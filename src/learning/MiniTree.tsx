@@ -9,23 +9,41 @@
  * only clickable nodes, and the rest of the tree recedes.
  */
 
-import { FIG27_NODES, type TreeNodeData } from "./content/figures";
+import { FIG27_NODES, FIG27_ROOT_QUESTION, type TreeNodeData } from "./content/figures";
 
-/** manual layout — fractions of width per node, rows by depth */
+/** manual layout — fractions of width per node, rows by depth, mirroring
+ *  Figure 27's left-to-right order (diversification left, existing right) */
 const POS: Record<string, { fx: number; row: number }> = {
   root: { fx: 0.5, row: 0 },
-  demand: { fx: 0.26, row: 1 },
+  demand: { fx: 0.27, row: 1 },
   supply: { fx: 0.76, row: 1 },
-  existing: { fx: 0.14, row: 2 },
-  newact: { fx: 0.40, row: 2 },
+  newact: { fx: 0.12, row: 2 },
+  existing: { fx: 0.35, row: 2 },
   col: { fx: 0.63, row: 2 },
-  amen: { fx: 0.90, row: 2 },
-  external: { fx: 0.07, row: 3 },
-  inputs: { fx: 0.23, row: 3 },
-  coord: { fx: 0.40, row: 3 },
-  housing: { fx: 0.55, row: 3 },
-  transport: { fx: 0.72, row: 3 },
+  amen: { fx: 0.88, row: 2 },
+  coord: { fx: 0.11, row: 3 },
+  external: { fx: 0.27, row: 3 },
+  inputs: { fx: 0.445, row: 3 },
+  housing: { fx: 0.615, row: 3 },
+  transport: { fx: 0.78, row: 3 },
+  horizontal: { fx: 0.36, row: 4 },
+  vertical: { fx: 0.53, row: 4 },
 };
+
+/** Label lines per node — long figure labels wrap as they do in the figure.
+ *  The root is special-cased: it shows the figure's question, above the node. */
+const LINES: Record<string, string[]> = {
+  newact: ["Low diversification into", "new activities"],
+  existing: ["Low growth of", "existing industries"],
+  coord: ["Coordination", "problems"],
+};
+const linesOf = (n: TreeNodeData) => LINES[n.id] ?? [n.title];
+
+/** The root question, split near its midpoint at a word break. */
+const ROOT_LINES = (() => {
+  const cut = FIG27_ROOT_QUESTION.lastIndexOf(" ", Math.ceil(FIG27_ROOT_QUESTION.length / 2));
+  return [FIG27_ROOT_QUESTION.slice(0, cut), FIG27_ROOT_QUESTION.slice(cut + 1)];
+})();
 
 export function MiniTree({
   path = [],
@@ -45,7 +63,8 @@ export function MiniTree({
 }) {
   const W = 800;
   const H = height;
-  const rowY = (row: number) => 26 + (row * (H - 52)) / 3;
+  // top pad holds the two root-question lines; bottom pad the row-4 labels
+  const rowY = (row: number) => 48 + (row * (H - 88)) / 4;
 
   const nodeAt = (id: string) => {
     const p = POS[id];
@@ -67,14 +86,19 @@ export function MiniTree({
     >
       {/* links */}
       {FIG27_NODES.filter((n) => n.parent).map((n) => {
+        const parent = FIG27_NODES.find((p) => p.id === n.parent)!;
         const a = nodeAt(n.parent!);
         const b = nodeAt(n.id);
         const lit = onPath(n.id) && onPath(n.parent!);
         const candidate = walking && isChoice(n.id) && onPath(n.parent!);
+        // start below the parent's label block so links never cross its text
+        // (the root's label sits above the node, so its links start at the dot)
+        const startY =
+          n.parent === "root" ? a.y + 11 : a.y + 34 + 13 * (linesOf(parent).length - 1);
         return (
           <path
             key={`l-${n.id}`}
-            d={`M${a.x},${a.y + 11} C${a.x},${(a.y + b.y) / 2} ${b.x},${(a.y + b.y) / 2} ${b.x},${b.y - 11}`}
+            d={`M${a.x},${startY} C${a.x},${(startY + b.y) / 2} ${b.x},${(startY + b.y) / 2} ${b.x},${b.y - 11}`}
             fill="none"
             stroke={lit || candidate ? "#c98500" : "#d8d4cc"}
             strokeWidth={lit ? 2 : candidate ? 1.6 : 1.2}
@@ -119,17 +143,33 @@ export function MiniTree({
               stroke={lit || choice ? "#c98500" : isSel ? "#7a746a" : "#9a9389"}
               strokeWidth={lit || choice || isSel ? 2 : 1.2}
             />
-            <text
-              x={x}
-              y={y + (choice ? 28 : 22)}
-              fontSize={walking ? 12.5 : 11.5}
-              textAnchor="middle"
-              fill={lit ? "#9a6712" : choice ? "#6b4d10" : out ? "#9a9389" : "#6b655c"}
-              fontWeight={lit || choice ? 600 : 400}
-              textDecoration={out ? "line-through" : undefined}
-            >
-              {n.title}
-            </text>
+            {n.id === "root"
+              ? ROOT_LINES.map((line, i) => (
+                  <text
+                    key={i}
+                    x={x}
+                    y={y - 34 + i * 13}
+                    fontSize={11.5}
+                    textAnchor="middle"
+                    fill="#6b655c"
+                  >
+                    {line}
+                  </text>
+                ))
+              : linesOf(n).map((line, i) => (
+                  <text
+                    key={i}
+                    x={x}
+                    y={y + (choice ? 28 : 22) + i * 13}
+                    fontSize={walking ? 12.5 : 11.5}
+                    textAnchor="middle"
+                    fill={lit ? "#9a6712" : choice ? "#6b4d10" : out ? "#9a9389" : "#6b655c"}
+                    fontWeight={lit || choice ? 600 : 400}
+                    textDecoration={out ? "line-through" : undefined}
+                  >
+                    {line}
+                  </text>
+                ))}
           </g>
         );
       })}

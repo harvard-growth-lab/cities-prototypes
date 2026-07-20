@@ -24,15 +24,15 @@ interface Fork {
 // ten words — the reading happens in the reveal, not here.
 const FORKS: Record<string, Fork> = {
   root: {
-    prompt: "Whose problem is it — the firms' or the residents'?",
+    prompt: "Whose problem is it — the firms' (labor demand) or the residents' (labor supply)?",
     evidence: [
-      { label: "The wedge", value: "pay ↑↑ · people ↓", hint: "pay is sprinting; people aren't coming" },
+      { label: "The wedge", value: "pay ↑↑ · people ↓", hint: "vs the typical metro: pay sprints, people lag" },
       { label: "Shift-share, local", value: `${signed(p.demand.shiftShare.localPp)} pp`, hint: "the industry mix isn't the drag" },
       { label: "Tradable jobs", value: "100 → 112", hint: "the export engine kept growing" },
     ],
   },
   supply: {
-    prompt: "Residents' side. The cost of living — or what living here is like?",
+    prompt: "Residents' side. The cost of living — or amenities?",
     evidence: [
       {
         label: "Home-value growth",
@@ -44,7 +44,8 @@ const FORKS: Record<string, Fork> = {
     ],
   },
   demand: {
-    prompt: "Firms' side. What the city already does — or what it can't become?",
+    prompt:
+      "Firms' side. Low diversification into new activities — or low growth of existing industries?",
     evidence: [
       { label: "Export jobs", value: "100 → 112", hint: "existing industries grew fine" },
       {
@@ -55,21 +56,28 @@ const FORKS: Record<string, Fork> = {
     ],
   },
   col: {
-    prompt: "Cost of living. Housing prices — or reaching the jobs?",
+    prompt: "Cost of living. Housing — or transportation?",
     evidence: [
       { label: "Home-value growth", value: "lags the nation", hint: "prices rose slower than typical" },
       { label: "Jobs within 30 min", value: "38%", hint: "middling reach, but stable" },
     ],
   },
   existing: {
-    prompt: "Existing industries. Outside shocks — or missing inputs?",
+    prompt: "Existing industries. External shocks — or production inputs?",
     evidence: [
       { label: "US market share", value: `${signed(p.demand.marketShare.deltaPp)} pp`, hint: "rising — no shock signature" },
       { label: "Input prices", value: "land #3 · rent #5", hint: "pricey — but land cuts both ways" },
     ],
   },
+  inputs: {
+    prompt: "Production inputs. Horizontal — hitting every firm — or vertical, industry-specific?",
+    evidence: [
+      { label: "Land & rent", value: "land #3 · rent #5", hint: "every firm pays these — horizontal, if anything" },
+      { label: "Power & water", value: "power #8 · water #122", hint: "no single industry choking on an input" },
+    ],
+  },
   newact: {
-    prompt: "New activities. One suspect left on this branch: coordination.",
+    prompt: "New activities. One suspect left on this branch: coordination problems.",
     evidence: [{ label: "Complexity outlook (COI)", value: `${p.demand.coi}`, hint: "many adjacent options, untaken" }],
   },
 };
@@ -114,7 +122,7 @@ export function TreeWalk({ onComplete }: { onComplete?: (correct: boolean) => vo
           selected={current}
           choices={done ? [] : kids.map((k) => k.id)}
           onSelect={done ? undefined : (n) => setPath([...path, n.id])}
-          height={250}
+          height={380}
         />
       </div>
 

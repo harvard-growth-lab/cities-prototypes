@@ -15,43 +15,41 @@
 import { boston } from "./data/boston";
 import { MEDIANS } from "./data/metros";
 import { verdictAt, signed } from "./data/derive";
+import { CONSTRAINT_COLORS, type WedgeId } from "./content/figures";
 import { PizzaChart, type PizzaPoint } from "./PizzaChart";
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 /**
- * The signal panel's one-line read, in plain language: describe the two dials
- * against the typical metro, then flag which side the pattern points to.
- * `dp`/`dw` are the point's growth minus the US medians; `side` is the wedge's
- * constraint side. e.g. "People and paychecks both up — but pay is outrunning
- * population, a possible constraint on the labor-supply side."
+ * The signal panel's one-line read, in plain language — one line per wedge,
+ * matching the Figure-31 scenario named in the header just above it. The
+ * wedge places the point against the typical metro; the absolute growth
+ * rates keep the words honest — a metro can lag the benchmark on people
+ * while still growing, or lag on pay while paychecks still rise.
  */
-function plainSummary(dp: number, dw: number, side: string): string {
+function plainSummary(wedge: WedgeId, popCagr: number, wageCagr: number): string {
   const eps = 0.07;
-  const pUp = dp > eps;
-  const pDown = dp < -eps;
-  const wUp = dw > eps;
-  const wDown = dw < -eps;
-  const people = pUp ? "people arriving" : pDown ? "people leaving" : "population flat";
-  const pay = wUp ? "pay rising" : wDown ? "pay falling" : "pay flat";
-  const together = (pUp && wUp) || (pDown && wDown);
-
-  if (side === "none")
-    return `${cap(people)}, ${pay} — both close to the typical metro, so no side clearly binds yet.`;
-
-  if (side === "demand")
-    return pUp
-      ? "People and paychecks up together — a labor-demand boom: the jobs engine is pulling."
-      : "People and paychecks down together — the labor-demand side is faltering: the jobs engine is stalling.";
-
-  // labor supply
-  if (together)
-    return pUp
-      ? "People and paychecks both up — but pay is outrunning population, a possible constraint on the labor-supply side (housing, amenities)."
-      : "People and paychecks both down — but population is sliding faster than pay, a labor-supply story.";
-  return pUp
-    ? "People arriving on thinner paychecks — a labor-supply story: cheaper living or amenities are doing the recruiting."
-    : "Paychecks up but people leaving — a labor-supply warning: something about living here is pushing people out.";
+  const peopleLag =
+    popCagr < -eps ? "people leaving" : "population lagging the typical metro";
+  const payLag = wageCagr < -eps ? "pay falling" : "pay lagging the typical metro";
+  switch (wedge) {
+    case "1a":
+      return "People and paychecks both beating the typical metro — but pay is outrunning population: either a constraint on the labor-supply side (housing, amenities) or a superstar's naturally tight supply. The housing tests tell the two apart.";
+    case "1b":
+      return "People arriving faster than pay is climbing — a boom the city is absorbing. No side binds; the challenge is keeping services ahead of growth.";
+    case "2a":
+      return `People pouring in with ${payLag} — cheaper living or amenities are doing the recruiting, and the jobs stretch to absorb them. No side clearly binds.`;
+    case "2c":
+      return `People arriving with ${payLag} — the jobs engine can't stretch to meet them: a possible constraint on the labor-demand side.`;
+    case "3c":
+      return `${cap(payLag)} while population barely budges — people ride out the pain: a labor-demand constraint either way.`;
+    case "3d":
+      return `${cap(peopleLag)} faster than pay is giving way — firms leave and people follow: the strongest labor-demand signal.`;
+    case "4e":
+      return `${cap(peopleLag)} even though pay beats the benchmark — a labor-supply warning: something about living here is pushing people away.`;
+    case "4f":
+      return `Pay bid far past the benchmark and ${peopleLag} anyway — a labor-supply warning: something about living here needs paying for.`;
+  }
 }
 
 export function DragDot({
@@ -76,8 +74,6 @@ export function DragDot({
   const tv = verdictAt(truth.x, truth.y);
   const shown = showTruth ? tv : v;
   const shownPt = showTruth ? truth : pt;
-  const shownDp = shownPt.x - MEDIANS.popCagr;
-  const shownDw = shownPt.y - MEDIANS.wageCagr;
 
   // On (or a hair off) the benchmark crosshair every wedge meets — there is
   // no honest signal to report, so don't pretend there is one.
@@ -161,20 +157,35 @@ export function DragDot({
                 {shown.scenario.id} · {shown.scenario.title}
               </div>
               <div className="dd-signal-read">
-                {plainSummary(shownDp, shownDw, shown.side)}
+                {plainSummary(shown.wedge, shownPt.x, shownPt.y)}
                 {shown.spiralRisk && (
                   <span className="dd-spiral">negative-spiral risk</span>
                 )}
+              </div>
+              {/* The figure's own constraint note for this wedge — the hinge
+                  between this chart and the decision tree's first fork. */}
+              <div
+                style={{
+                  marginTop: 8,
+                  fontSize: 12.5,
+                  color: CONSTRAINT_COLORS[shown.side],
+                }}
+              >
+                <strong>{shown.scenario.constraint}</strong>
+                <span style={{ opacity: 0.85 }}>
+                  {shown.side === "none"
+                    ? " — no tree branch to walk yet"
+                    : ` → walk the tree's Labor ${shown.side === "demand" ? "Demand" : "Supply"} branch`}
+                </span>
               </div>
             </div>
           )}
         </div>
       </div>
-      {!locked && (
-        <div className="fig-caption" style={{ marginTop: 10 }}>
-          Diagonals = where the verdict flips.
-        </div>
-      )}
+      <div className="fig-caption" style={{ marginTop: 10 }}>
+        Both dials are read against the typical US metro — the dashed
+        crosshair. Diagonals = where the verdict flips.
+      </div>
     </div>
   );
 }

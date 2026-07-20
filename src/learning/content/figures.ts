@@ -32,47 +32,58 @@ export interface TreeNodeData {
   tests?: string;
 }
 
+/** The question at the root of Figure 27, verbatim. */
+export const FIG27_ROOT_QUESTION =
+  "What are the binding constraints to achieve better, more inclusive, higher, or more resilient economic growth?";
+
+/** Node titles and sibling order follow the figure exactly (left → right). */
 export const FIG27_NODES: TreeNodeData[] = [
   {
     id: "root",
     title: "The growth question",
     sub: "root of the tree",
     detail:
-      "Every diagnosis starts from the question the city's trajectory poses: What constrains current growth? How do we make growth resilient? How do we grow through inclusion? What might constrain future growth? The tree maps the logical progression from that question to the potential binding constraints — progressing down any branch requires evidence that rules out the alternatives.",
+      `The tree's root asks, verbatim: "${FIG27_ROOT_QUESTION}" The emphasis — better, more inclusive, higher, or more resilient — varies with the city's case, and the tree maps the logical progression from that question to the potential binding constraints. Progressing down any branch requires evidence that rules out the alternatives.`,
     example:
-      "Cali asked the first, Ciudad del Carmen the second, Savannah the third, Bangalore the fourth.",
+      "Cali asked about current growth, Ciudad del Carmen about resilience, Savannah about inclusion, Bangalore about future growth.",
   },
   {
     id: "demand",
     parent: "root",
-    title: "Labor demand",
-    sub: "firms & production",
+    title: "Labor Demand",
     detail:
-      "Constraints that most affect firms — the city's ability to produce and sell tradables. The demand for a city's exports determines the labor demanded in both the tradable and non-tradable sectors. This branch splits by whether the trouble lies with what the city already does, or with what it can't yet become.",
+      "Constraints that most affect firms — the city's ability to produce and sell tradables. The demand for a city's exports determines the labor demanded in both the tradable and non-tradable sectors. This branch splits into low diversification into new activities and low growth of existing industries.",
   },
   {
     id: "supply",
     parent: "root",
-    title: "Labor supply",
-    sub: "residents & location choice",
+    title: "Labor Supply",
     detail:
-      "Constraints that most affect residents' willingness to live and work in the city — its workforce is determined by what it costs to live there and what living there is like. The branch separates cost-of-living concerns from attractiveness (amenities).",
-  },
-  {
-    id: "existing",
-    parent: "demand",
-    title: "Existing industries",
-    sub: "the current export base",
-    detail:
-      "The city's present tradable activities are struggling. Two suspects: shocks arriving from outside, or production inputs the city fails to provide.",
+      "Constraints that most affect residents' willingness to live and work in the city — its workforce is determined by what it costs to live there and what living there is like. The branch separates cost of living from amenities.",
   },
   {
     id: "newact",
     parent: "demand",
-    title: "New activities",
-    sub: "diversification",
+    title: "Low diversification into new activities",
     detail:
       "The city can't move into the adjacent possible — new industries that its know-how could support don't emerge. In Scrabble terms: the letters exist across many heads, but no new words get spelled.",
+  },
+  {
+    id: "existing",
+    parent: "demand",
+    title: "Low growth of existing industries",
+    detail:
+      "The city's present tradable activities are struggling. Two suspects: external shocks arriving from outside, or production inputs the city fails to provide.",
+  },
+  {
+    id: "coord",
+    parent: "newact",
+    title: "Coordination problems",
+    detail:
+      "Chicken-and-egg failures: the new industry needs suppliers, trained workers, and specialized infrastructure that only appear once the industry exists. Nobody profitably moves first, so the diversification that the city's know-how could support never happens.",
+    example:
+      "The serendipity workaround: move brains in — Microsoft to Seattle, Walmart to Bentonville.",
+    tests: "Magnetic fields: do capable firms sniff around and then locate elsewhere?",
   },
   {
     id: "external",
@@ -87,36 +98,39 @@ export const FIG27_NODES: TreeNodeData[] = [
     id: "inputs",
     parent: "existing",
     title: "Production inputs",
-    sub: "vertical & horizontal",
     detail:
-      "Inputs firms need but can't buy at any reasonable price. Vertical inputs are industry-specific — power for smelters, water for chip fabs, specialized regulation or facilities. Horizontal inputs hit every firm: permitting, roads, land registry, waste collection.",
+      "Inputs firms need but can't buy at any reasonable price. The tree splits them by reach: horizontal inputs hit every firm; vertical inputs are specific to an industry.",
     tests:
       "High shadow prices, queues and wait times; bypassing (generators in every courtyard); camels & hippos — do the surviving firms barely use the scarce input?",
   },
   {
-    id: "coord",
-    parent: "newact",
-    title: "Coordination problems",
+    id: "horizontal",
+    parent: "inputs",
+    title: "Horizontal inputs",
     detail:
-      "Chicken-and-egg failures: the new industry needs suppliers, trained workers, and specialized infrastructure that only appear once the industry exists. Nobody profitably moves first, so the diversification that the city's know-how could support never happens.",
-    example:
-      "The serendipity workaround: move brains in — Microsoft to Seattle, Walmart to Bentonville.",
-    tests: "Magnetic fields: do capable firms sniff around and then locate elsewhere?",
+      "Inputs every firm uses, whatever it makes: permitting, roads, land and commercial space, electricity, waste collection. When one is scarce, the whole export base pays for it.",
+  },
+  {
+    id: "vertical",
+    parent: "inputs",
+    title: "Vertical inputs",
+    detail:
+      "Industry-specific inputs — power for smelters, water for chip fabs, specialized regulation or facilities. Scarcity chokes one industry while its neighbors barely notice.",
   },
   {
     id: "col",
     parent: "supply",
-    title: "Cost of living",
+    title: "Cost of Living",
     detail:
-      "The pay is fine; the deal isn't — housing and commuting eat the wage. Which of the two depends on whether housing prices are rising: if they are, suspect housing supply; if people simply can't reach jobs, suspect transportation. The two are deeply intertwined.",
+      "The pay is fine; the deal isn't — housing and commuting eat the wage. Which of the two depends on whether housing prices are rising: if they are, suspect housing; if people simply can't reach jobs, suspect transportation. The two are deeply intertwined.",
   },
   {
     id: "amen",
     parent: "supply",
     title: "Amenities",
-    sub: "attractiveness",
+    sub: "recreation · environment · public services",
     detail:
-      "What makes a place worth living in on top of its costs: safety, schools, public services, the natural environment, recreation. Revealed by compensating differentials — when the place gets worse, employers must pay a premium to keep anyone, and people leave anyway.",
+      "What makes a place attractive on top of its living costs. The figure's examples, verbatim: recreational services like restaurants; the natural environment (e.g., parks, public spaces or climate); other services such as education, childcare or public safety. Revealed by compensating differentials — when the place gets worse, employers must pay a premium to keep anyone, and people leave anyway.",
     example:
       "Flint after the water crisis: rising wages, falling home values, outmigration.",
     tests: "Magnetic fields plus falling revealed premium (the amenity residual).",
@@ -124,9 +138,9 @@ export const FIG27_NODES: TreeNodeData[] = [
   {
     id: "housing",
     parent: "col",
-    title: "Housing supply",
+    title: "Housing",
     detail:
-      "Inelastic housing — FAR limits, height caps, parking minimums, missing radial and trunk infrastructure — turns growth into prices instead of people. The boom arrives; the cranes don't; rents eat the wage gain: a fortress city.",
+      "Inelastic housing supply — FAR limits, height caps, parking minimums, missing radial and trunk infrastructure — turns growth into prices instead of people. The boom arrives; the cranes don't; rents eat the wage gain: a fortress city.",
     example: "San Francisco's restrictive zoning; slums where formal supply can't respond.",
     tests: "High price + low quantity: are prices rising while little gets built?",
   },
@@ -162,7 +176,18 @@ export interface Fig31Scenario {
   blurb: string;
   color: string; // quadrant diagnosis color
   constrained: boolean;
+  /** the figure's own constraint note for this wedge, verbatim */
+  constraint: string;
 }
+
+/** The figure writes its constraint notes in a side-coded color: demand
+ *  constraints in blue, supply constraints in orange, "no apparent
+ *  constraints" in green. Keyed by the wedge's constraint side. */
+export const CONSTRAINT_COLORS = {
+  demand: DIAG_COLORS.positiveDemand,
+  supply: DIAG_COLORS.negativeSupply,
+  none: DIAG_COLORS.positiveSupply,
+} as const;
 
 export const FIG31_SCENARIOS: Fig31Scenario[] = [
   {
@@ -175,6 +200,7 @@ export const FIG31_SCENARIOS: Fig31Scenario[] = [
       "Wages outrun arrivals. Either something walls workers out — housing regulation, disamenities (a real, solvable constraint) — or the city is simply a dense superstar whose supply curve naturally flattens (no policy problem). The housing tests tell the two apart.",
     color: DIAG_COLORS.positiveDemand,
     constrained: true,
+    constraint: "Potential Supply Constraints",
   },
   {
     id: "1b",
@@ -186,6 +212,7 @@ export const FIG31_SCENARIOS: Fig31Scenario[] = [
       "People arrive faster than pay rises: the city absorbs its own success. No apparent constraint — the challenge is managing growth and keeping public services ahead of it.",
     color: DIAG_COLORS.positiveDemand,
     constrained: false,
+    constraint: "No Apparent Constraints",
   },
   {
     id: "2a",
@@ -197,6 +224,7 @@ export const FIG31_SCENARIOS: Fig31Scenario[] = [
       "The city got cheaper or nicer relative to its rivals; newcomers pour in and firms stretch to absorb them. Watch the sectoral mix — retirement and consumer towns grow this way without wages ever moving.",
     color: DIAG_COLORS.positiveSupply,
     constrained: false,
+    constraint: "No Apparent Constraints",
   },
   {
     id: "2c",
@@ -208,6 +236,7 @@ export const FIG31_SCENARIOS: Fig31Scenario[] = [
       "People keep coming but demand won't stretch: wages sag hard while few jobs are created. A low-complexity export base that can't scale is the usual suspect — constrained labor demand hiding behind population growth.",
     color: DIAG_COLORS.positiveSupply,
     constrained: true,
+    constraint: "Potential Demand Constraints",
   },
   {
     id: "3c",
@@ -219,6 +248,7 @@ export const FIG31_SCENARIOS: Fig31Scenario[] = [
       "Jobs and pay fall, but people hang on — homeownership, community, amenities keep them rooted. San Francisco lost 17% of high-tech employment after the dot-com bust; population fell just 1.4%. Constrained demand either way.",
     color: DIAG_COLORS.negativeDemand,
     constrained: true,
+    constraint: "Demand Constraints",
   },
   {
     id: "3d",
@@ -230,6 +260,7 @@ export const FIG31_SCENARIOS: Fig31Scenario[] = [
       "A few employers leave and many people follow. The strongest signal of a demand constraint — and a spiral risk, because exodus breeds its own supply problems (crime, fiscal stress) on the way down.",
     color: DIAG_COLORS.negativeDemand,
     constrained: true,
+    constraint: "Demand Constraints + potential negative spiral",
   },
   {
     id: "4e",
@@ -241,6 +272,7 @@ export const FIG31_SCENARIOS: Fig31Scenario[] = [
       "People leave even though the jobs are there; firms raise pay and still lose them. Cost of living or collapsing amenities are pushing residents toward better real wages elsewhere.",
     color: DIAG_COLORS.negativeSupply,
     constrained: true,
+    constraint: "Supply Constraints + potential negative spiral",
   },
   {
     id: "4f",
@@ -252,6 +284,7 @@ export const FIG31_SCENARIOS: Fig31Scenario[] = [
       "Firms bid wages up hard to hold onto workers, and workers trickle away anyway. Supply is constrained; demand is not the immediate problem — find what makes staying unattractive.",
     color: DIAG_COLORS.negativeSupply,
     constrained: true,
+    constraint: "Supply Constraints",
   },
 ];
 

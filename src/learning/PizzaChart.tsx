@@ -338,7 +338,7 @@ export function PizzaChart({
                     `${p.label} · ${windowLabel}`,
                     <>
                       People {signed(p.x)}%/yr · pay {signed(p.y)}%/yr — wedge {sc.id},{" "}
-                      {sc.title.toLowerCase()}.
+                      {sc.title.toLowerCase()}. The figure's note: {sc.constraint}.
                     </>,
                   );
                 }

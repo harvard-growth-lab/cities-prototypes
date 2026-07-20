@@ -2,7 +2,7 @@ import { useState } from "react";
 import { SKY_H, SKY_W, drawSkyline, BOOM, type SkyScene } from "../readcity/skyline";
 import { MEDIANS } from "../learning/data/metros";
 import { verdictAt } from "../learning/data/derive";
-import { DIAG_COLORS } from "../learning/content/figures";
+import { CONSTRAINT_COLORS, DIAG_COLORS } from "../learning/content/figures";
 import { PixelSim, type SimHud } from "./PixelSim";
 
 /**
@@ -80,7 +80,7 @@ const QUARTERS: Record<
     state: { ...BOOM, hour: 15.2, crane: 0.95, build: 0.8, flow: 0.8, harbor: 0.45, factory: 0.5, occ: 1.05 },
     hud: { people: 1, wages: -1, label: "cheap living pulls people in" },
     caption:
-      "More people on thinner paychecks: the city itself got easier to afford or nicer to live in, and people accept a little less pay to be here. That's the living side — the supply side — and it isn't a problem.",
+      "More people on thinner paychecks: the city itself got easier to afford or nicer to live in, and people accept a little less pay to be here. That's the living side — the supply side — and usually good news. But the second cut decides: it hinges on whether the jobs stretch to meet the newcomers.",
     question: "Pay is thinner, yet people keep coming — why?",
     causes: [
       { cell: "se", label: "The city got cheaper or nicer, and the jobs stretch" },
@@ -156,7 +156,7 @@ const CELLS: WedgeCell[] = [
     dWage: 1.4,
     state: { hour: 11.2, occ: 0.95, flow: 0.45, factory: 1, harbor: 1, crane: 0.4, build: 0.35, fortress: 0.45, rain: 0 },
     story:
-      "Pay is outrunning people: employers bid up wages faster than the city can house the winners. Note the lid creeping over the lot — a boom leaking into prices.",
+      "Pay is outrunning people: employers bid up wages faster than the city can house the winners. Note the lid creeping over the lot — a boom leaking into prices. Either housing is walling the winners out, or a dense superstar is just being expensive — the housing tests tell the two apart.",
   },
   {
     key: "n",
@@ -320,7 +320,7 @@ export function PizzaWidget() {
       <div className="pz-row">
         <div className="pz-steps">
           <div className="pz-step">
-            <span className="pz-step-head">1 · Read the two dials</span>
+            <span className="pz-step-head">1 · Read the two dials — against the typical city</span>
             <div className="pz-dial">
               <span className="pz-dial-name">People</span>
               <button className="btn" aria-pressed={pop === 1} onClick={() => setDial("pop", 1)}>
@@ -361,7 +361,10 @@ export function PizzaWidget() {
                       <span className="pc-main">{cz.label}</span>
                       <span className="pc-sub">
                         <b style={{ color: glc(v.scenario.color) }}>{v.wedge}</b>{" "}
-                        {plainQuad(v.scenario.quadrant)}
+                        {plainQuad(v.scenario.quadrant)} ·{" "}
+                        <span style={{ color: glc(CONSTRAINT_COLORS[v.side]) }}>
+                          {v.scenario.constraint}
+                        </span>
                       </span>
                     </button>
                   );
@@ -395,7 +398,9 @@ export function PizzaWidget() {
                   fill={glc(cellVerdict(c).scenario.color)}
                   onClick={() => jumpSlice(c)}
                 >
-                  <title>{cellVerdict(c).scenario.title}</title>
+                  <title>
+                    {cellVerdict(c).scenario.title} — {cellVerdict(c).scenario.constraint}
+                  </title>
                 </polygon>
               );
             })}
@@ -456,8 +461,16 @@ export function PizzaWidget() {
                 <span className="wc-verdict">
                   In the pizza chart this is slice{" "}
                   <b style={{ color: glc(verdict.scenario.color) }}>{verdict.wedge}</b> ·{" "}
-                  {verdict.scenario.title} — <strong>{SIDE_PLAIN[verdict.side]}</strong>
-                  {verdict.spiralRisk ? ", and it can spiral if ignored" : ""}.
+                  {verdict.scenario.title} — <strong>{SIDE_PLAIN[verdict.side]}</strong>. The
+                  figure's note here:{" "}
+                  <strong style={{ color: glc(CONSTRAINT_COLORS[verdict.side]) }}>
+                    {verdict.scenario.constraint}
+                  </strong>
+                  {verdict.side === "none"
+                    ? " — no branch of the diagnostic tree to walk."
+                    : ` — so in the diagnostic tree, take the Labor ${
+                        verdict.side === "demand" ? "Demand" : "Supply"
+                      } branch.`}
                 </span>
               </>
             )}
@@ -465,7 +478,7 @@ export function PizzaWidget() {
         ) : quadrant ? (
           QUARTERS[quadrant].caption
         ) : (
-          "Every diagnosis starts with these two numbers, read together. Set both dials — until then the skyline idles at the typical city, dead center of the chart."
+          "Every diagnosis starts with these two numbers, each read against the typical city. Set both dials — until then the skyline idles at that typical city, dead center of the chart."
         )}
       </p>
     </>

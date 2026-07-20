@@ -86,7 +86,7 @@ export const QUIZZES: Quiz[] = [
     prompt:
       "Drag the gold dot to where you think the Boston metro sits on the people × pay plane — then lock it in.",
     reveal:
-      "Boston lands at +0.4% people, +4.5% pay — the slow-people, fast-pay slice. Wages are sprinting while population barely moves: the signature of a constrained labor supply.",
+      "Boston lands at +0.4% people, +4.5% pay, against a typical metro's +0.5% and +3.8% — the slow-people, fast-pay slice. Wages are sprinting past the benchmark while population lags it: the signature of a constrained labor supply.",
   },
   {
     id: "place-vs-metro",
