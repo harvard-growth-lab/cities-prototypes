@@ -9,8 +9,15 @@ export const fmtInt = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 
 export const fmtPct = (x: number | null | undefined, digits = 1) =>
   x == null || Number.isNaN(x) ? '—' : `${x.toFixed(digits)}%`;
 
-export const fmtNum = (x: number | null | undefined, digits = 1) =>
-  x == null || Number.isNaN(x) ? '—' : x.toFixed(digits);
+// Chart formatters whose input is a FRACTION (0.042 → "4.2%"), unlike fmtPct
+// above which expects a value already in percent units. Kept as plain unary
+// functions so they can be passed directly as axis/tooltip formatters.
+export const fmtPct1 = (v: number) => `${(v * 100).toFixed(1)}%`;
+export const fmtPct2 = (v: number) => `${(v * 100).toFixed(2)}%`;
+/** Signed percentage-points, e.g. 0.042 → "+4.2 pp". */
+export const fmtPp = (v: number) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)} pp`;
+/** Signed percent, e.g. 0.042 → "+4.2%". */
+export const fmtSignedPct = (v: number) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)}%`;
 
 export function fmtMoney(x: number | null | undefined, country = 'usa'): string {
   if (x == null || Number.isNaN(x)) return '—';
@@ -43,9 +50,4 @@ export function fmtMoneyCompact(x: number | null | undefined, country = 'usa'): 
     currency: c.code,
     ...COMPACT_OPTS,
   }).format(x);
-}
-
-export function pctChange(a: number | null | undefined, b: number | null | undefined): number | null {
-  if (a == null || b == null || a === 0 || Number.isNaN(a) || Number.isNaN(b)) return null;
-  return ((b - a) / a) * 100;
 }

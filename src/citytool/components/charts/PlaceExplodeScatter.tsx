@@ -11,7 +11,7 @@ import type {
 } from '../../data/types';
 import { useYearRange } from '../../lib/yearRange';
 import { GL } from '../../lib/glColors';
-import { fmtCompact } from '../../lib/format';
+import { fmtCompact, fmtPct1, fmtPct2, fmtPp } from '../../lib/format';
 import { pctTickFormatter, ppTickFormatter } from '../../lib/tickFormat';
 import {
   buildPoints as buildCityPoints,
@@ -65,10 +65,6 @@ const EASE = [0.4, 0, 0.2, 1] as const;
 // the metro→place hand-off.
 const PLACE_R_MAX = 9;
 const PLACE_R_MIN = 1.6;
-
-const fmtPct1 = (v: number) => `${(v * 100).toFixed(1)}%`;
-const fmtPct2 = (v: number) => `${(v * 100).toFixed(2)}%`;
-const fmtPp = (v: number) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)} pp`;
 
 // Places don't carry the metro's wage-premium series, so the mode set is the
 // place trio plus the amenity-drift pair. Each mode maps 1:1 onto a metro mode

@@ -1,4 +1,4 @@
-import { clamp, keyframes, mix, rgb, type RGB } from "./pixel/pixel";
+import { clamp, keyframes, mix, rgb, type RGB } from "./pixel";
 
 /**
  * Shared time-of-day palette for the "How to Read a City" scenes — the

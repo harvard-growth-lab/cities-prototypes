@@ -1,6 +1,7 @@
 import type { ComponentProps, ReactNode } from 'react';
 import type { ConstraintType, Diagnosis, SupplyDiagnosis, SupplySide } from '../../lib/diagnosis';
 import type { ShiftShareResult } from '../../lib/shiftShare';
+import { fmtSignedPct, fmtPp } from '../../lib/format';
 import type {
   CityDirectoryRow,
   PlaceDirectoryRow,
@@ -183,8 +184,6 @@ function ActiveExplodeChart({
   return <PlaceExplodeScatter {...props} active={activeIndex === index} />;
 }
 
-const fmtSignedPct = (v: number) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)}%`;
-const fmtPp = (v: number) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)} pp`;
 
 export function buildDriverSteps(view: ConstraintType, d: DriverData): DriverStep[] {
   return view === 'demand' ? demandSteps(d) : supplySteps(d);

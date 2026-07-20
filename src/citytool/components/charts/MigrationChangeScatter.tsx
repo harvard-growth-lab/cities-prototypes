@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { CityPanelRow, HousingRow, CityRentRow } from '../../data/types';
 import { useYearRange } from '../../lib/yearRange';
 import { GL } from '../../lib/glColors';
-import { fmtCompact } from '../../lib/format';
+import { fmtCompact, fmtPct1, fmtPct2, fmtPp } from '../../lib/format';
+import { nearestRow } from '../../lib/panelRows';
 import { pctTickFormatter, ppTickFormatter } from '../../lib/tickFormat';
 import { amenityResiduals, residualDelta, type AmenityObs } from '../../lib/amenityResidual';
 
@@ -37,28 +38,6 @@ const PLOT_H = VIEW_H - M.top - M.bottom;
 // opening frame is pixel-identical to this chart.
 export const METRO_R_MAX = 12;
 export const METRO_R_MIN = 1.5;
-
-const fmtPct1 = (v: number) => `${(v * 100).toFixed(1)}%`;
-const fmtPct2 = (v: number) => `${(v * 100).toFixed(2)}%`;
-const fmtPp = (v: number) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)} pp`;
-
-// Pick the row in `rows` whose year is closest to `target`. Used to snap a
-// city's panel observations to the global compare window when the user's
-// requested year doesn't exist in the data (BEA mega panel covers 2008–2023).
-function nearestRow<T extends { year: number }>(
-  rows: T[],
-  target: number,
-  pred: (r: T) => boolean = () => true,
-): T | null {
-  let best: T | null = null;
-  let bestDist = Infinity;
-  for (const r of rows) {
-    if (!pred(r)) continue;
-    const d = Math.abs(r.year - target);
-    if (d < bestDist) { best = r; bestDist = d; }
-  }
-  return best;
-}
 
 type Mode = 'wage' | 'housing' | 'rent' | 'premium' | 'amenity_zhvi' | 'amenity_zori';
 

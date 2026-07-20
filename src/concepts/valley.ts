@@ -10,7 +10,7 @@ import {
   type Ctx,
   type RGB,
 } from "../pixel/pixel";
-import { paletteAt, walkersAt, WARM, type Palette, STOP_AT } from "../palette";
+import { paletteAt, walkersAt, WARM, type Palette, STOP_AT } from "../pixel/palette";
 
 /**
  * The breathing boundary — one valley, one labor market, and a dashed

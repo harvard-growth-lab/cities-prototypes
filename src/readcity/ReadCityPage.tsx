@@ -1,5 +1,5 @@
 import { StoryAct, type ActStep } from "./StoryAct";
-import { SKY_H, SKY_W, drawSkyline, type SkyScene } from "./skyline";
+import { SKY_H, SKY_W, drawSkyline, BOOM, NIGHT, type SkyScene } from "./skyline";
 import { ST_H, ST_W, drawStreet, type StScene } from "./street";
 
 /**
@@ -12,18 +12,6 @@ import { ST_H, ST_W, drawStreet, type StScene } from "./street";
  */
 
 /* ————— Act I · the lights and the bridge ————— */
-
-const NIGHT: SkyScene = {
-  hour: 21.4,
-  occ: 0.85,
-  flow: 0.15,
-  factory: 0.75,
-  harbor: 0.55,
-  crane: 0,
-  build: 0,
-  fortress: 0,
-  rain: 0,
-};
 
 const ACT1: ActStep<SkyScene>[] = [
   {
@@ -178,18 +166,6 @@ const ACT2: ActStep<StScene>[] = [
 ];
 
 /* ————— Act III · boom, bust, and the two dials ————— */
-
-const BOOM: SkyScene = {
-  hour: 9.6,
-  occ: 0.92,
-  flow: 0.4,
-  factory: 0.9,
-  harbor: 0.9,
-  crane: 0.35,
-  build: 0.12,
-  fortress: 0,
-  rain: 0,
-};
 
 const ACT3: ActStep<SkyScene>[] = [
   {

@@ -10,14 +10,14 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import type { InstrumentQuiz } from "../content/quizzes";
-import { useJourney, useScopedId } from "../state/journey";
-import { SkipButton } from "../shared/QuizBits";
-import { DragDot } from "../variants/lab/DragDot";
-import { TreeWalk } from "../variants/lab/TreeWalk";
-import { boston } from "../data/boston";
-import { MEDIANS } from "../data/metros";
-import { verdictAt, msaVerdict } from "../data/derive";
+import type { InstrumentQuiz } from "./content/quizzes";
+import { useJourney, useScopedId } from "./journey";
+import { SkipButton } from "./QuizBits";
+import { DragDot } from "./DragDot";
+import { TreeWalk } from "./TreeWalk";
+import { boston } from "./data/boston";
+import { MEDIANS } from "./data/metros";
+import { verdictAt, msaVerdict } from "./data/derive";
 
 function Reveal({ correct, right, wrong, reveal }: { correct: boolean; right: string; wrong: string; reveal: string }) {
   return (

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { Ctx } from "../pixel/pixel";
-import { SKY_H, SKY_W, drawSkyline, type SkyScene } from "../skyline";
-import { ST_H, ST_W, drawStreet, type StScene } from "../street";
+import { SKY_H, SKY_W, drawSkyline, BOOM, NIGHT, type SkyScene } from "../readcity/skyline";
+import { ST_H, ST_W, drawStreet, type StScene } from "../readcity/street";
 import { VAL_H, VAL_W, drawValley, type ValScene } from "./valley";
 import {
   TWIN_H,
@@ -26,18 +26,6 @@ import "./concepts.css";
  */
 
 /* ————— 01 · people vote with their feet ————— */
-
-const NIGHT: SkyScene = {
-  hour: 21.4,
-  occ: 0.85,
-  flow: 0.15,
-  factory: 0.75,
-  harbor: 0.55,
-  crane: 0,
-  build: 0,
-  fortress: 0,
-  rain: 0,
-};
 
 const FEET_ORDER = ["steady", "inflow", "exodus"] as const;
 type FeetKey = (typeof FEET_ORDER)[number];
@@ -377,18 +365,6 @@ const OXYGEN_STEPS: MiniStep<StScene>[] = [
 ];
 
 /* ————— 06 · the fortress city ————— */
-
-const BOOM: SkyScene = {
-  hour: 9.6,
-  occ: 0.92,
-  flow: 0.4,
-  factory: 0.9,
-  harbor: 0.9,
-  crane: 0.35,
-  build: 0.12,
-  fortress: 0,
-  rain: 0,
-};
 
 const FORTRESS_ORDER = ["build", "fortress"] as const;
 type FortressKey = (typeof FORTRESS_ORDER)[number];

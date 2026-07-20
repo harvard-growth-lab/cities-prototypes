@@ -8,10 +8,10 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import { boston } from "../../data/boston";
-import { signed } from "../../data/derive";
-import { FIG27_NODES } from "../../content/figures";
-import { MiniTree } from "../../shared/MiniTree";
+import { boston } from "./data/boston";
+import { signed } from "./data/derive";
+import { FIG27_NODES } from "./content/figures";
+import { MiniTree } from "./MiniTree";
 
 const p = boston;
 

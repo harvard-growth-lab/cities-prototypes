@@ -11,7 +11,7 @@ import {
   type Fig31Scenario,
   type WedgeId,
 } from "../content/figures";
-import type { CityProfile, Indicator, Side } from "./types";
+import type { CityProfile, Side } from "./types";
 import { MEDIANS } from "./metros";
 
 /* ————— wedge → side ————— */
@@ -57,17 +57,6 @@ export function msaVerdict(p: CityProfile): Verdict {
   return verdictFor(p.diagnosis.msa.popCagr, p.diagnosis.msa.wageCagr, p);
 }
 
-/** The admin city's own point on the same plane (stage 3/5 comparison). */
-export function cityVerdict(p: CityProfile): Verdict {
-  return verdictFor(p.diagnosis.city.popCagr, p.diagnosis.city.wageCagr, p);
-}
-
-export const sideLabel: Record<Side, string> = {
-  demand: "labor demand",
-  supply: "labor supply",
-  none: "no apparent constraint",
-};
-
 /** Verdict for an arbitrary (popCagr, wageCagr) point vs the US medians —
  *  used by the interactive toys. */
 export function verdictAt(popCagr: number, wageCagr: number): {
@@ -91,11 +80,6 @@ export function verdictAt(popCagr: number, wageCagr: number): {
 
 export type Table2Quadrant = "star" | "goodGreat" | "resilientDecline" | "critical";
 
-export function table2Quadrant(vsNationPp: number, vsPeersPp: number): Table2Quadrant {
-  if (vsNationPp >= 0) return vsPeersPp >= 0 ? "star" : "goodGreat";
-  return vsPeersPp >= 0 ? "resilientDecline" : "critical";
-}
-
 /* ————— formatting ————— */
 
 export function fmtCount(n: number): string {
@@ -111,24 +95,7 @@ export function fmtUsd(n: number): string {
   return `$${fmtCount(n)}`;
 }
 
-export function fmtLevel(ind: Indicator): string {
-  if (ind.unit === "usd") return fmtUsd(ind.level);
-  if (ind.unit === "pct") return `${ind.level}%`;
-  return fmtCount(ind.level);
-}
-
 export function signed(n: number, digits = 1): string {
   const v = n.toFixed(digits);
   return n > 0 ? `+${v}` : v;
-}
-
-/** "−0.8%/yr" or "+0.1 pp" depending on the indicator's unit. */
-export function fmtChange(ind: Indicator): string {
-  return ind.unit === "pct"
-    ? `${signed(ind.changePct)} pp`
-    : `${signed(ind.changePct)}%/yr`;
-}
-
-export function fmtShare(x: number): string {
-  return `${Math.round(x * 100)}%`;
 }

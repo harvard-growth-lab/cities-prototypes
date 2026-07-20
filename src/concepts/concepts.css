@@ -2,7 +2,7 @@
    City Concepts — the bite-size explainer-widgets page (#/concepts).
 
    Statically imported (safe: owns no :root/body). All class names are
-   page-unique, and the page root carries .gl-app so the proto.css token
+   page-unique, and the page root carries .gl-app so the app-shell.css token
    remap (surface, gold, pos/neg diagnosis colors) and widget chrome
    (.viz-card, .btn, .stat-tile, .dd-signal) apply. The dark inset frames
    carry their own explicit colors — they must read as film frames on
@@ -16,7 +16,7 @@
   font-family: var(--font-sans);
 }
 
-/* the fixed corner bar reuses .gl-corner from proto.css; on this page the
+/* the fixed corner bar reuses .gl-corner from app-shell.css; on this page the
    links must survive the <640px hide (there's no other way back) */
 @media (max-width: 640px) {
   .concepts-page .gl-corner .story-link {

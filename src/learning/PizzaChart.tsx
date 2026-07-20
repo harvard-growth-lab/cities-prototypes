@@ -15,9 +15,9 @@ import {
   scenarioOf,
   type Fig31Scenario,
   type WedgeId,
-} from "../content/figures";
-import { archetypeMetros, metroCloud, MEDIANS } from "../data/metros";
-import { signed } from "../data/derive";
+} from "./content/figures";
+import { archetypeMetros, metroCloud, MEDIANS } from "./data/metros";
+import { signed } from "./data/derive";
 import { useTip } from "./useTip";
 
 export const PIZZA_X: [number, number] = [-1.5, 3.5];
@@ -366,31 +366,6 @@ export function PizzaChart({
         })}
       </svg>
       {tipEl}
-    </div>
-  );
-}
-
-/** The wedge explainer card (used beside/below the chart on hover). */
-export function WedgeCard({ s, active }: { s: Fig31Scenario; active?: boolean }) {
-  return (
-    <div
-      className="viz-card"
-      style={{
-        padding: "12px 14px",
-        borderColor: active ? s.color : undefined,
-        transition: "border-color 0.15s",
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-        <span style={{ width: 10, height: 10, borderRadius: 3, background: s.color, display: "inline-block" }} />
-        <strong style={{ fontSize: 13.5 }}>
-          {s.id} · {s.title}
-        </strong>
-      </div>
-      <div className="note" style={{ marginBottom: 4 }}>
-        {s.shock} · {s.elasticity} · {s.quadrant}
-      </div>
-      <div style={{ fontSize: 13, color: "var(--ink-2)" }}>{s.blurb}</div>
     </div>
   );
 }

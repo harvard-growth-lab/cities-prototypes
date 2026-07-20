@@ -1,5 +1,5 @@
-import { useMemo, useState, type ComponentProps } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useMemo, useState, type ComponentProps } from "react";
+import { Link, useParams } from "react-router-dom";
 import {
   useCityDirectory,
   useCityPanel,
@@ -14,39 +14,56 @@ import {
   useMsaIndustry,
   useNationalIndustry,
   useIndustryAttributes,
-} from '../data/usePanel';
-import type { CityIndustryRow } from '../data/types';
-import StoryScroller from '../components/story/StoryScroller';
-import Section from '../components/story/Section';
-import StoryMap from '../components/story/StoryMap';
-import StatCardRow from '../components/story/StatCardRow';
-import { useStory } from '../components/story/useStory';
-import { buildPlaceCards, buildMsaCards } from '../lib/storyStats';
-import { classifyMsa, classifySupply, type ConstraintType, type SupplySide } from '../lib/diagnosis';
-import SectorEmploymentTreemap from '../components/charts/SectorEmploymentTreemap';
-import MigrationChangeScatter from '../components/charts/MigrationChangeScatter';
-import PlaceExplodeScatter from '../components/charts/PlaceExplodeScatter';
-import { buildDriverSteps, DriverTree, type DriverData } from '../components/story/DriversSection';
-import YearRangeSelector from '../components/YearRangeSelector';
-import { computeShiftShare, snapYear } from '../lib/shiftShare';
-import { useYearRange } from '../lib/yearRange';
-import { parsePlaceSlug, citySlug } from '../lib/slug';
-import type { ReactNode } from 'react';
-import { useProto } from '../../proto/settings';
-import { useJourney } from '../../state/journey';
-import { QuizGate, QuizCardSlot, QuizCard } from '../../shared/QuizBits';
-import { QuizRecap } from '../../shared/QuizRecap';
-import { quizForStage, QUIZZES, type Quiz } from '../../content/quizzes';
-import { DragDotQuizCard, TreeWalkQuizCard } from '../../proto/InstrumentCards';
+} from "../data/usePanel";
+import type { CityIndustryRow } from "../data/types";
+import StoryScroller from "../components/story/StoryScroller";
+import Section from "../components/story/Section";
+import StoryMap from "../components/story/StoryMap";
+import StatCardRow from "../components/story/StatCardRow";
+import { useStory } from "../components/story/useStory";
+import { buildPlaceCards, buildMsaCards } from "../lib/storyStats";
+import {
+  classifyMsa,
+  classifySupply,
+  type ConstraintType,
+  type SupplySide,
+} from "../lib/diagnosis";
+import SectorEmploymentTreemap from "../components/charts/SectorEmploymentTreemap";
+import MigrationChangeScatter from "../components/charts/MigrationChangeScatter";
+import PlaceExplodeScatter from "../components/charts/PlaceExplodeScatter";
+import {
+  buildDriverSteps,
+  DriverTree,
+  type DriverData,
+} from "../components/story/DriversSection";
+import YearRangeSelector from "../components/YearRangeSelector";
+import { computeShiftShare, snapYear } from "../lib/shiftShare";
+import { useYearRange } from "../lib/yearRange";
+import { parsePlaceSlug, citySlug } from "../lib/slug";
+import { fmtSignedPct } from "../lib/format";
+import type { ReactNode } from "react";
+import { useProto } from "../../learning/settings";
+import { useJourney } from "../../learning/journey";
+import { QuizGate, QuizCardSlot, QuizCard } from "../../learning/QuizBits";
+import { QuizRecap } from "../../learning/QuizRecap";
+import {
+  quizForStage,
+  QUIZZES,
+  type Quiz,
+} from "../../learning/content/quizzes";
+import {
+  DragDotQuizCard,
+  TreeWalkQuizCard,
+} from "../../learning/InstrumentCards";
 
 // Quiz stage for each driver step on the default supply→amenity walk (see
 // content/quizzes.ts stages 6–9; stage 6 is the walk-the-tree instrument on
 // the housing-test step). Steps not listed render ungated.
 const DRIVER_QUIZ_STAGE: Record<string, number> = {
-  'supply-scatter': 6,
-  'supply-amenity-msa': 7,
-  'supply-amenity-explode': 8,
-  'supply-amenity-choropleth': 9,
+  "supply-scatter": 6,
+  "supply-amenity-msa": 7,
+  "supply-amenity-explode": 8,
+  "supply-amenity-choropleth": 9,
 };
 
 // The scroll-driven "city diagnosis". Six full-screen sections that argue from
@@ -56,7 +73,7 @@ const DRIVER_QUIZ_STAGE: Record<string, number> = {
 // resolution plumbing mirrors the (snapshot) PlaceProfile.
 
 export default function CityStory() {
-  const { country = 'usa', placeSlug = '' } = useParams();
+  const { country = "usa", placeSlug = "" } = useParams();
   const places = usePlaceDirectory();
   const placePanel = usePlacePanel();
   const placeHousing = usePlaceHousing();
@@ -86,15 +103,21 @@ export default function CityStory() {
       if (r.year === latestYear) popByPlace.set(r.place_id, r.population ?? 0);
     }
     candidates.sort((a, b) => {
-      if (a.class !== b.class) return a.class === 'incorporated' ? -1 : 1;
-      return (popByPlace.get(b.place_id) ?? 0) - (popByPlace.get(a.place_id) ?? 0);
+      if (a.class !== b.class) return a.class === "incorporated" ? -1 : 1;
+      return (
+        (popByPlace.get(b.place_id) ?? 0) - (popByPlace.get(a.place_id) ?? 0)
+      );
     });
     return candidates[0];
   }, [places.data, placePanel.data, parsed, country]);
 
   const msa = useMemo(() => {
     if (!place || !cityDirectory.data) return null;
-    return cityDirectory.data.find((c) => c.country === country && c.city_id === place.msa_id) ?? null;
+    return (
+      cityDirectory.data.find(
+        (c) => c.country === country && c.city_id === place.msa_id,
+      ) ?? null
+    );
   }, [cityDirectory.data, place, country]);
 
   const placePanelUsa = useMemo(
@@ -128,7 +151,8 @@ export default function CityStory() {
   const placeNames = useMemo(() => {
     const map = new Map<string, string>();
     if (places.data) {
-      for (const p of places.data) map.set(p.place_id, `${p.place_name}, ${p.state}`);
+      for (const p of places.data)
+        map.set(p.place_id, `${p.place_name}, ${p.state}`);
     }
     return map;
   }, [places.data]);
@@ -149,7 +173,7 @@ export default function CityStory() {
     [cityComplexity.data, country],
   );
 
-  const msaIndustry = useMsaIndustry(place?.msa_id ?? '');
+  const msaIndustry = useMsaIndustry(place?.msa_id ?? "");
   const nationalIndustry = useNationalIndustry();
   const industryAttributes = useIndustryAttributes();
 
@@ -159,7 +183,7 @@ export default function CityStory() {
   // Two stages are hands-on instruments graded like a quiz — their cards
   // compose the widget (drag-the-dot, walk-the-tree) into the same chrome.
   const { on } = useProto();
-  const quizzesOn = on('quizzes');
+  const quizzesOn = on("quizzes");
   // Study mode replaces the whole story with a plain list of the quiz cards —
   // see the early return below.
   const { quizOnly } = useJourney();
@@ -167,10 +191,18 @@ export default function CityStory() {
     if (!quizzesOn) return node;
     const quiz = quizForStage(stage);
     const card =
-      quiz?.kind === 'instrument' ? (
-        quiz.id === 'place-the-metro' ? <DragDotQuizCard quiz={quiz} /> : <TreeWalkQuizCard quiz={quiz} />
+      quiz?.kind === "instrument" ? (
+        quiz.id === "place-the-metro" ? (
+          <DragDotQuizCard quiz={quiz} />
+        ) : (
+          <TreeWalkQuizCard quiz={quiz} />
+        )
       ) : undefined;
-    return <QuizGate quiz={quiz} card={card}>{node}</QuizGate>;
+    return (
+      <QuizGate quiz={quiz} card={card}>
+        {node}
+      </QuizGate>
+    );
   };
 
   // Driver branch (section 5). Defaults to following the diagnosis; the toggle
@@ -190,7 +222,9 @@ export default function CityStory() {
 
   const industryRowsForTreemap = useMemo<CityIndustryRow[]>(() => {
     if (!msaIndustry.data || !industryAttributes.data || !place) return [];
-    const attrsByNaics = new Map(industryAttributes.data.map((a) => [a.naics4, a]));
+    const attrsByNaics = new Map(
+      industryAttributes.data.map((a) => [a.naics4, a]),
+    );
     return msaIndustry.data.map((r) => {
       const a = attrsByNaics.get(r.naics4);
       return {
@@ -207,25 +241,50 @@ export default function CityStory() {
   }, [msaIndustry.data, industryAttributes.data, place]);
 
   const placeCards = useMemo(
-    () => (place ? buildPlaceCards(place.place_id, msaPlaceIds, placePanelUsa, placeHousingUsa, startYear, endYear) : []),
+    () =>
+      place
+        ? buildPlaceCards(
+            place.place_id,
+            msaPlaceIds,
+            placePanelUsa,
+            placeHousingUsa,
+            startYear,
+            endYear,
+          )
+        : [],
     [place, msaPlaceIds, placePanelUsa, placeHousingUsa, startYear, endYear],
   );
   const msaCards = useMemo(
-    () => (msa ? buildMsaCards(msa.city_id, cityPanelCountry, housingUsa, startYear, endYear) : []),
+    () =>
+      msa
+        ? buildMsaCards(
+            msa.city_id,
+            cityPanelCountry,
+            housingUsa,
+            startYear,
+            endYear,
+          )
+        : [],
     [msa, cityPanelCountry, housingUsa, startYear, endYear],
   );
   const diagnosis = useMemo(
-    () => (msa ? classifyMsa(cityPanelCountry, msa.city_id, startYear, endYear) : null),
+    () =>
+      msa
+        ? classifyMsa(cityPanelCountry, msa.city_id, startYear, endYear)
+        : null,
     [msa, cityPanelCountry, startYear, endYear],
   );
   const supplyDiagnosis = useMemo(
-    () => (msa ? classifySupply(housingUsa, msa.city_id, startYear, endYear) : null),
+    () =>
+      msa ? classifySupply(housingUsa, msa.city_id, startYear, endYear) : null,
     [msa, housingUsa, startYear, endYear],
   );
 
   const eci = useMemo(() => {
     if (!msa) return null;
-    const mine = cityComplexityCountry.filter((r) => r.city_id === msa.city_id && r.eci != null);
+    const mine = cityComplexityCountry.filter(
+      (r) => r.city_id === msa.city_id && r.eci != null,
+    );
     if (mine.length === 0) return null;
     const latest = mine.reduce((a, b) => (b.year > a.year ? b : a));
     return { value: latest.eci as number, year: latest.year };
@@ -238,14 +297,18 @@ export default function CityStory() {
     return (
       <article>
         <p className="error">Unrecognised place "{placeSlug}".</p>
-        <p className="muted">Use format <code>name-state</code>, e.g. <code>boston-ma</code>.</p>
+        <p className="muted">
+          Use format <code>name-state</code>, e.g. <code>boston-ma</code>.
+        </p>
       </article>
     );
   }
   if (!place || !msa) {
     return (
       <article>
-        <p className="error">No place matches "{placeSlug}" in {parsed?.state}.</p>
+        <p className="error">
+          No place matches "{placeSlug}" in {parsed?.state}.
+        </p>
       </article>
     );
   }
@@ -254,18 +317,26 @@ export default function CityStory() {
   // plain scrolling column, no map, no section chrome.
   if (quizOnly) return <QuizOnlyView />;
 
-  const classLabel = place.lsad === '25' ? 'city' :
-                     place.lsad === '43' ? 'town' :
-                     place.lsad === '47' ? 'village' :
-                     place.lsad === '21' ? 'borough' :
-                     place.class === 'CDP' ? 'CDP' :
-                     'place';
+  const classLabel =
+    place.lsad === "25"
+      ? "city"
+      : place.lsad === "43"
+        ? "town"
+        : place.lsad === "47"
+          ? "village"
+          : place.lsad === "21"
+            ? "borough"
+            : place.class === "CDP"
+              ? "CDP"
+              : "place";
 
   // Section 5 expands into one step per driver chart. Indices are assigned
   // sequentially so the levers section lands right after, however many driver
   // steps the active branch produces.
-  const driverView: ConstraintType = viewOverride ?? diagnosis?.constraintType ?? 'demand';
-  const supplySide: SupplySide = supplyOverride ?? supplyDiagnosis?.side ?? 'housing';
+  const driverView: ConstraintType =
+    viewOverride ?? diagnosis?.constraintType ?? "demand";
+  const supplySide: SupplySide =
+    supplyOverride ?? supplyDiagnosis?.side ?? "housing";
   const DRIVERS_BASE = 5;
   const driverData: DriverData = {
     msa,
@@ -306,22 +377,19 @@ export default function CityStory() {
           <p>
             How well is a city doing? The clearest signal is whether people are
             arriving or leaving. Within a country, moving is relatively
-            frictionless — so population change is residents{' '}
-            <strong>voting with their feet</strong> on whether {place.place_name}{' '}
-            is a good place to live and work.
+            frictionless — so population change is residents{" "}
+            <strong>voting with their feet</strong> on whether{" "}
+            {place.place_name} is a good place to live and work.
           </p>
         }
       >
         <p className="story-sub muted">
-          {place.place_long_name} ({classLabel}) ·{' '}
-          part of the{' '}
-          <Link to={`/${country}/${msaSlugFor(msa.city_name)}`}>{msa.city_name} MSA</Link>
+          {place.place_long_name} ({classLabel}) · part of the{" "}
+          <Link to={`/${country}/${msaSlugFor(msa.city_name)}`}>
+            {msa.city_name} MSA
+          </Link>
         </p>
-        <p className="story-sub">
-          <a className="concept-link" href="#/concepts">
-            New to the framework? Eight two-minute concepts →
-          </a>
-        </p>
+
         {gate(1, <StatCardRow cards={placeCards} rankLabel="in MSA" />)}
       </Section>
 
@@ -336,9 +404,9 @@ export default function CityStory() {
             The administrative city is one piece of a larger machine. People
             commute, firms hire, and housing supply responds across a region far
             wider than the city line — the <strong>labor market</strong>. We
-            approximate it with the Metropolitan Statistical Area. {place.place_name}{' '}
-            sits inside the {msa.city_name} MSA, and most of what follows is read
-            at that scale.
+            approximate it with the Metropolitan Statistical Area.{" "}
+            {place.place_name} sits inside the {msa.city_name} MSA, and most of
+            what follows is read at that scale.
           </p>
         }
       >
@@ -352,27 +420,33 @@ export default function CityStory() {
         title="Your exports matter"
         narrative={
           <p>
-            A city's size tracks the size of its <strong>export sector</strong> —
-            what it sells to people outside the region. No city makes everything
-            it consumes (the beef, the chips, the software), so to buy from
-            outside it has to sell outside. The export base is what a metro can
-            ultimately support. Below is the {msa.city_name} MSA's industrial
-            composition — every industry sized by employment and shaded by its
-            economic complexity.
+            A city's size tracks the size of its <strong>export sector</strong>{" "}
+            — what it sells to people outside the region. No city makes
+            everything it consumes (the beef, the chips, the software), so to
+            buy from outside it has to sell outside. The export base is what a
+            metro can ultimately support. Below is the {msa.city_name} MSA's
+            industrial composition — every industry sized by employment and
+            shaded by its economic complexity.
           </p>
         }
       >
         {eci && (
           <div className="story-inline-stat">
-            <span className="stat-card-label">Economic Complexity Index ({eci.year})</span>
+            <span className="stat-card-label">
+              Economic Complexity Index ({eci.year})
+            </span>
             <span className="stat-card-value">{eci.value.toFixed(2)}</span>
             <span className="stat-card-note">
               How much productive know-how the metro's industry mix embodies.
             </span>
           </div>
         )}
-        {msaIndustry.loading && <p className="loading">Loading industry data…</p>}
-        {msaIndustry.error && <p className="error">{msaIndustry.error.message}</p>}
+        {msaIndustry.loading && (
+          <p className="loading">Loading industry data…</p>
+        )}
+        {msaIndustry.error && (
+          <p className="error">{msaIndustry.error.message}</p>
+        )}
         {gate(
           3,
           industryRowsForTreemap.length > 0 ? (
@@ -394,40 +468,50 @@ export default function CityStory() {
         title="How is the metro performing?"
         narrative={
           <p>
-            Plot every metro by how fast its population grew (x) against how fast
-            its wages grew (y). Both rising is a <strong>positive demand
-            shock</strong>; both falling, a negative one. Population rising while
-            pay lags points to a <strong>supply shift</strong> (amenities, cheaper
-            living); pay rising while population lags, a <strong>constrained
-            supply</strong>. Where does {msa.city_name} land?
+            Plot every metro by how fast its population grew (x) against how
+            fast its wages grew (y). Both rising is a{" "}
+            <strong>positive demand shock</strong>; both falling, a negative
+            one. Population rising while pay lags points to a{" "}
+            <strong>supply shift</strong> (amenities, cheaper living); pay
+            rising while population lags, a <strong>constrained supply</strong>.
+            Where does {msa.city_name} land?
           </p>
         }
       >
-        {gate(4, <>
-        {diagnosis && (
-          <div className={`diagnosis-callout is-${diagnosis.constraintType}${diagnosis.borderline ? ' is-borderline' : ''}`}>
-            <span className="eyebrow">Diagnostic hypothesis · {msa.city_name} MSA</span>
-            <h4 className="diagnosis-title">{diagnosis.title}</h4>
-            <p className="diagnosis-blurb">{diagnosis.blurb}</p>
-            <p className="diagnosis-figures muted">
-              Population {fmtSigned(diagnosis.popCagr)}/yr (median {fmtSigned(diagnosis.popMedian)}) ·
-              wages {fmtSigned(diagnosis.wageCagr)}/yr (median {fmtSigned(diagnosis.wageMedian)})
-            </p>
-          </div>
+        {gate(
+          4,
+          <>
+            {diagnosis && (
+              <div
+                className={`diagnosis-callout is-${diagnosis.constraintType}${diagnosis.borderline ? " is-borderline" : ""}`}
+              >
+                <span className="eyebrow">
+                  Diagnostic hypothesis · {msa.city_name} MSA
+                </span>
+                <h4 className="diagnosis-title">{diagnosis.title}</h4>
+                <p className="diagnosis-blurb">{diagnosis.blurb}</p>
+                <p className="diagnosis-figures muted">
+                  Population {fmtSignedPct(diagnosis.popCagr)}/yr (median{" "}
+                  {fmtSignedPct(diagnosis.popMedian)}) · wages{" "}
+                  {fmtSignedPct(diagnosis.wageCagr)}/yr (median{" "}
+                  {fmtSignedPct(diagnosis.wageMedian)})
+                </p>
+              </div>
+            )}
+            <div className="chart-block">
+              <h4>Every US metro: population growth × wage growth</h4>
+              {housing.data && (
+                <MigrationChangeScatter
+                  panel={cityPanelCountry}
+                  housing={housingUsa}
+                  rent={cityRentUsa}
+                  highlightCityId={msa.city_id}
+                  quadrants
+                />
+              )}
+            </div>
+          </>,
         )}
-        <div className="chart-block">
-          <h4>Every US metro: population growth × wage growth</h4>
-          {housing.data && (
-            <MigrationChangeScatter
-              panel={cityPanelCountry}
-              housing={housingUsa}
-              rent={cityRentUsa}
-              highlightCityId={msa.city_id}
-              quadrants
-            />
-          )}
-        </div>
-        </>)}
       </Section>
 
       {/* 5 — Place vs. its metro. Opens on the metro scatter from the previous
@@ -439,7 +523,7 @@ export default function CityStory() {
         narrative={
           <p>
             The {msa.city_name} dot is not one economy — watch it break apart
-            into the <strong>places inside the MSA</strong>, with{' '}
+            into the <strong>places inside the MSA</strong>, with{" "}
             {place.place_name} highlighted. The dashed lines stay put: they are
             still the medians across US metros, so each place now reads against
             two benchmarks — its own metro (the dashed ring) and the typical
@@ -476,13 +560,16 @@ export default function CityStory() {
         // Stage steps (the full-bleed maps) mirror the two lead map sections:
         // the quiz lives INSIDE the narrative card and the gate blurs only the
         // map behind it — no separate floating quiz card.
-        const stageQuiz = step.layout === 'stage' && quizzesOn ? quizForStage(quizStage) : undefined;
+        const stageQuiz =
+          step.layout === "stage" && quizzesOn
+            ? quizForStage(quizStage)
+            : undefined;
         return (
           <Section
             key={step.key}
             index={DRIVERS_BASE + i}
-            variant={step.layout === 'stage' ? 'stage' : 'full'}
-            eyebrow={`Drivers · ${driverView === 'demand' ? 'industry' : supplySide === 'amenity' ? 'amenities' : 'housing'}`}
+            variant={step.layout === "stage" ? "stage" : "full"}
+            eyebrow={`Drivers · ${driverView === "demand" ? "industry" : supplySide === "amenity" ? "amenities" : "housing"}`}
             title={step.title}
             narrative={
               stageQuiz ? (
@@ -501,7 +588,7 @@ export default function CityStory() {
                 key); off-path steps simply render ungated. The DriverTree rides
                 INSIDE the first step's gate — it dots the branches the
                 diagnostics point to, which would spoil the walk-the-tree quiz. */}
-            {step.layout === 'stage' ? (
+            {step.layout === "stage" ? (
               stageQuiz ? (
                 <QuizGate quiz={stageQuiz} hideCard>
                   {step.chart}
@@ -539,39 +626,45 @@ export default function CityStory() {
         title="Levers for change"
         narrative={
           <p>
-            Pulling the diagnosis together: {msa.city_name} reads as a{' '}
-            <strong>{diagnosis ? diagnosis.title.toLowerCase() : 'mixed signal'}</strong>,
-            and {place.place_name} is positioned {place.place_name === msa.city_name ? 'at its core' : 'within it'}.
+            Pulling the diagnosis together: {msa.city_name} reads as a{" "}
+            <strong>
+              {diagnosis ? diagnosis.title.toLowerCase() : "mixed signal"}
+            </strong>
+            , and {place.place_name} is positioned{" "}
+            {place.place_name === msa.city_name ? "at its core" : "within it"}.
             That diagnosis points to where the leverage lives — and to which
             levers belong to the city versus the wider metro.
           </p>
         }
       >
-        {gate(10, <div className="levers-stub">
-          <p>
-            Three families of lever follow from the diagnosis, weighted toward
-            whichever side — demand or supply — is the binding constraint:
-          </p>
-          <ul>
-            <li>
-              <strong>Export-sector support</strong> — deepen the tradable base
-              that sets the ceiling on how large the metro can grow.
-            </li>
-            <li>
-              <strong>Housing supply</strong> — let construction respond to
-              demand, so growth shows up as people rather than only as prices.
-            </li>
-            <li>
-              <strong>Amenity investment</strong> — the quality-of-life pull
-              that draws residents independent of wages.
-            </li>
-          </ul>
-          <p className="muted">
-            Which of these moves the needle depends on the constraint above:
-            a demand-constrained metro leans on the first, a supply-constrained
-            one on the second and third.
-          </p>
-        </div>)}
+        {gate(
+          10,
+          <div className="levers-stub">
+            <p>
+              Three families of lever follow from the diagnosis, weighted toward
+              whichever side — demand or supply — is the binding constraint:
+            </p>
+            <ul>
+              <li>
+                <strong>Export-sector support</strong> — deepen the tradable
+                base that sets the ceiling on how large the metro can grow.
+              </li>
+              <li>
+                <strong>Housing supply</strong> — let construction respond to
+                demand, so growth shows up as people rather than only as prices.
+              </li>
+              <li>
+                <strong>Amenity investment</strong> — the quality-of-life pull
+                that draws residents independent of wages.
+              </li>
+            </ul>
+            <p className="muted">
+              Which of these moves the needle depends on the constraint above: a
+              demand-constrained metro leans on the first, a supply-constrained
+              one on the second and third.
+            </p>
+          </div>,
+        )}
       </Section>
 
       {/* Prototype · scorecard */}
@@ -580,7 +673,12 @@ export default function CityStory() {
           index={leversIndex + 1}
           eyebrow="Recap"
           title="Your intuitions vs the data"
-          narrative={<p>Every checkpoint you met on the way down, replayed against the numbers.</p>}
+          narrative={
+            <p>
+              Every checkpoint you met on the way down, replayed against the
+              numbers.
+            </p>
+          }
         >
           <QuizRecap />
         </Section>
@@ -597,8 +695,8 @@ function QuizOnlyView() {
   const { setQuizOnly } = useJourney();
   const quizzes = [...QUIZZES].sort((a, b) => a.stage - b.stage);
   const renderCard = (q: Quiz) => {
-    if (q.kind === 'instrument') {
-      return q.id === 'place-the-metro' ? (
+    if (q.kind === "instrument") {
+      return q.id === "place-the-metro" ? (
         <DragDotQuizCard quiz={q} />
       ) : (
         <TreeWalkQuizCard quiz={q} />
@@ -613,7 +711,7 @@ function QuizOnlyView() {
           <span className="eyebrow">Quiz-only mode</span>
           <h1>Check your intuition</h1>
           <p>
-            Every prototype quiz on its own — answer or skip each one.{' '}
+            Every prototype quiz on its own — answer or skip each one.{" "}
             <button className="link-btn" onClick={() => setQuizOnly(false)}>
               Exit to the full story
             </button>
@@ -636,7 +734,14 @@ function QuizOnlyView() {
 // the story context.
 function MapBackdrop({ placeId, msaId }: { placeId: string; msaId: string }) {
   const { activeIndex } = useStory();
-  return <StoryMap placeId={placeId} msaId={msaId} zoom={activeIndex >= 1 ? 'msa' : 'place'} dim={activeIndex >= 2} />;
+  return (
+    <StoryMap
+      placeId={placeId}
+      msaId={msaId}
+      zoom={activeIndex >= 1 ? "msa" : "place"}
+      dim={activeIndex >= 2}
+    />
+  );
 }
 
 // Feeds the explode scatter its activation signal: the MSA-dot → places burst
@@ -645,20 +750,19 @@ function MapBackdrop({ placeId, msaId }: { placeId: string; msaId: string }) {
 function ExplodeScatterStep({
   index,
   ...props
-}: { index: number } & Omit<ComponentProps<typeof PlaceExplodeScatter>, 'active'>) {
+}: { index: number } & Omit<
+  ComponentProps<typeof PlaceExplodeScatter>,
+  "active"
+>) {
   const { activeIndex } = useStory();
   return <PlaceExplodeScatter {...props} active={activeIndex === index} />;
-}
-
-function fmtSigned(x: number): string {
-  return `${x >= 0 ? '+' : ''}${(x * 100).toFixed(1)}%`;
 }
 
 function msaSlugFor(name: string): string {
   return name
     .toLowerCase()
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }

@@ -12,10 +12,10 @@
  * true wedge.
  */
 
-import { boston } from "../../data/boston";
-import { MEDIANS } from "../../data/metros";
-import { verdictAt, signed } from "../../data/derive";
-import { PizzaChart, type PizzaPoint } from "../../shared/PizzaChart";
+import { boston } from "./data/boston";
+import { MEDIANS } from "./data/metros";
+import { verdictAt, signed } from "./data/derive";
+import { PizzaChart, type PizzaPoint } from "./PizzaChart";
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 

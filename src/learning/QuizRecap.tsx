@@ -3,8 +3,8 @@
  * variant's scoped quiz answers against the data, with a scoped reset.
  */
 
-import { QUIZZES } from "../content/quizzes";
-import { useJourney, useQuizScope, useScopedId } from "../state/journey";
+import { QUIZZES } from "./content/quizzes";
+import { useJourney, useQuizScope, useScopedId } from "./journey";
 
 export function QuizRecap({ title = "Your intuitions vs the data" }: { title?: string }) {
   const { answers, resetAnswers } = useJourney();

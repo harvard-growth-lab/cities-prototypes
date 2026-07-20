@@ -62,25 +62,6 @@ export function usePrefersReducedMotion() {
   return reduced;
 }
 
-/** Sizes a canvas to its parent width at devicePixelRatio; returns the ctx per frame. */
-export function setupCanvas(
-  canvas: HTMLCanvasElement,
-  cssHeight: number,
-): { ctx: CanvasRenderingContext2D; w: number; h: number } {
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  const cssWidth = canvas.clientWidth || canvas.parentElement?.clientWidth || 600;
-  const w = Math.round(cssWidth);
-  const h = Math.round(cssHeight);
-  if (canvas.width !== w * dpr || canvas.height !== h * dpr) {
-    canvas.width = w * dpr;
-    canvas.height = h * dpr;
-    canvas.style.height = `${h}px`;
-  }
-  const ctx = canvas.getContext("2d")!;
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  return { ctx, w, h };
-}
-
 /** Mulberry32 — deterministic pseudo-random for stable generated skylines. */
 export function seededRandom(seed: number) {
   let a = seed >>> 0;

@@ -1,7 +1,7 @@
-import { seededRandom } from "./pixel/hooks";
-import { clamp, css, hash, mix, mixHex, rgb, skyGradient, type Ctx } from "./pixel/pixel";
-import { R, drawStars, genStars, lineDots } from "./pixel/bits";
-import { WARM, litShareAt, paletteAt, STOP_AT, walkersAt, type Palette } from "./palette";
+import { seededRandom } from "../pixel/hooks";
+import { clamp, css, hash, mix, mixHex, rgb, skyGradient, type Ctx } from "../pixel/pixel";
+import { R, drawStars, genStars, lineDots } from "../pixel/bits";
+import { WARM, litShareAt, paletteAt, STOP_AT, walkersAt, type Palette } from "../pixel/palette";
 
 /**
  * Street level — the same city from the quay: the container ship and its

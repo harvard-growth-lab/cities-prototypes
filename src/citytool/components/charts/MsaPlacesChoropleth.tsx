@@ -7,7 +7,8 @@ import { useMsaPlacesGeo } from '../../data/useMsaGeo';
 import { useYearRange } from '../../lib/yearRange';
 import type { PlacePanelRow, PlaceHousingRow, PlaceRentRow, PlaceFiscalRow, PlaceDirectoryRow } from '../../data/types';
 import { fmtMoney, fmtInt } from '../../lib/format';
-import { GL } from '../../lib/glColors';
+import { GL, sequentialColor, divergingColor } from '../../lib/glColors';
+import { nearestRow } from '../../lib/panelRows';
 import { amenityResiduals, residualDelta, type AmenityObs } from '../../lib/amenityResidual';
 
 // Choropleth of every place in the MSA. The user picks a metric — population /
@@ -110,64 +111,6 @@ type Props = {
   placeholder?: boolean;
 };
 
-// Red → neutral → green diverging palette. Growth/decline has a real midpoint,
-// so a diverging ramp is correct (grammar §3.6). GL's stock diverging palettes
-// anchor the positive tail in blue; here the bad/good = red/green convention is
-// strong enough (and stated in the caption) to keep green positive — but the
-// saturated ends are pinned to GL's own c-2 (red) and c-3 (green) tones, and
-// the midpoint to warm paper, rather than ad-hoc hues. Sequential metrics use
-// only the upper half (paper → green) so "more = greener".
-const GREEN_DARK: [number, number, number] = [26, 107, 83];   // c-3-dark  #1a6b53
-const GREEN_MID:  [number, number, number] = [91, 192, 160];  // c-3       #5bc0a0
-const CREAM:      [number, number, number] = [244, 241, 234]; // paper-warm #f4f1ea
-const RED_MID:    [number, number, number] = [220, 111, 110]; // c-2 seq-mid #dc6f6e
-const RED_DARK:   [number, number, number] = [138, 44, 43];   // c-2-dark  #8a2c2b
-
-function lerp(a: number, b: number, t: number) { return a + (b - a) * t; }
-function rgbHex(r: number, g: number, b: number) {
-  const h = (n: number) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, '0');
-  return `#${h(r)}${h(g)}${h(b)}`;
-}
-function rampSequential(t: number): string {
-  // 0 → cream, 1 → dark green
-  const u = Math.max(0, Math.min(1, t));
-  if (u < 0.5) {
-    const k = u / 0.5;
-    return rgbHex(lerp(CREAM[0], GREEN_MID[0], k), lerp(CREAM[1], GREEN_MID[1], k), lerp(CREAM[2], GREEN_MID[2], k));
-  }
-  const k = (u - 0.5) / 0.5;
-  return rgbHex(lerp(GREEN_MID[0], GREEN_DARK[0], k), lerp(GREEN_MID[1], GREEN_DARK[1], k), lerp(GREEN_MID[2], GREEN_DARK[2], k));
-}
-function rampDiverging(t: number): string {
-  // -1 → dark red, 0 → cream, +1 → dark green
-  const u = Math.max(-1, Math.min(1, t));
-  if (u >= 0) {
-    if (u < 0.5) {
-      const k = u / 0.5;
-      return rgbHex(lerp(CREAM[0], GREEN_MID[0], k), lerp(CREAM[1], GREEN_MID[1], k), lerp(CREAM[2], GREEN_MID[2], k));
-    }
-    const k = (u - 0.5) / 0.5;
-    return rgbHex(lerp(GREEN_MID[0], GREEN_DARK[0], k), lerp(GREEN_MID[1], GREEN_DARK[1], k), lerp(GREEN_MID[2], GREEN_DARK[2], k));
-  }
-  const v = -u;
-  if (v < 0.5) {
-    const k = v / 0.5;
-    return rgbHex(lerp(CREAM[0], RED_MID[0], k), lerp(CREAM[1], RED_MID[1], k), lerp(CREAM[2], RED_MID[2], k));
-  }
-  const k = (v - 0.5) / 0.5;
-  return rgbHex(lerp(RED_MID[0], RED_DARK[0], k), lerp(RED_MID[1], RED_DARK[1], k), lerp(RED_MID[2], RED_DARK[2], k));
-}
-
-function nearestRow<T extends { year: number }>(rows: T[], target: number, pred: (r: T) => boolean = () => true): T | null {
-  let best: T | null = null;
-  let bestDist = Infinity;
-  for (const r of rows) {
-    if (!pred(r)) continue;
-    const d = Math.abs(r.year - target);
-    if (d < bestDist) { best = r; bestDist = d; }
-  }
-  return best;
-}
 
 function percentile(sorted: number[], q: number): number {
   if (sorted.length === 0) return 0;
@@ -636,7 +579,7 @@ export default function MsaPlacesChoropleth({
       if (placeholder) return PLACEHOLDER_FILL;
       if (v == null || !Number.isFinite(v)) return NO_DATA;
       const [lo, hi] = domain;
-      if (hi === lo) return rampSequential(0.5);
+      if (hi === lo) return sequentialColor(0.5);
       if (meta.diverging) {
         // When 0 is *inside* [lo, hi] the data has both signs — anchor cream
         // at 0 and stretch each half to its own end. When 0 is *outside* the
@@ -645,20 +588,20 @@ export default function MsaPlacesChoropleth({
         // narrow slice of the palette).
         if (lo >= 0) {
           const t = Math.max(0, Math.min(1, (v - lo) / (hi - lo)));
-          return rampDiverging(t);            // cream → teal across full range
+          return divergingColor(t);            // cream → teal across full range
         }
         if (hi <= 0) {
           const t = Math.max(0, Math.min(1, (v - lo) / (hi - lo)));
-          return rampDiverging(-(1 - t));     // orange → cream across full range
+          return divergingColor(-(1 - t));     // orange → cream across full range
         }
         if (v >= 0) {
           const t = Math.max(0, Math.min(1, v / hi));
-          return rampDiverging(t);
+          return divergingColor(t);
         }
         const t = Math.max(0, Math.min(1, -v / -lo));
-        return rampDiverging(-t);
+        return divergingColor(-t);
       }
-      return rampSequential((v - lo) / (hi - lo));
+      return sequentialColor((v - lo) / (hi - lo));
     },
     [domain, meta.diverging, placeholder],
   );

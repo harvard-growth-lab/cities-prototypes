@@ -1,4 +1,4 @@
-import { seededRandom } from "./pixel/hooks";
+import { seededRandom } from "../pixel/hooks";
 import {
   clamp,
   css,
@@ -7,7 +7,7 @@ import {
   rgb,
   skyGradient,
   type Ctx,
-} from "./pixel/pixel";
+} from "../pixel/pixel";
 import {
   R,
   drawStars,
@@ -16,8 +16,8 @@ import {
   pxCircle,
   reflectWater,
   waterGlints,
-} from "./pixel/bits";
-import { COOL, WARM, litShareAt, paletteAt, STOP_AT, walkersAt, type Palette } from "./palette";
+} from "../pixel/bits";
+import { COOL, WARM, litShareAt, paletteAt, STOP_AT, walkersAt, type Palette } from "../pixel/palette";
 
 /**
  * The wide riverfront — Anyville seen from across the water. One drawing,
@@ -52,6 +52,33 @@ export type SkyScene = {
   build: number; // 0..1 — lot construction progress (≥0.97 = topped out, lit)
   fortress: number; // 0..1 — the door shut: height-cap lid, U-turning trucks, a queue at the letting office
   rain: number; // 0..1 — weather as mood
+};
+
+// Two shared base presets the story, concepts and pizza widget all riff on
+// (each spreads its own per-scene overrides on top). Kept here, beside the
+// renderer, so the three views can't drift apart.
+export const NIGHT: SkyScene = {
+  hour: 21.4,
+  occ: 0.85,
+  flow: 0.15,
+  factory: 0.75,
+  harbor: 0.55,
+  crane: 0,
+  build: 0,
+  fortress: 0,
+  rain: 0,
+};
+
+export const BOOM: SkyScene = {
+  hour: 9.6,
+  occ: 0.92,
+  flow: 0.4,
+  factory: 0.9,
+  harbor: 0.9,
+  crane: 0.35,
+  build: 0.12,
+  fortress: 0,
+  rain: 0,
 };
 
 /* ——— deterministic scene furniture ——— */

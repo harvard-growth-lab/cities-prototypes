@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { PlacePanelRow, PlaceHousingRow, PlaceRentRow, PlaceDirectoryRow } from '../../data/types';
 import { useYearRange } from '../../lib/yearRange';
 import { GL } from '../../lib/glColors';
+import { fmtPct1, fmtPct2, fmtPp } from '../../lib/format';
+import { nearestRow } from '../../lib/panelRows';
 import { pctTickFormatter, ppTickFormatter } from '../../lib/tickFormat';
 import { amenityResiduals, residualDelta, type AmenityObs } from '../../lib/amenityResidual';
 
@@ -10,17 +12,6 @@ import { amenityResiduals, residualDelta, type AmenityObs } from '../../lib/amen
 // over the same window. Per-place we snap to nearest available year in each
 // source so a place doesn't disappear just because its 2012/2022 entries
 // happen to be sparse.
-
-function nearestRow<T extends { year: number }>(rows: T[], target: number, pred: (r: T) => boolean = () => true): T | null {
-  let best: T | null = null;
-  let bestDist = Infinity;
-  for (const r of rows) {
-    if (!pred(r)) continue;
-    const d = Math.abs(r.year - target);
-    if (d < bestDist) { best = r; bestDist = d; }
-  }
-  return best;
-}
 
 // Highlight by muting: field in c-muted, peers in c-1 (institutional blue),
 // the focus place in c-2 (identity red). Labels use each mark's dark tone.
@@ -38,10 +29,6 @@ const VIEW_H = 400;
 const M = { top: 16, right: 32, bottom: 50, left: 64 };
 const PLOT_W = VIEW_W - M.left - M.right;
 const PLOT_H = VIEW_H - M.top - M.bottom;
-
-const fmtPct1 = (v: number) => `${(v * 100).toFixed(1)}%`;
-const fmtPct2 = (v: number) => `${(v * 100).toFixed(2)}%`;
-const fmtPp = (v: number) => `${v >= 0 ? '+' : ''}${(v * 100).toFixed(1)} pp`;
 
 type Mode = 'wage' | 'housing' | 'rent' | 'amenity_zhvi' | 'amenity_zori';
 type Universe = 'all' | 'msa';

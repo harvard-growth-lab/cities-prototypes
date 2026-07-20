@@ -4,7 +4,7 @@ import type { ShiftShareResult } from '../../lib/shiftShare';
 import type { IndustryAttributeRow } from '../../data/types';
 import { fmtInt } from '../../lib/format';
 import { sectorOf } from '../../lib/naicsSectors';
-import { GL } from '../../lib/glColors';
+import { GL, divergingColor } from '../../lib/glColors';
 
 // Treemap of the starting-year employment composition, with each industry
 // tinted by its **local-share** or **industry-mix** effect on the way to
@@ -27,40 +27,6 @@ type Props = {
   attributes: IndustryAttributeRow[];
   msaName: string;
 };
-
-// Diverging effect ramp pinned to GL tones: c-2 (red) for under-performance,
-// c-3 (green) for over-performance, warm paper at the neutral midpoint. The
-// green tail stays distinct from the complexity teal (orange/teal) palette.
-const RED_DARK:   [number, number, number] = [138,  44,  43];   // c-2-dark  #8a2c2b
-const RED_MID:    [number, number, number] = [220, 111, 110];   // c-2 seq-mid #dc6f6e
-const NEUTRAL:    [number, number, number] = [244, 241, 234];   // paper-warm #f4f1ea
-const GREEN_MID:  [number, number, number] = [ 91, 192, 160];   // c-3       #5bc0a0
-const GREEN_DARK: [number, number, number] = [ 26, 107,  83];   // c-3-dark  #1a6b53
-
-function lerp(a: number, b: number, t: number) { return a + (b - a) * t; }
-function rgbHex(r: number, g: number, b: number) {
-  const h = (n: number) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, '0');
-  return `#${h(r)}${h(g)}${h(b)}`;
-}
-function divergingColor(t: number) {
-  // t in [-1, 1]: -1 → dark red, 0 → neutral, +1 → dark green.
-  const u = Math.max(-1, Math.min(1, t));
-  if (u >= 0) {
-    if (u < 0.5) {
-      const k = u / 0.5;
-      return rgbHex(lerp(NEUTRAL[0], GREEN_MID[0], k), lerp(NEUTRAL[1], GREEN_MID[1], k), lerp(NEUTRAL[2], GREEN_MID[2], k));
-    }
-    const k = (u - 0.5) / 0.5;
-    return rgbHex(lerp(GREEN_MID[0], GREEN_DARK[0], k), lerp(GREEN_MID[1], GREEN_DARK[1], k), lerp(GREEN_MID[2], GREEN_DARK[2], k));
-  }
-  const v = -u;
-  if (v < 0.5) {
-    const k = v / 0.5;
-    return rgbHex(lerp(NEUTRAL[0], RED_MID[0], k), lerp(NEUTRAL[1], RED_MID[1], k), lerp(NEUTRAL[2], RED_MID[2], k));
-  }
-  const k = (v - 0.5) / 0.5;
-  return rgbHex(lerp(RED_MID[0], RED_DARK[0], k), lerp(RED_MID[1], RED_DARK[1], k), lerp(RED_MID[2], RED_DARK[2], k));
-}
 
 const truncateForBox = (s: string, w: number): string => {
   const cap = Math.max(0, Math.floor((w - 8) / 6.2));

@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { SKY_H, SKY_W, drawSkyline, type SkyScene } from "../skyline";
-import { MEDIANS } from "../data/metros";
-import { verdictAt } from "../data/derive";
-import { DIAG_COLORS } from "../content/figures";
+import { SKY_H, SKY_W, drawSkyline, BOOM, type SkyScene } from "../readcity/skyline";
+import { MEDIANS } from "../learning/data/metros";
+import { verdictAt } from "../learning/data/derive";
+import { DIAG_COLORS } from "../learning/content/figures";
 import { PixelSim, type SimHud } from "./PixelSim";
 
 /**
@@ -34,18 +34,6 @@ const GL_COLOR: Record<string, string> = {
   [DIAG_COLORS.negativeSupply]: "var(--neg-supply)",
 };
 const glc = (c: string) => GL_COLOR[c] ?? c;
-
-const BOOM: SkyScene = {
-  hour: 9.6,
-  occ: 0.92,
-  flow: 0.4,
-  factory: 0.9,
-  harbor: 0.9,
-  crane: 0.35,
-  build: 0.12,
-  fortress: 0,
-  rain: 0,
-};
 
 type Dir = 1 | -1;
 

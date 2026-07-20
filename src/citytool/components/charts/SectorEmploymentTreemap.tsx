@@ -3,7 +3,7 @@ import { Treemap, ResponsiveContainer, Tooltip } from 'recharts';
 import type { CityIndustryRow } from '../../data/types';
 import { fmtInt } from '../../lib/format';
 import { sectorOf } from '../../lib/naicsSectors';
-import { GL } from '../../lib/glColors';
+import { GL, lerp, rgbHex } from '../../lib/glColors';
 
 // GL complexity color scale (Atlas of Economic Complexity). Diverging gradient
 // from orange-tan (low PCI) → cream (mid) → teal-green (high PCI). Source:
@@ -24,14 +24,6 @@ const PCI_GRADIENT: Array<[number, [number, number, number]]> = [
   [0.6617, [ 40, 162, 153]],
   [1.0,    [  2, 146, 135]],
 ];
-function lerp(a: number, b: number, t: number) {
-  return a + (b - a) * t;
-}
-function rgb2hex(r: number, g: number, b: number) {
-  const h = (n: number) =>
-    Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, '0');
-  return `#${h(r)}${h(g)}${h(b)}`;
-}
 function sampleGradient(t: number): string {
   const u = Math.max(0, Math.min(1, t));
   for (let i = 1; i < PCI_GRADIENT.length; i++) {
@@ -40,7 +32,7 @@ function sampleGradient(t: number): string {
     if (u <= p2) {
       const span = p2 - p1;
       const local = span > 0 ? (u - p1) / span : 0;
-      return rgb2hex(
+      return rgbHex(
         lerp(c1[0], c2[0], local),
         lerp(c1[1], c2[1], local),
         lerp(c1[2], c2[2], local),
@@ -48,7 +40,7 @@ function sampleGradient(t: number): string {
     }
   }
   const [, last] = PCI_GRADIENT[PCI_GRADIENT.length - 1];
-  return rgb2hex(last[0], last[1], last[2]);
+  return rgbHex(last[0], last[1], last[2]);
 }
 function pciColor(pci: number | null | undefined): string {
   if (pci == null || !Number.isFinite(pci)) return GL.mutedLight;

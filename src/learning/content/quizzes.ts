@@ -7,8 +7,6 @@
  * MVP: prompts are written against the Boston profile.
  */
 
-export type QuizKind = "choice" | "slider" | "instrument";
-
 export interface ChoiceQuiz {
   id: string;
   stage: number;

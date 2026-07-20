@@ -21,8 +21,6 @@ export interface MetroDot {
 /** US-metro benchmark the wedges are measured against. */
 export const MEDIANS = { popCagr: 0.5, wageCagr: 3.8 };
 
-export const WINDOW_LABEL = "2017–2023";
-
 export const archetypeMetros: MetroDot[] = [
   {
     name: "Austin",

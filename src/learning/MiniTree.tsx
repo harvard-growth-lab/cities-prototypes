@@ -9,7 +9,7 @@
  * only clickable nodes, and the rest of the tree recedes.
  */
 
-import { FIG27_NODES, type TreeNodeData } from "../content/figures";
+import { FIG27_NODES, type TreeNodeData } from "./content/figures";
 
 /** manual layout — fractions of width per node, rows by depth */
 const POS: Record<string, { fx: number; row: number }> = {

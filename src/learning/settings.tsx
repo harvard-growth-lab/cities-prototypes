@@ -16,7 +16,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { useJourney } from "../state/journey";
+import { useJourney } from "./journey";
 
 export type ProtoId = "quizzes";
 
@@ -119,9 +119,20 @@ export function PrototypeDrawer() {
           </p>
 
           {ELEMENTS.map((e) => (
-            <label className={`toggle-row ${enabled[e.id] ? "on" : ""}`} key={e.id}>
+            // Quiz-only mode already forces the quiz layer on, so the element
+            // switch is moot while it's active — show it disabled.
+            <label
+              className={`toggle-row ${enabled[e.id] ? "on" : ""} ${quizOnly ? "is-disabled" : ""}`}
+              key={e.id}
+            >
               <span className={`switch ${enabled[e.id] ? "on" : ""}`} />
-              <input type="checkbox" hidden checked={enabled[e.id]} onChange={() => toggle(e.id)} />
+              <input
+                type="checkbox"
+                hidden
+                checked={enabled[e.id]}
+                disabled={quizOnly}
+                onChange={() => toggle(e.id)}
+              />
               <span className="t-copy">
                 <span className="t-name">{e.name}</span>
                 <span className="t-desc">{e.desc}</span>

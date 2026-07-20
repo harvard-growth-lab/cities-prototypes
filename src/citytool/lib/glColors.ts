@@ -49,3 +49,54 @@ export const GL = {
   mutedDark: '#5f6773',
   mutedLight: '#cdd2d9',
 } as const;
+
+/* ————— chart color-ramp helpers (shared by the map + treemap charts) ————— */
+
+export function lerp(a: number, b: number, t: number) {
+  return a + (b - a) * t;
+}
+export function rgbHex(r: number, g: number, b: number) {
+  const h = (n: number) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, '0');
+  return `#${h(r)}${h(g)}${h(b)}`;
+}
+
+// Red → warm-paper → green diverging ramp for signed growth/decline metrics.
+// The saturated ends are pinned to GL's own c-2 (red) and c-3 (green) tones and
+// the midpoint to warm paper, rather than ad-hoc hues; sequential metrics use
+// only the upper half (paper → green) so "more = greener".
+const GREEN_DARK: [number, number, number] = [26, 107, 83]; // c-3-dark   #1a6b53
+const GREEN_MID: [number, number, number] = [91, 192, 160]; // c-3        #5bc0a0
+const CREAM: [number, number, number] = [244, 241, 234]; //     paper-warm #f4f1ea
+const RED_MID: [number, number, number] = [220, 111, 110]; //  c-2 seq-mid #dc6f6e
+const RED_DARK: [number, number, number] = [138, 44, 43]; //   c-2-dark    #8a2c2b
+
+/** t in [0,1]: 0 → warm paper, 1 → dark green. */
+export function sequentialColor(t: number): string {
+  const u = Math.max(0, Math.min(1, t));
+  if (u < 0.5) {
+    const k = u / 0.5;
+    return rgbHex(lerp(CREAM[0], GREEN_MID[0], k), lerp(CREAM[1], GREEN_MID[1], k), lerp(CREAM[2], GREEN_MID[2], k));
+  }
+  const k = (u - 0.5) / 0.5;
+  return rgbHex(lerp(GREEN_MID[0], GREEN_DARK[0], k), lerp(GREEN_MID[1], GREEN_DARK[1], k), lerp(GREEN_MID[2], GREEN_DARK[2], k));
+}
+
+/** t in [-1,1]: -1 → dark red, 0 → warm paper, +1 → dark green. */
+export function divergingColor(t: number): string {
+  const u = Math.max(-1, Math.min(1, t));
+  if (u >= 0) {
+    if (u < 0.5) {
+      const k = u / 0.5;
+      return rgbHex(lerp(CREAM[0], GREEN_MID[0], k), lerp(CREAM[1], GREEN_MID[1], k), lerp(CREAM[2], GREEN_MID[2], k));
+    }
+    const k = (u - 0.5) / 0.5;
+    return rgbHex(lerp(GREEN_MID[0], GREEN_DARK[0], k), lerp(GREEN_MID[1], GREEN_DARK[1], k), lerp(GREEN_MID[2], GREEN_DARK[2], k));
+  }
+  const v = -u;
+  if (v < 0.5) {
+    const k = v / 0.5;
+    return rgbHex(lerp(CREAM[0], RED_MID[0], k), lerp(CREAM[1], RED_MID[1], k), lerp(CREAM[2], RED_MID[2], k));
+  }
+  const k = (v - 0.5) / 0.5;
+  return rgbHex(lerp(RED_MID[0], RED_DARK[0], k), lerp(RED_MID[1], RED_DARK[1], k), lerp(RED_MID[2], RED_DARK[2], k));
+}

@@ -19,7 +19,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { QuizAnswer } from "../content/quizzes";
+import type { QuizAnswer } from "./content/quizzes";
 
 const KEY = "gd-proto:boston-ma";
 

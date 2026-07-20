@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { MemoryRouter, Routes, Route, Navigate } from "react-router-dom";
-import { ReadCityPage } from "./ReadCityPage";
+import { ReadCityPage } from "./readcity/ReadCityPage";
 import { ConceptsPage } from "./concepts/ConceptsPage";
 import CityStory from "./citytool/pages/CityStory";
 import { YearRangeProvider } from "./citytool/lib/yearRange";
-import { JourneyProvider, QuizScope } from "./state/journey";
-import { PrototypeSettingsProvider, PrototypeDrawer, useProto } from "./proto/settings";
-import "./proto.css";
+import { JourneyProvider, QuizScope } from "./learning/journey";
+import { PrototypeSettingsProvider, PrototypeDrawer, useProto } from "./learning/settings";
+import "./app-shell.css";
 // The two themes are injected per view (see App) so the light GL styles and the
 // dark story styles never both own :root/body at once.
-import storyCssUrl from "./story.css?url";
+import storyCssUrl from "./readcity/story.css?url";
 import citytoolCssUrl from "./citytool/styles.css?url";
 
 /** Minimal hash switch — no router at the top level. #/story → the pixel

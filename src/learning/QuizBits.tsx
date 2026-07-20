@@ -9,8 +9,8 @@
  */
 
 import { useState, type ReactNode } from "react";
-import type { ChoiceQuiz, Quiz, SliderQuiz } from "../content/quizzes";
-import { useJourney, useScopedId } from "../state/journey";
+import type { ChoiceQuiz, Quiz, SliderQuiz } from "./content/quizzes";
+import { useJourney, useScopedId } from "./journey";
 
 export function ChoiceQuizCard({ quiz }: { quiz: ChoiceQuiz }) {
   const { answers, submitAnswer } = useJourney();

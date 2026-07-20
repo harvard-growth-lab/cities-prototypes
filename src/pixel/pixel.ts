@@ -75,27 +75,6 @@ export function dithered(x: number, y: number, t: number): boolean {
   return t > BAYER4[y & 3][x & 3];
 }
 
-/** Fill a rect with an ordered-dither blend of a→b (t = share of b). */
-export function ditherRect(
-  ctx: Ctx,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  a: string,
-  b: string,
-  t: number,
-) {
-  ctx.fillStyle = a;
-  ctx.fillRect(x, y, w, h);
-  ctx.fillStyle = b;
-  for (let yy = 0; yy < h; yy++) {
-    for (let xx = 0; xx < w; xx++) {
-      if (dithered(x + xx, y + yy, t)) ctx.fillRect(x + xx, y + yy, 1, 1);
-    }
-  }
-}
-
 export interface SkyStop {
   at: number; // 0 top … 1 bottom
   c: RGB;

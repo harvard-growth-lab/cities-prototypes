@@ -10,7 +10,7 @@ import {
   type Ctx,
   type RGB,
 } from "../pixel/pixel";
-import { paletteAt, STOP_AT, WARM, type Palette } from "../palette";
+import { paletteAt, STOP_AT, WARM, type Palette } from "../pixel/palette";
 
 /**
  * Two banks, one bridge — spatial equilibrium as a pixel scene. Alba on

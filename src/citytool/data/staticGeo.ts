@@ -6,7 +6,7 @@
  */
 
 import type { Feature, Geometry, Polygon, MultiPolygon } from "geojson";
-import { MSA_FC, MUNIS_FC, BOSTON_F } from "../../geo/geo";
+import { MSA_FC, MUNIS_FC, BOSTON_F } from "../geo/geo";
 import type { PlaceFeatureCollection, MsaFeatureCollection } from "./useMsaGeo";
 
 export const MSA_ID = "14460";

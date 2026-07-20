@@ -1,6 +1,6 @@
 import { useEffect, useRef, type ReactNode } from "react";
-import { useOnScreen, usePrefersReducedMotion, useScrollyStep } from "./pixel/hooks";
-import type { Ctx } from "./pixel/pixel";
+import { useOnScreen, usePrefersReducedMotion, useScrollyStep } from "../pixel/hooks";
+import type { Ctx } from "../pixel/pixel";
 
 /**
  * One act of the feature: a full-viewport sticky pixel scene with story
