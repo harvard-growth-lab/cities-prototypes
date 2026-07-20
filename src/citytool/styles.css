@@ -1,0 +1,1187 @@
+:root {
+  /* ── GL grammar tokens (~/dev/gl-design/grammar.md) ───────────────────── */
+  /* Warm four-layer ink ramp — sits on paper, not on a screen. */
+  --ink:   #1a1714;   /* headings, strong emphasis */
+  --ink-2: #2c2823;   /* body copy, axis text */
+  --ink-3: #4f4a42;   /* captions, eyebrows, secondary copy */
+  --ink-4: #9a9389;   /* deep-background markers (charts) */
+  /* Accent — the institutional voice (same hex as c-1-dark). */
+  --accent:      #1a5a8e;
+  --accent-deep: #003e6b;
+  --accent-tint: #e1f0fa;
+  /* Paper & chrome */
+  --paper:      #ffffff;
+  --paper-warm: #f4f1ea;
+  --rule:       #dddddd;   /* hairline borders between content blocks */
+  --gridline:   #d8d4cc;   /* in-chart gridlines */
+  /* Muted — cool grey that recedes behind the warm ink. */
+  --c-muted:      #afb5be;
+  --c-muted-dark: #5f6773;
+  /* Lead-finding red (c-2) — RESERVED for the highlighted place + emphasis,
+     never for links or UI chrome (grammar Rule #4). */
+  --c-2:      #cc4948;
+  --c-2-dark: #8a2c2b;
+
+  /* Legacy aliases → mapped onto the GL ramp so existing rules resolve. */
+  --fg:     var(--ink);
+  --muted:  var(--ink-3);
+  --bg:     var(--paper);
+  --bg-alt: var(--paper-warm);
+  --border: var(--rule);
+
+  --w-prose: 760px;
+  --w-breakout: 920px;
+  --gutter: 1.5rem;
+
+  /* Two families, two jobs: serif for voice, sans for function. */
+  --font-serif: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  --font-sans:  'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+                Helvetica, Arial, sans-serif;
+
+  font-family: var(--font-sans);
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--ink-2);
+  background: var(--paper);
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; }
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* ── Header ───────────────────────────────────────────────────────────── */
+
+.site-header {
+  border-bottom: 1px solid var(--rule);
+  padding: 0.85rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.75rem;
+  flex-wrap: wrap;
+}
+.site-header h1 {
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-weight: 600;
+  font-variation-settings: 'opsz' 22;
+  margin: 0;
+}
+.site-title { color: var(--fg); }
+.site-title:hover { color: var(--accent); text-decoration: none; }
+
+.site-controls {
+  display: flex;
+  gap: 1.25rem;
+  align-items: center;
+}
+.control {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.control-label {
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.control-select {
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+}
+.control-select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+.control-select:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Place search combobox ────────────────────────────────────────────── */
+.place-combobox {
+  position: relative;
+  display: inline-block;
+}
+.place-combobox-input {
+  min-width: 16rem;
+}
+.place-combobox-input::placeholder {
+  color: var(--fg);
+  opacity: 1;
+}
+.place-combobox-list {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  right: 0;
+  z-index: 50;
+  margin: 0;
+  padding: 0.2rem 0;
+  list-style: none;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  max-height: 22rem;
+  overflow-y: auto;
+}
+.place-combobox-item {
+  padding: 0.25rem 0.6rem;
+  font-size: 0.9rem;
+  color: var(--fg);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.place-combobox-item.is-highlighted {
+  background: var(--accent);
+  color: #fff;
+}
+.place-combobox-item.is-current {
+  font-weight: 600;
+}
+.place-combobox-empty {
+  padding: 0.4rem 0.6rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* ── Inline compare-window selector (per-page, not in the header) ─────── */
+.year-range-selector {
+  display: inline-flex;
+  align-items: center;
+  gap: 1rem;
+}
+.compare-window {
+  margin: 1.5rem 0 0.75rem;
+  padding: 0.85rem 1rem;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.5rem;
+  background: var(--bg-alt, transparent);
+}
+.compare-window-hint {
+  font-size: 0.8rem;
+  margin: 0;
+  flex: 1 1 320px;
+}
+
+/* ── Reading layout ───────────────────────────────────────────────────── */
+
+main {
+  display: grid;
+  grid-template-columns:
+    [full-start] minmax(var(--gutter), 1fr)
+    [content-start] min(var(--w-prose), 100% - 2 * var(--gutter)) [content-end]
+    minmax(var(--gutter), 1fr) [full-end];
+  row-gap: 0;
+  padding: 2.5rem 0 5rem;
+}
+main > *,
+article > * {
+  grid-column: content;
+}
+article { display: contents; }
+.breakout,
+.chart-block {
+  grid-column: content;
+}
+
+/* ── Type ─────────────────────────────────────────────────────────────── */
+
+h2, h3 {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  color: var(--ink);
+}
+h2 {
+  font-size: 2.25rem;
+  line-height: 1.15;
+  margin: 0.25rem 0 0.4rem;
+  letter-spacing: -0.018em;
+  font-variation-settings: 'opsz' 36;
+}
+h3 {
+  font-size: 1.5rem;
+  line-height: 1.25;
+  margin-top: 2.75rem;
+  margin-bottom: 0.4rem;
+  letter-spacing: -0.010em;
+  font-variation-settings: 'opsz' 22;
+}
+h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.3;
+}
+p { margin: 0.6rem 0 1rem; }
+em { font-style: italic; }
+strong { font-weight: 600; }
+
+.muted { color: var(--muted); }
+
+.eyebrow {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 0.35rem;
+}
+
+/* ── Loading / errors ─────────────────────────────────────────────────── */
+
+.loading, .error {
+  color: var(--muted);
+  font-style: italic;
+  margin: 1rem 0;
+}
+.error { color: var(--accent); }
+
+/* ── City header ──────────────────────────────────────────────────────── */
+
+.city-header {
+  margin: 0 0 0.4rem;
+}
+.city-title {
+  margin-top: 0.1rem;
+  margin-bottom: 0.2rem;
+}
+.city-long-name {
+  margin: 0.1rem 0 0;
+  font-size: 0.9rem;
+}
+
+/* ── Chart blocks ─────────────────────────────────────────────────────── */
+
+.chart-block {
+  margin-block: 2rem 2.5rem;
+}
+.chart-block h4 {
+  border-left: 3px solid var(--accent);
+  padding-left: 0.6rem;
+  font-size: 1.0625rem;
+}
+.chart-caption {
+  font-size: 0.875rem;
+  color: var(--muted);
+  margin: 0.2rem 0 0.9rem 0.85rem;
+  max-width: 60ch;
+}
+
+/* ── Levels block (small print-style table) ──────────────────────────── */
+
+.levels-table {
+  width: 100%;
+  margin: 1.25rem 0 1.75rem;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+.levels-table thead th {
+  font-family: var(--font-sans);
+  font-size: 0.69rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  text-align: left;
+  padding: 0.55rem 0.85rem 0.55rem 0;
+  border-top: 1px solid var(--fg);
+  border-bottom: 1px solid var(--rule);
+}
+.levels-table thead th.col-num { text-align: right; padding-right: 0; }
+.levels-table tbody td {
+  padding: 0.7rem 0.85rem 0.7rem 0;
+  border-bottom: 1px solid var(--rule);
+  vertical-align: baseline;
+}
+.levels-table tbody td.col-num {
+  text-align: right;
+  padding-right: 0;
+  font-variant-numeric: tabular-nums;
+}
+.levels-table tbody td.col-num.value { font-weight: 600; }
+.levels-table .indicator-name { font-weight: 500; }
+.levels-table .indicator-note {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin-top: 0.1rem;
+}
+.levels-table .rank-of { color: var(--muted); font-weight: 400; }
+/* Change column: direction reads via glyph + a neutral-positive green / amber
+   pair. Red is reserved for identity (the highlighted place), never "down". */
+.levels-table .change { color: var(--muted); }
+.levels-table .change.is-up { color: #1a6b53; }   /* c-3-dark */
+.levels-table .change.is-down { color: #a8580f; } /* c-5-dark */
+@media (max-width: 560px) {
+  .levels-table { font-size: 0.9rem; }
+  .levels-table thead th, .levels-table tbody td { padding-right: 0.5rem; }
+  .levels-table .indicator-note { display: none; }
+}
+
+/* Story variant: sits inside a translucent panel card, so trim the outer
+   margins the profile pages need. The card is narrower than an article column,
+   so numeric columns get a left gutter to keep long headers from touching. */
+.story-levels { margin: 0.9rem 0 0.25rem; }
+.story-levels thead th.col-num,
+.story-levels tbody td.col-num { padding-left: 1.1rem; }
+/* Keep headers and source notes on one line — wrapped fragments ("RANK OF
+   US / METROS") read worse than a slightly wider table. */
+.story-levels thead th,
+.story-levels .indicator-note { white-space: nowrap; }
+
+/* ── Chart tooltip ─────────────────────────────────────────────────── */
+/* Recharts wraps custom tooltip content in a positioned container; we just
+ * style the inner card. Two-column dl for label/value pairs. */
+.chart-tooltip {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.7rem;
+  font-size: 0.82rem;
+  max-width: 22rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  pointer-events: none;
+}
+.chart-tooltip-name {
+  font-weight: 600;
+  color: var(--fg);
+  margin-bottom: 0.3rem;
+  line-height: 1.25;
+}
+.chart-tooltip-grid {
+  display: grid;
+  grid-template-columns: auto auto;
+  column-gap: 0.85rem;
+  row-gap: 0.15rem;
+  margin: 0;
+}
+.chart-tooltip-grid dt { color: var(--muted); }
+.chart-tooltip-grid dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--fg);
+}
+
+/* ── Chart citation ───────────────────────────────────────────────────── */
+.chart-source {
+  margin: 0.75rem 0 0 0.85rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.chart-source-label {
+  font-family: var(--font-sans);
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-right: 0.4rem;
+}
+
+.chart-tooltip-sub {
+  font-size: 0.74rem;
+  color: var(--muted);
+  margin: -0.15rem 0 0.35rem 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Chart controls (year, color-by) ──────────────────────────────────── */
+.chart-controls {
+  display: flex;
+  gap: 1.25rem;
+  margin: 0 0 0.6rem 0.85rem;
+  font-size: 0.8rem;
+  flex-wrap: wrap;
+}
+.chart-controls label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--muted);
+}
+.chart-controls-label {
+  font-family: var(--font-sans);
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.chart-controls select {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--fg);
+  padding: 0.15rem 0.4rem;
+  font-size: 0.82rem;
+  font-family: inherit;
+}
+
+/* ── PCI gradient legend (treemap, color-by-complexity mode) ──────────── */
+.chart-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0.55rem 0 0 0.85rem;
+  font-size: 0.74rem;
+  color: var(--muted);
+}
+.chart-legend-bar {
+  display: inline-flex;
+  height: 0.7rem;
+  border: 1px solid var(--border);
+}
+.chart-legend-swatch {
+  display: inline-block;
+  width: 1.6rem;
+  height: 100%;
+}
+.chart-legend-label {
+  font-family: var(--font-sans);
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ── Zoom controls ────────────────────────────────────────────────────── */
+.chart-zoom-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 0 0 0.4rem 0.85rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+  min-height: 1.5rem;
+}
+.chart-zoom-hint { font-style: italic; }
+.btn-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  font-size: 0.8rem;
+  color: var(--accent);
+  cursor: pointer;
+  text-decoration: underline;
+}
+.btn-link:hover { text-decoration: none; }
+.btn-link:disabled { color: var(--muted); cursor: default; text-decoration: none; }
+
+/* ── Chart toolbar (dropdowns, mode toggles) ─────────────────────────── */
+.chart-toolbar {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 0 0 0.6rem 0.85rem;
+}
+.chart-toolbar-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.chart-toolbar-select {
+  font: inherit;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 0.25rem 0.5rem;
+  cursor: pointer;
+}
+.chart-toolbar-select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* ── Migration scatter (custom SVG with animated points) ──────────────── */
+.migration-scatter {
+  position: relative;
+}
+/* Smooth point transitions across mode switches. cx/cy on SVG circles is
+ * transitionable in modern browsers; older engines just snap. The fast
+ * r/fill/fill-opacity transitions carry the hover pop. */
+.migration-scatter .scatter-pt {
+  transition:
+    cx 600ms cubic-bezier(0.4, 0, 0.2, 1),
+    cy 600ms cubic-bezier(0.4, 0, 0.2, 1),
+    x 600ms cubic-bezier(0.4, 0, 0.2, 1),
+    y 600ms cubic-bezier(0.4, 0, 0.2, 1),
+    r 150ms ease,
+    fill 150ms ease,
+    fill-opacity 150ms ease,
+    stroke 150ms ease;
+}
+.migration-scatter .ref-line {
+  transition:
+    x1 600ms cubic-bezier(0.4, 0, 0.2, 1),
+    x2 600ms cubic-bezier(0.4, 0, 0.2, 1),
+    y1 600ms cubic-bezier(0.4, 0, 0.2, 1),
+    y2 600ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── MSA boundary map ─────────────────────────────────────────────────── */
+.msa-map {
+  margin-left: 0.85rem;
+}
+.msa-map .leaflet-container {
+  border: 1px solid var(--border);
+  background: var(--bg-alt);
+  font-family: inherit;
+}
+/* Match the rest of the page's neutral typography for Leaflet's UI bits. */
+.msa-map .leaflet-control-attribution {
+  font-size: 0.65rem;
+  background: rgba(255, 255, 255, 0.85);
+}
+.msa-reset-control a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  font-size: 1.05rem;
+  color: var(--fg);
+  background: #fff;
+  text-decoration: none;
+}
+.msa-reset-control a:hover { background: var(--bg-alt); }
+.msa-map-caption {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin: 0.55rem 0 0;
+  max-width: 60ch;
+  line-height: 1.5;
+}
+
+/* ── Choropleth (places within MSA) legend ─────────────────────────────── */
+.choropleth-legend {
+  position: absolute;
+  bottom: 0.6rem;
+  right: 0.6rem;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--border);
+  padding: 0.45rem 0.6rem;
+  font-size: 0.74rem;
+  line-height: 1.2;
+  max-width: 14rem;
+  z-index: 1000;
+}
+.choropleth-legend .chart-legend-label { display: block; margin-bottom: 0.3rem; color: var(--muted); }
+.gradient-legend {
+  margin-top: 0.6rem;
+  max-width: 18rem;
+  font-size: 0.74rem;
+  line-height: 1.2;
+}
+.gradient-legend-title { display: block; margin-bottom: 0.3rem; color: var(--muted); }
+.choropleth-legend-bar {
+  display: flex;
+  height: 0.55rem;
+  border: 1px solid var(--border);
+}
+.choropleth-legend-cell { flex: 1 1 auto; }
+.choropleth-legend-ticks {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.2rem;
+  color: var(--muted);
+  font-family: var(--font-sans);
+  font-size: 0.66rem;
+  font-variant-numeric: tabular-nums;
+}
+/* Rides beside the cursor — left/top/transform come inline from the map's
+   mousemove events; this only lifts it above the leaflet panes. */
+.choropleth-tooltip {
+  position: absolute;
+  z-index: 1000;
+}
+
+/* ── Full-bleed choropleth (story "stage" section) ─────────────────────── */
+.msa-choropleth-fill {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+.msa-choropleth-fill .msa-map.is-fill {
+  margin: 0;
+  height: 100%;
+}
+.msa-choropleth-fill .msa-map.is-fill .leaflet-container {
+  height: 100%;
+  border: none;
+}
+/* Drop the zoom + reset stack down so it sits clear of the site header. */
+.msa-choropleth-fill .msa-map.is-fill .leaflet-top.leaflet-left {
+  margin-top: 3.25rem;
+}
+/* The whole right edge is the story's chrome (year selector, rail, arrows), so
+   every map tool lives on the left. Leaflet's zoom + reset sit in the top-left
+   corner; this column stacks the metric picker + legend just to their right,
+   leaving the bottom-left for the narrative card. */
+.msa-choropleth-overlay {
+  position: absolute;
+  top: 0.85rem;
+  left: 3.4rem; /* clear the ~34px leaflet zoom bar at the corner */
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.55rem;
+  max-width: min(16rem, calc(100% - 4.5rem));
+}
+.msa-choropleth-overlay .chart-controls {
+  margin: 0;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  padding: 0.5rem 0.65rem;
+}
+/* Inline legend (full-bleed): drop the absolute pin so it flows in the column. */
+.choropleth-legend.is-inline {
+  position: static;
+  inset: auto;
+  max-width: none;
+  width: 100%;
+}
+
+/* Choropleth tools adopted into the stage narrative card: a ruled-off block
+   under the narrative, flattened (no chrome-in-chrome boxes). */
+.stage-card-tools {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--rule);
+}
+.stage-card-tools:empty { display: none; }
+.stage-card-tools .chart-controls { margin: 0; }
+.stage-card-tools .choropleth-legend {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+/* Methodology folds into the legend so it's at hand without crowding the map. */
+.choropleth-legend-source { margin-top: 0.5rem; }
+.choropleth-legend-source > summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+.choropleth-legend-source .chart-source {
+  margin-top: 0.4rem;
+  font-size: 0.7rem;
+  line-height: 1.45;
+}
+/* In full-bleed the top-left corner is the metric picker, so center the
+   hover tooltip up top instead of stacking it under the controls. */
+/* ═══════════════════════════════════════════════════════════════════════
+   Story mode — full-screen scroll-snapped narrative (CityStory page)
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* When the story is on screen, turn the app into a fixed-height column so the
+   scroller fills the viewport below the header (no document scroll). Scoped
+   via :has() so every other page keeps its normal flow. */
+#root:has(.story-scroller) {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+#root:has(.story-scroller) > main {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 0;
+  display: block;
+}
+/* Header stays opaque and above the fixed map stage. */
+body:has(.story-scroller) .site-header {
+  position: relative;
+  z-index: 1000;
+  background: var(--bg);
+}
+
+.story-scroller {
+  position: relative;
+  height: 100%;
+  overflow-y: auto;
+  /* proximity, not mandatory: mandatory snap bounced every small wheel/trackpad
+     delta back to the section top (sections are exactly viewport-height), which
+     read as "scrolling doesn't work". Proximity still settles on a section when
+     a gesture ends near one, but a deliberate scroll always makes progress. */
+  scroll-snap-type: y proximity;
+  scroll-behavior: smooth;
+}
+
+/* ── Sections ─────────────────────────────────────────────────────────── */
+.story-section {
+  /* Free scrolling by default — only the immersive map screens (the two lead
+     panels + the full-bleed stage maps) opt back into snapping below, so the
+     story reads as a continuous scroll that clicks into place on the maps. */
+  scroll-snap-align: none;
+  min-height: 100%;
+  display: flex;
+  width: 100%;
+  /* Sit above the fixed map stage (z-index 0) regardless of in-flow paint
+     order, so opaque sections cover the map and panel sections reveal it. */
+  position: relative;
+  z-index: 1;
+}
+/* The section is a programmatic focus target (for AT cursor sync), not a
+   control — a viewport-sized focus ring would be noise, so suppress it. */
+.story-section:focus { outline: none; }
+.story-section-full {
+  background: var(--bg);
+  align-items: flex-start;
+}
+.story-section-full .story-section-inner {
+  width: 100%;
+  max-width: var(--w-breakout);
+  margin: 0 auto;
+  padding: clamp(2.5rem, 6vh, 5rem) 1.5rem 4rem;
+}
+/* Map sections: transparent so the pinned <StoryMap> shows through; content
+   sits in a frosted card at the bottom-left. Only these two lead panels snap —
+   the full-bleed stage maps deeper in the story scroll freely like the charts. */
+.story-section-panel {
+  scroll-snap-align: start;
+  background: transparent;
+  align-items: flex-end;
+  pointer-events: none; /* let the card re-enable; map stays a backdrop */
+}
+/* Frosted white card: the warm paper token is a print surface and reads as
+   off-white on screen, so the floating cards use translucent white over a
+   backdrop blur instead — the map stays faintly present through the glass.
+   A 3px accent edge marks it as the story's voice; the subtle ink-tinted
+   shadow lifts it off the map. */
+.story-section-panel .story-section-inner {
+  pointer-events: auto;
+  max-width: 600px;
+  margin: 0 0 8vh clamp(1.25rem, 6vw, 5rem);
+  background: rgba(255, 255, 255, 0.88);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--accent);
+  box-shadow: 0 6px 20px rgba(26, 23, 20, 0.10);
+  padding: 1.6rem 1.8rem;
+}
+
+/* Stage sections: the body (an interactive map/chart) fills the whole section
+   and the head rides over it as a floating card — the immersive feel of the
+   lead map sections, but the chart itself stays live and interactive. */
+.story-section-stage {
+  background: var(--bg);
+  /* A *definite* height (not just min-height) so the map's height:100% chain
+     resolves — otherwise the inner collapses and the card floats to the top. */
+  height: 100%;
+}
+.story-section-stage .story-section-inner {
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+.story-section-stage .story-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
+  height: 100%;
+  /* Contain Leaflet's tall internal z-indexes in their own stacking context so
+     they can't paint over the narrative card (which sits above at z-index 10). */
+  position: relative;
+  z-index: 0;
+}
+.story-section-stage .story-head {
+  position: absolute;
+  z-index: 10;
+  left: clamp(1.25rem, 4vw, 3.5rem);
+  bottom: clamp(1.5rem, 6vh, 4.5rem);
+  width: min(420px, calc(100% - 2.5rem));
+  margin: 0;
+  padding: 1.5rem 1.7rem;
+  background: rgba(255, 255, 255, 0.88);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--accent);
+  box-shadow: 0 6px 20px rgba(26, 23, 20, 0.10);
+}
+.story-section-stage .story-head .story-title {
+  font-size: clamp(1.6rem, 2.6vw, 2.2rem);
+}
+.story-section-stage .story-narrative { font-size: 1rem; }
+
+.story-head { margin-bottom: 1.25rem; }
+.story-title {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: clamp(1.9rem, 4vw, 3rem);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  font-variation-settings: 'opsz' 48;
+  color: var(--ink);
+  margin: 0.2rem 0 0.6rem;
+}
+.story-narrative {
+  font-size: 1.05rem;
+  line-height: 1.55;
+  max-width: 52ch;
+}
+.story-narrative p { margin: 0; }
+.story-sub { margin: 0 0 1rem; font-size: 0.95rem; }
+.story-body { width: 100%; }
+
+/* The fixed, shared zoom-out map behind the lead sections. */
+.story-map-stage {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  transition: opacity 0.6s ease;
+  /* Purely a backdrop (drag/zoom all disabled) — never capture pointer or
+     wheel events, so scrolling over the map still pages the story. */
+  pointer-events: none;
+}
+.story-map-stage.is-dim {
+  opacity: 0;
+}
+.story-map-stage .leaflet-container {
+  width: 100%;
+  height: 100%;
+  background: var(--bg-alt);
+}
+
+/* ── Inline stat pieces (story sections; the row itself is .story-levels) ── */
+.stat-card-label {
+  font-family: var(--font-sans);
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.stat-card-value {
+  font-size: 1.45rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+  margin-top: 0.15rem;
+}
+.stat-card-note { font-size: 0.74rem; color: var(--muted); margin-top: 0.2rem; }
+
+/* Inline single stat (ECI on the exports section) */
+.story-inline-stat {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  margin: 0 0 1.5rem;
+  padding: 0.6rem 0.9rem;
+  border-left: 3px solid var(--accent);
+}
+.story-inline-stat .stat-card-value { font-size: 1.8rem; }
+
+/* ── Diagnosis callout ────────────────────────────────────────────────── */
+.diagnosis-callout {
+  border-left: 4px solid var(--muted);
+  background: var(--bg-alt);
+  padding: 1rem 1.25rem;
+  margin: 0 0 1.5rem;
+  border-radius: 0 4px 4px 0;
+}
+.diagnosis-callout.is-demand { border-left-color: #1a6b53; } /* c-3-dark */
+.diagnosis-callout.is-supply { border-left-color: var(--accent); }
+/* Near the medians the quadrant is a weak signal — mute the callout so it
+   doesn't assert a confident shock the data doesn't support. */
+.diagnosis-callout.is-borderline { border-left-color: var(--rule); background: var(--bg); }
+.diagnosis-callout.is-borderline .diagnosis-title { color: var(--muted); }
+.diagnosis-title {
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  margin: 0.2rem 0 0.4rem;
+}
+.diagnosis-blurb { margin: 0 0 0.6rem; max-width: 64ch; }
+.diagnosis-figures { font-size: 0.82rem; margin: 0; font-variant-numeric: tabular-nums; }
+
+/* ── Diagnosis tree (drivers branch picker) ───────────────────────────── */
+/* Two-level decision tree: root question → demand | supply → (within supply)
+   housing | amenities. Connectors are drawn with pseudo-elements: each
+   .dt-children paints the stem down from its parent, each .dt-branch paints
+   its half of the sibling rail plus the drop into its node. The active path
+   is inked in the accent tone via .on-path. */
+.driver-tree {
+  margin: 0 auto 1.4rem;
+  max-width: 640px;
+  font-family: var(--font-sans);
+}
+.dt-root {
+  text-align: center;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink-2);
+  max-width: 40ch;
+  margin: 0 auto;
+}
+.dt-children {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 26px;
+}
+.dt-children::before { /* stem from the parent down to the sibling rail */
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 1px;
+  height: 26px;
+  background: var(--rule);
+  transform: translateX(-0.5px);
+}
+.dt-edge { /* the "decided by" annotation riding beside the stem */
+  position: absolute;
+  top: 6px;
+  left: calc(50% + 7px);
+  font-size: 0.66rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+  white-space: nowrap;
+}
+.dt-branch {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 10px 0;
+  /* Equal halves keep the parent stem (at container 50%) landing exactly on
+     the junction between the two rail halves, so the accent path is
+     continuous whichever side is active. */
+  flex: 1 1 0;
+  min-width: 0;
+}
+.dt-branch::before { /* sibling rail — each branch draws its own half */
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--rule);
+}
+/* Trim the rail to the span between the first and last node centers.
+   *-of-type, not *-child: the .dt-edge <span> is the container's true
+   first child and must not count. */
+div.dt-branch:first-of-type::before { left: 50%; }
+div.dt-branch:last-of-type::before { right: 50%; }
+.dt-branch::after { /* drop from the rail into the node */
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 1px;
+  height: 12px;
+  background: var(--rule);
+  transform: translateX(-0.5px);
+}
+.dt-children.on-path::before,
+.dt-branch.on-path::before,
+.dt-branch.on-path::after { background: var(--accent); }
+.dt-node {
+  font: inherit;
+  font-size: 0.85rem;
+  line-height: 1.25;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  padding: 0.4rem 0.9rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--muted);
+}
+.dt-node-title {
+  font-weight: 600;
+  color: var(--ink-2);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+}
+.dt-node-sub { font-size: 0.72rem; }
+.dt-node.is-active { background: var(--accent); border-color: var(--accent); }
+.dt-node.is-active .dt-node-title { color: #fff; }
+.dt-node.is-active .dt-node-sub { color: rgba(255, 255, 255, 0.78); }
+.dt-node.is-dim { opacity: 0.55; }
+.dt-node.is-dim:hover, .dt-node.is-dim:focus-visible { opacity: 1; }
+.dt-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: inline-block;
+  flex: none;
+}
+.dt-node.is-active .dt-dot { background: #fff; }
+.dt-legend {
+  text-align: center;
+  font-size: 0.75rem;
+  margin: 0.7rem 0 0;
+}
+.dt-legend .dt-dot { vertical-align: baseline; margin-right: 0.3em; }
+@media (max-width: 520px) {
+  .dt-node-sub { display: none; }
+  .dt-edge { display: none; }
+}
+
+.levers-stub {
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--accent);
+  padding: 1.25rem 1.5rem;
+  background: var(--paper-warm);
+}
+.levers-stub ul { margin: 0.6rem 0; padding-left: 1.2rem; }
+.levers-stub li { margin: 0.35rem 0; }
+.levers-stub li::marker { color: var(--accent); }
+
+/* ── Story nav chrome (rail, arrows, year selector) ───────────────────── */
+/* Persistent compare-window control. Top-right, clear of the bottom-left
+   narrative card on the map sections. */
+.story-chrome {
+  position: fixed;
+  top: 4.5rem;
+  right: 1.1rem;
+  z-index: 1001;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.5rem 0.7rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+.story-rail {
+  position: fixed;
+  right: 1.1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.story-rail-dot {
+  width: 10px;
+  height: 10px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--muted);
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+.story-rail-dot.is-active { background: var(--accent); border-color: var(--accent); transform: scale(1.35); }
+.story-arrows {
+  position: fixed;
+  right: 1.1rem;
+  bottom: 1.1rem;
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.story-arrow {
+  width: 2.75rem;
+  height: 2.75rem;
+  font-size: 1.1rem;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 50%;
+  cursor: pointer;
+  color: var(--fg);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+.story-arrow:hover:not(:disabled) { background: var(--accent); color: #fff; }
+.story-arrow:disabled { opacity: 0.35; cursor: default; }
+
+/* ── Narrow / portrait: map becomes a top band, story flows beneath ────── */
+@media (max-width: 700px) {
+  /* Proximity (not mandatory) so a section taller than a short phone screen
+     can still be scrolled through rather than snapping its lower half away. */
+  .story-scroller { scroll-snap-type: y proximity; }
+
+  /* Map sits in a fixed top band; the dimmed (later-section) state keeps the
+     base full-bleed rule so it just fades out as before. */
+  .story-map-stage:not(.is-dim) { bottom: auto; height: 42vh; border-bottom: 1px solid var(--border); }
+
+  .story-section-panel { align-items: flex-start; }
+  .story-section-panel .story-section-inner {
+    margin: calc(42vh + 1rem) 1rem 2rem;
+    max-width: none;
+    /* No longer floating over the map → drop the translucency for legibility. */
+    background: var(--bg);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+  }
+
+  /* Stage sections stack on phones: the narrative card rides on top in normal
+     flow and the map fills the space below — floating cards would collide at
+     this width. */
+  .story-section-stage .story-section-inner {
+    display: flex;
+    flex-direction: column;
+  }
+  .story-section-stage .story-head {
+    position: static;
+    width: auto;
+    margin: 0;
+    border: none;
+    border-bottom: 1px solid var(--rule);
+    box-shadow: none;
+    padding: 1.1rem 1.1rem 1.25rem;
+  }
+  .story-section-stage .story-body {
+    position: relative;
+    inset: auto;
+    flex: 1 1 auto;
+    height: auto;
+    min-height: 60vh;
+  }
+
+  /* Year control back to a bottom corner (clears the header, which can wrap
+     tall on phones), opposite the arrows. */
+  .story-chrome { top: auto; bottom: 1.1rem; left: 1.1rem; right: auto; }
+  .story-rail { display: none; }
+}
