@@ -33,9 +33,10 @@ import { useYearRange } from '../lib/yearRange';
 import { parsePlaceSlug, citySlug } from '../lib/slug';
 import type { ReactNode } from 'react';
 import { useProto } from '../../proto/settings';
-import { QuizGate, QuizCardSlot } from '../../shared/QuizBits';
+import { useJourney } from '../../state/journey';
+import { QuizGate, QuizCardSlot, QuizCard } from '../../shared/QuizBits';
 import { QuizRecap } from '../../shared/QuizRecap';
-import { quizForStage } from '../../content/quizzes';
+import { quizForStage, QUIZZES, type Quiz } from '../../content/quizzes';
 import { DragDotQuizCard, TreeWalkQuizCard } from '../../proto/InstrumentCards';
 
 // Quiz stage for each driver step on the default supply→amenity walk (see
@@ -159,6 +160,9 @@ export default function CityStory() {
   // compose the widget (drag-the-dot, walk-the-tree) into the same chrome.
   const { on } = useProto();
   const quizzesOn = on('quizzes');
+  // Study mode replaces the whole story with a plain list of the quiz cards —
+  // see the early return below.
+  const { quizOnly } = useJourney();
   const gate = (stage: number, node: ReactNode): ReactNode => {
     if (!quizzesOn) return node;
     const quiz = quizForStage(stage);
@@ -245,6 +249,10 @@ export default function CityStory() {
       </article>
     );
   }
+
+  // Study mode: forget the story entirely — just stack every quiz card in a
+  // plain scrolling column, no map, no section chrome.
+  if (quizOnly) return <QuizOnlyView />;
 
   const classLabel = place.lsad === '25' ? 'city' :
                      place.lsad === '43' ? 'town' :
@@ -578,6 +586,48 @@ export default function CityStory() {
         </Section>
       )}
     </StoryScroller>
+  );
+}
+
+// Study mode: the whole prototype quiz set as a plain vertical list of cards —
+// no map, no section titles or narrative. Choice/slider quizzes use the shared
+// card; the two instruments compose their widget. The scorecard closes it, and
+// answers share the story's "citystory" scope so they stay in sync.
+function QuizOnlyView() {
+  const { setQuizOnly } = useJourney();
+  const quizzes = [...QUIZZES].sort((a, b) => a.stage - b.stage);
+  const renderCard = (q: Quiz) => {
+    if (q.kind === 'instrument') {
+      return q.id === 'place-the-metro' ? (
+        <DragDotQuizCard quiz={q} />
+      ) : (
+        <TreeWalkQuizCard quiz={q} />
+      );
+    }
+    return <QuizCard quiz={q} />;
+  };
+  return (
+    <div className="quiz-only-view">
+      <div className="quiz-only-stack">
+        <header className="quiz-only-head">
+          <span className="eyebrow">Quiz-only mode</span>
+          <h1>Check your intuition</h1>
+          <p>
+            Every prototype quiz on its own — answer or skip each one.{' '}
+            <button className="link-btn" onClick={() => setQuizOnly(false)}>
+              Exit to the full story
+            </button>
+            .
+          </p>
+        </header>
+        {quizzes.map((q) => (
+          <div key={q.id} className="quiz-only-item">
+            {renderCard(q)}
+          </div>
+        ))}
+        <QuizRecap />
+      </div>
+    </div>
   );
 }
 

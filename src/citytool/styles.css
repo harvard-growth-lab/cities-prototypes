@@ -1,3 +1,44 @@
+/* Quiz-only (study) mode — a plain scrolling column of quiz cards, no map or
+   story chrome. Replaces the whole scroll-snapped story while it's on. */
+.quiz-only-view {
+  height: 100vh;
+  overflow-y: auto;
+  background: var(--paper-warm, #f4f1ea);
+  padding: 56px 20px 120px;
+}
+.quiz-only-stack {
+  max-width: 700px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.quiz-only-head {
+  text-align: center;
+  margin-bottom: 8px;
+}
+.quiz-only-head h1 {
+  font-family: var(--font-serif, Georgia, serif);
+  font-size: 1.9rem;
+  color: var(--ink, #1a1714);
+  margin: 6px 0 8px;
+}
+.quiz-only-head p {
+  color: var(--ink-3, #4f4a42);
+  font-size: 0.92rem;
+  margin: 0;
+}
+.link-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--accent, #1a5a8e);
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.link-btn:hover { color: var(--accent-deep, #003e6b); }
+
 :root {
   /* ── GL grammar tokens (~/dev/gl-design/grammar.md) ───────────────────── */
   /* Warm four-layer ink ramp — sits on paper, not on a screen. */

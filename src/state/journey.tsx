@@ -25,21 +25,26 @@ const KEY = "gd-proto:boston-ma";
 
 interface Stored {
   learningMode: boolean;
+  /** Study mode: hide the charts/data and show only the quiz cards. */
+  quizOnly: boolean;
   answers: Record<string, QuizAnswer>;
 }
 
 function load(): Stored {
+  // Older saves predate quizOnly — merging over the defaults fills it in.
+  const defaults: Stored = { learningMode: true, quizOnly: false, answers: {} };
   try {
     const raw = localStorage.getItem(KEY);
-    if (raw) return JSON.parse(raw) as Stored;
+    if (raw) return { ...defaults, ...(JSON.parse(raw) as Partial<Stored>) };
   } catch {
     /* fresh start */
   }
-  return { learningMode: true, answers: {} };
+  return defaults;
 }
 
 interface JourneyCtx extends Stored {
   setLearningMode: (on: boolean) => void;
+  setQuizOnly: (on: boolean) => void;
   submitAnswer: (a: QuizAnswer) => void;
   /** clear stored answers — all of them, or only one variant's scope */
   resetAnswers: (scope?: string) => void;
@@ -62,6 +67,10 @@ export function JourneyProvider({ children }: { children: ReactNode }) {
     (on: boolean) => setState((s) => ({ ...s, learningMode: on })),
     [],
   );
+  const setQuizOnly = useCallback(
+    (on: boolean) => setState((s) => ({ ...s, quizOnly: on })),
+    [],
+  );
   const submitAnswer = useCallback(
     (a: QuizAnswer) =>
       setState((s) => ({ ...s, answers: { ...s.answers, [a.quizId]: a } })),
@@ -81,8 +90,8 @@ export function JourneyProvider({ children }: { children: ReactNode }) {
   );
 
   const value = useMemo(
-    () => ({ ...state, setLearningMode, submitAnswer, resetAnswers }),
-    [state, setLearningMode, submitAnswer, resetAnswers],
+    () => ({ ...state, setLearningMode, setQuizOnly, submitAnswer, resetAnswers }),
+    [state, setLearningMode, setQuizOnly, submitAnswer, resetAnswers],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

@@ -97,7 +97,8 @@ export function useProto(): ProtoCtx {
 
 export function PrototypeDrawer() {
   const { enabled, toggle, setAll, open, setOpen } = useProto();
-  const { learningMode, setLearningMode, answers, resetAnswers } = useJourney();
+  const { learningMode, setLearningMode, quizOnly, setQuizOnly, answers, resetAnswers } =
+    useJourney();
   const answeredCount = Object.keys(answers).length;
   if (!open) return null;
 
@@ -131,21 +132,39 @@ export function PrototypeDrawer() {
           <div className="proto-group">
             <div className="group-title">Quiz behaviour</div>
             {/* Learning mode only means something while quizzes exist — with
-                the element off it is inert, so it reads (and is) disabled. */}
+                the element off it is inert, so it reads (and is) disabled. In
+                quiz-only mode there is nothing to blur, so it reads disabled too. */}
             <label
-              className={`toggle-row ${learningMode ? "on" : ""} ${enabled.quizzes ? "" : "is-disabled"}`}
+              className={`toggle-row ${learningMode ? "on" : ""} ${enabled.quizzes && !quizOnly ? "" : "is-disabled"}`}
             >
               <span className={`switch master ${learningMode ? "on" : ""}`} />
               <input
                 type="checkbox"
                 hidden
                 checked={learningMode}
-                disabled={!enabled.quizzes}
+                disabled={!enabled.quizzes || quizOnly}
                 onChange={(e) => setLearningMode(e.target.checked)}
               />
               <span className="t-copy">
                 <span className="t-name">Learning mode</span>
                 <span className="t-desc">When on, a quiz blurs its section until you answer or skip.</span>
+              </span>
+            </label>
+
+            {/* Study mode: strip the charts/data and page through the quiz
+                cards alone. Sections without a quiz drop out of the story. It
+                implies the quiz layer, so it works even with the element off. */}
+            <label className={`toggle-row ${quizOnly ? "on" : ""}`}>
+              <span className={`switch master ${quizOnly ? "on" : ""}`} />
+              <input
+                type="checkbox"
+                hidden
+                checked={quizOnly}
+                onChange={(e) => setQuizOnly(e.target.checked)}
+              />
+              <span className="t-copy">
+                <span className="t-name">Quiz-only mode</span>
+                <span className="t-desc">Hide the data and show just the quizzes — a run through the questions on their own.</span>
               </span>
             </label>
           </div>

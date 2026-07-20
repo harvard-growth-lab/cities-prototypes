@@ -30,13 +30,17 @@ export default function StoryScroller({
   const ratiosRef = useRef<Map<number, number>>(new Map());
   const observerRef = useRef<IntersectionObserver | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
-  const [count, setCount] = useState(0);
+  // Sorted list of the indices actually registered right now. Section indices
+  // need not be contiguous — quiz-only study mode skips whole sections — so the
+  // rail and prev/next page through this list by position, not by raw index.
+  const [indices, setIndices] = useState<number[]>([]);
+  const count = indices.length;
 
   // Keep imperative nav reading the latest values without re-creating callbacks.
   const activeRef = useRef(0);
   activeRef.current = activeIndex;
-  const countRef = useRef(0);
-  countRef.current = count;
+  const indicesRef = useRef<number[]>([]);
+  indicesRef.current = indices;
 
   useEffect(() => {
     const root = containerRef.current;
@@ -87,21 +91,31 @@ export default function StoryScroller({
       map.delete(index);
       ratiosRef.current.delete(index);
     }
-    setCount(map.size);
+    setIndices([...map.keys()].sort((a, b) => a - b));
   }, []);
 
+  // goTo takes a raw section index (the value passed to <Section index=…>).
   const goTo = useCallback((index: number) => {
-    const max = countRef.current - 1;
-    const clamped = Math.max(0, Math.min(index, max));
-    const el = elsRef.current.get(clamped);
+    const el = elsRef.current.get(index);
     if (!el) return;
     el.scrollIntoView({ behavior: 'smooth' });
     // Move focus to the section so keyboard + screen-reader users land on the
     // content they navigated to (preventScroll: the scrollIntoView owns motion).
     el.focus({ preventScroll: true });
   }, []);
-  const next = useCallback(() => goTo(activeRef.current + 1), [goTo]);
-  const prev = useCallback(() => goTo(activeRef.current - 1), [goTo]);
+  // Step by position within the currently-registered indices.
+  const step = useCallback(
+    (delta: number) => {
+      const list = indicesRef.current;
+      const pos = list.indexOf(activeRef.current);
+      const nextPos = Math.max(0, Math.min((pos < 0 ? 0 : pos) + delta, list.length - 1));
+      const target = list[nextPos];
+      if (target != null) goTo(target);
+    },
+    [goTo],
+  );
+  const next = useCallback(() => step(1), [step]);
+  const prev = useCallback(() => step(-1), [step]);
 
   // Keyboard paging — but only when focus isn't in a form control.
   useEffect(() => {
@@ -120,8 +134,9 @@ export default function StoryScroller({
     return () => window.removeEventListener('keydown', onKey);
   }, [next, prev]);
 
-  const atStart = activeIndex <= 0;
-  const atEnd = count > 0 && activeIndex >= count - 1;
+  const activePos = indices.indexOf(activeIndex);
+  const atStart = activePos <= 0;
+  const atEnd = count > 0 && activePos >= count - 1;
 
   return (
     <StoryContext.Provider value={{ activeIndex, count, register, goTo, next, prev }}>
@@ -130,16 +145,16 @@ export default function StoryScroller({
 
         {chrome && <div className="story-chrome">{chrome}</div>}
 
-        {/* Progress rail — one dot per registered section. */}
+        {/* Progress rail — one dot per registered section, in index order. */}
         <nav className="story-rail" aria-label="Section navigation">
-          {Array.from({ length: count }, (_, i) => (
+          {indices.map((sectionIdx, i) => (
             <button
-              key={i}
+              key={sectionIdx}
               type="button"
-              className={`story-rail-dot${i === activeIndex ? ' is-active' : ''}`}
+              className={`story-rail-dot${sectionIdx === activeIndex ? ' is-active' : ''}`}
               aria-label={`Go to section ${i + 1}`}
-              aria-current={i === activeIndex}
-              onClick={() => goTo(i)}
+              aria-current={sectionIdx === activeIndex}
+              onClick={() => goTo(sectionIdx)}
             />
           ))}
         </nav>

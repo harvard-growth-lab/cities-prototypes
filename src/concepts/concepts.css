@@ -396,7 +396,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  padding: 2.4rem 1.15rem 1.05rem;
+  padding: 2rem 1rem 0.85rem;
   background: linear-gradient(
     to top,
     rgba(9, 10, 13, 0.94) 0%,
@@ -408,20 +408,20 @@
 .wstep-caption h3 {
   font-family: var(--font-serif);
   font-weight: 600;
-  font-size: 1.08rem;
+  font-size: 0.96rem;
   color: #f4f1ea;
-  margin: 0 0 0.4rem;
+  margin: 0 0 0.3rem;
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.85);
 }
 .wstep-caption p {
-  font-size: 0.9rem;
-  line-height: 1.55;
+  font-size: 0.8rem;
+  line-height: 1.5;
   color: #e4e1d8;
   margin: 0;
   text-shadow: 0 1px 10px rgba(0, 0, 0, 0.9);
 }
 .wstep-caption p + p {
-  margin-top: 0.5rem;
+  margin-top: 0.4rem;
 }
 
 .wstep-nav {
