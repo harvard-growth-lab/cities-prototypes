@@ -36,6 +36,8 @@ export const ELEMENTS: Element[] = [
 
 type EnabledMap = Record<ProtoId, boolean>;
 const ALL_OFF: EnabledMap = { quizzes: false };
+/** Fresh visitors start with the learning layer on. */
+const DEFAULTS: EnabledMap = { quizzes: true };
 
 interface ProtoCtx {
   enabled: EnabledMap;
@@ -48,7 +50,7 @@ interface ProtoCtx {
 }
 
 const Ctx = createContext<ProtoCtx | null>(null);
-const KEY = "gd-proto-settings:boston-ma-v2";
+const KEY = "gd-proto-settings:boston-ma-v3";
 
 function load(): EnabledMap {
   try {
@@ -57,7 +59,7 @@ function load(): EnabledMap {
   } catch {
     /* fresh */
   }
-  return ALL_OFF;
+  return DEFAULTS;
 }
 
 export function PrototypeSettingsProvider({ children }: { children: ReactNode }) {

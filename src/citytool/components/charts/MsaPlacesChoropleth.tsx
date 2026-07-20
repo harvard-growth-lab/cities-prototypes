@@ -20,6 +20,10 @@ import { amenityResiduals, residualDelta, type AmenityObs } from '../../lib/amen
 
 const HIGHLIGHT = GL.c2;        // active place outline — identity red
 const NO_DATA = GL.mutedLight;  // places with no value for the metric
+// Placeholder mode: this prototype ships without the real data behind this
+// metric, so every place is painted a flat neutral grey to signal "illustrative,
+// not actual figures" rather than dressing fake numbers in a real colour ramp.
+const PLACEHOLDER_FILL = GL.muted;
 
 const TILE_URL = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
 const TILE_ATTRIBUTION =
@@ -100,6 +104,10 @@ type Props = {
   toolsPortalId?: string;
   // Which metric to open on (user can still switch via the picker).
   initialMetric?: Metric;
+  // When true, the map is decorative: every place fills a flat neutral grey and
+  // the legend/tooltip/source say so. Used where the prototype hasn't wired the
+  // real data yet and we don't want fake numbers reading as genuine.
+  placeholder?: boolean;
 };
 
 // Red → neutral → green diverging palette. Growth/decline has a real midpoint,
@@ -574,6 +582,7 @@ export default function MsaPlacesChoropleth({
   fill = false,
   toolsPortalId,
   initialMetric = 'salary_level',
+  placeholder = false,
 }: Props) {
   const placesGeo = useMsaPlacesGeo(msaId);
   const { startYear, endYear } = useYearRange();
@@ -624,6 +633,7 @@ export default function MsaPlacesChoropleth({
 
   const colorFor = useCallback(
     (v: number | undefined): string => {
+      if (placeholder) return PLACEHOLDER_FILL;
       if (v == null || !Number.isFinite(v)) return NO_DATA;
       const [lo, hi] = domain;
       if (hi === lo) return rampSequential(0.5);
@@ -650,7 +660,7 @@ export default function MsaPlacesChoropleth({
       }
       return rampSequential((v - lo) / (hi - lo));
     },
-    [domain, meta.diverging],
+    [domain, meta.diverging, placeholder],
   );
 
   // Refs follow the latest values/colorFor so closures captured by Leaflet
@@ -725,11 +735,11 @@ export default function MsaPlacesChoropleth({
         color: isActive ? HIGHLIGHT : GL.ink3,
         weight: isActive ? 2.5 : 0.4,
         fillColor: colorFor(v),
-        fillOpacity: v == null ? 0.35 : 0.85,
+        fillOpacity: placeholder ? 0.5 : v == null ? 0.35 : 0.85,
       });
       if (isActive) (sub as L.Path).bringToFront();
     });
-  }, [values, colorFor, placeId]);
+  }, [values, colorFor, placeId, placeholder]);
 
   // Stable style fn for the GeoJSON `style` prop. react-leaflet calls setStyle
   // on every layer whenever this prop's reference changes, so we keep the
@@ -745,10 +755,10 @@ export default function MsaPlacesChoropleth({
         color: isActive ? HIGHLIGHT : GL.ink3,
         weight: isActive ? 2.5 : 0.4,
         fillColor: colorForRef.current(v),
-        fillOpacity: v == null ? 0.35 : 0.85,
+        fillOpacity: placeholder ? 0.5 : v == null ? 0.35 : 0.85,
       };
     },
-    [placeId],
+    [placeId, placeholder],
   );
 
   const onEachFeature = useCallback(
@@ -814,7 +824,14 @@ export default function MsaPlacesChoropleth({
 
   // Source/methodology text — placed below the map normally, or folded into a
   // collapsible inside the legend when the map runs full-bleed.
-  const sourceInner = (
+  const sourceInner = placeholder ? (
+    <>
+      <strong>Placeholder.</strong> This prototype ships without the real
+      appeal-shift figures, so every place is drawn a flat neutral grey — the map
+      shows the {msaName} MSA's geography only, not actual data. The red outline
+      marks {placeName}.
+    </>
+  ) : (
     <>
       {metric === 'pop_level' && `Census PEP subcounty (incorporated places only — CDPs are blank).`}
       {metric === 'pop_cagr'  && `Census PEP for incorporated places; IRS SOI n_returns (household proxy) for CDPs where PEP is unavailable.`}
@@ -839,26 +856,35 @@ export default function MsaPlacesChoropleth({
   );
 
   const legend = (
-    <div className={`choropleth-legend${fill ? ' is-inline' : ''}`}>
+    <div className={`choropleth-legend${placeholder ? ' is-placeholder' : ''}${fill ? ' is-inline' : ''}`}>
       <span className="chart-legend-label">{meta.label}</span>
-      <div className="choropleth-legend-bar">
-        {Array.from({ length: 24 }).map((_, i) => {
-          const t = i / 23;
-          const v = domain[0] + t * (domain[1] - domain[0]);
-          return (
-            <span
-              key={i}
-              className="choropleth-legend-cell"
-              style={{ background: colorFor(v) }}
-            />
-          );
-        })}
-      </div>
-      <div className="choropleth-legend-ticks">
-        {ticks.map((t, i) => (
-          <span key={i}>{fmtValue(t, meta.kind)}</span>
-        ))}
-      </div>
+      {placeholder ? (
+        <div className="choropleth-legend-placeholder">
+          <span className="choropleth-legend-swatch" style={{ background: PLACEHOLDER_FILL }} />
+          Placeholder — illustrative geometry only, not actual figures.
+        </div>
+      ) : (
+        <>
+          <div className="choropleth-legend-bar">
+            {Array.from({ length: 24 }).map((_, i) => {
+              const t = i / 23;
+              const v = domain[0] + t * (domain[1] - domain[0]);
+              return (
+                <span
+                  key={i}
+                  className="choropleth-legend-cell"
+                  style={{ background: colorFor(v) }}
+                />
+              );
+            })}
+          </div>
+          <div className="choropleth-legend-ticks">
+            {ticks.map((t, i) => (
+              <span key={i}>{fmtValue(t, meta.kind)}</span>
+            ))}
+          </div>
+        </>
+      )}
       {fill && (
         <details className="choropleth-legend-source">
           <summary>Source &amp; method</summary>
@@ -913,7 +939,7 @@ export default function MsaPlacesChoropleth({
             <dl className="chart-tooltip-grid">
               <div style={{ display: 'contents' }}>
                 <dt>{meta.label}</dt>
-                <dd>{fmtValue(hoverValue, meta.kind)}</dd>
+                <dd>{placeholder ? 'placeholder' : fmtValue(hoverValue, meta.kind)}</dd>
               </div>
             </dl>
           </div>
@@ -925,7 +951,7 @@ export default function MsaPlacesChoropleth({
   if (fill) {
     const tools = (
       <>
-        {controls}
+        {!placeholder && controls}
         {legend}
       </>
     );
@@ -945,7 +971,7 @@ export default function MsaPlacesChoropleth({
 
   return (
     <>
-      {controls}
+      {!placeholder && controls}
       {mapBlock}
       <p className="chart-source">
         <span className="chart-source-label">Source</span>

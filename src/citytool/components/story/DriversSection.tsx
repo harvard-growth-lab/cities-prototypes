@@ -475,11 +475,14 @@ function amenitySteps({
       narrative: (
         <>
           <p>
-            The same residual change on the map: where inside the{' '}
-            {msa.city_name} MSA appeal is rising (green) or fading (red), and
-            where {place.place_name} ranks in that pattern. The picker also
-            holds the residual <em>levels</em> and the rent-based versions of
-            both.
+            The same residual change, mapped: where inside the{' '}
+            {msa.city_name} MSA appeal is rising or fading, and where{' '}
+            {place.place_name} ranks in that pattern.
+          </p>
+          <p className="stage-card-note">
+            This is a lightweight prototype, so the map below is a{' '}
+            <strong>placeholder</strong> — the MSA's real geography drawn in flat
+            grey, standing in for figures not wired up here.
           </p>
           <div id="amenity-choropleth-card-tools" className="stage-card-tools" />
         </>
@@ -499,6 +502,7 @@ function amenitySteps({
           fill
           toolsPortalId="amenity-choropleth-card-tools"
           initialMetric="amenity_zhvi_delta"
+          placeholder
         />
       ),
     },

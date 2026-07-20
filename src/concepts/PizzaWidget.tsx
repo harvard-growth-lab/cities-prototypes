@@ -234,37 +234,29 @@ const cellQuad = (c: WedgeCell): QuarterKey => quadOf(c.dPop > 0 ? 1 : -1, c.dWa
 /** "pop ↑ · wages ↑↑" → the page's plain words. */
 const plainQuad = (q: string) => q.replace("pop", "people").replace("wages", "pay");
 
-/* ————— figure geometry: 45° sectors of a w×h box around (cx, cy) ————— */
+/* ————— figure geometry: 8 wedges of a w×h box around (cx, cy) ————— */
 
-/** Polygon points for sector k (k·45°..k·45°+45°, math angles, y down). */
+// The eight wedges are bounded by the two axes (drawn through the centre) and
+// the two box diagonals (centre → each corner). Because the box isn't square,
+// true 45° geometric sectors would land at slope ±1 and miss the corners — so
+// the wedge edges are pinned to the same perimeter points the axes/diagonals
+// reach, and every wedge is a triangle whose outer edge lies on the box border.
+// Order matches sectorOf(): index 0 opens at the +x axis and runs CCW.
+const perimPoints = (cx: number, cy: number, w: number, h: number): [number, number][] => [
+  [w, cy], // 0 · +x axis
+  [w, 0], //  1 · NE corner (diagonal)
+  [cx, 0], // 2 · +y (up) axis
+  [0, 0], //  3 · NW corner (diagonal)
+  [0, cy], // 4 · −x axis
+  [0, h], //  5 · SW corner (diagonal)
+  [cx, h], // 6 · −y (down) axis
+  [w, h], //  7 · SE corner (diagonal)
+];
+
+/** Triangle points for wedge k: centre → perimeter[k] → perimeter[k+1]. */
 export function sectorPoints(cx: number, cy: number, w: number, h: number, k: number): string {
-  const ray = (deg: number): [number, number] => {
-    const th = (deg * Math.PI) / 180;
-    const dx = Math.cos(th);
-    const dy = -Math.sin(th);
-    let t = Infinity;
-    if (dx > 1e-9) t = Math.min(t, (w - cx) / dx);
-    else if (dx < -1e-9) t = Math.min(t, -cx / dx);
-    if (dy > 1e-9) t = Math.min(t, (h - cy) / dy);
-    else if (dy < -1e-9) t = Math.min(t, -cy / dy);
-    return [cx + dx * t, cy + dy * t];
-  };
-  const a0 = k * 45;
-  const a1 = a0 + 45;
-  const pts: [number, number][] = [[cx, cy], ray(a0)];
-  const corners: [number, number][] = [
-    [w, 0],
-    [0, 0],
-    [0, h],
-    [w, h],
-  ];
-  const between = corners
-    .map((c) => ({ c, a: (Math.atan2(cy - c[1], c[0] - cx) * 180) / Math.PI }))
-    .map(({ c, a }) => ({ c, a: (a + 360) % 360 }))
-    .filter(({ a }) => a > a0 && a < a1)
-    .sort((p, q) => p.a - q.a);
-  for (const { c } of between) pts.push(c);
-  pts.push(ray(a1));
+  const perim = perimPoints(cx, cy, w, h);
+  const pts: [number, number][] = [[cx, cy], perim[k], perim[(k + 1) % 8]];
   return pts.map((p) => `${p[0].toFixed(2)},${p[1].toFixed(2)}`).join(" ");
 }
 

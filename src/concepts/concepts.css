@@ -379,88 +379,94 @@
 
 /* ————— contained mini-scrolly ————— */
 
-.widget-scrolly {
-  display: grid;
-  grid-template-columns: minmax(280px, 340px) 1fr;
-  gap: 28px;
-  align-items: start;
-}
-.ws-stage {
-  position: sticky;
-  top: 18vh;
-}
-.ws-steps {
+/* Stepped explainer: one graphic with the step's text laid over it and
+   Back / Next controls beneath — no scrolling under the frame. */
+.widget-stepper {
   display: flex;
   flex-direction: column;
-  gap: 42vh;
-  padding: 20vh 0 26vh;
+  gap: 0.85rem;
 }
-.ws-step {
-  background: var(--paper);
-  border: 1px solid var(--rule);
-  border-left: 3px solid var(--rule);
-  border-radius: 10px;
-  padding: 1rem 1.15rem;
-  box-shadow: 0 10px 30px rgba(26, 23, 20, 0.07);
-  opacity: 0.45;
-  transition: opacity 0.3s ease, border-color 0.3s ease;
+.wstep-stage {
+  position: relative;
 }
-.ws-step.active {
-  opacity: 1;
-  border-left-color: var(--gold);
+/* The caption floats over the lower part of the scene, on its own scrim so
+   the pixel art still reads around it while the text stays legible. */
+.wstep-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 2.4rem 1.15rem 1.05rem;
+  background: linear-gradient(
+    to top,
+    rgba(9, 10, 13, 0.94) 0%,
+    rgba(9, 10, 13, 0.82) 55%,
+    rgba(9, 10, 13, 0) 100%
+  );
+  pointer-events: none;
 }
-.ws-step h3 {
+.wstep-caption h3 {
   font-family: var(--font-serif);
   font-weight: 600;
   font-size: 1.08rem;
-  color: var(--ink);
-  margin: 0 0 0.45rem;
+  color: #f4f1ea;
+  margin: 0 0 0.4rem;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.85);
 }
-.ws-step p {
-  font-size: 0.92rem;
+.wstep-caption p {
+  font-size: 0.9rem;
   line-height: 1.55;
-  color: var(--ink-2);
+  color: #e4e1d8;
   margin: 0;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.9);
 }
-.ws-step p + p {
+.wstep-caption p + p {
   margin-top: 0.5rem;
 }
 
-@media (max-width: 900px) {
-  .widget-scrolly {
-    grid-template-columns: 1fr;
-    gap: 0;
-  }
-  .ws-stage {
-    order: -1;
-    top: 0;
-    z-index: 2;
-    padding: 0.4rem 0 0.8rem;
-    background: linear-gradient(var(--paper) 86%, transparent);
-  }
-  .ws-steps {
-    padding: 6vh 0 18vh;
-    gap: 46vh;
-  }
+.wstep-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+/* Keep Back/Next a fixed width so the dots stay centred as labels change. */
+.wstep-nav > .btn {
+  flex: 0 0 auto;
+  min-width: 84px;
+}
+.wstep-nav > .btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.wstep-dots {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.wstep-dot {
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--ink-3);
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+.wstep-dot:hover {
+  border-color: var(--gold);
+}
+.wstep-dot.active {
+  background: var(--gold);
+  border-color: var(--gold);
+  transform: scale(1.15);
 }
 
-/* inside the modal the scrolly always stacks: full-width stage on top
-   (upscaled = crisp pixels), steps scrolling beneath it */
-.concept-modal .widget-scrolly {
-  grid-template-columns: 1fr;
-  gap: 0;
-}
-.concept-modal .ws-stage {
-  order: -1;
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  padding: 0.2rem 0 0.8rem;
-  background: linear-gradient(var(--paper) 86%, transparent);
-}
-.concept-modal .ws-steps {
-  padding: 4vh 0 14vh;
-  gap: 38vh;
+@media (max-width: 560px) {
+  .wstep-nav > .btn {
+    min-width: 0;
+  }
 }
 
 /* ————— the analytical layer: formulas, data notes, tiles, meters ————— */
