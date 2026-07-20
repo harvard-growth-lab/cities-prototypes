@@ -133,13 +133,12 @@ export function QuizCard({ quiz }: { quiz: Quiz }) {
 }
 
 /**
- * The quiz card alone, learning-mode aware — for layouts that place the card
- * away from the gated content (the full-bleed map steps put it inside the
- * narrative card while QuizGate blurs the map elsewhere in the section).
+ * The quiz card alone — for layouts that place the card away from the gated
+ * content (the full-bleed map steps put it inside the narrative card while
+ * QuizGate blurs the map elsewhere in the section).
  */
 export function QuizCardSlot({ quiz }: { quiz: Quiz | undefined }) {
-  const { learningMode } = useJourney();
-  if (!quiz || !learningMode) return null;
+  if (!quiz) return null;
   return <QuizCard quiz={quiz} />;
 }
 
@@ -167,7 +166,7 @@ export function QuizGate({
 
   return (
     <>
-      {quiz && learningMode && !hideCard && (card ?? <QuizCard quiz={quiz} />)}
+      {quiz && !hideCard && (card ?? <QuizCard quiz={quiz} />)}
       <div className={`gated ${gated ? "" : "open"}`}>
         <div className="gated-content">{children}</div>
       </div>
