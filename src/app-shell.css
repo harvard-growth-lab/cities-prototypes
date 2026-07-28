@@ -641,6 +641,33 @@
   line-height: 1.45;
   margin-top: 0.15rem;
 }
+/* link rows in the drawer (e.g. Tree Prototypes) — toggle-row chrome minus
+   the switch, with the accent affordance of a link */
+.gl-app .drawer-link {
+  display: flex;
+  padding: 0.5rem 0;
+  border-top: 1px solid var(--rule);
+  text-decoration: none;
+}
+.gl-app .drawer-link:first-of-type {
+  border-top: none;
+}
+.gl-app .drawer-link .t-name {
+  font-size: 0.92rem;
+  color: var(--accent);
+  font-weight: 500;
+}
+.gl-app .drawer-link:hover .t-name {
+  color: var(--accent-deep);
+  text-decoration: underline;
+}
+.gl-app .drawer-link .t-desc {
+  font-size: 0.78rem;
+  color: var(--ink-3);
+  line-height: 1.45;
+  margin-top: 0.15rem;
+}
+
 .gl-app .drawer-foot {
   border-top: 1px solid var(--rule);
   padding: 0.9rem 1.25rem;

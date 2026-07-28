@@ -179,6 +179,19 @@ export function PrototypeDrawer() {
               </span>
             </label>
           </div>
+
+          <div className="proto-group">
+            <div className="group-title">More prototypes</div>
+            <a className="drawer-link" href="#/tree" onClick={() => setOpen(false)}>
+              <span className="t-copy">
+                <span className="t-name">Tree Prototypes →</span>
+                <span className="t-desc">
+                  The Figure-27 decision tree rebuilt three ways — a wall chart, a dial, and a
+                  metro map.
+                </span>
+              </span>
+            </a>
+          </div>
         </div>
         <div className="drawer-foot">
           <button onClick={() => resetAnswers()} disabled={answeredCount === 0}>

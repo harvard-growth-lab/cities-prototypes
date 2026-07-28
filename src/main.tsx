@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { MemoryRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ReadCityPage } from "./readcity/ReadCityPage";
 import { ConceptsPage } from "./concepts/ConceptsPage";
+import { TreeLabPage } from "./treelab/TreeLabPage";
 import CityStory from "./citytool/pages/CityStory";
 import { YearRangeProvider } from "./citytool/lib/yearRange";
 import { JourneyProvider, QuizScope } from "./learning/journey";
@@ -70,6 +71,7 @@ function App() {
   const hash = useHashRoute();
   const isStory = hash.startsWith("#/story");
   const isConcepts = hash.startsWith("#/concepts");
+  const isTreeLab = hash.startsWith("#/tree");
 
   useEffect(() => {
     let link = document.getElementById("app-theme") as HTMLLinkElement | null;
@@ -79,14 +81,16 @@ function App() {
       link.rel = "stylesheet";
       document.head.appendChild(link);
     }
-    // concepts shares the light GL theme with the profile view
+    // concepts and the tree lab share the light GL theme with the profile view
     link.href = isStory ? storyCssUrl : citytoolCssUrl;
     document.title = isStory
       ? "How to Read a City"
       : isConcepts
         ? "City Concepts · Growth Lab"
-        : "Boston · Cities — Growth Lab";
-  }, [isStory, isConcepts]);
+        : isTreeLab
+          ? "Tree Prototypes · Growth Lab"
+          : "Boston · Cities — Growth Lab";
+  }, [isStory, isConcepts, isTreeLab]);
 
   if (isStory) {
     return (
@@ -116,6 +120,7 @@ function App() {
     );
   }
   if (isConcepts) return <ConceptsPage hash={hash} />;
+  if (isTreeLab) return <TreeLabPage />;
   return <PlaceApp />;
 }
 

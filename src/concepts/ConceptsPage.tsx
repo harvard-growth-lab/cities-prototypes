@@ -16,6 +16,14 @@ import { PizzaThumb, PizzaWidget } from "./PizzaWidget";
 import { PixelSim } from "./PixelSim";
 import { MiniScrolly, type MiniStep } from "./MiniScrolly";
 import { Barrel } from "./Barrel";
+import { TEXTBOOK_CONCEPTS } from "./TextbookFigs";
+import { SKETCH_A } from "./SketchFigsA";
+import { SKETCH_B } from "./SketchFigsB";
+import { MICRO_A } from "./MicroFigsA";
+import { MICRO_B } from "./MicroFigsB";
+import { MICRO_C } from "./MicroFigsC";
+import { MICRO_D } from "./MicroFigsD";
+import { MICRO_E } from "./MicroFigsE";
 import "./concepts.css";
 
 /**
@@ -481,7 +489,7 @@ function BarrelThumb() {
   );
 }
 
-interface Concept {
+export interface Concept {
   id: string;
   num: string;
   eyebrow: string;
@@ -491,7 +499,11 @@ interface Concept {
   tag: string;
   thumb: ReactNode;
   body: () => ReactNode;
+  /** figure-style cards render their thumb on paper, not the dark film frame */
+  paperThumb?: boolean;
 }
+
+const MICRO_CONCEPTS: Concept[] = [...MICRO_A, ...MICRO_B, ...MICRO_C, ...MICRO_D, ...MICRO_E];
 
 const CONCEPTS: Concept[] = [
   {
@@ -581,10 +593,50 @@ const CONCEPTS: Concept[] = [
   },
 ];
 
+/* ————— the sandbox: extra prototype shelves, folded behind one toggle ————— */
+
+interface Shelf {
+  id: string;
+  eyebrow: string;
+  title: string;
+  blurb: string;
+  items: Concept[];
+}
+
+const SANDBOX: Shelf[] = [
+  {
+    id: "textbook",
+    eyebrow: "Second take · the same ideas as figures",
+    title: "The interactive textbook",
+    blurb:
+      "The same seven ideas again — this time plated the way a textbook would draw them: axes, curves, flows and levers instead of pixel scenes. Every figure is live; drag, slide and toggle to push on the idea.",
+    items: TEXTBOOK_CONCEPTS,
+  },
+  {
+    id: "sketchbook",
+    eyebrow: "Third take · twenty sketches",
+    title: "The sketchbook",
+    blurb:
+      "Twenty quick experiments on the same framework — the paper's tests and metaphors, each tried as a different kind of interactive: gauges, queues, letter tiles, vector fields, sorting quizzes, draggable rules. Rougher than the figures above, on purpose.",
+    items: [...SKETCH_A, ...SKETCH_B],
+  },
+  {
+    id: "pocket",
+    eyebrow: "Fourth take · fifty micro-pages",
+    title: "The pocket textbook",
+    blurb:
+      "Fifty more pages in the textbook register, reaching past the paper onto the wider urban-economics shelf: how cities grow, how land and housing work, how labor markets match, how trade picks places — and how to read evidence without fooling yourself. One idea per page, one figure, one thing to poke.",
+    items: MICRO_CONCEPTS,
+  },
+];
+
+const SANDBOX_COUNT = SANDBOX.reduce((n, s) => n + s.items.length, 0);
+const SANDBOX_IDS = new Set(SANDBOX.flatMap((s) => s.items.map((c) => c.id)));
+
 function ConceptCard({ c, onOpen }: { c: Concept; onOpen: () => void }) {
   return (
     <button className="concept-card" onClick={onOpen}>
-      <span className="cc-thumb">{c.thumb}</span>
+      <span className={`cc-thumb${c.paperThumb ? " paper" : ""}`}>{c.thumb}</span>
       <span className="cc-head">
         <span className="widget-num">{c.num}</span>
         <span className="eyebrow">{c.eyebrow}</span>
@@ -642,10 +694,18 @@ export function ConceptsPage({ hash }: { hash: string }) {
   const rawId = hash.split("/")[2] || null;
   // "dials" folded into the pizza widget; keep old deep links working
   const openId = rawId === "dials" ? "pizza" : rawId;
-  const open = CONCEPTS.find((c) => c.id === openId) ?? null;
+  const open =
+    [...CONCEPTS, ...SANDBOX.flatMap((s) => s.items)].find((c) => c.id === openId) ?? null;
   const close = () => {
     window.location.hash = "#/concepts";
   };
+
+  // the sandbox stays shut by default — but a deep link into it must land
+  // on an open shelf, so closing the modal doesn't drop you on a bare page
+  const [sandboxOpen, setSandboxOpen] = useState(() => !!openId && SANDBOX_IDS.has(openId));
+  useEffect(() => {
+    if (openId && SANDBOX_IDS.has(openId)) setSandboxOpen(true);
+  }, [openId]);
 
   return (
     <div className="gl-app concepts-page">
@@ -681,6 +741,52 @@ export function ConceptsPage({ hash }: { hash: string }) {
           />
         ))}
       </div>
+
+      <section className="sandbox">
+        <button
+          className="sandbox-toggle"
+          aria-expanded={sandboxOpen}
+          aria-controls="sandbox-shelves"
+          onClick={() => setSandboxOpen((v) => !v)}
+        >
+          <span className="sandbox-flag">Sandbox</span>
+          <span className="sandbox-label">
+            {SANDBOX_COUNT} more explainer prototypes
+            <em>
+              Work in progress — the same ideas retried as textbook figures, rough sketches and
+              micro-pages.
+            </em>
+          </span>
+          <span className="sandbox-chev" aria-hidden>
+            {sandboxOpen ? "▲" : "▼"}
+          </span>
+        </button>
+
+        {sandboxOpen && (
+          <div id="sandbox-shelves">
+            {SANDBOX.map((shelf) => (
+              <div key={shelf.id}>
+                <div className="concepts-part">
+                  <span className="eyebrow">{shelf.eyebrow}</span>
+                  <h2>{shelf.title}</h2>
+                  <p>{shelf.blurb}</p>
+                </div>
+                <div className="concepts-grid">
+                  {shelf.items.map((c) => (
+                    <ConceptCard
+                      key={c.id}
+                      c={c}
+                      onOpen={() => {
+                        window.location.hash = `#/concepts/${c.id}`;
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
 
       <footer className="concepts-footer">
         <div className="btn-row">
