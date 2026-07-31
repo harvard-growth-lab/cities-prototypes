@@ -8,6 +8,7 @@ import {
   SPANS,
 } from "./data/content";
 import type { Insight } from "./data/content";
+import { PLACE_QUAD } from "./data/figures";
 import { Landing } from "./components/Landing";
 import { ToolView } from "./components/ToolView";
 import { JourneyModal } from "./components/modals/JourneyModal";
@@ -43,6 +44,10 @@ export default function App() {
     () => new Set(SAMPLE_EXPLORED_CITIES),
   );
   const [insights, setInsights] = useState<Insight[]>(SAMPLE_INSIGHTS);
+
+  /* the descent picked on the diagnostic tree (ids below the root); defaults
+     to the data-driven read and names/feeds the branch-analysis section */
+  const [branchPath, setBranchPath] = useState<string[]>(PLACE_QUAD.path);
 
   const addExploredCity = (c: string) => {
     setExploredCities((prev) => (prev.has(c) ? prev : new Set(prev).add(c)));
@@ -159,6 +164,8 @@ export default function App() {
         currentPageId={currentPageId}
         onPageInView={onPageInView}
         onSavePractice={savePractice}
+        branchPath={branchPath}
+        onSelectBranch={setBranchPath}
       />
 
       <JourneyModal

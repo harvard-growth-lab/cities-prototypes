@@ -33,12 +33,15 @@ export const PAGE_IDS = [
   "page-practice",
   "page-constraints",
   "page-constraints-diagnose",
+  "page-branch-analysis",
   "page-levers",
 ];
 
 export interface RailStep {
   id: string;
   label: string;
+  /** label follows the branch picked on the diagnostic tree */
+  branchNamed?: boolean;
 }
 
 export interface SectionDef {
@@ -49,6 +52,10 @@ export interface SectionDef {
   star?: boolean;
   steps?: RailStep[];
 }
+
+/** the branch picked on the diagnostic tree names its analysis section */
+export const branchSectionName = (side: "demand" | "supply") =>
+  side === "demand" ? "Demand side analysis" : "Supply side analysis";
 
 export const SECTION_DEFS: SectionDef[] = [
   {
@@ -83,11 +90,13 @@ export const SECTION_DEFS: SectionDef[] = [
   },
   {
     name: "City Constraints",
-    pages: ["page-constraints", "page-constraints-diagnose"],
+    pages: ["page-constraints", "page-constraints-diagnose", "page-branch-analysis"],
     entry: "page-constraints",
     steps: [
       { id: "page-constraints", label: "Where is your constraint?" },
       { id: "page-constraints-diagnose", label: "How we diagnose the constraint" },
+      /* default label; the Rail renames it live from the selected tree branch */
+      { id: "page-branch-analysis", label: "Supply side analysis", branchNamed: true },
     ],
   },
   {

@@ -1,118 +1,199 @@
-/* The City Constraints scroll sequence: one sticky stage that scrubs from the
-   quadrant chart ("Where is your constraint?") into the decision tree ("How we
-   diagnose the constraint") as the user scrolls. Chrome (header + caption) is
-   kept tight so the stage — and its type — renders as large as possible. */
+/* The City Constraints scroll sequence: one sticky stage, five scroll-triggered
+   phases (chart intro → MSA dot → place dot → tree draws itself in → default
+   path). Layout: the narrative captions and an always-expanded pizza minimap
+   live in a right rail; the stage keeps the rest. */
 
 /* ============ scrolly scaffold ============ */
-.jz-scrolly{position:relative;height:340vh;}
+.jz-scrolly{position:relative;height:300vh;}
 .jz-sticky{
   position:sticky;top:0;height:calc(100vh - 72px);
   display:flex;flex-direction:column;min-height:0;
-  padding:18px 44px 14px 48px;background:#fff;
+  padding:16px 40px 14px 44px;background:#fff;
 }
 /* invisible anchors that keep the rail's scroll-spy + navigation working */
 .jz-anchor{position:absolute;left:0;width:2px;opacity:0;pointer-events:none;}
 .jz-anchor-top{top:0;height:80vh;}
 .jz-anchor-bottom{bottom:0;height:80vh;}
 
-.jz-head{
-  display:flex;align-items:flex-start;justify-content:space-between;
-  gap:8px 28px;flex-wrap:wrap;
-}
+.jz-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px 28px;}
 .jz-titles .eyebrow{display:block;margin-bottom:3px;}
-/* the two section headings share one cell and crossfade with scroll phase */
 .jz-h2s{display:grid;}
 .jz-h2s h2{
-  grid-area:1/1;font-size:22px;font-weight:600;letter-spacing:-.3px;
+  grid-area:1/1;font-size:25px;font-weight:600;letter-spacing:-.3px;
   opacity:0;transition:opacity .35s ease;white-space:nowrap;
 }
 .jz-h2s h2.on{opacity:1;}
-.jz-modes-col{display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
 
+.jz-body{flex:1;min-height:0;display:flex;gap:20px;}
 .jz-stagewrap{
-  flex:1;min-height:0;display:flex;align-items:center;justify-content:center;
-  margin:2px 0 6px;
+  flex:1;min-width:0;min-height:0;position:relative;
+  display:flex;align-items:center;justify-content:center;
 }
-/* clipped: the camera-walk variant pushes zoomed content past the viewBox */
 .jz-svg{width:100%;height:100%;display:block;overflow:hidden;}
 
-/* ============ prototype selector ============ */
-.fig-modes{display:inline-flex;background:var(--teal-tint);border-radius:8px;padding:3px;gap:2px;}
-.fig-modes button{
-  border:none;background:none;border-radius:6px;padding:6px 12px;
-  font-size:12.5px;font-weight:600;color:var(--ink-soft);
-  transition:background .15s ease, color .15s ease, box-shadow .15s ease;
-}
-.fig-modes button:hover{color:var(--teal);}
-.fig-modes button.on{background:#fff;color:var(--teal);box-shadow:var(--shadow-sm);}
-.fig-mode-hint{font-size:12px;font-style:italic;color:var(--ink-soft);max-width:460px;text-align:right;}
-
-/* ============ scene A: the quadrant chart ============ */
-.jz-quad{cursor:pointer;outline:none;}
+/* ============ scene A: the pizza chart ============ */
 .jz-quad rect{
   fill-opacity:.06;stroke-opacity:0;stroke-width:1.5;
-  transition:fill-opacity .2s ease, stroke-opacity .2s ease;
+  transition:fill-opacity .3s ease, stroke-opacity .3s ease;
 }
-.jz-quad:hover rect{fill-opacity:.11;}
-.jz-quad.sel rect{fill-opacity:.15;stroke-opacity:.4;}
-.jz-quad:focus-visible rect{stroke-opacity:.65;}
-.jz-shock{font-size:19px;font-weight:700;}
-.jz-sub{font-size:13.5px;fill:var(--ink-soft);}
-.jz-tag{font-size:11.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;}
+.jz-quad.sel rect{fill-opacity:.15;stroke-opacity:.45;}
+.jz-shock{font-size:22px;font-weight:700;}
+.jz-sub{font-size:15.5px;fill:var(--ink-soft);}
+.jz-tag{font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;}
 .jz-axis{stroke:var(--teal);stroke-width:1.8;}
-.jz-axis-title{font-size:13.5px;font-weight:700;fill:var(--ink);}
+.jz-axis-title{font-size:15px;font-weight:700;fill:var(--ink);}
 
-/* the city / what-if dot */
-.jz-dot .core{fill:#1a2226;stroke:#fff;stroke-width:2;}
-.jz-dot text{
-  font-size:14px;font-weight:700;fill:#1a2226;
-  paint-order:stroke;stroke:#fff;stroke-width:3.5px;
+/* the MSA ring + the place dot */
+.jz-msadot .ring{fill:#fff;stroke:#5b686d;stroke-width:2.5;}
+.jz-msadot text,.jz-placedot text{
+  font-size:16.5px;font-weight:700;fill:#1a2226;
+  paint-order:stroke;stroke:#fff;stroke-width:4px;
 }
-.jz-dot .halo{fill:none;stroke:#1a2226;stroke-opacity:0;stroke-width:1.8;}
-.jz-dot.pulse .halo{animation:jz-pulse 1.6s ease-out infinite;}
+.jz-msadot text.stats,.jz-placedot text.stats{
+  font-size:13px;font-weight:600;fill:var(--ink-soft);
+}
+.jz-placedot .core{fill:#1a2226;stroke:#fff;stroke-width:2;}
+.jz-placedot .halo{fill:none;stroke:#1a2226;stroke-opacity:0;stroke-width:1.8;}
+.jz-placedot.pulse .halo{animation:jz-pulse 1.6s ease-out infinite;}
 @keyframes jz-pulse{
   0%{r:9;stroke-opacity:.5;}
-  70%{r:22;stroke-opacity:0;}
-  100%{r:22;stroke-opacity:0;}
+  70%{r:24;stroke-opacity:0;}
+  100%{r:24;stroke-opacity:0;}
 }
 
 /* ============ scene B: the tree ============ */
-.tree-link,.tree-stem{fill:none;stroke-width:1.5;opacity:.4;}
-.tree-link.lit,.tree-stem.lit{opacity:1;stroke-width:2.4;}
-.tree-link.dim,.tree-stem.dim{opacity:.18;}
+.tree-link,.tree-stem{fill:none;stroke-width:1.7;opacity:.55;transition:opacity .25s ease;}
+.tree-link.lit,.tree-stem.lit{opacity:1;stroke-width:2.6;}
+.tree-link.dim,.tree-stem.dim{opacity:.3;}
 
-.tree-label{font-size:15px;line-height:1.25;fill-opacity:.78;pointer-events:none;}
-.tree-node.lead .tree-label{font-size:17px;font-weight:700;}
+/* wide invisible strokes that make the links themselves hoverable */
+.tree-hitpath{
+  fill:none;stroke:transparent;stroke-width:18;
+  pointer-events:stroke;cursor:pointer;
+}
+
+.tree-node{cursor:pointer;outline:none;}
+.tree-hit{fill:transparent;}
+.tree-node:hover .tree-hit{fill:rgba(37,88,98,.06);}
+.tree-label{
+  font-size:17.5px;line-height:1.25;fill-opacity:.92;pointer-events:none;
+  transition:fill-opacity .25s ease;
+}
+.tree-node.lead .tree-label{font-size:20px;font-weight:700;}
 .tree-node .tree-label{font-weight:600;}
 .tree-node.lit .tree-label{fill-opacity:1;}
-.tree-node.dim .tree-label{fill-opacity:.3;}
-/* labels ease between states; link/stem geometry is scrubbed directly */
-.tree-label{transition:fill-opacity .25s ease;}
-.tree-stem{transition:opacity .25s ease;}
+.tree-node.dim .tree-label{fill-opacity:.55;}
 
-/* the spotlight lens (spot variant) */
-.jz-halo{fill-opacity:.07;}
+/* the picked node — the descent the next section analyses (click to set) */
+.tree-node.picked .tree-hit{stroke-width:1.5;stroke-dasharray:4 3;}
+.tree-node.side-demand.picked .tree-hit{stroke:#1d4b54;fill:rgba(29,75,84,.05);}
+.tree-node.side-supply.picked .tree-hit{stroke:#b8431f;fill:rgba(184,67,31,.05);}
 
-/* ============ caption card ============ */
-.fig-detail{
-  background:var(--teal-tint);border-radius:12px;padding:10px 18px;
-  max-width:1240px;
-  display:flex;flex-direction:column;gap:4px;justify-content:center;
+/* "where we think you are": highlighter underlay + badge on the default path */
+.tree-home{
+  fill:none;stroke-width:11;opacity:.15;
+  stroke-linecap:round;stroke-linejoin:round;
 }
-.jz-cardrow{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;}
+.jz-youare text{
+  font-size:13px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;fill:#fff;
+}
+
+/* ============ the rail minimap (always expanded) ============ */
+.jz-mini{
+  width:100%;
+  background:rgba(255,255,255,.95);border:1px solid var(--border);
+  border-radius:10px;padding:8px;box-shadow:var(--shadow-sm);
+  opacity:0;transition:opacity .35s ease;
+}
+.jz-mini.show{opacity:1;}
+.jz-mini svg{width:100%;height:auto;display:block;}
+.jz-mini-quad{
+  fill-opacity:.07;stroke-opacity:0;stroke-width:2;
+  transition:fill-opacity .2s ease, stroke-opacity .2s ease;
+}
+.jz-mini-quad.place{stroke-opacity:.4;fill-opacity:.13;}
+.jz-mini-quad.hl{fill-opacity:.3;stroke-opacity:.85;}
+.jz-mini-axis{stroke:var(--teal);stroke-width:1.5;}
+.jz-mini-shock{font-size:13px;font-weight:700;}
+.jz-mini-sub{font-size:11px;fill:var(--ink-soft);}
+.jz-mini-msa{fill:#fff;stroke:#5b686d;stroke-width:2.5;}
+.jz-mini-place{fill:#1a2226;stroke:#fff;stroke-width:2;}
+.jz-mini-dotlabel{
+  font-size:13.5px;font-weight:700;fill:#1a2226;
+  paint-order:stroke;stroke:#fff;stroke-width:3px;
+}
+
+/* ============ rail captions ============ */
+.jz-rail{
+  width:330px;flex:0 0 330px;min-height:0;
+  display:flex;flex-direction:column;gap:16px;padding-top:6px;
+  overflow:hidden;
+}
+.jz-railtext{display:flex;flex-direction:column;gap:7px;}
+.jz-cap-kickrow{display:flex;align-items:center;justify-content:space-between;gap:12px;}
 .fig-kicker{
-  font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--teal);
+  font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--teal);
 }
+.jz-dots{display:inline-flex;gap:5px;}
+.jz-dots i{
+  width:7px;height:7px;border-radius:50%;
+  border:1.5px solid var(--border-strong);background:#fff;
+}
+.jz-dots i.done{background:var(--border-strong);}
+.jz-dots i.on{background:var(--orange);border-color:var(--orange);}
+.jz-cap-title{font-size:19px;font-weight:700;color:var(--ink);margin-top:2px;}
+.jz-cap-body{font-size:16px;line-height:25px;color:#000;}
+.jz-cap-tests{font-style:italic;color:var(--ink-soft);font-size:14.5px;}
 .fig-trail{
-  display:flex;flex-wrap:wrap;align-items:center;gap:6px;
-  font-size:11.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;
+  display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:2px;
+  font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;
 }
 .fig-trail b{color:var(--border-strong);font-weight:400;}
-.fig-detail-body{font-size:13.5px;line-height:20px;color:#000;}
-.jz-hint{font-size:12px;font-style:italic;color:var(--ink-soft);}
+
+/* the rail's "next section" pointer — renamed live by the picked branch */
+.jz-next{
+  margin-top:auto;display:flex;flex-direction:column;gap:4px;align-items:flex-start;
+  border-top:1px solid var(--border);padding-top:12px;
+  opacity:0;transition:opacity .35s ease;
+}
+.jz-next.show{opacity:1;}
+.jz-next-k{
+  font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--ink-soft);
+}
+.jz-next-name{font-size:17px;font-weight:700;}
+.jz-next .ph{font-size:12.5px;}
 
 /* bracketed prototype placeholder text */
 .ph{
   font-style:italic;color:var(--ink-soft);
   border-bottom:1px dashed var(--border-strong);
 }
+
+/* ============ the branch-analysis page (empty; named by the picked branch) ============ */
+.ba-body{
+  flex:1;min-height:0;display:flex;gap:36px;align-items:stretch;
+  max-width:1280px;margin-top:14px;
+}
+.ba-body .placeholder-frame{flex:1;margin-top:0;max-width:none;}
+.ba-context{
+  width:400px;flex:0 0 400px;align-self:flex-start;
+  display:flex;flex-direction:column;gap:12px;
+  background:#fff;border:1px solid var(--border);border-radius:12px;
+  padding:18px 20px 16px;box-shadow:var(--shadow-sm);
+}
+.ba-kicker{
+  font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--ink-soft);
+}
+.ba-mini{width:100%;height:auto;display:block;}
+.ba-link{fill:none;stroke-width:1.3;}
+.ba-link.on{stroke-width:2.4;}
+.ba-lab{font-size:10.5px;font-weight:700;}
+.ba-lab.root{fill:var(--ink-soft);font-weight:600;letter-spacing:.4px;}
+.ba-here-ring{fill:none;stroke-width:1.6;}
+.ba-here-chip{
+  color:#fff;font-size:9.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+  border-radius:9px;padding:3px 9px;
+}
+.ba-note{font-size:13px;line-height:20px;}

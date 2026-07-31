@@ -8,6 +8,7 @@ import { OverviewSection } from "./pages/OverviewSection";
 import { ExportBasketPage, ExportComplexityPage } from "./pages/ExportPages";
 import { PracticePage } from "./pages/PracticePage";
 import { ConstraintScrolly } from "./pages/ConstraintScrolly";
+import { BranchAnalysisPage } from "./pages/BranchAnalysisPage";
 
 interface ToolViewProps {
   active: boolean;
@@ -25,6 +26,9 @@ interface ToolViewProps {
   currentPageId: string | null;
   onPageInView: (pageId: string) => void;
   onSavePractice: (text: string) => void;
+  /** the descent picked on the diagnostic tree (ids below the root) */
+  branchPath: string[];
+  onSelectBranch: (path: string[]) => void;
 }
 
 export function ToolView({
@@ -43,9 +47,12 @@ export function ToolView({
   currentPageId,
   onPageInView,
   onSavePractice,
+  branchPath,
+  onSelectBranch,
 }: ToolViewProps) {
   const pagesRef = useRef<HTMLElement>(null);
   const cityShort = cityShortName(city);
+  const branchSide = branchPath[0] === "demand" ? ("demand" as const) : ("supply" as const);
 
   /* scroll spy: tracks the page in view for the rail + journey, and toggles
      .inview on sections so their entrance animations re-trigger */
@@ -83,7 +90,7 @@ export function ToolView({
       />
 
       <div className="tool-body" style={explainersOpen ? { display: "none" } : undefined}>
-        <Rail currentPageId={currentPageId} onGoTo={onGoTo} />
+        <Rail currentPageId={currentPageId} onGoTo={onGoTo} branchSide={branchSide} />
 
         <main
           className="pages"
@@ -113,7 +120,13 @@ export function ToolView({
           <ExportComplexityPage />
           <PracticePage onSave={onSavePractice} />
 
-          <ConstraintScrolly cityShort={cityShort} />
+          <ConstraintScrolly
+            cityShort={cityShort}
+            selectedPath={branchPath}
+            onSelectPath={onSelectBranch}
+          />
+
+          <BranchAnalysisPage cityShort={cityShort} branchPath={branchPath} />
 
           {/* Levers for Change (empty for now) */}
           <section className="page" id="page-levers"></section>

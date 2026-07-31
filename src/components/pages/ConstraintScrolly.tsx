@@ -4,6 +4,7 @@ import "d3-transition";
 import { easeCubicInOut } from "d3-ease";
 import { stratify, tree as d3tree, type HierarchyNode } from "d3-hierarchy";
 import {
+  PLACE_QUAD,
   QUADRANTS,
   TREE_NODES,
   TREE_SIDE_COLOR,
@@ -11,61 +12,98 @@ import {
   type TreeNodeData,
   type TreeSide,
 } from "../../data/figures";
+import { branchSectionName } from "../../data/content";
 import { wrapText } from "../../lib/wrapText";
 
-/* The two City Constraints pages merged into one scroll-driven sequence: a
-   sticky stage holds both scenes — the quadrant chart ("Where is your
-   constraint?") and the decision tree ("How we diagnose the constraint") —
-   and scrolling scrubs the transition between them. Every frame is a pure
-   function of scroll progress, so scrolling back rewinds the animation.
-   Invisible anchor sections keep the rail's two steps working. */
+/* The two City Constraints pages as one sticky, STEP-driven sequence.
+   Crossing a scroll boundary triggers a timed transition to the next phase
+   (rather than scrubbing a continuous animation), which keeps the scroll
+   track short:
+
+     step 0  the pizza chart fades in, quadrants labeled
+     step 1  + the MSA dot (continuity with the previous section)
+     step 2  + the place dot — its quadrant picks the fork in the tree
+     step 3  chart docks to the rail minimap; the FULL tree draws itself in,
+             arrows flowing top to bottom, labels surfacing as they connect
+     step 4  the default path lights up — "where we think you are"
+
+   From step 3 on, hovering any node OR LINK explains it in the rail and
+   reflects it on the always-expanded minimap; CLICKING a node picks the
+   descent the next step analyses (default: the data-driven read), which
+   renames that step Demand/Supply side analysis in the side nav. Layout:
+   the narrative and the minimap live in a right rail; the stage keeps the
+   rest. */
 
 const W = 1180;
 const H = 640;
 
 /* scene A: the chart square, centred on the stage */
-const CQ = { cx: W / 2, cy: 316, r: 270 };
+const CQ = { cx: W / 2, cy: 316, r: 268 };
 
 /* scene B: the tidy tree */
 const TM = { left: 60, top: 36 };
 const T_W = 1060;
 const T_H = 516;
-const LABEL_W = 176;
-const ROOT_LABEL_W = 520;
+const LABEL_W = 215;
+const ROOT_LABEL_W = 620;
 const BUS_DROP = 26;
 
-/* dock variant: where the minimap lands and how small it gets */
-const DOCK = { k: 0.22, x: 6, y: 2 };
+const STEPS = 5;
 
-/* camera + spotlight variants */
-const CAM_SCALE = 1.85;
-const SPOT_RADIUS = 150;
-const SPOT_BOOST = 1.1;
+/* where the big chart flies when it docks (toward the rail minimap) */
+const DOCK = { x: W - 44, y: 140 };
 
-type Node = HierarchyNode<TreeNodeData> & { x: number; y: number };
-type Variant = "dock" | "fold" | "dot" | "camera" | "spot";
-type Phase = "chart" | "tree";
+/* intro reveal timing: per-depth wave of drawn arrows + surfacing labels */
+const INTRO_BASE = 300;
+const INTRO_LEVEL = 480;
+const INTRO_MS = 2500;
 
-const VARIANTS: { id: Variant; label: string; hint: string }[] = [
-  { id: "dock", label: "Dock & trace", hint: "The chart tucks into a corner; the tree traces the path." },
-  { id: "fold", label: "Quadrants fold", hint: "The quadrants fold into the branch each one argues for." },
-  { id: "dot", label: "Follow the dot", hint: "Your city's dot walks off the chart and down the tree." },
-  { id: "camera", label: "Camera walk", hint: "The camera dives into your quadrant, walks the path close-up, then pulls back to the full tree." },
-  { id: "spot", label: "Spotlight", hint: "The full tree never leaves the screen; a reading lens enlarges each step as it passes." },
-];
+/* the two dots: sample values match the indicator tables in content.ts */
+const MSA_SPOT: [number, number] = [0.38, 0.82];
+const PLACE_SPOT: [number, number] = [-0.72, 0.82];
+const MSA_STATS = "+0.4%/yr pop · +4.5%/yr wages";
+const PLACE_STATS = "−0.8%/yr pop · +5.8%/yr wages";
 
-/** where the heading/card flip from chart-talk to tree-talk, per variant */
-const PHASE_SPLIT: Record<Variant, number> = {
-  dock: 0.38,
-  fold: 0.44,
-  dot: 0.3,
-  camera: 0.18,
-  spot: 0.18,
+/** tree side → the minimap quadrants it corresponds to */
+const SIDE_QUADS: Record<TreeSide, QuadrantDef["id"][]> = {
+  root: [],
+  demand: ["q2", "q3"],
+  supply: ["q1", "q4"],
 };
 
+type Node = HierarchyNode<TreeNodeData> & { x: number; y: number };
+type Phase = "chart" | "tree";
+
+const STEP_COPY: { kicker: string; body: string }[] = [
+  {
+    kicker: "The pizza chart",
+    body: "[how to read it: each quadrant pairs a population move with a wage move, vs the average city]",
+  },
+  {
+    kicker: "Your metro area",
+    body: "[the {city} MSA lands in positive demand shock — population ↑, wages ↑]",
+  },
+  {
+    kicker: "Your place",
+    body: "[{city} itself: population ↓, wages ↑ — negative supply shock. This quadrant picks the tree fork]",
+  },
+  {
+    kicker: "The diagnostic tree",
+    body: "The growth question branches into demand and supply. Hover any node or link to read it.",
+  },
+  {
+    kicker: "Where we think you are",
+    body: "[based on where {city} sits on the chart, the default read is housing — ___ tests to confirm]",
+  },
+];
+
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
-const seg = (p: number, a: number, b: number) => clamp01((p - a) / (b - a));
-const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+
+/** first sentence only — captions run at full text size, so keep them short */
+function firstSentence(s: string) {
+  const i = s.indexOf(". ");
+  return i > 0 ? s.slice(0, i + 1) : s;
+}
 
 /** which side of the tree a node hangs off — depth-1 ancestor decides */
 function sideOf(n: HierarchyNode<TreeNodeData>): TreeSide {
@@ -77,20 +115,108 @@ function displayTitle(n: Node) {
   return n.depth === 0 ? "The growth question" : n.data.title;
 }
 
-export function ConstraintScrolly({ cityShort }: { cityShort: string }) {
+/* ---------- the always-expanded pizza minimap ---------- */
+
+function MiniMap({
+  visible,
+  hlSide,
+  cityShort,
+}: {
+  visible: boolean;
+  hlSide: TreeSide | null;
+  cityShort: string;
+}) {
+  const S = 320;
+  const c = S / 2;
+  const r = S / 2 - 12;
+  const mx = (v: number) => c + v * r;
+  const my = (v: number) => c - v * r;
+  const hl = hlSide ? SIDE_QUADS[hlSide] : [];
+  return (
+    <div className={"jz-mini" + (visible ? " show" : "")} aria-hidden={!visible}>
+      <svg viewBox={`0 0 ${S} ${S - 14}`}>
+        {QUADRANTS.map((q) => (
+          <g key={q.id}>
+            <rect
+              className={
+                "jz-mini-quad" +
+                (hl.includes(q.id) ? " hl" : "") +
+                (q.id === PLACE_QUAD.id ? " place" : "")
+              }
+              x={q.dx === 1 ? mx(0) + 4 : mx(-1)}
+              y={q.dy === 1 ? my(1) : my(0) + 4}
+              width={r - 4}
+              height={r - 4}
+              rx={10}
+              fill={TREE_SIDE_COLOR[q.side]}
+              stroke={TREE_SIDE_COLOR[q.side]}
+            />
+            <text
+              className="jz-mini-shock"
+              x={mx(q.dx * 0.5)}
+              y={my(q.dy * 0.5) - 2}
+              textAnchor="middle"
+              fill={TREE_SIDE_COLOR[q.side]}
+            >
+              {q.shock}
+            </text>
+            <text className="jz-mini-sub" x={mx(q.dx * 0.5)} y={my(q.dy * 0.5) + 16} textAnchor="middle">
+              {q.sub}
+            </text>
+          </g>
+        ))}
+        <line className="jz-mini-axis" x1={mx(-1)} y1={my(0)} x2={mx(1)} y2={my(0)} />
+        <line className="jz-mini-axis" x1={mx(0)} y1={my(-1)} x2={mx(0)} y2={my(1)} />
+        {/* MSA ring + place dot */}
+        <circle className="jz-mini-msa" cx={mx(MSA_SPOT[0])} cy={my(MSA_SPOT[1])} r={7} />
+        <text className="jz-mini-dotlabel" x={mx(MSA_SPOT[0]) + 11} y={my(MSA_SPOT[1]) + 4}>
+          {cityShort} MSA
+        </text>
+        <circle className="jz-mini-place" cx={mx(PLACE_SPOT[0])} cy={my(PLACE_SPOT[1])} r={7} />
+        <text className="jz-mini-dotlabel" x={mx(PLACE_SPOT[0]) + 11} y={my(PLACE_SPOT[1]) + 4}>
+          {cityShort}
+        </text>
+      </svg>
+    </div>
+  );
+}
+
+/* ------------------------------ the scrolly ------------------------------ */
+
+export function ConstraintScrolly({
+  cityShort,
+  selectedPath,
+  onSelectPath,
+}: {
+  cityShort: string;
+  /** the descent picked for the next section (ids below the root) */
+  selectedPath: string[];
+  onSelectPath: (path: string[]) => void;
+}) {
   const trackRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const scene = useRef<any>(null);
-  const renderRef = useRef<(p: number) => void>(() => {});
-  const pRef = useRef(0);
+  const timers = useRef<number[]>([]);
 
-  const [variant, setVariant] = useState<Variant>("dock");
-  const [phase, setPhase] = useState<Phase>("chart");
-  const [quad, setQuad] = useState<QuadrantDef["id"]>("q1");
-  const variantRef = useRef(variant);
-  variantRef.current = variant;
-  const quadRef = useRef(quad);
-  quadRef.current = quad;
+  const [step, setStep] = useState(0);
+  const [hover, setHover] = useState<string | null>(null);
+  const stepRef = useRef(step);
+  stepRef.current = step;
+  const prevStepRef = useRef(0);
+
+  /* text is measured at draw time (badge pill, hit rects, link bounds) — once
+     the webfont finishes loading, redraw so nothing is sized to the fallback
+     font's metrics */
+  const [fontTick, setFontTick] = useState(0);
+  useEffect(() => {
+    let on = true;
+    (document as { fonts?: FontFaceSet }).fonts?.ready.then(() => {
+      if (on) setFontTick(1);
+    });
+    return () => {
+      on = false;
+    };
+  }, []);
 
   const root = useMemo(() => {
     const built = stratify<TreeNodeData>()
@@ -107,9 +233,275 @@ export function ConstraintScrolly({ cityShort }: { cityShort: string }) {
     return m;
   }, [root]);
 
-  const qDef = QUADRANTS.find((q) => q.id === quad)!;
+  const clearTimers = () => {
+    timers.current.forEach((t) => window.clearTimeout(t));
+    timers.current = [];
+  };
+  const later = (fn: () => void, ms: number) => {
+    timers.current.push(window.setTimeout(fn, ms));
+  };
 
-  /* ---------- build both scenes, then define the scrubbed frame ---------- */
+  /* ---------- step + hover appliers (imperative, over the drawn scene) ---------- */
+
+  const applyStepRef = useRef<(s: number, animate: boolean) => void>(() => {});
+  applyStepRef.current = (s, animate) => {
+    const sc = scene.current;
+    if (!sc) return;
+    /* test hook: the screenshot harness sets this to land on final states */
+    if (document.documentElement.dataset.jzInstant === "1") animate = false;
+    clearTimers();
+    const T = (sel: any) =>
+      animate ? sel.transition().duration(600).ease(easeCubicInOut) : sel.interrupt();
+
+    /* chart: full-size through step 2, docked away from step 3 on */
+    if (s <= 2) {
+      T(sc.gChart).attr("transform", "translate(0,0) scale(1)").attr("opacity", 1);
+    } else {
+      const k = 0.12;
+      T(sc.gChart)
+        .attr("transform", `translate(${DOCK.x - k * CQ.cx},${DOCK.y - k * CQ.cy}) scale(${k})`)
+        .attr("opacity", 0);
+    }
+    T(sc.msaDot).attr("opacity", s >= 1 ? 1 : 0);
+    T(sc.placeDot).attr("opacity", s >= 2 ? 1 : 0);
+    sc.placeDot.classed("pulse", s === 2);
+    sc.quads.classed("sel", (d: QuadrantDef) => s >= 2 && d.id === PLACE_QUAD.id);
+
+    /* tree */
+    const entering = s >= 3 && prevStepRef.current <= 2 && animate;
+    sc.gTree.style("pointer-events", s >= 3 ? "auto" : "none");
+
+    /* base link/node classes: idle for the whole tree */
+    const idleTree = () => {
+      sc.links
+        .classed("lit", false)
+        .classed("dim", false)
+        .attr("stroke-dasharray", null)
+        .attr("stroke-dashoffset", null)
+        .attr("marker-end", (d: Node) => `url(#jz-arrow-${sideOf(d)})`);
+      sc.stems.classed("lit", false).classed("dim", false);
+      sc.nodes.classed("lit", false).classed("dim", false);
+    };
+    /* clear any per-element intro state left behind */
+    const normalize = () => {
+      sc.nodes
+        .interrupt()
+        .attr("opacity", 1)
+        .attr("transform", (d: Node) => `translate(${d.x},${d.y})`);
+      sc.links.interrupt().attr("opacity", 1);
+      sc.stems.interrupt().attr("opacity", 1);
+    };
+
+    if (entering) {
+      /* progressive reveal: arrows draw themselves depth by depth, top to
+         bottom, and each label surfaces as its arrow arrives */
+      sc.gTree.interrupt().attr("opacity", 1);
+      idleTree();
+      /* labels: root first, then each level as its links complete */
+      sc.nodes
+        .interrupt()
+        .attr("opacity", 0)
+        .attr("transform", (d: Node) => `translate(${d.x},${d.y - 8})`)
+        .transition()
+        .duration(380)
+        .delay((d: Node) =>
+          d.depth === 0 ? 80 : INTRO_BASE + (d.depth - 1) * INTRO_LEVEL + 230,
+        )
+        .ease(easeCubicInOut)
+        .attr("opacity", 1)
+        .attr("transform", (d: Node) => `translate(${d.x},${d.y})`);
+      /* links: dash-drawn in a wave, one depth level at a time */
+      sc.links
+        .interrupt()
+        .attr("opacity", 1)
+        .each(function (this: SVGPathElement, d: Node) {
+          const len = this.getTotalLength();
+          select(this)
+            .attr("marker-end", null)
+            .attr("stroke-dasharray", `${len} ${len}`)
+            .attr("stroke-dashoffset", len)
+            .transition()
+            .duration(340)
+            .delay(INTRO_BASE + (d.depth - 1) * INTRO_LEVEL)
+            .ease(easeCubicInOut)
+            .attr("stroke-dashoffset", 0)
+            .on("end", function (this: SVGPathElement) {
+              select(this)
+                .attr("stroke-dasharray", null)
+                .attr("marker-end", `url(#jz-arrow-${sideOf(d)})`);
+            });
+        });
+      /* stems: each parent's short drop draws just before its children's links */
+      sc.stems
+        .interrupt()
+        .attr("opacity", 1)
+        .each(function (this: SVGPathElement, d: Node) {
+          const len = this.getTotalLength();
+          select(this)
+            .attr("stroke-dasharray", `${len} ${len}`)
+            .attr("stroke-dashoffset", len)
+            .transition()
+            .duration(170)
+            .delay(INTRO_BASE + d.depth * INTRO_LEVEL - 170)
+            .ease(easeCubicInOut)
+            .attr("stroke-dashoffset", 0)
+            .on("end", function (this: SVGPathElement) {
+              select(this).attr("stroke-dasharray", null);
+            });
+        });
+    } else {
+      T(sc.gTree).attr("opacity", s >= 3 ? 1 : 0);
+      normalize();
+      idleTree();
+    }
+
+    /* the home marking + path emphasis, delayed until the intro settles */
+    const introMs = entering ? INTRO_MS : 0;
+    if (animate) {
+      sc.gHome
+        .transition()
+        .delay(s >= 4 ? introMs : 0)
+        .duration(600)
+        .attr("opacity", s >= 4 ? 1 : 0);
+    } else {
+      sc.gHome.interrupt().attr("opacity", s >= 4 ? 1 : 0);
+    }
+    if (s >= 4) applyPath(animate, introMs);
+
+    prevStepRef.current = s;
+  };
+
+  /** step-4 state: the default path lit; animated = links draw in sequence,
+   *  starting after `delay0` (so the tree intro can finish first) */
+  const applyPath = (animate: boolean, delay0 = 0) => {
+    const sc = scene.current;
+    if (document.documentElement.dataset.jzInstant === "1") animate = false;
+    const ids = PLACE_QUAD.path;
+    const setDims = () => {
+      sc.nodes.classed("dim", (d: Node) => d.data.id !== "root" && !ids.includes(d.data.id));
+      sc.stems.classed("dim", (d: Node) => d.data.id !== "root" && !ids.includes(d.data.id));
+      sc.links
+        .classed("dim", (d: Node) => !ids.includes(d.data.id))
+        .attr("stroke-dasharray", null)
+        .attr("stroke-dashoffset", null)
+        .attr("marker-end", (d: Node) => `url(#jz-arrow-${sideOf(d)})`);
+    };
+    if (!animate) {
+      setDims();
+      sc.nodes.classed("lit", (d: Node) => d.data.id === "root" || ids.includes(d.data.id));
+      sc.stems.classed("lit", (d: Node) => d.data.id === "root" || ids.includes(d.data.id));
+      sc.links.classed("lit", (d: Node) => ids.includes(d.data.id));
+      return;
+    }
+    /* sequential dash-draw down the path */
+    const litNode = (id: string) =>
+      sc.nodes.filter((d: Node) => d.data.id === id).classed("lit", true).classed("dim", false);
+    later(() => {
+      setDims();
+      litNode("root");
+      sc.stems.filter((d: Node) => d.data.id === "root").classed("lit", true);
+    }, delay0);
+    ids.forEach((id, i) => {
+      later(() => {
+        const sel = sc.links.filter((d: Node) => d.data.id === id);
+        const el = sel.node() as SVGPathElement | null;
+        if (!el) return;
+        const len = el.getTotalLength();
+        sc.stems.filter((d: Node) => d.data.id === id).classed("lit", true).classed("dim", false);
+        sel
+          .classed("lit", true)
+          .attr("marker-end", null)
+          .attr("stroke-dasharray", `${len} ${len}`)
+          .attr("stroke-dashoffset", len)
+          .transition()
+          .duration(360)
+          .ease(easeCubicInOut)
+          .attr("stroke-dashoffset", 0)
+          .on("end", function (this: SVGPathElement, d: Node) {
+            select(this)
+              .attr("stroke-dasharray", null)
+              .attr("marker-end", `url(#jz-arrow-${sideOf(d)})`);
+          });
+        later(() => litNode(id), 320);
+      }, delay0 + 150 + i * 450);
+    });
+  };
+
+  /** hover emphasis (steps 3+): the hovered node's route wins the stage */
+  const applyHoverRef = useRef<(id: string | null) => void>(() => {});
+  applyHoverRef.current = (id) => {
+    const sc = scene.current;
+    if (!sc || stepRef.current < 3) return;
+    if (!id) {
+      applyStepRef.current(stepRef.current, false);
+      return;
+    }
+    clearTimers();
+    const onPath = new Set(byId.get(id)!.ancestors().map((a) => a.data.id));
+    /* while another path is hovered, the "where we think you are" path keeps
+       its highlighter underlay + badge and only falls back to idle, not dim */
+    const home =
+      stepRef.current >= 4 ? new Set(["root", ...PLACE_QUAD.path]) : new Set<string>();
+    /* settle any in-flight intro animation before emphasising */
+    sc.nodes
+      .interrupt()
+      .attr("opacity", 1)
+      .attr("transform", (d: Node) => `translate(${d.x},${d.y})`);
+    sc.links.interrupt().attr("opacity", 1);
+    sc.stems.interrupt().attr("opacity", 1);
+    sc.nodes
+      .classed("lit", (d: Node) => onPath.has(d.data.id))
+      .classed("dim", (d: Node) => !onPath.has(d.data.id) && !home.has(d.data.id));
+    sc.links
+      .classed("lit", (d: Node) => onPath.has(d.data.id))
+      .classed("dim", (d: Node) => !onPath.has(d.data.id) && !home.has(d.data.id))
+      .attr("stroke-dasharray", null)
+      .attr("stroke-dashoffset", null)
+      .attr("marker-end", (d: Node) => `url(#jz-arrow-${sideOf(d)})`);
+    sc.stems
+      .classed(
+        "lit",
+        (d: Node) => onPath.has(d.data.id) && (d.children ?? []).some((c) => onPath.has(c.data.id)),
+      )
+      .classed(
+        "dim",
+        (d: Node) =>
+          !onPath.has(d.data.id) && !(d.children ?? []).some((c) => home.has(c.data.id)),
+      );
+  };
+
+  const hoverRef = useRef<(id: string | null) => void>(() => {});
+  hoverRef.current = (id) => {
+    if (stepRef.current < 3) return;
+    setHover(id);
+  };
+
+  /* clicking a node (or its link) picks the descent the next section analyses */
+  const selectedRef = useRef(selectedPath);
+  selectedRef.current = selectedPath;
+  const clickRef = useRef<(id: string) => void>(() => {});
+  clickRef.current = (id) => {
+    if (stepRef.current < 3) return;
+    const n = byId.get(id);
+    if (!n || n.depth === 0) return;
+    onSelectPath(
+      n
+        .ancestors()
+        .filter((a) => a.depth >= 1)
+        .map((a) => a.data.id)
+        .reverse(),
+    );
+  };
+  const applyPicked = () => {
+    const sel = selectedRef.current;
+    scene.current?.nodes.classed(
+      "picked",
+      (d: Node) => d.data.id === sel[sel.length - 1],
+    );
+  };
+  useEffect(applyPicked, [selectedPath]);
+
+  /* ---------- draw both scenes once ---------- */
   useEffect(() => {
     const svg = select(svgRef.current!);
     svg.selectAll("*").remove();
@@ -145,18 +537,9 @@ export function ConstraintScrolly({ cityShort }: { cityShort: string }) {
       .attr("d", "M0 0 L10 5 L0 10 z")
       .attr("fill", "var(--teal)");
 
-    /* ----- scene B: the tree ----- */
-    const gTree = svg
-      .append("g")
-      .attr("opacity", 0)
-      .style("pointer-events", "none");
+    /* ----- scene B: the tree (under the chart) ----- */
+    const gTree = svg.append("g").attr("opacity", 0).style("pointer-events", "none");
     const plot = gTree.append("g").attr("transform", `translate(${TM.left},${TM.top})`);
-    /* the spotlight lens sits under everything else in the tree */
-    const halo = plot
-      .append("circle")
-      .attr("class", "jz-halo")
-      .attr("r", SPOT_RADIUS)
-      .attr("opacity", 0);
     const gLinks = plot.append("g");
     const gNodes = plot.append("g");
 
@@ -165,8 +548,13 @@ export function ConstraintScrolly({ cityShort }: { cityShort: string }) {
       .selectAll<SVGGElement, Node>("g.tree-node")
       .data(tnodes, (d) => d.data.id)
       .join("g")
-      .attr("class", (d) => `tree-node side-${sideOf(d)}${d.depth <= 1 ? " lead" : ""} dim`)
-      .attr("transform", (d) => `translate(${d.x},${d.y})`);
+      .attr("class", (d) => `tree-node side-${sideOf(d)}${d.depth <= 1 ? " lead" : ""}`)
+      .attr("transform", (d) => `translate(${d.x},${d.y})`)
+      .on("mouseenter", (_e, d) => hoverRef.current(d.data.id))
+      .on("mouseleave", () => hoverRef.current(null))
+      .on("click", (_e, d) => clickRef.current(d.data.id));
+
+    nodes.append("rect").attr("class", "tree-hit").attr("rx", 6);
 
     nodes
       .append("text")
@@ -188,7 +576,13 @@ export function ConstraintScrolly({ cityShort }: { cityShort: string }) {
       const first = text.node()!.firstElementChild as SVGTSpanElement | null;
       if (first) first.setAttribute("dy", `${shift + 0.32}em`);
       const bb = text.node()!.getBBox();
-      bounds.set(d.data.id, { top: bb.y - 6, bottom: bb.y + bb.height + 6 });
+      select(this)
+        .select("rect.tree-hit")
+        .attr("x", bb.x - 10)
+        .attr("y", bb.y - 7)
+        .attr("width", bb.width + 20)
+        .attr("height", bb.height + 14);
+      bounds.set(d.data.id, { top: bb.y - 7, bottom: bb.y + bb.height + 7 });
     });
 
     const parents = tnodes.filter((d) => d.children?.length) as Node[];
@@ -205,7 +599,7 @@ export function ConstraintScrolly({ cityShort }: { cityShort: string }) {
       .selectAll<SVGPathElement, Node>("path.tree-stem")
       .data(parents, (d) => d.data.id)
       .join("path")
-      .attr("class", "tree-stem dim")
+      .attr("class", "tree-stem")
       .attr("stroke", (d) => TREE_SIDE_COLOR[sideOf(d)])
       .attr("d", (d) => {
         const y0 = d.y + (bounds.get(d.data.id)?.bottom ?? 0);
@@ -216,7 +610,7 @@ export function ConstraintScrolly({ cityShort }: { cityShort: string }) {
       .selectAll<SVGPathElement, Node>("path.tree-link")
       .data(tnodes.filter((d) => d.parent) as Node[], (d) => d.data.id)
       .join("path")
-      .attr("class", "tree-link dim")
+      .attr("class", "tree-link")
       .attr("stroke", (d) => TREE_SIDE_COLOR[sideOf(d)])
       .attr("marker-end", (d) => `url(#jz-arrow-${sideOf(d)})`)
       .attr("d", (d) => {
@@ -225,32 +619,80 @@ export function ConstraintScrolly({ cityShort }: { cityShort: string }) {
         return `M${p.x},${busY.get(p.data.id)} H${d.x} V${y1}`;
       });
 
-    const linkLen = new Map<string, number>();
+    /* ----- wide invisible strokes over every link and stem, so the paths
+           themselves are hoverable — hovering a link reads as hovering the
+           node it leads to (its child); a stem reads as its parent ----- */
+    const gHits = plot.append("g").attr("class", "jz-hits");
     links.each(function (d) {
-      linkLen.set(d.data.id, (this as SVGPathElement).getTotalLength());
+      gHits
+        .append("path")
+        .attr("class", "tree-hitpath")
+        .attr("d", select(this).attr("d"))
+        .on("mouseenter", () => hoverRef.current(d.data.id))
+        .on("mouseleave", () => hoverRef.current(null))
+        .on("click", () => clickRef.current(d.data.id));
+    });
+    stems.each(function (d) {
+      gHits
+        .append("path")
+        .attr("class", "tree-hitpath")
+        .attr("d", select(this).attr("d"))
+        .on("mouseenter", () => hoverRef.current(d.data.id))
+        .on("mouseleave", () => hoverRef.current(null))
+        .on("click", () => clickRef.current(d.data.id));
     });
 
-    const pos = new Map<string, { x: number; y: number }>();
-    tnodes.forEach((d) => pos.set(d.data.id, { x: d.x + TM.left, y: d.y + TM.top }));
+    /* ----- the "where we think you are" marking: a highlighter underlay on
+           the default path plus a badge at its leaf. It persists while the
+           user hovers other paths, so the data-driven read never vanishes. */
+    const gHome = plot.insert("g", ":first-child").attr("class", "jz-homeg").attr("opacity", 0);
+    const homeColor = TREE_SIDE_COLOR[PLACE_QUAD.side];
+    stems
+      .filter((d) => (d.children ?? []).some((c) => PLACE_QUAD.path.includes(c.data.id)))
+      .each(function () {
+        gHome
+          .append("path")
+          .attr("class", "tree-home")
+          .attr("stroke", homeColor)
+          .attr("d", select(this).attr("d"));
+      });
+    links
+      .filter((d) => PLACE_QUAD.path.includes(d.data.id))
+      .each(function () {
+        gHome
+          .append("path")
+          .attr("class", "tree-home")
+          .attr("stroke", homeColor)
+          .attr("d", select(this).attr("d"));
+      });
+    const leafNode = byId.get(PLACE_QUAD.path[PLACE_QUAD.path.length - 1])!;
+    const badge = gHome
+      .append("g")
+      .attr("class", "jz-youare")
+      .attr("transform", `translate(${leafNode.x},${leafNode.y + 44})`);
+    const badgeText = badge
+      .append("text")
+      .attr("text-anchor", "middle")
+      .attr("dy", "0.34em")
+      .text("↑ where we think you are");
+    const bbb = badgeText.node()!.getBBox();
+    badge
+      .insert("rect", ":first-child")
+      .attr("x", bbb.x - 16)
+      .attr("y", bbb.y - 9)
+      .attr("width", bbb.width + 32)
+      .attr("height", bbb.height + 18)
+      .attr("rx", 14)
+      .attr("fill", homeColor);
 
-    /* ----- scene A: the quadrant chart, on top ----- */
-    const gChart = svg.append("g").attr("class", "jz-chart");
+    /* ----- scene A: the pizza chart, on top ----- */
+    const gChart = svg.append("g").attr("class", "jz-chart").attr("opacity", 0);
 
     const quads = gChart
       .selectAll<SVGGElement, QuadrantDef>("g.jz-quad")
       .data(QUADRANTS)
       .join("g")
-      .attr("class", "jz-quad")
-      .attr("tabindex", 0)
-      .attr("role", "button")
-      .attr("aria-label", (d) => d.shock)
-      .on("click", (_e, d) => clickQuadRef.current(d.id))
-      .on("keydown", (e: KeyboardEvent, d) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          clickQuadRef.current(d.id);
-        }
-      });
+      .attr("class", "jz-quad");
 
     quads
       .append("rect")
@@ -266,7 +708,7 @@ export function ConstraintScrolly({ cityShort }: { cityShort: string }) {
       .append("text")
       .attr("class", "jz-shock")
       .attr("x", (d) => cx(d.dx * 0.5))
-      .attr("y", (d) => cy(d.dy * 0.5) - 16)
+      .attr("y", (d) => cy(d.dy * 0.5) - 14)
       .attr("text-anchor", "middle")
       .attr("fill", (d) => TREE_SIDE_COLOR[d.side])
       .text((d) => d.shock);
@@ -274,14 +716,14 @@ export function ConstraintScrolly({ cityShort }: { cityShort: string }) {
       .append("text")
       .attr("class", "jz-sub")
       .attr("x", (d) => cx(d.dx * 0.5))
-      .attr("y", (d) => cy(d.dy * 0.5) + 8)
+      .attr("y", (d) => cy(d.dy * 0.5) + 10)
       .attr("text-anchor", "middle")
       .text((d) => d.sub);
     quads
       .append("text")
       .attr("class", "jz-tag")
       .attr("x", (d) => cx(d.dx * 0.5))
-      .attr("y", (d) => cy(d.dy * 0.5) + 31)
+      .attr("y", (d) => cy(d.dy * 0.5) + 33)
       .attr("text-anchor", "middle")
       .attr("fill", (d) => TREE_SIDE_COLOR[d.side])
       .text((d) => `→ ${d.side === "demand" ? "labor demand" : "labor supply"} branch`);
@@ -317,239 +759,58 @@ export function ConstraintScrolly({ cityShort }: { cityShort: string }) {
       .attr("text-anchor", "middle")
       .text("Δ nominal wages ↑");
 
-    /* the city dot: rides inside the chart for dock/fold/camera/spot, walks
-       the stage on its own layer for the dot variant */
-    const q1 = QUADRANTS[0];
-    const dot = (variant === "dot" ? svg : gChart)
+    /* the MSA ring and the place dot (children of the chart, so they dock
+       and fade with it) */
+    const msaDot = gChart
       .append("g")
-      .attr("class", "jz-dot")
-      .attr("transform", `translate(${cx(q1.spot[0])},${cy(q1.spot[1])})`);
-    dot.append("circle").attr("class", "halo").attr("r", 9);
-    dot.append("circle").attr("class", "core").attr("r", 8);
-    dot.append("text").attr("x", 15).attr("y", 5).text(cityShort);
+      .attr("class", "jz-msadot")
+      .attr("opacity", 0)
+      .attr("transform", `translate(${cx(MSA_SPOT[0])},${cy(MSA_SPOT[1])})`);
+    msaDot.append("circle").attr("class", "ring").attr("r", 9);
+    msaDot.append("text").attr("x", 16).attr("y", -2).text(`${cityShort} MSA`);
+    msaDot.append("text").attr("class", "stats").attr("x", 16).attr("y", 16).text(MSA_STATS);
 
-    scene.current = {
-      gChart,
-      gTree,
-      gAxes,
-      quads,
-      dot,
-      halo,
-      nodes,
-      links,
-      stems,
-      pos,
-      linkLen,
-      cx,
-      cy,
-    };
+    const placeDot = gChart
+      .append("g")
+      .attr("class", "jz-placedot")
+      .attr("opacity", 0)
+      .attr("transform", `translate(${cx(PLACE_SPOT[0])},${cy(PLACE_SPOT[1])})`);
+    placeDot.append("circle").attr("class", "halo").attr("r", 9);
+    placeDot.append("circle").attr("class", "core").attr("r", 8);
+    placeDot.append("text").attr("x", 16).attr("y", -2).text(cityShort);
+    placeDot.append("text").attr("class", "stats").attr("x", 16).attr("y", 16).text(PLACE_STATS);
 
-    /* ----- the scrubbed frame: everything is a function of p ----- */
-    renderRef.current = (p: number) => {
-      const sc = scene.current;
-      if (!sc) return;
-      const q = QUADRANTS.find((x) => x.id === quadRef.current)!;
-      const ids = q.path;
-      const n = ids.length;
-      const stops = [
-        sc.pos.get("root")!,
-        ...ids.map((id: string) => sc.pos.get(id)!),
-      ] as { x: number; y: number }[];
+    scene.current = { gChart, gTree, gAxes, quads, msaDot, placeDot, nodes, links, stems, gHome };
+    applyPicked();
 
-      let chartT = "translate(0,0) scale(1)";
-      let chartO = 1;
-      let axesO = 1;
-      let dotO = 1;
-      let treeO = 0;
-      let treeT = "translate(0,0) scale(1)";
-      let chartPE = true;
-      let dotPos = { x: sc.cx(q.spot[0]), y: sc.cy(q.spot[1]) };
-      let pulse = false;
-      let quadFrame: ((d: QuadrantDef, el: SVGGElement) => void) | null = null;
-      let focus: { x: number; y: number } | null = null;
-      let focusBoost = 0;
-      let haloO = 0;
-      let linkProg: (j: number) => number = () => 0;
-      let rootLit = false;
-
-      if (variant === "dock") {
-        const t = easeCubicInOut(seg(p, 0.02, 0.32));
-        const ox = CQ.cx - CQ.r - 66;
-        const oy = CQ.cy - CQ.r - 30;
-        const k = lerp(1, DOCK.k, t);
-        chartT = `translate(${lerp(ox, DOCK.x, t) - k * ox},${lerp(oy, DOCK.y, t) - k * oy}) scale(${k})`;
-        treeO = seg(p, 0.22, 0.42);
-        const dr = seg(p, 0.4, 0.96);
-        linkProg = (j) => clamp01(dr * n - j);
-        rootLit = dr > 0.02;
-      } else if (variant === "fold") {
-        axesO = 1 - seg(p, 0.02, 0.18);
-        dotO = axesO;
-        /* the tree surfaces first, so the panels land on visible branches */
-        const t = easeCubicInOut(seg(p, 0.08, 0.5));
-        quadFrame = (d, el) => {
-          const c = { x: sc.cx(d.dx * 0.5), y: sc.cy(d.dy * 0.5) };
-          const target = sc.pos.get(d.side)!;
-          const k = lerp(1, 0.1, t);
-          const tx = lerp(c.x, target.x, t) - k * c.x;
-          const ty = lerp(c.y, target.y - 34, t) - k * c.y;
-          const o = d.id === q.id ? 1 - seg(p, 0.5, 0.6) : 1 - seg(p, 0.38, 0.5);
-          select(el).attr("transform", `translate(${tx},${ty}) scale(${k})`).attr("opacity", o);
-        };
-        chartPE = p < 0.15;
-        treeO = seg(p, 0.12, 0.32);
-        const dr = seg(p, 0.55, 0.96);
-        linkProg = (j) => clamp01(dr * n - j);
-        rootLit = dr > 0.02;
-      } else if (variant === "dot") {
-        chartO = 1 - seg(p, 0.03, 0.22);
-        chartPE = chartO > 0.3;
-        treeO = seg(p, 0.1, 0.3);
-        const walk = [
-          dotPos,
-          { x: stops[0].x, y: stops[0].y - 28 },
-          ...stops.slice(1).map((s) => ({ x: s.x, y: s.y - 26 })),
-        ];
-        const legs = walk.length - 1;
-        const f = seg(p, 0.12, 0.9) * legs;
-        const i = Math.min(Math.floor(f), legs - 1);
-        const local = easeCubicInOut(clamp01(f - i));
-        dotPos = {
-          x: lerp(walk[i].x, walk[i + 1].x, local),
-          y: lerp(walk[i].y, walk[i + 1].y, local),
-        };
-        pulse = f >= legs - 0.001;
-        linkProg = (j) => clamp01(f - (j + 1));
-        rootLit = f >= 1;
-      } else if (variant === "camera") {
-        /* dive into the chosen quadrant, walk the path zoomed-in, pull back */
-        const qc = { x: sc.cx(q.dx * 0.5), y: sc.cy(q.dy * 0.5) };
-        const zi = easeCubicInOut(seg(p, 0.04, 0.18));
-        const s0 = lerp(1, 2.4, zi);
-        chartT = `translate(${qc.x - s0 * qc.x},${qc.y - s0 * qc.y}) scale(${s0})`;
-        chartO = 1 - seg(p, 0.1, 0.2);
-        chartPE = p < 0.08;
-        treeO = seg(p, 0.12, 0.22);
-        const m = stops.length - 1;
-        const f = seg(p, 0.2, 0.72) * m;
-        const i = Math.min(Math.floor(f), m - 1);
-        const local = easeCubicInOut(clamp01(f - i));
-        let center = {
-          x: lerp(stops[i].x, stops[i + 1].x, local),
-          y: lerp(stops[i].y, stops[i + 1].y, local),
-        };
-        let s = CAM_SCALE;
-        const pb = easeCubicInOut(seg(p, 0.76, 0.96));
-        if (pb > 0) {
-          center = { x: lerp(center.x, W / 2, pb), y: lerp(center.y, H / 2, pb) };
-          s = lerp(CAM_SCALE, 1, pb);
+    /* entry: fade the chart in the first time the stage is on screen */
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          applyStepRef.current(stepRef.current, true);
+          io.disconnect();
         }
-        treeT = `translate(${W / 2 - s * center.x},${H / 2 - s * center.y}) scale(${s})`;
-        linkProg = (j) => clamp01(f - j);
-        rootLit = p > 0.19;
-      } else {
-        /* spotlight: the whole tree stays on screen; a lens walks the path */
-        chartO = 1 - seg(p, 0.04, 0.18);
-        chartPE = chartO > 0.3;
-        treeO = seg(p, 0.08, 0.2);
-        const m = stops.length - 1;
-        const f = seg(p, 0.2, 0.88) * m;
-        const i = Math.min(Math.floor(f), m - 1);
-        const local = easeCubicInOut(clamp01(f - i));
-        focus = {
-          x: lerp(stops[i].x, stops[i + 1].x, local),
-          y: lerp(stops[i].y, stops[i + 1].y, local),
-        };
-        const settle = easeCubicInOut(seg(p, 0.9, 1));
-        focusBoost = SPOT_BOOST * (1 - settle);
-        haloO = treeO * (1 - settle) * 0.9;
-        linkProg = (j) => clamp01(f - j);
-        rootLit = p > 0.19;
-      }
-
-      /* ---- apply the frame ---- */
-      sc.gChart
-        .attr("transform", chartT)
-        .attr("opacity", chartO)
-        .style("pointer-events", chartPE ? null : "none");
-      sc.gAxes.attr("opacity", axesO);
-      sc.gTree.attr("transform", treeT).attr("opacity", treeO);
-
-      sc.quads.each(function (this: SVGGElement, d: QuadrantDef) {
-        if (quadFrame) quadFrame(d, this);
-        else select(this).attr("transform", "translate(0,0) scale(1)").attr("opacity", 1);
-      });
-      sc.quads.classed("sel", (d: QuadrantDef) => d.id === quadRef.current);
-
-      sc.dot
-        .attr("transform", `translate(${dotPos.x},${dotPos.y})`)
-        .attr("opacity", variant === "fold" ? dotO : 1)
-        .classed("pulse", pulse);
-
-      sc.halo
-        .attr("cx", focus ? focus.x - TM.left : -500)
-        .attr("cy", focus ? focus.y - TM.top : -500)
-        .attr("fill", TREE_SIDE_COLOR[q.side])
-        .attr("opacity", haloO);
-
-      sc.links.each(function (this: SVGPathElement, d: Node) {
-        const j = ids.indexOf(d.data.id);
-        const el = select(this);
-        if (j < 0) {
-          el.classed("lit", false)
-            .classed("dim", true)
-            .attr("stroke-dasharray", null)
-            .attr("stroke-dashoffset", null)
-            .attr("marker-end", `url(#jz-arrow-${sideOf(d)})`);
-          return;
-        }
-        const lp = linkProg(j);
-        const len = sc.linkLen.get(d.data.id)!;
-        el.classed("lit", lp > 0)
-          .classed("dim", false)
-          .attr("stroke-dasharray", `${len} ${len}`)
-          .attr("stroke-dashoffset", len * (1 - lp))
-          .attr("marker-end", lp >= 0.98 ? `url(#jz-arrow-${sideOf(d)})` : null);
-      });
-
-      sc.stems.each(function (this: SVGPathElement, d: Node) {
-        const childOnPath = (d.children ?? []).find((c) => ids.includes(c.data.id));
-        const j = childOnPath ? ids.indexOf(childOnPath.data.id) : -1;
-        const lit = j >= 0 && linkProg(j) > 0;
-        select(this).classed("lit", lit).classed("dim", !lit);
-      });
-
-      sc.nodes.each(function (this: SVGGElement, d: Node) {
-        const j = ids.indexOf(d.data.id);
-        const lit = d.data.id === "root" ? rootLit : j >= 0 && linkProg(j) >= 0.97;
-        let transform = `translate(${d.x},${d.y})`;
-        if (focus && focusBoost > 0) {
-          const pt = sc.pos.get(d.data.id)!;
-          const dist = Math.hypot(pt.x - focus.x, pt.y - focus.y);
-          const k = 1 + focusBoost * Math.exp(-((dist / SPOT_RADIUS) ** 2));
-          if (k > 1.005) transform += ` scale(${k})`;
-        }
-        select(this).classed("lit", lit).classed("dim", !lit).attr("transform", transform);
-      });
-    };
-
-    renderRef.current(pRef.current);
+      },
+      { threshold: 0.2 },
+    );
+    io.observe(svgRef.current!);
 
     return () => {
+      io.disconnect();
+      clearTimers();
       svg.selectAll("*").interrupt();
     };
-  }, [variant, cityShort, root, byId]);
+  }, [cityShort, root, byId, fontTick]);
 
-  /* quadrant click: switches the what-if, re-renders the current frame */
-  const clickQuadRef = useRef<(id: QuadrantDef["id"]) => void>(() => {});
-  clickQuadRef.current = (id) => {
-    if (id === quadRef.current) return;
-    setQuad(id);
-    quadRef.current = id;
-    renderRef.current(pRef.current);
-  };
+  /* step changes animate */
+  useEffect(() => {
+    applyStepRef.current(step, true);
+  }, [step]);
+  useEffect(() => {
+    applyHoverRef.current(hover);
+  }, [hover]);
 
-  /* ---------- scroll scrubbing ---------- */
+  /* ---------- scroll → step ---------- */
   useEffect(() => {
     const track = trackRef.current!;
     const scroller = track.closest(".pages") as HTMLElement | null;
@@ -562,9 +823,7 @@ export function ConstraintScrolly({ cityShort }: { cityShort: string }) {
       const r = track.getBoundingClientRect();
       const total = r.height - sH;
       const p = total > 0 ? clamp01((sTop - r.top) / total) : 0;
-      pRef.current = p;
-      renderRef.current(p);
-      setPhase(p < PHASE_SPLIT[variantRef.current] ? "chart" : "tree");
+      setStep(Math.min(STEPS - 1, Math.floor(p * STEPS)));
     };
     const onScroll = () => {
       if (!ticking) {
@@ -583,17 +842,66 @@ export function ConstraintScrolly({ cityShort }: { cityShort: string }) {
     };
   }, []);
 
-  const switchVariant = (v: Variant) => {
-    setVariant(v);
-    setPhase(pRef.current < PHASE_SPLIT[v] ? "chart" : "tree");
-  };
+  /* ---------- caption content ---------- */
 
   const Ph = ({ text }: { text: string }) => (
     <span className="ph">{text.replace(/\{city\}/g, cityShort)}</span>
   );
 
-  const trail = ["root", ...qDef.path].map((id) => byId.get(id)!);
-  const leaf = trail[trail.length - 1];
+  const phase: Phase = step <= 2 ? "chart" : "tree";
+  const hoverNode = hover ? byId.get(hover)! : null;
+  const hlSide = hoverNode ? sideOf(hoverNode) : null;
+  const selSide = selectedPath[0] === "demand" ? ("demand" as const) : ("supply" as const);
+
+  const caption = hoverNode ? (
+    <>
+      <div className="jz-cap-kickrow">
+        <span className="fig-kicker" style={{ color: TREE_SIDE_COLOR[sideOf(hoverNode)] }}>
+          On the tree · {sideOf(hoverNode) === "root" ? "the root" : `${sideOf(hoverNode)} side`}
+        </span>
+      </div>
+      <p className="jz-cap-title">{displayTitle(hoverNode)}</p>
+      <p className="jz-cap-body">
+        {firstSentence(hoverNode.data.detail)}{" "}
+        {hoverNode.data.tests ? (
+          <em className="jz-cap-tests">Test it: {firstSentence(hoverNode.data.tests)}</em>
+        ) : (
+          <Ph text="[tests: ___ ]" />
+        )}
+      </p>
+    </>
+  ) : (
+    <>
+      <div className="jz-cap-kickrow">
+        <span className="fig-kicker">{STEP_COPY[step].kicker}</span>
+        <span className="jz-dots">
+          {STEP_COPY.map((_, i) => (
+            <i key={i} className={i === step ? "on" : i < step ? "done" : ""} />
+          ))}
+        </span>
+      </div>
+      {step === 4 && (
+        <div className="fig-trail">
+          {["root", ...PLACE_QUAD.path].map((id, i) => {
+            const n = byId.get(id)!;
+            return (
+              <span key={id}>
+                {i > 0 && <b>›</b>}
+                <span style={{ color: TREE_SIDE_COLOR[sideOf(n)] }}>{displayTitle(n)}</span>
+              </span>
+            );
+          })}
+        </div>
+      )}
+      <p className="jz-cap-body">
+        {STEP_COPY[step].body.startsWith("[") ? (
+          <Ph text={STEP_COPY[step].body} />
+        ) : (
+          STEP_COPY[step].body
+        )}
+      </p>
+    </>
+  );
 
   return (
     <div className="jz-scrolly" ref={trackRef}>
@@ -606,68 +914,31 @@ export function ConstraintScrolly({ cityShort }: { cityShort: string }) {
               <h2 className={phase === "tree" ? "on" : ""}>How we diagnose the constraint</h2>
             </div>
           </div>
-          <div className="jz-modes-col">
-            <div className="fig-modes" role="tablist" aria-label="Transition prototypes">
-              {VARIANTS.map((v) => (
-                <button
-                  key={v.id}
-                  role="tab"
-                  aria-selected={variant === v.id}
-                  className={variant === v.id ? "on" : ""}
-                  onClick={() => switchVariant(v.id)}
-                >
-                  {v.label}
-                </button>
-              ))}
-            </div>
-            <span className="fig-mode-hint">
-              Scroll: {VARIANTS.find((v) => v.id === variant)!.hint}
-            </span>
-          </div>
         </div>
 
-        <div className="jz-stagewrap">
-          <svg
-            ref={svgRef}
-            className="jz-svg"
-            viewBox={`0 0 ${W} ${H}`}
-            role="img"
-            aria-label="Scroll-driven transition from the labor-market quadrant chart to the diagnostic decision tree"
-          />
-        </div>
-
-        <div className="fig-detail shown jz-card">
-          <div className="jz-cardrow">
-            <span className="fig-kicker">
-              {phase === "chart"
-                ? quad === "q1"
-                  ? `Where ${cityShort} lands`
-                  : "What-if scenario"
-                : `Default path · ${qDef.shock.toLowerCase()}`}
-            </span>
-            <div className="fig-trail">
-              {trail.map((n, i) => (
-                <span key={n.data.id}>
-                  {i > 0 && <b>›</b>}
-                  <span style={{ color: TREE_SIDE_COLOR[sideOf(n)] }}>{displayTitle(n)}</span>
-                </span>
-              ))}
-            </div>
+        <div className="jz-body">
+          <div className="jz-stagewrap">
+            <svg
+              ref={svgRef}
+              className="jz-svg"
+              viewBox={`0 0 ${W} ${H}`}
+              role="img"
+              aria-label="Step-driven transition from the labor-market quadrant chart to the diagnostic decision tree"
+            />
           </div>
-          <p className="fig-detail-body">
-            {phase === "chart" ? (
-              <Ph text={qDef.note} />
-            ) : (
-              <Ph
-                text={`[what to verify at each step before accepting the ${leaf.data.title.toLowerCase()} diagnosis — ___ tests, ___ data]`}
-              />
-            )}
-            <span className="jz-hint">
-              {phase === "chart"
-                ? " Click a quadrant for a what-if · scroll to trace ↓"
-                : " Scroll back up to return to the chart ↑"}
-            </span>
-          </p>
+
+          <aside className="jz-rail">
+            <MiniMap visible={step >= 3} hlSide={hlSide} cityShort={cityShort} />
+            <div className="jz-railtext">{caption}</div>
+            {/* the branch picked on the tree names + feeds the next step */}
+            <div className={"jz-next" + (step >= 3 ? " show" : "")} aria-hidden={step < 3}>
+              <span className="jz-next-k">Up next</span>
+              <span className="jz-next-name" style={{ color: TREE_SIDE_COLOR[selSide] }}>
+                {branchSectionName(selSide)} →
+              </span>
+              <span className="ph">[click a node to switch your branch]</span>
+            </div>
+          </aside>
         </div>
       </div>
 

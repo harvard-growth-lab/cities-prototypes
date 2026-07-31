@@ -25,10 +25,12 @@ export interface TreeNodeData {
 export const TREE_ROOT_QUESTION =
   "What are the binding constraints to achieve better, more inclusive, higher, or more resilient economic growth?";
 
+/** side colors, darkened a step from the site tokens so figure text holds up
+ *  at small sizes (base tokens: --teal #255862, --orange-dark #cf4f2c) */
 export const TREE_SIDE_COLOR: Record<TreeSide, string> = {
   root: "#1a2226", // --ink
-  demand: "#255862", // --teal
-  supply: "#cf4f2c", // --orange-dark
+  demand: "#1d4b54",
+  supply: "#b8431f",
 };
 
 /* ---------- quadrant → default tree path (chart→tree transitions) ---------- */
@@ -95,11 +97,15 @@ export const QUADRANTS: QuadrantDef[] = [
     shock: "Negative supply shock",
     sub: "population ↓ · wages ↑",
     side: "supply",
-    path: ["supply", "amen"],
+    path: ["supply", "col", "housing"],
     spot: [-0.66, 0.78],
-    note: "[what-if: people leave despite rising pay — check ___ for what makes staying unattractive]",
+    note: "[{city} itself lands here — population ↓ while wages ↑; the fork goes to the labor supply branch]",
   },
 ];
+
+/** The sample city's quadrant (population ↓ · wages ↑). It decides the fork
+ *  taken in the tree and the default branch for the section that follows. */
+export const PLACE_QUAD: QuadrantDef = QUADRANTS.find((q) => q.id === "q4")!;
 
 /** Node titles and sibling order follow the figure exactly (left → right). */
 export const TREE_NODES: TreeNodeData[] = [
