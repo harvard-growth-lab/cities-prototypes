@@ -141,6 +141,13 @@ export const FORK_QUESTION: Record<string, string> = {
   col: "Is it the rent, or the commute?",
 };
 
+/** how the chips name a node's side of the tree */
+export const SIDE_LABEL: Record<Side, string> = {
+  root: "the root",
+  demand: "firms' side",
+  supply: "residents' side",
+};
+
 /* ————— color language: demand = institutional blue, supply = gold ————— */
 
 export const SIDE_COLOR: Record<Side, { base: string; deep: string; tint: string }> = {
