@@ -7,6 +7,7 @@ import { IntroQuiz } from "./pages/IntroQuiz";
 import { OverviewSection } from "./pages/OverviewSection";
 import { ExportBasketPage, ExportComplexityPage } from "./pages/ExportPages";
 import { PracticePage } from "./pages/PracticePage";
+import { ConstraintScrolly } from "./pages/ConstraintScrolly";
 
 interface ToolViewProps {
   active: boolean;
@@ -112,9 +113,9 @@ export function ToolView({
           <ExportComplexityPage />
           <PracticePage onSave={onSavePractice} />
 
-          {/* City Constraints & Levers for Change (empty for now) */}
-          <section className="page" id="page-constraints"></section>
-          <section className="page" id="page-constraints-diagnose"></section>
+          <ConstraintScrolly cityShort={cityShort} />
+
+          {/* Levers for Change (empty for now) */}
           <section className="page" id="page-levers"></section>
         </main>
       </div>

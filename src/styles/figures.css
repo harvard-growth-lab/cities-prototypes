@@ -1,0 +1,118 @@
+/* The City Constraints scroll sequence: one sticky stage that scrubs from the
+   quadrant chart ("Where is your constraint?") into the decision tree ("How we
+   diagnose the constraint") as the user scrolls. Chrome (header + caption) is
+   kept tight so the stage — and its type — renders as large as possible. */
+
+/* ============ scrolly scaffold ============ */
+.jz-scrolly{position:relative;height:340vh;}
+.jz-sticky{
+  position:sticky;top:0;height:calc(100vh - 72px);
+  display:flex;flex-direction:column;min-height:0;
+  padding:18px 44px 14px 48px;background:#fff;
+}
+/* invisible anchors that keep the rail's scroll-spy + navigation working */
+.jz-anchor{position:absolute;left:0;width:2px;opacity:0;pointer-events:none;}
+.jz-anchor-top{top:0;height:80vh;}
+.jz-anchor-bottom{bottom:0;height:80vh;}
+
+.jz-head{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  gap:8px 28px;flex-wrap:wrap;
+}
+.jz-titles .eyebrow{display:block;margin-bottom:3px;}
+/* the two section headings share one cell and crossfade with scroll phase */
+.jz-h2s{display:grid;}
+.jz-h2s h2{
+  grid-area:1/1;font-size:22px;font-weight:600;letter-spacing:-.3px;
+  opacity:0;transition:opacity .35s ease;white-space:nowrap;
+}
+.jz-h2s h2.on{opacity:1;}
+.jz-modes-col{display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
+
+.jz-stagewrap{
+  flex:1;min-height:0;display:flex;align-items:center;justify-content:center;
+  margin:2px 0 6px;
+}
+/* clipped: the camera-walk variant pushes zoomed content past the viewBox */
+.jz-svg{width:100%;height:100%;display:block;overflow:hidden;}
+
+/* ============ prototype selector ============ */
+.fig-modes{display:inline-flex;background:var(--teal-tint);border-radius:8px;padding:3px;gap:2px;}
+.fig-modes button{
+  border:none;background:none;border-radius:6px;padding:6px 12px;
+  font-size:12.5px;font-weight:600;color:var(--ink-soft);
+  transition:background .15s ease, color .15s ease, box-shadow .15s ease;
+}
+.fig-modes button:hover{color:var(--teal);}
+.fig-modes button.on{background:#fff;color:var(--teal);box-shadow:var(--shadow-sm);}
+.fig-mode-hint{font-size:12px;font-style:italic;color:var(--ink-soft);max-width:460px;text-align:right;}
+
+/* ============ scene A: the quadrant chart ============ */
+.jz-quad{cursor:pointer;outline:none;}
+.jz-quad rect{
+  fill-opacity:.06;stroke-opacity:0;stroke-width:1.5;
+  transition:fill-opacity .2s ease, stroke-opacity .2s ease;
+}
+.jz-quad:hover rect{fill-opacity:.11;}
+.jz-quad.sel rect{fill-opacity:.15;stroke-opacity:.4;}
+.jz-quad:focus-visible rect{stroke-opacity:.65;}
+.jz-shock{font-size:19px;font-weight:700;}
+.jz-sub{font-size:13.5px;fill:var(--ink-soft);}
+.jz-tag{font-size:11.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;}
+.jz-axis{stroke:var(--teal);stroke-width:1.8;}
+.jz-axis-title{font-size:13.5px;font-weight:700;fill:var(--ink);}
+
+/* the city / what-if dot */
+.jz-dot .core{fill:#1a2226;stroke:#fff;stroke-width:2;}
+.jz-dot text{
+  font-size:14px;font-weight:700;fill:#1a2226;
+  paint-order:stroke;stroke:#fff;stroke-width:3.5px;
+}
+.jz-dot .halo{fill:none;stroke:#1a2226;stroke-opacity:0;stroke-width:1.8;}
+.jz-dot.pulse .halo{animation:jz-pulse 1.6s ease-out infinite;}
+@keyframes jz-pulse{
+  0%{r:9;stroke-opacity:.5;}
+  70%{r:22;stroke-opacity:0;}
+  100%{r:22;stroke-opacity:0;}
+}
+
+/* ============ scene B: the tree ============ */
+.tree-link,.tree-stem{fill:none;stroke-width:1.5;opacity:.4;}
+.tree-link.lit,.tree-stem.lit{opacity:1;stroke-width:2.4;}
+.tree-link.dim,.tree-stem.dim{opacity:.18;}
+
+.tree-label{font-size:15px;line-height:1.25;fill-opacity:.78;pointer-events:none;}
+.tree-node.lead .tree-label{font-size:17px;font-weight:700;}
+.tree-node .tree-label{font-weight:600;}
+.tree-node.lit .tree-label{fill-opacity:1;}
+.tree-node.dim .tree-label{fill-opacity:.3;}
+/* labels ease between states; link/stem geometry is scrubbed directly */
+.tree-label{transition:fill-opacity .25s ease;}
+.tree-stem{transition:opacity .25s ease;}
+
+/* the spotlight lens (spot variant) */
+.jz-halo{fill-opacity:.07;}
+
+/* ============ caption card ============ */
+.fig-detail{
+  background:var(--teal-tint);border-radius:12px;padding:10px 18px;
+  max-width:1240px;
+  display:flex;flex-direction:column;gap:4px;justify-content:center;
+}
+.jz-cardrow{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;}
+.fig-kicker{
+  font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--teal);
+}
+.fig-trail{
+  display:flex;flex-wrap:wrap;align-items:center;gap:6px;
+  font-size:11.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;
+}
+.fig-trail b{color:var(--border-strong);font-weight:400;}
+.fig-detail-body{font-size:13.5px;line-height:20px;color:#000;}
+.jz-hint{font-size:12px;font-style:italic;color:var(--ink-soft);}
+
+/* bracketed prototype placeholder text */
+.ph{
+  font-style:italic;color:var(--ink-soft);
+  border-bottom:1px dashed var(--border-strong);
+}

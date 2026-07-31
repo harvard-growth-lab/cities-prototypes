@@ -7,6 +7,7 @@ import "./styles/tool.css";
 import "./styles/intro.css";
 import "./styles/explainers.css";
 import "./styles/modals.css";
+import "./styles/figures.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
