@@ -1,4 +1,11 @@
+# Cities Tool
+
 A shared repository for housing prototypes related to the 2026–2027 Bloomberg Cities project.
+
+This branch is a React + TypeScript (Vite) port of the `V2_With_intoquiz` static prototype from
+the `nt-prototypes` branch: a landing page that slides up into the Cities Tool — an intro quiz,
+a scroll-driven city → MSA map overview, export visualizations, a "Put in Practice" reflection,
+a Visual Explainers gallery, a My Learning Journey window, and an experimental Data Chat.
 
 ## Running
 
@@ -8,33 +15,33 @@ npm run dev      # start the Vite dev server
 npm run build    # tsc -b + vite build
 ```
 
-The app is a single-page hash router (`src/main.tsx`) with four views:
-
-- `#/` — **CityStory**, the Growth-Lab city diagnosis (the landing page)
-- `#/concepts` — **Concepts**, four takes on the framework: seven pixel-art explainer toys, the same seven ideas as interactive-textbook figures, a sketchbook of twenty experimental mini-prototypes, and a "pocket textbook" of fifty interactive micro-pages on the wider urban-economics shelf (M1–M50, `MicroFigsA–E.tsx`)
-- `#/tree` — **Tree Prototypes**, three renderings of the Figure-27 diagnostic tree: a wall chart (hover & pin), a zoomable dial, and a metro map. Linked from the prototype-settings drawer on the city profile.
-- `#/story` — **ReadCity**, a scrollytelling narrative
-
 ## Project structure
 
 ```
 src/
-  main.tsx          hash router + view switch, theme loading
-  app-shell.css     global chrome (corner bar, prototype-settings drawer)
-
-  citytool/         View 1 — the city profile
-    pages/ components/ lib/ data/ geo/ styles.css
-  concepts/         View 2 — the concept toys
-  treelab/          View 3 — the diagnostic-tree design explorations
-  readcity/         View 4 — the scrollytelling story (+ skyline/street scenes)
-
-  learning/         the quiz / diagnostic layer shared into CityStory
-    data/ content/  illustrative Boston data, figures + quiz definitions
-    journey.tsx settings.tsx    answer persistence + the settings drawer
-    QuizBits / QuizRecap / InstrumentCards / DragDot / TreeWalk / PizzaChart …
-
-  pixel/            low-level pixel-canvas graphics lib (Views 2 & 3)
+  main.tsx                  entry point; imports the split stylesheets
+  App.tsx                   view switching (landing <-> tool), city/span, journey state
+  data/content.ts           all copy, options, indicator data, and sample journey state
+  lib/downloads.ts          insights .txt and chat .csv download helpers
+  styles/                   the original prototype CSS, split by area
+  components/
+    Landing.tsx             fixed landing view (hero, selectors, jump row)
+    ToolView.tsx            toolbar + rail + scrolling pages; scroll spy
+    Toolbar.tsx  Rail.tsx
+    ExplainersView.tsx      Visual Explainers gallery (pixel-city thumbnails)
+    icons.tsx               SVG icons shared across components
+    pages/
+      IntroQuiz.tsx         gapminder-style intro question carousel
+      OverviewSection.tsx   two indicator blocks + sticky zooming Leaflet map
+      OverviewMap.tsx       Leaflet map, city -> MSA zoom driven by scroll
+      IndicatorTable.tsx    animated change-slider tables
+      ExportPages.tsx       export basket + complexity viz pages
+      VizActions.tsx        Data / Image / Share-link button cluster
+      PracticePage.tsx      "Put in Practice" reflection card
+    modals/
+      JourneyModal.tsx      My Learning Journey window
+      DataChatModal.tsx     Data Chat (beta) window
 ```
 
-Dependencies flow one way: `citytool/` and the concept/story views depend on
-the `learning/` and `pixel/` substrates, never the reverse.
+Chart images, the Growth Lab logo, and the map backdrop are placeholder assets served from
+Figma URLs (see `src/data/content.ts` and the `--map-asset` variable in `src/styles/base.css`).
