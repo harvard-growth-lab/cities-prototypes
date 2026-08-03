@@ -639,6 +639,34 @@
   .rca-tip[hidden]{display:none;}
   .rca-tip strong{font-size:14px;font-weight:600;color:#000;}
   .rca-tip p{font-size:14px;line-height:21px;color:#000;margin:7px 0 0;}
+
+  /* per-row tooltip: narrower, follows the cursor */
+  .row-tip{width:auto;min-width:250px;max-width:320px;padding:12px 14px;}
+  .row-tip strong{display:block;margin-bottom:8px;line-height:1.35;}
+  .row-tip .tip-row{
+    display:flex;justify-content:space-between;gap:18px;
+    font-size:13px;color:#000;padding:3px 0;
+  }
+  .row-tip .tip-row span:first-child{color:var(--ink-soft);}
+  .row-tip .tip-row span:last-child{font-weight:600;}
+  .row-tip .tip-sub{
+    font-size:12px;line-height:1.45;color:var(--ink-soft);
+    margin:2px 0 6px;padding-bottom:6px;border-bottom:1px solid var(--border);
+  }
+  /* above/below verdict — the one place direction carries colour */
+  .row-tip .tip-verdict{
+    display:flex;align-items:center;gap:7px;margin:8px 0;
+    padding:6px 9px;border-radius:4px;font-size:13px;font-weight:600;
+  }
+  .row-tip .tip-verdict.up{background:rgba(37,88,98,.12);color:var(--teal);}
+  .row-tip .tip-verdict.down{background:rgba(207,79,44,.14);color:var(--orange-dark);}
+  .row-tip .tip-arrow{font-size:11px;line-height:1;}
+  .row-tip .tip-peers{
+    margin:8px 0;padding:6px 0;
+    border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  }
+  .row-tip .tip-row--peer span{font-size:12px;color:var(--ink-soft);}
+  .row-tip .tip-row--peer span:last-child{font-weight:600;color:#000;}
   .rca-bench-hit rect{fill:transparent;cursor:help;}
   .rca-chart .rca-axis{stroke:var(--border-strong);stroke-width:1;}
   .rca-chart .rca-grid{stroke:var(--border);stroke-width:1;}
@@ -663,11 +691,6 @@
     color:var(--ink-soft);text-decoration:underline;text-underline-offset:3px;
   }
   .viz-controls .design-opt:hover{color:var(--teal);}
-  .design-note{
-    width:80%;margin:12px auto 0;padding:10px 14px;border-radius:4px;
-    background:var(--teal-tint);font-size:13px;line-height:1.5;color:#000;
-  }
-  .design-note[hidden]{display:none;}
   .rca-chart .rca-value{font-size:13px;fill:#000;}
   /* translucent wash on hover rather than an opaque tint */
   .rca-chart .rca-hit{fill:transparent;}
@@ -675,9 +698,11 @@
 
   /* ---- peer comparison marks ---- */
   .rca-chart .peer-gap{stroke:var(--ink-soft);stroke-width:2.5;opacity:.35;}
-  .rca-chart .peer-gap--behind{stroke:var(--orange-dark);opacity:1;}
+  /* the shortfall reads as a solid black run against the faint neutral gap;
+     direction colour now lives in the row tooltip instead */
+  .rca-chart .peer-gap--behind{stroke:var(--ink);opacity:1;}
   .rca-chart .peer-tick{stroke:var(--ink);stroke-width:2.5;}
-  .rca-chart .rca-value--behind{fill:var(--orange-dark);font-weight:600;}
+  .rca-chart .rca-value--behind{fill:#000;font-weight:600;}
   /* the peer chart keeps the benchmark label static — no tooltip on it */
   .rca-chart .rca-benchmark-label--plain{
     cursor:default;text-decoration:none;
@@ -725,8 +750,9 @@
   }
   .rca-footnote .rca-key{display:inline-flex;align-items:center;gap:9px;}
 
-  /* sector legend, so colours are readable without scrolling back up */
-  .rca-legend{display:flex;flex-wrap:wrap;align-items:center;gap:16px;}
+  /* Sector legend hidden for now — delete this rule to bring it back. */
+  .rca-legend{display:none;}
+  .rca-legend--on{display:flex;flex-wrap:wrap;align-items:center;gap:16px;}
   .rca-legend .rca-sw{
     display:inline-flex;align-items:center;gap:7px;font-size:13px;color:#000;
   }
@@ -1255,10 +1281,6 @@
         <button class="jump-item" onclick="enterTool('page-overview')">
           <svg viewBox="0 0 20 20" fill="none" stroke-width="1.4"><path d="M2 17h16"/><path d="M3.5 17V9h4v8"/><path d="M8.5 17V4.5h4.5V17"/><path d="M14 17v-6h3v6"/><path d="M10.2 7h1.5M10.2 9.5h1.5M10.2 12h1.5"/></svg>
           City Overview
-        </button>
-        <button class="jump-item" onclick="enterTool('page-overview-msa')">
-          <svg viewBox="0 0 20 20" fill="none" stroke-width="1.4"><path d="M2 4.5 7 3l6 2 5-1.5v12L13 17l-6-2-5 1.5v-12Z" stroke-linejoin="round"/><path d="M7 3v12M13 5v12"/></svg>
-          City as part of MSA
         </button>
         <button class="jump-item" onclick="enterTool('page-export-basket')">
           <svg viewBox="0 0 20 20" fill="none" stroke-width="1.4"><path d="M3 8v8.5h9V8"/><path d="M2 5.5h11V8H2z"/><path d="M6.3 11h2.4"/><path d="M13.5 6.5 18 2m0 0h-3.6M18 2v3.6"/></svg>
@@ -1920,13 +1942,12 @@
               <p>An industry’s share of jobs in this city, divided by that industry’s share of jobs worldwide.</p>
               <p><strong>RCA = 1</strong> means the industry is exactly as concentrated here as it is globally. Above 1 means the city is more concentrated in it than the world is — the further right, the more distinctive.</p>
             </div>
+            <div class="rca-tip row-tip" id="rcaRowTip" role="tooltip" hidden></div>
           </div>
-
-          <p class="design-note" id="rcaDesignNote" hidden>Design option shown. Bars are anchored at the benchmark, so their length is the amount above 1.0 — but employment is no longer carried by the mark, only by the Employment column.</p>
 
           <div class="rca-footnote">
             <div class="rca-legend" id="rcaLegend"></div>
-            <span class="rca-key"><svg width="46" height="16" aria-hidden="true"><circle cx="6" cy="8" r="3.5" fill="#5b686d"/><circle cx="22" cy="8" r="6" fill="#5b686d"/><circle cx="40" cy="8" r="8.5" fill="#5b686d"/></svg>Dot size also shows employment</span>
+            <span class="rca-key"><svg width="46" height="16" aria-hidden="true"><circle cx="6" cy="8" r="3.5" fill="#5b686d"/><circle cx="22" cy="8" r="6" fill="#5b686d"/><circle cx="40" cy="8" r="8.5" fill="#5b686d"/></svg>Dot size shows employment — hover a row for exact figures</span>
           </div>
         </div>
 
@@ -1970,14 +1991,13 @@
 
           <div class="rca-wrap">
             <svg class="viz-big rca-chart" id="peerChartSvg" width="880" height="488" viewBox="0 0 880 488" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Specialization compared against the average of four peer cities"></svg>
+            <div class="rca-tip row-tip" id="peerRowTip" role="tooltip" hidden></div>
           </div>
 
-          <p class="design-note" id="peerDesignNote" hidden>Design option shown. The bar is this city and the tick is the peer average, so a bar falling short of its tick is a shortfall — but employment is no longer carried by the mark, only by the Employment column.</p>
-
           <div class="rca-footnote">
-            <span class="rca-key"><svg width="16" height="16" aria-hidden="true"><circle cx="8" cy="8" r="6" fill="#5b686d"/></svg>This city, sized by employment</span>
+            <span class="rca-key"><svg width="46" height="16" aria-hidden="true"><circle cx="6" cy="8" r="3.5" fill="#5b686d"/><circle cx="22" cy="8" r="6" fill="#5b686d"/><circle cx="40" cy="8" r="8.5" fill="#5b686d"/></svg>Dot is the city, sized by employment</span>
             <span class="rca-key"><svg width="12" height="20" aria-hidden="true"><line x1="6" y1="2" x2="6" y2="18" stroke="#1a2226" stroke-width="2.5"/></svg>Peer average</span>
-            <span class="rca-key"><svg width="26" height="10" aria-hidden="true"><line x1="1" y1="5" x2="25" y2="5" stroke="#cf4f2c" stroke-width="3"/></svg>Below the peer average</span>
+            <span class="rca-key"><svg width="26" height="10" aria-hidden="true"><line x1="1" y1="5" x2="25" y2="5" stroke="#1a2226" stroke-width="3"/></svg>Below the peer average</span>
           </div>
           <p class="peer-note" id="peerNote"></p>
         </div>

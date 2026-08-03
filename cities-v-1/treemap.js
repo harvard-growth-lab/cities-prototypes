@@ -744,6 +744,38 @@
      from the viz bar. Not part of the reader-facing flow. */
   let rcaDesign = "dot";
 
+  /* Shared axis header for both RCA charts, so they read identically.
+     "RCA = 1" sits at the head of the benchmark line and reads rightwards from
+     it; the axis title shares that baseline and is centred over the scale —
+     nudged right only if it would otherwise run into the marker. */
+  const RCA_LABEL_ZONE = 84;   // width reserved for the "RCA = 1" marker
+
+  function drawAxisHeader(svg, x, plotR, MT, gridBottom, plainLabel){
+    const baseline = MT - 40;
+
+    svg.append("line").attr("class", "rca-benchmark")
+      .attr("x1", x(1)).attr("y1", MT - 34).attr("x2", x(1)).attr("y2", gridBottom);
+
+    // Centred on the scale *after* the marker's zone. Measuring the rendered
+    // text would be exact, but getComputedTextLength returns 0 while the page
+    // is hidden at init, so the clamp would silently never fire.
+    svg.append("text").attr("class", "rca-axis-title")
+      .attr("x", (x(1) + RCA_LABEL_ZONE + plotR) / 2).attr("y", baseline)
+      .attr("text-anchor", "middle")
+      .text("Times more concentrated in this city than in the world");
+
+    const bench = svg.append("g").attr("class", "rca-bench-hit");
+    bench.append("rect")
+      .attr("x", x(1) - 6).attr("y", MT - 55)
+      .attr("width", 74).attr("height", 24);
+    bench.append("text")
+      .attr("class", "rca-benchmark-label" + (plainLabel ? " rca-benchmark-label--plain" : ""))
+      .attr("x", x(1) + 7).attr("y", baseline).attr("text-anchor", "start")
+      .text("RCA = 1");
+
+    return bench;
+  }
+
   function renderRcaChart(){
     const el = document.getElementById("rcaChartSvg");
     if (!el) return;
@@ -751,9 +783,9 @@
     const all  = specialized();
     const rows = rcaShowAll ? all : all.slice(0, RCA_TOP_N);
 
-    // PLOT_R leaves room for the multiplier label and then the jobs column.
-    const W = 880, ML = 300, MT = 84, MB = 26, RH = 34;
-    const PLOT_R = 690, JOBS_X = 872;
+    // Employment now lives in the row tooltip, so the plot takes that width.
+    const W = 880, ML = 300, MT = 76, MB = 26, RH = 34;
+    const PLOT_R = 800;
     const H = MT + rows.length * RH + MB;
 
     const svg = d3.select(el)
@@ -775,11 +807,6 @@
     const rowY = i => MT + i * RH + RH / 2;
     const gridBottom = MT + rows.length * RH;
 
-    // says what the numbers mean before the reader reaches a single row
-    svg.append("text").attr("class", "rca-axis-title")
-      .attr("x", x(1)).attr("y", MT - 56)
-      .text("times more concentrated in this city than in the world");
-
     svg.append("line").attr("class", "rca-axis")
       .attr("x1", x.range()[0]).attr("y1", MT - 12).attr("x2", PLOT_R).attr("y2", MT - 12);
 
@@ -792,21 +819,7 @@
         .attr("x", x(t)).attr("y", MT - 20).attr("text-anchor", "middle").text(t + "×");
     }
 
-    svg.append("text").attr("class", "rca-col-head")
-      .attr("x", JOBS_X).attr("y", MT - 20).attr("text-anchor", "end").text("Employment");
-
-    // the benchmark — the whole point of the chart
-    svg.append("line").attr("class", "rca-benchmark")
-      .attr("x1", x(1)).attr("y1", MT - 12).attr("x2", x(1)).attr("y2", gridBottom);
-
-    // Padded hit target: the label glyphs alone are far too small to hover.
-    const bench = svg.append("g").attr("class", "rca-bench-hit");
-    bench.append("rect")
-      .attr("x", x(1) - 80).attr("y", MT - 48)
-      .attr("width", 160).attr("height", 26);
-    bench.append("text").attr("class", "rca-benchmark-label")
-      .attr("x", x(1)).attr("y", MT - 30).attr("text-anchor", "middle")
-      .text("RCA = 1 (same as world)");
+    const bench = drawAxisHeader(svg, x, PLOT_R, MT, gridBottom, false);
 
     const tip  = document.getElementById("rcaTip");
     const wrap = el.parentElement;
@@ -824,14 +837,6 @@
     }
 
     const g = svg.selectAll(".rca-row").data(rows).join("g").attr("class", "rca-row");
-
-    // the two shares behind the ratio, so the multiplier is checkable
-    g.append("title").text(d =>
-      d.name + "\n" +
-      fmtX(d.rca) + " more concentrated than the world\n" +
-      d.localPct.toFixed(2) + "% of " + cityName + "'s jobs vs " +
-      d.worldPct.toFixed(2) + "% of the world's\n" +
-      fmtJobs(d.employ) + " jobs");
 
     g.append("rect").attr("class", "rca-hit")
       .attr("x", 0).attr("y", (d, i) => MT + i * RH)
@@ -870,10 +875,34 @@
       .attr("y", (d, i) => rowY(i) + 4)
       .text(d => fmtX(d.rca));
 
-    // employment spelled out — dot area alone is a weak encoding
-    g.append("text").attr("class", "rca-jobs")
-      .attr("x", JOBS_X).attr("y", (d, i) => rowY(i) + 4)
-      .attr("text-anchor", "end").text(d => fmtJobs(d.employ));
+    // Row tooltip carries what the marks can't: the exact employment count,
+    // the year, and the two shares the multiplier is derived from.
+    const rowTip = document.getElementById("rcaRowTip");
+    if (rowTip && wrap) {
+      const yearSel = document.querySelector("#specializationSection .ctl select");
+      g.on("mouseenter", function(ev, d){
+        const year = yearSel ? yearSel.value : "";
+        rowTip.innerHTML =
+          '<strong>' + d.name + '</strong>' +
+          (year ? '<div class="tip-row"><span>Year</span><span>' + year + '</span></div>' : '') +
+          '<div class="tip-row"><span>RCA</span><span>' + fmtX(d.rca) + '</span></div>' +
+          '<div class="tip-sub">' + d.localPct.toFixed(2) + '% of ' + cityName +
+            "'s jobs vs " + d.worldPct.toFixed(2) + "% of the world's</div>" +
+          '<div class="tip-row"><span>Employment</span><span>' +
+            fmtJobs(d.employ) + ' jobs</span></div>';
+        rowTip.hidden = false;
+      })
+      .on("mousemove", function(ev){
+        const w = wrap.getBoundingClientRect();
+        const left = ev.clientX - w.left + 16;
+        const top  = ev.clientY - w.top + 14;
+        rowTip.style.left =
+          Math.max(0, Math.min(left, w.width - rowTip.offsetWidth)) + "px";
+        rowTip.style.top =
+          Math.max(0, Math.min(top, w.height - rowTip.offsetHeight)) + "px";
+      })
+      .on("mouseleave", function(){ rowTip.hidden = true; });
+    }
 
     const btn = document.getElementById("rcaToggleBtn");
     if (btn) {
@@ -1007,8 +1036,9 @@
     const all  = specializedWithPeers();
     const rows = peerShowAll ? all : all.slice(0, RCA_TOP_N);
 
-    const W = 880, ML = 300, MT = 84, MB = 26, RH = 34;
-    const PLOT_R = 690, JOBS_X = 872;
+    // Employment lives in the row tooltip, so the plot takes that width.
+    const W = 880, ML = 300, MT = 76, MB = 26, RH = 34;
+    const PLOT_R = 800;
     const H = MT + rows.length * RH + MB;
 
     const svg = d3.select(el)
@@ -1024,10 +1054,6 @@
     const rowY = i => MT + i * RH + RH / 2;
     const gridBottom = MT + rows.length * RH;
 
-    svg.append("text").attr("class", "rca-axis-title")
-      .attr("x", x(1)).attr("y", MT - 56)
-      .text("times more concentrated in this city than in the world");
-
     svg.append("line").attr("class", "rca-axis")
       .attr("x1", x.range()[0]).attr("y1", MT - 12).attr("x2", PLOT_R).attr("y2", MT - 12);
 
@@ -1039,23 +1065,9 @@
         .attr("x", x(t)).attr("y", MT - 20).attr("text-anchor", "middle").text(t + "×");
     }
 
-    svg.append("text").attr("class", "rca-col-head")
-      .attr("x", JOBS_X).attr("y", MT - 20).attr("text-anchor", "end").text("Employment");
-
-    svg.append("line").attr("class", "rca-benchmark")
-      .attr("x1", x(1)).attr("y1", MT - 12).attr("x2", x(1)).attr("y2", gridBottom);
-    svg.append("text").attr("class", "rca-benchmark-label rca-benchmark-label--plain")
-      .attr("x", x(1)).attr("y", MT - 30).attr("text-anchor", "middle")
-      .text("RCA = 1 (same as world)");
+    drawAxisHeader(svg, x, PLOT_R, MT, gridBottom, true);
 
     const g = svg.selectAll(".rca-row").data(rows).join("g").attr("class", "rca-row");
-
-    g.append("title").text(d =>
-      d.name + "\n" +
-      cityName + "  " + fmtX(d.rca) + "\n" +
-      "Peer average  " + fmtX(d.peerAvg) + "\n" +
-      PEERS.map((p, i) => "   " + p + "  " + fmtX(d.peerValues[i])).join("\n") + "\n" +
-      fmtJobs(d.employ) + " jobs in " + cityName);
 
     g.append("rect").attr("class", "rca-hit")
       .attr("x", 0).attr("y", (d, i) => MT + i * RH)
@@ -1110,9 +1122,49 @@
       .attr("y", (d, i) => rowY(i) + 4)
       .text(d => fmtX(d.rca));
 
-    g.append("text").attr("class", "rca-jobs")
-      .attr("x", JOBS_X).attr("y", (d, i) => rowY(i) + 4)
-      .attr("text-anchor", "end").text(d => fmtJobs(d.employ));
+    // Row tooltip: the peer comparison spelled out, with the four cities the
+    // average is built from and an explicit above/below verdict.
+    const rowTip = document.getElementById("peerRowTip");
+    const wrap = el.parentElement;
+    if (rowTip && wrap) {
+      const yearSel = document.querySelector("#peerSection .ctl select");
+      g.on("mouseenter", function(ev, d){
+        const year = yearSel ? yearSel.value : "";
+        // A gap between two multipliers is a difference in points, not itself
+        // a multiplier — "0.8×" would read as Boston being smaller than peers.
+        const diff = Math.abs(Math.round((d.rca - d.peerAvg) * 10) / 10);
+        const dir  = d.ahead ? "up" : "down";
+        const verdict = diff === 0
+          ? "Level with the peer average"
+          : diff + (d.ahead ? " above the peer average" : " below the peer average");
+        rowTip.innerHTML =
+          '<strong>' + d.name + '</strong>' +
+          (year ? '<div class="tip-row"><span>Year</span><span>' + year + '</span></div>' : '') +
+          '<div class="tip-row"><span>' + cityName + '</span><span>' + fmtX(d.rca) + '</span></div>' +
+          '<div class="tip-row"><span>Peer average</span><span>' + fmtX(d.peerAvg) + '</span></div>' +
+          '<div class="tip-verdict ' + dir + '">' +
+            '<span class="tip-arrow" aria-hidden="true">' + (d.ahead ? "▲" : "▼") + '</span>' +
+            verdict + '</div>' +
+          '<div class="tip-peers">' +
+            PEERS.map((p, i) =>
+              '<div class="tip-row tip-row--peer"><span>' + p + '</span><span>' +
+              fmtX(d.peerValues[i]) + '</span></div>').join("") +
+          '</div>' +
+          '<div class="tip-row"><span>Employment</span><span>' +
+            fmtJobs(d.employ) + ' jobs</span></div>';
+        rowTip.hidden = false;
+      })
+      .on("mousemove", function(ev){
+        const w = wrap.getBoundingClientRect();
+        const left = ev.clientX - w.left + 16;
+        const top  = ev.clientY - w.top + 14;
+        rowTip.style.left =
+          Math.max(0, Math.min(left, w.width - rowTip.offsetWidth)) + "px";
+        rowTip.style.top =
+          Math.max(0, Math.min(top, w.height - rowTip.offsetHeight)) + "px";
+      })
+      .on("mouseleave", function(){ rowTip.hidden = true; });
+    }
 
     const btn = document.getElementById("peerToggleBtn");
     if (btn) {
@@ -1142,8 +1194,6 @@
       peerDesign = (peerDesign === "dot") ? "bar" : "dot";
       design.textContent = (peerDesign === "dot")
         ? "Bar design option" : "Back to dot design";
-      const note = document.getElementById("peerDesignNote");
-      if (note) note.hidden = (peerDesign !== "bar");
       renderPeerChart();
     });
   }
@@ -1161,8 +1211,6 @@
       rcaDesign = (rcaDesign === "dot") ? "bar" : "dot";
       design.textContent = (rcaDesign === "dot")
         ? "Bar design option" : "Back to dot design";
-      const note = document.getElementById("rcaDesignNote");
-      if (note) note.hidden = (rcaDesign !== "bar");
       renderRcaChart();
     });
   }
