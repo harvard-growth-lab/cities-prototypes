@@ -751,6 +751,9 @@
     align-items:center;gap:26px;font-size:13px;color:#000;
   }
   .rca-footnote .rca-key{display:inline-flex;align-items:center;gap:9px;}
+  /* these display rules outrank the [hidden] attribute, so restate it */
+  .rca-footnote[hidden],
+  .rca-footnote .rca-key[hidden]{display:none;}
 
   /* Sector legend hidden for now — delete this rule to bring it back. */
   .rca-legend{display:none;}
@@ -1947,7 +1950,7 @@
             <div class="rca-tip row-tip" id="rcaRowTip" role="tooltip" hidden></div>
           </div>
 
-          <div class="rca-footnote">
+          <div class="rca-footnote" id="rcaFootnote">
             <div class="rca-legend" id="rcaLegend"></div>
             <span class="rca-key"><svg width="46" height="16" aria-hidden="true"><circle cx="6" cy="8" r="3.5" fill="#5b686d"/><circle cx="22" cy="8" r="6" fill="#5b686d"/><circle cx="40" cy="8" r="8.5" fill="#5b686d"/></svg>Dot size shows employment — hover a row for exact figures</span>
           </div>
@@ -2643,15 +2646,21 @@
   /* ---------- scroll spy ---------- */
   const pagesRoot = document.getElementById("pages");
 
-  // `inview` drives one-shot entry animations. Keep it on an observer, but at a
-  // low threshold so pages taller than the viewport still trigger.
+  // `inview` drives one-shot entry animations, so it has to fire when the page
+  // is actually being read — it is never removed, and an animation that plays
+  // off-screen is simply missed.
+  //
+  // A ratio-of-element threshold can't do this: 0.55 is unreachable for a page
+  // taller than the viewport, while 0.15 fires while the reader is still on the
+  // page above. Trigger on a band across the middle of the viewport instead,
+  // which behaves the same whatever the page's height.
   const observer = new IntersectionObserver(entries=>{
     entries.forEach(e=>{
       if(e.isIntersecting && !e.target.classList.contains("inview")) {
         e.target.classList.add("inview");
       }
     });
-  },{root:pagesRoot, threshold:0.15});
+  },{root:pagesRoot, rootMargin:"-30% 0px -30% 0px", threshold:0});
   pageIds.forEach(id=>observer.observe(document.getElementById(id)));
 
   // Rail highlight: pick whichever page fills the most of the viewport.

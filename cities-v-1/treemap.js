@@ -920,6 +920,10 @@
         '<span class="rca-sw"><i style="background:' + sectorColors[s] + '"></i>' +
         s + "</span>").join("");
     }
+
+    // The bar form drops the legend entirely — dot size means nothing there.
+    const foot = document.getElementById("rcaFootnote");
+    if (foot) foot.hidden = (rcaDesign === "bar");
   }
 
   /* =====================================================================
@@ -1179,8 +1183,10 @@
       const k = document.getElementById(id);
       if (k) k.hidden = !shown;
     };
+    // In bar form neither city key applies: there is no sized dot, and the bar
+    // needs no naming. Only the peer tick and the shortfall remain.
     setKey("peerCityKey", !isBar);
-    setKey("peerCityKeyBar", isBar);
+    setKey("peerCityKeyBar", false);
     setKey("peerAboveKey", !isBar);
   }
 
