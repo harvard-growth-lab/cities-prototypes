@@ -697,10 +697,15 @@
   .rca-chart .rca-row:hover .rca-hit{fill:rgba(37,88,98,.07);}
 
   /* ---- peer comparison marks ---- */
-  .rca-chart .peer-gap{stroke:var(--ink-soft);stroke-width:2.5;opacity:.35;}
-  /* the shortfall reads as a solid black run against the faint neutral gap;
-     direction colour now lives in the row tooltip instead */
-  .rca-chart .peer-gap--behind{stroke:var(--ink);opacity:1;}
+  /* Direction is encoded by texture, not hue: a solid run past the peer tick
+     is ground gained, a dotted run short of it is ground still to cover.
+     Colour is left to the sector dots, and to the tooltip's verdict. */
+  .rca-chart .peer-gap{
+    stroke:var(--ink-soft);stroke-width:2.5;opacity:.55;
+  }
+  .rca-chart .peer-gap--behind{
+    stroke:var(--ink);opacity:1;stroke-dasharray:3 3;stroke-linecap:butt;
+  }
   .rca-chart .peer-tick{stroke:var(--ink);stroke-width:2.5;}
   .rca-chart .rca-value--behind{fill:#000;font-weight:600;}
   /* the peer chart keeps the benchmark label static — no tooltip on it */
@@ -740,9 +745,6 @@
     border-top:1px solid var(--border);
   }
 
-  .peer-note{
-    width:80%;margin:10px auto 0;font-size:13px;color:#000;
-  }
 
   .rca-footnote{
     width:80%;margin:12px auto 0;display:flex;flex-wrap:wrap;
@@ -1995,11 +1997,12 @@
           </div>
 
           <div class="rca-footnote">
-            <span class="rca-key"><svg width="46" height="16" aria-hidden="true"><circle cx="6" cy="8" r="3.5" fill="#5b686d"/><circle cx="22" cy="8" r="6" fill="#5b686d"/><circle cx="40" cy="8" r="8.5" fill="#5b686d"/></svg>Dot is the city, sized by employment</span>
+            <span class="rca-key" id="peerCityKey"><svg width="46" height="16" aria-hidden="true"><circle cx="6" cy="8" r="3.5" fill="#5b686d"/><circle cx="22" cy="8" r="6" fill="#5b686d"/><circle cx="40" cy="8" r="8.5" fill="#5b686d"/></svg>Dot is the city, sized by employment</span>
+            <span class="rca-key" id="peerCityKeyBar" hidden><svg width="26" height="14" aria-hidden="true"><rect x="1" y="3" width="24" height="8" fill="#5b686d"/></svg>Bar is the city</span>
             <span class="rca-key"><svg width="12" height="20" aria-hidden="true"><line x1="6" y1="2" x2="6" y2="18" stroke="#1a2226" stroke-width="2.5"/></svg>Peer average</span>
-            <span class="rca-key"><svg width="26" height="10" aria-hidden="true"><line x1="1" y1="5" x2="25" y2="5" stroke="#1a2226" stroke-width="3"/></svg>Below the peer average</span>
+            <span class="rca-key" id="peerAboveKey"><svg width="26" height="10" aria-hidden="true"><line x1="1" y1="5" x2="25" y2="5" stroke="#5b686d" stroke-width="2.5" opacity="0.55"/></svg>Above the peer average</span>
+            <span class="rca-key"><svg width="26" height="10" aria-hidden="true"><line x1="1" y1="5" x2="25" y2="5" stroke="#1a2226" stroke-width="2.5" stroke-dasharray="3 3" stroke-linecap="butt"/></svg>Below the peer average</span>
           </div>
-          <p class="peer-note" id="peerNote"></p>
         </div>
       </section>
 

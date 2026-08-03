@@ -1171,14 +1171,17 @@
       btn.textContent = peerShowAll ? "Show top " + RCA_TOP_N : "Show all " + all.length;
     }
 
-    const behind = rows.filter(d => !d.ahead).length;
-    const note = document.getElementById("peerNote");
-    if (note) {
-      note.textContent = behind === 0
-        ? cityName + " is ahead of the peer average in every industry shown."
-        : cityName + " trails the peer average in " + behind +
-          (behind === 1 ? " of these industries." : " of these industries.");
-    }
+    // Keep the legend to marks actually on screen. In bar form the city is a
+    // bar rather than a sized dot, and the "above" run isn't drawn at all —
+    // only shortfalls are — so naming it would describe nothing.
+    const isBar = (peerDesign === "bar");
+    const setKey = (id, shown) => {
+      const k = document.getElementById(id);
+      if (k) k.hidden = !shown;
+    };
+    setKey("peerCityKey", !isBar);
+    setKey("peerCityKeyBar", isBar);
+    setKey("peerAboveKey", !isBar);
   }
 
   function initPeerChart(){
