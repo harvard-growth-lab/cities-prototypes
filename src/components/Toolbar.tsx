@@ -62,8 +62,9 @@ export function Toolbar({
         Explainers
       </button>
       <nav className="toolbar-links">
-        <a href="#">About</a>
-        <a href="#">Glossary</a>
+        {/* placeholder links; a bare "#" href would clear the routing hash */}
+        <a href="#" onClick={(e) => e.preventDefault()}>About</a>
+        <a href="#" onClick={(e) => e.preventDefault()}>Glossary</a>
       </nav>
       <button className="btn-journey" onClick={onOpenJourney}>
         <JourneyIcon />

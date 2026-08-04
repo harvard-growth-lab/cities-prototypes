@@ -552,8 +552,12 @@ export function ConstraintScrolly({
           const el = sel.node() as SVGPathElement | null;
           if (!el) return;
           const len = el.getTotalLength();
+          /* a node's stem is the drop BELOW it — the start of the next arrow.
+             The stem this link flows out of belongs to its parent, so lighting
+             `id`'s own stem here would darken it one segment early */
+          const parentId = i === 0 ? "root" : ids[i - 1];
           sc.stems
-            .filter((d: Node) => d.data.id === id)
+            .filter((d: Node) => d.data.id === parentId)
             .classed("lit", true)
             .classed("dim", false);
           sel
