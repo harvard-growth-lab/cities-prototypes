@@ -1245,6 +1245,388 @@
     });
   }
 
+  /* =====================================================================
+     5 · Metro scatter — population growth vs wage growth
+
+     Dummy metros, generated once per load. Medians are set so the quadrant
+     story matches the section copy and the City Overview tables: Boston's
+     metro grows slowly (+0.4%/yr) while pay runs ahead (+4.5%/yr), which
+     lands it in the constrained-supply quadrant.
+     ===================================================================== */
+  const METRO_X_MED = 0.7;    // population CAGR, %/yr
+  const METRO_Y_MED = 4.0;    // avg-salary CAGR, %/yr
+
+  const HOME = { name: "Boston", pop: 0.4, pay: 4.5, size: 4.9 };
+  const PEER_POINTS = [
+    { name: "Washington",  pop: 0.35, pay: 4.9, size: 6.4 },
+    { name: "Seattle",     pop: 1.15, pay: 5.4, size: 4.0 },
+    { name: "Denver",      pop: 1.30, pay: 4.6, size: 3.0 },
+    { name: "San Diego",   pop: 0.25, pay: 4.3, size: 3.3 }
+  ];
+
+  let _metros = null;
+  function metroPoints(){
+    if (_metros) return _metros;
+    const rest = [];
+    for (let i = 0; i < 170; i++) {
+      // clustered around the medians, with a long tail on both axes
+      const pop = METRO_X_MED + (Math.random() + Math.random() + Math.random() - 1.5) * 1.1;
+      const pay = METRO_Y_MED + (Math.random() + Math.random() + Math.random() - 1.5) * 1.1;
+      rest.push({
+        name: "Metro area " + (i + 1),
+        pop: Math.round(pop * 100) / 100,
+        pay: Math.round(pay * 100) / 100,
+        size: Math.round((0.15 + Math.pow(Math.random(), 3) * 5.5) * 100) / 100,
+        other: true
+      });
+    }
+    _metros = rest
+      .concat(PEER_POINTS.map(p => Object.assign({ peer: true }, p)))
+      .concat([Object.assign({ home: true }, HOME)])
+      // draw the small grey mass first so highlights sit on top
+      .sort((a, b) => (a.home ? 2 : a.peer ? 1 : 0) - (b.home ? 2 : b.peer ? 1 : 0));
+    return _metros;
+  }
+
+  /* Quadrant buttons. Rendered as HTML over the chart rather than in the SVG
+     so they are real buttons — focusable, with a genuine border-radius — and
+     positioned in % so they track the responsive viewBox. */
+  const QUADS = [
+    { key:"tl", name:"Held back", pop:"down", pay:"up",
+      dx:"Negative Supply Shock",
+      blurb:"Pay is bid up because workers cannot, or will not, move in \u2014 often a housing or cost-of-living wall. Demand for labor is there; the supply of people can\u2019t follow it." },
+    { key:"tr", name:"Boomtown", pop:"up", pay:"up",
+      dx:"Positive Demand Shock",
+      blurb:"People and pay rise together. Demand for what the city produces is growing, and the city is still able to absorb the workers it pulls in." },
+    { key:"bl", name:"Cooling off", pop:"down", pay:"down",
+      dx:"Negative Demand Shock",
+      blurb:"Fewer newcomers and slower raises at the same time. Demand for the city\u2019s output has gone quiet, so neither wages nor population are being pulled up." },
+    { key:"br", name:"Lifestyle magnet", pop:"up", pay:"down",
+      dx:"Positive Supply Shock",
+      blurb:"People keep arriving even though pay lags. Amenities or cheaper living draw workers in, and that added supply of people holds wages down." }
+  ];
+
+  /* Conventional icons: a group-of-people silhouette, and a coin marked with
+     a dollar sign. Both solid so they sit together. */
+  const ICON_POP =
+    '<svg class="q-ico q-ico--pop" viewBox="0 0 24 18" aria-hidden="true">' +
+    '<circle cx="5" cy="5.4" r="3"/><circle cx="19" cy="5.4" r="3"/>' +
+    '<circle cx="12" cy="4.4" r="3.7"/>' +
+    '<path d="M0.5 17v-2.1a4.5 4.5 0 0 1 7.1-3.7 6 6 0 0 0-1.6 4.1V17Z"/>' +
+    '<path d="M23.5 17v-2.1a4.5 4.5 0 0 0-7.1-3.7 6 6 0 0 1 1.6 4.1V17Z"/>' +
+    '<path d="M6.5 17v-2.3a5.5 5.5 0 0 1 11 0V17Z"/></svg>';
+  const ICON_PAY =
+    '<svg class="q-ico q-ico--pay" viewBox="0 0 18 18" aria-hidden="true">' +
+    '<circle cx="9" cy="9" r="8"/>' +
+    '<path d="M9 3.5v11" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/>' +
+    '<path d="M11.6 6.2c-.6-.8-1.6-1.2-2.6-1.2-1.5 0-2.6.8-2.6 1.9 0 1.2 1 1.6 2.6 1.9 1.6.3 2.6.7 2.6 1.9 0 1.1-1.1 1.9-2.6 1.9-1.1 0-2.1-.4-2.7-1.2" ' +
+    'fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/></svg>';
+  const arrow = dir => '<svg class="q-arr q-arr--' + dir + '" viewBox="0 0 10 10" aria-hidden="true">' +
+    (dir === "up" ? '<path d="M5 1 9 9 1 9Z"/>' : '<path d="M5 9 1 1 9 1Z"/>') + '</svg>';
+
+  function buildQuadrantButtons(){
+    const wrap = document.getElementById("scatterWrap");
+    if (!wrap || wrap.querySelector(".q-btn")) return;
+    QUADS.forEach(q => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "q-btn q-btn--" + q.key;
+      b.dataset.q = q.key;
+      b.setAttribute("aria-expanded", "false");
+      b.innerHTML =
+        '<span class="q-btn-name">' + q.name + '</span>' +
+        '<span class="q-btn-metrics">' +
+          '<span class="q-metric">' + ICON_POP + 'Population' + arrow(q.pop) + '</span>' +
+          '<span class="q-metric">' + ICON_PAY + 'Pay' + arrow(q.pay) + '</span>' +
+        '</span>';
+      wrap.appendChild(b);
+    });
+
+    const tip = document.getElementById("quadTip");
+    if (!tip) return;
+
+    const show = btn => {
+      const q = QUADS.find(d => d.key === btn.dataset.q);
+      btn.setAttribute("aria-expanded", "true");
+      tip.innerHTML =
+        '<strong>' + q.dx + '</strong>' +
+        '<p>' + q.blurb + '</p>';
+      tip.hidden = false;
+      const w = wrap.getBoundingClientRect(), r = btn.getBoundingClientRect();
+      const left = r.left - w.left + r.width / 2 - tip.offsetWidth / 2;
+      // flip above the button when there is no room below
+      const below = r.bottom - w.top + 8;
+      const fits = below + tip.offsetHeight <= w.height;
+      tip.style.left = Math.max(6, Math.min(left, w.width - tip.offsetWidth - 6)) + "px";
+      tip.style.top = (fits ? below : r.top - w.top - tip.offsetHeight - 8) + "px";
+    };
+    const hide = btn => {
+      if (btn) btn.setAttribute("aria-expanded", "false");
+      tip.hidden = true;
+    };
+
+    wrap.querySelectorAll(".q-btn").forEach(btn => {
+      btn.addEventListener("mouseenter", () => show(btn));
+      btn.addEventListener("focus", () => show(btn));
+      btn.addEventListener("mouseleave", () => hide(btn));
+      btn.addEventListener("blur", () => hide(btn));
+      // tap support, where hover does not exist
+      btn.addEventListener("click", () => {
+        if (btn.getAttribute("aria-expanded") === "true") hide(btn); else show(btn);
+      });
+    });
+  }
+
+  /* Anchor each button just inside its quadrant, in % of the viewBox. */
+  function placeQuadrantButtons(x, y, W, H){
+    buildQuadrantButtons();
+    const wrap = document.getElementById("scatterWrap");
+    if (!wrap) return;
+    const vx = x(METRO_X_MED) / W * 100, vy = y(METRO_Y_MED) / H * 100;
+    const pad = 1.4;
+    const pos = {
+      tl: { left: (x.range()[0] / W * 100 + pad) + "%", top: (y.range()[1] / H * 100 + pad) + "%" },
+      tr: { right: ((W - x.range()[1]) / W * 100 + pad) + "%", top: (y.range()[1] / H * 100 + pad) + "%" },
+      bl: { left: (x.range()[0] / W * 100 + pad) + "%", bottom: ((H - y.range()[0]) / H * 100 + pad) + "%" },
+      br: { right: ((W - x.range()[1]) / W * 100 + pad) + "%", bottom: ((H - y.range()[0]) / H * 100 + pad) + "%" }
+    };
+    Object.keys(pos).forEach(k => {
+      const b = wrap.querySelector(".q-btn--" + k);
+      if (!b) return;
+      b.style.left = b.style.right = b.style.top = b.style.bottom = "";
+      Object.assign(b.style, pos[k]);
+    });
+    void vx; void vy;
+  }
+
+  /* =====================================================================
+     6 · Diagnostic explainer
+
+     Two dials and a draggable dot over the same four quarters as the scatter.
+     Setting the dials moves the dot; dragging the dot sets the dials. Either
+     way the verdict below explains the supply/demand mechanism.
+     ===================================================================== */
+  const DX_TEXT = {
+    tl: { title:"Negative Supply Shock",
+      body:"Demand for workers is strong, and that is what bids pay up. What is missing is the supply of people: they cannot move in, or will not. The wall is usually housing. Too few homes get built, so the cost of living swallows the raise before anyone banks it, and the city is held back by its own capacity rather than by weak demand." },
+    tr: { title:"Positive Demand Shock",
+      body:"Demand for what the city produces is growing, and both numbers move up together. Employers bid harder for workers, and workers arrive. Supply is keeping pace well enough that the newcomers do not drag pay back down, which is growth working roughly as intended." },
+    bl: { title:"Negative Demand Shock",
+      body:"Demand has gone quiet. Fewer employers competing for workers means slower raises, and slower raises mean fewer reasons to move in. Nothing is blocking supply here; there simply is not the pull. The constraint sits on the demand side." },
+    br: { title:"Positive Supply Shock",
+      body:"People arrive for reasons other than pay: amenities, space, a lower cost of living. That inflow is itself an increase in labor supply, and more workers competing for the same jobs holds wages down. The draw is the place, not the paycheck." }
+  };
+
+  function initDxExplainer(){
+    const svgEl = document.getElementById("dxChart");
+    const verdict = document.getElementById("dxVerdict");
+    if (!svgEl || !verdict) return;
+
+    const S = 300, PAD = 26, MID = S / 2;
+    const svg = d3.select(svgEl);
+    // Deepened now that the chart sits on white — the panel's own peach was
+    // washing the top-left quarter out entirely.
+    const fills = { tl:"#fbe4da", tr:"#e2ecef",
+                    bl:"#eceef0", br:"#f4ecdd" };
+    const box = { tl:[PAD, PAD], tr:[MID, PAD], bl:[PAD, MID], br:[MID, MID] };
+    Object.keys(box).forEach(k => {
+      svg.append("rect").attr("class", "dx-q dx-q--" + k)
+        .attr("x", box[k][0]).attr("y", box[k][1])
+        .attr("width", MID - PAD).attr("height", MID - PAD)
+        .attr("fill", fills[k]);
+    });
+
+    svg.append("line").attr("class", "dx-cross")
+      .attr("x1", MID).attr("x2", MID).attr("y1", PAD).attr("y2", S - PAD);
+    svg.append("line").attr("class", "dx-cross")
+      .attr("x1", PAD).attr("x2", S - PAD).attr("y1", MID).attr("y2", MID);
+
+    svg.append("text").attr("class", "dx-axis")
+      .attr("x", S - PAD).attr("y", MID - 8).attr("text-anchor", "end")
+      .text("People \u2192");
+    svg.append("text").attr("class", "dx-axis")
+      .attr("transform", "rotate(-90)")
+      .attr("x", -(PAD)).attr("y", MID - 8).attr("text-anchor", "end")
+      .text("Pay \u2191");
+
+    const dot = svg.append("circle").attr("class", "dx-dot")
+      .attr("cx", MID).attr("cy", MID).attr("r", 9);
+
+    let state = { pop:null, pay:null };
+
+    const quadOf = (px, py) =>
+      (py < MID ? "t" : "b") + (px < MID ? "l" : "r");
+
+    function paint(){
+      svg.selectAll(".dx-q").classed("is-on", false);
+      const q = (state.pop && state.pay)
+        ? (state.pay === "up" ? "t" : "b") + (state.pop === "up" ? "r" : "l")
+        : null;
+      if (q) svg.select(".dx-q--" + q).classed("is-on", true);
+
+      document.querySelectorAll(".dx-opt").forEach(b => {
+        b.classList.toggle("is-on", state[b.dataset.dial] === b.dataset.val);
+      });
+
+      if (!q) {
+        verdict.innerHTML =
+          '<h5 class="dx-step-head">2 · What that tells you</h5>' +
+          '<p class="dx-idle">Set both dials — or drag the dot on the chart.</p>';
+        return;
+      }
+      const t = DX_TEXT[q];
+      verdict.innerHTML =
+        '<h5 class="dx-step-head">2 · What that tells you</h5>' +
+        '<strong class="dx-verdict-title">' + t.title + '</strong>' +
+        '<p class="dx-verdict-body">' + t.body + '</p>';
+    }
+
+    function moveDotToState(){
+      if (!state.pop || !state.pay) return;
+      const cx = state.pop === "up" ? MID + 52 : MID - 52;
+      const cy = state.pay === "up" ? MID - 52 : MID + 52;
+      dot.transition().duration(260).attr("cx", cx).attr("cy", cy);
+    }
+
+    document.querySelectorAll(".dx-opt").forEach(b => {
+      b.addEventListener("click", () => {
+        state[b.dataset.dial] = b.dataset.val;
+        paint(); moveDotToState();
+      });
+    });
+
+    // drag the dot by hand — it sets the dials rather than reading them
+    let dragging = false;
+    const place = ev => {
+      const r = svgEl.getBoundingClientRect();
+      const pt = ev.touches ? ev.touches[0] : ev;
+      const px = Math.max(PAD, Math.min(S - PAD, (pt.clientX - r.left) / r.width * S));
+      const py = Math.max(PAD, Math.min(S - PAD, (pt.clientY - r.top) / r.height * S));
+      dot.interrupt().attr("cx", px).attr("cy", py);
+      const q = quadOf(px, py);
+      state.pop = q[1] === "r" ? "up" : "down";
+      state.pay = q[0] === "t" ? "up" : "down";
+      paint();
+    };
+    svgEl.addEventListener("pointerdown", e => {
+      dragging = true; svgEl.setPointerCapture(e.pointerId); place(e); e.preventDefault();
+    });
+    svgEl.addEventListener("pointermove", e => { if (dragging) place(e); });
+    svgEl.addEventListener("pointerup", e => {
+      dragging = false;
+      try { svgEl.releasePointerCapture(e.pointerId); } catch (err) {}
+    });
+
+    paint();
+  }
+
+  function renderMetroScatter(){
+    const el = document.getElementById("metroScatterSvg");
+    if (!el) return;
+
+    const data = metroPoints();
+    const W = 880, H = 560;
+    // Room for the axis lines and their labels: the top clears the "typical"
+    // caption, the left and bottom clear ticks plus the axis titles.
+    const M = { top: 46, right: 30, bottom: 82, left: 92 };
+
+    const svg = d3.select(el).attr("viewBox", "0 0 " + W + " " + H);
+    svg.selectAll("*").remove();
+
+    const x = d3.scaleLinear()
+      .domain(d3.extent(data, d => d.pop)).nice()
+      .range([M.left, W - M.right]);
+    const y = d3.scaleLinear()
+      .domain(d3.extent(data, d => d.pay)).nice()
+      .range([H - M.bottom, M.top]);
+    const r = d3.scaleSqrt()
+      .domain([0, d3.max(data, d => d.size)]).range([1.3, 12]);
+
+    // the quadrant this section is about
+    svg.append("rect").attr("class", "ms-quad")
+      .attr("x", x.range()[0]).attr("y", y.range()[1])
+      .attr("width", x(METRO_X_MED) - x.range()[0])
+      .attr("height", y(METRO_Y_MED) - y.range()[1]);
+
+    x.ticks(6).forEach(t => {
+      svg.append("line").attr("class", "ms-grid")
+        .attr("x1", x(t)).attr("x2", x(t)).attr("y1", M.top).attr("y2", H - M.bottom);
+      svg.append("text").attr("class", "ms-tick")
+        .attr("x", x(t)).attr("y", H - M.bottom + 20).attr("text-anchor", "middle")
+        .text(t + "%");
+    });
+    y.ticks(6).forEach(t => {
+      svg.append("line").attr("class", "ms-grid")
+        .attr("x1", M.left).attr("x2", W - M.right).attr("y1", y(t)).attr("y2", y(t));
+      svg.append("text").attr("class", "ms-tick")
+        .attr("x", M.left - 10).attr("y", y(t) + 4).attr("text-anchor", "end")
+        .text(t.toFixed(1) + "%");
+    });
+
+    // solid axis lines framing the plot, drawn over the gridlines
+    svg.append("line").attr("class", "ms-axis-line")
+      .attr("x1", M.left).attr("x2", M.left)
+      .attr("y1", M.top).attr("y2", H - M.bottom);
+    svg.append("line").attr("class", "ms-axis-line")
+      .attr("x1", M.left).attr("x2", W - M.right)
+      .attr("y1", H - M.bottom).attr("y2", H - M.bottom);
+
+    // medians that split the four quadrants
+    svg.append("line").attr("class", "ms-median")
+      .attr("x1", x(METRO_X_MED)).attr("x2", x(METRO_X_MED))
+      .attr("y1", M.top).attr("y2", H - M.bottom);
+    svg.append("line").attr("class", "ms-median")
+      .attr("x1", M.left).attr("x2", W - M.right)
+      .attr("y1", y(METRO_Y_MED)).attr("y2", y(METRO_Y_MED));
+
+    // Reference lines get named in place — "typical" is what the dashed
+    // crosshair actually means, and saying so beats a legend.
+    svg.append("text").attr("class", "ms-typical")
+      .attr("x", x(METRO_X_MED)).attr("y", M.top - 10).attr("text-anchor", "middle")
+      .text("Typical population growth");
+    svg.append("path").attr("class", "ms-typical-mark")
+      .attr("d", "M" + (x(METRO_X_MED) - 4) + " " + (M.top - 6) +
+                 "L" + (x(METRO_X_MED) + 4) + " " + (M.top - 6) +
+                 "L" + x(METRO_X_MED) + " " + (M.top) + "Z");
+
+    svg.append("text").attr("class", "ms-typical")
+      .attr("x", W - M.right - 10).attr("y", y(METRO_Y_MED) - 8).attr("text-anchor", "end")
+      .text("Typical salary growth");
+    svg.append("path").attr("class", "ms-typical-mark")
+      .attr("d", "M" + (W - M.right) + " " + (y(METRO_Y_MED) - 4) +
+                 "L" + (W - M.right) + " " + (y(METRO_Y_MED) + 4) +
+                 "L" + (W - M.right - 5) + " " + y(METRO_Y_MED) + "Z");
+
+    svg.append("text").attr("class", "ms-axis-title")
+      .attr("x", (M.left + W - M.right) / 2).attr("y", H - 14)
+      .attr("text-anchor", "middle")
+      .text("Population growth (annual rate, 2014\u20132024)");
+    svg.append("text").attr("class", "ms-axis-title")
+      .attr("transform", "rotate(-90)")
+      .attr("x", -(M.top + H - M.bottom) / 2).attr("y", 24)
+      .attr("text-anchor", "middle")
+      .text("Average salary growth (annual rate, 2014\u20132024)");
+
+    placeQuadrantButtons(x, y, W, H);
+
+    svg.append("g").selectAll("circle").data(data).join("circle")
+      .attr("class", d => "ms-dot" + (d.home ? " ms-dot--home" : d.peer ? " ms-dot--peer" : ""))
+      .attr("cx", d => x(d.pop)).attr("cy", d => y(d.pay))
+      .attr("r", d => r(d.size));
+
+    // Peers are named too, but smaller — they are context, not the subject.
+    svg.append("g").selectAll("text")
+      .data(data.filter(d => d.peer)).join("text")
+      .attr("class", "ms-peer-label")
+      .attr("x", d => x(d.pop) + r(d.size) + 6)
+      .attr("y", d => y(d.pay) + 4)
+      .text(d => d.name);
+
+    svg.append("text").attr("class", "ms-home-label")
+      .attr("x", x(HOME.pop) + r(HOME.size) + 8).attr("y", y(HOME.pay) + 5)
+      .text(HOME.name);
+  }
+
   function init(){
     if (typeof d3 === "undefined") return;
     renderStaticTreemap();
@@ -1253,6 +1635,8 @@
     initRcaChart();
     initPeerChart();
     initPeerCityChips();
+    renderMetroScatter();
+    initDxExplainer();
   }
 
   window.CityTreemaps = { setColorBy };
