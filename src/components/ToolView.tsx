@@ -68,7 +68,12 @@ export function ToolView({
       },
       { root, threshold: 0.55 },
     );
+    /* the two City Constraints steps live inside the scrolly's sticky track
+       and report themselves from its scroll position — a mid-track flip is
+       beyond a visibility-ratio observer on thin anchors */
+    const selfReporting = new Set(["page-constraints", "page-constraints-diagnose"]);
     PAGE_IDS.forEach((id) => {
+      if (selfReporting.has(id)) return;
       const el = document.getElementById(id);
       if (el) observer.observe(el);
     });
@@ -124,9 +129,14 @@ export function ToolView({
             cityShort={cityShort}
             selectedPath={branchPath}
             onSelectPath={onSelectBranch}
+            onPhaseInView={onPageInView}
           />
 
-          <BranchAnalysisPage cityShort={cityShort} branchPath={branchPath} />
+          <BranchAnalysisPage
+            cityShort={cityShort}
+            branchPath={branchPath}
+            onSelectBranch={onSelectBranch}
+          />
 
           {/* Levers for Change (empty for now) */}
           <section className="page" id="page-levers"></section>

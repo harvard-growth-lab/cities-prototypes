@@ -4,202 +4,602 @@
    live in a right rail; the stage keeps the rest. */
 
 /* ============ scrolly scaffold ============ */
-.jz-scrolly{position:relative;height:300vh;}
-.jz-sticky{
-  position:sticky;top:0;height:calc(100vh - 72px);
-  display:flex;flex-direction:column;min-height:0;
-  padding:16px 40px 14px 44px;background:#fff;
+.jz-scrolly {
+  position: relative;
+  height: 300vh;
 }
-/* invisible anchors that keep the rail's scroll-spy + navigation working */
-.jz-anchor{position:absolute;left:0;width:2px;opacity:0;pointer-events:none;}
-.jz-anchor-top{top:0;height:80vh;}
-.jz-anchor-bottom{bottom:0;height:80vh;}
+.jz-sticky {
+  position: sticky;
+  top: 0;
+  height: calc(100vh - 72px);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 16px 40px 14px 44px;
+  background: #fff;
+}
+/* invisible anchors: click targets for the rail's two steps (the scroll-spy
+   itself is reported from the track's scroll position). The bottom anchor
+   sits mid-track so navigating to "How we diagnose" lands on the tree phase
+   with the sticky stage still pinned and fully framed. */
+.jz-anchor {
+  position: absolute;
+  left: 0;
+  width: 2px;
+  opacity: 0;
+  pointer-events: none;
+}
+.jz-anchor-top {
+  top: 0;
+  height: 40vh;
+}
+.jz-anchor-bottom {
+  top: 130vh;
+  height: 40vh;
+}
 
-.jz-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px 28px;}
-.jz-titles .eyebrow{display:block;margin-bottom:3px;}
-.jz-h2s{display:grid;}
-.jz-h2s h2{
-  grid-area:1/1;font-size:25px;font-weight:600;letter-spacing:-.3px;
-  opacity:0;transition:opacity .35s ease;white-space:nowrap;
+.jz-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px 28px;
 }
-.jz-h2s h2.on{opacity:1;}
+.jz-titles .eyebrow {
+  display: block;
+  margin-bottom: 3px;
+}
+.jz-h2s {
+  display: grid;
+}
+.jz-h2s h2 {
+  grid-area: 1/1;
+  font-size: 25px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  white-space: nowrap;
+}
+.jz-h2s h2.on {
+  opacity: 1;
+}
 
-.jz-body{flex:1;min-height:0;display:flex;gap:20px;}
-.jz-stagewrap{
-  flex:1;min-width:0;min-height:0;position:relative;
-  display:flex;align-items:center;justify-content:center;
+.jz-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  gap: 20px;
 }
-.jz-svg{width:100%;height:100%;display:block;overflow:hidden;}
+.jz-stagewrap {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.jz-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: hidden;
+}
 
 /* ============ scene A: the pizza chart ============ */
-.jz-quad rect{
-  fill-opacity:.06;stroke-opacity:0;stroke-width:1.5;
-  transition:fill-opacity .3s ease, stroke-opacity .3s ease;
+.jz-quad rect {
+  fill-opacity: 0.06;
+  stroke-opacity: 0;
+  stroke-width: 1.5;
+  transition:
+    fill-opacity 0.3s ease,
+    stroke-opacity 0.3s ease;
 }
-.jz-quad.sel rect{fill-opacity:.15;stroke-opacity:.45;}
-.jz-shock{font-size:22px;font-weight:700;}
-.jz-sub{font-size:15.5px;fill:var(--ink-soft);}
-.jz-tag{font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;}
-.jz-axis{stroke:var(--teal);stroke-width:1.8;}
-.jz-axis-title{font-size:15px;font-weight:700;fill:var(--ink);}
+.jz-quad.sel rect {
+  fill-opacity: 0.15;
+  stroke-opacity: 0.45;
+}
+.jz-shock {
+  font-size: 22px;
+  font-weight: 700;
+}
+.jz-sub {
+  font-size: 15.5px;
+  fill: var(--ink-soft);
+}
+.jz-tag {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.jz-axis {
+  stroke: var(--teal);
+  stroke-width: 1.8;
+}
+.jz-axis-title {
+  font-size: 15px;
+  font-weight: 700;
+  fill: var(--ink);
+}
 
 /* the MSA ring + the place dot */
-.jz-msadot .ring{fill:#fff;stroke:#5b686d;stroke-width:2.5;}
-.jz-msadot text,.jz-placedot text{
-  font-size:16.5px;font-weight:700;fill:#1a2226;
-  paint-order:stroke;stroke:#fff;stroke-width:4px;
+.jz-msadot .ring {
+  fill: #fff;
+  stroke: #5b686d;
+  stroke-width: 2.5;
 }
-.jz-msadot text.stats,.jz-placedot text.stats{
-  font-size:13px;font-weight:600;fill:var(--ink-soft);
+.jz-msadot text,
+.jz-placedot text {
+  font-size: 16.5px;
+  font-weight: 700;
+  fill: #1a2226;
+  paint-order: stroke;
+  stroke: #fff;
+  stroke-width: 4px;
 }
-.jz-placedot .core{fill:#1a2226;stroke:#fff;stroke-width:2;}
-.jz-placedot .halo{fill:none;stroke:#1a2226;stroke-opacity:0;stroke-width:1.8;}
-.jz-placedot.pulse .halo{animation:jz-pulse 1.6s ease-out infinite;}
-@keyframes jz-pulse{
-  0%{r:9;stroke-opacity:.5;}
-  70%{r:24;stroke-opacity:0;}
-  100%{r:24;stroke-opacity:0;}
+.jz-msadot text.stats,
+.jz-placedot text.stats {
+  font-size: 13px;
+  font-weight: 600;
+  fill: var(--ink-soft);
+}
+.jz-placedot .core {
+  fill: #1a2226;
+  stroke: #fff;
+  stroke-width: 2;
+}
+.jz-placedot .halo {
+  fill: none;
+  stroke: #1a2226;
+  stroke-opacity: 0;
+  stroke-width: 1.8;
+}
+.jz-placedot.pulse .halo {
+  animation: jz-pulse 1.6s ease-out infinite;
+}
+@keyframes jz-pulse {
+  0% {
+    r: 9;
+    stroke-opacity: 0.5;
+  }
+  70% {
+    r: 24;
+    stroke-opacity: 0;
+  }
+  100% {
+    r: 24;
+    stroke-opacity: 0;
+  }
 }
 
 /* ============ scene B: the tree ============ */
-.tree-link,.tree-stem{fill:none;stroke-width:1.7;opacity:.55;transition:opacity .25s ease;}
-.tree-link.lit,.tree-stem.lit{opacity:1;stroke-width:2.6;}
-.tree-link.dim,.tree-stem.dim{opacity:.3;}
+.tree-link,
+.tree-stem {
+  fill: none;
+  stroke-width: 1.7;
+  opacity: 0.55;
+  transition: opacity 0.25s ease;
+}
+.tree-link.lit,
+.tree-stem.lit {
+  opacity: 1;
+  stroke-width: 2.6;
+}
+.tree-link.dim,
+.tree-stem.dim {
+  opacity: 0.3;
+}
 
 /* the area-linked hover capture surface: the whole stage maps the pointer to
-   the nearest node, so individual shapes never take pointer events */
-.jz-capture{fill:transparent;pointer-events:all;cursor:pointer;}
-.jz-chart{pointer-events:none;}
-
-.tree-node{outline:none;}
-.tree-hit{fill:transparent;}
-.tree-node.hovered .tree-hit{fill:rgba(37,88,98,.06);}
-.tree-label{
-  font-size:17.5px;line-height:1.25;fill-opacity:.92;pointer-events:none;
-  transition:fill-opacity .25s ease;
+   the nearest node, so individual shapes never take pointer events. The
+   pointer cursor is set inline, ONLY while a selectable end leaf is hovered */
+.jz-capture {
+  fill: transparent;
+  pointer-events: all;
 }
-.tree-node.lead .tree-label{font-size:20px;font-weight:700;}
-.tree-node .tree-label{font-weight:600;}
-.tree-node.lit .tree-label{fill-opacity:1;}
-.tree-node.dim .tree-label{fill-opacity:.55;}
+.jz-chart {
+  pointer-events: none;
+}
+
+.tree-node {
+  outline: none;
+}
+.tree-hit {
+  fill: transparent;
+}
+.tree-node.hovered .tree-hit {
+  fill: rgba(37, 88, 98, 0.06);
+}
+.tree-label {
+  font-size: 17.5px;
+  line-height: 1.25;
+  fill-opacity: 0.92;
+  pointer-events: none;
+  transition: fill-opacity 0.25s ease;
+}
+.tree-node.lead .tree-label {
+  font-size: 20px;
+  font-weight: 700;
+}
+.tree-node .tree-label {
+  font-weight: 600;
+}
+.tree-node.lit .tree-label {
+  fill-opacity: 1;
+}
+.tree-node.dim .tree-label {
+  fill-opacity: 0.55;
+}
 
 /* the picked node — the descent the next section analyses (click to set) */
-.tree-node.picked .tree-hit{stroke-width:1.5;stroke-dasharray:4 3;}
-.tree-node.side-demand.picked .tree-hit{stroke:#1d4b54;fill:rgba(29,75,84,.05);}
-.tree-node.side-supply.picked .tree-hit{stroke:#b8431f;fill:rgba(184,67,31,.05);}
+.tree-node.picked .tree-hit {
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+}
+.tree-node.side-demand.picked .tree-hit {
+  stroke: #1d4b54;
+  fill: rgba(29, 75, 84, 0.05);
+}
+.tree-node.side-supply.picked .tree-hit {
+  stroke: #b8431f;
+  fill: rgba(184, 67, 31, 0.05);
+}
 
 /* the path the user is on: highlighter underlay + badge. Wide enough that the
    glow reads around the 2.6px lit link drawn over its centre; one continuous
    stroke per level with round caps/joins, ending at the padded label bounds
    so it wraps the line ends but stays clear of the text */
-.tree-home{
-  fill:none;stroke-width:10;opacity:.16;
-  stroke-linecap:round;stroke-linejoin:round;
+.tree-home {
+  fill: none;
+  stroke-width: 10;
+  opacity: 0.16;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
-.jz-youare text{
-  font-size:13px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;fill:#fff;
+.jz-youare text {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  fill: #fff;
+}
+
+/* the leaf-hover tip: rides the cursor over a selectable end leaf, so it
+   must never catch the pointer itself */
+.jz-seltip {
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+.jz-seltip text {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  fill: #fff;
 }
 
 /* ============ the rail minimap (always expanded) ============ */
-.jz-mini{
-  width:100%;
-  background:rgba(255,255,255,.95);border:1px solid var(--border);
-  border-radius:10px;padding:8px;box-shadow:var(--shadow-sm);
-  opacity:0;transition:opacity .35s ease;
-  pointer-events:none; /* hidden minimap must not catch quadrant hovers */
+.jz-mini {
+  /* narrower than the rail: the rail's height is a fixed budget (sticky
+     stage), and every px of pizza height comes out of the caption below */
+  width: min(100%, 260px);
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px;
+  box-shadow: var(--shadow-sm);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  pointer-events: none; /* hidden minimap must not catch quadrant hovers */
 }
-.jz-mini.show{opacity:1;pointer-events:auto;}
+.jz-mini.show {
+  opacity: 1;
+  pointer-events: auto;
+}
 /* only the quadrant rects are hover targets — labels, axes and dots must not
    swallow the pointer */
-.jz-mini svg text,.jz-mini svg line,.jz-mini svg circle{pointer-events:none;}
-.jz-mini svg{width:100%;height:auto;display:block;}
-.jz-mini-quad{
-  fill-opacity:.05;stroke-opacity:0;stroke-width:2;
-  transition:fill-opacity .2s ease, stroke-opacity .2s ease;
+.jz-mini svg text,
+.jz-mini svg line,
+.jz-mini svg circle {
+  pointer-events: none;
 }
-.jz-mini-quad.place{stroke-opacity:.4;fill-opacity:.13;}
-.jz-mini-quad.hl{fill-opacity:.3;stroke-opacity:.85;}
-.jz-mini-axis{stroke:var(--teal);stroke-width:1.5;}
-.jz-mini-shock{font-size:13px;font-weight:700;}
-.jz-mini-sub{font-size:11px;fill:var(--ink-soft);}
-.jz-mini-msa{fill:#fff;stroke:#5b686d;stroke-width:2.5;}
-.jz-mini-place{fill:#1a2226;stroke:#fff;stroke-width:2;}
-.jz-mini-dotlabel{
-  font-size:13.5px;font-weight:700;fill:#1a2226;
-  paint-order:stroke;stroke:#fff;stroke-width:3px;
+.jz-mini svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.jz-mini-quad {
+  fill-opacity: 0.05;
+  stroke-opacity: 0;
+  stroke-width: 2;
+  transition:
+    fill-opacity 0.2s ease,
+    stroke-opacity 0.2s ease;
+}
+.jz-mini-quad.place {
+  stroke-opacity: 0.4;
+  fill-opacity: 0.13;
+}
+.jz-mini-quad.hl {
+  fill-opacity: 0.3;
+  stroke-opacity: 0.85;
+}
+.jz-mini-axis {
+  stroke: var(--teal);
+  stroke-width: 1.5;
+}
+.jz-mini-shock {
+  font-size: 13px;
+  font-weight: 700;
+}
+.jz-mini-sub {
+  font-size: 11px;
+  fill: var(--ink-soft);
+}
+.jz-mini-msa {
+  fill: #fff;
+  stroke: #5b686d;
+  stroke-width: 2.5;
+}
+.jz-mini-place {
+  fill: #1a2226;
+  stroke: #fff;
+  stroke-width: 2;
+}
+.jz-mini-dotlabel {
+  font-size: 13.5px;
+  font-weight: 700;
+  fill: #1a2226;
+  paint-order: stroke;
+  stroke: #fff;
+  stroke-width: 3px;
 }
 
 /* ============ rail captions ============ */
-.jz-rail{
-  width:330px;flex:0 0 330px;min-height:0;
-  display:flex;flex-direction:column;gap:16px;padding-top:6px;
-  overflow:hidden;
+.jz-rail {
+  width: 330px;
+  flex: 0 0 330px;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 6px;
+  overflow: hidden;
 }
-.jz-railtext{display:flex;flex-direction:column;gap:7px;}
-.jz-cap-kickrow{display:flex;align-items:center;justify-content:space-between;gap:12px;}
-.fig-kicker{
-  font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--teal);
+.jz-railtext {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  /* natural height, so "up next" follows the caption instead of pinning to
+     the rail's bottom; on viewports too short for the whole rail, the
+     caption shrinks and scrolls instead of clipping */
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow-y: auto;
 }
-.jz-dots{display:inline-flex;gap:5px;}
-.jz-dots i{
-  width:7px;height:7px;border-radius:50%;
-  border:1.5px solid var(--border-strong);background:#fff;
+
+/* short laptops: shrink the pizza further before the caption has to scroll */
+@media (max-height: 760px) {
+  .jz-mini {
+    width: min(100%, 216px);
+  }
 }
-.jz-dots i.done{background:var(--border-strong);}
-.jz-dots i.on{background:var(--orange);border-color:var(--orange);}
-.jz-cap-title{font-size:19px;font-weight:700;color:var(--ink);margin-top:2px;}
-.jz-cap-body{font-size:16px;line-height:25px;color:#000;}
-.jz-cap-tests{font-style:italic;color:var(--ink-soft);font-size:14.5px;}
-.fig-trail{
-  display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:2px;
-  font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;
+.jz-cap-kickrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
-.fig-trail b{color:var(--border-strong);font-weight:400;}
+.fig-kicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--teal);
+}
+.jz-dots {
+  display: inline-flex;
+  gap: 5px;
+}
+.jz-dots i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-strong);
+  background: #fff;
+}
+.jz-dots i.done {
+  background: var(--border-strong);
+}
+.jz-dots i.on {
+  background: var(--orange);
+  border-color: var(--orange);
+}
+.jz-cap-title {
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-top: 2px;
+}
+.jz-cap-body {
+  font-size: 16px;
+  line-height: 25px;
+  color: #000;
+}
+.jz-cap-tests {
+  font-style: italic;
+  color: var(--ink-soft);
+  font-size: 14.5px;
+}
+.fig-trail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+/* breadcrumb separators: the trail reads as a progressive descent */
+.fig-trail .crumb-sep {
+  color: var(--ink-soft);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1;
+}
 
 /* the rail's "next section" pointer — renamed live by the picked branch */
-.jz-next{
-  margin-top:auto;display:flex;flex-direction:column;gap:4px;align-items:flex-start;
-  border-top:1px solid var(--border);padding-top:12px;
-  opacity:0;transition:opacity .35s ease;
+.jz-next {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-start;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+  opacity: 0;
+  transition: opacity 0.35s ease;
 }
-.jz-next.show{opacity:1;}
-.jz-next-k{
-  font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
-  color:var(--ink-soft);
+.jz-next.show {
+  opacity: 1;
 }
-.jz-next-name{font-size:17px;font-weight:700;}
-.jz-next .ph{font-size:12.5px;}
+.jz-next-k {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.jz-next-name {
+  font-size: 17px;
+  font-weight: 700;
+}
+.jz-next .ph {
+  font-size: 12.5px;
+}
 
 /* bracketed prototype placeholder text */
-.ph{
-  font-style:italic;color:var(--ink-soft);
-  border-bottom:1px dashed var(--border-strong);
+.ph {
+  font-style: italic;
+  color: var(--ink-soft);
+  border-bottom: 1px dashed var(--border-strong);
 }
 
 /* ============ the branch-analysis page (empty; named by the picked branch) ============ */
-.ba-body{
-  flex:1;min-height:0;display:flex;gap:36px;align-items:stretch;
-  max-width:1280px;margin-top:14px;
+.ba-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  gap: 36px;
+  align-items: stretch;
+  max-width: 1280px;
+  margin-top: 14px;
 }
-.ba-body .placeholder-frame{flex:1;margin-top:0;max-width:none;}
-.ba-context{
-  width:400px;flex:0 0 400px;align-self:flex-start;
-  display:flex;flex-direction:column;gap:12px;
-  background:#fff;border:1px solid var(--border);border-radius:12px;
-  padding:18px 20px 16px;box-shadow:var(--shadow-sm);
+.ba-body .placeholder-frame {
+  flex: 1;
+  margin-top: 0;
+  max-width: none;
 }
-.ba-kicker{
-  font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
-  color:var(--ink-soft);
+.ba-context {
+  width: 400px;
+  flex: 0 0 400px;
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 20px 16px;
+  box-shadow: var(--shadow-sm);
 }
-.ba-mini{width:100%;height:auto;display:block;}
-.ba-link{fill:none;stroke-width:1.3;}
-.ba-link.on{stroke-width:2.4;}
-.ba-lab{font-size:10.5px;font-weight:700;}
-.ba-lab.root{fill:var(--ink-soft);font-weight:600;letter-spacing:.4px;}
-.ba-here-ring{fill:none;stroke-width:1.6;}
-.ba-here-chip{
-  color:#fff;font-size:9.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
-  border-radius:9px;padding:3px 9px;
+.ba-kicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--ink-soft);
 }
-.ba-note{font-size:13px;line-height:20px;}
+.ba-mini {
+  width: 100%;
+  height: auto;
+  display: block;
+  cursor: pointer;
+}
+/* the data-driven suggestion holds a middle emphasis: side-coloured but
+   translucent, sitting between the lit pick and the faded grey rest */
+.ba-link.sugg {
+  opacity: 0.35;
+  stroke-width: 3;
+}
+.ba-dot.sugg {
+  opacity: 0.4;
+}
+/* the hovered path previews below full emphasis — commit happens on click */
+.ba-link.preview {
+  opacity: 0.6;
+  stroke-width: 2;
+}
+.ba-dot.preview {
+  opacity: 0.65;
+}
+/* the rest keeps its side colour, just very faint */
+.ba-link.faint {
+  opacity: 0.15;
+}
+.ba-dot.faint {
+  opacity: 0.2;
+}
+.ba-lab.faint {
+  opacity: 0.5;
+}
+.ba-legend {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11.5px;
+  font-style: italic;
+  color: var(--ink-soft);
+}
+.ba-legend i {
+  width: 16px;
+  height: 6px;
+  border-radius: 3px;
+  opacity: 0.3;
+  flex: 0 0 auto;
+}
+.ba-link {
+  fill: none;
+  stroke-width: 1.3;
+}
+.ba-link.on {
+  stroke-width: 2.4;
+}
+.ba-lab {
+  font-size: 10.5px;
+  font-weight: 700;
+}
+.ba-lab.root {
+  fill: var(--ink-soft);
+  font-weight: 600;
+  letter-spacing: 0.4px;
+}
+.ba-here-ring {
+  fill: none;
+  stroke-width: 1.6;
+}
+.ba-here-chip {
+  color: #fff;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border-radius: 9px;
+  padding: 3px 9px;
+}
+.ba-note {
+  font-size: 13px;
+  line-height: 20px;
+}

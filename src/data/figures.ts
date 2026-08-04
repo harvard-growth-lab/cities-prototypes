@@ -23,7 +23,7 @@ export interface TreeNodeData {
 }
 
 export const TREE_ROOT_QUESTION =
-  "What are the binding constraints to achieve better, more inclusive, higher, or more resilient economic growth?";
+  "What are binding constraints for economic growth in cities?";
 
 /** side colors, darkened a step from the site tokens so figure text holds up
  *  at small sizes (base tokens: --teal #255862, --orange-dark #cf4f2c) */
@@ -107,6 +107,25 @@ export const QUADRANTS: QuadrantDef[] = [
  *  taken in the tree and the default branch for the section that follows. */
 export const PLACE_QUAD: QuadrantDef = QUADRANTS.find((q) => q.id === "q4")!;
 
+/** A selection must name a FULL route — the section that follows navigates to
+ *  a leaf, so a pick on an inner node completes downward: follow whichever
+ *  child continues an already-marked path (the current pick first, then the
+ *  data-driven suggestion), else the leftmost child. */
+export function completeToLeaf<N extends { data: TreeNodeData; children?: N[] }>(
+  node: N,
+  preferred: string[][],
+): N {
+  let n = node;
+  while (n.children?.length) {
+    const kids = n.children;
+    n =
+      preferred
+        .map((ids) => kids.find((c) => ids.includes(c.data.id)))
+        .find(Boolean) ?? kids[0];
+  }
+  return n;
+}
+
 /** Node titles and sibling order follow the figure exactly (left → right). */
 export const TREE_NODES: TreeNodeData[] = [
   {
@@ -153,7 +172,8 @@ export const TREE_NODES: TreeNodeData[] = [
       "Chicken-and-egg failures: a new industry needs suppliers, trained workers, and specialized infrastructure that only appear once the industry exists. Nobody profitably moves first, so the diversification the city's know-how could support never happens.",
     example:
       "The serendipity workaround is to move brains in — Microsoft to Seattle, Walmart to Bentonville.",
-    tests: "Magnetic fields: do capable firms look at the city and then locate elsewhere?",
+    tests:
+      "Magnetic fields: do capable firms look at the city and then locate elsewhere?",
   },
   {
     id: "external",
@@ -161,7 +181,8 @@ export const TREE_NODES: TreeNodeData[] = [
     title: "External shocks",
     detail:
       "Global industry trends, technological change, natural disasters, national demographics — forces no city controls. Shift-share (Bartik) analysis helps disentangle local dynamics from external ones. The policy answer is not to reverse the shock but to build resilience by diversifying the export base.",
-    example: "Detroit's single-industry exposure; Acapulco and natural disasters; Japan and aging.",
+    example:
+      "Detroit's single-industry exposure; Acapulco and natural disasters; Japan and aging.",
     tests: "Changes in changes: did city growth move when the shock hit?",
   },
   {
@@ -200,7 +221,8 @@ export const TREE_NODES: TreeNodeData[] = [
     title: "Amenities",
     detail:
       "What makes a place attractive on top of what it costs. The figure's own examples: recreational services like restaurants; the natural environment, such as parks, public spaces or climate; and other services such as education, childcare or public safety. Amenities are hard to quantify, but a city gets unattractive when public goods are poor, natural conditions are unfavorable, or recreation is scarce.",
-    example: "Flint after the water crisis: rising wages, falling home values, outmigration.",
+    example:
+      "Flint after the water crisis: rising wages, falling home values, outmigration.",
     tests: "Magnetic fields, plus a falling revealed premium for living there.",
   },
   {
@@ -209,8 +231,10 @@ export const TREE_NODES: TreeNodeData[] = [
     title: "Housing",
     detail:
       "Inelastic housing supply — FAR limits, height caps, parking minimums, missing trunk infrastructure — turns growth into prices instead of people. The boom arrives, the cranes do not, and rent eats the wage gain.",
-    example: "San Francisco's restrictive zoning; slums where formal supply cannot respond.",
-    tests: "High price with low quantity: are prices rising while little gets built?",
+    example:
+      "San Francisco's restrictive zoning; slums where formal supply cannot respond.",
+    tests:
+      "High price with low quantity: are prices rising while little gets built?",
   },
   {
     id: "transport",
@@ -218,7 +242,9 @@ export const TREE_NODES: TreeNodeData[] = [
     title: "Transportation",
     detail:
       "Congestion shrinks the effective labor market: the jobs exist but cannot be reached within a livable commute, so workers and firms match badly. Distorted urban form makes this worse, and it feeds back into housing costs.",
-    example: "Nairobi, where driving speeds sharply cut the number of reachable jobs.",
-    tests: "Bypassing: informal transit, moving next to the job, employer-run buses.",
+    example:
+      "Nairobi, where driving speeds sharply cut the number of reachable jobs.",
+    tests:
+      "Bypassing: informal transit, moving next to the job, employer-run buses.",
   },
 ];
