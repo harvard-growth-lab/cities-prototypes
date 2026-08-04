@@ -103,6 +103,36 @@ const STEP_COPY: { kicker: string; body: string }[] = [
   },
 ];
 
+/* one tiny line icon per step, shown beside the rail kicker */
+const STEP_ICONS: React.ReactNode[] = [
+  /* the quartered chart */
+  <svg viewBox="0 0 13 13" fill="none" stroke="currentColor" strokeWidth="1.4">
+    <circle cx="6.5" cy="6.5" r="5.4" />
+    <path d="M6.5 1.1v10.8M1.1 6.5h10.8" />
+  </svg>,
+  /* the MSA ring */
+  <svg viewBox="0 0 13 13" fill="none" stroke="currentColor" strokeWidth="1.4">
+    <circle cx="6.5" cy="6.5" r="5" />
+    <circle cx="6.5" cy="6.5" r="1.4" fill="currentColor" stroke="none" />
+  </svg>,
+  /* the place pin */
+  <svg viewBox="0 0 13 13" fill="none" stroke="currentColor" strokeWidth="1.4">
+    <path d="M6.5 11.9c2.9-3.2 4.4-5.3 4.4-7.2a4.4 4.4 0 1 0-8.8 0c0 1.9 1.5 4 4.4 7.2Z" />
+    <circle cx="6.5" cy="4.9" r="1.5" />
+  </svg>,
+  /* the fork */
+  <svg viewBox="0 0 13 13" fill="none" stroke="currentColor" strokeWidth="1.4">
+    <path d="M6.5 1.6v3M6.5 4.6 3 7v3M6.5 4.6 10 7v3" />
+    <circle cx="3" cy="11.2" r="1.1" fill="currentColor" stroke="none" />
+    <circle cx="10" cy="11.2" r="1.1" fill="currentColor" stroke="none" />
+  </svg>,
+  /* the target */
+  <svg viewBox="0 0 13 13" fill="none" stroke="currentColor" strokeWidth="1.4">
+    <circle cx="6.5" cy="6.5" r="5.4" />
+    <circle cx="6.5" cy="6.5" r="2.2" fill="currentColor" stroke="none" />
+  </svg>,
+];
+
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 
 /** first sentence only — captions run at full text size, so keep them short */
@@ -688,12 +718,15 @@ export function ConstraintScrolly({
 
   /* clicking an END LEAF picks the descent the next section analyses. Inner
      nodes are hover-to-read only — the app needs a full route to a leaf to
-     navigate to, so a partial path can never be committed */
+     navigate to, so a partial path can never be committed. Picking waits for
+     the path phase (step >= 4): while the tree is only being introduced the
+     data-driven default hasn't been shown yet, so there is nothing to pick
+     against */
   const selectedRef = useRef(selectedPath);
   selectedRef.current = selectedPath;
   const clickRef = useRef<(id: string) => void>(() => {});
   clickRef.current = (id) => {
-    if (stepRef.current < 3) return;
+    if (stepRef.current < 4) return;
     const n = byId.get(id);
     if (!n || n.depth === 0 || n.children?.length) return;
     onSelectPath(
@@ -1148,10 +1181,11 @@ export function ConstraintScrolly({
       const n = id ? byId.get(id) : null;
       const sel = selectedRef.current;
       /* an already-selected leaf gets no tip — clicking it would change
-         nothing, and its badge marks it anyway */
+         nothing, and its badge marks it anyway. No tip before the path phase
+         either: selection is locked until the default path has been shown */
       const show =
         !!n &&
-        stepRef.current >= 3 &&
+        stepRef.current >= 4 &&
         !!n.parent &&
         !n.children?.length &&
         n.data.id !== sel[sel.length - 1];
@@ -1312,6 +1346,9 @@ export function ConstraintScrolly({
     <>
       <div className="jz-cap-kickrow">
         <span className="fig-kicker">
+          <span className="jz-kick-ico" aria-hidden="true">
+            {STEP_ICONS[step]}
+          </span>
           {step === 4 && !isDefaultPath
             ? "Where you are"
             : STEP_COPY[step].kicker}
@@ -1385,10 +1422,12 @@ export function ConstraintScrolly({
               onSideHover={setQuadHover}
             />
             <div className="jz-railtext">{caption}</div>
-            {/* the branch picked on the tree names + feeds the next step */}
+            {/* the branch picked on the tree names + feeds the next step.
+                Held back until the path phase — it names the default branch,
+                which step 3 hasn't revealed yet */}
             <div
-              className={"jz-next" + (step >= 3 ? " show" : "")}
-              aria-hidden={step < 3}
+              className={"jz-next" + (step >= 4 ? " show" : "")}
+              aria-hidden={step < 4}
             >
               <span className="jz-next-k">Up next</span>
               <span

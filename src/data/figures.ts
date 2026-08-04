@@ -23,7 +23,7 @@ export interface TreeNodeData {
 }
 
 export const TREE_ROOT_QUESTION =
-  "What are binding constraints for economic growth in cities?";
+  "What are binding constraints for economic growth in my city?";
 
 /** side colors, darkened a step from the site tokens so figure text holds up
  *  at small sizes (base tokens: --teal #255862, --orange-dark #cf4f2c) */
@@ -111,10 +111,9 @@ export const PLACE_QUAD: QuadrantDef = QUADRANTS.find((q) => q.id === "q4")!;
  *  a leaf, so a pick on an inner node completes downward: follow whichever
  *  child continues an already-marked path (the current pick first, then the
  *  data-driven suggestion), else the leftmost child. */
-export function completeToLeaf<N extends { data: TreeNodeData; children?: N[] }>(
-  node: N,
-  preferred: string[][],
-): N {
+export function completeToLeaf<
+  N extends { data: TreeNodeData; children?: N[] },
+>(node: N, preferred: string[][]): N {
   let n = node;
   while (n.children?.length) {
     const kids = n.children;
