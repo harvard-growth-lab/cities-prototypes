@@ -66,15 +66,14 @@
 .tree-link.lit,.tree-stem.lit{opacity:1;stroke-width:2.6;}
 .tree-link.dim,.tree-stem.dim{opacity:.3;}
 
-/* wide invisible strokes that make the links themselves hoverable */
-.tree-hitpath{
-  fill:none;stroke:transparent;stroke-width:18;
-  pointer-events:stroke;cursor:pointer;
-}
+/* the area-linked hover capture surface: the whole stage maps the pointer to
+   the nearest node, so individual shapes never take pointer events */
+.jz-capture{fill:transparent;pointer-events:all;cursor:pointer;}
+.jz-chart{pointer-events:none;}
 
-.tree-node{cursor:pointer;outline:none;}
+.tree-node{outline:none;}
 .tree-hit{fill:transparent;}
-.tree-node:hover .tree-hit{fill:rgba(37,88,98,.06);}
+.tree-node.hovered .tree-hit{fill:rgba(37,88,98,.06);}
 .tree-label{
   font-size:17.5px;line-height:1.25;fill-opacity:.92;pointer-events:none;
   transition:fill-opacity .25s ease;
@@ -89,9 +88,12 @@
 .tree-node.side-demand.picked .tree-hit{stroke:#1d4b54;fill:rgba(29,75,84,.05);}
 .tree-node.side-supply.picked .tree-hit{stroke:#b8431f;fill:rgba(184,67,31,.05);}
 
-/* "where we think you are": highlighter underlay + badge on the default path */
+/* the path the user is on: highlighter underlay + badge. Wide enough that the
+   glow reads around the 2.6px lit link drawn over its centre; one continuous
+   stroke per level with round caps/joins, ending at the padded label bounds
+   so it wraps the line ends but stays clear of the text */
 .tree-home{
-  fill:none;stroke-width:11;opacity:.15;
+  fill:none;stroke-width:10;opacity:.16;
   stroke-linecap:round;stroke-linejoin:round;
 }
 .jz-youare text{
@@ -104,11 +106,15 @@
   background:rgba(255,255,255,.95);border:1px solid var(--border);
   border-radius:10px;padding:8px;box-shadow:var(--shadow-sm);
   opacity:0;transition:opacity .35s ease;
+  pointer-events:none; /* hidden minimap must not catch quadrant hovers */
 }
-.jz-mini.show{opacity:1;}
+.jz-mini.show{opacity:1;pointer-events:auto;}
+/* only the quadrant rects are hover targets — labels, axes and dots must not
+   swallow the pointer */
+.jz-mini svg text,.jz-mini svg line,.jz-mini svg circle{pointer-events:none;}
 .jz-mini svg{width:100%;height:auto;display:block;}
 .jz-mini-quad{
-  fill-opacity:.07;stroke-opacity:0;stroke-width:2;
+  fill-opacity:.05;stroke-opacity:0;stroke-width:2;
   transition:fill-opacity .2s ease, stroke-opacity .2s ease;
 }
 .jz-mini-quad.place{stroke-opacity:.4;fill-opacity:.13;}

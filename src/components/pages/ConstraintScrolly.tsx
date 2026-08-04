@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { select } from "d3-selection";
+import { pointer, select } from "d3-selection";
+import { Delaunay } from "d3-delaunay";
 import "d3-transition";
-import { easeCubicInOut } from "d3-ease";
+import { easeCubicInOut, easeCubicOut, easeSinInOut } from "d3-ease";
 import { stratify, tree as d3tree, type HierarchyNode } from "d3-hierarchy";
 import {
   PLACE_QUAD,
@@ -46,17 +47,22 @@ const T_W = 1060;
 const T_H = 516;
 const LABEL_W = 215;
 const ROOT_LABEL_W = 620;
-const BUS_DROP = 26;
 
 const STEPS = 5;
 
 /* where the big chart flies when it docks (toward the rail minimap) */
 const DOCK = { x: W - 44, y: 140 };
 
-/* intro reveal timing: per-depth wave of drawn arrows + surfacing labels */
-const INTRO_BASE = 300;
-const INTRO_LEVEL = 480;
-const INTRO_MS = 2500;
+/* intro reveal timing: per-depth wave of drawn arrows + surfacing labels.
+   The chart's dock ride is longer than a standard step transition, the tree
+   starts once the chart is mostly out of the way, and each depth level draws
+   slightly longer than the stagger between levels — the overlap keeps the
+   cascade reading as one continuous flow instead of stepped waves. */
+const CHART_EXIT_MS = 800;
+const INTRO_BASE = 520;
+const INTRO_LEVEL = 400;
+const INTRO_DRAW = 460;
+const INTRO_MS = 2600;
 
 /* the two dots: sample values match the indicator tables in content.ts */
 const MSA_SPOT: [number, number] = [0.38, 0.82];
@@ -121,10 +127,13 @@ function MiniMap({
   visible,
   hlSide,
   cityShort,
+  onSideHover,
 }: {
   visible: boolean;
   hlSide: TreeSide | null;
   cityShort: string;
+  /** hovering a quadrant emphasises its half of the tree */
+  onSideHover: (side: "demand" | "supply" | null) => void;
 }) {
   const S = 320;
   const c = S / 2;
@@ -132,9 +141,12 @@ function MiniMap({
   const mx = (v: number) => c + v * r;
   const my = (v: number) => c - v * r;
   const hl = hlSide ? SIDE_QUADS[hlSide] : [];
+  /* content ends at y = c + r + hover-stroke overhang; crop the empty band
+     below without clipping the bottom quads' corners */
+  const VH = c + r + 2;
   return (
     <div className={"jz-mini" + (visible ? " show" : "")} aria-hidden={!visible}>
-      <svg viewBox={`0 0 ${S} ${S - 14}`}>
+      <svg viewBox={`0 0 ${S} ${VH}`}>
         {QUADRANTS.map((q) => (
           <g key={q.id}>
             <rect
@@ -150,6 +162,8 @@ function MiniMap({
               rx={10}
               fill={TREE_SIDE_COLOR[q.side]}
               stroke={TREE_SIDE_COLOR[q.side]}
+              onMouseEnter={() => onSideHover(q.side)}
+              onMouseLeave={() => onSideHover(null)}
             />
             <text
               className="jz-mini-shock"
@@ -200,9 +214,16 @@ export function ConstraintScrolly({
 
   const [step, setStep] = useState(0);
   const [hover, setHover] = useState<string | null>(null);
+  /* hovering a minimap quadrant emphasises that half of the tree */
+  const [quadHover, setQuadHover] = useState<"demand" | "supply" | null>(null);
   const stepRef = useRef(step);
   stepRef.current = step;
+  const hoverIdRef = useRef(hover);
+  hoverIdRef.current = hover;
   const prevStepRef = useRef(0);
+  /* the intro's pointer-unlock runs outside the clearable timer pool, so a
+     mid-intro emphasis change can never leave the tree stuck unhoverable */
+  const ptrTimer = useRef(0);
 
   /* text is measured at draw time (badge pill, hit rects, link bounds) — once
      the webfont finishes loading, redraw so nothing is sized to the fallback
@@ -243,6 +264,14 @@ export function ConstraintScrolly({
 
   /* ---------- step + hover appliers (imperative, over the drawn scene) ---------- */
 
+  /** the root's stem is neutral ink at idle; when a route is emphasised it
+   *  takes that route's side colour so the path reads one colour end to end */
+  const colorRootStem = (side: TreeSide | null) => {
+    scene.current?.stems
+      .filter((d: Node) => d.data.id === "root")
+      .attr("stroke", TREE_SIDE_COLOR[side ?? "root"]);
+  };
+
   const applyStepRef = useRef<(s: number, animate: boolean) => void>(() => {});
   applyStepRef.current = (s, animate) => {
     const sc = scene.current;
@@ -252,13 +281,29 @@ export function ConstraintScrolly({
     clearTimers();
     const T = (sel: any) =>
       animate ? sel.transition().duration(600).ease(easeCubicInOut) : sel.interrupt();
+    const entering = s >= 3 && prevStepRef.current <= 2 && animate;
 
-    /* chart: full-size through step 2, docked away from step 3 on */
+    /* leaving the tree phase invalidates any hover: elements fading out under
+       a stationary pointer never fire mouseleave, and a stale hover must not
+       be re-asserted when the tree returns */
+    if (s <= 2) {
+      hoverIdRef.current = null;
+      setHover(null);
+      setQuadHover(null);
+    }
+
+    /* chart: full-size through step 2, docked away from step 3 on. On the
+       chart→tree handoff the dock ride runs longer than a standard step
+       transition, so the shrink-and-fade and the tree's arrival read as one
+       continuous motion */
     if (s <= 2) {
       T(sc.gChart).attr("transform", "translate(0,0) scale(1)").attr("opacity", 1);
     } else {
       const k = 0.12;
-      T(sc.gChart)
+      (entering
+        ? sc.gChart.transition().duration(CHART_EXIT_MS).ease(easeCubicInOut)
+        : T(sc.gChart)
+      )
         .attr("transform", `translate(${DOCK.x - k * CQ.cx},${DOCK.y - k * CQ.cy}) scale(${k})`)
         .attr("opacity", 0);
     }
@@ -267,9 +312,19 @@ export function ConstraintScrolly({
     sc.placeDot.classed("pulse", s === 2);
     sc.quads.classed("sel", (d: QuadrantDef) => s >= 2 && d.id === PLACE_QUAD.id);
 
-    /* tree */
-    const entering = s >= 3 && prevStepRef.current <= 2 && animate;
-    sc.gTree.style("pointer-events", s >= 3 ? "auto" : "none");
+    /* tree. While the intro cascade draws, the tree ignores the pointer — a
+       mouse resting over the stage would otherwise fire a stray hover that
+       interrupts the reveal mid-dash */
+    window.clearTimeout(ptrTimer.current);
+    if (entering) {
+      sc.gTree.style("pointer-events", "none");
+      ptrTimer.current = window.setTimeout(
+        () => sc.gTree.style("pointer-events", "auto"),
+        INTRO_MS,
+      );
+    } else {
+      sc.gTree.style("pointer-events", s >= 3 ? "auto" : "none");
+    }
 
     /* base link/node classes: idle for the whole tree */
     const idleTree = () => {
@@ -279,8 +334,13 @@ export function ConstraintScrolly({
         .attr("stroke-dasharray", null)
         .attr("stroke-dashoffset", null)
         .attr("marker-end", (d: Node) => `url(#jz-arrow-${sideOf(d)})`);
-      sc.stems.classed("lit", false).classed("dim", false);
-      sc.nodes.classed("lit", false).classed("dim", false);
+      sc.stems
+        .classed("lit", false)
+        .classed("dim", false)
+        .attr("stroke-dasharray", null)
+        .attr("stroke-dashoffset", null);
+      sc.nodes.classed("lit", false).classed("dim", false).classed("hovered", false);
+      colorRootStem(null);
     };
     /* clear any per-element intro state left behind */
     const normalize = () => {
@@ -297,17 +357,18 @@ export function ConstraintScrolly({
          bottom, and each label surfaces as its arrow arrives */
       sc.gTree.interrupt().attr("opacity", 1);
       idleTree();
-      /* labels: root first, then each level as its links complete */
+      /* labels: root first (as the chart clears the centre), then each level
+         surfacing as its arrow arrives, settling with a decelerating ease */
       sc.nodes
         .interrupt()
         .attr("opacity", 0)
         .attr("transform", (d: Node) => `translate(${d.x},${d.y - 8})`)
         .transition()
-        .duration(380)
+        .duration(440)
         .delay((d: Node) =>
-          d.depth === 0 ? 80 : INTRO_BASE + (d.depth - 1) * INTRO_LEVEL + 230,
+          d.depth === 0 ? 260 : INTRO_BASE + (d.depth - 1) * INTRO_LEVEL + 280,
         )
-        .ease(easeCubicInOut)
+        .ease(easeCubicOut)
         .attr("opacity", 1)
         .attr("transform", (d: Node) => `translate(${d.x},${d.y})`);
       /* links: dash-drawn in a wave, one depth level at a time */
@@ -321,9 +382,9 @@ export function ConstraintScrolly({
             .attr("stroke-dasharray", `${len} ${len}`)
             .attr("stroke-dashoffset", len)
             .transition()
-            .duration(340)
+            .duration(INTRO_DRAW)
             .delay(INTRO_BASE + (d.depth - 1) * INTRO_LEVEL)
-            .ease(easeCubicInOut)
+            .ease(easeSinInOut)
             .attr("stroke-dashoffset", 0)
             .on("end", function (this: SVGPathElement) {
               select(this)
@@ -341,9 +402,9 @@ export function ConstraintScrolly({
             .attr("stroke-dasharray", `${len} ${len}`)
             .attr("stroke-dashoffset", len)
             .transition()
-            .duration(170)
-            .delay(INTRO_BASE + d.depth * INTRO_LEVEL - 170)
-            .ease(easeCubicInOut)
+            .duration(220)
+            .delay(INTRO_BASE + d.depth * INTRO_LEVEL - 220)
+            .ease(easeSinInOut)
             .attr("stroke-dashoffset", 0)
             .on("end", function (this: SVGPathElement) {
               select(this).attr("stroke-dasharray", null);
@@ -368,15 +429,20 @@ export function ConstraintScrolly({
     }
     if (s >= 4) applyPath(animate, introMs);
 
+    /* a live hover survives step re-application (its emphasis wins until the
+       pointer leaves; the exit path re-derives the step state) */
+    if (!entering && s >= 3 && hoverIdRef.current) applyHoverRef.current(hoverIdRef.current);
+
     prevStepRef.current = s;
   };
 
-  /** step-4 state: the default path lit; animated = links draw in sequence,
-   *  starting after `delay0` (so the tree intro can finish first) */
+  /** step-4 state: the path the user is on lit; animated = links draw in
+   *  sequence, starting after `delay0` (so the tree intro can finish first) */
   const applyPath = (animate: boolean, delay0 = 0) => {
     const sc = scene.current;
     if (document.documentElement.dataset.jzInstant === "1") animate = false;
-    const ids = PLACE_QUAD.path;
+    const ids = selectedRef.current;
+    const pathSide = (ids[0] as TreeSide) ?? "supply";
     const setDims = () => {
       sc.nodes.classed("dim", (d: Node) => d.data.id !== "root" && !ids.includes(d.data.id));
       sc.stems.classed("dim", (d: Node) => d.data.id !== "root" && !ids.includes(d.data.id));
@@ -391,6 +457,7 @@ export function ConstraintScrolly({
       sc.nodes.classed("lit", (d: Node) => d.data.id === "root" || ids.includes(d.data.id));
       sc.stems.classed("lit", (d: Node) => d.data.id === "root" || ids.includes(d.data.id));
       sc.links.classed("lit", (d: Node) => ids.includes(d.data.id));
+      colorRootStem(pathSide);
       return;
     }
     /* sequential dash-draw down the path */
@@ -400,6 +467,7 @@ export function ConstraintScrolly({
       setDims();
       litNode("root");
       sc.stems.filter((d: Node) => d.data.id === "root").classed("lit", true);
+      colorRootStem(pathSide);
     }, delay0);
     ids.forEach((id, i) => {
       later(() => {
@@ -437,11 +505,13 @@ export function ConstraintScrolly({
       return;
     }
     clearTimers();
-    const onPath = new Set(byId.get(id)!.ancestors().map((a) => a.data.id));
-    /* while another path is hovered, the "where we think you are" path keeps
-       its highlighter underlay + badge and only falls back to idle, not dim */
+    const hovered = byId.get(id)!;
+    const onPath = new Set(hovered.ancestors().map((a) => a.data.id));
+    colorRootStem(hovered.depth === 0 ? null : sideOf(hovered));
+    /* while another path is hovered, the path the user is on keeps its
+       highlighter underlay + badge and only falls back to idle, not dim */
     const home =
-      stepRef.current >= 4 ? new Set(["root", ...PLACE_QUAD.path]) : new Set<string>();
+      stepRef.current >= 4 ? new Set(["root", ...selectedRef.current]) : new Set<string>();
     /* settle any in-flight intro animation before emphasising */
     sc.nodes
       .interrupt()
@@ -451,7 +521,8 @@ export function ConstraintScrolly({
     sc.stems.interrupt().attr("opacity", 1);
     sc.nodes
       .classed("lit", (d: Node) => onPath.has(d.data.id))
-      .classed("dim", (d: Node) => !onPath.has(d.data.id) && !home.has(d.data.id));
+      .classed("dim", (d: Node) => !onPath.has(d.data.id) && !home.has(d.data.id))
+      .classed("hovered", (d: Node) => d.data.id === id);
     sc.links
       .classed("lit", (d: Node) => onPath.has(d.data.id))
       .classed("dim", (d: Node) => !onPath.has(d.data.id) && !home.has(d.data.id))
@@ -467,7 +538,9 @@ export function ConstraintScrolly({
         "dim",
         (d: Node) =>
           !onPath.has(d.data.id) && !(d.children ?? []).some((c) => home.has(c.data.id)),
-      );
+      )
+      .attr("stroke-dasharray", null)
+      .attr("stroke-dashoffset", null);
   };
 
   const hoverRef = useRef<(id: string | null) => void>(() => {});
@@ -475,6 +548,44 @@ export function ConstraintScrolly({
     if (stepRef.current < 3) return;
     setHover(id);
   };
+
+  /** minimap-quadrant hover: light one whole half of the tree */
+  const applyQuadRef = useRef<(side: "demand" | "supply" | null) => void>(() => {});
+  applyQuadRef.current = (side) => {
+    const sc = scene.current;
+    if (!sc || stepRef.current < 3) return;
+    if (!side) {
+      applyHoverRef.current(hoverIdRef.current);
+      return;
+    }
+    clearTimers();
+    sc.nodes
+      .interrupt()
+      .attr("opacity", 1)
+      .attr("transform", (d: Node) => `translate(${d.x},${d.y})`);
+    sc.links.interrupt().attr("opacity", 1);
+    sc.stems.interrupt().attr("opacity", 1);
+    const on = (d: Node) => sideOf(d) === side;
+    sc.nodes
+      .classed("lit", on)
+      .classed("dim", (d: Node) => !on(d) && d.depth > 0)
+      .classed("hovered", false);
+    sc.links
+      .classed("lit", on)
+      .classed("dim", (d: Node) => !on(d))
+      .attr("stroke-dasharray", null)
+      .attr("stroke-dashoffset", null)
+      .attr("marker-end", (d: Node) => `url(#jz-arrow-${sideOf(d)})`);
+    sc.stems
+      .classed("lit", (d: Node) => on(d) || d.data.id === "root")
+      .classed("dim", (d: Node) => !on(d) && d.data.id !== "root")
+      .attr("stroke-dasharray", null)
+      .attr("stroke-dashoffset", null);
+    colorRootStem(side);
+  };
+  useEffect(() => {
+    applyQuadRef.current(quadHover);
+  }, [quadHover]);
 
   /* clicking a node (or its link) picks the descent the next section analyses */
   const selectedRef = useRef(selectedPath);
@@ -499,7 +610,16 @@ export function ConstraintScrolly({
       (d: Node) => d.data.id === sel[sel.length - 1],
     );
   };
-  useEffect(applyPicked, [selectedPath]);
+  /* selection changed: move the picked marker, rebuild the badge + underlay,
+     and re-derive the current emphasis (keeping any live hover) on top */
+  useEffect(() => {
+    const sc = scene.current;
+    if (!sc) return;
+    applyPicked();
+    sc.rebuildHome(selectedPath);
+    if (stepRef.current >= 3) applyHoverRef.current(hoverIdRef.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedPath]);
 
   /* ---------- draw both scenes once ---------- */
   useEffect(() => {
@@ -509,6 +629,10 @@ export function ConstraintScrolly({
     const cx = (v: number) => CQ.cx + v * CQ.r;
     const cy = (v: number) => CQ.cy - v * CQ.r;
 
+    /* markers overflow their viewport (the default clip shaves the tip's
+       anti-aliasing), and the triangle carries a thin same-colour stroke with
+       round joins — a bare fill's extreme vertex rasterises into stair-steps
+       at fractional pixels; the rounded stroke renders it as a clean point */
     const defs = svg.append("defs");
     (["root", "demand", "supply"] as TreeSide[]).forEach((side) => {
       defs
@@ -520,9 +644,13 @@ export function ConstraintScrolly({
         .attr("markerWidth", 5)
         .attr("markerHeight", 5)
         .attr("orient", "auto")
+        .attr("overflow", "visible")
         .append("path")
         .attr("d", "M0 0 L10 5 L0 10 z")
-        .attr("fill", TREE_SIDE_COLOR[side]);
+        .attr("fill", TREE_SIDE_COLOR[side])
+        .attr("stroke", TREE_SIDE_COLOR[side])
+        .attr("stroke-width", 1.4)
+        .attr("stroke-linejoin", "round");
     });
     defs
       .append("marker")
@@ -533,9 +661,13 @@ export function ConstraintScrolly({
       .attr("markerWidth", 6)
       .attr("markerHeight", 6)
       .attr("orient", "auto")
+      .attr("overflow", "visible")
       .append("path")
       .attr("d", "M0 0 L10 5 L0 10 z")
-      .attr("fill", "var(--teal)");
+      .attr("fill", "var(--teal)")
+      .attr("stroke", "var(--teal)")
+      .attr("stroke-width", 1.4)
+      .attr("stroke-linejoin", "round");
 
     /* ----- scene B: the tree (under the chart) ----- */
     const gTree = svg.append("g").attr("opacity", 0).style("pointer-events", "none");
@@ -549,10 +681,7 @@ export function ConstraintScrolly({
       .data(tnodes, (d) => d.data.id)
       .join("g")
       .attr("class", (d) => `tree-node side-${sideOf(d)}${d.depth <= 1 ? " lead" : ""}`)
-      .attr("transform", (d) => `translate(${d.x},${d.y})`)
-      .on("mouseenter", (_e, d) => hoverRef.current(d.data.id))
-      .on("mouseleave", () => hoverRef.current(null))
-      .on("click", (_e, d) => clickRef.current(d.data.id));
+      .attr("transform", (d) => `translate(${d.x},${d.y})`);
 
     nodes.append("rect").attr("class", "tree-hit").attr("rx", 6);
 
@@ -567,7 +696,7 @@ export function ConstraintScrolly({
         wrapText(select(this), d.depth === 0 ? ROOT_LABEL_W : LABEL_W);
       });
 
-    const bounds = new Map<string, { top: number; bottom: number }>();
+    const bounds = new Map<string, { top: number; bottom: number; halfW: number }>();
     nodes.each(function (d) {
       const text = select(this).select<SVGTextElement>("text.tree-label");
       const lines = text.node()!.childElementCount || 1;
@@ -582,17 +711,30 @@ export function ConstraintScrolly({
         .attr("y", bb.y - 7)
         .attr("width", bb.width + 20)
         .attr("height", bb.height + 14);
-      bounds.set(d.data.id, { top: bb.y - 7, bottom: bb.y + bb.height + 7 });
+      /* generous vertical padding: stems and arrows keep their distance from
+         the label text (the hit rect above stays tighter than this) */
+      bounds.set(d.data.id, {
+        top: bb.y - 13,
+        bottom: bb.y + bb.height + 13,
+        halfW: bb.width / 2,
+      });
     });
 
     const parents = tnodes.filter((d) => d.children?.length) as Node[];
+    /* the fork sits at the vertical midpoint between the parent label and its
+       nearest child, so the parent keeps a real stem down to the split instead
+       of a bar hugging the label — and the highlighted path traces the same
+       stem-then-fork geometry (matching the minimap schematic's elbows) */
     const busY = new Map<string, number>();
     parents.forEach((p) => {
       const y0 = p.y + (bounds.get(p.data.id)?.bottom ?? 0);
       const topmostChild = Math.min(
         ...p.children!.map((c) => (c as Node).y + (bounds.get(c.data.id)?.top ?? 0)),
       );
-      busY.set(p.data.id, Math.min(y0 + BUS_DROP, topmostChild - 10));
+      busY.set(
+        p.data.id,
+        Math.max(y0 + 12, Math.min((y0 + topmostChild) / 2, topmostChild - 12)),
+      );
     });
 
     const stems = gLinks
@@ -619,71 +761,88 @@ export function ConstraintScrolly({
         return `M${p.x},${busY.get(p.data.id)} H${d.x} V${y1}`;
       });
 
-    /* ----- wide invisible strokes over every link and stem, so the paths
-           themselves are hoverable — hovering a link reads as hovering the
-           node it leads to (its child); a stem reads as its parent ----- */
-    const gHits = plot.append("g").attr("class", "jz-hits");
-    links.each(function (d) {
-      gHits
-        .append("path")
-        .attr("class", "tree-hitpath")
-        .attr("d", select(this).attr("d"))
-        .on("mouseenter", () => hoverRef.current(d.data.id))
-        .on("mouseleave", () => hoverRef.current(null))
-        .on("click", () => clickRef.current(d.data.id));
-    });
-    stems.each(function (d) {
-      gHits
-        .append("path")
-        .attr("class", "tree-hitpath")
-        .attr("d", select(this).attr("d"))
-        .on("mouseenter", () => hoverRef.current(d.data.id))
-        .on("mouseleave", () => hoverRef.current(null))
-        .on("click", () => clickRef.current(d.data.id));
-    });
+    /* ----- area-linked hovering: one capture surface over the stage maps
+           the pointer to the NEAREST tree node (Voronoi), so hovering needs
+           no precise aim and never flickers when crossing from an arrow to a
+           label. pointermove-only: browsers re-hit-test when content scrolls
+           under a stationary cursor, and that must not steal the step state */
+    const delaunay = Delaunay.from(
+      tnodes,
+      (d) => d.x + TM.left,
+      (d) => d.y + TM.top,
+    );
+    const HOVER_R2 = 120 * 120;
+    const targetAt = (event: MouseEvent) => {
+      const [px, py] = pointer(event, svg.node());
+      const n = tnodes[delaunay.find(px, py)];
+      const ddx = n.x + TM.left - px;
+      const ddy = n.y + TM.top - py;
+      return ddx * ddx + ddy * ddy <= HOVER_R2 ? n.data.id : null;
+    };
+    gTree
+      .append("rect")
+      .attr("class", "jz-capture")
+      .attr("width", W)
+      .attr("height", H)
+      .on("pointermove", (e: PointerEvent) => hoverRef.current(targetAt(e)))
+      .on("pointerleave", () => hoverRef.current(null))
+      .on("click", (e: MouseEvent) => {
+        const id = targetAt(e);
+        if (id) clickRef.current(id);
+      });
 
-    /* ----- the "where we think you are" marking: a highlighter underlay on
-           the default path plus a badge at its leaf. It persists while the
-           user hovers other paths, so the data-driven read never vanishes. */
+    /* ----- the marking of the path the user is on: a highlighter underlay
+           plus a badge at the picked node. It follows the selected descent
+           (default: the data-driven read) and persists while other paths are
+           hovered. Each level is ONE continuous stroke (stem + fork + drop),
+           so nothing overlaps or notches at the corners; round caps let the
+           glow enclose the crisp line's ends while the padded label bounds
+           keep it clear of the text. */
     const gHome = plot.insert("g", ":first-child").attr("class", "jz-homeg").attr("opacity", 0);
-    const homeColor = TREE_SIDE_COLOR[PLACE_QUAD.side];
-    stems
-      .filter((d) => (d.children ?? []).some((c) => PLACE_QUAD.path.includes(c.data.id)))
-      .each(function () {
+    const rebuildHome = (path: string[]) => {
+      gHome.selectAll("*").remove();
+      const color = TREE_SIDE_COLOR[(path[0] as TreeSide) ?? "supply"];
+      (tnodes.filter((d) => d.parent && path.includes(d.data.id)) as Node[]).forEach((d) => {
+        const p = d.parent as Node;
+        const y0 = p.y + (bounds.get(p.data.id)?.bottom ?? 0);
+        /* the final drop stops short of the label bound: the glow's round cap
+           ends a few px above the arrowhead's tip, so the point renders on
+           clean background instead of over the glow's soft edge */
+        const y1 = d.y + (bounds.get(d.data.id)?.top ?? 0) - 11;
         gHome
           .append("path")
           .attr("class", "tree-home")
-          .attr("stroke", homeColor)
-          .attr("d", select(this).attr("d"));
+          .attr("stroke", color)
+          .attr("d", `M${p.x},${y0} V${busY.get(p.data.id)} H${d.x} V${y1}`);
       });
-    links
-      .filter((d) => PLACE_QUAD.path.includes(d.data.id))
-      .each(function () {
-        gHome
-          .append("path")
-          .attr("class", "tree-home")
-          .attr("stroke", homeColor)
-          .attr("d", select(this).attr("d"));
-      });
-    const leafNode = byId.get(PLACE_QUAD.path[PLACE_QUAD.path.length - 1])!;
-    const badge = gHome
-      .append("g")
-      .attr("class", "jz-youare")
-      .attr("transform", `translate(${leafNode.x},${leafNode.y + 44})`);
-    const badgeText = badge
-      .append("text")
-      .attr("text-anchor", "middle")
-      .attr("dy", "0.34em")
-      .text("↑ where we think you are");
-    const bbb = badgeText.node()!.getBBox();
-    badge
-      .insert("rect", ":first-child")
-      .attr("x", bbb.x - 16)
-      .attr("y", bbb.y - 9)
-      .attr("width", bbb.width + 32)
-      .attr("height", bbb.height + 18)
-      .attr("rx", 14)
-      .attr("fill", homeColor);
+      /* the badge: under the picked node when it's a leaf, beside it when the
+         stem below is occupied */
+      const n = byId.get(path[path.length - 1])!;
+      const b = bounds.get(n.data.id)!;
+      const below = !n.children?.length;
+      const isDefault = path.join("/") === PLACE_QUAD.path.join("/");
+      const badge = gHome.append("g").attr("class", "jz-youare");
+      const badgeText = badge
+        .append("text")
+        .attr("text-anchor", "middle")
+        .attr("dy", "0.34em")
+        .text((below ? "↑ " : "← ") + (isDefault ? "where we think you are" : "you are here"));
+      const bbb = badgeText.node()!.getBBox();
+      badge
+        .insert("rect", ":first-child")
+        .attr("x", bbb.x - 16)
+        .attr("y", bbb.y - 9)
+        .attr("width", bbb.width + 32)
+        .attr("height", bbb.height + 18)
+        .attr("rx", 14)
+        .attr("fill", color);
+      badge.attr(
+        "transform",
+        below
+          ? `translate(${n.x},${n.y + b.bottom + 24})`
+          : `translate(${n.x + b.halfW + 24 + (bbb.width + 32) / 2},${n.y})`,
+      );
+    };
 
     /* ----- scene A: the pizza chart, on top ----- */
     const gChart = svg.append("g").attr("class", "jz-chart").attr("opacity", 0);
@@ -780,7 +939,20 @@ export function ConstraintScrolly({
     placeDot.append("text").attr("x", 16).attr("y", -2).text(cityShort);
     placeDot.append("text").attr("class", "stats").attr("x", 16).attr("y", 16).text(PLACE_STATS);
 
-    scene.current = { gChart, gTree, gAxes, quads, msaDot, placeDot, nodes, links, stems, gHome };
+    scene.current = {
+      gChart,
+      gTree,
+      gAxes,
+      quads,
+      msaDot,
+      placeDot,
+      nodes,
+      links,
+      stems,
+      gHome,
+      rebuildHome,
+    };
+    rebuildHome(selectedRef.current);
     applyPicked();
 
     /* entry: fade the chart in the first time the stage is on screen */
@@ -798,6 +970,7 @@ export function ConstraintScrolly({
     return () => {
       io.disconnect();
       clearTimers();
+      window.clearTimeout(ptrTimer.current);
       svg.selectAll("*").interrupt();
     };
   }, [cityShort, root, byId, fontTick]);
@@ -850,21 +1023,25 @@ export function ConstraintScrolly({
 
   const phase: Phase = step <= 2 ? "chart" : "tree";
   const hoverNode = hover ? byId.get(hover)! : null;
-  const hlSide = hoverNode ? sideOf(hoverNode) : null;
+  /* the rail caption follows the tree hover, or the branch head while a
+     minimap quadrant is hovered */
+  const capNode = hoverNode ?? (quadHover ? byId.get(quadHover)! : null);
+  const hlSide = hoverNode ? sideOf(hoverNode) : quadHover;
   const selSide = selectedPath[0] === "demand" ? ("demand" as const) : ("supply" as const);
+  const isDefaultPath = selectedPath.join("/") === PLACE_QUAD.path.join("/");
 
-  const caption = hoverNode ? (
+  const caption = capNode ? (
     <>
       <div className="jz-cap-kickrow">
-        <span className="fig-kicker" style={{ color: TREE_SIDE_COLOR[sideOf(hoverNode)] }}>
-          On the tree · {sideOf(hoverNode) === "root" ? "the root" : `${sideOf(hoverNode)} side`}
+        <span className="fig-kicker" style={{ color: TREE_SIDE_COLOR[sideOf(capNode)] }}>
+          On the tree · {sideOf(capNode) === "root" ? "the root" : `${sideOf(capNode)} side`}
         </span>
       </div>
-      <p className="jz-cap-title">{displayTitle(hoverNode)}</p>
+      <p className="jz-cap-title">{displayTitle(capNode)}</p>
       <p className="jz-cap-body">
-        {firstSentence(hoverNode.data.detail)}{" "}
-        {hoverNode.data.tests ? (
-          <em className="jz-cap-tests">Test it: {firstSentence(hoverNode.data.tests)}</em>
+        {firstSentence(capNode.data.detail)}{" "}
+        {capNode.data.tests ? (
+          <em className="jz-cap-tests">Test it: {firstSentence(capNode.data.tests)}</em>
         ) : (
           <Ph text="[tests: ___ ]" />
         )}
@@ -873,7 +1050,9 @@ export function ConstraintScrolly({
   ) : (
     <>
       <div className="jz-cap-kickrow">
-        <span className="fig-kicker">{STEP_COPY[step].kicker}</span>
+        <span className="fig-kicker">
+          {step === 4 && !isDefaultPath ? "Where you are" : STEP_COPY[step].kicker}
+        </span>
         <span className="jz-dots">
           {STEP_COPY.map((_, i) => (
             <i key={i} className={i === step ? "on" : i < step ? "done" : ""} />
@@ -882,7 +1061,7 @@ export function ConstraintScrolly({
       </div>
       {step === 4 && (
         <div className="fig-trail">
-          {["root", ...PLACE_QUAD.path].map((id, i) => {
+          {["root", ...selectedPath].map((id, i) => {
             const n = byId.get(id)!;
             return (
               <span key={id}>
@@ -894,7 +1073,9 @@ export function ConstraintScrolly({
         </div>
       )}
       <p className="jz-cap-body">
-        {STEP_COPY[step].body.startsWith("[") ? (
+        {step === 4 && !isDefaultPath ? (
+          <Ph text="[your pick — the data-driven default remains housing; ___ tests for this node]" />
+        ) : STEP_COPY[step].body.startsWith("[") ? (
           <Ph text={STEP_COPY[step].body} />
         ) : (
           STEP_COPY[step].body
@@ -928,7 +1109,12 @@ export function ConstraintScrolly({
           </div>
 
           <aside className="jz-rail">
-            <MiniMap visible={step >= 3} hlSide={hlSide} cityShort={cityShort} />
+            <MiniMap
+              visible={step >= 3}
+              hlSide={hlSide}
+              cityShort={cityShort}
+              onSideHover={setQuadHover}
+            />
             <div className="jz-railtext">{caption}</div>
             {/* the branch picked on the tree names + feeds the next step */}
             <div className={"jz-next" + (step >= 3 ? " show" : "")} aria-hidden={step < 3}>
