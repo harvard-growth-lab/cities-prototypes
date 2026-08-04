@@ -1324,8 +1324,7 @@
   const arrow = dir => '<svg class="q-arr q-arr--' + dir + '" viewBox="0 0 10 10" aria-hidden="true">' +
     (dir === "up" ? '<path d="M5 1 9 9 1 9Z"/>' : '<path d="M5 9 1 1 9 1Z"/>') + '</svg>';
 
-  function buildQuadrantButtons(){
-    const wrap = document.getElementById("scatterWrap");
+  function buildQuadrantButtons(wrap, tip){
     if (!wrap || wrap.querySelector(".q-btn")) return;
     QUADS.forEach(q => {
       const b = document.createElement("button");
@@ -1342,7 +1341,6 @@
       wrap.appendChild(b);
     });
 
-    const tip = document.getElementById("quadTip");
     if (!tip) return;
 
     const show = btn => {
@@ -1378,9 +1376,8 @@
   }
 
   /* Anchor each button just inside its quadrant, in % of the viewBox. */
-  function placeQuadrantButtons(x, y, W, H){
-    buildQuadrantButtons();
-    const wrap = document.getElementById("scatterWrap");
+  function placeQuadrantButtons(wrap, tip, x, y, W, H){
+    buildQuadrantButtons(wrap, tip);
     if (!wrap) return;
     const vx = x(METRO_X_MED) / W * 100, vy = y(METRO_Y_MED) / H * 100;
     const pad = 1.4;
@@ -1525,10 +1522,10 @@
     paint();
   }
 
-  function renderMetroScatter(){
-    const el = document.getElementById("metroScatterSvg");
-    if (!el) return;
-
+  /* The frame both metro-scale scatters share: same margins, same scales off
+     the same metro field, same reference lines. The second chart has to read
+     as the first one carrying on, so none of this may drift between them. */
+  function metroFrame(el){
     const data = metroPoints();
     const W = 880, H = 560;
     // Room for the axis lines and their labels: the top clears the "typical"
@@ -1612,7 +1609,17 @@
       .attr("text-anchor", "middle")
       .text("Average salary growth (annual rate, 2014\u20132024)");
 
-    placeQuadrantButtons(x, y, W, H);
+    return { svg, data, x, y, r, W, H, M };
+  }
+
+  function renderMetroScatter(){
+    const el = document.getElementById("metroScatterSvg");
+    if (!el) return;
+
+    const { svg, data, x, y, r, W, H } = metroFrame(el);
+
+    placeQuadrantButtons(document.getElementById("scatterWrap"),
+                         document.getElementById("quadTip"), x, y, W, H);
 
     svg.append("g").selectAll("circle").data(data).join("circle")
       .attr("class", d => "ms-dot" + (d.home ? " ms-dot--home" : d.peer ? " ms-dot--peer" : ""))
@@ -1632,6 +1639,169 @@
       .text(HOME.name);
   }
 
+  /* =====================================================================
+     6 · The city inside the metro
+
+     The same plot again, but the metro dot breaks apart into the places
+     that make it up. Positions are authored as offsets from the metro's
+     own point rather than as absolute rates, so the places land inside
+     the frame whatever domain the random metro field happens to produce.
+
+     The story the dummy numbers tell: the metro grows slowly while pay
+     runs ahead, and the city itself is the part shedding people fastest
+     — so the single metro dot was hiding the city's own problem.
+     ===================================================================== */
+  const MSA_PLACES = [
+    // The left-hand places are kept under pay ≈ 4.9 so they clear the "Held
+    // back" button sitting in that corner — the city especially.
+    { name:"Somerville",  dx:-1.00, dy: 0.32, size: 81 },
+    { name:"Cambridge",   dx:-0.70, dy: 0.38, size:118 },
+    { name:"Brookline",   dx:-0.50, dy: 0.34, size: 63 },
+    { name:"Arlington",   dx:-0.38, dy: 0.28, size: 46 },
+    { name:"Watertown",   dx:-0.32, dy: 0.26, size: 35 },
+    { name:"Medford",     dx:-0.24, dy: 0.34, size: 59 },
+    { name:"Milton",      dx:-0.12, dy:-0.30, size: 28 },
+    { name:"Melrose",     dx: 0.06, dy:-0.55, size: 29 },
+    { name:"Waltham",     dx: 0.06, dy: 0.38, size: 65 },
+    { name:"Needham",     dx: 0.12, dy: 0.50, size: 32 },
+    { name:"Newton",      dx: 0.18, dy: 0.55, size: 88 },
+    { name:"Beverly",     dx: 0.18, dy:-0.62, size: 42 },
+    { name:"Salem",       dx: 0.24, dy:-0.36, size: 44 },
+    { name:"Dedham",      dx: 0.26, dy:-0.95, size: 25 },
+    { name:"Norwood",     dx: 0.30, dy:-0.72, size: 31 },
+    { name:"Malden",      dx: 0.32, dy:-0.44, size: 66 },
+    { name:"Woburn",      dx: 0.36, dy: 0.22, size: 41 },
+    { name:"Quincy",      dx: 0.42, dy: 0.16, size:101 },
+    { name:"Braintree",   dx: 0.44, dy:-0.18, size: 39 },
+    { name:"Saugus",      dx: 0.44, dy:-1.15, size: 29 },
+    { name:"Peabody",     dx: 0.50, dy:-0.86, size: 54 },
+    { name:"Framingham",  dx: 0.56, dy: 0.06, size: 72 },
+    { name:"Wakefield",   dx: 0.56, dy:-0.42, size: 27 },
+    { name:"Everett",     dx: 0.62, dy:-1.05, size: 49 },
+    { name:"Lynn",        dx: 0.68, dy:-0.92, size:101 },
+    { name:"Weymouth",    dx: 0.70, dy:-0.66, size: 57 },
+    { name:"Revere",      dx: 0.76, dy:-1.28, size: 62 },
+    { name:"Natick",      dx: 0.76, dy: 0.34, size: 37 },
+    { name:"Randolph",    dx: 0.84, dy:-1.35, size: 34 },
+    { name:"Lowell",      dx: 0.90, dy:-0.55, size:115 },
+    { name:"Chelsea",     dx: 0.96, dy:-1.20, size: 40 },
+    { name:"Marlborough", dx: 1.08, dy: 0.12, size: 41 },
+    { name:"Franklin",    dx: 1.24, dy:-0.24, size: 33 },
+    // last so it paints on top of the rest
+    { name:"Boston",      dx:-0.88, dy: 0.22, size:660, home:true }
+  ];
+
+  function renderCityInMetro(){
+    const el = document.getElementById("cityInMetroSvg");
+    if (!el) return;
+
+    const { svg, data, x, y, r, W, H } = metroFrame(el);
+
+    // Same four quadrant buttons as the section above — the plot is the same
+    // plot, so the reader should not have to re-learn what the corners mean.
+    placeQuadrantButtons(document.getElementById("cimWrap"),
+                         document.getElementById("cimQuadTip"), x, y, W, H);
+
+    // Keep the places off the axis lines however the domain came out.
+    const inset = 12;
+    const clamp = (scale, v) => {
+      const [a, b] = scale.range();
+      const lo = Math.min(a, b) + inset, hi = Math.max(a, b) - inset;
+      return Math.max(lo, Math.min(hi, scale(v)));
+    };
+    const px = d => clamp(x, HOME.pop + d.dx);
+    const py = d => clamp(y, HOME.pay + d.dy);
+    const pr = d3.scaleSqrt()
+      .domain([0, d3.max(MSA_PLACES, d => d.size)]).range([2.5, 13]);
+
+    /* Opening frame: the metro field exactly as the section above leaves it. */
+    const field = svg.append("g").attr("class", "cim-field");
+    field.selectAll("circle").data(data).join("circle")
+      .attr("class", d => "ms-dot" + (d.home ? " ms-dot--home" : d.peer ? " ms-dot--peer" : ""))
+      .attr("cx", d => x(d.pop)).attr("cy", d => y(d.pay))
+      .attr("r", d => r(d.size));
+    field.selectAll("text").data(data.filter(d => d.peer)).join("text")
+      .attr("class", "ms-peer-label")
+      .attr("x", d => x(d.pop) + r(d.size) + 6)
+      .attr("y", d => y(d.pay) + 4)
+      .text(d => d.name);
+
+    const mx = x(HOME.pop), my = y(HOME.pay), mr = r(HOME.size);
+
+    const metroDot = svg.append("circle").attr("class", "ms-dot ms-dot--home cim-metro")
+      .attr("cx", mx).attr("cy", my).attr("r", mr);
+    const metroLabel = svg.append("text").attr("class", "ms-home-label")
+      .attr("x", mx + mr + 8).attr("y", my + 5)
+      .text(HOME.name);
+
+    /* What the metro leaves behind once it has come apart: a dashed ring on
+       the spot, so every place can still be read against its own metro. */
+    // Opacity goes through style() throughout: the dot classes carry an
+    // `opacity` rule in the stylesheet, which outranks the attribute.
+    const ring = svg.append("g").attr("class", "cim-ring").style("opacity", 0);
+    ring.append("circle").attr("class", "cim-ring-c")
+      .attr("cx", mx).attr("cy", my).attr("r", mr + 7);
+    ring.append("text").attr("class", "cim-ring-label")
+      .attr("x", mx + mr + 14).attr("y", my + 4)
+      .text("Boston metro");
+
+    const places = svg.append("g").attr("class", "cim-places")
+      .selectAll("circle").data(MSA_PLACES).join("circle")
+      .attr("class", d => "cim-dot" + (d.home ? " cim-dot--home" : ""))
+      .attr("cx", mx).attr("cy", my).attr("r", 0).style("opacity", 0);
+
+    const city = MSA_PLACES[MSA_PLACES.length - 1];
+    const cityLabel = svg.append("text").attr("class", "ms-home-label")
+      .attr("x", px(city) + pr(city.size) + 8).attr("y", py(city) + 5)
+      .style("opacity", 0)
+      .text(city.name);
+
+    function reset(){
+      svg.selectAll(".cim-field, .cim-metro, .ms-home-label, .cim-ring").interrupt();
+      places.interrupt();
+      field.style("opacity", 1);
+      metroDot.style("opacity", 1).attr("r", mr);
+      metroLabel.style("opacity", 1);
+      ring.style("opacity", 0);
+      cityLabel.style("opacity", 0);
+      places.attr("cx", mx).attr("cy", my).attr("r", 0).style("opacity", 0);
+    }
+
+    /* The break-up, in one pass: the rest of the country clears out, the
+       metro dot collapses into its ring, and the places it was standing in
+       for spill out of that same point to their own growth rates. */
+    function run(){
+      reset();
+
+      field.transition().duration(520).style("opacity", 0);
+      metroLabel.transition().duration(320).style("opacity", 0);
+      metroDot.transition().delay(320).duration(340)
+        .attr("r", 0).style("opacity", 0);
+      ring.transition().delay(520).duration(300).style("opacity", 1);
+
+      places.transition()
+        .delay((d, i) => d.home ? 560 : 660 + i * 16)
+        .duration(900).ease(d3.easeCubicOut)
+        .attr("cx", px).attr("cy", py)
+        .attr("r", d => pr(d.size))
+        .style("opacity", 1);
+
+      cityLabel.transition().delay(1400).duration(400).style("opacity", 1);
+    }
+
+    const btn = document.getElementById("cimReplayBtn");
+    if (btn) btn.addEventListener("click", run);
+
+    // Play once when the section first scrolls into view.
+    new IntersectionObserver((entries, obs) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        setTimeout(run, 350);
+        obs.disconnect();
+      });
+    }, { threshold: 0.35 }).observe(el);
+  }
+
   function init(){
     if (typeof d3 === "undefined") return;
     renderStaticTreemap();
@@ -1641,6 +1811,7 @@
     initPeerChart();
     initPeerCityChips();
     renderMetroScatter();
+    renderCityInMetro();
     initDxExplainer();
   }
 

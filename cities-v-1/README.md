@@ -40,7 +40,10 @@ charts and the map will be missing.
   city compares with its metro
 - **City Exports** — an industry treemap, a tradable/non-tradable split, the
   city's most specialized industries, and a comparison against peer cities
-- **City Constraints** / **Levers for Change** — placeholder sections
+- **City Constraints** — every US metro plotted on population growth against
+  salary growth, with an explainer for the four quadrants, then the same plot
+  again with the metro dot breaking apart into the places inside it
+- **Levers for Change** — placeholder section
 
 ## Notes on the data
 

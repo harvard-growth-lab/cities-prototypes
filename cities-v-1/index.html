@@ -710,7 +710,7 @@
   .q-ico--pop{width:16px;height:12px;}
   .q-ico--pay{width:13px;height:13px;}
   .q-arr{flex:none;width:9px;height:9px;}
-  .q-arr--up{fill:var(--teal);}
+  .q-arr--up{fill:#2e7e33;}
   .q-arr--down{fill:var(--orange-dark);}
 
   .quad-tip{
@@ -731,6 +731,50 @@
   }
   .metro-scatter .ms-peer-label{
     font-size:12px;font-weight:600;fill:#9ea2a3;
+  }
+
+  /* ---- The city inside the metro ---- */
+  /* Places read a shade darker than the metro field they replace, so the
+     swap is legible even though both are grey. */
+  .city-in-metro .cim-dot{fill:#b3b8ba;}
+  .city-in-metro .cim-dot--home{fill:var(--orange-dark);}
+  .city-in-metro .cim-ring-c{fill:none;stroke:var(--ink);stroke-width:1.4;stroke-dasharray:4 4;}
+  .city-in-metro .cim-ring-label{font-size:12px;font-weight:600;fill:var(--ink-soft);}
+  .scatter-footnote{
+    width:100%;max-width:880px;margin:12px 0 0;display:flex;flex-wrap:wrap;
+    align-items:center;gap:26px;font-size:13px;color:#000;
+  }
+  .scatter-footnote .rca-key{display:inline-flex;align-items:center;gap:7px;}
+
+  /* ---- City / metro silhouettes ----
+     These two sections keep swapping which geography a dot stands for, so the
+     shapes are drawn wherever that could be read the wrong way. Same polygons
+     as the overview map, but inline: tiles are illegible at this size and
+     would not survive the page going offline. Each shape is fitted to its own
+     box so both stay recognisable — nesting is carried by the city knocked out
+     inside the metro, which lands at its true relative size. */
+  /* A scale tag on the section title, naming the geography this chart's dots
+     are. It changes nothing, so it does not belong in the viz-control bar. */
+  .page-head--geo{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  .geo-badge{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:4px 11px 4px 5px;border:1px solid var(--border);border-radius:4px;
+    background:#fff;font-size:13px;color:var(--ink);
+  }
+  .geo-badge .geo-glyph{height:30px;}
+  .geo-mark{display:inline-flex;}
+  .geo-glyph{height:36px;width:auto;display:block;}
+  .geo-bg{fill:#fff;stroke:var(--border);}
+  /* The city covers a twelfth of the region's height, so at 36px it needs a
+     stroke to survive — a highlight, not a claim about its size. */
+  .geo-glyph .geo-city{stroke-linejoin:round;}
+  /* metro named: the region solid, the city knocked out of it */
+  .geo-glyph--metro .geo-msa{fill:var(--ink);}
+  .geo-glyph--metro .geo-city{fill:#fff;stroke:#fff;stroke-width:1.6;}
+  /* city named: the region recedes to context, the city takes the accent */
+  .geo-glyph--city .geo-msa{fill:#ccd4d6;}
+  .geo-glyph--city .geo-city{
+    fill:var(--orange-dark);stroke:var(--orange-dark);stroke-width:2.2;
   }
 
   /* ---- Specialization (RCA) chart ---- */
@@ -1490,10 +1534,11 @@
           <li data-step="peerSection"><span class="dot"></span><button onclick="goTo('peerSection')">How You Compare With Peer Cities</button></li>
         </ul>
       </div>
-      <div class="sec" data-sec="page-constraints page-constraints-lorem">
+      <div class="sec" data-sec="page-constraints page-city-in-metro page-constraints-lorem">
         <button class="sec-head" onclick="goTo('page-constraints')"><span class="num">3</span>City Constraints</button>
         <ul class="steps">
           <li data-step="page-constraints"><span class="dot"></span><button onclick="goTo('page-constraints')">How is the metro performing?</button></li>
+          <li data-step="page-city-in-metro"><span class="dot"></span><button onclick="goTo('page-city-in-metro')">Is your city pulling with the metro?</button></li>
           <li data-step="page-constraints-lorem"><span class="dot"></span><button onclick="goTo('page-constraints-lorem')">Lorem Ipsum</button></li>
         </ul>
       </div>
@@ -2125,8 +2170,9 @@
 
             <!-- 4 City Constraints (empty) -->
       <section class="page" id="page-constraints">
-        <div class="page-head">
+        <div class="page-head page-head--geo">
           <h2>How is the metro performing?</h2>
+          <span class="geo-badge"><span class="geo-mark" data-geo="metro"></span>Metro (MSA)</span>
         </div>
         <p class="lede">Plot every metro by how fast its population grew (x) against how fast its wages grew (y). Both rising is a <strong>positive demand shock</strong>; both falling, a negative one. Population rising while pay lags points to a <strong>supply shift</strong> (amenities, cheaper living); pay rising while population lags, a <strong>constrained supply</strong>. Where does Boston land?</p>
         <div class="collapsible-info collapsible-info--wide">
@@ -2183,6 +2229,32 @@
             <svg class="viz-big metro-scatter" id="metroScatterSvg" width="880" height="560" viewBox="0 0 880 560" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Every US metro plotted by population growth against wage growth, with Boston and its four peer cities highlighted"></svg>
             <div class="rca-tip row-tip" id="metroTip" role="tooltip" hidden></div>
             <div class="quad-tip" id="quadTip" role="tooltip" hidden></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4b City Constraints · the metro dot broken into its places -->
+      <section class="page" id="page-city-in-metro">
+        <div class="page-head page-head--geo">
+          <h2>Is your city pulling with the metro?</h2>
+          <span class="geo-badge"><span class="geo-mark" data-geo="city"></span>City (admin)</span>
+        </div>
+        <p class="lede">That single Boston dot is not one economy. Watch it break apart into the places inside the metro, with Boston itself picked out. The dashed lines stay where they were, because they are still the typical US metro, so every place can be read against two benchmarks at once: its own metro, marked by the dashed ring, and the typical metro.</p>
+
+        <div class="viz-controls viz-controls--export">
+          <button class="replay-btn" id="cimReplayBtn">Replay</button>
+        </div>
+
+        <div class="chart-block">
+          <div class="scatter-wrap" id="cimWrap">
+            <svg class="viz-big metro-scatter city-in-metro" id="cityInMetroSvg" width="880" height="560" viewBox="0 0 880 560" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The Boston metro dot breaking apart into the places inside the metro, plotted by population growth against salary growth"></svg>
+            <div class="quad-tip" id="cimQuadTip" role="tooltip" hidden></div>
+          </div>
+          <div class="scatter-footnote">
+            <span class="rca-key"><svg width="14" height="14" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="#b3b8ba"/></svg>Place inside the metro, sized by population</span>
+            <span class="rca-key"><svg width="16" height="16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="#cf4f2c"/></svg><span class="geo-mark" data-geo="city"></span>Boston</span>
+            <span class="rca-key"><svg width="18" height="18" aria-hidden="true"><circle cx="9" cy="9" r="7" fill="none" stroke="#1a2226" stroke-width="1.4" stroke-dasharray="4 4"/></svg><span class="geo-mark" data-geo="metro"></span>The metro as a whole</span>
+            <span class="rca-key"><svg width="26" height="10" aria-hidden="true"><line x1="1" y1="5" x2="25" y2="5" stroke="#1a2226" stroke-width="1.5" stroke-dasharray="6 5"/></svg>Typical US metro</span>
           </div>
         </div>
       </section>
@@ -2412,7 +2484,7 @@
   });
 
   const pageIds = ["page-overview","page-overview-msa","page-overview-city","page-export-basket",
-                   "page-constraints","page-constraints-lorem","page-levers"];
+                   "page-constraints","page-city-in-metro","page-constraints-lorem","page-levers"];
 
   /* ---------- view switching ---------- */
   let landingAnim=false;
@@ -2480,7 +2552,7 @@
   const sectionDefs=[
     {name:"City Overview",   pages:["page-overview","page-overview-msa","page-overview-city"], entry:"page-overview"},
     {name:"City Exports",    pages:["page-export-basket"], entry:"page-export-basket"},
-    {name:"City Constraints",pages:["page-constraints","page-constraints-lorem"],entry:"page-constraints"},
+    {name:"City Constraints",pages:["page-constraints","page-city-in-metro","page-constraints-lorem"],entry:"page-constraints"},
     {name:"Levers for Change",pages:["page-levers"],    entry:"page-levers"}
   ];
   const visitedPages=new Set();
@@ -2952,6 +3024,41 @@
     [42.13,-71.30],[42.25,-71.50],[42.45,-71.55],[42.63,-71.55],
     [42.70,-71.30],[42.88,-71.40],[43.10,-71.25]
   ];
+
+  /* ---------- small city / metro silhouettes ----------
+     Fills every [data-geo] slot on the page from the polygons above. Each
+     shape is fitted to its own box so neither is reduced to a smudge; the
+     metro glyph also carries the city knocked out inside it, at true relative
+     size, which is what shows the nesting. */
+  (function geoGlyphs(){
+    const H=36, PAD=2.5;
+    // Both thumbnails share the metro's frame. Drawing the city to its own
+    // bounds would make the two shapes look comparable in size, which is the
+    // misreading these are here to prevent — at this scale the city should be
+    // a speck inside the region, because that is what it is.
+    const lats=msaPoly.map(p=>p[0]);
+    const k=Math.cos((Math.min(...lats)+Math.max(...lats))/2*Math.PI/180);
+    const xs=msaPoly.map(p=>p[1]*k), ys=msaPoly.map(p=>-p[0]);
+    const x0=Math.min(...xs), x1=Math.max(...xs),
+          y0=Math.min(...ys), y1=Math.max(...ys);
+    // The frame crops to the region rather than sitting in a square, so the
+    // thumbnail fills itself instead of floating in empty margins.
+    const s=(H-2*PAD)/(y1-y0), W=(x1-x0)*s+2*PAD;
+    const d=poly=>"M"+poly.map(p=>
+      ((p[1]*k-x0)*s+PAD).toFixed(2)+" "+((-p[0]-y0)*s+PAD).toFixed(2)).join("L")+"Z";
+    const dMsa=d(msaPoly), dCity=d(cityPoly);
+
+    document.querySelectorAll("[data-geo]").forEach(el=>{
+      const kind=el.dataset.geo;
+      if(kind!=="city" && kind!=="metro") return;
+      el.innerHTML=
+        '<svg class="geo-glyph geo-glyph--'+kind+'" viewBox="0 0 '+W.toFixed(2)+' '+H+'" aria-hidden="true">'+
+          '<rect class="geo-bg" x=".5" y=".5" width="'+(W-1).toFixed(2)+'" height="'+(H-1)+'" rx="3"/>'+
+          '<path class="geo-msa" d="'+dMsa+'"/>'+
+          '<path class="geo-city" d="'+dCity+'"/>'+
+        '</svg>';
+    });
+  })();
 
   if(window.L && document.getElementById("ovMap")){
     ovLeaflet=L.map("ovMap",{
