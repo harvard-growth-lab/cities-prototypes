@@ -1471,7 +1471,7 @@
       if (!q) {
         verdict.innerHTML =
           '<h5 class="dx-step-head">2 · What that tells you</h5>' +
-          '<p class="dx-idle">Set both dials — or drag the dot on the chart.</p>';
+          '<p class="dx-idle">Set both dials, or drag the dot on the chart.</p>';
         return;
       }
       const t = DX_TEXT[q];
