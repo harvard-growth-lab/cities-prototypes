@@ -654,11 +654,13 @@
   .dx-chart-card{padding:14px 14px 12px;}
   .dx-right svg{width:100%;height:auto;display:block;touch-action:none;cursor:grab;}
   .dx-right svg:active{cursor:grabbing;}
-  .dx-q{stroke:#fff;stroke-width:2;transition:opacity .2s ease;opacity:.82;}
-  .dx-q.is-on{opacity:1;}
-  .dx-cross{stroke:var(--ink);stroke-width:1.2;stroke-dasharray:4 4;}
-  .dx-axis{font-size:10px;font-weight:600;fill:var(--ink-soft);}
-  .dx-dot{fill:var(--orange-dark);stroke:#fff;stroke-width:2.5;pointer-events:none;}
+  .dx-q{transition:opacity .2s ease;opacity:1;}
+  /* idle shows all four flat; picking one dims the rest instead of deepening it */
+  #dxChart.has-sel .dx-q:not(.is-on){opacity:.4;}
+  .dx-cross{stroke:#c9c5bf;stroke-width:1.2;stroke-dasharray:4 4;}
+  .dx-axis{font-size:13px;font-weight:600;fill:#a8a49e;}
+  .dx-dot{fill:#111;stroke:#fff;stroke-width:3;pointer-events:none;}
+  .dx-dot-halo{fill:none;stroke:#cbc7c1;stroke-width:1.5;stroke-dasharray:2 2;pointer-events:none;}
   .dx-caption{font-size:12px;line-height:1.5;color:var(--ink-soft);margin-top:9px;}
 
   @media (max-width:860px){
@@ -699,7 +701,7 @@
   .q-btn-name{font-size:14px;font-weight:600;color:#000;}
   .q-btn-metrics{display:flex;flex-wrap:wrap;gap:4px 12px;}
   .q-metric{
-    display:inline-flex;align-items:center;gap:5px;
+    display:inline-flex;align-items:center;gap:1px;
     font-size:12px;color:#000;white-space:nowrap;
   }
   /* Scoped per icon rather than a blanket `.q-metric svg` — that rule was
@@ -720,16 +722,15 @@
   .quad-tip strong{display:block;font-size:14px;font-weight:600;color:#000;margin-bottom:6px;}
   .quad-tip p{font-size:13px;line-height:1.5;color:var(--ink-soft);}
   .metro-scatter .ms-dot{fill:#c8cdd0;opacity:.55;}
-  /* Theme accents rather than sector palette. Peers use a lightened teal so
-     they sit between the grey field and this city without competing with it;
-     their labels stay a mid teal to remain readable at 12px. */
-  .metro-scatter .ms-dot--peer{fill:#8aafb8;opacity:.95;}
+  /* Peers sit a shade above the grey field but stay neutral, so only this
+     city carries an accent colour. */
+  .metro-scatter .ms-dot--peer{fill:#9ea2a3;opacity:.95;}
   .metro-scatter .ms-dot--home{fill:var(--orange-dark);opacity:1;}
   .metro-scatter .ms-home-label{
     font-size:15px;font-weight:600;fill:var(--orange-dark);
   }
   .metro-scatter .ms-peer-label{
-    font-size:12px;font-weight:600;fill:#5b8a95;
+    font-size:12px;font-weight:600;fill:#9ea2a3;
   }
 
   /* ---- Specialization (RCA) chart ---- */

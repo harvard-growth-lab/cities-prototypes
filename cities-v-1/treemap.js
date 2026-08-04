@@ -1424,10 +1424,10 @@
 
     const S = 300, PAD = 26, MID = S / 2;
     const svg = d3.select(svgEl);
-    // Deepened now that the chart sits on white — the panel's own peach was
-    // washing the top-left quarter out entirely.
-    const fills = { tl:"#fbe4da", tr:"#e2ecef",
-                    bl:"#eceef0", br:"#f4ecdd" };
+    // Flat pastels, butted edge to edge with no separator. Selection is shown
+    // by dimming the other three rather than by deepening this one.
+    const fills = { tl:"#f6f2e9", tr:"#e8ecf2",
+                    bl:"#f9edec", br:"#e9efeb" };
     const box = { tl:[PAD, PAD], tr:[MID, PAD], bl:[PAD, MID], br:[MID, MID] };
     Object.keys(box).forEach(k => {
       svg.append("rect").attr("class", "dx-q dx-q--" + k)
@@ -1441,16 +1441,19 @@
     svg.append("line").attr("class", "dx-cross")
       .attr("x1", PAD).attr("x2", S - PAD).attr("y1", MID).attr("y2", MID);
 
+    // Both labels sit flat inside the plot, hugging their own axis line.
     svg.append("text").attr("class", "dx-axis")
-      .attr("x", S - PAD).attr("y", MID - 8).attr("text-anchor", "end")
+      .attr("x", S - PAD - 4).attr("y", MID - 9).attr("text-anchor", "end")
       .text("People \u2192");
     svg.append("text").attr("class", "dx-axis")
-      .attr("transform", "rotate(-90)")
-      .attr("x", -(PAD)).attr("y", MID - 8).attr("text-anchor", "end")
+      .attr("x", MID + 9).attr("y", PAD + 16).attr("text-anchor", "start")
       .text("Pay \u2191");
 
-    const dot = svg.append("circle").attr("class", "dx-dot")
-      .attr("cx", MID).attr("cy", MID).attr("r", 9);
+    // A black dot in a white ring, inside a dashed halo that marks it draggable.
+    const dot = svg.append("g").attr("class", "dx-dot-g")
+      .attr("transform", "translate(" + MID + "," + MID + ")");
+    dot.append("circle").attr("class", "dx-dot-halo").attr("r", 16);
+    dot.append("circle").attr("class", "dx-dot").attr("r", 9);
 
     let state = { pop:null, pay:null };
 
@@ -1463,6 +1466,7 @@
         ? (state.pay === "up" ? "t" : "b") + (state.pop === "up" ? "r" : "l")
         : null;
       if (q) svg.select(".dx-q--" + q).classed("is-on", true);
+      svg.classed("has-sel", !!q);
 
       document.querySelectorAll(".dx-opt").forEach(b => {
         b.classList.toggle("is-on", state[b.dataset.dial] === b.dataset.val);
@@ -1485,7 +1489,8 @@
       if (!state.pop || !state.pay) return;
       const cx = state.pop === "up" ? MID + 52 : MID - 52;
       const cy = state.pay === "up" ? MID - 52 : MID + 52;
-      dot.transition().duration(260).attr("cx", cx).attr("cy", cy);
+      dot.transition().duration(260)
+        .attr("transform", "translate(" + cx + "," + cy + ")");
     }
 
     document.querySelectorAll(".dx-opt").forEach(b => {
@@ -1502,7 +1507,7 @@
       const pt = ev.touches ? ev.touches[0] : ev;
       const px = Math.max(PAD, Math.min(S - PAD, (pt.clientX - r.left) / r.width * S));
       const py = Math.max(PAD, Math.min(S - PAD, (pt.clientY - r.top) / r.height * S));
-      dot.interrupt().attr("cx", px).attr("cy", py);
+      dot.interrupt().attr("transform", "translate(" + px + "," + py + ")");
       const q = quadOf(px, py);
       state.pop = q[1] === "r" ? "up" : "down";
       state.pay = q[0] === "t" ? "up" : "down";
