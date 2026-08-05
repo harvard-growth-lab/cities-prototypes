@@ -53,17 +53,33 @@ const H = 640;
 /* scene A: the chart square, centred on the stage */
 const CQ = { cx: W / 2, cy: 316, r: 268 };
 
-/* scene B: the tidy tree */
-const TM = { left: 60, top: 36 };
+/* scene B: the tidy tree. The top margin clears the root's full dressing —
+   chip pad + icon riding above the label — so no styling combo clips at
+   the viewBox edge */
+const TM = { left: 60, top: 52 };
 const T_W = 1060;
-const T_H = 516;
-const LABEL_W = 215;
+const LABEL_W = 250;
 const ROOT_LABEL_W = 620;
 
 const STEPS = 5;
 
 /* where the big chart flies when it docks (toward the rail minimap) */
 const DOCK = { x: W - 44, y: 140 };
+
+/* the chart phase tightens the viewBox around the chart square (plus its
+   frame ticks/titles and the arrow-axis caption), so the pizza uses the
+   stage's full width instead of reserving room for the tree; the tree phase
+   eases back to the full box while the chart docks */
+const CHART_VB = "245 0 810 640";
+
+/* the tree phase mirrors the trick vertically: the stage viewBox grows to
+   the stage's own aspect ratio (capped, so level gaps stay readable) and
+   the tree lays out taller to fill it — otherwise a laptop's squarer stage
+   letterboxes the wide tree into a small band */
+const TREE_H_MAX = 900;
+/* space kept below the deepest leaves for their badges ("where we think
+   you are"), matching the original 640-tall layout */
+const TREE_BOTTOM = 88;
 
 /* intro reveal timing: per-depth wave of drawn arrows + surfacing labels.
    The chart's dock ride is longer than a standard step transition, the tree
@@ -477,14 +493,52 @@ export function ConstraintScrolly({
     };
   }, []);
 
+  /* the tree-phase viewBox height, matched to the stage's real aspect so
+     the wide tree isn't letterboxed into a small band on squarer (laptop)
+     stages; the tree lays out taller to fill it */
+  const [treeH, setTreeH] = useState(H);
+  useEffect(() => {
+    const el = svgRef.current!;
+    const measure = () => {
+      const r = el.getBoundingClientRect();
+      if (!r.width || !r.height) return;
+      const h = Math.round(
+        Math.min(TREE_H_MAX, Math.max(H, (W * r.height) / r.width)),
+      );
+      setTreeH((p) => (Math.abs(p - h) > 8 ? h : p));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const fullVB = `0 0 ${W} ${treeH}`;
+
   const root = useMemo(() => {
     const built = stratify<TreeNodeData>()
       .id((d) => d.id)
       .parentId((d) => d.parent)(TREE_NODES);
-    return d3tree<TreeNodeData>()
-      .size([T_W, T_H])
-      .separation((a, b) => (a.parent === b.parent ? 1 : 1.35))(built);
-  }, []);
+    /* separation ∝ the labels' rendered widths (wrap measure capped) plus
+       chip padding, so wide neighbours — and their chip cards — never
+       overlap horizontally in any styling combo */
+    const estW = (n: { data: TreeNodeData }) =>
+      Math.min(n.data.title.length * 10.8, LABEL_W) + 36;
+    const laid = d3tree<TreeNodeData>()
+      .size([T_W, treeH - TM.top - TREE_BOTTOM])
+      .separation(
+        (a, b) =>
+          ((a.parent === b.parent ? 1 : 1.15) * (estW(a) + estW(b))) / 2 / 200,
+      )(built);
+    /* the levels aren't spread evenly: the root row is one line of text, so
+       its gap down to the branch heads reads too tall at an equal share —
+       pull level 1 up and give the deeper gaps the space (5 levels: root →
+       branch heads → … → horizontal/vertical inputs) */
+    const LEVEL_F = [0, 0.2, 0.47, 0.74, 1];
+    laid.each((d) => {
+      d.y = LEVEL_F[d.depth] * (treeH - TM.top - TREE_BOTTOM);
+    });
+    return laid;
+  }, [treeH]);
 
   const byId = useMemo(() => {
     const m = new Map<string, Node>();
@@ -531,6 +585,14 @@ export function ConstraintScrolly({
       setHover(null);
       setQuadHover(null);
     }
+
+    /* the viewBox rides the phase: tight around the chart while it has the
+       stage, easing out to the full box in step with the dock ride */
+    const svgSel = select(svgRef.current!);
+    (entering
+      ? svgSel.transition().duration(CHART_EXIT_MS).ease(easeCubicInOut)
+      : T(svgSel)
+    ).attr("viewBox", s <= 2 ? CHART_VB : fullVB);
 
     /* chart: full-size through step 2, docked away from step 3 on. On the
        chart→tree handoff the dock ride runs longer than a standard step
@@ -1014,7 +1076,7 @@ export function ConstraintScrolly({
        label, and/or a tinted chip card enclosing both. The hit rect doubles
        as hover tint and picked outline, so in chip mode it IS the chip's box
        and all three stay aligned */
-    const ICO = 18;
+    const ICO = 20;
     nodes.each(function (d) {
       const text = select(this).select<SVGTextElement>("text.tree-label");
       const lines = text.node()!.childElementCount || 1;
@@ -1095,10 +1157,14 @@ export function ConstraintScrolly({
           (c) => (c as Node).y + (bounds.get(c.data.id)?.top ?? 0),
         ),
       );
-      busY.set(
-        p.data.id,
-        Math.max(y0 + 12, Math.min((y0 + topmostChild) / 2, topmostChild - 12)),
+      let y = Math.max(
+        y0 + 12,
+        Math.min((y0 + topmostChild) / 2, topmostChild - 12),
       );
+      /* the root's drop is capped: at the midpoint it reads overly long on
+         tall stages, and the first fork should stay near the question */
+      if (p.depth === 0) y = Math.min(y, y0 + 22);
+      busY.set(p.data.id, y);
     });
 
     /* curved mode: one smooth cubic per link, straight from the parent's
@@ -1108,17 +1174,21 @@ export function ConstraintScrolly({
        still, so the tip renders on clean background) */
     const linkD = (d: Node, inset: number) => {
       const p = d.parent as Node;
-      const y1 = d.y + (bounds.get(d.data.id)?.top ?? 0) - inset;
+      const yEnd = d.y + (bounds.get(d.data.id)?.top ?? 0) - inset;
       if (!treeStyle.curved)
-        return `M${p.x},${busY.get(p.data.id)} H${d.x} V${y1}`;
+        return `M${p.x},${busY.get(p.data.id)} H${d.x} V${yEnd}`;
       const y0 = p.y + (bounds.get(p.data.id)?.bottom ?? 0);
       /* the curve ends a step early and a straight vertical tail finishes the
          run: on wide, shallow hops (root → branch heads) the bend otherwise
          reaches the very tip, and the down-pointing arrowhead reads glued
-         sideways onto a near-horizontal curve */
+         sideways onto a near-horizontal curve. The curve's shape ALWAYS
+         derives from the link's true endpoint (inset 4) — a larger inset
+         only shortens the tail, so the home glow's bend sits exactly under
+         the lit link's instead of tracing a slightly different curve */
+      const y1 = d.y + (bounds.get(d.data.id)?.top ?? 0) - 4;
       const yc = Math.max(y1 - 12, (y0 + y1) / 2);
       const my = (y0 + yc) / 2;
-      return `M${p.x},${y0} C${p.x},${my} ${d.x},${my} ${d.x},${yc} V${y1}`;
+      return `M${p.x},${y0} C${p.x},${my} ${d.x},${my} ${d.x},${yc} V${Math.max(yc, yEnd)}`;
     };
 
     const stems = gLinks
@@ -1169,7 +1239,7 @@ export function ConstraintScrolly({
       .append("rect")
       .attr("class", "jz-capture")
       .attr("width", W)
-      .attr("height", H)
+      .attr("height", treeH)
       .on("pointermove", (e: PointerEvent) => {
         hoverRef.current(targetAt(e));
         moveTip(e);
@@ -1581,10 +1651,11 @@ export function ConstraintScrolly({
     }
 
     /* the other US sample cities, v1 peer-style: a shade above the grey
-       field but neutral — only the home city carries an accent. They arrive
-       with the MSA dot (the "your metro area" step is metro-scale) */
+       field but neutral — only the home city carries an accent. They belong
+       to the metro-field experiment (labeled context within the field) and
+       arrive with the MSA dot (the "your metro area" step is metro-scale) */
     const peerDots = gChart.append("g").attr("opacity", 0);
-    home.peers.forEach((m) => {
+    (chartStyle.field ? home.peers : []).forEach((m) => {
       const [ux, uy] = metroUnit(m);
       const pr = Math.max(6, dotR(m.size));
       const gp = peerDots
@@ -1653,7 +1724,7 @@ export function ConstraintScrolly({
     ) => {
       const px = cx(spot[0]);
       const py = cy(spot[1]);
-      const w = Math.max(name.length * 8.8, ...rows.map((s) => s.length * 7));
+      const w = Math.max(name.length * 9.3, ...rows.map((s) => s.length * 7.5));
       const n = rows.length + 1;
       const CAND = {
         above: { dx: 14, anchor: "start", top: -15 - (n - 1) * 17 },
@@ -1781,7 +1852,7 @@ export function ConstraintScrolly({
          roughly above the cursor (area-linked hover reaches well below a
          label), where it would cover the leaf: then it flips underneath,
          provided that keeps it inside the stage */
-      const below = py > n.y + TM.top + 8 && py + 46 < H;
+      const below = py > n.y + TM.top + 8 && py + 46 < treeH;
       gTip.attr(
         "transform",
         `translate(${Math.max(tipHalf, Math.min(W - tipHalf, px))},${below ? py + 32 : py - 26})`,
@@ -2069,7 +2140,7 @@ export function ConstraintScrolly({
             <svg
               ref={svgRef}
               className="jz-svg"
-              viewBox={`0 0 ${W} ${H}`}
+              viewBox={fullVB}
               role="img"
               aria-label="Step-driven transition from the labor-market quadrant chart to the diagnostic decision tree"
             />
