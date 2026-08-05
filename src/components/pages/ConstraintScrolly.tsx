@@ -133,6 +133,124 @@ const STEP_ICONS: React.ReactNode[] = [
   </svg>,
 ];
 
+/* one tiny pictogram per TREE NODE, in the step icons' line style. Shown
+   ONLY in the rail caption beside the node title — the stage itself keeps
+   its clean text-and-arrows look */
+function NodeGlyph({ children }: { children: React.ReactNode }) {
+  return (
+    <svg
+      viewBox="0 0 13 13"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {children}
+    </svg>
+  );
+}
+
+const NODE_ICONS: Record<string, React.ReactNode> = {
+  /* the growth question */
+  root: (
+    <NodeGlyph>
+      <circle cx="6.5" cy="6.5" r="5.4" />
+      <path d="M4.9 5a1.6 1.6 0 1 1 2.7 1.2c-.5.5-1.1.8-1.1 1.5" />
+      <circle cx="6.5" cy="9.5" r="0.8" fill="currentColor" stroke="none" />
+    </NodeGlyph>
+  ),
+  /* firms and jobs: the briefcase */
+  demand: (
+    <NodeGlyph>
+      <rect x="1.6" y="4.1" width="9.8" height="6.9" rx="1.4" />
+      <path d="M4.7 4.1v-1A1.2 1.2 0 0 1 5.9 1.9h1.2a1.2 1.2 0 0 1 1.2 1.2v1" />
+    </NodeGlyph>
+  ),
+  /* residents: the person */
+  supply: (
+    <NodeGlyph>
+      <circle cx="6.5" cy="4" r="2.1" />
+      <path d="M2.7 11.2c.5-2.3 2-3.6 3.8-3.6s3.3 1.3 3.8 3.6" />
+    </NodeGlyph>
+  ),
+  /* new activities: the spark */
+  newact: (
+    <NodeGlyph>
+      <path d="M6.5 1.4 7.7 5.3l3.9 1.2-3.9 1.2-1.2 3.9-1.2-3.9-3.9-1.2 3.9-1.2Z" />
+    </NodeGlyph>
+  ),
+  /* struggling industries: the falling trend */
+  existing: (
+    <NodeGlyph>
+      <path d="M1.6 3.9 5 7.3l2-2 3.9 3.9" />
+      <path d="M8.5 9.2h2.4V6.8" />
+    </NodeGlyph>
+  ),
+  /* chicken-and-egg: the interlock */
+  coord: (
+    <NodeGlyph>
+      <circle cx="4.6" cy="6.5" r="3.1" />
+      <circle cx="8.4" cy="6.5" r="3.1" />
+    </NodeGlyph>
+  ),
+  /* shocks from outside: the bolt */
+  external: (
+    <NodeGlyph>
+      <path d="M7.4 1.5 3.4 7.2h2.8l-.9 4.3 4.3-6H6.8Z" />
+    </NodeGlyph>
+  ),
+  /* what firms must buy: the crate */
+  inputs: (
+    <NodeGlyph>
+      <path d="M6.5 1.6 11.2 4.3v5.4L6.5 12.4 1.8 9.7V4.3Z" />
+      <path d="M1.8 4.3 6.5 7l4.7-2.7M6.5 7v5.4" />
+    </NodeGlyph>
+  ),
+  /* reach across every firm */
+  horizontal: (
+    <NodeGlyph>
+      <path d="M1.4 6.5h10.2M3.8 4.1 1.4 6.5l2.4 2.4M9.2 4.1l2.4 2.4-2.4 2.4" />
+    </NodeGlyph>
+  ),
+  /* reach down one industry */
+  vertical: (
+    <NodeGlyph>
+      <path d="M6.5 1.4v10.2M4.1 3.8 6.5 1.4l2.4 2.4M4.1 9.2l2.4 2.4 2.4-2.4" />
+    </NodeGlyph>
+  ),
+  /* what living there costs: the price tag */
+  col: (
+    <NodeGlyph>
+      <path d="M1.8 1.8h3.9l5.6 5.6a1 1 0 0 1 0 1.4l-2.5 2.5a1 1 0 0 1-1.4 0L1.8 5.7Z" />
+      <circle cx="4.3" cy="4.3" r="0.9" fill="currentColor" stroke="none" />
+    </NodeGlyph>
+  ),
+  /* what living there is like: the park tree */
+  amen: (
+    <NodeGlyph>
+      <path d="M6.5 1.5 9.4 5.6H7.9l2.6 3.6H2.5l2.6-3.6H3.6Z" />
+      <path d="M6.5 9.2v2.4" />
+    </NodeGlyph>
+  ),
+  /* the house */
+  housing: (
+    <NodeGlyph>
+      <path d="M1.9 6.4 6.5 2.1l4.6 4.3" />
+      <path d="M3.3 5.8v5.4h6.4V5.8" />
+    </NodeGlyph>
+  ),
+  /* the bus */
+  transport: (
+    <NodeGlyph>
+      <rect x="2" y="2.6" width="9" height="6.6" rx="1.3" />
+      <path d="M2 6.2h9" />
+      <circle cx="4.4" cy="10.8" r="1" fill="currentColor" stroke="none" />
+      <circle cx="8.6" cy="10.8" r="1" fill="currentColor" stroke="none" />
+    </NodeGlyph>
+  ),
+};
+
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 
 /** first sentence only — captions run at full text size, so keep them short */
@@ -1330,7 +1448,16 @@ export function ConstraintScrolly({
           {sideOf(capNode) === "root" ? "the root" : `${sideOf(capNode)} side`}
         </span>
       </div>
-      <p className="jz-cap-title">{displayTitle(capNode)}</p>
+      <p className="jz-cap-title">
+        <span
+          className="jz-node-ico"
+          style={{ color: TREE_SIDE_COLOR[sideOf(capNode)] }}
+          aria-hidden="true"
+        >
+          {NODE_ICONS[capNode.data.id]}
+        </span>
+        {displayTitle(capNode)}
+      </p>
       <p className="jz-cap-body">
         {firstSentence(capNode.data.detail)}{" "}
         {capNode.data.tests ? (

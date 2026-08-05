@@ -427,10 +427,23 @@
   border-color: var(--orange);
 }
 .jz-cap-title {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
   font-size: 19px;
   font-weight: 700;
   color: var(--ink);
   margin-top: 2px;
+}
+/* the node's pictogram, side-coloured; lives only in the rail caption */
+.jz-node-ico {
+  flex: 0 0 auto;
+  margin-top: 4px;
+}
+.jz-node-ico svg {
+  display: block;
+  width: 15px;
+  height: 15px;
 }
 .jz-cap-body {
   font-size: 16px;
