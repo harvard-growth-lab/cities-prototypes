@@ -242,18 +242,6 @@
   stroke: var(--border-strong);
   stroke-width: 1;
 }
-/* focus tint: only the quadrant the city lands in keeps its wash */
-.jz-chart.style-focus .jz-quad:not(.place) rect {
-  fill-opacity: 0;
-  stroke-opacity: 0;
-}
-.jz-chart.style-focus .jz-quad.place rect {
-  fill-opacity: 0.13;
-}
-.jz-chart.style-focus .jz-quad.place.sel rect {
-  fill-opacity: 0.18;
-}
-
 /* ============ scene B: the tree ============ */
 .tree-link,
 .tree-stem {
@@ -340,6 +328,16 @@
 .tree-node.dim .tree-chip {
   fill-opacity: 0.03;
   stroke-opacity: 0.12;
+}
+/* the root's chip is inked (its side colour is near-black), so the same
+   opacities read far heavier there — keep the growth question much lighter */
+.tree-node.side-root .tree-chip {
+  fill-opacity: 0.015;
+  stroke-opacity: 0.2;
+}
+.tree-node.side-root.lit .tree-chip {
+  fill-opacity: 0.03;
+  stroke-opacity: 0.35;
 }
 /* the styling-experiment toggles, top-right in the section header. Both
    phase clusters share one grid cell, so they cross-fade in place */

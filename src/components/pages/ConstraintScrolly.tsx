@@ -142,7 +142,7 @@ const STEP_COPY: { kicker: string; body: string }[] = [
   },
   {
     kicker: "Where we think you are",
-    body: "[step 5: highlight suggested path based on the data. allow user to click an END leaf to pick a different path for the next section — inner nodes are hover-to-read only, so every pick is a full route.]",
+    body: "[step 5: highlight suggested path based on the data. allow user to click an end leaf to pick a different path for the next section, or hover over a node for more information.]",
   },
 ];
 
@@ -195,7 +195,8 @@ const NODE_ICON_ART: Record<string, string> = {
   existing:
     '<path d="M1.6 3.9 5 7.3l2-2 3.9 3.9"/><path d="M8.5 9.2h2.4V6.8"/>',
   /* chicken-and-egg: the interlock */
-  coord: '<circle cx="4.6" cy="6.5" r="3.1"/><circle cx="8.4" cy="6.5" r="3.1"/>',
+  coord:
+    '<circle cx="4.6" cy="6.5" r="3.1"/><circle cx="8.4" cy="6.5" r="3.1"/>',
   /* shocks from outside: the bolt */
   external: '<path d="M7.4 1.5 3.4 7.2h2.8l-.9 4.3 4.3-6H6.8Z"/>',
   /* what firms must buy: the crate */
@@ -250,7 +251,10 @@ const TREE_STYLE_TOGGLES = [
 type ChartStyle = {
   field: boolean;
   frame: boolean;
-  focus: boolean;
+  /* reduced text: the dots keep their names only (no stat numbers) and the
+     quadrant blocks drop the "___ shock" headings — the arrows line and
+     branch tag carry the meaning alone */
+  reduced: boolean;
   /* where the quadrant text lives. With REAL dot positions the sample
      cities ride the crowded band near the median crosshair, so the compact
      outer-corner block is the default; the big centered text and v1's
@@ -260,7 +264,7 @@ type ChartStyle = {
 const CHART_STYLE_TOGGLES = [
   ["field", "metro field"],
   ["frame", "framed axes"],
-  ["focus", "focus tint"],
+  ["reduced", "reduced text"],
 ] as const;
 const CHART_LABEL_TOGGLES = [
   ["center", "centered labels"],
@@ -436,7 +440,7 @@ export function ConstraintScrolly({
   const [chartStyle, setChartStyle] = useState<ChartStyle>({
     field: false,
     frame: false,
-    focus: false,
+    reduced: false,
     labels: "corner",
   });
 
@@ -1196,7 +1200,10 @@ export function ConstraintScrolly({
     /* pills live in a separate TOP layer (also .jz-homeg, so opacity
        transitions hit both): in the underlay they'd be painted over by
        strokes and labels */
-    const gBadges = plot.append("g").attr("class", "jz-homeg").attr("opacity", 0);
+    const gBadges = plot
+      .append("g")
+      .attr("class", "jz-homeg")
+      .attr("opacity", 0);
     const rebuildHome = (path: string[]) => {
       gHome.selectAll("*").remove();
       gBadges.selectAll("*").remove();
@@ -1222,7 +1229,10 @@ export function ConstraintScrolly({
           .attr("height", bbb.height + 18)
           .attr("rx", 14)
           .attr("fill", color);
-        badge.attr("transform", `translate(${n.x},${n.y + b.bottom + 24 + drop})`);
+        badge.attr(
+          "transform",
+          `translate(${n.x},${n.y + b.bottom + 24 + drop})`,
+        );
         return n;
       };
 
@@ -1230,9 +1240,7 @@ export function ConstraintScrolly({
          original read stays visible while the user picks another path */
       const suggColor = TREE_SIDE_COLOR[suggSide];
       (
-        tnodes.filter(
-          (d) => d.parent && suggPath.includes(d.data.id),
-        ) as Node[]
+        tnodes.filter((d) => d.parent && suggPath.includes(d.data.id)) as Node[]
       ).forEach((d) => {
         const p = d.parent as Node;
         const y0 = p.y + (bounds.get(p.data.id)?.bottom ?? 0);
@@ -1280,9 +1288,7 @@ export function ConstraintScrolly({
     /* ----- scene A: the pizza chart, on top ----- */
     const gChart = svg.append("g").attr("class", "jz-chart").attr("opacity", 0);
 
-    gChart
-      .classed("style-frame", chartStyle.frame)
-      .classed("style-focus", chartStyle.focus);
+    gChart.classed("style-frame", chartStyle.frame);
 
     /* framed mode squares the quadrant cards up edge-to-edge (the v1 plot is
        one rectangle split by the crosshair, not four floating cards) */
@@ -1454,26 +1460,29 @@ export function ConstraintScrolly({
       .data(QUADRANTS)
       .join("g");
     if (labMode === "center") {
-      qLabels
-        .append("text")
-        .attr("class", "jz-shock")
-        .attr("x", (d) => cx(d.dx * 0.5))
-        .attr("y", (d) => cy(d.dy * 0.5) - 14)
-        .attr("text-anchor", "middle")
-        .attr("fill", (d) => TREE_SIDE_COLOR[d.side])
-        .text((d) => d.shock);
+      /* reduced mode drops the shock heading; the remaining two lines
+         recentre on the quadrant */
+      if (!chartStyle.reduced)
+        qLabels
+          .append("text")
+          .attr("class", "jz-shock")
+          .attr("x", (d) => cx(d.dx * 0.5))
+          .attr("y", (d) => cy(d.dy * 0.5) - 14)
+          .attr("text-anchor", "middle")
+          .attr("fill", (d) => TREE_SIDE_COLOR[d.side])
+          .text((d) => d.shock);
       qLabels
         .append("text")
         .attr("class", "jz-sub")
         .attr("x", (d) => cx(d.dx * 0.5))
-        .attr("y", (d) => cy(d.dy * 0.5) + 10)
+        .attr("y", (d) => cy(d.dy * 0.5) + (chartStyle.reduced ? -2 : 10))
         .attr("text-anchor", "middle")
         .text((d) => d.sub);
       qLabels
         .append("text")
         .attr("class", "jz-tag")
         .attr("x", (d) => cx(d.dx * 0.5))
-        .attr("y", (d) => cy(d.dy * 0.5) + 33)
+        .attr("y", (d) => cy(d.dy * 0.5) + (chartStyle.reduced ? 21 : 33))
         .attr("text-anchor", "middle")
         .attr("fill", (d) => TREE_SIDE_COLOR[d.side])
         .text(branchTag);
@@ -1501,15 +1510,17 @@ export function ConstraintScrolly({
               dyp >= top - 30 &&
               dyp <= top + 58,
           );
-        const yTop =
-          blocked(yBottom) && !blocked(yTopAlt) ? yTopAlt : yBottom;
-        g.append("text")
-          .attr("class", "jz-shock")
-          .attr("x", xa)
-          .attr("y", yTop)
-          .attr("text-anchor", anchor)
-          .attr("fill", TREE_SIDE_COLOR[d.side])
-          .text(d.shock);
+        const yTop = blocked(yBottom) && !blocked(yTopAlt) ? yTopAlt : yBottom;
+        /* reduced mode drops the shock heading; the block keeps its bottom
+           edge and just loses its top line */
+        if (!chartStyle.reduced)
+          g.append("text")
+            .attr("class", "jz-shock")
+            .attr("x", xa)
+            .attr("y", yTop)
+            .attr("text-anchor", anchor)
+            .attr("fill", TREE_SIDE_COLOR[d.side])
+            .text(d.shock);
         g.append("text")
           .attr("class", "jz-sub")
           .attr("x", xa)
@@ -1710,23 +1721,22 @@ export function ConstraintScrolly({
     placeDot.append("circle").attr("class", "halo").attr("r", 9);
     placeDot.append("circle").attr("class", "core").attr("r", 8);
 
-    /* the place dot is the subject, so its stack places first */
-    dotText(placeDot, home.placeSpot, cityShort, home.placeStats, [
-      "above",
-      "right",
-      "left",
-      "below",
-      "aboveEnd",
-      "belowEnd",
-    ]);
-    dotText(msaDot, home.msaSpot, `${cityShort} MSA`, home.msaStats, [
-      "right",
-      "below",
-      "above",
-      "left",
-      "belowEnd",
-      "aboveEnd",
-    ]);
+    /* the place dot is the subject, so its stack places first. Reduced
+       mode keeps the names and drops the stat rows */
+    dotText(
+      placeDot,
+      home.placeSpot,
+      cityShort,
+      chartStyle.reduced ? [] : home.placeStats,
+      ["above", "right", "left", "below", "aboveEnd", "belowEnd"],
+    );
+    dotText(
+      msaDot,
+      home.msaSpot,
+      `${cityShort} MSA`,
+      chartStyle.reduced ? [] : home.msaStats,
+      ["right", "below", "above", "left", "belowEnd", "aboveEnd"],
+    );
 
     /* ----- leaf-hover affordance: a small pill riding the cursor over an
        END LEAF — "this path is selectable". Inner nodes get neither tip nor
@@ -2018,7 +2028,9 @@ export function ConstraintScrolly({
               {CHART_LABEL_TOGGLES.map(([key, label]) => (
                 <button
                   key={key}
-                  className={"jz-var" + (chartStyle.labels === key ? " on" : "")}
+                  className={
+                    "jz-var" + (chartStyle.labels === key ? " on" : "")
+                  }
                   aria-pressed={chartStyle.labels === key}
                   onClick={() =>
                     setChartStyle((v) => ({
