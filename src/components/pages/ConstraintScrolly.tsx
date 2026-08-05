@@ -1,19 +1,30 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
-import { pointer, select } from "d3-selection";
+import { pointer, select, type Selection } from "d3-selection";
 import { Delaunay } from "d3-delaunay";
 import "d3-transition";
 import { easeCubicInOut, easeCubicOut, easeSinInOut } from "d3-ease";
 import { stratify, tree as d3tree, type HierarchyNode } from "d3-hierarchy";
 import {
-  PLACE_QUAD,
   QUADRANTS,
   TREE_NODES,
   TREE_SIDE_COLOR,
+  suggestedPath,
   type QuadrantDef,
   type TreeNodeData,
   type TreeSide,
 } from "../../data/figures";
 import { branchSectionName } from "../../data/content";
+import {
+  METROS,
+  METRO_MEDIANS,
+  METRO_SPAN,
+  homeMsa,
+  homePlace,
+  metroStatsRows,
+  metroUnit,
+  peerMetros,
+  type MetroDatum,
+} from "../../data/metros";
 import { wrapText } from "../../lib/wrapText";
 
 /* The two City Constraints pages as one sticky, STEP-driven sequence.
@@ -65,11 +76,42 @@ const INTRO_LEVEL = 400;
 const INTRO_DRAW = 460;
 const INTRO_MS = 2600;
 
-/* the two dots: sample values match the indicator tables in content.ts */
-const MSA_SPOT: [number, number] = [0.38, 0.82];
-const PLACE_SPOT: [number, number] = [-0.72, 0.82];
-const MSA_STATS = "+0.4%/yr pop · +4.5%/yr wages";
-const PLACE_STATS = "−0.8%/yr pop · +5.8%/yr wages";
+/* the two dots follow the SELECTED city: REAL values (metros.ts) for the US
+   sample cities, placed on the unit square around the every-metro median
+   crosshair; the non-US samples fall back to placeholder spots + bracketed
+   stats until their data exists */
+interface HomeData {
+  msa: MetroDatum | null;
+  msaSpot: [number, number];
+  placeSpot: [number, number];
+  msaStats: string[];
+  placeStats: string[];
+  peers: MetroDatum[];
+  /** the quadrant the place dot lands in — drives the sel/focus marking */
+  placeQuad: QuadrantDef;
+}
+function homeData(cityShort: string): HomeData {
+  const msa = homeMsa(cityShort);
+  const place = homePlace(cityShort);
+  const msaSpot = msa ? metroUnit(msa) : ([0.38, 0.82] as [number, number]);
+  const placeSpot = place
+    ? metroUnit(place)
+    : ([-0.72, 0.82] as [number, number]);
+  const ph = [`[no ${cityShort} data yet — sample spot]`];
+  return {
+    msa,
+    msaSpot,
+    placeSpot,
+    msaStats: msa ? metroStatsRows(msa) : ph,
+    placeStats: place ? metroStatsRows(place) : ph,
+    peers: peerMetros(cityShort),
+    placeQuad: QUADRANTS.find(
+      (q) =>
+        q.dx === (placeSpot[0] >= 0 ? 1 : -1) &&
+        q.dy === (placeSpot[1] >= 0 ? 1 : -1),
+    )!,
+  };
+}
 
 /** tree side → the minimap quadrants it corresponds to */
 const SIDE_QUADS: Record<TreeSide, QuadrantDef["id"][]> = {
@@ -201,6 +243,30 @@ const TREE_STYLE_TOGGLES = [
   ["curved", "curved branches"],
 ] as const;
 
+/* the pizza chart's styling experiments, same mechanism: toward the v1
+   "How is the metro performing?" scatter — a grey field of metros, the
+   framed axes with dashed gridlines and a "typical" crosshair, and the
+   single-quadrant focus tint */
+type ChartStyle = {
+  field: boolean;
+  frame: boolean;
+  focus: boolean;
+  /* where the quadrant text lives. With REAL dot positions the sample
+     cities ride the crowded band near the median crosshair, so the compact
+     outer-corner block is the default; the big centered text and v1's
+     white corner cards remain as experiments */
+  labels: "center" | "corner" | "card";
+};
+const CHART_STYLE_TOGGLES = [
+  ["field", "metro field"],
+  ["frame", "framed axes"],
+  ["focus", "focus tint"],
+] as const;
+const CHART_LABEL_TOGGLES = [
+  ["center", "centered labels"],
+  ["card", "label cards"],
+] as const;
+
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 
 /** first sentence only — captions run at full text size, so keep them short */
@@ -225,11 +291,14 @@ function MiniMap({
   visible,
   hlSide,
   cityShort,
+  home,
   onSideHover,
 }: {
   visible: boolean;
   hlSide: TreeSide | null;
   cityShort: string;
+  /** the selected city's dots + landing quadrant */
+  home: HomeData;
   /** hovering a quadrant emphasises its half of the tree */
   onSideHover: (side: "demand" | "supply" | null) => void;
 }) {
@@ -254,7 +323,7 @@ function MiniMap({
               className={
                 "jz-mini-quad" +
                 (hl.includes(q.id) ? " hl" : "") +
-                (q.id === PLACE_QUAD.id ? " place" : "")
+                (q.id === home.placeQuad.id ? " place" : "")
               }
               x={q.dx === 1 ? mx(0) + 4 : mx(-1)}
               y={q.dy === 1 ? my(1) : my(0) + 4}
@@ -302,27 +371,29 @@ function MiniMap({
         {/* MSA ring + place dot */}
         <circle
           className="jz-mini-msa"
-          cx={mx(MSA_SPOT[0])}
-          cy={my(MSA_SPOT[1])}
+          cx={mx(home.msaSpot[0])}
+          cy={my(home.msaSpot[1])}
           r={7}
         />
         <text
           className="jz-mini-dotlabel"
-          x={mx(MSA_SPOT[0]) + 11}
-          y={my(MSA_SPOT[1]) + 4}
+          x={mx(home.msaSpot[0])}
+          y={my(home.msaSpot[1]) + 22}
+          textAnchor="middle"
         >
           {cityShort} MSA
         </text>
         <circle
           className="jz-mini-place"
-          cx={mx(PLACE_SPOT[0])}
-          cy={my(PLACE_SPOT[1])}
+          cx={mx(home.placeSpot[0])}
+          cy={my(home.placeSpot[1])}
           r={7}
         />
         <text
           className="jz-mini-dotlabel"
-          x={mx(PLACE_SPOT[0]) + 11}
-          y={my(PLACE_SPOT[1]) + 4}
+          x={mx(home.placeSpot[0])}
+          y={my(home.placeSpot[1]) - 13}
+          textAnchor="middle"
         >
           {cityShort}
         </text>
@@ -362,6 +433,20 @@ export function ConstraintScrolly({
     chips: false,
     curved: false,
   });
+  const [chartStyle, setChartStyle] = useState<ChartStyle>({
+    field: false,
+    frame: false,
+    focus: false,
+    labels: "corner",
+  });
+
+  /* the selected city's real dots (or placeholder spots) — drives the two
+     accent dots, the peer set, and which quadrant reads as "yours" */
+  const home = useMemo(() => homeData(cityShort), [cityShort]);
+  /* the per-city suggested descent (hardcoded sample): what the tree lights
+     up as "where we think you are" */
+  const suggPath = useMemo(() => suggestedPath(cityShort), [cityShort]);
+  const suggSide: TreeSide = suggPath[0] === "demand" ? "demand" : "supply";
   /* hovering a minimap quadrant emphasises that half of the tree */
   const [quadHover, setQuadHover] = useState<"demand" | "supply" | null>(null);
   const stepRef = useRef(step);
@@ -464,11 +549,12 @@ export function ConstraintScrolly({
         .attr("opacity", 0);
     }
     T(sc.msaDot).attr("opacity", s >= 1 ? 1 : 0);
+    T(sc.peerDots).attr("opacity", s >= 1 ? 1 : 0);
     T(sc.placeDot).attr("opacity", s >= 2 ? 1 : 0);
     sc.placeDot.classed("pulse", s === 2);
     sc.quads.classed(
       "sel",
-      (d: QuadrantDef) => s >= 2 && d.id === PLACE_QUAD.id,
+      (d: QuadrantDef) => s >= 2 && d.id === sc.placeQuadId,
     );
 
     /* tree. While the intro cascade draws, the tree ignores the pointer — a
@@ -610,7 +696,7 @@ export function ConstraintScrolly({
     const pathSide = (ids[0] as TreeSide) ?? "supply";
     /* the data-driven suggestion never dims — its glow + badge must stay
        readable even when the user's pick is the lit path */
-    const keep = new Set(["root", ...ids, ...PLACE_QUAD.path]);
+    const keep = new Set(["root", ...ids, ...suggPath]);
     const setDims = () => {
       sc.nodes.classed("dim", (d: Node) => !keep.has(d.data.id));
       sc.stems.classed("dim", (d: Node) => !keep.has(d.data.id));
@@ -618,7 +704,7 @@ export function ConstraintScrolly({
         .classed(
           "dim",
           (d: Node) =>
-            !ids.includes(d.data.id) && !PLACE_QUAD.path.includes(d.data.id),
+            !ids.includes(d.data.id) && !suggPath.includes(d.data.id),
         )
         .attr("stroke-dasharray", null)
         .attr("stroke-dashoffset", null)
@@ -703,7 +789,7 @@ export function ConstraintScrolly({
        suggestion keep their markings and only fall back to idle, not dim */
     const home =
       stepRef.current >= 4
-        ? new Set(["root", ...selectedRef.current, ...PLACE_QUAD.path])
+        ? new Set(["root", ...selectedRef.current, ...suggPath])
         : new Set<string>();
     /* settle any in-flight intro animation before emphasising */
     sc.nodes
@@ -956,7 +1042,14 @@ export function ConstraintScrolly({
         this.appendChild(ico);
       }
       const pad = treeStyle.chips ? 13 : 10;
-      const hy = treeStyle.chips ? top - 8 : bb.y - 7;
+      /* the hit rect carries the hover tint and the picked node's dashed
+         outline — with icons on it grows upward to enclose the icon too,
+         not just the label text */
+      const hy = treeStyle.chips
+        ? top - 8
+        : treeStyle.icons
+          ? top - 6
+          : bb.y - 7;
       const hh = bb.y + bb.height + (treeStyle.chips ? 8 : 7) - hy;
       select(this)
         .select("rect.tree-hit")
@@ -1135,10 +1228,10 @@ export function ConstraintScrolly({
 
       /* the data-driven suggestion ALWAYS keeps its glow + badge, so the
          original read stays visible while the user picks another path */
-      const suggColor = TREE_SIDE_COLOR[PLACE_QUAD.side];
+      const suggColor = TREE_SIDE_COLOR[suggSide];
       (
         tnodes.filter(
-          (d) => d.parent && PLACE_QUAD.path.includes(d.data.id),
+          (d) => d.parent && suggPath.includes(d.data.id),
         ) as Node[]
       ).forEach((d) => {
         const p = d.parent as Node;
@@ -1159,7 +1252,7 @@ export function ConstraintScrolly({
           );
       });
       const sugg = mkBadge(
-        PLACE_QUAD.path[PLACE_QUAD.path.length - 1],
+        suggPath[suggPath.length - 1],
         suggColor,
         "where we think you are",
       );
@@ -1167,7 +1260,7 @@ export function ConstraintScrolly({
       /* a differing pick gets its own badge — its route is the lit one on
          the stage. When both badges sit below same-row leaves, the pick's
          drops a step so the pills never collide */
-      if (path.join("/") !== PLACE_QUAD.path.join("/")) {
+      if (path.join("/") !== suggPath.join("/")) {
         const pickColor = TREE_SIDE_COLOR[(path[0] as TreeSide) ?? "supply"];
         const pn = byId.get(path[path.length - 1])!;
         const collide =
@@ -1187,95 +1280,424 @@ export function ConstraintScrolly({
     /* ----- scene A: the pizza chart, on top ----- */
     const gChart = svg.append("g").attr("class", "jz-chart").attr("opacity", 0);
 
+    gChart
+      .classed("style-frame", chartStyle.frame)
+      .classed("style-focus", chartStyle.focus);
+
+    /* framed mode squares the quadrant cards up edge-to-edge (the v1 plot is
+       one rectangle split by the crosshair, not four floating cards) */
+    const QGAP = chartStyle.frame ? 0 : 8;
     const quads = gChart
       .selectAll<SVGGElement, QuadrantDef>("g.jz-quad")
       .data(QUADRANTS)
       .join("g")
-      .attr("class", "jz-quad");
+      .attr("class", "jz-quad")
+      .classed("place", (d) => d.id === home.placeQuad.id);
 
     quads
       .append("rect")
-      .attr("x", (d) => (d.dx === 1 ? cx(0) + 8 : cx(-1)))
-      .attr("y", (d) => (d.dy === 1 ? cy(1) : cy(0) + 8))
-      .attr("width", CQ.r - 8)
-      .attr("height", CQ.r - 8)
-      .attr("rx", 14)
+      .attr("x", (d) => (d.dx === 1 ? cx(0) + QGAP : cx(-1)))
+      .attr("y", (d) => (d.dy === 1 ? cy(1) : cy(0) + QGAP))
+      .attr("width", CQ.r - QGAP)
+      .attr("height", CQ.r - QGAP)
+      .attr("rx", chartStyle.frame ? 0 : 14)
       .attr("fill", (d) => TREE_SIDE_COLOR[d.side])
       .attr("stroke", (d) => TREE_SIDE_COLOR[d.side]);
 
-    quads
-      .append("text")
-      .attr("class", "jz-shock")
-      .attr("x", (d) => cx(d.dx * 0.5))
-      .attr("y", (d) => cy(d.dy * 0.5) - 14)
-      .attr("text-anchor", "middle")
-      .attr("fill", (d) => TREE_SIDE_COLOR[d.side])
-      .text((d) => d.shock);
-    quads
-      .append("text")
-      .attr("class", "jz-sub")
-      .attr("x", (d) => cx(d.dx * 0.5))
-      .attr("y", (d) => cy(d.dy * 0.5) + 10)
-      .attr("text-anchor", "middle")
-      .text((d) => d.sub);
-    quads
-      .append("text")
-      .attr("class", "jz-tag")
-      .attr("x", (d) => cx(d.dx * 0.5))
-      .attr("y", (d) => cy(d.dy * 0.5) + 33)
-      .attr("text-anchor", "middle")
-      .attr("fill", (d) => TREE_SIDE_COLOR[d.side])
-      .text(
-        (d) =>
-          `→ ${d.side === "demand" ? "labor demand" : "labor supply"} branch`,
-      );
+    /* framed axes (v1 look): dashed gridlines with % ticks, a solid black
+       frame on the left and bottom, and a dashed "typical" crosshair named
+       in place — replacing the through-the-middle arrow axes. Tick values
+       anchor on the sample city's [placeholder] stats */
+    if (chartStyle.frame) {
+      const gFrame = gChart.append("g");
+      [-1, -0.5, 0.5, 1].forEach((t) => {
+        gFrame
+          .append("line")
+          .attr("class", "jz-ms-grid")
+          .attr("x1", cx(t))
+          .attr("x2", cx(t))
+          .attr("y1", cy(1))
+          .attr("y2", cy(-1));
+        const xv = METRO_MEDIANS.pop + t * METRO_SPAN.pop;
+        gFrame
+          .append("text")
+          .attr("class", "jz-ms-tick")
+          .attr("x", cx(t))
+          .attr("y", cy(-1) + 22)
+          .attr("text-anchor", "middle")
+          .text(`${xv > 0 ? "+" : ""}${xv.toFixed(1)}%`);
+        gFrame
+          .append("line")
+          .attr("class", "jz-ms-grid")
+          .attr("x1", cx(-1))
+          .attr("x2", cx(1))
+          .attr("y1", cy(t))
+          .attr("y2", cy(t));
+        const yv = METRO_MEDIANS.wage + t * METRO_SPAN.wage;
+        gFrame
+          .append("text")
+          .attr("class", "jz-ms-tick")
+          .attr("x", cx(-1) - 12)
+          .attr("y", cy(t) + 4)
+          .attr("text-anchor", "end")
+          .text(`${yv > 0 ? "+" : ""}${yv.toFixed(1)}%`);
+      });
+      gFrame
+        .append("line")
+        .attr("class", "jz-ms-axisline")
+        .attr("x1", cx(-1))
+        .attr("x2", cx(-1))
+        .attr("y1", cy(1))
+        .attr("y2", cy(-1));
+      gFrame
+        .append("line")
+        .attr("class", "jz-ms-axisline")
+        .attr("x1", cx(-1))
+        .attr("x2", cx(1))
+        .attr("y1", cy(-1))
+        .attr("y2", cy(-1));
+      gFrame
+        .append("line")
+        .attr("class", "jz-ms-median")
+        .attr("x1", cx(0))
+        .attr("x2", cx(0))
+        .attr("y1", cy(1))
+        .attr("y2", cy(-1));
+      gFrame
+        .append("line")
+        .attr("class", "jz-ms-median")
+        .attr("x1", cx(-1))
+        .attr("x2", cx(1))
+        .attr("y1", cy(0))
+        .attr("y2", cy(0));
+      gFrame
+        .append("text")
+        .attr("class", "jz-ms-typical")
+        .attr("x", cx(0))
+        .attr("y", cy(1) - 10)
+        .attr("text-anchor", "middle")
+        .text("Typical population growth");
+      gFrame
+        .append("path")
+        .attr("class", "jz-ms-typical-mark")
+        .attr(
+          "d",
+          `M${cx(0) - 4} ${cy(1) - 6}L${cx(0) + 4} ${cy(1) - 6}L${cx(0)} ${cy(1)}Z`,
+        );
+      gFrame
+        .append("text")
+        .attr("class", "jz-ms-typical")
+        .attr("x", cx(1) - 10)
+        .attr("y", cy(0) - 8)
+        .attr("text-anchor", "end")
+        .text("Typical wage growth");
+      gFrame
+        .append("path")
+        .attr("class", "jz-ms-typical-mark")
+        .attr(
+          "d",
+          `M${cx(1)} ${cy(0) - 4}L${cx(1)} ${cy(0) + 4}L${cx(1) - 5} ${cy(0)}Z`,
+        );
+      gFrame
+        .append("text")
+        .attr("class", "jz-ms-title")
+        .attr("x", cx(0))
+        .attr("y", cy(-1) + 48)
+        .attr("text-anchor", "middle")
+        .text("Population growth (annual rate, 2017–2023)");
+      gFrame
+        .append("text")
+        .attr("class", "jz-ms-title")
+        .attr("transform", "rotate(-90)")
+        .attr("x", -CQ.cy)
+        .attr("y", cx(-1) - 50)
+        .attr("text-anchor", "middle")
+        .text("Average wage growth (annual rate, 2017–2023)");
+    }
+
+    /* the metro field: every real US metro (metros.ts), population-sized
+       like v1's employment-sized dots. The home metro and the labeled
+       sample peers are drawn as accents elsewhere, so they stay out of the
+       grey field */
+    const named = new Set([
+      ...(home.msa ? [home.msa.name] : []),
+      ...home.peers.map((m) => m.name),
+    ]);
+    const maxSize = Math.max(...METROS.map((m) => m.size));
+    const dotR = (s: number) => 1.3 + 10.7 * Math.sqrt(s / maxSize);
+    if (chartStyle.field) {
+      const gField = gChart.append("g");
+      METROS.filter((m) => !named.has(m.name)).forEach((m) => {
+        const [ux, uy] = metroUnit(m);
+        gField
+          .append("circle")
+          .attr("class", "jz-ms-dot")
+          .attr("cx", cx(ux))
+          .attr("cy", cy(uy))
+          .attr("r", dotR(m.size));
+      });
+    }
+
+    /* quadrant labels live above the field dots, so text never gets
+       speckled. Centered = the shipped look; the corner modes (after v1's
+       quadrant buttons) tuck a compact block just inside each quadrant's
+       outer corner so mid-field points never land on text — "card" backs it
+       with v1's translucent white card, which stays readable even when the
+       field runs beneath it */
+    const labMode = chartStyle.labels;
+    gChart.classed("lab-side", labMode !== "center");
+    const branchTag = (d: QuadrantDef) =>
+      `→ ${d.side === "demand" ? "labor demand" : "labor supply"} branch`;
+    const qLabels = gChart
+      .append("g")
+      .selectAll<SVGGElement, QuadrantDef>("g")
+      .data(QUADRANTS)
+      .join("g");
+    if (labMode === "center") {
+      qLabels
+        .append("text")
+        .attr("class", "jz-shock")
+        .attr("x", (d) => cx(d.dx * 0.5))
+        .attr("y", (d) => cy(d.dy * 0.5) - 14)
+        .attr("text-anchor", "middle")
+        .attr("fill", (d) => TREE_SIDE_COLOR[d.side])
+        .text((d) => d.shock);
+      qLabels
+        .append("text")
+        .attr("class", "jz-sub")
+        .attr("x", (d) => cx(d.dx * 0.5))
+        .attr("y", (d) => cy(d.dy * 0.5) + 10)
+        .attr("text-anchor", "middle")
+        .text((d) => d.sub);
+      qLabels
+        .append("text")
+        .attr("class", "jz-tag")
+        .attr("x", (d) => cx(d.dx * 0.5))
+        .attr("y", (d) => cy(d.dy * 0.5) + 33)
+        .attr("text-anchor", "middle")
+        .attr("fill", (d) => TREE_SIDE_COLOR[d.side])
+        .text(branchTag);
+    } else {
+      qLabels.each(function (d) {
+        const g = select(this);
+        const right = d.dx === 1;
+        const xa = right ? cx(1) - 18 : cx(-1) + 18;
+        const anchor = right ? "end" : "start";
+        /* every block sits in its quadrant's OUTER-BOTTOM corner (v1's
+           bl/br buttons) — unless an accent dot lands inside that spot
+           (the data decides where dots go): then it flips to the
+           outer-top corner, provided that corner is free */
+        const yBottom = (d.dy === 1 ? cy(0) - QGAP : cy(-1)) - 58;
+        const yTopAlt = (d.dy === 1 ? cy(1) : cy(0) + QGAP) + 30;
+        const wEst = 175;
+        const dots = [home.msaSpot, home.placeSpot].map(
+          ([sx, sy]) => [cx(sx), cy(sy)] as const,
+        );
+        const blocked = (top: number) =>
+          dots.some(
+            ([dxp, dyp]) =>
+              dxp >= (right ? xa - wEst : xa) - 14 &&
+              dxp <= (right ? xa : xa + wEst) + 14 &&
+              dyp >= top - 30 &&
+              dyp <= top + 58,
+          );
+        const yTop =
+          blocked(yBottom) && !blocked(yTopAlt) ? yTopAlt : yBottom;
+        g.append("text")
+          .attr("class", "jz-shock")
+          .attr("x", xa)
+          .attr("y", yTop)
+          .attr("text-anchor", anchor)
+          .attr("fill", TREE_SIDE_COLOR[d.side])
+          .text(d.shock);
+        g.append("text")
+          .attr("class", "jz-sub")
+          .attr("x", xa)
+          .attr("y", yTop + 19)
+          .attr("text-anchor", anchor)
+          .text(d.sub);
+        g.append("text")
+          .attr("class", "jz-tag")
+          .attr("x", xa)
+          .attr("y", yTop + 37)
+          .attr("text-anchor", anchor)
+          .attr("fill", TREE_SIDE_COLOR[d.side])
+          .text(branchTag(d));
+        if (labMode === "card") {
+          const bb = (this as SVGGElement).getBBox();
+          g.insert("rect", ":first-child")
+            .attr("class", "jz-qcard")
+            .attr("x", bb.x - 12)
+            .attr("y", bb.y - 9)
+            .attr("width", bb.width + 24)
+            .attr("height", bb.height + 18)
+            .attr("rx", 6);
+        }
+      });
+    }
 
     const gAxes = gChart.append("g");
-    gAxes
-      .append("line")
-      .attr("class", "jz-axis")
-      .attr("x1", cx(-1) - 14)
-      .attr("y1", cy(0))
-      .attr("x2", cx(1) + 22)
-      .attr("y2", cy(0))
-      .attr("marker-end", "url(#jz-axis-arrow)");
-    gAxes
-      .append("line")
-      .attr("class", "jz-axis")
-      .attr("x1", cx(0))
-      .attr("y1", cy(-1) + 14)
-      .attr("x2", cx(0))
-      .attr("y2", cy(1) - 22)
-      .attr("marker-end", "url(#jz-axis-arrow)");
-    gAxes
-      .append("text")
-      .attr("class", "jz-axis-title")
-      .attr("x", cx(1) + 28)
-      .attr("y", cy(0) + 4)
-      .text("Population growth →");
-    gAxes
-      .append("text")
-      .attr("class", "jz-axis-title")
-      .attr("x", cx(0))
-      .attr("y", cy(1) - 32)
-      .attr("text-anchor", "middle")
-      .text("Δ nominal wages ↑");
+    if (!chartStyle.frame) {
+      gAxes
+        .append("line")
+        .attr("class", "jz-axis")
+        .attr("x1", cx(-1) - 14)
+        .attr("y1", cy(0))
+        .attr("x2", cx(1) + 22)
+        .attr("y2", cy(0))
+        .attr("marker-end", "url(#jz-axis-arrow)");
+      gAxes
+        .append("line")
+        .attr("class", "jz-axis")
+        .attr("x1", cx(0))
+        .attr("y1", cy(-1) + 14)
+        .attr("x2", cx(0))
+        .attr("y2", cy(1) - 22)
+        .attr("marker-end", "url(#jz-axis-arrow)");
+      gAxes
+        .append("text")
+        .attr("class", "jz-axis-title")
+        .attr("x", cx(1) + 28)
+        .attr("y", cy(0) + 4)
+        .text("Population growth →");
+      gAxes
+        .append("text")
+        .attr("class", "jz-axis-title")
+        .attr("x", cx(0))
+        .attr("y", cy(1) - 32)
+        .attr("text-anchor", "middle")
+        .text("Δ nominal wages ↑");
+    }
 
-    /* the MSA ring and the place dot (children of the chart, so they dock
-       and fade with it) */
+    /* the other US sample cities, v1 peer-style: a shade above the grey
+       field but neutral — only the home city carries an accent. They arrive
+       with the MSA dot (the "your metro area" step is metro-scale) */
+    const peerDots = gChart.append("g").attr("opacity", 0);
+    home.peers.forEach((m) => {
+      const [ux, uy] = metroUnit(m);
+      const pr = Math.max(6, dotR(m.size));
+      const gp = peerDots
+        .append("g")
+        .attr("class", "jz-peerdot")
+        .attr("transform", `translate(${cx(ux)},${cy(uy)})`);
+      gp.append("circle").attr("r", pr);
+      /* labels flip to the left near the right rim, so they never leave
+         the plot */
+      gp.append("text")
+        .attr("x", ux > 0.55 ? -pr - 6 : pr + 6)
+        .attr("y", 4)
+        .attr("text-anchor", ux > 0.55 ? "end" : "start")
+        .text(m.name);
+    });
+
+    /* ---- accent-dot labels: with REAL positions the dots land wherever
+       the data says, so each stack (name + stat rows) tries a few spots
+       around its dot and takes the first that clears the quadrant blocks,
+       the frame captions, the peer labels, the other stack and the plot
+       bounds. Widths are estimated; obstacles carry their own padding, so
+       a losing fallback only ever grazes */
+    type Rect = { x: number; y: number; w: number; h: number };
+    const obstacles: Rect[] = [];
+    const addObstacle = (el: SVGGraphicsElement, pad: number) => {
+      const b = el.getBBox();
+      obstacles.push({
+        x: b.x - pad,
+        y: b.y - pad,
+        w: b.width + pad * 2,
+        h: b.height + pad * 2,
+      });
+    };
+    qLabels.each(function () {
+      addObstacle(this, 5);
+    });
+    gChart
+      .selectAll<SVGTextElement, unknown>("text.jz-ms-typical")
+      .each(function () {
+        addObstacle(this, 4);
+      });
+    peerDots.selectAll<SVGTextElement, unknown>("text").each(function () {
+      addObstacle(this, 4);
+    });
+    const hit = (r: Rect) =>
+      obstacles.some(
+        (o) =>
+          r.x < o.x + o.w &&
+          o.x < r.x + r.w &&
+          r.y < o.y + o.h &&
+          o.y < r.y + r.h,
+      );
+    const dotText = (
+      g: Selection<SVGGElement, unknown, null, undefined>,
+      spot: [number, number],
+      name: string,
+      rows: string[],
+      prefer: (
+        | "above"
+        | "below"
+        | "right"
+        | "left"
+        | "aboveEnd"
+        | "belowEnd"
+      )[],
+    ) => {
+      const px = cx(spot[0]);
+      const py = cy(spot[1]);
+      const w = Math.max(name.length * 8.8, ...rows.map((s) => s.length * 7));
+      const n = rows.length + 1;
+      const CAND = {
+        above: { dx: 14, anchor: "start", top: -15 - (n - 1) * 17 },
+        below: { dx: 14, anchor: "start", top: 26 },
+        right: { dx: 17, anchor: "start", top: -3 - ((n - 1) * 17) / 2 },
+        left: { dx: -17, anchor: "end", top: -3 - ((n - 1) * 17) / 2 },
+        /* end-anchored variants extend leftward — the escape hatch for
+           dots near the right rim (wide placeholder stacks especially) */
+        aboveEnd: { dx: -14, anchor: "end", top: -15 - (n - 1) * 17 },
+        belowEnd: { dx: -14, anchor: "end", top: 26 },
+      } as const;
+      const rectOf = (k: keyof typeof CAND): Rect => {
+        const c = CAND[k];
+        return {
+          x: c.anchor === "start" ? px + c.dx : px + c.dx - w,
+          y: py + c.top - 13,
+          w,
+          h: n * 17 + 4,
+        };
+      };
+      const inPlot = (r: Rect) =>
+        r.x >= cx(-1) - 30 &&
+        r.x + r.w <= cx(1) + 40 &&
+        r.y >= cy(1) - 34 &&
+        r.y + r.h <= cy(-1) + 30;
+      const pick =
+        prefer.find((k) => inPlot(rectOf(k)) && !hit(rectOf(k))) ??
+        prefer.find((k) => inPlot(rectOf(k))) ??
+        prefer[0];
+      const c = CAND[pick];
+      g.append("text")
+        .attr("x", c.dx)
+        .attr("y", c.top)
+        .attr("text-anchor", c.anchor)
+        .text(name);
+      rows.forEach((s, i) =>
+        g
+          .append("text")
+          .attr("class", "stats")
+          .attr("x", c.dx)
+          .attr("y", c.top + (i + 1) * 17)
+          .attr("text-anchor", c.anchor)
+          .text(s),
+      );
+      obstacles.push(rectOf(pick));
+    };
     const msaDot = gChart
       .append("g")
       .attr("class", "jz-msadot")
       .attr("opacity", 0)
-      .attr("transform", `translate(${cx(MSA_SPOT[0])},${cy(MSA_SPOT[1])})`);
+      .attr(
+        "transform",
+        `translate(${cx(home.msaSpot[0])},${cy(home.msaSpot[1])})`,
+      );
     msaDot.append("circle").attr("class", "ring").attr("r", 9);
-    msaDot.append("text").attr("x", 16).attr("y", -2).text(`${cityShort} MSA`);
-    msaDot
-      .append("text")
-      .attr("class", "stats")
-      .attr("x", 16)
-      .attr("y", 16)
-      .text(MSA_STATS);
 
     const placeDot = gChart
       .append("g")
@@ -1283,17 +1705,28 @@ export function ConstraintScrolly({
       .attr("opacity", 0)
       .attr(
         "transform",
-        `translate(${cx(PLACE_SPOT[0])},${cy(PLACE_SPOT[1])})`,
+        `translate(${cx(home.placeSpot[0])},${cy(home.placeSpot[1])})`,
       );
     placeDot.append("circle").attr("class", "halo").attr("r", 9);
     placeDot.append("circle").attr("class", "core").attr("r", 8);
-    placeDot.append("text").attr("x", 16).attr("y", -2).text(cityShort);
-    placeDot
-      .append("text")
-      .attr("class", "stats")
-      .attr("x", 16)
-      .attr("y", 16)
-      .text(PLACE_STATS);
+
+    /* the place dot is the subject, so its stack places first */
+    dotText(placeDot, home.placeSpot, cityShort, home.placeStats, [
+      "above",
+      "right",
+      "left",
+      "below",
+      "aboveEnd",
+      "belowEnd",
+    ]);
+    dotText(msaDot, home.msaSpot, `${cityShort} MSA`, home.msaStats, [
+      "right",
+      "below",
+      "above",
+      "left",
+      "belowEnd",
+      "aboveEnd",
+    ]);
 
     /* ----- leaf-hover affordance: a small pill riding the cursor over an
        END LEAF — "this path is selectable". Inner nodes get neither tip nor
@@ -1350,7 +1783,9 @@ export function ConstraintScrolly({
       gTree,
       gAxes,
       quads,
+      placeQuadId: home.placeQuad.id,
       msaDot,
+      peerDots,
       placeDot,
       nodes,
       links,
@@ -1397,7 +1832,7 @@ export function ConstraintScrolly({
       window.clearTimeout(ptrTimer.current);
       svg.selectAll("*").interrupt();
     };
-  }, [cityShort, root, byId, fontTick, treeStyle]);
+  }, [cityShort, home, root, byId, fontTick, treeStyle, chartStyle]);
 
   /* step changes animate */
   useEffect(() => {
@@ -1462,7 +1897,7 @@ export function ConstraintScrolly({
   const hlSide = hoverNode ? sideOf(hoverNode) : quadHover;
   const selSide =
     selectedPath[0] === "demand" ? ("demand" as const) : ("supply" as const);
-  const isDefaultPath = selectedPath.join("/") === PLACE_QUAD.path.join("/");
+  const isDefaultPath = selectedPath.join("/") === suggPath.join("/");
 
   const caption = capNode ? (
     <>
@@ -1530,7 +1965,9 @@ export function ConstraintScrolly({
       )}
       <p className="jz-cap-body">
         {step === 4 && !isDefaultPath ? (
-          <Ph text="[your pick — the data-driven default remains housing; ___ tests for this node]" />
+          <Ph
+            text={`[your pick — the data-driven default remains ${byId.get(suggPath[suggPath.length - 1])!.data.title.toLowerCase()}; ___ tests for this node]`}
+          />
         ) : STEP_COPY[step].body.startsWith("[") ? (
           <Ph text={STEP_COPY[step].body} />
         ) : (
@@ -1555,19 +1992,45 @@ export function ConstraintScrolly({
               </h2>
             </div>
           </div>
-        </div>
-
-        <div className="jz-body">
-          <div className="jz-stagewrap">
-            <svg
-              ref={svgRef}
-              className="jz-svg"
-              viewBox={`0 0 ${W} ${H}`}
-              role="img"
-              aria-label="Step-driven transition from the labor-market quadrant chart to the diagnostic decision tree"
-            />
-            {/* the styling experiments: independent switches over the tree's
-                look, live only in the tree phase */}
+          {/* the styling experiments live in the section header, top-right:
+              the chart cluster during the chart phase, the tree cluster
+              during the tree phase, cross-fading in one grid cell */}
+          <div className="jz-varsbox">
+            <div
+              className={"jz-vars" + (phase === "chart" ? " show" : "")}
+              aria-hidden={phase !== "chart"}
+            >
+              <span className="jz-vars-k">Chart style</span>
+              {CHART_STYLE_TOGGLES.map(([key, label]) => (
+                <button
+                  key={key}
+                  className={"jz-var" + (chartStyle[key] ? " on" : "")}
+                  aria-pressed={chartStyle[key]}
+                  onClick={() =>
+                    setChartStyle((v) => ({ ...v, [key]: !v[key] }))
+                  }
+                >
+                  {label}
+                </button>
+              ))}
+              {/* label placement is one-of: the pills act as a radio, both
+                  off = the default outer-corner blocks */}
+              {CHART_LABEL_TOGGLES.map(([key, label]) => (
+                <button
+                  key={key}
+                  className={"jz-var" + (chartStyle.labels === key ? " on" : "")}
+                  aria-pressed={chartStyle.labels === key}
+                  onClick={() =>
+                    setChartStyle((v) => ({
+                      ...v,
+                      labels: v.labels === key ? "corner" : key,
+                    }))
+                  }
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
             <div
               className={"jz-vars" + (phase === "tree" ? " show" : "")}
               aria-hidden={phase !== "tree"}
@@ -1587,12 +2050,25 @@ export function ConstraintScrolly({
               ))}
             </div>
           </div>
+        </div>
+
+        <div className="jz-body">
+          <div className="jz-stagewrap">
+            <svg
+              ref={svgRef}
+              className="jz-svg"
+              viewBox={`0 0 ${W} ${H}`}
+              role="img"
+              aria-label="Step-driven transition from the labor-market quadrant chart to the diagnostic decision tree"
+            />
+          </div>
 
           <aside className="jz-rail">
             <MiniMap
               visible={step >= 3}
               hlSide={hlSide}
               cityShort={cityShort}
+              home={home}
               onSideHover={setQuadHover}
             />
             <div className="jz-railtext">{caption}</div>

@@ -3,10 +3,10 @@ import { pointer } from "d3-selection";
 import { Delaunay } from "d3-delaunay";
 import { stratify, tree as d3tree, type HierarchyPointNode } from "d3-hierarchy";
 import {
-  PLACE_QUAD,
   TREE_NODES,
   TREE_SIDE_COLOR,
   completeToLeaf,
+  suggestedPath,
   type TreeNodeData,
   type TreeSide,
 } from "../../data/figures";
@@ -35,11 +35,14 @@ function sideOf(n: MiniNode): TreeSide {
  *  completed down to a leaf, so the pick is a full navigable route. */
 function DiagSchematic({
   path,
+  suggPath,
   preview,
   onPick,
   onPreview,
 }: {
   path: string[];
+  /** the city's suggested descent — keeps its tinted marking */
+  suggPath: string[];
   /** the hovered path — lifted to the page, whose text follows it too */
   preview: string[] | null;
   onPick: (path: string[]) => void;
@@ -77,7 +80,7 @@ function DiagSchematic({
     const ddx = n.x + MV.pad.left - px;
     const ddy = n.y + MV.pad.top - py;
     if (ddx * ddx + ddy * ddy > 36 * 36 || !n.parent) return null;
-    return completeToLeaf(n, [path, PLACE_QUAD.path])
+    return completeToLeaf(n, [path, suggPath])
       .ancestors()
       .filter((a) => a.depth >= 1)
       .map((a) => a.data.id)
@@ -99,7 +102,7 @@ function DiagSchematic({
   /* the data-driven suggestion keeps a middle emphasis (tinted, not grey)
      while the pick is elsewhere — "where we think you are" stays readable */
   const sugg = new Set(
-    PLACE_QUAD.path.filter((id) => !on.has(id) && !prev.has(id)),
+    suggPath.filter((id) => !on.has(id) && !prev.has(id)),
   );
   const root = nodes[0];
   const here = nodes.find((n) => n.data.id === path[path.length - 1]);
@@ -213,6 +216,9 @@ export function BranchAnalysisPage({
 }) {
   const side = branchPath[0] === "demand" ? ("demand" as const) : ("supply" as const);
   const titleOf = useMemo(() => new Map(TREE_NODES.map((n) => [n.id, n.title])), []);
+  /* the city's hardcoded suggested read (sample) — the tinted route */
+  const suggPath = useMemo(() => suggestedPath(cityShort), [cityShort]);
+  const suggSide: TreeSide = suggPath[0] === "demand" ? "demand" : "supply";
 
   /* the schematic's hover preview lives here: the kicker, breadcrumbs and
      chip below follow the path under the pointer, not just the dots */
@@ -246,12 +252,13 @@ export function BranchAnalysisPage({
           </span>
           <DiagSchematic
             path={branchPath}
+            suggPath={suggPath}
             preview={preview}
             onPick={onSelectBranch}
             onPreview={setPreview}
           />
           <span className="ba-legend">
-            <i style={{ background: TREE_SIDE_COLOR[PLACE_QUAD.side] }} />
+            <i style={{ background: TREE_SIDE_COLOR[suggSide] }} />
             tinted = where we think you are
           </span>
           <div className="fig-trail ba-trail">

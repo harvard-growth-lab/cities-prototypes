@@ -7,9 +7,10 @@ import {
   SAMPLE_INSIGHTS,
   SAMPLE_VISITED_PAGES,
   SPANS,
+  cityShortName,
 } from "./data/content";
 import type { Insight } from "./data/content";
-import { PLACE_QUAD } from "./data/figures";
+import { suggestedPath } from "./data/figures";
 import { Landing } from "./components/Landing";
 import { ToolView } from "./components/ToolView";
 import { JourneyModal } from "./components/modals/JourneyModal";
@@ -76,7 +77,14 @@ export default function App() {
 
   /* the descent picked on the diagnostic tree (ids below the root); defaults
      to the data-driven read and names/feeds the branch-analysis section */
-  const [branchPath, setBranchPath] = useState<string[]>(PLACE_QUAD.path);
+  const [branchPath, setBranchPath] = useState<string[]>(() =>
+    suggestedPath(cityShortName(CITIES[0])),
+  );
+  /* switching cities re-derives the suggested read — a pick made for one
+     city shouldn't leak into another's diagnostic */
+  useEffect(() => {
+    setBranchPath(suggestedPath(cityShortName(city)));
+  }, [city]);
 
   const addExploredCity = (c: string) => {
     setExploredCities((prev) => (prev.has(c) ? prev : new Set(prev).add(c)));

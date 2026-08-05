@@ -173,6 +173,87 @@
   }
 }
 
+/* ----- the chart's styling experiments (stage toggles) ----- */
+/* framed axes: the v1 metro-scatter treatment — dashed gridlines, a solid
+   black frame, a dashed "typical" crosshair named in place */
+.jz-ms-grid {
+  stroke: var(--border);
+  stroke-width: 1;
+  stroke-dasharray: 3 4;
+}
+.jz-ms-axisline {
+  stroke: var(--ink);
+  stroke-width: 1;
+}
+.jz-ms-median {
+  stroke: var(--ink);
+  stroke-width: 1.5;
+  stroke-dasharray: 6 5;
+}
+.jz-ms-tick {
+  font-size: 13px;
+  fill: #000;
+}
+.jz-ms-title {
+  font-size: 14px;
+  fill: #000;
+}
+.jz-ms-typical {
+  font-size: 12px;
+  font-style: italic;
+  fill: var(--ink-soft);
+}
+.jz-ms-typical-mark {
+  fill: var(--ink-soft);
+}
+/* the metro field: every metro as a small grey dot, sized by population */
+.jz-ms-dot {
+  fill: #c8cdd0;
+  opacity: 0.55;
+}
+/* the labeled sample peers (v1 peer treatment): above the field, neutral */
+.jz-peerdot circle {
+  fill: #9ea2a3;
+  opacity: 0.95;
+}
+.jz-peerdot text {
+  font-size: 13px;
+  font-weight: 600;
+  fill: #7c8285;
+  paint-order: stroke;
+  stroke: #fff;
+  stroke-width: 4px;
+}
+/* corner-anchored quadrant labels (v1's quadrant buttons): smaller and
+   edge-hugging, so the quadrant interiors stay clear for the dots */
+.jz-chart.lab-side .jz-shock {
+  font-size: 15px;
+}
+.jz-chart.lab-side .jz-sub {
+  font-size: 12.5px;
+}
+.jz-chart.lab-side .jz-tag {
+  font-size: 10.5px;
+  letter-spacing: 0.6px;
+}
+/* the translucent white card behind a corner block (v1 .q-btn) */
+.jz-qcard {
+  fill: rgba(255, 255, 255, 0.92);
+  stroke: var(--border-strong);
+  stroke-width: 1;
+}
+/* focus tint: only the quadrant the city lands in keeps its wash */
+.jz-chart.style-focus .jz-quad:not(.place) rect {
+  fill-opacity: 0;
+  stroke-opacity: 0;
+}
+.jz-chart.style-focus .jz-quad.place rect {
+  fill-opacity: 0.13;
+}
+.jz-chart.style-focus .jz-quad.place.sel rect {
+  fill-opacity: 0.18;
+}
+
 /* ============ scene B: the tree ============ */
 .tree-link,
 .tree-stem {
@@ -260,14 +341,22 @@
   fill-opacity: 0.03;
   stroke-opacity: 0.12;
 }
-/* the toggles, parked in the stage's bottom-left through the tree phase */
+/* the styling-experiment toggles, top-right in the section header. Both
+   phase clusters share one grid cell, so they cross-fade in place */
+.jz-varsbox {
+  display: grid;
+  justify-items: end;
+  align-content: start;
+  padding-top: 30px; /* down past the eyebrow, level with the h2 line */
+  min-width: 0;
+}
 .jz-vars {
-  position: absolute;
-  left: 14px;
-  bottom: 10px;
+  grid-area: 1 / 1;
   display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease;
@@ -277,7 +366,7 @@
   pointer-events: auto;
 }
 .jz-vars-k {
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 1.2px;
   text-transform: uppercase;
@@ -285,14 +374,15 @@
   margin-right: 3px;
 }
 .jz-var {
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.3px;
-  padding: 4px 11px;
+  padding: 5px 13px;
   border-radius: 999px;
   border: 1px solid var(--border-strong);
   background: #fff;
   color: var(--ink-soft);
+  box-shadow: 0 1px 2px rgba(37, 88, 98, 0.06);
   transition: all 0.15s ease;
 }
 .jz-var:hover {

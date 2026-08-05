@@ -107,6 +107,17 @@ export const QUADRANTS: QuadrantDef[] = [
  *  taken in the tree and the default branch for the section that follows. */
 export const PLACE_QUAD: QuadrantDef = QUADRANTS.find((q) => q.id === "q4")!;
 
+/** HARDCODED per-sample-city suggested descent — the "where we think you
+ *  are" read the tree lights up. Sample only; the real app derives this
+ *  from the diagnostics. */
+export const CITY_SUGGESTED_PATH: Record<string, string[]> = {
+  Boston: ["supply", "col", "housing"],
+  Chicago: ["supply", "amen"],
+  Detroit: ["demand", "existing", "external"],
+};
+export const suggestedPath = (cityShort: string): string[] =>
+  CITY_SUGGESTED_PATH[cityShort] ?? PLACE_QUAD.path;
+
 /** A selection must name a FULL route — the section that follows navigates to
  *  a leaf, so a pick on an inner node completes downward: follow whichever
  *  child continues an already-marked path (the current pick first, then the
