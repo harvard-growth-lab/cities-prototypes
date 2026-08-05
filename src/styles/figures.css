@@ -232,6 +232,79 @@
   fill-opacity: 0.55;
 }
 
+/* ----- the styling experiments (stage toggles) ----- */
+/* node icons: side-coloured pictograms riding above the labels */
+.tree-ico {
+  opacity: 0.9;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.tree-node.dim .tree-ico {
+  opacity: 0.4;
+}
+/* chip cards: a tinted rounded card enclosing icon + label */
+.tree-chip {
+  fill-opacity: 0.05;
+  stroke-opacity: 0.3;
+  stroke-width: 1.2;
+  pointer-events: none;
+  transition:
+    fill-opacity 0.25s ease,
+    stroke-opacity 0.25s ease;
+}
+.tree-node.lit .tree-chip {
+  fill-opacity: 0.1;
+  stroke-opacity: 0.6;
+}
+.tree-node.dim .tree-chip {
+  fill-opacity: 0.03;
+  stroke-opacity: 0.12;
+}
+/* the toggles, parked in the stage's bottom-left through the tree phase */
+.jz-vars {
+  position: absolute;
+  left: 14px;
+  bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.jz-vars.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+.jz-vars-k {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-right: 3px;
+}
+.jz-var {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: #fff;
+  color: var(--ink-soft);
+  transition: all 0.15s ease;
+}
+.jz-var:hover {
+  border-color: var(--teal);
+  color: var(--teal);
+}
+.jz-var.on {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: #fff;
+}
+
 /* the picked node — the descent the next section analyses (click to set) */
 .tree-node.picked .tree-hit {
   stroke-width: 1.5;

@@ -33,7 +33,8 @@ import { wrapText } from "../../lib/wrapText";
    descent the next step analyses (default: the data-driven read), which
    renames that step Demand/Supply side analysis in the side nav. Layout:
    the narrative and the minimap live in a right rail; the stage keeps the
-   rest. */
+   rest. A "tree style" toggle cluster in the stage's bottom-left flips the
+   styling experiments (node icons / chip cards / curved branches) live. */
 
 const W = 1180;
 const H = 640;
@@ -133,10 +134,50 @@ const STEP_ICONS: React.ReactNode[] = [
   </svg>,
 ];
 
-/* one tiny pictogram per TREE NODE, in the step icons' line style. Shown
-   ONLY in the rail caption beside the node title — the stage itself keeps
-   its clean text-and-arrows look */
-function NodeGlyph({ children }: { children: React.ReactNode }) {
+/* one tiny pictogram per TREE NODE, in the step icons' line style: raw 13×13
+   markup shared by the rail caption (via <NodeGlyph>) and the "node icons"
+   styling experiment, which inlines it into the drawn tree */
+const NODE_ICON_ART: Record<string, string> = {
+  /* the growth question */
+  root: '<circle cx="6.5" cy="6.5" r="5.4"/><path d="M4.9 5a1.6 1.6 0 1 1 2.7 1.2c-.5.5-1.1.8-1.1 1.5"/><circle cx="6.5" cy="9.5" r="0.8" fill="currentColor" stroke="none"/>',
+  /* firms and jobs: the briefcase */
+  demand:
+    '<rect x="1.6" y="4.1" width="9.8" height="6.9" rx="1.4"/><path d="M4.7 4.1v-1A1.2 1.2 0 0 1 5.9 1.9h1.2a1.2 1.2 0 0 1 1.2 1.2v1"/>',
+  /* residents: the person */
+  supply:
+    '<circle cx="6.5" cy="4" r="2.1"/><path d="M2.7 11.2c.5-2.3 2-3.6 3.8-3.6s3.3 1.3 3.8 3.6"/>',
+  /* new activities: the spark */
+  newact:
+    '<path d="M6.5 1.4 7.7 5.3l3.9 1.2-3.9 1.2-1.2 3.9-1.2-3.9-3.9-1.2 3.9-1.2Z"/>',
+  /* struggling industries: the falling trend */
+  existing:
+    '<path d="M1.6 3.9 5 7.3l2-2 3.9 3.9"/><path d="M8.5 9.2h2.4V6.8"/>',
+  /* chicken-and-egg: the interlock */
+  coord: '<circle cx="4.6" cy="6.5" r="3.1"/><circle cx="8.4" cy="6.5" r="3.1"/>',
+  /* shocks from outside: the bolt */
+  external: '<path d="M7.4 1.5 3.4 7.2h2.8l-.9 4.3 4.3-6H6.8Z"/>',
+  /* what firms must buy: the crate */
+  inputs:
+    '<path d="M6.5 1.6 11.2 4.3v5.4L6.5 12.4 1.8 9.7V4.3Z"/><path d="M1.8 4.3 6.5 7l4.7-2.7M6.5 7v5.4"/>',
+  /* reach across every firm */
+  horizontal:
+    '<path d="M1.4 6.5h10.2M3.8 4.1 1.4 6.5l2.4 2.4M9.2 4.1l2.4 2.4-2.4 2.4"/>',
+  /* reach down one industry */
+  vertical:
+    '<path d="M6.5 1.4v10.2M4.1 3.8 6.5 1.4l2.4 2.4M4.1 9.2l2.4 2.4 2.4-2.4"/>',
+  /* what living there costs: the price tag */
+  col: '<path d="M1.8 1.8h3.9l5.6 5.6a1 1 0 0 1 0 1.4l-2.5 2.5a1 1 0 0 1-1.4 0L1.8 5.7Z"/><circle cx="4.3" cy="4.3" r="0.9" fill="currentColor" stroke="none"/>',
+  /* what living there is like: the park tree */
+  amen: '<path d="M6.5 1.5 9.4 5.6H7.9l2.6 3.6H2.5l2.6-3.6H3.6Z"/><path d="M6.5 9.2v2.4"/>',
+  /* the house */
+  housing:
+    '<path d="M1.9 6.4 6.5 2.1l4.6 4.3"/><path d="M3.3 5.8v5.4h6.4V5.8"/>',
+  /* the bus */
+  transport:
+    '<rect x="2" y="2.6" width="9" height="6.6" rx="1.3"/><path d="M2 6.2h9"/><circle cx="4.4" cy="10.8" r="1" fill="currentColor" stroke="none"/><circle cx="8.6" cy="10.8" r="1" fill="currentColor" stroke="none"/>',
+};
+
+function NodeGlyph({ id }: { id: string }) {
   return (
     <svg
       viewBox="0 0 13 13"
@@ -145,111 +186,20 @@ function NodeGlyph({ children }: { children: React.ReactNode }) {
       strokeWidth="1.4"
       strokeLinecap="round"
       strokeLinejoin="round"
-    >
-      {children}
-    </svg>
+      dangerouslySetInnerHTML={{ __html: NODE_ICON_ART[id] }}
+    />
   );
 }
 
-const NODE_ICONS: Record<string, React.ReactNode> = {
-  /* the growth question */
-  root: (
-    <NodeGlyph>
-      <circle cx="6.5" cy="6.5" r="5.4" />
-      <path d="M4.9 5a1.6 1.6 0 1 1 2.7 1.2c-.5.5-1.1.8-1.1 1.5" />
-      <circle cx="6.5" cy="9.5" r="0.8" fill="currentColor" stroke="none" />
-    </NodeGlyph>
-  ),
-  /* firms and jobs: the briefcase */
-  demand: (
-    <NodeGlyph>
-      <rect x="1.6" y="4.1" width="9.8" height="6.9" rx="1.4" />
-      <path d="M4.7 4.1v-1A1.2 1.2 0 0 1 5.9 1.9h1.2a1.2 1.2 0 0 1 1.2 1.2v1" />
-    </NodeGlyph>
-  ),
-  /* residents: the person */
-  supply: (
-    <NodeGlyph>
-      <circle cx="6.5" cy="4" r="2.1" />
-      <path d="M2.7 11.2c.5-2.3 2-3.6 3.8-3.6s3.3 1.3 3.8 3.6" />
-    </NodeGlyph>
-  ),
-  /* new activities: the spark */
-  newact: (
-    <NodeGlyph>
-      <path d="M6.5 1.4 7.7 5.3l3.9 1.2-3.9 1.2-1.2 3.9-1.2-3.9-3.9-1.2 3.9-1.2Z" />
-    </NodeGlyph>
-  ),
-  /* struggling industries: the falling trend */
-  existing: (
-    <NodeGlyph>
-      <path d="M1.6 3.9 5 7.3l2-2 3.9 3.9" />
-      <path d="M8.5 9.2h2.4V6.8" />
-    </NodeGlyph>
-  ),
-  /* chicken-and-egg: the interlock */
-  coord: (
-    <NodeGlyph>
-      <circle cx="4.6" cy="6.5" r="3.1" />
-      <circle cx="8.4" cy="6.5" r="3.1" />
-    </NodeGlyph>
-  ),
-  /* shocks from outside: the bolt */
-  external: (
-    <NodeGlyph>
-      <path d="M7.4 1.5 3.4 7.2h2.8l-.9 4.3 4.3-6H6.8Z" />
-    </NodeGlyph>
-  ),
-  /* what firms must buy: the crate */
-  inputs: (
-    <NodeGlyph>
-      <path d="M6.5 1.6 11.2 4.3v5.4L6.5 12.4 1.8 9.7V4.3Z" />
-      <path d="M1.8 4.3 6.5 7l4.7-2.7M6.5 7v5.4" />
-    </NodeGlyph>
-  ),
-  /* reach across every firm */
-  horizontal: (
-    <NodeGlyph>
-      <path d="M1.4 6.5h10.2M3.8 4.1 1.4 6.5l2.4 2.4M9.2 4.1l2.4 2.4-2.4 2.4" />
-    </NodeGlyph>
-  ),
-  /* reach down one industry */
-  vertical: (
-    <NodeGlyph>
-      <path d="M6.5 1.4v10.2M4.1 3.8 6.5 1.4l2.4 2.4M4.1 9.2l2.4 2.4 2.4-2.4" />
-    </NodeGlyph>
-  ),
-  /* what living there costs: the price tag */
-  col: (
-    <NodeGlyph>
-      <path d="M1.8 1.8h3.9l5.6 5.6a1 1 0 0 1 0 1.4l-2.5 2.5a1 1 0 0 1-1.4 0L1.8 5.7Z" />
-      <circle cx="4.3" cy="4.3" r="0.9" fill="currentColor" stroke="none" />
-    </NodeGlyph>
-  ),
-  /* what living there is like: the park tree */
-  amen: (
-    <NodeGlyph>
-      <path d="M6.5 1.5 9.4 5.6H7.9l2.6 3.6H2.5l2.6-3.6H3.6Z" />
-      <path d="M6.5 9.2v2.4" />
-    </NodeGlyph>
-  ),
-  /* the house */
-  housing: (
-    <NodeGlyph>
-      <path d="M1.9 6.4 6.5 2.1l4.6 4.3" />
-      <path d="M3.3 5.8v5.4h6.4V5.8" />
-    </NodeGlyph>
-  ),
-  /* the bus */
-  transport: (
-    <NodeGlyph>
-      <rect x="2" y="2.6" width="9" height="6.6" rx="1.3" />
-      <path d="M2 6.2h9" />
-      <circle cx="4.4" cy="10.8" r="1" fill="currentColor" stroke="none" />
-      <circle cx="8.6" cy="10.8" r="1" fill="currentColor" stroke="none" />
-    </NodeGlyph>
-  ),
-};
+/* the stage's styling experiments, flipped live by the toggles parked in the
+   tree phase's bottom-left corner. Independent switches, so their combos give
+   eight looks; all off = the shipped tree */
+type TreeStyle = { icons: boolean; chips: boolean; curved: boolean };
+const TREE_STYLE_TOGGLES = [
+  ["icons", "node icons"],
+  ["chips", "chip cards"],
+  ["curved", "curved branches"],
+] as const;
 
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
 
@@ -405,6 +355,13 @@ export function ConstraintScrolly({
 
   const [step, setStep] = useState(0);
   const [hover, setHover] = useState<string | null>(null);
+  /* the styling experiments; toggling redraws the scene (same path as the
+     webfont/layout redraws below) */
+  const [treeStyle, setTreeStyle] = useState<TreeStyle>({
+    icons: false,
+    chips: false,
+    curved: false,
+  });
   /* hovering a minimap quadrant emphasises that half of the tree */
   const [quadHover, setQuadHover] = useState<"demand" | "supply" | null>(null);
   const stepRef = useRef(step);
@@ -963,6 +920,11 @@ export function ConstraintScrolly({
       string,
       { top: number; bottom: number; halfW: number }
     >();
+    /* per-node dressing for the styling experiments: an icon riding above the
+       label, and/or a tinted chip card enclosing both. The hit rect doubles
+       as hover tint and picked outline, so in chip mode it IS the chip's box
+       and all three stay aligned */
+    const ICO = 18;
     nodes.each(function (d) {
       const text = select(this).select<SVGTextElement>("text.tree-label");
       const lines = text.node()!.childElementCount || 1;
@@ -971,17 +933,54 @@ export function ConstraintScrolly({
       const first = text.node()!.firstElementChild as SVGTSpanElement | null;
       if (first) first.setAttribute("dy", `${shift + 0.32}em`);
       const bb = text.node()!.getBBox();
+      let top = bb.y;
+      if (treeStyle.icons) {
+        top = bb.y - 5 - ICO;
+        const ico = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "svg",
+        );
+        ico.setAttribute("class", "tree-ico");
+        ico.setAttribute("viewBox", "0 0 13 13");
+        ico.setAttribute("x", `${-ICO / 2}`);
+        ico.setAttribute("y", `${top}`);
+        ico.setAttribute("width", `${ICO}`);
+        ico.setAttribute("height", `${ICO}`);
+        ico.setAttribute("fill", "none");
+        ico.setAttribute("stroke", "currentColor");
+        ico.setAttribute("stroke-width", "1.4");
+        ico.setAttribute("stroke-linecap", "round");
+        ico.setAttribute("stroke-linejoin", "round");
+        ico.style.color = TREE_SIDE_COLOR[sideOf(d)];
+        ico.innerHTML = NODE_ICON_ART[d.data.id];
+        this.appendChild(ico);
+      }
+      const pad = treeStyle.chips ? 13 : 10;
+      const hy = treeStyle.chips ? top - 8 : bb.y - 7;
+      const hh = bb.y + bb.height + (treeStyle.chips ? 8 : 7) - hy;
       select(this)
         .select("rect.tree-hit")
-        .attr("x", bb.x - 10)
-        .attr("y", bb.y - 7)
-        .attr("width", bb.width + 20)
-        .attr("height", bb.height + 14);
+        .attr("rx", treeStyle.chips ? 10 : 6)
+        .attr("x", bb.x - pad)
+        .attr("y", hy)
+        .attr("width", bb.width + pad * 2)
+        .attr("height", hh);
+      if (treeStyle.chips)
+        select(this)
+          .insert("rect", "text")
+          .attr("class", "tree-chip")
+          .attr("x", bb.x - pad)
+          .attr("y", hy)
+          .attr("width", bb.width + pad * 2)
+          .attr("height", hh)
+          .attr("rx", 10)
+          .attr("fill", TREE_SIDE_COLOR[sideOf(d)])
+          .attr("stroke", TREE_SIDE_COLOR[sideOf(d)]);
       /* generous vertical padding: stems and arrows keep their distance from
-         the label text (the hit rect above stays tighter than this) */
+         the node's content (the hit rect above stays tighter than this) */
       bounds.set(d.data.id, {
-        top: bb.y - 13,
-        bottom: bb.y + bb.height + 13,
+        top: (treeStyle.chips ? hy : top) - (treeStyle.chips ? 6 : 13),
+        bottom: bb.y + bb.height + (treeStyle.chips ? 14 : 13),
         halfW: bb.width / 2,
       });
     });
@@ -1005,6 +1004,26 @@ export function ConstraintScrolly({
       );
     });
 
+    /* curved mode: one smooth cubic per link, straight from the parent's
+       bottom to the child's top — stems collapse to nothing and the fork
+       geometry (busY) goes unused. `inset` lifts the endpoint clear of the
+       label bound (links stop short of the arrow tip; the home glow shorter
+       still, so the tip renders on clean background) */
+    const linkD = (d: Node, inset: number) => {
+      const p = d.parent as Node;
+      const y1 = d.y + (bounds.get(d.data.id)?.top ?? 0) - inset;
+      if (!treeStyle.curved)
+        return `M${p.x},${busY.get(p.data.id)} H${d.x} V${y1}`;
+      const y0 = p.y + (bounds.get(p.data.id)?.bottom ?? 0);
+      /* the curve ends a step early and a straight vertical tail finishes the
+         run: on wide, shallow hops (root → branch heads) the bend otherwise
+         reaches the very tip, and the down-pointing arrowhead reads glued
+         sideways onto a near-horizontal curve */
+      const yc = Math.max(y1 - 12, (y0 + y1) / 2);
+      const my = (y0 + yc) / 2;
+      return `M${p.x},${y0} C${p.x},${my} ${d.x},${my} ${d.x},${yc} V${y1}`;
+    };
+
     const stems = gLinks
       .selectAll<SVGPathElement, Node>("path.tree-stem")
       .data(parents, (d) => d.data.id)
@@ -1013,7 +1032,9 @@ export function ConstraintScrolly({
       .attr("stroke", (d) => TREE_SIDE_COLOR[sideOf(d)])
       .attr("d", (d) => {
         const y0 = d.y + (bounds.get(d.data.id)?.bottom ?? 0);
-        return `M${d.x},${y0} V${busY.get(d.data.id)}`;
+        return treeStyle.curved
+          ? `M${d.x},${y0} V${y0}`
+          : `M${d.x},${y0} V${busY.get(d.data.id)}`;
       });
 
     const links = gLinks
@@ -1023,11 +1044,7 @@ export function ConstraintScrolly({
       .attr("class", "tree-link")
       .attr("stroke", (d) => TREE_SIDE_COLOR[sideOf(d)])
       .attr("marker-end", (d) => `url(#jz-arrow-${sideOf(d)})`)
-      .attr("d", (d) => {
-        const p = d.parent as Node;
-        const y1 = d.y + (bounds.get(d.data.id)?.top ?? 0) - 4;
-        return `M${p.x},${busY.get(p.data.id)} H${d.x} V${y1}`;
-      });
+      .attr("d", (d) => linkD(d, 4));
 
     /* ----- area-linked hovering: one capture surface over the stage maps
            the pointer to the NEAREST tree node (Voronoi), so hovering needs
@@ -1134,7 +1151,12 @@ export function ConstraintScrolly({
           .append("path")
           .attr("class", "tree-home")
           .attr("stroke", suggColor)
-          .attr("d", `M${p.x},${y0} V${busY.get(p.data.id)} H${d.x} V${y1}`);
+          .attr(
+            "d",
+            treeStyle.curved
+              ? linkD(d, 11)
+              : `M${p.x},${y0} V${busY.get(p.data.id)} H${d.x} V${y1}`,
+          );
       });
       const sugg = mkBadge(
         PLACE_QUAD.path[PLACE_QUAD.path.length - 1],
@@ -1312,9 +1334,14 @@ export function ConstraintScrolly({
       if (!show || !e || !n) return;
       const [px, py] = pointer(e, svg.node());
       tipRect.attr("fill", TREE_SIDE_COLOR[sideOf(n)]);
+      /* the pill rides above the pointer — unless the hovered leaf sits
+         roughly above the cursor (area-linked hover reaches well below a
+         label), where it would cover the leaf: then it flips underneath,
+         provided that keeps it inside the stage */
+      const below = py > n.y + TM.top + 8 && py + 46 < H;
       gTip.attr(
         "transform",
-        `translate(${Math.max(tipHalf, Math.min(W - tipHalf, px))},${py - 26})`,
+        `translate(${Math.max(tipHalf, Math.min(W - tipHalf, px))},${below ? py + 32 : py - 26})`,
       );
     };
 
@@ -1370,7 +1397,7 @@ export function ConstraintScrolly({
       window.clearTimeout(ptrTimer.current);
       svg.selectAll("*").interrupt();
     };
-  }, [cityShort, root, byId, fontTick]);
+  }, [cityShort, root, byId, fontTick, treeStyle]);
 
   /* step changes animate */
   useEffect(() => {
@@ -1454,7 +1481,7 @@ export function ConstraintScrolly({
           style={{ color: TREE_SIDE_COLOR[sideOf(capNode)] }}
           aria-hidden="true"
         >
-          {NODE_ICONS[capNode.data.id]}
+          <NodeGlyph id={capNode.data.id} />
         </span>
         {displayTitle(capNode)}
       </p>
@@ -1539,6 +1566,26 @@ export function ConstraintScrolly({
               role="img"
               aria-label="Step-driven transition from the labor-market quadrant chart to the diagnostic decision tree"
             />
+            {/* the styling experiments: independent switches over the tree's
+                look, live only in the tree phase */}
+            <div
+              className={"jz-vars" + (phase === "tree" ? " show" : "")}
+              aria-hidden={phase !== "tree"}
+            >
+              <span className="jz-vars-k">Tree style</span>
+              {TREE_STYLE_TOGGLES.map(([key, label]) => (
+                <button
+                  key={key}
+                  className={"jz-var" + (treeStyle[key] ? " on" : "")}
+                  aria-pressed={treeStyle[key]}
+                  onClick={() =>
+                    setTreeStyle((v) => ({ ...v, [key]: !v[key] }))
+                  }
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
 
           <aside className="jz-rail">
