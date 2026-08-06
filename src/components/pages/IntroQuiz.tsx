@@ -15,6 +15,8 @@ function IntroSlide({
   const done = picked !== null;
   const correctIdx = q.options.findIndex((o) => o.correct);
   const isRight = picked === correctIdx;
+  /* the placeholder copy is written against {city} so it follows the picker */
+  const sub = (s: string) => s.replace(/\{city\}/g, cityShort);
 
   return (
     <div className="intro-slide" id={q.slideId}>
@@ -29,7 +31,7 @@ function IntroSlide({
             <span key={i} className={"seg" + (i < q.progress ? " fill" : "")}></span>
           ))}
         </div>
-        <h2 className="intro-q">{q.question}</h2>
+        <h2 className="intro-q">{sub(q.question)}</h2>
         <div className={"intro-opts" + (done ? " done" : "")}>
           {q.options.map((opt, i) => (
             <button
@@ -45,7 +47,7 @@ function IntroSlide({
           ))}
         </div>
         <p className={"intro-fb" + (done ? (isRight ? " ok" : " no") : "")}>
-          {done ? (isRight ? q.feedbackCorrect : q.feedbackWrong) : ""}
+          {done ? sub(isRight ? q.feedbackCorrect : q.feedbackWrong) : ""}
         </p>
       </div>
     </div>

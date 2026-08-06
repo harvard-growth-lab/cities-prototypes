@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import {
-  CITIES,
+  DEFAULT_CITY,
   PAGE_IDS,
   SAMPLE_EXPLORED_CITIES,
   SAMPLE_INSIGHTS,
@@ -10,7 +10,13 @@ import {
   cityShortName,
 } from "./data/content";
 import type { Insight } from "./data/content";
-import { suggestedPath } from "./data/figures";
+import {
+  convertPath,
+  modeThemes,
+  modeVariant,
+  suggestedPath,
+  type TreeMode,
+} from "./data/figures";
 import { Landing } from "./components/Landing";
 import { ToolView } from "./components/ToolView";
 import { JourneyModal } from "./components/modals/JourneyModal";
@@ -36,7 +42,7 @@ const pageForSlug = (slug: string) => {
 const readHash = () => decodeURIComponent(window.location.hash.slice(1));
 
 export default function App() {
-  const [city, setCity] = useState(CITIES[0]);
+  const [city, setCity] = useState(DEFAULT_CITY);
   const [span, setSpan] = useState(SPANS[0]);
 
   /* a valid hash on load deep-links straight into the tool, skipping the
@@ -75,15 +81,30 @@ export default function App() {
   );
   const [insights, setInsights] = useState<Insight[]>(SAMPLE_INSIGHTS);
 
+  /* which structure the diagnostic tree proposes. One mode rather than two
+     coupled flags: themes only exist under the alt leaves, so the pair could
+     never move freely anyway. Lives here because the branch-analysis section
+     has to follow the same shape. */
+  const [treeMode, setTreeMode] = useState<TreeMode>("paper");
+  const treeVariant = modeVariant(treeMode);
+  const showThemes = modeThemes(treeMode);
   /* the descent picked on the diagnostic tree (ids below the root); defaults
      to the data-driven read and names/feeds the branch-analysis section */
   const [branchPath, setBranchPath] = useState<string[]>(() =>
-    suggestedPath(cityShortName(CITIES[0])),
+    suggestedPath(cityShortName(DEFAULT_CITY)),
   );
+  /* switching modes carries the pick across to the nearest route in the
+     target structure, so hover/selection state never dangles */
+  const changeTreeMode = useCallback((m: TreeMode) => {
+    setTreeMode(m);
+    setBranchPath((p) => convertPath(p, modeVariant(m)));
+  }, []);
   /* switching cities re-derives the suggested read — a pick made for one
      city shouldn't leak into another's diagnostic */
+  const treeVariantRef = useRef(treeVariant);
+  treeVariantRef.current = treeVariant;
   useEffect(() => {
-    setBranchPath(suggestedPath(cityShortName(city)));
+    setBranchPath(suggestedPath(cityShortName(city), treeVariantRef.current));
   }, [city]);
 
   const addExploredCity = (c: string) => {
@@ -240,6 +261,10 @@ export default function App() {
         onSavePractice={savePractice}
         branchPath={branchPath}
         onSelectBranch={setBranchPath}
+        treeMode={treeMode}
+        onTreeModeChange={changeTreeMode}
+        treeVariant={treeVariant}
+        showThemes={showThemes}
       />
 
       <JourneyModal

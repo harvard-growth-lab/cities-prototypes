@@ -5,13 +5,19 @@ import "d3-transition";
 import { easeCubicInOut, easeCubicOut, easeSinInOut } from "d3-ease";
 import { stratify, tree as d3tree, type HierarchyNode } from "d3-hierarchy";
 import {
+  LEAF_THEMES,
   QUADRANTS,
-  TREE_NODES,
+  THEMES,
+  TREE_MODES,
   TREE_SIDE_COLOR,
+  diagnose,
   suggestedPath,
+  treeNodes,
   type QuadrantDef,
   type TreeNodeData,
+  type TreeMode,
   type TreeSide,
+  type TreeVariant,
 } from "../../data/figures";
 import { branchSectionName } from "../../data/content";
 import {
@@ -26,6 +32,7 @@ import {
   type MetroDatum,
 } from "../../data/metros";
 import { wrapText } from "../../lib/wrapText";
+import { NodeGlyph, iconArt } from "./treeIcons";
 
 /* The two City Constraints pages as one sticky, STEP-driven sequence.
    Crossing a scroll boundary triggers a timed transition to the next phase
@@ -129,11 +136,14 @@ function homeData(cityShort: string): HomeData {
   };
 }
 
-/** tree side → the minimap quadrants it corresponds to */
+/** tree side → the minimap quadrants it corresponds to. Derived from the
+ *  quadrant table rather than listed, so hovering a branch always lights the
+ *  quadrants that branch actually comes from — this was hand-written and had
+ *  drifted out of step with the fork logic on the two top quadrants. */
 const SIDE_QUADS: Record<TreeSide, QuadrantDef["id"][]> = {
   root: [],
-  demand: ["q2", "q3"],
-  supply: ["q1", "q4"],
+  demand: QUADRANTS.filter((q) => q.side === "demand").map((q) => q.id),
+  supply: QUADRANTS.filter((q) => q.side === "supply").map((q) => q.id),
 };
 
 type Node = HierarchyNode<TreeNodeData> & { x: number; y: number };
@@ -158,7 +168,7 @@ const STEP_COPY: { kicker: string; body: string }[] = [
   },
   {
     kicker: "Where we think you are",
-    body: "[step 5: highlight suggested path based on the data. allow user to click an end leaf to pick a different path for the next section, or hover over a node for more information.]",
+    body: "Each fork below is one comparison against the typical US metro. Click an end leaf to follow a different path instead, or hover any node to read it.",
   },
 ];
 
@@ -191,64 +201,6 @@ const STEP_ICONS: React.ReactNode[] = [
     <circle cx="6.5" cy="6.5" r="2.2" fill="currentColor" stroke="none" />
   </svg>,
 ];
-
-/* one tiny pictogram per TREE NODE, in the step icons' line style: raw 13×13
-   markup shared by the rail caption (via <NodeGlyph>) and the "node icons"
-   styling experiment, which inlines it into the drawn tree */
-const NODE_ICON_ART: Record<string, string> = {
-  /* the growth question */
-  root: '<circle cx="6.5" cy="6.5" r="5.4"/><path d="M4.9 5a1.6 1.6 0 1 1 2.7 1.2c-.5.5-1.1.8-1.1 1.5"/><circle cx="6.5" cy="9.5" r="0.8" fill="currentColor" stroke="none"/>',
-  /* firms and jobs: the briefcase */
-  demand:
-    '<rect x="1.6" y="4.1" width="9.8" height="6.9" rx="1.4"/><path d="M4.7 4.1v-1A1.2 1.2 0 0 1 5.9 1.9h1.2a1.2 1.2 0 0 1 1.2 1.2v1"/>',
-  /* residents: the person */
-  supply:
-    '<circle cx="6.5" cy="4" r="2.1"/><path d="M2.7 11.2c.5-2.3 2-3.6 3.8-3.6s3.3 1.3 3.8 3.6"/>',
-  /* new activities: the spark */
-  newact:
-    '<path d="M6.5 1.4 7.7 5.3l3.9 1.2-3.9 1.2-1.2 3.9-1.2-3.9-3.9-1.2 3.9-1.2Z"/>',
-  /* struggling industries: the falling trend */
-  existing:
-    '<path d="M1.6 3.9 5 7.3l2-2 3.9 3.9"/><path d="M8.5 9.2h2.4V6.8"/>',
-  /* chicken-and-egg: the interlock */
-  coord:
-    '<circle cx="4.6" cy="6.5" r="3.1"/><circle cx="8.4" cy="6.5" r="3.1"/>',
-  /* shocks from outside: the bolt */
-  external: '<path d="M7.4 1.5 3.4 7.2h2.8l-.9 4.3 4.3-6H6.8Z"/>',
-  /* what firms must buy: the crate */
-  inputs:
-    '<path d="M6.5 1.6 11.2 4.3v5.4L6.5 12.4 1.8 9.7V4.3Z"/><path d="M1.8 4.3 6.5 7l4.7-2.7M6.5 7v5.4"/>',
-  /* reach across every firm */
-  horizontal:
-    '<path d="M1.4 6.5h10.2M3.8 4.1 1.4 6.5l2.4 2.4M9.2 4.1l2.4 2.4-2.4 2.4"/>',
-  /* reach down one industry */
-  vertical:
-    '<path d="M6.5 1.4v10.2M4.1 3.8 6.5 1.4l2.4 2.4M4.1 9.2l2.4 2.4 2.4-2.4"/>',
-  /* what living there costs: the price tag */
-  col: '<path d="M1.8 1.8h3.9l5.6 5.6a1 1 0 0 1 0 1.4l-2.5 2.5a1 1 0 0 1-1.4 0L1.8 5.7Z"/><circle cx="4.3" cy="4.3" r="0.9" fill="currentColor" stroke="none"/>',
-  /* what living there is like: the park tree */
-  amen: '<path d="M6.5 1.5 9.4 5.6H7.9l2.6 3.6H2.5l2.6-3.6H3.6Z"/><path d="M6.5 9.2v2.4"/>',
-  /* the house */
-  housing:
-    '<path d="M1.9 6.4 6.5 2.1l4.6 4.3"/><path d="M3.3 5.8v5.4h6.4V5.8"/>',
-  /* the bus */
-  transport:
-    '<rect x="2" y="2.6" width="9" height="6.6" rx="1.3"/><path d="M2 6.2h9"/><circle cx="4.4" cy="10.8" r="1" fill="currentColor" stroke="none"/><circle cx="8.6" cy="10.8" r="1" fill="currentColor" stroke="none"/>',
-};
-
-function NodeGlyph({ id }: { id: string }) {
-  return (
-    <svg
-      viewBox="0 0 13 13"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.4"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      dangerouslySetInnerHTML={{ __html: NODE_ICON_ART[id] }}
-    />
-  );
-}
 
 /* the stage's styling experiments, flipped live by the toggles parked in the
    tree phase's bottom-left corner. Independent switches, so their combos give
@@ -426,16 +378,30 @@ function MiniMap({
 
 export function ConstraintScrolly({
   cityShort,
+  country,
   selectedPath,
   onSelectPath,
   onPhaseInView,
+  variant,
+  showThemes,
+  mode,
+  onModeChange,
 }: {
   cityShort: string;
+  /** the city's country — the forks compare against its median metro */
+  country: string;
   /** the descent picked for the next section (ids below the root) */
   selectedPath: string[];
   onSelectPath: (path: string[]) => void;
   /** reports which of the two rail steps the track is on (scroll-spy) */
   onPhaseInView: (pageId: string) => void;
+  /** which tree structure the stage shows — shared with the next section */
+  variant: TreeVariant;
+  /** the themes layer: chip stacks under the alt tree's leaves */
+  showThemes: boolean;
+  /** the section's top-level structure choice, which the two above derive from */
+  mode: TreeMode;
+  onModeChange: (m: TreeMode) => void;
 }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const onPhaseRef = useRef(onPhaseInView);
@@ -446,6 +412,14 @@ export function ConstraintScrolly({
 
   const [step, setStep] = useState(0);
   const [hover, setHover] = useState<string | null>(null);
+  /* the hovered theme chip, as leaf + theme (a theme reached from two leaves
+     is two chips, so the leaf is part of the identity) */
+  const [themeHover, setThemeHover] = useState<{
+    leaf: string;
+    theme: string;
+  } | null>(null);
+  /* themes hang off the alt structure's leaves only */
+  const themesOn = showThemes && variant === "alt";
   /* the styling experiments; toggling redraws the scene (same path as the
      webfont/layout redraws below) */
   const [treeStyle, setTreeStyle] = useState<TreeStyle>({
@@ -465,7 +439,16 @@ export function ConstraintScrolly({
   const home = useMemo(() => homeData(cityShort), [cityShort]);
   /* the per-city suggested descent (hardcoded sample): what the tree lights
      up as "where we think you are" */
-  const suggPath = useMemo(() => suggestedPath(cityShort), [cityShort]);
+  const suggPath = useMemo(
+    () => suggestedPath(cityShort, variant),
+    [cityShort, variant],
+  );
+  /* the fork-by-fork reasoning behind that suggestion, with the numbers it
+     turned on — the rail shows it once the path lights up (step 4) */
+  const dx = useMemo(
+    () => diagnose(cityShort, country),
+    [cityShort, country],
+  );
   const suggSide: TreeSide = suggPath[0] === "demand" ? "demand" : "supply";
   /* hovering a minimap quadrant emphasises that half of the tree */
   const [quadHover, setQuadHover] = useState<"demand" | "supply" | null>(null);
@@ -517,12 +500,28 @@ export function ConstraintScrolly({
   const root = useMemo(() => {
     const built = stratify<TreeNodeData>()
       .id((d) => d.id)
-      .parentId((d) => d.parent)(TREE_NODES);
+      .parentId((d) => d.parent)(treeNodes(variant));
     /* separation ∝ the labels' rendered widths (wrap measure capped) plus
        chip padding, so wide neighbours — and their chip cards — never
-       overlap horizontally in any styling combo */
-    const estW = (n: { data: TreeNodeData }) =>
-      Math.min(n.data.title.length * 10.8, LABEL_W) + 36;
+       overlap horizontally in any styling combo.
+       With themes on, a LEAF's footprint is its widest evidence chip, not
+       its label: "Housing" and "Amenities" are short words carrying chips
+       like "Housing supply and prices", so sizing the gap from the label
+       alone let those two stacks collide. Chip text is measured for real at
+       draw time; here it only has to be estimated, so the per-character
+       figure is deliberately generous (7.8 against a measured worst case of
+       7.6) — overshooting costs a little slack, undershooting overlaps. */
+    /* 34 = the chip's own horizontal padding, 20 = the leading glyph and its
+       gap (CHIP_ICO + 6, at draw time) */
+    const chipW = (title: string) =>
+      Math.max(104, title.length * 7.8 + 34 + 20);
+    const estW = (n: { data: TreeNodeData }) => {
+      const label = Math.min(n.data.title.length * 10.8, LABEL_W) + 36;
+      const themes = themesOn ? (LEAF_THEMES[n.data.id] ?? []) : [];
+      if (!themes.length) return label;
+      const widest = Math.max(...themes.map((id) => chipW(THEMES[id].title)));
+      return Math.max(label, widest + 26);
+    };
     const laid = d3tree<TreeNodeData>()
       .size([T_W, treeH - TM.top - TREE_BOTTOM])
       .separation(
@@ -531,20 +530,37 @@ export function ConstraintScrolly({
       )(built);
     /* the levels aren't spread evenly: the root row is one line of text, so
        its gap down to the branch heads reads too tall at an equal share —
-       pull level 1 up and give the deeper gaps the space (5 levels: root →
-       branch heads → … → horizontal/vertical inputs) */
-    const LEVEL_F = [0, 0.2, 0.47, 0.74, 1];
+       pull level 1 up and give the deeper gaps the space (full: 5 levels,
+       root → branch heads → … → horizontal/vertical inputs). The alt
+       structure is 3 levels; spreading it over the full height would leave
+       the two arrows absurdly long, so its rows sit closer together. With
+       the themes layer on, the leaf row climbs again to leave room for the
+       chip stacks (five deep under Regional Shock) plus the badge row */
+    const LEVEL_F =
+      variant !== "alt"
+        ? [0, 0.2, 0.47, 0.74, 1]
+        : themesOn
+          ? [0, 0.3, 0.62]
+          : [0, 0.42, 0.88];
     laid.each((d) => {
       d.y = LEVEL_F[d.depth] * (treeH - TM.top - TREE_BOTTOM);
     });
     return laid;
-  }, [treeH]);
+  }, [treeH, variant, themesOn]);
 
   const byId = useMemo(() => {
     const m = new Map<string, Node>();
     root.descendants().forEach((d) => m.set(d.data.id, d as Node));
     return m;
   }, [root]);
+
+  /* a variant switch rebuilds the tree under the pointer — a hover id from
+     the other structure must not be re-asserted against the new nodes */
+  useEffect(() => {
+    hoverIdRef.current = null;
+    setHover(null);
+    setThemeHover(null);
+  }, [variant, themesOn]);
 
   const clearTimers = () => {
     timers.current.forEach((t) => window.clearTimeout(t));
@@ -654,6 +670,10 @@ export function ConstraintScrolly({
         .classed("lit", false)
         .classed("dim", false)
         .classed("hovered", false);
+      sc.chips
+        .classed("lit", false)
+        .classed("dim", false)
+        .classed("hovered", false);
       colorRootStem(null);
     };
     /* clear any per-element intro state left behind */
@@ -664,6 +684,7 @@ export function ConstraintScrolly({
         .attr("transform", (d: Node) => `translate(${d.x},${d.y})`);
       sc.links.interrupt().attr("opacity", 1);
       sc.stems.interrupt().attr("opacity", 1);
+      sc.gChips.interrupt().attr("opacity", 1);
     };
 
     if (entering) {
@@ -706,6 +727,15 @@ export function ConstraintScrolly({
                 .attr("marker-end", `url(#jz-arrow-${sideOf(d)})`);
             });
         });
+      /* the themes layer arrives last, once the tree it hangs off has drawn */
+      sc.gChips
+        .interrupt()
+        .attr("opacity", 0)
+        .transition()
+        .duration(420)
+        .delay(INTRO_BASE + 2 * INTRO_LEVEL + 420)
+        .ease(easeCubicOut)
+        .attr("opacity", 1);
       /* stems: each parent's short drop draws just before its children's links */
       sc.stems
         .interrupt()
@@ -766,6 +796,9 @@ export function ConstraintScrolly({
     const setDims = () => {
       sc.nodes.classed("dim", (d: Node) => !keep.has(d.data.id));
       sc.stems.classed("dim", (d: Node) => !keep.has(d.data.id));
+      sc.chips
+        .classed("dim", (c: { leaf: string }) => !keep.has(c.leaf))
+        .classed("lit", (c: { leaf: string }) => ids.includes(c.leaf));
       sc.links
         .classed(
           "dim",
@@ -848,7 +881,9 @@ export function ConstraintScrolly({
       return;
     }
     clearTimers();
-    const hovered = byId.get(id)!;
+    /* stale id from the other tree structure — nothing to emphasise */
+    const hovered = byId.get(id);
+    if (!hovered) return;
     const onPath = new Set(hovered.ancestors().map((a) => a.data.id));
     colorRootStem(hovered.depth === 0 ? null : sideOf(hovered));
     /* while another path is hovered, the user's pick AND the data-driven
@@ -871,6 +906,13 @@ export function ConstraintScrolly({
         (d: Node) => !onPath.has(d.data.id) && !home.has(d.data.id),
       )
       .classed("hovered", (d: Node) => d.data.id === id);
+    sc.chips
+      .classed("lit", (c: { leaf: string }) => onPath.has(c.leaf))
+      .classed(
+        "dim",
+        (c: { leaf: string }) => !onPath.has(c.leaf) && !home.has(c.leaf),
+      )
+      .classed("hovered", false);
     sc.links
       .classed("lit", (d: Node) => onPath.has(d.data.id))
       .classed(
@@ -903,6 +945,27 @@ export function ConstraintScrolly({
     setHover(id);
   };
 
+  /** theme-chip hover: the leaf's route lights as if the leaf itself were
+   *  hovered, and the chip under the pointer takes the emphasis */
+  const applyThemeRef = useRef<
+    (t: { leaf: string; theme: string } | null) => void
+  >(() => {});
+  applyThemeRef.current = (t) => {
+    const sc = scene.current;
+    if (!sc || stepRef.current < 3) return;
+    if (!t) {
+      sc.chips.classed("hovered", false);
+      applyHoverRef.current(hoverIdRef.current);
+      return;
+    }
+    applyHoverRef.current(t.leaf);
+    sc.chips.classed(
+      "hovered",
+      (c: { leaf: string; theme: string }) =>
+        c.leaf === t.leaf && c.theme === t.theme,
+    );
+  };
+
   /** minimap-quadrant hover: light one whole half of the tree */
   const applyQuadRef = useRef<(side: "demand" | "supply" | null) => void>(
     () => {},
@@ -925,6 +988,14 @@ export function ConstraintScrolly({
     sc.nodes
       .classed("lit", on)
       .classed("dim", (d: Node) => !on(d) && d.depth > 0)
+      .classed("hovered", false);
+    const chipOn = (c: { leaf: string }) => {
+      const n = byId.get(c.leaf);
+      return !!n && sideOf(n) === side;
+    };
+    sc.chips
+      .classed("lit", chipOn)
+      .classed("dim", (c: { leaf: string }) => !chipOn(c))
       .classed("hovered", false);
     sc.links
       .classed("lit", on)
@@ -1086,7 +1157,7 @@ export function ConstraintScrolly({
       if (first) first.setAttribute("dy", `${shift + 0.32}em`);
       const bb = text.node()!.getBBox();
       let top = bb.y;
-      if (treeStyle.icons) {
+      if (treeStyle.icons && iconArt(d.data.id)) {
         top = bb.y - 5 - ICO;
         const ico = document.createElementNS(
           "http://www.w3.org/2000/svg",
@@ -1104,7 +1175,7 @@ export function ConstraintScrolly({
         ico.setAttribute("stroke-linecap", "round");
         ico.setAttribute("stroke-linejoin", "round");
         ico.style.color = TREE_SIDE_COLOR[sideOf(d)];
-        ico.innerHTML = NODE_ICON_ART[d.data.id];
+        ico.innerHTML = iconArt(d.data.id)!;
         this.appendChild(ico);
       }
       const pad = treeStyle.chips ? 13 : 10;
@@ -1242,6 +1313,9 @@ export function ConstraintScrolly({
       .attr("height", treeH)
       .on("pointermove", (e: PointerEvent) => {
         hoverRef.current(targetAt(e));
+        /* the pointer is over the stage proper, so it is not over a chip —
+           clear any theme emphasis the chips left behind */
+        setThemeHover(null);
         moveTip(e);
       })
       .on("pointerleave", () => {
@@ -1255,6 +1329,116 @@ export function ConstraintScrolly({
            rather than waiting for the next pointermove to notice */
         moveTip(null);
       });
+
+    /* ----- the themes layer: under each alt leaf, a stack of chips naming
+           the evidence you would read there. Deliberately NOT tree nodes —
+           no arrows, a flatter shape, a separate hover — because a theme is
+           not another step of the diagnostic but the data behind the leaf
+           above it. Every chip is styled identically — where two leaves rest
+           on the same underlying data, the themes are NAMED for the question
+           each one answers rather than repeated and then marked.
+           The chips sit ABOVE the capture rect so they take their own
+           pointer events instead of resolving to the nearest tree node. */
+    const CHIP_H = 26;
+    const CHIP_GAP = 7;
+    const CHIP_TOP = 22;
+    const CHIP_ICO = 14;
+    interface ChipDatum {
+      leaf: string;
+      theme: string;
+      row: number;
+    }
+    /* the bottom of EACH leaf's own stack — a badge hangs off the leaf it
+       marks, so it has to know that leaf's depth, not the deepest one */
+    const stackBottom = new Map<string, number>();
+    const gChips = gTree
+      .append("g")
+      .attr("class", "jz-chips")
+      .attr("transform", `translate(${TM.left},${TM.top})`);
+
+    const chipData: ChipDatum[] = [];
+    if (themesOn)
+      Object.entries(LEAF_THEMES).forEach(([leafId, themeIds]) => {
+        if (!byId.has(leafId)) return;
+        themeIds.forEach((tid, row) =>
+          chipData.push({ leaf: leafId, theme: tid, row }),
+        );
+      });
+
+    const chips = gChips
+      .selectAll<SVGGElement, ChipDatum>("g.jz-chip")
+      .data(chipData, (d) => `${d.leaf}:${d.theme}`)
+      .join("g")
+      .attr("class", "jz-chip");
+
+    chips.each(function (d) {
+      const n = byId.get(d.leaf)!;
+      const color = TREE_SIDE_COLOR[sideOf(n)];
+      const art = iconArt(d.theme);
+      const g = select(this);
+      const t = g
+        .append("text")
+        .attr("class", "jz-chip-lab")
+        .attr("text-anchor", "middle")
+        .attr("dy", "0.34em")
+        .attr("fill", color)
+        .text(THEMES[d.theme].title);
+      /* the glyph sits left of the label inside the chip, so the box grows
+         by its width and the label shifts right by half of that to keep the
+         pair centred on the leaf */
+      const lead = art ? CHIP_ICO + 6 : 0;
+      const w = Math.max(104, t.node()!.getBBox().width + 34 + lead);
+      t.attr("x", lead / 2);
+      const y =
+        n.y +
+        (bounds.get(d.leaf)?.bottom ?? 0) +
+        CHIP_TOP +
+        d.row * (CHIP_H + CHIP_GAP);
+      g.insert("rect", "text")
+        .attr("class", "jz-chip-box")
+        .attr("x", -w / 2)
+        .attr("y", -CHIP_H / 2)
+        .attr("width", w)
+        .attr("height", CHIP_H)
+        .attr("rx", 7)
+        .attr("fill", color)
+        .attr("stroke", color);
+      if (art) {
+        const ico = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "svg",
+        );
+        ico.setAttribute("class", "jz-chip-ico");
+        ico.setAttribute("viewBox", "0 0 13 13");
+        ico.setAttribute("x", `${-w / 2 + 11}`);
+        ico.setAttribute("y", `${-CHIP_ICO / 2}`);
+        ico.setAttribute("width", `${CHIP_ICO}`);
+        ico.setAttribute("height", `${CHIP_ICO}`);
+        ico.setAttribute("fill", "none");
+        ico.setAttribute("stroke", "currentColor");
+        ico.setAttribute("stroke-width", "1.4");
+        ico.setAttribute("stroke-linecap", "round");
+        ico.setAttribute("stroke-linejoin", "round");
+        ico.style.color = color;
+        ico.innerHTML = art;
+        this.appendChild(ico);
+      }
+      g.attr("transform", `translate(${n.x},${y})`);
+      stackBottom.set(
+        d.leaf,
+        Math.max(stackBottom.get(d.leaf) ?? 0, y + CHIP_H / 2),
+      );
+    });
+
+    chips
+      .on("pointerenter", (_e: PointerEvent, d: ChipDatum) => {
+        if (stepRef.current < 3) return;
+        setThemeHover({ leaf: d.leaf, theme: d.theme });
+        moveTip(null);
+      })
+      .on("pointerleave", () => setThemeHover(null))
+      /* clicking the evidence picks the leaf it hangs off */
+      .on("click", (_e: MouseEvent, d: ChipDatum) => clickRef.current(d.leaf));
 
     /* ----- the marking of the path the user is on: a highlighter underlay
            plus a badge at the picked node. It follows the selected descent
@@ -1274,6 +1458,18 @@ export function ConstraintScrolly({
       .append("g")
       .attr("class", "jz-homeg")
       .attr("opacity", 0);
+    /* a badge hangs under the leaf it marks: below that leaf's own evidence
+       stack when themes are on, below its label otherwise. An earlier
+       version parked every badge in one row under the DEEPEST stack so the
+       pills would line up, but a one-chip leaf then floated its badge a
+       hundred-odd px below itself with nothing in between, reading as
+       unattached. Alignment is worth less than the badge pointing at its
+       own leaf. */
+    const badgeY = (n: Node) =>
+      (stackBottom.get(n.data.id) ?? 0) > 0
+        ? stackBottom.get(n.data.id)! + 26
+        : n.y + (bounds.get(n.data.id)?.bottom ?? 0) + 24;
+
     const rebuildHome = (path: string[]) => {
       gHome.selectAll("*").remove();
       gBadges.selectAll("*").remove();
@@ -1281,9 +1477,10 @@ export function ConstraintScrolly({
          marked by its dashed outline and lit route, and a side-mounted pill
          collides with same-row labels or the stage edge */
       const mkBadge = (id: string, color: string, label: string, drop = 0) => {
-        const n = byId.get(id)!;
-        if (n.children?.length) return n;
-        const b = bounds.get(n.data.id)!;
+        /* an id from the other tree structure (mid variant-switch) has no
+           node here — skip rather than crash; the redraw settles it */
+        const n = byId.get(id);
+        if (!n || n.children?.length) return n ?? null;
         const badge = gBadges.append("g").attr("class", "jz-youare");
         const badgeText = badge
           .append("text")
@@ -1299,10 +1496,7 @@ export function ConstraintScrolly({
           .attr("height", bbb.height + 18)
           .attr("rx", 14)
           .attr("fill", color);
-        badge.attr(
-          "transform",
-          `translate(${n.x},${n.y + b.bottom + 24 + drop})`,
-        );
+        badge.attr("transform", `translate(${n.x},${badgeY(n) + drop})`);
         return n;
       };
 
@@ -1336,15 +1530,20 @@ export function ConstraintScrolly({
       );
 
       /* a differing pick gets its own badge — its route is the lit one on
-         the stage. When both badges sit below same-row leaves, the pick's
-         drops a step so the pills never collide */
+         the stage. When the two pills would land on the same row close
+         together, the pick's drops a step. The test is on where the BADGES
+         sit, not where their leaves do: with themes on, two same-depth
+         leaves can carry stacks of different heights and so put their
+         badges on quite different rows */
       if (path.join("/") !== suggPath.join("/")) {
         const pickColor = TREE_SIDE_COLOR[(path[0] as TreeSide) ?? "supply"];
-        const pn = byId.get(path[path.length - 1])!;
+        const pn = byId.get(path[path.length - 1]);
+        if (!pn) return;
         const collide =
+          !!sugg &&
           !pn.children?.length &&
           !sugg.children?.length &&
-          Math.abs(pn.y - sugg.y) < 10 &&
+          Math.abs(badgeY(pn) - badgeY(sugg)) < 30 &&
           Math.abs(pn.x - sugg.x) < 240;
         mkBadge(
           path[path.length - 1],
@@ -1871,6 +2070,8 @@ export function ConstraintScrolly({
       nodes,
       links,
       stems,
+      chips,
+      gChips,
       /* both marking layers (underlay glow + top-layer pills) at once, so
          every opacity transition in the appliers hits them together */
       gHome: svg.selectAll(".jz-homeg"),
@@ -1913,7 +2114,7 @@ export function ConstraintScrolly({
       window.clearTimeout(ptrTimer.current);
       svg.selectAll("*").interrupt();
     };
-  }, [cityShort, home, root, byId, fontTick, treeStyle, chartStyle]);
+  }, [cityShort, home, root, byId, fontTick, treeStyle, chartStyle, themesOn]);
 
   /* step changes animate */
   useEffect(() => {
@@ -1922,6 +2123,11 @@ export function ConstraintScrolly({
   useEffect(() => {
     applyHoverRef.current(hover);
   }, [hover]);
+  /* after the node-hover effect, so entering a chip (which makes the capture
+     rect fire its own leave) settles on the theme emphasis, not the node's */
+  useEffect(() => {
+    applyThemeRef.current(themeHover);
+  }, [themeHover]);
 
   /* ---------- scroll → step ---------- */
   useEffect(() => {
@@ -1971,7 +2177,10 @@ export function ConstraintScrolly({
   );
 
   const phase: Phase = step <= 2 ? "chart" : "tree";
-  const hoverNode = hover ? byId.get(hover)! : null;
+  /* on the variant-switch render the hover id may name a node of the OTHER
+     structure for one frame (the reset effect runs after render) — treat a
+     miss as no hover */
+  const hoverNode = hover ? (byId.get(hover) ?? null) : null;
   /* the rail caption follows the tree hover, or the branch head while a
      minimap quadrant is hovered */
   const capNode = hoverNode ?? (quadHover ? byId.get(quadHover)! : null);
@@ -1980,7 +2189,54 @@ export function ConstraintScrolly({
     selectedPath[0] === "demand" ? ("demand" as const) : ("supply" as const);
   const isDefaultPath = selectedPath.join("/") === suggPath.join("/");
 
-  const caption = capNode ? (
+  /* a hovered theme chip takes the rail over: the theme's own question and
+     the data views behind it, plus where else the theme is reached from */
+  const hoveredTheme = themeHover ? THEMES[themeHover.theme] : null;
+  const themeLeafNode = themeHover ? byId.get(themeHover.leaf) : null;
+
+  const caption = hoveredTheme ? (
+    <>
+      <div className="jz-cap-kickrow">
+        <span
+          className="fig-kicker"
+          style={{
+            color: themeLeafNode
+              ? TREE_SIDE_COLOR[sideOf(themeLeafNode)]
+              : undefined,
+          }}
+        >
+          Evidence · under {themeLeafNode?.data.title}
+        </span>
+      </div>
+      <p className="jz-cap-title">
+        <span
+          className="jz-node-ico"
+          style={{
+            color: themeLeafNode
+              ? TREE_SIDE_COLOR[sideOf(themeLeafNode)]
+              : undefined,
+          }}
+          aria-hidden="true"
+        >
+          <NodeGlyph id={hoveredTheme.id} />
+        </span>
+        {hoveredTheme.title}
+      </p>
+      <p className="jz-cap-body">
+        <Ph text={hoveredTheme.detail} />
+      </p>
+      <ul className="jz-cap-inds">
+        {hoveredTheme.indicators.map((ind) => (
+          <li key={ind}>{ind}</li>
+        ))}
+      </ul>
+      {hoveredTheme.seeAlso && (
+        <p className="jz-cap-also">
+          You saw this in <strong>{hoveredTheme.seeAlso}</strong>.
+        </p>
+      )}
+    </>
+  ) : capNode ? (
     <>
       <div className="jz-cap-kickrow">
         <span
@@ -2055,6 +2311,19 @@ export function ConstraintScrolly({
           STEP_COPY[step].body
         )}
       </p>
+      {/* the reasoning behind the lit path: one line per fork, each naming
+          the comparison and the numbers that turned it. Only on the alt
+          structure — the forks are defined against its two levels */}
+      {step === 4 && isDefaultPath && variant === "alt" && dx.derived && (
+        <ol className="jz-forks">
+          {dx.steps.map((s, i) => (
+            <li key={i}>
+              <span className="jz-fork-n">{i + 1}</span>
+              {s.reason}
+            </li>
+          ))}
+        </ol>
+      )}
     </>
   );
 
@@ -2071,6 +2340,34 @@ export function ConstraintScrolly({
               <h2 className={phase === "tree" ? "on" : ""}>
                 How we diagnose the constraint
               </h2>
+            </div>
+            {/* The section's top-level choice, deliberately NOT among the
+                style pills opposite: each mode is a different proposal for
+                how the diagnostic is structured, and the themed one may end
+                up shaping how the whole app is navigated. It sits under the
+                heading, in the reading column, at the weight that decision
+                deserves. */}
+            <div
+              className={"jz-modes" + (phase === "tree" ? " show" : "")}
+              aria-hidden={phase !== "tree"}
+            >
+              <span className="jz-modes-k">Structure</span>
+              <div className="jz-seg" role="group" aria-label="Tree structure">
+                {TREE_MODES.map((m) => (
+                  <button
+                    key={m.id}
+                    className={"jz-segbtn" + (mode === m.id ? " on" : "")}
+                    aria-pressed={mode === m.id}
+                    title={m.about}
+                    onClick={() => onModeChange(m.id)}
+                  >
+                    {m.label}
+                  </button>
+                ))}
+              </div>
+              <span className="jz-modes-hint">
+                {TREE_MODES.find((m) => m.id === mode)?.hint}
+              </span>
             </div>
           </div>
           {/* the styling experiments live in the section header, top-right:

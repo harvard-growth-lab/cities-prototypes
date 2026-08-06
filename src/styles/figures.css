@@ -339,6 +339,129 @@
   fill-opacity: 0.03;
   stroke-opacity: 0.35;
 }
+/* ----- the themes layer: evidence chips under the alt tree's leaves -----
+   Flatter and quieter than the tree above them, and with no arrows at all:
+   a theme is not another step of the diagnostic, it is the data behind the
+   leaf it hangs off. Every chip is styled identically — two leaves resting
+   on the same data is handled by NAMING each theme for its own question,
+   never by marking one of them as a repeat. */
+.jz-chip {
+  cursor: pointer;
+}
+.jz-chip-box {
+  fill-opacity: 0.07;
+  stroke-opacity: 0.34;
+  stroke-width: 1.1;
+  transition:
+    fill-opacity 0.2s ease,
+    stroke-opacity 0.2s ease;
+}
+.jz-chip-lab {
+  font-size: 14.5px;
+  font-weight: 600;
+  fill-opacity: 0.9;
+  pointer-events: none;
+  transition: fill-opacity 0.2s ease;
+}
+.jz-chip-ico {
+  opacity: 0.85;
+  pointer-events: none;
+  overflow: visible;
+  transition: opacity 0.2s ease;
+}
+.jz-chip.lit .jz-chip-ico,
+.jz-chip.hovered .jz-chip-ico {
+  opacity: 1;
+}
+.jz-chip.dim .jz-chip-ico {
+  opacity: 0.4;
+}
+.jz-chip.lit .jz-chip-box {
+  fill-opacity: 0.13;
+  stroke-opacity: 0.68;
+}
+.jz-chip.lit .jz-chip-lab {
+  fill-opacity: 1;
+}
+.jz-chip.dim .jz-chip-box {
+  fill-opacity: 0.03;
+  stroke-opacity: 0.13;
+}
+.jz-chip.dim .jz-chip-lab {
+  fill-opacity: 0.5;
+}
+.jz-chip.hovered .jz-chip-box {
+  fill-opacity: 0.2;
+  stroke-opacity: 1;
+  stroke-width: 1.7;
+}
+.jz-chip.hovered .jz-chip-lab {
+  fill-opacity: 1;
+}
+
+/* ----- the structure control: the section's top-level choice -----
+   A segmented control, deliberately a different shape from the round style
+   pills opposite: those are look experiments, this picks which diagnostic
+   the section is proposing. Sits under the heading, in the reading column. */
+.jz-modes {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 11px;
+  margin-top: 11px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.jz-modes.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+.jz-modes-k {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.jz-seg {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 9px;
+  border: 1px solid var(--border-strong);
+  background: var(--paper, #f4f1ec);
+  box-shadow: inset 0 1px 2px rgba(37, 88, 98, 0.05);
+}
+.jz-segbtn {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 5px 14px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ink-soft);
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+.jz-segbtn:hover {
+  color: var(--teal);
+}
+.jz-segbtn.on {
+  background: #fff;
+  color: var(--ink);
+  font-weight: 700;
+  box-shadow: 0 1px 3px rgba(37, 88, 98, 0.16);
+}
+.jz-modes-hint {
+  font-size: 12.5px;
+  font-style: italic;
+  color: var(--ink-soft);
+}
+
 /* the styling-experiment toggles, top-right in the section header. Both
    phase clusters share one grid cell, so they cross-fade in place */
 .jz-varsbox {
@@ -616,6 +739,73 @@
   color: var(--ink-soft);
   font-size: 14.5px;
 }
+/* the data views behind a hovered theme chip */
+.jz-cap-inds {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.jz-cap-inds li {
+  position: relative;
+  padding-left: 15px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--ink-soft);
+}
+.jz-cap-inds li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 6px;
+  height: 6px;
+  border-radius: 2px;
+  background: currentColor;
+  opacity: 0.45;
+}
+/* the fork-by-fork reasoning behind the suggested path */
+.jz-forks {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.jz-forks li {
+  display: flex;
+  gap: 9px;
+  font-size: 13.5px;
+  line-height: 20px;
+  color: var(--ink-soft);
+}
+.jz-fork-n {
+  flex: 0 0 auto;
+  width: 17px;
+  height: 17px;
+  margin-top: 1px;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.jz-cap-also {
+  margin-top: 10px;
+  font-size: 13px;
+  line-height: 19px;
+  font-style: italic;
+  color: var(--ink-soft);
+}
+.jz-cap-also strong {
+  font-style: normal;
+  font-weight: 700;
+}
 .fig-trail {
   display: flex;
   flex-wrap: wrap;
@@ -690,6 +880,10 @@
   width: 400px;
   flex: 0 0 400px;
   align-self: flex-start;
+  /* the themes layer makes this section many screens tall — the schematic
+     and the evidence list have to ride along to stay useful */
+  position: sticky;
+  top: 0;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -786,4 +980,129 @@
 .ba-note {
   font-size: 13px;
   line-height: 20px;
+}
+
+/* ----- the themes layer in the analysis section ----- */
+.ba-themes {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+.ba-theme {
+  scroll-margin-top: 20px;
+}
+.ba-theme-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.ba-theme-ico {
+  flex: 0 0 auto;
+  align-self: center;
+  display: block;
+}
+.ba-theme-ico svg {
+  display: block;
+  width: 19px;
+  height: 19px;
+  overflow: visible;
+}
+.ba-theme-head h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+.ba-theme-lede {
+  margin: 8px 0 0;
+  font-size: 15px;
+  line-height: 23px;
+}
+.ba-theme-see {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 20px;
+}
+/* one frame per data view named in the researchers' notes */
+.ba-inds {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(228px, 1fr));
+  gap: 12px;
+}
+.ba-ind {
+  min-height: 132px;
+  border: 1px dashed var(--border-strong);
+  border-radius: 10px;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 16px;
+  text-align: center;
+  color: var(--ink-soft);
+}
+.ba-ind-name {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 19px;
+}
+.ba-themelist {
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ba-themelist ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ba-themelist li {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 4px 0;
+  opacity: 0.55;
+  transition: opacity 0.2s ease;
+}
+.ba-themelist li.active {
+  opacity: 1;
+}
+.ba-themedot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+  opacity: 0.45;
+}
+.ba-themelist li.active .ba-themedot {
+  opacity: 1;
+}
+.ba-themelist a {
+  font-size: 14px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.ba-themelist li.active a {
+  font-weight: 700;
+}
+.ba-themelist a:hover {
+  text-decoration: underline;
+}
+.ba-themecount {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink-soft);
 }

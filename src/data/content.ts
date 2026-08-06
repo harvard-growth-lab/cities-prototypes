@@ -7,17 +7,30 @@ export const ASSETS = {
   scatter: "https://www.figma.com/api/mcp/asset/336768cb-4a4b-4ad6-9382-60dd383739b3",
 } as const;
 
+/** One sample city per leaf of the alt diagnostic tree, in leaf order:
+ *  Memphis → demand / metro-wide, San Antonio → demand / place-specific,
+ *  San Jose → supply / housing, Boston → supply / amenities. The branch
+ *  each one lands on is DERIVED from its data (see diagnose() in
+ *  figures.ts), not pinned here. */
 export const CITIES = [
+  "Memphis, United States of America",
+  "San Antonio, United States of America",
+  "San Jose, United States of America",
   "Boston, United States of America",
-  "Chicago, United States of America",
-  "Detroit, United States of America",
-  "Bogotá, Colombia",
-  "Nairobi, Kenya",
 ];
+
+/** Where the app opens. Kept separate from the array order, which is the
+ *  tree's leaf order and is worth preserving as documentation of which
+ *  sample covers which branch. */
+export const DEFAULT_CITY = CITIES[3]; // Boston — supply / amenities
 
 export const SPANS = ["10 years", "5 years", "20 years"];
 
 export const cityShortName = (city: string) => city.split(",")[0];
+/** the country half of a picker entry — the forks compare a place to the
+ *  median metro in its own country, so it has to travel with the city */
+export const cityCountryName = (city: string) =>
+  city.split(",").slice(1).join(",").trim();
 
 /* ---------- pages & sections ---------- */
 
@@ -121,37 +134,32 @@ export interface IntroQuestion {
 
 export const INTRO_SEGMENTS = 5;
 
+/* Blank for now. These were written against Boston's numbers and would be
+   simply wrong under the other three sample cities; only City Constraints
+   is populated with real data at this stage. {city} is substituted live. */
 export const INTRO_QUESTIONS: IntroQuestion[] = [
   {
     progress: 1,
-    question:
-      "Over the past 10 years, how has the population of Boston changed compared with its metro area?",
+    question: "[intro question 1 — {city}'s population against its metro's]",
     options: [
-      { text: "The city grew faster than the metro area" },
-      { text: "Both grew at about the same rate" },
-      { text: "The metro area grew, while the city itself shrank", correct: true },
+      { text: "[option A]" },
+      { text: "[option B]", correct: true },
+      { text: "[option C]" },
     ],
-    feedbackCorrect:
-      "Correct — Boston city lost about 0.8% of its residents per year, while the wider metro area kept growing at +0.4% per year.",
-    feedbackWrong:
-      "Not quite — Boston city actually shrank (−0.8%/yr) while the wider metro area kept growing (+0.4%/yr).",
+    feedbackCorrect: "[feedback when right — the figure and where it comes from]",
+    feedbackWrong: "[feedback when wrong — the figure and where it comes from]",
   },
   {
     slideId: "page-intro-q2",
     progress: 2,
-    question: "What do you think the Boston metro area exports most?",
+    question: "[intro question 2 — what {city} exports most]",
     options: [
-      { text: "Seafood and food products" },
-      {
-        text: "Knowledge services — scientific research, software, and higher education",
-        correct: true,
-      },
-      { text: "Cars and industrial machinery" },
+      { text: "[option A]" },
+      { text: "[option B]", correct: true },
+      { text: "[option C]" },
     ],
-    feedbackCorrect:
-      "Right — the biggest blocks in Boston’s export basket are knowledge services: scientific research, software publishing, and universities.",
-    feedbackWrong:
-      "Not quite — the largest blocks in Boston’s export basket are knowledge services: scientific research, software, and higher education.",
+    feedbackCorrect: "[feedback when right]",
+    feedbackWrong: "[feedback when wrong]",
   },
 ];
 
@@ -187,109 +195,32 @@ export interface IndicatorRow {
   heroNote?: string;
 }
 
-export const CITY_INDICATORS: IndicatorRow[] = [
-  {
-    name: "Population",
-    level: "660K",
-    slider: { zero: "50%", from: "50%", to: "10%", good: false },
-    change: "−0.8%/yr",
-    changeGood: false,
-    rank: "1 / 35",
-  },
-  {
-    name: "Average salary",
-    level: "$100K",
-    slider: { zero: "0%", from: "50%", to: "72%", good: true },
-    change: "+5.8%/yr",
-    changeGood: true,
-    rank: "62 / 130",
-  },
-  {
-    name: "Home value",
-    level: "$971K",
-    slider: { zero: "0%", from: "50%", to: "45%", good: true },
-    change: "+3.6%/yr",
-    changeGood: true,
-    rank: "14 / 130",
-  },
-  {
-    name: "Unemployment",
-    level: "3.5%",
-    slider: { zero: "50%", from: "50%", to: "60%", good: true },
-    change: "+0.1 pp",
-    changeGood: true,
-    rank: "21 / 35",
-  },
-];
+/* Blank for now — the numbers here were Boston's, and under a different
+   sample city they would read as that city's. The rows keep their names and
+   the knobs sit on the zero line, so the table reads as "no data yet"
+   rather than as data. */
+const BLANK_ROWS = (): IndicatorRow[] =>
+  ["Population", "Average salary", "Home value", "Unemployment"].map(
+    (name) => ({
+      name,
+      level: "[—]",
+      slider: { zero: "50%", from: "50%", to: "50%", good: true },
+      change: "[—]",
+      changeGood: true,
+      rank: "[—]",
+    }),
+  );
 
-export const MSA_INDICATORS: IndicatorRow[] = [
-  {
-    name: "Population",
-    level: "4.9M",
-    slider: {
-      zero: "50%",
-      from: "10%",
-      to: "70%",
-      good: true,
-      focus: true,
-      ghost: { pos: "10%", good: false, tip: "City −0.8%/yr" },
-    },
-    change: "+0.4%/yr",
-    changeGood: true,
-    rank: "11 / 384",
-    hero: true,
-    heroNote: "the city is shrinking (−0.8%/yr) while the metro keeps growing (+0.4%/yr)",
-  },
-  {
-    name: "Average salary",
-    level: "$83K",
-    slider: {
-      zero: "0%",
-      from: "72%",
-      to: "56%",
-      good: true,
-      ghost: { pos: "72%", good: true, tip: "City +5.8%/yr" },
-    },
-    change: "+4.5%/yr",
-    changeGood: true,
-    rank: "6 / 262",
-  },
-  {
-    name: "Home value",
-    level: "$648K",
-    slider: {
-      zero: "0%",
-      from: "45%",
-      to: "89%",
-      good: true,
-      ghost: { pos: "45%", good: true, tip: "City +3.6%/yr" },
-    },
-    change: "+7.1%/yr",
-    changeGood: true,
-    rank: "19 / 379",
-  },
-  {
-    name: "Unemployment",
-    level: "3.3%",
-    slider: {
-      zero: "50%",
-      from: "60%",
-      to: "40%",
-      good: false,
-      ghost: { pos: "60%", good: true, tip: "City +0.1 pp" },
-    },
-    change: "−0.1 pp",
-    changeGood: false,
-    rank: "144 / 371",
-  },
-];
+export const CITY_INDICATORS: IndicatorRow[] = BLANK_ROWS();
+
+export const MSA_INDICATORS: IndicatorRow[] = BLANK_ROWS();
 
 /* ---------- data chat ---------- */
 
 export const CHAT_SUGGESTIONS = [
-  "Boston’s exports in 2024",
-  "Compare Boston and Chicago export complexity",
-  "Employment by sector as a CSV",
+  "[a question about this city's exports]",
+  "[compare two of the sample cities]",
+  "[ask for a table as a CSV]",
 ];
 
 /* ---------- learning journey ---------- */
@@ -301,12 +232,13 @@ export interface Insight {
   text: string;
 }
 
-/* Sample state for the prototype: Boston + Chicago explored,
-   sections 1 & 2 completed, City Exports in progress. */
+/* Sample journey state for the prototype: two cities explored, the early
+   sections visited. The saved insight is blank for now — the only section
+   carrying real data is City Constraints. */
 
 export const SAMPLE_EXPLORED_CITIES = [
+  "Memphis, United States of America",
   "Boston, United States of America",
-  "Chicago, United States of America",
 ];
 
 export const SAMPLE_VISITED_PAGES = [
@@ -321,8 +253,8 @@ export const SAMPLE_VISITED_PAGES = [
 export const SAMPLE_INSIGHTS: Insight[] = [
   {
     section: "City Exports · Put in Practice",
-    city: "Boston, United States of America",
+    city: "Memphis, United States of America",
     span: "10 years",
-    text: "Boston's export basket leans heavily on knowledge services — scientific research, software, and higher education dominate the treemap. The opportunity seems to be in translating that research strength into advanced manufacturing; the constraint is likely housing costs, which the scatter plot hints at through fast wage growth but slow population growth.",
+    text: "[a saved note the user wrote in Put in Practice — what the export basket showed, what it implies about the binding constraint]",
   },
 ];

@@ -1,16 +1,27 @@
-import { Fragment, useMemo, useRef, useState } from "react";
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { pointer } from "d3-selection";
 import { Delaunay } from "d3-delaunay";
 import { stratify, tree as d3tree, type HierarchyPointNode } from "d3-hierarchy";
 import {
-  TREE_NODES,
   TREE_SIDE_COLOR,
   completeToLeaf,
+  pathThemes,
   suggestedPath,
+  treeNodes,
+  type ThemeDef,
   type TreeNodeData,
   type TreeSide,
+  type TreeVariant,
 } from "../../data/figures";
 import { branchSectionName } from "../../data/content";
+import { NodeGlyph } from "./treeIcons";
 
 /* The third City Constraints step. Empty for now — its name and the
    "where you are" schematic follow the branch picked on the diagnostic tree
@@ -37,6 +48,7 @@ function DiagSchematic({
   path,
   suggPath,
   preview,
+  variant,
   onPick,
   onPreview,
 }: {
@@ -45,6 +57,8 @@ function DiagSchematic({
   suggPath: string[];
   /** the hovered path — lifted to the page, whose text follows it too */
   preview: string[] | null;
+  /** which tree structure to draw — follows the stage's toggle */
+  variant: TreeVariant;
   onPick: (path: string[]) => void;
   onPreview: (path: string[] | null) => void;
 }) {
@@ -52,7 +66,7 @@ function DiagSchematic({
   const { nodes, delaunay } = useMemo(() => {
     const built = stratify<TreeNodeData>()
       .id((d) => d.id)
-      .parentId((d) => d.parent)(TREE_NODES);
+      .parentId((d) => d.parent)(treeNodes(variant));
     const laid = d3tree<TreeNodeData>().size([
       MV.w - MV.pad.left - MV.pad.right,
       MV.h - MV.pad.top - MV.pad.bottom,
@@ -65,7 +79,7 @@ function DiagSchematic({
         (d) => d.y + MV.pad.top,
       ),
     };
-  }, []);
+  }, [variant]);
 
   /* hovering only PREVIEWS a path (locally); clicking commits it app-wide.
      Both are area-linked: the pointer maps to the nearest node, no precise
@@ -204,29 +218,126 @@ function DiagSchematic({
   );
 }
 
+/* ---------- the themes layer: the section's actual skeleton ----------
+   Each theme reached from the picked leaf becomes a block of indicator
+   frames. Where two leaves rest on the same underlying data, the themes are
+   named for the question each one answers, so a block never has to explain
+   that it is a repeat of one somewhere else. */
+
+function ThemeBlock({
+  theme,
+  color,
+  onSeen,
+}: {
+  theme: ThemeDef;
+  color: string;
+  /** reports the block entering view, for the rail's theme list */
+  onSeen: (id: string, on: boolean) => void;
+}) {
+  const ref = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const scroller = el.closest(".pages") as HTMLElement | null;
+    const io = new IntersectionObserver(
+      (entries) => entries.forEach((e) => onSeen(theme.id, e.isIntersecting)),
+      { root: scroller, threshold: 0.3 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [theme.id, onSeen]);
+
+  return (
+    <section className="ba-theme" id={`theme-${theme.id}`} ref={ref}>
+      <div className="ba-theme-head">
+        <span className="ba-theme-ico" style={{ color }} aria-hidden="true">
+          <NodeGlyph id={theme.id} />
+        </span>
+        <h3 style={{ color }}>{theme.title}</h3>
+      </div>
+      <p className="ba-theme-lede">
+        <span className="ph">{theme.detail}</span>
+      </p>
+      {theme.seeAlso && (
+        <p className="ba-theme-see">
+          <span className="ph">
+            [you already saw this in {theme.seeAlso} — link back rather than
+            re-plot]
+          </span>
+        </p>
+      )}
+      <div className="ba-inds">
+        {theme.indicators.map((ind) => (
+          <div className="ba-ind" key={ind}>
+            <span className="ba-ind-name">{ind}</span>
+            <span className="ph-sub">[data view — to come]</span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export function BranchAnalysisPage({
   cityShort,
   branchPath,
   onSelectBranch,
+  variant,
+  showThemes,
 }: {
   cityShort: string;
   /** the descent picked on the diagnostic tree (ids below the root) */
   branchPath: string[];
   onSelectBranch: (path: string[]) => void;
+  /** which tree structure the schematic mirrors (the stage's toggle) */
+  variant: TreeVariant;
+  /** show the themes under the picked leaf instead of the empty frame */
+  showThemes: boolean;
 }) {
   const side = branchPath[0] === "demand" ? ("demand" as const) : ("supply" as const);
-  const titleOf = useMemo(() => new Map(TREE_NODES.map((n) => [n.id, n.title])), []);
+  const titleOf = useMemo(
+    () => new Map(treeNodes(variant).map((n) => [n.id, n.title])),
+    [variant],
+  );
   /* the city's hardcoded suggested read (sample) — the tinted route */
-  const suggPath = useMemo(() => suggestedPath(cityShort), [cityShort]);
+  const suggPath = useMemo(
+    () => suggestedPath(cityShort, variant),
+    [cityShort, variant],
+  );
   const suggSide: TreeSide = suggPath[0] === "demand" ? "demand" : "supply";
 
   /* the schematic's hover preview lives here: the kicker, breadcrumbs and
      chip below follow the path under the pointer, not just the dots */
   const [preview, setPreview] = useState<string[] | null>(null);
+  /* the structure changed under the preview — its ids may not exist here */
+  useEffect(() => setPreview(null), [variant]);
   const previewing = !!preview && preview.join("/") !== branchPath.join("/");
   const shown = preview ?? branchPath;
   const shownSide =
     shown[0] === "demand" ? ("demand" as const) : ("supply" as const);
+
+  /* the themes hanging off the picked leaf — the section's content when the
+     stage's themes toggle is on */
+  const themesOn = showThemes && variant === "alt";
+  const themes = useMemo(
+    () => (themesOn ? pathThemes(branchPath) : []),
+    [themesOn, branchPath],
+  );
+  /* which theme block the reader is in, for the rail's theme list */
+  const [seenThemes, setSeenThemes] = useState<ReadonlySet<string>>(
+    () => new Set(),
+  );
+  const onSeen = useCallback((id: string, on: boolean) => {
+    setSeenThemes((prev) => {
+      if (prev.has(id) === on) return prev;
+      const next = new Set(prev);
+      if (on) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  }, []);
+  /* the topmost theme in view reads as "where you are" */
+  const activeTheme = themes.find((t) => seenThemes.has(t.id))?.id ?? null;
 
   return (
     <section className="page" id="page-branch-analysis">
@@ -239,12 +350,25 @@ export function BranchAnalysisPage({
       </p>
 
       <div className="ba-body">
-        <div className="placeholder-frame">
-          <span className="ph-title">{branchSectionName(side)}</span>
-          <span className="ph-sub">
-            [tests, data views and narrative for the {side} branch — to come]
-          </span>
-        </div>
+        {themesOn ? (
+          <div className="ba-themes">
+            {themes.map((t) => (
+              <ThemeBlock
+                key={t.id}
+                theme={t}
+                color={TREE_SIDE_COLOR[side]}
+                onSeen={onSeen}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="placeholder-frame">
+            <span className="ph-title">{branchSectionName(side)}</span>
+            <span className="ph-sub">
+              [tests, data views and narrative for the {side} branch — to come]
+            </span>
+          </div>
+        )}
 
         <aside className="ba-context">
           <span className="ba-kicker">
@@ -254,6 +378,7 @@ export function BranchAnalysisPage({
             path={branchPath}
             suggPath={suggPath}
             preview={preview}
+            variant={variant}
             onPick={onSelectBranch}
             onPreview={setPreview}
           />
@@ -277,6 +402,31 @@ export function BranchAnalysisPage({
               {previewing ? "click to select" : "you are here"}
             </span>
           </div>
+          {/* the themes under the picked leaf, scroll-spied like the main
+              rail one level up — the reader always knows which piece of
+              evidence they are in */}
+          {themesOn && themes.length > 0 && (
+            <div className="ba-themelist">
+              <span className="ba-kicker">Evidence</span>
+              <ul>
+                {themes.map((t) => (
+                  <li
+                    key={t.id}
+                    className={t.id === activeTheme ? "active" : ""}
+                  >
+                    <span
+                      className="ba-themedot"
+                      style={{ background: TREE_SIDE_COLOR[side] }}
+                    />
+                    <a href={`#theme-${t.id}`}>{t.title}</a>
+                    <span className="ba-themecount">
+                      {t.indicators.length}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           <p className="ba-note">
             <span className="ph">
               [hover the schematic to preview a path, click to make it yours — or click the tree

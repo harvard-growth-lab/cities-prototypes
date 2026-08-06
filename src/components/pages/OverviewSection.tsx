@@ -48,7 +48,12 @@ export function OverviewSection({ cityShort, span, pagesRef, mapVisible }: Overv
 
       <div className="ov-map">
         <div className="ov-map-inner">
-          <OverviewMap pagesRef={pagesRef} wrapRef={wrapRef} visible={mapVisible} />
+          <OverviewMap
+            cityShort={cityShort}
+            pagesRef={pagesRef}
+            wrapRef={wrapRef}
+            visible={mapVisible}
+          />
         </div>
       </div>
     </div>

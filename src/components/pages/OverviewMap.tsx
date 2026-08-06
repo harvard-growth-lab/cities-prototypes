@@ -3,6 +3,20 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { RefObject } from "react";
 
+/* Where the map sits per sample city: the place centre it opens on and the
+   metro centre it pulls back to as the block scrolls. Approximate centroids,
+   good enough to frame the zoom ride — they are not presented as data.
+   Only Boston has traced boundary geometry so far, so the other three get
+   the same ride without outlines rather than Boston's shape under their
+   name. Trace the remaining three when these sections get populated. */
+const CITY_VIEW: Record<string, { city: [number, number]; msa: [number, number] }> = {
+  Boston: { city: [42.33, -71.06], msa: [42.55, -71.1] },
+  Memphis: { city: [35.12, -89.97], msa: [35.1, -89.85] },
+  "San Antonio": { city: [29.42, -98.49], msa: [29.5, -98.55] },
+  "San Jose": { city: [37.34, -121.89], msa: [37.26, -121.8] },
+};
+const DEFAULT_VIEW = CITY_VIEW.Boston;
+
 const CITY_POLY: [number, number][] = [
   // simplified Boston city boundary
   [42.397, -71.035],
@@ -48,6 +62,8 @@ const MSA_POLY: [number, number][] = [
 ];
 
 interface OverviewMapProps {
+  /** the selected city — decides where the map sits */
+  cityShort: string;
   /** the scrolling .pages container that drives the zoom */
   pagesRef: RefObject<HTMLElement | null>;
   /** the .ov-wrap block whose scroll progress maps to city -> msa zoom */
@@ -56,9 +72,18 @@ interface OverviewMapProps {
   visible: boolean;
 }
 
-export function OverviewMap({ pagesRef, wrapRef, visible }: OverviewMapProps) {
+export function OverviewMap({
+  cityShort,
+  pagesRef,
+  wrapRef,
+  visible,
+}: OverviewMapProps) {
   const mapEl = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
+  /* read through a ref so the zoom handler follows a city change without
+     tearing the map down and rebuilding it */
+  const viewRef = useRef(DEFAULT_VIEW);
+  viewRef.current = CITY_VIEW[cityShort] ?? DEFAULT_VIEW;
 
   const ovZoom = useCallback(() => {
     const map = mapRef.current;
@@ -69,10 +94,18 @@ export function OverviewMap({ pagesRef, wrapRef, visible }: OverviewMapProps) {
     if (range <= 0) return;
     const p = Math.min(1, Math.max(0, (pages.scrollTop - wrap.offsetTop) / range));
     const zoom = 11.4 - 2.9 * p; // city (11.4) -> msa (8.5)
-    const lat = 42.33 + 0.22 * p,
-      lng = -71.06 - 0.04 * p;
-    map.setView([lat, lng], zoom, { animate: false });
+    const { city, msa } = viewRef.current;
+    map.setView(
+      [city[0] + (msa[0] - city[0]) * p, city[1] + (msa[1] - city[1]) * p],
+      zoom,
+      { animate: false },
+    );
   }, [pagesRef, wrapRef]);
+
+  /* a city change re-frames the map in place */
+  useEffect(() => {
+    ovZoom();
+  }, [cityShort, ovZoom]);
 
   useEffect(() => {
     const el = mapEl.current;
@@ -86,24 +119,11 @@ export function OverviewMap({ pagesRef, wrapRef, visible }: OverviewMapProps) {
       doubleClickZoom: false,
       boxZoom: false,
       keyboard: false,
-    }).setView([42.33, -71.06], 11.4);
+    }).setView(viewRef.current.city, 11.4);
     L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
       attribution: "&copy; OpenStreetMap contributors &copy; CARTO",
       subdomains: "abcd",
       maxZoom: 19,
-    }).addTo(map);
-    L.polygon(MSA_POLY, {
-      color: "#4a6a72",
-      weight: 2,
-      dashArray: "6 6",
-      fillColor: "#255862",
-      fillOpacity: 0.04,
-    }).addTo(map);
-    L.polygon(CITY_POLY, {
-      color: "#255862",
-      weight: 2,
-      fillColor: "#255862",
-      fillOpacity: 0.45,
     }).addTo(map);
     mapRef.current = map;
     return () => {
@@ -111,6 +131,31 @@ export function OverviewMap({ pagesRef, wrapRef, visible }: OverviewMapProps) {
       mapRef.current = null;
     };
   }, []);
+
+  /* the boundary outlines, drawn only where we actually have the geometry —
+     Boston is the only one traced so far, and Boston's shape under another
+     city's name would be worse than no shape at all */
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || cityShort !== "Boston") return;
+    const msa = L.polygon(MSA_POLY, {
+      color: "#4a6a72",
+      weight: 2,
+      dashArray: "6 6",
+      fillColor: "#255862",
+      fillOpacity: 0.04,
+    }).addTo(map);
+    const city = L.polygon(CITY_POLY, {
+      color: "#255862",
+      weight: 2,
+      fillColor: "#255862",
+      fillOpacity: 0.45,
+    }).addTo(map);
+    return () => {
+      msa.remove();
+      city.remove();
+    };
+  }, [cityShort]);
 
   useEffect(() => {
     const pages = pagesRef.current;

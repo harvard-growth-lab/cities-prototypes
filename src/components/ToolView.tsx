@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
-import { PAGE_IDS, cityShortName } from "../data/content";
+import { PAGE_IDS, cityCountryName, cityShortName } from "../data/content";
+import type { TreeMode, TreeVariant } from "../data/figures";
 import { Toolbar } from "./Toolbar";
 import { Rail } from "./Rail";
 import { ExplainersView } from "./ExplainersView";
@@ -29,6 +30,12 @@ interface ToolViewProps {
   /** the descent picked on the diagnostic tree (ids below the root) */
   branchPath: string[];
   onSelectBranch: (path: string[]) => void;
+  /** the tree section's top-level structure choice */
+  treeMode: TreeMode;
+  onTreeModeChange: (m: TreeMode) => void;
+  /** derived from the mode, for the sections that only need the shape */
+  treeVariant: TreeVariant;
+  showThemes: boolean;
 }
 
 export function ToolView({
@@ -49,9 +56,14 @@ export function ToolView({
   onSavePractice,
   branchPath,
   onSelectBranch,
+  treeMode,
+  onTreeModeChange,
+  treeVariant,
+  showThemes,
 }: ToolViewProps) {
   const pagesRef = useRef<HTMLElement>(null);
   const cityShort = cityShortName(city);
+  const country = cityCountryName(city);
   const branchSide = branchPath[0] === "demand" ? ("demand" as const) : ("supply" as const);
 
   /* scroll spy: tracks the page in view for the rail + journey, and toggles
@@ -127,15 +139,22 @@ export function ToolView({
 
           <ConstraintScrolly
             cityShort={cityShort}
+            country={country}
             selectedPath={branchPath}
             onSelectPath={onSelectBranch}
             onPhaseInView={onPageInView}
+            variant={treeVariant}
+            showThemes={showThemes}
+            mode={treeMode}
+            onModeChange={onTreeModeChange}
           />
 
           <BranchAnalysisPage
             cityShort={cityShort}
             branchPath={branchPath}
             onSelectBranch={onSelectBranch}
+            variant={treeVariant}
+            showThemes={showThemes}
           />
 
           {/* Levers for Change (empty for now) */}
