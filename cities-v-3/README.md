@@ -1,17 +1,20 @@
-# Cities Tool — design option C, colour
+# Cities Tool — design option C: colour & navigation
 
-[`../cities-v-2/`](../cities-v-2/) (design option B) in a different palette.
-**Colour is the only subject of this option.** Structure, content and behaviour
-are identical to option B on purpose, so the two can be held side by side and
-compared on colour alone — anything else that differs between them is a bug,
-not a design decision.
+[`../cities-v-2/`](../cities-v-2/) (design option B) with two deliberate
+differences.
 
-It gets its own folder rather than a toggle because a palette runs through every
-section at once: chart scales, map shapes, section chrome and the landing page
-all have to move together for the comparison to mean anything.
+**Colour** — each geography carries its own hue everywhere it is named: the
+admin boundary keeps the brand teal, the metro takes its own colour, on the
+map, the thumbnails, the comparison knobs, the badges and the scatter's ring.
 
-Keeping it in step with option B is therefore part of the option: a functional
-change made in `cities-v-2/` has to be made here too.
+**Navigation** — option B's left rail and single long scroll become a page per
+section: a nav across the top always says where you are, and previous/next
+buttons at the foot of the content move between sections. The rail markup
+stays in the DOM (goTo and the journey panel reference it) but never renders.
+
+Content changes made in `cities-v-2/` should still be ported here so the two
+stay comparable; layout differences that follow from the navigation model are
+part of the option.
 
 Because the copy was taken from option B rather than from the main line, this
 folder also inherits option B's drift from `cities-v-1/`: outside City Overview,
