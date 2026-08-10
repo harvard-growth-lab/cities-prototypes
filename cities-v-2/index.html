@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>City Profiles — Growth Lab</title>
+<title>City Diagnosis — Growth Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
@@ -19,6 +19,12 @@
     --border-strong:#c3ccce;
     --ink:#1a2226;
     --ink-soft:#5b686d;
+    /* Direction is its own scale, kept deliberately clear of the brand reds.
+       The old falling colour sat at deltaE 11.5 from --orange, so a number
+       that had dropped was painted almost exactly the accent that means
+       "this city" or "you are here". Rising never had that problem. */
+    --rise:#3d9a43;
+    --fall:#c0244a;
     --shadow-sm:0 1px 3px rgba(37,88,98,.10);
     --shadow-md:0 8px 28px rgba(37,88,98,.14);
   }
@@ -47,6 +53,51 @@
     background-repeat:no-repeat;background-position:right 13px center;
     transition:border-color .15s ease, box-shadow .15s ease;cursor:pointer;
   }
+  /* ---- time span picker ---- */
+  /* Width is fixed rather than shrink-to-fit: 14px pad + 108px for the widest
+     label ("15 years (2010–2025)") + 5px gap + 38px chevron slot, plus slack.
+     Sized to the longest option so the control does not jump when you switch. */
+  .spanpick{position:relative;display:inline-block;width:172px;}
+  /* the native control stays for its value and change event, off screen */
+  .spanpick-native{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;}
+  /* The label and the years share a baseline with each other, but that group
+     is centred in the button — baseline alignment on the button itself left
+     the text 10px above centre while the chevron sat at 50%. */
+  .spanpick-btn{
+    display:inline-flex;align-items:center;width:100%;
+    font-family:inherit;text-align:left;color:var(--ink);
+  }
+  .spanpick-txt{display:inline-flex;align-items:baseline;gap:5px;}
+  .spanpick-val{font-weight:600;}
+  .spanpick-yrs{font-size:11.5px;color:var(--ink-soft);}
+  /* the menu repeats the button's surface, so it reads as the same object */
+  .spanpick-menu{
+    position:absolute;top:calc(100% + 6px);left:0;min-width:100%;width:max-content;
+    background:#fff;border:1px solid var(--border-strong);border-radius:4px;
+    box-shadow:var(--shadow-md);padding:5px;z-index:60;
+  }
+  .spanpick-menu[hidden]{display:none;}
+  .spanpick-opt{
+    display:flex;align-items:baseline;gap:9px;width:100%;
+    background:none;border:none;border-radius:3px;cursor:pointer;
+    font-family:inherit;font-size:14px;color:var(--ink);
+    padding:8px 10px;text-align:left;
+  }
+  .spanpick-opt:hover{background:var(--teal-tint);}
+  .spanpick-opt.is-on{background:var(--teal-tint);}
+  .spanpick-opt.is-on .spanpick-opt-lab{font-weight:600;color:var(--teal);}
+  .spanpick-opt-lab{white-space:nowrap;}
+  .spanpick-opt-yrs{font-size:13px;color:var(--ink-soft);white-space:nowrap;}
+  .spanpick-rec{
+    margin-left:auto;font-size:11px;font-weight:600;color:var(--teal);
+    background:var(--teal-tint);border:1px solid #cfdcdf;border-radius:3px;
+    padding:2px 7px;white-space:nowrap;
+  }
+  .spanpick-note{
+    font-size:12px;line-height:1.45;color:var(--ink-soft);
+    border-top:1px solid var(--border);margin-top:5px;padding:8px 10px 4px;max-width:260px;
+  }
+
   .dd:hover{border-color:var(--teal);}
   .dd:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(37,88,98,.12);outline:none;}
 
@@ -83,16 +134,6 @@
     background:
       radial-gradient(ellipse 70% 55% at 50% 42%, rgba(255,255,255,.55) 0%, rgba(255,255,255,.18) 55%, rgba(255,255,255,0) 100%);
   }
-  /* Marks this copy as an alternative under review rather than the main line.
-     Only City Overview is the subject of the option — see this folder's
-     README for what else may have fallen behind cities-v-1. */
-  .proto-flag{
-    display:inline-flex;align-items:center;flex:0 0 auto;
-    padding:5px 12px;border:1px solid var(--orange-dark);border-radius:999px;
-    font-size:12px;font-weight:600;color:var(--orange-dark);
-    text-decoration:none;white-space:nowrap;
-  }
-  .proto-flag:hover{background:var(--orange-tint);}
 
   .landing-header{
     background:#fff;
@@ -106,16 +147,22 @@
     display:flex;align-items:center;cursor:pointer;
   }
   .landing-header .logo-btn img{height:36px;display:block;}
-  .landing-header #citySelect, .landing-header #spanSelect{display:none !important;}
+  .landing-header #citySelect{display:none !important;}
   .landing-hero{
     position:relative;z-index:1;flex:1;display:flex;flex-direction:column;
     align-items:center;justify-content:center;text-align:center;min-height:0;
     padding:0 24px;
   }
   .landing-hero .eyebrow{margin-bottom:14px;}
+  /* Title case rather than the site's small-caps .eyebrow — this is the
+     product's name, not a label. */
+  .landing-kicker{
+    font-size:18px;font-weight:600;letter-spacing:.2px;color:var(--teal);
+    margin-bottom:14px;
+  }
   .landing-hero h1{
-    color:var(--teal);font-size:clamp(64px,7.5vw,104px);font-weight:700;line-height:1.05;
-    letter-spacing:-1px;
+    color:var(--teal);font-size:clamp(40px,4.4vw,64px);font-weight:700;line-height:1.1;
+    letter-spacing:-.6px;max-width:21ch;
   }
   .landing-hero p.intro{
     max-width:660px;font-size:18px;line-height:28px;letter-spacing:.1px;color:#000;
@@ -381,58 +428,164 @@
   }
   #ovMap{width:100%;height:100%;}
   #ovMap .leaflet-control-attribution{font-size:10px;}
+  /* Map labels: Leaflet's tooltip chrome stripped back to plain text, so the
+     names sit on the map rather than in little white boxes. A white halo
+     carries them over both the city fill and the basemap. */
+  .map-lbl.leaflet-tooltip{
+    background:none;border:0;box-shadow:none;padding:0;
+    font-family:inherit;font-weight:600;white-space:nowrap;
+    color:var(--ink);text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 4px #fff;
+  }
+  .map-lbl.leaflet-tooltip:before{display:none;}
+  .map-lbl--city{font-size:13px;}
+  .map-lbl--metro{font-size:14px;color:#3c5a62;}
 
   /* indicator tables */
   .ind-table{margin-top:26px;max-width:520px;}
   .ind-head, .ind-row{
     display:grid;grid-template-columns:1.05fr .65fr 1.55fr .85fr;gap:8px;align-items:center;
   }
+  /* Two bold things per row, not four: the name finds the row and the change
+     tells the story. Levels, ranks and column heads are reference — they stay
+     legible without competing. Pure #000 is gone; the section runs on one ink
+     scale, --ink for what you read and --ink-soft for what you refer to. */
   .ind-head span{
-    font-size:13px;font-weight:600;color:#000;padding-bottom:6px;
+    font-size:13px;font-weight:400;color:var(--ink);padding-bottom:6px;
   }
   .ind-row{padding:15px 0;}
   .ind-head > :nth-child(n+2), .ind-row > :nth-child(n+2){justify-self:center;text-align:center;}
   .chg-wrap{justify-content:center;}
   .ind-name{font-size:15px;font-weight:600;color:var(--ink);}
-  .ind-val{font-size:16px;font-weight:600;color:var(--ink);}
-  .ind-rank{font-size:16px;font-weight:600;color:#000;}
+  .ind-val{font-size:16px;font-weight:400;color:var(--ink);}
+  .ind-rank{font-size:15px;font-weight:400;color:var(--ink);}
 
-  /* city-vs-metro comparison table — reuses the indicator table's rhythm but
-     spends the wide column on the comparison instead of a change slider */
-  .cmp-table{margin-top:26px;max-width:520px;}
-  .cmp-row{
-    display:grid;grid-template-columns:1.05fr 2.35fr;gap:16px;align-items:center;
-    padding:16px 0;border-top:1px solid var(--border);
+  /* ---- city vs metro on one ten-year track ----
+     The change slider stakeholders liked, widened and given a second dot: the
+     city and the metro sit on the same hatched track, so the bar between them
+     is the gap and the dashed line still says whether the measure rose. This
+     block is full width rather than in the map column — a shared track needs
+     the room, and the map has finished its job by the time you reach it. */
+  /* A table again: the indicator, then the two diagrams side by side — where
+     the two places stand today, and how each has moved. Splitting the width
+     between them is what keeps either from sprawling. */
+  .gap-table{margin-top:14px;}
+  .gap-head, .gap-row{
+    display:grid;grid-template-columns:.82fr 1.08fr 1.3fr;gap:12px;align-items:center;
   }
-  .cmp-row:first-child{border-top:none;}
-  .cmp-cell{display:flex;align-items:center;gap:11px;}
-  .cmp-mark{
-    flex:none;width:28px;height:28px;border-radius:50%;
+  .gap-head span{font-size:12px;font-weight:400;color:var(--ink);padding-bottom:5px;}
+  .gap-row{padding:9px 0;border-top:1px solid var(--border);}
+  .gap-name{
+    font-size:15px;font-weight:600;color:var(--ink);
+    display:flex;flex-direction:column;gap:2px;
+  }
+  .gap-sub{font-size:12px;font-weight:400;color:var(--ink-soft);}
+
+  /* the level comparison, unchanged: a filled proportion for population,
+     an arrow for the rest. Neutral ink — higher than the metro is not good
+     or bad on its own. */
+  .gap-now{display:flex;align-items:center;gap:9px;}
+  .gap-now-mark{
+    flex:none;width:26px;height:26px;border-radius:50%;
     display:inline-flex;align-items:center;justify-content:center;
+    background:rgba(26,34,38,.07);color:var(--ink);
   }
-  .cmp-mark svg{width:15px;height:15px;}
-  .cmp-mark.up{background:rgba(37,88,98,.12);color:var(--teal);}
-  .cmp-mark.down{background:rgba(207,79,44,.14);color:var(--orange-dark);}
-  /* population reads as a share, so its mark is a filled proportion */
-  .cmp-mark.cmp-share{
-    background:conic-gradient(var(--teal) 0 var(--pct), var(--border) var(--pct) 100%);
+  /* the arrow takes the same rise/fall colours as the change values, so one
+     palette covers direction everywhere in the section */
+  .gap-now-mark.up{background:rgba(61,154,67,.13);color:var(--rise);}
+  .gap-now-mark.down{background:rgba(192,36,74,.12);color:var(--fall);}
+  .gap-now-mark svg{width:14px;height:14px;}
+  .gap-now-mark--share{
+    background:conic-gradient(#93a9ad 0 var(--pct), rgba(37,88,98,.16) var(--pct) 100%);
   }
-  .cmp-num{font-size:20px;font-weight:600;white-space:nowrap;}
-  .cmp-num.up{color:var(--teal);}
-  .cmp-num.down{color:var(--orange-dark);}
-  .cmp-num.neutral{color:var(--ink);}
-  .cmp-text{font-size:14px;color:var(--ink-soft);line-height:1.35;}
+  .gap-now-body{display:flex;flex-direction:column;gap:1px;min-width:0;}
+  .gap-now-num{font-size:16px;font-weight:600;color:var(--ink);white-space:nowrap;}
+  .gap-now-text{font-size:12px;color:var(--ink-soft);line-height:1.3;}
+
+  .gap-track{position:relative;display:block;width:100%;height:30px;}
+  /* The zones are a 22px band on the axis rather than the full track height.
+     Height never encoded anything, so this is the same information with a
+     fraction of the ink — and in the comparison it leaves the track tall
+     enough for the values that sit above and below each dot. */
+  .gap-track .neg{
+    position:absolute;left:0;top:50%;height:22px;transform:translateY(-50%);
+    width:var(--zero);
+    background:repeating-linear-gradient(45deg, rgba(192,36,74,.26) 0 1px, transparent 1px 6px);
+  }
+  .gap-track .pos{
+    position:absolute;left:var(--zero);right:0;top:50%;height:22px;
+    transform:translateY(-50%);
+    background:repeating-linear-gradient(45deg, rgba(61,154,67,.26) 0 1px, transparent 1px 6px);
+  }
+  .gap-track .track{
+    position:absolute;left:0;right:0;top:50%;height:0;border-top:1px dotted #adbabd;
+  }
+  .gap-track .zero{
+    position:absolute;top:0;bottom:0;left:var(--zero);width:0;
+    border-left:1.5px dashed #7d8c90;transform:translateX(-50%);
+  }
+  .gap-track .link{
+    position:absolute;top:50%;height:3px;border-radius:2px;background:#aab5b8;
+    transform:translateY(-50%);
+    left:var(--zero);right:calc(100% - var(--zero));opacity:0;
+    transition:left .9s cubic-bezier(.25,.8,.3,1) .25s,
+               right .9s cubic-bezier(.25,.8,.3,1) .25s,
+               opacity .3s ease .3s;
+  }
+  .inview .gap-track .link{left:var(--a);right:calc(100% - var(--b));opacity:1;}
+
+  .gap-dot{
+    display:inline-block;flex:none;width:14px;height:14px;border-radius:50%;
+  }
+  .gap-track .gap-dot{
+    position:absolute;top:50%;left:var(--zero);transform:translate(-50%,-50%);
+    opacity:0;cursor:help;
+    transition:left .9s cubic-bezier(.25,.8,.3,1) .25s, opacity .25s ease .2s;
+  }
+  .inview .gap-track .gap-dot{left:var(--p);opacity:1;}
+  /* The rates live in a tooltip rather than on the track. Ten permanent
+     labels were more type than the comparison needed — the dot's side of the
+     dashed line already says which way it went, and the exact figure is a
+     detail you go looking for. */
+  .gap-track .gap-dot::after{
+    content:attr(data-val);position:absolute;bottom:calc(50% + 13px);left:50%;
+    transform:translateX(-50%) translateY(4px);
+    background:var(--teal);color:#fff;font-size:12px;font-weight:600;
+    padding:4px 9px;border-radius:4px;white-space:nowrap;
+    opacity:0;pointer-events:none;z-index:5;
+    transition:opacity .15s ease, transform .15s ease;
+  }
+  .gap-track .gap-dot:hover::after{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* the line that says what the population row means */
+  .gap-note{
+    grid-column:1/-1;font-size:13px;color:var(--teal);
+    margin-top:5px;opacity:0;transition:opacity .5s ease .35s;
+  }
+  .inview .gap-note{opacity:1;}
+
+  /* population is the finding, so it takes the tint */
+  .gap-row.hero{
+    background:transparent;border-radius:4px;
+    padding:11px 12px;margin:0 -12px;border-top:none;
+    transition:background .5s ease .25s;
+  }
+  .inview .gap-row.hero{background:var(--teal-tint);}
+  .gap-row.hero + .gap-row{border-top:none;}
+
+  .gap-key{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;}
 
   /* change column sliders */
   .chg-wrap{display:flex;align-items:center;gap:10px;}
   .chg-slider{position:relative;flex:0 0 84px;height:36px;cursor:default;}
-  .chg-slider .neg{ /* negative zone: red diagonal hatch */
-    position:absolute;left:0;top:0;bottom:0;width:var(--zero);
-    background:repeating-linear-gradient(45deg, rgba(193,79,79,.28) 0 1px, transparent 1px 6px);
+  .chg-slider .neg{ /* negative zone: red diagonal hatch, banded on the axis */
+    position:absolute;left:0;top:50%;height:22px;transform:translateY(-50%);
+    width:var(--zero);
+    background:repeating-linear-gradient(45deg, rgba(192,36,74,.26) 0 1px, transparent 1px 6px);
   }
-  .chg-slider .pos{ /* positive zone: green diagonal hatch */
-    position:absolute;left:var(--zero);right:0;top:0;bottom:0;
-    background:repeating-linear-gradient(45deg, rgba(46,125,51,.25) 0 1px, transparent 1px 6px);
+  .chg-slider .pos{ /* positive zone: green diagonal hatch, banded on the axis */
+    position:absolute;left:var(--zero);right:0;top:50%;height:22px;
+    transform:translateY(-50%);
+    background:repeating-linear-gradient(45deg, rgba(61,154,67,.26) 0 1px, transparent 1px 6px);
   }
   .chg-slider .track{ /* dotted center axis */
     position:absolute;left:0;right:0;top:50%;height:0;border-top:1px dotted #adbabd;
@@ -442,41 +595,31 @@
     border-left:1.5px dashed #7d8c90;transform:translateX(-50%);
   }
   .chg-slider .knob{ /* data dot */
-    position:absolute;top:50%;width:10px;height:10px;border-radius:50%;
+    position:absolute;top:50%;width:13px;height:13px;border-radius:50%;
     left:var(--from);transform:translate(-50%,-50%);opacity:0;
     transition:left .9s cubic-bezier(.25,.8,.3,1) .25s, opacity .25s ease .1s;
     pointer-events:none;
   }
   .inview .chg-slider .knob{left:var(--to);opacity:1;}
-  .knob.good{background:#2e7d33;}
-  .knob.bad{background:#c14f4f;}
-  .knob.focus{width:14px;height:14px;}
-  /* the city dot: starts as a solid dot, then turns into the small bordered
-     circle while the new dot slides away toward the msa value */
-  .chg-slider .ghost{
-    position:absolute;top:50%;width:11px;height:11px;border-radius:50%;
-    border:1.5px solid transparent;
-    left:var(--gpos);transform:translate(-50%,-50%);
-    transition:all .45s ease .25s;
+
+  /* ---- the two geographies, styled off the map ----
+     The map draws the city as a solid teal shape and the metro as a dashed
+     outline with almost no fill. Every dot in this section repeats those two
+     styles exactly, so whichever block you are in, the dot looks like the
+     shape on the map beside it. Rising or falling is left to the hatched
+     zone and the value, which is where it already was. */
+  .dot-city{
+    background:rgb(147 169 173);
+    border:1px solid #255862;
   }
-  .ghost.good{background:#2e7d33;}
-  .ghost.bad{background:#c14f4f;}
-  .inview .chg-slider .ghost{
-    width:8px;height:8px;background:#fff;border-color:#9aa6aa;
+  .dot-metro{
+    background:rgb(221 231 234);
+    border:1.5px dashed #4a6a72;
   }
-  /* hover tooltip on the city dot (msa page) */
-  .chg-slider .ghost{cursor:help;}
-  .chg-slider .ghost::after{
-    content:attr(data-tip);position:absolute;bottom:calc(50% + 12px);left:50%;
-    transform:translateX(-50%) translateY(4px);
-    background:var(--teal);color:#fff;font-size:12px;font-weight:600;
-    padding:4px 9px;border-radius:4px;white-space:nowrap;
-    opacity:0;pointer-events:none;transition:opacity .15s ease, transform .15s ease;z-index:5;
-  }
-  .chg-slider .ghost:hover::after{opacity:1;transform:translateX(-50%) translateY(0);}
+
   .chg-val{font-size:16px;font-weight:600;white-space:nowrap;}
-  .chg-val.good{color:#2e7d33;}
-  .chg-val.bad{color:#c14f4f;}
+  .chg-val.good{color:var(--rise);}
+  .chg-val.bad{color:var(--fall);}
   .page-head{margin-bottom:6px;}
   .page-head .eyebrow{display:block;margin-bottom:6px;}
   .page-head h2{font-size:28px;font-weight:600;letter-spacing:-.3px;}
@@ -721,8 +864,8 @@
   .q-ico--pop{width:16px;height:12px;}
   .q-ico--pay{width:13px;height:13px;}
   .q-arr{flex:none;width:9px;height:9px;}
-  .q-arr--up{fill:#2e7e33;}
-  .q-arr--down{fill:var(--orange-dark);}
+  .q-arr--up{fill:var(--rise);}
+  .q-arr--down{fill:var(--fall);}
 
   .quad-tip{
     position:absolute;z-index:6;width:270px;padding:12px 14px;
@@ -757,6 +900,42 @@
   }
   .scatter-footnote .rca-key{display:inline-flex;align-items:center;gap:7px;}
 
+  /* ---- peer groups in the overview panel ----
+     Name and chips share a line, with how the set was chosen underneath, so
+     each scale costs three short lines rather than a paragraph. */
+  .pg{margin-top:16px;}
+  .pg-head{display:flex;align-items:center;gap:11px;flex-wrap:wrap;}
+  .pg-head .geo-glyph{height:40px;}
+  .pg-name{font-size:16px;font-weight:600;color:var(--ink);white-space:nowrap;}
+  .pg-list{display:flex;flex-wrap:wrap;gap:7px;}
+  .collapsible-content .pg-crit{
+    font-size:14px;line-height:21px;font-style:italic;
+    color:#000;margin:0 0 6px;
+  }
+  /* the panel clips its corners, which would swallow a card opening upward.
+     The collapse is a display toggle, so nothing here needs the clipping. */
+  .collapsible-info.collapsible-info--peers{overflow:visible;}
+  .pg-peer{position:relative;display:inline-flex;}
+  .pg-btn{
+    font-family:inherit;font-size:14px;color:var(--ink);cursor:help;
+    background:#fff;border:1px solid var(--border-strong);border-radius:4px;
+    padding:7px 14px;white-space:nowrap;transition:border-color .15s ease;
+  }
+  .pg-peer:hover .pg-btn{border-color:var(--teal);}
+  .pg-card{
+    position:absolute;bottom:calc(100% + 8px);left:50%;
+    transform:translateX(-50%) translateY(4px);
+    background:#fff;border:1px solid var(--border);border-radius:6px;
+    box-shadow:var(--shadow-md);padding:10px 12px;z-index:60;
+    opacity:0;pointer-events:none;transition:opacity .15s ease, transform .15s ease;
+  }
+  .pg-peer:hover .pg-card{opacity:1;transform:translateX(-50%) translateY(0);}
+  .pg-card table{border-collapse:collapse;white-space:nowrap;}
+  .pg-card th,.pg-card td{font-size:12px;padding:2px 0 2px 14px;text-align:right;}
+  .pg-card thead th{font-weight:600;color:var(--ink-soft);padding-bottom:5px;}
+  .pg-card tbody th{font-weight:400;color:var(--ink-soft);text-align:left;padding-left:0;}
+  .pg-card tbody td{color:var(--ink);}
+
   /* ---- City / metro silhouettes ----
      These two sections keep swapping which geography a dot stands for, so the
      shapes are drawn wherever that could be read the wrong way. Same polygons
@@ -776,17 +955,24 @@
   .geo-mark{display:inline-flex;}
   .geo-glyph{height:36px;width:auto;display:block;}
   .geo-bg{fill:#fff;stroke:var(--border);}
-  /* The city covers a twelfth of the region's height, so at 36px it needs a
-     stroke to survive — a highlight, not a claim about its size. */
-  .geo-glyph .geo-city{stroke-linejoin:round;}
-  /* metro named: the region solid, the city knocked out of it */
-  .geo-glyph--metro .geo-msa{fill:var(--ink);}
-  .geo-glyph--metro .geo-city{fill:#fff;stroke:#fff;stroke-width:1.6;}
-  /* city named: the region recedes to context, the city takes the accent */
-  .geo-glyph--city .geo-msa{fill:#ccd4d6;}
-  .geo-glyph--city .geo-city{
-    fill:var(--orange-dark);stroke:var(--orange-dark);stroke-width:2.2;
+  /* Both shapes are drawn the way the Leaflet map draws them — the region
+     dashed, the city a solid teal patch — so the map, the dots and these
+     thumbnails all speak one language. Which of the two a badge names is
+     carried by emphasis rather than by a different colour. The dash pattern
+     is held in device pixels so it survives the drop to legend size; the
+     city keeps a heavy edge only because it is a twelfth of the region's
+     height and would otherwise vanish. */
+  .geo-glyph .geo-msa{
+    fill:none;stroke:#4a6a72;stroke-width:1.1;stroke-dasharray:2 1.4;
+    vector-effect:non-scaling-stroke;
   }
+  .geo-glyph .geo-city{fill:#93a9ad;stroke:#255862;stroke-linejoin:round;}
+  /* metro named: the region takes its fill, the city recedes to context */
+  .geo-glyph--metro .geo-msa{fill:#dde7ea;stroke-width:1.3;}
+  .geo-glyph--metro .geo-city{stroke-width:1.4;opacity:.5;}
+  /* city named: the region drops back, the city takes the weight */
+  .geo-glyph--city .geo-msa{opacity:.45;}
+  .geo-glyph--city .geo-city{stroke-width:2.2;}
 
   /* ---- Specialization (RCA) chart ---- */
   .rca-wrap{position:relative;width:80%;margin:8px auto 0;}
@@ -822,8 +1008,8 @@
     display:flex;align-items:center;gap:7px;margin:8px 0;
     padding:6px 9px;border-radius:4px;font-size:13px;font-weight:600;
   }
-  .row-tip .tip-verdict.up{background:rgba(37,88,98,.12);color:var(--teal);}
-  .row-tip .tip-verdict.down{background:rgba(207,79,44,.14);color:var(--orange-dark);}
+  .row-tip .tip-verdict.up{background:rgba(26,34,38,.07);color:var(--ink);}
+  .row-tip .tip-verdict.down{background:rgba(26,34,38,.07);color:var(--ink);}
   .row-tip .tip-arrow{font-size:11px;line-height:1;}
   .row-tip .tip-peers{
     margin:8px 0;padding:6px 0;
@@ -832,12 +1018,12 @@
   .row-tip .tip-row--peer span{font-size:12px;color:var(--ink-soft);}
   .row-tip .tip-row--peer span:last-child{font-weight:600;color:#000;}
   .rca-bench-hit rect{fill:transparent;cursor:help;}
-  .rca-chart .rca-axis{stroke:var(--ink);stroke-width:1;}
+  .rca-chart .rca-axis{stroke:var(--ink);stroke-width:1;shape-rendering:crispEdges;}
   .rca-chart .rca-grid{stroke:var(--border);stroke-width:1;}
   /* All chart text is black and never below 12px */
   .rca-chart .rca-tick{font-size:12px;fill:#000;}
   /* the reference the whole chart is read against */
-  .rca-chart .rca-benchmark{stroke:var(--ink);stroke-width:2;}
+  .rca-chart .rca-benchmark{stroke:var(--ink);stroke-width:1;shape-rendering:crispEdges;}
   .rca-chart .rca-benchmark-label{
     font-size:13px;font-weight:600;fill:#000;cursor:help;
     text-decoration:underline dotted;text-underline-offset:3px;
@@ -881,7 +1067,7 @@
   .peer-city{position:relative;display:inline-block;}
   .peer-city-btn{
     font-family:inherit;font-size:15px;color:#000;cursor:default;
-    background:#fff;border:1px solid var(--border-strong);border-radius:999px;
+    background:#fff;border:1px solid var(--border-strong);border-radius:4px;
     padding:7px 16px;transition:border-color .15s ease,box-shadow .15s ease;
   }
   .peer-city:hover .peer-city-btn,
@@ -909,6 +1095,16 @@
     border-top:1px solid var(--border);
   }
 
+
+  /* The three strongest, tinted behind the whole chart and labelled on it.
+     Transparent so gridlines and the benchmark rule still read through. */
+  .rca-top-band{fill:var(--teal);fill-opacity:.07;pointer-events:none;}
+  .rca-row.is-top .rca-label{font-weight:600;fill:var(--ink);}
+  .rca-row.is-top .rca-value{font-weight:700;}
+  /* plain text in the band's own tint — a heading, not a chip */
+  .rca-top-tag{
+    font-size:12.5px;font-weight:600;fill:var(--teal);pointer-events:none;
+  }
 
   .rca-footnote{
     width:80%;margin:12px auto 0;display:flex;flex-wrap:wrap;
@@ -1228,7 +1424,7 @@
 
   /* keep the non-scrolling landing inside one viewport on shorter screens */
   @media (max-height: 960px){
-    .landing-hero h1{font-size:clamp(52px,6.2vw,80px);}
+    .landing-hero h1{font-size:clamp(36px,3.9vw,54px);}
     .landing-hero p.intro{margin:16px 0 26px;}
     .jump-wrap{margin-top:28px;}
   }
@@ -1245,9 +1441,12 @@
   }
   .inview .ind-row.hero{background:var(--teal-tint);}
   .hero-note{
-    grid-column:1/-1;font-size:13px;font-weight:600;color:#255862;
+    grid-column:1/-1;font-size:13px;font-weight:400;color:#255862;
     margin-top:4px;opacity:0;transition:opacity .5s ease .25s;
   }
+  /* The table centres every cell after the first, and that rule outranks a
+     bare .hero-note. This one is a sentence, so it stays left. */
+  .ind-row.hero .hero-note{justify-self:stretch;text-align:left;}
   .inview .hero-note{opacity:1;}
 
   /* ---- Sections hidden for now ----
@@ -1259,6 +1458,12 @@
   .rail .sec[data-sec^="page-intro-q1"],
   #page-overview-practice,
   .rail .steps li[data-step="page-overview-practice"]{display:none !important;}
+  /* :last-child is structural, so the hidden step above still claims it and
+     the step before it keeps drawing a connector into empty space. Treat the
+     last *visible* item as last. Delete along with the rule above when the
+     Put in Practice step is restored. */
+  .rail .steps li:has(+ li[data-step="page-overview-practice"]){padding-bottom:0;}
+  .rail .steps li:has(+ li[data-step="page-overview-practice"])::before{display:none;}
 
   /* intro quiz (gapminder-style) */
   .intro-page{
@@ -1394,7 +1599,6 @@
     <button class="logo-btn" onclick="backToLanding()" title="Back to start">
       <img alt="Growth Lab" src="assets/gl_logo.png">
     </button>
-    <a class="proto-flag" href="../" title="All prototypes">Design option B · City Overview</a>
     <select id="citySelect" class="dd">
       <option>Boston, United States of America</option>
       <option>Chicago, United States of America</option>
@@ -1402,14 +1606,9 @@
       <option>Bogotá, Colombia</option>
       <option>Nairobi, Kenya</option>
     </select>
-    <select id="spanSelect" class="dd">
-      <option>10 years</option>
-      <option>5 years</option>
-      <option>20 years</option>
-    </select>
     <div class="spacer"></div>
     <nav class="toolbar-links">
-      <a href="#" class="current-page" onclick="toggleExplainers(false);return false;">City Profiles</a>
+      <a href="#" class="current-page" onclick="toggleExplainers(false);return false;">City Diagnosis</a>
       <a href="#">About</a>
       <a href="#">Glossary</a>
     </nav>
@@ -1424,7 +1623,8 @@
   </header>
 
   <div class="landing-hero">
-    <h1>Cities Tool</h1>
+    <p class="landing-kicker">Growth Lab Cities Tool</p>
+    <h1>Why is a city growing or shrinking?</h1>
     <p class="intro">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Proin tortor purus platea sit eu id nisi litora libero. Neque vulputate consequat ac amet augue blandit maximus aliquet congue.</p>
 
     <div class="selector-card">
@@ -1443,7 +1643,7 @@
         <select id="spanSelect" class="dd">
           <option>10 years</option>
           <option>5 years</option>
-          <option>20 years</option>
+          <option>15 years</option>
         </select>
       </div>
       <button class="btn-orange" onclick="enterTool('page-overview')">Start Exploring</button>
@@ -1458,7 +1658,7 @@
         </button>
         <button class="jump-item" onclick="enterTool('page-export-basket')">
           <svg viewBox="0 0 20 20" fill="none" stroke-width="1.4"><path d="M3 8v8.5h9V8"/><path d="M2 5.5h11V8H2z"/><path d="M6.3 11h2.4"/><path d="M13.5 6.5 18 2m0 0h-3.6M18 2v3.6"/></svg>
-          City’s Exports
+          Metro Exports
         </button>
         <button class="jump-item" onclick="enterTool('page-constraints')">
           <svg viewBox="0 0 20 20" fill="none" stroke-width="1.4"><rect x="3" y="9" width="8" height="8.5" rx="1"/><path d="M6.8 9V6.4a3.2 3.2 0 0 1 6.4 0V9"/><path d="M10 12.4v2.2"/></svg>
@@ -1494,7 +1694,6 @@
     <button class="logo-btn" onclick="backToLanding()" title="Back to start">
       <img alt="Growth Lab" src="assets/gl_logo.png">
     </button>
-    <a class="proto-flag" href="../" title="All prototypes">Design option B · City Overview</a>
     <select id="citySelectTool" class="dd">
       <option>Boston, United States of America</option>
       <option>Chicago, United States of America</option>
@@ -1503,13 +1702,13 @@
       <option>Nairobi, Kenya</option>
     </select>
     <select id="spanSelectTool" class="dd">
-      <option>10 years</option>
       <option>5 years</option>
-      <option>20 years</option>
+      <option selected>10 years</option>
+      <option>15 years</option>
     </select>
     <div class="spacer"></div>
     <nav class="toolbar-links">
-      <a href="#" class="current-page" onclick="toggleExplainers(false);return false;">City Profiles</a>
+      <a href="#" class="current-page" onclick="toggleExplainers(false);return false;">City Diagnosis</a>
       <a href="#">About</a>
       <a href="#">Glossary</a>
     </nav>
@@ -1539,7 +1738,7 @@
         </ul>
       </div>
       <div class="sec" data-sec="page-export-basket">
-        <button class="sec-head" onclick="goTo('page-export-basket')"><span class="num">2</span>City Exports</button>
+        <button class="sec-head" onclick="goTo('page-export-basket')"><span class="num">2</span>Metro Exports</button>
         <ul class="steps">
           <li data-step="page-export-basket"><span class="dot"></span><button onclick="goTo('page-export-basket')">Your exports matter</button></li>
           <li data-step="tradableSection"><span class="dot"></span><button onclick="goTo('tradableSection')">What Brings Income Into Your City?</button></li>
@@ -1740,29 +1939,30 @@
             <p class="lede">The clearest signal is whether people are arriving or leaving. Within a country, moving is relatively frictionless — so population change is residents <strong>voting with their feet</strong> on whether <span class="city-short">Boston</span> is a good place to live and work.</p>
             <div class="ind-table">
               <div class="ind-head"><span></span><span>Level</span><span>Change in <span class="span-name">10 years</span></span><span>Rank in Nation</span></div>
-              <div class="ind-row">
+              <div class="ind-row hero">
                 <span class="ind-name">Population</span><span class="ind-val">660K</span>
-                <span class="chg-wrap"><span class="chg-slider" style="--zero:50%"><span class="neg"></span><span class="pos"></span><span class="track"></span><span class="zero"></span><span class="knob bad" style="--from:50%;--to:10%"></span></span><span class="chg-val bad">−0.8%/yr</span></span>
+                <span class="chg-wrap"><span class="chg-slider" style="--zero:50%"><span class="neg"></span><span class="pos"></span><span class="track"></span><span class="zero"></span><span class="knob dot-city" style="--from:50%;--to:10%"></span></span><span class="chg-val bad">−0.8%/yr</span></span>
                 <span class="ind-rank">1 / 35</span>
+                <span class="hero-note"><span class="city-short">Boston</span> has been losing residents for a decade.</span>
               </div>
               <div class="ind-row">
                 <span class="ind-name">Average salary</span><span class="ind-val">$100K</span>
-                <span class="chg-wrap"><span class="chg-slider" style="--zero:0%"><span class="neg"></span><span class="pos"></span><span class="track"></span><span class="zero"></span><span class="knob good" style="--from:50%;--to:72%"></span></span><span class="chg-val good">+5.8%/yr</span></span>
+                <span class="chg-wrap"><span class="chg-slider" style="--zero:0%"><span class="neg"></span><span class="pos"></span><span class="track"></span><span class="zero"></span><span class="knob dot-city" style="--from:50%;--to:72%"></span></span><span class="chg-val good">+5.8%/yr</span></span>
                 <span class="ind-rank">62 / 130</span>
               </div>
               <div class="ind-row">
                 <span class="ind-name">Home value</span><span class="ind-val">$971K</span>
-                <span class="chg-wrap"><span class="chg-slider" style="--zero:0%"><span class="neg"></span><span class="pos"></span><span class="track"></span><span class="zero"></span><span class="knob good" style="--from:50%;--to:45%"></span></span><span class="chg-val good">+3.6%/yr</span></span>
+                <span class="chg-wrap"><span class="chg-slider" style="--zero:0%"><span class="neg"></span><span class="pos"></span><span class="track"></span><span class="zero"></span><span class="knob dot-city" style="--from:50%;--to:45%"></span></span><span class="chg-val good">+3.6%/yr</span></span>
                 <span class="ind-rank">14 / 130</span>
               </div>
               <div class="ind-row">
                 <span class="ind-name">Unemployment</span><span class="ind-val">3.5%</span>
-                <span class="chg-wrap"><span class="chg-slider" style="--zero:50%"><span class="neg"></span><span class="pos"></span><span class="track"></span><span class="zero"></span><span class="knob good" style="--from:50%;--to:60%"></span></span><span class="chg-val good">+0.1 pp</span></span>
+                <span class="chg-wrap"><span class="chg-slider" style="--zero:50%"><span class="neg"></span><span class="pos"></span><span class="track"></span><span class="zero"></span><span class="knob dot-city" style="--from:50%;--to:60%"></span></span><span class="chg-val good">+0.1 pp</span></span>
                 <span class="ind-rank">21 / 35</span>
               </div>
               <div class="ind-row">
                 <span class="ind-name">Diversity index</span><span class="ind-val">0.64</span>
-                <span class="chg-wrap"><span class="chg-slider" style="--zero:50%"><span class="neg"></span><span class="pos"></span><span class="track"></span><span class="zero"></span><span class="knob bad" style="--from:50%;--to:34%"></span></span><span class="chg-val bad">−0.05</span></span>
+                <span class="chg-wrap"><span class="chg-slider" style="--zero:50%"><span class="neg"></span><span class="pos"></span><span class="track"></span><span class="zero"></span><span class="knob dot-city" style="--from:50%;--to:34%"></span></span><span class="chg-val bad">−0.05</span></span>
                 <span class="ind-rank">96 / 130</span>
               </div>
             </div>
@@ -1775,30 +1975,29 @@
             <p class="lede">The administrative city is one piece of a larger machine: people commute, firms hire, and housing supply responds across a region far wider than the city line — the <strong>labor market</strong>. We approximate it with the metropolitan statistical area. <span class="city-short">Boston</span> sits inside its metro area, and most of what follows is read at that scale.</p>
             <div class="ind-table">
               <div class="ind-head"><span></span><span>Level</span><span>Change in <span class="span-name">10 years</span></span><span>Rank in Nation</span></div>
-              <div class="ind-row hero">
+              <div class="ind-row">
                 <span class="ind-name">Population</span><span class="ind-val">4.9M</span>
-                <span class="chg-wrap"><span class="chg-slider" style="--zero:50%"><span class="neg"></span><span class="pos"></span><span class="track"></span><span class="zero"></span><span class="ghost bad" style="--gpos:10%" data-tip="City −0.8%/yr"></span><span class="knob good focus" style="--from:10%;--to:70%"></span></span><span class="chg-val good">+0.4%/yr</span></span>
+                <span class="chg-wrap"><span class="chg-slider" style="--zero:50%"><span class="neg"></span><span class="pos"></span><span class="track"></span><span class="zero"></span><span class="knob dot-metro" style="--from:50%;--to:70%"></span></span><span class="chg-val good">+0.4%/yr</span></span>
                 <span class="ind-rank">11 / 384</span>
-                <span class="hero-note">the city is shrinking (−0.8%/yr) while the metro keeps growing (+0.4%/yr)</span>
               </div>
               <div class="ind-row">
                 <span class="ind-name">Average salary</span><span class="ind-val">$83K</span>
-                <span class="chg-wrap"><span class="chg-slider" style="--zero:0%"><span class="neg"></span><span class="pos"></span><span class="track"></span><span class="zero"></span><span class="ghost good" style="--gpos:72%" data-tip="City +5.8%/yr"></span><span class="knob good" style="--from:72%;--to:56%"></span></span><span class="chg-val good">+4.5%/yr</span></span>
+                <span class="chg-wrap"><span class="chg-slider" style="--zero:0%"><span class="neg"></span><span class="pos"></span><span class="track"></span><span class="zero"></span><span class="knob dot-metro" style="--from:50%;--to:56%"></span></span><span class="chg-val good">+4.5%/yr</span></span>
                 <span class="ind-rank">6 / 262</span>
               </div>
               <div class="ind-row">
                 <span class="ind-name">Home value</span><span class="ind-val">$648K</span>
-                <span class="chg-wrap"><span class="chg-slider" style="--zero:0%"><span class="neg"></span><span class="pos"></span><span class="track"></span><span class="zero"></span><span class="ghost good" style="--gpos:45%" data-tip="City +3.6%/yr"></span><span class="knob good" style="--from:45%;--to:89%"></span></span><span class="chg-val good">+7.1%/yr</span></span>
+                <span class="chg-wrap"><span class="chg-slider" style="--zero:0%"><span class="neg"></span><span class="pos"></span><span class="track"></span><span class="zero"></span><span class="knob dot-metro" style="--from:50%;--to:89%"></span></span><span class="chg-val good">+7.1%/yr</span></span>
                 <span class="ind-rank">19 / 379</span>
               </div>
               <div class="ind-row">
                 <span class="ind-name">Unemployment</span><span class="ind-val">3.3%</span>
-                <span class="chg-wrap"><span class="chg-slider" style="--zero:50%"><span class="neg"></span><span class="pos"></span><span class="track"></span><span class="zero"></span><span class="ghost good" style="--gpos:60%" data-tip="City +0.1 pp"></span><span class="knob bad" style="--from:60%;--to:40%"></span></span><span class="chg-val bad">−0.1 pp</span></span>
+                <span class="chg-wrap"><span class="chg-slider" style="--zero:50%"><span class="neg"></span><span class="pos"></span><span class="track"></span><span class="zero"></span><span class="knob dot-metro" style="--from:50%;--to:40%"></span></span><span class="chg-val bad">−0.1 pp</span></span>
                 <span class="ind-rank">144 / 371</span>
               </div>
               <div class="ind-row">
                 <span class="ind-name">Diversity index</span><span class="ind-val">0.71</span>
-                <span class="chg-wrap"><span class="chg-slider" style="--zero:50%"><span class="neg"></span><span class="pos"></span><span class="track"></span><span class="zero"></span><span class="ghost bad" style="--gpos:34%" data-tip="City −0.05"></span><span class="knob good" style="--from:34%;--to:58%"></span></span><span class="chg-val good">+0.02</span></span>
+                <span class="chg-wrap"><span class="chg-slider" style="--zero:50%"><span class="neg"></span><span class="pos"></span><span class="track"></span><span class="zero"></span><span class="knob dot-metro" style="--from:50%;--to:58%"></span></span><span class="chg-val good">+0.02</span></span>
                 <span class="ind-rank">57 / 384</span>
               </div>
             </div>
@@ -1808,47 +2007,116 @@
             <div class="page-head">
               <h2>The city inside the metro</h2>
             </div>
-            <p class="lede">The metro is the labor market, but the city line is where policy gets set — and the two are not the same place. Read against the region around it, <span class="city-short">Boston</span> proper is a small, expensive, high-wage slice rather than a miniature of the whole.</p>
-            <div class="cmp-table">
-              <div class="cmp-row">
-                <span class="ind-name">Population</span>
-                <span class="cmp-cell">
-                  <span class="cmp-mark cmp-share" style="--pct:13%" aria-hidden="true"></span>
-                  <span class="cmp-num neutral">13%</span>
-                  <span class="cmp-text">of the metro lives inside the city</span>
+            <p class="lede">Now read the two against each other: where each stands today, and how each has moved. On the map the solid shape is the city and the dashed outline the metro — the dots are drawn the same way.</p>
+
+            <div class="gap-table">
+              <div class="gap-head">
+                <span></span><span>Admin vs Metro</span><span>Change in <span class="span-name">10 years</span></span>
+              </div>
+              <div class="gap-row hero">
+                <span class="gap-name">Population<span class="gap-sub">660K vs 4.9M</span></span>
+                <span class="gap-now">
+                  <span class="gap-now-mark gap-now-mark--share" style="--pct:13%" aria-hidden="true"></span>
+                  <span class="gap-now-body"><span class="gap-now-num">13%</span><span class="gap-now-text">of the metro lives in the city</span></span>
+                </span>
+                <span class="gap-track" style="--zero:50%;--a:10%;--b:70%">
+                  <span class="neg"></span><span class="pos"></span><span class="track"></span><span class="zero"></span>
+                  <span class="link"></span>
+                  <span class="gap-dot dot-city is-down" style="--p:10%" data-val="City −0.8%/yr"></span>
+                  <span class="gap-dot dot-metro is-up" style="--p:70%" data-val="Metro +0.4%/yr"></span>
+                </span>
+                <span class="gap-note">The admin is shrinking while the metro around it keeps growing.</span>
+              </div>
+              <div class="gap-row">
+                <span class="gap-name">Average salary<span class="gap-sub">$100K vs $83K</span></span>
+                <span class="gap-now">
+                  <span class="gap-now-mark up" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V3"/><path d="M3.5 7.5 8 3l4.5 4.5"/></svg></span>
+                  <span class="gap-now-body"><span class="gap-now-num">20%</span><span class="gap-now-text">higher than the metro</span></span>
+                </span>
+                <span class="gap-track" style="--zero:6%;--a:56%;--b:72%">
+                  <span class="neg"></span><span class="pos"></span><span class="track"></span><span class="zero"></span>
+                  <span class="link"></span>
+                  <span class="gap-dot dot-metro is-up" style="--p:56%" data-val="Metro +4.5%/yr"></span>
+                  <span class="gap-dot dot-city is-up" style="--p:72%" data-val="City +5.8%/yr"></span>
                 </span>
               </div>
-              <div class="cmp-row">
-                <span class="ind-name">Average salary</span>
-                <span class="cmp-cell">
-                  <span class="cmp-mark up" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V3"/><path d="M3.5 7.5 8 3l4.5 4.5"/></svg></span>
-                  <span class="cmp-num up">20%</span>
-                  <span class="cmp-text">higher than the metro</span>
+              <div class="gap-row">
+                <span class="gap-name">Home value<span class="gap-sub">$971K vs $648K</span></span>
+                <span class="gap-now">
+                  <span class="gap-now-mark up" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V3"/><path d="M3.5 7.5 8 3l4.5 4.5"/></svg></span>
+                  <span class="gap-now-body"><span class="gap-now-num">50%</span><span class="gap-now-text">higher than the metro</span></span>
+                </span>
+                <span class="gap-track" style="--zero:6%;--a:45%;--b:89%">
+                  <span class="neg"></span><span class="pos"></span><span class="track"></span><span class="zero"></span>
+                  <span class="link"></span>
+                  <span class="gap-dot dot-city is-up" style="--p:45%" data-val="City +3.6%/yr"></span>
+                  <span class="gap-dot dot-metro is-up" style="--p:89%" data-val="Metro +7.1%/yr"></span>
                 </span>
               </div>
-              <div class="cmp-row">
-                <span class="ind-name">Home value</span>
-                <span class="cmp-cell">
-                  <span class="cmp-mark up" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V3"/><path d="M3.5 7.5 8 3l4.5 4.5"/></svg></span>
-                  <span class="cmp-num up">50%</span>
-                  <span class="cmp-text">higher than the metro</span>
+              <div class="gap-row">
+                <span class="gap-name">Unemployment<span class="gap-sub">3.5% vs 3.3%</span></span>
+                <span class="gap-now">
+                  <span class="gap-now-mark up" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V3"/><path d="M3.5 7.5 8 3l4.5 4.5"/></svg></span>
+                  <span class="gap-now-body"><span class="gap-now-num">0.2 pp</span><span class="gap-now-text">higher than the metro</span></span>
+                </span>
+                <span class="gap-track" style="--zero:50%;--a:40%;--b:60%">
+                  <span class="neg"></span><span class="pos"></span><span class="track"></span><span class="zero"></span>
+                  <span class="link"></span>
+                  <span class="gap-dot dot-metro is-down" style="--p:40%" data-val="Metro −0.1 pp"></span>
+                  <span class="gap-dot dot-city is-up" style="--p:60%" data-val="City +0.1 pp"></span>
                 </span>
               </div>
-              <div class="cmp-row">
-                <span class="ind-name">Unemployment</span>
-                <span class="cmp-cell">
-                  <span class="cmp-mark up" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 13V3"/><path d="M3.5 7.5 8 3l4.5 4.5"/></svg></span>
-                  <span class="cmp-num up">0.2 pp</span>
-                  <span class="cmp-text">higher than the metro</span>
+              <div class="gap-row">
+                <span class="gap-name">Diversity index<span class="gap-sub">0.64 vs 0.71</span></span>
+                <span class="gap-now">
+                  <span class="gap-now-mark down" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v10"/><path d="M3.5 8.5 8 13l4.5-4.5"/></svg></span>
+                  <span class="gap-now-body"><span class="gap-now-num">0.07</span><span class="gap-now-text">lower than the metro</span></span>
+                </span>
+                <span class="gap-track" style="--zero:50%;--a:34%;--b:58%">
+                  <span class="neg"></span><span class="pos"></span><span class="track"></span><span class="zero"></span>
+                  <span class="link"></span>
+                  <span class="gap-dot dot-city is-down" style="--p:34%" data-val="City −0.05"></span>
+                  <span class="gap-dot dot-metro is-up" style="--p:58%" data-val="Metro +0.02"></span>
                 </span>
               </div>
-              <div class="cmp-row">
-                <span class="ind-name">Diversity index</span>
-                <span class="cmp-cell">
-                  <span class="cmp-mark down" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v10"/><path d="M3.5 8.5 8 13l4.5-4.5"/></svg></span>
-                  <span class="cmp-num down">0.07</span>
-                  <span class="cmp-text">lower than the metro</span>
+            </div>
+
+            <!-- Peers are introduced here, at the end of the overview, because
+                 Metro Exports puts them to work and stakeholders should meet
+                 the idea first. Both scales get their own set, so the panel is
+                 named for neither. -->
+            <div class="collapsible-info collapsible-info--peers">
+              <button class="collapsible-header">
+                <span class="ci-mark" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2.75a6.25 6.25 0 0 0-3.75 11.25c.53.4.87 1 .96 1.66l.09.59h5.4l.09-.59c.09-.66.43-1.26.96-1.66A6.25 6.25 0 0 0 12 2.75Z"/>
+                    <path d="M9.6 18.6h4.8"/>
+                    <path d="M10.5 21h3"/>
+                  </svg>
                 </span>
+                <span class="ci-title">Who does your city get compared with?</span>
+                <svg class="collapsible-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M6 9l6 6 6-6"/>
+                </svg>
+              </button>
+              <div class="collapsible-content">
+                <p class="pg-crit">Closest peers, by population, density, wage, home value &amp; share of the metro, as of 2017</p>
+
+                <div class="pg" id="pgAdmin">
+                  <div class="pg-head">
+                    <span class="geo-mark" data-geo="city"></span>
+                    <span class="pg-name">Admin Boundary</span>
+                    <span class="pg-list"></span>
+                  </div>
+                </div>
+
+                <div class="pg" id="pgMetro">
+                  <div class="pg-head">
+                    <span class="geo-mark" data-geo="metro"></span>
+                    <span class="pg-name">Metro Area</span>
+                    <span class="pg-list"></span>
+                  </div>
+                </div>
               </div>
             </div>
           </section>
@@ -1886,10 +2154,11 @@
         </div>
       </section>
 
-      <!-- 2 City Exports · Your exports matter -->
+      <!-- 2 Metro Exports · Your exports matter -->
       <section class="page" id="page-export-basket">
-        <div class="page-head">
+        <div class="page-head page-head--geo">
           <h2>Your exports matter</h2>
+          <span class="geo-badge"><span class="geo-mark" data-geo="metro"></span>Metro (MSA)</span>
         </div>
         <p class="lede">A city’s size tracks the size of its <strong>export sector</strong> — what it sells to people outside the region. No city makes everything it consumes (the beef, the chips, the software), so to buy from outside it has to sell outside. The export base is what a metro can ultimately support. Below is the <span class="city-short">Boston</span> MSA’s industrial composition — every industry sized by employment and shaded by its economic complexity.</p>
         <div class="viz-controls viz-controls--export">
@@ -2564,7 +2833,7 @@
   /* ---------- journey state ---------- */
   const sectionDefs=[
     {name:"City Overview",   pages:["page-overview","page-overview-msa","page-overview-city"], entry:"page-overview"},
-    {name:"City Exports",    pages:["page-export-basket"], entry:"page-export-basket"},
+    {name:"Metro Exports",    pages:["page-export-basket"], entry:"page-export-basket"},
     {name:"City Constraints",pages:["page-constraints","page-city-in-metro","page-constraints-lorem"],entry:"page-constraints"},
     {name:"Levers for Change",pages:["page-levers"],    entry:"page-levers"}
   ];
@@ -2575,13 +2844,13 @@
   let introQuestionsAnswered=0; // track for journey display
 
   /* ---- sample state for the prototype: Boston + Chicago explored,
-         sections 1 & 2 completed, City Exports in progress ---- */
+         sections 1 & 2 completed, Metro Exports in progress ---- */
   exploredCities.add("Boston, United States of America");
   exploredCities.add("Chicago, United States of America");
   ["page-overview","page-overview-msa",
    "page-export-basket"].forEach(p=>visitedPages.add(p));
   savedInsights.push({
-    section:"City Exports · Put in Practice",
+    section:"Metro Exports · Put in Practice",
     city:"Boston, United States of America",
     span:"10 years",
     text:"Boston's export basket leans heavily on knowledge services — scientific research, software, and higher education dominate the treemap. The opportunity seems to be in translating that research strength into advanced manufacturing; the constraint is likely housing costs, which the scatter plot hints at through fast wage growth but slow population growth."
@@ -2871,10 +3140,10 @@
 
   // Rail highlight: pick whichever page fills the most of the viewport.
   // A ratio-of-element threshold can never be satisfied by a page taller than
-  // the scroll root (City Exports is ~2x), which left the rail stuck on the
+  // the scroll root (Metro Exports is ~2x), which left the rail stuck on the
   // previous section — so measure visible height instead of element ratio.
   // A rail step may point at a subsection nested inside a page (e.g. the
-  // tradable treemap inside City Exports), so the step is resolved separately
+  // tradable treemap inside Metro Exports), so the step is resolved separately
   // from the section: take the deepest target covering the viewport midline.
   function activeStepId(rootRect, fallbackId){
     const mid = rootRect.top + rootRect.height/2;
@@ -2973,7 +3242,7 @@
 
     // section rows
     document.getElementById("journeySections").innerHTML=secStates.map((s,i)=>{
-      const isExports=s.name==="City Exports";
+      const isExports=s.name==="Metro Exports";
       const isIntro=s.name==="Explore Your Assumption";
       const exploreDone=s.seen>0;
       const insightDone=isExports&&savedInsights.length>0;
@@ -3038,6 +3307,52 @@
     [42.70,-71.30],[42.88,-71.40],[43.10,-71.25]
   ];
 
+  /* ---------- peer chips in the overview panel ----------
+     Deliberately independent of the peer code in Metro Exports: that one is
+     about specialisation against a metro peer group, this one introduces the
+     idea at both scales. Sharing state between them would couple two sections
+     that answer different questions. Figures are illustrative. */
+  (function peerPanel(){
+    const SUBJECT = {
+      city:  { label:"Boston", pop:"660K", dens:"5,391/km\u00b2", pay:"$100,412", home:"$971,204" },
+      metro: { label:"Boston", pop:"4.9M", dens:"2,929/km\u00b2", pay:"$83,286",  home:"$648,110" }
+    };
+    const PEERS = {
+      city: [
+        { label:"Washington, DC", pop:"690K", dens:"4,457/km\u00b2", pay:"$105,318", home:"$625,470" },
+        { label:"Oakland, CA",    pop:"440K", dens:"3,142/km\u00b2", pay:"$96,204",  home:"$840,115" },
+        { label:"Cambridge, MA",  pop:"118K", dens:"7,020/km\u00b2", pay:"$112,880", home:"$1,104,300" },
+        { label:"Long Beach, CA", pop:"466K", dens:"3,608/km\u00b2", pay:"$78,940",  home:"$720,650" }
+      ],
+      metro: [
+        { label:"Washington", pop:"6.3M", dens:"2,839/km\u00b2", pay:"$81,453", home:"$560,984" },
+        { label:"Seattle",    pop:"4.0M", dens:"1,204/km\u00b2", pay:"$92,110", home:"$700,240" },
+        { label:"Denver",     pop:"3.0M", dens:"1,688/km\u00b2", pay:"$76,320", home:"$580,470" },
+        { label:"San Diego",  pop:"3.3M", dens:"1,975/km\u00b2", pay:"$74,880", home:"$840,910" }
+      ]
+    };
+    const ROWS = [["Population","pop"],["Density","dens"],
+                  ["Wage","pay"],["Home value","home"]];
+
+    Object.keys(PEERS).forEach(kind => {
+      const list = document.querySelector("#pg" + (kind === "city" ? "Admin" : "Metro") + " .pg-list");
+      if (!list) return;
+      const me = SUBJECT[kind];
+      list.innerHTML = PEERS[kind].map(peer => {
+        const rows = ROWS.map(([label, key]) =>
+          "<tr><th scope=\"row\">" + label + "</th>" +
+          "<td>" + peer[key] + "</td><td>" + me[key] + "</td></tr>").join("");
+        return '<span class="pg-peer">' +
+          '<button type="button" class="pg-btn">' + peer.label + "</button>" +
+          '<span class="pg-card" role="tooltip">' +
+            "<table><thead><tr><td></td><th>This</th><th>" +
+              me.label + "</th></tr></thead>" +
+            "<tbody>" + rows + "</tbody></table>" +
+          "</span></span>";
+      }).join("");
+    });
+  })();
+
   /* ---------- small city / metro silhouettes ----------
      Fills every [data-geo] slot on the page from the polygons above. Each
      shape is fitted to its own box so neither is reduced to a smudge; the
@@ -3049,9 +3364,14 @@
     // bounds would make the two shapes look comparable in size, which is the
     // misreading these are here to prevent — at this scale the city should be
     // a speck inside the region, because that is what it is.
-    const lats=msaPoly.map(p=>p[0]);
+    // Half the vertices for the thumbnail. The region is drawn dashed here,
+    // and on the full outline the dashes bunch up on every wiggle of
+    // coastline; on long straight runs they space evenly. Derived rather than
+    // duplicated so it cannot drift from the polygon the map draws.
+    const msaLite=msaPoly.filter((_,i)=>i%2===0);
+    const lats=msaLite.map(p=>p[0]);
     const k=Math.cos((Math.min(...lats)+Math.max(...lats))/2*Math.PI/180);
-    const xs=msaPoly.map(p=>p[1]*k), ys=msaPoly.map(p=>-p[0]);
+    const xs=msaLite.map(p=>p[1]*k), ys=msaLite.map(p=>-p[0]);
     const x0=Math.min(...xs), x1=Math.max(...xs),
           y0=Math.min(...ys), y1=Math.max(...ys);
     // The frame crops to the region rather than sitting in a square, so the
@@ -3059,7 +3379,7 @@
     const s=(H-2*PAD)/(y1-y0), W=(x1-x0)*s+2*PAD;
     const d=poly=>"M"+poly.map(p=>
       ((p[1]*k-x0)*s+PAD).toFixed(2)+" "+((-p[0]-y0)*s+PAD).toFixed(2)).join("L")+"Z";
-    const dMsa=d(msaPoly), dCity=d(cityPoly);
+    const dMsa=d(msaLite), dCity=d(cityPoly);
 
     document.querySelectorAll("[data-geo]").forEach(el=>{
       const kind=el.dataset.geo;
@@ -3089,13 +3409,26 @@
     L.polygon(cityPoly,{
       color:"#255862",weight:2,fillColor:"#255862",fillOpacity:.45
     }).addTo(ovLeaflet);
+
+    /* Name both shapes on the map itself. The metro label sits up in the
+       north of the region rather than at its centre, which would land it on
+       top of the city; at city zoom it is simply off-screen, which is right —
+       the metro has not been introduced yet. */
+    const mapLabel = (latlng, text, cls) =>
+      L.tooltip({
+        permanent:true, direction:"center", interactive:false,
+        className:"map-lbl " + cls
+      }).setLatLng(latlng).setContent(text).addTo(ovLeaflet);
+
+    mapLabel([42.322,-71.075], "Admin Boundary", "map-lbl--city");
+    mapLabel([42.980,-71.150], "Metro Area", "map-lbl--metro");
   }
 
   function ovZoom(){
     if(!ovWrap||!ovLeaflet) return;
-    // Finish the city -> metro zoom by the end of the MSA block, then hold.
-    // Measuring against the whole wrapper would stretch it across the third
-    // block too, so the map wouldn't reach metro view until the section ended.
+    // Finish the city -> metro zoom by the end of the MSA block, then hold, so
+    // the comparison block reads against a map showing both shapes at once —
+    // which is what keeps the dot styles legible while you scroll it.
     const endEl=document.getElementById("page-overview-city");
     const endY=endEl
       ? endEl.getBoundingClientRect().top-ovWrap.getBoundingClientRect().top
@@ -3130,7 +3463,9 @@
     document.querySelectorAll(".city-short").forEach(el=>el.textContent=v.split(",")[0]);
   }
   function syncSpan(v){
-    spanL.value=v; spanT.value=v;
+    // Two controls share id="spanSelect", so getElementById only ever reached
+    // the first — the visible one in the landing card drifted out of sync.
+    document.querySelectorAll("select.dd[id^=spanSelect]").forEach(el=>el.value=v);
     document.querySelectorAll(".span-name").forEach(el=>el.textContent=v);
   }
   /* scrolling down on the landing flows into City Overview */
@@ -3158,6 +3493,98 @@
 
   cityL.onchange=()=>syncCity(cityL.value);
   cityT.onchange=()=>syncCity(cityT.value);
+  /* ---------- time span picker ----------
+     A native <select> cannot carry a second line of years or mark one option
+     as the recommended one, so each span select keeps its value and change
+     event but is replaced on screen by a menu we draw ourselves. */
+  const SPAN_OPTS = [
+    { label:"5 years",  years:"2020\u20132025" },
+    { label:"10 years", years:"2015\u20132025", rec:true },
+    { label:"15 years", years:"2010\u20132025" }
+  ];
+  const SPAN_NOTE = "Growth Lab research suggests ten years is the most useful " +
+                    "window: long enough for a trend to separate from noise, short " +
+                    "enough to still describe the city as it is today.";
+
+  function buildSpanPickers(){
+    document.querySelectorAll("select.dd[id^=spanSelect]").forEach(sel => {
+      if (sel.dataset.picked) return;
+      sel.dataset.picked = "1";
+
+      const wrap = document.createElement("div");
+      wrap.className = "spanpick";
+      sel.parentNode.insertBefore(wrap, sel);
+      wrap.appendChild(sel);              // kept as the value + change source
+      sel.classList.add("spanpick-native");
+
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "dd spanpick-btn";
+      btn.setAttribute("aria-haspopup", "listbox");
+      btn.setAttribute("aria-expanded", "false");
+      wrap.appendChild(btn);
+
+      const menu = document.createElement("div");
+      menu.className = "spanpick-menu";
+      menu.setAttribute("role", "listbox");
+      menu.hidden = true;
+      menu.innerHTML = SPAN_OPTS.map(o =>
+        '<button type="button" class="spanpick-opt" role="option" data-v="' + o.label + '">' +
+          '<span class="spanpick-opt-lab">' + o.label + '</span>' +
+          '<span class="spanpick-opt-yrs">(' + o.years + ')</span>' +
+          (o.rec ? '<span class="spanpick-rec">Recommended</span>' : '') +
+        '</button>').join("") +
+        '<p class="spanpick-note">' + SPAN_NOTE + '</p>';
+      wrap.appendChild(menu);
+
+      const paint = () => {
+        const o = SPAN_OPTS.find(o => o.label === sel.value) || SPAN_OPTS[0];
+        btn.innerHTML = '<span class="spanpick-txt">' +
+                          '<span class="spanpick-val">' + o.label + '</span>' +
+                          '<span class="spanpick-yrs">(' + o.years + ')</span>' +
+                        '</span>';
+        menu.querySelectorAll(".spanpick-opt").forEach(b =>
+          b.classList.toggle("is-on", b.dataset.v === o.label));
+      };
+      const close = () => { menu.hidden = true; btn.setAttribute("aria-expanded", "false"); };
+
+      btn.addEventListener("click", e => {
+        e.stopPropagation();
+        const open = menu.hidden;
+        document.querySelectorAll(".spanpick-menu").forEach(m => m.hidden = true);
+        document.querySelectorAll(".spanpick-btn").forEach(b => b.setAttribute("aria-expanded","false"));
+        menu.hidden = !open;
+        btn.setAttribute("aria-expanded", String(open));
+      });
+      menu.addEventListener("click", e => {
+        const opt = e.target.closest(".spanpick-opt");
+        if (!opt) return;
+        sel.value = opt.dataset.v;
+        syncSpan(opt.dataset.v);
+        close();
+      });
+      sel.addEventListener("change", paint);
+      wrap._repaint = paint;
+      paint();
+    });
+
+    document.addEventListener("click", () => {
+      document.querySelectorAll(".spanpick-menu").forEach(m => m.hidden = true);
+      document.querySelectorAll(".spanpick-btn").forEach(b => b.setAttribute("aria-expanded","false"));
+    });
+    document.addEventListener("keydown", e => {
+      if (e.key === "Escape")
+        document.querySelectorAll(".spanpick-menu").forEach(m => m.hidden = true);
+    });
+  }
+  buildSpanPickers();
+  // every picker reflects the shared value, whichever one was used
+  const _syncSpan = syncSpan;
+  syncSpan = function(v){
+    _syncSpan(v);
+    document.querySelectorAll(".spanpick").forEach(w => w._repaint && w._repaint());
+  };
+
   spanL.onchange=()=>syncSpan(spanL.value);
   spanT.onchange=()=>syncSpan(spanT.value);
 
@@ -3166,7 +3593,7 @@
     const t=document.getElementById("practiceInput");
     if(!t.value.trim()){ t.focus(); return; }
     savedInsights.push({
-      section:"City Exports · Put in Practice",
+      section:"Metro Exports · Put in Practice",
       city:cityT.value, span:spanT.value,
       text:t.value.trim()
     });

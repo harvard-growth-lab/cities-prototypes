@@ -754,7 +754,7 @@
     const baseline = MT - 40;
 
     svg.append("line").attr("class", "rca-benchmark")
-      .attr("x1", x(1)).attr("y1", MT - 34).attr("x2", x(1)).attr("y2", gridBottom);
+      .attr("x1", x(1)).attr("y1", MT - 12).attr("x2", x(1)).attr("y2", gridBottom);
 
     // Centred on the scale *after* the marker's zone. Measuring the rendered
     // text would be exact, but getComputedTextLength returns 0 while the page
@@ -776,6 +776,21 @@
     return bench;
   }
 
+  /* Sits above the band's top-left corner, reading left to right across it —
+     a title over the three rows rather than a note against any one of them. */
+  function topTag(svg, rows, x0, y, versusPeers){
+    if (rows.length < 3) return;
+    let text = "Most concentrated";
+    if (versusPeers) {
+      const ahead = rows.slice(0, 3).filter(d => d.ahead).length;
+      text = ahead === 3 ? "All three beat their peers"
+           : ahead === 0 ? "All three trail their peers"
+           : "Mixed against peers";
+    }
+    svg.append("text").attr("class", "rca-top-tag")
+      .attr("x", x0).attr("y", y).attr("text-anchor", "start").text(text);
+  }
+
   function renderRcaChart(){
     const el = document.getElementById("rcaChartSvg");
     if (!el) return;
@@ -785,8 +800,12 @@
 
     // Employment now lives in the row tooltip, so the plot takes that width.
     const W = 880, ML = 300, MT = 76, MB = 26, RH = 34;
+    // The band carries a header strip in the same tint, so the label reads as
+    // a title on the block rather than an annotation of whichever row it
+    // happens to sit beside. Rows move down by HDR; the axis header does not.
+    const HDR = 0;   // label sits in the left margin, so no headroom needed
     const PLOT_R = 800;
-    const H = MT + rows.length * RH + MB;
+    const H = MT + HDR + rows.length * RH + MB;
 
     const svg = d3.select(el)
       .attr("viewBox", "0 0 " + W + " " + H)
@@ -804,8 +823,15 @@
       .domain([0, d3.max(all, d => d.employ)])
       .range([3.5, 13]);
 
-    const rowY = i => MT + i * RH + RH / 2;
-    const gridBottom = MT + rows.length * RH;
+    const rowY = i => MT + HDR + i * RH + RH / 2;
+    const gridBottom = MT + HDR + rows.length * RH;
+
+    // Behind the gridlines and everything else, so the band tints the rows
+    // without hiding any part of the chart drawn over it.
+    if (rows.length >= 3) {
+      svg.append("rect").attr("class", "rca-top-band")
+        .attr("x", 0).attr("y", MT + HDR).attr("width", W).attr("height", 3 * RH);
+    }
 
     svg.append("line").attr("class", "rca-axis")
       .attr("x1", x.range()[0]).attr("y1", MT - 12).attr("x2", PLOT_R).attr("y2", MT - 12);
@@ -838,9 +864,16 @@
 
     const g = svg.selectAll(".rca-row").data(rows).join("g").attr("class", "rca-row");
 
+    // The three strongest carry the story, so they get a band behind them and
+    // a note underneath. Both charts sort by RCA, so "first three" is the same
+    // three industries in each — which is what lets the peer note refer back.
+    g.classed("is-top", (d, i) => i < 3);
+
     g.append("rect").attr("class", "rca-hit")
-      .attr("x", 0).attr("y", (d, i) => MT + i * RH)
+      .attr("x", 0).attr("y", (d, i) => MT + HDR + i * RH)
       .attr("width", W).attr("height", RH);
+
+
 
     g.append("text").attr("class", "rca-label")
       .attr("x", ML - 16).attr("y", (d, i) => rowY(i) + 4)
@@ -877,6 +910,8 @@
 
     // Row tooltip carries what the marks can't: the exact employment count,
     // the year, and the two shares the multiplier is derived from.
+    topTag(svg, rows, 0, MT - 7, false);
+
     const rowTip = document.getElementById("rcaRowTip");
     if (rowTip && wrap) {
       const yearSel = document.querySelector("#specializationSection .ctl select");
@@ -1042,8 +1077,12 @@
 
     // Employment lives in the row tooltip, so the plot takes that width.
     const W = 880, ML = 300, MT = 76, MB = 26, RH = 34;
+    // The band carries a header strip in the same tint, so the label reads as
+    // a title on the block rather than an annotation of whichever row it
+    // happens to sit beside. Rows move down by HDR; the axis header does not.
+    const HDR = 0;   // label sits in the left margin, so no headroom needed
     const PLOT_R = 800;
-    const H = MT + rows.length * RH + MB;
+    const H = MT + HDR + rows.length * RH + MB;
 
     const svg = d3.select(el)
       .attr("viewBox", "0 0 " + W + " " + H)
@@ -1055,8 +1094,15 @@
     const rad = d3.scaleSqrt()
       .domain([0, d3.max(all, d => d.employ)]).range([3.5, 13]);
 
-    const rowY = i => MT + i * RH + RH / 2;
-    const gridBottom = MT + rows.length * RH;
+    const rowY = i => MT + HDR + i * RH + RH / 2;
+    const gridBottom = MT + HDR + rows.length * RH;
+
+    // Behind the gridlines and everything else, so the band tints the rows
+    // without hiding any part of the chart drawn over it.
+    if (rows.length >= 3) {
+      svg.append("rect").attr("class", "rca-top-band")
+        .attr("x", 0).attr("y", MT + HDR).attr("width", W).attr("height", 3 * RH);
+    }
 
     svg.append("line").attr("class", "rca-axis")
       .attr("x1", x.range()[0]).attr("y1", MT - 12).attr("x2", PLOT_R).attr("y2", MT - 12);
@@ -1073,9 +1119,16 @@
 
     const g = svg.selectAll(".rca-row").data(rows).join("g").attr("class", "rca-row");
 
+    // The three strongest carry the story, so they get a band behind them and
+    // a note underneath. Both charts sort by RCA, so "first three" is the same
+    // three industries in each — which is what lets the peer note refer back.
+    g.classed("is-top", (d, i) => i < 3);
+
     g.append("rect").attr("class", "rca-hit")
-      .attr("x", 0).attr("y", (d, i) => MT + i * RH)
+      .attr("x", 0).attr("y", (d, i) => MT + HDR + i * RH)
       .attr("width", W).attr("height", RH);
+
+
 
     g.append("text").attr("class", "rca-label")
       .attr("x", ML - 16).attr("y", (d, i) => rowY(i) + 4)
@@ -1128,6 +1181,8 @@
 
     // Row tooltip: the peer comparison spelled out, with the four cities the
     // average is built from and an explicit above/below verdict.
+    topTag(svg, rows, 0, MT - 7, true);
+
     const rowTip = document.getElementById("peerRowTip");
     const wrap = el.parentElement;
     if (rowTip && wrap) {

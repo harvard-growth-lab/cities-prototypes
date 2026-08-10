@@ -83,10 +83,11 @@
     return g === null ? CHANGE_NEW : changeScale(g);
   }
 
-  /* Fill for one industry cell. Non-tradable cells stay grey in every mode —
-     grey encodes "non-tradable", not a sector. */
-  function cellFill(svgId, d, grey){
-    if (grey) return GREY;
+  /* Fill for one industry cell. Non-tradable cells keep their own colour and
+     are dimmed with opacity instead of repainted grey — grey threw away the
+     sector reading, and the point is that these industries are still there,
+     just not part of the export base. */
+  function cellFill(svgId, d){
     const mode = colorMode[svgId];
     if (mode === COMPLEXITY) return complexityColor(d.data.name);
     if (mode === CHANGE)     return changeColor(d.data.name);
@@ -104,6 +105,18 @@
     "Professional & Business": "#b94a44",
     "Trade & Transportation": "#e0938a"
   };
+
+  /* Non-tradable at sector grain: these serve the people already here, so they
+     scale with the city rather than setting how large it can get. Dummy split —
+     it counts education & health as local, which understates hospital and
+     university towns. */
+  const LOCAL_SECTORS = new Set([
+    "Construction", "Education & Health", "Leisure & Hospitality",
+    "Trade & Transportation", "Other"
+  ]);
+  const DIM = 0.22;
+  const HOLD = 900;   // beat on the full basket before the non-tradables recede
+  const FADE = 900;
 
   const rawData = [
     {name: "Oilseed and Grain Farming", employ: 49.09, sector: "Natural Resources"},
@@ -484,7 +497,7 @@
       .attr("class", "cell industry-rect")
       .attr("x", d => d.x0).attr("y", d => d.y0)
       .attr("width", d => d.x1 - d.x0).attr("height", d => d.y1 - d.y0)
-      .attr("fill", d => cellFill(svgEl.id, d, false));
+      .attr("fill", d => cellFill(svgEl.id, d));
 
     cells.append("text")
       .attr("class", "industry-text")
@@ -501,126 +514,56 @@
     if (el) draw(el);
   }
 
-  /* ---------- 2. animated split ---------- */
-  function initTradableAnimation(){
+  /* ---------- 2. tradable split ---------- */
+  function initTradableTreemap(){
     const el = document.getElementById("tradableAnimatedSvg");
     if (!el) return;
 
-    const { svg, root, sectorLayer, cells } = draw(el);
-    const allLeaves = root.leaves();
+    const { root, sectorLayer, cells } = draw(el);
+    const isLocal = d => LOCAL_SECTORS.has(d.parent.data.name);
 
-    function reset(){
-      sectorLayer.selectAll(".sector-rect").interrupt();
-      sectorLayer.selectAll(".sector-rect")
-        .data(root.children, d => d.key)
-        .join("rect")
-        .attr("class", "sector-rect")
-        .attr("x", d => d.x0).attr("y", d => d.y0)
-        .attr("width", d => d.x1 - d.x0).attr("height", d => d.y1 - d.y0)
-        .attr("fill", d => sectorColors[d.data.name])
-        .style("opacity", 1);
+    const box = new Map();
+    root.leaves().forEach(n => box.set(n.data.name, {
+      x: n.x0, y: n.y0, width: n.x1 - n.x0, height: n.y1 - n.y0,
+      local: LOCAL_SECTORS.has(n.parent.data.name)
+    }));
+    splitState[el.id] = box;
 
-      cells.select(".cell").interrupt()
-        .attr("x", d => d.x0).attr("y", d => d.y0)
-        .attr("width", d => d.x1 - d.x0).attr("height", d => d.y1 - d.y0)
-        .attr("fill", d => cellFill(el.id, d, false));
-
-      cells.select(".industry-text").interrupt()
-        .style("opacity", 1)
-        .attr("x", d => d.x0 + 4).attr("y", d => d.y0 + 11)
-        .text(d => fitLabel(d.data.name, { width: d.x1 - d.x0, height: d.y1 - d.y0 }));
-
-      el.classList.remove("animated");
-    }
-
+    /* The whole basket, then the part of it that earns from outside. Holding the
+       full treemap for a beat before the non-tradables recede is what makes the
+       fade read as a subset being lifted out, rather than as a chart that simply
+       arrived with two shades in it. Plays once, on arrival — there is no replay,
+       so nothing here needs to be restorable. */
     function run(){
-      reset();
-
-      // 30 random industries become non-tradable (grey, right half).
-      const pick = new Set();
-      while (pick.size < 30) pick.add(Math.floor(Math.random() * allLeaves.length));
-      const nonTradableNames = new Set([...pick].map(i => allLeaves[i].data.name));
-
-      const tradable    = allLeaves.filter(d => !nonTradableNames.has(d.data.name));
-      const nonTradable = allLeaves.filter(d =>  nonTradableNames.has(d.data.name));
-
-      // Equal-width halves, both using the full height.
-      const gap = 6;
-      const half = (WIDTH - gap) / 2;
-      const rightX = half + gap;
-
-      // Left keeps the sector grouping; right is a flat grey treemap.
-      const left = layout(
-        tradable.map(d => ({ name: d.data.name, employ: d.value, sector: d.parent.data.name })),
-        "L", half
-      );
-      const right = d3.hierarchy({
-        name: "R",
-        children: nonTradable.map(d => ({ name: d.data.name, value: d.value }))
-      }).sum(d => d.value);
-      d3.treemap().size([half, HEIGHT])
-        .paddingTop(1).paddingRight(1).paddingBottom(1).paddingLeft(1)(right);
-
-      const box = new Map();
-      left.leaves().forEach(n => box.set(n.data.name,
-        { x: n.x0, y: n.y0, width: n.x1 - n.x0, height: n.y1 - n.y0, grey: false }));
-      right.leaves().forEach(n => box.set(n.data.name,
-        { x: rightX + n.x0, y: n.y0, width: n.x1 - n.x0, height: n.y1 - n.y0, grey: true }));
-
-      // Sector blocks now describe the left half only.
-      left.children.forEach(s => { s.key = "L:" + s.data.name; });
-      const blocks = sectorLayer.selectAll(".sector-rect").data(left.children, d => d.key);
-
-      blocks.exit().transition().duration(500).style("opacity", 0).remove();
-
-      blocks.enter().append("rect")
-        .attr("class", "sector-rect")
-        .attr("x", d => d.x0).attr("y", d => d.y0)
-        .attr("width", d => d.x1 - d.x0).attr("height", d => d.y1 - d.y0)
-        .attr("fill", d => sectorColors[d.data.name])
-        .style("opacity", 0)
-        .transition().delay(700).duration(700).style("opacity", 1);
-
-      blocks.transition().duration(1200).ease(d3.easeCubicInOut)
-        .attr("x", d => d.x0).attr("y", d => d.y0)
-        .attr("width", d => d.x1 - d.x0).attr("height", d => d.y1 - d.y0);
-
-      cells.select(".industry-text").transition().duration(300).style("opacity", 0);
+      // The sector block behind a dimmed cell has to fade too, or it shows
+      // through the transparency at full strength and cancels the fade.
+      sectorLayer.selectAll(".sector-rect")
+        .transition().delay(HOLD).duration(FADE).ease(d3.easeCubicInOut)
+        .style("opacity", d => LOCAL_SECTORS.has(d.data.name) ? 0 : 1);
 
       cells.select(".cell")
-        .transition().duration(1200).ease(d3.easeCubicInOut)
-        .attr("x", d => box.get(d.data.name).x)
-        .attr("y", d => box.get(d.data.name).y)
-        .attr("width", d => box.get(d.data.name).width)
-        .attr("height", d => box.get(d.data.name).height)
-        .attr("fill", d => cellFill(el.id, d, box.get(d.data.name).grey))
-        .on("end", function(d, i){
-          if (i !== cells.size() - 1) return;   // run the follow-up once
-          cells.select(".industry-text")
-            .attr("x", d => box.get(d.data.name).x + 4)
-            .attr("y", d => box.get(d.data.name).y + 11)
-            .text(d => fitLabel(d.data.name, box.get(d.data.name)))
-            .transition().duration(400).style("opacity", 1);
-        });
+        .transition().delay(HOLD).duration(FADE).ease(d3.easeCubicInOut)
+        .style("opacity", d => isLocal(d) ? DIM : 1);
 
-      splitState[el.id] = box;
-      el.classList.add("animated");
-      // Also flag the subsection so the split headers above the chart can reveal.
-      const section = el.closest(".export-subsection");
-      if (section) section.classList.add("animated");
+      cells.select(".industry-text")
+        .transition().delay(HOLD).duration(FADE).ease(d3.easeCubicInOut)
+        .style("opacity", d => isLocal(d) ? DIM : 1);
     }
 
-    const btn = document.getElementById("replayBtn");
-    if (btn) btn.addEventListener("click", run);
-
-    // Play once when the section first scrolls into view.
-    new IntersectionObserver((entries, obs) => {
-      entries.forEach(entry => {
-        if (!entry.isIntersecting) return;
-        setTimeout(run, 300);
-        obs.disconnect();
-      });
-    }, { threshold: 0.35 }).observe(el);
+    /* Waiting for the chart to be on screen is the point: the fade is the
+       explanation, so playing it while the section is still below the fold
+       would spend it on nobody. Disconnects after the one play. */
+    if (window.IntersectionObserver) {
+      new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          obs.disconnect();
+          run();
+        });
+      }, { threshold: 0.35 }).observe(el);
+    } else {
+      run();
+    }
   }
 
   /* Repaint one treemap for the given "Color by" mode, preserving any
@@ -630,7 +573,7 @@
     colorMode[svgId] = mode;
     const split = splitState[svgId];
     d3.select("#" + svgId).selectAll(".cell")
-      .attr("fill", d => cellFill(svgId, d, split ? !!(split.get(d.data.name) || {}).grey : false));
+      .attr("fill", d => cellFill(svgId, d));
 
     if (legends) {
       const show = (id, on) => {
@@ -740,9 +683,11 @@
   };
 
   let rcaShowAll = false;
-  /* "dot" (live design) or "bar" — a stakeholder-facing alternative, reachable
-     from the viz bar. Not part of the reader-facing flow. */
-  let rcaDesign = "dot";
+  /* "bar" (live design) or "dot" — the alternative, reachable from the viz bar.
+     Bars read the excess over the benchmark as a length, which is the quantity
+     the chart is actually about; the dot form encodes employment in its radius
+     as well, which the row tooltip now carries either way. */
+  let rcaDesign = "bar";
 
   /* Shared axis header for both RCA charts, so they read identically.
      "RCA = 1" sits at the head of the benchmark line and reads rightwards from
@@ -754,7 +699,7 @@
     const baseline = MT - 40;
 
     svg.append("line").attr("class", "rca-benchmark")
-      .attr("x1", x(1)).attr("y1", MT - 34).attr("x2", x(1)).attr("y2", gridBottom);
+      .attr("x1", x(1)).attr("y1", MT - 12).attr("x2", x(1)).attr("y2", gridBottom);
 
     // Centred on the scale *after* the marker's zone. Measuring the rendered
     // text would be exact, but getComputedTextLength returns 0 while the page
@@ -774,6 +719,21 @@
       .text("RCA = 1");
 
     return bench;
+  }
+
+  /* Sits above the band's top-left corner, reading left to right across it —
+     a title over the three rows rather than a note against any one of them. */
+  function topTag(svg, rows, x0, y, versusPeers){
+    if (rows.length < 3) return;
+    let text = "Most concentrated";
+    if (versusPeers) {
+      const ahead = rows.slice(0, 3).filter(d => d.ahead).length;
+      text = ahead === 3 ? "All three beat their peers"
+           : ahead === 0 ? "All three trail their peers"
+           : "Mixed against peers";
+    }
+    svg.append("text").attr("class", "rca-top-tag")
+      .attr("x", x0).attr("y", y).attr("text-anchor", "start").text(text);
   }
 
   function renderRcaChart(){
@@ -807,6 +767,13 @@
     const rowY = i => MT + i * RH + RH / 2;
     const gridBottom = MT + rows.length * RH;
 
+    // Behind the gridlines and everything else, so the band tints the rows
+    // without hiding any part of the chart drawn over it.
+    if (rows.length >= 3) {
+      svg.append("rect").attr("class", "rca-top-band")
+        .attr("x", 0).attr("y", MT).attr("width", W).attr("height", 3 * RH);
+    }
+
     svg.append("line").attr("class", "rca-axis")
       .attr("x1", x.range()[0]).attr("y1", MT - 12).attr("x2", PLOT_R).attr("y2", MT - 12);
 
@@ -837,6 +804,10 @@
     }
 
     const g = svg.selectAll(".rca-row").data(rows).join("g").attr("class", "rca-row");
+
+    // Both charts sort by RCA, so "first three" is the same three industries in
+    // each — which is what lets the peer label refer back to the other chart.
+    g.classed("is-top", (d, i) => i < 3);
 
     g.append("rect").attr("class", "rca-hit")
       .attr("x", 0).attr("y", (d, i) => MT + i * RH)
@@ -877,6 +848,8 @@
 
     // Row tooltip carries what the marks can't: the exact employment count,
     // the year, and the two shares the multiplier is derived from.
+    topTag(svg, rows, 0, MT - 7, false);
+
     const rowTip = document.getElementById("rcaRowTip");
     if (rowTip && wrap) {
       const yearSel = document.querySelector("#specializationSection .ctl select");
@@ -921,9 +894,16 @@
         s + "</span>").join("");
     }
 
-    // The bar form drops the legend entirely — dot size means nothing there.
-    const foot = document.getElementById("rcaFootnote");
-    if (foot) foot.hidden = (rcaDesign === "bar");
+    /* Only the mark-specific key swaps. The sector legend describes both forms —
+       bars are filled by sector too — and with bar as the default, dropping the
+       whole footnote would leave the chart's only colour key off the page. */
+    const isBar = (rcaDesign === "bar");
+    const setKey = (id, shown) => {
+      const k = document.getElementById(id);
+      if (k) k.hidden = !shown;
+    };
+    setKey("rcaDotKey", !isBar);
+    setKey("rcaBarKey", isBar);
   }
 
   /* =====================================================================
@@ -1029,9 +1009,9 @@
   }
 
   let peerShowAll = false;
-  /* "dot" (live design) or "bar" — stakeholder-facing alternative, same as the
-     specialization chart. Not part of the reader-facing flow. */
-  let peerDesign = "dot";
+  /* Follows the specialization chart: the two are one section behind a toggle,
+     so switching views must not also switch mark type under the reader. */
+  let peerDesign = "bar";
 
   function renderPeerChart(){
     const el = document.getElementById("peerChartSvg");
@@ -1058,6 +1038,13 @@
     const rowY = i => MT + i * RH + RH / 2;
     const gridBottom = MT + rows.length * RH;
 
+    // Behind the gridlines and everything else, so the band tints the rows
+    // without hiding any part of the chart drawn over it.
+    if (rows.length >= 3) {
+      svg.append("rect").attr("class", "rca-top-band")
+        .attr("x", 0).attr("y", MT).attr("width", W).attr("height", 3 * RH);
+    }
+
     svg.append("line").attr("class", "rca-axis")
       .attr("x1", x.range()[0]).attr("y1", MT - 12).attr("x2", PLOT_R).attr("y2", MT - 12);
 
@@ -1072,6 +1059,10 @@
     drawAxisHeader(svg, x, PLOT_R, MT, gridBottom, true);
 
     const g = svg.selectAll(".rca-row").data(rows).join("g").attr("class", "rca-row");
+
+    // Both charts sort by RCA, so "first three" is the same three industries in
+    // each — which is what lets the peer label refer back to the other chart.
+    g.classed("is-top", (d, i) => i < 3);
 
     g.append("rect").attr("class", "rca-hit")
       .attr("x", 0).attr("y", (d, i) => MT + i * RH)
@@ -1128,10 +1119,12 @@
 
     // Row tooltip: the peer comparison spelled out, with the four cities the
     // average is built from and an explicit above/below verdict.
+    topTag(svg, rows, 0, MT - 7, true);
+
     const rowTip = document.getElementById("peerRowTip");
     const wrap = el.parentElement;
     if (rowTip && wrap) {
-      const yearSel = document.querySelector("#peerSection .ctl select");
+      const yearSel = document.querySelector("#specializationSection .ctl select");
       g.on("mouseenter", function(ev, d){
         const year = yearSel ? yearSel.value : "";
         // A gap between two multipliers is a difference in points, not itself
@@ -1200,11 +1193,52 @@
     });
     const design = document.getElementById("peerDesignBtn");
     if (design) design.addEventListener("click", () => {
-      peerDesign = (peerDesign === "dot") ? "bar" : "dot";
-      design.textContent = (peerDesign === "dot")
-        ? "Bar design option" : "Back to dot design";
+      peerDesign = (peerDesign === "bar") ? "dot" : "bar";
+      design.textContent = (peerDesign === "bar")
+        ? "Dot design option" : "Back to bar design";
       renderPeerChart();
     });
+  }
+
+  /* World benchmark vs peer benchmark: the same industries and the same RCA
+     formula, so this is one section with two views rather than two sections.
+     Both charts stay rendered and only their visibility changes — switching
+     costs nothing, and each view keeps its own "show all" and design state
+     instead of being reset every time the reader looks at the other one. */
+  function initRcaViewToggle(){
+    const host = document.getElementById("specializationSection");
+    const seg  = document.getElementById("rcaViewSeg");
+    if (!host || !seg) return;
+
+    function show(view){
+      host.querySelectorAll("[data-rcaview]").forEach(el => {
+        el.classList.toggle("view-off", el.dataset.rcaview !== view);
+      });
+      seg.querySelectorAll(".seg-btn").forEach(b => {
+        const on = b.dataset.rcaviewGo === view;
+        b.classList.toggle("is-active", on);
+        b.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+    }
+
+    /* Named from the same list the chart averages, so the tooltip cannot drift
+       from the four cities actually behind the tick. */
+    const tip = document.getElementById("peerListTip");
+    if (tip) {
+      tip.innerHTML =
+        "<strong>" + PEERS.length + " peer cities</strong><ul>" +
+        PEERS.map(n => "<li>" + ((PEER_PROFILES[n] || {}).label || n) + "</li>").join("") +
+        "</ul><span class=\"peer-tip-note\">Metros close to " + cityName +
+        " in size, income and industry mix — close enough that the comparison " +
+        "says something other than \u201clarge city\u201d.</span>";
+    }
+
+    seg.addEventListener("click", e => {
+      const btn = e.target.closest(".seg-btn");
+      if (btn && seg.contains(btn)) show(btn.dataset.rcaviewGo);
+    });
+
+    show("self");
   }
 
   function initRcaChart(){
@@ -1217,9 +1251,9 @@
     });
     const design = document.getElementById("rcaDesignBtn");
     if (design) design.addEventListener("click", () => {
-      rcaDesign = (rcaDesign === "dot") ? "bar" : "dot";
-      design.textContent = (rcaDesign === "dot")
-        ? "Bar design option" : "Back to dot design";
+      rcaDesign = (rcaDesign === "bar") ? "dot" : "bar";
+      design.textContent = (rcaDesign === "bar")
+        ? "Dot design option" : "Back to bar design";
       renderRcaChart();
     });
   }
@@ -1805,11 +1839,12 @@
   function init(){
     if (typeof d3 === "undefined") return;
     renderStaticTreemap();
-    initTradableAnimation();
+    initTradableTreemap();
     initColorBySegments();
     initRcaChart();
     initPeerChart();
     initPeerCityChips();
+    initRcaViewToggle();
     renderMetroScatter();
     renderCityInMetro();
     initDxExplainer();
