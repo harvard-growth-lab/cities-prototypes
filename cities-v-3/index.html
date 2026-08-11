@@ -417,6 +417,76 @@
   .tool-body .ov-block{padding:20px 0;}
   .tool-body .ind-row{padding:12px 0;}
 
+  /* ---- one content grid for every page ----
+     The shared styles assume the rail eating ~240px on the left, so with the
+     rail gone every page ran full-bleed: text pinned 56px off the left edge
+     with up to 700px of dead space to the right, the pager button floating at
+     the far edge, and nav items starting at a different offset than the
+     content below them. A typical page owns this with one centred container:
+     nav items, page content, the overview split and the pager all sit on the
+     same 1200px grid. Padding goes symmetric — the old 56/72 split existed to
+     balance the rail. */
+  /* 976 = 880 chart + 2×48 padding. The grid is exactly as wide as the
+     widest content, so nothing floats on a second axis and nothing trails
+     dead space. City Overview keeps its own split-pane geometry below. */
+  .tool-body .page{
+    max-width:976px;width:100%;margin-inline:auto;
+    padding:52px 48px 60px;
+  }
+  /* The overview keeps its split-pane character: the map runs full height to
+     the right edge. Only the text column joins the grid — its left padding is
+     computed from the same container maths as .page's auto margins (both in %
+     of the scroller's width, so the scrollbar cancels out), which is what
+     keeps the heading's left edge identical across every section when the
+     reader switches pages. 608 = 48 grid pad + 520 column + 40 gutter. */
+  .tool-body .ov-left{
+    flex:0 0 auto;
+    width:max(608px, calc((100% - 1200px)/2 + 608px));
+    padding:0 40px 0 max(48px, calc((100% - 1200px)/2 + 48px));
+  }
+  /* first nav number lines up with the content's left edge (grid + 48px pad,
+     minus the button's own 16px) */
+  .secnav{padding-inline:max(22px, calc((100vw - 976px)/2 + 32px));}
+  .secpager{max-width:976px;width:100%;margin-inline:auto;padding:26px 48px 34px;}
+  /* Charts left-align and fill the measure — on a grid sized to them, their
+     80%-and-centre habits from the rail layout would re-introduce the second
+     axis this grid exists to remove. */
+  .tool-body #exportTreemapSvg{width:100%;margin:8px 0 0;}
+  .tool-body .tradable-viz-wrapper{width:100%;margin:0 0 20px;}
+  .tool-body .rca-wrap{width:100%;margin:8px 0 0;}
+  .tool-body .tradable-split-header{width:100%;margin:22px 0 10px;}
+  .tool-body .rca-footnote{width:100%;margin:12px 0 0;}
+
+  /* ---- header zone: lede left, collapsible right ----
+     The collapsed panel is exactly the size of the void that used to trail
+     the lede, and beside the text it reads as what it is — optional depth off
+     the main lede → chart path. Open, it breaks to a full row beneath: the
+     constraints panel holds the two-column diagnostic grid, which cannot
+     live in a 320px column. */
+  .lede-row{
+    display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:0 40px;
+    align-items:start;margin:16px 0 14px;max-width:880px;
+  }
+  .lede-row > .lede{margin:0;}
+  .lede-row > .collapsible-info{margin:0;max-width:none;}
+  /* Open, the bar you clicked stays exactly where it was — only the content
+     unfolds below, as a tray on the full row. The bar's box stretches down to
+     meet the tray, so the two read as one folded surface (a tab and its
+     drawer), and the corners square off only where the surfaces join. */
+  .lede-row > .collapsible-info:has(.collapsible-header.active){
+    align-self:stretch;
+    border-bottom-left-radius:0;border-bottom-right-radius:0;
+  }
+  .lede-row > .collapsible-content{
+    grid-column:1 / -1;
+    background:var(--orange-tint);
+    border-radius:4px 0 4px 4px;
+    padding:18px 22px 18px 58px;
+  }
+  /* the tray's full width belongs to the diagnostic grid; plain text keeps
+     its reading measure */
+  .lede-row > .collapsible-content > p{max-width:680px;}
+
   /* left rail */
   .rail{
     width:206px;flex:0 0 206px;border-right:1px solid var(--border);
@@ -3944,6 +4014,27 @@
   secPager.addEventListener("click", e => {
     const b = e.target.closest(".pager-btn");
     if(b) showSection(+b.dataset.go);
+  });
+
+  // Pair every lede with the collapsible that follows it. Overview ledes are
+  // exempt — that section's layout is its own.
+  document.querySelectorAll("p.lede").forEach(l => {
+    const panel = l.nextElementSibling;
+    if(!panel || !panel.classList.contains("collapsible-info")) return;
+    if(l.closest(".ov-wrap")) return;
+    const row = document.createElement("div");
+    row.className = "lede-row";
+    l.parentNode.insertBefore(row, l);
+    row.append(l, panel);
+    // The stock toggle finds its content via nextElementSibling at click
+    // time; detaching the content breaks that lookup (silently — it null-
+    // checks), so the drawer gets its own toggle on the same click.
+    const content = panel.querySelector(".collapsible-content");
+    if(content){
+      row.appendChild(content);
+      panel.querySelector(".collapsible-header").addEventListener("click",
+        () => content.classList.toggle("show"));
+    }
   });
 
   const goToScroll = goTo;
