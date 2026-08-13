@@ -138,7 +138,10 @@
   .landing-header .logo-btn img{height:36px;display:block;}
   .landing-header #citySelect, .landing-header #spanSelect{display:none !important;}
   .landing-hero{
-    position:relative;z-index:1;flex:1;display:flex;flex-direction:column;
+    /* z 2, one above .landing-bottom: the hero is its own stacking context,
+       so the open time-span menu can only beat the scroll cue if the hero
+       itself does */
+    position:relative;z-index:2;flex:1;display:flex;flex-direction:column;
     align-items:center;justify-content:center;text-align:center;min-height:0;
     padding:0 24px;
   }
@@ -1020,6 +1023,8 @@
 
   /* ---- Specialization (RCA) chart ---- */
   .rca-wrap{position:relative;width:80%;margin:8px auto 0;}
+  .rca-dist-wrap{margin:8px 0 0;}
+  .rca-dist-wrap iframe{display:block;width:100%;height:765px;border:0;}
   .rca-chart{width:100%;margin:0;height:auto;}
 
   /* Explainer tooltip for the RCA = 1 marker. A native SVG <title> was
@@ -1085,6 +1090,21 @@
     color:var(--ink-soft);text-decoration:underline;text-underline-offset:3px;
   }
   .viz-controls .design-opt:hover{color:var(--teal);}
+  /* the design-option links read as one group: the per-view one carries the
+     auto margin, so the pair sits together at the far right, apart from the
+     end-user controls; alone in the box-plot view the link keeps the edge */
+  /* inside either box plot the end-user comparison seg has no meaning —
+     the design list is the only way in and out */
+  #specializationSection.is-dist .seg-wrap{display:none;}
+  .design-list{margin-left:auto;display:flex;align-items:center;gap:12px;}
+  .design-list .design-opt{margin-left:0;}
+  .design-list .design-opt.is-on{
+    color:var(--teal);text-decoration:none;cursor:default;font-weight:700;
+  }
+  .design-list-label{
+    font-size:11px;font-weight:700;letter-spacing:1.6px;
+    color:var(--ink-soft);text-transform:uppercase;
+  }
   .rca-chart .rca-value{font-size:13px;fill:#000;}
   /* translucent wash on hover rather than an opaque tint */
   .rca-chart .rca-hit{fill:transparent;}
@@ -1766,7 +1786,7 @@
         <button class="sec-head" onclick="goTo('page-intro-q1')"><span class="num"><svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13" aria-hidden="true"><path d="M12 2l2.9 6.2 6.6.8-4.9 4.6 1.3 6.5L12 16.9 6.1 20l1.3-6.5L2.5 9l6.6-.8L12 2z"/></svg></span>Explore Your Assumption</button>
       </div>
       <div class="sec" data-sec="page-overview page-overview-msa page-overview-city">
-        <button class="sec-head" onclick="goTo('page-overview')"><span class="num">1</span>City Overview</button>
+        <button class="sec-head" onclick="goTo('page-overview')"><span class="num">1</span>Overview</button>
         <ul class="steps">
           <li data-step="page-overview"><span class="dot"></span><button onclick="goTo('page-overview')">How well is your city doing</button></li>
           <li data-step="page-overview-msa"><span class="dot"></span><button onclick="goTo('page-overview-msa')">Your city is not an island</button></li>
@@ -2358,6 +2378,7 @@
 
           <p class="lede" data-rcaview="self">Of the tradable industries above, these are the ones <span class="city-short">Boston</span> does an unusual amount of. Each is measured against the global benchmark: a score of 1.0 means the industry takes up the same share of jobs here as it does worldwide. Anything higher means the city is more concentrated in it than the world is — and the further past 1.0, the more distinctive it is.</p>
           <p class="lede" data-rcaview="peers">The same measure, now set against four cities of similar size and economic make-up. The tick on each row is the average of those four — where <span class="city-short">Boston</span>’s mark runs past it, the city is more specialized in that industry than its peers; where it falls short, less. Hover any row to see the cities behind the average.</p>
+          <p class="lede" data-rcaview="dist">The same measure, now read against <strong>every US metro at once</strong> — the orange dot is where the <span class="city-short">Boston</span> metro lands. Hover any mark for the city and figures behind it.</p>
 
           <div class="collapsible-info">
             <button class="collapsible-header">
@@ -2400,9 +2421,17 @@
               <span class="peer-tip" id="peerListTip" role="tooltip"></span>
             </div>
             <button class="replay-btn" id="rcaToggleBtn" data-rcaview="self">Show all</button>
-            <button type="button" class="reset design-opt" id="rcaDesignBtn" data-rcaview="self">Dot design option</button>
             <button class="replay-btn" id="peerToggleBtn" data-rcaview="peers">Show all</button>
-            <button type="button" class="reset design-opt" id="peerDesignBtn" data-rcaview="peers">Dot design option</button>
+            <!-- every design the section can wear, named in one stakeholder-
+                 facing list: bar and dot restyle the chart in place, the two
+                 box plots open the all-metros view -->
+            <div class="design-list" id="rcaDesignList">
+              <span class="design-list-label">Design</span>
+              <button type="button" class="reset design-opt is-on" data-design="bar">Bar</button>
+              <button type="button" class="reset design-opt" data-design="dot">Dot</button>
+              <button type="button" class="reset design-opt" data-design="box">Box plot</button>
+              <button type="button" class="reset design-opt" data-design="band">Friendly box plot</button>
+            </div>
           </div>
 
           <div class="rca-wrap" data-rcaview="self">
@@ -2432,6 +2461,14 @@
             <span class="rca-key"><svg width="12" height="20" aria-hidden="true"><line x1="6" y1="2" x2="6" y2="18" stroke="#1a2226" stroke-width="2.5"/></svg>Peer average</span>
             <span class="rca-key" id="peerAboveKey"><svg width="26" height="10" aria-hidden="true"><line x1="1" y1="5" x2="25" y2="5" stroke="#5b686d" stroke-width="2.5" opacity="0.55"/></svg>Above the peer average</span>
             <span class="rca-key"><svg width="26" height="10" aria-hidden="true"><line x1="1" y1="5" x2="25" y2="5" stroke="#1a2226" stroke-width="2.5" stroke-dasharray="3 3" stroke-linecap="butt"/></svg>Below the peer average</span>
+          </div>
+
+          <!-- Third view: the national distribution chart, a self-contained page
+               (real 2023 figures, its own controls and tooltips) embedded as is.
+               The query string pins its opening state; its own seg controls stay
+               live inside the frame. -->
+          <div class="rca-dist-wrap" data-rcaview="dist">
+            <iframe id="rcaDistFrame" src="rca-distributions.html?dots=peers&amp;design=box" title="Boston metro specialization across all US metros"></iframe>
           </div>
         </div>
       </section>

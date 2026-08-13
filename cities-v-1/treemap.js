@@ -1191,13 +1191,6 @@
       peerShowAll = !peerShowAll;
       renderPeerChart();
     });
-    const design = document.getElementById("peerDesignBtn");
-    if (design) design.addEventListener("click", () => {
-      peerDesign = (peerDesign === "bar") ? "dot" : "bar";
-      design.textContent = (peerDesign === "bar")
-        ? "Dot design option" : "Back to bar design";
-      renderPeerChart();
-    });
   }
 
   /* World benchmark vs peer benchmark: the same industries and the same RCA
@@ -1210,7 +1203,10 @@
     const seg  = document.getElementById("rcaViewSeg");
     if (!host || !seg) return;
 
+    let cur = "self";
     function show(view){
+      cur = view;
+      host.classList.toggle("is-dist", view === "dist");
       host.querySelectorAll("[data-rcaview]").forEach(el => {
         el.classList.toggle("view-off", el.dataset.rcaview !== view);
       });
@@ -1219,7 +1215,51 @@
         b.classList.toggle("is-active", on);
         b.setAttribute("aria-pressed", on ? "true" : "false");
       });
+      /* entering or leaving by any route keeps the active design marked */
+      markDesigns();
     }
+
+    /* One design list serves the whole section: bar and dot restyle the
+       charts in place (both views share the choice, one mental model),
+       while the two box plots open the all-metros view with that design
+       pinned through the query string. The active option is marked rather
+       than relabelled, so every design the section can wear stays listed. */
+    const designList = document.getElementById("rcaDesignList");
+    const distFrame  = document.getElementById("rcaDistFrame");
+    let distBack = "self", distDesign = "box";
+    function markDesigns(){
+      if (!designList) return;
+      const active = (cur === "dist") ? distDesign : rcaDesign;
+      designList.querySelectorAll(".design-opt").forEach(b =>
+        b.classList.toggle("is-on", b.dataset.design === active));
+    }
+    function openDist(design){
+      if (cur !== "dist") distBack = cur;
+      distDesign = design;
+      if (distFrame){
+        /* the classic box keeps the four peer metros on stage; the friendly
+           band stays clean */
+        const url = "rca-distributions.html?dots=" + (design === "box" ? "peers" : "none")
+                  + "&design=" + design;
+        if (distFrame.getAttribute("src") !== url) distFrame.setAttribute("src", url);
+      }
+      show("dist");
+    }
+    if (designList) designList.addEventListener("click", e => {
+      const b = e.target.closest(".design-opt");
+      if (!b) return;
+      const d = b.dataset.design;
+      if (d === "box" || d === "band"){
+        if (cur !== "dist" || distDesign !== d) openDist(d);
+      } else {
+        rcaDesign = d;
+        peerDesign = d;
+        renderRcaChart();
+        renderPeerChart();
+        if (cur === "dist") show(distBack);
+      }
+      markDesigns();
+    });
 
     /* Named from the same list the chart averages, so the tooltip cannot drift
        from the four cities actually behind the tick. */
@@ -1247,13 +1287,6 @@
     const btn = document.getElementById("rcaToggleBtn");
     if (btn) btn.addEventListener("click", () => {
       rcaShowAll = !rcaShowAll;
-      renderRcaChart();
-    });
-    const design = document.getElementById("rcaDesignBtn");
-    if (design) design.addEventListener("click", () => {
-      rcaDesign = (rcaDesign === "bar") ? "dot" : "bar";
-      design.textContent = (rcaDesign === "bar")
-        ? "Dot design option" : "Back to bar design";
       renderRcaChart();
     });
   }

@@ -632,6 +632,8 @@
     d3.select("#" + svgId).selectAll(".cell")
       .attr("fill", d => cellFill(svgId, d, split ? !!(split.get(d.data.name) || {}).grey : false));
 
+    if (svgId === "exportTreemapSvg") refreshExportOption();
+
     if (legends) {
       const show = (id, on) => {
         const el = id && document.getElementById(id);
@@ -740,9 +742,11 @@
   };
 
   let rcaShowAll = false;
-  /* "dot" (live design) or "bar" — a stakeholder-facing alternative, reachable
-     from the viz bar. Not part of the reader-facing flow. */
-  let rcaDesign = "dot";
+  /* "bar" (live design) or "dot" — the alternative, reachable from the viz bar.
+     Bars read the excess over the benchmark as a length, which is the quantity
+     the chart is actually about; the dot form encodes employment in its radius
+     as well, which the row tooltip now carries either way. */
+  let rcaDesign = "bar";
 
   /* Shared axis header for both RCA charts, so they read identically.
      "RCA = 1" sits at the head of the benchmark line and reads rightwards from
@@ -762,15 +766,17 @@
     svg.append("text").attr("class", "rca-axis-title")
       .attr("x", (x(1) + RCA_LABEL_ZONE + plotR) / 2).attr("y", baseline)
       .attr("text-anchor", "middle")
-      .text("Times more concentrated in this city than in the world");
+      .text("Times more concentrated in this metro than in the US metros");
 
     const bench = svg.append("g").attr("class", "rca-bench-hit");
     bench.append("rect")
-      .attr("x", x(1) - 6).attr("y", MT - 55)
-      .attr("width", 74).attr("height", 24);
+      .attr("x", x(1) - 6).attr("y", MT - 29)
+      .attr("width", 74).attr("height", 16);
+    /* the marker sits just above the line it names, dressed like a tick —
+       an axis annotation, not a second title */
     bench.append("text")
       .attr("class", "rca-benchmark-label" + (plainLabel ? " rca-benchmark-label--plain" : ""))
-      .attr("x", x(1) + 7).attr("y", baseline).attr("text-anchor", "start")
+      .attr("x", x(1) + 7).attr("y", MT - 17).attr("text-anchor", "start")
       .text("RCA = 1");
 
     return bench;
@@ -780,7 +786,7 @@
      a title over the three rows rather than a note against any one of them. */
   function topTag(svg, rows, x0, y, versusPeers){
     if (rows.length < 3) return;
-    let text = "Most concentrated";
+    let text = "Most concentrated tradable industries";
     if (versusPeers) {
       const ahead = rows.slice(0, 3).filter(d => d.ahead).length;
       text = ahead === 3 ? "All three beat their peers"
@@ -800,12 +806,8 @@
 
     // Employment now lives in the row tooltip, so the plot takes that width.
     const W = 880, ML = 300, MT = 76, MB = 26, RH = 34;
-    // The band carries a header strip in the same tint, so the label reads as
-    // a title on the block rather than an annotation of whichever row it
-    // happens to sit beside. Rows move down by HDR; the axis header does not.
-    const HDR = 0;   // label sits in the left margin, so no headroom needed
     const PLOT_R = 800;
-    const H = MT + HDR + rows.length * RH + MB;
+    const H = MT + rows.length * RH + MB;
 
     const svg = d3.select(el)
       .attr("viewBox", "0 0 " + W + " " + H)
@@ -823,14 +825,14 @@
       .domain([0, d3.max(all, d => d.employ)])
       .range([3.5, 13]);
 
-    const rowY = i => MT + HDR + i * RH + RH / 2;
-    const gridBottom = MT + HDR + rows.length * RH;
+    const rowY = i => MT + i * RH + RH / 2;
+    const gridBottom = MT + rows.length * RH;
 
     // Behind the gridlines and everything else, so the band tints the rows
     // without hiding any part of the chart drawn over it.
     if (rows.length >= 3) {
       svg.append("rect").attr("class", "rca-top-band")
-        .attr("x", 0).attr("y", MT + HDR).attr("width", W).attr("height", 3 * RH);
+        .attr("x", 0).attr("y", MT).attr("width", W).attr("height", 3 * RH);
     }
 
     svg.append("line").attr("class", "rca-axis")
@@ -864,16 +866,13 @@
 
     const g = svg.selectAll(".rca-row").data(rows).join("g").attr("class", "rca-row");
 
-    // The three strongest carry the story, so they get a band behind them and
-    // a note underneath. Both charts sort by RCA, so "first three" is the same
-    // three industries in each — which is what lets the peer note refer back.
+    // Both charts sort by RCA, so "first three" is the same three industries in
+    // each — which is what lets the peer label refer back to the other chart.
     g.classed("is-top", (d, i) => i < 3);
 
     g.append("rect").attr("class", "rca-hit")
-      .attr("x", 0).attr("y", (d, i) => MT + HDR + i * RH)
+      .attr("x", 0).attr("y", (d, i) => MT + i * RH)
       .attr("width", W).attr("height", RH);
-
-
 
     g.append("text").attr("class", "rca-label")
       .attr("x", ML - 16).attr("y", (d, i) => rowY(i) + 4)
@@ -956,9 +955,20 @@
         s + "</span>").join("");
     }
 
-    // The bar form drops the legend entirely — dot size means nothing there.
+    /* Only the mark-specific key swaps. The sector legend describes both forms —
+       bars are filled by sector too — and with bar as the default, dropping the
+       whole footnote would leave the chart's only colour key off the page. */
+    const isBar = (rcaDesign === "bar");
+    /* the bar form reads without a legend — sector colour is decoration the
+       row labels already carry, and the footnote returns with the dot form */
     const foot = document.getElementById("rcaFootnote");
-    if (foot) foot.hidden = (rcaDesign === "bar");
+    if (foot) foot.hidden = isBar;
+    const setKey = (id, shown) => {
+      const k = document.getElementById(id);
+      if (k) k.hidden = !shown;
+    };
+    setKey("rcaDotKey", !isBar);
+    setKey("rcaBarKey", isBar);
   }
 
   /* =====================================================================
@@ -1064,9 +1074,9 @@
   }
 
   let peerShowAll = false;
-  /* "dot" (live design) or "bar" — stakeholder-facing alternative, same as the
-     specialization chart. Not part of the reader-facing flow. */
-  let peerDesign = "dot";
+  /* Follows the specialization chart: the two are one section behind a toggle,
+     so switching views must not also switch mark type under the reader. */
+  let peerDesign = "bar";
 
   function renderPeerChart(){
     const el = document.getElementById("peerChartSvg");
@@ -1077,12 +1087,8 @@
 
     // Employment lives in the row tooltip, so the plot takes that width.
     const W = 880, ML = 300, MT = 76, MB = 26, RH = 34;
-    // The band carries a header strip in the same tint, so the label reads as
-    // a title on the block rather than an annotation of whichever row it
-    // happens to sit beside. Rows move down by HDR; the axis header does not.
-    const HDR = 0;   // label sits in the left margin, so no headroom needed
     const PLOT_R = 800;
-    const H = MT + HDR + rows.length * RH + MB;
+    const H = MT + rows.length * RH + MB;
 
     const svg = d3.select(el)
       .attr("viewBox", "0 0 " + W + " " + H)
@@ -1094,14 +1100,14 @@
     const rad = d3.scaleSqrt()
       .domain([0, d3.max(all, d => d.employ)]).range([3.5, 13]);
 
-    const rowY = i => MT + HDR + i * RH + RH / 2;
-    const gridBottom = MT + HDR + rows.length * RH;
+    const rowY = i => MT + i * RH + RH / 2;
+    const gridBottom = MT + rows.length * RH;
 
     // Behind the gridlines and everything else, so the band tints the rows
     // without hiding any part of the chart drawn over it.
     if (rows.length >= 3) {
       svg.append("rect").attr("class", "rca-top-band")
-        .attr("x", 0).attr("y", MT + HDR).attr("width", W).attr("height", 3 * RH);
+        .attr("x", 0).attr("y", MT).attr("width", W).attr("height", 3 * RH);
     }
 
     svg.append("line").attr("class", "rca-axis")
@@ -1119,16 +1125,13 @@
 
     const g = svg.selectAll(".rca-row").data(rows).join("g").attr("class", "rca-row");
 
-    // The three strongest carry the story, so they get a band behind them and
-    // a note underneath. Both charts sort by RCA, so "first three" is the same
-    // three industries in each — which is what lets the peer note refer back.
+    // Both charts sort by RCA, so "first three" is the same three industries in
+    // each — which is what lets the peer label refer back to the other chart.
     g.classed("is-top", (d, i) => i < 3);
 
     g.append("rect").attr("class", "rca-hit")
-      .attr("x", 0).attr("y", (d, i) => MT + HDR + i * RH)
+      .attr("x", 0).attr("y", (d, i) => MT + i * RH)
       .attr("width", W).attr("height", RH);
-
-
 
     g.append("text").attr("class", "rca-label")
       .attr("x", ML - 16).attr("y", (d, i) => rowY(i) + 4)
@@ -1186,7 +1189,7 @@
     const rowTip = document.getElementById("peerRowTip");
     const wrap = el.parentElement;
     if (rowTip && wrap) {
-      const yearSel = document.querySelector("#peerSection .ctl select");
+      const yearSel = document.querySelector("#specializationSection .ctl select");
       g.on("mouseenter", function(ev, d){
         const year = yearSel ? yearSel.value : "";
         // A gap between two multipliers is a difference in points, not itself
@@ -1253,13 +1256,94 @@
       peerShowAll = !peerShowAll;
       renderPeerChart();
     });
-    const design = document.getElementById("peerDesignBtn");
-    if (design) design.addEventListener("click", () => {
-      peerDesign = (peerDesign === "dot") ? "bar" : "dot";
-      design.textContent = (peerDesign === "dot")
-        ? "Bar design option" : "Back to dot design";
-      renderPeerChart();
+  }
+
+  /* World benchmark vs peer benchmark: the same industries and the same RCA
+     formula, so this is one section with two views rather than two sections.
+     Both charts stay rendered and only their visibility changes — switching
+     costs nothing, and each view keeps its own "show all" and design state
+     instead of being reset every time the reader looks at the other one. */
+  function initRcaViewToggle(){
+    const host = document.getElementById("specializationSection");
+    const seg  = document.getElementById("rcaViewSeg");
+    if (!host || !seg) return;
+
+    let cur = "self";
+    function show(view){
+      cur = view;
+      host.classList.toggle("is-dist", view === "dist");
+      host.querySelectorAll("[data-rcaview]").forEach(el => {
+        el.classList.toggle("view-off", el.dataset.rcaview !== view);
+      });
+      seg.querySelectorAll(".seg-btn").forEach(b => {
+        const on = b.dataset.rcaviewGo === view;
+        b.classList.toggle("is-active", on);
+        b.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+      /* entering or leaving by any route keeps the active design marked */
+      markDesigns();
+    }
+
+    /* One design list serves the whole section: bar and dot restyle the
+       charts in place (both views share the choice, one mental model),
+       while the two box plots open the all-metros view with that design
+       pinned through the query string. The active option is marked rather
+       than relabelled, so every design the section can wear stays listed. */
+    const designList = document.getElementById("rcaDesignList");
+    const distFrame  = document.getElementById("rcaDistFrame");
+    let distBack = "self", distDesign = "box";
+    function markDesigns(){
+      if (!designList) return;
+      const active = (cur === "dist") ? distDesign : rcaDesign;
+      designList.querySelectorAll(".design-opt").forEach(b =>
+        b.classList.toggle("is-on", b.dataset.design === active));
+    }
+    function openDist(design){
+      if (cur !== "dist") distBack = cur;
+      distDesign = design;
+      if (distFrame){
+        /* the classic box keeps the four peer metros on stage; the friendly
+           band stays clean */
+        const url = "rca-distributions.html?dots=" + (design === "box" ? "peers" : "none")
+                  + "&design=" + design;
+        if (distFrame.getAttribute("src") !== url) distFrame.setAttribute("src", url);
+      }
+      show("dist");
+    }
+    if (designList) designList.addEventListener("click", e => {
+      const b = e.target.closest(".design-opt");
+      if (!b) return;
+      const d = b.dataset.design;
+      if (d === "box" || d === "band"){
+        if (cur !== "dist" || distDesign !== d) openDist(d);
+      } else {
+        rcaDesign = d;
+        peerDesign = d;
+        renderRcaChart();
+        renderPeerChart();
+        if (cur === "dist") show(distBack);
+      }
+      markDesigns();
     });
+
+    /* Named from the same list the chart averages, so the tooltip cannot drift
+       from the four cities actually behind the tick. */
+    const tip = document.getElementById("peerListTip");
+    if (tip) {
+      tip.innerHTML =
+        "<strong>" + PEERS.length + " peer cities</strong><ul>" +
+        PEERS.map(n => "<li>" + ((PEER_PROFILES[n] || {}).label || n) + "</li>").join("") +
+        "</ul><span class=\"peer-tip-note\">Metros close to " + cityName +
+        " in size, income and industry mix — close enough that the comparison " +
+        "says something other than \u201clarge city\u201d.</span>";
+    }
+
+    seg.addEventListener("click", e => {
+      const btn = e.target.closest(".seg-btn");
+      if (btn && seg.contains(btn)) show(btn.dataset.rcaviewGo);
+    });
+
+    show("self");
   }
 
   function initRcaChart(){
@@ -1268,13 +1352,6 @@
     const btn = document.getElementById("rcaToggleBtn");
     if (btn) btn.addEventListener("click", () => {
       rcaShowAll = !rcaShowAll;
-      renderRcaChart();
-    });
-    const design = document.getElementById("rcaDesignBtn");
-    if (design) design.addEventListener("click", () => {
-      rcaDesign = (rcaDesign === "dot") ? "bar" : "dot";
-      design.textContent = (rcaDesign === "dot")
-        ? "Bar design option" : "Back to dot design";
       renderRcaChart();
     });
   }
@@ -1857,13 +1934,288 @@
     }, { threshold: 0.35 }).observe(el);
   }
 
+
+  /* ---------- export treemap: transformation options 1-4 ----------
+     Stakeholder-facing, numbered on the right of the controls bar. Each
+     number transforms the export treemap (or annotates it) around whichever
+     "Color by" is active: 1 = ranked list under the map, 2 = one-axis swarm,
+     3 = metric x jobs scatter, 4 = ranked bars. The metric follows the
+     colour mode: complexity -> PCI, change -> growth, sector -> jobs.
+     Clicking the active number restores the plain map. */
+  let exportOpt = 0;
+  let exportView = "map";   /* the treemap is always the default view */
+  const EOPT_DUR = 950;
+
+  function pciNumOf(name){
+    /* numeric complexity consistent with the assigned colour bin */
+    const bin = complexityPalette.indexOf(complexityColor(name));
+    let h = 2166136261;
+    for (const c of name) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); }
+    return Math.round((bin - 2 + (h >>> 0) / 4294967296) * 100) / 100;
+  }
+
+  function exportMetric(){
+    const mode = colorMode.exportTreemapSvg;
+    if (mode === COMPLEXITY) return {
+      kind: "pci", axis: "Product complexity (PCI)",
+      listTitle: "Top 5 most complex industries",
+      corner: "big and complex",
+      val: n => pciNumOf(n),
+      fmt: v => "PCI " + v.toFixed(2), barFmt: v => v.toFixed(2)
+    };
+    if (mode === CHANGE) return {
+      kind: "chg", axis: "Change, 2014–2024",
+      listTitle: "Top 5 fastest-growing industries",
+      corner: "big and growing",
+      val: n => { const g = growthOf(n); return g === null ? 1.05 : g; },
+      /* "new" industries have no rate: they sit at the scale's edge in the
+         positional views but rank below every real grower in the lists */
+      rank: n => { const g = growthOf(n); return g === null ? -Infinity : g; },
+      isNew: n => growthOf(n) === null,
+      fmt: v => (v > 0 ? "+" : "") + Math.round(v * 100) + "%",
+      barFmt: v => (v > 0 ? "+" : "") + Math.round(v * 100) + "%"
+    };
+    return {
+      kind: "jobs", axis: "Jobs (log scale)",
+      listTitle: "Top 5 industries by jobs",
+      fmt: v => Math.round(v).toLocaleString() + " jobs",
+      barFmt: v => Math.round(v).toLocaleString(), log: true
+    };
+  }
+  const exVal  = (m, d) => m.val ? m.val(d.data.name) : d.value;
+  const exRank = (m, d) => m.rank ? m.rank(d.data.name) : exVal(m, d);
+
+  function exportAltLabel(){
+    const m = exportMetric();
+    if (exportOpt === 2) return m.kind === "pci" ? "Ordered by complexity"
+                       : m.kind === "chg" ? "Ordered by change" : "Ordered by jobs";
+    if (exportOpt === 3) return m.kind === "pci" ? "Complexity vs. jobs"
+                       : m.kind === "chg" ? "Change vs. jobs" : "Jobs by sector";
+    if (exportOpt === 4) return m.kind === "pci" ? "Most complex, ranked"
+                       : m.kind === "chg" ? "Fastest growing, ranked" : "Biggest, ranked";
+    return "";
+  }
+
+  function updateExportViewSeg(){
+    const wrap = document.getElementById("exportViewWrap");
+    if (!wrap) return;
+    const show = exportOpt >= 2;
+    wrap.hidden = !show;
+    if (!show) return;
+    wrap.querySelector('[data-view="alt"]').textContent = exportAltLabel();
+    wrap.querySelectorAll(".seg-btn").forEach(b => {
+      const on = (b.dataset.view === "alt") === (exportView === "alt");
+      b.classList.toggle("is-active", on);
+      b.setAttribute("aria-pressed", String(on));
+    });
+  }
+
+  function applyExportOption(animate){
+    const svgEl = document.getElementById("exportTreemapSvg");
+    const listWrap = document.getElementById("exportTopList");
+    if (!svgEl || !listWrap) return;
+    const svg = d3.select(svgEl);
+    const cells = svg.selectAll("g.industry");
+    if (cells.empty()) return;
+    const m = exportMetric();
+    const dur = animate ? EOPT_DUR : 0;
+    const leaves = cells.data();
+    const W2 = WIDTH, H2 = HEIGHT;
+
+    svg.selectAll(".opt-overlay").interrupt().transition().duration(200).attr("opacity", 0).remove();
+    listWrap.hidden = true; listWrap.textContent = "";
+    cells.style("opacity", 1);
+
+    const restoreMap = () => {
+      svg.selectAll(".sector-layer").interrupt().transition().duration(dur * .6).style("opacity", 1);
+      cells.select("rect").interrupt().transition().duration(dur).ease(d3.easeCubicInOut)
+        .attr("x", d => d.x0).attr("y", d => d.y0)
+        .attr("width", d => d.x1 - d.x0).attr("height", d => d.y1 - d.y0)
+        .attr("rx", 0).attr("opacity", 1)
+        .attr("stroke", null).attr("stroke-width", null);
+      cells.select("text").interrupt().transition()
+        .delay(dur ? dur - 150 : 0).duration(300).attr("opacity", 1);
+    };
+
+    if (exportOpt === 0){ restoreMap(); return; }
+
+    if (exportOpt === 1){
+      restoreMap();
+      const top = [...leaves].sort((a, b) => exRank(m, b) - exRank(m, a)).slice(0, 5);
+      const title = document.createElement("div");
+      title.className = "toplist-title";
+      title.textContent = m.listTitle + " (hover to see them on the treemap)";
+      listWrap.appendChild(title);
+      top.forEach((d, i) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        const valTxt = m.isNew && m.isNew(d.data.name) ? "new since 2014" : m.fmt(exVal(m, d));
+        b.innerHTML = '<span class="rk">' + (i + 1) + '</span><span>' + d.data.name +
+                      '</span><span class="pci">' + valTxt + '</span>';
+        b.addEventListener("mouseenter", () => {
+          cells.style("opacity", c => c === d ? 1 : .18)
+            .select("rect").attr("stroke", c => c === d ? "#1a2226" : null)
+            .attr("stroke-width", c => c === d ? 2.5 : null);
+          svg.selectAll(".sector-layer").style("opacity", .18);
+        });
+        b.addEventListener("mouseleave", () => {
+          cells.style("opacity", 1).select("rect").attr("stroke", null).attr("stroke-width", null);
+          svg.selectAll(".sector-layer").style("opacity", 1);
+        });
+        listWrap.appendChild(b);
+      });
+      listWrap.hidden = false;
+      return;
+    }
+
+    /* options 2-4 rest on the treemap until the reader flips their toggle */
+    if (exportView !== "alt"){ restoreMap(); return; }
+
+    /* the morphs: sector blocks and cell labels step aside */
+    svg.selectAll(".sector-layer").interrupt().transition().duration(300).style("opacity", 0);
+    cells.select("text").interrupt().transition().duration(250).attr("opacity", 0);
+    const ov = svg.append("g").attr("class", "opt-ax opt-overlay").attr("opacity", 0);
+    const moveRect = (sel, fx, fy, fw, fh, frx) => sel.select("rect").interrupt()
+      .transition().duration(dur).ease(d3.easeCubicInOut)
+      .attr("x", fx).attr("y", fy).attr("width", fw).attr("height", fh)
+      .attr("rx", frx).attr("opacity", 1).attr("stroke", null).attr("stroke-width", null);
+
+    if (exportOpt === 2){
+      const vals = leaves.map(d => exVal(m, d));
+      const x = m.log
+        ? d3.scaleLog([Math.max(1, d3.min(vals)), d3.max(vals)], [46, W2 - 26])
+        : d3.scaleLinear([d3.min(vals), d3.max(vals)], [46, W2 - 26]);
+      const r = d3.scaleSqrt([0, d3.max(leaves, d => d.value)], [2, 34]);
+      const nodes = leaves.map(d => ({d, x: x(exVal(m, d)), y: H2 * .46, r: r(d.value)}));
+      const sim = d3.forceSimulation(nodes)
+        .force("x", d3.forceX(n => x(exVal(m, n.d))).strength(1))
+        .force("y", d3.forceY(H2 * .46).strength(.08))
+        .force("c", d3.forceCollide(n => n.r + .6)).stop();
+      for (let i = 0; i < 200; i++) sim.tick();
+      const pos = new Map(nodes.map(n => [n.d, n]));
+      moveRect(cells,
+        d => pos.get(d).x - pos.get(d).r, d => pos.get(d).y - pos.get(d).r,
+        d => pos.get(d).r * 2, d => pos.get(d).r * 2, d => pos.get(d).r);
+      ov.append("line").attr("x1", 26).attr("x2", W2 - 16).attr("y1", H2 - 46).attr("y2", H2 - 46);
+      ov.append("text").attr("class", "axname").attr("x", W2 / 2).attr("y", H2 - 24)
+        .attr("text-anchor", "middle").text(m.axis + " →");
+      const lead = [...leaves].sort((a, b) => exRank(m, b) - exRank(m, a))[0];
+      const lp = pos.get(lead), t = lead.data.name;
+      const est = t.length * 6.4;
+      const lx = Math.max(est / 2 + 8, Math.min(lp.x, W2 - 10 - est / 2));
+      ov.append("text").attr("class", "opt-dotlab").attr("x", lx).attr("y", lp.y - lp.r - 7)
+        .attr("text-anchor", "middle").text(t);
+      ov.transition().delay(Math.max(0, dur - 200)).duration(400).attr("opacity", 1);
+      return;
+    }
+
+    if (exportOpt === 3){
+      const R = 8;
+      const jobs = leaves.map(d => d.value);
+      if (m.kind === "jobs"){
+        /* sector strip plot: a row per sector, jobs along x */
+        const sectors = [...new Set(leaves.map(d => d.parent.data.name))];
+        const band = d3.scalePoint().domain(sectors).range([34, H2 - 72]).padding(.5);
+        const x = d3.scaleLog([Math.max(1, d3.min(jobs)), d3.max(jobs)], [120, W2 - 26]);
+        const jit = d => { let h = 0; for (const c of d.data.name) h = (h * 31 + c.charCodeAt(0)) | 0;
+                           return ((h >>> 0) % 21) - 10; };
+        moveRect(cells,
+          d => x(Math.max(1, d.value)) - R, d => band(d.parent.data.name) + jit(d) - R,
+          R * 2, R * 2, R);
+        sectors.forEach(s => {
+          ov.append("text").attr("x", 4).attr("y", band(s) + 4).attr("font-size", 10)
+            .text(s.length > 16 ? s.slice(0, 15) + "…" : s);
+        });
+        ov.append("line").attr("x1", 110).attr("x2", W2 - 16).attr("y1", H2 - 48).attr("y2", H2 - 48);
+        ov.append("text").attr("class", "axname").attr("x", (W2 + 100) / 2).attr("y", H2 - 26)
+          .attr("text-anchor", "middle").text("Jobs (log) →");
+      } else {
+        const vals = leaves.map(d => exVal(m, d));
+        const x = d3.scaleLinear([d3.min(vals), d3.max(vals)], [56, W2 - 26]);
+        const y = d3.scaleLog([Math.max(1, d3.min(jobs)), d3.max(jobs)], [H2 - 62, 22]);
+        moveRect(cells,
+          d => x(exVal(m, d)) - R, d => y(Math.max(1, d.value)) - R, R * 2, R * 2, R);
+        ov.append("line").attr("x1", 46).attr("x2", W2 - 16).attr("y1", H2 - 48).attr("y2", H2 - 48);
+        ov.append("line").attr("x1", 46).attr("x2", 46).attr("y1", 14).attr("y2", H2 - 48);
+        ov.append("text").attr("x", 50).attr("y", H2 - 28).text("← " + m.axis + " →");
+        ov.append("text").attr("class", "axname").attr("x", 14).attr("y", 26)
+          .attr("transform", "rotate(-90 14 26)").attr("text-anchor", "end").text("jobs (log)");
+        const medX = d3.median(vals), medY = d3.median(jobs);
+        ov.append("line").attr("class", "opt-quad")
+          .attr("x1", x(medX)).attr("x2", x(medX)).attr("y1", 14).attr("y2", H2 - 48);
+        ov.append("line").attr("class", "opt-quad")
+          .attr("x1", 46).attr("x2", W2 - 16).attr("y1", y(medY)).attr("y2", y(medY));
+        ov.append("text").attr("class", "opt-quadlab").attr("x", W2 - 20).attr("y", 30)
+          .attr("text-anchor", "end").text(m.corner + " → the corner that matters");
+      }
+      ov.transition().delay(Math.max(0, dur - 200)).duration(400).attr("opacity", 1);
+      return;
+    }
+
+    if (exportOpt === 4){
+      const top = [...leaves].sort((a, b) => exRank(m, b) - exRank(m, a)).slice(0, 12);
+      const rows = new Map(top.map((d, i) => [d, i]));
+      const GUT = 330, rowH = (H2 - 66) / 12, barH = Math.min(26, rowH - 8);
+      const xw = d3.scaleLinear([0, exVal(m, top[0])], [GUT, W2 - 96]);
+      const rowY = i => 16 + i * rowH;
+      cells.filter(d => !rows.has(d)).select("rect").interrupt()
+        .transition().duration(dur * .8)
+        .attr("x", d => (d.x0 + d.x1) / 2).attr("y", d => (d.y0 + d.y1) / 2)
+        .attr("width", 0).attr("height", 0).attr("opacity", 0);
+      moveRect(cells.filter(d => rows.has(d)),
+        GUT, d => rowY(rows.get(d)), d => Math.max(2, xw(exVal(m, d)) - GUT), barH, 2);
+      top.forEach((d, i) => {
+        const n = d.data.name;
+        ov.append("text").attr("class", "opt-bar-name").attr("x", GUT - 8)
+          .attr("y", rowY(i) + barH / 2 + 4).attr("text-anchor", "end")
+          .text(n.length > 52 ? n.slice(0, 51) + "…" : n);
+        const valTxt = m.isNew && m.isNew(d.data.name) ? "new" : m.barFmt(exVal(m, d));
+        ov.append("text").attr("class", "opt-bar-val")
+          .attr("x", xw(exVal(m, d)) + 6).attr("y", rowY(i) + barH / 2 + 4).text(valTxt);
+      });
+      ov.append("text").attr("class", "axname").attr("x", GUT).attr("y", H2 - 14)
+        .text("bar length = " + m.axis.toLowerCase());
+      ov.transition().delay(Math.max(0, dur - 200)).duration(400).attr("opacity", 1);
+      return;
+    }
+  }
+
+  function refreshExportOption(){
+    if (!exportOpt) return;
+    updateExportViewSeg();
+    applyExportOption(true);
+  }
+
+  function initExportOptions(){
+    const btns = document.querySelectorAll("#exportOptList .design-opt");
+    if (!btns.length) return;
+    btns.forEach(b => b.addEventListener("click", () => {
+      const n = +b.dataset.opt;
+      exportOpt = (exportOpt === n) ? 0 : n;
+      exportView = "map";                       /* every option opens on the treemap */
+      btns.forEach(x => x.classList.toggle("is-on", +x.dataset.opt === exportOpt));
+      updateExportViewSeg();
+      applyExportOption(true);
+    }));
+    const wrap = document.getElementById("exportViewWrap");
+    if (wrap) wrap.addEventListener("click", e => {
+      const b = e.target.closest(".seg-btn");
+      if (!b || b.dataset.view === exportView) return;
+      exportView = b.dataset.view;
+      updateExportViewSeg();
+      applyExportOption(true);
+    });
+  }
+
   function init(){
     if (typeof d3 === "undefined") return;
     renderStaticTreemap();
     initTradableAnimation();
     initColorBySegments();
+    initExportOptions();
     initRcaChart();
     initPeerChart();
+    initRcaViewToggle();
     initPeerCityChips();
     renderMetroScatter();
     renderCityInMetro();
