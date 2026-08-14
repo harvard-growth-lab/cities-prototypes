@@ -69,6 +69,38 @@ export const modeVariant = (m: TreeMode): TreeVariant =>
   m === "paper" ? "full" : "alt";
 export const modeThemes = (m: TreeMode): boolean => m === "themes";
 
+/** The section's USER-FLOW choice — a different axis from the tree structure
+ *  above. Each flow is a different proposal for how the pizza-chart → tree
+ *  sequence is TOLD: "compact" is the shipped five-step walk (your metro and
+ *  place land on the chart, their quadrant picks the fork); "guided" borrows
+ *  the cities-explainer prototype's narrative moves (dials, benchmark,
+ *  together/apart, tree-as-questions, an instrument per fork) but keeps them
+ *  concise by making the SELECTED CITY the one example that walks the tree —
+ *  the reference toured the entire dataset; this page diagnoses one city. */
+export type ConstraintFlow = "compact" | "guided";
+
+export const CONSTRAINT_FLOWS: {
+  id: ConstraintFlow;
+  label: string;
+  hint: string;
+  about: string;
+}[] = [
+  {
+    id: "compact",
+    label: "Compact",
+    hint: "The pizza and tree in five quick steps",
+    about:
+      "The shipped flow: your metro and place land on the chart, and their quadrant picks the tree fork",
+  },
+  {
+    id: "guided",
+    label: "Guided walk",
+    hint: "Two dials, three questions — your city walks the tree",
+    about:
+      "The explainer flow: the chart builds dial by dial and your city answers each fork with its own numbers, one instrument per question",
+  },
+];
+
 export interface TreeNodeData {
   id: string;
   parent?: string;

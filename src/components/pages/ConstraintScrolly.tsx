@@ -13,12 +13,14 @@ import {
   diagnose,
   suggestedPath,
   treeNodes,
+  type ConstraintFlow,
   type QuadrantDef,
   type TreeNodeData,
   type TreeMode,
   type TreeSide,
   type TreeVariant,
 } from "../../data/figures";
+import { FlowSwitch } from "./ConstraintNarrative";
 import { branchSectionName } from "../../data/content";
 import {
   METROS,
@@ -386,6 +388,8 @@ export function ConstraintScrolly({
   showThemes,
   mode,
   onModeChange,
+  flow,
+  onFlowChange,
 }: {
   cityShort: string;
   /** the city's country — the forks compare against its median metro */
@@ -402,6 +406,9 @@ export function ConstraintScrolly({
   /** the section's top-level structure choice, which the two above derive from */
   mode: TreeMode;
   onModeChange: (m: TreeMode) => void;
+  /** which telling of the section the user is on — this one, or the guided walk */
+  flow: ConstraintFlow;
+  onFlowChange: (f: ConstraintFlow) => void;
 }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const onPhaseRef = useRef(onPhaseInView);
@@ -2341,6 +2348,10 @@ export function ConstraintScrolly({
                 How we diagnose the constraint
               </h2>
             </div>
+            {/* The section's user-flow choice: this telling, or the guided
+                walkthrough (ConstraintNarrative). Always visible — it
+                swaps the whole sequence, so it can't hide with a phase. */}
+            <FlowSwitch flow={flow} onFlowChange={onFlowChange} />
             {/* The section's top-level choice, deliberately NOT among the
                 style pills opposite: each mode is a different proposal for
                 how the diagnostic is structured, and the themed one may end

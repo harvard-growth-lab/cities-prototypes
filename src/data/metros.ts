@@ -467,7 +467,15 @@ export const METRO_HOUSING: Record<string, HousingDatum> = {
  *  without the other is the specific mistake this comment exists to prevent:
  *  San Jose's place ZHVI is 10.62 on the pinned window (clears 8.83 by
  *  1.8pp, comfortably Housing) but 8.07 on 2017 → 2023 — which, tested
- *  against the 2022-window 8.83, would wrongly read as Amenities. */
+ *  against the 2022-window 8.83, would wrongly read as Amenities.
+ *
+ *  The threshold is also PAIRED to the universe. The cities-explainer
+ *  reference site uses the same METHOD for its supply fork — each city's
+ *  home growth vs the MEDIAN across US METROS, same 2017 → 2022 window,
+ *  never a mean and never computed from the city field — but its metro list
+ *  is broader (700 metros incl. ones this file's METROS excludes for missing
+ *  wage data), so its median lands at 9.18. Neither number is wrong; each is
+ *  the median of its own universe, and this one pairs with THIS file's data. */
 export const METRO_MEDIAN_ZHVI = 8.83;
 
 export const placeHousing = (city: string): HousingDatum | null =>

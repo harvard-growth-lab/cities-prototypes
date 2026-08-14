@@ -1,6 +1,11 @@
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { PAGE_IDS, cityCountryName, cityShortName } from "../data/content";
-import type { TreeMode, TreeVariant } from "../data/figures";
+import {
+  convertPath,
+  type ConstraintFlow,
+  type TreeMode,
+  type TreeVariant,
+} from "../data/figures";
 import { Toolbar } from "./Toolbar";
 import { Rail } from "./Rail";
 import { ExplainersView } from "./ExplainersView";
@@ -9,6 +14,7 @@ import { OverviewSection } from "./pages/OverviewSection";
 import { ExportBasketPage, ExportComplexityPage } from "./pages/ExportPages";
 import { PracticePage } from "./pages/PracticePage";
 import { ConstraintScrolly } from "./pages/ConstraintScrolly";
+import { ConstraintNarrative } from "./pages/ConstraintNarrative";
 import { BranchAnalysisPage } from "./pages/BranchAnalysisPage";
 
 interface ToolViewProps {
@@ -65,6 +71,19 @@ export function ToolView({
   const cityShort = cityShortName(city);
   const country = cityCountryName(city);
   const branchSide = branchPath[0] === "demand" ? ("demand" as const) : ("supply" as const);
+
+  /* which telling of the City Constraints section is mounted. Local to the
+     view — nothing outside the section reads it. The two flows' scroll
+     tracks differ in height, so the swap re-anchors the section in view. */
+  const [constraintFlow, setConstraintFlow] = useState<ConstraintFlow>("compact");
+  const changeConstraintFlow = useCallback((f: ConstraintFlow) => {
+    setConstraintFlow(f);
+    requestAnimationFrame(() =>
+      document
+        .getElementById("page-constraints")
+        ?.scrollIntoView({ behavior: "auto", block: "start" }),
+    );
+  }, []);
 
   /* scroll spy: tracks the page in view for the rail + journey, and toggles
      .inview on sections so their entrance animations re-trigger */
@@ -137,23 +156,49 @@ export function ToolView({
           <ExportComplexityPage />
           <PracticePage onSave={onSavePractice} />
 
-          <ConstraintScrolly
-            cityShort={cityShort}
-            country={country}
-            selectedPath={branchPath}
-            onSelectPath={onSelectBranch}
-            onPhaseInView={onPageInView}
-            variant={treeVariant}
-            showThemes={showThemes}
-            mode={treeMode}
-            onModeChange={onTreeModeChange}
-          />
+          {constraintFlow === "compact" ? (
+            <ConstraintScrolly
+              cityShort={cityShort}
+              country={country}
+              selectedPath={branchPath}
+              onSelectPath={onSelectBranch}
+              onPhaseInView={onPageInView}
+              variant={treeVariant}
+              showThemes={showThemes}
+              mode={treeMode}
+              onModeChange={onTreeModeChange}
+              flow={constraintFlow}
+              onFlowChange={changeConstraintFlow}
+            />
+          ) : (
+            <ConstraintNarrative
+              cityShort={cityShort}
+              country={country}
+              selectedPath={branchPath}
+              onSelectPath={onSelectBranch}
+              onPhaseInView={onPageInView}
+              variant={treeVariant}
+              flow={constraintFlow}
+              onFlowChange={changeConstraintFlow}
+            />
+          )}
 
+          {/* the guided walk always tells the ALT structure, so while it is
+              active the analysis schematic mirrors that four-leaf tree; picks
+              made on it convert back into the app-wide structure */}
           <BranchAnalysisPage
             cityShort={cityShort}
-            branchPath={branchPath}
-            onSelectBranch={onSelectBranch}
-            variant={treeVariant}
+            branchPath={
+              constraintFlow === "guided"
+                ? convertPath(branchPath, "alt")
+                : branchPath
+            }
+            onSelectBranch={
+              constraintFlow === "guided"
+                ? (p) => onSelectBranch(convertPath(p, treeVariant))
+                : onSelectBranch
+            }
+            variant={constraintFlow === "guided" ? "alt" : treeVariant}
             showThemes={showThemes}
           />
 
