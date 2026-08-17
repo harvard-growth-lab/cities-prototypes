@@ -1,0 +1,332 @@
+/* ————————————————————————————————————————————————————————————————
+   The Diagnostic Tree — r2d3-style scroll explainer. Light GL paper.
+   Ported from the cities-explainer prototype; every selector is scoped
+   under .tree-page, and the source project's theme tokens are declared
+   here on the scope root (this app's own :root palette is different).
+   ———————————————————————————————————————————————————————————————— */
+
+.tree-page {
+  --ink:   #1a1714;   /* headings, strong emphasis */
+  --ink-2: #2c2823;   /* body copy, axis text */
+  --ink-3: #4f4a42;   /* captions, eyebrows, secondary copy */
+  --ink-4: #9a9389;   /* deep-background markers (charts) */
+  --accent:      #1a5a8e;
+  --accent-deep: #003e6b;
+  --accent-tint: #e1f0fa;
+  --paper: #ffffff;
+  --rule:  #dddddd;   /* hairline borders between content blocks */
+  --font-serif: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  --font-sans:  'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+                Roboto, sans-serif;
+}
+
+/* NOTE: no overflow-x:hidden here — it would make .tree-page a scroll
+   container and silently kill every position:sticky stage inside. */
+.tree-page {
+  background: var(--paper);
+  color: var(--ink-2);
+  font-family: var(--font-sans);
+}
+
+/* ————— hero ————— */
+
+.tree-hero {
+  min-height: 88vh;
+  max-width: 800px;
+  margin: 0 auto;
+  /* bottom-heavy padding floats the centered block a bit ABOVE true
+     center (user-set: title sat too low) */
+  padding: 9vh 1.5rem 18vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+}
+.tree-hero .tree-sub {
+  margin: 1.1rem auto 0;
+  font-size: 1.02rem;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+/* the abstract fork glyph over the title (the hero is title-only, user-set;
+   the glyph keeps it from feeling empty) */
+.tree-hero .tree-hero-glyph {
+  width: min(280px, 62vw);
+  margin: 0 auto 2rem;
+  display: block;
+  opacity: 0.92;
+}
+.tree-hero .tree-eyebrow,
+.tree-page .ta-eyebrow,
+.tree-chapter .kicker {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.tree-hero h1 {
+  font-family: var(--font-serif);
+  font-size: clamp(2.5rem, 6.5vw, 4.1rem);
+  line-height: 1.08;
+  color: var(--ink);
+  margin: 0.7rem 0 1.1rem;
+}
+.tree-hero .lede {
+  font-size: clamp(1.05rem, 1.7vw, 1.22rem);
+  line-height: 1.65;
+  color: var(--ink-2);
+  margin: 0 auto;
+  max-width: 620px;
+}
+.tree-hero .tree-credit {
+  margin-top: 1.6rem;
+  font-size: 0.88rem;
+  color: var(--ink-3);
+}
+.tree-hero .tree-credit em {
+  font-family: var(--font-serif);
+}
+.tree-hero .tree-cue {
+  margin-top: 3.2rem;
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-4);
+  animation: tree-bob 2.2s ease-in-out infinite;
+}
+@keyframes tree-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(6px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tree-hero .tree-cue { animation: none; }
+}
+
+/* ————— chapter dividers ————— */
+
+.tree-chapter {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 8rem 1.5rem 1rem;
+}
+.tree-chapter h2 {
+  font-family: var(--font-serif);
+  font-size: clamp(1.9rem, 3.8vw, 2.7rem);
+  line-height: 1.15;
+  color: var(--ink);
+  margin: 0.55rem 0 0.8rem;
+}
+.tree-chapter p {
+  font-size: 1.06rem;
+  line-height: 1.65;
+  color: var(--ink-3);
+  margin: 0;
+}
+
+/* ————— the scrolly act: steps left, sticky stage right ————— */
+
+.tree-act {
+  display: grid;
+  grid-template-columns: minmax(300px, 400px) minmax(0, 1fr);
+  gap: 3rem;
+  max-width: 1260px;
+  margin: 0 auto;
+  padding: 0 2.2rem;
+  align-items: stretch;
+}
+.tree-act .ta-steps {
+  grid-column: 1;
+  grid-row: 1;
+  padding: 10vh 0 30vh;
+}
+.tree-act .ta-stage-wrap {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+}
+/* stage height accounts for the 72px toolbar above the explainers view */
+.tree-act .ta-stage {
+  position: sticky;
+  top: 0;
+  height: calc(100vh - 72px);
+  height: calc(100dvh - 72px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+.tree-act .ta-stage-card {
+  width: 100%;
+  max-width: 740px;
+}
+.tree-act .ta-stage-card svg {
+  width: 100%;
+  height: auto;
+  max-height: 78vh;
+  display: block;
+}
+
+.tree-act .ta-step {
+  min-height: 82vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  opacity: 0.32;
+  transition: opacity 0.35s ease;
+}
+.tree-act .ta-step.active {
+  opacity: 1;
+}
+.tree-act .ta-step h3 {
+  font-family: var(--font-serif);
+  font-size: 1.45rem;
+  line-height: 1.25;
+  color: var(--ink);
+  margin: 0.45rem 0 0.65rem;
+}
+.tree-act .ta-step p {
+  font-size: 1.01rem;
+  line-height: 1.64;
+  margin: 0 0 0.85rem;
+  color: var(--ink-2);
+}
+.tree-act .ta-step p:last-child {
+  margin-bottom: 0;
+}
+.tree-act .ta-step strong {
+  color: var(--ink);
+}
+
+/* branch markers (user-set): cards narrating one branch of the tree carry
+   a "The Demand/Supply Branch" tag and a side bar in the branch's color,
+   so the hand-off between branches reads distinctly in the column */
+.tree-act .ta-step-inner.ta-branch-demand {
+  border-left: 3px solid #3d7ab8;
+  padding-left: 18px;
+}
+.tree-act .ta-step-inner.ta-branch-supply {
+  border-left: 3px solid #c98500;
+  padding-left: 18px;
+}
+.tree-act .ta-branch-tag {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  margin-bottom: 0.55rem;
+}
+.tree-act .ta-branch-demand .ta-branch-tag {
+  color: #3d7ab8;
+}
+.tree-act .ta-branch-supply .ta-branch-tag {
+  color: #c98500;
+}
+
+/* ————— side charts riding in the narrative column ————— */
+
+.tree-page .mini-viz {
+  margin-top: 1rem;
+  background: #fff;
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  padding: 0.45rem 0.45rem 0.25rem;
+}
+.tree-page .mini-viz svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* ————— stage HUD pills (market/plane acts) ————— */
+
+.tree-page .stage-hud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 0.9rem;
+  min-height: 2.1rem;
+}
+.tree-page .hud-pill {
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  padding: 0.28rem 0.85rem;
+  font-size: 0.86rem;
+  color: var(--ink-3);
+  background: var(--paper);
+  white-space: nowrap;
+}
+.tree-page .hud-pill .up { color: #199e70; font-weight: 700; }
+.tree-page .hud-pill .dn { color: #cc4948; font-weight: 700; }
+.tree-page .hud-pill .fl { color: var(--ink-4); font-weight: 700; }
+.tree-page .hud-verdict {
+  border-radius: 999px;
+  padding: 0.28rem 0.95rem;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--accent-deep);
+  background: var(--accent-tint);
+  white-space: nowrap;
+}
+
+/* (the NARRATIVE outro footer was removed — user, Aug 2026; the page ends on
+   the scrolly's recap beat. The block below is not it: a fine-print DATA note
+   on how the field was filtered, user-requested the same month.) */
+
+.tree-datanote {
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 3.5rem 1.5rem 5.5rem;
+  font-size: 0.8rem;
+  line-height: 1.65;
+  color: var(--ink-3);
+  text-align: center;
+}
+.tree-datanote strong {
+  font-weight: 600;
+  color: var(--ink-2);
+}
+
+/* ————— narrow screens: stage pins on top, cards scroll under it ————— */
+
+@media (max-width: 900px) {
+  .tree-act {
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding: 0 1.1rem;
+  }
+  .tree-act .ta-stage-wrap,
+  .tree-act .ta-steps {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .tree-act .ta-stage {
+    height: 48vh;
+    height: 48dvh;
+    z-index: 2;
+    background: var(--paper);
+    border-bottom: 1px solid var(--rule);
+    align-items: center;
+    padding: 0.4rem 0;
+  }
+  .tree-act .ta-stage-card svg {
+    max-height: 40vh;
+  }
+  .tree-page .stage-hud {
+    margin-top: 0.4rem;
+  }
+  .tree-act .ta-steps {
+    position: relative;
+    z-index: 1;
+    padding: 54vh 0 22vh;
+  }
+  .tree-act .ta-step {
+    min-height: 64vh;
+    justify-content: flex-start;
+    padding-top: 4vh;
+  }
+  .tree-chapter {
+    padding-top: 5rem;
+  }
+}

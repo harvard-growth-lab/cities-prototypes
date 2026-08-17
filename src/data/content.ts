@@ -53,8 +53,6 @@ export const PAGE_IDS = [
 export interface RailStep {
   id: string;
   label: string;
-  /** label follows the branch picked on the diagnostic tree */
-  branchNamed?: boolean;
 }
 
 export interface SectionDef {
@@ -63,6 +61,9 @@ export interface SectionDef {
   entry: string;
   /** section 1 shows a star instead of a number in the rail */
   star?: boolean;
+  /** listed but inert: the empty shell sections stay visible in the nav so
+   *  the tool reads whole, but only the prototype section is clickable */
+  disabled?: boolean;
   steps?: RailStep[];
 }
 
@@ -73,12 +74,14 @@ export const branchSectionName = (side: "demand" | "supply") =>
 export const SECTION_DEFS: SectionDef[] = [
   {
     name: "Introduction to your City",
+    disabled: true,
     pages: ["page-intro-q1", "page-intro-q2"],
     entry: "page-intro-q1",
     star: true,
   },
   {
     name: "City Overview",
+    disabled: true,
     pages: ["page-overview", "page-overview-msa"],
     entry: "page-overview",
     steps: [
@@ -88,11 +91,13 @@ export const SECTION_DEFS: SectionDef[] = [
   },
   {
     name: "City Description",
+    disabled: true,
     pages: ["page-description", "page-msa"],
     entry: "page-description",
   },
   {
     name: "City Exports",
+    disabled: true,
     pages: ["page-export-basket", "page-export-complexity", "page-practice"],
     entry: "page-export-basket",
     steps: [
@@ -102,118 +107,20 @@ export const SECTION_DEFS: SectionDef[] = [
     ],
   },
   {
+    /* matches nt-prototypes' V2 rail: a bare section head, no sub-steps —
+       the pages array still names every anchor inside the section so the
+       head highlights (and the journey counts) across the whole prototype */
     name: "City Constraints",
     pages: ["page-constraints", "page-constraints-diagnose", "page-branch-analysis"],
     entry: "page-constraints",
-    steps: [
-      { id: "page-constraints", label: "Where is your constraint?" },
-      { id: "page-constraints-diagnose", label: "How we diagnose the constraint" },
-      /* default label; the Rail renames it live from the selected tree branch */
-      { id: "page-branch-analysis", label: "Supply side analysis", branchNamed: true },
-    ],
   },
   {
     name: "Levers for Change",
+    disabled: true,
     pages: ["page-levers"],
     entry: "page-levers",
   },
 ];
-
-/* ---------- intro quiz ---------- */
-
-export interface IntroQuestion {
-  /** extra anchor id on the slide, when a rail entry points at it */
-  slideId?: string;
-  /** number of filled progress segments (out of INTRO_SEGMENTS) */
-  progress: number;
-  question: string;
-  options: { text: string; correct?: boolean }[];
-  feedbackCorrect: string;
-  feedbackWrong: string;
-}
-
-export const INTRO_SEGMENTS = 5;
-
-/* Blank for now. These were written against Boston's numbers and would be
-   simply wrong under the other three sample cities; only City Constraints
-   is populated with real data at this stage. {city} is substituted live. */
-export const INTRO_QUESTIONS: IntroQuestion[] = [
-  {
-    progress: 1,
-    question: "[intro question 1 — {city}'s population against its metro's]",
-    options: [
-      { text: "[option A]" },
-      { text: "[option B]", correct: true },
-      { text: "[option C]" },
-    ],
-    feedbackCorrect: "[feedback when right — the figure and where it comes from]",
-    feedbackWrong: "[feedback when wrong — the figure and where it comes from]",
-  },
-  {
-    slideId: "page-intro-q2",
-    progress: 2,
-    question: "[intro question 2 — what {city} exports most]",
-    options: [
-      { text: "[option A]" },
-      { text: "[option B]", correct: true },
-      { text: "[option C]" },
-    ],
-    feedbackCorrect: "[feedback when right]",
-    feedbackWrong: "[feedback when wrong]",
-  },
-];
-
-/* ---------- overview indicator tables ---------- */
-
-export interface GhostSpec {
-  /** resting position of the city dot (css --gpos) */
-  pos: string;
-  good: boolean;
-  tip: string;
-}
-
-export interface SliderSpec {
-  /** where the dashed zero divider sits (css --zero) */
-  zero: string;
-  from: string;
-  to: string;
-  good: boolean;
-  /** larger knob for the highlighted data point */
-  focus?: boolean;
-  ghost?: GhostSpec;
-}
-
-export interface IndicatorRow {
-  name: string;
-  level: string;
-  slider: SliderSpec;
-  change: string;
-  changeGood: boolean;
-  rank: string;
-  /** highlighted row with an annotation caption */
-  hero?: boolean;
-  heroNote?: string;
-}
-
-/* Blank for now — the numbers here were Boston's, and under a different
-   sample city they would read as that city's. The rows keep their names and
-   the knobs sit on the zero line, so the table reads as "no data yet"
-   rather than as data. */
-const BLANK_ROWS = (): IndicatorRow[] =>
-  ["Population", "Average salary", "Home value", "Unemployment"].map(
-    (name) => ({
-      name,
-      level: "[—]",
-      slider: { zero: "50%", from: "50%", to: "50%", good: true },
-      change: "[—]",
-      changeGood: true,
-      rank: "[—]",
-    }),
-  );
-
-export const CITY_INDICATORS: IndicatorRow[] = BLANK_ROWS();
-
-export const MSA_INDICATORS: IndicatorRow[] = BLANK_ROWS();
 
 /* ---------- data chat ---------- */
 

@@ -11,6 +11,7 @@ import {
 } from "./data/content";
 import type { Insight } from "./data/content";
 import {
+  DEFAULT_TREE_MODE,
   convertPath,
   modeThemes,
   modeVariant,
@@ -79,19 +80,19 @@ export default function App() {
   const [exploredCities, setExploredCities] = useState<ReadonlySet<string>>(
     () => new Set(SAMPLE_EXPLORED_CITIES),
   );
-  const [insights, setInsights] = useState<Insight[]>(SAMPLE_INSIGHTS);
+  const [insights] = useState<Insight[]>(SAMPLE_INSIGHTS);
 
   /* which structure the diagnostic tree proposes. One mode rather than two
      coupled flags: themes only exist under the alt leaves, so the pair could
      never move freely anyway. Lives here because the branch-analysis section
      has to follow the same shape. */
-  const [treeMode, setTreeMode] = useState<TreeMode>("paper");
+  const [treeMode, setTreeMode] = useState<TreeMode>(DEFAULT_TREE_MODE);
   const treeVariant = modeVariant(treeMode);
   const showThemes = modeThemes(treeMode);
   /* the descent picked on the diagnostic tree (ids below the root); defaults
      to the data-driven read and names/feeds the branch-analysis section */
   const [branchPath, setBranchPath] = useState<string[]>(() =>
-    suggestedPath(cityShortName(DEFAULT_CITY)),
+    suggestedPath(cityShortName(DEFAULT_CITY), modeVariant(DEFAULT_TREE_MODE)),
   );
   /* switching modes carries the pick across to the nearest route in the
      target structure, so hover/selection state never dangles */
@@ -216,13 +217,6 @@ export default function App() {
     setVisitedPages((prev) => (prev.has(id) ? prev : new Set(prev).add(id)));
   }, []);
 
-  const savePractice = (text: string) => {
-    setInsights((prev) => [
-      ...prev,
-      { section: "City Exports · Put in Practice", city, span, text },
-    ]);
-  };
-
   const journeyNavigate = (entry: string) => {
     setJourneyOpen(false);
     if (landingHidden) goTo(entry);
@@ -258,7 +252,6 @@ export default function App() {
         onGoTo={goTo}
         currentPageId={currentPageId}
         onPageInView={onPageInView}
-        onSavePractice={savePractice}
         branchPath={branchPath}
         onSelectBranch={setBranchPath}
         treeMode={treeMode}

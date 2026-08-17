@@ -191,11 +191,11 @@
   stroke-dasharray: 6 5;
 }
 .jz-ms-tick {
-  font-size: 13.5px;
+  font-size: 15px;
   fill: #000;
 }
 .jz-ms-title {
-  font-size: 15px;
+  font-size: 17px;
   fill: #000;
 }
 .jz-ms-typical {
@@ -407,8 +407,8 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 6px 11px;
-  margin-top: 11px;
+  justify-content: flex-end;
+  gap: 4px 9px;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease;
@@ -417,27 +417,38 @@
   opacity: 1;
   pointer-events: auto;
 }
+/* on the header row the tabs pack right (toward the style pills, when the
+   compact flow shows them); in the reading column they keep their old seat
+   under the heading, left-aligned with breathing room */
+.jz-head > .jz-modes {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.jz-titles .jz-modes {
+  margin-top: 11px;
+  justify-content: flex-start;
+}
 .jz-modes-k {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 1.2px;
+  letter-spacing: 1px;
   text-transform: uppercase;
   color: var(--ink-soft);
 }
 .jz-seg {
   display: inline-flex;
-  padding: 3px;
+  padding: 2px;
   border-radius: 9px;
   border: 1px solid var(--border-strong);
   background: var(--paper, #f4f1ec);
   box-shadow: inset 0 1px 2px rgba(37, 88, 98, 0.05);
 }
 .jz-segbtn {
-  font-size: 13px;
+  font-size: 11.5px;
   font-weight: 600;
-  padding: 5px 14px;
+  padding: 3px 10px;
   border: none;
-  border-radius: 7px;
+  border-radius: 6px;
   background: transparent;
   color: var(--ink-soft);
   cursor: pointer;
@@ -456,10 +467,10 @@
   font-weight: 700;
   box-shadow: 0 1px 3px rgba(37, 88, 98, 0.16);
 }
+/* the hints came off the row — each pill still explains itself on hover
+   (title=about), and the row stays one compact line beside the header */
 .jz-modes-hint {
-  font-size: 12.5px;
-  font-style: italic;
-  color: var(--ink-soft);
+  display: none;
 }
 
 /* the styling-experiment toggles, top-right in the section header. Both
@@ -642,8 +653,8 @@
 
 /* ============ rail captions ============ */
 .jz-rail {
-  width: 330px;
-  flex: 0 0 330px;
+  width: 248px;
+  flex: 0 0 248px;
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -730,8 +741,8 @@
   height: 15px;
 }
 .jz-cap-body {
-  font-size: 16px;
-  line-height: 25px;
+  font-size: 13.5px;
+  line-height: 20px;
   color: #000;
 }
 .jz-cap-tests {
@@ -891,7 +902,7 @@
   transition: r 0.4s ease;
 }
 .nv-travname {
-  font-size: 13.5px;
+  font-size: 15px;
   font-weight: 700;
   fill: #1a2226;
   paint-order: stroke;
@@ -930,14 +941,14 @@
 }
 /* corner readings + dot-adjacent labels ride above the field on white halos */
 .nv-lab {
-  font-size: 13.5px;
+  font-size: 15px;
   fill: var(--ink-soft);
   paint-order: stroke;
   stroke: #fff;
   stroke-width: 4px;
 }
 .nv-tag {
-  font-size: 12px;
+  font-size: 13.5px;
   font-weight: 700;
   letter-spacing: 0.8px;
   text-transform: uppercase;
@@ -947,7 +958,7 @@
 }
 /* small-caps nameplates (chart + inset instruments + the root eyebrow) */
 .nv-captitle {
-  font-size: 11px;
+  font-size: 12.5px;
   font-weight: 700;
   letter-spacing: 1px;
   fill: #8a867e;
@@ -976,11 +987,50 @@
   opacity: 0.22;
 }
 .nv-elab {
-  font-size: 11.5px;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.75;
   paint-order: stroke;
   stroke: #fff;
   stroke-width: 4px;
+}
+/* the tree's own edge labels sit a notch below even that — on the tree they
+   are logic, not readings */
+.nv-treewrap .nv-elab {
+  font-size: 11px;
+}
+/* the hero panel (the shortened walk's instrument stops): the instrument is
+   the thing being read, so its type steps up to full reading size. CSS
+   font-size outranks the inline fontSize attributes, so the same markup
+   serves both panel sizes. */
+.nv-inset-hero .nv-captitle {
+  font-size: 15px;
+}
+.nv-inset-hero .nv-axlab {
+  font-size: 15.5px;
+}
+.nv-inset-hero .nv-elab {
+  font-size: 15.5px;
+}
+.nv-inset-hero .nv-lab {
+  font-size: 18px;
+}
+.nv-inset-hero .nv-ph {
+  font-size: 14px;
+}
+.nv-inset-hero .nv-qq {
+  font-size: 14px;
+}
+.nv-inset-hero .jz-ms-tick {
+  font-size: 15px;
+}
+
+/* inset axis titles: quiet grey, never competing with the data */
+.nv-axlab {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  fill: #8a867e;
 }
 /* node cards: white, side-coloured border + label; questions are dashed */
 .nv-card rect {
@@ -998,18 +1048,32 @@
 .nv-fade.dim {
   opacity: 0.28;
 }
+/* the fork logic reads quieter than the nodes it connects: thinner, fainter
+   dashed boxes and smaller italic text, coming back to full voice only on
+   the lit (walked) side */
 .nv-q rect {
   stroke-dasharray: 5 4;
+  stroke-width: 1;
+  stroke-opacity: 0.5;
+}
+.nv-q.lit rect,
+.nv-fade.lit .nv-q rect {
+  stroke-opacity: 0.85;
 }
 .nv-qq {
-  font-size: 13px;
+  font-size: 12px;
   font-style: italic;
   font-weight: 600;
+  opacity: 0.75;
+}
+.nv-card.lit .nv-qq,
+.nv-fade.lit .nv-qq {
+  opacity: 1;
 }
 .nv-qread {
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 700;
-  letter-spacing: 0.7px;
+  letter-spacing: 0.6px;
   text-transform: uppercase;
 }
 /* the placeholder idiom, on the stage (SVG cousin of .ph) */
@@ -1096,6 +1160,11 @@ html[data-jz-instant="1"] .nv-svg {
   display: block;
   cursor: pointer;
 }
+/* the schematic while the section is still withholding the choice: it draws
+   the route as usual, it just offers nothing to aim at */
+.ba-mini.inert {
+  cursor: default;
+}
 /* the data-driven suggestion holds a middle emphasis: side-coloured but
    translucent, sitting between the lit pick and the faded grey rest */
 .ba-link.sugg {
@@ -1170,6 +1239,16 @@ html[data-jz-instant="1"] .nv-svg {
 .ba-note {
   font-size: 13px;
   line-height: 20px;
+}
+/* the quiet fork-in-the-road at the very end of the analysis — the shortened
+   walk's only invitation to leave the diagnosed path */
+.ba-endprompt {
+  margin-top: 36px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+  max-width: 560px;
+  font-size: 14.5px;
+  line-height: 22px;
 }
 
 /* ----- the themes layer in the analysis section ----- */

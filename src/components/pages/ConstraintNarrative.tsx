@@ -59,16 +59,59 @@ const H = 640;
 
 /* the chart square, centred on the stage (same geometry as the compact flow,
    so swapping flows keeps the chart where the eye left it) */
-const CQ = { cx: W / 2, cy: 316, r: 268 };
+const CQ = { cx: W / 2, cy: 316, r: 278 };
 const cxu = (v: number) => CQ.cx + v * CQ.r;
 const cyu = (v: number) => CQ.cy - v * CQ.r;
 
-const STEPS = 9;
-/* ~40vh of scroll per step (the compact flow's rate) + the sticky stage */
-const TRACK_VH = STEPS * 40 + 100;
-/* the second rail step ("How we diagnose") lands just past the phase flip:
-   this offset / (TRACK_VH − 100) must sit a little above 4 / STEPS */
-const ANCHOR_BOTTOM_VH = 170;
+/* ---------- the step schedule ----------
+   Both guided flows are cut from the same nine BEATS, and every gate in the
+   render below is keyed on the beat rather than on the scroll stop. What a
+   flow chooses is which beats get a stop: a stop landing on a later beat
+   reveals the skipped ones with it, and the traveller covers the extra
+   stations in one move — a shorter walk loses scrolling, not animation. */
+/* The tree half's beats are named, since the schedules below are written in
+   them; the chart half's four (dial, dial, benchmark, quadrant) stay numeric
+   — no schedule touches them. */
+/** the tree opens: the chart parks into the inset, the root card arrives */
+const TREE_BEAT = 4;
+/** fork one is answered: the branch heads and the edges down to them */
+const FORK1_BEAT = 5;
+/** fork two is asked: the question cards, and the inset swaps instrument */
+const FORK2_BEAT = 6;
+/** the leaves arrive and the traveller lands on the diagnosed one */
+const LEAF_BEAT = 7;
+/** the four diagnoses — the only beat that hands the pick to the reader */
+const CHOICE_BEAT = 8;
+
+const FULL_BEATS = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+/* "short" is a different telling, not just fewer stops: the chart never runs
+   full-stage. Three stops, all of them tree beats — the whole tree up front
+   with the city's dot at the root, the pizza chart arriving beside it to
+   answer fork one, the second instrument swapping in to answer fork two and
+   land the dot. The reveals that pace the guided walk's tree are simply
+   forced on from the first stop, and the choice beat never comes: in this
+   telling the route opens at the END of the analysis section, not on the
+   tree. */
+const SHORT_BEATS = [TREE_BEAT, FORK1_BEAT, LEAF_BEAT];
+const beatsFor = (flow: ConstraintFlow) =>
+  flow === "short" ? SHORT_BEATS : FULL_BEATS;
+
+/* ~40vh of scroll per stop (the compact flow's rate) + the sticky stage */
+const STEP_VH = 40;
+const trackVh = (stops: number) => stops * STEP_VH + 100;
+
+/* the shortened walk's opening pose: the whole tree slightly enlarged and
+   centred on the stage; the next stop eases it back home to the left,
+   making room for the instrument inset. Derived from the tree's extents
+   (x 19–749, y 56–509) against the 1180×640 stage — 1.3 is the largest
+   scale that keeps the badge row on it. */
+const TREE_OPENING_POSE = "translate(91px, -47px) scale(1.3)";
+const TREE_HOME_POSE = "translate(0px, 0px) scale(1)";
+/* the shortened walk's instrument stops give the INSTRUMENT the stage: the
+   tree eases down toward context size on the left while the hero panel
+   takes the right. 0.9 is the largest scale that keeps the badge row clear
+   of the hero panel's left edge. */
+const TREE_ASIDE_POSE = "translate(6px, 30px) scale(0.9)";
 
 type Side = "demand" | "supply";
 type LeafId = "metrowide" | "placespec" | "col" | "amen";
@@ -82,10 +125,13 @@ const dotR = (s: number) => 1.3 + 10.7 * Math.sqrt(s / maxSize);
 
 /* ---------- tree geometry (no cohort stacks — one dot walks it) ---------- */
 
-const ROOT = { x: 405, y: 84, w: 348, h: 40 };
+/* the question cards are deliberately the SMALLEST boxes on the tree: the
+   fork logic is connective tissue, and the answers (heads, leaves) are what
+   the eye should land on */
+const ROOT = { x: 405, y: 84, w: 318, h: 34 };
 const HEAD = { w: 152, h: 32, y: 188 };
 const HEAD_X: Record<Side, number> = { demand: 205, supply: 605 };
-const QCARD = { w: 252, h: 52, y: 300 };
+const QCARD = { w: 208, h: 42, y: 300 };
 const LEAF = { h: 30, y: 420 };
 const LEAF_DEFS: { id: LeafId; x: number; w: number; side: Side; title: string }[] = [
   { id: "metrowide", x: 105, w: 172, side: "demand", title: "Metro-wide shock" },
@@ -97,7 +143,14 @@ const LEAF_X = Object.fromEntries(LEAF_DEFS.map((l) => [l.id, l.x])) as Record<
   LeafId,
   number
 >;
-const INSET = { x: 792, y: 30, w: 368, h: 250 };
+/* the instrument panel: sized for a pizza square big enough to read, with
+   margins for a rotated y-axis title on the left and the axis title +
+   quadrant readings stacked below */
+const INSET = { x: 772, y: 30, w: 388, h: 372 };
+/* the shortened walk's HERO version of the same panel: the right half of
+   the stage, sized around a 400-unit pizza square — the instrument is the
+   thing being read at those stops, so it gets the room */
+const INSET_HERO = { x: 730, y: 24, w: 440, h: 470 };
 
 /** elbow path: straight drop, bus across, straight drop */
 const elbow = (x0: number, y0: number, busY: number, x1: number, y1: number) =>
@@ -189,6 +242,7 @@ export function ConstraintNarrative({
   variant,
   flow,
   onFlowChange,
+  routePinned,
 }: {
   cityShort: string;
   country: string;
@@ -200,12 +254,24 @@ export function ConstraintNarrative({
   variant: TreeVariant;
   flow: ConstraintFlow;
   onFlowChange: (f: ConstraintFlow) => void;
+  /** hold the app's pick on the diagnosed route (the shortened walk, until
+   *  the analysis section below has been read to its end) */
+  routePinned: boolean;
 }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const onPhaseRef = useRef(onPhaseInView);
   onPhaseRef.current = onPhaseInView;
-  const [step, setStep] = useState(0);
+  /* the scroll STOP; `step` below is the BEAT it lands on, and everything
+     that renders reads the beat (see the schedule at the top of the file) */
+  const [stepIdx, setStepIdx] = useState(0);
   const [hoverLeaf, setHoverLeaf] = useState<LeafId | null>(null);
+  const beats = useMemo(() => beatsFor(flow), [flow]);
+  const step = beats[Math.min(stepIdx, beats.length - 1)];
+  const short = flow === "short";
+  /* the stop where the rail's second step ("How we diagnose") takes over:
+     the guided walk flips when its four chart stops end; the shortened walk
+     opens on the whole tree, so everything past that pose is diagnosis */
+  const diagStop = short ? 1 : 4;
 
   /* ---------- scroll → step (same mechanism as the compact flow) ---------- */
   useEffect(() => {
@@ -219,12 +285,12 @@ export function ConstraintNarrative({
       const r = track.getBoundingClientRect();
       const total = r.height - sH;
       const p = total > 0 ? clamp01((sTop - r.top) / total) : 0;
-      const s = Math.min(STEPS - 1, Math.floor(p * STEPS));
-      setStep(s);
+      const s = Math.min(beats.length - 1, Math.floor(p * beats.length));
+      setStepIdx(s);
       const mid = sTop + sH / 2;
       if (r.top <= mid && r.bottom >= mid)
         onPhaseRef.current(
-          s <= 3 ? "page-constraints" : "page-constraints-diagnose",
+          s < diagStop ? "page-constraints" : "page-constraints-diagnose",
         );
     };
     const onScroll = () => {
@@ -241,10 +307,10 @@ export function ConstraintNarrative({
       target.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
     };
-  }, []);
+  }, [beats, diagStop]);
 
   useEffect(() => {
-    if (step < 8) setHoverLeaf(null);
+    if (step < CHOICE_BEAT) setHoverLeaf(null);
   }, [step]);
 
   /* ---------- the city's own read (real numbers where they exist) ---------- */
@@ -271,8 +337,30 @@ export function ConstraintNarrative({
     [],
   );
 
+  /* ---------- the route, in the shortened walk ----------
+     The shortened walk reads the chart, the tree and the analysis below as
+     ONE piece, so the tree here is never a control: it shows the diagnosed
+     route and only that, and while `routePinned` holds, the section asserts
+     that route as the app's pick — a pick carried in from another flow does
+     not survive into a walk whose whole point is the diagnosis. The choice
+     of another branch belongs to the end of the analysis section, and it is
+     from there that ToolView drops the pin. (The full guided walk is
+     unchanged: no pin, and its last stop hands the leaves over.) */
+  const leafPickable = flow !== "short" && step >= CHOICE_BEAT;
+
+  const onSelectRef = useRef(onSelectPath);
+  onSelectRef.current = onSelectPath;
+  useEffect(() => {
+    if (!routePinned) return;
+    /* compared on the APP's structure, not on the alt reading of it: the
+       write lands in that space, so this settles after one pass whatever
+       the cross-structure conversion does to a path */
+    const target = convertPath(suggAlt, variant);
+    if (selectedPath.join("/") !== target.join("/")) onSelectRef.current(target);
+  }, [routePinned, selectedPath, suggAlt, variant]);
+
   const pickLeaf = (leaf: LeafId) => {
-    if (step < 8) return;
+    if (!leafPickable) return;
     const side = LEAF_DEFS.find((l) => l.id === leaf)!.side;
     onSelectPath(convertPath([side, leaf], variant));
   };
@@ -280,17 +368,25 @@ export function ConstraintNarrative({
   /* ---------- per-element emphasis ----------
      steps 5–7: the walk — the city's route full, everything else muted;
      step 8: the choice — hover/selection lights, the rest recedes */
+  /* in the shortened walk the tree is fully drawn from the start, so reveal
+     order can no longer imply progress — the lit set follows the dot instead,
+     admitting the leaf only once fork two has resolved */
   const cityPath = useMemo(
-    () => new Set<string>(["root", citySide, suggLeaf]),
-    [citySide, suggLeaf],
+    () =>
+      new Set<string>(
+        short && step < LEAF_BEAT
+          ? ["root", citySide]
+          : ["root", citySide, suggLeaf],
+      ),
+    [short, step, citySide, suggLeaf],
   );
   const keep = useMemo(
     () => new Set<string>(["root", ...suggAlt, ...selAlt]),
     [suggAlt, selAlt],
   );
   const status = (id: string): { g: string; lit: boolean } => {
-    if (step < 5) return { g: "", lit: false };
-    if (step < 8)
+    if (step < FORK1_BEAT) return { g: "", lit: false };
+    if (step < CHOICE_BEAT)
       return cityPath.has(id) ? { g: "", lit: true } : { g: " nv-mute", lit: false };
     const active = hoverLeaf
       ? new Set<string>([
@@ -303,7 +399,7 @@ export function ConstraintNarrative({
     return { g: keep.has(id) ? "" : " nv-dim", lit: false };
   };
 
-  const phase: "chart" | "tree" = step <= 3 ? "chart" : "tree";
+  const phase: "chart" | "tree" = stepIdx < diagStop ? "chart" : "tree";
   const on = (b: boolean) => "nv-fade" + (b ? " on" : "");
 
   /* ---------- the walking dot ----------
@@ -362,9 +458,9 @@ export function ConstraintNarrative({
     const g = travelerRef.current;
     if (!g) return;
     const arc =
-      step <= 3
+      step < TREE_BEAT
         ? null
-        : walk.stations[Math.min(step - 4, 3)];
+        : walk.stations[Math.min(step - TREE_BEAT, 3)];
     const target: [number, number] =
       arc != null
         ? walk.at(arc)
@@ -416,11 +512,17 @@ export function ConstraintNarrative({
 
   /* ---------- instrument scales (the city's fork-two chart) ---------- */
   /* supply: home-value growth vs the typical metro */
-  const hz = { x: INSET.x + 46, y: INSET.y + 58, w: INSET.w - 78, h: 140 };
+  /* the shortened walk reads its instruments off the hero panel */
+  const inset = short ? INSET_HERO : INSET;
+  const hz = short
+    ? { x: inset.x + 50, y: inset.y + 56, w: inset.w - 84, h: 330 }
+    : { x: inset.x + 52, y: inset.y + 58, w: inset.w - 88, h: 230 };
   const zy = (z: number) => hz.y + hz.h - ((z - 2) / 11) * hz.h; // 2…13 %/yr
   const zx = (p: number) => hz.x + ((p + 1.5) / 2.5) * hz.w; // −1.5…+1.0 %/yr
   /* demand: the metro's population dial on the same pizza plane */
-  const pz = { x: INSET.x + 36, y: INSET.y + 38, s: 160 };
+  const pz = short
+    ? { x: inset.x + 56, y: inset.y + 48, s: 330 }
+    : { x: inset.x + 66, y: inset.y + 44, s: 258 };
   const pzx = (u: number) => pz.x + ((u + 1) / 2) * pz.s;
   const pzy = (u: number) => pz.y + ((1 - u) / 2) * pz.s;
 
@@ -432,30 +534,30 @@ export function ConstraintNarrative({
     {
       kicker: "Dial one: people",
       body: place
-        ? `Population growth — is ${cityShort} gaining people, or losing them? ${cityShort} proper: ${pc(place.pop)} over ${DATA_WINDOW_LABEL}. Dial one of two.`
-        : `Population growth — is ${cityShort} gaining people, or losing them? [no ${cityShort} data yet — a sample spot stands in]`,
+        ? `Is ${cityShort} gaining people, or losing them? ${pc(place.pop)}.`
+        : `Is ${cityShort} gaining people, or losing them? [sample spot]`,
     },
     {
       kicker: "Dial two: pay",
       body: place
-        ? `Wage growth — has the work been paying better, or worse? ${cityShort}: ${pc(place.wage)}. The two dials together place it on the plane.`
-        : `Wage growth — the second dial. The two together place ${cityShort} on the plane. [sample spot]`,
+        ? `Wages: ${pc(place.wage)}. Two dials place ${cityShort} on the plane.`
+        : `Wages, the second dial. [sample spot]`,
     },
     {
       kicker: "The benchmark",
-      body: `Alone, the spot means little. The typical US metro grew ${pc(med.pop)} · ${pc(med.wage)} — the crosshair — and the grey field is every other US metro. ${cityShort} reads against them.`,
+      body: `The crosshair: the typical US metro (${pc(med.pop)} · ${pc(med.wage)}). The grey field: everyone else.`,
     },
     {
       kicker: "Reading the quadrant",
       body:
-        `Dials moving together point at demand — the pull of the work itself. Dials moving apart point at supply — the place. ` +
+        `Together → demand. Apart → supply. ` +
         (together === null
           ? `[no ${cityShort} data yet — the sample spot reads as apart]`
-          : `${cityShort}'s moved ${together ? "together" : "apart"}.`),
+          : `${cityShort}: ${together ? "together" : "apart"}.`),
     },
     {
       kicker: "The tree begins",
-      body: `The chart parks to the side — a diagnosis is the order you ask questions in. ${cityShort} carries its two dials to question one: same side of the medians?`,
+      body: `The chart parks aside. Question one: same side of the medians?`,
     },
     {
       kicker: "Fork one: demand or supply",
@@ -467,8 +569,8 @@ export function ConstraintNarrative({
       kicker: "Fork two: one more comparison",
       body:
         citySide === "demand"
-          ? `The demand fork asks about the wider labor market: is the metro's population growth below the median (${pc(med.pop)})? ${cityShort}'s own dot can't answer that — the inset reads its metro.`
-          : `The supply fork asks what being there costs: are home values climbing faster than the typical metro's ${pc(medCost)}? The jobs plane can't answer that — the inset swaps the instrument.`,
+          ? `Fork two: is the metro growing? The inset reads it against ${pc(med.pop)}.`
+          : `Fork two: what does being there cost? The inset reads home values against ${pc(medCost)}.`,
     },
     {
       kicker: "Where we think you are",
@@ -479,28 +581,71 @@ export function ConstraintNarrative({
     { kicker: "The four diagnoses", body: "" },
   ];
 
+  /* the shortened walk swaps the telling, not just the count — no full-stage
+     chart phase — so each stop's copy carries the instrument AND the answer
+     this city reads off it */
+  if (short) {
+    stepCopy[TREE_BEAT] = {
+      kicker: "The whole tree, up front",
+      body: `The entire diagnostic: one fork splits demand from supply, one more names the constraint. ${cityShort} starts at the root — each fork is answered by an instrument, not a guess.`,
+    };
+    stepCopy[FORK1_BEAT] = {
+      kicker: "Fork one: the pizza chart",
+      body:
+        `The tree makes room for the pizza chart: together → demand, apart → supply. ` +
+        (dx.derived
+          ? dx.steps[0].reason
+          : `[no ${cityShort} data yet — the walk shows the fallback read]`),
+    };
+    stepCopy[LEAF_BEAT] = {
+      kicker:
+        citySide === "supply"
+          ? "Fork two: the housing chart"
+          : "Fork two: the population dial",
+      body:
+        (citySide === "supply"
+          ? `The instrument swaps to the housing chart — home values against the typical metro's ${pc(medCost)}. `
+          : `The instrument swaps to the population dial — the metro against the median (${pc(med.pop)}). `) +
+        (dx.derived
+          ? dx.steps[1].reason
+          : `[no ${cityShort} data yet — the fallback leaf is marked]`),
+    };
+  }
+
   /* ---------- rail caption ---------- */
+  /* one dot per SCROLL STOP — the shortened walk shows three, not nine */
   const railDots = (
     <span className="jz-dots">
-      {stepCopy.map((_, i) => (
-        <i key={i} className={i === step ? "on" : i < step ? "done" : ""} />
+      {beats.map((_, i) => (
+        <i key={i} className={i === stepIdx ? "on" : i < stepIdx ? "done" : ""} />
       ))}
     </span>
   );
   const kickerColor =
-    step >= 7
+    step >= LEAF_BEAT
       ? TREE_SIDE_COLOR[
-          step >= 8 && hoverLeaf
+          step >= CHOICE_BEAT && hoverLeaf
             ? LEAF_DEFS.find((l) => l.id === hoverLeaf)!.side
-            : step >= 8
+            : step >= CHOICE_BEAT
               ? selSide
               : citySide
         ]
-      : step >= 5
+      : step >= FORK1_BEAT
         ? TREE_SIDE_COLOR[citySide]
         : undefined;
+  /* the closing panel: the trail, and what happens next. The guided walk
+     reaches it on the choice beat; the shortened walk has no choice beat, so
+     it closes on its last stop instead */
+  const closing = stepIdx === beats.length - 1 && step >= LEAF_BEAT;
+  /* the trail names whatever the tree is lighting. In the shortened walk the
+     tree is a statement of the diagnosis rather than a control, and it stays
+     lit on the diagnosed route even after the analysis below has been given
+     the choice — so the crumb follows the diagnosis there, and the reader's
+     own pick is the analysis section's story to tell. */
+  const trailPath = flow === "short" ? suggAlt : selAlt;
+  const trailSide = (trailPath[0] as Side) ?? "supply";
   const caption =
-    step < 8 ? (
+    !closing ? (
       <>
         <div className="jz-cap-kickrow">
           <span className="fig-kicker" style={{ color: kickerColor }}>
@@ -520,13 +665,18 @@ export function ConstraintNarrative({
           </span>
           {railDots}
         </div>
+        {flow === "short" && (
+          <p className="jz-cap-body">
+            <Body text={stepCopy[step].body} />
+          </p>
+        )}
         <div className="fig-trail">
-          {["root", ...selAlt].map((id, i) => (
+          {["root", ...trailPath].map((id, i) => (
             <Fragment key={id}>
               {i > 0 && <span className="crumb-sep">›</span>}
               <span
                 style={{
-                  color: TREE_SIDE_COLOR[id === "root" ? "root" : selSide],
+                  color: TREE_SIDE_COLOR[id === "root" ? "root" : trailSide],
                 }}
               >
                 {id === "root" ? "The growth question" : altById.get(id)?.title}
@@ -535,8 +685,8 @@ export function ConstraintNarrative({
           ))}
         </div>
         <p className="jz-cap-body">
-          Two questions, four possible diagnoses.{" "}
-          {isDefaultPath ? (
+          Two questions, four diagnoses —{" "}
+          {flow === "short" || isDefaultPath ? (
             `${cityShort}'s numbers argue for the lit path.`
           ) : (
             <Body
@@ -545,7 +695,13 @@ export function ConstraintNarrative({
           )}
         </p>
         <p className="jz-cap-body">
-          <Body text="[click an end leaf to follow a different path instead]" />
+          <Body
+            text={
+              flow === "short"
+                ? "[the other three stay closed — the end of the analysis below is where the route opens]"
+                : "[click a leaf to switch path]"
+            }
+          />
         </p>
       </>
     );
@@ -555,7 +711,7 @@ export function ConstraintNarrative({
     <div
       className="jz-scrolly nv-scrolly"
       ref={trackRef}
-      style={{ height: `${TRACK_VH}vh` }}
+      style={{ height: `${trackVh(beats.length)}vh` }}
     >
       <div className="jz-sticky">
         <div className="jz-head">
@@ -569,10 +725,10 @@ export function ConstraintNarrative({
                 How we diagnose the constraint
               </h2>
             </div>
-            <FlowSwitch flow={flow} onFlowChange={onFlowChange} />
           </div>
-          {/* no style pills here: this flow's chart and tree are one fixed
-              design; the experiments live on the compact flow */}
+          {/* the variant tabs ride the header row's right edge — the stage
+              below keeps the vertical room */}
+          <FlowSwitch flow={flow} onFlowChange={onFlowChange} />
         </div>
 
         <div className="jz-body">
@@ -584,7 +740,7 @@ export function ConstraintNarrative({
               aria-label={`${cityShort} walks the diagnostic tree: two dials place it on the pizza chart, and each fork is answered with its own numbers until it lands on a diagnosis`}
             >
               {/* ============ scene A: the chart, built dial by dial ============ */}
-              <g className={"nv-chart" + (step >= 4 ? " off" : "")}>
+              <g className={"nv-chart" + (short || step >= TREE_BEAT ? " off" : "")}>
                 {/* quadrant tints — the whole plane reads at once; yours marked */}
                 {QUADRANTS.map((q) => (
                   <rect
@@ -678,7 +834,7 @@ export function ConstraintNarrative({
                   <text
                     className="jz-ms-title"
                     x={cxu(0)}
-                    y={cyu(-1) + 48}
+                    y={cyu(-1) + 44}
                     textAnchor="middle"
                   >
                     {`Population growth (annual rate, ${DATA_WINDOW_LABEL})`}
@@ -770,10 +926,24 @@ export function ConstraintNarrative({
                 })}
               </g>
 
-              {/* ============ scene B: the tree the dot walks ============ */}
-
+              {/* ============ scene B: the tree the dot walks ============
+                  One group, so the shortened walk can pose it: enlarged and
+                  centred while it is the only thing on stage, easing home to
+                  the left when the first instrument arrives. The inset stays
+                  outside — it is the thing being made room for. */}
+              <g
+                className="nv-treewrap"
+                style={{
+                  transform: short
+                    ? stepIdx === 0
+                      ? TREE_OPENING_POSE
+                      : TREE_ASIDE_POSE
+                    : TREE_HOME_POSE,
+                  transition: "transform 0.9s cubic-bezier(0.4, 0, 0.2, 1)",
+                }}
+              >
               {/* the walked route's glow, from the landing on */}
-              <g className={on(step >= 7)}>
+              <g className={on(step >= LEAF_BEAT)}>
                 <path
                   className="tree-home"
                   stroke={TREE_SIDE_COLOR[citySide]}
@@ -801,10 +971,10 @@ export function ConstraintNarrative({
               {(["demand", "supply"] as Side[]).map((side) => {
                 const st = status(side);
                 return (
-                  <g key={`re-${side}`} className={on(step >= 5) + st.g}>
+                  <g key={`re-${side}`} className={on(short || step >= FORK1_BEAT) + st.g}>
                     <path
                       className={
-                        "nv-edge" + (step >= 5 ? " on" : "") + (st.lit ? " lit" : "")
+                        "nv-edge" + (short || step >= FORK1_BEAT ? " on" : "") + (st.lit ? " lit" : "")
                       }
                       stroke={TREE_SIDE_COLOR[side]}
                       pathLength={1}
@@ -831,7 +1001,7 @@ export function ConstraintNarrative({
                     key={`st-${side}`}
                     className={
                       "nv-edge" +
-                      (step >= 6 ? " on" : "") +
+                      (short || step >= FORK2_BEAT ? " on" : "") +
                       (st.lit ? " lit" : "") +
                       st.g
                     }
@@ -846,10 +1016,10 @@ export function ConstraintNarrative({
               {LEAF_DEFS.map((l) => {
                 const st = status(l.id);
                 return (
-                  <g key={`le-${l.id}`} className={on(step >= 7) + st.g}>
+                  <g key={`le-${l.id}`} className={on(short || step >= LEAF_BEAT) + st.g}>
                     <path
                       className={
-                        "nv-edge" + (step >= 7 ? " on" : "") + (st.lit ? " lit" : "")
+                        "nv-edge" + (short || step >= LEAF_BEAT ? " on" : "") + (st.lit ? " lit" : "")
                       }
                       stroke={TREE_SIDE_COLOR[l.side]}
                       pathLength={1}
@@ -873,10 +1043,10 @@ export function ConstraintNarrative({
                   the cards, so mid-walk it slips through each question box. */}
               <g
                 ref={travelerRef}
-                className={"jz-placedot nv-traveler" + (step === 7 ? " pulse" : "")}
+                className={"jz-placedot nv-traveler" + (step === LEAF_BEAT ? " pulse" : "")}
               >
                 <circle className="halo" r={9} />
-                <circle className="core" r={step >= 4 ? 7 : 8} />
+                <circle className="core" r={step >= TREE_BEAT ? 7 : 8} />
                 {/* axis mode: the first dial's reading, above the dot */}
                 <g className={on(step === 0)}>
                   <text x={0} y={-30} textAnchor="middle">
@@ -887,7 +1057,7 @@ export function ConstraintNarrative({
                   </text>
                 </g>
                 {/* plane mode: name + both dials, riding right of the dot */}
-                <g className={on(step >= 1 && step <= 3)}>
+                <g className={on(step >= 1 && step < TREE_BEAT)}>
                   <text x={14} y={-12}>
                     {cityShort}
                   </text>
@@ -898,13 +1068,13 @@ export function ConstraintNarrative({
                   ))}
                 </g>
                 {/* tree mode: just the name, close by */}
-                <text className={"nv-travname " + on(step >= 4)} x={13} y={4}>
+                <text className={"nv-travname " + on(step >= TREE_BEAT)} x={13} y={4}>
                   {cityShort}
                 </text>
               </g>
 
               {/* the root question card */}
-              <g className={on(step >= 4) + status("root").g}>
+              <g className={on(step >= TREE_BEAT) + status("root").g}>
                 <text
                   className="nv-captitle"
                   x={ROOT.x}
@@ -938,7 +1108,7 @@ export function ConstraintNarrative({
               {(["demand", "supply"] as Side[]).map((side) => {
                 const st = status(side);
                 return (
-                  <g key={`hd-${side}`} className={on(step >= 5) + st.g}>
+                  <g key={`hd-${side}`} className={on(short || step >= FORK1_BEAT) + st.g}>
                     <g className={"nv-card" + (st.lit ? " lit" : "")}>
                       <rect
                         x={HEAD_X[side] - HEAD.w / 2}
@@ -952,7 +1122,7 @@ export function ConstraintNarrative({
                         x={HEAD_X[side]}
                         y={HEAD.y + 5}
                         textAnchor="middle"
-                        fontSize={16}
+                        fontSize={17.5}
                         fill={TREE_SIDE_COLOR[side]}
                       >
                         {side === "demand" ? "Labor Demand" : "Labor Supply"}
@@ -967,7 +1137,7 @@ export function ConstraintNarrative({
               {(["demand", "supply"] as Side[]).map((side) => {
                 const st = status(side);
                 return (
-                  <g key={`q-${side}`} className={on(step >= 6) + st.g}>
+                  <g key={`q-${side}`} className={on(short || step >= FORK2_BEAT) + st.g}>
                     <g className={"nv-card nv-q" + (st.lit ? " lit" : "")}>
                       <rect
                         x={HEAD_X[side] - QCARD.w / 2}
@@ -980,7 +1150,7 @@ export function ConstraintNarrative({
                       <text
                         className="nv-qq"
                         x={HEAD_X[side]}
-                        y={QCARD.y - 6}
+                        y={QCARD.y - 4}
                         textAnchor="middle"
                         fill={TREE_SIDE_COLOR[side]}
                       >
@@ -991,7 +1161,7 @@ export function ConstraintNarrative({
                       <text
                         className="nv-qq"
                         x={HEAD_X[side]}
-                        y={QCARD.y + 9}
+                        y={QCARD.y + 8}
                         textAnchor="middle"
                         fill={TREE_SIDE_COLOR[side]}
                       >
@@ -1001,9 +1171,9 @@ export function ConstraintNarrative({
                       </text>
                       {side === citySide && (
                         <text
-                          className="nv-qread"
+                          className={"nv-qread " + on(!short || step >= LEAF_BEAT)}
                           x={HEAD_X[side]}
-                          y={QCARD.y + 22}
+                          y={QCARD.y + 17}
                           textAnchor="middle"
                           fill="var(--teal)"
                         >
@@ -1018,10 +1188,10 @@ export function ConstraintNarrative({
               {/* leaves */}
               {LEAF_DEFS.map((l) => {
                 const st = status(l.id);
-                const clickable = step >= 8;
+                const clickable = leafPickable;
                 const picked = clickable && l.id === selLeaf;
                 return (
-                  <g key={`lf-${l.id}`} className={on(step >= 7) + st.g}>
+                  <g key={`lf-${l.id}`} className={on(short || step >= LEAF_BEAT) + st.g}>
                     <g
                       className={
                         "nv-card nv-leaf" +
@@ -1045,7 +1215,7 @@ export function ConstraintNarrative({
                         x={l.x}
                         y={LEAF.y + 5}
                         textAnchor="middle"
-                        fontSize={14.5}
+                        fontSize={16}
                         fill={TREE_SIDE_COLOR[l.side]}
                       >
                         {l.title}
@@ -1056,7 +1226,7 @@ export function ConstraintNarrative({
               })}
 
               {/* the personal badges: the data-driven read + a differing pick */}
-              <g className={on(step >= 7)}>
+              <g className={on(step >= LEAF_BEAT)}>
                 {(() => {
                   const badge = (
                     leaf: LeafId,
@@ -1097,7 +1267,7 @@ export function ConstraintNarrative({
                       TREE_SIDE_COLOR[citySide],
                     ),
                   ];
-                  if (step >= 8 && !isDefaultPath) {
+                  if (step >= CHOICE_BEAT && !isDefaultPath) {
                     const collide =
                       Math.abs(LEAF_X[selLeaf] - LEAF_X[suggLeaf]) < 240;
                     out.push(
@@ -1113,22 +1283,29 @@ export function ConstraintNarrative({
                 })()}
               </g>
 
+              </g>
+
               {/* ============ the instrument inset (top-right) ============
                   Steps 4–5 keep the PARKED PIZZA CHART here — the root fork
                   is read off it, so it stays in reach while the dot carries
                   that reading down the first edge. Fork two then swaps in
                   its own instrument. */}
-              <g className={on(step >= 4)}>
+              <g
+                className={
+                  on(short ? step >= FORK1_BEAT : step >= TREE_BEAT) +
+                  (short ? " nv-inset-hero" : "")
+                }
+              >
                 <rect
                   className="nv-inset-panel"
-                  x={INSET.x}
-                  y={INSET.y}
-                  width={INSET.w}
-                  height={INSET.h}
+                  x={inset.x}
+                  y={inset.y}
+                  width={inset.w}
+                  height={inset.h}
                   rx={10}
                 />
-                <g className={on(step <= 5)}>
-                  <text className="nv-captitle" x={INSET.x + 14} y={INSET.y + 22}>
+                <g className={on(step <= FORK1_BEAT)}>
+                  <text className="nv-captitle" x={inset.x + 14} y={inset.y + 22}>
                     THE PIZZA CHART · THE ROOT FORK
                   </text>
                   {QUADRANTS.map((q) => (
@@ -1161,7 +1338,7 @@ export function ConstraintNarrative({
                         key={`rz-${i}`}
                         cx={pzx(mx)}
                         cy={pzy(my)}
-                        r={1.2}
+                        r={short ? 2.4 : 1.6}
                         fill="#c8cdd0"
                         opacity={0.45}
                       />
@@ -1190,7 +1367,7 @@ export function ConstraintNarrative({
                   <circle
                     cx={pzx(ux)}
                     cy={pzy(uy)}
-                    r={5}
+                    r={short ? 7 : 5}
                     fill="var(--ink)"
                     stroke="#fff"
                     strokeWidth={1.5}
@@ -1199,16 +1376,33 @@ export function ConstraintNarrative({
                     className="nv-lab"
                     x={pzx(ux) + 9}
                     y={pzy(uy) - 7}
-                    fontSize={12}
+                    fontSize={13.5}
                     fontWeight={700}
                     fill="var(--ink)"
                   >
                     {cityShort}
                   </text>
                   <text
+                    className="nv-axlab"
+                    x={pz.x + pz.s / 2}
+                    y={pz.y + pz.s + 17}
+                    textAnchor="middle"
+                  >
+                    population growth →
+                  </text>
+                  <text
+                    className="nv-axlab"
+                    x={pz.x - 12}
+                    y={pz.y + pz.s / 2}
+                    textAnchor="middle"
+                    transform={`rotate(-90 ${pz.x - 12} ${pz.y + pz.s / 2})`}
+                  >
+                    wage growth →
+                  </text>
+                  <text
                     className="nv-elab"
                     x={pz.x}
-                    y={pz.y + pz.s + 18}
+                    y={pz.y + pz.s + 35}
                     fill={TREE_SIDE_COLOR.demand}
                   >
                     together → Labor Demand
@@ -1216,18 +1410,18 @@ export function ConstraintNarrative({
                   <text
                     className="nv-elab"
                     x={pz.x + pz.s}
-                    y={pz.y + pz.s + 34}
+                    y={pz.y + pz.s + 49}
                     textAnchor="end"
                     fill={TREE_SIDE_COLOR.supply}
                   >
                     apart → Labor Supply
                   </text>
                 </g>
-                <g className={on(step >= 6)}>
+                <g className={on(step >= FORK2_BEAT)}>
                 {citySide === "demand" ? (
                   /* the metro's dial, on the same pizza plane */
                   <g>
-                    <text className="nv-captitle" x={INSET.x + 14} y={INSET.y + 22}>
+                    <text className="nv-captitle" x={inset.x + 14} y={inset.y + 22}>
                       THE MSA PIZZA CHART · THE DEMAND FORK
                     </text>
                     <rect
@@ -1245,7 +1439,7 @@ export function ConstraintNarrative({
                           key={`pz-${i}`}
                           cx={pzx(ux)}
                           cy={pzy(uy)}
-                          r={1.2}
+                          r={short ? 2 : 1.2}
                           fill="#c8cdd0"
                           opacity={0.5}
                         />
@@ -1265,7 +1459,7 @@ export function ConstraintNarrative({
                         <circle
                           cx={pzx(metroUnit(msa)[0])}
                           cy={pzy(metroUnit(msa)[1])}
-                          r={5}
+                          r={short ? 7 : 5}
                           fill="var(--ink)"
                           stroke="#fff"
                           strokeWidth={1.5}
@@ -1274,7 +1468,7 @@ export function ConstraintNarrative({
                           className="nv-lab"
                           x={pzx(metroUnit(msa)[0]) + 9}
                           y={pzy(metroUnit(msa)[1]) - 7}
-                          fontSize={12}
+                          fontSize={13.5}
                           fontWeight={700}
                           fill="var(--ink)"
                         >
@@ -1284,7 +1478,7 @@ export function ConstraintNarrative({
                     ) : (
                       <text
                         className="nv-ph"
-                        x={INSET.x + INSET.w / 2}
+                        x={inset.x + inset.w / 2}
                         y={pz.y + pz.s / 2}
                         textAnchor="middle"
                       >
@@ -1292,9 +1486,26 @@ export function ConstraintNarrative({
                       </text>
                     )}
                     <text
+                      className="nv-axlab"
+                      x={pz.x + pz.s / 2}
+                      y={pz.y + pz.s + 17}
+                      textAnchor="middle"
+                    >
+                      population growth →
+                    </text>
+                    <text
+                      className="nv-axlab"
+                      x={pz.x - 12}
+                      y={pz.y + pz.s / 2}
+                      textAnchor="middle"
+                      transform={`rotate(-90 ${pz.x - 12} ${pz.y + pz.s / 2})`}
+                    >
+                      wage growth →
+                    </text>
+                    <text
                       className="nv-elab"
                       x={pz.x}
-                      y={pz.y + pz.s + 18}
+                      y={pz.y + pz.s + 35}
                       fill={TREE_SIDE_COLOR.demand}
                     >
                       ← below · Metro-wide
@@ -1302,7 +1513,7 @@ export function ConstraintNarrative({
                     <text
                       className="nv-elab"
                       x={pz.x + pz.s}
-                      y={pz.y + pz.s + 34}
+                      y={pz.y + pz.s + 49}
                       textAnchor="end"
                       fill={TREE_SIDE_COLOR.demand}
                     >
@@ -1312,7 +1523,7 @@ export function ConstraintNarrative({
                 ) : (
                   /* the housing read: one value against one threshold */
                   <g>
-                    <text className="nv-captitle" x={INSET.x + 14} y={INSET.y + 22}>
+                    <text className="nv-captitle" x={inset.x + 14} y={inset.y + 22}>
                       THE HOUSING SCATTER · THE SUPPLY FORK
                     </text>
                     {[4, 8, 12].map((t) => (
@@ -1371,7 +1582,7 @@ export function ConstraintNarrative({
                         <circle
                           cx={zx(place.pop)}
                           cy={zy(cost.growth)}
-                          r={5}
+                          r={short ? 7 : 5}
                           fill="var(--ink)"
                           stroke="#fff"
                           strokeWidth={1.5}
@@ -1380,7 +1591,7 @@ export function ConstraintNarrative({
                           className="nv-lab"
                           x={zx(place.pop) + 9}
                           y={zy(cost.growth) + (cost.growth > medCost ? -8 : 14)}
-                          fontSize={12}
+                          fontSize={13.5}
                           fontWeight={700}
                           fill="var(--ink)"
                         >
@@ -1390,7 +1601,7 @@ export function ConstraintNarrative({
                     ) : (
                       <text
                         className="nv-ph"
-                        x={INSET.x + INSET.w / 2}
+                        x={inset.x + inset.w / 2}
                         y={zy(medCost) + 44}
                         textAnchor="middle"
                       >
@@ -1415,8 +1626,8 @@ export function ConstraintNarrative({
           <aside className="jz-rail">
             <div className="jz-railtext">{caption}</div>
             <div
-              className={"jz-next" + (step >= 7 ? " show" : "")}
-              aria-hidden={step < 7}
+              className={"jz-next" + (step >= LEAF_BEAT ? " show" : "")}
+              aria-hidden={step < LEAF_BEAT}
             >
               <span className="jz-next-k">Up next</span>
               <span
@@ -1425,7 +1636,11 @@ export function ConstraintNarrative({
               >
                 {branchSectionName(selSide)} →
               </span>
-              <span className="ph">[click a leaf to switch your branch]</span>
+              <span className="ph">
+                {flow === "short"
+                  ? "[the tree stays on the diagnosis — the route opens at the end of the analysis]"
+                  : "[click a leaf to switch your branch]"}
+              </span>
             </div>
           </aside>
         </div>
@@ -1436,7 +1651,7 @@ export function ConstraintNarrative({
       <section
         id="page-constraints-diagnose"
         className="jz-anchor"
-        style={{ top: `${ANCHOR_BOTTOM_VH}vh`, height: "40vh" }}
+        style={{ top: `${STEP_VH * (diagStop + 0.25)}vh`, height: `${STEP_VH}vh` }}
       />
     </div>
   );

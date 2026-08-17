@@ -62,7 +62,8 @@
   padding:9px 18px;
   transition:all .16s ease;box-shadow:0 1px 2px rgba(37,88,98,.06);
 }
-.jump-item:hover{
+.jump-item:disabled{opacity:.45;cursor:default;}
+.jump-item:not(:disabled):hover{
   border-color:var(--teal);color:var(--teal);transform:translateY(-2px);
   box-shadow:var(--shadow-sm);background:#fff;
 }

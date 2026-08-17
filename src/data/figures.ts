@@ -45,6 +45,13 @@ export const TREE_MODES: {
   about: string;
 }[] = [
   {
+    id: "themes",
+    label: "Alt + themes",
+    hint: "Four leaves + the evidence under each",
+    about:
+      "The four leaves, each carrying the evidence you would read there",
+  },
+  {
     id: "paper",
     label: "Paper tree",
     hint: "Figure 27 as published",
@@ -56,29 +63,37 @@ export const TREE_MODES: {
     hint: "One fork per side, four leaves",
     about: "One fork per side: four leaves, each a diagnosable branch",
   },
-  {
-    id: "themes",
-    label: "Alt + themes",
-    hint: "Four leaves + the evidence under each",
-    about:
-      "The four leaves, each carrying the evidence you would read there",
-  },
 ];
 
 export const modeVariant = (m: TreeMode): TreeVariant =>
   m === "paper" ? "full" : "alt";
 export const modeThemes = (m: TreeMode): boolean => m === "themes";
 
+/** what the section opens on — and, like the flows, listed first in
+ *  TREE_MODES so the default leads the pill row. The paper figure stays one
+ *  switch away, but the proposal shown first is the four-leaf tree carrying
+ *  the evidence under each leaf — so the structure is read as the
+ *  diagnostic, not as a variant of it. */
+export const DEFAULT_TREE_MODE: TreeMode = "themes";
+
 /** The section's USER-FLOW choice — a different axis from the tree structure
  *  above. Each flow is a different proposal for how the pizza-chart → tree
- *  sequence is TOLD: "compact" is the shipped five-step walk (your metro and
+ *  sequence is TOLD: "compact" is the initial-draft five-step walk (your metro and
  *  place land on the chart, their quadrant picks the fork); "guided" borrows
  *  the cities-explainer prototype's narrative moves (dials, benchmark,
  *  together/apart, tree-as-questions, an instrument per fork) but keeps them
  *  concise by making the SELECTED CITY the one example that walks the tree —
- *  the reference toured the entire dataset; this page diagnoses one city. */
-export type ConstraintFlow = "compact" | "guided";
+ *  the reference toured the entire dataset; this page diagnoses one city.
+ *  "short" retells it tree-first in three stops: the whole tree up front,
+ *  then an instrument per fork moving the city's dot down it, with the route
+ *  pinned to the diagnosis until the analysis section has been read. */
+export type ConstraintFlow = "compact" | "guided" | "short";
 
+/** what the section opens on — also listed FIRST in CONSTRAINT_FLOWS, since
+ *  the pill row renders in array order and the default leads it */
+export const DEFAULT_CONSTRAINT_FLOW: ConstraintFlow = "short";
+
+/* the default leads the row; the rest keep their original order */
 export const CONSTRAINT_FLOWS: {
   id: ConstraintFlow;
   label: string;
@@ -86,11 +101,11 @@ export const CONSTRAINT_FLOWS: {
   about: string;
 }[] = [
   {
-    id: "compact",
-    label: "Compact",
-    hint: "The pizza and tree in five quick steps",
+    id: "short",
+    label: "Shortened guided walk",
+    hint: "The whole tree up front — two instruments walk it",
     about:
-      "The shipped flow: your metro and place land on the chart, and their quadrant picks the tree fork",
+      "Tree-first: the full tree opens the walk, the pizza chart answers fork one, the housing chart fork two — and the other paths open only at the end of the analysis below",
   },
   {
     id: "guided",
@@ -98,6 +113,13 @@ export const CONSTRAINT_FLOWS: {
     hint: "Two dials, three questions — your city walks the tree",
     about:
       "The explainer flow: the chart builds dial by dial and your city answers each fork with its own numbers, one instrument per question",
+  },
+  {
+    id: "compact",
+    label: "Initial draft",
+    hint: "The pizza and tree in five quick steps",
+    about:
+      "The first-draft flow: your metro and place land on the chart, and their quadrant picks the tree fork",
   },
 ];
 

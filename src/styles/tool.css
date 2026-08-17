@@ -55,6 +55,8 @@
   color:var(--ink-soft);margin-bottom:24px;
 }
 .rail .sec{margin-bottom:30px;}
+/* the empty shell sections: listed, dimmed, inert */
+.rail .sec.disabled{opacity:.45;pointer-events:none;}
 .rail .sec-head{
   display:flex;align-items:center;gap:10px;background:none;border:none;
   font-size:14.5px;font-weight:600;color:var(--ink);text-align:left;padding:0;

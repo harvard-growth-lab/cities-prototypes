@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { PAGE_IDS, cityCountryName, cityShortName } from "../data/content";
 import {
+  DEFAULT_CONSTRAINT_FLOW,
   convertPath,
   type ConstraintFlow,
   type TreeMode,
@@ -9,10 +10,6 @@ import {
 import { Toolbar } from "./Toolbar";
 import { Rail } from "./Rail";
 import { ExplainersView } from "./ExplainersView";
-import { IntroQuiz } from "./pages/IntroQuiz";
-import { OverviewSection } from "./pages/OverviewSection";
-import { ExportBasketPage, ExportComplexityPage } from "./pages/ExportPages";
-import { PracticePage } from "./pages/PracticePage";
 import { ConstraintScrolly } from "./pages/ConstraintScrolly";
 import { ConstraintNarrative } from "./pages/ConstraintNarrative";
 import { BranchAnalysisPage } from "./pages/BranchAnalysisPage";
@@ -32,7 +29,6 @@ interface ToolViewProps {
   onGoTo: (pageId: string) => void;
   currentPageId: string | null;
   onPageInView: (pageId: string) => void;
-  onSavePractice: (text: string) => void;
   /** the descent picked on the diagnostic tree (ids below the root) */
   branchPath: string[];
   onSelectBranch: (path: string[]) => void;
@@ -59,7 +55,6 @@ export function ToolView({
   onGoTo,
   currentPageId,
   onPageInView,
-  onSavePractice,
   branchPath,
   onSelectBranch,
   treeMode,
@@ -70,12 +65,24 @@ export function ToolView({
   const pagesRef = useRef<HTMLElement>(null);
   const cityShort = cityShortName(city);
   const country = cityCountryName(city);
-  const branchSide = branchPath[0] === "demand" ? ("demand" as const) : ("supply" as const);
 
   /* which telling of the City Constraints section is mounted. Local to the
      view — nothing outside the section reads it. The two flows' scroll
      tracks differ in height, so the swap re-anchors the section in view. */
-  const [constraintFlow, setConstraintFlow] = useState<ConstraintFlow>("compact");
+  const [constraintFlow, setConstraintFlow] = useState<ConstraintFlow>(
+    DEFAULT_CONSTRAINT_FLOW,
+  );
+  /* both guided tellings ("guided" and its shortened cut) mount the narrative
+     and always tell the ALT structure, so they gate the same things */
+  const guidedFlow = constraintFlow !== "compact";
+  /* The shortened walk reads the chart, the tree and the branch analysis as
+     ONE piece: the route stays on the diagnosis the whole way down, and only
+     the end of the analysis hands the choice over. The release lives here
+     because it spans both sections — the narrative pins the route, the
+     analysis is what lifts the pin. */
+  const [routeReleased, setRouteReleased] = useState(false);
+  useEffect(() => setRouteReleased(false), [constraintFlow, city]);
+  const routeHeld = constraintFlow === "short" && !routeReleased;
   const changeConstraintFlow = useCallback((f: ConstraintFlow) => {
     setConstraintFlow(f);
     requestAnimationFrame(() =>
@@ -126,7 +133,7 @@ export function ToolView({
       />
 
       <div className="tool-body" style={explainersOpen ? { display: "none" } : undefined}>
-        <Rail currentPageId={currentPageId} onGoTo={onGoTo} branchSide={branchSide} />
+        <Rail currentPageId={currentPageId} onGoTo={onGoTo} />
 
         <main
           className="pages"
@@ -139,22 +146,18 @@ export function ToolView({
             }
           }}
         >
-          <IntroQuiz cityShort={cityShort} onFinish={() => onGoTo("page-overview")} />
-
-          <OverviewSection
-            cityShort={cityShort}
-            span={span}
-            pagesRef={pagesRef}
-            mapVisible={active && !explainersOpen}
-          />
-
-          {/* City Description (empty for now) */}
+          {/* every section outside City Constraints is an empty shell —
+              the anchors exist so the rail highlights and the journey
+              counts, but only the prototype section carries content */}
+          <section className="page" id="page-intro-q1"></section>
+          <section className="page" id="page-intro-q2"></section>
+          <section className="page" id="page-overview"></section>
+          <section className="page" id="page-overview-msa"></section>
           <section className="page" id="page-description"></section>
           <section className="page" id="page-msa"></section>
-
-          <ExportBasketPage cityShort={cityShort} />
-          <ExportComplexityPage />
-          <PracticePage onSave={onSavePractice} />
+          <section className="page" id="page-export-basket"></section>
+          <section className="page" id="page-export-complexity"></section>
+          <section className="page" id="page-practice"></section>
 
           {constraintFlow === "compact" ? (
             <ConstraintScrolly
@@ -180,26 +183,28 @@ export function ToolView({
               variant={treeVariant}
               flow={constraintFlow}
               onFlowChange={changeConstraintFlow}
+              routePinned={routeHeld}
             />
           )}
 
-          {/* the guided walk always tells the ALT structure, so while it is
+          {/* the guided walks always tell the ALT structure, so while one is
               active the analysis schematic mirrors that four-leaf tree; picks
               made on it convert back into the app-wide structure */}
           <BranchAnalysisPage
             cityShort={cityShort}
             branchPath={
-              constraintFlow === "guided"
-                ? convertPath(branchPath, "alt")
-                : branchPath
+              guidedFlow ? convertPath(branchPath, "alt") : branchPath
             }
             onSelectBranch={
-              constraintFlow === "guided"
+              guidedFlow
                 ? (p) => onSelectBranch(convertPath(p, treeVariant))
                 : onSelectBranch
             }
-            variant={constraintFlow === "guided" ? "alt" : treeVariant}
+            variant={guidedFlow ? "alt" : treeVariant}
             showThemes={showThemes}
+            routeHeld={routeHeld}
+            onReachEnd={() => setRouteReleased(true)}
+            treePickable={constraintFlow !== "short"}
           />
 
           {/* Levers for Change (empty for now) */}

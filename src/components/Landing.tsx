@@ -6,12 +6,15 @@ import { JourneyIcon } from "./icons";
 interface JumpItem {
   label: string;
   target: string;
+  /** the empty shell sections: shown, but not a destination */
+  disabled?: boolean;
   icon: React.ReactNode;
 }
 
 const JUMP_ITEMS: JumpItem[] = [
   {
     label: "City Overview",
+    disabled: true,
     target: "page-overview",
     icon: (
       <svg viewBox="0 0 20 20" fill="none" strokeWidth="1.4">
@@ -25,6 +28,7 @@ const JUMP_ITEMS: JumpItem[] = [
   },
   {
     label: "City Description",
+    disabled: true,
     target: "page-description",
     icon: (
       <svg viewBox="0 0 20 20" fill="none" strokeWidth="1.4">
@@ -36,6 +40,7 @@ const JUMP_ITEMS: JumpItem[] = [
   },
   {
     label: "City as part of MSA",
+    disabled: true,
     target: "page-msa",
     icon: (
       <svg viewBox="0 0 20 20" fill="none" strokeWidth="1.4">
@@ -46,6 +51,7 @@ const JUMP_ITEMS: JumpItem[] = [
   },
   {
     label: "City’s Exports",
+    disabled: true,
     target: "page-export-basket",
     icon: (
       <svg viewBox="0 0 20 20" fill="none" strokeWidth="1.4">
@@ -69,6 +75,7 @@ const JUMP_ITEMS: JumpItem[] = [
   },
   {
     label: "Levers for Change",
+    disabled: true,
     target: "page-levers",
     icon: (
       <svg viewBox="0 0 20 20" fill="none" strokeWidth="1.4">
@@ -109,7 +116,7 @@ export function Landing({
   useEffect(() => {
     if (hidden) return;
     const onKey = (e: KeyboardEvent) => {
-      if (["ArrowDown", "PageDown", " "].includes(e.key)) onEnterTool("page-intro-q1");
+      if (["ArrowDown", "PageDown", " "].includes(e.key)) onEnterTool("page-constraints");
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
@@ -125,7 +132,7 @@ export function Landing({
       className={(up ? "up " : "") + (hidden ? "hidden" : "")}
       onTransitionEnd={handleTransitionEnd}
       onWheel={(e) => {
-        if (e.deltaY > 8) onEnterTool("page-intro-q1");
+        if (e.deltaY > 8) onEnterTool("page-constraints");
       }}
       onTouchStart={(e) => {
         touchY.current = e.touches[0].clientY;
@@ -133,7 +140,7 @@ export function Landing({
       onTouchMove={(e) => {
         if (touchY.current !== null && touchY.current - e.touches[0].clientY > 30) {
           touchY.current = null;
-          onEnterTool("page-intro-q1");
+          onEnterTool("page-constraints");
         }
       }}
     >
@@ -182,7 +189,7 @@ export function Landing({
               ))}
             </select>
           </div>
-          <button className="btn-orange" onClick={() => onEnterTool("page-overview")}>
+          <button className="btn-orange" onClick={() => onEnterTool("page-constraints")}>
             Start Exploring
           </button>
         </div>
@@ -191,7 +198,12 @@ export function Landing({
           <span className="jump-label">Jump to Section</span>
           <div className="jump-row">
             {JUMP_ITEMS.map((item) => (
-              <button key={item.target} className="jump-item" onClick={() => onEnterTool(item.target)}>
+              <button
+                key={item.target}
+                className="jump-item"
+                onClick={() => onEnterTool(item.target)}
+                disabled={item.disabled}
+              >
                 {item.icon}
                 {item.label}
               </button>
@@ -201,7 +213,7 @@ export function Landing({
       </div>
 
       <div className="landing-bottom">
-        <button className="start-scrolling" onClick={() => onEnterTool("page-intro-q1")}>
+        <button className="start-scrolling" onClick={() => onEnterTool("page-constraints")}>
           <span className="ss-row">
             Start Scrolling
             <svg className="ss-chev" viewBox="0 0 16 9" fill="none" aria-hidden="true">

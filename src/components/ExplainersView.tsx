@@ -1,94 +1,86 @@
+import { useRef, useState } from "react";
 import { OpenBookIcon } from "./icons";
+import { TreePage } from "../explainers/tree/TreePage";
 
-/** Pixel-art night skyline thumbnail. Pattern ids are prefixed per card so
- *  the four copies on the grid don't collide. */
-function PixelCityThumb({ idPrefix }: { idPrefix: string }) {
-  const wA = `${idPrefix}-wA`,
-    wB = `${idPrefix}-wB`,
-    wC = `${idPrefix}-wC`;
+/** Card thumbnail for the diagnostic-tree explainer: the page's own hero
+ *  glyph (root → two sides → four leaves, in its branch colors), scaled up
+ *  on GL paper with the two fork rules as faint furniture. */
+function TreeGlyphThumb() {
   return (
-    <svg viewBox="0 0 400 320" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Pixel city at night">
-      <defs>
-        <pattern id={wA} width="14" height="16" patternUnits="userSpaceOnUse">
-          <rect width="14" height="16" fill="none" />
-          <rect x="3" y="4" width="6" height="7" fill="#e8b05c" opacity=".85" />
-        </pattern>
-        <pattern id={wB} width="13" height="15" patternUnits="userSpaceOnUse">
-          <rect width="13" height="15" fill="none" />
-          <rect x="3" y="3" width="6" height="7" fill="#cfe3f5" opacity=".9" />
-        </pattern>
-        <pattern id={wC} width="12" height="14" patternUnits="userSpaceOnUse">
-          <rect width="12" height="14" fill="none" />
-          <rect x="3" y="3" width="5" height="6" fill="#f2e6c9" opacity=".8" />
-        </pattern>
-      </defs>
-      <rect width="400" height="320" fill="#161b30" />
-      <circle cx="352" cy="38" r="16" fill="#e9dfa8" />
-      <circle cx="344" cy="32" r="14" fill="#161b30" />
-      <circle cx="60" cy="30" r="1.4" fill="#fff" opacity=".8" />
-      <circle cx="120" cy="55" r="1.2" fill="#fff" opacity=".6" />
-      <circle cx="210" cy="24" r="1.3" fill="#fff" opacity=".7" />
-      <circle cx="300" cy="70" r="1.2" fill="#fff" opacity=".5" />
-      <circle cx="30" cy="90" r="1.2" fill="#fff" opacity=".5" />
-      <rect x="18" y="130" width="92" height="190" fill="#2b2140" />
-      <rect x="18" y="130" width="92" height="190" fill={`url(#${wA})`} />
-      <rect x="34" y="108" width="8" height="22" fill="#2b2140" />
-      <rect x="58" y="102" width="8" height="28" fill="#2b2140" />
-      <rect x="122" y="88" width="76" height="232" fill="#252c4a" />
-      <rect x="122" y="88" width="76" height="232" fill={`url(#${wC})`} />
-      <rect x="150" y="74" width="20" height="14" fill="#354066" />
-      <path d="M155 80h10M160 75v10" stroke="#e76565" strokeWidth="3" />
-      <rect x="210" y="42" width="104" height="278" fill="#20284a" />
-      <rect x="210" y="42" width="104" height="278" fill={`url(#${wB})`} />
-      <rect x="326" y="150" width="58" height="170" fill="#272038" />
-      <rect x="326" y="150" width="58" height="170" fill={`url(#${wA})`} />
-      <g transform="translate(236,272)">
-        <rect x="0" y="14" width="9" height="12" fill="#5aa06e" />
-        <rect x="11" y="8" width="9" height="18" fill="#c9a44a" />
-        <rect x="22" y="4" width="9" height="22" fill="#6a89b5" />
-        <rect x="33" y="10" width="9" height="16" fill="#b56a6a" />
-        <rect x="44" y="6" width="9" height="20" fill="#8a6ab5" />
-        <rect x="0" y="30" width="56" height="3" fill="#c14f4f" />
+    <svg viewBox="0 0 400 320" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Abstract diagnostic tree">
+      <rect width="400" height="320" fill="#f7f5f0" />
+      {/* faint pizza-chart crosshair, echoing the page's opening instrument */}
+      <g stroke="#e3ded4" strokeWidth="1.5" strokeDasharray="4 5">
+        <path d="M 200 24 V 296" />
+        <path d="M 36 160 H 364" />
+      </g>
+      <g transform="translate(80, 82) scale(1)">
+        <g fill="none" strokeWidth={3} strokeLinecap="round">
+          <path d="M 120 22 L 120 36 L 60 36 L 60 52" stroke="#3d7ab8" />
+          <path d="M 120 22 L 120 36 L 180 36 L 180 52" stroke="#c98500" />
+          <path d="M 60 66 L 60 82 L 24 82 L 24 100" stroke="#7059ad" />
+          <path d="M 60 66 L 60 82 L 96 82 L 96 100" stroke="#3d7ab8" />
+          <path d="M 180 66 L 180 82 L 144 82 L 144 100" stroke="#8a5a00" />
+          <path d="M 180 66 L 180 82 L 216 82 L 216 100" stroke="#199e70" />
+        </g>
+        <circle cx={120} cy={16} r={8} fill="#ffffff" stroke="#a89f91" strokeWidth={1.8} strokeDasharray="3.5 3" />
+        <circle cx={60} cy={59} r={7.5} fill="#3d7ab8" fillOpacity={0.85} />
+        <circle cx={180} cy={59} r={7.5} fill="#c98500" fillOpacity={0.85} />
+        <circle cx={24} cy={106} r={7} fill="#7059ad" fillOpacity={0.8} />
+        <circle cx={96} cy={106} r={7} fill="#3d7ab8" fillOpacity={0.8} />
+        <circle cx={144} cy={106} r={7} fill="#8a5a00" fillOpacity={0.8} />
+        <circle cx={216} cy={106} r={7} fill="#199e70" fillOpacity={0.8} />
       </g>
     </svg>
   );
 }
 
-function ExplainerCard({ idPrefix }: { idPrefix: string }) {
-  return (
-    <a
-      className="ex-card"
-      href="https://github.com/harvard-growth-lab/cities-prototypes"
-      target="_blank"
-      rel="noopener"
-    >
-      <span className="ex-thumb">
-        <PixelCityThumb idPrefix={idPrefix} />
-      </span>
-      <span className="ex-title-row">
-        <span className="ex-title">How to Read a City</span>
-        <span className="ex-read">3min read</span>
-      </span>
-      <p className="ex-desc">
-        Lit windows, moving trucks, cranes, dark storefronts — a city announces exactly how it’s
-        doing, all the time, to anyone who knows the code.
-      </p>
-    </a>
-  );
-}
-
+/** The Explainers tab: a gallery of explainer cards. One explainer so far —
+ *  the diagnostic-tree scrolly ported from the cities-explainer prototype —
+ *  which opens IN PLACE of the gallery (same scroll container, which the
+ *  scrolly's sticky stage and step tracking rely on), with a floating pill
+ *  to come back. */
 export function ExplainersView({ open }: { open: boolean }) {
+  const [openId, setOpenId] = useState<string | null>(null);
+  const viewRef = useRef<HTMLDivElement | null>(null);
+
+  const navigate = (id: string | null) => {
+    setOpenId(id);
+    viewRef.current?.scrollTo({ top: 0, behavior: "instant" });
+  };
+
   return (
-    <div className={"explainers-view" + (open ? " open" : "")}>
-      <div className="ex-head">
-        <OpenBookIcon fill="var(--teal)" />
-        <h2>Visual Explainers</h2>
-      </div>
-      <div className="ex-grid">
-        {["exA", "exB", "exC", "exD"].map((prefix) => (
-          <ExplainerCard key={prefix} idPrefix={prefix} />
-        ))}
-      </div>
+    <div ref={viewRef} className={"explainers-view" + (open ? " open" : "")}>
+      {openId === "diagnostic-tree" ? (
+        <>
+          <button className="ex-back" onClick={() => navigate(null)}>
+            ← All explainers
+          </button>
+          <TreePage />
+        </>
+      ) : (
+        <>
+          <div className="ex-head">
+            <OpenBookIcon fill="var(--teal)" />
+            <h2>Visual Explainers</h2>
+          </div>
+          <div className="ex-grid">
+            <button className="ex-card" onClick={() => navigate("diagnostic-tree")}>
+              <span className="ex-thumb">
+                <TreeGlyphThumb />
+              </span>
+              <span className="ex-title-row">
+                <span className="ex-title">How to Read the Diagnostic Tree</span>
+                <span className="ex-read">4min read</span>
+              </span>
+              <p className="ex-desc">
+                Two dials — people and pay — two questions, and four diagnoses. How every US
+                city over 100k sorts down the tree, one fork at a time.
+              </p>
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }

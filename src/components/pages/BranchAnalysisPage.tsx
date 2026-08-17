@@ -51,6 +51,7 @@ function DiagSchematic({
   variant,
   onPick,
   onPreview,
+  interactive,
 }: {
   path: string[];
   /** the city's suggested descent — keeps its tinted marking */
@@ -61,6 +62,9 @@ function DiagSchematic({
   variant: TreeVariant;
   onPick: (path: string[]) => void;
   onPreview: (path: string[] | null) => void;
+  /** false while the section withholds the choice — the schematic still draws
+   *  the route, it just stops answering the pointer */
+  interactive: boolean;
 }) {
   const svgRef = useRef<SVGSVGElement>(null);
   const { nodes, delaunay } = useMemo(() => {
@@ -101,11 +105,13 @@ function DiagSchematic({
       .reverse();
   };
   const handleMove = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (!interactive) return;
     const ids = targetPath(e);
     if ((ids?.join("/") ?? null) !== (preview?.join("/") ?? null))
       onPreview(ids);
   };
   const handleClick = (e: React.MouseEvent<SVGSVGElement>) => {
+    if (!interactive) return;
     const ids = targetPath(e);
     if (ids && ids.join("/") !== path.join("/")) onPick(ids);
   };
@@ -134,10 +140,14 @@ function DiagSchematic({
   return (
     <svg
       ref={svgRef}
-      className="ba-mini"
+      className={"ba-mini" + (interactive ? "" : " inert")}
       viewBox={`0 0 ${MV.w} ${MV.h}`}
       role="img"
-      aria-label="Schematic of the diagnostic tree with your selected branch highlighted; hover to preview, click to pick a different path"
+      aria-label={
+        interactive
+          ? "Schematic of the diagnostic tree with your selected branch highlighted; hover to preview, click to pick a different path"
+          : "Schematic of the diagnostic tree with the diagnosed branch highlighted"
+      }
       onPointerMove={handleMove}
       onPointerLeave={() => onPreview(null)}
       onClick={handleClick}
@@ -284,6 +294,9 @@ export function BranchAnalysisPage({
   onSelectBranch,
   variant,
   showThemes,
+  routeHeld = false,
+  onReachEnd,
+  treePickable = true,
 }: {
   cityShort: string;
   /** the descent picked on the diagnostic tree (ids below the root) */
@@ -293,6 +306,16 @@ export function BranchAnalysisPage({
   variant: TreeVariant;
   /** show the themes under the picked leaf instead of the empty frame */
   showThemes: boolean;
+  /** the shortened walk withholds the choice of branch until this section has
+   *  been read to its end — chart, tree and analysis are one piece there */
+  routeHeld?: boolean;
+  /** fired when the end of the section comes into view, which is what
+   *  releases the hold */
+  onReachEnd?: () => void;
+  /** whether the tree up in City Constraints is a control too — it is in
+   *  every flow but the shortened walk, where this schematic is the only
+   *  place a branch can be chosen */
+  treePickable?: boolean;
 }) {
   const side = branchPath[0] === "demand" ? ("demand" as const) : ("supply" as const);
   const titleOf = useMemo(
@@ -339,6 +362,31 @@ export function BranchAnalysisPage({
   /* the topmost theme in view reads as "where you are" */
   const activeTheme = themes.find((t) => seenThemes.has(t.id))?.id ?? null;
 
+  /* ---------- the end of the section ----------
+     A held route is released by READING to the end, not by scrolling past
+     the top: the sentinel sits after the last block, so it reports only once
+     the analysis itself has gone by. The observer exists only while the hold
+     does — which both retires it once the choice is given (the release is
+     latched a level up, so scrolling back never takes it away) and re-arms it
+     if a later flow switch puts the hold back on. A fresh observer reports
+     the current state on its first tick, so a reader already sitting at the
+     end is released at once rather than made to scroll away and back. */
+  const endRef = useRef<HTMLDivElement>(null);
+  const onReachRef = useRef(onReachEnd);
+  onReachRef.current = onReachEnd;
+  useEffect(() => {
+    const el = endRef.current;
+    if (!routeHeld || !el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) onReachRef.current?.();
+      },
+      { root: el.closest(".pages"), threshold: 0 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [routeHeld]);
+
   return (
     <section className="page" id="page-branch-analysis">
       <div className="page-head">
@@ -381,6 +429,7 @@ export function BranchAnalysisPage({
             variant={variant}
             onPick={onSelectBranch}
             onPreview={setPreview}
+            interactive={!routeHeld}
           />
           <span className="ba-legend">
             <i style={{ background: TREE_SIDE_COLOR[suggSide] }} />
@@ -429,12 +478,32 @@ export function BranchAnalysisPage({
           )}
           <p className="ba-note">
             <span className="ph">
-              [hover the schematic to preview a path, click to make it yours — or click the tree
-              in City Constraints]
+              {routeHeld
+                ? "[the diagnosed route — read the analysis through and the schematic opens at the end]"
+                : treePickable
+                  ? "[hover the schematic to preview a path, click to make it yours — or click the tree in City Constraints]"
+                  : "[hover the schematic to preview a path, click to make it yours]"}
             </span>
           </p>
         </aside>
       </div>
+
+      {/* the shortened walk's exit: the first place the route opens. A quiet
+          offer rather than a call to action — the diagnosed read is the main
+          road, and most readers should simply finish it. */}
+      {!treePickable && (
+        <p className="ba-endprompt">
+          <span className="ph">
+            [that's the {side}-side read — the diagnosed path. if you're
+            curious how another branch tells it, the schematic in the sidebar
+            is open now: hover to preview, click to switch]
+          </span>
+        </p>
+      )}
+
+      {/* the end of the section — see the observer above. A hairline rather
+          than a zero-height node, which not every engine reports on. */}
+      <div ref={endRef} style={{ height: 1 }} aria-hidden="true" />
     </section>
   );
 }

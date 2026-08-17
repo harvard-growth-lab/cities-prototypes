@@ -2348,10 +2348,6 @@ export function ConstraintScrolly({
                 How we diagnose the constraint
               </h2>
             </div>
-            {/* The section's user-flow choice: this telling, or the guided
-                walkthrough (ConstraintNarrative). Always visible — it
-                swaps the whole sequence, so it can't hide with a phase. */}
-            <FlowSwitch flow={flow} onFlowChange={onFlowChange} />
             {/* The section's top-level choice, deliberately NOT among the
                 style pills opposite: each mode is a different proposal for
                 how the diagnostic is structured, and the themed one may end
@@ -2381,6 +2377,10 @@ export function ConstraintScrolly({
               </span>
             </div>
           </div>
+          {/* The section's user-flow choice: this telling, or the guided
+              walkthroughs (ConstraintNarrative). On the header row — always
+              visible, since it swaps the whole sequence. */}
+          <FlowSwitch flow={flow} onFlowChange={onFlowChange} />
           {/* the styling experiments live in the section header, top-right:
               the chart cluster during the chart phase, the tree cluster
               during the tree phase, cross-fading in one grid cell */}
