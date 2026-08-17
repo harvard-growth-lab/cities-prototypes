@@ -74,6 +74,12 @@
   .key-item b{font-weight:400}
   /* direct labels on the band swatch */
   .kd{font-size:13px;fill:var(--ink)}
+  .col-head{font-size:10px;font-weight:700;letter-spacing:.09em;fill:var(--ink-soft)}
+  .rows-btn{
+    display:block;margin:4px auto 0;appearance:none;border:0;background:none;
+    font:inherit;font-size:12.5px;font-weight:600;color:var(--teal);cursor:pointer;
+    text-decoration:underline;text-underline-offset:3px;
+  }
   .kdl{stroke:var(--ink-faint);stroke-width:1}
   .whisk{stroke:var(--ink-faint); stroke-width:1}
   .cap{stroke:var(--ink-faint); stroke-width:1}
@@ -206,6 +212,8 @@
     <div class="tip" id="tip" role="status" aria-live="polite"></div>
   </div>
 
+  <button type="button" id="rowsBtn" class="rows-btn">Show all</button>
+
   <div id="tablewrap" hidden></div>
 
 
@@ -267,12 +275,14 @@ function el(tag, attrs, parent){
 }
 
 /* ----------------------------------------------------------------- sorting */
+let rowLimit = 10;   /* top 10 by default; the host's "Show all" lifts it */
 function rows(){
   let r = DATA.rows.slice();
   if (state.filter === "above1") r = r.filter(d => d.boston >= 1);
   if (state.sort === "rca") r.sort((a,b)=> b.boston - a.boston);
   if (state.sort === "pct") r.sort((a,b)=> b.pctRank - a.pctRank);
   if (state.sort === "jobs") r.sort((a,b)=> b.bostonEmp - a.bostonEmp);
+  if (rowLimit) r = r.slice(0, rowLimit);
   return r;
 }
 
@@ -318,12 +328,13 @@ function render(){
   });
   const uy = el("text", { x:X(1), y:PAD.t-26, "text-anchor":"middle", class:"unity-label" }, gAxis);
   uy.appendChild(document.createTextNode("RCA = 1"));
-  /* the gloss under the axis title only fits on a wide plot; "RCA = 1" and the
-     notes carry it otherwise */
-  if (x1 - x0 > 640){
-    const uy2 = el("text", { x:X(1), y:PAD.t-42, "text-anchor":"middle", class:"tick" }, gAxis);
-    uy2.appendChild(document.createTextNode("same share as the U.S."));
-  }
+  /* the left block mirrors the right: the column header's two lines sit on
+     the same baselines as the axis title and the tick row, right-aligned
+     with the labels they name */
+  const rt1 = el("text", { x:PAD.l-18, y:22, "text-anchor":"end", class:"col-head" }, gAxis);
+  rt1.appendChild(document.createTextNode("MOST SPECIALIZED"));
+  const rt2 = el("text", { x:PAD.l-18, y:38, "text-anchor":"end", class:"col-head" }, gAxis);
+  rt2.appendChild(document.createTextNode("TRADABLE INDUSTRIES"));
 
   /* --- rows ------------------------------------------------------ */
   R.forEach((d, i) => {
@@ -479,6 +490,17 @@ function showBox(h, e){
 
 function hide(){ tip.style.opacity = 0; if (halo){ halo.remove(); halo = null; } }
 
+/* The intro's Boston beat opens the real tooltip rather than a bubble, so
+   the reader leaves knowing the marks answer the cursor. Anchored to the
+   first row's Boston dot, in screen coordinates. */
+function demoTip(){
+  const h = hits.find(t => t.kind === "city" && t.subject);
+  if (!h) return;
+  const r = svg.getBoundingClientRect();
+  const k = r.width / svg.viewBox.baseVal.width;
+  showCity(h, { clientX: r.left + h.x * k, clientY: r.top + h.y * k });
+}
+
 /* ----------------------------------------------------------------- key */
 function buildKey(){
   const k = document.getElementById("key");
@@ -521,12 +543,6 @@ function buildKey(){
          `Other metros`, 44);
   item(`<circle cx="8" cy="10" r="6.5" class="dot-focus"/>`,
        `<b>Boston Metro</b>`, 16);
-  if (state.design !== "band"){
-    const rb = document.createElement("button");
-    rb.type = "button"; rb.id = "replayBtn";
-    rb.innerHTML = "&#8635; Replay the intro";
-    k.appendChild(rb);
-  }
 }
 
 /* ----------------------------------------------------------------- table */
@@ -583,16 +599,23 @@ let introTimers = [], introPlayed = false;
 const LABELS = [
   "The scale: 1\u00d7 means an industry has the same share of jobs here as nationally \u2014 further right, more specialised.",
   "Each grey dot is one U.S. metro",
-  "Half of all metros fall inside this box",
+  state.design === "band"
+    ? "Most metros bunch together \u2014 the darker middle holds half of them"
+    : "Half of all metros fall inside this box",
   "The typical metro",
   "Boston"
 ];
 function clearIntroLabel(){ chartBox.querySelectorAll(".intro-label").forEach(n => n.remove()); }
 function introLabel(i){
   clearIntroLabel();
-  const box = svg.querySelector(".boxr"), med = svg.querySelector(".med"),
+  /* each design anchors the bubbles to its own marks: the band's step-3
+     bubble points at the darker middle it describes */
+  const band = state.design === "band";
+  const box = svg.querySelector(band ? ".bandr" : ".boxr"),
+        mid2El = svg.querySelector(band ? ".bandm" : ".boxr"),
+        med = svg.querySelector(".med"),
         subj = svg.querySelector(".dot-focus");
-  if (!box || !med || !subj) return;
+  if (!box || !mid2El || !med || !subj) return;
   const cr = chartBox.getBoundingClientRect();
   const mid = n => { const r = n.getBoundingClientRect();
                      return { x:(r.left + r.right)/2 - cr.left, top:r.top - cr.top }; };
@@ -600,7 +623,7 @@ function introLabel(i){
   const ur = svg.querySelector(".unity-label").getBoundingClientRect();
   const anchor = [
     { x:(ur.left + ur.right)/2 - cr.left, top:ur.bottom - cr.top + 16 },
-    { x:cr.width/2, top:bb.top }, bb, mid(med), mid(subj)
+    { x:cr.width/2, top:bb.top }, mid(mid2El), mid(med), mid(subj)
   ][i];
   const lab = document.createElement("div");
   lab.className = i === 0 ? "intro-label below wide" : "intro-label";
@@ -620,18 +643,26 @@ let introRunning = false, introPaused = false;
 let introStart = 0, introElapsed = 0;
 const INTRO_STEPS = [
   [900,  () => introLabel(0)],
-  [1500, () => { svg.classList.add("s1"); introLabel(1); }],
-  [3000, () => { svg.classList.add("s2"); introLabel(2); }],
-  [4500, () => { svg.classList.add("s3"); introLabel(3); }],
-  [6000, () => { svg.classList.add("s4"); introLabel(4); }],
+  [1500, () => { svg.classList.add("s1"); introLabel(1); introStep = 2; setIntroBtn(); }],
+  [3000, () => { svg.classList.add("s2"); introLabel(2); introStep = 3; setIntroBtn(); }],
+  [4500, () => { svg.classList.add("s3"); introLabel(3); introStep = 4; setIntroBtn(); }],
+  [6000, () => { svg.classList.add("s4"); clearIntroLabel(); demoTip(); introStep = 5; setIntroBtn(); }],
   [7500, finishIntro]
 ];
+let introStep = 0;
+const INTRO_API = window.__intro = {
+  play: () => playIntro(), pause: () => pauseIntro(), resume: () => resumeIntro(),
+  state: () => ({ step: introStep, total: 5, running: introRunning, paused: introPaused }),
+  onChange: null
+};
+window.__chart = {
+  setLimit(n){ rowLimit = n; render(); },
+  limit: () => rowLimit,
+  total: () => DATA.rows.length,
+  contentBottom: () => Math.ceil(document.querySelector(".wrap").getBoundingClientRect().bottom)
+};
 function setIntroBtn(){
-  const b = document.getElementById("replayBtn");
-  if (!b) return;
-  b.innerHTML = !introRunning ? "&#8635; Replay the intro"
-              : introPaused  ? "&#9654; Resume the intro"
-              :                "&#9654; Intro playing &mdash; pause";
+  if (INTRO_API.onChange) try { INTRO_API.onChange(INTRO_API.state()); } catch(e){}
 }
 function scheduleFrom(elapsed){
   introStart = performance.now();
@@ -643,6 +674,7 @@ function finishIntro(){
   svg.classList.remove("intro-anim","s1","s2","s3","s4","paused");
   clearIntroLabel();
   introDots = null; render();
+  demoTip();   /* the invitation stays until the cursor takes over */
   introRunning = false; introPaused = false; setIntroBtn();
 }
 function pauseIntro(){
@@ -662,31 +694,50 @@ function playIntro(){
   introTimers.forEach(clearTimeout); introTimers = [];
   svg.classList.remove("intro-anim","s1","s2","s3","s4","paused");
   clearIntroLabel();
+  hide();
   if (matchMedia("(prefers-reduced-motion: reduce)").matches){
     introDots = null; render(); return;
   }
-  introRunning = true; introPaused = false; introElapsed = 0;
-  setIntroBtn();
+  introRunning = true; introPaused = false; introElapsed = 0; introStep = 1;
   introDots = "all"; render();
+  setIntroBtn();
   svg.classList.add("intro-anim");
   scheduleFrom(0);
 }
-/* delegation, so the button survives any rebuild of the key */
-document.getElementById("key").addEventListener("click", e => {
-  if (!e.target.closest("#replayBtn")) return;
-  if (!introRunning) playIntro();
-  else if (introPaused) resumeIntro();
-  else pauseIntro();
+const rowsBtn = document.getElementById("rowsBtn");
+function syncRowsBtn(){
+  if (rowsBtn) rowsBtn.textContent = rowLimit
+    ? "Show all " + DATA.rows.length : "Show top 10";
+}
+function fitFrame(){
+  if (!window.frameElement) return;
+  const b = Math.ceil(document.querySelector(".wrap").getBoundingClientRect().bottom);
+  if (b > 200) window.frameElement.style.height = (b + 14) + "px";
+}
+if (rowsBtn) rowsBtn.addEventListener("click", () => {
+  rowLimit = rowLimit ? null : 10;
+  render(); syncRowsBtn(); fitFrame();
 });
+syncRowsBtn();
 
 buildKey(); buildTable(); syncView(); render();
 new ResizeObserver(() => {
   render();
-  if (!introPlayed && state.design === "box" && document.getElementById("chart").clientWidth > 0){
+  fitFrame();
+}).observe(document.getElementById("chart"));
+
+/* The intro waits for the reader: it starts the first time the chart is
+   genuinely on screen — an IntersectionObserver in an iframe measures
+   against the top-level viewport, so scrolling the host page counts. */
+new IntersectionObserver((entries, io) => {
+  if (introPlayed){ io.disconnect(); return; }
+  const e = entries[0];
+  if (e.isIntersecting && e.intersectionRatio >= 0.35 && chartBox.clientWidth > 0){
     introPlayed = true;
+    io.disconnect();
     playIntro();
   }
-}).observe(document.getElementById("chart"));
+}, { threshold: [0.35] }).observe(chartBox);
 </script>
 </body>
 </html>

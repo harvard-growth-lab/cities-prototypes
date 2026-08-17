@@ -1302,10 +1302,8 @@
       if (cur !== "dist") distBack = cur;
       distDesign = design;
       if (distFrame){
-        /* the classic box keeps the four peer metros on stage; the friendly
-           band stays clean */
-        const url = "rca-distributions.html?dots=" + (design === "box" ? "peers" : "none")
-                  + "&design=" + design;
+        /* both box plots keep the four peer metros on stage */
+        const url = "rca-distributions.html?dots=peers&design=" + design;
         if (distFrame.getAttribute("src") !== url) distFrame.setAttribute("src", url);
       }
       show("dist");
@@ -1343,7 +1341,64 @@
       if (btn && seg.contains(btn)) show(btn.dataset.rcaviewGo);
     });
 
-    show("self");
+    /* ---- intro transport + row-count control for the embedded chart.
+       The frame exposes window.__intro (play/pause/resume + step events)
+       and window.__chart (row limit); the bar's five dots follow the
+       intro's steps. ---- */
+    const introBtn    = document.getElementById("rcaIntroBtn");
+    const introDotsEl = document.getElementById("rcaIntroDots");
+    const rowsBtn     = document.getElementById("distRowsBtn");
+    const frameIntro  = () => distFrame && distFrame.contentWindow && distFrame.contentWindow.__intro;
+    const frameChart  = () => distFrame && distFrame.contentWindow && distFrame.contentWindow.__chart;
+    function frameHeight(){
+      const c = frameChart();
+      if (!c) return;
+      const b = c.contentBottom();
+      if (b > 200) distFrame.style.height = (b + 14) + "px";
+    }
+    function introUi(st){
+      if (introBtn) introBtn.innerHTML =
+        !st.running ? "&#9654; Play intro"
+        : st.paused ? "&#9654; Resume intro"
+        :             "&#10074;&#10074; Pause intro";
+      if (introDotsEl) [...introDotsEl.children].forEach((d, i) => {
+        d.classList.toggle("on", i < st.step);
+        d.classList.toggle("cur", st.running && !st.paused && i === st.step - 1);
+      });
+      frameHeight();
+    }
+    function bindDistFrame(){
+      const api = frameIntro();
+      if (!api) return;
+      api.onChange = introUi;
+      introUi(api.state());
+      const c = frameChart();
+      if (rowsBtn && c) rowsBtn.textContent =
+        c.limit() ? "Show all " + c.total() : "Show top 10";
+    }
+    if (distFrame){
+      distFrame.addEventListener("load", bindDistFrame);
+      bindDistFrame();
+    }
+    if (introBtn) introBtn.addEventListener("click", () => {
+      const api = frameIntro();
+      if (!api) return;
+      const st = api.state();
+      if (!st.running) api.play();
+      else if (st.paused) api.resume();
+      else api.pause();
+    });
+    if (rowsBtn) rowsBtn.addEventListener("click", () => {
+      const c = frameChart();
+      if (!c) return;
+      c.setLimit(c.limit() ? null : 10);
+      rowsBtn.textContent = c.limit() ? "Show all " + c.total() : "Show top 10";
+      frameHeight();
+    });
+
+    /* the friendly box plot is the section's opening view; Bar and the
+       classic box stay one click away on the design list */
+    openDist("band");
   }
 
   function initRcaChart(){
@@ -1938,12 +1993,13 @@
   /* ---------- export treemap: transformation options 1-4 ----------
      Stakeholder-facing, numbered on the right of the controls bar. Each
      number transforms the export treemap (or annotates it) around whichever
-     "Color by" is active: 1 = ranked list under the map, 2 = one-axis swarm,
-     3 = metric x jobs scatter, 4 = ranked bars. The metric follows the
+     "Color by" is active: 1 = ranked list beside the map, 2 = one-axis
+     swarm. The metric follows the
      colour mode: complexity -> PCI, change -> growth, sector -> jobs.
      Clicking the active number restores the plain map. */
   let exportOpt = 0;
   let exportView = "map";   /* the treemap is always the default view */
+  let exportListOn = false; /* option 1's side list, off until asked for */
   const EOPT_DUR = 950;
 
   function pciNumOf(name){
@@ -1989,10 +2045,10 @@
     const m = exportMetric();
     if (exportOpt === 2) return m.kind === "pci" ? "Ordered by complexity"
                        : m.kind === "chg" ? "Ordered by change" : "Ordered by jobs";
-    if (exportOpt === 3) return m.kind === "pci" ? "Complexity vs. jobs"
-                       : m.kind === "chg" ? "Change vs. jobs" : "Jobs by sector";
-    if (exportOpt === 4) return m.kind === "pci" ? "Most complex, ranked"
+    if (exportOpt === 3) return m.kind === "pci" ? "Most complex, ranked"
                        : m.kind === "chg" ? "Fastest growing, ranked" : "Biggest, ranked";
+    if (exportOpt === 4) return m.kind === "pci" ? "Complexity vs. jobs"
+                       : m.kind === "chg" ? "Change vs. jobs" : "Jobs by sector";
     return "";
   }
 
@@ -2039,14 +2095,28 @@
 
     if (exportOpt === 0){ restoreMap(); return; }
 
+    const vizRow = document.querySelector(".export-viz-row");
+    if (vizRow) vizRow.classList.toggle("with-list", exportOpt === 1 && exportListOn);
+
     if (exportOpt === 1){
       restoreMap();
-      const top = [...leaves].sort((a, b) => exRank(m, b) - exRank(m, a)).slice(0, 5);
+      if (!exportListOn) return;
+      const ranked = [...leaves].sort((a, b) => exRank(m, b) - exRank(m, a));
+      const groups = [];
+      if (m.kind === "chg"){
+        /* change cuts both ways: the shrinking half is often the story */
+        const real = ranked.filter(d => !(m.isNew && m.isNew(d.data.name)));
+        groups.push(["Top 5 fastest-growing", real.slice(0, 5)]);
+        groups.push(["Top 5 fastest-shrinking", real.slice(-5).reverse()]);
+      } else {
+        groups.push([m.listTitle, ranked.slice(0, 5)]);
+      }
+      groups.forEach(([gTitle, items], gi) => {
       const title = document.createElement("div");
       title.className = "toplist-title";
-      title.textContent = m.listTitle + " (hover to see them on the treemap)";
+      title.textContent = gTitle + (gi === 0 ? " (hover to locate)" : "");
       listWrap.appendChild(title);
-      top.forEach((d, i) => {
+      items.forEach((d, i) => {
         const b = document.createElement("button");
         b.type = "button";
         const valTxt = m.isNew && m.isNew(d.data.name) ? "new since 2014" : m.fmt(exVal(m, d));
@@ -2063,6 +2133,7 @@
           svg.selectAll(".sector-layer").style("opacity", 1);
         });
         listWrap.appendChild(b);
+      });
       });
       listWrap.hidden = false;
       return;
@@ -2092,6 +2163,11 @@
         .force("y", d3.forceY(H2 * .46).strength(.08))
         .force("c", d3.forceCollide(n => n.r + .6)).stop();
       for (let i = 0; i < 200; i++) sim.tick();
+      /* no dot may leave the sheet: pin centres a radius inside every edge */
+      nodes.forEach(n => {
+        n.x = Math.max(n.r + 2, Math.min(W2 - n.r - 2, n.x));
+        n.y = Math.max(n.r + 2, Math.min(H2 - 60 - n.r, n.y));
+      });
       const pos = new Map(nodes.map(n => [n.d, n]));
       moveRect(cells,
         d => pos.get(d).x - pos.get(d).r, d => pos.get(d).y - pos.get(d).r,
@@ -2102,14 +2178,20 @@
       const lead = [...leaves].sort((a, b) => exRank(m, b) - exRank(m, a))[0];
       const lp = pos.get(lead), t = lead.data.name;
       const est = t.length * 6.4;
+      const labY = Math.max(16, lp.y - lp.r - 24);
       const lx = Math.max(est / 2 + 8, Math.min(lp.x, W2 - 10 - est / 2));
-      ov.append("text").attr("class", "opt-dotlab").attr("x", lx).attr("y", lp.y - lp.r - 7)
+      ov.append("circle").attr("class", "opt-lead-ring")
+        .attr("cx", lp.x).attr("cy", lp.y).attr("r", lp.r + 3.5);
+      ov.append("line").attr("class", "opt-lead-stem")
+        .attr("x1", lp.x).attr("y1", lp.y - lp.r - 5)
+        .attr("x2", lx).attr("y2", labY + 4);
+      ov.append("text").attr("class", "opt-dotlab").attr("x", lx).attr("y", labY)
         .attr("text-anchor", "middle").text(t);
       ov.transition().delay(Math.max(0, dur - 200)).duration(400).attr("opacity", 1);
       return;
     }
 
-    if (exportOpt === 3){
+    if (exportOpt === 4){
       const R = 8;
       const jobs = leaves.map(d => d.value);
       if (m.kind === "jobs"){
@@ -2152,7 +2234,7 @@
       return;
     }
 
-    if (exportOpt === 4){
+    if (exportOpt === 3){
       const top = [...leaves].sort((a, b) => exRank(m, b) - exRank(m, a)).slice(0, 12);
       const rows = new Map(top.map((d, i) => [d, i]));
       const GUT = 330, rowH = (H2 - 66) / 12, barH = Math.min(26, rowH - 8);
@@ -2178,12 +2260,77 @@
       ov.transition().delay(Math.max(0, dur - 200)).duration(400).attr("opacity", 1);
       return;
     }
+
   }
 
   function refreshExportOption(){
     if (!exportOpt) return;
     updateExportViewSeg();
+    updateTopBtn();
     applyExportOption(true);
+  }
+
+  function updateTopBtn(){
+    const b = document.getElementById("exportTopBtn");
+    if (!b) return;
+    b.hidden = exportOpt !== 1;
+    /* the switch names what it will actually show under the active Color by */
+    const mk = exportMetric().kind;
+    const lab = b.querySelector(".switch-label");
+    if (lab) lab.textContent =
+        mk === "pci" ? "Show Most Complex Industries"
+      : mk === "chg" ? "Show Top Growing/Shrinking Industries"
+      :                "Show Largest Industries";
+    b.setAttribute("aria-pressed", String(exportListOn));
+  }
+
+  /* one labelled slot in the bar carries whichever control the active
+     option brings: "Top industries" for the list, "View" for the morphs */
+  function updateExportOptCtl(){
+    const ctl = document.getElementById("exportOptCtl");
+    if (!ctl) return;
+    ctl.hidden = !exportOpt;
+    ctl.dataset.opt = String(exportOpt);   /* lets CSS hard-guard per option */
+    /* option 1's button names itself; the morph options keep a View label */
+    const lab = document.getElementById("exportOptCtlLabel");
+    if (lab){ lab.hidden = exportOpt === 1; lab.textContent = "View"; }
+  }
+
+  /* One tooltip serves every form the export cells take — treemap tiles,
+     swarm dots, ranked bars — because the morphs reuse the same elements.
+     Same card pattern as the RCA row tooltips. */
+  function initExportTooltip(){
+    const svgEl = document.getElementById("exportTreemapSvg");
+    const tip = document.getElementById("exportTip");
+    const wrap = document.querySelector(".export-viz-row");
+    if (!svgEl || !tip || !wrap) return;
+    d3.select(svgEl).selectAll("g.industry")
+      .on("mouseenter", function(ev, d){
+        const name = d.data.name;
+        const mode = colorMode.exportTreemapSvg;
+        let extra = "";
+        if (mode === COMPLEXITY)
+          extra = '<div class="tip-row"><span>Complexity (PCI)</span><span>' +
+                  pciNumOf(name).toFixed(2) + '</span></div>';
+        if (mode === CHANGE){
+          const g = growthOf(name);
+          extra = '<div class="tip-row"><span>Change 2014\u20132024</span><span>' +
+                  (g === null ? "new since 2014"
+                              : (g > 0 ? "+" : "") + Math.round(g * 100) + "%") + '</span></div>';
+        }
+        tip.innerHTML = '<strong>' + name + '</strong>' +
+          '<div class="tip-row"><span>Sector</span><span>' + d.parent.data.name + '</span></div>' +
+          '<div class="tip-row"><span>Jobs</span><span>' +
+            Math.round(d.value).toLocaleString() + '</span></div>' + extra;
+        tip.hidden = false;
+      })
+      .on("mousemove", function(ev){
+        const w = wrap.getBoundingClientRect();
+        const left = ev.clientX - w.left + 16, top = ev.clientY - w.top + 14;
+        tip.style.left = Math.max(0, Math.min(left, w.width - tip.offsetWidth)) + "px";
+        tip.style.top  = Math.max(0, Math.min(top, w.height - tip.offsetHeight)) + "px";
+      })
+      .on("mouseleave", function(){ tip.hidden = true; });
   }
 
   function initExportOptions(){
@@ -2193,10 +2340,28 @@
       const n = +b.dataset.opt;
       exportOpt = (exportOpt === n) ? 0 : n;
       exportView = "map";                       /* every option opens on the treemap */
+      exportListOn = false;                     /* the list is always opt-in */
       btns.forEach(x => x.classList.toggle("is-on", +x.dataset.opt === exportOpt));
       updateExportViewSeg();
+      updateTopBtn();
+      updateExportOptCtl();
       applyExportOption(true);
     }));
+    const topBtn = document.getElementById("exportTopBtn");
+    if (topBtn) topBtn.addEventListener("click", () => {
+      exportListOn = !exportListOn;
+      updateTopBtn();
+      applyExportOption(true);
+    });
+
+    /* option 2 is the section's default: its View toggle sits on the bar
+       from the start, with the treemap still the resting view */
+    exportOpt = 2;
+    btns.forEach(x => x.classList.toggle("is-on", +x.dataset.opt === 2));
+    updateExportViewSeg();
+    updateTopBtn();
+    updateExportOptCtl();
+    applyExportOption(false);
     const wrap = document.getElementById("exportViewWrap");
     if (wrap) wrap.addEventListener("click", e => {
       const b = e.target.closest(".seg-btn");
@@ -2213,6 +2378,7 @@
     initTradableAnimation();
     initColorBySegments();
     initExportOptions();
+    initExportTooltip();
     initRcaChart();
     initPeerChart();
     initRcaViewToggle();

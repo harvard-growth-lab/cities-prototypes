@@ -407,7 +407,7 @@
   .viz-big{
     width:100%;max-width:1160px;height:auto;display:block;margin-top:8px;
   }
-  #exportTreemapSvg{width:80%;margin:8px auto 0;}
+  #exportTreemapSvg{width:80%;margin:8px auto 20px;}
   #exportTreemapSvg rect.cell{stroke:#fff;stroke-width:1;}
   #exportTreemapSvg .sector-rect{stroke:none;}
   #exportTreemapSvg text{
@@ -793,7 +793,7 @@
      other sections (18px/29px, full-strength ink). */
 
   .tradable-viz-wrapper{
-    position:relative;width:80%;margin:0 auto 20px;
+    position:relative;width:80%;margin:8px auto 20px;
   }
 
   .tradable-treemap-animated{
@@ -1265,14 +1265,14 @@
   .collapsible-info{
     max-width:680px;margin:18px 0 22px;
     border:none;
-    border-radius:4px;background:var(--orange-tint);overflow:hidden;
+    border-radius:4px;background:var(--teal-tint);overflow:hidden;
     transition:box-shadow .2s ease;
   }
   /* the diagnostic explainer holds a two-column layout, so it takes the same
      width as the chart it explains rather than the body-copy measure */
   .collapsible-info--wide{max-width:880px;}
   .collapsible-info--wide .collapsible-content{padding-right:22px;}
-  .collapsible-info:hover{box-shadow:0 2px 10px rgba(207,79,44,.13);}
+  .collapsible-info:hover{box-shadow:0 2px 10px rgba(37,88,98,.13);}
 
   .collapsible-header{
     width:100%;padding:14px 16px;background:none;border:none;cursor:pointer;
@@ -1285,13 +1285,13 @@
   .ci-mark{
     flex:none;display:inline-flex;align-items:center;justify-content:center;
     width:32px;height:32px;border-radius:50%;
-    background:#fff;color:var(--orange-dark);
-    box-shadow:0 1px 3px rgba(207,79,44,.20);
+    background:#fff;color:var(--teal);
+    box-shadow:0 1px 3px rgba(37,88,98,.20);
   }
   .ci-title{flex:1 1 auto;}
 
   .collapsible-icon{
-    flex:none;transition:transform .3s ease;color:var(--orange-dark);
+    flex:none;transition:transform .3s ease;color:var(--teal);
   }
   .collapsible-header.active .collapsible-icon{
     transform:rotate(180deg);
@@ -1755,6 +1755,26 @@
      the design list is the only way in and out */
   #specializationSection.is-dist .seg-wrap{display:none;}
   .design-list{margin-left:auto;display:flex;align-items:center;gap:12px;}
+  /* hard guard: option 1 can never show the view seg, whatever the state */
+  #exportOptCtl[data-opt="1"] #exportViewWrap,
+  #exportOptCtl[data-opt="1"] #exportOptCtlLabel{display:none !important;}
+  /* a real on/off switch: the knob slides and the track fills, so the
+     state is legible at a glance */
+  .switch-ctl{display:inline-flex;align-items:center;gap:9px;background:none;border:0;cursor:pointer;padding:0;}
+  .switch-ctl[hidden]{display:none;}
+  .switch-ctl .switch-label{font-size:13px;font-weight:600;color:var(--ink);font-family:inherit;}
+  .switch-track{
+    width:34px;height:20px;border-radius:10px;background:var(--border-strong);
+    position:relative;transition:background .18s ease;flex:none;
+  }
+  .switch-knob{
+    position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;
+    background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:left .18s ease;
+  }
+  .switch-ctl[aria-pressed="true"] .switch-track{background:var(--teal);}
+  .switch-ctl[aria-pressed="true"] .switch-knob{left:16px;}
+  /* the divider fences the secondary views off from the primary controls */
+  #exportOptList{border-left:1px solid var(--border-strong);padding-left:18px;}
   .design-list .design-opt{margin-left:0;}
   .design-list .design-opt.is-on{
     color:var(--teal);text-decoration:none;cursor:default;font-weight:700;
@@ -1778,7 +1798,14 @@
   #page-overview-msa .lede{margin-top:10px;}
 
   /* ---- export treemap transformation options ---- */
-  #exportTopList{width:80%;margin:10px auto 0;display:flex;flex-direction:column;gap:2px;}
+  /* the treemap keeps its full width until the reader asks for the list;
+     toggled on, the list takes a side column and the map yields */
+  .export-viz-row{display:block;position:relative;}
+  #exportTopList{width:80%;margin:12px auto 0;display:flex;flex-direction:column;gap:2px;}
+  #exportTopList .toplist-title:not(:first-child){margin-top:14px;}
+  .export-viz-row.with-list{display:flex;gap:26px;align-items:flex-start;}
+  .export-viz-row.with-list #exportTreemapSvg{flex:1 1 0;min-width:0;width:100%;margin:8px 0 0;}
+  .export-viz-row.with-list #exportTopList{flex:0 0 300px;width:300px;margin:14px 0 0;}
   .toplist-title{font-size:13px;font-weight:600;color:var(--ink);margin:0 0 4px 8px;}
   .toplist button{
     display:flex;align-items:center;gap:9px;width:100%;text-align:left;
@@ -1794,6 +1821,8 @@
   #exportTreemapSvg .opt-ax line{stroke:#adbabd;}
   #exportTreemapSvg .opt-ax text{font-size:12px;fill:var(--ink-soft);}
   #exportTreemapSvg .opt-ax .axname{font-size:13px;font-weight:600;fill:var(--ink);}
+  #exportTreemapSvg .opt-lead-ring{fill:none;stroke:var(--ink);stroke-width:1.75;}
+  #exportTreemapSvg .opt-lead-stem{stroke:var(--ink);stroke-width:1.25;}
   #exportTreemapSvg .opt-dotlab{
     font-size:12px;fill:var(--ink);
     paint-order:stroke fill;stroke:#fff;stroke-width:3px;stroke-linejoin:round;
@@ -1803,12 +1832,25 @@
   #exportTreemapSvg .opt-bar-name{font-size:12px;fill:var(--ink);}
   #exportTreemapSvg .opt-bar-val{font-size:11.5px;font-weight:600;fill:var(--ink-soft);}
 
-  .export-view-wrap{width:80%;margin:14px auto -2px;}
 
   /* change rides beside the level, small and coloured, costing no height */
   .plc-chg{font-style:normal;font-size:11px;font-weight:600;margin-left:6px;white-space:nowrap;}
   .plc-chg--up{color:var(--rise);}
   .plc-chg--down{color:var(--fall);}
+
+  /* ---- intro transport on the controls bar ---- */
+  .intro-ctl{display:flex;align-items:center;gap:10px;}
+  .intro-play{
+    background:none;border:0;cursor:pointer;font-size:12.5px;font-weight:600;
+    color:var(--teal);text-decoration:underline;text-underline-offset:3px;white-space:nowrap;
+  }
+  .intro-dots{display:inline-flex;gap:5px;align-items:center;}
+  .intro-dots i{
+    width:7px;height:7px;border-radius:50%;background:var(--border-strong);
+    transition:background .3s ease, transform .3s ease;
+  }
+  .intro-dots i.on{background:var(--teal);}
+  .intro-dots i.cur{transform:scale(1.35);}
 </style>
 </head>
 <body>
@@ -2430,30 +2472,40 @@
               <button type="button" class="seg-btn" data-mode="Change" aria-pressed="false">Change (2024–2014)</button>
             </div>
           </div>
-          <!-- transformation options, stakeholder-facing: 1 ranked list,
-               2 one-axis swarm, 3 metric x jobs scatter, 4 ranked bars.
-               Each adapts to whichever Color by is active; clicking the
-               active number restores the plain map. -->
-          <div class="design-list" id="exportOptList">
+          <!-- The active design option's own control joins the bar here,
+               labelled like its neighbours: cause (the option, right) and
+               effect (its control) sit side by side. -->
+          <div class="ctl" id="exportOptCtl" hidden>
+            <span class="ctl-label" id="exportOptCtlLabel">View</span>
+            <div class="seg" id="exportViewWrap" role="group" aria-label="Chart view" hidden>
+              <button type="button" class="seg-btn is-active" data-view="map" aria-pressed="true">Sized by jobs</button>
+              <button type="button" class="seg-btn" data-view="alt" aria-pressed="false"></button>
+            </div>
+            <button type="button" class="switch-ctl" id="exportTopBtn" hidden aria-pressed="false">
+              <span class="switch-track" aria-hidden="true"><span class="switch-knob"></span></span>
+              <span class="switch-label">Show Largest Industries</span>
+            </button>
+          </div>
+          <!-- Secondary design options, deliberately quiet: picking one never
+               changes the treemap by itself — it surfaces a labelled control
+               beside this comment's ctl, and the reader chooses. -->
+          <div class="design-list" id="exportOptList" aria-label="Design options">
             <span class="design-list-label">Options</span>
             <button type="button" class="reset design-opt" data-opt="1">1</button>
             <button type="button" class="reset design-opt" data-opt="2">2</button>
             <button type="button" class="reset design-opt" data-opt="3">3</button>
-            <button type="button" class="reset design-opt" data-opt="4">4</button>
           </div>
         </div>
         <!-- the option's own view switch, sitting on the chart's left
              shoulder: the treemap is always the left state, and the right
              state names the arrangement the reader is about to see -->
-        <div class="export-view-wrap" id="exportViewWrap" hidden>
-          <div class="seg" role="group" aria-label="Chart view">
-            <button type="button" class="seg-btn is-active" data-view="map" aria-pressed="true">Sized by jobs</button>
-            <button type="button" class="seg-btn" data-view="alt" aria-pressed="false"></button>
-          </div>
-        </div>
+
+        <div class="export-viz-row">
+        <div class="rca-tip" id="exportTip" role="tooltip" hidden></div>
         <svg class="viz-big" id="exportTreemapSvg" width="880" height="550" viewBox="0 0 880 550" xmlns="http://www.w3.org/2000/svg" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; background:#ffffff;">
 </svg>
         <div class="toplist" id="exportTopList" hidden></div>
+        </div>
         <div class="complexity-legend" id="complexityLegend">
           <div class="lg-ramp">
             <span class="cl-label">Less complex</span>
@@ -2660,6 +2712,12 @@
               <span class="ctl-label">Year</span>
               <select><option>2024</option><option>2019</option><option>2014</option></select>
             </div>
+            <!-- intro transport: lives on the controls bar, only while a
+                 box-plot view is up; the five dots track the intro's steps -->
+            <div class="ctl intro-ctl" data-rcaview="dist" id="rcaIntroCtl">
+              <button type="button" class="reset intro-play" id="rcaIntroBtn">&#9654; Play intro</button>
+              <span class="intro-dots" id="rcaIntroDots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+            </div>
             <div class="seg-wrap">
               <div class="seg" id="rcaViewSeg" role="group" aria-label="Compare against">
                 <button type="button" class="seg-btn is-active" data-rcaview-go="self" aria-pressed="true">Against the world</button>
@@ -2714,7 +2772,7 @@
                The query string pins its opening state; its own seg controls stay
                live inside the frame. -->
           <div class="rca-dist-wrap" data-rcaview="dist">
-            <iframe id="rcaDistFrame" src="rca-distributions.html?dots=peers&amp;design=box" title="Boston metro specialization across all US metros"></iframe>
+            <iframe id="rcaDistFrame" src="rca-distributions.html?dots=peers&amp;design=band" title="Boston metro specialization across all US metros"></iframe>
           </div>
         </div>
       </section>
