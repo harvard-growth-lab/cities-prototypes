@@ -2124,12 +2124,12 @@
                       '</span><span class="pci">' + valTxt + '</span>';
         b.addEventListener("mouseenter", () => {
           cells.style("opacity", c => c === d ? 1 : .18)
-            .select("rect").attr("stroke", c => c === d ? "#1a2226" : null)
-            .attr("stroke-width", c => c === d ? 2.5 : null);
+            .select("rect").style("stroke", c => c === d ? "#1a2226" : null)
+            .style("stroke-width", c => c === d ? 2.5 : null);
           svg.selectAll(".sector-layer").style("opacity", .18);
         });
         b.addEventListener("mouseleave", () => {
-          cells.style("opacity", 1).select("rect").attr("stroke", null).attr("stroke-width", null);
+          cells.style("opacity", 1).select("rect").style("stroke", null).style("stroke-width", null);
           svg.selectAll(".sector-layer").style("opacity", 1);
         });
         listWrap.appendChild(b);
@@ -2323,6 +2323,10 @@
           '<div class="tip-row"><span>Jobs</span><span>' +
             Math.round(d.value).toLocaleString() + '</span></div>' + extra;
         tip.hidden = false;
+        /* the mark answers the cursor: ink outline, brought to the front
+           because swarm dots overlap (inline style so it beats the CSS) */
+        this.parentNode.appendChild(this);
+        d3.select(this).select("rect").style("stroke", "#1a2226").style("stroke-width", 2.5);
       })
       .on("mousemove", function(ev){
         const w = wrap.getBoundingClientRect();
@@ -2330,7 +2334,10 @@
         tip.style.left = Math.max(0, Math.min(left, w.width - tip.offsetWidth)) + "px";
         tip.style.top  = Math.max(0, Math.min(top, w.height - tip.offsetHeight)) + "px";
       })
-      .on("mouseleave", function(){ tip.hidden = true; });
+      .on("mouseleave", function(){
+        tip.hidden = true;
+        d3.select(this).select("rect").style("stroke", null).style("stroke-width", null);
+      });
   }
 
   function initExportOptions(){

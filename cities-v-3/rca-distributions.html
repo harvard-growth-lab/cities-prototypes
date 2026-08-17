@@ -52,7 +52,7 @@
      narrower. One deliberate rhythm: host controls -> 24px -> key -> 14px
      -> chart, and no standalone page padding above or below. */
   .embedded .wrap{padding:0 26px 8px;}
-  .embedded .key{margin:6px 0 14px; gap:18px 26px;}
+  .embedded .key{margin:14px 0 0; gap:18px 26px;}
   /* nowrap so a long label wraps the whole legend item to the next line rather
      than stacking text beside its swatch */
   .key-item{display:flex; align-items:center; gap:8px; font-size:13px; color:var(--ink); white-space:nowrap}
@@ -205,14 +205,14 @@
 <body>
 <div class="wrap">
 
-  <div class="key" id="key"></div>
-
   <div class="chart" id="chart">
     <svg id="svg" role="img" aria-labelledby="svg-title"><title id="svg-title">Distribution of industry concentration (RCA) across U.S. metropolitan areas, with the Boston metro highlighted</title></svg>
     <div class="tip" id="tip" role="status" aria-live="polite"></div>
   </div>
 
   <button type="button" id="rowsBtn" class="rows-btn">Show all</button>
+
+  <div class="key" id="key"></div>
 
   <div id="tablewrap" hidden></div>
 
