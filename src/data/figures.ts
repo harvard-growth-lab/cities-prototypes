@@ -485,13 +485,25 @@ const nodeById = new Map(TREE_NODES.map((n) => [n.id, n]));
 
 /** Alternate tree: the root fork is unchanged, then each side goes straight
  *  to two leaves — demand → metro-wide/place-specific, supply →
- *  housing/amenities. Root and branch heads are reused verbatim;
- *  housing/amenities keep their ids (so a pick survives the variant switch)
- *  but reparent to the branch head; the two demand leaves are new. */
+ *  housing/amenities. The root is reused verbatim; the two branch heads keep
+ *  their ids and titles but restate their closing sentence, which in the
+ *  paper tree names the children THAT tree has (new activities / existing
+ *  industries, cost of living / amenities) and would otherwise describe a
+ *  fork the reader cannot see here. The supply and amenities leaves keep
+ *  their ids too, so a pick survives the variant switch, and reparent to the
+ *  branch head; the two demand leaves are new. */
 export const TREE_NODES_ALT: TreeNodeData[] = [
   nodeById.get("root")!,
-  nodeById.get("demand")!,
-  nodeById.get("supply")!,
+  {
+    ...nodeById.get("demand")!,
+    detail:
+      "Constraints that most affect firms — the city's ability to produce and sell tradables. The demand for a city's exports determines the labor demanded in both the tradable and non-tradable sectors. This branch splits by how far the trouble reached: a metro-wide shock, or one specific to the place.",
+  },
+  {
+    ...nodeById.get("supply")!,
+    detail:
+      "Constraints that most affect residents' willingness to live and work in the city — its workforce is determined by what living there costs and what living there is like. The branch separates housing from amenities.",
+  },
   {
     id: "metrowide",
     parent: "demand",
@@ -510,18 +522,23 @@ export const TREE_NODES_ALT: TreeNodeData[] = [
     tests:
       "Is the metro's population growth at or above the median metro's, while the place's is not?",
   },
-  /* the alt supply fork is cost vs amenities, so this leaf reuses the full
-     tree's Cost of Living node rather than jumping straight to Housing —
-     which also lets a pick round-trip between the two structures, since the
-     id is shared */
+  /* This leaf keeps the full tree's Cost of Living NODE ID, so a pick
+     round-trips between the two structures (supply/col/housing ⇄
+     supply/col). It is TITLED Housing, though: the alt fork tests housing
+     cost alone — home values in the US, rents in Mexico — with no
+     transportation branch under it, and Housing is what the fork's own
+     question ("home values climbing faster than the typical metro?"), its
+     evidence chip and the diagnostic-tree explainer all call that answer.
+     Only the full tree, where Cost of Living really does fork into Housing
+     and Transportation, still carries the broader name. */
   {
     ...nodeById.get("col")!,
     parent: "supply",
-    title: "Cost of living",
+    title: "Housing",
     detail:
-      "People and pay move apart — they are leaving while pay climbs — and what it costs to live here is climbing faster than the typical metro. The wage gain is being taken back at the door.",
+      "People and pay move apart — they are leaving while pay climbs — and housing is climbing faster than the typical metro. The wage gain is being taken back at the door.",
     tests:
-      "Is cost-of-living growth above the median metro's? Home values are the measure in the US, rents in Mexico.",
+      "Is housing-cost growth above the median metro's? Home values are the measure in the US, rents in Mexico.",
   },
   {
     ...nodeById.get("amen")!,

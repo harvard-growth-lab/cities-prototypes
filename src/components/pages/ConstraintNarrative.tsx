@@ -136,7 +136,9 @@ const LEAF = { h: 30, y: 420 };
 const LEAF_DEFS: { id: LeafId; x: number; w: number; side: Side; title: string }[] = [
   { id: "metrowide", x: 105, w: 172, side: "demand", title: "Metro-wide shock" },
   { id: "placespec", x: 305, w: 188, side: "demand", title: "Place-specific shock" },
-  { id: "col", x: 505, w: 152, side: "supply", title: "Cost of living" },
+  /* "Housing", not "Cost of living": this fork tests home-value growth
+     alone, and the box is sized to the shorter word (x is the centre) */
+  { id: "col", x: 505, w: 118, side: "supply", title: "Housing" },
   { id: "amen", x: 685, w: 128, side: "supply", title: "Amenities" },
 ];
 const LEAF_X = Object.fromEntries(LEAF_DEFS.map((l) => [l.id, l.x])) as Record<
@@ -1565,7 +1567,7 @@ export function ConstraintNarrative({
                       textAnchor="end"
                       fill={TREE_SIDE_COLOR.supply}
                     >
-                      faster → Cost of living
+                      faster → Housing
                     </text>
                     <text
                       className="nv-elab"
