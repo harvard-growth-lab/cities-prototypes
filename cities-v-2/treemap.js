@@ -2076,6 +2076,7 @@
     const m = exportMetric();
     const dur = animate ? EOPT_DUR : 0;
     const leaves = cells.data();
+    if (exportClearHover) exportClearHover();   /* no highlight survives a view change */
     const W2 = WIDTH, H2 = HEIGHT;
 
     svg.selectAll(".opt-overlay").interrupt().transition().duration(200).attr("opacity", 0).remove();
@@ -2299,13 +2300,30 @@
   /* One tooltip serves every form the export cells take — treemap tiles,
      swarm dots, ranked bars — because the morphs reuse the same elements.
      Same card pattern as the RCA row tooltips. */
+  let exportClearHover = null;   /* lets view changes clear a live highlight */
+
   function initExportTooltip(){
     const svgEl = document.getElementById("exportTreemapSvg");
     const tip = document.getElementById("exportTip");
     const wrap = document.querySelector(".export-viz-row");
     if (!svgEl || !tip || !wrap) return;
+    /* Self-healing highlight: re-parenting a hovered node (the bring-to-
+       front) can swallow its mouseleave, so never trust leave alone — track
+       the hot mark and clear it on the next enter, on leaving the svg, and
+       on any view change. */
+    let hot = null;
+    const clearHot = () => {
+      tip.hidden = true;
+      if (!hot) return;
+      d3.select(hot).select("rect").style("stroke", null).style("stroke-width", null);
+      hot = null;
+    };
+    exportClearHover = clearHot;
+    d3.select(svgEl).on("mouseleave.exporttip", () => { tip.hidden = true; clearHot(); });
     d3.select(svgEl).selectAll("g.industry")
       .on("mouseenter", function(ev, d){
+        clearHot();
+        hot = this;
         const name = d.data.name;
         const mode = colorMode.exportTreemapSvg;
         let extra = "";
@@ -2329,14 +2347,16 @@
         d3.select(this).select("rect").style("stroke", "#1a2226").style("stroke-width", 2.5);
       })
       .on("mousemove", function(ev){
+        /* rides the cursor's top-right corner, 10px off in both axes */
         const w = wrap.getBoundingClientRect();
-        const left = ev.clientX - w.left + 16, top = ev.clientY - w.top + 14;
+        const left = ev.clientX - w.left + 10;
+        const top  = ev.clientY - w.top - tip.offsetHeight - 10;
         tip.style.left = Math.max(0, Math.min(left, w.width - tip.offsetWidth)) + "px";
         tip.style.top  = Math.max(0, Math.min(top, w.height - tip.offsetHeight)) + "px";
       })
       .on("mouseleave", function(){
         tip.hidden = true;
-        d3.select(this).select("rect").style("stroke", null).style("stroke-width", null);
+        clearHot();
       });
   }
 

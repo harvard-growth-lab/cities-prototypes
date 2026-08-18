@@ -169,11 +169,17 @@
     display:flex;align-items:center;cursor:pointer;
   }
   .landing-header .logo-btn img{height:36px;display:block;}
-  .landing-header #citySelect{display:none !important;}
   .landing-hero{
     position:relative;z-index:1;flex:1;display:flex;flex-direction:column;
-    align-items:center;justify-content:center;text-align:center;min-height:0;
+    align-items:center;justify-content:center;text-align:left;min-height:0;
     padding:0 24px;
+  }
+  /* two-zone hero: the story reads on the left, the action stands on the
+     right, both on one shared measure */
+  .hero-grid{
+    display:grid;grid-template-columns:minmax(0,620px) 440px;
+    justify-content:space-between;gap:56px;
+    align-items:center;width:min(1140px,100%);
   }
   .landing-hero .eyebrow{margin-bottom:14px;}
   /* Title case rather than the site's small-caps .eyebrow — this is the
@@ -183,42 +189,86 @@
     margin-bottom:14px;
   }
   .landing-hero h1{
-    color:var(--teal);font-size:clamp(40px,4.4vw,64px);font-weight:700;line-height:1.1;
-    letter-spacing:-.6px;max-width:21ch;
+    color:var(--teal);font-size:clamp(44px,4.8vw,70px);font-weight:700;line-height:1.08;
+    letter-spacing:-.6px;
   }
   .landing-hero p.intro{
-    max-width:660px;font-size:18px;line-height:28px;letter-spacing:.1px;color:#000;
-    margin:22px 0 38px;
+    font-size:18px;line-height:29px;letter-spacing:.1px;color:#000;
+    margin:20px 0 0;
   }
-  .selector-card{
-    background:#fff;border:1px solid var(--border);border-radius:10px;
-    box-shadow:var(--shadow-md);
-    width:790px;max-width:calc(100% - 24px);padding:26px 30px 30px;
-    display:flex;gap:22px;align-items:flex-end;text-align:left;
+  .hero-copy .intro + .intro{margin-top:12px;}
+  /* jump links are wayfinding, not calls to action: quiet text under the copy */
+  .jump-quiet{margin-top:38px;display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 18px;}
+  .jump-quiet-label{font-size:12.5px;font-weight:600;color:#255862;}
+  .jump-quiet button{
+    background:none;border:0;padding:0;cursor:pointer;font-family:inherit;
+    font-size:13.5px;color:#255862;
+    text-decoration:underline;text-underline-offset:3px;
   }
-  .selector-card .field{display:flex;flex-direction:column;gap:8px;}
-  .selector-card label{font-size:13px;font-weight:600;letter-spacing:.3px;color:var(--ink);}
-  #citySelect{width:300px;}
-  #spanSelect{width:190px;}
-  .selector-card .btn-orange{margin-left:auto;}
+  .jump-quiet button:hover{color:var(--teal);}
 
-  .jump-wrap{margin-top:42px;display:flex;flex-direction:column;align-items:center;gap:14px;}
-  .jump-wrap .jump-label{
-    font-size:13px;font-weight:600;letter-spacing:.5px;font-variant:none;color:#000000;
+  /* the diagnose panel: one location, its verdict, its numbers, the action */
+  .diagnose-panel{
+    background:#fff;border:1px solid var(--border);border-radius:12px;
+    box-shadow:var(--shadow-md);width:100%;padding:30px 28px;
+    display:flex;flex-direction:column;gap:20px;text-align:left;
   }
-  .jump-row{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;max-width:1100px;}
-  .jump-item{
-    display:inline-flex;align-items:center;gap:8px;
-    background:rgba(255,255,255,.9);border:1px solid var(--border-strong);border-radius:4px;
-    font-size:14.5px;font-weight:600;letter-spacing:.2px;color:var(--ink);
-    padding:9px 18px;
-    transition:all .16s ease;box-shadow:0 1px 2px rgba(37,88,98,.06);
+  .diagnose-panel .field{display:flex;flex-direction:column;gap:8px;}
+  .diagnose-panel label{font-size:13px;font-weight:600;letter-spacing:.3px;color:var(--ink);}
+  #citySelect{width:100%;}
+  .btn-diagnose{
+    width:100%;display:flex;align-items:center;justify-content:center;gap:10px;
+    background:var(--teal);color:#fff;border:0;border-radius:6px;
+    font-family:inherit;font-size:16px;font-weight:600;letter-spacing:.2px;
+    padding:13px 18px;cursor:pointer;transition:background .16s ease;
   }
-  .jump-item:hover{
-    border-color:var(--teal);color:var(--teal);transform:translateY(-2px);
-    box-shadow:var(--shadow-sm);background:#fff;
+  .btn-diagnose:hover{background:#1d4750;}
+  .btn-diagnose .city-build{width:22px;height:22px;flex:none;}
+  .btn-diagnose .bd-chev{width:14px;height:9px;flex:none;}
+
+  .city-hint{
+    display:flex;flex-direction:column;gap:16px;
+    border-radius:8px;padding:22px 20px;background:rgba(192,36,74,.07);
   }
-  .jump-item svg{width:17px;height:17px;flex:0 0 auto;stroke:currentColor;}
+  .city-hint[data-dir="up"]{background:rgba(61,154,67,.09);}
+  .verdict-row{display:flex;align-items:center;gap:12px;}
+  /* the verdict pictogram: a city, and people leaving it or arriving,
+     depending on which way the decade went */
+  .verdict-arrow{flex:none;width:64px;height:28px;}
+  .verdict-arrow svg{width:64px;height:28px;display:block;overflow:visible;}
+  .city-hint[data-dir="down"] .verdict-arrow{color:var(--fall);}
+  .city-hint[data-dir="up"] .verdict-arrow{color:var(--rise);}
+  .ppl-anim .ppl{fill:currentColor;opacity:0;}
+  .ppl-anim .ppl{animation:ppl-leave 3s linear infinite;}
+  .ppl-anim .ppl-2{animation-delay:1s;}
+  .ppl-anim .ppl-3{animation-delay:2s;}
+  .city-hint[data-dir="up"] .ppl-anim .ppl{animation-name:ppl-arrive;}
+  @keyframes ppl-leave{
+    0%{transform:translateX(0);opacity:0;}
+    18%{opacity:1;}
+    78%{opacity:.85;}
+    100%{transform:translateX(28px);opacity:0;}
+  }
+  @keyframes ppl-arrive{
+    0%{transform:translateX(28px);opacity:0;}
+    22%{opacity:1;}
+    82%{opacity:.85;}
+    100%{transform:translateX(0);opacity:0;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .ppl-anim .ppl{animation:none;opacity:0;}
+    .ppl-anim .ppl-1{opacity:1;transform:translateX(14px);}
+  }
+  .city-hint-head{font-size:16px;line-height:1.45;color:var(--ink);margin:0;}
+  /* one number, told big: the decline itself */
+  .verdict-viz{display:flex;align-items:center;gap:18px;}
+  .verdict-stat{flex:none;}
+  .verdict-big{display:flex;align-items:baseline;gap:8px;}
+  .city-hint[data-dir="down"] .verdict-big{color:var(--fall);}
+  .city-hint[data-dir="up"] .verdict-big{color:var(--rise);}
+  .verdict-num{font-size:56px;font-weight:700;line-height:1;letter-spacing:-1.5px;}
+  .verdict-per{font-size:16px;font-weight:600;}
+  .verdict-span{display:block;font-size:13px;font-weight:600;color:var(--ink);margin-top:8px;}
 
   .landing-bottom{
     position:relative;z-index:1;flex:0 0 auto;display:flex;flex-direction:column;align-items:center;
@@ -1722,13 +1772,15 @@
 
   /* keep the non-scrolling landing inside one viewport on shorter screens */
   @media (max-height: 960px){
-    .landing-hero h1{font-size:clamp(36px,3.9vw,54px);}
-    .landing-hero p.intro{margin:16px 0 26px;}
-    .jump-wrap{margin-top:28px;}
+    .landing-hero h1{font-size:clamp(40px,4.2vw,60px);}
+    .landing-hero p.intro{margin:16px 0 0;}
+    .jump-quiet{margin-top:26px;}
   }
   @media (max-height: 820px){
-    .landing-hero p.intro{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;max-width:620px;}
-    .selector-card{padding:20px 24px 24px;}
+    /* never hide the copy — tighten the type instead */
+    .jump-quiet{margin-top:20px;}
+    .landing-hero h1{font-size:clamp(36px,3.8vw,52px);}
+    .diagnose-panel{padding:18px 20px;}
   }
 
   /* population = the data point to notice: hero row, accent knob with pulse,
@@ -2020,6 +2072,38 @@
   }
   .intro-dots i.on{background:var(--teal);}
   .intro-dots i.cur{transform:scale(1.35);}
+
+  /* ---- the landing city picker, in the time-span menu's family ---- */
+  .citypick{position:relative;display:block;width:100%;}
+  .citypick-native{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px;}
+  .citypick-btn{
+    width:100%;height:auto;display:flex;align-items:center;justify-content:space-between;
+    gap:10px;text-align:left;font-family:inherit;padding:9px 30px 9px 12px;
+  }
+  .citypick-txt{display:flex;flex-direction:column;gap:2px;font-size:14.5px;font-weight:600;color:var(--ink);}
+  .citypick-sub{font-size:12px;font-weight:600;}
+  .citypick-sub.down{color:var(--fall);}
+  .citypick-sub.up{color:var(--rise);}
+  .citypick-menu{
+    position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:60;
+    background:#fff;border:1px solid var(--border-strong);border-radius:6px;
+    box-shadow:var(--shadow-md);padding:5px;
+  }
+  .citypick-opt{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;
+    background:none;border:0;border-radius:4px;cursor:pointer;font-family:inherit;
+    padding:9px 10px;text-align:left;
+  }
+  .citypick-opt:hover,.citypick-opt.is-on{background:var(--teal-tint);}
+  .citypick-opt-name{display:flex;flex-direction:column;font-size:14px;font-weight:600;color:var(--ink);}
+  .citypick-opt-ctry{font-size:11.5px;font-weight:400;color:var(--ink-soft);}
+  .citypick-opt-verdict{font-size:12.5px;font-weight:700;white-space:nowrap;}
+  .citypick-opt-verdict.down{color:var(--fall);}
+  .citypick-opt-verdict.up{color:var(--rise);}
+  .citypick--bar{width:auto;min-width:250px;}
+  .citypick--bar .citypick-btn{height:34px;padding:0 30px 0 12px;}
+  .citypick--bar .citypick-txt{flex-direction:row;align-items:baseline;gap:9px;font-size:14px;}
+  .citypick--bar .citypick-menu{width:320px;right:auto;}
 </style>
 </head>
 <body>
@@ -2032,13 +2116,6 @@
     <button class="logo-btn" onclick="backToLanding()" title="Back to start">
       <img alt="Growth Lab" src="assets/gl_logo.png">
     </button>
-    <select id="citySelect" class="dd">
-      <option>Boston, United States of America</option>
-      <option>Chicago, United States of America</option>
-      <option>Detroit, United States of America</option>
-      <option>Bogotá, Colombia</option>
-      <option>Nairobi, Kenya</option>
-    </select>
     <div class="spacer"></div>
     <nav class="toolbar-links">
       <a href="#" class="current-page" onclick="toggleExplainers(false);return false;">City Diagnosis</a>
@@ -2056,69 +2133,71 @@
   </header>
 
   <div class="landing-hero">
-    <p class="landing-kicker">Growth Lab Cities Tool</p>
-    <h1>Why is a city growing or shrinking?</h1>
-    <p class="intro">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Proin tortor purus platea sit eu id nisi litora libero. Neque vulputate consequat ac amet augue blandit maximus aliquet congue.</p>
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <p class="landing-kicker">Growth Lab Cities Tool</p>
+        <h1>Why is a city growing or shrinking?</h1>
+        <p class="intro">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Proin tortor purus platea sit eu id nisi litora libero. Neque vulputate consequat ac amet augue blandit maximus aliquet congue.</p>
+        <p class="intro">Curabitur euismod magna sit amet velit fermentum, at porta risus dictum. Integer tristique ligula nec urna varius, in aliquet sapien pulvinar. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Donec fringilla nunc vitae augue convallis, sed volutpat justo ornare.</p>
+        <div class="jump-quiet">
+          <span class="jump-quiet-label">Jump to a section:</span>
+          <button type="button" onclick="enterTool('page-overview')">Economic Fundamentals</button>
+          <button type="button" onclick="enterTool('page-export-basket')">Metro Exports</button>
+          <button type="button" onclick="enterTool('page-constraints')">City Constraints</button>
+          <button type="button" onclick="enterTool('page-levers')">Levers for Change</button>
+        </div>
+      </div>
 
-    <div class="selector-card">
-      <div class="field">
-        <label for="citySelect">Select a city</label>
-        <select id="citySelect" class="dd">
-          <option>Boston, United States of America</option>
-          <option>Chicago, United States of America</option>
-          <option>Detroit, United States of America</option>
-          <option>Bogotá, Colombia</option>
-          <option>Nairobi, Kenya</option>
-        </select>
-      </div>
-      <div class="field">
-        <label for="spanSelect">Time span comparison</label>
-        <select id="spanSelect" class="dd">
-          <option>10 years</option>
-          <option>5 years</option>
-          <option>15 years</option>
-        </select>
-      </div>
-      <button class="btn-orange" onclick="enterTool('page-overview')">Start Exploring</button>
-    </div>
+      <aside class="diagnose-panel">
+        <div class="field">
+          <label for="citySelect">Select a location</label>
+          <select id="citySelect" class="dd">
+            <option>Boston, United States of America</option>
+            <option>Chicago, United States of America</option>
+            <option>Detroit, United States of America</option>
+            <option>Bogotá, Colombia</option>
+            <option>Nairobi, Kenya</option>
+          </select>
+        </div>
 
-    <div class="jump-wrap">
-      <span class="jump-label">Jump to Section</span>
-      <div class="jump-row">
-        <button class="jump-item" onclick="enterTool('page-overview')">
-          <svg viewBox="0 0 20 20" fill="none" stroke-width="1.4"><path d="M2 17h16"/><path d="M3.5 17V9h4v8"/><path d="M8.5 17V4.5h4.5V17"/><path d="M14 17v-6h3v6"/><path d="M10.2 7h1.5M10.2 9.5h1.5M10.2 12h1.5"/></svg>
-          Economic Fundamentals
+        <div class="city-hint" id="cityHint" data-dir="down">
+          <div class="verdict-row">
+            <span class="verdict-arrow" aria-hidden="true">
+              <svg class="ppl-anim" viewBox="0 0 64 28">
+                <g class="ppl-city" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M2 26h20"/><path d="M4 26V15h6v11"/><path d="M12 26V8h7v18"/>
+                  <path d="M14.6 12h1.8M14.6 16h1.8M14.6 20h1.8" stroke-width="1.2"/>
+                </g>
+                <g class="ppl ppl-1"><circle cx="30" cy="15" r="2.6"/><path d="M25.8 26c.5-4.4 7.9-4.4 8.4 0Z"/></g>
+                <g class="ppl ppl-2"><circle cx="30" cy="15" r="2.6"/><path d="M25.8 26c.5-4.4 7.9-4.4 8.4 0Z"/></g>
+                <g class="ppl ppl-3"><circle cx="30" cy="15" r="2.6"/><path d="M25.8 26c.5-4.4 7.9-4.4 8.4 0Z"/></g>
+              </svg>
+            </span>
+            <p class="city-hint-head"></p>
+          </div>
+          <div class="verdict-viz">
+            <div class="verdict-stat">
+              <div class="verdict-big"><span class="verdict-num"></span><span class="verdict-per">a year</span></div>
+              <span class="verdict-span">Population between 2015 and 2025</span>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-diagnose" id="diagnoseBtn" onclick="enterTool('page-overview')">
+          <svg class="city-build" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
+            <path d="M2 17h16"/>
+            <path class="cb-b cb-1" d="M3.5 17V9h4v8"/>
+            <path class="cb-b cb-2" d="M8.5 17V4.5h4.5V17"/>
+            <path class="cb-b cb-3" d="M14 17v-6h3v6"/>
+            <path class="cb-w" d="M10.2 7h1.5M10.2 9.5h1.5M10.2 12h1.5"/>
+          </svg>
+          <span id="diagnoseLabel">Diagnose Boston</span>
+          <svg class="bd-chev" viewBox="0 0 16 9" fill="none" aria-hidden="true"><path d="M1.5 1.5 8 7.5l6.5-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </button>
-        <button class="jump-item" onclick="enterTool('page-export-basket')">
-          <svg viewBox="0 0 20 20" fill="none" stroke-width="1.4"><path d="M3 8v8.5h9V8"/><path d="M2 5.5h11V8H2z"/><path d="M6.3 11h2.4"/><path d="M13.5 6.5 18 2m0 0h-3.6M18 2v3.6"/></svg>
-          Metro Exports
-        </button>
-        <button class="jump-item" onclick="enterTool('page-constraints')">
-          <svg viewBox="0 0 20 20" fill="none" stroke-width="1.4"><rect x="3" y="9" width="8" height="8.5" rx="1"/><path d="M6.8 9V6.4a3.2 3.2 0 0 1 6.4 0V9"/><path d="M10 12.4v2.2"/></svg>
-          City Constraints
-        </button>
-        <button class="jump-item" onclick="enterTool('page-levers')">
-          <svg viewBox="0 0 20 20" fill="none" stroke-width="1.4"><path d="M6 3v14M14 3v14"/><circle cx="6" cy="7.5" r="2" fill="white"/><circle cx="14" cy="12.5" r="2" fill="white"/></svg>
-          Levers for Change
-        </button>
-      </div>
+      </aside>
     </div>
   </div>
 
-  <div class="landing-bottom">
-    <button class="start-scrolling" onclick="enterTool('page-overview')">
-      <span class="ss-row">Start Scrolling
-        <svg class="ss-chev" viewBox="0 0 16 9" fill="none" aria-hidden="true"><path d="M1.5 1.5 8 7.5l6.5-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </span>
-      <svg class="city-build" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
-        <path d="M2 17h16"/>
-        <path class="cb-b cb-1" d="M3.5 17V9h4v8"/>
-        <path class="cb-b cb-2" d="M8.5 17V4.5h4.5V17"/>
-        <path class="cb-b cb-3" d="M14 17v-6h3v6"/>
-        <path class="cb-w" d="M10.2 7h1.5M10.2 9.5h1.5M10.2 12h1.5"/>
-      </svg>
-    </button>
-  </div>
 </div>
 
 <!-- ==================== TOOL VIEW ==================== -->
@@ -4352,10 +4431,104 @@
   /* ---------- city & time span sync ---------- */
   const cityL=document.getElementById("citySelect"),
         cityT=document.getElementById("citySelectTool"),
-        spanL=document.getElementById("spanSelect"),
         spanT=document.getElementById("spanSelectTool");
+  /* Landing teaser: every city carries its ten-year population verdict and
+     the tool's promise. Boston's figure matches the Overview's real one;
+     the rest are illustrative like the rest of the prototype. */
+  const CITY_HINTS = {
+    "Boston, United States of America":  { dir:"down", rate:-0.8, head:"<strong>Boston is shrinking</strong> \u2014 diagnose what is constraining its growth." },
+    "Chicago, United States of America": { dir:"up",   rate: 0.6, head:"<strong>Chicago is growing</strong> \u2014 diagnose what fuels it, and what could stall it." },
+    "Detroit, United States of America": { dir:"up",   rate: 0.9, head:"<strong>Detroit is growing</strong> \u2014 diagnose what fuels it, and what could stall it." },
+    "Bogot\u00e1, Colombia":            { dir:"up",   rate: 1.2, head:"<strong>Bogot\u00e1 is growing</strong> \u2014 diagnose what fuels it, and what could stall it." },
+    "Nairobi, Kenya":                    { dir:"up",   rate: 3.9, head:"<strong>Nairobi is growing fast</strong> \u2014 diagnose what fuels it, and what could stall it." }
+  };
+  /* seeded 11-point population path so each city keeps its own wiggle */
+  function hintSparkPath(city, rate){
+    let h = 0;
+    for (const c of city) h = (h * 31 + c.charCodeAt(0)) | 0;
+    const rnd = () => { h = (Math.imul(h, 1103515245) + 12345) | 0; return ((h >>> 16) % 1000) / 1000 - 0.5; };
+    let v = 100;
+    const vals = [v];
+    for (let i = 0; i < 10; i++){ v *= 1 + rate / 100 + rnd() * 0.004; vals.push(v); }
+    const min = Math.min(...vals), max = Math.max(...vals), span = Math.max(max - min, 0.6);
+    const X = i => 4 + i * (150 - 8) / 10;
+    const Y = val => 6 + (max - val) / span * 30;
+    return { d: vals.map((val, i) => (i ? "L" : "M") + X(i).toFixed(1) + " " + Y(val).toFixed(1)).join(""),
+             ex: X(10), ey: Y(vals[10]) };
+  }
+  const fmtRate = r => (r > 0 ? "+" : "\u2212") + Math.abs(r).toFixed(1) + "%/yr";
+  const cityPickRefreshers = [];
+  /* Every location select wears the same clothes as the time-span menu: the
+     native select keeps the value and change event, a drawn button and menu
+     carry the design — each option shows its city, country, and its
+     ten-year verdict in the direction colour. The toolbar variant keeps a
+     one-line button. */
+  function buildCityPickers(){
+    document.querySelectorAll("select.dd[id^=citySelect]").forEach(sel => {
+    if (sel.dataset.picked) return;
+    sel.dataset.picked = "1";
+    const bar = sel.id === "citySelectTool";
+    const wrap = document.createElement("div");
+    wrap.className = "citypick" + (bar ? " citypick--bar" : "");
+    sel.parentNode.insertBefore(wrap, sel);
+    wrap.appendChild(sel);
+    sel.classList.add("citypick-native");
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "dd citypick-btn";
+    wrap.appendChild(btn);
+    const menu = document.createElement("div");
+    menu.className = "citypick-menu";
+    menu.hidden = true;
+    wrap.appendChild(menu);
+    /* the closed button stays plain — city and country, as the native
+       select always printed it; the verdicts live in the open menu */
+    function renderBtn(){
+      btn.innerHTML = '<span class="citypick-txt">' + sel.value + '</span>';
+    }
+    function renderMenu(){
+      menu.textContent = "";
+      [...sel.options].forEach(o => {
+        const d = CITY_HINTS[o.value];
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "citypick-opt" + (o.value === sel.value ? " is-on" : "");
+        b.innerHTML = '<span class="citypick-opt-name">' + o.value.split(",")[0] +
+          '<span class="citypick-opt-ctry">' + o.value.split(",").slice(1).join(",").trim() + '</span></span>' +
+          '<span class="citypick-opt-verdict ' + d.dir + '">' +
+          (d.dir === "down" ? "\u25BC " : "\u25B2 ") + fmtRate(d.rate) + '</span>';
+        b.addEventListener("click", () => {
+          sel.value = o.value;
+          syncCity(o.value);
+          menu.hidden = true;
+        });
+        menu.appendChild(b);
+      });
+    }
+    btn.addEventListener("click", () => { menu.hidden = !menu.hidden; });
+    document.addEventListener("click", e => { if (!wrap.contains(e.target)) menu.hidden = true; });
+    const refresh = () => { renderBtn(); renderMenu(); };
+    cityPickRefreshers.push(refresh);
+    refresh();
+    });
+  }
+
+  function updateCityHint(v){
+    const h = document.getElementById("cityHint");
+    if (!h) return;
+    const d = CITY_HINTS[v] || CITY_HINTS["Boston, United States of America"];
+    h.dataset.dir = d.dir;
+    h.querySelector(".city-hint-head").innerHTML = d.head;
+    h.querySelector(".verdict-num").textContent =
+      (d.rate > 0 ? "+" : "\u2212") + Math.abs(d.rate).toFixed(1) + "%";
+    const lab = document.getElementById("diagnoseLabel");
+    if (lab) lab.textContent = "Diagnose " + v.split(",")[0];
+  }
+
   function syncCity(v){
+    updateCityHint(v);
     cityL.value=v; cityT.value=v;
+    cityPickRefreshers.forEach(f => f());
     if(document.getElementById("tool").classList.contains("active")) exploredCities.add(v);
     document.querySelectorAll(".city-name").forEach(el=>el.textContent=v);
     document.querySelectorAll(".city-short").forEach(el=>el.textContent=v.split(",")[0]);
@@ -4389,6 +4562,8 @@
     }
   }, {passive:true});
 
+  updateCityHint(cityL.value);
+  buildCityPickers();
   cityL.onchange=()=>syncCity(cityL.value);
   cityT.onchange=()=>syncCity(cityT.value);
   /* ---------- time span picker ----------
@@ -4483,7 +4658,6 @@
     document.querySelectorAll(".spanpick").forEach(w => w._repaint && w._repaint());
   };
 
-  spanL.onchange=()=>syncSpan(spanL.value);
   spanT.onchange=()=>syncSpan(spanT.value);
 
   /* ---------- put in practice ---------- */
