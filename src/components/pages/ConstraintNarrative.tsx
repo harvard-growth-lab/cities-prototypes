@@ -107,11 +107,17 @@ const trackVh = (stops: number) => stops * STEP_VH + 100;
    scale that keeps the badge row on it. */
 const TREE_OPENING_POSE = "translate(91px, -47px) scale(1.3)";
 const TREE_HOME_POSE = "translate(0px, 0px) scale(1)";
+/* the full walk's tree phase rides slightly enlarged too (user-set: at 1.0
+   the tree read as too small beside the inset) — 1.06 is the most the
+   narrowed inset allows, and it only applies from TREE_BEAT: during the
+   chart beats the traveller dot inside this wrap is positioned in
+   full-stage chart coordinates, which must not be scaled. */
+const TREE_GROWN_POSE = "translate(-6px, -8px) scale(1.06)";
 /* the shortened walk's instrument stops give the INSTRUMENT the stage: the
    tree eases down toward context size on the left while the hero panel
-   takes the right. 0.9 is the largest scale that keeps the badge row clear
-   of the hero panel's left edge. */
-const TREE_ASIDE_POSE = "translate(6px, 30px) scale(0.9)";
+   takes the right. 0.94 is the largest scale that keeps the badge row clear
+   of the (narrowed) hero panel's left edge. */
+const TREE_ASIDE_POSE = "translate(0px, 26px) scale(0.94)";
 
 type Side = "demand" | "supply";
 type LeafId = "metrowide" | "placespec" | "col" | "amen";
@@ -148,11 +154,13 @@ const LEAF_X = Object.fromEntries(LEAF_DEFS.map((l) => [l.id, l.x])) as Record<
 /* the instrument panel: sized for a pizza square big enough to read, with
    margins for a rotated y-axis title on the left and the axis title +
    quadrant readings stacked below */
-const INSET = { x: 772, y: 30, w: 388, h: 372 };
+/* both panels sit trimmed against the right edge (user-set, twice now: the
+   instruments kept crowding the tree, which rides enlarged since the trim) */
+const INSET = { x: 802, y: 30, w: 358, h: 372 };
 /* the shortened walk's HERO version of the same panel: the right half of
-   the stage, sized around a 400-unit pizza square — the instrument is the
-   thing being read at those stops, so it gets the room */
-const INSET_HERO = { x: 730, y: 24, w: 440, h: 470 };
+   the stage — the instrument is the thing being read at those stops, so it
+   gets the room */
+const INSET_HERO = { x: 760, y: 24, w: 410, h: 470 };
 
 /** elbow path: straight drop, bus across, straight drop */
 const elbow = (x0: number, y0: number, busY: number, x1: number, y1: number) =>
@@ -523,8 +531,8 @@ export function ConstraintNarrative({
   const zx = (p: number) => hz.x + ((p + 1.5) / 2.5) * hz.w; // −1.5…+1.0 %/yr
   /* demand: the metro's population dial on the same pizza plane */
   const pz = short
-    ? { x: inset.x + 56, y: inset.y + 48, s: 330 }
-    : { x: inset.x + 66, y: inset.y + 44, s: 258 };
+    ? { x: inset.x + 56, y: inset.y + 48, s: 310 }
+    : { x: inset.x + 66, y: inset.y + 44, s: 240 };
   const pzx = (u: number) => pz.x + ((u + 1) / 2) * pz.s;
   const pzy = (u: number) => pz.y + ((1 - u) / 2) * pz.s;
 
@@ -940,7 +948,9 @@ export function ConstraintNarrative({
                     ? stepIdx === 0
                       ? TREE_OPENING_POSE
                       : TREE_ASIDE_POSE
-                    : TREE_HOME_POSE,
+                    : step >= TREE_BEAT
+                      ? TREE_GROWN_POSE
+                      : TREE_HOME_POSE,
                   transition: "transform 0.9s cubic-bezier(0.4, 0, 0.2, 1)",
                 }}
               >

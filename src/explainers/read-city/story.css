@@ -1,0 +1,437 @@
+/* ————————————————————————————————————————————————————————————————
+   "How to Read a City" — the pixel-town scrollytelling feature.
+
+   Ported from the cities-explainer prototype, where it was a standalone
+   dark-themed page that owned :root and body. Here it is one card in a
+   light-paper tool, so EVERY selector is scoped under .story-page and the
+   source project's theme tokens are declared on that scope root instead —
+   including the handful of shared classes the feature borrows from its
+   old design system (.eyebrow, .note, .lede, .btn, .prose, .concept,
+   .pull-stat, .next-page-card), each of which would otherwise either
+   clash with this app's own or be missing entirely.
+   ———————————————————————————————————————————————————————————————— */
+
+.story-page {
+  --page: #0d0d0d;
+  --surface: #1a1a19;
+  --ink: #f4f3ee;
+  --ink-2: #c3c2b7;
+  --ink-3: #898781;
+  --hairline: rgba(255, 255, 255, 0.1);
+
+  --gold: #c98500;
+  --gold-bright: #e8b84b;
+
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --max-prose: 680px;
+
+  /* the explainer opens under the 72px toolbar, so a "full viewport"
+     stage here is the viewport minus that bar */
+  --stage-h: calc(100vh - 72px);
+}
+
+@supports (height: 100dvh) {
+  .story-page {
+    --stage-h: calc(100dvh - 72px);
+  }
+}
+
+/* NOTE: no overflow here — .story-page must not become a scroll container,
+   or every position:sticky stage inside it silently stops sticking. */
+.story-page {
+  background: var(--page);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.story-page h1,
+.story-page h2,
+.story-page h3 {
+  font-family: var(--serif);
+  font-weight: 600;
+  line-height: 1.15;
+  margin: 0 0 10px;
+}
+
+.story-page p { margin: 0 0 14px; }
+.story-page a { color: var(--gold-bright); }
+
+/* ————— shared vocabulary the feature borrows ————— */
+
+.story-page .eyebrow {
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 8px;
+}
+
+.story-page .note {
+  font-size: 13px;
+  color: var(--ink-3);
+}
+
+/* line-height and margin are restated (not inherited) because the tool's
+   own .lede — a bare class selector — otherwise reaches in and sets them */
+.story-page .lede {
+  font-size: 18px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  max-width: 680px;
+  margin: 0;
+}
+
+.story-page .btn {
+  display: inline-block;
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--ink-3);
+  border-radius: 999px;
+  padding: 8px 18px;
+  font-size: 14px;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+
+.story-page .btn:hover { border-color: var(--ink); }
+
+.story-page .btn.gold {
+  border-color: var(--gold);
+  color: var(--gold-bright);
+}
+
+.story-page .btn.gold:hover { background: rgba(201, 133, 0, 0.12); }
+
+.story-page .btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.story-page .prose {
+  max-width: var(--max-prose);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.story-page .concept {
+  color: var(--ink);
+  border-bottom: 1px dotted var(--ink-3);
+  cursor: help;
+}
+
+.story-page .pull-stat {
+  font-family: var(--serif);
+  font-size: clamp(24px, 3.4vw, 34px);
+  font-style: italic;
+  color: var(--ink-2);
+  border-left: 2px solid var(--gold);
+  padding-left: 22px;
+  margin: 34px 0;
+  line-height: 1.4;
+}
+
+.story-page .pull-stat .attr {
+  display: block;
+  font-family: var(--sans);
+  font-style: normal;
+  font-size: 13px;
+  color: var(--ink-3);
+  margin-top: 10px;
+}
+
+.story-page .next-page-card {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: 14px;
+  padding: 28px;
+  margin-top: 6vh;
+}
+
+/* ————— the feature ————— */
+
+.story-page .story-act {
+  position: relative;
+}
+
+.story-page .story-stage {
+  position: sticky;
+  top: 0;
+  height: var(--stage-h);
+  overflow: hidden;
+  background: #05070f;
+}
+
+.story-page .story-stage canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  image-rendering: pixelated;
+}
+
+.story-page .story-steps {
+  position: relative;
+  z-index: 2;
+  margin-top: calc(-1 * var(--stage-h));
+  padding: 0 24px 26vh;
+  display: flex;
+  flex-direction: column;
+  gap: 78vh;
+}
+
+.story-page .story-step {
+  width: min(440px, 94vw);
+  margin: 0 auto;
+  background: rgba(9, 10, 15, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 12px;
+  padding: 22px 26px;
+  opacity: 0.38;
+  transition: opacity 0.45s ease, border-color 0.45s ease;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+}
+
+.story-page .story-step.active {
+  opacity: 1;
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.story-page .story-step h3 {
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+
+.story-page .story-step p {
+  font-size: 15.5px;
+  color: var(--ink-2);
+  margin-bottom: 0.6em;
+}
+
+.story-page .story-step p:last-child {
+  margin-bottom: 0;
+}
+
+.story-page .story-step.left {
+  margin-left: max(0px, calc(50% - 570px));
+  margin-right: auto;
+}
+
+.story-page .story-step.right {
+  margin-right: max(0px, calc(50% - 570px));
+  margin-left: auto;
+}
+
+/* The title step is a transparent shell — the underlay lives on the
+   inner .story-titlecard (or .story-hero) so it hugs the text instead
+   of ballooning to the full-height box. */
+.story-page .story-step.title {
+  width: min(760px, 94vw);
+  background: none;
+  border: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  text-align: center;
+  opacity: 1;
+  padding: 0 18px;
+}
+
+/* Compact, fully-feathered pool hugging the chapter-title text. */
+.story-page .story-titlecard {
+  padding: 30px 40px;
+  background: radial-gradient(
+    closest-side,
+    rgba(4, 5, 10, 0.68),
+    rgba(4, 5, 10, 0.42) 56%,
+    transparent
+  );
+}
+
+.story-page .story-step.title h3 {
+  font-size: clamp(34px, 5vw, 56px);
+  margin: 6px 0 0;
+  text-wrap: balance;
+  text-shadow: 0 4px 34px rgba(0, 0, 0, 0.9), 0 1px 8px rgba(0, 0, 0, 0.8);
+}
+
+.story-page .story-step.title .eyebrow {
+  color: var(--gold-bright);
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.9);
+}
+
+/* Every act opens on a title step (the first child of its own
+   .story-steps): fill the stage and center the title vertically. */
+.story-page .story-steps > .story-step.title:first-child {
+  min-height: calc(var(--stage-h) - 8vh);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* The page's LANDING hero (first act only) rides a touch lower than true
+   center: the toolbar + back pill above the stage made it read as sitting
+   high (user-set). Padding shifts the centered content down by half its
+   value (border-box), so 72px of bar ≈ a 36px nudge. */
+.story-page > .story-act:first-child .story-steps > .story-step.title:first-child {
+  padding-top: 72px;
+}
+
+.story-page .story-hero {
+  position: relative;
+}
+
+.story-page .story-hero::before {
+  content: "";
+  position: absolute;
+  inset: -16% -12%;
+  z-index: -1;
+  background: radial-gradient(
+    60% 54% at 50% 48%,
+    rgba(2, 3, 7, 0.98),
+    rgba(2, 3, 7, 0.9) 40%,
+    rgba(2, 3, 7, 0.5) 66%,
+    transparent 84%
+  );
+  filter: blur(30px);
+  pointer-events: none;
+}
+
+.story-page .story-hero h1 {
+  font-size: clamp(46px, 8vw, 96px);
+  margin: 10px 0 20px;
+  text-wrap: balance;
+  text-shadow: 0 6px 44px rgba(0, 0, 0, 0.95), 0 2px 10px rgba(0, 0, 0, 0.8);
+}
+
+.story-page .story-hero .lede {
+  max-width: 600px;
+  margin: 0 auto;
+  color: var(--ink);
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.95);
+}
+
+.story-page .story-credit {
+  margin-top: 22px;
+  font-size: 13px;
+  color: var(--ink-2);
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.9);
+}
+
+.story-page .story-cue {
+  margin-top: 8vh;
+  color: var(--ink-2);
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  animation: story-bob 2.6s ease-in-out infinite;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.9);
+}
+
+@keyframes story-bob {
+  0%, 100% { transform: translateY(0); opacity: 0.55; }
+  50% { transform: translateY(8px); opacity: 1; }
+}
+
+/* the two-dial diagnosis overlay */
+
+.story-page .story-hud {
+  position: absolute;
+  top: max(66px, 9vh);
+  right: clamp(14px, 4vw, 52px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  pointer-events: none;
+}
+
+.story-page .story-hud.on {
+  opacity: 1;
+  transform: none;
+}
+
+.story-page .hud-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 138px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: rgba(9, 10, 15, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  padding: 7px 14px;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.story-page .hud-up { color: #4ade80; }
+.story-page .hud-dn { color: #ff7a6a; }
+.story-page .hud-fl { color: var(--ink-3); }
+
+.story-page .hud-verdict {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 14.5px;
+  color: var(--ink);
+  max-width: 190px;
+  text-align: right;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.95);
+}
+
+/* prose between the acts */
+
+.story-page .story-interlude {
+  position: relative;
+  z-index: 3;
+  background: var(--page);
+  padding: 13vh 0;
+}
+
+.story-page .story-interlude .prose p {
+  font-size: 17px;
+  color: var(--ink-2);
+}
+
+@media (max-width: 720px) {
+  .story-page .story-stage canvas {
+    object-fit: contain;
+    object-position: center 24%;
+  }
+  .story-page .story-steps {
+    gap: 62vh;
+    padding-bottom: 20vh;
+  }
+  .story-page .story-step,
+  .story-page .story-step.left,
+  .story-page .story-step.right {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .story-page .story-hud {
+    top: auto;
+    bottom: 12px;
+    right: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .story-page .story-cue {
+    animation: none;
+  }
+}

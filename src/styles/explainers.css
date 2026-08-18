@@ -17,8 +17,16 @@
   display:grid;grid-template-columns:repeat(3,1fr);gap:52px 44px;
   max-width:1300px;margin:44px auto 90px;padding:0 52px;
 }
+/* Each card is a SUBGRID of three rows — thumb, title row, description —
+   rather than its own block stack, so the three bands line up straight
+   across a row: a title that wraps to two lines ("How to Read the
+   Diagnostic Tree") grows the shared title track instead of pushing its
+   own description a line below its neighbours'. row-gap:0 keeps the
+   in-card spacing on the margins below; only the tracks a card spans are
+   affected, so the 52px gap between card rows survives. */
 .ex-card{
-  display:block;text-decoration:none;color:inherit;text-align:left;
+  display:grid;grid-template-rows:subgrid;grid-row:span 3;row-gap:0;
+  text-decoration:none;color:inherit;text-align:left;
   background:none;border:none;padding:0;font:inherit;cursor:pointer;
 }
 .ex-thumb{

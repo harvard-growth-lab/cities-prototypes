@@ -136,7 +136,9 @@ function quantile(sorted: number[], q: number): number {
   const i = (sorted.length - 1) * q;
   const lo = Math.floor(i);
   const hi = Math.ceil(i);
-  return lo === hi ? sorted[lo] : sorted[lo] + (sorted[hi] - sorted[lo]) * (i - lo);
+  return lo === hi
+    ? sorted[lo]
+    : sorted[lo] + (sorted[hi] - sorted[lo]) * (i - lo);
 }
 function dom(vals: number[], must: number[]): [number, number] {
   const s = [...vals].sort((a, b) => a - b);
@@ -152,9 +154,18 @@ function dom(vals: number[], must: number[]): [number, number] {
 /* the pop/wage domains cover BOTH grains (the city field on the main and
    parked charts, the metro field on the MSA instrument), so the two planes
    share honest, comparable scales */
-const XD = dom([...FIELD_DOTS.map((d) => d.x), ...METRO_DOTS.map((m) => m.x)], [POP_MED]);
-const YW = dom([...FIELD_DOTS.map((d) => d.wage), ...METRO_DOTS.map((m) => m.wage)], [WAGE_MED]);
-const YH = dom(FIELD_DOTS.map((d) => d.home), [HOME_GATE]);
+const XD = dom(
+  [...FIELD_DOTS.map((d) => d.x), ...METRO_DOTS.map((m) => m.x)],
+  [POP_MED],
+);
+const YW = dom(
+  [...FIELD_DOTS.map((d) => d.wage), ...METRO_DOTS.map((m) => m.wage)],
+  [WAGE_MED],
+);
+const YH = dom(
+  FIELD_DOTS.map((d) => d.home),
+  [HOME_GATE],
+);
 
 const scale = (v: number, [lo, hi]: [number, number], a: number, b: number) => {
   const t = (v - lo) / (hi - lo);
@@ -172,7 +183,8 @@ function niceStep(span: number): number {
 function ticks(d: [number, number]): number[] {
   const step = niceStep(d[1] - d[0]);
   const out: number[] = [];
-  for (let t = Math.ceil(d[0] / step) * step; t <= d[1] + 1e-9; t += step) out.push(Math.round(t * 100) / 100);
+  for (let t = Math.ceil(d[0] / step) * step; t <= d[1] + 1e-9; t += step)
+    out.push(Math.round(t * 100) / 100);
   return out;
 }
 const XT = ticks(XD);
@@ -194,7 +206,11 @@ const LEAF_C: Record<LeafKey, string> = {
 };
 
 /** paper-colored halo so labels stay legible over dots */
-const HALO = { stroke: "#faf8f3", strokeWidth: 3, style: { paintOrder: "stroke" } } as const;
+const HALO = {
+  stroke: "#faf8f3",
+  strokeWidth: 3,
+  style: { paintOrder: "stroke" },
+} as const;
 const CARD_STROKE = "#e0d9ca";
 
 /* ————— the parked field (tree phase): the chart, shrunk to a corner card ————— */
@@ -203,27 +219,51 @@ const CARD_STROKE = "#e0d9ca";
    pixel they give up goes to the tree, which now has to hold piles under
    both the side row AND the leaf row. */
 const PARK = { x: 28, y: 30, w: 214, h: 168 } as const;
-const PK = { l: PARK.x + 18, r: PARK.x + PARK.w - 10, t: PARK.y + 20, b: PARK.y + PARK.h - 24 } as const;
+const PK = {
+  l: PARK.x + 18,
+  r: PARK.x + PARK.w - 10,
+  t: PARK.y + 20,
+  b: PARK.y + PARK.h - 24,
+} as const;
 const pxm = (x: number) => scale(x, XD, PK.l, PK.r);
 const pym = (y: number) => scale(y, YW, PK.b, PK.t);
 
 /* ————— the instrument panel (tree phase, top-right) ————— */
 
 /* wider and shorter than before: the scatter keeps its area while the tree
-   gets the vertical room back */
-const INST = { x: 286, y: 30, w: 336, h: 190 } as const;
+   gets the vertical room back. Trimmed a notch further and kept anchored to
+   the RIGHT edge (user-set: the panel crowded the tree, which now also sits
+   16px left of it — the two elements want clear air between them). */
+const INST = { x: 306, y: 30, w: 316, h: 178 } as const;
 /** the plot area starts below a two-line header (title + who it serves) */
-const IN = { l: INST.x + 30, r: INST.x + INST.w - 12, t: INST.y + 46, b: INST.y + INST.h - 26 } as const;
+const IN = {
+  l: INST.x + 30,
+  r: INST.x + INST.w - 12,
+  t: INST.y + 46,
+  b: INST.y + INST.h - 26,
+} as const;
 /** the wage instrument re-titles as it changes grain, so the header narrates
     the very thing that is happening to the dots. TITLES are the canonical
     short chart names (user-set, consistent everywhere a chart is named:
     city pizza chart · MSA pizza chart · city housing scatter — the tree's
     "read: …" pointers use the same names); the sub line carries the
     narration. */
-const INST_HEAD: Record<"city" | "msa" | "home", { title: string; sub: string }> = {
-  city: { title: "the city pizza chart", sub: "for the Demand fork · the same plane you just read, up close" },
-  msa: { title: "the MSA pizza chart", sub: "for the Demand fork · one dot per MSA, not per city" },
-  home: { title: "the city housing scatter", sub: "for the Supply fork · supply-side cities" },
+const INST_HEAD: Record<
+  "city" | "msa" | "home",
+  { title: string; sub: string }
+> = {
+  city: {
+    title: "the city pizza chart",
+    sub: "for the Demand fork · the same plane you just read, up close",
+  },
+  msa: {
+    title: "the MSA pizza chart",
+    sub: "for the Demand fork · one dot per MSA, not per city",
+  },
+  home: {
+    title: "the city housing scatter",
+    sub: "for the Supply fork · supply-side cities",
+  },
 };
 /** city → its own MSA, for the give-way animation */
 const METRO_BY_ID = new Map(METRO_DOTS.map((m) => [m.id, m]));
@@ -237,22 +277,81 @@ type SideKey = "demand" | "supply";
 /** dashed sub-question annex — sits BELOW each side's pile, so the branch
     edges leave from under the question, clear of the dots */
 const AH = 36;
+/* the whole tree rides 16px left of canvas-center (user-set: with the
+   instrument panel anchored top-right, the centered tree read as crowding
+   it — the shift plus the panel's trim opens a clear diagonal of air) */
 const NODES = {
-  root: { x: 320, y: 260, w: 212, h: 38, title: "same side of the medians?", side: null, color: "#b9b2a6" },
+  root: {
+    x: 304,
+    y: 260,
+    w: 212,
+    h: 38,
+    title: "same side of the medians?",
+    side: null,
+    color: "#b9b2a6",
+  },
   /* each side node sits at the MIDPOINT of its two leaves, so the fork
      glyph is symmetric — off-center parents (they once sat at 180/460)
      make the inner run shorter than the outer one, which read as lopsided
      once the answer labels grew */
-  demand: { x: 166, y: 336, w: 104, h: 30, title: "Demand", side: "demand" as SideKey, color: SIDE_C.demand },
-  supply: { x: 478, y: 336, w: 104, h: 30, title: "Supply", side: "supply" as SideKey, color: SIDE_C.supply },
+  demand: {
+    x: 150,
+    y: 336,
+    w: 104,
+    h: 30,
+    title: "Demand",
+    side: "demand" as SideKey,
+    color: SIDE_C.demand,
+  },
+  supply: {
+    x: 462,
+    y: 336,
+    w: 104,
+    h: 30,
+    title: "Supply",
+    side: "supply" as SideKey,
+    color: SIDE_C.supply,
+  },
   /* yes branches LEFT on both forks (diagram order) — MSA-wide far left,
      matching the instrument's left-half violet lens; even 156px pitch */
   /* the leaf row rides low (user-set: the sub-forks' bottom halves — run →
      leaf drop — want real height, and the canvas has the room) */
-  regional: { x: 88, y: 538, w: 104, h: 26, title: "MSA-wide", side: "demand" as SideKey, color: REGIONAL_C },
-  local: { x: 244, y: 538, w: 108, h: 26, title: "Admin-specific", side: "demand" as SideKey, color: SIDE_C.demand },
-  housing: { x: 400, y: 538, w: 104, h: 26, title: "Housing", side: "supply" as SideKey, color: HALF_C.above },
-  amen: { x: 556, y: 538, w: 104, h: 26, title: "Amenities", side: "supply" as SideKey, color: HALF_C.below },
+  regional: {
+    x: 72,
+    y: 538,
+    w: 104,
+    h: 26,
+    title: "MSA-wide",
+    side: "demand" as SideKey,
+    color: REGIONAL_C,
+  },
+  local: {
+    x: 228,
+    y: 538,
+    w: 108,
+    h: 26,
+    title: "Admin-specific",
+    side: "demand" as SideKey,
+    color: SIDE_C.demand,
+  },
+  housing: {
+    x: 384,
+    y: 538,
+    w: 104,
+    h: 26,
+    title: "Housing",
+    side: "supply" as SideKey,
+    color: HALF_C.above,
+  },
+  amen: {
+    x: 540,
+    y: 538,
+    w: 104,
+    h: 26,
+    title: "Amenities",
+    side: "supply" as SideKey,
+    color: HALF_C.below,
+  },
 } as const;
 type NodeId = keyof typeof NODES;
 const ROOT_SUB = "people × pay · read: the city pizza chart ↖";
@@ -270,15 +369,24 @@ const SIDE_ROWS = Math.ceil(Math.max(DEMAND_N, SUPPLY_N) / SIDE_COLS);
 const ANNEX_TOP = SIDE_TOP + SIDE_ROWS * CELL + 26;
 
 const ANNEX: Record<SideKey, { w: number; q: string; read: string }> = {
-  demand: { w: 184, q: "MSA pop growth below the median?", read: "read: the MSA pizza chart ↗" },
-  supply: { w: 184, q: "cost of living above the median?", read: "read: the city housing scatter ↑" },
+  demand: {
+    w: 184,
+    q: "MSA pop growth below the median?",
+    read: "read: the MSA pizza chart ↗",
+  },
+  supply: {
+    w: 184,
+    q: "cost of living above the median?",
+    read: "read: the city housing scatter ↑",
+  },
 };
 
 /** Where a parent hands off its edges: side nodes from the bottom of their
     question annex, the root from its own bottom. The edge PATH and the
     answer LABELS both derive from this one helper — they drifted apart
     once, leaving the labels floating inside the side piles. */
-const edgeStartY = (p: (typeof NODES)[NodeId]): number => (p.side ? ANNEX_TOP + AH : p.y + p.h / 2);
+const edgeStartY = (p: (typeof NODES)[NodeId]): number =>
+  p.side ? ANNEX_TOP + AH : p.y + p.h / 2;
 /** the y of the elbow's horizontal run for a given parent — the drop is
     deep enough (14px) that the answer labels riding the run keep clear
     air under the question box above them (user-set spacing) */
@@ -307,7 +415,13 @@ const EDGES: [NodeId, NodeId, string][] = [
 /* ————— the piles (progressive: side piles fill at the first pour, leaf
    piles as each branch's fork is answered) ————— */
 
-function grid(n: number, cx: number, top: number, cols: number, cell: number): { x: number; y: number }[] {
+function grid(
+  n: number,
+  cx: number,
+  top: number,
+  cols: number,
+  cell: number,
+): { x: number; y: number }[] {
   const x0 = cx - ((Math.min(n, cols) - 1) * cell) / 2;
   return Array.from({ length: n }, (_, i) => ({
     x: x0 + (i % cols) * cell,
@@ -324,11 +438,12 @@ const SIDE_DOTS: Record<SideKey, FieldDot[]> = {
 };
 const SIDE_BIN = new Map<string, { x: number; y: number }>();
 for (const s of SIDES) {
-  grid(SIDE_DOTS[s].length, NODES[s].x, SIDE_TOP, SIDE_COLS, CELL).forEach((p, i) =>
-    SIDE_BIN.set(SIDE_DOTS[s][i].id, p)
+  grid(SIDE_DOTS[s].length, NODES[s].x, SIDE_TOP, SIDE_COLS, CELL).forEach(
+    (p, i) => SIDE_BIN.set(SIDE_DOTS[s][i].id, p),
   );
 }
-const sideCountY = (s: SideKey) => SIDE_TOP + Math.ceil(SIDE_DOTS[s].length / SIDE_COLS) * CELL + 13;
+const sideCountY = (s: SideKey) =>
+  SIDE_TOP + Math.ceil(SIDE_DOTS[s].length / SIDE_COLS) * CELL + 13;
 
 const LEAF_TOP = NODES.regional.y + NODES.regional.h / 2 + 14;
 const LEAVES: LeafKey[] = ["regional", "local", "housing", "amen"];
@@ -340,9 +455,13 @@ const LEAF_DOTS: Record<LeafKey, FieldDot[]> = {
 };
 const LEAF_BIN = new Map<string, { x: number; y: number }>();
 for (const leaf of LEAVES) {
-  grid(LEAF_DOTS[leaf].length, NODES[leaf].x, LEAF_TOP, LEAF_COLS, CELL).forEach((p, i) =>
-    LEAF_BIN.set(LEAF_DOTS[leaf][i].id, p)
-  );
+  grid(
+    LEAF_DOTS[leaf].length,
+    NODES[leaf].x,
+    LEAF_TOP,
+    LEAF_COLS,
+    CELL,
+  ).forEach((p, i) => LEAF_BIN.set(LEAF_DOTS[leaf][i].id, p));
 }
 const SIDE_COUNTS: { id: SideKey; n: number }[] = [
   { id: "demand", n: DEMAND_N },
@@ -360,10 +479,34 @@ const leafCountY = (leaf: LeafKey) =>
 /* ————— quadrant metadata (for the pair lenses) ————— */
 
 const QUADS = [
-  { key: "tr", right: true, top: true, side: "demand" as SideKey, sub: "people ↑ · pay ↑" },
-  { key: "tl", right: false, top: true, side: "supply" as SideKey, sub: "people ↓ · pay ↑" },
-  { key: "br", right: true, top: false, side: "supply" as SideKey, sub: "people ↑ · pay ↓" },
-  { key: "bl", right: false, top: false, side: "demand" as SideKey, sub: "people ↓ · pay ↓" },
+  {
+    key: "tr",
+    right: true,
+    top: true,
+    side: "demand" as SideKey,
+    sub: "people ↑ · pay ↑",
+  },
+  {
+    key: "tl",
+    right: false,
+    top: true,
+    side: "supply" as SideKey,
+    sub: "people ↓ · pay ↑",
+  },
+  {
+    key: "br",
+    right: true,
+    top: false,
+    side: "supply" as SideKey,
+    sub: "people ↑ · pay ↓",
+  },
+  {
+    key: "bl",
+    right: false,
+    top: false,
+    side: "demand" as SideKey,
+    sub: "people ↓ · pay ↓",
+  },
 ];
 
 const TWEEN = { duration: 0.65, ease: "easeInOut" } as const;
@@ -385,8 +528,28 @@ const DRAW = { duration: 0.55, ease: "easeOut" } as const;
     labels are end-anchored, a start-side icon needs the label's rendered
     length: `LBL_W` below holds measured advance widths. The parked card's
     small labels go without: at that size a glyph is noise. */
-function AxisIcon({ kind, x, y, color, s = 1, rot = 0 }: { kind: "people" | "pay" | "home"; x: number; y: number; color: string; s?: number; rot?: number }) {
-  const st = { fill: "none", stroke: color, strokeWidth: 1.2 / s, strokeLinecap: "round", strokeLinejoin: "round" } as const;
+function AxisIcon({
+  kind,
+  x,
+  y,
+  color,
+  s = 1,
+  rot = 0,
+}: {
+  kind: "people" | "pay" | "home";
+  x: number;
+  y: number;
+  color: string;
+  s?: number;
+  rot?: number;
+}) {
+  const st = {
+    fill: "none",
+    stroke: color,
+    strokeWidth: 1.2 / s,
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+  } as const;
   return (
     <g transform={`translate(${x} ${y}) rotate(${rot}) scale(${s})`}>
       {kind === "people" && (
@@ -403,33 +566,56 @@ function AxisIcon({ kind, x, y, color, s = 1, rot = 0 }: { kind: "people" | "pay
           <path d="M -3.2 -0.8 L -3.2 0.8 M 3.2 -0.8 L 3.2 0.8" {...st} />
         </>
       )}
-      {kind === "home" && <path d="M -3.4 0.3 L 0 -3 L 3.4 0.3 M -2.3 -0.1 L -2.3 3.2 L 2.3 3.2 L 2.3 -0.1" {...st} />}
+      {kind === "home" && (
+        <path
+          d="M -3.4 0.3 L 0 -3 L 3.4 0.3 M -2.3 -0.1 L -2.3 3.2 L 2.3 3.2 L 2.3 -0.1"
+          {...st}
+        />
+      )}
     </g>
   );
 }
 /** measured advance widths of the end-anchored axis labels (browser-
     measured via getComputedTextLength at their font sizes) — re-measure
     if the label copy or sizes change */
-const LBL_W = { mainX: 178, mainY: 151, instX: 88, instWage: 71, instHome: 101 } as const;
+const LBL_W = {
+  mainX: 178,
+  mainY: 151,
+  instX: 88,
+  instWage: 71,
+  instHome: 101,
+} as const;
 
 /** The MSA pizza chart's dots: REAL METROS (METRO_DOTS — the layer a
     demand-side city looks its own MSA up in), a plain field until the lens
     splits the halves violet/blue. */
-function instMsaDot(m: MetroDot, lensOn: boolean): { fill: string; opacity: number } {
+function instMsaDot(
+  m: MetroDot,
+  lensOn: boolean,
+): { fill: string; opacity: number } {
   return lensOn
     ? { fill: m.x < POP_MED ? REGIONAL_C : SIDE_C.demand, opacity: 0.45 }
     : { fill: FIELD_BLUE, opacity: 0.35 };
 }
 /** The housing scatter's dots: the CITY field with the supply cohort lit;
     gate colors arrive with the lens. */
-function instHomeDot(d: FieldDot, lensOn: boolean): { fill: string; opacity: number } {
+function instHomeDot(
+  d: FieldDot,
+  lensOn: boolean,
+): { fill: string; opacity: number } {
   if (d.side !== "supply") return { fill: GHOST, opacity: 0.1 };
   return lensOn
     ? { fill: d.above ? HALF_C.above : HALF_C.below, opacity: 0.55 }
     : { fill: SIDE_C.supply, opacity: 0.5 };
 }
 
-export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?: boolean }) {
+export function DiagnoseStage({
+  scene,
+  live = true,
+}: {
+  scene: DiagScene;
+  live?: boolean;
+}) {
   /* hover is GRACED (user-set, "make hovering smooth"): clearing waits
      120ms so sliding between neighboring dots re-targets without the
      tooltip flickering off and on, each dot's hit area is padded by a
@@ -455,7 +641,7 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
     () => () => {
       if (hoverClear.current !== null) window.clearTimeout(hoverClear.current);
     },
-    []
+    [],
   );
 
   /* the stage mounts at page load, hidden behind the hero — a visibility
@@ -477,20 +663,34 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
   const mx = px(POP_MED);
   const myY = pyW(WAGE_MED);
 
-  const pairSide = scene.lens === "quad-demand" ? "demand" : scene.lens === "quad-supply" ? "supply" : null;
+  const pairSide =
+    scene.lens === "quad-demand"
+      ? "demand"
+      : scene.lens === "quad-supply"
+        ? "supply"
+        : null;
   /** is this quadrant's tint + corner label lit? */
-  const quadLit = (side: SideKey) => wage && (scene.lens === "quad-all" || pairSide === side);
+  const quadLit = (side: SideKey) =>
+    wage && (scene.lens === "quad-all" || pairSide === side);
 
   const target = (d: FieldDot): { x: number; y: number; r: number } => {
     switch (scene.layout) {
       case "wage":
-        return { x: px(d.x), y: pyW(d.wage), r: radiusFor(d.pop, POP_MAX, 8, 1.7) };
+        return {
+          x: px(d.x),
+          y: pyW(d.wage),
+          r: radiusFor(d.pop, POP_MAX, 8, 1.7),
+        };
       case "tree": {
         /* each side moves on the beat its own fork is answered */
         const f = flowOf(d.side);
         if (f === "leaf") return { ...LEAF_BIN.get(d.id)!, r: DOT_R };
         if (f === "side") return { ...SIDE_BIN.get(d.id)!, r: DOT_R };
-        return { x: pxm(d.x), y: pym(d.wage), r: radiusFor(d.pop, POP_MAX, 3, 0.8) };
+        return {
+          x: pxm(d.x),
+          y: pym(d.wage),
+          r: radiusFor(d.pop, POP_MAX, 3, 0.8),
+        };
       }
     }
   };
@@ -509,9 +709,13 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
       case "side":
         return { fill: SIDE_C[d.side], opacity: 0.55 };
       case "demand":
-        return d.side === "demand" ? { fill: SIDE_C.demand, opacity: 0.55 } : { fill: GHOST, opacity: 0.12 };
+        return d.side === "demand"
+          ? { fill: SIDE_C.demand, opacity: 0.55 }
+          : { fill: GHOST, opacity: 0.12 };
       case "supply":
-        return d.side === "supply" ? { fill: SIDE_C.supply, opacity: 0.55 } : { fill: GHOST, opacity: 0.12 };
+        return d.side === "supply"
+          ? { fill: SIDE_C.supply, opacity: 0.55 }
+          : { fill: GHOST, opacity: 0.12 };
       default:
         return { fill: FIELD_BLUE, opacity: 0.38 };
     }
@@ -524,7 +728,8 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
     if (id === "demand" || id === "supply") return !!t.sides;
     return NODES[id].side === "demand" ? !!t.demandLeaves : !!t.supplyLeaves;
   };
-  const annexOn = (sid: SideKey): boolean => (sid === "demand" ? !!t.demandQ : !!t.supplyQ);
+  const annexOn = (sid: SideKey): boolean =>
+    sid === "demand" ? !!t.demandQ : !!t.supplyQ;
   const dimmed = (id: NodeId): boolean => {
     const side = NODES[id].side;
     return !!scene.focus && !!side && side !== scene.focus;
@@ -553,7 +758,11 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
 
   return (
     <div className="diag-stage">
-      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="The diagnostic tree, assembled from the data">
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        role="img"
+        aria-label="The diagnostic tree, assembled from the data"
+      >
         {/* ————— quadrant-pair tints (wage phase) —————
             color SLIDES in, not fades (user-set): each tint sweeps out of
             the median crosshair toward its corner — the very lines that
@@ -586,7 +795,11 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
 
         {/* ————— chart axes: one axis per beat, each line DRAWS and its
             ticks + label follow (r2d3-granular) ————— */}
-        <motion.g initial={false} animate={{ opacity: wage ? 1 : 0 }} transition={TWEEN}>
+        <motion.g
+          initial={false}
+          animate={{ opacity: wage ? 1 : 0 }}
+          transition={TWEEN}
+        >
           <motion.line
             x1={M.l}
             x2={W - M.r}
@@ -598,19 +811,48 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
             animate={{ pathLength: xAxisOn ? 1 : 0 }}
             transition={{ duration: 0.7, ease: "easeOut" }}
           />
-          <motion.g initial={{ opacity: 0 }} animate={{ opacity: xAxisOn ? 1 : 0 }} transition={{ duration: 0.4, delay: xAxisOn ? 0.45 : 0 }}>
+          <motion.g
+            initial={{ opacity: 0 }}
+            animate={{ opacity: xAxisOn ? 1 : 0 }}
+            transition={{ duration: 0.4, delay: xAxisOn ? 0.45 : 0 }}
+          >
             {XT.map((tk) => (
               <g key={`x${tk}`}>
-                <line x1={px(tk)} x2={px(tk)} y1={PLOT_B} y2={PLOT_B + 4} stroke="#d6d0c4" strokeWidth={1} />
-                <text x={px(tk)} y={PLOT_B + 17} textAnchor="middle" fontSize={10} fill="#8a867e">
+                <line
+                  x1={px(tk)}
+                  x2={px(tk)}
+                  y1={PLOT_B}
+                  y2={PLOT_B + 4}
+                  stroke="#d6d0c4"
+                  strokeWidth={1}
+                />
+                <text
+                  x={px(tk)}
+                  y={PLOT_B + 17}
+                  textAnchor="middle"
+                  fontSize={10}
+                  fill="#8a867e"
+                >
                   {tk > 0 ? `+${tk}` : tk}
                 </text>
               </g>
             ))}
-            <text x={W - M.r - 14} y={H - 14} textAnchor="end" fontSize={11.5} fill="#6f6e69">
+            <text
+              x={W - M.r - 14}
+              y={H - 14}
+              textAnchor="end"
+              fontSize={11.5}
+              fill="#6f6e69"
+            >
               population growth, % per year →
             </text>
-            <AxisIcon kind="people" x={W - M.r - 14 - LBL_W.mainX - 9} y={H - 18} color="#6f6e69" s={1.3} />
+            <AxisIcon
+              kind="people"
+              x={W - M.r - 14 - LBL_W.mainX - 9}
+              y={H - 18}
+              color="#6f6e69"
+              s={1.3}
+            />
           </motion.g>
           {/* the plane self-titles with its canonical name (user-set) — the
               same caps line the parked card carries, so the park later
@@ -639,19 +881,50 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
             animate={{ pathLength: yAxisOn ? 1 : 0 }}
             transition={{ duration: 0.7, ease: "easeOut" }}
           />
-          <motion.g initial={{ opacity: 0 }} animate={{ opacity: yAxisOn ? 1 : 0 }} transition={{ duration: 0.4, delay: yAxisOn ? 0.45 : 0 }}>
+          <motion.g
+            initial={{ opacity: 0 }}
+            animate={{ opacity: yAxisOn ? 1 : 0 }}
+            transition={{ duration: 0.4, delay: yAxisOn ? 0.45 : 0 }}
+          >
             {YWT.map((tk) => (
               <g key={`y${tk}`}>
-                <line x1={M.l - 4} x2={M.l} y1={pyW(tk)} y2={pyW(tk)} stroke="#d6d0c4" strokeWidth={1} />
-                <text x={M.l - 8} y={pyW(tk) + 3.5} textAnchor="end" fontSize={10} fill="#8a867e">
+                <line
+                  x1={M.l - 4}
+                  x2={M.l}
+                  y1={pyW(tk)}
+                  y2={pyW(tk)}
+                  stroke="#d6d0c4"
+                  strokeWidth={1}
+                />
+                <text
+                  x={M.l - 8}
+                  y={pyW(tk) + 3.5}
+                  textAnchor="end"
+                  fontSize={10}
+                  fill="#8a867e"
+                >
                   {tk > 0 ? `+${tk}` : tk}
                 </text>
               </g>
             ))}
-            <text x={16} y={M.t + 18} fontSize={11.5} fill="#6f6e69" transform={`rotate(-90 16 ${M.t + 18})`} textAnchor="end">
+            <text
+              x={16}
+              y={M.t + 18}
+              fontSize={11.5}
+              fill="#6f6e69"
+              transform={`rotate(-90 16 ${M.t + 18})`}
+              textAnchor="end"
+            >
               wage growth, % per year →
             </text>
-            <AxisIcon kind="pay" x={12.5} y={M.t + 18 + LBL_W.mainY + 9} color="#6f6e69" s={1.3} rot={-90} />
+            <AxisIcon
+              kind="pay"
+              x={12.5}
+              y={M.t + 18 + LBL_W.mainY + 9}
+              color="#6f6e69"
+              s={1.3}
+              rot={-90}
+            />
           </motion.g>
 
           {/* median crosshair draws on — endpoint animation, NOT pathLength
@@ -665,7 +938,10 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
             strokeWidth={1}
             strokeDasharray="3 5"
             initial={false}
-            animate={{ x2: scene.medians ? W - M.r : M.l, opacity: scene.medians ? 1 : 0 }}
+            animate={{
+              x2: scene.medians ? W - M.r : M.l,
+              opacity: scene.medians ? 1 : 0,
+            }}
             transition={{ x2: DRAW, opacity: { duration: 0.2 } }}
           />
           <motion.line
@@ -676,14 +952,37 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
             strokeWidth={1}
             strokeDasharray="3 5"
             initial={false}
-            animate={{ y2: scene.medians ? PLOT_B : M.t, opacity: scene.medians ? 1 : 0 }}
-            transition={{ y2: { ...DRAW, delay: 0.12 }, opacity: { duration: 0.2 } }}
+            animate={{
+              y2: scene.medians ? PLOT_B : M.t,
+              opacity: scene.medians ? 1 : 0,
+            }}
+            transition={{
+              y2: { ...DRAW, delay: 0.12 },
+              opacity: { duration: 0.2 },
+            }}
           />
-          <motion.g initial={false} animate={{ opacity: scene.medians ? 1 : 0 }} transition={{ duration: 0.35, delay: 0.35 }}>
-            <text x={W - M.r - 4} y={myY - 6} textAnchor="end" fontSize={10} fill="#7a766e" {...HALO}>
+          <motion.g
+            initial={false}
+            animate={{ opacity: scene.medians ? 1 : 0 }}
+            transition={{ duration: 0.35, delay: 0.35 }}
+          >
+            <text
+              x={W - M.r - 4}
+              y={myY - 6}
+              textAnchor="end"
+              fontSize={10}
+              fill="#7a766e"
+              {...HALO}
+            >
               typical MSA {sPct(WAGE_MED)}
             </text>
-            <text x={mx + 6} y={PLOT_B - 8} fontSize={10} fill="#7a766e" {...HALO}>
+            <text
+              x={mx + 6}
+              y={PLOT_B - 8}
+              fontSize={10}
+              fill="#7a766e"
+              {...HALO}
+            >
               typical MSA {sPct(POP_MED)}
             </text>
           </motion.g>
@@ -693,10 +992,22 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
             to a corner card; it empties on the final sort and dims ————— */}
         <motion.g
           initial={false}
-          animate={{ opacity: parkOn ? (scene.recap ? 0.3 : parkHolds ? 1 : 0.5) : 0 }}
+          animate={{
+            opacity: parkOn ? (scene.recap ? 0.3 : parkHolds ? 1 : 0.5) : 0,
+          }}
           transition={TWEEN}
         >
-          <rect x={PARK.x} y={PARK.y} width={PARK.w} height={PARK.h} rx={10} fill="#ffffff" fillOpacity={0.92} stroke={CARD_STROKE} strokeWidth={1} />
+          <rect
+            x={PARK.x}
+            y={PARK.y}
+            width={PARK.w}
+            height={PARK.h}
+            rx={10}
+            fill="#ffffff"
+            fillOpacity={0.92}
+            stroke={CARD_STROKE}
+            strokeWidth={1}
+          />
           {/* the quadrant shading carries over from the full-size plane — the
               card keeps saying WHY each dot belongs to the side it flows to */}
           {QUADS.map((q) => (
@@ -710,7 +1021,14 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
               fillOpacity={0.075}
             />
           ))}
-          <text x={PARK.x + 10} y={PARK.y + 14} fontSize={9} fontWeight={600} letterSpacing={0.3} fill="#8a867e">
+          <text
+            x={PARK.x + 10}
+            y={PARK.y + 14}
+            fontSize={9}
+            fontWeight={600}
+            letterSpacing={0.3}
+            fill="#8a867e"
+          >
             THE CITY PIZZA CHART · {N_CITIES} CITIES
           </text>
           <motion.line
@@ -735,19 +1053,52 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
             animate={{ pathLength: parkOn ? 1 : 0 }}
             transition={{ ...DRAW, delay: 0.1 }}
           />
-          <line x1={PK.l} x2={PK.r} y1={pym(WAGE_MED)} y2={pym(WAGE_MED)} stroke="#b3ada1" strokeWidth={0.8} strokeDasharray="3 4" />
-          <line x1={pxm(POP_MED)} x2={pxm(POP_MED)} y1={PK.t} y2={PK.b} stroke="#b3ada1" strokeWidth={0.8} strokeDasharray="3 4" />
-          <text x={PK.r} y={PARK.y + PARK.h - 10} textAnchor="end" fontSize={8.5} fill="#8a867e">
+          <line
+            x1={PK.l}
+            x2={PK.r}
+            y1={pym(WAGE_MED)}
+            y2={pym(WAGE_MED)}
+            stroke="#b3ada1"
+            strokeWidth={0.8}
+            strokeDasharray="3 4"
+          />
+          <line
+            x1={pxm(POP_MED)}
+            x2={pxm(POP_MED)}
+            y1={PK.t}
+            y2={PK.b}
+            stroke="#b3ada1"
+            strokeWidth={0.8}
+            strokeDasharray="3 4"
+          />
+          <text
+            x={PK.r}
+            y={PARK.y + PARK.h - 10}
+            textAnchor="end"
+            fontSize={8.5}
+            fill="#8a867e"
+          >
             people →
           </text>
-          <text x={PARK.x + 12} y={PK.t + 4} fontSize={8.5} fill="#8a867e" transform={`rotate(-90 ${PARK.x + 12} ${PK.t + 4})`} textAnchor="end">
+          <text
+            x={PARK.x + 12}
+            y={PK.t + 4}
+            fontSize={8.5}
+            fill="#8a867e"
+            transform={`rotate(-90 ${PARK.x + 12} ${PK.t + 4})`}
+            textAnchor="end"
+          >
             pay →
           </text>
         </motion.g>
 
         {/* ————— the instrument panel (tree phase, top-right): the secondary
             visualization at reading size — base draws, then the lens ————— */}
-        <motion.g initial={false} animate={{ opacity: instAny ? (scene.recap ? 0.3 : 1) : 0 }} transition={TWEEN}>
+        <motion.g
+          initial={false}
+          animate={{ opacity: instAny ? (scene.recap ? 0.3 : 1) : 0 }}
+          transition={TWEEN}
+        >
           {/* the slot: its border and header take the branch's color, so
               swapping instruments repaints the whole panel */}
           <motion.rect
@@ -760,7 +1111,10 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
             fillOpacity={0.95}
             strokeWidth={1.3}
             initial={false}
-            animate={{ stroke: instAny ? instAccent : CARD_STROKE, strokeOpacity: instAny ? 0.5 : 1 }}
+            animate={{
+              stroke: instAny ? instAccent : CARD_STROKE,
+              strokeOpacity: instAny ? 0.5 : 1,
+            }}
             transition={TWEEN}
           />
           <motion.rect
@@ -774,8 +1128,19 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
             transition={TWEEN}
           />
           {(["city", "msa", "home"] as const).map((k) => (
-            <motion.g key={`ih-${k}`} initial={false} animate={{ opacity: instHead === k ? 1 : 0 }} transition={{ duration: 0.3 }}>
-              <text x={INST.x + 21} y={INST.y + 22} fontSize={12} fontWeight={700} fill={k === "home" ? SIDE_C.supply : SIDE_C.demand}>
+            <motion.g
+              key={`ih-${k}`}
+              initial={false}
+              animate={{ opacity: instHead === k ? 1 : 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <text
+                x={INST.x + 21}
+                y={INST.y + 22}
+                fontSize={12}
+                fontWeight={700}
+                fill={k === "home" ? SIDE_C.supply : SIDE_C.demand}
+              >
                 {INST_HEAD[k].title}
               </text>
               <text x={INST.x + 21} y={INST.y + 35} fontSize={9} fill="#6f6e69">
@@ -800,8 +1165,16 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
             height={IN.b - IN.t}
             fill={REGIONAL_C}
             initial={false}
-            animate={{ x: lensW ? IN.l : imx, width: lensW ? imx - IN.l : 0, fillOpacity: lensW ? 0.09 : 0 }}
-            transition={{ duration: 0.5, ease: "easeOut", delay: lensW ? 0.15 : 0 }}
+            animate={{
+              x: lensW ? IN.l : imx,
+              width: lensW ? imx - IN.l : 0,
+              fillOpacity: lensW ? 0.09 : 0,
+            }}
+            transition={{
+              duration: 0.5,
+              ease: "easeOut",
+              delay: lensW ? 0.15 : 0,
+            }}
           />
           <motion.rect
             x={imx}
@@ -809,16 +1182,31 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
             height={IN.b - IN.t}
             fill={SIDE_C.demand}
             initial={false}
-            animate={{ width: lensW ? IN.r - imx : 0, fillOpacity: lensW ? 0.09 : 0 }}
-            transition={{ duration: 0.5, ease: "easeOut", delay: lensW ? 0.15 : 0 }}
+            animate={{
+              width: lensW ? IN.r - imx : 0,
+              fillOpacity: lensW ? 0.09 : 0,
+            }}
+            transition={{
+              duration: 0.5,
+              ease: "easeOut",
+              delay: lensW ? 0.15 : 0,
+            }}
           />
           <motion.rect
             x={IN.l}
             width={IN.r - IN.l}
             fill={HALF_C.above}
             initial={false}
-            animate={{ y: lensH ? IN.t : imyH, height: lensH ? imyH - IN.t : 0, fillOpacity: lensH ? 0.08 : 0 }}
-            transition={{ duration: 0.5, ease: "easeOut", delay: lensH ? 0.15 : 0 }}
+            animate={{
+              y: lensH ? IN.t : imyH,
+              height: lensH ? imyH - IN.t : 0,
+              fillOpacity: lensH ? 0.08 : 0,
+            }}
+            transition={{
+              duration: 0.5,
+              ease: "easeOut",
+              delay: lensH ? 0.15 : 0,
+            }}
           />
           <motion.rect
             x={IN.l}
@@ -826,8 +1214,15 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
             width={IN.r - IN.l}
             fill={HALF_C.below}
             initial={false}
-            animate={{ height: lensH ? IN.b - imyH : 0, fillOpacity: lensH ? 0.08 : 0 }}
-            transition={{ duration: 0.5, ease: "easeOut", delay: lensH ? 0.15 : 0 }}
+            animate={{
+              height: lensH ? IN.b - imyH : 0,
+              fillOpacity: lensH ? 0.08 : 0,
+            }}
+            transition={{
+              duration: 0.5,
+              ease: "easeOut",
+              delay: lensH ? 0.15 : 0,
+            }}
           />
 
           {/* the new instrument's frame DRAWS in its own beat (the slot sits
@@ -851,21 +1246,44 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
             y2={IN.t}
             strokeWidth={1.4}
             initial={false}
-            animate={{ pathLength: instAxes ? 1 : 0, stroke: instAccent, strokeOpacity: instAxes ? 0.55 : 0 }}
+            animate={{
+              pathLength: instAxes ? 1 : 0,
+              stroke: instAccent,
+              strokeOpacity: instAxes ? 0.55 : 0,
+            }}
             transition={{ pathLength: { ...DRAW, delay: 0.1 }, default: TWEEN }}
           />
-          <motion.g initial={false} animate={{ opacity: instAxes ? 1 : 0 }} transition={{ duration: 0.3, delay: instAxes ? 0.3 : 0 }}>
-            <text x={IN.r - 12} y={INST.y + INST.h - 10} textAnchor="end" fontSize={9} fill="#8a867e">
+          <motion.g
+            initial={false}
+            animate={{ opacity: instAxes ? 1 : 0 }}
+            transition={{ duration: 0.3, delay: instAxes ? 0.3 : 0 }}
+          >
+            <text
+              x={IN.r - 12}
+              y={INST.y + INST.h - 10}
+              textAnchor="end"
+              fontSize={9}
+              fill="#8a867e"
+            >
               population growth →
             </text>
-            <AxisIcon kind="people" x={IN.r - 12 - LBL_W.instX - 8} y={INST.y + INST.h - 13} color="#8a867e" s={1.15} />
+            <AxisIcon
+              kind="people"
+              x={IN.r - 12 - LBL_W.instX - 8}
+              y={INST.y + INST.h - 13}
+              color="#8a867e"
+              s={1.15}
+            />
           </motion.g>
           {(["wage", "home"] as const).map((k) => (
             <motion.g
               key={`iy-${k}`}
               initial={false}
               animate={{ opacity: instAxes && instK === k ? 1 : 0 }}
-              transition={{ duration: 0.3, delay: instAxes && instK === k ? 0.3 : 0 }}
+              transition={{
+                duration: 0.3,
+                delay: instAxes && instK === k ? 0.3 : 0,
+              }}
             >
               <text
                 x={INST.x + 14}
@@ -881,7 +1299,12 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
               <AxisIcon
                 kind={k === "wage" ? "pay" : "home"}
                 x={INST.x + 11.5}
-                y={IN.t + 2 + (k === "wage" ? LBL_W.instWage : LBL_W.instHome) + 8}
+                y={
+                  IN.t +
+                  2 +
+                  (k === "wage" ? LBL_W.instWage : LBL_W.instHome) +
+                  8
+                }
                 color={k === "wage" ? SIDE_C.demand : SIDE_C.supply}
                 s={1.15}
                 rot={-90}
@@ -899,7 +1322,10 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
             strokeDasharray="3 4"
             initial={false}
             animate={{ y2: instAxes ? IN.b : IN.t, opacity: instAxes ? 1 : 0 }}
-            transition={{ y2: { ...DRAW, delay: 0.25 }, opacity: { duration: 0.15, delay: 0.25 } }}
+            transition={{
+              y2: { ...DRAW, delay: 0.25 },
+              opacity: { duration: 0.15, delay: 0.25 },
+            }}
           />
           {/* the wage median (context) vs THE GATE (the all-places home median) */}
           <motion.line
@@ -910,8 +1336,14 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
             strokeWidth={1}
             strokeDasharray="3 4"
             initial={false}
-            animate={{ x2: instAxes && instK === "wage" ? IN.r : IN.l, opacity: instAxes && instK === "wage" ? 1 : 0 }}
-            transition={{ x2: { ...DRAW, delay: 0.25 }, opacity: { duration: 0.15, delay: 0.25 } }}
+            animate={{
+              x2: instAxes && instK === "wage" ? IN.r : IN.l,
+              opacity: instAxes && instK === "wage" ? 1 : 0,
+            }}
+            transition={{
+              x2: { ...DRAW, delay: 0.25 },
+              opacity: { duration: 0.15, delay: 0.25 },
+            }}
           />
           <motion.line
             x1={IN.l}
@@ -921,8 +1353,14 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
             strokeWidth={1}
             strokeDasharray="3 4"
             initial={false}
-            animate={{ x2: instAxes && instK === "home" ? IN.r : IN.l, opacity: instAxes && instK === "home" ? 1 : 0 }}
-            transition={{ x2: { ...DRAW, delay: 0.25 }, opacity: { duration: 0.15, delay: 0.25 } }}
+            animate={{
+              x2: instAxes && instK === "home" ? IN.r : IN.l,
+              opacity: instAxes && instK === "home" ? 1 : 0,
+            }}
+            transition={{
+              x2: { ...DRAW, delay: 0.25 },
+              opacity: { duration: 0.15, delay: 0.25 },
+            }}
           />
 
           {/* THE GIVE-WAY: the wage instrument opens showing the very field
@@ -943,7 +1381,14 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
                   animate={{
                     cx: atCity ? pxi(d.x) : pxi(m!.x),
                     cy: atCity ? pyiW(d.wage) : pyiW(m!.wage),
-                    r: instDots ? radiusFor(atCity ? d.pop : m!.pop, atCity ? POP_MAX : METRO_POP_MAX, 3.4, 0.8) : 0,
+                    r: instDots
+                      ? radiusFor(
+                          atCity ? d.pop : m!.pop,
+                          atCity ? POP_MAX : METRO_POP_MAX,
+                          3.4,
+                          0.8,
+                        )
+                      : 0,
                     fill: s.fill,
                     opacity: instDots && atCity ? s.opacity : 0,
                   }}
@@ -955,10 +1400,23 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
               );
             })}
           {/* the metro field takes over once the cities have arrived */}
-          <motion.g initial={false} animate={{ opacity: msaOn ? 1 : 0 }} transition={{ duration: 0.4, delay: msaOn ? 0.5 : 0 }}>
+          <motion.g
+            initial={false}
+            animate={{ opacity: msaOn ? 1 : 0 }}
+            transition={{ duration: 0.4, delay: msaOn ? 0.5 : 0 }}
+          >
             {METRO_DOTS.map((m) => {
               const s = instMsaDot(m, lensW);
-              return <circle key={`iw-${m.id}`} cx={pxi(m.x)} cy={pyiW(m.wage)} r={radiusFor(m.pop, METRO_POP_MAX, 3.4, 0.8)} fill={s.fill} opacity={s.opacity} />;
+              return (
+                <circle
+                  key={`iw-${m.id}`}
+                  cx={pxi(m.x)}
+                  cy={pyiW(m.wage)}
+                  r={radiusFor(m.pop, METRO_POP_MAX, 3.4, 0.8)}
+                  fill={s.fill}
+                  opacity={s.opacity}
+                />
+              );
             })}
           </motion.g>
           {/* the housing field LANDS the way the opening plane did — dots
@@ -975,7 +1433,11 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
                 cx={pxi(d.x)}
                 cy={pyiH(d.home)}
                 initial={false}
-                animate={{ r: on ? radiusFor(d.pop, POP_MAX, 3.4, 0.8) : 0, fill: s.fill, opacity: on ? s.opacity : 0 }}
+                animate={{
+                  r: on ? radiusFor(d.pop, POP_MAX, 3.4, 0.8) : 0,
+                  fill: s.fill,
+                  opacity: on ? s.opacity : 0,
+                }}
                 transition={{
                   fill: { duration: 0.3, ease: "easeOut" },
                   r: { duration: 0.45, ease: "easeOut", delay: on ? stag : 0 },
@@ -986,19 +1448,56 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
           })}
 
           {/* lens verdict labels */}
-          <motion.g initial={false} animate={{ opacity: lensW ? 1 : 0 }} transition={{ duration: 0.35, delay: lensW ? 0.45 : 0 }}>
-            <text x={IN.l + 5} y={IN.t + 13} fontSize={10.5} fontWeight={600} fill={REGIONAL_C} {...HALO}>
+          <motion.g
+            initial={false}
+            animate={{ opacity: lensW ? 1 : 0 }}
+            transition={{ duration: 0.35, delay: lensW ? 0.45 : 0 }}
+          >
+            <text
+              x={IN.l + 5}
+              y={IN.t + 13}
+              fontSize={10.5}
+              fontWeight={600}
+              fill={REGIONAL_C}
+              {...HALO}
+            >
               left → MSA-wide
             </text>
-            <text x={IN.r - 5} y={IN.t + 13} textAnchor="end" fontSize={10.5} fontWeight={600} fill={SIDE_C.demand} {...HALO}>
+            <text
+              x={IN.r - 5}
+              y={IN.t + 13}
+              textAnchor="end"
+              fontSize={10.5}
+              fontWeight={600}
+              fill={SIDE_C.demand}
+              {...HALO}
+            >
               else → Admin-specific
             </text>
           </motion.g>
-          <motion.g initial={false} animate={{ opacity: lensH ? 1 : 0 }} transition={{ duration: 0.35, delay: lensH ? 0.45 : 0 }}>
-            <text x={IN.l + 5} y={imyH - 8} fontSize={10.5} fontWeight={600} fill={HALF_C.above} {...HALO}>
+          <motion.g
+            initial={false}
+            animate={{ opacity: lensH ? 1 : 0 }}
+            transition={{ duration: 0.35, delay: lensH ? 0.45 : 0 }}
+          >
+            <text
+              x={IN.l + 5}
+              y={imyH - 8}
+              fontSize={10.5}
+              fontWeight={600}
+              fill={HALF_C.above}
+              {...HALO}
+            >
               faster → Housing
             </text>
-            <text x={IN.l + 5} y={imyH + 16} fontSize={10.5} fontWeight={600} fill={HALF_C.below} {...HALO}>
+            <text
+              x={IN.l + 5}
+              y={imyH + 16}
+              fontSize={10.5}
+              fontWeight={600}
+              fill={HALF_C.below}
+              {...HALO}
+            >
               slower → Amenities
             </text>
           </motion.g>
@@ -1023,11 +1522,21 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
               stroke="transparent"
               strokeWidth={7}
               initial={false}
-              animate={{ cx: p.x, cy: p.y, r: dotsOn ? p.r : 0, fill: s.fill, opacity: dotsOn ? s.opacity : 0 }}
+              animate={{
+                cx: p.x,
+                cy: p.y,
+                r: dotsOn ? p.r : 0,
+                fill: s.fill,
+                opacity: dotsOn ? s.opacity : 0,
+              }}
               transition={{
                 fill: { duration: 0.3, ease: "easeOut", delay: stag },
                 opacity: { duration: 0.3, ease: "easeOut", delay: stag },
-                default: { duration: 0.75, ease: "easeInOut", delay: stag + 0.22 },
+                default: {
+                  duration: 0.75,
+                  ease: "easeInOut",
+                  delay: stag + 0.22,
+                },
               }}
               onMouseEnter={() => hoverEnter(d)}
               onMouseLeave={() => hoverLeave(d)}
@@ -1037,7 +1546,10 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
 
         {/* ————— tree edges (elbows DRAW, colored by the child they reach) ————— */}
         {EDGES.map(([a, b]) => {
-          const vis = nodeOn(a) && nodeOn(b) && (a === "root" || annexOn(NODES[a].side as SideKey));
+          const vis =
+            nodeOn(a) &&
+            nodeOn(b) &&
+            (a === "root" || annexOn(NODES[a].side as SideKey));
           const side = NODES[b].side as SideKey;
           const dim = dimmed(b);
           return (
@@ -1066,7 +1578,8 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
             closing the tree behind them. */}
         {(["demand", "supply"] as const).map((sid) => {
           const n = NODES[sid];
-          const on = !wage && flowOf(sid) === "leaf" && nodeOn(sid) && annexOn(sid);
+          const on =
+            !wage && flowOf(sid) === "leaf" && nodeOn(sid) && annexOn(sid);
           const dim = dimmed(sid);
           return (
             <motion.line
@@ -1099,7 +1612,10 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
             than the line it sat on read lopsided — while over the drop
             they are symmetric by construction. */}
         {EDGES.map(([a, b, lbl]) => {
-          const vis = nodeOn(a) && nodeOn(b) && (a === "root" || annexOn(NODES[a].side as SideKey));
+          const vis =
+            nodeOn(a) &&
+            nodeOn(b) &&
+            (a === "root" || annexOn(NODES[a].side as SideKey));
           const dim = dimmed(b);
           const p = NODES[a];
           const n = NODES[b];
@@ -1108,7 +1624,9 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
           /* a drop label centers on ITS segment — midway between the run
              and the capsule top (+3.5 baseline shift) — not a fixed offset
              off the capsule, which sat it low in the drop */
-          const lyy = onDrop ? (edgeRunY(p) + n.y - n.h / 2) / 2 + 3.5 : edgeRunY(p) + 3.5;
+          const lyy = onDrop
+            ? (edgeRunY(p) + n.y - n.h / 2) / 2 + 3.5
+            : edgeRunY(p) + 3.5;
           return (
             <motion.text
               key={`el-${a}-${b}`}
@@ -1145,7 +1663,10 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
               /* answers SETTLE in — a short slide down from the edge that
                  reaches them — instead of fading in place */
               animate={{ opacity: vis ? (dim ? 0.25 : 1) : 0, y: vis ? 0 : -6 }}
-              transition={{ opacity: { duration: 0.25 }, y: { duration: 0.4, ease: "easeOut" } }}
+              transition={{
+                opacity: { duration: 0.25 },
+                y: { duration: 0.4, ease: "easeOut" },
+              }}
             >
               <motion.rect
                 x={n.x - n.w / 2}
@@ -1161,7 +1682,11 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
                 animate={{ fillOpacity: vis ? (isQ ? 0.92 : 0.13) : 0 }}
                 transition={{ duration: 0.35, delay: vis ? 0.25 : 0 }}
               />
-              <motion.g initial={false} animate={{ opacity: vis ? 1 : 0 }} transition={{ duration: 0.3, delay: vis ? 0.3 : 0 }}>
+              <motion.g
+                initial={false}
+                animate={{ opacity: vis ? 1 : 0 }}
+                transition={{ duration: 0.3, delay: vis ? 0.3 : 0 }}
+              >
                 <text
                   x={n.x}
                   y={isQ ? n.y - 4 : n.y + 4}
@@ -1173,7 +1698,13 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
                   {n.title}
                 </text>
                 {isQ && (
-                  <text x={n.x} y={n.y + 12} textAnchor="middle" fontSize={9} fill="#6f6e69">
+                  <text
+                    x={n.x}
+                    y={n.y + 12}
+                    textAnchor="middle"
+                    fontSize={9}
+                    fill="#6f6e69"
+                  >
                     {ROOT_SUB}
                   </text>
                 )}
@@ -1194,7 +1725,10 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
               key={`ax-${sid}`}
               initial={false}
               animate={{ opacity: vis ? (dim ? 0.25 : 1) : 0, y: vis ? 0 : -6 }}
-              transition={{ opacity: { duration: 0.25 }, y: { duration: 0.4, ease: "easeOut" } }}
+              transition={{
+                opacity: { duration: 0.25 },
+                y: { duration: 0.4, ease: "easeOut" },
+              }}
             >
               <motion.rect
                 x={n.x - a.w / 2}
@@ -1210,11 +1744,29 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
                 animate={{ fillOpacity: vis ? 0.92 : 0 }}
                 transition={{ duration: 0.35, delay: vis ? 0.25 : 0 }}
               />
-              <motion.g initial={false} animate={{ opacity: vis ? 1 : 0 }} transition={{ duration: 0.3, delay: vis ? 0.3 : 0 }}>
-                <text x={n.x} y={top + 15} textAnchor="middle" fontSize={9.5} fontWeight={600} fill="#3f3b34">
+              <motion.g
+                initial={false}
+                animate={{ opacity: vis ? 1 : 0 }}
+                transition={{ duration: 0.3, delay: vis ? 0.3 : 0 }}
+              >
+                <text
+                  x={n.x}
+                  y={top + 15}
+                  textAnchor="middle"
+                  fontSize={9.5}
+                  fontWeight={600}
+                  fill="#3f3b34"
+                >
                   {a.q}
                 </text>
-                <text x={n.x} y={top + 28.5} textAnchor="middle" fontSize={8.5} fontStyle="italic" fill="#6f6e69">
+                <text
+                  x={n.x}
+                  y={top + 28.5}
+                  textAnchor="middle"
+                  fontSize={8.5}
+                  fontStyle="italic"
+                  fill="#6f6e69"
+                >
                   {a.read}
                 </text>
               </motion.g>
@@ -1233,8 +1785,18 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
             <motion.text
               key={`sc-${sc.id}`}
               initial={false}
-              animate={{ opacity: on ? (scene.focus && scene.focus !== sc.id ? 0.25 : 1) : 0, y: on ? 0 : -6 }}
-              transition={{ opacity: TWEEN, y: { duration: 0.5, ease: "easeOut" } }}
+              animate={{
+                opacity: on
+                  ? scene.focus && scene.focus !== sc.id
+                    ? 0.25
+                    : 1
+                  : 0,
+                y: on ? 0 : -6,
+              }}
+              transition={{
+                opacity: TWEEN,
+                y: { duration: 0.5, ease: "easeOut" },
+              }}
               x={NODES[sc.id].x}
               y={sideCountY(sc.id)}
               textAnchor="middle"
@@ -1254,7 +1816,10 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
               key={`lc-${lc.id}`}
               initial={false}
               animate={{ opacity: on ? (dim ? 0.25 : 1) : 0, y: on ? 0 : -6 }}
-              transition={{ opacity: TWEEN, y: { duration: 0.5, ease: "easeOut" } }}
+              transition={{
+                opacity: TWEEN,
+                y: { duration: 0.5, ease: "easeOut" },
+              }}
               x={NODES[lc.id].x}
               y={leafCountY(lc.id)}
               textAnchor="middle"
@@ -1279,13 +1844,34 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
               initial={false}
               /* the label rides its tint's sweep: it slides in from its
                  corner's edge instead of fading in place */
-              animate={{ opacity: lit ? 1 : 0, x: lit ? 0 : q.right ? 16 : -16 }}
-              transition={{ opacity: TWEEN, x: { duration: 0.55, ease: "easeOut" } }}
+              animate={{
+                opacity: lit ? 1 : 0,
+                x: lit ? 0 : q.right ? 16 : -16,
+              }}
+              transition={{
+                opacity: TWEEN,
+                x: { duration: 0.55, ease: "easeOut" },
+              }}
             >
-              <text x={lx} y={ly} textAnchor={anchor} fontSize={12.5} fontWeight={600} fill={SIDE_C[q.side]} {...HALO}>
+              <text
+                x={lx}
+                y={ly}
+                textAnchor={anchor}
+                fontSize={12.5}
+                fontWeight={600}
+                fill={SIDE_C[q.side]}
+                {...HALO}
+              >
                 {q.side === "demand" ? "together → Demand" : "apart → Supply"}
               </text>
-              <text x={lx} y={ly + 15} textAnchor={anchor} fontSize={10} fill="#6f6e69" {...HALO}>
+              <text
+                x={lx}
+                y={ly + 15}
+                textAnchor={anchor}
+                fontSize={10}
+                fill="#6f6e69"
+                {...HALO}
+              >
                 {q.sub}
               </text>
             </motion.g>
@@ -1294,48 +1880,81 @@ export function DiagnoseStage({ scene, live = true }: { scene: DiagScene; live?:
 
         {/* ————— hover: name the city under the cursor, on a card so the
             label reads over dots and tree alike (user-set) ————— */}
-        {hover && dotsOn && (() => {
-          const p = target(hover);
-          const flip = p.x > W - 175;
-          const tx = flip ? p.x - 10 : p.x + 10;
-          const anchor: "start" | "end" = flip ? "end" : "start";
-          const ly = Math.min(Math.max(p.y, M.t + 18), H - 46);
-          const l2 = `people ${sPct(hover.x)}/yr · pay ${sPct(hover.wage)}/yr`;
-          const l3 = `MSA: ${hover.msaName} (${sPct(hover.msaPop)}/yr people)`;
-          /* estimated card width — advance ≈ .60em bold title / .50em body */
-          const cw = Math.max(hover.name.length * 6.9, l2.length * 4.75, l3.length * 4.75) + 12;
-          return (
-            <motion.g
-              key={hover.id}
-              pointerEvents="none"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
-            >
-              <circle cx={p.x} cy={p.y} r={p.r + 3} fill="none" stroke="#2c2823" strokeWidth={1} />
-              <rect
-                x={flip ? tx - cw + 6 : tx - 6}
-                y={ly - 14}
-                width={cw}
-                height={41}
-                rx={6}
-                fill="#ffffff"
-                fillOpacity={0.94}
-                stroke={CARD_STROKE}
-                strokeWidth={1}
-              />
-              <text x={tx} y={ly - 2} textAnchor={anchor} fontSize={11.5} fontWeight={700} fill="#2c2823">
-                {hover.name}
-              </text>
-              <text x={tx} y={ly + 11} textAnchor={anchor} fontSize={9.5} fill="#6f6e69">
-                {l2}
-              </text>
-              <text x={tx} y={ly + 23} textAnchor={anchor} fontSize={9.5} fill="#6f6e69">
-                {l3}
-              </text>
-            </motion.g>
-          );
-        })()}
+        {hover &&
+          dotsOn &&
+          (() => {
+            const p = target(hover);
+            const flip = p.x > W - 175;
+            const tx = flip ? p.x - 10 : p.x + 10;
+            const anchor: "start" | "end" = flip ? "end" : "start";
+            const ly = Math.min(Math.max(p.y, M.t + 18), H - 46);
+            const l2 = `people ${sPct(hover.x)}/yr · pay ${sPct(hover.wage)}/yr`;
+            const l3 = `MSA: ${hover.msaName} (${sPct(hover.msaPop)}/yr people)`;
+            /* estimated card width — advance ≈ .60em bold title / .50em body */
+            const cw =
+              Math.max(
+                hover.name.length * 6.9,
+                l2.length * 4.75,
+                l3.length * 4.75,
+              ) + 12;
+            return (
+              <motion.g
+                key={hover.id}
+                pointerEvents="none"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+              >
+                <circle
+                  cx={p.x}
+                  cy={p.y}
+                  r={p.r + 3}
+                  fill="none"
+                  stroke="#2c2823"
+                  strokeWidth={1}
+                />
+                <rect
+                  x={flip ? tx - cw + 6 : tx - 6}
+                  y={ly - 14}
+                  width={cw}
+                  height={41}
+                  rx={6}
+                  fill="#ffffff"
+                  fillOpacity={0.94}
+                  stroke={CARD_STROKE}
+                  strokeWidth={1}
+                />
+                <text
+                  x={tx}
+                  y={ly - 2}
+                  textAnchor={anchor}
+                  fontSize={11.5}
+                  fontWeight={700}
+                  fill="#2c2823"
+                >
+                  {hover.name}
+                </text>
+                <text
+                  x={tx}
+                  y={ly + 11}
+                  textAnchor={anchor}
+                  fontSize={9.5}
+                  fill="#6f6e69"
+                >
+                  {l2}
+                </text>
+                <text
+                  x={tx}
+                  y={ly + 23}
+                  textAnchor={anchor}
+                  fontSize={9.5}
+                  fill="#6f6e69"
+                >
+                  {l3}
+                </text>
+              </motion.g>
+            );
+          })()}
 
         {scene.caption && (
           <motion.text
