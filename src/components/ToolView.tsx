@@ -23,6 +23,9 @@ interface ToolViewProps {
   onSpanChange: (span: string) => void;
   explainersOpen: boolean;
   onToggleExplainers: () => void;
+  /** which explainer is open inside the section, or null for the gallery */
+  openExplainer: string | null;
+  onOpenExplainer: (id: string | null) => void;
   onOpenChat: () => void;
   onOpenJourney: () => void;
   onBackToLanding: () => void;
@@ -49,6 +52,8 @@ export function ToolView({
   onSpanChange,
   explainersOpen,
   onToggleExplainers,
+  openExplainer,
+  onOpenExplainer,
   onOpenChat,
   onOpenJourney,
   onBackToLanding,
@@ -212,7 +217,7 @@ export function ToolView({
         </main>
       </div>
 
-      <ExplainersView open={explainersOpen} />
+      <ExplainersView open={explainersOpen} openId={openExplainer} onOpen={onOpenExplainer} />
     </div>
   );
 }
