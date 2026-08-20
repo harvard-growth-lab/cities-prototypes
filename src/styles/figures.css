@@ -428,6 +428,17 @@
   margin-top: 11px;
   justify-content: flex-start;
 }
+/* the guided walks carry TWO switches — the tree shape and the user flow.
+   They pack right together as one cluster: given a margin-left:auto each
+   they would split the free space between them and drift apart. */
+.jz-switches {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px 22px;
+  margin-left: auto;
+}
 .jz-modes-k {
   font-size: 10px;
   font-weight: 700;
@@ -539,6 +550,11 @@
 .tree-node.side-supply.picked .tree-hit {
   stroke: #b8431f;
   fill: rgba(184, 67, 31, 0.05);
+}
+/* the third-branch layout study's placeholder hue (TREE_SIDE_COLOR.third) */
+.tree-node.side-third.picked .tree-hit {
+  stroke: #5f4a86;
+  fill: rgba(95, 74, 134, 0.05);
 }
 
 /* the path the user is on: highlighter underlay + badge. Wide enough that the
@@ -938,6 +954,242 @@
   fill-opacity: 0.15;
   stroke-opacity: 0.45;
   stroke-width: 1.5;
+}
+/* ----- telling the plane's regions apart -----
+   Measured on this palette, three tint fills land at ΔE 1–4 where the floor
+   is 15 — the fills are ~90% white, so no hue and no opacity makes them
+   distinct. The same hues at FULL strength are ΔE 18–26. So identity moves
+   off the fill: each region gets a full-strength rim along its stretch of the
+   chart's edge, and any boundary the axes don't already draw gets a surface
+   gap so two regions never share a line. */
+.nv-rim {
+  fill: none;
+  stroke-width: 3;
+  stroke-linejoin: round;
+  opacity: 0;
+  transition: opacity 0.45s ease;
+}
+.nv-rim.on {
+  opacity: 0.8;
+}
+.nv-cut {
+  stroke: #fff;
+  stroke-width: 5;
+  opacity: 0;
+  transition: opacity 0.45s ease;
+}
+.nv-cut.on {
+  opacity: 1;
+}
+
+/* ----- the tree options disclosure -----
+   Two switches folded behind one control, so the header row carries a single
+   visible choice again. The button shows what is currently set, and marks
+   itself when that is not the default — a control you cannot see still has
+   to say when it is doing something. */
+.jz-opts {
+  position: relative;
+  flex-shrink: 0;
+}
+.jz-opts-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 27px;
+  padding: 0 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 9px;
+  background: var(--paper, #f4f1ec);
+  color: var(--ink-soft);
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+.jz-opts-btn:hover,
+.jz-opts-btn.open {
+  border-color: var(--teal);
+  background: #fff;
+}
+.jz-opts-k {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.jz-opts-now {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.jz-opts-btn svg {
+  width: 10px;
+  height: 6px;
+  transition: transform 0.2s ease;
+}
+.jz-opts-btn.open svg {
+  transform: rotate(180deg);
+}
+/* the dot: settings are folded away and not at their defaults */
+.jz-opts-btn.set .jz-opts-k::after {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  margin-left: 5px;
+  border-radius: 50%;
+  background: var(--orange);
+  vertical-align: 1px;
+}
+.jz-opts-panel {
+  position: absolute;
+  top: calc(100% + 7px);
+  right: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px 15px;
+  min-width: 264px;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: var(--shadow-md);
+}
+/* inside the panel the rows stack and — unlike the header row, which has
+   never had space for them — each one gets to explain itself */
+.jz-opts-panel .jz-modes {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 6px;
+  opacity: 1;
+}
+.jz-opts-panel .jz-modes-hint {
+  display: block;
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--ink-soft);
+}
+
+/* the panel's one link out: the study the small-stage switch was cut from,
+   holding the directions that did not (yet) make the switch */
+.jz-opts-study {
+  margin-top: -4px;
+  padding-top: 11px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--ink-soft);
+  text-decoration: none;
+}
+.jz-opts-study b {
+  font-weight: 700;
+  color: var(--teal);
+  white-space: nowrap;
+}
+.jz-opts-study:hover b {
+  text-decoration: underline;
+}
+
+/* ============ meeting a stage smaller than the tree ============ */
+
+/* "follow the path" frames the tree itself, so its transform must be
+   unambiguous: transform-origin on an SVG element otherwise resolves against
+   the view-box, and the fit maths assumes the user-space origin. */
+.nv-focus {
+  transform-origin: 0 0;
+  transition: transform 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* the branches detail mode folded away: the head stays, the count says what
+   it is holding back */
+.nv-fold path {
+  stroke-width: 1.2;
+  stroke-dasharray: 2 2.5;
+  opacity: 0.6;
+}
+.nv-fold text {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  opacity: 0.7;
+}
+
+/* the whole tree at a glance, so zooming never costs the reader the map */
+.nv-mini {
+  position: absolute;
+  left: 14px;
+  bottom: 12px;
+  width: 176px;
+  padding: 7px 4px 4px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: var(--shadow-sm);
+  opacity: 0;
+  transform: translateY(6px);
+  pointer-events: none;
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s ease;
+}
+.nv-mini.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+.nv-mini svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.nv-mini-you {
+  stroke-width: 2;
+}
+.nv-mini-frame {
+  fill: rgba(37, 88, 98, 0.07);
+  stroke: var(--teal);
+  stroke-width: 1.2;
+  stroke-dasharray: 3 2.5;
+}
+
+/* what the stage is doing to the smallest type on the tree. Quiet until it
+   matters, then it says so and offers the mode that fixes it. */
+.nv-fitread {
+  position: absolute;
+  right: 14px;
+  bottom: 12px;
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  font-size: 11px;
+  color: var(--ink-soft);
+  pointer-events: none;
+}
+.nv-fitread-n {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+.nv-fitread.tight {
+  border-color: var(--orange);
+  color: var(--orange-dark);
+  pointer-events: auto;
+}
+.nv-fitread.tight .nv-fitread-n {
+  color: var(--orange-dark);
+}
+.nv-fitread-go {
+  border: none;
+  background: var(--orange);
+  color: #fff;
+  border-radius: 999px;
+  padding: 3px 9px;
+  font-size: 10.5px;
+  font-weight: 700;
 }
 /* corner readings + dot-adjacent labels ride above the field on white halos */
 .nv-lab {

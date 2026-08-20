@@ -1,6 +1,8 @@
 /** All prototype copy, options, and sample state for the Cities Tool.
  *  Figma-hosted placeholder assets; swap for real ones when available. */
 
+import { TREE_SIDE_LABEL, type BranchSide } from "./figures";
+
 export const ASSETS = {
   logo: "https://www.figma.com/api/mcp/asset/88485d58-0a09-4b76-a794-9c77770e11c5",
   treemap: "https://www.figma.com/api/mcp/asset/6bb40150-76ee-4013-bcb1-78de2deb40b4",
@@ -67,9 +69,14 @@ export interface SectionDef {
   steps?: RailStep[];
 }
 
-/** the branch picked on the diagnostic tree names its analysis section */
-export const branchSectionName = (side: "demand" | "supply") =>
-  side === "demand" ? "Demand side analysis" : "Supply side analysis";
+/** The branch picked on the diagnostic tree names its analysis section. Built
+ *  from the side's own label (figures.ts) rather than listed per branch, so a
+ *  structure that adds branches needs no edit here — the third branch keeps
+ *  its brackets because its LABEL is bracketed, which is the point. */
+export const branchSectionName = (side: BranchSide) => {
+  const label = TREE_SIDE_LABEL[side];
+  return `${label[0].toUpperCase()}${label.slice(1)} analysis`;
+};
 
 export const SECTION_DEFS: SectionDef[] = [
   {

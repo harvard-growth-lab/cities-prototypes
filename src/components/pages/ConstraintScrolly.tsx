@@ -10,7 +10,9 @@ import {
   THEMES,
   TREE_MODES,
   TREE_SIDE_COLOR,
+  TREE_SIDE_LABEL,
   diagnose,
+  sideOfPath,
   suggestedPath,
   treeNodes,
   type ConstraintFlow,
@@ -146,6 +148,15 @@ const SIDE_QUADS: Record<TreeSide, QuadrantDef["id"][]> = {
   root: [],
   demand: QUADRANTS.filter((q) => q.side === "demand").map((q) => q.id),
   supply: QUADRANTS.filter((q) => q.side === "supply").map((q) => q.id),
+  /* Branches this tree never shows: the third-branch and four-quadrant
+     structures belong to the guided walk (walkShapes.ts), which draws its own
+     chart. Listed so the record stays exhaustive — nothing here can be
+     hovered on this minimap. */
+  third: [],
+  demandpos: [],
+  demandneg: [],
+  supplypos: [],
+  supplyneg: [],
 };
 
 type Node = HierarchyNode<TreeNodeData> & { x: number; y: number };
@@ -456,7 +467,7 @@ export function ConstraintScrolly({
     () => diagnose(cityShort, country),
     [cityShort, country],
   );
-  const suggSide: TreeSide = suggPath[0] === "demand" ? "demand" : "supply";
+  const suggSide: TreeSide = sideOfPath(suggPath);
   /* hovering a minimap quadrant emphasises that half of the tree */
   const [quadHover, setQuadHover] = useState<"demand" | "supply" | null>(null);
   const stepRef = useRef(step);
@@ -544,7 +555,7 @@ export function ConstraintScrolly({
        the themes layer on, the leaf row climbs again to leave room for the
        chip stacks (five deep under Regional Shock) plus the badge row */
     const LEVEL_F =
-      variant !== "alt"
+      variant === "full"
         ? [0, 0.2, 0.47, 0.74, 1]
         : themesOn
           ? [0, 0.3, 0.62]
@@ -1076,7 +1087,7 @@ export function ConstraintScrolly({
        round joins — a bare fill's extreme vertex rasterises into stair-steps
        at fractional pixels; the rounded stroke renders it as a clean point */
     const defs = svg.append("defs");
-    (["root", "demand", "supply"] as TreeSide[]).forEach((side) => {
+    (["root", "demand", "supply", "third"] as TreeSide[]).forEach((side) => {
       defs
         .append("marker")
         .attr("id", `jz-arrow-${side}`)
@@ -2192,8 +2203,7 @@ export function ConstraintScrolly({
      minimap quadrant is hovered */
   const capNode = hoverNode ?? (quadHover ? byId.get(quadHover)! : null);
   const hlSide = hoverNode ? sideOf(hoverNode) : quadHover;
-  const selSide =
-    selectedPath[0] === "demand" ? ("demand" as const) : ("supply" as const);
+  const selSide = sideOfPath(selectedPath);
   const isDefaultPath = selectedPath.join("/") === suggPath.join("/");
 
   /* a hovered theme chip takes the rail over: the theme's own question and
@@ -2250,8 +2260,7 @@ export function ConstraintScrolly({
           className="fig-kicker"
           style={{ color: TREE_SIDE_COLOR[sideOf(capNode)] }}
         >
-          On the tree ·{" "}
-          {sideOf(capNode) === "root" ? "the root" : `${sideOf(capNode)} side`}
+          On the tree · {TREE_SIDE_LABEL[sideOf(capNode)]}
         </span>
       </div>
       <p className="jz-cap-title">

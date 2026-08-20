@@ -71,6 +71,16 @@ export const NODE_ICON_ART: Record<string, string> = {
      off the top edge so the stroke clears */
   placespec:
     '<path d="M6.5 11.6c2.6-3 3.9-4.8 3.9-6.6a3.9 3.9 0 1 0-7.8 0c0 1.8 1.3 3.6 3.9 6.6Z"/><circle cx="6.5" cy="5" r="1.4"/>',
+  /* ----- the third-branch layout study -----
+     Nothing is decided about this branch, so its marks say exactly that:
+     the same line vocabulary drawn dashed, one plain shape per node. They
+     read as held space rather than as art that means something, and the
+     dashes match the bracketed titles they sit beside. */
+  third:
+    '<rect x="1.9" y="1.9" width="9.2" height="9.2" rx="1.6" stroke-dasharray="2 1.9"/>',
+  third1: '<circle cx="6.5" cy="6.5" r="4.6" stroke-dasharray="2 1.9"/>',
+  third2:
+    '<path d="M6.5 1.9 11.1 6.5 6.5 11.1 1.9 6.5Z" stroke-dasharray="2 1.9"/>',
 };
 
 /* one pictogram per THEME, same 13×13 line style as the node icons. These

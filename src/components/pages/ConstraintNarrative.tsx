@@ -1,5 +1,6 @@
 import {
   Fragment,
+  useCallback,
   useEffect,
   useLayoutEffect,
   useMemo,
@@ -9,14 +10,56 @@ import {
 import { easeCubicInOut } from "d3-ease";
 import {
   CONSTRAINT_FLOWS,
-  QUADRANTS,
+  PLACEHOLDER_BRANCHES,
   TREE_SIDE_COLOR,
+  TREE_SIDE_LABEL,
   convertPath,
   diagnose,
+  sideOfPath,
   treeNodes,
   type ConstraintFlow,
   type TreeVariant,
 } from "../../data/figures";
+import { BranchMinimap, StageFit, useStageScale } from "./walkFit";
+import {
+  DOT_LEAF_Y,
+  DOT_QCARD_Y,
+  DOT_ROOT_Y,
+  LEAF_BUS,
+  LEAF_ROW,
+  QCARD_ROW,
+  ROOT_BUS,
+  ROOT_ROW,
+  WALK_SHAPES,
+  hasLeaves,
+  headRowH,
+  headRowY,
+  headX,
+  landingX,
+  landingY,
+  leafSide,
+  DOT_BELOW_HEAD,
+  branchBox,
+  detailLeafBoxes,
+  fitTransform,
+  DEFAULT_WALK_SHAPE,
+  numberWord,
+  planeBranches,
+  planeCuts,
+  planeNeedsRim,
+  FIT_MODES,
+  rayExit,
+  sectorAnchor,
+  sectorRim,
+  sectorAt,
+  sectorPoly,
+  shapeBand,
+  shapeLeaves,
+  walkShape,
+  wholeBox,
+  type FitMode,
+  type WalkShapeId,
+} from "./walkShapes";
 import {
   DATA_WINDOW_LABEL,
   METROS,
@@ -42,7 +85,7 @@ import { branchSectionName } from "../../data/content";
      0  dial one: people        the x axis draws; the dot sits on it
      1  dial two: pay           the plane completes; the dot lifts to its spot
      2  the benchmark           the median crosshair + the grey field around it
-     3  reading the quadrant    together → demand, apart → supply; yours marked
+     3  reading the plane       the regions the shape cuts it into; yours marked
      4  the tree begins         the chart parks; the dot carries to the root
      5  fork one                the dot drops to its side, on its own numbers
      6  fork two + instrument   the side's question, read on its own chart
@@ -119,9 +162,6 @@ const TREE_GROWN_POSE = "translate(-6px, -8px) scale(1.06)";
    of the (narrowed) hero panel's left edge. */
 const TREE_ASIDE_POSE = "translate(0px, 26px) scale(0.94)";
 
-type Side = "demand" | "supply";
-type LeafId = "metrowide" | "placespec" | "col" | "amen";
-
 const med = METRO_MEDIANS;
 const pc = (v: number) => `${v >= 0 ? "+" : "−"}${Math.abs(v).toFixed(1)}%/yr`;
 
@@ -129,28 +169,13 @@ const pc = (v: number) => `${v >= 0 ? "+" : "−"}${Math.abs(v).toFixed(1)}%/yr`
 const maxSize = Math.max(...METROS.map((m) => m.size));
 const dotR = (s: number) => 1.3 + 10.7 * Math.sqrt(s / maxSize);
 
-/* ---------- tree geometry (no cohort stacks — one dot walks it) ---------- */
+/* ---------- tree geometry (no cohort stacks — one dot walks it) ----------
+   Which cards the tree carries, and where they sit, comes from the SHAPE
+   (walkShapes.ts) — the row heights below are what every shape shares. The
+   question cards are deliberately the SMALLEST boxes on the tree: the fork
+   logic is connective tissue, and the answers (heads, leaves) are what the
+   eye should land on. */
 
-/* the question cards are deliberately the SMALLEST boxes on the tree: the
-   fork logic is connective tissue, and the answers (heads, leaves) are what
-   the eye should land on */
-const ROOT = { x: 405, y: 84, w: 318, h: 34 };
-const HEAD = { w: 152, h: 32, y: 188 };
-const HEAD_X: Record<Side, number> = { demand: 205, supply: 605 };
-const QCARD = { w: 208, h: 42, y: 300 };
-const LEAF = { h: 30, y: 420 };
-const LEAF_DEFS: { id: LeafId; x: number; w: number; side: Side; title: string }[] = [
-  { id: "metrowide", x: 105, w: 172, side: "demand", title: "Metro-wide shock" },
-  { id: "placespec", x: 305, w: 188, side: "demand", title: "Place-specific shock" },
-  /* "Housing", not "Cost of living": this fork tests home-value growth
-     alone, and the box is sized to the shorter word (x is the centre) */
-  { id: "col", x: 505, w: 118, side: "supply", title: "Housing" },
-  { id: "amen", x: 685, w: 128, side: "supply", title: "Amenities" },
-];
-const LEAF_X = Object.fromEntries(LEAF_DEFS.map((l) => [l.id, l.x])) as Record<
-  LeafId,
-  number
->;
 /* the instrument panel: sized for a pizza square big enough to read, with
    margins for a rotated y-axis title on the left and the axis title +
    quadrant readings stacked below */
@@ -166,29 +191,9 @@ const INSET_HERO = { x: 760, y: 24, w: 410, h: 470 };
 const elbow = (x0: number, y0: number, busY: number, x1: number, y1: number) =>
   `M${x0},${y0} V${busY} H${x1} V${y1}`;
 
-const ROOT_BOT = ROOT.y + ROOT.h / 2;
-const ROOT_BUS = 132;
-const HEAD_TOP = HEAD.y - HEAD.h / 2;
-const HEAD_BOT = HEAD.y + HEAD.h / 2;
-const QCARD_TOP = QCARD.y - QCARD.h / 2;
-const QCARD_BOT = QCARD.y + QCARD.h / 2;
-const LEAF_BUS = 368;
-const LEAF_TOP = LEAF.y - LEAF.h / 2;
-/* where the walking dot rests at each station: under the root question,
-   below its branch head, facing the sub-question, then at its leaf */
-const DOT_AT_ROOT: [number, number] = [ROOT.x, 120];
-const DOT_HEAD_Y = 222;
-const DOT_QCARD_Y = 258;
-const DOT_LEAF_Y = 458;
-
-const EDGE_LABEL: Record<string, string> = {
-  demand: "yes — together",
-  supply: "no — apart",
-  metrowide: "yes — below",
-  placespec: "no — at or above",
-  col: "yes — faster",
-  amen: "no — slower",
-};
+const ROOT_BOT = ROOT_ROW.y + ROOT_ROW.h / 2;
+const QCARD_TOP = QCARD_ROW.y - QCARD_ROW.h / 2;
+const QCARD_BOT = QCARD_ROW.y + QCARD_ROW.h / 2;
 
 /** bracketed segments render as the repo's placeholder idiom */
 function Body({ text }: { text: string }) {
@@ -239,6 +244,161 @@ export function FlowSwitch({
   );
 }
 
+/* ---------- the tree options panel ----------
+   The flow switch stays on the header row: it swaps the whole telling of the
+   section and belongs where it can be seen. The two that shape the TREE —
+   how many branches it has, and what it does on a stage too small to draw it
+   whole — fold away behind one control, with their current settings on its
+   face so the state is legible without opening it. Collapsed, the header is
+   back to one visible switch; open, each option carries the hint that the
+   inline rows have never had room for. */
+
+function TreeOptions({
+  shape,
+  onShapeChange,
+  fit,
+  onFitChange,
+}: {
+  shape: WalkShapeId;
+  onShapeChange: (s: WalkShapeId) => void;
+  fit: FitMode;
+  onFitChange: (f: FitMode) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const box = useRef<HTMLDivElement>(null);
+  /* a panel that floats over the stage has to close the way readers expect
+     one to: clicking away from it, or pressing Escape */
+  useEffect(() => {
+    if (!open) return;
+    const away = (e: PointerEvent) => {
+      if (!box.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const key = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("pointerdown", away);
+    document.addEventListener("keydown", key);
+    return () => {
+      document.removeEventListener("pointerdown", away);
+      document.removeEventListener("keydown", key);
+    };
+  }, [open]);
+
+  const shapeDef = WALK_SHAPES.find((s) => s.id === shape);
+  const fitDef = FIT_MODES.find((m) => m.id === fit);
+  /* anything other than the shipped tree, fitted whole, gets a mark — a
+     folded-away control must still say when it is doing something */
+  const changed = shape !== DEFAULT_WALK_SHAPE || fit !== "fit";
+
+  return (
+    <div className="jz-opts" ref={box}>
+      <button
+        className={"jz-opts-btn" + (open ? " open" : "") + (changed ? " set" : "")}
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span className="jz-opts-k">Tree options</span>
+        <span className="jz-opts-now">
+          {shapeDef?.label} · {fitDef?.label}
+        </span>
+        <svg viewBox="0 0 10 6" aria-hidden="true">
+          <path d="M1 1.5 5 4.8 9 1.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+      </button>
+      {open && (
+        <div className="jz-opts-panel">
+          <ShapeSwitch shape={shape} onShapeChange={onShapeChange} />
+          <FitSwitch fit={fit} onFitChange={onFitChange} />
+          {/* the switches hold the built answers; the study holds the space
+              they were picked from — nine more small-stage directions,
+              each sketched wide and narrow */}
+          <a
+            className="jz-opts-study"
+            href="nine-more-trees.html"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <b>Nine More Trees ↗</b> — the design study behind these switches:
+            nine more small-stage directions, sketched
+          </a>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ---------- the small-stage switch (guided walks only) ----------
+   A third axis again, and a different question from either of the others:
+   not what the tree IS or how it is told, but what to do when the stage is
+   too small to draw it whole. See FIT_MODES for what each answer does. */
+
+export function FitSwitch({
+  fit,
+  onFitChange,
+}: {
+  fit: FitMode;
+  onFitChange: (f: FitMode) => void;
+}) {
+  return (
+    <div className="jz-modes show">
+      <span className="jz-modes-k">Small stage</span>
+      <div className="jz-seg" role="group" aria-label="Small-stage behaviour">
+        {FIT_MODES.map((m) => (
+          <button
+            key={m.id}
+            className={"jz-segbtn" + (fit === m.id ? " on" : "")}
+            aria-pressed={fit === m.id}
+            title={m.about}
+            onClick={() => onFitChange(m.id)}
+          >
+            {m.label}
+          </button>
+        ))}
+      </div>
+      <span className="jz-modes-hint">
+        {FIT_MODES.find((m) => m.id === fit)?.hint}
+      </span>
+    </div>
+  );
+}
+
+/* ---------- the tree-shape switch (guided walks only) ----------
+   A separate control from the flow switch above, because it is a separate
+   question: the flow decides how the section is TOLD, the shape decides how
+   many branches the tree it tells has. Only the walks mount it — the initial
+   draft's tree is solved by d3 from the app-wide structure, and carries its
+   own "Structure" control for that. */
+
+export function ShapeSwitch({
+  shape,
+  onShapeChange,
+}: {
+  shape: WalkShapeId;
+  onShapeChange: (s: WalkShapeId) => void;
+}) {
+  return (
+    <div className="jz-modes show">
+      <span className="jz-modes-k">Tree shape</span>
+      <div className="jz-seg" role="group" aria-label="Tree shape">
+        {WALK_SHAPES.map((sp) => (
+          <button
+            key={sp.id}
+            className={"jz-segbtn" + (shape === sp.id ? " on" : "")}
+            aria-pressed={shape === sp.id}
+            title={sp.about}
+            onClick={() => onShapeChange(sp.id)}
+          >
+            {sp.label}
+          </button>
+        ))}
+      </div>
+      <span className="jz-modes-hint">
+        {WALK_SHAPES.find((sp) => sp.id === shape)?.hint}
+      </span>
+    </div>
+  );
+}
+
 /* ------------------------------ the scrolly ------------------------------ */
 
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
@@ -252,6 +412,8 @@ export function ConstraintNarrative({
   variant,
   flow,
   onFlowChange,
+  shape,
+  onShapeChange,
   routePinned,
 }: {
   cityShort: string;
@@ -264,6 +426,9 @@ export function ConstraintNarrative({
   variant: TreeVariant;
   flow: ConstraintFlow;
   onFlowChange: (f: ConstraintFlow) => void;
+  /** how many branches the walk's tree has — its own axis, see walkShapes */
+  shape: WalkShapeId;
+  onShapeChange: (s: WalkShapeId) => void;
   /** hold the app's pick on the diagnosed route (the shortened walk, until
    *  the analysis section below has been read to its end) */
   routePinned: boolean;
@@ -274,10 +439,36 @@ export function ConstraintNarrative({
   /* the scroll STOP; `step` below is the BEAT it lands on, and everything
      that renders reads the beat (see the schedule at the top of the file) */
   const [stepIdx, setStepIdx] = useState(0);
-  const [hoverLeaf, setHoverLeaf] = useState<LeafId | null>(null);
+  const [hoverLeaf, setHoverLeaf] = useState<string | null>(null);
+  /* how the tree meets a stage smaller than the one it was drawn for. Local
+     to the section — nothing downstream reads it. */
+  const [fit, setFit] = useState<FitMode>("fit");
+  const svgRef = useRef<SVGSVGElement>(null);
   const beats = useMemo(() => beatsFor(flow), [flow]);
   const step = beats[Math.min(stepIdx, beats.length - 1)];
   const short = flow === "short";
+  /* the tree this walk tells: its branches, its cards and where they sit.
+     Everything below reads the tree from here rather than from constants, so
+     a shape switch is a data swap and nothing else. */
+  const sh = walkShape(shape);
+  const leaves = useMemo(() => shapeLeaves(sh), [sh]);
+  /* how many endings the structure has: its leaves, or — where it forks once
+     — its branch heads, which are the endings */
+  const endings = leaves.length || sh.branches.length;
+  /* the leaf row is the one rank whose height varies with the shape — the
+     narrow shapes wrap their titles onto a second line */
+  const LEAF_TOP = LEAF_ROW.y - sh.leafH / 2;
+  /* the head row and the rows below it move with the shape: a structure that
+     forks once has no question or leaf row, so its heads drop down the stage
+     and carry the diagnosis themselves */
+  const forks2 = hasLeaves(sh);
+  const focusMode = fit === "focus";
+  const detailMode = fit === "detail";
+  const stageScale = useStageScale(svgRef);
+  const HEAD_Y = headRowY(sh);
+  const HEAD_H = headRowH(sh);
+  const HEAD_TOP = HEAD_Y - HEAD_H / 2;
+  const HEAD_BOT = HEAD_Y + HEAD_H / 2;
   /* the stop where the rail's second step ("How we diagnose") takes over:
      the guided walk flips when its four chart stops end; the shortened walk
      opens on the whole tree, so everything past that pose is diagnosis */
@@ -322,6 +513,9 @@ export function ConstraintNarrative({
   useEffect(() => {
     if (step < CHOICE_BEAT) setHoverLeaf(null);
   }, [step]);
+  /* a shape switch rebuilds the tree under the pointer — a hovered leaf from
+     the other shape must not be re-asserted against the new one */
+  useEffect(() => setHoverLeaf(null), [sh]);
 
   /* ---------- the city's own read (real numbers where they exist) ---------- */
   const place = useMemo(() => homePlace(cityShort), [cityShort]);
@@ -332,19 +526,98 @@ export function ConstraintNarrative({
   const placeStats = place
     ? metroStatsRows(place)
     : [`[no ${cityShort} data yet — sample spot]`];
+  /* the region of the plane the city's dot falls in — what the chart marks
+     as "yours". Which regions exist is the shape's call, so this follows the
+     shape rather than the four quadrants. */
+  const placeSector = sectorAt(sh, placeSpot[0], placeSpot[1]);
 
+  const planeRead = placeSector?.read ?? placeSector?.sub ?? "";
   const dx = useMemo(() => diagnose(cityShort, country), [cityShort, country]);
-  const suggAlt = dx.path;
-  const citySide = (suggAlt[0] as Side) ?? "supply";
-  const suggLeaf = suggAlt[suggAlt.length - 1] as LeafId;
+  /* Which branch the city takes. Where the tree forks twice that is the
+     researchers' diagnosis, converted onto this shape. Where it forks ONCE,
+     the branch IS the region of the plane the city landed in — there is no
+     second question to answer, so the chart alone decides it. */
+  const suggAlt = useMemo(
+    () =>
+      forks2
+        ? convertPath(dx.path, sh.variant)
+        : [placeSector?.side ?? "supply"],
+    [forks2, dx, sh, placeSector],
+  );
+  const citySide = sideOfPath(suggAlt);
+  const suggLeaf = suggAlt[suggAlt.length - 1];
   /* the app's pick may live on the other structure — read it on this one */
-  const selAlt = useMemo(() => convertPath(selectedPath, "alt"), [selectedPath]);
-  const selLeaf = selAlt[selAlt.length - 1] as LeafId;
-  const selSide = (selAlt[0] as Side) ?? "supply";
+  const selAlt = useMemo(
+    () => convertPath(selectedPath, sh.variant),
+    [selectedPath, sh],
+  );
+  const selLeaf = selAlt[selAlt.length - 1];
+  const selSide = sideOfPath(selAlt);
   const isDefaultPath = selAlt.join("/") === suggAlt.join("/");
+
+  /* What the stage is looking at, beat by beat: the whole tree while it is
+     being introduced, the root and its branches once fork one is answered,
+     then just the branch the city took. Only "focus" mode acts on it; the
+     minimap draws it in every mode so the frame is never a surprise. */
+  /* ---------- what the stage is looking at ----------
+     TWO poses, not four. The tree is far wider than it is tall relative to
+     the stage, so any frame that keeps its full width is width-bound at the
+     SAME scale — a "root and its branches" frame is exactly as wide as the
+     whole tree, so framing it moved the tree without ever zooming it. A pose
+     that only pans is worse than no pose at all: it costs the reader a
+     re-orientation and buys them nothing.
+     So the frame changes only where it can actually narrow — the whole tree
+     while the walk is still at the root and its forks, then the branch the
+     city took once it has landed. The choice beat opens back out, because
+     there every leaf is a target again and a frame around one branch would
+     put the others off-stage. */
+  const frame = useMemo((): [number, number, number, number] => {
+    if (step < LEAF_BEAT) return wholeBox(sh);
+    /* a one-fork structure has nothing to pick on its tree, so its landing
+       frame is simply where it stays */
+    if (step >= CHOICE_BEAT && forks2) return wholeBox(sh);
+    return branchBox(sh, citySide);
+  }, [step, sh, forks2, citySide]);
+  /* the room the tree has on stage: the whole width while it is alone, the
+     left of it once an instrument is up */
+  const focusInto = useMemo((): [number, number, number, number] => {
+    const right = short ? (stepIdx === 0 ? W - 40 : INSET_HERO.x - 24) : INSET.x - 24;
+    return [40, 34, right, H - 26];
+  }, [short, stepIdx]);
+
+
+  /* ---------- where a leaf card actually sits ----------
+     Authored positions, except in detail mode, where only the walked
+     branch's leaves draw and they re-space across the whole band. Everything
+     that points at a leaf — the route glow, the walking dot, the badges —
+     goes through here, so the three modes can never disagree about it. */
+  const detailBoxes = useMemo(
+    () => (detailMode ? detailLeafBoxes(sh, citySide) : []),
+    [detailMode, sh, citySide],
+  );
+  const leafBox = useCallback(
+    (id: string) => {
+      const hit = detailBoxes.find((d) => d.id === id);
+      const l = leaves.find((v) => v.id === id);
+      if (hit)
+        return { x: hit.x, w: hit.w, lines: [l?.lines.join(" ") ?? ""], size: 17 };
+      return {
+        x: l?.x ?? sh.rootX,
+        w: l?.w ?? 120,
+        lines: l?.lines ?? [""],
+        size: sh.leafSize,
+      };
+    },
+    [detailBoxes, leaves, sh],
+  );
+  /* detail mode hides every off-route leaf; the other modes draw them all */
+  const leafShown = useCallback(
+    (branch: string) => !detailMode || branch === citySide,
+    [detailMode, citySide],
+  );
   const altById = useMemo(
-    () => new Map(treeNodes("alt").map((n) => [n.id, n])),
-    [],
+    () => new Map(treeNodes(sh.variant).map((n) => [n.id, n])),
+    [sh],
   );
 
   /* ---------- the route, in the shortened walk ----------
@@ -369,9 +642,9 @@ export function ConstraintNarrative({
     if (selectedPath.join("/") !== target.join("/")) onSelectRef.current(target);
   }, [routePinned, selectedPath, suggAlt, variant]);
 
-  const pickLeaf = (leaf: LeafId) => {
+  const pickLeaf = (leaf: string) => {
     if (!leafPickable) return;
-    const side = LEAF_DEFS.find((l) => l.id === leaf)!.side;
+    const side = leafSide(sh, leaf);
     onSelectPath(convertPath([side, leaf], variant));
   };
 
@@ -401,7 +674,7 @@ export function ConstraintNarrative({
     const active = hoverLeaf
       ? new Set<string>([
           "root",
-          LEAF_DEFS.find((l) => l.id === hoverLeaf)!.side,
+          leafSide(sh, hoverLeaf),
           hoverLeaf,
         ])
       : new Set<string>(["root", ...selAlt]);
@@ -421,14 +694,18 @@ export function ConstraintNarrative({
      length. Off-tree moves (the chart steps, chart → root) stay straight. */
   const walk = useMemo(() => {
     const pts: [number, number][] = [
-      DOT_AT_ROOT,
-      [ROOT.x, ROOT_BUS],
-      [HEAD_X[citySide], ROOT_BUS],
-      [HEAD_X[citySide], DOT_HEAD_Y],
-      [HEAD_X[citySide], DOT_QCARD_Y],
-      [HEAD_X[citySide], LEAF_BUS],
-      [LEAF_X[suggLeaf], LEAF_BUS],
-      [LEAF_X[suggLeaf], DOT_LEAF_Y],
+      [sh.rootX, DOT_ROOT_Y],
+      [sh.rootX, ROOT_BUS],
+      [headX(sh, citySide), ROOT_BUS],
+      [headX(sh, citySide), HEAD_BOT + DOT_BELOW_HEAD],
+      ...(forks2
+        ? ([
+            [headX(sh, citySide), DOT_QCARD_Y],
+            [headX(sh, citySide), LEAF_BUS],
+            [leafBox(suggLeaf).x, LEAF_BUS],
+            [leafBox(suggLeaf).x, DOT_LEAF_Y],
+          ] as [number, number][])
+        : []),
     ];
     const cum = [0];
     for (let i = 1; i < pts.length; i++)
@@ -447,9 +724,15 @@ export function ConstraintNarrative({
         pts[i - 1][1] + (pts[i][1] - pts[i - 1][1]) * f,
       ];
     };
-    /* station arcs: root, below-the-head, facing-the-question, the leaf */
-    return { at, stations: [0, cum[3], cum[4], cum[7]] };
-  }, [citySide, suggLeaf]);
+    /* station arcs: root, below-the-head, facing-the-question, the leaf. A
+       one-fork tree has only the first two, so its later beats hold the dot
+       at the head it already reached rather than inventing stations. */
+    const end = cum[cum.length - 1];
+    return {
+      at,
+      stations: forks2 ? [0, cum[3], cum[4], cum[7]] : [0, end, end, end],
+    };
+  }, [sh, forks2, citySide, suggLeaf, HEAD_BOT, leafBox]);
 
   const travelerRef = useRef<SVGGElement>(null);
   const posRef = useRef<[number, number] | null>(null);
@@ -537,9 +820,6 @@ export function ConstraintNarrative({
   const pzy = (u: number) => pz.y + ((1 - u) / 2) * pz.s;
 
   /* ---------- rail copy ---------- */
-  const together = place
-    ? (place.pop < med.pop) === (place.wage < med.wage)
-    : null;
   const stepCopy: { kicker: string; body: string }[] = [
     {
       kicker: "Dial one: people",
@@ -558,12 +838,14 @@ export function ConstraintNarrative({
       body: `The crosshair: the typical US metro (${pc(med.pop)} · ${pc(med.wage)}). The grey field: everyone else.`,
     },
     {
-      kicker: "Reading the quadrant",
+      /* what the plane divides into, and which region the city landed in —
+         both the shape's to say, since it is the shape that cuts the plane */
+      kicker: sh.planeCopy.kicker,
       body:
-        `Together → demand. Apart → supply. ` +
-        (together === null
-          ? `[no ${cityShort} data yet — the sample spot reads as apart]`
-          : `${cityShort}: ${together ? "together" : "apart"}.`),
+        `${sh.planeCopy.lead} ` +
+        (place
+          ? `${cityShort}: ${planeRead}.`
+          : `[no ${cityShort} data yet — the sample spot reads as ${planeRead}]`),
     },
     {
       kicker: "The tree begins",
@@ -576,19 +858,22 @@ export function ConstraintNarrative({
         : `[no ${cityShort} data yet — the walk shows the fallback read]`,
     },
     {
-      kicker: "Fork two: one more comparison",
-      body:
-        citySide === "demand"
+      kicker: forks2 ? "Fork two: one more comparison" : "No second fork",
+      body: !forks2
+        ? `This structure stops here: the quadrant is the whole diagnosis, so there is no second instrument to read.`
+        : citySide === "demand"
           ? `Fork two: is the metro growing? The inset reads it against ${pc(med.pop)}.`
           : `Fork two: what does being there cost? The inset reads home values against ${pc(medCost)}.`,
     },
     {
       kicker: "Where we think you are",
-      body: dx.derived
-        ? dx.steps[1].reason
-        : `[no ${cityShort} data yet — the fallback leaf is marked]`,
+      body: !forks2
+        ? `${cityShort} sits in the ${planeRead} quadrant, and on this tree that IS the branch — ${TREE_SIDE_LABEL[citySide]}.`
+        : dx.derived
+          ? dx.steps[1].reason
+          : `[no ${cityShort} data yet — the fallback leaf is marked]`,
     },
-    { kicker: "The four diagnoses", body: "" },
+    { kicker: `The ${numberWord(endings)} diagnoses`, body: "" },
   ];
 
   /* the shortened walk swaps the telling, not just the count — no full-stage
@@ -597,17 +882,22 @@ export function ConstraintNarrative({
   if (short) {
     stepCopy[TREE_BEAT] = {
       kicker: "The whole tree, up front",
-      body: `The entire diagnostic: one fork splits demand from supply, one more names the constraint. ${cityShort} starts at the root — each fork is answered by an instrument, not a guess.`,
+      body: `The entire diagnostic: ${sh.forkOneLine}. ${cityShort} starts at the root — each fork is answered by an instrument, not a guess.`,
     };
     stepCopy[FORK1_BEAT] = {
       kicker: "Fork one: the pizza chart",
       body:
-        `The tree makes room for the pizza chart: together → demand, apart → supply. ` +
+        `The tree makes room for the pizza chart. ${sh.planeCopy.lead} ` +
         (dx.derived
           ? dx.steps[0].reason
           : `[no ${cityShort} data yet — the walk shows the fallback read]`),
     };
-    stepCopy[LEAF_BEAT] = {
+    stepCopy[LEAF_BEAT] = !forks2
+      ? {
+          kicker: "One fork, and that is the diagnosis",
+          body: `No second instrument: the pizza chart answered the only question this structure asks. ${cityShort} sits in the ${planeRead} quadrant — ${TREE_SIDE_LABEL[citySide]}.`,
+        }
+      : {
       kicker:
         citySide === "supply"
           ? "Fork two: the housing chart"
@@ -635,7 +925,7 @@ export function ConstraintNarrative({
     step >= LEAF_BEAT
       ? TREE_SIDE_COLOR[
           step >= CHOICE_BEAT && hoverLeaf
-            ? LEAF_DEFS.find((l) => l.id === hoverLeaf)!.side
+            ? leafSide(sh, hoverLeaf)
             : step >= CHOICE_BEAT
               ? selSide
               : citySide
@@ -653,7 +943,7 @@ export function ConstraintNarrative({
      the choice — so the crumb follows the diagnosis there, and the reader's
      own pick is the analysis section's story to tell. */
   const trailPath = flow === "short" ? suggAlt : selAlt;
-  const trailSide = (trailPath[0] as Side) ?? "supply";
+  const trailSide = sideOfPath(trailPath);
   const caption =
     !closing ? (
       <>
@@ -695,7 +985,8 @@ export function ConstraintNarrative({
           ))}
         </div>
         <p className="jz-cap-body">
-          Two questions, four diagnoses —{" "}
+          {forks2 ? "Two questions" : "One question"},{" "}
+          {numberWord(endings)} diagnoses —{" "}
           {flow === "short" || isDefaultPath ? (
             `${cityShort}'s numbers argue for the lit path.`
           ) : (
@@ -736,14 +1027,25 @@ export function ConstraintNarrative({
               </h2>
             </div>
           </div>
-          {/* the variant tabs ride the header row's right edge — the stage
-              below keeps the vertical room */}
-          <FlowSwitch flow={flow} onFlowChange={onFlowChange} />
+          {/* the two switches ride the header row's right edge — the stage
+              below keeps the vertical room. They are separate controls on
+              purpose: the flow is how the section is told, the shape is what
+              the tree it tells looks like. */}
+          <div className="jz-switches">
+            <TreeOptions
+              shape={shape}
+              onShapeChange={onShapeChange}
+              fit={fit}
+              onFitChange={setFit}
+            />
+            <FlowSwitch flow={flow} onFlowChange={onFlowChange} />
+          </div>
         </div>
 
         <div className="jz-body">
           <div className="jz-stagewrap">
             <svg
+              ref={svgRef}
               className="jz-svg nv-svg"
               viewBox={`0 0 ${W} ${H}`}
               role="img"
@@ -751,25 +1053,51 @@ export function ConstraintNarrative({
             >
               {/* ============ scene A: the chart, built dial by dial ============ */}
               <g className={"nv-chart" + (short || step >= TREE_BEAT ? " off" : "")}>
-                {/* quadrant tints — the whole plane reads at once; yours marked */}
-                {QUADRANTS.map((q) => (
-                  <rect
-                    key={q.id}
+                {/* the plane's tints — it reads at once; yours marked. Drawn
+                    as sector polygons rather than quadrant blocks, since a
+                    shape may cut the plane on the diagonals instead of on
+                    the axes; for the quadrants the polygon IS the block. */}
+                {sh.plane.map((sec, i) => (
+                  <polygon
+                    key={`quad-${i}`}
                     className={
                       "nv-quad" +
                       (step >= 3 ? " on" : "") +
-                      (step >= 3 &&
-                      q.dx === (placeSpot[0] >= 0 ? 1 : -1) &&
-                      q.dy === (placeSpot[1] >= 0 ? 1 : -1)
-                        ? " sel"
-                        : "")
+                      (step >= 3 && sec === placeSector ? " sel" : "")
                     }
-                    x={q.dx === 1 ? cxu(0) : cxu(-1)}
-                    y={q.dy === 1 ? cyu(1) : cyu(0)}
-                    width={CQ.r}
-                    height={CQ.r}
-                    fill={TREE_SIDE_COLOR[q.side]}
-                    stroke={TREE_SIDE_COLOR[q.side]}
+                    points={sectorPoly(sec)
+                      .map(([px, py]) => `${cxu(px)},${cyu(py)}`)
+                      .join(" ")}
+                    fill={TREE_SIDE_COLOR[sec.side]}
+                    stroke={TREE_SIDE_COLOR[sec.side]}
+                  />
+                ))}
+                {/* a surface gap along any cut the axes don't already draw, so
+                    neighbouring regions never touch */}
+                {planeCuts(sh).map((deg) => {
+                  const [rx, ry] = rayExit(deg);
+                  return (
+                    <line
+                      key={`cut-${deg}`}
+                      className={"nv-cut" + (step >= 3 ? " on" : "")}
+                      x1={cxu(0)}
+                      y1={cyu(0)}
+                      x2={cxu(rx)}
+                      y2={cyu(ry)}
+                    />
+                  );
+                })}
+                {/* and each region's stretch of the outer edge, in its branch's
+                    colour at full strength — the fills are too pale to tell
+                    apart, so the rim is what actually names the region */}
+                {planeNeedsRim(sh) && sh.plane.map((sec, i) => (
+                  <polyline
+                    key={`rim-${i}`}
+                    className={"nv-rim" + (step >= 3 ? " on" : "")}
+                    points={sectorRim(sec)
+                      .map(([px, py]) => `${cxu(px)},${cyu(py)}`)
+                      .join(" ")}
+                    stroke={TREE_SIDE_COLOR[sec.side]}
                   />
                 ))}
                 {/* gridlines + ticks: x from step 0, y joins at step 1 */}
@@ -905,31 +1233,29 @@ export function ConstraintNarrative({
                     {`Typical wage growth ${pc(med.wage)}`}
                   </text>
                 </g>
-                {/* quadrant corner readings — the together/apart lesson */}
-                {QUADRANTS.map((q) => {
-                  const right = q.dx === 1;
-                  const xa = right ? cxu(1) - 14 : cxu(-1) + 14;
-                  const ya = q.dy === 1 ? cyu(1) + 26 : cyu(-1) - 36;
+                {/* edge readings — the lesson the plane teaches. Each sits
+                    where its sector meets the edge, which for a quadrant is
+                    the corner these labels have always used. */}
+                {sh.plane.map((sec, i) => {
+                  const [ax, ay] = sectorAnchor(sec);
+                  const anchor = ax > 0 ? "end" : ax < 0 ? "start" : "middle";
+                  const xa = cxu(ax) + (ax > 0 ? -14 : ax < 0 ? 14 : 0);
+                  /* a sector centred on the x axis has no corner to sit in —
+                     its pair of lines straddles the axis at the edge instead */
+                  const ya = ay > 0 ? cyu(ay) + 26 : ay < 0 ? cyu(ay) - 36 : cyu(0) - 7;
                   return (
-                    <g key={`lab-${q.id}`} className={on(step >= 3)}>
-                      <text
-                        className="nv-lab"
-                        x={xa}
-                        y={ya}
-                        textAnchor={right ? "end" : "start"}
-                      >
-                        {q.sub}
+                    <g key={`lab-${i}`} className={on(step >= 3)}>
+                      <text className="nv-lab" x={xa} y={ya} textAnchor={anchor}>
+                        {sec.sub}
                       </text>
                       <text
                         className="nv-tag"
                         x={xa}
                         y={ya + 18}
-                        textAnchor={right ? "end" : "start"}
-                        fill={TREE_SIDE_COLOR[q.side]}
+                        textAnchor={anchor}
+                        fill={TREE_SIDE_COLOR[sec.side]}
                       >
-                        {q.side === "demand"
-                          ? "together → demand"
-                          : "apart → supply"}
+                        {sec.tag}
                       </text>
                     </g>
                   );
@@ -944,14 +1270,30 @@ export function ConstraintNarrative({
               <g
                 className="nv-treewrap"
                 style={{
-                  transform: short
-                    ? stepIdx === 0
-                      ? TREE_OPENING_POSE
-                      : TREE_ASIDE_POSE
-                    : step >= TREE_BEAT
-                      ? TREE_GROWN_POSE
-                      : TREE_HOME_POSE,
+                  /* focus mode frames the tree itself, on the inner group
+                     below — the two must not both pose it */
+                  transform: focusMode
+                    ? "none"
+                    : short
+                      ? stepIdx === 0
+                        ? TREE_OPENING_POSE
+                        : TREE_ASIDE_POSE
+                      : step >= TREE_BEAT
+                        ? TREE_GROWN_POSE
+                        : TREE_HOME_POSE,
                   transition: "transform 0.9s cubic-bezier(0.4, 0, 0.2, 1)",
+                }}
+              >
+              <g
+                className="nv-focus"
+                style={{
+                  /* not before the tree beat: until then the traveller inside
+                     this group is positioned in full-stage CHART coordinates,
+                     and framing the tree would drag it off the pizza chart */
+                  transform:
+                    focusMode && step >= TREE_BEAT
+                      ? fitTransform(frame, focusInto)
+                      : "none",
                 }}
               >
               {/* the walked route's glow, from the landing on */}
@@ -959,96 +1301,107 @@ export function ConstraintNarrative({
                 <path
                   className="tree-home"
                   stroke={TREE_SIDE_COLOR[citySide]}
-                  d={elbow(ROOT.x, ROOT_BOT + 4, ROOT_BUS, HEAD_X[citySide], HEAD_TOP - 6)}
+                  d={elbow(sh.rootX, ROOT_BOT + 4, ROOT_BUS, headX(sh, citySide), HEAD_TOP - 6)}
                 />
                 <path
                   className="tree-home"
                   stroke={TREE_SIDE_COLOR[citySide]}
-                  d={`M${HEAD_X[citySide]},${HEAD_BOT + 4} V${QCARD_TOP - 6}`}
+                  d={
+                    forks2
+                      ? `M${headX(sh, citySide)},${HEAD_BOT + 4} V${QCARD_TOP - 6}`
+                      : ""
+                  }
                 />
                 <path
                   className="tree-home"
                   stroke={TREE_SIDE_COLOR[citySide]}
-                  d={elbow(
-                    HEAD_X[citySide],
-                    QCARD_BOT + 4,
-                    LEAF_BUS,
-                    LEAF_X[suggLeaf],
-                    LEAF_TOP - 6,
-                  )}
+                  d={
+                    forks2
+                      ? elbow(
+                          headX(sh, citySide),
+                          QCARD_BOT + 4,
+                          LEAF_BUS,
+                          leafBox(suggLeaf).x,
+                          LEAF_TOP - 6,
+                        )
+                      : ""
+                  }
                 />
               </g>
 
               {/* edges: root → heads */}
-              {(["demand", "supply"] as Side[]).map((side) => {
-                const st = status(side);
+              {sh.branches.map((b) => {
+                const st = status(b.id);
                 return (
-                  <g key={`re-${side}`} className={on(short || step >= FORK1_BEAT) + st.g}>
+                  <g key={`re-${b.id}`} className={on(short || step >= FORK1_BEAT) + st.g}>
                     <path
                       className={
                         "nv-edge" + (short || step >= FORK1_BEAT ? " on" : "") + (st.lit ? " lit" : "")
                       }
-                      stroke={TREE_SIDE_COLOR[side]}
+                      stroke={TREE_SIDE_COLOR[b.id]}
                       pathLength={1}
-                      d={elbow(ROOT.x, ROOT_BOT + 2, ROOT_BUS, HEAD_X[side], HEAD_TOP - 4)}
+                      d={elbow(sh.rootX, ROOT_BOT + 2, ROOT_BUS, b.x, HEAD_TOP - 4)}
                     />
                     <text
                       className="nv-elab"
-                      x={HEAD_X[side]}
+                      x={b.x}
                       y={ROOT_BUS - 7}
                       textAnchor="middle"
-                      fill={TREE_SIDE_COLOR[side]}
+                      fill={TREE_SIDE_COLOR[b.id]}
                     >
-                      {EDGE_LABEL[side]}
+                      {b.edge}
                     </text>
                   </g>
                 );
               })}
 
               {/* stems: head → sub-question */}
-              {(["demand", "supply"] as Side[]).map((side) => {
-                const st = status(side);
+              {sh.branches.filter((b) => b.leaves.length > 0 && leafShown(b.id)).map((b) => {
+                const st = status(b.id);
                 return (
                   <path
-                    key={`st-${side}`}
+                    key={`st-${b.id}`}
                     className={
                       "nv-edge" +
                       (short || step >= FORK2_BEAT ? " on" : "") +
                       (st.lit ? " lit" : "") +
                       st.g
                     }
-                    stroke={TREE_SIDE_COLOR[side]}
+                    stroke={TREE_SIDE_COLOR[b.id]}
                     pathLength={1}
-                    d={`M${HEAD_X[side]},${HEAD_BOT + 2} V${QCARD_TOP - 4}`}
+                    d={`M${b.x},${HEAD_BOT + 2} V${QCARD_TOP - 4}`}
                   />
                 );
               })}
 
               {/* edges: sub-question → leaves */}
-              {LEAF_DEFS.map((l) => {
-                const st = status(l.id);
-                return (
-                  <g key={`le-${l.id}`} className={on(short || step >= LEAF_BEAT) + st.g}>
-                    <path
-                      className={
-                        "nv-edge" + (short || step >= LEAF_BEAT ? " on" : "") + (st.lit ? " lit" : "")
-                      }
-                      stroke={TREE_SIDE_COLOR[l.side]}
-                      pathLength={1}
-                      d={elbow(HEAD_X[l.side], QCARD_BOT + 2, LEAF_BUS, l.x, LEAF_TOP - 4)}
-                    />
-                    <text
-                      className="nv-elab"
-                      x={l.x}
-                      y={LEAF_BUS - 7}
-                      textAnchor="middle"
-                      fill={TREE_SIDE_COLOR[l.side]}
-                    >
-                      {EDGE_LABEL[l.id]}
-                    </text>
-                  </g>
-                );
-              })}
+              {sh.branches.flatMap((b) =>
+                (leafShown(b.id) ? b.leaves : []).map((l) => {
+                  const st = status(l.id);
+                  const box = leafBox(l.id);
+                  return (
+                    <g key={`le-${l.id}`} className={on(short || step >= LEAF_BEAT) + st.g}>
+                      <path
+                        className={
+                          "nv-edge" + (short || step >= LEAF_BEAT ? " on" : "") + (st.lit ? " lit" : "")
+                        }
+                        stroke={TREE_SIDE_COLOR[b.id]}
+                        pathLength={1}
+                        d={elbow(b.x, QCARD_BOT + 2, LEAF_BUS, box.x, LEAF_TOP - 4)}
+                      />
+                      <text
+                        className="nv-elab"
+                        x={box.x}
+                        y={LEAF_BUS - 7}
+                        textAnchor="middle"
+                        fill={TREE_SIDE_COLOR[b.id]}
+                      >
+                        {l.edge}
+                      </text>
+                    </g>
+                  );
+                }),
+              )}
 
               {/* ============ the city itself: one dot walks the whole story ============
                   Positioned imperatively (the walk tween above); it sits UNDER
@@ -1089,56 +1442,59 @@ export function ConstraintNarrative({
               <g className={on(step >= TREE_BEAT) + status("root").g}>
                 <text
                   className="nv-captitle"
-                  x={ROOT.x}
-                  y={ROOT.y - 28}
+                  x={sh.rootX}
+                  y={ROOT_ROW.y - 28}
                   textAnchor="middle"
                 >
                   {`THE GROWTH QUESTION, ASKED OF ${cityShort.toUpperCase()}`}
                 </text>
                 <g className="nv-card nv-q">
                   <rect
-                    x={ROOT.x - ROOT.w / 2}
-                    y={ROOT.y - ROOT.h / 2}
-                    width={ROOT.w}
-                    height={ROOT.h}
+                    x={sh.rootX - sh.rootW / 2}
+                    y={ROOT_ROW.y - ROOT_ROW.h / 2}
+                    width={sh.rootW}
+                    height={ROOT_ROW.h}
                     rx={9}
                     stroke="#8a867e"
                   />
                   <text
                     className="nv-qq"
-                    x={ROOT.x}
-                    y={ROOT.y + 4.5}
+                    x={sh.rootX}
+                    y={ROOT_ROW.y + 4.5}
                     textAnchor="middle"
                     fill="var(--ink)"
                   >
-                    population × wages — same side of the medians?
+                    {sh.rootQuestion}
                   </text>
                 </g>
               </g>
 
               {/* branch heads */}
-              {(["demand", "supply"] as Side[]).map((side) => {
-                const st = status(side);
+              {sh.branches.map((b) => {
+                const st = status(b.id);
                 return (
-                  <g key={`hd-${side}`} className={on(short || step >= FORK1_BEAT) + st.g}>
+                  <g key={`hd-${b.id}`} className={on(short || step >= FORK1_BEAT) + st.g}>
                     <g className={"nv-card" + (st.lit ? " lit" : "")}>
                       <rect
-                        x={HEAD_X[side] - HEAD.w / 2}
-                        y={HEAD.y - HEAD.h / 2}
-                        width={HEAD.w}
-                        height={HEAD.h}
+                        x={b.x - sh.headW / 2}
+                        y={HEAD_TOP}
+                        width={sh.headW}
+                        height={HEAD_H}
                         rx={8}
-                        stroke={TREE_SIDE_COLOR[side]}
+                        stroke={TREE_SIDE_COLOR[b.id]}
                       />
-                      <text
-                        x={HEAD_X[side]}
-                        y={HEAD.y + 5}
-                        textAnchor="middle"
-                        fontSize={17.5}
-                        fill={TREE_SIDE_COLOR[side]}
-                      >
-                        {side === "demand" ? "Labor Demand" : "Labor Supply"}
-                      </text>
+                      {(b.titleLines ?? [b.title]).map((line, li, all) => (
+                        <text
+                          key={li}
+                          x={b.x}
+                          y={HEAD_Y + 5 - (all.length - 1) * 9 + li * 18}
+                          textAnchor="middle"
+                          fontSize={sh.headSize ?? 17.5}
+                          fill={TREE_SIDE_COLOR[b.id]}
+                        >
+                          {line}
+                        </text>
+                      ))}
                     </g>
                   </g>
                 );
@@ -1146,46 +1502,40 @@ export function ConstraintNarrative({
 
               {/* the two sub-question cards; only the walked side names its
                   instrument — the other's never opens */}
-              {(["demand", "supply"] as Side[]).map((side) => {
-                const st = status(side);
+              {sh.branches.filter((b) => b.leaves.length > 0 && leafShown(b.id)).map((b) => {
+                const st = status(b.id);
+                const lines = b.question({
+                  medPop: pc(med.pop),
+                  medCost: pc(medCost),
+                });
                 return (
-                  <g key={`q-${side}`} className={on(short || step >= FORK2_BEAT) + st.g}>
+                  <g key={`q-${b.id}`} className={on(short || step >= FORK2_BEAT) + st.g}>
                     <g className={"nv-card nv-q" + (st.lit ? " lit" : "")}>
                       <rect
-                        x={HEAD_X[side] - QCARD.w / 2}
-                        y={QCARD.y - QCARD.h / 2}
-                        width={QCARD.w}
-                        height={QCARD.h}
+                        x={b.x - sh.qcardW / 2}
+                        y={QCARD_ROW.y - QCARD_ROW.h / 2}
+                        width={sh.qcardW}
+                        height={QCARD_ROW.h}
                         rx={9}
-                        stroke={TREE_SIDE_COLOR[side]}
+                        stroke={TREE_SIDE_COLOR[b.id]}
                       />
-                      <text
-                        className="nv-qq"
-                        x={HEAD_X[side]}
-                        y={QCARD.y - 4}
-                        textAnchor="middle"
-                        fill={TREE_SIDE_COLOR[side]}
-                      >
-                        {side === "demand"
-                          ? "metro population growth"
-                          : "home values climbing faster"}
-                      </text>
-                      <text
-                        className="nv-qq"
-                        x={HEAD_X[side]}
-                        y={QCARD.y + 8}
-                        textAnchor="middle"
-                        fill={TREE_SIDE_COLOR[side]}
-                      >
-                        {side === "demand"
-                          ? `below the median (${pc(med.pop)})?`
-                          : `than the typical metro (${pc(medCost)})?`}
-                      </text>
-                      {side === citySide && (
+                      {lines.map((line, i) => (
+                        <text
+                          key={i}
+                          className="nv-qq"
+                          x={b.x}
+                          y={QCARD_ROW.y - 4 + i * 12}
+                          textAnchor="middle"
+                          fill={TREE_SIDE_COLOR[b.id]}
+                        >
+                          {line}
+                        </text>
+                      ))}
+                      {b.id === citySide && (
                         <text
                           className={"nv-qread " + on(!short || step >= LEAF_BEAT)}
-                          x={HEAD_X[side]}
-                          y={QCARD.y + 17}
+                          x={b.x}
+                          y={QCARD_ROW.y + 17}
                           textAnchor="middle"
                           fill="var(--teal)"
                         >
@@ -1198,63 +1548,83 @@ export function ConstraintNarrative({
               })}
 
               {/* leaves */}
-              {LEAF_DEFS.map((l) => {
-                const st = status(l.id);
-                const clickable = leafPickable;
-                const picked = clickable && l.id === selLeaf;
-                return (
-                  <g key={`lf-${l.id}`} className={on(short || step >= LEAF_BEAT) + st.g}>
-                    <g
-                      className={
-                        "nv-card nv-leaf" +
-                        (st.lit ? " lit" : "") +
-                        (clickable ? " clickable" : "") +
-                        (picked ? " picked" : "")
-                      }
-                      onMouseEnter={() => clickable && setHoverLeaf(l.id)}
-                      onMouseLeave={() => setHoverLeaf(null)}
-                      onClick={() => pickLeaf(l.id)}
-                    >
-                      <rect
-                        x={l.x - l.w / 2}
-                        y={LEAF.y - LEAF.h / 2}
-                        width={l.w}
-                        height={LEAF.h}
-                        rx={8}
-                        stroke={TREE_SIDE_COLOR[l.side]}
-                      />
-                      <text
-                        x={l.x}
-                        y={LEAF.y + 5}
-                        textAnchor="middle"
-                        fontSize={16}
-                        fill={TREE_SIDE_COLOR[l.side]}
+              {sh.branches.flatMap((b) =>
+                (leafShown(b.id) ? b.leaves : []).map((l) => {
+                  const st = status(l.id);
+                  const box = leafBox(l.id);
+                  /* a placeholder branch has no analysis section behind it —
+                     it draws, it does not pick */
+                  const clickable = leafPickable && !PLACEHOLDER_BRANCHES.has(b.id);
+                  const picked = leafPickable && l.id === selLeaf;
+                  return (
+                    <g key={`lf-${l.id}`} className={on(short || step >= LEAF_BEAT) + st.g}>
+                      <g
+                        className={
+                          "nv-card nv-leaf" +
+                          (st.lit ? " lit" : "") +
+                          (clickable ? " clickable" : "") +
+                          (picked ? " picked" : "")
+                        }
+                        onMouseEnter={() => clickable && setHoverLeaf(l.id)}
+                        onMouseLeave={() => setHoverLeaf(null)}
+                        onClick={() => clickable && pickLeaf(l.id)}
                       >
-                        {l.title}
-                      </text>
+                        <rect
+                          x={box.x - box.w / 2}
+                          y={LEAF_ROW.y - sh.leafH / 2}
+                          width={box.w}
+                          height={sh.leafH}
+                          rx={8}
+                          stroke={TREE_SIDE_COLOR[b.id]}
+                        />
+                        {/* the shape authors the line breaks: a narrow row
+                            wraps the long titles rather than shrinking the
+                            card past the type it has to hold */}
+                        {box.lines.map((line, i) => (
+                          <text
+                            key={i}
+                            x={box.x}
+                            y={LEAF_ROW.y + 5 - (box.lines.length - 1) * 8 + i * 16}
+                            textAnchor="middle"
+                            fontSize={box.size}
+                            fill={TREE_SIDE_COLOR[b.id]}
+                          >
+                            {line}
+                          </text>
+                        ))}
+                      </g>
                     </g>
-                  </g>
-                );
-              })}
+                  );
+                }),
+              )}
 
               {/* the personal badges: the data-driven read + a differing pick */}
               <g className={on(step >= LEAF_BEAT)}>
                 {(() => {
+                  const band = shapeBand(sh);
                   const badge = (
-                    leaf: LeafId,
+                    leaf: string,
                     label: string,
                     color: string,
                     drop = 0,
                   ) => {
-                    const y = DOT_LEAF_Y + 38 + drop;
+                    const y = landingY(sh) + 38 + drop;
                     /* the pill renders "↑ " + label in 13px caps with 1.2px
                        tracking — size for the FULL string, plus real margins,
                        so the words never crowd the rounded ends */
                     const w = (label.length + 2) * 7.8 + 30;
+                    /* the pill is wider than the leaf it points at, so an
+                       outer leaf would hang it off the stage — keep it inside
+                       the tree's own band and let the arrow do the pointing */
+                    const at = forks2 ? leafBox(leaf).x : landingX(sh, [leaf]);
+                    const cx = Math.min(
+                      Math.max(at, band[0] + w / 2),
+                      band[1] - w / 2,
+                    );
                     return (
                       <g key={`${leaf}-${label}`} className="jz-youare">
                         <rect
-                          x={LEAF_X[leaf] - w / 2}
+                          x={cx - w / 2}
                           y={y - 13}
                           width={w}
                           height={26}
@@ -1262,7 +1632,7 @@ export function ConstraintNarrative({
                           fill={color}
                         />
                         <text
-                          x={LEAF_X[leaf]}
+                          x={cx}
                           y={y}
                           textAnchor="middle"
                           dy="0.34em"
@@ -1281,7 +1651,10 @@ export function ConstraintNarrative({
                   ];
                   if (step >= CHOICE_BEAT && !isDefaultPath) {
                     const collide =
-                      Math.abs(LEAF_X[selLeaf] - LEAF_X[suggLeaf]) < 240;
+                      Math.abs(
+                        (forks2 ? leafBox(selLeaf).x : landingX(sh, [selLeaf])) -
+                          (forks2 ? leafBox(suggLeaf).x : landingX(sh, [suggLeaf])),
+                      ) < 240;
                     out.push(
                       badge(
                         selLeaf,
@@ -1295,6 +1668,32 @@ export function ConstraintNarrative({
                 })()}
               </g>
 
+              {/* the branches detail mode folded: the head stays as context,
+                  with a count of what it is holding back */}
+              {detailMode &&
+                sh.branches
+                  .filter((b) => b.leaves.length > 0 && b.id !== citySide)
+                  .map((b) => (
+                    <g
+                      key={`fold-${b.id}`}
+                      className={"nv-fold " + on(short || step >= LEAF_BEAT)}
+                    >
+                      <path
+                        d={`M${b.x},${HEAD_BOT + 4} v14`}
+                        stroke={TREE_SIDE_COLOR[b.id]}
+                      />
+                      <text
+                        x={b.x}
+                        y={HEAD_BOT + 32}
+                        textAnchor="middle"
+                        fill={TREE_SIDE_COLOR[b.id]}
+                      >
+                        {`+${b.leaves.length} not taken`}
+                      </text>
+                    </g>
+                  ))}
+
+              </g>
               </g>
 
               {/* ============ the instrument inset (top-right) ============
@@ -1320,19 +1719,37 @@ export function ConstraintNarrative({
                   <text className="nv-captitle" x={inset.x + 14} y={inset.y + 22}>
                     THE PIZZA CHART · THE ROOT FORK
                   </text>
-                  {QUADRANTS.map((q) => (
-                    <rect
-                      key={`rq-${q.id}`}
-                      x={q.dx === 1 ? pzx(0) : pzx(-1)}
-                      y={q.dy === 1 ? pzy(1) : pzy(0)}
-                      width={pz.s / 2}
-                      height={pz.s / 2}
-                      fill={TREE_SIDE_COLOR[q.side]}
-                      fillOpacity={
-                        q.dx === (ux >= 0 ? 1 : -1) && q.dy === (uy >= 0 ? 1 : -1)
-                          ? 0.16
-                          : 0.06
-                      }
+                  {sh.plane.map((sec, i) => (
+                    <polygon
+                      key={`rq-${i}`}
+                      points={sectorPoly(sec)
+                        .map(([px, py]) => `${pzx(px)},${pzy(py)}`)
+                        .join(" ")}
+                      fill={TREE_SIDE_COLOR[sec.side]}
+                      fillOpacity={sec === placeSector ? 0.18 : 0.07}
+                    />
+                  ))}
+                  {planeCuts(sh).map((deg) => {
+                    const [rx, ry] = rayExit(deg);
+                    return (
+                      <line
+                        key={`rcut-${deg}`}
+                        className="nv-cut on"
+                        x1={pzx(0)}
+                        y1={pzy(0)}
+                        x2={pzx(rx)}
+                        y2={pzy(ry)}
+                      />
+                    );
+                  })}
+                  {planeNeedsRim(sh) && sh.plane.map((sec, i) => (
+                    <polyline
+                      key={`rrim-${i}`}
+                      className="nv-rim on"
+                      points={sectorRim(sec)
+                        .map(([px, py]) => `${pzx(px)},${pzy(py)}`)
+                        .join(" ")}
+                      stroke={TREE_SIDE_COLOR[sec.side]}
                     />
                   ))}
                   <rect
@@ -1411,23 +1828,23 @@ export function ConstraintNarrative({
                   >
                     wage growth →
                   </text>
-                  <text
-                    className="nv-elab"
-                    x={pz.x}
-                    y={pz.y + pz.s + 35}
-                    fill={TREE_SIDE_COLOR.demand}
-                  >
-                    together → Labor Demand
-                  </text>
-                  <text
-                    className="nv-elab"
-                    x={pz.x + pz.s}
-                    y={pz.y + pz.s + 49}
-                    textAnchor="end"
-                    fill={TREE_SIDE_COLOR.supply}
-                  >
-                    apart → Labor Supply
-                  </text>
+                  {/* one line per region. A pair reads as a pair, at either
+                      end of the axis; three or more stack down the left. */}
+                  {planeBranches(sh).map((sec, i, all) => {
+                    const right = all.length === 2 && i === 1;
+                    return (
+                      <text
+                        key={`lg-${i}`}
+                        className="nv-elab"
+                        x={right ? pz.x + pz.s : pz.x}
+                        y={pz.y + pz.s + 35 + i * 14}
+                        textAnchor={right ? "end" : "start"}
+                        fill={TREE_SIDE_COLOR[sec.side]}
+                      >
+                        {sec.legend}
+                      </text>
+                    );
+                  })}
                 </g>
                 <g className={on(step >= FORK2_BEAT)}>
                 {citySide === "demand" ? (
@@ -1633,6 +2050,23 @@ export function ConstraintNarrative({
               </g>
 
             </svg>
+            {/* what the frame is leaving out, and how hard the stage is
+                squeezing the tree. The minimap is the answer to zooming: the
+                reader keeps the map even when the stage only shows a branch
+                of it. */}
+            <BranchMinimap
+              shape={sh}
+              route={forks2 ? suggAlt : [citySide]}
+              frame={focusMode ? frame : null}
+              show={step >= TREE_BEAT && (focusMode || detailMode)}
+            />
+            <StageFit
+              scale={stageScale}
+              /* the card titles, not the 11px edge labels: the titles are
+                 what a reader has to read to use the tree */
+              smallest={Math.min(sh.leafSize || 99, sh.headSize ?? 17.5)}
+              onPick={() => setFit("focus")}
+            />
           </div>
 
           <aside className="jz-rail">

@@ -20,13 +20,30 @@ import {
 
 /* ---------- Figure 27: the decision tree ---------- */
 
-export type TreeSide = "root" | "demand" | "supply";
+export type TreeSide =
+  | "root"
+  | "demand"
+  | "supply"
+  | "third"
+  /* the four-quadrant structure's branches: demand and supply each split by
+     the SIGN of the shock. They are separate branches with separate ids, but
+     they deliberately share the two parent colours — see TREE_SIDE_COLOR. */
+  | "demandpos"
+  | "demandneg"
+  | "supplypos"
+  | "supplyneg";
 
-/** the tree comes in two structures, flipped by a stage toggle: "full" is the
- *  figure's five-level tree; "alt" keeps the demand/supply fork but goes
+/** a branch of the tree — every side but the root, which is where a descent
+ *  starts rather than something it hangs off */
+export type BranchSide = Exclude<TreeSide, "root">;
+
+/** the tree comes in three structures, flipped by a stage toggle: "full" is
+ *  the figure's five-level tree; "alt" keeps the demand/supply fork but goes
  *  straight to two leaves per side — demand → metro-wide/place-specific
- *  shock, supply → housing/amenities */
-export type TreeVariant = "full" | "alt";
+ *  shock, supply → housing/amenities; "alt3" is that same tree with a third,
+ *  still-unnamed branch hanging off the root (a layout study — see
+ *  TREE_NODES_ALT3) */
+export type TreeVariant = "full" | "alt" | "alt3" | "quad";
 
 /** The tree section's top-level choice. Not a styling experiment like the
  *  icon/chip/curve toggles — each mode is a different proposal for how the
@@ -65,6 +82,11 @@ export const TREE_MODES: {
   },
 ];
 
+/* NB: "alt3" is deliberately absent here. The third branch is a layout study
+   on the GUIDED WALK's hand-laid tree (walkShapes.ts), which chooses its own
+   structure; this control belongs to the initial draft's d3-solved tree, and
+   offering the same idea in two places would make them two settings that
+   have to agree. */
 export const modeVariant = (m: TreeMode): TreeVariant =>
   m === "paper" ? "full" : "alt";
 export const modeThemes = (m: TreeMode): boolean => m === "themes";
@@ -141,7 +163,60 @@ export const TREE_SIDE_COLOR: Record<TreeSide, string> = {
   root: "#1a2226", // --ink
   demand: "#1d4b54",
   supply: "#b8431f",
+  /* placeholder hue for the third branch: a muted violet, picked to sit at
+     the same weight as the other two so the three-way root reads evenly —
+     what the branch IS will decide what colour it keeps */
+  third: "#5f4a86",
+  /* Four branches, four hues. Found by searching the colours that are dark
+     enough to double as label text (≥ 4.5:1 on white) for the pair that best
+     joins teal and rust: worst pair across all four is ΔE 22.3 against a 15
+     floor, and 8.1 under simulated red-green colourblindness against a target
+     of 8 — so the set clears both separation gates rather than only the one a
+     full-colour reader cares about. Requiring the colourblind gate cost 0.2
+     ΔE; the unconstrained best put a green next to the rust that a
+     deuteranope reads as the SAME colour (ΔE 1.0), which is the classic trap.
+     Assignment follows the chart: the quadrants run teal → blue → magenta →
+     rust around the ring, so the weakest pair (teal↔magenta) sits diagonally
+     opposite rather than sharing an edge. */
+  demandpos: "#1d4b54", // q1 · people ↑ pay ↑
+  supplyneg: "#3364db", // q4 · people ↓ pay ↑
+  demandneg: "#851286", // q3 · people ↓ pay ↓
+  supplypos: "#b8431f", // q2 · people ↑ pay ↓
 };
+
+/** how a branch is named in running text — "On the tree · demand side" */
+export const TREE_SIDE_LABEL: Record<TreeSide, string> = {
+  root: "the root",
+  demand: "demand side",
+  supply: "supply side",
+  third: "[third branch]",
+  demandpos: "positive demand shock",
+  demandneg: "negative demand shock",
+  supplypos: "positive supply shock",
+  supplyneg: "negative supply shock",
+};
+
+/** Branches that draw but do not pick: a placeholder has no test behind it
+ *  and no analysis section to navigate to, so the tree shows it and the
+ *  leaves under it stay inert. Keyed by branch id, so a future placeholder
+ *  branch only has to be listed here. */
+export const PLACEHOLDER_BRANCHES: ReadonlySet<string> = new Set(["third"]);
+
+/** which top-level branch a descent hangs off: its first id below the root.
+ *  Anything unrecognised falls back to supply, which is what the several
+ *  hand-written `path[0] === "demand" ? … : "supply"` reads this replaces
+ *  each did on their own. */
+const BRANCH_SIDES = new Set<string>([
+  "demand",
+  "supply",
+  "third",
+  "demandpos",
+  "demandneg",
+  "supplypos",
+  "supplyneg",
+]);
+export const sideOfPath = (path: string[]): BranchSide =>
+  BRANCH_SIDES.has(path[0]) ? (path[0] as BranchSide) : "supply";
 
 /* ---------- quadrant → default tree path (chart→tree transitions) ---------- */
 
@@ -548,8 +623,98 @@ export const TREE_NODES_ALT: TreeNodeData[] = [
   },
 ];
 
+/* ---------- the alt structure, plus a third branch ----------
+ *  A LAYOUT study, not a proposal about the diagnostic: the alt tree exactly
+ *  as above, with one more branch hanging off the root — something that is
+ *  neither labor demand nor labor supply. What that branch would BE has not
+ *  been decided, so it and its two leaves are bracketed placeholders; the
+ *  question this variant asks is how the tree reads and lays out with an odd
+ *  number of branches — three arrows off the root, six leaves across the
+ *  bottom row — not what the third one says.
+ *
+ *  It is appended rather than slotted between the existing two, so demand
+ *  and supply stay adjacent and keep their sibling order, and every id in
+ *  those subtrees is unchanged: a pick still round-trips through
+ *  convertPath() into either other structure. Nothing DIAGNOSES into this
+ *  branch — diagnose() knows only the two forks — so it is reachable by
+ *  clicking it and by nothing else, which is the right behaviour for a
+ *  branch with no test behind it yet. */
+export const TREE_NODES_ALT3: TreeNodeData[] = [
+  ...TREE_NODES_ALT,
+  {
+    id: "third",
+    parent: "root",
+    title: "[Third branch]",
+    detail:
+      "[a third branch off the root, neither labor demand nor labor supply — what it asks, and why the growth question forks three ways instead of two, to be written]",
+    tests: "[the comparison that would send a city down this branch]",
+  },
+  {
+    id: "third1",
+    parent: "third",
+    title: "[First leaf]",
+    detail: "[the first answer under the third branch]",
+    tests: "[what you would read to land here]",
+  },
+  {
+    id: "third2",
+    parent: "third",
+    title: "[Second leaf]",
+    detail: "[the second answer under the third branch]",
+    tests: "[what you would read to land here]",
+  },
+];
+
+/* ---------- the four-quadrant structure ----------
+ *  One fork and then nothing: the quadrant a city lands in on the population
+ *  × wage plane IS the diagnosis, so every branch is also a leaf. The four
+ *  are the paper's own four shock readings (see QUADRANT_DEFS), promoted from
+ *  a label on the chart to a branch of the tree. Nothing here is a
+ *  placeholder — the structure is a real proposal, just a flatter one. */
+export const TREE_NODES_QUAD: TreeNodeData[] = [
+  nodeById.get("root")!,
+  {
+    id: "demandpos",
+    parent: "root",
+    title: "Positive demand shock",
+    detail:
+      "Population and pay are both running ahead of the typical metro. Demand for what the city sells is growing; the question is what that demand is running into.",
+    tests: "Population growth and wage growth both above the median metro's.",
+  },
+  {
+    id: "supplypos",
+    parent: "root",
+    title: "Positive supply shock",
+    detail:
+      "People are arriving faster than pay is rising — the city got easier to live in or cheaper to live in, and labor supply moved before labor demand did.",
+    tests: "Population growth above the median metro's, wage growth below it.",
+  },
+  {
+    id: "demandneg",
+    parent: "root",
+    title: "Negative demand shock",
+    detail:
+      "Population and pay are falling together. Something took demand out of the city's export base, and the labor market shrank with it.",
+    tests: "Population growth and wage growth both below the median metro's.",
+  },
+  {
+    id: "supplyneg",
+    parent: "root",
+    title: "Negative supply shock",
+    detail:
+      "Pay is climbing while people leave — the city is holding its demand but losing its workforce, so what living there costs or offers is the suspect.",
+    tests: "Population growth below the median metro's, wage growth above it.",
+  },
+];
+
 export const treeNodes = (variant: TreeVariant): TreeNodeData[] =>
-  variant === "alt" ? TREE_NODES_ALT : TREE_NODES;
+  variant === "quad"
+    ? TREE_NODES_QUAD
+    : variant === "full"
+    ? TREE_NODES
+    : variant === "alt3"
+      ? TREE_NODES_ALT3
+      : TREE_NODES_ALT;
 
 /** every root→leaf descent (ids below the root) of a variant, figure order */
 function leafPaths(variant: TreeVariant): string[][] {
@@ -576,6 +741,17 @@ const CROSS_VARIANT: Record<string, string> = {
      cannot move into the adjacent possible */
   placespec: "coord",
   coord: "placespec",
+  /* the four-quadrant branches carry the demand/supply split inside them, so
+     a pick there lands on the matching side of every other structure. The
+     reverse is a choice rather than a fact — a plain "demand" read does not
+     say which SIGN of demand shock it is — so it resolves to the positive
+     one and the reader re-picks if they meant the other. */
+  demandpos: "demand",
+  demandneg: "demand",
+  supplypos: "supply",
+  supplyneg: "supply",
+  demand: "demandpos",
+  supply: "supplypos",
 };
 
 /** carry a pick across the variant switch: of the target variant's full

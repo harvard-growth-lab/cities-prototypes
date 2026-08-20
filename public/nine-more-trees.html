@@ -1,0 +1,1068 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nine More Trees</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23255862'/%3E%3Crect x='7' y='12' width='6' height='14' fill='%23fff'/%3E%3Crect x='15' y='7' width='5' height='19' fill='%23e76565'/%3E%3Crect x='22' y='16' width='4' height='10' fill='%23fff'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+    </style>
+    <style>
+:root {
+  --paper: #fdfdfc;
+  --stage: #f4f6f5;
+  --card: #ffffff;
+  --ink: #1a2226;
+  --ink-soft: #5c6a70;
+  --line: #e2e7e6;
+  --line-strong: #c3cdcc;
+  --teal: #1d4b54;
+  --teal-soft: #e0ebed;
+  --orange: #b8431f;
+  --orange-soft: #f7e6de;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #14191c;
+    --stage: #1b2226;
+    --card: #212a2e;
+    --ink: #e6e9e8;
+    --ink-soft: #93a2a7;
+    --line: #2a3438;
+    --line-strong: #48575a;
+    --teal: #7fb3bd;
+    --teal-soft: #1e3a41;
+    --orange: #d98f6c;
+    --orange-soft: #3e2a20;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #14191c;
+  --stage: #1b2226;
+  --card: #212a2e;
+  --ink: #e6e9e8;
+  --ink-soft: #93a2a7;
+  --line: #2a3438;
+  --line-strong: #48575a;
+  --teal: #7fb3bd;
+  --teal-soft: #1e3a41;
+  --orange: #d98f6c;
+  --orange-soft: #3e2a20;
+}
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font: 400 15.5px/1.62 'Libre Franklin', 'Helvetica Neue', Arial, sans-serif;
+  margin: 0;
+}
+.wrap { max-width: 880px; margin: 0 auto; padding: 52px 28px 90px; }
+.mono { font-family: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace; }
+a { color: var(--teal); }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+
+/* ---------- header ---------- */
+.eyebrow {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--ink-soft); margin: 0 0 14px;
+}
+h1 {
+  font-size: 42px; font-weight: 800; letter-spacing: -0.015em; line-height: 1.05;
+  margin: 0 0 18px; text-wrap: balance;
+}
+.brief { max-width: 66ch; margin: 0 0 10px; }
+.brief b { font-weight: 600; }
+.srcline {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 11.5px; color: var(--ink-soft); margin: 14px 0 0;
+}
+
+/* ---------- the bind: stat row ---------- */
+.stats {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0 26px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  margin: 30px 0 0; padding: 14px 0;
+}
+.stat { padding: 4px 0; }
+.stat .n {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 17px; font-weight: 600; color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.stat .l { font-size: 12.5px; color: var(--ink-soft); line-height: 1.45; margin-top: 2px; }
+
+/* ---------- families & options ---------- */
+.fam { margin-top: 64px; }
+.fam-eyebrow {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--orange); margin: 0 0 6px;
+}
+.fam h2 { font-size: 25px; font-weight: 700; letter-spacing: -0.01em; margin: 0 0 6px; text-wrap: balance; }
+.fam > .famlead { max-width: 66ch; color: var(--ink-soft); font-size: 14.5px; margin: 0 0 8px; }
+
+.opt { border-top: 1px solid var(--line); margin-top: 28px; padding-top: 24px; }
+.opt-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.opt-num {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 14px; font-weight: 600; color: var(--teal);
+}
+.opt h3 { font-size: 20.5px; font-weight: 700; letter-spacing: -0.01em; margin: 0; }
+.lands {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 10.5px; letter-spacing: 0.04em; color: var(--ink-soft);
+  border: 1px solid var(--line-strong); border-radius: 99px; padding: 2px 9px;
+  white-space: nowrap;
+}
+.gist { max-width: 68ch; margin: 10px 0 4px; }
+.meta-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px 28px; margin: 16px 0 8px; max-width: 74ch;
+}
+.meta-grid dt {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 10.5px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--ink-soft); margin: 0 0 3px;
+}
+.meta-grid dd { margin: 0; font-size: 14px; line-height: 1.55; }
+.meta-grid dl { margin: 0; }
+
+/* ---------- sketches ---------- */
+figure.sk {
+  background: var(--stage); border: 1px solid var(--line); border-radius: 10px;
+  margin: 16px 0 4px; padding: 14px 12px 8px; overflow-x: auto;
+}
+figure.sk svg { display: block; max-width: 100%; height: auto; min-width: 520px; margin: 0 auto; }
+figure.sk figcaption {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 11.5px; color: var(--ink-soft); padding: 8px 4px 2px; line-height: 1.5;
+}
+/* sketch vocabulary */
+.skstage { fill: var(--card); stroke: var(--line-strong); stroke-width: 1; }
+.skl  { stroke: var(--line-strong); fill: none; stroke-width: 1.4; }
+.skw  { stroke: var(--teal); fill: none; stroke-width: 2.1; }
+.skc  { fill: var(--stage); stroke: var(--line-strong); stroke-width: 1; }
+.skcw { fill: var(--teal-soft); stroke: var(--teal); stroke-width: 1.2; }
+.ski  { fill: var(--orange-soft); stroke: var(--orange); stroke-width: 1.2; }
+.skig { stroke: var(--orange); fill: none; stroke-width: 1.1; }
+.skt  { fill: var(--line-strong); }
+.skf  { stroke: var(--ink-soft); stroke-dasharray: 4 3; fill: none; stroke-width: 1.2; }
+.skp  { fill: var(--card); stroke: var(--ink-soft); stroke-width: 1.5; }
+.skd  { fill: var(--ink); }
+.skyou{ fill: none; stroke: var(--teal); stroke-width: 1.6; }
+.sklb { font: 500 10px 'IBM Plex Mono', monospace; fill: var(--ink-soft); }
+.sklbt{ font: 600 10px 'IBM Plex Mono', monospace; fill: var(--teal); }
+.skarr{ stroke: var(--ink-soft); fill: none; stroke-width: 1.3; }
+.skah { fill: var(--ink-soft); }
+
+/* ---------- table ---------- */
+.tblwrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; margin: 20px 0 8px; }
+table { border-collapse: collapse; width: 100%; min-width: 700px; font-size: 13px; }
+th {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink-soft); text-align: left; font-weight: 500;
+  padding: 10px 14px; border-bottom: 1px solid var(--line); background: var(--stage);
+}
+td { padding: 9px 14px; border-bottom: 1px solid var(--line); vertical-align: top; line-height: 1.5; }
+tr:last-child td { border-bottom: none; }
+td.num { font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: var(--teal); font-weight: 600; }
+td.name { font-weight: 600; white-space: nowrap; }
+.lift {
+  font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; font-weight: 600;
+  border-radius: 5px; padding: 2px 7px; white-space: nowrap;
+}
+.lift.s { background: var(--teal-soft); color: var(--teal); }
+.lift.m { background: var(--stage); color: var(--ink-soft); border: 1px solid var(--line-strong); }
+.lift.l { background: var(--orange-soft); color: var(--orange); }
+
+/* ---------- probes ---------- */
+.probes { max-width: 70ch; }
+.probes ol { padding-left: 22px; margin: 12px 0; }
+.probes li { margin: 10px 0; }
+footer {
+  margin-top: 70px; padding-top: 16px; border-top: 1px solid var(--line);
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 11px; color: var(--ink-soft);
+}
+</style>
+  </head>
+  <body>
+<div class="wrap">
+<header>
+  <p class="eyebrow">City Constraints &middot; Responsive study &middot; Aug 2026</p>
+  <h1>Nine More Trees</h1>
+  <p class="brief">The constraint section has to do two jobs at once as it narrows: keep the <b>whole tree</b> (up to four branches) on screen as a map of where the reader is in the framework, while giving the <b>fork logic</b> — the pizza chart, the per-branch instruments, the rail copy — enough room to actually be read. The three shipped small-stage modes (<span class="mono">fit&nbsp;/&nbsp;focus&nbsp;/&nbsp;detail</span>) all answer the same question: <i>what does the camera do inside a fixed, vertical, single-purpose stage?</i> Each family below breaks one word of that question — the <b>optics</b> (04–06), the <b>vertical</b> (07–08), the <b>single-purpose</b> (09–11), and finally the <b>stage</b> itself (12).</p>
+  <p class="srcline">walkShapes.ts &middot; walkFit.tsx &middot; ConstraintNarrative.tsx &middot; FIT_MODES</p>
+
+  <div class="stats">
+    <div class="stat"><div class="n">1180 &times; 640</div><div class="l">the authored stage, scaled as one block to whatever width it gets</div></div>
+    <div class="stat"><div class="n">13.5px &rarr; 11px</div><div class="l">smallest leaf type hits the legibility floor once the stage drops below ~81% — roughly a 1310px window with the 248px rail</div></div>
+    <div class="stat"><div class="n">4 heads &middot; 8 leaves</div><div class="l">the widest rank spans the full band (x&nbsp;19–749) and competes for the scarcest axis</div></div>
+    <div class="stat"><div class="n">358 &times; 372</div><div class="l">what the instrument inset wants beside the tree; 410&times;470 as the short walk&rsquo;s hero</div></div>
+  </div>
+</header>
+
+<section class="fam" style="margin-top:44px">
+  <p class="fam-eyebrow">Baseline</p>
+  <h2>The three already on the switch</h2>
+  <p class="famlead">Numbered 01–03 here so the new options can keep counting. All three live as entries on the <span class="mono">FIT_MODES</span> segmented control — which is worth keeping in mind below: that switch is already an experiment harness, and several new options can land as just another entry on it.</p>
+
+  <figure class="sk">
+    <svg viewBox="0 0 700 168" role="img" aria-label="The three shipped modes: fit whole shrinks everything, follow the path crops a camera frame with a minimap, detail on route folds unwalked branches into counts.">
+      <!-- pane 1: fit whole -->
+      <g>
+        <rect class="skstage" x="2" y="6" width="196" height="128" rx="8"/>
+        <circle class="skd" cx="103" cy="24" r="3"/>
+        <path class="skl" d="M103,27 V38 M40,38 H166 M40,38 V56 M82,38 V56 M124,38 V56 M166,38 V56"/>
+        <path class="skl" d="M40,67 V76 M29,76 H51 M29,76 V84 M51,76 V84"/>
+        <path class="skl" d="M124,67 V76 M113,76 H135 M113,76 V84 M135,76 V84"/>
+        <path class="skl" d="M166,67 V76 M155,76 H177 M155,76 V84 M177,76 V84"/>
+        <path class="skl" d="M82,67 V76 M71,76 H93 M93,76 V84"/>
+        <path class="skw" d="M103,24 V38 H82 V56"/>
+        <path class="skw" d="M82,67 V76 H71 V84"/>
+        <rect class="skc" x="25" y="56" width="30" height="11" rx="2"/>
+        <rect class="skcw" x="67" y="56" width="30" height="11" rx="2"/>
+        <rect class="skc" x="109" y="56" width="30" height="11" rx="2"/>
+        <rect class="skc" x="151" y="56" width="30" height="11" rx="2"/>
+        <rect class="skc" x="20.5" y="84" width="17" height="7" rx="1.5"/>
+        <rect class="skc" x="42.5" y="84" width="17" height="7" rx="1.5"/>
+        <rect class="skcw" x="62.5" y="84" width="17" height="7" rx="1.5"/>
+        <rect class="skc" x="84.5" y="84" width="17" height="7" rx="1.5"/>
+        <rect class="skc" x="104.5" y="84" width="17" height="7" rx="1.5"/>
+        <rect class="skc" x="126.5" y="84" width="17" height="7" rx="1.5"/>
+        <rect class="skc" x="146.5" y="84" width="17" height="7" rx="1.5"/>
+        <rect class="skc" x="168.5" y="84" width="17" height="7" rx="1.5"/>
+        <circle class="skyou" cx="71" cy="88" r="9"/>
+        <text class="sklb" x="100" y="118" text-anchor="middle">type: 8px</text>
+        <text class="sklb" x="100" y="154" text-anchor="middle">01 fit whole — everything shrinks</text>
+      </g>
+      <!-- pane 2: follow the path -->
+      <g transform="translate(240,0)">
+        <rect class="skstage" x="2" y="6" width="196" height="128" rx="8"/>
+        <circle class="skd" cx="103" cy="24" r="3"/>
+        <path class="skl" d="M103,27 V38 M40,38 H166 M40,38 V56 M82,38 V56 M124,38 V56 M166,38 V56"/>
+        <path class="skl" d="M82,67 V76 M71,76 H93 M93,76 V84"/>
+        <path class="skw" d="M103,24 V38 H82 V56"/>
+        <path class="skw" d="M82,67 V76 H71 V84"/>
+        <rect class="skc" x="25" y="56" width="30" height="11" rx="2"/>
+        <rect class="skcw" x="67" y="56" width="30" height="11" rx="2"/>
+        <rect class="skc" x="109" y="56" width="30" height="11" rx="2"/>
+        <rect class="skc" x="151" y="56" width="30" height="11" rx="2"/>
+        <rect class="skcw" x="62.5" y="84" width="17" height="7" rx="1.5"/>
+        <rect class="skc" x="84.5" y="84" width="17" height="7" rx="1.5"/>
+        <circle class="skyou" cx="71" cy="88" r="9"/>
+        <rect class="skf" x="54" y="48" width="54" height="50" rx="4"/>
+        <text class="sklb" x="112" y="45" >camera</text>
+        <rect class="skc" x="140" y="100" width="52" height="28" rx="4"/>
+        <path class="skl" style="stroke-width:1" d="M166,106 V110 M152,110 H180 M152,110 V115 M161.3,110 V115 M170.6,110 V115 M180,110 V115"/>
+        <path class="skw" style="stroke-width:1.3" d="M166,106 V110 H161.3 V115"/>
+        <rect class="skf" x="155" y="108" width="12" height="11" style="stroke-dasharray:2 2"/>
+        <text class="sklb" x="100" y="154" text-anchor="middle">02 follow the path — camera + minimap</text>
+      </g>
+      <!-- pane 3: detail on route -->
+      <g transform="translate(480,0)">
+        <rect class="skstage" x="2" y="6" width="196" height="128" rx="8"/>
+        <circle class="skd" cx="103" cy="24" r="3"/>
+        <path class="skl" d="M103,27 V38 M40,38 H166 M40,38 V56 M82,38 V56 M124,38 V56 M166,38 V56"/>
+        <path class="skl" d="M40,67 V70 M124,67 V70 M166,67 V70"/>
+        <path class="skl" d="M82,67 V75 M60,75 H106 M106,75 V82"/>
+        <path class="skw" d="M103,24 V38 H82 V56"/>
+        <path class="skw" d="M82,67 V75 H60 V82"/>
+        <rect class="skc" x="25" y="56" width="30" height="11" rx="2"/>
+        <rect class="skcw" x="67" y="56" width="30" height="11" rx="2"/>
+        <rect class="skc" x="109" y="56" width="30" height="11" rx="2"/>
+        <rect class="skc" x="151" y="56" width="30" height="11" rx="2"/>
+        <rect class="skc" x="30" y="70" width="20" height="11" rx="5.5"/>
+        <rect class="skc" x="114" y="70" width="20" height="11" rx="5.5"/>
+        <rect class="skc" x="156" y="70" width="20" height="11" rx="5.5"/>
+        <text class="sklb" style="font-size:8px" x="40" y="78" text-anchor="middle">&times;2</text>
+        <text class="sklb" style="font-size:8px" x="124" y="78" text-anchor="middle">&times;2</text>
+        <text class="sklb" style="font-size:8px" x="166" y="78" text-anchor="middle">&times;2</text>
+        <rect class="skcw" x="40" y="82" width="40" height="13" rx="2"/>
+        <rect class="skc" x="86" y="82" width="40" height="13" rx="2"/>
+        <circle class="skyou" cx="60" cy="89" r="11"/>
+        <text class="sklb" x="100" y="154" text-anchor="middle">03 detail on route — others fold to counts</text>
+      </g>
+    </svg>
+    <figcaption>The shipped three, for reference — all of them camera strategies inside the same fixed, vertical, do-both-jobs stage.</figcaption>
+  </figure>
+</section>
+
+<section class="fam">
+  <p class="fam-eyebrow">Family A &middot; 04–06</p>
+  <h2>More zoom &amp; pan — change the optics</h2>
+  <p class="famlead">Keep the vertical tree and the stage; make the camera and the rendering smarter. These are the closest relatives of <span class="mono">focus</span> and <span class="mono">detail</span>, and the cheapest to probe — they mostly fix the 1200–1400px laptop squeeze rather than the phone.</p>
+
+  <article class="opt">
+    <div class="opt-head"><span class="opt-num">04</span><h3>Semantic zoom</h3><span class="lands">lands as: a FIT_MODES entry</span></div>
+    <p class="gist">Follow-the-path already moves a camera; this makes zoom <i>mean</i> something. Each zoom band renders a different drawing of the same nodes: far is the minimap&rsquo;s dots-and-elbows drawn on the stage itself, mid is one-word chips, near is full cards with copy. Scroll drives the camera as it does now; the representation crossfades at thresholds. Zoomed out, the stage <i>is</i> the map — no separate minimap needed.</p>
+    <figure class="sk">
+      <svg viewBox="0 0 640 175" role="img" aria-label="Three zoom levels of the same tree: far renders dots and elbows, mid renders chips, near renders full cards. Arrows show zooming between them.">
+        <!-- far -->
+        <rect class="skstage" x="10" y="20" width="130" height="100" rx="8"/>
+        <circle class="skd" cx="75" cy="40" r="2.5"/>
+        <path class="skl" d="M75,43 V54 M35,54 H115 M35,54 V68 M61.6,54 V68 M88.3,54 V68 M115,54 V68"/>
+        <path class="skw" d="M75,40 V54 H61.6 V68"/>
+        <circle class="skl" style="fill:var(--card)" cx="35" cy="70" r="3"/>
+        <circle style="fill:var(--teal)" cx="61.6" cy="70" r="3.4"/>
+        <circle class="skl" style="fill:var(--card)" cx="88.3" cy="70" r="3"/>
+        <circle class="skl" style="fill:var(--card)" cx="115" cy="70" r="3"/>
+        <path class="skw" d="M61.6,73 V84 H54 V92"/>
+        <path class="skl" d="M61.6,84 H69 V92"/>
+        <circle style="fill:var(--teal)" cx="54" cy="94" r="2.4"/>
+        <circle class="skl" style="fill:var(--card)" cx="69" cy="94" r="2"/>
+        <circle class="skyou" cx="54" cy="94" r="6"/>
+        <text class="sklb" x="75" y="140" text-anchor="middle">far — the minimap&rsquo;s drawing</text>
+        <!-- zoom arrow 1 -->
+        <circle class="skarr" cx="163" cy="62" r="5"/>
+        <path class="skarr" d="M166.5,65.5 L171,70"/>
+        <path class="skarr" d="M148,84 H184"/>
+        <polygon class="skah" points="184,80.5 191,84 184,87.5"/>
+        <!-- mid -->
+        <rect class="skstage" x="198" y="20" width="130" height="100" rx="8"/>
+        <rect class="skc" x="238" y="30" width="54" height="12" rx="2"/>
+        <rect class="skt" x="246" y="34.5" width="38" height="3" rx="1.5"/>
+        <path class="skl" d="M265,42 V50 M218,50 H304 M218,50 V62 M246.6,50 V62 M275.3,50 V62 M304,50 V62"/>
+        <path class="skw" d="M265,42 V50 H246.6 V62"/>
+        <rect class="skc" x="206" y="62" width="24" height="11" rx="2"/>
+        <rect class="skcw" x="234.6" y="62" width="24" height="11" rx="2"/>
+        <rect class="skc" x="263.3" y="62" width="24" height="11" rx="2"/>
+        <rect class="skc" x="292" y="62" width="24" height="11" rx="2"/>
+        <rect class="skt" x="211" y="66" width="14" height="3" rx="1.5"/>
+        <rect class="skt" x="239.6" y="66" width="14" height="3" rx="1.5"/>
+        <rect class="skt" x="268.3" y="66" width="14" height="3" rx="1.5"/>
+        <rect class="skt" x="297" y="66" width="14" height="3" rx="1.5"/>
+        <path class="skw" d="M246.6,73 V84 H238 V92"/>
+        <rect class="skcw" x="229" y="92" width="18" height="9" rx="2"/>
+        <rect class="skc" x="251" y="92" width="18" height="9" rx="2"/>
+        <circle class="skyou" cx="238" cy="96.5" r="8"/>
+        <text class="sklb" x="263" y="140" text-anchor="middle">mid — one-word chips</text>
+        <!-- zoom arrow 2 -->
+        <circle class="skarr" cx="351" cy="62" r="5"/>
+        <path class="skarr" d="M354.5,65.5 L359,70"/>
+        <path class="skarr" d="M336,84 H372"/>
+        <polygon class="skah" points="372,80.5 379,84 372,87.5"/>
+        <!-- near -->
+        <rect class="skstage" x="386" y="20" width="130" height="100" rx="8"/>
+        <rect class="skc" x="398" y="30" width="106" height="20" rx="3"/>
+        <rect class="skt" x="406" y="36" width="70" height="3" rx="1.5"/>
+        <rect class="skt" x="406" y="42" width="52" height="3" rx="1.5"/>
+        <path class="skw" d="M451,50 V60 M422,60 H480 M422,60 V68"/>
+        <path class="skl" d="M480,60 V68"/>
+        <rect class="skcw" x="398" y="68" width="48" height="30" rx="3"/>
+        <rect class="skc" x="456" y="68" width="48" height="30" rx="3"/>
+        <rect class="skt" x="404" y="74" width="34" height="3" rx="1.5"/>
+        <rect class="skt" x="404" y="80" width="36" height="3" rx="1.5"/>
+        <rect class="skt" x="404" y="86" width="26" height="3" rx="1.5"/>
+        <rect class="skt" x="462" y="74" width="34" height="3" rx="1.5"/>
+        <rect class="skt" x="462" y="80" width="30" height="3" rx="1.5"/>
+        <rect class="skyou" x="394" y="64" width="56" height="38" rx="6"/>
+        <text class="sklb" x="451" y="140" text-anchor="middle">near — full cards, native type</text>
+        <text class="sklb" x="320" y="166" text-anchor="middle">one tree, three drawings — scroll moves the camera, the drawing snaps at the floor</text>
+      </svg>
+      <figcaption>04 &middot; zoom picks the drawing, not just the scale: dots &rarr; chips &rarr; cards.</figcaption>
+    </figure>
+    <div class="meta-grid">
+      <dl><dt>Where the fork logic lives</dt><dd>Instruments park at fixed spots beside their fork node, so the camera <i>arrives</i> at each chart — the reading is staged where the question is asked.</dd></dl>
+      <dl><dt>How the map survives</dt><dd>The far level is the map; any zoom-out recovers the whole structure on the stage itself.</dd></dl>
+      <dl><dt>Reuses</dt><dd><span class="mono">branchBox / fitTransform</span> for the camera; <span class="mono">BranchMinimap</span>&rsquo;s drawing becomes the far LOD.</dd></dl>
+      <dl><dt>Sharpest risk</dt><dd>Three renderings of every node to author and keep in sync. Thresholds feel arbitrary unless principled — snap exactly where a level&rsquo;s type would cross <span class="mono">LEGIBLE_PX</span>, which the stage already measures.</dd></dl>
+    </div>
+  </article>
+
+  <article class="opt">
+    <div class="opt-head"><span class="opt-num">05</span><h3>Fisheye accordion</h3><span class="lands">lands as: a FIT_MODES entry</span></div>
+    <p class="gist">Detail-on-route is binary: the walked branch gets everything, the others fold to a count. Make it continuous instead — every branch is always drawn as a column, and <b>width redistributes</b>: the focused column takes the room its full-size cards need, the others compress into narrow spines (head chip on top, leaves as ticks). Focus follows the walk, but hover or tap borrows it, so peeking at a sibling branch never costs your place.</p>
+    <figure class="sk">
+      <svg viewBox="0 0 640 215" role="img" aria-label="Fisheye layout: the walked branch renders at full width while three other branches compress into narrow spines; on a phone the spines become edge tabs.">
+        <!-- wide -->
+        <rect class="skstage" x="0" y="10" width="390" height="170" rx="8"/>
+        <circle class="skd" cx="195" cy="26" r="3"/>
+        <path class="skl" d="M195,29 V40 M45,40 H355 M45,40 V52 M90,40 V52 M355,40 V52 M220,40 V52"/>
+        <path class="skw" d="M195,26 V40 H220 V52"/>
+        <!-- spines -->
+        <rect class="skc" x="34" y="52" width="22" height="100" rx="6"/>
+        <rect class="skc" x="79" y="52" width="22" height="100" rx="6"/>
+        <rect class="skc" x="344" y="52" width="22" height="100" rx="6"/>
+        <rect class="skt" x="38" y="58" width="14" height="5" rx="1.5"/>
+        <rect class="skt" x="83" y="58" width="14" height="5" rx="1.5"/>
+        <rect class="skt" x="348" y="58" width="14" height="5" rx="1.5"/>
+        <rect class="skt" x="41" y="128" width="8" height="3" rx="1.5"/>
+        <rect class="skt" x="41" y="136" width="8" height="3" rx="1.5"/>
+        <rect class="skt" x="86" y="128" width="8" height="3" rx="1.5"/>
+        <rect class="skt" x="86" y="136" width="8" height="3" rx="1.5"/>
+        <rect class="skt" x="351" y="128" width="8" height="3" rx="1.5"/>
+        <rect class="skt" x="351" y="136" width="8" height="3" rx="1.5"/>
+        <!-- walked column, full size -->
+        <rect class="skcw" x="178" y="52" width="84" height="18" rx="3"/>
+        <rect class="skt" x="186" y="58" width="56" height="3" rx="1.5"/>
+        <path class="skw" d="M220,70 V84"/>
+        <rect class="skc" x="186" y="84" width="68" height="14" rx="3"/>
+        <rect class="skt" x="193" y="89" width="46" height="3" rx="1.5"/>
+        <path class="skw" d="M220,98 V108 H190 V118"/>
+        <path class="skl" d="M190,108 H260 M260,108 V118"/>
+        <rect class="skcw" x="162" y="118" width="56" height="30" rx="3"/>
+        <rect class="skc" x="232" y="118" width="56" height="30" rx="3"/>
+        <rect class="skt" x="169" y="124" width="40" height="3" rx="1.5"/>
+        <rect class="skt" x="169" y="130" width="34" height="3" rx="1.5"/>
+        <rect class="skt" x="169" y="136" width="28" height="3" rx="1.5"/>
+        <rect class="skt" x="239" y="124" width="40" height="3" rx="1.5"/>
+        <rect class="skt" x="239" y="130" width="30" height="3" rx="1.5"/>
+        <rect class="skyou" x="158" y="114" width="64" height="38" rx="8"/>
+        <!-- redistribution arrows -->
+        <path class="skarr" d="M116,160 H158"/>
+        <polygon class="skah" points="158,156.5 165,160 158,163.5"/>
+        <polygon class="skah" points="116,156.5 109,160 116,163.5"/>
+        <path class="skarr" d="M300,160 H326"/>
+        <polygon class="skah" points="300,156.5 293,160 300,163.5"/>
+        <polygon class="skah" points="326,156.5 333,160 326,163.5"/>
+        <text class="sklb" x="195" y="196" text-anchor="middle">wide — widths redistribute continuously; hover a spine to borrow focus</text>
+        <!-- narrow -->
+        <g transform="translate(430,0)">
+          <rect class="skp" x="0" y="15" width="130" height="180" rx="12"/>
+          <rect class="skc" x="8" y="40" width="9" height="38" rx="3"/>
+          <rect class="skc" x="8" y="84" width="9" height="38" rx="3"/>
+          <rect class="skc" x="8" y="128" width="9" height="38" rx="3"/>
+          <rect class="skt" x="10" y="44" width="5" height="5" rx="1"/>
+          <rect class="skt" x="10" y="88" width="5" height="5" rx="1"/>
+          <rect class="skt" x="10" y="132" width="5" height="5" rx="1"/>
+          <rect class="skcw" x="24" y="32" width="94" height="14" rx="3"/>
+          <rect class="skc" x="24" y="52" width="94" height="10" rx="2"/>
+          <rect class="ski" x="24" y="68" width="94" height="34" rx="3"/>
+          <circle class="skig" cx="44" cy="85" r="11"/>
+          <path class="skig" d="M44,74 V96 M33,85 H55"/>
+          <rect class="skt" x="62" y="78" width="46" height="3" rx="1.5"/>
+          <rect class="skt" x="62" y="85" width="38" height="3" rx="1.5"/>
+          <rect class="skt" x="62" y="92" width="42" height="3" rx="1.5"/>
+          <rect class="skcw" x="24" y="108" width="94" height="12" rx="2"/>
+          <rect class="skc" x="24" y="124" width="94" height="12" rx="2"/>
+          <circle class="skyou" cx="112" cy="114" r="7"/>
+          <rect class="skt" x="24" y="146" width="86" height="3" rx="1.5"/>
+          <rect class="skt" x="24" y="154" width="68" height="3" rx="1.5"/>
+          <rect class="skt" x="52" y="186" width="26" height="3" rx="1.5"/>
+          <text class="sklb" x="65" y="208" text-anchor="middle">narrow — spines become edge tabs</text>
+        </g>
+      </svg>
+      <figcaption>05 &middot; nothing ever leaves the stage: unfocused branches compress, they don&rsquo;t fold away.</figcaption>
+    </figure>
+    <div class="meta-grid">
+      <dl><dt>Where the fork logic lives</dt><dd>Inside the focused column&rsquo;s width — the instrument threads between the question card and the leaves, at full size, because the column is sized to fit it.</dd></dl>
+      <dl><dt>How the map survives</dt><dd>All branches remain visible, colored, and tappable places — the map and the detail are the same object at two compression levels.</dd></dl>
+      <dl><dt>Reuses</dt><dd><span class="mono">detailLeafBoxes</span> already re-spaces the walked leaf row across freed room; this generalizes its width math to whole columns.</dd></dl>
+      <dl><dt>Sharpest risk</dt><dd>Compressed spines must look pressable, not decorative; truncated labels need a hover/tap reveal; and the constant re-layout as focus moves has to feel like breathing, not churn.</dd></dl>
+    </div>
+  </article>
+
+  <article class="opt">
+    <div class="opt-head"><span class="opt-num">06</span><h3>The loupe</h3><span class="lands">lands as: a FIT_MODES entry</span></div>
+    <p class="gist">Accept the shrink. The whole tree stays fit-whole at any width — and below the legibility floor its labels simply fade out, leaving pure shape: the honest map. A <b>lens rides with the traveller</b> and renders whatever it covers at native size; the lens is the only reading surface. Parked on a question node, it snaps open into a card; dragged anywhere else, it reads that neighborhood instead. Touch-native by accident — a loupe is already a finger-sized object.</p>
+    <figure class="sk">
+      <svg viewBox="0 0 640 215" role="img" aria-label="Loupe layout: the entire tree stays visible at small scale while a circular magnifier renders the area under it at full size; on a phone the loupe follows the traveller.">
+        <defs>
+          <clipPath id="lz6"><circle cx="170" cy="100" r="40"/></clipPath>
+          <clipPath id="lz6b"><circle cx="50" cy="110" r="30"/></clipPath>
+        </defs>
+        <!-- wide -->
+        <rect class="skstage" x="0" y="10" width="390" height="170" rx="8"/>
+        <circle class="skd" cx="195" cy="30" r="3"/>
+        <path class="skl" d="M195,33 V46 M80,46 H310 M80,46 V64 M157,46 V64 M233,46 V64 M310,46 V64"/>
+        <path class="skw" d="M195,30 V46 H157 V64"/>
+        <rect class="skc" x="60" y="64" width="40" height="12" rx="2"/>
+        <rect class="skcw" x="137" y="64" width="40" height="12" rx="2"/>
+        <rect class="skc" x="213" y="64" width="40" height="12" rx="2"/>
+        <rect class="skc" x="290" y="64" width="40" height="12" rx="2"/>
+        <path class="skl" d="M80,76 V88 M66,88 H94 M66,88 V96 M94,88 V96"/>
+        <path class="skl" d="M233,76 V88 M219,88 H247 M219,88 V96 M247,88 V96"/>
+        <path class="skl" d="M310,76 V88 M296,88 H324 M296,88 V96 M324,88 V96"/>
+        <rect class="skc" x="56" y="96" width="20" height="8" rx="1.5"/>
+        <rect class="skc" x="84" y="96" width="20" height="8" rx="1.5"/>
+        <rect class="skc" x="209" y="96" width="20" height="8" rx="1.5"/>
+        <rect class="skc" x="237" y="96" width="20" height="8" rx="1.5"/>
+        <rect class="skc" x="286" y="96" width="20" height="8" rx="1.5"/>
+        <rect class="skc" x="314" y="96" width="20" height="8" rx="1.5"/>
+        <!-- the lens -->
+        <circle style="fill:var(--card);stroke:var(--ink);stroke-width:1.8" cx="170" cy="100" r="40"/>
+        <g clip-path="url(#lz6)">
+          <path class="skw" d="M170,60 V86"/>
+          <rect class="skt" x="146" y="74" width="28" height="3" rx="1.5"/>
+          <rect class="skcw" x="138" y="86" width="60" height="26" rx="3"/>
+          <rect class="skt" x="145" y="92" width="42" height="3.5" rx="1.5"/>
+          <rect class="skt" x="145" y="99" width="36" height="3.5" rx="1.5"/>
+          <rect class="skt" x="145" y="106" width="30" height="3.5" rx="1.5"/>
+          <rect class="skc" x="206" y="86" width="40" height="26" rx="3"/>
+          <path class="skl" d="M130,120 H210"/>
+        </g>
+        <path style="stroke:var(--ink);stroke-width:3.5;stroke-linecap:round" d="M198,132 L216,150"/>
+        <text class="sklb" x="224" y="156">drag</text>
+        <text class="sklb" x="195" y="196" text-anchor="middle">wide — base layer keeps the whole shape; the lens reads at 1&times;</text>
+        <!-- narrow -->
+        <g transform="translate(430,0)">
+          <rect class="skp" x="0" y="15" width="130" height="180" rx="12"/>
+          <circle class="skd" cx="65" cy="32" r="2.5"/>
+          <path class="skl" d="M65,35 V44 M20,44 H110 M20,44 V56 M50,44 V56 M80,44 V56 M110,44 V56"/>
+          <path class="skw" d="M65,32 V44 H50 V56"/>
+          <rect class="skc" x="11" y="56" width="18" height="8" rx="1.5"/>
+          <rect class="skcw" x="41" y="56" width="18" height="8" rx="1.5"/>
+          <rect class="skc" x="71" y="56" width="18" height="8" rx="1.5"/>
+          <rect class="skc" x="101" y="56" width="18" height="8" rx="1.5"/>
+          <path class="skw" d="M50,64 V72 H43 V78"/>
+          <rect class="skcw" x="36" y="78" width="14" height="6" rx="1.5"/>
+          <rect class="skc" x="54" y="78" width="14" height="6" rx="1.5"/>
+          <circle style="fill:var(--card);stroke:var(--ink);stroke-width:1.6" cx="50" cy="110" r="30"/>
+          <g clip-path="url(#lz6b)">
+            <path class="skw" d="M50,80 V98"/>
+            <rect class="skcw" x="28" y="98" width="44" height="20" rx="3"/>
+            <rect class="skt" x="34" y="103" width="30" height="3" rx="1.5"/>
+            <rect class="skt" x="34" y="109" width="24" height="3" rx="1.5"/>
+          </g>
+          <path style="stroke:var(--ink);stroke-width:3;stroke-linecap:round" d="M71,131 L82,144"/>
+          <rect class="skt" x="14" y="158" width="90" height="3" rx="1.5"/>
+          <rect class="skt" x="14" y="166" width="72" height="3" rx="1.5"/>
+          <rect class="skt" x="52" y="186" width="26" height="3" rx="1.5"/>
+          <text class="sklb" x="65" y="208" text-anchor="middle">narrow — the loupe rides the walk</text>
+        </g>
+      </svg>
+      <figcaption>06 &middot; total context, spot legibility: the map never changes, the lens does the reading.</figcaption>
+    </figure>
+    <div class="meta-grid">
+      <dl><dt>Where the fork logic lives</dt><dd>The lens has &ldquo;park&rdquo; states: on a fork it grows into the question card; the instrument opens beside the tree as now, or as a full-bleed interlude on narrow stages.</dd></dl>
+      <dl><dt>How the map survives</dt><dd>Completely — the base layer is never cropped, folded, or re-laid; it just stops pretending its labels are readable.</dd></dl>
+      <dl><dt>Reuses</dt><dd><span class="mono">fit</span> mode as-is for the base; the lens is the same SVG rendered once more under a clip with a bigger transform — cheap.</dd></dl>
+      <dl><dt>Sharpest risk</dt><dd>Reading multi-line cards through a porthole is fussy; the park-state must be generous or it&rsquo;s a gimmick. Screen-reader and keyboard paths must not live inside the lens.</dd></dl>
+    </div>
+  </article>
+</section>
+
+<section class="fam">
+  <p class="fam-eyebrow">Family B &middot; 07–08</p>
+  <h2>Turn the tree — change the geometry</h2>
+  <p class="famlead">The deeper problem: the tree&rsquo;s widest rank (four heads, or the full leaf row) competes for the screen&rsquo;s scarcest axis. Both options here move the crowded rank onto an axis that has room — the scroll direction, or the ring of a circle the section already owns.</p>
+
+  <article class="opt">
+    <div class="opt-head"><span class="opt-num">07</span><h3>The sideways tree</h3><span class="lands">lands as: a shape-level transpose</span></div>
+    <p class="gist">Root at the left, leaves at the right: depth runs across in three columns, and <b>siblings stack downward</b>, where scroll makes room effectively infinite. Cards become rows — the multi-line labels finally get set horizontally, the way text wants. The traveller walks in reading direction, which suits the story (&ldquo;a diagnostic pipeline&rdquo;) as well as descent ever did. On a phone it degrades gracefully into an outline view: heads as rows, the walked one expanding inline, the instrument slotting in as a full-width card between its question and its leaves. The quad shape — the worst case for width — becomes the easiest case: four rows.</p>
+    <figure class="sk">
+      <svg viewBox="0 0 640 215" role="img" aria-label="Sideways tree: root at left, four branch heads stacked vertically, leaves further right, with the instrument panel docked in the unwalked space; on a phone the same tree renders as an expandable outline.">
+        <!-- wide -->
+        <rect class="skstage" x="0" y="10" width="390" height="170" rx="8"/>
+        <rect class="skc" x="14" y="80" width="44" height="26" rx="3"/>
+        <rect class="skt" x="20" y="88" width="32" height="3" rx="1.5"/>
+        <rect class="skt" x="20" y="95" width="24" height="3" rx="1.5"/>
+        <path class="skl" d="M58,93 H84 M84,45 V153 M84,45 H98 M84,81 H98 M84,117 H98 M84,153 H98"/>
+        <path class="skw" d="M58,93 H84 V45 H98"/>
+        <rect class="skcw" x="98" y="36" width="64" height="18" rx="3"/>
+        <rect class="skc" x="98" y="72" width="64" height="18" rx="3"/>
+        <rect class="skc" x="98" y="108" width="64" height="18" rx="3"/>
+        <rect class="skc" x="98" y="144" width="64" height="18" rx="3"/>
+        <rect class="skt" x="104" y="42" width="48" height="3" rx="1.5"/>
+        <rect class="skt" x="104" y="48" width="30" height="3" rx="1.5"/>
+        <rect class="skt" x="104" y="79" width="44" height="3" rx="1.5"/>
+        <rect class="skt" x="104" y="115" width="44" height="3" rx="1.5"/>
+        <rect class="skt" x="104" y="151" width="44" height="3" rx="1.5"/>
+        <path class="skl" d="M162,45 H186 M186,37 V62 M186,37 H198 M186,62 H198"/>
+        <path class="skw" d="M162,45 H186 V37 H198"/>
+        <rect class="skcw" x="198" y="29" width="72" height="16" rx="3"/>
+        <rect class="skc" x="198" y="54" width="72" height="16" rx="3"/>
+        <rect class="skt" x="204" y="34" width="56" height="3" rx="1.5"/>
+        <rect class="skt" x="204" y="40" width="40" height="3" rx="1.5"/>
+        <rect class="skt" x="204" y="59" width="56" height="3" rx="1.5"/>
+        <rect class="skt" x="204" y="65" width="40" height="3" rx="1.5"/>
+        <rect class="skyou" x="194" y="25" width="80" height="24" rx="6"/>
+        <rect class="ski" x="198" y="86" width="176" height="86" rx="6"/>
+        <circle class="skig" cx="240" cy="129" r="26"/>
+        <path class="skig" d="M240,103 V155 M214,129 H266"/>
+        <circle style="fill:var(--teal)" cx="250" cy="120" r="3"/>
+        <rect class="skt" x="280" y="100" width="80" height="3" rx="1.5"/>
+        <rect class="skt" x="280" y="108" width="64" height="3" rx="1.5"/>
+        <rect class="skt" x="280" y="116" width="72" height="3" rx="1.5"/>
+        <text class="sklb" x="195" y="196" text-anchor="middle">wide — depth runs across; the not-yet-walked space holds the instrument</text>
+        <!-- narrow: outline view -->
+        <g transform="translate(430,0)">
+          <rect class="skp" x="0" y="15" width="130" height="180" rx="12"/>
+          <rect class="skc" x="12" y="26" width="106" height="13" rx="2"/>
+          <rect class="skt" x="18" y="31" width="80" height="3" rx="1.5"/>
+          <path class="skl" d="M20,39 V173 M20,52 H28 M20,143 H28 M20,158 H28 M20,173 H28"/>
+          <path class="skw" d="M20,39 V52 H28"/>
+          <rect class="skcw" x="28" y="46" width="90" height="13" rx="3"/>
+          <rect class="skt" x="34" y="51" width="64" height="3" rx="1.5"/>
+          <path class="skl" d="M36,59 V127 M36,82 H44 M36,112 H44 M36,127 H44"/>
+          <path class="skw" d="M36,59 V112 H44"/>
+          <rect class="ski" x="44" y="64" width="74" height="36" rx="3"/>
+          <circle class="skig" cx="58" cy="82" r="10"/>
+          <path class="skig" d="M58,72 V92 M48,82 H68"/>
+          <rect class="skt" x="74" y="76" width="36" height="3" rx="1.5"/>
+          <rect class="skt" x="74" y="84" width="28" height="3" rx="1.5"/>
+          <rect class="skcw" x="44" y="106" width="74" height="11" rx="2"/>
+          <rect class="skc" x="44" y="121" width="74" height="11" rx="2"/>
+          <rect class="skyou" x="41" y="103" width="80" height="17" rx="4"/>
+          <rect class="skc" x="28" y="138" width="90" height="11" rx="2"/>
+          <rect class="skc" x="28" y="153" width="90" height="11" rx="2"/>
+          <rect class="skc" x="28" y="168" width="90" height="11" rx="2"/>
+          <rect class="skt" x="34" y="142" width="52" height="3" rx="1.5"/>
+          <rect class="skt" x="34" y="157" width="52" height="3" rx="1.5"/>
+          <rect class="skt" x="34" y="172" width="52" height="3" rx="1.5"/>
+          <text class="sklb" x="65" y="208" text-anchor="middle">narrow — an outline; the walked row expands inline</text>
+        </g>
+      </svg>
+      <figcaption>07 &middot; the crowded rank moves to the axis with room: siblings stack in the scroll direction.</figcaption>
+    </figure>
+    <div class="meta-grid">
+      <dl><dt>Where the fork logic lives</dt><dd>In the blank &ldquo;future&rdquo; space right of the walk&rsquo;s frontier on wide stages; inline between question and leaves in the narrow outline.</dd></dl>
+      <dl><dt>How the map survives</dt><dd>The whole tree fits any width by construction — only its height varies, and height is scroll.</dd></dl>
+      <dl><dt>Reuses</dt><dd>Everything in <span class="mono">walkShapes</span> is authored x/y — this is a transpose of the row constants into column constants; buses, elbows, and the traveller survive rotated.</dd></dl>
+      <dl><dt>Sharpest risk</dt><dd>The chart&rarr;root handoff beat is choreographed for a top-rooted tree, and the rail copy speaks in descents (&ldquo;drops to its side&rdquo;). This changes the section&rsquo;s signature move, not just its layout — the thing to test is whether the walk still feels like a walk.</dd></dl>
+    </div>
+  </article>
+
+  <article class="opt">
+    <div class="opt-head"><span class="opt-num">08</span><h3>The chart is the map</h3><span class="lands">lands as: a new shape / telling</span></div>
+    <p class="gist">The section maintains two figures — the plane and the tree — and parks one to show the other. But branches already <i>are</i> sectors: <span class="mono">PlaneSector</span> tiles the full 360&deg;. So draw the framework <b>on the plane</b>: root at the origin, branch heads on a first ring at their sector anchors, leaves on an outer ring — angle chooses the branch, radius is depth. The walk becomes a journey outward from the center, and the city&rsquo;s dot never has to &ldquo;carry to the root&rdquo;: it is already home. A square scales to any width far more gracefully than a 1180-unit-wide tree.</p>
+    <figure class="sk">
+      <svg viewBox="0 0 640 215" role="img" aria-label="Radial layout: the tree is drawn on the pizza chart itself, with branch heads on an inner ring and leaves on an outer ring; the instrument panel sits beside it, or stacks below on a phone.">
+        <!-- wide -->
+        <rect class="skstage" x="0" y="10" width="390" height="170" rx="8"/>
+        <rect style="fill:var(--teal-soft)" opacity="0.55" x="103" y="22" width="73" height="73"/>
+        <rect class="skc" x="30" y="22" width="146" height="146" rx="4" style="fill:none"/>
+        <path class="skl" d="M103,22 V168 M30,95 H176"/>
+        <circle class="skf" cx="103" cy="95" r="30"/>
+        <circle class="skf" cx="103" cy="95" r="62"/>
+        <circle class="skd" cx="103" cy="95" r="3.5"/>
+        <path class="skw" d="M103,95 L124,74"/>
+        <path class="skw" d="M124,74 L159,71"/>
+        <rect class="skcw" x="107" y="68" width="34" height="11" rx="2"/>
+        <rect class="skc" x="49" y="68" width="34" height="11" rx="2"/>
+        <rect class="skc" x="49" y="116" width="34" height="11" rx="2"/>
+        <rect class="skc" x="107" y="116" width="34" height="11" rx="2"/>
+        <circle class="skl" style="fill:var(--card)" cx="139" cy="48" r="3.5"/>
+        <circle style="fill:var(--teal)" cx="159" cy="71" r="4"/>
+        <rect class="skc" x="143" y="38" width="26" height="9" rx="1.5"/>
+        <rect class="skcw" x="163" y="62" width="26" height="9" rx="1.5"/>
+        <circle class="skyou" cx="159" cy="71" r="9"/>
+        <rect class="skt" x="36" y="28" width="22" height="3" rx="1.5"/>
+        <rect class="skt" x="36" y="158" width="22" height="3" rx="1.5"/>
+        <rect class="skt" x="148" y="158" width="22" height="3" rx="1.5"/>
+        <text class="sklb" x="184" y="54">ring 2 &middot; leaves</text>
+        <text class="sklb" x="184" y="78">ring 1 &middot; heads</text>
+        <rect class="ski" x="248" y="76" width="126" height="84" rx="6"/>
+        <circle class="skig" cx="280" cy="118" r="22"/>
+        <path class="skig" d="M280,96 V140 M258,118 H302"/>
+        <rect class="skt" x="312" y="98" width="52" height="3" rx="1.5"/>
+        <rect class="skt" x="312" y="106" width="42" height="3" rx="1.5"/>
+        <rect class="skt" x="312" y="114" width="48" height="3" rx="1.5"/>
+        <rect class="skt" x="248" y="40" width="108" height="3" rx="1.5"/>
+        <rect class="skt" x="248" y="48" width="84" height="3" rx="1.5"/>
+        <text class="sklb" x="195" y="196" text-anchor="middle">wide — one figure is both chart and tree; the walk moves outward</text>
+        <!-- narrow -->
+        <g transform="translate(430,0)">
+          <rect class="skp" x="0" y="15" width="130" height="180" rx="12"/>
+          <rect style="fill:var(--teal-soft)" opacity="0.55" x="65" y="26" width="53" height="53"/>
+          <path class="skl" d="M65,26 V132 M12,79 H118"/>
+          <circle class="skf" cx="65" cy="79" r="22"/>
+          <circle class="skf" cx="65" cy="79" r="44"/>
+          <circle class="skd" cx="65" cy="79" r="2.5"/>
+          <path class="skw" d="M65,79 L81,63 L96,50"/>
+          <rect class="skcw" x="70" y="57" width="24" height="9" rx="1.5"/>
+          <circle style="fill:var(--teal)" cx="96" cy="50" r="3.5"/>
+          <circle class="skyou" cx="96" cy="50" r="7.5"/>
+          <rect class="ski" x="12" y="140" width="106" height="36" rx="3"/>
+          <circle class="skig" cx="30" cy="158" r="12"/>
+          <path class="skig" d="M30,146 V170 M18,158 H42"/>
+          <rect class="skt" x="48" y="150" width="58" height="3" rx="1.5"/>
+          <rect class="skt" x="48" y="158" width="46" height="3" rx="1.5"/>
+          <rect class="skt" x="48" y="166" width="52" height="3" rx="1.5"/>
+          <text class="sklb" x="65" y="208" text-anchor="middle">narrow — one square scales; panel stacks under</text>
+        </g>
+      </svg>
+      <figcaption>08 &middot; angle = branch, radius = depth: the framework drawn on the figure the section already owns.</figcaption>
+    </figure>
+    <div class="meta-grid">
+      <dl><dt>Where the fork logic lives</dt><dd>Fork one is literally visible — the sector boundary the dot sits inside. Fork two opens as a panel beside the square (or below it, narrow), reading the active sector.</dd></dl>
+      <dl><dt>How the map survives</dt><dd>There is only one figure, and it is always whole; the tree can never scroll away from the chart because they are the same object.</dd></dl>
+      <dl><dt>Reuses</dt><dd><span class="mono">sectorAnchor / sectorPoly</span> and the whole plane model; the chart beats are unchanged — the tree beats stop leaving the chart.</dd></dl>
+      <dl><dt>Sharpest risk</dt><dd>Fork two isn&rsquo;t a planar direction (cost vs. constraint), so radius must be sold as &ldquo;one question deeper&rdquo;; ring labels crowd at 4 branches &times; 2 leaves. The strongest version may be the quad shape — where the quadrant <i>is</i> the diagnosis, this drawing is simply the truth.</dd></dl>
+    </div>
+  </article>
+</section>
+
+<section class="fam">
+  <p class="fam-eyebrow">Family C &middot; 09–11</p>
+  <h2>Split the jobs — map and reading surface stop sharing</h2>
+  <p class="famlead">The stage is overloaded: it is asked to be the map of the framework <i>and</i> the surface where each fork&rsquo;s logic gets read. These three give each job its own real estate — the map becomes chrome, a swappable camera, or a sheet — so neither job has to lose.</p>
+
+  <article class="opt">
+    <div class="opt-head"><span class="opt-num">09</span><h3>The tree-shaped stepper</h3><span class="lands">lands as: section chrome</span></div>
+    <p class="gist">Promote the minimap from fallback to <b>the</b> map. A slim strip — left edge on wide screens, sticky under the header on narrow ones — permanently shows the whole structure with the lit route and the you-dot. The stage is then free to give each beat <i>one</i> full-bleed thing: the question card large, the instrument at hero size, the leaf choice as big tappable cards. It&rsquo;s a wizard whose stepper is shaped like the actual decision tree instead of a row of dots. Context stops being negotiated per-beat; it&rsquo;s guaranteed by the frame.</p>
+    <figure class="sk">
+      <svg viewBox="0 0 640 215" role="img" aria-label="Stepper layout: a slim strip holds the whole schematic tree while the main stage shows the question, instrument, and leaf choices full size; on a phone the strip docks sticky at the top.">
+        <!-- wide -->
+        <rect class="skstage" x="0" y="10" width="390" height="170" rx="8"/>
+        <rect style="fill:var(--stage)" x="1" y="11" width="56" height="168" rx="7"/>
+        <path class="skl" d="M1,11 M57,11 V179" style="stroke-width:1"/>
+        <circle class="skd" cx="29" cy="30" r="2.5"/>
+        <path class="skl" d="M29,33 V42 M12,42 H46 M12,42 V52 M23.3,42 V52 M34.6,42 V52 M46,42 V52"/>
+        <path class="skw" d="M29,30 V42 H23.3 V52"/>
+        <rect class="skc" x="7.5" y="52" width="9" height="5" rx="1"/>
+        <rect class="skcw" x="18.8" y="52" width="9" height="5" rx="1"/>
+        <rect class="skc" x="30.1" y="52" width="9" height="5" rx="1"/>
+        <rect class="skc" x="41.5" y="52" width="9" height="5" rx="1"/>
+        <path class="skw" d="M23.3,57 V66 H18 V72"/>
+        <rect class="skcw" x="14" y="72" width="8" height="4" rx="1"/>
+        <rect class="skc" x="24" y="72" width="8" height="4" rx="1"/>
+        <circle class="skyou" cx="18" cy="74" r="6"/>
+        <rect class="skc" x="78" y="34" width="130" height="34" rx="4"/>
+        <rect class="skt" x="86" y="44" width="100" height="4" rx="2"/>
+        <rect class="skt" x="86" y="52" width="76" height="4" rx="2"/>
+        <rect class="ski" x="224" y="34" width="148" height="120" rx="6"/>
+        <circle class="skig" cx="262" cy="86" r="30"/>
+        <path class="skig" d="M262,56 V116 M232,86 H292"/>
+        <circle style="fill:var(--teal)" cx="273" cy="74" r="3.5"/>
+        <rect class="skt" x="300" y="60" width="60" height="3" rx="1.5"/>
+        <rect class="skt" x="300" y="68" width="48" height="3" rx="1.5"/>
+        <rect class="skt" x="300" y="76" width="56" height="3" rx="1.5"/>
+        <rect class="skt" x="300" y="84" width="44" height="3" rx="1.5"/>
+        <rect class="skt" x="78" y="84" width="120" height="3" rx="1.5"/>
+        <rect class="skt" x="78" y="92" width="104" height="3" rx="1.5"/>
+        <rect class="skt" x="78" y="100" width="112" height="3" rx="1.5"/>
+        <rect class="skcw" x="78" y="118" width="60" height="36" rx="4"/>
+        <rect class="skc" x="146" y="118" width="60" height="36" rx="4"/>
+        <rect class="skt" x="85" y="126" width="44" height="3" rx="1.5"/>
+        <rect class="skt" x="85" y="133" width="36" height="3" rx="1.5"/>
+        <rect class="skt" x="153" y="126" width="44" height="3" rx="1.5"/>
+        <rect class="skt" x="153" y="133" width="36" height="3" rx="1.5"/>
+        <text class="sklb" x="195" y="196" text-anchor="middle">wide — the strip owns context; the stage gives each beat one thing, huge</text>
+        <!-- narrow -->
+        <g transform="translate(430,0)">
+          <rect class="skp" x="0" y="15" width="130" height="180" rx="12"/>
+          <rect style="fill:var(--stage)" x="8" y="26" width="114" height="26" rx="5"/>
+          <circle class="skd" cx="18" cy="39" r="2.5"/>
+          <path class="skl" d="M21,39 H28 M28,39 L38,30 M28,39 L38,36 M28,39 L38,42 M28,39 L38,48"/>
+          <path class="skw" d="M21,39 H28 L38,36"/>
+          <circle class="skl" style="fill:var(--card)" cx="40" cy="30" r="2.5"/>
+          <circle style="fill:var(--teal)" cx="40" cy="36" r="3"/>
+          <circle class="skl" style="fill:var(--card)" cx="40" cy="42" r="2.5"/>
+          <circle class="skl" style="fill:var(--card)" cx="40" cy="48" r="2.5"/>
+          <path class="skw" d="M43,36 H52 L58,32"/>
+          <path class="skl" d="M52,36 L58,40"/>
+          <circle style="fill:var(--teal)" cx="60" cy="32" r="2.2"/>
+          <circle class="skl" style="fill:var(--card)" cx="60" cy="40" r="2"/>
+          <circle class="skyou" cx="60" cy="32" r="5"/>
+          <text class="sklb" style="font-size:8px" x="74" y="41">you are here</text>
+          <rect class="ski" x="8" y="60" width="114" height="64" rx="5"/>
+          <circle class="skig" cx="30" cy="92" r="16"/>
+          <path class="skig" d="M30,76 V108 M14,92 H46"/>
+          <rect class="skt" x="54" y="74" width="58" height="3" rx="1.5"/>
+          <rect class="skt" x="54" y="82" width="48" height="3" rx="1.5"/>
+          <rect class="skt" x="54" y="90" width="54" height="3" rx="1.5"/>
+          <rect class="skt" x="54" y="98" width="40" height="3" rx="1.5"/>
+          <rect class="skc" x="8" y="132" width="114" height="20" rx="4"/>
+          <rect class="skt" x="15" y="138" width="86" height="3" rx="1.5"/>
+          <rect class="skt" x="15" y="145" width="62" height="3" rx="1.5"/>
+          <rect class="skt" x="8" y="160" width="100" height="3" rx="1.5"/>
+          <rect class="skt" x="8" y="168" width="80" height="3" rx="1.5"/>
+          <rect class="skt" x="52" y="187" width="26" height="3" rx="1.5"/>
+          <text class="sklb" x="65" y="208" text-anchor="middle">narrow — the strip goes sticky at the top</text>
+        </g>
+      </svg>
+      <figcaption>09 &middot; the map becomes chrome, by contract — it never has to share space with the reading again.</figcaption>
+    </figure>
+    <div class="meta-grid">
+      <dl><dt>Where the fork logic lives</dt><dd>The entire stage. <span class="mono">INSET_HERO</span> stops being an inset — each instrument simply <i>is</i> the scene for its beat.</dd></dl>
+      <dl><dt>How the map survives</dt><dd>Constant and structural: the strip is always there, always whole, always lit with the route — the one place it can&rsquo;t be crowded out of.</dd></dl>
+      <dl><dt>Reuses</dt><dd><span class="mono">BranchMinimap</span> is already this component; the beat schedule maps one-to-one onto scenes. The cheapest probe on this page.</dd></dl>
+      <dl><dt>Sharpest risk</dt><dd>The tree stops being the theater. The traveller now lives in a 60px strip, and the physical descent — the section&rsquo;s signature — shrinks with it. Whether the walk still lands emotionally is exactly what the probe should test.</dd></dl>
+    </div>
+  </article>
+
+  <article class="opt">
+    <div class="opt-head"><span class="opt-num">10</span><h3>Two cameras trade places</h3><span class="lands">lands as: a FIT_MODES entry</span></div>
+    <p class="gist">Keep both panels mounted at all times: the whole tree, and the detail (the instrument, or the zoomed fork). The <b>beat decides which one is hero</b> and which is the thumbnail — and tapping the thumbnail swaps them at any moment, so the reader can always trade &ldquo;where am I&rdquo; for &ldquo;let me read that&rdquo; and back. The section already half-does this in one direction (the chart parks into the inset when the tree arrives; the instrument takes the hero panel in the short flow). This makes the relationship symmetric and hands the reader the swap.</p>
+    <figure class="sk">
+      <svg viewBox="0 0 640 215" role="img" aria-label="Two-camera layout: a hero instrument panel with the whole tree as a corner thumbnail, with a tap-to-swap arrow; on a phone the thumbnail docks over the hero card.">
+        <!-- wide -->
+        <rect class="skstage" x="0" y="10" width="390" height="170" rx="8"/>
+        <rect class="ski" x="20" y="26" width="238" height="138" rx="8"/>
+        <circle class="skig" cx="85" cy="95" r="42"/>
+        <path class="skig" d="M85,53 V137 M43,95 H127"/>
+        <circle style="fill:var(--teal)" cx="100" cy="80" r="4"/>
+        <rect class="skt" x="140" y="60" width="100" height="3" rx="1.5"/>
+        <rect class="skt" x="140" y="70" width="84" height="3" rx="1.5"/>
+        <rect class="skt" x="140" y="80" width="92" height="3" rx="1.5"/>
+        <rect class="skt" x="140" y="92" width="70" height="3" rx="1.5"/>
+        <text class="sklb" x="30" y="42">hero</text>
+        <rect class="skc" x="282" y="26" width="88" height="62" rx="6"/>
+        <circle class="skd" cx="326" cy="36" r="2.5"/>
+        <path class="skl" d="M326,39 V46 M298,46 H354 M298,46 V56 M316.6,46 V56 M335.3,46 V56 M354,46 V56"/>
+        <path class="skw" d="M326,36 V46 H316.6 V56"/>
+        <rect class="skc" x="292" y="56" width="12" height="6" rx="1"/>
+        <rect class="skcw" x="310.6" y="56" width="12" height="6" rx="1"/>
+        <rect class="skc" x="329.3" y="56" width="12" height="6" rx="1"/>
+        <rect class="skc" x="348" y="56" width="12" height="6" rx="1"/>
+        <path class="skw" d="M316.6,62 V70 H311 V74"/>
+        <rect class="skcw" x="306" y="74" width="10" height="5" rx="1"/>
+        <rect class="skc" x="320" y="74" width="10" height="5" rx="1"/>
+        <circle class="skyou" cx="311" cy="76" r="6"/>
+        <text class="sklb" x="326" y="100" text-anchor="middle">map</text>
+        <path class="skarr" d="M326,104 C326,120 300,126 266,128"/>
+        <polygon class="skah" points="266,124.5 259,128 266,131.5"/>
+        <path class="skarr" d="M262,146 C300,146 320,138 330,120"/>
+        <polygon class="skah" points="326.6,120.8 331.5,114 333.4,121.6"/>
+        <text class="sklb" x="298" y="162">tap to swap</text>
+        <text class="sklb" x="195" y="196" text-anchor="middle">wide — both cameras stay mounted; the beat (or a tap) picks the hero</text>
+        <!-- narrow -->
+        <g transform="translate(430,0)">
+          <rect class="skp" x="0" y="15" width="130" height="180" rx="12"/>
+          <rect class="ski" x="8" y="28" width="114" height="84" rx="6"/>
+          <circle class="skig" cx="36" cy="74" r="20"/>
+          <path class="skig" d="M36,54 V94 M16,74 H56"/>
+          <rect class="skt" x="62" y="58" width="50" height="3" rx="1.5"/>
+          <rect class="skt" x="62" y="66" width="42" height="3" rx="1.5"/>
+          <rect class="skt" x="62" y="74" width="46" height="3" rx="1.5"/>
+          <rect class="skp" x="78" y="20" width="44" height="32" rx="5"/>
+          <circle class="skd" cx="100" cy="26" r="1.8"/>
+          <path class="skl" style="stroke-width:1" d="M100,28 V32 M88,32 H112 M88,32 V37 M96,32 V37 M104,32 V37 M112,32 V37"/>
+          <path class="skw" style="stroke-width:1.4" d="M100,26 V32 H96 V37"/>
+          <circle style="fill:var(--teal)" cx="96" cy="42" r="2"/>
+          <circle class="skyou" cx="96" cy="42" r="4.5"/>
+          <rect class="skc" x="8" y="120" width="114" height="18" rx="4"/>
+          <rect class="skt" x="15" y="126" width="84" height="3" rx="1.5"/>
+          <rect class="skt" x="8" y="148" width="100" height="3" rx="1.5"/>
+          <rect class="skt" x="8" y="156" width="84" height="3" rx="1.5"/>
+          <rect class="skt" x="8" y="164" width="90" height="3" rx="1.5"/>
+          <rect class="skt" x="52" y="187" width="26" height="3" rx="1.5"/>
+          <text class="sklb" x="65" y="208" text-anchor="middle">narrow — the map docks as a corner thumbnail</text>
+        </g>
+      </svg>
+      <figcaption>10 &middot; the whole tree is never gone — just sometimes small, and always one tap from being big.</figcaption>
+    </figure>
+    <div class="meta-grid">
+      <dl><dt>Where the fork logic lives</dt><dd>The hero panel, at whatever size the stage affords — it no longer has to fit <i>beside</i> a full tree.</dd></dl>
+      <dl><dt>How the map survives</dt><dd>As the thumbnail camera — degraded gracefully, but recoverable instantly and manually, which the current modes never allow.</dd></dl>
+      <dl><dt>Reuses</dt><dd><span class="mono">INSET / INSET_HERO</span> geometry and the park animation; both cameras render the same SVG under two transforms, so the swap is one transition.</dd></dl>
+      <dl><dt>Sharpest risk</dt><dd>The swap animation must be flawless or it disorients; thumbnail tap targets are tight on phones; and a reader who swaps mid-beat needs the scroll story to still make sense when they swap back.</dd></dl>
+    </div>
+  </article>
+
+  <article class="opt">
+    <div class="opt-head"><span class="opt-num">11</span><h3>The bottom-sheet map</h3><span class="lands">lands as: the narrow companion</span></div>
+    <p class="gist">Phone-native job split: the narrative and instruments become the page&rsquo;s main scroll, and the tree persists as a <b>bottom sheet</b>. Collapsed, it peeks as a one-line schematic — root ▸ your branch ▸ your leaf, with the unwalked branches as dimmed stubs. Pulled up, it&rsquo;s the whole tree at full width. The sheet position becomes the reader&rsquo;s own context dial, in a gesture every phone user already owns. Not a desktop mode at all — it pairs with whatever the wide stage does.</p>
+    <figure class="sk">
+      <svg viewBox="0 0 640 215" role="img" aria-label="Bottom sheet in two states: collapsed it shows a one-line route strip under the scrolling narrative; dragged up it reveals the whole tree.">
+        <!-- phone A: peek -->
+        <g transform="translate(120,0)">
+          <rect class="skp" x="0" y="15" width="130" height="180" rx="12"/>
+          <rect class="skt" x="12" y="30" width="106" height="3" rx="1.5"/>
+          <rect class="skt" x="12" y="38" width="88" height="3" rx="1.5"/>
+          <rect class="ski" x="12" y="50" width="106" height="52" rx="4"/>
+          <circle class="skig" cx="32" cy="76" r="14"/>
+          <path class="skig" d="M32,62 V90 M18,76 H46"/>
+          <rect class="skt" x="52" y="62" width="54" height="3" rx="1.5"/>
+          <rect class="skt" x="52" y="70" width="44" height="3" rx="1.5"/>
+          <rect class="skt" x="52" y="78" width="50" height="3" rx="1.5"/>
+          <rect class="skt" x="12" y="112" width="96" height="3" rx="1.5"/>
+          <rect class="skt" x="12" y="120" width="76" height="3" rx="1.5"/>
+          <rect class="skp" x="4" y="132" width="122" height="59" rx="10"/>
+          <rect class="skt" x="53" y="138" width="24" height="3" rx="1.5"/>
+          <circle class="skd" cx="16" cy="158" r="2.5"/>
+          <path class="skl" d="M19,158 H28 M28,158 L38,146 M28,158 L38,154 M28,158 L38,162 M28,158 L38,170"/>
+          <path class="skw" d="M19,158 H28 L38,154"/>
+          <circle class="skl" style="fill:var(--card)" cx="40" cy="146" r="2.5"/>
+          <circle style="fill:var(--teal)" cx="40" cy="154" r="3"/>
+          <circle class="skl" style="fill:var(--card)" cx="40" cy="162" r="2.5"/>
+          <circle class="skl" style="fill:var(--card)" cx="40" cy="170" r="2.5"/>
+          <path class="skw" d="M43,154 H52 L58,150"/>
+          <path class="skl" d="M52,154 L58,158"/>
+          <circle style="fill:var(--teal)" cx="60" cy="150" r="2.2"/>
+          <circle class="skl" style="fill:var(--card)" cx="60" cy="158" r="2"/>
+          <circle class="skyou" cx="60" cy="150" r="5"/>
+          <rect class="skt" x="72" y="148" width="40" height="3" rx="1.5"/>
+          <rect class="skt" x="72" y="156" width="30" height="3" rx="1.5"/>
+          <text class="sklb" x="65" y="208" text-anchor="middle">peek — the route + branch stubs</text>
+        </g>
+        <!-- drag arrow -->
+        <path class="skarr" d="M322,132 V98"/>
+        <polygon class="skah" points="318,98 322,89 326,98"/>
+        <text class="sklb" x="322" y="148" text-anchor="middle">drag</text>
+        <!-- phone B: pulled -->
+        <g transform="translate(390,0)">
+          <rect class="skp" x="0" y="15" width="130" height="180" rx="12"/>
+          <rect class="skt" x="12" y="28" width="106" height="3" rx="1.5" opacity="0.5"/>
+          <rect class="skt" x="12" y="36" width="80" height="3" rx="1.5" opacity="0.5"/>
+          <rect class="skp" x="4" y="48" width="122" height="143" rx="10"/>
+          <rect class="skt" x="53" y="54" width="24" height="3" rx="1.5"/>
+          <circle class="skd" cx="65" cy="68" r="2.5"/>
+          <path class="skl" d="M65,71 V80 M24,80 H106 M24,80 V92 M51.3,80 V92 M78.6,80 V92 M106,80 V92"/>
+          <path class="skw" d="M65,68 V80 H51.3 V92"/>
+          <rect class="skc" x="14" y="92" width="20" height="9" rx="1.5"/>
+          <rect class="skcw" x="41.3" y="92" width="20" height="9" rx="1.5"/>
+          <rect class="skc" x="68.6" y="92" width="20" height="9" rx="1.5"/>
+          <rect class="skc" x="96" y="92" width="20" height="9" rx="1.5"/>
+          <rect class="skt" x="18" y="105" width="6" height="3" rx="1"/>
+          <rect class="skt" x="26" y="105" width="6" height="3" rx="1"/>
+          <rect class="skt" x="73" y="105" width="6" height="3" rx="1"/>
+          <rect class="skt" x="81" y="105" width="6" height="3" rx="1"/>
+          <rect class="skt" x="100" y="105" width="6" height="3" rx="1"/>
+          <rect class="skt" x="108" y="105" width="6" height="3" rx="1"/>
+          <path class="skw" d="M51.3,101 V110 H40 V118"/>
+          <path class="skl" d="M40,110 H62 M62,110 V118"/>
+          <rect class="skcw" x="32" y="118" width="16" height="7" rx="1.5"/>
+          <rect class="skc" x="54" y="118" width="16" height="7" rx="1.5"/>
+          <circle class="skyou" cx="40" cy="121.5" r="8"/>
+          <rect class="skt" x="24" y="140" width="80" height="3" rx="1.5"/>
+          <rect class="skt" x="24" y="148" width="62" height="3" rx="1.5"/>
+          <rect class="skt" x="24" y="156" width="70" height="3" rx="1.5"/>
+          <text class="sklb" x="65" y="208" text-anchor="middle">pulled — the whole tree, full width</text>
+        </g>
+      </svg>
+      <figcaption>11 &middot; context on a dial: the sheet position is how much map the reader wants right now.</figcaption>
+    </figure>
+    <div class="meta-grid">
+      <dl><dt>Where the fork logic lives</dt><dd>The main scroll — instruments and copy get the full column, uncontested, exactly when the walk reaches them.</dd></dl>
+      <dl><dt>How the map survives</dt><dd>One gesture away, plus the always-visible peek strip. Weaker than always-on — but honest about what a phone can hold.</dd></dl>
+      <dl><dt>Reuses</dt><dd>The minimap drawing for the peek strip; <span class="mono">wholeBox</span> fit for the pulled state; <span class="mono">diagnose()</span> untouched.</dd></dl>
+      <dl><dt>Sharpest risk</dt><dd>Sheets fight browser edge gestures; and &ldquo;context on demand&rdquo; teaches the framework less firmly than context always-on — the peek strip has to carry more weight than it looks like it does.</dd></dl>
+    </div>
+  </article>
+</section>
+
+<section class="fam">
+  <p class="fam-eyebrow">Family D &middot; 12</p>
+  <h2>Let the page be the tree</h2>
+  <p class="famlead">The most radical move: on narrow screens, stop fitting the tree to a stage at all. There is no stage — which means nothing to squeeze.</p>
+
+  <article class="opt">
+    <div class="opt-head"><span class="opt-num">12</span><h3>The subway spine</h3><span class="lands">lands as: a third telling (flow-level)</span></div>
+    <p class="gist">The walked route draws as <b>one continuous line down the page</b>; scrolling is the descent. At each fork station the unwalked siblings appear as stubs that curve off and fold — labeled, dimmed, and tappable (tap a stub to reroute the walk from that fork). Between stations, the fork&rsquo;s instrument and copy sit as full-width cards threaded on the line. A small persistent glyph keeps the whole-tree shape with a you-dot; tapping it opens the full map (option 11&rsquo;s sheet). The scrolly track and the tree stop being two things.</p>
+    <figure class="sk">
+      <svg viewBox="0 0 640 220" role="img" aria-label="Subway spine layout: the walked route is a vertical line down the page with fork stubs branching off, instrument cards threaded on the line, and a persistent corner glyph of the whole tree.">
+        <!-- page column -->
+        <rect class="skstage" x="40" y="8" width="250" height="198" rx="8"/>
+        <path class="skw" d="M76,22 V196"/>
+        <circle class="skd" cx="76" cy="26" r="3.5"/>
+        <rect class="skc" x="90" y="18" width="120" height="16" rx="3"/>
+        <rect class="skt" x="97" y="24" width="90" height="3" rx="1.5"/>
+        <!-- fork station + stubs -->
+        <circle style="fill:var(--card);stroke:var(--teal);stroke-width:2" cx="76" cy="58" r="4.5"/>
+        <path class="skl" d="M76,58 C90,58 94,41.5 106,41.5"/>
+        <path class="skl" d="M76,58 H106"/>
+        <path class="skl" d="M76,58 C90,58 94,75.5 106,75.5"/>
+        <rect class="skc" x="108" y="36" width="58" height="11" rx="2"/>
+        <rect class="skc" x="108" y="53" width="58" height="11" rx="2"/>
+        <rect class="skc" x="108" y="70" width="58" height="11" rx="2"/>
+        <rect class="skt" x="114" y="40" width="40" height="3" rx="1.5"/>
+        <rect class="skt" x="114" y="57" width="40" height="3" rx="1.5"/>
+        <rect class="skt" x="114" y="74" width="40" height="3" rx="1.5"/>
+        <text class="sklb" x="174" y="62">tap &rarr; reroute</text>
+        <!-- instrument interlude threaded on the line -->
+        <circle style="fill:var(--teal)" cx="76" cy="90" r="2.5"/>
+        <rect class="ski" x="60" y="94" width="200" height="54" rx="5"/>
+        <circle class="skig" cx="92" cy="121" r="18"/>
+        <path class="skig" d="M92,103 V139 M74,121 H110"/>
+        <circle style="fill:var(--teal)" cx="99" cy="114" r="2.5"/>
+        <rect class="skt" x="120" y="106" width="120" height="3" rx="1.5"/>
+        <rect class="skt" x="120" y="114" width="100" height="3" rx="1.5"/>
+        <rect class="skt" x="120" y="122" width="110" height="3" rx="1.5"/>
+        <rect class="skt" x="120" y="130" width="86" height="3" rx="1.5"/>
+        <circle style="fill:var(--teal)" cx="76" cy="152" r="2.5"/>
+        <rect class="skt" x="92" y="158" width="150" height="3" rx="1.5"/>
+        <rect class="skt" x="92" y="166" width="120" height="3" rx="1.5"/>
+        <!-- landing -->
+        <circle style="fill:var(--teal)" cx="76" cy="184" r="4"/>
+        <circle class="skyou" cx="76" cy="184" r="9"/>
+        <rect class="skcw" x="90" y="176" width="110" height="16" rx="3"/>
+        <rect class="skt" x="97" y="182" width="80" height="3" rx="1.5"/>
+        <!-- persistent whole-tree glyph -->
+        <rect class="skc" x="222" y="16" width="48" height="32" rx="5"/>
+        <circle class="skd" cx="246" cy="23" r="1.8"/>
+        <path class="skl" style="stroke-width:0.9" d="M246,25 V29 M234,29 H258 M234,29 V34 M242,29 V34 M250,29 V34 M258,29 V34"/>
+        <path class="skw" style="stroke-width:1.3" d="M246,23 V29 H242 V34"/>
+        <circle style="fill:var(--teal)" cx="242" cy="40" r="1.8"/>
+        <circle class="skyou" style="stroke-width:1.2" cx="242" cy="40" r="3.8"/>
+        <text class="sklb" x="165" y="216" text-anchor="middle">the scroll is the descent — cards thread on the line</text>
+        <!-- narrow -->
+        <g transform="translate(430,0)">
+          <rect class="skp" x="0" y="15" width="130" height="180" rx="12"/>
+          <path class="skw" d="M30,30 V178"/>
+          <circle class="skd" cx="30" cy="32" r="2.5"/>
+          <circle style="fill:var(--card);stroke:var(--teal);stroke-width:1.6" cx="30" cy="58" r="3.5"/>
+          <path class="skl" d="M30,58 C40,58 42,47 50,47"/>
+          <path class="skl" d="M30,58 H50 M30,58 C40,58 42,69 50,69"/>
+          <rect class="skc" x="52" y="42" width="56" height="10" rx="2"/>
+          <rect class="skc" x="52" y="53" width="56" height="10" rx="2"/>
+          <rect class="skc" x="52" y="64" width="56" height="10" rx="2"/>
+          <circle style="fill:var(--teal)" cx="30" cy="88" r="2"/>
+          <rect class="ski" x="18" y="92" width="100" height="40" rx="4"/>
+          <circle class="skig" cx="38" cy="112" r="12"/>
+          <path class="skig" d="M38,100 V124 M26,112 H50"/>
+          <rect class="skt" x="56" y="102" width="52" height="3" rx="1.5"/>
+          <rect class="skt" x="56" y="110" width="42" height="3" rx="1.5"/>
+          <rect class="skt" x="56" y="118" width="48" height="3" rx="1.5"/>
+          <circle style="fill:var(--teal)" cx="30" cy="164" r="3.5"/>
+          <circle class="skyou" cx="30" cy="164" r="7.5"/>
+          <rect class="skcw" x="44" y="156" width="70" height="14" rx="3"/>
+          <rect class="skc" x="86" y="22" width="36" height="24" rx="4"/>
+          <circle class="skd" cx="104" cy="27" r="1.5"/>
+          <path class="skl" style="stroke-width:0.8" d="M104,28.5 V31.5 M95,31.5 H113 M95,31.5 V35.5 M101,31.5 V35.5 M107,31.5 V35.5 M113,31.5 V35.5"/>
+          <path class="skw" style="stroke-width:1.1" d="M104,27 V31.5 H101 V35.5"/>
+          <circle style="fill:var(--teal)" cx="101" cy="40" r="1.5"/>
+          <rect class="skt" x="52" y="186" width="26" height="3" rx="1.5"/>
+          <text class="sklb" x="65" y="212" text-anchor="middle">same telling, any width</text>
+        </g>
+      </svg>
+      <figcaption>12 &middot; no stage, so nothing to squeeze: the tree is experienced at forks, kept whole in the corner glyph.</figcaption>
+    </figure>
+    <div class="meta-grid">
+      <dl><dt>Where the fork logic lives</dt><dd>Full-width cards threaded on the line, exactly at the fork they explain — the instrument arrives at the moment its question is asked, at the column&rsquo;s full size.</dd></dl>
+      <dl><dt>How the map survives</dt><dd>Structurally at forks (the stubs are the other branches, in place, tappable) and globally in the corner glyph / pull-up map.</dd></dl>
+      <dl><dt>Reuses</dt><dd>Beats map one-to-one onto stations; <span class="mono">diagnose() / convertPath</span> drive rerouting; the rail copy becomes the between-station cards nearly verbatim.</dd></dl>
+      <dl><dt>Sharpest risk</dt><dd>It&rsquo;s the biggest build — a third telling, not a fit mode, and it needs a width gate (the wide stage flows stay as they are). Folded stubs must read as &ldquo;doors you didn&rsquo;t take,&rdquo; never &ldquo;options that vanished.&rdquo;</dd></dl>
+    </div>
+  </article>
+</section>
+
+<section class="fam">
+  <p class="fam-eyebrow">Side by side</p>
+  <h2>What each one trades</h2>
+  <div class="tblwrap">
+  <table>
+    <thead><tr><th>#</th><th>Option</th><th>The map survives as</th><th>The instrument gets</th><th>At phone width</th><th>Lift</th></tr></thead>
+    <tbody>
+      <tr><td class="num">04</td><td class="name">Semantic zoom</td><td>the far drawing, on the stage itself</td><td>a parked pane the camera visits</td><td>mid level + zoom-out gesture</td><td><span class="lift m">M</span></td></tr>
+      <tr><td class="num">05</td><td class="name">Fisheye accordion</td><td>spines that never leave the stage</td><td>the focused column&rsquo;s width</td><td>walked branch full-width, edge tabs</td><td><span class="lift m">M</span></td></tr>
+      <tr><td class="num">06</td><td class="name">The loupe</td><td>the whole tree, always, as shape</td><td>a park-state card / hero interlude</td><td>tiny tree + finger-sized lens</td><td><span class="lift s">S</span></td></tr>
+      <tr><td class="num">07</td><td class="name">Sideways tree</td><td>whole tree fits any width</td><td>the not-yet-walked space</td><td>outline view, instrument inline</td><td><span class="lift m">M</span></td></tr>
+      <tr><td class="num">08</td><td class="name">Chart as map</td><td>one figure is chart <i>and</i> tree</td><td>a panel beside / under the square</td><td>the square, full width</td><td><span class="lift l">L</span></td></tr>
+      <tr><td class="num">09</td><td class="name">Tree-shaped stepper</td><td>a chrome strip, by contract</td><td>the entire stage</td><td>sticky strip + full-bleed scenes</td><td><span class="lift s">S</span></td></tr>
+      <tr><td class="num">10</td><td class="name">Two cameras</td><td>the thumbnail camera, tap-to-grow</td><td>the hero panel, until swapped</td><td>docked corner thumbnail</td><td><span class="lift s">S</span></td></tr>
+      <tr><td class="num">11</td><td class="name">Bottom sheet</td><td>a peek strip + one gesture</td><td>the main scroll, uncontested</td><td>native</td><td><span class="lift m">M</span></td></tr>
+      <tr><td class="num">12</td><td class="name">Subway spine</td><td>stubs at forks + a corner glyph</td><td>full-width cards on the line</td><td>native</td><td><span class="lift l">L</span></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="probes">
+    <h2 style="font-size:25px;margin-top:44px">Where to probe first</h2>
+    <ol>
+      <li><b>09, the stepper, first.</b> It is nearly free — <span class="mono">BranchMinimap</span> and the beat gates already exist — and it answers the scariest design question on this page in a day: does the section survive the tree leaving center stage? Every other job-split option (10, 11, 12) inherits that answer.</li>
+      <li><b>06 or 10 as small FIT_MODES entries.</b> Both fix the real, current problem — the ~1310px laptop squeeze — without touching the phone story, and both slot into the existing switch beside fit/focus/detail, so they A/B against the shipped three with the control the section already has.</li>
+      <li><b>The phone bet is 07 vs 12.</b> One geometry at every width (sideways, degrading to an outline) against a second telling under a width gate (the spine). The section already treats &ldquo;a different telling&rdquo; as a legitimate axis — short vs. full on the flow switch — which is an argument that 12 is a third <i>flow</i>, not a fourth fit mode.</li>
+    </ol>
+    <p>These compose rather than compete: 04–06 and 10 are <span class="mono">FIT_MODES</span> entries, 07–08 are shape-level, 09 and 11 are chrome, 12 is a flow. One from each column can ship together — e.g. the stepper strip everywhere, the loupe on tight laptops, and the spine (or sheet) below a phone-width gate.</p>
+  </div>
+</section>
+
+<footer>City Constraints &middot; responsive study &middot; drawn against walkShapes.ts geometry (1180&times;640 stage, LEGIBLE_PX&nbsp;=&nbsp;11) &middot; options 01–03 ship today as FIT_MODES</footer>
+</div>
+  </body>
+</html>

@@ -10,9 +10,12 @@ import { pointer } from "d3-selection";
 import { Delaunay } from "d3-delaunay";
 import { stratify, tree as d3tree, type HierarchyPointNode } from "d3-hierarchy";
 import {
+  PLACEHOLDER_BRANCHES,
   TREE_SIDE_COLOR,
+  TREE_SIDE_LABEL,
   completeToLeaf,
   pathThemes,
+  sideOfPath,
   suggestedPath,
   treeNodes,
   type ThemeDef,
@@ -98,11 +101,14 @@ function DiagSchematic({
     const ddx = n.x + MV.pad.left - px;
     const ddy = n.y + MV.pad.top - py;
     if (ddx * ddx + ddy * ddy > 36 * 36 || !n.parent) return null;
-    return completeToLeaf(n, [path, suggPath])
+    const ids = completeToLeaf(n, [path, suggPath])
       .ancestors()
       .filter((a) => a.depth >= 1)
       .map((a) => a.data.id)
       .reverse();
+    /* a placeholder branch is drawn but has no analysis to navigate to, so
+       it answers the pointer with nothing — same rule the walk's tree uses */
+    return PLACEHOLDER_BRANCHES.has(ids[0]) ? null : ids;
   };
   const handleMove = (e: React.PointerEvent<SVGSVGElement>) => {
     if (!interactive) return;
@@ -317,7 +323,7 @@ export function BranchAnalysisPage({
    *  place a branch can be chosen */
   treePickable?: boolean;
 }) {
-  const side = branchPath[0] === "demand" ? ("demand" as const) : ("supply" as const);
+  const side = sideOfPath(branchPath);
   const titleOf = useMemo(
     () => new Map(treeNodes(variant).map((n) => [n.id, n.title])),
     [variant],
@@ -327,7 +333,7 @@ export function BranchAnalysisPage({
     () => suggestedPath(cityShort, variant),
     [cityShort, variant],
   );
-  const suggSide: TreeSide = suggPath[0] === "demand" ? "demand" : "supply";
+  const suggSide: TreeSide = sideOfPath(suggPath);
 
   /* the schematic's hover preview lives here: the kicker, breadcrumbs and
      chip below follow the path under the pointer, not just the dots */
@@ -336,8 +342,7 @@ export function BranchAnalysisPage({
   useEffect(() => setPreview(null), [variant]);
   const previewing = !!preview && preview.join("/") !== branchPath.join("/");
   const shown = preview ?? branchPath;
-  const shownSide =
-    shown[0] === "demand" ? ("demand" as const) : ("supply" as const);
+  const shownSide = sideOfPath(shown);
 
   /* the themes hanging off the picked leaf — the section's content when the
      stage's themes toggle is on */
@@ -394,7 +399,9 @@ export function BranchAnalysisPage({
         <h2>{branchSectionName(side)}</h2>
       </div>
       <p className="lede">
-        <span className="ph">[lead question for the {side}-side analysis of {cityShort}]</span>
+        <span className="ph">
+          [lead question for the {TREE_SIDE_LABEL[side]} analysis of {cityShort}]
+        </span>
       </p>
 
       <div className="ba-body">
@@ -413,7 +420,8 @@ export function BranchAnalysisPage({
           <div className="placeholder-frame">
             <span className="ph-title">{branchSectionName(side)}</span>
             <span className="ph-sub">
-              [tests, data views and narrative for the {side} branch — to come]
+              [tests, data views and narrative for the {TREE_SIDE_LABEL[side]} —
+              to come]
             </span>
           </div>
         )}
@@ -494,7 +502,7 @@ export function BranchAnalysisPage({
       {!treePickable && (
         <p className="ba-endprompt">
           <span className="ph">
-            [that's the {side}-side read — the diagnosed path. if you're
+            [that's the {TREE_SIDE_LABEL[side]} read — the diagnosed path. if you're
             curious how another branch tells it, the schematic in the sidebar
             is open now: hover to preview, click to switch]
           </span>

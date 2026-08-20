@@ -10,6 +10,11 @@ import {
 import { Toolbar } from "./Toolbar";
 import { Rail } from "./Rail";
 import { ExplainersView } from "./ExplainersView";
+import {
+  DEFAULT_WALK_SHAPE,
+  walkShape,
+  type WalkShapeId,
+} from "./pages/walkShapes";
 import { ConstraintScrolly } from "./pages/ConstraintScrolly";
 import { ConstraintNarrative } from "./pages/ConstraintNarrative";
 import { BranchAnalysisPage } from "./pages/BranchAnalysisPage";
@@ -77,9 +82,17 @@ export function ToolView({
   const [constraintFlow, setConstraintFlow] = useState<ConstraintFlow>(
     DEFAULT_CONSTRAINT_FLOW,
   );
-  /* both guided tellings ("guided" and its shortened cut) mount the narrative
-     and always tell the ALT structure, so they gate the same things */
+  /* both guided tellings ("guided" and its shortened cut) mount the narrative,
+     so they gate the same things */
   const guidedFlow = constraintFlow !== "compact";
+  /* how many branches the walk's tree has — the walks' own axis, separate
+     from the flow switch beside it. It lives here rather than in the
+     narrative because the branch-analysis section below has to mirror
+     whatever the walk drew. */
+  const [walkShapeId, setWalkShapeId] = useState<WalkShapeId>(DEFAULT_WALK_SHAPE);
+  /* the app-wide structure the walk's tree stands for, which the analysis
+     schematic follows while a walk is mounted */
+  const walkVariant = walkShape(walkShapeId).variant;
   /* The shortened walk reads the chart, the tree and the branch analysis as
      ONE piece: the route stays on the diagnosis the whole way down, and only
      the end of the analysis hands the choice over. The release lives here
@@ -188,24 +201,27 @@ export function ToolView({
               variant={treeVariant}
               flow={constraintFlow}
               onFlowChange={changeConstraintFlow}
+              shape={walkShapeId}
+              onShapeChange={setWalkShapeId}
               routePinned={routeHeld}
             />
           )}
 
-          {/* the guided walks always tell the ALT structure, so while one is
-              active the analysis schematic mirrors that four-leaf tree; picks
-              made on it convert back into the app-wide structure */}
+          {/* while a guided walk is active the analysis schematic mirrors the
+              tree the walk just drew — including its shape, so a third branch
+              up there is a third branch down here; picks made on it convert
+              back into the app-wide structure */}
           <BranchAnalysisPage
             cityShort={cityShort}
             branchPath={
-              guidedFlow ? convertPath(branchPath, "alt") : branchPath
+              guidedFlow ? convertPath(branchPath, walkVariant) : branchPath
             }
             onSelectBranch={
               guidedFlow
                 ? (p) => onSelectBranch(convertPath(p, treeVariant))
                 : onSelectBranch
             }
-            variant={guidedFlow ? "alt" : treeVariant}
+            variant={guidedFlow ? walkVariant : treeVariant}
             showThemes={showThemes}
             routeHeld={routeHeld}
             onReachEnd={() => setRouteReleased(true)}
