@@ -735,11 +735,19 @@ export const branchBox = (
   ];
 };
 
-/** the whole tree's box */
+/** the whole tree's box — its band, widened where a landing's badge would
+ *  overhang the leaf row (the badge is centred on its leaf, and an outer
+ *  leaf's pill is wider than the leaf is), so a whole-tree fit keeps the
+ *  pill on stage */
 export const wholeBox = (s: WalkShape): [number, number, number, number] => {
   const [x0, x1] = shapeBand(s);
   const [y0, y1] = shapeExtent(s);
-  return [x0 - 12, y0, x1 + 12, y1];
+  const landings = hasLeaves(s)
+    ? shapeLeaves(s).map((l) => l.x)
+    : s.branches.map((b) => b.x);
+  const bx0 = Math.min(...landings.map((x) => badgeCX(x, BADGE_W) - BADGE_W / 2));
+  const bx1 = Math.max(...landings.map((x) => badgeCX(x, BADGE_W) + BADGE_W / 2));
+  return [Math.min(x0, bx0) - 12, y0, Math.max(x1, bx1) + 12, y1];
 };
 
 /** `translate(...) scale(...)` that maps `box` into `into`, centred and

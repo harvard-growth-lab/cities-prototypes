@@ -17,9 +17,11 @@ import {
   shapeExtent,
   type WalkShape,
 } from "./walkShapes";
+import { sideGeometry } from "./walkVariants";
 
 /* the stage the tree is authored against */
 const W = 1180;
+const H = 640;
 
 /** The smallest type on the tree, at the size it will actually RENDER: the
  *  stage is a fixed viewBox scaled to whatever width it gets, so every font
@@ -59,6 +61,89 @@ export function useStageScale(ref: RefObject<SVGSVGElement | null>) {
   return scale;
 }
 
+/** How much taller the stage is than its viewBox needs at the width it has:
+ *  the headroom a chart-phase zoom can spend without leaving the stage. The
+ *  zoom is a transform on the whole svg, so on a height-bound stage (the
+ *  narrow layouts, where the rail sits under it) any zoom at all runs into
+ *  the head above and the rail below — there the headroom is exactly 1. */
+export function useStageHeadroom(ref: RefObject<SVGSVGElement | null>) {
+  const [room, setRoom] = useState(1);
+  const seen = useRef(1);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const measure = () => {
+      /* a ratio, so the chart-phase transform already on the element
+         cancels out of it */
+      const { width: w, height: h } = el.getBoundingClientRect();
+      if (!w || !h) return;
+      const k = Math.max(1, h / ((w * H) / W));
+      if (Math.abs(k - seen.current) > 0.02) {
+        seen.current = k;
+        setRoom(k);
+      }
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [ref]);
+  return room;
+}
+
+/** a media query, live: the section's narrow layout is a CSS breakpoint, and
+ *  the stage geometry that layout implies has to follow the same line */
+export function useMediaQuery(query: string) {
+  const [on, setOn] = useState(
+    () => typeof window !== "undefined" && window.matchMedia(query).matches,
+  );
+  useLayoutEffect(() => {
+    const mq = window.matchMedia(query);
+    const sync = () => setOn(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, [query]);
+  return on;
+}
+
+/** Where the rail's instrument sits over the stage, in px: how far in from
+ *  the stage's left edge its right edge reaches, and how far up from the
+ *  stage's bottom its top does. Both zero while it is off (display: none)
+ *  or docked beside the stage rather than over it. Measured against the
+ *  stage's WRAPPER, which the chart-phase zoom transform never touches. */
+export function useChartOverlap(
+  stageRef: RefObject<SVGSVGElement | null>,
+  chartRef: RefObject<HTMLDivElement | null>,
+): [number, number] {
+  const [v, setV] = useState<[number, number]>([0, 0]);
+  const seen = useRef<[number, number]>([0, 0]);
+  useLayoutEffect(() => {
+    const stage = stageRef.current?.parentElement;
+    const chart = chartRef.current;
+    if (!stage || !chart) return;
+    const measure = () => {
+      const s = stage.getBoundingClientRect();
+      const c = chart.getBoundingClientRect();
+      const strip = c.width ? Math.max(0, c.right - s.left) : 0;
+      const overlap = c.width ? Math.max(0, s.bottom - c.top) : 0;
+      if (
+        Math.abs(strip - seen.current[0]) > 1 ||
+        Math.abs(overlap - seen.current[1]) > 1
+      ) {
+        seen.current = [strip, overlap];
+        setV([strip, overlap]);
+      }
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(stage);
+    ro.observe(chart);
+    return () => ro.disconnect();
+  }, [stageRef, chartRef]);
+  return v;
+}
+
 /** how small the smallest label on this shape's tree is actually rendering,
  *  and whether that is past the point where fitting the whole tree works */
 export function StageFit({
@@ -91,12 +176,21 @@ export function StageFit({
  *  walked route lit, and a frame showing what the stage is currently looking
  *  at. This is what makes zooming acceptable — the reader never loses the map
  *  of where they are in the diagnostic, which is the tree's other job. */
+/** a box in stage/tree coords → the minimap's own units (x, y, w, h),
+ *  clipped to the map — so the camera rides can draw what they see */
+export type MiniFrameMap = (
+  box: [number, number, number, number],
+) => [number, number, number, number];
+
 export function BranchMinimap({
   shape,
   route,
   frame,
   show,
   orientation = "vertical",
+  live = false,
+  liveFrameRef,
+  mapRef,
 }: {
   shape: WalkShape;
   /** the walked descent — its branch, and its leaf where there is one */
@@ -105,6 +199,12 @@ export function BranchMinimap({
   frame: [number, number, number, number] | null;
   show: boolean;
   orientation?: "vertical" | "sideways";
+  /** a camera ride is looking at the tree: the frame is then drawn by the
+   *  ride itself, every animation frame, through `liveFrameRef` and the
+   *  mapping handed back on `mapRef` */
+  live?: boolean;
+  liveFrameRef?: RefObject<SVGRectElement | null>;
+  mapRef?: RefObject<MiniFrameMap | null>;
 }) {
   const [bx0, bx1] = shapeBand(shape);
   const [by0, by1] = shapeExtent(shape);
@@ -141,6 +241,38 @@ export function BranchMinimap({
     });
     return { root, headByBranch, leafById };
   })();
+
+  /* stage → map. The vertical map is the tree to scale; the sideways one
+     is a schematic, so its map runs piecewise through the landmarks the
+     schematic keeps — root, head column, leaf column, and the row spread. */
+  const toMini: MiniFrameMap = (box) => {
+    let x0: number, y0: number, x1: number, y1: number;
+    if (orientation === "sideways") {
+      const g = sideGeometry(shape, forks2);
+      const headMx = forks2 ? 86 : 122;
+      const sx = (x: number) => {
+        const k1 = (headMx - sideMap.root[0]) / Math.max(1, g.headX - g.rootX);
+        const k2 = forks2
+          ? (146 - headMx) / Math.max(1, g.leafX - g.headX)
+          : k1;
+        return x <= g.headX
+          ? sideMap.root[0] + (x - g.rootX) * k1
+          : headMx + (x - g.headX) * k2;
+      };
+      const ky = g.half > 0 ? 34 / g.half : 0.1;
+      const sy = (y: number) => 48 + (y - g.cy) * ky;
+      [x0, y0, x1, y1] = [sx(box[0]), sy(box[1]), sx(box[2]), sy(box[3])];
+    } else {
+      [x0, y0, x1, y1] = [mx(box[0]), my(box[1]), mx(box[2]), my(box[3])];
+    }
+    const cx0 = Math.max(0, Math.min(S, x0));
+    const cy0 = Math.max(0, Math.min(96, y0));
+    const cx1 = Math.max(0, Math.min(S, x1));
+    const cy1 = Math.max(0, Math.min(96, y1));
+    return [cx0, cy0, Math.max(0, cx1 - cx0), Math.max(0, cy1 - cy0)];
+  };
+  if (mapRef) mapRef.current = toMini;
+  const frameBox = frame ? toMini(frame) : null;
 
   return (
     <div className={"nv-mini" + (show ? " show" : "")} aria-hidden={!show}>
@@ -266,16 +398,20 @@ export function BranchMinimap({
             stroke={TREE_SIDE_COLOR[route[0] as TreeSide] ?? "#1a2226"}
           />
         )}
-        {/* what the stage is looking at */}
-        {frame && (
+        {/* what the stage is looking at: the focus frame, or — on a ride —
+            whatever the camera shows, written by the ride each frame */}
+        {frameBox && (
           <rect
             className="nv-mini-frame"
-            x={mx(frame[0])}
-            y={my(frame[1])}
-            width={(frame[2] - frame[0]) * k}
-            height={(frame[3] - frame[1]) * k}
+            x={frameBox[0]}
+            y={frameBox[1]}
+            width={frameBox[2]}
+            height={frameBox[3]}
             rx={3}
           />
+        )}
+        {live && !frameBox && (
+          <rect ref={liveFrameRef} className="nv-mini-frame" rx={3} />
         )}
       </svg>
     </div>

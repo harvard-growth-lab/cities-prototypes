@@ -437,7 +437,7 @@
    they would split the free space between them and drift apart. */
 .jz-switches {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 6px 22px;
@@ -489,9 +489,11 @@
   color: var(--border-strong);
   cursor: default;
 }
+/* …but the one that IS on must still read as on: inert, not unselected */
 .jz-segbtn.on:disabled {
-  color: var(--ink-soft);
-  box-shadow: none;
+  color: var(--ink);
+  opacity: 0.72;
+  box-shadow: 0 1px 2px rgba(37, 88, 98, 0.12);
 }
 /* the hints came off the row — each pill still explains itself on hover
    (title=about), and the row stays one compact line beside the header */
@@ -722,39 +724,124 @@
   display: block;
 }
 
+/* ============ narrow stages (≤920px) ============
+   The sticky panel is exactly one viewport tall, and the tree is the thing
+   in it — so everything else is pressed to its minimum: a tighter head, the
+   rail dropped under the stage as one low band (caption left, instrument
+   right), and the band collapsing to the caption alone while there is no
+   instrument to read. Whatever the rail does not take, the stage gets. */
 @media (max-width: 920px) {
   .jz-sticky {
     height: calc(100dvh - 96px - var(--tool-top-rail-offset, 0px));
     min-height: 0;
-    padding-left: 20px;
-    padding-right: 20px;
-    padding-bottom: 18px;
+    padding: 10px 20px 10px;
   }
 
   .jz-head {
     flex-direction: column;
     align-items: stretch;
+    gap: 4px;
+    /* the chart-phase zoom is a transform on the stage svg, whose box then
+       reaches up under this row — the switches must stay on top of it */
+    position: relative;
+    z-index: 3;
+  }
+  .jz-titles .eyebrow {
+    margin-bottom: 0;
+  }
+  .jz-h2s h2 {
+    font-size: 20px;
+  }
+  /* the prototype's own controls shrink with the stage — they are settings,
+     not the thing being read. (Scoped under .jz-sticky: the base rules
+     are declared later in the file and would win on order.) */
+  .jz-sticky .jz-switches {
+    gap: 3px 10px;
+  }
+  .jz-sticky .jz-modes {
+    gap: 3px 6px;
+  }
+  .jz-sticky .jz-segbtn {
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 5px;
+  }
+  .jz-sticky .jz-seg {
+    padding: 1px;
+    border-radius: 7px;
+  }
+  .jz-sticky .jz-modes-k,
+  .jz-sticky .jz-opts-k {
+    font-size: 8px;
+    letter-spacing: 0.7px;
+  }
+  .jz-sticky .jz-opts-btn {
+    height: 19px;
+    padding: 0 6px;
+    gap: 5px;
+    border-radius: 6px;
+  }
+  .jz-sticky .jz-opts-now {
+    font-size: 9.5px;
+  }
+  .jz-sticky .jz-opts-btn svg {
+    width: 8px;
+    height: 5px;
+  }
+  /* the options panel hangs off the HEAD here, not the button: anchored to
+     the button it can run off the left edge of a narrow stage; the head's
+     right edge is always on screen */
+  .jz-sticky .jz-opts {
+    position: static;
+  }
+  .jz-sticky .jz-opts-panel {
+    top: calc(100% + 4px);
+    right: 0;
+    max-width: calc(100vw - 40px);
   }
 
   .jz-body {
     flex-direction: column;
-    gap: 14px;
+    gap: 8px;
     min-height: 0;
   }
 
   .jz-stagewrap {
     width: 100%;
-    min-height: 276px;
+    flex: 1 1 auto;
+    min-height: 200px;
     max-width: none;
+    max-height: none;
   }
 
+  /* The rail in flow is only the caption, one low band at the panel's foot
+     — so the stage above runs down to it. The instrument is taken out of
+     flow and laid over the stage's bottom-left corner, its bottom on the
+     caption's; the caption is indented past it while it is on. The stage
+     knows the instrument is there (ConstraintNarrative measures the
+     overlap) and frames the tree around it. */
+  .jz-body {
+    position: relative;
+    /* the instrument is anchored to the body's bottom; the caption ends at
+       its content box — no padding between, so the two bottoms agree */
+    padding-bottom: 0;
+  }
+  /* The caption band holds a FIXED minimum height rather than the caption's
+     own: the stage takes whatever is left, so a band that grew and shrank
+     with each beat's caption would resize the stage — and the stage's
+     viewBox with it — at every stop, which read as the whole tree jumping.
+     The minimum fits the longest caption on most stages; on the narrowest
+     one a caption that wraps past it pushes the band up instead of
+     scrolling inside it (a rare, one-beat shift beats a scrollbar). */
   .jz-rail {
+    --jz-band: clamp(140px, 25vh, 210px);
     width: 100%;
-    flex: 1 1 auto;
+    flex: 0 0 auto;
+    min-height: clamp(84px, 13vh, 100px);
     display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding-top: 2px;
+    flex-direction: row;
+    align-items: flex-end;
+    padding-top: 0;
     max-width: 100%;
     overflow: visible;
   }
@@ -762,11 +849,15 @@
   .jz-railtext {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 5px;
+    flex: 1 1 auto;
     min-width: 0;
-    width: 100%;
-    min-height: 0;
-    overflow: visible;
+    max-height: var(--jz-band);
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+  .jz-rail.with-inset .jz-railtext {
+    margin-left: calc(var(--jz-band) * var(--inset-ratio, 0.96) + 16px);
   }
 
   .jz-railtext > * {
@@ -774,16 +865,50 @@
     margin-bottom: 0;
   }
 
+  /* the chart box is the inset PANEL at the band's height (--inset-ratio
+     comes from the component, since the hero and standard panels differ);
+     the svg's viewBox also carries some breathing room under the panel,
+     so the svg runs taller than the box by that much (--inset-slack) and
+     the slack hangs below, empty — the panel's bottom is then the box's,
+     flush with the caption beside it. Before the inset is on the box is
+     gone altogether — that is the chart phase, where the pizza wants every
+     pixel of stage. */
   .jz-railchart {
-    width: 100%;
-    max-width: none;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    z-index: 2;
+    width: auto;
+    height: var(--jz-band);
+    max-width: 46%;
+    aspect-ratio: var(--inset-ratio, 0.96);
     margin: 0;
     overflow: visible;
+  }
+  .jz-railchart:not(.show) {
+    display: none;
+  }
+
+  .jz-railchart svg {
+    width: 100%;
+    height: calc(100% * var(--inset-slack, 1));
   }
 
   .jz-rail .jz-next,
   .jz-rail .jz-next.show {
     display: none;
+  }
+
+  /* the floating minimap shares the stage with the tree; at this width it
+     shrinks and moves to the top-left — the bottom-left is the instrument's,
+     and the framed tree sits right of both. (Scoped, because the base
+     .nv-mini rule is declared later in this file and would win on order.) */
+  .nv-scrolly .nv-mini {
+    width: 100px;
+    left: 8px;
+    top: 6px;
+    bottom: auto;
+    padding: 4px 3px 3px;
   }
 }
 
@@ -1087,6 +1212,9 @@
 .jz-opts {
   position: relative;
   flex-shrink: 0;
+  /* a flex box, so its height is the button's — a block here carries the
+     line box's descender room and sits the button high in the row */
+  display: flex;
 }
 .jz-opts-btn {
   display: inline-flex;
@@ -1557,6 +1685,99 @@ html[data-jz-instant="1"] .nv-svg {
 .ba-note {
   font-size: 13px;
   line-height: 20px;
+}
+/* the context card's header row: its kicker, and — on narrow screens only —
+   the pull-up toggle at the row's end */
+.ba-ctx-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.ba-ctx-toggle {
+  display: none;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--teal);
+  background: none;
+  border: 1px solid var(--border-strong);
+  border-radius: 7px;
+  padding: 3px 8px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* Narrow screens: the analysis reads in one column, and the context card —
+   400px of sticky sidebar on a wide screen — becomes a low pull-up pinned
+   to the bottom of the viewport: the trail and a toggle, with the schematic,
+   legend and evidence list folded away until asked for. */
+@media (max-width: 920px) {
+  .ba-body {
+    flex-direction: column;
+    gap: 16px;
+  }
+  /* folded: a thumbnail of the schematic at the left, the kicker and the
+     trail beside it — two short rows. Expanded: the wide card's full stack. */
+  .ba-context {
+    order: 1;
+    width: 100%;
+    flex: 0 0 auto;
+    align-self: stretch;
+    position: sticky;
+    top: auto;
+    bottom: 8px;
+    z-index: 4;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      "mini head"
+      "mini trail";
+    column-gap: 12px;
+    row-gap: 4px;
+    align-items: center;
+    padding: 8px 12px 8px;
+    box-shadow:
+      0 -4px 14px rgba(26, 34, 38, 0.08),
+      var(--shadow-sm);
+  }
+  .ba-ctx-toggle {
+    display: inline-flex;
+  }
+  .ba-context .ba-ctx-head {
+    grid-area: head;
+  }
+  .ba-context .ba-trail {
+    grid-area: trail;
+    flex-wrap: wrap;
+  }
+  .ba-context .ba-mini {
+    grid-area: mini;
+    width: 96px;
+    height: auto;
+  }
+  .ba-context .ba-legend,
+  .ba-context .ba-themelist,
+  .ba-context .ba-note {
+    display: none;
+  }
+  .ba-context.open {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .ba-context.open .ba-mini {
+    width: min(100%, 520px);
+    margin: 0 auto;
+  }
+  .ba-context.open .ba-legend {
+    display: flex;
+  }
+  .ba-context.open .ba-themelist,
+  .ba-context.open .ba-note {
+    display: block;
+  }
 }
 /* the quiet fork-in-the-road at the very end of the analysis — the shortened
    walk's only invitation to leave the diagnosed path */

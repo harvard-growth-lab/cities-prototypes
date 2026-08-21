@@ -66,8 +66,10 @@ const S_CY = 320;
 const S_ROOT = { x: 112, w: 178, h: 48 };
 const S_BUS1 = 232;
 const S_Q = { x: 560, w: 168, h: 62 };
-const S_BUS2 = 656;
-const S_LEAF = { x: 725, w: 128 };
+/* the second fork gets the reach the first has: question card → bus → leaf
+   spans about what root → bus → head does, so the two forks read alike */
+const S_BUS2 = 664;
+const S_LEAF = { x: 752, w: 128 };
 const S_SPACING: Record<number, number> = { 1: 0, 2: 270, 3: 215, 4: 155 };
 /* a leaf's vertical pitch, and its card heights plain vs wrapped */
 const S_LEAF_STEP = 74;
@@ -99,6 +101,21 @@ const sideHeads = (forks2: boolean) => ({
   HH: forks2 ? 44 : 60,
 });
 
+/** the sideways tree's landmarks in stage coords — its columns and the
+ *  spread of its rows — for anything that has to map the sideways stage
+ *  onto another drawing (the minimap's schematic, which is not to scale) */
+export const sideGeometry = (sh: WalkShape, forks2: boolean) => {
+  const n = sh.branches.length;
+  const spacing = S_SPACING[n] ?? 155;
+  return {
+    rootX: S_ROOT.x,
+    headX: sideHeads(forks2).HX,
+    leafX: S_LEAF.x,
+    cy: S_CY,
+    half: ((n - 1) / 2) * spacing,
+  };
+};
+
 /** the row and (where there is one) leaf-y the city's route runs through */
 const sideRouteYs = (
   sh: WalkShape,
@@ -124,7 +141,7 @@ const sideRouteYs = (
 };
 
 /** Where the walking dot RESTS at each sideways station — under the root,
- *  under the head (beside it in a one-fork shape, where the badge takes
+ *  under the head (right of it in a one-fork shape, where the badge takes
  *  the room below), under the question, beside the landing leaf. The
  *  drawing and the camera ride both read these, so they cannot disagree. */
 export const sideRests = (
@@ -137,9 +154,12 @@ export const sideRests = (
   const { HX, HW, HH } = sideHeads(forks2);
   return [
     [S_ROOT.x, S_CY + S_ROOT.h / 2 + 22],
-    forks2 ? [HX, ry + HH / 2 + 18] : [HX - HW / 2 - 18, ry],
+    /* one fork: the head IS the landing, so the dot parks past it on the
+       right, where a landing dot parks — the badge takes the room below */
+    forks2 ? [HX, ry + HH / 2 + 18] : [HX + HW / 2 + 26, ry],
     [S_Q.x, ry + S_Q.h / 2 + 16],
-    [S_LEAF.x + S_LEAF.w / 2 + 16, ly],
+    /* clear of the card's edge with the halo on: the dot is r7 in an r9 halo */
+    [S_LEAF.x + S_LEAF.w / 2 + 26, ly],
   ];
 };
 
@@ -180,10 +200,17 @@ export const sideBox = (
   const spread = forks2
     ? ((maxL - 1) / 2) * S_LEAF_STEP + S_LEAF_H2 / 2
     : HH / 2;
+  /* the landing's badge is centred under its leaf and wider than the leaf
+     card — the box reaches past the column to keep it in the frame (half of
+     the "where we think you are" pill, sized as badge() sizes it) */
+  const badgeHalf = (("where we think you are".length + 2) * 7.8 + 30) / 2;
   return [
     S_ROOT.x - S_ROOT.w / 2 - 14,
     S_CY - half - spread - 28,
-    (forks2 ? S_LEAF.x + S_LEAF.w / 2 : HX + HW / 2) + 14,
+    (forks2
+      ? S_LEAF.x + Math.max(S_LEAF.w / 2, badgeHalf)
+      : /* the one-fork landing dot parks right of the head */
+        HX + HW / 2 + 36) + 14,
     S_CY + half + spread + 64,
   ];
 };
@@ -253,7 +280,9 @@ export function SidewaysTree(p: WalkViewProps) {
     drop = 0,
   ) => {
     const w = (label.length + 2) * 7.8 + 30;
-    const cx = Math.max(w / 2 + 20, Math.min(at[0], 775 - w / 2));
+    /* centred on what it points at; clamped only at the stage's own edges
+       (sideBox leaves room for it at the leaf column) */
+    const cx = Math.max(w / 2 + 20, Math.min(at[0], 1156 - w / 2));
     const y = at[1] + (p.forks2 ? S_LEAF_H2 / 2 : HH / 2) + 24 + drop;
     return (
       <g className="jz-youare">
@@ -510,6 +539,18 @@ export function SidewaysTree(p: WalkViewProps) {
           const picked = p.leafPickable && l.id === p.selLeaf;
           return (
             <g key={`slf-${l.id}`} className={on(gates.leaf) + st.g}>
+              {/* the answer that reaches this leaf rides above its card: the
+                  run in from the bus is too short to carry it, and beside
+                  the card is the traveller's */}
+              <text
+                className="nv-elab"
+                x={S_LEAF.x}
+                y={y - lh / 2 - 7}
+                textAnchor="middle"
+                fill={TREE_SIDE_COLOR[b.id]}
+              >
+                {l.edge}
+              </text>
               <g
                 className={
                   "nv-card nv-leaf" +

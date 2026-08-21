@@ -410,6 +410,10 @@ export function BranchAnalysisPage({
     return () => io.disconnect();
   }, [routeHeld]);
 
+  /* narrow screens fold the context card down to its trail; this opens it.
+     Wide screens ignore it — the toggle is not even drawn there. */
+  const [ctxOpen, setCtxOpen] = useState(false);
+
   return (
     <section className="page" id="page-branch-analysis">
       <div className="page-head">
@@ -445,12 +449,22 @@ export function BranchAnalysisPage({
           </div>
         )}
 
-        <aside className="ba-context">
-          <span className="ba-kicker">
-            {previewing
-              ? "Previewing another path"
-              : "Where you are in the diagnostic"}
-          </span>
+        <aside className={"ba-context" + (ctxOpen ? " open" : "")}>
+          <div className="ba-ctx-head">
+            <span className="ba-kicker">
+              {previewing
+                ? "Previewing another path"
+                : "Where you are in the diagnostic"}
+            </span>
+            <button
+              type="button"
+              className="ba-ctx-toggle"
+              aria-expanded={ctxOpen}
+              onClick={() => setCtxOpen((v) => !v)}
+            >
+              {ctxOpen ? "Collapse" : "Expand"}
+            </button>
+          </div>
           <DiagSchematic
             path={branchPath}
             suggPath={suggPath}

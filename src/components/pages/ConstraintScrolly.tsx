@@ -955,9 +955,15 @@ export function ConstraintScrolly({
       .attr("stroke-dashoffset", null);
   };
 
+  /* The tree is a read-only statement of the route in this flow too, as in
+     the walks: no hover lighting of other routes, no picking another path
+     from the diagram — the analysis section's schematic is where the pick
+     happens. Kept as one switch, since the hover, the tip, the click and
+     the theme chips all have to agree. */
+  const TREE_PICKABLE = false;
   const hoverRef = useRef<(id: string | null) => void>(() => {});
   hoverRef.current = (id) => {
-    if (stepRef.current < 3) return;
+    if (!TREE_PICKABLE || stepRef.current < 3) return;
     setHover(id);
   };
 
@@ -968,7 +974,7 @@ export function ConstraintScrolly({
   >(() => {});
   applyThemeRef.current = (t) => {
     const sc = scene.current;
-    if (!sc || stepRef.current < 3) return;
+    if (!sc || !TREE_PICKABLE || stepRef.current < 3) return;
     if (!t) {
       sc.chips.classed("hovered", false);
       applyHoverRef.current(hoverIdRef.current);
@@ -1040,7 +1046,7 @@ export function ConstraintScrolly({
   selectedRef.current = selectedPath;
   const clickRef = useRef<(id: string) => void>(() => {});
   clickRef.current = (id) => {
-    if (stepRef.current < 4) return;
+    if (!TREE_PICKABLE || stepRef.current < 4) return;
     const n = byId.get(id);
     if (!n || n.depth === 0 || n.children?.length) return;
     onSelectPath(
@@ -2038,6 +2044,7 @@ export function ConstraintScrolly({
          nothing, and its badge marks it anyway. No tip before the path phase
          either: selection is locked until the default path has been shown */
       const show =
+        TREE_PICKABLE &&
         !!n &&
         stepRef.current >= 4 &&
         !!n.parent &&

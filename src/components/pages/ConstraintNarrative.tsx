@@ -1,5 +1,6 @@
 import {
   Fragment,
+  type CSSProperties,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -21,7 +22,16 @@ import {
   type ConstraintFlow,
   type TreeVariant,
 } from "../../data/figures";
-import { BranchMinimap, LEGIBLE_PX, StageFit, useStageScale } from "./walkFit";
+import {
+  BranchMinimap,
+  LEGIBLE_PX,
+  StageFit,
+  type MiniFrameMap,
+  useChartOverlap,
+  useMediaQuery,
+  useStageHeadroom,
+  useStageScale,
+} from "./walkFit";
 import {
   SidewaysTree,
   sideBox,
@@ -92,13 +102,14 @@ import { branchSectionName } from "../../data/content";
 
      0  dial one: people        the x axis draws; the dot sits on it
      1  dial two: pay           the plane completes; the dot lifts to its spot
-     2  the benchmark           the median crosshair + the grey field around it
-     3  reading the plane       the regions the shape cuts it into; yours marked
-     4  the tree begins         the chart parks; the dot carries to the root
-     5  fork one                the dot drops to its side, on its own numbers
-     6  fork two + instrument   the side's question, read on its own chart
-     7  the landing             the dot reaches its leaf — where we think you are
-     8  four leaves, four cities  the other samples land; click to re-pick
+     2  the metro               the city's MSA joins it, a hollow dot beside
+     3  the benchmark           the median crosshair + the grey field around it
+     4  reading the plane       the regions the shape cuts it into; yours marked
+     5  the tree begins         the chart parks; the dot carries to the root
+     6  fork one                the dot drops to its side, on its own numbers
+     7  fork two + instrument   the side's question, read on its own chart
+     8  the landing             the dot reaches its leaf — where we think you are
+     9  four leaves, four cities  the other samples land; click to re-pick
 
    Every number on the walk is real (metros.ts / diagnose()); a city without
    data walks the fallback read behind bracketed placeholders. The tree is
@@ -115,26 +126,33 @@ const cxu = (v: number) => CQ.cx + v * CQ.r;
 const cyu = (v: number) => CQ.cy - v * CQ.r;
 
 /* ---------- the step schedule ----------
-   Both guided flows are cut from the same nine BEATS, and every gate in the
+   Both guided flows are cut from the same ten BEATS, and every gate in the
    render below is keyed on the beat rather than on the scroll stop. What a
    flow chooses is which beats get a stop: a stop landing on a later beat
    reveals the skipped ones with it, and the traveller covers the extra
    stations in one move — a shorter walk loses scrolling, not animation. */
-/* The tree half's beats are named, since the schedules below are written in
-   them; the chart half's four (dial, dial, benchmark, quadrant) stay numeric
-   — no schedule touches them. */
+/* The chart half's beats: the two dials are 0 and 1; after them the metro
+   joins the plane, then the benchmark, then the plane's reading. The tree
+   half's beats follow, named as well since the schedules below are written
+   in them. */
+/** the city's MSA joins the plane beside the city's own dot */
+const MSA_BEAT = 2;
+/** the benchmark: the median crosshair and the grey field */
+const BENCH_BEAT = 3;
+/** reading the plane: the regions the shape cuts it into, yours marked */
+const PLANE_BEAT = 4;
 /** the tree opens: the chart parks into the inset, the root card arrives */
-const TREE_BEAT = 4;
+const TREE_BEAT = 5;
 /** fork one is answered: the branch heads and the edges down to them */
-const FORK1_BEAT = 5;
+const FORK1_BEAT = 6;
 /** fork two is asked: the question cards, and the inset swaps instrument */
-const FORK2_BEAT = 6;
+const FORK2_BEAT = 7;
 /** the leaves arrive and the traveller lands on the diagnosed one */
-const LEAF_BEAT = 7;
+const LEAF_BEAT = 8;
 /** the four diagnoses — the only beat that hands the pick to the reader */
-const CHOICE_BEAT = 8;
+const CHOICE_BEAT = 9;
 
-const FULL_BEATS = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+const FULL_BEATS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 /* "short" is a different telling, not just fewer stops: the chart never runs
    full-stage. Three stops, all of them tree beats — the whole tree up front
    with the city's dot at the root, the pizza chart arriving beside it to
@@ -162,12 +180,12 @@ const trackVh = (stops: number) => stops * STEP_VH + 100;
    scale that keeps the badge row on it. */
 const TREE_OPENING_POSE = "translate(91px, -47px) scale(1.3)";
 const TREE_HOME_POSE = "translate(0px, 0px) scale(1)";
-/* the full walk's tree phase rides slightly enlarged too (user-set: at 1.0
-   the tree read as too small beside the inset) — 1.06 is the most the
-   narrowed inset allows, and it only applies from TREE_BEAT: during the
-   chart beats the traveller dot inside this wrap is positioned in
+/* the full walk's tree phase is not a fixed pose: the whole tree is FITTED
+   to the room the stage gives it (see `wholeFit` below), so it fills a
+   narrow stage's width and sits centred on a wide one instead of leaving
+   the stage's right quarter empty. It only applies from TREE_BEAT: during
+   the chart beats the traveller dot inside this wrap is positioned in
    full-stage chart coordinates, which must not be scaled. */
-const TREE_GROWN_POSE = "translate(-8px, -16px) scale(1.2)";
 /* the shortened walk's instrument stops give the INSTRUMENT the stage: the
    tree eases down toward context size on the left while the hero panel
    takes the right. 0.94 is the largest scale that keeps the badge row clear
@@ -502,9 +520,26 @@ export function ConstraintNarrative({
      sleeps; a resize that squeezes it under swaps the remembered answer in,
      and a resize back out swaps it away again. Local to the section —
      nothing downstream reads it. */
-  const [smallFit, setSmallFit] = useState<FitMode>("focus");
+  /* the remembered small-stage answer — always one the switch OFFERS, so the
+     switch can never show an empty selection (FIT_MODES is the menu; a mode
+     the type knows but the menu does not must not be the default) */
+  const [smallFit, setSmallFit] = useState<FitMode>(FIT_MODES[1].id);
   const svgRef = useRef<SVGSVGElement>(null);
   const stageScale = useStageScale(svgRef);
+  const stageHeadroom = useStageHeadroom(svgRef);
+  /* the narrow layout (≤920px) lays the instrument OVER the stage's bottom-
+     left corner instead of beside it, so the stage can run down to the
+     caption — and opens the viewBox to the height that buys (see `dy`) */
+  const narrow = useMediaQuery("(max-width: 920px)");
+  const railChartRef = useRef<HTMLDivElement>(null);
+  const [chartStripPx, chartOverlapPx] = useChartOverlap(svgRef, railChartRef);
+  /* a small-stage answer picked on a narrow window is for that window:
+     widening back out returns the stage to the whole tree */
+  const wasNarrow = useRef(narrow);
+  useEffect(() => {
+    if (wasNarrow.current && !narrow) setSmallFit("fit");
+    wasNarrow.current = narrow;
+  }, [narrow]);
   const short = flow === "short";
   /* the tree this walk tells: its branches, its cards and where they sit.
      Everything below reads the tree from here rather than from constants, so
@@ -526,7 +561,11 @@ export function ConstraintNarrative({
      read to use the tree) at the scale the stage is actually drawing */
   const smallestCard = Math.min(sh.leafSize || 99, sh.headSize ?? 17.5);
   const tight = smallestCard * stageScale < LEGIBLE_PX;
-  const fit: FitMode = tight ? smallFit : "fit";
+  const fit: FitMode = tight
+    ? FIT_MODES.some((m) => m.id === smallFit)
+      ? smallFit
+      : FIT_MODES[1].id
+    : "fit";
   const focusMode = fit === "focus";
   const sideMode = fit === "side";
   const rideMode = fit === "ride";
@@ -554,7 +593,7 @@ export function ConstraintNarrative({
   /* the stop where the rail's second step ("How we diagnose") takes over:
      the guided walk flips when its four chart stops end; the shortened walk
      opens on the whole tree, so everything past that pose is diagnosis */
-  const diagStop = short ? 1 : 4;
+  const diagStop = short ? 1 : TREE_BEAT;
 
   /* ---------- scroll → step (same mechanism as the compact flow) ---------- */
   useEffect(() => {
@@ -666,12 +705,62 @@ export function ConstraintNarrative({
      left of it once an instrument is up. Smaller screens get a more
      aggressive zoom cap so the framed tree stays readable instead of
      squashing to a tiny footprint. */
-  const focusInto = useMemo((): [number, number, number, number] => {
-    return [24, 18, W - 24, H - 18];
-  }, []);
+  /* The viewBox grows past its authored 640 to the stage's own aspect,
+     symmetrically (dy above and below), so a stage taller than the tree is
+     wide stops letterboxing: the whole-tree fit and a framed branch can use
+     the height. On a narrow stage the instrument then sits over the stage's
+     bottom-left corner, so a frame has two rooms to choose from — the full
+     width above the instrument, or the full height right of it — and takes
+     whichever shows its box larger: wide boxes (the whole tree) the first,
+     tall ones (a branch) the second. On a wide stage both are the whole
+     room. */
+  const dy = (H * (stageHeadroom - 1)) / 2;
+  const intoFor = useCallback(
+    (
+      box: [number, number, number, number],
+    ): [number, number, number, number] => {
+      const k = stageScale || 1;
+      const above: [number, number, number, number] = [
+        24,
+        18 - dy,
+        W - 24,
+        H - 18 + dy - (narrow ? chartOverlapPx / k : 0),
+      ];
+      const beside: [number, number, number, number] = [
+        24 + (narrow ? (chartStripPx + 16) / k : 0),
+        18 - dy,
+        W - 24,
+        H - 18 + dy,
+      ];
+      return fitScale(box, above, 99) >= fitScale(box, beside, 99)
+        ? above
+        : beside;
+    },
+    [narrow, dy, stageScale, chartOverlapPx, chartStripPx],
+  );
+  /* the ride's room: it frames the whole tree at its full stops and centres
+     its zoomed ones, so it reads the room the whole tree would get */
+  const focusInto = useMemo(() => intoFor(wholeBox(sh)), [intoFor, sh]);
+  /* the "fit whole" pose: the whole tree fitted to its room, capped so a
+     very wide stage does not blow it up past reading size */
+  const wholeFit = useMemo(
+    () => fitTransform(wholeBox(sh), focusInto, 1.5),
+    [sh, focusInto],
+  );
+  /* the static poses centre the tree in the authored 640; in the opened
+     viewBox "centred" puts its foot over the instrument's corner, so they
+     are lifted by dy, back to the top of the stage */
+  const lift = dy ? `translate(0px, ${-dy.toFixed(1)}px) ` : "";
+  /* the chart-phase zoom is a transform on the whole svg, so it can only
+     spend the stage's own vertical headroom — past that it overlaps the head
+     and the rail (the narrow layouts are height-bound, with none) */
   const chartScale =
     step < TREE_BEAT
-      ? Math.min(1.24, 1 + Math.max(0, 1 - stageScale) * 0.4)
+      ? Math.min(
+          1.24,
+          1 + Math.max(0, 1 - stageScale) * 0.4,
+          stageHeadroom,
+        )
       : 1;
   const treeZoomCap = Math.min(4.8, 2.4 + Math.max(0, 1 - stageScale) * 2.2);
 
@@ -853,6 +942,12 @@ export function ConstraintNarrative({
   const focusRef = useRef<SVGGElement>(null);
   const sideFocusRef = useRef<SVGGElement>(null);
   const sideDotRef = useRef<SVGGElement>(null);
+  /* the minimap's frame while a ride is on: the ride draws what its camera
+     sees, every animation frame, through these */
+  const miniRectRef = useRef<SVGRectElement>(null);
+  const miniMapRef = useRef<MiniFrameMap | null>(null);
+  const dyRef = useRef(dy);
+  dyRef.current = dy;
   const posRef = useRef<[number, number] | null>(null);
   const arcRef = useRef<number | null>(null);
   const rafRef = useRef(0);
@@ -1016,6 +1111,11 @@ export function ConstraintNarrative({
       const fcxT = (ix0 + ix1) / 2;
       const fcyT = (iy0 + iy1) / 2;
       const kFit = fitScale(wb, focusIntoRef.current, 2.4);
+      /* a one-fork tree has two rests, not four: the stops past its head
+         all park the dot beside the head (the sideways drawing clamps the
+         same way), never at the question or leaf columns it does not have */
+      const lastRest = forks2 ? 3 : 1;
+      const restAt = (i: number) => rests[Math.min(i, lastRest)];
       if (!st.init) {
         st.init = true;
         st.a = arcT;
@@ -1023,7 +1123,7 @@ export function ConstraintNarrative({
         st.cx = sx;
         st.cy = sy;
         st.k = wholeStop ? kFit : STOP_ZOOM[sIdx];
-        [st.dx, st.dy] = rests[Math.min(sIdx, rests.length - 1)];
+        [st.dx, st.dy] = restAt(sIdx);
         st.fx = fcxT;
         st.fy = fcyT;
       }
@@ -1037,8 +1137,42 @@ export function ConstraintNarrative({
         Math.abs(arcT - st.a) < 130 ? sIdx : Math.min(arrivedRef.current, sIdx),
       );
       const [px, py] = route.at(st.a);
-      const cx = wholeStop ? wcx : px;
-      const cy = wholeStop ? wcy : py;
+      /* The dot. The sideways rests live BELOW the cards, off the route
+         that runs along the card centreline, so the sideways dot does not
+         ride the route — it runs straight between the rests of whichever
+         leg the arc is on (the pair of stations the arc lies between, read
+         off the arc itself so a ride back down a leg retraces it at the
+         camera's pace instead of jumping to the near rest). */
+      const remain = Math.abs(arcT - st.a);
+      const arrived = remain < 14;
+      let leg = 0;
+      while (leg < lastRest && st.a > stationArcs[leg + 1]) leg++;
+      const legA = stationArcs[leg];
+      const legB = stationArcs[Math.min(leg + 1, lastRest)];
+      const legProgress =
+        legB > legA
+          ? Math.max(0, Math.min(1, (st.a - legA) / (legB - legA)))
+          : 1;
+      const [rx1, ry1] = restAt(leg);
+      const [rx2, ry2] = restAt(leg + 1);
+      const [rxS, ryS] = restAt(sIdx);
+      const dxT = sideRideMode
+        ? rx1 + (rx2 - rx1) * legProgress
+        : arrived
+          ? rxS
+          : px;
+      const dyT = sideRideMode
+        ? ry1 + (ry2 - ry1) * legProgress
+        : arrived
+          ? ryS
+          : py;
+      /* The camera. Along the vertical tree it rides the route itself. The
+         sideways route's elbows would swing it up to the centreline and back
+         down on every leg — a visible lurch on the first fork, whose leg
+         runs a whole row's height — so sideways it tracks the dot's own
+         straight run instead, biased a little toward the cards above. */
+      const cx = wholeStop ? wcx : sideRideMode ? (dxT + px) / 2 : px;
+      const cy = wholeStop ? wcy : sideRideMode ? dyT - 24 : py;
       const k = wholeStop ? kFit : STOP_ZOOM[sIdx];
       const f = 1 - Math.exp(-dt * 9);
       st.cx += (cx - st.cx) * f;
@@ -1051,30 +1185,25 @@ export function ConstraintNarrative({
         st.fy -
         st.k * st.cy
       ).toFixed(2)}px) scale(${st.k.toFixed(4)})`;
-      /* the sideways camera rides along the card centreline, but its parked
-         dot rests live BELOW the cards. Driving the sideways dot from the
-         camera route makes each leg rise to the centreline and then drop back
-         under the next card. So in sideways mode the camera still follows the
-         route, while the dot itself interpolates directly between the station
-         rests. */
-      const remain = Math.abs(arcT - st.a);
-      const arrived = remain < 14;
-      const prevIdx = Math.max(0, sIdx - 1);
-      const prevArc = stationArcs[Math.min(prevIdx, stationArcs.length - 1)];
-      const legSpan = Math.max(1, arcT - prevArc);
-      const legProgress = Math.max(0, Math.min(1, (st.a - prevArc) / legSpan));
-      const [rx1, ry1] = rests[Math.min(prevIdx, rests.length - 1)];
-      const [rx2, ry2] = rests[Math.min(sIdx, rests.length - 1)];
-      const dxT = sideRideMode
-        ? rx1 + (rx2 - rx1) * legProgress
-        : arrived
-          ? rx2
-          : px;
-      const dyT = sideRideMode
-        ? ry1 + (ry2 - ry1) * legProgress
-        : arrived
-          ? ry2
-          : py;
+      /* the minimap's frame: the stage's viewBox pulled back through the
+         camera into tree coords, then onto the map */
+      const miniRect = miniRectRef.current;
+      const miniMap = miniMapRef.current;
+      if (miniRect && miniMap) {
+        const tx = st.fx - st.k * st.cx;
+        const ty = st.fy - st.k * st.cy;
+        const vdy = dyRef.current;
+        const [mx0, my0, mw, mh] = miniMap([
+          (0 - tx) / st.k,
+          (-vdy - ty) / st.k,
+          (W - tx) / st.k,
+          (H + vdy - ty) / st.k,
+        ]);
+        miniRect.setAttribute("x", mx0.toFixed(1));
+        miniRect.setAttribute("y", my0.toFixed(1));
+        miniRect.setAttribute("width", mw.toFixed(1));
+        miniRect.setAttribute("height", mh.toFixed(1));
+      }
       const fd = 1 - Math.exp(-dt * 11);
       st.dx += (dxT - st.dx) * fd;
       st.dy += (dyT - st.dy) * fd;
@@ -1229,6 +1358,12 @@ export function ConstraintNarrative({
       body: place
         ? `Wages: ${pc(place.wage)}. Two dials place ${cityShort} on the plane.`
         : `Wages, the second dial. [sample spot]`,
+    },
+    {
+      kicker: "The metro around it",
+      body: msa
+        ? `The wider metro — the ${cityShort} MSA — joins the plane: ${pc(msa.pop)} · ${pc(msa.wage)}.`
+        : `The wider metro would join the plane here. [no ${cityShort} metro data yet]`,
     },
     {
       kicker: "The benchmark",
@@ -1487,7 +1622,7 @@ export function ConstraintNarrative({
                   ? " nv-hidedot"
                   : "")
               }
-              viewBox={`0 0 ${W} ${H}`}
+              viewBox={`0 ${-dy} ${W} ${H + 2 * dy}`}
               role="img"
               aria-label={`${cityShort} walks the diagnostic tree: two dials place it on the pizza chart, and each fork is answered with its own numbers until it lands on a diagnosis`}
               style={{
@@ -1514,8 +1649,8 @@ export function ConstraintNarrative({
                     key={`quad-${i}`}
                     className={
                       "nv-quad" +
-                      (step >= 3 ? " on" : "") +
-                      (step >= 3 && sec === placeSector ? " sel" : "")
+                      (step >= PLANE_BEAT ? " on" : "") +
+                      (step >= PLANE_BEAT && sec === placeSector ? " sel" : "")
                     }
                     points={sectorPoly(sec)
                       .map(([px, py]) => `${cxu(px)},${cyu(py)}`)
@@ -1531,7 +1666,7 @@ export function ConstraintNarrative({
                   return (
                     <line
                       key={`cut-${deg}`}
-                      className={"nv-cut" + (step >= 3 ? " on" : "")}
+                      className={"nv-cut" + (step >= PLANE_BEAT ? " on" : "")}
                       x1={cxu(0)}
                       y1={cyu(0)}
                       x2={cxu(rx)}
@@ -1546,7 +1681,7 @@ export function ConstraintNarrative({
                   sh.plane.map((sec, i) => (
                     <polyline
                       key={`rim-${i}`}
-                      className={"nv-rim" + (step >= 3 ? " on" : "")}
+                      className={"nv-rim" + (step >= PLANE_BEAT ? " on" : "")}
                       points={sectorRim(sec)
                         .map(([px, py]) => `${cxu(px)},${cyu(py)}`)
                         .join(" ")}
@@ -1633,7 +1768,7 @@ export function ConstraintNarrative({
                   </text>
                 </g>
                 {/* the backdrop field + nameplate, from the benchmark on */}
-                <g className={on(step >= 2)} opacity={0.55}>
+                <g className={on(step >= BENCH_BEAT)} opacity={0.55}>
                   {METROS.map((m, i) => {
                     const [ux, uy] = metroUnit(m);
                     return (
@@ -1648,14 +1783,69 @@ export function ConstraintNarrative({
                   })}
                 </g>
                 <text
-                  className={"nv-captitle " + on(step >= 2)}
+                  className={"nv-captitle " + on(step >= BENCH_BEAT)}
                   x={cxu(-1)}
                   y={cyu(1) - 26}
                 >
                   {`${cityShort.toUpperCase()} AGAINST ${METROS.length} US METROS · ${DATA_WINDOW_LABEL}`}
                 </text>
+                {/* the wider metro: the city's MSA joins the plane — hollow,
+                    so the city's own dot (the traveller) stays the
+                    protagonist; its label takes whichever side has room */}
+                <g className={on(step >= MSA_BEAT)}>
+                  {msa ? (
+                    (() => {
+                      const [mux, muy] = metroUnit(msa);
+                      const left = mux > 0.55;
+                      const lx = cxu(mux) + (left ? -12 : 12);
+                      return (
+                        <g>
+                          <circle
+                            cx={cxu(mux)}
+                            cy={cyu(muy)}
+                            r={7}
+                            fill="#fff"
+                            stroke="var(--ink)"
+                            strokeWidth={2}
+                          />
+                          <text
+                            className="nv-lab"
+                            x={lx}
+                            y={cyu(muy) - 5}
+                            textAnchor={left ? "end" : "start"}
+                            fontSize={13.5}
+                            fontWeight={700}
+                            fill="var(--ink)"
+                          >
+                            {`${cityShort} MSA`}
+                          </text>
+                          {metroStatsRows(msa).map((row, i) => (
+                            <text
+                              key={row}
+                              className="nv-ph"
+                              x={lx}
+                              y={cyu(muy) + 10 + i * 13}
+                              textAnchor={left ? "end" : "start"}
+                            >
+                              {row}
+                            </text>
+                          ))}
+                        </g>
+                      );
+                    })()
+                  ) : (
+                    <text
+                      className="nv-ph"
+                      x={cxu(0.55)}
+                      y={cyu(-0.82)}
+                      textAnchor="middle"
+                    >
+                      {`[no ${cityShort} metro data yet — its MSA would join here]`}
+                    </text>
+                  )}
+                </g>
                 {/* the benchmark: the median crosshair, named in place */}
-                <g className={on(step >= 2)}>
+                <g className={on(step >= BENCH_BEAT)}>
                   <line
                     className="jz-ms-median"
                     x1={cxu(0)}
@@ -1699,7 +1889,7 @@ export function ConstraintNarrative({
                   const ya =
                     ay > 0 ? cyu(ay) + 26 : ay < 0 ? cyu(ay) - 36 : cyu(0) - 7;
                   return (
-                    <g key={`lab-${i}`} className={on(step >= 3)}>
+                    <g key={`lab-${i}`} className={on(step >= PLANE_BEAT)}>
                       <text
                         className="nv-lab"
                         x={xa}
@@ -1738,9 +1928,9 @@ export function ConstraintNarrative({
                       : short
                         ? stepIdx === 0
                           ? TREE_OPENING_POSE
-                          : TREE_ASIDE_POSE
+                          : lift + TREE_ASIDE_POSE
                         : step >= TREE_BEAT
-                          ? TREE_GROWN_POSE
+                          ? wholeFit
                           : TREE_HOME_POSE,
                   transition: "transform 0.9s cubic-bezier(0.4, 0, 0.2, 1)",
                 }}
@@ -1757,7 +1947,7 @@ export function ConstraintNarrative({
                     transform: rideMode
                       ? undefined
                       : focusMode && step >= TREE_BEAT
-                        ? fitTransform(frame, focusInto, treeZoomCap)
+                        ? fitTransform(frame, intoFor(frame), treeZoomCap)
                         : "none",
                   }}
                 >
@@ -2195,7 +2385,7 @@ export function ConstraintNarrative({
                       sideMode && (short || step >= TREE_BEAT)
                         ? fitTransform(
                             sideBox(sh, forks2),
-                            focusInto,
+                            intoFor(sideBox(sh, forks2)),
                             treeZoomCap,
                           )
                         : undefined,
@@ -2602,6 +2792,9 @@ export function ConstraintNarrative({
               frame={focusMode && showTreeSchematic ? frame : null}
               show={showTreeSchematic}
               orientation={sideLayout ? "sideways" : "vertical"}
+              live={rideOn}
+              liveFrameRef={miniRectRef}
+              mapRef={miniMapRef}
             />
             {!sideLayout && !rideMode && (
               <StageFit
@@ -2610,13 +2803,30 @@ export function ConstraintNarrative({
                 /* the escape is offered only while the reader HOLDS the
                    whole-tree fit against the squeeze — in any other mode a
                    small-stage answer is already on stage */
-                onPick={fit === "fit" ? () => setSmallFit("focus") : undefined}
+                onPick={
+                  fit === "fit" ? () => setSmallFit(FIT_MODES[1].id) : undefined
+                }
               />
             )}
           </div>
 
-          <aside className="jz-rail">
+          <aside
+            className={"jz-rail" + (insetShown ? " with-inset" : "")}
+            /* the narrow layout sizes the chart box by height, to the
+               PANEL's proportions (they differ between the hero and the
+               standard one) — and indents the caption past it, so both
+               children read these. The viewBox's breathing room under the
+               panel is hung below the box, so the panel's bottom edge is
+               the box's. */
+            style={
+              {
+                "--inset-ratio": inset.w / inset.h,
+                "--inset-slack": (inset.h + insetExtra) / inset.h,
+              } as CSSProperties
+            }
+          >
             <div
+              ref={railChartRef}
               className={"jz-railchart" + (insetShown ? " show" : "")}
               aria-hidden={!insetShown}
             >

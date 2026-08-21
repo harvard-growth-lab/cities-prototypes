@@ -109,6 +109,84 @@
   display: flex;
   min-height: 0;
 }
+/* the pages scroll one way only: a stage transform or a wide card must
+   never hand the reader a horizontal scrollbar */
+.tool-body .pages {
+  overflow-x: hidden;
+}
+#tool {
+  overflow-x: hidden;
+}
+
+/* The toolbar is one fixed-height row and must never be the reason the page
+   scrolls sideways: its pieces give up width in steps as the window
+   narrows — tighter gaps and selects first, then the placeholder links,
+   then the journey button's label (its icon stays). */
+@media (max-width: 1180px) {
+  .toolbar {
+    gap: 10px;
+    padding: 0 20px;
+  }
+  .logo-btn {
+    width: 130px;
+    flex-basis: 130px;
+  }
+  #citySelectTool {
+    width: 220px;
+  }
+  #spanSelectTool {
+    width: 120px;
+  }
+  .toolbar-links {
+    gap: 14px;
+    margin-right: 4px;
+  }
+  .datachat-btn,
+  .explainers-btn {
+    padding: 8px 8px;
+    margin-right: 0;
+  }
+  .btn-journey {
+    padding: 0 12px;
+    font-size: 13px;
+  }
+}
+@media (max-width: 1000px) {
+  .toolbar-links {
+    display: none;
+  }
+  .logo-btn {
+    width: 110px;
+    flex-basis: 110px;
+  }
+  #citySelectTool {
+    width: 190px;
+  }
+}
+@media (max-width: 880px) {
+  .btn-journey {
+    font-size: 0;
+    gap: 0;
+    padding: 0 11px;
+  }
+  .datachat-btn,
+  .explainers-btn {
+    font-size: 13px;
+    padding: 6px 6px;
+  }
+}
+@media (max-width: 760px) {
+  .logo-btn {
+    width: 90px;
+    flex-basis: 90px;
+  }
+  #citySelectTool {
+    width: 150px;
+  }
+  #spanSelectTool {
+    width: 100px;
+  }
+}
 
 @media (max-width: 820px) {
   .tool-body {
@@ -117,25 +195,45 @@
     min-height: 0;
   }
 
+  /* the rail as a top bar: one low strip of section names, so the stage
+     below keeps the height — the sticky panel's --tool-top-rail-offset
+     must match what this adds up to */
   .tool-body .rail {
     width: 100%;
     flex: 0 0 auto;
     border-right: none;
     border-bottom: 1px solid var(--border);
-    padding: 12px 14px 10px;
+    padding: 5px 12px 4px;
     overflow-x: auto;
     overflow-y: hidden;
     white-space: nowrap;
+    scrollbar-width: none;
+  }
+  .tool-body .rail::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tool-body .rail .rail-label {
+    display: none;
   }
 
   .tool-body .rail .sec {
     display: inline-flex;
-    margin: 0 14px 0 0;
+    margin: 0 10px 0 0;
     vertical-align: top;
   }
 
   .tool-body .rail .sec-head {
     white-space: nowrap;
+    font-size: 12px;
+    gap: 6px;
+  }
+  .tool-body .rail .sec-head .num {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 18px;
+    font-size: 10px;
+    border-width: 1.2px;
   }
 
   .tool-body .rail .steps {
@@ -143,7 +241,7 @@
   }
 
   .tool-body .pages {
-    --tool-top-rail-offset: 40px;
+    --tool-top-rail-offset: 28px;
     overflow-x: hidden;
     flex: 1 1 auto;
   }
