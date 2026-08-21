@@ -11,11 +11,11 @@
 .jz-sticky {
   position: sticky;
   top: 0;
-  height: calc(100vh - 72px);
+  height: calc(100dvh - 96px - var(--tool-top-rail-offset, 0px));
   display: flex;
   flex-direction: column;
   min-height: 0;
-  padding: 16px 40px 14px 44px;
+  padding: 16px 40px 8px 44px;
   background: #fff;
 }
 /* invisible anchors: click targets for the rail's two steps (the scroll-spy
@@ -69,6 +69,7 @@
   min-height: 0;
   display: flex;
   gap: 20px;
+  padding-bottom: 2px;
 }
 .jz-stagewrap {
   flex: 1;
@@ -78,6 +79,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  max-height: calc(100% - 8px);
 }
 .jz-svg {
   width: 100%;
@@ -100,15 +102,17 @@
   stroke-opacity: 0.45;
 }
 .jz-shock {
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 700;
+  letter-spacing: 0.04em;
 }
 .jz-sub {
-  font-size: 15.5px;
+  font-size: 13.5px;
+  font-weight: 600;
   fill: var(--ink-soft);
 }
 .jz-tag {
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -469,7 +473,7 @@
     color 0.18s ease,
     box-shadow 0.18s ease;
 }
-.jz-segbtn:hover {
+.jz-segbtn:hover:not(:disabled) {
   color: var(--teal);
 }
 .jz-segbtn.on {
@@ -477,6 +481,17 @@
   color: var(--ink);
   font-weight: 700;
   box-shadow: 0 1px 3px rgba(37, 88, 98, 0.16);
+}
+/* a stage wide enough for the whole tree leaves the small-stage switch
+   nothing to answer — its pills wait, legible but inert, until the squeeze
+   (ConstraintNarrative disables them while over the legibility floor) */
+.jz-segbtn:disabled {
+  color: var(--border-strong);
+  cursor: default;
+}
+.jz-segbtn.on:disabled {
+  color: var(--ink-soft);
+  box-shadow: none;
 }
 /* the hints came off the row — each pill still explains itself on hover
    (title=about), and the row stays one compact line beside the header */
@@ -688,6 +703,88 @@
   flex: 0 1 auto;
   min-height: 0;
   overflow-y: auto;
+}
+.jz-railchart {
+  width: 100%;
+  padding: 0;
+  opacity: 0;
+  transform: none;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.jz-railchart.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+.jz-railchart svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+@media (max-width: 920px) {
+  .jz-sticky {
+    height: calc(100dvh - 96px - var(--tool-top-rail-offset, 0px));
+    min-height: 0;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-bottom: 18px;
+  }
+
+  .jz-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .jz-body {
+    flex-direction: column;
+    gap: 14px;
+    min-height: 0;
+  }
+
+  .jz-stagewrap {
+    width: 100%;
+    min-height: 276px;
+    max-width: none;
+  }
+
+  .jz-rail {
+    width: 100%;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 2px;
+    max-width: 100%;
+    overflow: visible;
+  }
+
+  .jz-railtext {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+    width: 100%;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .jz-railtext > * {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+
+  .jz-railchart {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    overflow: visible;
+  }
+
+  .jz-rail .jz-next,
+  .jz-rail .jz-next.show {
+    display: none;
+  }
 }
 
 /* short laptops: shrink the pizza further before the caption has to scroll */
@@ -1101,20 +1198,6 @@
   transition: transform 0.9s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* the branches detail mode folded away: the head stays, the count says what
-   it is holding back */
-.nv-fold path {
-  stroke-width: 1.2;
-  stroke-dasharray: 2 2.5;
-  opacity: 0.6;
-}
-.nv-fold text {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.3px;
-  opacity: 0.7;
-}
-
 /* the whole tree at a glance, so zooming never costs the reader the map */
 .nv-mini {
   position: absolute;
@@ -1159,37 +1242,20 @@
   right: 14px;
   bottom: 12px;
   display: flex;
-  align-items: baseline;
-  gap: 7px;
-  padding: 5px 10px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.92);
-  font-size: 11px;
-  color: var(--ink-soft);
+  align-items: center;
+  justify-content: flex-end;
   pointer-events: none;
 }
-.nv-fitread-n {
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  color: var(--ink);
-}
 .nv-fitread.tight {
-  border-color: var(--orange);
-  color: var(--orange-dark);
   pointer-events: auto;
-}
-.nv-fitread.tight .nv-fitread-n {
-  color: var(--orange-dark);
 }
 .nv-fitread-go {
   border: none;
-  background: var(--orange);
-  color: #fff;
-  border-radius: 999px;
-  padding: 3px 9px;
-  font-size: 10.5px;
-  font-weight: 700;
+  background: transparent;
+  color: var(--ink-soft);
+  padding: 0;
+  font-size: 11px;
+  font-weight: 600;
 }
 /* corner readings + dot-adjacent labels ride above the field on white halos */
 .nv-lab {
@@ -1626,4 +1692,53 @@ html[data-jz-instant="1"] .nv-svg {
   font-size: 11px;
   font-weight: 700;
   color: var(--ink-soft);
+}
+
+/* ============ the study's stage modes (nine-more-trees.html) ============
+   07 sideways and the camera rides live as FIT_MODES entries. */
+
+/* the small-stage row wraps if a narrow panel runs out of room */
+.jz-opts-panel .jz-seg {
+  flex-wrap: wrap;
+}
+
+/* sideways draws its own tree: the authored one leaves the stage (and, at
+   tree beats, its traveller goes with it) */
+.nv-hidetree
+  .nv-treewrap
+  :is(
+    .nv-card,
+    .nv-edge,
+    .nv-elab,
+    .nv-captitle,
+    .tree-home,
+    .jz-youare,
+    .nv-fold
+  ) {
+  display: none;
+}
+.nv-hidedot .nv-treewrap .nv-traveler {
+  opacity: 0;
+}
+
+/* negative-shock edges: the draw-in animation runs on stroke-dasharray
+   (pathLength=1), which a real dash pattern would fight — so these edges
+   skip pathLength, carry the sign's dash (same "7 4" as TREE_SIDE_DASH),
+   and arrive by fading instead of drawing */
+.nv-edge.neg {
+  stroke-dasharray: 7 4;
+  stroke-dashoffset: 0;
+  opacity: 0;
+  transition:
+    opacity 0.7s ease,
+    stroke-width 0.2s ease;
+}
+.nv-edge.neg.on {
+  opacity: 0.75;
+}
+.nv-edge.neg.on.lit {
+  opacity: 1;
+}
+.nv-edge.neg.on.dim {
+  opacity: 0.22;
 }

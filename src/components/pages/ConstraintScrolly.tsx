@@ -12,6 +12,7 @@ import {
   TREE_SIDE_COLOR,
   TREE_SIDE_LABEL,
   diagnose,
+  sideDash,
   sideOfPath,
   suggestedPath,
   treeNodes,
@@ -463,10 +464,7 @@ export function ConstraintScrolly({
   );
   /* the fork-by-fork reasoning behind that suggestion, with the numbers it
      turned on — the rail shows it once the path lights up (step 4) */
-  const dx = useMemo(
-    () => diagnose(cityShort, country),
-    [cityShort, country],
-  );
+  const dx = useMemo(() => diagnose(cityShort, country), [cityShort, country]);
   const suggSide: TreeSide = sideOfPath(suggPath);
   /* hovering a minimap quadrant emphasises that half of the tree */
   const [quadHover, setQuadHover] = useState<"demand" | "supply" | null>(null);
@@ -1580,6 +1578,12 @@ export function ConstraintScrolly({
     /* framed mode squares the quadrant cards up edge-to-edge (the v1 plot is
        one rectangle split by the crosshair, not four floating cards) */
     const QGAP = chartStyle.frame ? 0 : 8;
+    const quadrantShockId = (d: QuadrantDef): keyof typeof TREE_SIDE_COLOR => {
+      if (d.dx === 1 && d.dy === 1) return "demandpos";
+      if (d.dx === 1 && d.dy === -1) return "supplypos";
+      if (d.dx === -1 && d.dy === -1) return "demandneg";
+      return "supplyneg";
+    };
     const quads = gChart
       .selectAll<SVGGElement, QuadrantDef>("g.jz-quad")
       .data(QUADRANTS)
@@ -1594,8 +1598,12 @@ export function ConstraintScrolly({
       .attr("width", CQ.r - QGAP)
       .attr("height", CQ.r - QGAP)
       .attr("rx", chartStyle.frame ? 0 : 14)
-      .attr("fill", (d) => TREE_SIDE_COLOR[d.side])
-      .attr("stroke", (d) => TREE_SIDE_COLOR[d.side]);
+      .attr("fill", (d) => TREE_SIDE_COLOR[quadrantShockId(d)])
+      .attr("fill-opacity", 0.08)
+      .attr("stroke", (d) => TREE_SIDE_COLOR[quadrantShockId(d)])
+      .attr("stroke-width", 2.2)
+      .attr("stroke-dasharray", (d) => sideDash(quadrantShockId(d)) ?? null)
+      .attr("stroke-opacity", 0.9);
 
     /* framed axes (v1 look): dashed gridlines with % ticks, a solid black
        frame on the left and bottom, and a dashed "typical" crosshair named
@@ -1739,24 +1747,20 @@ export function ConstraintScrolly({
        field runs beneath it */
     const labMode = chartStyle.labels;
     gChart.classed("lab-side", labMode !== "center");
-    const branchTag = (d: QuadrantDef) =>
-      `→ ${d.side === "demand" ? "labor demand" : "labor supply"} branch`;
     const qLabels = gChart
       .append("g")
       .selectAll<SVGGElement, QuadrantDef>("g")
       .data(QUADRANTS)
       .join("g");
     if (labMode === "center") {
-      /* reduced mode drops the shock heading; the remaining two lines
-         recentre on the quadrant */
       if (!chartStyle.reduced)
         qLabels
           .append("text")
           .attr("class", "jz-shock")
           .attr("x", (d) => cx(d.dx * 0.5))
-          .attr("y", (d) => cy(d.dy * 0.5) - 14)
+          .attr("y", (d) => cy(d.dy * 0.5) - 16)
           .attr("text-anchor", "middle")
-          .attr("fill", (d) => TREE_SIDE_COLOR[d.side])
+          .attr("fill", (d) => TREE_SIDE_COLOR[quadrantShockId(d)])
           .text((d) => d.shock);
       qLabels
         .append("text")
@@ -1765,24 +1769,12 @@ export function ConstraintScrolly({
         .attr("y", (d) => cy(d.dy * 0.5) + (chartStyle.reduced ? -2 : 10))
         .attr("text-anchor", "middle")
         .text((d) => d.sub);
-      qLabels
-        .append("text")
-        .attr("class", "jz-tag")
-        .attr("x", (d) => cx(d.dx * 0.5))
-        .attr("y", (d) => cy(d.dy * 0.5) + (chartStyle.reduced ? 21 : 33))
-        .attr("text-anchor", "middle")
-        .attr("fill", (d) => TREE_SIDE_COLOR[d.side])
-        .text(branchTag);
     } else {
       qLabels.each(function (d) {
         const g = select(this);
         const right = d.dx === 1;
         const xa = right ? cx(1) - 18 : cx(-1) + 18;
         const anchor = right ? "end" : "start";
-        /* every block sits in its quadrant's OUTER-BOTTOM corner (v1's
-           bl/br buttons) — unless an accent dot lands inside that spot
-           (the data decides where dots go): then it flips to the
-           outer-top corner, provided that corner is free */
         const yBottom = (d.dy === 1 ? cy(0) - QGAP : cy(-1)) - 58;
         const yTopAlt = (d.dy === 1 ? cy(1) : cy(0) + QGAP) + 30;
         const wEst = 175;
@@ -1798,15 +1790,13 @@ export function ConstraintScrolly({
               dyp <= top + 58,
           );
         const yTop = blocked(yBottom) && !blocked(yTopAlt) ? yTopAlt : yBottom;
-        /* reduced mode drops the shock heading; the block keeps its bottom
-           edge and just loses its top line */
         if (!chartStyle.reduced)
           g.append("text")
             .attr("class", "jz-shock")
             .attr("x", xa)
             .attr("y", yTop)
             .attr("text-anchor", anchor)
-            .attr("fill", TREE_SIDE_COLOR[d.side])
+            .attr("fill", TREE_SIDE_COLOR[quadrantShockId(d)])
             .text(d.shock);
         g.append("text")
           .attr("class", "jz-sub")
@@ -1814,13 +1804,6 @@ export function ConstraintScrolly({
           .attr("y", yTop + 19)
           .attr("text-anchor", anchor)
           .text(d.sub);
-        g.append("text")
-          .attr("class", "jz-tag")
-          .attr("x", xa)
-          .attr("y", yTop + 37)
-          .attr("text-anchor", anchor)
-          .attr("fill", TREE_SIDE_COLOR[d.side])
-          .text(branchTag(d));
         if (labMode === "card") {
           const bb = (this as SVGGElement).getBBox();
           g.insert("rect", ":first-child")

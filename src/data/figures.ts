@@ -65,8 +65,7 @@ export const TREE_MODES: {
     id: "themes",
     label: "Alt + themes",
     hint: "Four leaves + the evidence under each",
-    about:
-      "The four leaves, each carrying the evidence you would read there",
+    about: "The four leaves, each carrying the evidence you would read there",
   },
   {
     id: "paper",
@@ -113,7 +112,7 @@ export type ConstraintFlow = "compact" | "guided" | "short";
 
 /** what the section opens on — also listed FIRST in CONSTRAINT_FLOWS, since
  *  the pill row renders in array order and the default leads it */
-export const DEFAULT_CONSTRAINT_FLOW: ConstraintFlow = "short";
+export const DEFAULT_CONSTRAINT_FLOW: ConstraintFlow = "guided";
 
 /* the default leads the row; the rest keep their original order */
 export const CONSTRAINT_FLOWS: {
@@ -123,18 +122,18 @@ export const CONSTRAINT_FLOWS: {
   about: string;
 }[] = [
   {
-    id: "short",
-    label: "Shortened guided walk",
-    hint: "The whole tree up front — two instruments walk it",
-    about:
-      "Tree-first: the full tree opens the walk, the pizza chart answers fork one, the housing chart fork two — and the other paths open only at the end of the analysis below",
-  },
-  {
     id: "guided",
     label: "Guided walk",
     hint: "Two dials, three questions — your city walks the tree",
     about:
       "The explainer flow: the chart builds dial by dial and your city answers each fork with its own numbers, one instrument per question",
+  },
+  {
+    id: "short",
+    label: "Shortened guided walk",
+    hint: "The whole tree up front — two instruments walk it",
+    about:
+      "Tree-first: the full tree opens the walk, the pizza chart answers fork one, the housing chart fork two — and the other paths open only at the end of the analysis below",
   },
   {
     id: "compact",
@@ -167,22 +166,36 @@ export const TREE_SIDE_COLOR: Record<TreeSide, string> = {
      the same weight as the other two so the three-way root reads evenly —
      what the branch IS will decide what colour it keeps */
   third: "#5f4a86",
-  /* Four branches, four hues. Found by searching the colours that are dark
-     enough to double as label text (≥ 4.5:1 on white) for the pair that best
-     joins teal and rust: worst pair across all four is ΔE 22.3 against a 15
-     floor, and 8.1 under simulated red-green colourblindness against a target
-     of 8 — so the set clears both separation gates rather than only the one a
-     full-colour reader cares about. Requiring the colourblind gate cost 0.2
-     ΔE; the unconstrained best put a green next to the rust that a
-     deuteranope reads as the SAME colour (ΔE 1.0), which is the classic trap.
-     Assignment follows the chart: the quadrants run teal → blue → magenta →
-     rust around the ring, so the weakest pair (teal↔magenta) sits diagonally
-     opposite rather than sharing an edge. */
-  demandpos: "#1d4b54", // q1 · people ↑ pay ↑
-  supplyneg: "#3364db", // q4 · people ↓ pay ↑
-  demandneg: "#851286", // q3 · people ↓ pay ↓
-  supplypos: "#b8431f", // q2 · people ↑ pay ↓
+  /* Four branches, TWO hues: each shock keeps its parent side's colour —
+     demand teal, supply rust — exactly as the two-branch tree draws them,
+     and the SIGN moves off the colour channel: negative shocks draw broken
+     (dashed strokes, hollow dots — see TREE_SIDE_DASH below), positive ones
+     solid. Hue answers "which side of the economy", stroke answers "which
+     way it moved". A side effect worth keeping: the quad pizza chart's
+     colouring becomes identical to the two-branch chart's, and because the
+     quadrants alternate demand/supply around the ring, no two adjacent
+     regions share a hue even with only two in play. (The four-hue set this
+     replaces — teal/blue/magenta/rust, ΔE- and colourblind-gated — is in
+     the git history if a shape ever needs four true hues again.) */
+  demandpos: "#1d4b54", // q1 · people ↑ pay ↑ · solid teal
+  supplyneg: "#b8431f", // q4 · people ↓ pay ↑ · dashed rust
+  demandneg: "#1d4b54", // q3 · people ↓ pay ↓ · dashed teal
+  supplypos: "#b8431f", // q2 · people ↑ pay ↓ · solid rust
 };
+
+/** The stroke that says "negative shock" wherever a side draws a line or a
+ *  card border — the sign's channel, now that hue belongs to the parent
+ *  side. Everything else stays solid. The tiny schematics (the minimap)
+ *  scale the pattern down rather than reading it verbatim, and dots
+ *  too small to dash go hollow instead — sideHollow. */
+export const TREE_SIDE_DASH: Partial<Record<TreeSide, string>> = {
+  demandneg: "7 4",
+  supplyneg: "7 4",
+};
+export const sideDash = (side: string): string | undefined =>
+  TREE_SIDE_DASH[side as TreeSide];
+/** a negative shock's dot draws as a ring, not a disc */
+export const sideHollow = (side: string): boolean => sideDash(side) != null;
 
 /** how a branch is named in running text — "On the tree · demand side" */
 export const TREE_SIDE_LABEL: Record<TreeSide, string> = {
@@ -711,10 +724,10 @@ export const treeNodes = (variant: TreeVariant): TreeNodeData[] =>
   variant === "quad"
     ? TREE_NODES_QUAD
     : variant === "full"
-    ? TREE_NODES
-    : variant === "alt3"
-      ? TREE_NODES_ALT3
-      : TREE_NODES_ALT;
+      ? TREE_NODES
+      : variant === "alt3"
+        ? TREE_NODES_ALT3
+        : TREE_NODES_ALT;
 
 /** every root→leaf descent (ids below the root) of a variant, figure order */
 function leafPaths(variant: TreeVariant): string[][] {

@@ -8,10 +8,16 @@ import {
 } from "react";
 import { pointer } from "d3-selection";
 import { Delaunay } from "d3-delaunay";
-import { stratify, tree as d3tree, type HierarchyPointNode } from "d3-hierarchy";
+import {
+  stratify,
+  tree as d3tree,
+  type HierarchyPointNode,
+} from "d3-hierarchy";
 import {
   PLACEHOLDER_BRANCHES,
   TREE_SIDE_COLOR,
+  sideDash,
+  sideHollow,
   TREE_SIDE_LABEL,
   completeToLeaf,
   pathThemes,
@@ -33,7 +39,11 @@ import { NodeGlyph } from "./treeIcons";
 
 type MiniNode = HierarchyPointNode<TreeNodeData>;
 
-const MV = { w: 396, h: 178, pad: { top: 26, right: 14, bottom: 10, left: 14 } };
+const MV = {
+  w: 396,
+  h: 178,
+  pad: { top: 26, right: 14, bottom: 10, left: 14 },
+};
 
 /* every element keeps its side colour (grey would break the demand/supply
    encoding); emphasis is carried by opacity alone: lit pick > tinted
@@ -74,10 +84,12 @@ function DiagSchematic({
     const built = stratify<TreeNodeData>()
       .id((d) => d.id)
       .parentId((d) => d.parent)(treeNodes(variant));
-    const laid = d3tree<TreeNodeData>().size([
-      MV.w - MV.pad.left - MV.pad.right,
-      MV.h - MV.pad.top - MV.pad.bottom,
-    ])(built).descendants() as MiniNode[];
+    const laid = d3tree<TreeNodeData>()
+      .size([
+        MV.w - MV.pad.left - MV.pad.right,
+        MV.h - MV.pad.top - MV.pad.bottom,
+      ])(built)
+      .descendants() as MiniNode[];
     return {
       nodes: laid,
       delaunay: Delaunay.from(
@@ -127,9 +139,7 @@ function DiagSchematic({
   const prev = new Set((preview ?? []).filter((id) => !on.has(id)));
   /* the data-driven suggestion keeps a middle emphasis (tinted, not grey)
      while the pick is elsewhere — "where we think you are" stays readable */
-  const sugg = new Set(
-    suggPath.filter((id) => !on.has(id) && !prev.has(id)),
-  );
+  const sugg = new Set(suggPath.filter((id) => !on.has(id) && !prev.has(id)));
   const root = nodes[0];
   const here = nodes.find((n) => n.data.id === path[path.length - 1]);
   /* paint order: faint, tinted suggestion, hover preview, lit pick on top */
@@ -174,6 +184,7 @@ function DiagSchematic({
             }
             d={elbow(n)}
             stroke={TREE_SIDE_COLOR[sideOf(n)]}
+            strokeDasharray={sideDash(n.data.id) ? "4 3" : undefined}
           />
         ))}
         {nodes.map((n) => (
@@ -200,7 +211,9 @@ function DiagSchematic({
                     ? 4
                     : 3.5
             }
-            fill={TREE_SIDE_COLOR[sideOf(n)]}
+            fill={sideHollow(n.data.id) ? "#fff" : TREE_SIDE_COLOR[sideOf(n)]}
+            stroke={TREE_SIDE_COLOR[sideOf(n)]}
+            strokeWidth={sideHollow(n.data.id) ? 1.7 : 0}
           />
         ))}
         {here && (
@@ -212,7 +225,12 @@ function DiagSchematic({
             stroke={TREE_SIDE_COLOR[sideOf(here)]}
           />
         )}
-        <text className="ba-lab root" x={root.x} y={root.y - 11} textAnchor="middle">
+        <text
+          className="ba-lab root"
+          x={root.x}
+          y={root.y - 11}
+          textAnchor="middle"
+        >
           The growth question
         </text>
         {nodes
@@ -400,7 +418,8 @@ export function BranchAnalysisPage({
       </div>
       <p className="lede">
         <span className="ph">
-          [lead question for the {TREE_SIDE_LABEL[side]} analysis of {cityShort}]
+          [lead question for the {TREE_SIDE_LABEL[side]} analysis of {cityShort}
+          ]
         </span>
       </p>
 
@@ -428,7 +447,9 @@ export function BranchAnalysisPage({
 
         <aside className="ba-context">
           <span className="ba-kicker">
-            {previewing ? "Previewing another path" : "Where you are in the diagnostic"}
+            {previewing
+              ? "Previewing another path"
+              : "Where you are in the diagnostic"}
           </span>
           <DiagSchematic
             path={branchPath}
@@ -476,9 +497,7 @@ export function BranchAnalysisPage({
                       style={{ background: TREE_SIDE_COLOR[side] }}
                     />
                     <a href={`#theme-${t.id}`}>{t.title}</a>
-                    <span className="ba-themecount">
-                      {t.indicators.length}
-                    </span>
+                    <span className="ba-themecount">{t.indicators.length}</span>
                   </li>
                 ))}
               </ul>
@@ -489,7 +508,7 @@ export function BranchAnalysisPage({
               {routeHeld
                 ? "[the diagnosed route — read the analysis through and the schematic opens at the end]"
                 : treePickable
-                  ? "[hover the schematic to preview a path, click to make it yours — or click the tree in City Constraints]"
+                  ? "[hover the schematic to preview a path, click to make it yours]"
                   : "[hover the schematic to preview a path, click to make it yours]"}
             </span>
           </p>
@@ -502,9 +521,9 @@ export function BranchAnalysisPage({
       {!treePickable && (
         <p className="ba-endprompt">
           <span className="ph">
-            [that's the {TREE_SIDE_LABEL[side]} read — the diagnosed path. if you're
-            curious how another branch tells it, the schematic in the sidebar
-            is open now: hover to preview, click to switch]
+            [that's the {TREE_SIDE_LABEL[side]} read — the diagnosed path. if
+            you're curious how another branch tells it, the schematic in the
+            sidebar is open now: hover to preview, click to switch]
           </span>
         </p>
       )}

@@ -151,7 +151,8 @@ const TWO: WalkShape = {
   qcardW: 208,
   leafH: 30,
   leafSize: 16,
-  forkOneLine: "one fork splits demand from supply, one more names the constraint",
+  forkOneLine:
+    "one fork splits demand from supply, one more names the constraint",
   /* the four quadrants, in figure order — each is a 90° sector, so this
      renders exactly the square blocks the chart has always drawn */
   planeCopy: {
@@ -159,10 +160,42 @@ const TWO: WalkShape = {
     lead: "Together → demand. Apart → supply.",
   },
   plane: [
-    { side: "demand", from: 0, to: 90, sub: "population ↑ · wages ↑", tag: "together → demand", legend: "together → Labor Demand", read: "together" },
-    { side: "supply", from: 90, to: 180, sub: "population ↓ · wages ↑", tag: "apart → supply", legend: "apart → Labor Supply", read: "apart" },
-    { side: "demand", from: 180, to: 270, sub: "population ↓ · wages ↓", tag: "together → demand", legend: "together → Labor Demand", read: "together" },
-    { side: "supply", from: 270, to: 360, sub: "population ↑ · wages ↓", tag: "apart → supply", legend: "apart → Labor Supply", read: "apart" },
+    {
+      side: "demand",
+      from: 0,
+      to: 90,
+      sub: "population ↑ · wages ↑",
+      tag: "together → demand",
+      legend: "together → Labor Demand",
+      read: "together",
+    },
+    {
+      side: "supply",
+      from: 90,
+      to: 180,
+      sub: "population ↓ · wages ↑",
+      tag: "apart → supply",
+      legend: "apart → Labor Supply",
+      read: "apart",
+    },
+    {
+      side: "demand",
+      from: 180,
+      to: 270,
+      sub: "population ↓ · wages ↓",
+      tag: "together → demand",
+      legend: "together → Labor Demand",
+      read: "together",
+    },
+    {
+      side: "supply",
+      from: 270,
+      to: 360,
+      sub: "population ↑ · wages ↓",
+      tag: "apart → supply",
+      legend: "apart → Labor Supply",
+      read: "apart",
+    },
   ],
   branches: [
     {
@@ -175,8 +208,20 @@ const TWO: WalkShape = {
         `below the median (${n.medPop})?`,
       ],
       leaves: [
-        { id: "metrowide", lines: ["Metro-wide shock"], edge: "yes — below", x: 105, w: 172 },
-        { id: "placespec", lines: ["Place-specific shock"], edge: "no — at or above", x: 305, w: 188 },
+        {
+          id: "metrowide",
+          lines: ["Metro-wide shock"],
+          edge: "yes — below",
+          x: 105,
+          w: 172,
+        },
+        {
+          id: "placespec",
+          lines: ["Place-specific shock"],
+          edge: "no — at or above",
+          x: 305,
+          w: 188,
+        },
       ],
     },
     {
@@ -192,7 +237,13 @@ const TWO: WalkShape = {
         /* "Housing", not "Cost of living": this fork tests home-value growth
            alone, and the box is sized to the shorter word (x is the centre) */
         { id: "col", lines: ["Housing"], edge: "yes — faster", x: 505, w: 118 },
-        { id: "amen", lines: ["Amenities"], edge: "no — slower", x: 685, w: 128 },
+        {
+          id: "amen",
+          lines: ["Amenities"],
+          edge: "no — slower",
+          x: 685,
+          w: 128,
+        },
       ],
     },
   ],
@@ -222,7 +273,8 @@ const THREE: WalkShape = {
   qcardW: 208,
   leafH: 42,
   leafSize: 13.5,
-  forkOneLine: "the root splits three ways, and one more fork names the constraint",
+  forkOneLine:
+    "the root splits three ways, and one more fork names the constraint",
   /* Cut on the two 45° diagonals rather than on the axes. Each sector is
      named by its bounding rays: supply runs from the top-right diagonal
      round to the −x axis, demand from there on to the bottom-right diagonal,
@@ -274,8 +326,20 @@ const THREE: WalkShape = {
         `below the median (${n.medPop})?`,
       ],
       leaves: [
-        { id: "metrowide", lines: ["Metro-wide", "shock"], edge: "yes — below", x: 71, w: 104 },
-        { id: "placespec", lines: ["Place-specific", "shock"], edge: "no — at or above", x: 197, w: 120 },
+        {
+          id: "metrowide",
+          lines: ["Metro-wide", "shock"],
+          edge: "yes — below",
+          x: 71,
+          w: 104,
+        },
+        {
+          id: "placespec",
+          lines: ["Place-specific", "shock"],
+          edge: "no — at or above",
+          x: 197,
+          w: 120,
+        },
       ],
     },
     {
@@ -289,7 +353,13 @@ const THREE: WalkShape = {
       ],
       leaves: [
         { id: "col", lines: ["Housing"], edge: "yes — faster", x: 330, w: 92 },
-        { id: "amen", lines: ["Amenities"], edge: "no — slower", x: 438, w: 96 },
+        {
+          id: "amen",
+          lines: ["Amenities"],
+          edge: "no — slower",
+          x: 438,
+          w: 96,
+        },
       ],
     },
     {
@@ -297,10 +367,25 @@ const THREE: WalkShape = {
       title: "[Third branch]",
       edge: "[the third answer]",
       x: 630,
-      question: () => ["[fork two on this branch —", "the comparison, to come]"],
+      question: () => [
+        "[fork two on this branch —",
+        "the comparison, to come]",
+      ],
       leaves: [
-        { id: "third1", lines: ["[First leaf]"], edge: "[yes]", x: 567, w: 108 },
-        { id: "third2", lines: ["[Second leaf]"], edge: "[no]", x: 692, w: 114 },
+        {
+          id: "third1",
+          lines: ["[First leaf]"],
+          edge: "[yes]",
+          x: 567,
+          w: 108,
+        },
+        {
+          id: "third2",
+          lines: ["[Second leaf]"],
+          edge: "[no]",
+          x: 692,
+          w: 114,
+        },
       ],
     },
   ],
@@ -339,35 +424,79 @@ const QUAD: WalkShape = {
   },
   plane: [
     {
-      side: "demandpos", from: 0, to: 90,
-      sub: "population ↑ · wages ↑", tag: "→ positive demand shock",
-      legend: "people ↑ pay ↑ → Positive demand shock", read: "population ↑ · wages ↑",
+      side: "demandpos",
+      from: 0,
+      to: 90,
+      sub: "population ↑ · wages ↑",
+      tag: "→ positive demand shock",
+      legend: "people ↑ pay ↑ → Positive demand shock",
+      read: "population ↑ · wages ↑",
     },
     {
-      side: "supplyneg", from: 90, to: 180,
-      sub: "population ↓ · wages ↑", tag: "→ negative supply shock",
-      legend: "people ↓ pay ↑ → Negative supply shock", read: "population ↓ · wages ↑",
+      side: "supplyneg",
+      from: 90,
+      to: 180,
+      sub: "population ↓ · wages ↑",
+      tag: "→ negative supply shock",
+      legend: "people ↓ pay ↑ → Negative supply shock",
+      read: "population ↓ · wages ↑",
     },
     {
-      side: "demandneg", from: 180, to: 270,
-      sub: "population ↓ · wages ↓", tag: "→ negative demand shock",
-      legend: "people ↓ pay ↓ → Negative demand shock", read: "population ↓ · wages ↓",
+      side: "demandneg",
+      from: 180,
+      to: 270,
+      sub: "population ↓ · wages ↓",
+      tag: "→ negative demand shock",
+      legend: "people ↓ pay ↓ → Negative demand shock",
+      read: "population ↓ · wages ↓",
     },
     {
-      side: "supplypos", from: 270, to: 360,
-      sub: "population ↑ · wages ↓", tag: "→ positive supply shock",
-      legend: "people ↑ pay ↓ → Positive supply shock", read: "population ↑ · wages ↓",
+      side: "supplypos",
+      from: 270,
+      to: 360,
+      sub: "population ↑ · wages ↓",
+      tag: "→ positive supply shock",
+      legend: "people ↑ pay ↓ → Positive supply shock",
+      read: "population ↑ · wages ↓",
     },
   ],
   branches: [
-    { id: "demandpos", title: "Positive demand shock", titleLines: ["Positive demand", "shock"],
-      edge: "people ↑ · pay ↑", x: 111, question: () => [], leaves: [] },
-    { id: "supplypos", title: "Positive supply shock", titleLines: ["Positive supply", "shock"],
-      edge: "people ↑ · pay ↓", x: 293, question: () => [], leaves: [] },
-    { id: "demandneg", title: "Negative demand shock", titleLines: ["Negative demand", "shock"],
-      edge: "people ↓ · pay ↓", x: 475, question: () => [], leaves: [] },
-    { id: "supplyneg", title: "Negative supply shock", titleLines: ["Negative supply", "shock"],
-      edge: "people ↓ · pay ↑", x: 657, question: () => [], leaves: [] },
+    {
+      id: "demandpos",
+      title: "Positive demand shock",
+      titleLines: ["Positive demand", "shock"],
+      edge: "people ↑ · pay ↑",
+      x: 111,
+      question: () => [],
+      leaves: [],
+    },
+    {
+      id: "supplypos",
+      title: "Positive supply shock",
+      titleLines: ["Positive supply", "shock"],
+      edge: "people ↑ · pay ↓",
+      x: 293,
+      question: () => [],
+      leaves: [],
+    },
+    {
+      id: "demandneg",
+      title: "Negative demand shock",
+      titleLines: ["Negative demand", "shock"],
+      edge: "people ↓ · pay ↓",
+      x: 475,
+      question: () => [],
+      leaves: [],
+    },
+    {
+      id: "supplyneg",
+      title: "Negative supply shock",
+      titleLines: ["Negative supply", "shock"],
+      edge: "people ↓ · pay ↑",
+      x: 657,
+      question: () => [],
+      leaves: [],
+    },
   ],
 };
 
@@ -402,9 +531,7 @@ export const headRowH = (s: WalkShape): number => s.headH ?? HEAD_ROW.h;
 export const DOT_BELOW_HEAD = 18;
 
 export const landingY = (s: WalkShape): number =>
-  hasLeaves(s)
-    ? DOT_LEAF_Y
-    : headRowY(s) + headRowH(s) / 2 + DOT_BELOW_HEAD;
+  hasLeaves(s) ? DOT_LEAF_Y : headRowY(s) + headRowH(s) / 2 + DOT_BELOW_HEAD;
 export const landingX = (s: WalkShape, route: string[]): number =>
   hasLeaves(s)
     ? leafX(s, route[route.length - 1])
@@ -518,42 +645,43 @@ export const sectorAt = (
 /* ---------- fitting the tree to a stage that is not 1180×640 ----------
  *  The walk's tree is authored against a fixed stage and then scaled to fit,
  *  which is fine until the stage narrows: everything shrinks together, and
- *  13.5px leaf type at 0.6× is 8px. These three modes are different answers
- *  to "keep the tree readable without losing it as a map of where you are".
+ *  13.5px leaf type at 0.6× is 8px. These modes are different answers to
+ *  "keep the tree readable without losing it as a map of where you are".
  *
  *    fit     today's behaviour — the whole tree, scaled to the stage
  *    focus   the frame follows the walked route: the whole tree while it is
  *            being introduced, then the root and its branches, then just the
  *            branch the city took. Type stays near native size because the
  *            frame is smaller; the map you lose comes back as a minimap.
- *    detail  the tree stays whole and in place, but only the walked branch
- *            spends room on detail — its question card and leaves draw, and
- *            they re-space across the full band at full size. Every other
- *            branch keeps its head (that is the navigation context) and folds
- *            its leaves into a count.
  */
-export type FitMode = "fit" | "focus" | "detail";
+export type FitMode = "fit" | "focus" | "side" | "ride" | "sideride";
 
-export const FIT_MODES: { id: FitMode; label: string; hint: string; about: string }[] = [
+export const FIT_MODES: {
+  id: FitMode;
+  label: string;
+  hint: string;
+  about: string;
+}[] = [
   {
     id: "fit",
     label: "Fit whole",
     hint: "The whole tree, scaled to the stage",
-    about: "Today's behaviour: the entire tree scaled down to whatever the stage gives it",
+    about:
+      "Today's behaviour: the entire tree scaled down to whatever the stage gives it",
   },
   {
-    id: "focus",
-    label: "Follow the path",
-    hint: "The frame tracks the route; a minimap keeps the whole",
+    id: "ride",
+    label: "Zoom",
+    hint: "Scroll steps between stops; the frame rides the route between them",
     about:
-      "The frame zooms with the walk — whole tree, then the root and its branches, then just the branch taken — with a minimap for context",
+      "A stepped immersive pass: each gesture lands on the next stop, and the frame (with the dot) rides the route there at reading zoom — the branch not taken slides off the edge — while the schematic keeps the whole tree",
   },
   {
-    id: "detail",
-    label: "Detail on route",
-    hint: "Every head stays; only the walked branch shows leaves",
+    id: "sideride",
+    label: "Zoom (horizontal)",
+    hint: "The same stepped ride, along the sideways tree",
     about:
-      "The tree stays whole and in place; only the branch the city took spends room on its question and leaves, which re-space to full size",
+      "The camera ride over the sideways layout: stop by stop, left to right along the route, with the rows not taken sliding off the frame's edge",
   },
 ];
 
@@ -567,17 +695,27 @@ export const shapeExtent = (s: WalkShape): [number, number] => [
  *  a frame that only covered the cards would crop it */
 const BADGE_W = ("where we think you are".length + 2) * 7.8 + 30;
 
+/** The band a badge may occupy without clipping — the STAGE's, not the
+ *  tree's. A badge centred on an outer leaf overhangs the leaf row, and the
+ *  stage has room for it: the viewBox runs 0–1180, and the widest static
+ *  pose (scale 1.2, translate −8) keeps tree x 8–980 on stage. Clamping to
+ *  the tree band instead visibly un-centres the pill from its leaf. */
+const BADGE_BAND: [number, number] = [8, 980];
+
+/** centre a badge of width `w` on `x`, kept inside the stage's safe band */
+export const badgeCX = (x: number, w: number): number =>
+  Math.min(Math.max(x, BADGE_BAND[0] + w / 2), BADGE_BAND[1] - w / 2);
+
 /** Where a branch's own subtree sits, for the focus frame: its head, its
  *  leaves if it has any, and — the part that is easy to miss — the badge
  *  hanging under whichever leaf it lands on. The badge is clamped into the
- *  tree's band before it draws, so the frame has to account for the clamped
- *  position, not the raw one. */
+ *  stage's safe band before it draws, so the frame has to account for the
+ *  clamped position, not the raw one. */
 export const branchBox = (
   s: WalkShape,
   side: string,
 ): [number, number, number, number] => {
   const b = s.branches.find((br) => br.id === side) ?? s.branches[0];
-  const [band0, band1] = shapeBand(s);
   const cards: (readonly [number, number])[] = [
     [b.x, s.headW] as const,
     ...(b.leaves.length
@@ -586,13 +724,7 @@ export const branchBox = (
   ];
   /* every landing this branch could produce, with its badge around it */
   const landings = b.leaves.length ? b.leaves.map((l) => l.x) : [b.x];
-  const badges = landings.map((x) => {
-    const cx = Math.min(
-      Math.max(x, band0 + BADGE_W / 2),
-      band1 - BADGE_W / 2,
-    );
-    return [cx, BADGE_W] as const;
-  });
+  const badges = landings.map((x) => [badgeCX(x, BADGE_W), BADGE_W] as const);
   const all = [...cards, ...badges];
   const pad = 34;
   return [
@@ -613,44 +745,31 @@ export const wholeBox = (s: WalkShape): [number, number, number, number] => {
 /** `translate(...) scale(...)` that maps `box` into `into`, centred and
  *  never upscaled past `maxScale` — the tree should fill the frame, not be
  *  blown up past the size it was drawn for */
-export const fitTransform = (
+export const fitScale = (
   box: [number, number, number, number],
   into: [number, number, number, number],
-  maxScale = 1.6,
-): string => {
+  maxScale = 2.4,
+): number => {
   const [bx0, by0, bx1, by1] = box;
   const [ix0, iy0, ix1, iy1] = into;
-  const k = Math.min(
+  return Math.min(
     maxScale,
     (ix1 - ix0) / Math.max(1, bx1 - bx0),
     (iy1 - iy0) / Math.max(1, by1 - by0),
   );
+};
+
+export const fitTransform = (
+  box: [number, number, number, number],
+  into: [number, number, number, number],
+  maxScale = 2.4,
+): string => {
+  const [bx0, by0, bx1, by1] = box;
+  const [ix0, iy0, ix1, iy1] = into;
+  const k = fitScale(box, into, maxScale);
   const tx = (ix0 + ix1) / 2 - k * ((bx0 + bx1) / 2);
   const ty = (iy0 + iy1) / 2 - k * ((by0 + by1) / 2);
   return `translate(${tx.toFixed(1)}px, ${ty.toFixed(1)}px) scale(${k.toFixed(3)})`;
-};
-
-/** Detail mode's leaf row: only the walked branch draws leaves, so they get
- *  the whole band instead of a slice of it. Cards grow to the room freed by
- *  the branches that folded, up to a cap — past that the row would read as a
- *  few enormous boxes rather than a rank of siblings. */
-export const detailLeafBoxes = (
-  s: WalkShape,
-  side: string,
-): { id: string; x: number; w: number }[] => {
-  const b = s.branches.find((br) => br.id === side);
-  if (!b || !b.leaves.length) return [];
-  const [x0, x1] = shapeBand(s);
-  const gap = 44;
-  const slot = (x1 - x0 - gap * (b.leaves.length - 1)) / b.leaves.length;
-  const w = Math.min(248, slot);
-  const total = w * b.leaves.length + gap * (b.leaves.length - 1);
-  const start = (x0 + x1) / 2 - total / 2;
-  return b.leaves.map((l, i) => ({
-    id: l.id,
-    x: start + w / 2 + i * (w + gap),
-    w,
-  }));
 };
 
 /** the count the rail copy names ("two questions, six diagnoses") */
