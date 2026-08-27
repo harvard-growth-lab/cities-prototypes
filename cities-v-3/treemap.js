@@ -644,11 +644,7 @@
       })
       .on("mousemove.adm", function(ev){
         if (!merged || !admTip) return;
-        const w = admWrap.getBoundingClientRect();
-        const left = ev.clientX - w.left + 10;
-        const top  = ev.clientY - w.top - admTip.offsetHeight - 10;
-        admTip.style.left = Math.max(0, Math.min(left, w.width - admTip.offsetWidth)) + "px";
-        admTip.style.top  = Math.max(0, Math.min(top, w.height - admTip.offsetHeight)) + "px";
+        cursorTipPos(ev, admWrap, admTip);
       })
       .on("mouseleave.adm", function(){ if (admTip) admTip.hidden = true; });
 
@@ -983,14 +979,7 @@
         rowTip.hidden = false;
       })
       .on("mousemove", function(ev){
-        /* rides the cursor's top-right corner, matching the treemap tips */
-        const w = wrap.getBoundingClientRect();
-        const left = ev.clientX - w.left + 10;
-        const top  = ev.clientY - w.top - rowTip.offsetHeight - 10;
-        rowTip.style.left =
-          Math.max(0, Math.min(left, w.width - rowTip.offsetWidth)) + "px";
-        rowTip.style.top =
-          Math.max(0, Math.min(top, w.height - rowTip.offsetHeight)) + "px";
+        cursorTipPos(ev, wrap, rowTip);
       })
       .on("mouseleave", function(){ rowTip.hidden = true; });
     }
@@ -1274,14 +1263,7 @@
         rowTip.hidden = false;
       })
       .on("mousemove", function(ev){
-        /* rides the cursor's top-right corner, matching the treemap tips */
-        const w = wrap.getBoundingClientRect();
-        const left = ev.clientX - w.left + 10;
-        const top  = ev.clientY - w.top - rowTip.offsetHeight - 10;
-        rowTip.style.left =
-          Math.max(0, Math.min(left, w.width - rowTip.offsetWidth)) + "px";
-        rowTip.style.top =
-          Math.max(0, Math.min(top, w.height - rowTip.offsetHeight)) + "px";
+        cursorTipPos(ev, wrap, rowTip);
       })
       .on("mouseleave", function(){ rowTip.hidden = true; });
     }
@@ -2355,6 +2337,19 @@
   let exportClearHover = null;     /* lets view changes clear a live highlight */
   let tradableClearHover = null;   /* same, for the split animation */
 
+  /* Cursor tooltips prefer the top-right corner of the cursor; when the
+     cursor is too close to the frame's top the tip flips BELOW it — never
+     pinned to an edge while the cursor keeps moving. */
+  function cursorTipPos(ev, wrap, tip){
+    const w = wrap.getBoundingClientRect();
+    let left = ev.clientX - w.left + 10;
+    if (left + tip.offsetWidth > w.width) left = ev.clientX - w.left - tip.offsetWidth - 10;
+    let top = ev.clientY - w.top - tip.offsetHeight - 10;
+    if (top < 0) top = ev.clientY - w.top + 14;
+    tip.style.left = Math.max(0, left) + "px";
+    tip.style.top  = Math.max(0, Math.min(top, w.height - tip.offsetHeight)) + "px";
+  }
+
   function attachCellTip(svgEl, wrap, tip){
     /* Self-healing highlight: re-parenting a hovered node (the bring-to-
        front) can swallow its mouseleave, so never trust leave alone — track
@@ -2392,12 +2387,7 @@
         d3.select(this).select("rect").style("stroke", "#1a2226").style("stroke-width", 2.5);
       })
       .on("mousemove", function(ev){
-        /* rides the cursor's top-right corner, 10px off in both axes */
-        const w = wrap.getBoundingClientRect();
-        const left = ev.clientX - w.left + 10;
-        const top  = ev.clientY - w.top - tip.offsetHeight - 10;
-        tip.style.left = Math.max(0, Math.min(left, w.width - tip.offsetWidth)) + "px";
-        tip.style.top  = Math.max(0, Math.min(top, w.height - tip.offsetHeight)) + "px";
+        cursorTipPos(ev, wrap, tip);
       })
       .on("mouseleave", function(){
         tip.hidden = true;
@@ -2529,11 +2519,7 @@
         tip.hidden = false;
       })
       .on("mousemove", function(ev){
-        const w = wrap.getBoundingClientRect();
-        const left = ev.clientX - w.left + 10;
-        const top2 = ev.clientY - w.top - tip.offsetHeight - 10;
-        tip.style.left = Math.max(0, Math.min(left, w.width - tip.offsetWidth)) + "px";
-        tip.style.top  = Math.max(0, Math.min(top2, w.height - tip.offsetHeight)) + "px";
+        cursorTipPos(ev, wrap, tip);
       })
       .on("mouseleave", function(){ tip.hidden = true; });
     }

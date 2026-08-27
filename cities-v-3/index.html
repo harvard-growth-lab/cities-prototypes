@@ -1092,6 +1092,74 @@
   @keyframes xch-march{to{stroke-dashoffset:-14;}}
   .xch-dash{animation:xch-march 1.1s linear infinite;}
   @media (prefers-reduced-motion: reduce){ .xch-dash{animation:none;} }
+  .xch-split{
+    display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:22px;
+    align-items:start;width:1000px;max-width:100%;margin:14px auto 0;
+  }
+  .commute-map--split{width:100% !important;margin:0 !important;}
+  .xch-side{display:flex;flex-direction:column;gap:12px;min-width:0;}
+  .xch-prompt{
+    border:1.5px dashed var(--border-strong);border-radius:8px;
+    padding:26px 18px;text-align:center;color:var(--ink-soft);
+  }
+  .xp-ico{animation:xp-bob 1.8s ease-in-out infinite;}
+  @keyframes xp-bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-5px);}}
+  @media (prefers-reduced-motion: reduce){ .xp-ico,.xch-nudge{animation:none;} }
+  .xp-main{font-size:15.5px;font-weight:700;color:var(--ink);margin:10px 0 6px;}
+  .xp-sub{font-size:12.5px;line-height:1.5;}
+  .plc-table--side{margin-top:0;}
+  .plc-table--side th,.plc-table--side td{padding:9px 0 9px 8px;font-size:12.5px;}
+  .plc-table--side thead th{font-size:12px;}
+  .xch-side-hint{font-size:12px;color:var(--ink-soft);display:flex;align-items:center;gap:7px;}
+  .xch-side-hint .sw{width:12px;height:12px;border-radius:3px;display:inline-block;}
+  .xch-nudge{
+    position:absolute;z-index:6;transform:translate(-50%,-135%);
+    background:var(--teal);color:#fff;font-size:12px;font-weight:600;
+    padding:5px 11px;border-radius:14px;pointer-events:none;white-space:nowrap;
+    animation:xp-bob 1.8s ease-in-out infinite;
+  }
+  .xch-nudge::after{
+    content:"";position:absolute;left:50%;top:100%;transform:translateX(-50%);
+    border:5px solid transparent;border-top-color:var(--teal);
+  }
+  .ktest{
+    width:1000px;max-width:100%;margin:26px auto 0;
+    border:1px solid var(--border);border-radius:10px;padding:18px 22px 20px;
+    background:#fff;
+  }
+  .ktest--apply{background:var(--teal-tint);border-color:var(--border-strong);}
+  .ktest-head{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+  .ktest-head h3{font-size:16.5px;}
+  .ktest-ic{
+    width:26px;height:26px;border-radius:50%;flex:none;
+    display:inline-flex;align-items:center;justify-content:center;
+    background:var(--teal);color:#fff;font-weight:700;font-size:14px;
+  }
+  .ktest-q{font-size:14.5px;color:var(--ink);margin-bottom:12px;max-width:78ch;}
+  .ktest-opts{display:flex;flex-direction:column;gap:8px;max-width:560px;}
+  .ktest-opts button{
+    text-align:left;font:inherit;font-size:14px;padding:10px 14px;
+    border:1px solid var(--border-strong);border-radius:6px;background:#fff;
+    cursor:pointer;transition:border-color .15s ease,background .15s ease;
+  }
+  .ktest-opts button:hover:not(:disabled){border-color:var(--teal);}
+  .ktest-opts button.is-right{border-color:var(--rise);box-shadow:inset 0 0 0 1px var(--rise);}
+  .ktest-opts button.is-picked:not(.is-right){border-color:var(--fall);box-shadow:inset 0 0 0 1px var(--fall);background:#fdf3f5;}
+  .ktest-opts button:disabled{cursor:default;}
+  .ktest-fb{font-size:13.5px;color:var(--ink);margin-top:12px;max-width:72ch;}
+  .ktest-ta{
+    width:100%;max-width:640px;font:inherit;font-size:14px;padding:10px 12px;
+    border:1px solid var(--border-strong);border-radius:6px;resize:vertical;background:#fff;
+  }
+  .ktest-actions{display:flex;align-items:center;gap:12px;margin-top:10px;}
+  .ktest-save{
+    font:inherit;font-size:13.5px;font-weight:600;color:#fff;background:var(--teal);
+    border:none;border-radius:5px;padding:9px 16px;cursor:pointer;
+  }
+  .ktest-save:hover:not(:disabled){background:var(--teal-dark);}
+  .ktest-save:disabled{opacity:.55;cursor:default;}
+  .ktest-saved{font-size:13px;font-weight:700;color:var(--rise);}
+  .ov-block--check{min-height:auto;justify-content:flex-start;padding:8px 0 40px;}
   .commute-map{
     width:1000px;max-width:100%;margin:14px auto 0;
     border:1px solid var(--border-strong);border-radius:8px;overflow:hidden;
@@ -1810,6 +1878,26 @@
 
   .journey-body{flex:1;overflow-y:auto;padding:26px 32px 32px;}
 
+  .jp-sec{border-bottom:1px solid var(--border);}
+  .jp-sec:last-child{border-bottom:none;}
+  .jp-steps{padding:2px 0 12px 58px;display:flex;flex-direction:column;gap:2px;}
+  .jp-step{
+    display:flex;align-items:center;gap:10px;font:inherit;font-size:13.5px;color:var(--ink-soft);
+    background:none;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;text-align:left;
+  }
+  .jp-step:hover{background:var(--teal-tint);color:var(--ink);}
+  .jp-step .sdot{
+    width:16px;height:16px;border-radius:50%;flex:none;
+    border:1.5px solid var(--border-strong);
+    display:inline-flex;align-items:center;justify-content:center;
+    font-size:10px;font-weight:700;color:var(--ink-soft);background:#fff;
+  }
+  .jp-step.done{color:var(--ink);}
+  .jp-step.done .sdot{border-color:var(--teal);color:var(--teal);}
+  .jp-step.current{color:var(--orange-dark);font-weight:600;}
+  .jp-step.current .sdot{border-color:var(--orange);}
+  .jp-step .stick{color:#2e7d33;font-weight:700;margin-left:auto;font-size:12px;}
+  .jp-step.special .sdot{background:var(--teal-tint);}
   .jp-title{font-size:17px;font-weight:600;color:var(--ink);}
 
   /* cities explored */
@@ -2237,10 +2325,6 @@
       <a href="#">About</a>
       <a href="#">Glossary</a>
     </nav>
-    <button class="datachat-btn" onclick="openChat()">
-      Stat Chat
-      <span class="beta-tag">beta</span>
-    </button>
     <button class="btn-journey">
       <svg width="19" height="19" viewBox="0 0 83 83.01" fill="currentColor" aria-hidden="true"><path d="M82.92,7.06s-.01-.05-.02-.07c-.05-.13-.12-.26-.2-.37-.02-.02-.03-.04-.05-.06-.09-.11-.2-.21-.32-.3-.01,0-.01-.01-.02-.01-.12-.08-.26-.14-.41-.18-.01,0-.02-.01-.04-.02L57.86.04c-.24-.06-.49-.06-.73,0l-24,6c-.67.17-1.14.77-1.14,1.46s.47,1.29,1.14,1.46l9.86,2.47v14.07c0,.22.14.42.36.48l14,4s.09.02.14.02.09-.01.14-.02l14-4c.21-.06.36-.26.36-.48v-14.08l8-2v10.08c0,.83.67,1.5,1.5,1.5s1.5-.67,1.5-1.5V7.5c.01-.16-.02-.31-.07-.45h0ZM57.5,11.95l-17.82-4.45,17.82-4.45,17.82,4.45-17.82,4.45ZM68.5,42.01h-35.71c-.66-2.3-2.77-4-5.29-4s-4.63,1.7-5.29,4h-7.71c-6.34,0-11.5-5.16-11.5-11.5s5.16-11.5,11.5-11.5h21c.83,0,1.5-.67,1.5-1.5s-.67-1.5-1.5-1.5H14.5C6.5,16.01,0,22.51,0,30.51s6.5,14.5,14.5,14.5h7.71c.66,2.3,2.77,4,5.29,4s4.63-1.7,5.29-4h35.71c6.34,0,11.5,5.16,11.5,11.5s-5.16,11.5-11.5,11.5h-7.71c-.66-2.3-2.77-4-5.29-4s-4.63,1.7-5.29,4H18l-15.6-11.7c-.46-.34-1.06-.4-1.57-.14-.51.25-.83.77-.83,1.34v24c0,.57.32,1.09.83,1.34.21.11.44.16.67.16.32,0,.64-.1.9-.3l15.6-11.7h32.21c.66,2.3,2.77,4,5.29,4s4.63-1.7,5.29-4h7.71c8,0,14.5-6.5,14.5-14.5s-6.5-14.5-14.5-14.5h0ZM27.5,46.01c-1.38,0-2.5-1.12-2.5-2.5s1.12-2.5,2.5-2.5,2.5,1.12,2.5,2.5-1.12,2.5-2.5,2.5ZM55.5,72.01c-1.38,0-2.5-1.12-2.5-2.5s1.12-2.5,2.5-2.5,2.5,1.12,2.5,2.5-1.12,2.5-2.5,2.5Z"/></svg>
       My Learning Journey
@@ -2339,10 +2423,6 @@
       <a href="#">About</a>
       <a href="#">Glossary</a>
     </nav>
-    <button class="datachat-btn" onclick="openChat()">
-      Stat Chat
-      <span class="beta-tag">beta</span>
-    </button>
     <button class="btn-journey">
       <svg width="19" height="19" viewBox="0 0 83 83.01" fill="currentColor" aria-hidden="true"><path d="M82.92,7.06s-.01-.05-.02-.07c-.05-.13-.12-.26-.2-.37-.02-.02-.03-.04-.05-.06-.09-.11-.2-.21-.32-.3-.01,0-.01-.01-.02-.01-.12-.08-.26-.14-.41-.18-.01,0-.02-.01-.04-.02L57.86.04c-.24-.06-.49-.06-.73,0l-24,6c-.67.17-1.14.77-1.14,1.46s.47,1.29,1.14,1.46l9.86,2.47v14.07c0,.22.14.42.36.48l14,4s.09.02.14.02.09-.01.14-.02l14-4c.21-.06.36-.26.36-.48v-14.08l8-2v10.08c0,.83.67,1.5,1.5,1.5s1.5-.67,1.5-1.5V7.5c.01-.16-.02-.31-.07-.45h0ZM57.5,11.95l-17.82-4.45,17.82-4.45,17.82,4.45-17.82,4.45ZM68.5,42.01h-35.71c-.66-2.3-2.77-4-5.29-4s-4.63,1.7-5.29,4h-7.71c-6.34,0-11.5-5.16-11.5-11.5s5.16-11.5,11.5-11.5h21c.83,0,1.5-.67,1.5-1.5s-.67-1.5-1.5-1.5H14.5C6.5,16.01,0,22.51,0,30.51s6.5,14.5,14.5,14.5h7.71c.66,2.3,2.77,4,5.29,4s4.63-1.7,5.29-4h35.71c6.34,0,11.5,5.16,11.5,11.5s-5.16,11.5-11.5,11.5h-7.71c-.66-2.3-2.77-4-5.29-4s-4.63,1.7-5.29,4H18l-15.6-11.7c-.46-.34-1.06-.4-1.57-.14-.51.25-.83.77-.83,1.34v24c0,.57.32,1.09.83,1.34.21.11.44.16.67.16.32,0,.64-.1.9-.3l15.6-11.7h32.21c.66,2.3,2.77,4,5.29,4s4.63-1.7,5.29-4h7.71c8,0,14.5-6.5,14.5-14.5s-6.5-14.5-14.5-14.5h0ZM27.5,46.01c-1.38,0-2.5-1.12-2.5-2.5s1.12-2.5,2.5-2.5,2.5,1.12,2.5,2.5-1.12,2.5-2.5,2.5ZM55.5,72.01c-1.38,0-2.5-1.12-2.5-2.5s1.12-2.5,2.5-2.5,2.5,1.12,2.5,2.5-1.12,2.5-2.5,2.5Z"/></svg>
       My Learning Journey
@@ -2364,6 +2444,8 @@
           <li data-step="page-overview-msa"><span class="dot"></span><button onclick="goTo('page-overview-msa')">Your city is not an island</button></li>
           <li data-step="page-overview-city"><span class="dot"></span><button onclick="goTo('page-overview-city')">Admin and metro, side by side</button></li>
           <li data-step="page-overview-places"><span class="dot"></span><button onclick="goTo('page-overview-places')">Admins in your Metro</button></li>
+          <li data-step="check-overview"><span class="dot"></span><button onclick="goTo('check-overview')">Test your knowledge</button></li>
+          <li data-step="apply-overview"><span class="dot"></span><button onclick="goTo('apply-overview')">Put your insights</button></li>
           <li data-step="page-overview-practice"><span class="dot"></span><button onclick="goTo('page-overview-practice')">Put in Practice</button></li>
         </ul>
       </div>
@@ -2376,6 +2458,8 @@
           <li data-step="commuteOutSection"><span class="dot"></span><button onclick="goTo('commuteOutSection')">Not everyone who lives here works here</button></li>
           <li data-step="commuteInSection"><span class="dot"></span><button onclick="goTo('commuteInSection')">Your city is a net importer of workers</button></li>
           <li data-step="commuteExploreSection"><span class="dot"></span><button onclick="goTo('commuteExploreSection')">Explore the exchanges yourself</button></li>
+          <li data-step="check-export"><span class="dot"></span><button onclick="goTo('check-export')">Test your knowledge</button></li>
+          <li data-step="apply-export"><span class="dot"></span><button onclick="goTo('apply-export')">Put your insights</button></li>
         </ul>
       </div>
       <div class="sec" data-sec="page-constraints page-city-in-metro page-constraints-lorem">
@@ -2384,10 +2468,16 @@
           <li data-step="page-constraints"><span class="dot"></span><button onclick="goTo('page-constraints')">How is the metro performing?</button></li>
           <li data-step="page-city-in-metro"><span class="dot"></span><button onclick="goTo('page-city-in-metro')">Is your city pulling with the metro?</button></li>
           <li data-step="page-constraints-lorem"><span class="dot"></span><button onclick="goTo('page-constraints-lorem')">Lorem Ipsum</button></li>
+          <li data-step="check-constraints"><span class="dot"></span><button onclick="goTo('check-constraints')">Test your knowledge</button></li>
+          <li data-step="apply-constraints"><span class="dot"></span><button onclick="goTo('apply-constraints')">Put your insights</button></li>
         </ul>
       </div>
       <div class="sec" data-sec="page-levers">
         <button class="sec-head" onclick="goTo('page-levers')"><span class="num">4</span>Levers for Change</button>
+        <ul class="steps">
+          <li data-step="check-levers"><span class="dot"></span><button onclick="goTo('check-levers')">Test your knowledge</button></li>
+          <li data-step="apply-levers"><span class="dot"></span><button onclick="goTo('apply-levers')">Put your insights</button></li>
+        </ul>
       </div>
       <div class="sec" data-sec="page-extras">
         <button class="sec-head" onclick="goTo('page-extras')"><span class="num">5</span>Extras</button>
@@ -2790,6 +2880,24 @@
             <p class="places-hint"><span class="sw" style="background:var(--geo-city)"></span><span class="city-short">Boston</span> &nbsp;&middot;&nbsp; <span class="sw" style="background:var(--orange)"></span>your picks &mdash; click the map to add a place, click again to remove. Up to three.</p>
           </section>
 
+          <section class="ov-block ov-block--check">
+          <div class="ktest" id="check-overview" data-sec="Economic Fundamentals" data-fb="Around 13% — the administrative city is one piece of a much larger labor market, which is why most of the diagnosis reads at the metro scale.">
+            <div class="ktest-head"><span class="ktest-ic">?</span><h3>Test your knowledge</h3></div>
+            <p class="ktest-q">Roughly what share of the Boston metro&rsquo;s residents live in Boston proper?</p>
+            <div class="ktest-opts"><button type="button" data-ok="1">About 13%</button><button type="button" data-ok="0">About half</button><button type="button" data-ok="0">Nearly all of them</button></div>
+            <p class="ktest-fb" hidden></p>
+          </div>
+          <div class="ktest ktest--apply" id="apply-overview" data-sec="Economic Fundamentals">
+            <div class="ktest-head"><span class="ktest-ic">&#9998;</span><h3>Put your insights</h3></div>
+            <p class="ktest-q">What single fact about how your city is doing would you flag for a colleague — and what would you want to check next?</p>
+            <textarea class="ktest-ta" rows="3" placeholder="The population trend surprised me because&hellip;"></textarea>
+            <div class="ktest-actions">
+              <button type="button" class="ktest-save">Save to my journey</button>
+              <span class="ktest-saved" hidden>Saved &#10003;</span>
+            </div>
+          </div>
+          </section>
+
         </div>
 
         <div class="ov-map">
@@ -2908,27 +3016,6 @@
             <span class="headstat" id="admHeadStat" hidden></span>
           </div>
 
-          <!-- Explainer sits between the copy and the chart, so the concept is
-               defined before the reader meets the visualisation. -->
-          <div class="collapsible-info">
-            <button class="collapsible-header">
-              <span class="ci-mark" aria-hidden="true">
-                <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 2.75a6.25 6.25 0 0 0-3.75 11.25c.53.4.87 1 .96 1.66l.09.59h5.4l.09-.59c.09-.66.43-1.26.96-1.66A6.25 6.25 0 0 0 12 2.75Z"/>
-                  <path d="M9.6 18.6h4.8"/>
-                  <path d="M10.5 21h3"/>
-                </svg>
-              </span>
-              <span class="ci-title">Why does the detail change at the city line?</span>
-              <svg class="collapsible-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M6 9l6 6 6-6"/>
-              </svg>
-            </button>
-            <div class="collapsible-content">
-              <p>Metro industries are reported in fine detail — hundreds of them. For the places <em>inside</em> a metro, employment is published at the sector level only: about ten broad groups. So when the story crosses the city line, the treemap has to change grain first.</p>
-              <p>The share is the point: <span class="city-short">Boston</span> is one place among many in its metro, and each sector’s block shows how much of that work actually sits inside the administrative boundary — the city’s slice of the metro’s economy, sector by sector.</p>
-            </div>
-          </div>
 
           <div class="viz-controls viz-controls--export">
             <div class="ctl">
@@ -3002,10 +3089,41 @@
             <h3>Explore the exchanges yourself</h3>
           </div>
           <p class="lede">Every place around <span class="city-short">Boston</span> trades workers with it, in both directions at once. <strong>Click any place on the map</strong> to add its exchange &mdash; a teal arrow for <span class="city-short">Boston</span>&rsquo;s residents working there, a grey arrow for its workers commuting in &mdash; and build the picture place by place.</p>
-          <div class="commute-map" id="commuteExploreMap"></div>
-          <table class="plc-table" id="exchangeTable" aria-live="polite"></table>
-          <p class="places-hint"><span class="sw" style="background:var(--geo-city)"></span><span class="city-short">Boston</span> &nbsp;&middot;&nbsp; <span class="sw" style="background:var(--orange)"></span>your picks &mdash; click the map to add a place, click again to remove. Up to three.</p>
+          <div class="xch-split">
+            <div class="commute-map commute-map--split" id="commuteExploreMap"></div>
+            <aside class="xch-side">
+              <div class="xch-prompt" id="xchPrompt">
+                <svg class="xp-ico" viewBox="0 0 44 44" width="40" height="40" fill="none" stroke="#255862" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M18 20V8a3 3 0 0 1 6 0v9"/>
+                  <path d="M24 17a3 3 0 0 1 6 0v3a3 3 0 0 1 6 0v4c0 7-3 12-10 12h-2c-4 0-6-1.6-8.5-5.5L11 24a2.8 2.8 0 0 1 4.8-2.8L18 24"/>
+                  <path d="M10 8 6 4M14 5.5 13 1.5M6.5 12 2.5 11"/>
+                </svg>
+                <p class="xp-main">Click any place on the map</p>
+                <p class="xp-sub">Every place trades workers with <span class="city-short">Boston</span>. Tap one to see the exchange &mdash; up to three side by side.</p>
+              </div>
+              <table class="plc-table plc-table--side" id="exchangeTable" aria-live="polite" hidden></table>
+              <p class="xch-side-hint" id="xchSideHint" hidden><span class="sw" style="background:var(--orange)"></span>your picks &middot; click a place again &mdash; or its &times; &mdash; to remove it.</p>
+            </aside>
+          </div>
           <p class="lean-caveat">Census LEHD origin&ndash;destination counts; a &ldquo;~&rdquo; marks figures the source does not list, estimated to scale.</p>
+        </div>
+
+        <div class="export-subsection">
+          <div class="ktest" id="check-export" data-sec="Composition and Trade" data-fb="Financial Activities — 38% of the metro&rsquo;s finance jobs are inside the city, against 24% of the metro&rsquo;s jobs overall.">
+            <div class="ktest-head"><span class="ktest-ic">?</span><h3>Test your knowledge</h3></div>
+            <p class="ktest-q">Which sector&rsquo;s metro jobs sit most disproportionately inside Boston proper?</p>
+            <div class="ktest-opts"><button type="button" data-ok="0">Manufacturing</button><button type="button" data-ok="1">Financial Activities</button><button type="button" data-ok="0">Natural Resources</button></div>
+            <p class="ktest-fb" hidden></p>
+          </div>
+          <div class="ktest ktest--apply" id="apply-export" data-sec="Composition and Trade">
+            <div class="ktest-head"><span class="ktest-ic">&#9998;</span><h3>Put your insights</h3></div>
+            <p class="ktest-q">Which part of your city&rsquo;s economic mix surprised you, and what does it suggest about what the city could sell more of?</p>
+            <textarea class="ktest-ta" rows="3" placeholder="The exchange with Cambridge suggests&hellip;"></textarea>
+            <div class="ktest-actions">
+              <button type="button" class="ktest-save">Save to my journey</button>
+              <span class="ktest-saved" hidden>Saved &#10003;</span>
+            </div>
+          </div>
         </div>
 
 
@@ -3109,10 +3227,45 @@
           <h2>Lorem Ipsum</h2>
         </div>
         <p class="lede">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Proin tortor purus platea sit eu id nisi litora libero. Neque vulputate consequat ac amet augue blandit maximus aliquet congue.</p>
+        <div class="ktest" id="check-constraints" data-sec="City Constraints" data-fb="When pay is bid up but people cannot move in, the binding constraint is usually the cost and supply of housing — the supply-shock quadrant the scatter shades.">
+            <div class="ktest-head"><span class="ktest-ic">?</span><h3>Test your knowledge</h3></div>
+            <p class="ktest-q">Boston&rsquo;s metro pairs fast salary growth with slow population growth. What does that pattern usually point to?</p>
+            <div class="ktest-opts"><button type="button" data-ok="1">A supply constraint — people are being priced out</button><button type="button" data-ok="0">Weak demand for workers</button><button type="button" data-ok="0">A shrinking export base</button></div>
+            <p class="ktest-fb" hidden></p>
+          </div>
+          <div class="ktest ktest--apply" id="apply-constraints" data-sec="City Constraints">
+            <div class="ktest-head"><span class="ktest-ic">&#9998;</span><h3>Put your insights</h3></div>
+            <p class="ktest-q">After these charts, what do you now suspect is binding your city&rsquo;s growth — and which chart made you think so?</p>
+            <textarea class="ktest-ta" rows="3" placeholder="The scatter position makes me suspect&hellip;"></textarea>
+            <div class="ktest-actions">
+              <button type="button" class="ktest-save">Save to my journey</button>
+              <span class="ktest-saved" hidden>Saved &#10003;</span>
+            </div>
+          </div>
       </section>
 
       <!-- 5 Levers for Change (empty) -->
-      <section class="page" id="page-levers"></section>
+      <section class="page" id="page-levers">
+        <div class="page-head">
+          <h2>Levers for Change</h2>
+        </div>
+        <p class="lede">What could loosen the constraint the diagnosis points to. This chapter&rsquo;s content is still being drafted &mdash; its closing checks below already work.</p>
+        <div class="ktest" id="check-levers" data-sec="Levers for Change" data-fb="A supply constraint is loosened on the supply side — zoning, permitting and construction capacity come before demand-side campaigns.">
+            <div class="ktest-head"><span class="ktest-ic">?</span><h3>Test your knowledge</h3></div>
+            <p class="ktest-q">If housing supply is the binding constraint, which lever belongs first on the list?</p>
+            <div class="ktest-opts"><button type="button" data-ok="1">Zoning and permitting reform</button><button type="button" data-ok="0">An export marketing campaign</button><button type="button" data-ok="0">Lower parking fees</button></div>
+            <p class="ktest-fb" hidden></p>
+          </div>
+          <div class="ktest ktest--apply" id="apply-levers" data-sec="Levers for Change">
+            <div class="ktest-head"><span class="ktest-ic">&#9998;</span><h3>Put your insights</h3></div>
+            <p class="ktest-q">Name one lever you would explore first for your city, and the evidence you would need before backing it.</p>
+            <textarea class="ktest-ta" rows="3" placeholder="I would start with&hellip; because&hellip;"></textarea>
+            <div class="ktest-actions">
+              <button type="button" class="ktest-save">Save to my journey</button>
+              <span class="ktest-saved" hidden>Saved &#10003;</span>
+            </div>
+          </div>
+      </section>
 
       <!-- 5 Extras · well-built pieces that sit outside the storyline -->
       <section class="page" id="page-extras">
@@ -3348,6 +3501,7 @@
       </div>
       <div class="jh-titles">
         <h2 id="journeyTitle">My Learning Journey</h2>
+        <p class="jh-sub">The index of the diagnosis &mdash; every section and step, with what you&rsquo;ve read, <strong>answered</strong> and <strong>saved</strong>. Click anything to go there.</p>
       </div>
       <button class="journey-close" onclick="closeJourney()" aria-label="Close">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 2l12 12M14 2 2 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
@@ -3417,7 +3571,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://d3js.org/d3.v7.min.js"></script>
-<script src="treemap.js?v=xch3"></script>
+<script src="treemap.js?v=jrny"></script>
 <script>
   /* ---------- treemaps: color by ----------
      Handled entirely in treemap.js — it wires the visible .seg controls and
@@ -3509,10 +3663,10 @@
 
   /* ---------- journey state ---------- */
   const sectionDefs=[
-    {name:"Economic Fundamentals", pages:["page-overview","page-overview-msa","page-overview-city","page-overview-places"], entry:"page-overview"},
-    {name:"Composition and Trade",    pages:["page-export-basket","tradableSection","leanSection","commuteOutSection","commuteInSection","commuteExploreSection"], entry:"page-export-basket"},
-    {name:"City Constraints",pages:["page-constraints","page-city-in-metro","page-constraints-lorem"],entry:"page-constraints"},
-    {name:"Levers for Change",pages:["page-levers"],    entry:"page-levers"},
+    {name:"Economic Fundamentals", pages:["page-overview","page-overview-msa","page-overview-city","page-overview-places","check-overview","apply-overview"], entry:"page-overview"},
+    {name:"Composition and Trade",    pages:["page-export-basket","tradableSection","leanSection","commuteOutSection","commuteInSection","commuteExploreSection","check-export","apply-export"], entry:"page-export-basket"},
+    {name:"City Constraints",pages:["page-constraints","page-city-in-metro","page-constraints-lorem","check-constraints","apply-constraints"],entry:"page-constraints"},
+    {name:"Levers for Change",pages:["page-levers","check-levers","apply-levers"], entry:"page-levers"},
     /* Well-built pieces outside the storyline; the anchor id is listed so
        goTo() from anywhere routes to this section before scrolling. */
     {name:"Extras",          pages:["page-extras","specializationSection"], entry:"page-extras"}
@@ -3921,24 +4075,54 @@
     }
 
     // section rows
-    document.getElementById("journeySections").innerHTML=secStates.map((s,i)=>{
-      const isExports=s.name==="Composition and Trade";
+    /* the index draws its sub-steps from the rail, the same source the nav
+       ticks use, so the three can never disagree about the site's shape */
+    const railStepsOf = sd => {
+      const sec = [...document.querySelectorAll(".rail .sec")]
+        .find(x => (x.dataset.sec || "").split(/\s+/).includes(sd.entry));
+      return sec ? [...sec.querySelectorAll(".steps li[data-step]")]
+        .filter(li => !li.dataset.step.endsWith("-practice"))
+        .map(li => ({ id: li.dataset.step,
+                      title: li.querySelector("button").textContent.trim() })) : [];
+    };
+    const introRow = '<div class="jp-sec">'+
+      '<button class="jp-row" onclick="journeyGoTo(\'page-intro-q1\')">'+
+      '<span class="num"><svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13" aria-hidden="true"><path d="M12 2l2.9 6.2 6.6.8-4.9 4.6 1.3 6.5L12 16.9 6.1 20l1.3-6.5L2.5 9l6.6-.8L12 2z"/></svg></span>'+
+      '<span class="info"><span class="name">Explore Your Assumption</span>'+
+      '<div class="status '+(introQuestionsAnswered>0?"inprogress":"notstarted")+'">'+
+        (introQuestionsAnswered>0?"Questions: "+introQuestionsAnswered+"/7":"The prologue \u2014 not started")+
+      '</div></span></button></div>';
+    document.getElementById("journeySections").innerHTML=introRow+secStates.map((s,i)=>{
       const isIntro=s.name==="Explore Your Assumption";
       const exploreDone=s.seen>0;
-      const insightDone=isExports&&savedInsights.length>0;
+      const insightDone=APPLY_DONE.has(s.name);
       const rowCls=(s.current?" current":"")+(s.completed?" completed":"");
       const stKey=s.completed?"completed":(s.seen>0?"inprogress":"notstarted");
       const stText=s.completed?"Completed":(s.seen>0?(isIntro?"Questions: "+introQuestionsAnswered+"/7":"In progress"):"Not started");
-      return '<button class="jp-row'+rowCls+'" onclick="journeyGoTo(\''+s.entry+'\')">'+
-        '<span class="num">'+(i===0
-          ?'<svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13" aria-hidden="true"><path d="M12 2l2.9 6.2 6.6.8-4.9 4.6 1.3 6.5L12 16.9 6.1 20l1.3-6.5L2.5 9l6.6-.8L12 2z"/></svg>'
-          :String(i).padStart(2,"0"))+'</span>'+
+      const steps=railStepsOf(s).map(st=>{
+        const isCheck=st.id.indexOf("check-")===0;
+        const isApply=st.id.indexOf("apply-")===0;
+        const done=isCheck?CHECK_DONE.has(s.name)
+                 :isApply?APPLY_DONE.has(s.name)
+                 :visitedPages.has(st.id);
+        const cur=st.id===currentPageId;
+        const mark=isCheck?"?":isApply?"\u270e":"";
+        return '<button class="jp-step'+(cur?" current":"")+(done?" done":"")+
+          ((isCheck||isApply)?" special":"")+'" onclick="journeyGoTo(\''+st.id+'\')">'+
+          '<span class="sdot">'+mark+'</span>'+st.title+
+          (done?'<span class="stick">\u2713</span>':"")+'</button>';
+      }).join("");
+      return '<div class="jp-sec">'+
+        '<button class="jp-row'+rowCls+'" onclick="journeyGoTo(\''+s.entry+'\')">'+
+        '<span class="num">'+String(i+1).padStart(2,"0")+'</span>'+
         '<span class="info"><span class="name">'+s.name+'</span>'+
         '<div class="status '+stKey+'">'+stText+'</div></span>'+
         '<span class="jp-icons">'+
           jpIcon(icExplore, exploreDone)+
           jpIcon(icInsight, insightDone)+
-        '</span></button>';
+        '</span></button>'+
+        (steps?'<div class="jp-steps">'+steps+'</div>':"")+
+        '</div>';
     }).join("");
 
     // saved insights/notes
@@ -3949,7 +4133,7 @@
     }else{
       nWrap.innerHTML=savedInsights.map(ins=>
         '<div class="jp-note">'+
-          '<div class="meta">'+ins.city.split(",")[0]+' ('+ins.span+')</div>'+
+          '<div class="meta">'+ins.section+' \u2014 '+ins.city.split(",")[0]+' ('+ins.span+')</div>'+
           '<p class="text">'+ins.text.replace(/</g,"&lt;")+'</p></div>'
       ).join("");
     }
@@ -4503,7 +4687,7 @@
     const host = document.getElementById(id);
     if (!host || typeof d3 === "undefined") return;
     loadXchGeo(() => {
-      const W = 1000, H = 460;
+      const W = 1000, H = cfg.mode === "explore" ? 700 : 460;
       const feats = XCH_GEO.places.features;
       const featOf = n => feats.find(f => f.properties.place_name === n);
       const focusFC = { type: "FeatureCollection",
@@ -4592,8 +4776,16 @@
           .attr("class", "xch-count").text(t);
       }
 
-      /* Boston label */
-      labels.append("text").attr("x", bosC[0]).attr("y", bosC[1] + 4)
+      /* the landing's building glyph anchors the admin city, as in the
+         mock-up — a white halo copy underneath keeps it legible */
+      const BLDG = '<path d="M2 26h20"/><path d="M4 26V15h6v11"/><path d="M12 26V8h7v18"/>' +
+        '<path d="M14.6 12h1.8M14.6 16h1.8M14.6 20h1.8"/>';
+      labels.append("g")
+        .attr("transform", "translate(" + (bosC[0] - 12) + "," + (bosC[1] - 24) + ")")
+        .html('<g fill="none" stroke-linecap="round" stroke-linejoin="round">' +
+          '<g stroke="#ffffff" stroke-width="4.6">' + BLDG + '</g>' +
+          '<g stroke="#255862" stroke-width="1.8">' + BLDG + '</g></g>');
+      labels.append("text").attr("x", bosC[0]).attr("y", bosC[1] + 16)
         .attr("text-anchor", "middle").attr("class", "xch-name xch-name--home")
         .text("Boston");
 
@@ -4626,9 +4818,11 @@
         })
         .on("mousemove", function(ev){
           const w = host.getBoundingClientRect();
-          const left = ev.clientX - w.left + 10;
-          const top = ev.clientY - w.top - tip.offsetHeight - 10;
-          tip.style.left = Math.max(0, Math.min(left, w.width - tip.offsetWidth)) + "px";
+          let left = ev.clientX - w.left + 10;
+          if (left + tip.offsetWidth > w.width) left = ev.clientX - w.left - tip.offsetWidth - 10;
+          let top = ev.clientY - w.top - tip.offsetHeight - 10;
+          if (top < 0) top = ev.clientY - w.top + 14;
+          tip.style.left = Math.max(0, left) + "px";
           tip.style.top  = Math.max(0, Math.min(top, w.height - tip.offsetHeight)) + "px";
         })
         .on("mouseleave", function(ev, f){
@@ -4654,11 +4848,17 @@
           "<th>" + c.n +
           ' <button class="plc-remove" data-name="' + c.n + '" aria-label="Remove ' + c.n + '">&times;</button></th>'
         ).join("");
-        const empty = cols.length === 0 ? '<th class="plc-empty">click the map &rarr;</th>' : "";
+        const prompt = document.getElementById("xchPrompt");
+        const sideHint = document.getElementById("xchSideHint");
+        const has = cols.length > 0;
+        if (prompt) prompt.hidden = has;
+        tbl.hidden = !has;
+        if (sideHint) sideHint.hidden = !has;
+        const empty = "";
         const rows = [
-          ["Residents commuting there", c => xchFmt(c.x.out, c.x.outEst)],
-          ["Workers commuting from there", c => xchFmt(c.x.inn, c.x.innEst)],
-          ["Net flow into the city", c => {
+          ["\u2191 Residents out", c => xchFmt(c.x.out, c.x.outEst)],
+          ["\u2193 Workers in", c => xchFmt(c.x.inn, c.x.innEst)],
+          ["Net into the city", c => {
             const net = c.x.inn - c.x.out;
             return (net >= 0 ? "+" : "−") + Math.abs(net).toLocaleString();
           }]
@@ -4672,6 +4872,8 @@
           b.addEventListener("click", () => togglePick(b.dataset.name)));
       }
       function togglePick(n){
+        const nd = document.getElementById("xchNudge");
+        if (nd) nd.remove();
         const i = picked.indexOf(n);
         if (i >= 0) picked.splice(i, 1);
         else {
@@ -4687,9 +4889,56 @@
       if (cfg.mode === "explore"){
         cellSel.on("click", (ev, f) => togglePick(f.properties.place_name));
         renderXchTable();
+        /* a friendly pointer on the map itself — prompts must not live only
+           in prose. Positioned in % so it tracks the responsive frame. */
+        const cam = featOf("Cambridge");
+        if (cam){
+          const pc = proj(d3.geoCentroid(cam));
+          const nd = document.createElement("div");
+          nd.className = "xch-nudge"; nd.id = "xchNudge";
+          nd.textContent = "Click a place \u2014 try Cambridge";
+          nd.style.left = (pc[0] / W * 100) + "%";
+          nd.style.top  = (pc[1] / H * 100) + "%";
+          host.appendChild(nd);
+        }
       }
     });
   }
+
+  /* ---------- per-section knowledge checks & insight capture ----------
+     One wiring for every .ktest block; states feed the journey index. */
+  const CHECK_DONE = new Set(), APPLY_DONE = new Set();
+  document.querySelectorAll(".ktest").forEach(k => {
+    const sec = k.dataset.sec;
+    k.querySelectorAll(".ktest-opts button").forEach(b => {
+      b.addEventListener("click", () => {
+        const ok = b.dataset.ok === "1";
+        k.querySelectorAll(".ktest-opts button").forEach(x => {
+          x.classList.toggle("is-right", x.dataset.ok === "1");
+          x.classList.toggle("is-picked", x === b);
+          x.disabled = true;
+        });
+        const fb = k.querySelector(".ktest-fb");
+        fb.hidden = false;
+        fb.textContent = (ok ? "Right. " : "Not quite. ") + k.dataset.fb;
+        CHECK_DONE.add(sec);
+      });
+    });
+    const save = k.querySelector(".ktest-save");
+    if (save) save.addEventListener("click", () => {
+      const ta = k.querySelector(".ktest-ta");
+      if (!ta.value.trim()){ ta.focus(); return; }
+      savedInsights.push({
+        section: sec + " \u00b7 Put your insights",
+        city: document.getElementById("citySelectTool").value,
+        span: "10 years",
+        text: ta.value.trim()
+      });
+      APPLY_DONE.add(sec);
+      k.querySelector(".ktest-saved").hidden = false;
+      save.disabled = true;
+    });
+  });
 
   commuteFlowMap("commuteOutMap", { mode: "out", legendHi: "outLegHi",
     focus: ["Cambridge","Newton","Waltham","Quincy"] });
