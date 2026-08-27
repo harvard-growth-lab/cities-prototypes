@@ -7,53 +7,83 @@
                                 Tradable (left, still sector-grouped/coloured)
                                 Non-tradable (right, greyed)
 
-   Both use a 880x550 viewBox so they share the prototype's proportions.
+   Both use a 1000x480 viewBox so they share the prototype's proportions.
    ========================================================================= */
 (function(){
   "use strict";
 
-  const WIDTH  = 880;
-  const HEIGHT = 550;
+  const WIDTH  = 1000;   /* the figure measure: slightly inside the 1104 text measure, fonts 1:1 */
+  const HEIGHT = 480;    /* wide-and-short (2.1:1) so the full map fits one view */
   const GREY   = "#9ca3af";
 
   /* "Color by" modes. Complexity and change are dummy values for the prototype,
      but held stable per industry so a cell keeps its shade across replays. */
   const SECTOR     = "Sector";
   const COMPLEXITY = "Product complexity";
-  const CHANGE     = "Change";
+  const TRADABILITY = "Tradability";
 
   const complexityPalette = ["#d38b52","#e8c39b","#d3e5df","#6fab97","#2f7d6a"];
   const complexityByName = new Map();
 
-  /* Change 2014 -> 2024. Deliberately a different axis from the complexity
-     ramp (terracotta -> green): this one runs on the theme's own two accent
-     tokens, --orange (shrinking) through a light neutral to --teal (growing).
-     Read from :root so the scale tracks the theme rather than duplicating it.
-     "New" industries have no 2014 baseline, so they have no growth rate to
-     place on the ramp and take an off-scale swatch instead. */
-  const CHANGE_MID = "#f4f1ee";
-  const CHANGE_NEW = "#7a67a3";
-
+  /* Tradability 0 -> 1: how much of an industry's output is sold outside
+     the region. A diverging ramp — russet (locally consumed) through a
+     neutral gray to the theme teal (widely traded) — because the midpoint
+     means "neither". Poles are lightness-matched (OKLab L .45/.43) and sit
+     on opposite sides of the blue–yellow axis, so the direction survives
+     red-green colourblindness (poles ΔE 9.9 protan, target ≥8); the russet
+     pole keeps ΔE 24 from the complexity ramp's terracotta. */
   function token(name, fallback){
     const v = getComputedStyle(document.documentElement)
       .getPropertyValue(name).trim();
     return v || fallback;
   }
 
-  let _changeScale = null;
-  function changeScale(v){
-    if (!_changeScale) {
-      _changeScale = d3.scaleLinear()
-        .domain([-0.6, 0, 0.9])
-        .range([token("--orange", "#e76565"), CHANGE_MID, token("--teal", "#255862")])
+  let _tradScale = null;
+  function tradabilityScale(v){
+    if (!_tradScale) {
+      _tradScale = d3.scaleLinear()
+        .domain([0, 0.25, 0.5, 0.75, 1])
+        .range(["#7f451e", "#b97f4e", "#efeeec",
+                "#67929f", token("--teal", "#255862")])
         .interpolate(d3.interpolateLab)
         .clamp(true);
     }
-    return _changeScale(v);
+    return _tradScale(v);
   }
 
-  /* Dummy 2014->2024 growth per industry; null means "new since 2014". */
-  const growthByName = new Map();
+  /* Dummy tradability per industry: a sector prior (manufacturing travels,
+     restaurants don't) plus a stable per-name spread, so a cell keeps its
+     shade across replays and the ranked views agree with the ramp. */
+  const TRADABILITY_PRIOR = {
+    "Construction": 0.15, "Education & Health": 0.45,
+    "Financial Activities": 0.62, "Leisure & Hospitality": 0.22,
+    "Manufacturing": 0.78, "Natural Resources": 0.70,
+    "Other": 0.35, "Professional & Business": 0.60,
+    "Trade & Transportation": 0.50
+  };
+  /* Dummy admin share of each sector's metro jobs — downtown-weighted
+     sectors run high, land-hungry ones low. One function to swap for real
+     place-level (2-digit) employment when it arrives. */
+  const ADMIN_SHARE = {
+    "Construction": 0.12, "Education & Health": 0.31,
+    "Financial Activities": 0.38, "Leisure & Hospitality": 0.24,
+    "Manufacturing": 0.08, "Natural Resources": 0.03,
+    "Other": 0.18, "Professional & Business": 0.33,
+    "Trade & Transportation": 0.15
+  };
+  const tradByName = new Map();
+  let _sectorOf = null;
+  function tradabilityOf(name){
+    if(!tradByName.has(name)){
+      if (!_sectorOf) _sectorOf = new Map(rawData.map(r => [r.name, r.sector]));
+      const prior = TRADABILITY_PRIOR[_sectorOf.get(name)] ?? 0.35;
+      let h = 2166136261;
+      for (const c of name){ h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); }
+      const jitter = ((h >>> 0) / 4294967296 - 0.5) * 0.5;
+      tradByName.set(name, Math.min(0.98, Math.max(0.02, prior + jitter)));
+    }
+    return tradByName.get(name);
+  }
 
   const colorMode  = { exportTreemapSvg:SECTOR, tradableAnimatedSvg:SECTOR };
 
@@ -69,19 +99,7 @@
     return complexityByName.get(name);
   }
 
-  function growthOf(name){
-    if(!growthByName.has(name)){
-      // ~8% are new since 2014 (no baseline); the rest spread across the ramp.
-      growthByName.set(name,
-        Math.random() < 0.08 ? null : (Math.random() * 1.5 - 0.6));
-    }
-    return growthByName.get(name);
-  }
-
-  function changeColor(name){
-    const g = growthOf(name);
-    return g === null ? CHANGE_NEW : changeScale(g);
-  }
+  function tradabilityColor(name){ return tradabilityScale(tradabilityOf(name)); }
 
   /* Fill for one industry cell. Non-tradable cells stay grey in every mode —
      grey encodes "non-tradable", not a sector. */
@@ -89,7 +107,7 @@
     if (grey) return GREY;
     const mode = colorMode[svgId];
     if (mode === COMPLEXITY) return complexityColor(d.data.name);
-    if (mode === CHANGE)     return changeColor(d.data.name);
+    if (mode === TRADABILITY) return tradabilityColor(d.data.name);
     return sectorColors[d.parent.data.name];
   }
 
@@ -510,6 +528,16 @@
     const allLeaves = root.leaves();
 
     function reset(){
+      if (tradableClearHover) tradableClearHover();
+      svg.selectAll(".adm-layer").interrupt().remove();
+      merged = false;
+      const key = document.getElementById("admKey");
+      if (key) key.hidden = true;
+      const stripEl = document.getElementById("admHeadStat");
+      if (stripEl) stripEl.hidden = true;
+      const sect = el.closest(".export-subsection");
+      if (sect) sect.classList.remove("animated");
+      cells.style("pointer-events", null);
       sectorLayer.selectAll(".sector-rect").interrupt();
       sectorLayer.selectAll(".sector-rect")
         .data(root.children, d => d.key)
@@ -523,7 +551,8 @@
       cells.select(".cell").interrupt()
         .attr("x", d => d.x0).attr("y", d => d.y0)
         .attr("width", d => d.x1 - d.x0).attr("height", d => d.y1 - d.y0)
-        .attr("fill", d => cellFill(el.id, d, false));
+        .attr("fill", d => cellFill(el.id, d, false))
+        .style("opacity", 1);
 
       cells.select(".industry-text").interrupt()
         .style("opacity", 1)
@@ -533,91 +562,115 @@
       el.classList.remove("animated");
     }
 
+    let merged = false;
+
     function run(){
       reset();
 
-      // 30 random industries become non-tradable (grey, right half).
-      const pick = new Set();
-      while (pick.size < 30) pick.add(Math.floor(Math.random() * allLeaves.length));
-      const nonTradableNames = new Set([...pick].map(i => allLeaves[i].data.name));
-
-      const tradable    = allLeaves.filter(d => !nonTradableNames.has(d.data.name));
-      const nonTradable = allLeaves.filter(d =>  nonTradableNames.has(d.data.name));
-
-      // Equal-width halves, both using the full height.
-      const gap = 6;
-      const half = (WIDTH - gap) / 2;
-      const rightX = half + gap;
-
-      // Left keeps the sector grouping; right is a flat grey treemap.
-      const left = layout(
-        tradable.map(d => ({ name: d.data.name, employ: d.value, sector: d.parent.data.name })),
-        "L", half
-      );
-      const right = d3.hierarchy({
-        name: "R",
-        children: nonTradable.map(d => ({ name: d.data.name, value: d.value }))
-      }).sum(d => d.value);
-      d3.treemap().size([half, HEIGHT])
-        .paddingTop(1).paddingRight(1).paddingBottom(1).paddingLeft(1)(right);
-
-      const box = new Map();
-      left.leaves().forEach(n => box.set(n.data.name,
-        { x: n.x0, y: n.y0, width: n.x1 - n.x0, height: n.y1 - n.y0, grey: false }));
-      right.leaves().forEach(n => box.set(n.data.name,
-        { x: rightX + n.x0, y: n.y0, width: n.x1 - n.x0, height: n.y1 - n.y0, grey: true }));
-
-      // Sector blocks now describe the left half only.
-      left.children.forEach(s => { s.key = "L:" + s.data.name; });
-      const blocks = sectorLayer.selectAll(".sector-rect").data(left.children, d => d.key);
-
-      blocks.exit().transition().duration(500).style("opacity", 0).remove();
-
-      blocks.enter().append("rect")
-        .attr("class", "sector-rect")
-        .attr("x", d => d.x0).attr("y", d => d.y0)
-        .attr("width", d => d.x1 - d.x0).attr("height", d => d.y1 - d.y0)
-        .attr("fill", d => sectorColors[d.data.name])
-        .style("opacity", 0)
-        .transition().delay(700).duration(700).style("opacity", 1);
-
-      blocks.transition().duration(1200).ease(d3.easeCubicInOut)
-        .attr("x", d => d.x0).attr("y", d => d.y0)
-        .attr("width", d => d.x1 - d.x0).attr("height", d => d.y1 - d.y0);
-
+      // The grain change is deliberately quiet: the industry seams and
+      // labels fade out IN PLACE and the sector blocks that were always
+      // behind them come forward — nothing moves, the areas do not change,
+      // only the level of detail does.
       cells.select(".industry-text").transition().duration(300).style("opacity", 0);
+      cells.style("pointer-events", "none");
+      cells.select(".cell").transition().duration(700).ease(d3.easeCubicInOut)
+        .style("opacity", 0)
+        .end().then(() => {
+          /* rejects if a replay interrupts this run — exactly when phase 2
+             must NOT fire on top of a fresh reset */
+          merged = true;
+          phase2();
+        }).catch(() => {});
 
-      cells.select(".cell")
-        .transition().duration(1200).ease(d3.easeCubicInOut)
-        .attr("x", d => box.get(d.data.name).x)
-        .attr("y", d => box.get(d.data.name).y)
-        .attr("width", d => box.get(d.data.name).width)
-        .attr("height", d => box.get(d.data.name).height)
-        .attr("fill", d => cellFill(el.id, d, box.get(d.data.name).grey))
-        .on("end", function(d, i){
-          if (i !== cells.size() - 1) return;   // run the follow-up once
-          cells.select(".industry-text")
-            .attr("x", d => box.get(d.data.name).x + 4)
-            .attr("y", d => box.get(d.data.name).y + 11)
-            .text(d => fitLabel(d.data.name, box.get(d.data.name)))
-            .transition().duration(400).style("opacity", 1);
+      // Phase 2 — the admin share: a veil fades everything that happens
+      // elsewhere in the metro; the solid band left at the foot of each
+      // block IS the city's slice of that sector.
+      function phase2(){
+        const layer = svg.append("g")
+          .attr("class", "adm-layer").attr("pointer-events", "none");
+        root.children.forEach(sec => {
+          const name = sec.data.name;
+          const a = { x: sec.x0, y: sec.y0, w: sec.x1 - sec.x0, h: sec.y1 - sec.y0 };
+          const share = ADMIN_SHARE[name] !== undefined ? ADMIN_SHARE[name] : 0.15;
+          const veilH = (1 - share) * a.h;
+          const g = layer.append("g");
+          g.append("rect")
+            .attr("x", a.x).attr("y", a.y)
+            .attr("width", a.w).attr("height", 0)
+            .attr("fill", "#ffffff").attr("opacity", 0.68)
+            .transition().delay(250).duration(750).ease(d3.easeCubicInOut)
+            .attr("height", veilH);
+          if (a.w > 64 && a.h > 44){
+            const label = fitLabel(name, { width: a.w, height: a.h });
+            g.append("text")
+              .attr("x", a.x + 8).attr("y", a.y + 19)
+              .attr("fill", "#1a2226").attr("font-size", 13.5).attr("font-weight", 600)
+              .text(label)
+              .style("opacity", 0)
+              .transition().delay(650).duration(450).style("opacity", 1);
+            g.append("text")
+              .attr("x", a.x + 8).attr("y", a.y + 36)
+              .attr("fill", "#5b686d").attr("font-size", 12)
+              .text(Math.round(share * 100) + "% in the city")
+              .style("opacity", 0)
+              .transition().delay(800).duration(450).style("opacity", 1);
+          }
         });
-
-      splitState[el.id] = box;
-      el.classList.add("animated");
-      // Also flag the subsection so the split headers above the chart can reveal.
-      const section = el.closest(".export-subsection");
-      if (section) section.classList.add("animated");
+        const key = document.getElementById("admKey");
+        if (key) key.hidden = false;
+        const strip = document.getElementById("admHeadStat");
+        if (strip) strip.hidden = false;
+        el.classList.add("animated");
+        const section = el.closest(".export-subsection");
+        if (section) section.classList.add("animated");
+      }
     }
 
-    const btn = document.getElementById("replayBtn");
-    if (btn) btn.addEventListener("click", run);
+    /* In the merged state the sector blocks are the marks — they answer the
+       cursor with the sector's metro total and the city's slice of it. */
+    const admTip = document.getElementById("tradableTip");
+    const admWrap = document.querySelector(".tradable-viz-wrapper");
+    sectorLayer.selectAll(".sector-rect")
+      .on("mouseenter.adm", function(ev, d){
+        if (!merged || !admTip) return;
+        const share = ADMIN_SHARE[d.data.name] !== undefined ? ADMIN_SHARE[d.data.name] : 0.15;
+        admTip.innerHTML = "<strong>" + d.data.name + "</strong>" +
+          '<div class="tip-row"><span>Metro jobs</span><span>' +
+            Math.round(d.value).toLocaleString() + "</span></div>" +
+          '<div class="tip-row"><span>Inside the city</span><span>' +
+            Math.round(d.value * share).toLocaleString() + " \u00b7 " +
+            Math.round(share * 100) + "%</span></div>";
+        admTip.hidden = false;
+      })
+      .on("mousemove.adm", function(ev){
+        if (!merged || !admTip) return;
+        const w = admWrap.getBoundingClientRect();
+        const left = ev.clientX - w.left + 10;
+        const top  = ev.clientY - w.top - admTip.offsetHeight - 10;
+        admTip.style.left = Math.max(0, Math.min(left, w.width - admTip.offsetWidth)) + "px";
+        admTip.style.top  = Math.max(0, Math.min(top, w.height - admTip.offsetHeight)) + "px";
+      })
+      .on("mouseleave.adm", function(){ if (admTip) admTip.hidden = true; });
 
-    // Play once when the section first scrolls into view.
+    const admTotal = d3.sum(root.children, sec => sec.value);
+    const admInside = d3.sum(root.children, sec =>
+      sec.value * (ADMIN_SHARE[sec.data.name] !== undefined ? ADMIN_SHARE[sec.data.name] : 0.15));
+    const admStat = document.getElementById("admHeadStat");
+    donutStat(admStat, admInside / admTotal, token("--teal", "#255862"),
+      'of the metro\u2019s jobs sit inside <span class="city-short">Boston</span> proper');
+    if (admStat) admStat.hidden = true;   /* revealed by the veil's final beat */
+
+    let hasRun = false;
+    const runOnce = () => { hasRun = true; run(); };
+    const btn = document.getElementById("replayBtn");
+    if (btn) btn.addEventListener("click", runOnce);
+
+    // Play once when the section first scrolls into view — but never stomp
+    // a run the reader already started (the replay button races this timer).
     new IntersectionObserver((entries, obs) => {
       entries.forEach(entry => {
         if (!entry.isIntersecting) return;
-        setTimeout(run, 300);
+        setTimeout(() => { if (!hasRun) runOnce(); }, 300);
         obs.disconnect();
       });
     }, { threshold: 0.35 }).observe(el);
@@ -632,7 +685,10 @@
     d3.select("#" + svgId).selectAll(".cell")
       .attr("fill", d => cellFill(svgId, d, split ? !!(split.get(d.data.name) || {}).grey : false));
 
-    if (svgId === "exportTreemapSvg") refreshExportOption();
+    if (svgId === "exportTreemapSvg"){
+      refreshExportOption();
+      updateExportHeadStat();
+    }
 
     if (legends) {
       const show = (id, on) => {
@@ -640,7 +696,7 @@
         if (el) el.classList.toggle("show", on);
       };
       show(legends.complexity, mode === COMPLEXITY);
-      show(legends.change,     mode === CHANGE);
+      show(legends.change,     mode === TRADABILITY);
     }
   }
 
@@ -927,9 +983,10 @@
         rowTip.hidden = false;
       })
       .on("mousemove", function(ev){
+        /* rides the cursor's top-right corner, matching the treemap tips */
         const w = wrap.getBoundingClientRect();
-        const left = ev.clientX - w.left + 16;
-        const top  = ev.clientY - w.top + 14;
+        const left = ev.clientX - w.left + 10;
+        const top  = ev.clientY - w.top - rowTip.offsetHeight - 10;
         rowTip.style.left =
           Math.max(0, Math.min(left, w.width - rowTip.offsetWidth)) + "px";
         rowTip.style.top =
@@ -1217,9 +1274,10 @@
         rowTip.hidden = false;
       })
       .on("mousemove", function(ev){
+        /* rides the cursor's top-right corner, matching the treemap tips */
         const w = wrap.getBoundingClientRect();
-        const left = ev.clientX - w.left + 16;
-        const top  = ev.clientY - w.top + 14;
+        const left = ev.clientX - w.left + 10;
+        const top  = ev.clientY - w.top - rowTip.offsetHeight - 10;
         rowTip.style.left =
           Math.max(0, Math.min(left, w.width - rowTip.offsetWidth)) + "px";
         rowTip.style.top =
@@ -1995,7 +2053,7 @@
      number transforms the export treemap (or annotates it) around whichever
      "Color by" is active: 1 = ranked list beside the map, 2 = one-axis
      swarm. The metric follows the
-     colour mode: complexity -> PCI, change -> growth, sector -> jobs.
+     colour mode: complexity -> PCI, tradability -> traded share, sector -> jobs.
      Clicking the active number restores the plain map. */
   let exportOpt = 0;
   let exportView = "map";   /* the treemap is always the default view */
@@ -2019,17 +2077,12 @@
       val: n => pciNumOf(n),
       fmt: v => "PCI " + v.toFixed(2), barFmt: v => v.toFixed(2)
     };
-    if (mode === CHANGE) return {
-      kind: "chg", axis: "Change, 2014–2024",
-      listTitle: "Top 5 fastest-growing industries",
-      corner: "big and growing",
-      val: n => { const g = growthOf(n); return g === null ? 1.05 : g; },
-      /* "new" industries have no rate: they sit at the scale's edge in the
-         positional views but rank below every real grower in the lists */
-      rank: n => { const g = growthOf(n); return g === null ? -Infinity : g; },
-      isNew: n => growthOf(n) === null,
-      fmt: v => (v > 0 ? "+" : "") + Math.round(v * 100) + "%",
-      barFmt: v => (v > 0 ? "+" : "") + Math.round(v * 100) + "%"
+    if (mode === TRADABILITY) return {
+      kind: "trd", axis: "Tradability (0 local \u2192 1 traded)",
+      listTitle: "Top 5 most traded industries",
+      corner: "big and traded",
+      val: n => tradabilityOf(n),
+      fmt: v => v.toFixed(2), barFmt: v => v.toFixed(2)
     };
     return {
       kind: "jobs", axis: "Jobs (log scale)",
@@ -2044,11 +2097,11 @@
   function exportAltLabel(){
     const m = exportMetric();
     if (exportOpt === 2) return m.kind === "pci" ? "Ordered by complexity"
-                       : m.kind === "chg" ? "Ordered by change" : "Ordered by jobs";
+                       : m.kind === "trd" ? "Ordered by tradability" : "Ordered by jobs";
     if (exportOpt === 3) return m.kind === "pci" ? "Most complex, ranked"
-                       : m.kind === "chg" ? "Fastest growing, ranked" : "Biggest, ranked";
+                       : m.kind === "trd" ? "Most traded, ranked" : "Biggest, ranked";
     if (exportOpt === 4) return m.kind === "pci" ? "Complexity vs. jobs"
-                       : m.kind === "chg" ? "Change vs. jobs" : "Jobs by sector";
+                       : m.kind === "trd" ? "Tradability vs. jobs" : "Jobs by sector";
     return "";
   }
 
@@ -2104,11 +2157,10 @@
       if (!exportListOn) return;
       const ranked = [...leaves].sort((a, b) => exRank(m, b) - exRank(m, a));
       const groups = [];
-      if (m.kind === "chg"){
-        /* change cuts both ways: the shrinking half is often the story */
-        const real = ranked.filter(d => !(m.isNew && m.isNew(d.data.name)));
-        groups.push(["Top 5 fastest-growing", real.slice(0, 5)]);
-        groups.push(["Top 5 fastest-shrinking", real.slice(-5).reverse()]);
+      if (m.kind === "trd"){
+        /* tradability cuts both ways: the local tail is often the story */
+        groups.push(["Top 5 most traded", ranked.slice(0, 5)]);
+        groups.push(["Top 5 most local", ranked.slice(-5).reverse()]);
       } else {
         groups.push([m.listTitle, ranked.slice(0, 5)]);
       }
@@ -2280,7 +2332,7 @@
     const lab = b.querySelector(".switch-label");
     if (lab) lab.textContent =
         mk === "pci" ? "Show Most Complex Industries"
-      : mk === "chg" ? "Show Top Growing/Shrinking Industries"
+      : mk === "trd" ? "Show Most & Least Traded Industries"
       :                "Show Largest Industries";
     b.setAttribute("aria-pressed", String(exportListOn));
   }
@@ -2297,16 +2349,13 @@
     if (lab){ lab.hidden = exportOpt === 1; lab.textContent = "View"; }
   }
 
-  /* One tooltip serves every form the export cells take — treemap tiles,
-     swarm dots, ranked bars — because the morphs reuse the same elements.
-     Same card pattern as the RCA row tooltips. */
-  let exportClearHover = null;   /* lets view changes clear a live highlight */
+  /* One tooltip serves every form a treemap's cells take — tiles, swarm
+     dots, ranked bars, the tradable/local split — because the morphs reuse
+     the same elements. Same card pattern as the RCA row tooltips. */
+  let exportClearHover = null;     /* lets view changes clear a live highlight */
+  let tradableClearHover = null;   /* same, for the split animation */
 
-  function initExportTooltip(){
-    const svgEl = document.getElementById("exportTreemapSvg");
-    const tip = document.getElementById("exportTip");
-    const wrap = document.querySelector(".export-viz-row");
-    if (!svgEl || !tip || !wrap) return;
+  function attachCellTip(svgEl, wrap, tip){
     /* Self-healing highlight: re-parenting a hovered node (the bring-to-
        front) can swallow its mouseleave, so never trust leave alone — track
        the hot mark and clear it on the next enter, on leaving the svg, and
@@ -2318,24 +2367,20 @@
       d3.select(hot).select("rect").style("stroke", null).style("stroke-width", null);
       hot = null;
     };
-    exportClearHover = clearHot;
-    d3.select(svgEl).on("mouseleave.exporttip", () => { tip.hidden = true; clearHot(); });
+    d3.select(svgEl).on("mouseleave.celltip", () => { tip.hidden = true; clearHot(); });
     d3.select(svgEl).selectAll("g.industry")
       .on("mouseenter", function(ev, d){
         clearHot();
         hot = this;
         const name = d.data.name;
-        const mode = colorMode.exportTreemapSvg;
+        const mode = colorMode[svgEl.id];
         let extra = "";
         if (mode === COMPLEXITY)
           extra = '<div class="tip-row"><span>Complexity (PCI)</span><span>' +
                   pciNumOf(name).toFixed(2) + '</span></div>';
-        if (mode === CHANGE){
-          const g = growthOf(name);
-          extra = '<div class="tip-row"><span>Change 2014\u20132024</span><span>' +
-                  (g === null ? "new since 2014"
-                              : (g > 0 ? "+" : "") + Math.round(g * 100) + "%") + '</span></div>';
-        }
+        if (mode === TRADABILITY)
+          extra = '<div class="tip-row"><span>Tradability</span><span>' +
+                  tradabilityOf(name).toFixed(2) + '</span></div>';
         tip.innerHTML = '<strong>' + name + '</strong>' +
           '<div class="tip-row"><span>Sector</span><span>' + d.parent.data.name + '</span></div>' +
           '<div class="tip-row"><span>Jobs</span><span>' +
@@ -2358,7 +2403,158 @@
         tip.hidden = true;
         clearHot();
       });
+    return clearHot;
   }
+
+  /* ---- share strips: one headline percentage per treemap reading ----
+     A jobs-weighted share of the metro above a stated threshold, drawn as a
+     number plus a 100% bar, so every colour ramp also gets its one-line
+     quantitative summary. */
+  function jobsShare(pred){
+    let hit = 0, tot = 0;
+    rawData.forEach(r => { tot += r.employ; if (pred(r)) hit += r.employ; });
+    return tot ? hit / tot : 0;
+  }
+
+  function donutStat(host, pct, color, caption){
+    if (!host) return;
+    const r = 15.5, c = 2 * Math.PI * r;
+    host.innerHTML =
+      '<svg class="ds-donut" width="40" height="40" viewBox="0 0 40 40" aria-hidden="true">' +
+        '<circle class="ds-track" cx="20" cy="20" r="' + r + '"/>' +
+        '<circle class="ds-val" cx="20" cy="20" r="' + r + '" style="stroke:' + color +
+          '" stroke-dasharray="' + (c * pct).toFixed(2) + ' ' + (c * (1 - pct)).toFixed(2) + '"/>' +
+      '</svg>' +
+      '<span class="ds-txt"><span class="ds-num">' + Math.round(pct * 100) + '%</span>' +
+      '<span class="ds-cap">' + caption + '</span></span>';
+    host.hidden = false;
+  }
+
+  /* The export map's stat follows the Color-by mode and hides with it. */
+  function updateExportHeadStat(){
+    const host = document.getElementById("exportHeadStat");
+    if (!host) return;
+    const mode = colorMode.exportTreemapSvg;
+    if (mode === COMPLEXITY)
+      donutStat(host, jobsShare(r => pciNumOf(r.name) > 0), "#2f7d6a",
+        "of metro jobs are in industries of above-average complexity");
+    else if (mode === TRADABILITY)
+      donutStat(host, jobsShare(r => tradabilityOf(r.name) >= 0.5), token("--teal", "#255862"),
+        "of metro jobs are in widely traded industries (tradability \u2265 0.5)");
+    else host.hidden = true;
+  }
+
+  /* ---- the lean map: what the place does more of than its metro ----
+     The same sector blocks as the merged admin map, recoloured by each
+     sector's share of the city against its share of the metro (the ratio
+     the reference proto states as "1.9x as large a share here"). House
+     diverging pair: russet = leans less, teal = leans more, parity pale. */
+  /* The two commuting donuts — real LEHD-style shares from the reference. */
+  function initCommuteStats(){
+    donutStat(document.getElementById("commuteOutStat"), 0.54, token("--teal", "#255862"),
+      'of the jobs <span class="city-short">Boston</span>\u2019s residents hold are inside the city itself');
+    donutStat(document.getElementById("commuteInStat"), 0.26, token("--teal", "#255862"),
+      'of the jobs inside <span class="city-short">Boston</span> are held by its own residents');
+  }
+
+  function initLeanMap(){
+    const el = document.getElementById("leanMapSvg");
+    if (!el) return;
+    const root = layout(industryData, "root", WIDTH);
+    const total = d3.sum(root.children, sec => sec.value);
+    const overall = d3.sum(root.children, sec =>
+      sec.value * (ADMIN_SHARE[sec.data.name] !== undefined ? ADMIN_SHARE[sec.data.name] : 0.15)) / total;
+    const ratioOf = sec => {
+      const sh = ADMIN_SHARE[sec.data.name] !== undefined ? ADMIN_SHARE[sec.data.name] : 0.15;
+      return sh / overall;
+    };
+    const leanScale = d3.scaleLinear()
+      .domain([-1.6, 0, 0.8])
+      .range(["#7f451e", "#efeeec", token("--teal", "#255862")])
+      .interpolate(d3.interpolateLab)
+      .clamp(true);
+
+    const svg = d3.select(el);
+    const g = svg.selectAll("g.lean-cell")
+      .data(root.children, d => d.data.name)
+      .join("g").attr("class", "lean-cell");
+    g.append("rect")
+      .attr("x", d => d.x0).attr("y", d => d.y0)
+      .attr("width", d => d.x1 - d.x0).attr("height", d => d.y1 - d.y0)
+      .attr("fill", d => leanScale(Math.log2(ratioOf(d))))
+      .attr("stroke", "#fff").attr("stroke-width", 1.5);
+    g.each(function(d){
+      const w = d.x1 - d.x0, h = d.y1 - d.y0;
+      if (w < 70 || h < 44) return;
+      const r = ratioOf(d);
+      const nearParity = r > 0.8 && r < 1.25;
+      const ink = nearParity ? "#1a2226" : "#ffffff";
+      const sub = nearParity ? "#5b686d" : "rgba(255,255,255,.85)";
+      const sel = d3.select(this);
+      sel.append("text")
+        .attr("x", d.x0 + 8).attr("y", d.y0 + 19)
+        .attr("fill", ink).attr("font-size", 13.5).attr("font-weight", 600)
+        .text(fitLabel(d.data.name, { width: w, height: h }));
+      sel.append("text")
+        .attr("x", d.x0 + 8).attr("y", d.y0 + 36)
+        .attr("fill", sub).attr("font-size", 12)
+        .text(r.toFixed(1).replace(/\.0$/, "") + "\u00d7 the metro\u2019s share");
+    });
+
+    /* the superlative, stated the way the reference states it */
+    const top = root.children.reduce((a, b) => ratioOf(a) > ratioOf(b) ? a : b);
+    const note = document.getElementById("leanNote");
+    if (note){
+      const sh = ADMIN_SHARE[top.data.name];
+      note.innerHTML = "<strong>" + top.data.name + "</strong> is " +
+        ratioOf(top).toFixed(1) + "\u00d7 as large a share here as in the metro \u2014 " +
+        Math.round(sh * 100) + "% of the metro\u2019s " + top.data.name.toLowerCase() +
+        " sits inside the city, against " + Math.round(overall * 100) +
+        "% of the metro\u2019s jobs overall.";
+    }
+
+    /* house tooltip: cursor top-right */
+    const tip = document.getElementById("leanTip");
+    const wrap = document.getElementById("leanWrap");
+    if (tip && wrap){
+      g.on("mouseenter", function(ev, d){
+        const r = ratioOf(d);
+        const sh = ADMIN_SHARE[d.data.name] !== undefined ? ADMIN_SHARE[d.data.name] : 0.15;
+        tip.innerHTML = "<strong>" + d.data.name + "</strong>" +
+          '<div class="tip-row"><span>Lean vs the metro</span><span>' + r.toFixed(2) + "\u00d7</span></div>" +
+          '<div class="tip-row"><span>Of this sector, in the city</span><span>' +
+            Math.round(sh * 100) + "%</span></div>" +
+          '<div class="tip-row"><span>Of all metro jobs, in the city</span><span>' +
+            Math.round(overall * 100) + "%</span></div>";
+        tip.hidden = false;
+      })
+      .on("mousemove", function(ev){
+        const w = wrap.getBoundingClientRect();
+        const left = ev.clientX - w.left + 10;
+        const top2 = ev.clientY - w.top - tip.offsetHeight - 10;
+        tip.style.left = Math.max(0, Math.min(left, w.width - tip.offsetWidth)) + "px";
+        tip.style.top  = Math.max(0, Math.min(top2, w.height - tip.offsetHeight)) + "px";
+      })
+      .on("mouseleave", function(){ tip.hidden = true; });
+    }
+  }
+
+  function initExportTooltip(){
+    const svgEl = document.getElementById("exportTreemapSvg");
+    const tip = document.getElementById("exportTip");
+    const wrap = document.querySelector(".export-viz-row");
+    if (!svgEl || !tip || !wrap) return;
+    exportClearHover = attachCellTip(svgEl, wrap, tip);
+  }
+
+  function initTradableTooltip(){
+    const svgEl = document.getElementById("tradableAnimatedSvg");
+    const tip = document.getElementById("tradableTip");
+    const wrap = document.querySelector(".tradable-viz-wrapper");
+    if (!svgEl || !tip || !wrap) return;
+    tradableClearHover = attachCellTip(svgEl, wrap, tip);
+  }
+
 
   function initExportOptions(){
     const btns = document.querySelectorAll("#exportOptList .design-opt");
@@ -2406,6 +2602,10 @@
     initColorBySegments();
     initExportOptions();
     initExportTooltip();
+    initTradableTooltip();
+    initLeanMap();
+    initCommuteStats();
+    updateExportHeadStat();
     initRcaChart();
     initPeerChart();
     initRcaViewToggle();

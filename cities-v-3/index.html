@@ -446,6 +446,38 @@
   .secnav-btn.is-active{color:var(--teal);border-bottom-color:var(--teal);}
   .secnav-btn.is-active .num{background:var(--teal);border-color:var(--teal);color:#fff;}
 
+  /* ---- sub-step ticks: the active tab's underline, taught to count ----
+     One segment per sub-step. Filled = behind you, tall = where you are,
+     hollow = ahead. The ticks are a scroll-spy over the section page's own
+     continuous scroll — never a stepper: clicking one scrolls the page. */
+  .secnav-btn{position:relative;}
+  .secnav-btn.is-active{border-bottom-color:transparent;}
+  .stepseg-row{
+    position:absolute;left:16px;right:16px;bottom:-3px;
+    display:flex;gap:3px;height:16px;align-items:flex-end;
+  }
+  .stepseg{position:relative;flex:1;height:16px;background:none;border:none;padding:0;cursor:pointer;}
+  .stepseg::before{
+    content:"";position:absolute;left:0;right:0;bottom:0;height:3px;
+    background:var(--border);transition:background .15s ease,height .15s ease;
+  }
+  .stepseg.passed::before{background:var(--teal);}
+  .stepseg.cur::before{background:var(--teal);height:5px;}
+  .stepseg:hover::before{background:var(--teal-dark);}
+  .stepseg::after{
+    content:attr(data-tip);position:absolute;top:calc(100% + 6px);left:50%;
+    transform:translateX(-50%) translateY(-3px);
+    background:var(--teal);color:#fff;font-size:12px;font-weight:600;
+    padding:4px 9px;border-radius:4px;white-space:nowrap;
+    opacity:0;pointer-events:none;z-index:30;
+    transition:opacity .15s ease,transform .15s ease;
+  }
+  .stepseg:hover::after{opacity:1;transform:translateX(-50%) translateY(0);}
+  /* inactive tabs preview their shape (and remembered progress) on hover */
+  .secnav-btn:not(.is-active) .stepseg-row{opacity:0;pointer-events:none;transition:opacity .15s ease;}
+  .secnav-btn:not(.is-active):hover .stepseg-row{opacity:1;pointer-events:auto;}
+  .secnav-btn:not(.is-active) .stepseg:not(.passed):not(.cur)::before{background:var(--border-strong);height:3px;}
+
   /* sections that are not the current page */
   .pages .sec-off{display:none !important;}
 
@@ -476,11 +508,13 @@
      nav items, page content, the overview split and the pager all sit on the
      same 1200px grid. Padding goes symmetric — the old 56/72 split existed to
      balance the rail. */
-  /* 976 = 880 chart + 2×48 padding. The grid is exactly as wide as the
-     widest content, so nothing floats on a second axis and nothing trails
-     dead space. City Overview keeps its own split-pane geometry below. */
+  /* 1200 = 1104 content + 2×48 padding — the measure reference sites run
+     at this viewport (WIPO navigator ~1150, Our World in Data 1280, the
+     common framework containers 1140–1280); 976 left ~230px dead per side.
+     City Overview keeps its own split-pane geometry below, already centred
+     on the same 1200 reference. */
   .tool-body .page{
-    max-width:976px;width:100%;margin-inline:auto;
+    max-width:1200px;width:100%;margin-inline:auto;
     padding:52px 48px 60px;
   }
   /* The overview keeps its split-pane character: the map runs full height to
@@ -496,16 +530,25 @@
   }
   /* first nav number lines up with the content's left edge (grid + 48px pad,
      minus the button's own 16px) */
-  .secnav{padding-inline:max(22px, calc((100vw - 976px)/2 + 32px));}
-  .secpager{max-width:976px;width:100%;margin-inline:auto;padding:26px 48px 34px;}
-  /* Charts left-align and fill the measure — on a grid sized to them, their
-     80%-and-centre habits from the rail layout would re-introduce the second
-     axis this grid exists to remove. */
+  .secnav{padding-inline:max(22px, calc((100vw - 1200px)/2 + 32px));}
+  .secpager{max-width:1200px;width:100%;margin-inline:auto;padding:26px 48px 34px;}
+  /* Figures sit slightly inside the 1104 text measure: one centred 1000px
+     figure column, so every chart, its controls bar, and its furniture
+     (headers, footnotes, wrappers) read as a single aligned block. */
+  .tool-body .viz-big,
+  .tool-body .viz-controls,
+  .tool-body .export-viz-row,
+  .tool-body .scatter-wrap,
+  .tool-body .rca-wrap,
+  .tool-body .tradable-split-header,
+  .tool-body .rca-footnote,
+  .tool-body .tradable-viz-wrapper{width:1000px;max-width:100%;margin-inline:auto;}
   .tool-body #exportTreemapSvg{width:100%;margin:8px 0 0;}
-  .tool-body .tradable-viz-wrapper{width:100%;margin:0 0 20px;}
-  .tool-body .rca-wrap{width:100%;margin:8px 0 0;}
-  .tool-body .tradable-split-header{width:100%;margin:22px 0 10px;}
-  .tool-body .rca-footnote{width:100%;margin:12px 0 0;}
+  .tool-body .tradable-viz-wrapper{margin-block:0 20px;}
+  .tool-body .scatter-wrap{margin-block:8px 0;}
+  .tool-body .rca-wrap{margin-block:8px 0;}
+  .tool-body .tradable-split-header{margin-block:22px 10px;}
+  .tool-body .rca-footnote{margin-block:12px 0;}
 
   /* ---- header zone: lede left, collapsible right ----
      The collapsed panel is exactly the size of the void that used to trail
@@ -950,13 +993,13 @@
   }
   /* Same tokens the scale in treemap.js reads, so the two cannot drift apart */
   .change-legend .chg-gradient{
-    background:linear-gradient(to right,var(--orange),#f4f1ee,var(--teal));
+    background:linear-gradient(to right,
+      #7f451e,#b97f4e,#efeeec,#67929f,var(--teal));
   }
   .change-legend .chg-key{
     display:inline-flex;align-items:center;gap:8px;
   }
   .change-legend .sw{width:15px;height:15px;border-radius:0;display:inline-block;}
-  .change-legend .sw-new{background:#7a67a3;}
   .change-legend .sw-grey{background:#9ca3af;}
   .viz-controls .reset{
     background:none;border:none;font-size:13px;font-weight:600;color:var(--teal);
@@ -1003,6 +1046,78 @@
     position:relative;width:80%;margin:8px auto 20px;
   }
 
+  /* headline donut stats: part-of-whole beside the lede, never in a legend.
+     The row is a fixed two-column grid so the donut owns its space whether
+     or not the current mode shows a stat — the text never reflows. */
+  .lede-stat-row{
+    display:grid;grid-template-columns:minmax(0,1fr) 320px;
+    gap:36px;align-items:center;
+  }
+  .lede-stat-row .lede{margin-block:16px 8px;}
+  .headstat{
+    display:inline-flex;align-items:center;gap:12px;background:#fff;
+    border:1px solid var(--border);border-radius:8px;padding:9px 16px;
+    justify-self:start;
+  }
+  .ds-donut{transform:rotate(-90deg);flex:none;}
+  .ds-track{fill:none;stroke:#e4e9ea;stroke-width:7;}
+  .ds-val{fill:none;stroke-width:7;}
+  .ds-num{display:block;font-size:21px;font-weight:700;line-height:1.1;color:var(--ink);}
+  .ds-cap{display:block;font-size:11.5px;color:var(--ink-soft);line-height:1.3;max-width:230px;}
+  .commute-leg{
+    display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+    width:1000px;max-width:100%;margin:10px auto 0;
+    font-size:12.5px;color:var(--ink-soft);
+  }
+  .xch-chips{
+    display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+    width:1000px;max-width:100%;margin:12px auto 0;min-height:34px;
+  }
+  .xch-empty{font-size:12.5px;color:var(--ink-soft);}
+  .fchip{
+    display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);
+    border-radius:6px;padding:5px 11px;font-size:12.5px;background:#fff;
+  }
+  .fchip b{font-weight:700;}
+  .fchip .fc-out{color:var(--teal);font-weight:700;}
+  .fchip .fc-in{color:var(--ink-soft);font-weight:700;}
+  .fchip .fc-x{border:none;background:none;color:var(--ink-soft);font-size:14px;padding:0 0 0 2px;cursor:pointer;}
+  .fchip .fc-x:hover{color:var(--fall);}
+  .bldg-marker svg{display:block;}
+  .commute-place{cursor:pointer;}
+  .xch-svg{display:block;width:100%;height:auto;background:#fdfdfd;}
+  .xch-name{font-size:12px;font-weight:600;fill:#1a2226;paint-order:stroke;stroke:#fff;stroke-width:3;}
+  .xch-name--home{font-size:13px;fill:#255862;}
+  .xch-count{font-size:11px;fill:#5b686d;paint-order:stroke;stroke:#fff;stroke-width:3;}
+  @keyframes xch-march{to{stroke-dashoffset:-14;}}
+  .xch-dash{animation:xch-march 1.1s linear infinite;}
+  @media (prefers-reduced-motion: reduce){ .xch-dash{animation:none;} }
+  .commute-map{
+    width:1000px;max-width:100%;margin:14px auto 0;
+    border:1px solid var(--border-strong);border-radius:8px;overflow:hidden;
+    position:relative;background:#fdfdfd;
+  }
+  .lean-legend{
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    margin-top:14px;font-size:13px;color:var(--ink);
+  }
+  .lean-gradient{
+    width:220px;height:14px;border-radius:3px;
+    background:linear-gradient(to right,#7f451e,#b97f4e,#efeeec,#67929f,var(--teal));
+  }
+  .lean-note{
+    width:1000px;max-width:100%;margin:16px auto 0;padding:12px 16px;
+    background:var(--teal-tint);border-radius:6px;font-size:14px;color:var(--ink);
+  }
+  .lean-note strong{font-weight:700;}
+  .lean-caveat{
+    width:1000px;max-width:100%;margin:10px auto 0;
+    font-size:12.5px;color:var(--ink-soft);
+  }
+  .adm-key{
+    font-size:12.5px;color:var(--ink-soft);margin:12px auto 0;
+    width:1000px;max-width:100%;
+  }
   .tradable-treemap-animated{
     width:100%;display:block;
   }
@@ -2142,7 +2257,7 @@
         <div class="jump-quiet">
           <span class="jump-quiet-label">Jump to a section:</span>
           <button type="button" onclick="enterTool('page-overview')">Economic Fundamentals</button>
-          <button type="button" onclick="enterTool('page-export-basket')">Metro Exports</button>
+          <button type="button" onclick="enterTool('page-export-basket')">Composition and Trade</button>
           <button type="button" onclick="enterTool('page-constraints')">City Constraints</button>
           <button type="button" onclick="enterTool('page-levers')">Levers for Change</button>
         </div>
@@ -2253,11 +2368,14 @@
         </ul>
       </div>
       <div class="sec" data-sec="page-export-basket">
-        <button class="sec-head" onclick="goTo('page-export-basket')"><span class="num">2</span>Metro Exports</button>
+        <button class="sec-head" onclick="goTo('page-export-basket')"><span class="num">2</span>Composition and Trade</button>
         <ul class="steps">
-          <li data-step="page-export-basket"><span class="dot"></span><button onclick="goTo('page-export-basket')">Your exports matter</button></li>
-          <li data-step="tradableSection"><span class="dot"></span><button onclick="goTo('tradableSection')">What Brings Income Into Your City?</button></li>
-          <li data-step="specializationSection"><span class="dot"></span><button onclick="goTo('specializationSection')">Your City’s Most Specialized Industries</button></li>
+          <li data-step="page-export-basket"><span class="dot"></span><button onclick="goTo('page-export-basket')">What the metro does for a living</button></li>
+          <li data-step="tradableSection"><span class="dot"></span><button onclick="goTo('tradableSection')">The work that happens in your city</button></li>
+          <li data-step="leanSection"><span class="dot"></span><button onclick="goTo('leanSection')">What your city does more of than its metro</button></li>
+          <li data-step="commuteOutSection"><span class="dot"></span><button onclick="goTo('commuteOutSection')">Not everyone who lives here works here</button></li>
+          <li data-step="commuteInSection"><span class="dot"></span><button onclick="goTo('commuteInSection')">Your city is a net importer of workers</button></li>
+          <li data-step="commuteExploreSection"><span class="dot"></span><button onclick="goTo('commuteExploreSection')">Explore the exchanges yourself</button></li>
         </ul>
       </div>
       <div class="sec" data-sec="page-constraints page-city-in-metro page-constraints-lorem">
@@ -2270,6 +2388,12 @@
       </div>
       <div class="sec" data-sec="page-levers">
         <button class="sec-head" onclick="goTo('page-levers')"><span class="num">4</span>Levers for Change</button>
+      </div>
+      <div class="sec" data-sec="page-extras">
+        <button class="sec-head" onclick="goTo('page-extras')"><span class="num">5</span>Extras</button>
+        <ul class="steps">
+          <li data-step="specializationSection"><span class="dot"></span><button onclick="goTo('specializationSection')">Your City’s Most Specialized Industries</button></li>
+        </ul>
       </div>
     </nav>
 
@@ -2699,13 +2823,16 @@
         </div>
       </section>
 
-      <!-- 2 Metro Exports · Your exports matter -->
+      <!-- 2 Composition and Trade · What the metro does for a living -->
       <section class="page" id="page-export-basket">
         <div class="page-head page-head--geo">
-          <h2>Your exports matter</h2>
+          <h2>What the metro does for a living</h2>
           <span class="geo-badge"><span class="geo-mark" data-geo="metro"></span>Metro (MSA)</span>
         </div>
-        <p class="lede">A city’s size tracks the size of its <strong>export sector</strong> — what it sells to people outside the region. No city makes everything it consumes (the beef, the chips, the software), so to buy from outside it has to sell outside. The export base is what a metro can ultimately support. Below is the <span class="city-short">Boston</span> MSA’s industrial composition — every industry sized by employment and shaded by its economic complexity.</p>
+        <div class="lede-stat-row">
+          <p class="lede">What a place produces shapes much of what follows for it. Some metros grew up around a single industry and still rest on it; others carry a wide range, and with it a workforce holding many different specialised skills. Here is the <span class="city-short">Boston</span> MSA’s mix — every industry sized by employment, grouped into sectors.</p>
+          <span class="headstat" id="exportHeadStat" hidden></span>
+        </div>
         <div class="viz-controls viz-controls--export">
           <div class="ctl">
             <span class="ctl-label">Year</span>
@@ -2719,7 +2846,7 @@
                  data-legend-change="changeLegend">
               <button type="button" class="seg-btn is-active" data-mode="Sector" aria-pressed="true">Sector</button>
               <button type="button" class="seg-btn" data-mode="Product complexity" aria-pressed="false">Product complexity</button>
-              <button type="button" class="seg-btn" data-mode="Change" aria-pressed="false">Change (2024–2014)</button>
+              <button type="button" class="seg-btn" data-mode="Tradability" aria-pressed="false">Tradability</button>
             </div>
           </div>
           <!-- The active design option's own control joins the bar here,
@@ -2752,7 +2879,7 @@
 
         <div class="export-viz-row">
         <div class="rca-tip" id="exportTip" role="tooltip" hidden></div>
-        <svg class="viz-big" id="exportTreemapSvg" width="880" height="550" viewBox="0 0 880 550" xmlns="http://www.w3.org/2000/svg" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; background:#ffffff;">
+        <svg class="viz-big" id="exportTreemapSvg" width="1000" height="480" viewBox="0 0 1000 480" xmlns="http://www.w3.org/2000/svg" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; background:#ffffff;">
 </svg>
         <div class="toplist" id="exportTopList" hidden></div>
         </div>
@@ -2765,21 +2892,21 @@
         </div>
         <div class="change-legend" id="changeLegend">
           <div class="lg-ramp">
-            <span class="cl-label">Shrinking</span>
+            <span class="cl-label">Locally consumed</span>
             <span class="chg-gradient"></span>
-            <span class="cl-label">Growing</span>
-          </div>
-          <div class="lg-keys">
-            <span class="chg-key"><i class="sw sw-new"></i>New since 2014</span>
+            <span class="cl-label">Widely traded</span>
           </div>
         </div>
 
         <!-- Subsection: Tradable Industries Animation -->
         <div class="export-subsection" id="tradableSection">
           <div class="subsection-header">
-            <h3>What Brings Income Into Your City?</h3>
+            <h3>The work that happens in <span class="city-short">Boston</span></h3>
           </div>
-          <p class="lede">Tradable industries sell goods and services to customers outside the city, bringing new income into the local economy. That income helps pay for imports and supports jobs in locally serving industries such as retail, restaurants, and personal services.</p>
+          <div class="lede-stat-row">
+            <p class="lede">The metro’s mix above is drawn industry by industry; the administrative city is read at a coarser grain — whole sectors. Watch the metro’s industries gather into those sectors, and each block then shows how much of its work actually sits inside <span class="city-short">Boston</span> proper.</p>
+            <span class="headstat" id="admHeadStat" hidden></span>
+          </div>
 
           <!-- Explainer sits between the copy and the chart, so the concept is
                defined before the reader meets the visualisation. -->
@@ -2792,75 +2919,14 @@
                   <path d="M10.5 21h3"/>
                 </svg>
               </span>
-              <span class="ci-title">What makes an industry more or less tradable, and why does it matter?</span>
+              <span class="ci-title">Why does the detail change at the city line?</span>
               <svg class="collapsible-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M6 9l6 6 6-6"/>
               </svg>
             </button>
             <div class="collapsible-content">
-              <p><strong>More tradable</strong> industries—such as manufacturing, software, tourism, and consulting—sell to customers outside the city, bringing new income in. <strong>Less tradable</strong> industries—retail, restaurants, personal services—serve the people already here, re-circulating that income locally.</p>
-
-              <svg class="tradable-diagram" viewBox="0 0 600 258" role="img" aria-labelledby="tdTitle tdDesc">
-                <title id="tdTitle">How a tradable industry brings income into the city</title>
-                <desc id="tdDesc">Outside customers buy from the city's tradable industries; that income flows in and supports local jobs and businesses.</desc>
-                <defs>
-                  <marker id="tdArrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
-                    <path d="M0 0.5 L7 4 L0 7.5 Z" fill="var(--teal)"/>
-                  </marker>
-                </defs>
-
-                <!-- 1 · outside customers -->
-                <g class="td-card">
-                  <rect x="1" y="16" width="178" height="152" rx="12"/>
-                  <circle class="td-disc" cx="90" cy="58" r="21"/>
-                  <g class="td-ico" transform="translate(90 58)">
-                    <circle r="10.5"/>
-                    <path d="M-10.5 0h21"/>
-                    <path d="M0 -10.5c4.2 4 6.3 6.6 6.3 10.5S4.2 6.5 0 10.5C-4.2 6.5-6.3 3.9-6.3 0S-4.2-6.5 0-10.5Z"/>
-                  </g>
-                  <text class="td-title" x="90" y="110">Outside customers</text>
-                  <text class="td-sub" x="90" y="132">Buyers beyond</text>
-                  <text class="td-sub" x="90" y="148">the city</text>
-                </g>
-
-                <line class="td-flow" x1="184" y1="92" x2="204" y2="92" marker-end="url(#tdArrow)"/>
-
-                <!-- 2 · the tradable industry itself (emphasised) -->
-                <g class="td-card td-card--key">
-                  <rect x="211" y="16" width="178" height="152" rx="12"/>
-                  <circle class="td-disc td-disc--key" cx="300" cy="58" r="21"/>
-                  <g class="td-ico td-ico--key" transform="translate(300 58)">
-                    <path d="M-10 9V-3l6.5-3.8V-3l6.5-3.8V9Z"/>
-                    <path d="M3 9V-9h7v18"/>
-                  </g>
-                  <text class="td-title" x="300" y="110">More tradable industries</text>
-                  <text class="td-sub" x="300" y="132">Manufacturing, software,</text>
-                  <text class="td-sub" x="300" y="148">tourism, consulting</text>
-                </g>
-
-                <line class="td-flow" x1="394" y1="92" x2="414" y2="92" marker-end="url(#tdArrow)"/>
-
-                <!-- 3 · income returning to the city -->
-                <g class="td-card">
-                  <rect x="421" y="16" width="178" height="152" rx="12"/>
-                  <circle class="td-disc" cx="510" cy="58" r="21"/>
-                  <g class="td-ico" transform="translate(510 58)">
-                    <rect x="-11" y="-7" width="22" height="14" rx="2.5"/>
-                    <circle r="3.6"/>
-                  </g>
-                  <text class="td-title" x="510" y="110">Income flows in</text>
-                  <text class="td-sub" x="510" y="132">Supports local jobs</text>
-                  <text class="td-sub" x="510" y="148">and businesses</text>
-                </g>
-
-                <!-- summary strip -->
-                <rect class="td-strip" x="1" y="196" width="598" height="46" rx="10"/>
-                <text class="td-strip-text" x="300" y="224">
-                  Sell outside the city
-                  <tspan class="td-sep">→</tspan> income flows in
-                  <tspan class="td-sep">→</tspan> the local economy grows
-                </text>
-              </svg>
+              <p>Metro industries are reported in fine detail — hundreds of them. For the places <em>inside</em> a metro, employment is published at the sector level only: about ten broad groups. So when the story crosses the city line, the treemap has to change grain first.</p>
+              <p>The share is the point: <span class="city-short">Boston</span> is one place among many in its metro, and each sector’s block shows how much of that work actually sits inside the administrative boundary — the city’s slice of the metro’s economy, sector by sector.</p>
             </div>
           </div>
 
@@ -2869,55 +2935,191 @@
               <span class="ctl-label">Year</span>
               <select><option>2024</option><option>2019</option><option>2014</option></select>
             </div>
-            <div class="ctl">
-              <span class="ctl-label">Color by</span>
-              <div class="seg" role="group" aria-label="Color by"
-                   data-svg="tradableAnimatedSvg"
-                   data-legend-complexity="tradableComplexityLegend"
-                   data-legend-change="tradableChangeLegend">
-                <button type="button" class="seg-btn is-active" data-mode="Sector" aria-pressed="true">Sector</button>
-                <button type="button" class="seg-btn" data-mode="Product complexity" aria-pressed="false">Product complexity</button>
-                <button type="button" class="seg-btn" data-mode="Change" aria-pressed="false">Change (2024–2014)</button>
-              </div>
-            </div>
             <button class="replay-btn" id="replayBtn">↻ Replay</button>
           </div>
 
-          <!-- Split headers sit above the chart so they never cover any cells -->
-          <div class="tradable-split-header">
-            <div class="split-col split-col--tradable">
-              <span class="split-label">More Tradable</span>
-              <span class="split-rule"></span>
-            </div>
-            <div class="split-col split-col--nontradable">
-              <span class="split-label">Less Tradable</span>
-              <span class="split-rule"></span>
-            </div>
-          </div>
-
           <div class="tradable-viz-wrapper">
-            <svg class="viz-big tradable-treemap-animated" id="tradableAnimatedSvg" width="880" height="550" viewBox="0 0 880 550" xmlns="http://www.w3.org/2000/svg" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; background:#ffffff;"></svg>
+            <svg class="viz-big tradable-treemap-animated" id="tradableAnimatedSvg" width="1000" height="480" viewBox="0 0 1000 480" xmlns="http://www.w3.org/2000/svg" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; background:#ffffff;"></svg>
+            <div class="rca-tip" id="tradableTip" role="tooltip" hidden></div>
           </div>
-          <div class="complexity-legend" id="tradableComplexityLegend">
-            <div class="lg-ramp">
-              <span class="cl-label">Less complex</span>
-              <span class="cl-gradient"></span>
-              <span class="cl-label">More complex</span>
-            </div>
-          </div>
-          <div class="change-legend" id="tradableChangeLegend">
-            <div class="lg-ramp">
-              <span class="cl-label">Shrinking</span>
-              <span class="chg-gradient"></span>
-              <span class="cl-label">Growing</span>
-            </div>
-            <div class="lg-keys">
-              <span class="chg-key"><i class="sw sw-new"></i>New since 2014</span>
-              <span class="chg-key"><i class="sw sw-grey"></i>Less Tradable</span>
-            </div>
-          </div>
+          <p class="adm-key" id="admKey" hidden>Solid = inside <span class="city-short">Boston</span> (admin) · faded = elsewhere in the metro — hover any sector for its numbers.</p>
 
         </div>
+
+        <!-- Subsection: what the place does more of than its metro -->
+        <div class="export-subsection" id="leanSection">
+          <div class="subsection-header">
+            <h3>What <span class="city-short">Boston</span> does more of than its metro</h3>
+          </div>
+          <p class="lede">A mix on its own says little &mdash; most places look like the region they sit in, because most of what any place does is serve the people around it. What separates them is where the shares differ. The same blocks, recoloured by each sector&rsquo;s share of <span class="city-short">Boston</span> against its share of the metro: <strong>teal where the city leans on a sector more than the metro does, russet where it leans on it less</strong>.</p>
+
+          <div class="tradable-viz-wrapper" id="leanWrap">
+            <svg class="viz-big" id="leanMapSvg" width="1000" height="480" viewBox="0 0 1000 480" xmlns="http://www.w3.org/2000/svg" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; background:#ffffff;"></svg>
+            <div class="rca-tip" id="leanTip" role="tooltip" hidden></div>
+          </div>
+
+          <div class="lean-legend">
+            <span class="cl-label">Leans on it less than the metro</span>
+            <span class="lean-gradient"></span>
+            <span class="cl-label">Leans on it more</span>
+          </div>
+
+          <p class="lean-note" id="leanNote"></p>
+          <p class="lean-caveat"><span class="city-short">Boston</span> is part of the metro it is compared with, so a place large enough to move its own metro&rsquo;s shares reads closer to parity than it would against the rest of the region.</p>
+        </div>
+
+        <!-- Subsection: residents who work elsewhere (animated out-commute) -->
+        <div class="export-subsection" id="commuteOutSection">
+          <div class="subsection-header">
+            <h3>Not everyone who lives in <span class="city-short">Boston</span> works there</h3>
+          </div>
+          <div class="lede-stat-row">
+            <p class="lede"><span class="city-short">Boston</span>&rsquo;s residents hold 334,026 jobs, and 54% of them are inside the city itself (55% in 2012). The other 154,904 are somewhere else &mdash; above all Cambridge, Newton, Waltham and Quincy.</p>
+            <span class="headstat" id="commuteOutStat" hidden></span>
+          </div>
+          <div class="commute-map" id="commuteOutMap"></div>
+          <p class="commute-leg"><span class="plc-legend"><span class="lo">0</span><i class="plc-ramp"></i><span class="hi" id="outLegHi"></span></span> residents of <span class="city-short">Boston</span> working there &middot; the teal arrows carry them out, sized by volume &middot; hover any place for its figures.</p>
+        </div>
+
+        <!-- Subsection: workers commuting in (animated in-commute) -->
+        <div class="export-subsection" id="commuteInSection">
+          <div class="subsection-header">
+            <h3><span class="city-short">Boston</span> is a net importer of workers</h3>
+          </div>
+          <div class="lede-stat-row">
+            <p class="lede">Read the other way round: 687,736 jobs sit inside <span class="city-short">Boston</span>, and 26% of them are held by its own residents. The remaining 508,614 are filled by people commuting in, mostly from Quincy, Cambridge, Somerville, Brookline and Newton.</p>
+            <span class="headstat" id="commuteInStat" hidden></span>
+          </div>
+          <div class="commute-map" id="commuteInMap"></div>
+          <p class="commute-leg"><span class="plc-legend"><span class="lo">0</span><i class="plc-ramp"></i><span class="hi" id="inLegHi"></span></span> workers commuting into <span class="city-short">Boston</span> from there &middot; the grey arrows carry them in, sized by volume &middot; hover any place for its figures.</p>
+          <p class="lean-note">That is <strong>206 jobs for every 100 jobs</strong> its residents hold: <span class="city-short">Boston</span> draws workers in on net.</p>
+          <p class="lean-caveat">Call these places its partners. Each has partners of its own, largely overlapping this list, and following the exchanges outward until they close is roughly how the metro is drawn.</p>
+        </div>
+
+        <!-- Subsection: click-to-add exploration — the city never moves -->
+        <div class="export-subsection" id="commuteExploreSection">
+          <div class="subsection-header">
+            <h3>Explore the exchanges yourself</h3>
+          </div>
+          <p class="lede">Every place around <span class="city-short">Boston</span> trades workers with it, in both directions at once. <strong>Click any place on the map</strong> to add its exchange &mdash; a teal arrow for <span class="city-short">Boston</span>&rsquo;s residents working there, a grey arrow for its workers commuting in &mdash; and build the picture place by place.</p>
+          <div class="commute-map" id="commuteExploreMap"></div>
+          <table class="plc-table" id="exchangeTable" aria-live="polite"></table>
+          <p class="places-hint"><span class="sw" style="background:var(--geo-city)"></span><span class="city-short">Boston</span> &nbsp;&middot;&nbsp; <span class="sw" style="background:var(--orange)"></span>your picks &mdash; click the map to add a place, click again to remove. Up to three.</p>
+          <p class="lean-caveat">Census LEHD origin&ndash;destination counts; a &ldquo;~&rdquo; marks figures the source does not list, estimated to scale.</p>
+        </div>
+
+
+      </section>
+
+
+            <!-- 4 City Constraints (empty) -->
+      <section class="page" id="page-constraints">
+        <div class="page-head page-head--geo">
+          <h2>How is the metro performing?</h2>
+          <span class="geo-badge"><span class="geo-mark" data-geo="metro"></span>Metro (MSA)</span>
+        </div>
+        <p class="lede">Plot every metro by how fast its population grew (x) against how fast its wages grew (y). Both rising is a <strong>positive demand shock</strong>; both falling, a negative one. Population rising while pay lags points to a <strong>supply shift</strong> (amenities, cheaper living); pay rising while population lags, a <strong>constrained supply</strong>. Where does Boston land?</p>
+        <div class="collapsible-info collapsible-info--wide">
+          <button class="collapsible-header">
+            <span class="ci-mark" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2.75a6.25 6.25 0 0 0-3.75 11.25c.53.4.87 1 .96 1.66l.09.59h5.4l.09-.59c.09-.66.43-1.26.96-1.66A6.25 6.25 0 0 0 12 2.75Z"/>
+                <path d="M9.6 18.6h4.8"/>
+                <path d="M10.5 21h3"/>
+              </svg>
+            </span>
+            <span class="ci-title">Understand the diagnostic hypothesis</span>
+            <svg class="collapsible-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
+          </button>
+          <div class="collapsible-content">
+            <p>Every diagnosis starts with two questions, each read against the typical city: are people arriving or leaving, and is pay rising or falling? The answers drop the city into one of four quarters, and each quarter points at a different cause.</p>
+
+            <div class="dx-grid">
+              <div class="dx-left">
+                <div class="dx-step">
+                  <h5 class="dx-step-head">1 · Read the two dials, against the typical city</h5>
+                  <div class="dx-dial">
+                    <span class="dx-dial-name">People</span>
+                    <button type="button" class="dx-opt" data-dial="pop" data-val="up">&#9650; arriving</button>
+                    <button type="button" class="dx-opt" data-dial="pop" data-val="down">&#9660; leaving</button>
+                  </div>
+                  <div class="dx-dial">
+                    <span class="dx-dial-name">Paychecks</span>
+                    <button type="button" class="dx-opt" data-dial="pay" data-val="up">&#9650; rising</button>
+                    <button type="button" class="dx-opt" data-dial="pay" data-val="down">&#9660; falling</button>
+                  </div>
+                </div>
+
+                <div class="dx-step dx-verdict" id="dxVerdict">
+                  <h5 class="dx-step-head">2 · What that tells you</h5>
+                  <p class="dx-idle">Set both dials, or drag the dot on the chart.</p>
+                </div>
+              </div>
+
+              <div class="dx-right">
+                <div class="dx-step dx-chart-card">
+                  <svg id="dxChart" viewBox="0 0 300 300" role="img" aria-label="Four-quadrant diagram; drag the dot to place a city"></svg>
+                  <p class="dx-caption">The colours are the four quarters and the dashed crosshair is the typical city. Drag the dot, or set the dials.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-block">
+          <div class="scatter-wrap" id="scatterWrap">
+            <svg class="viz-big metro-scatter" id="metroScatterSvg" width="880" height="560" viewBox="0 0 880 560" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Every US metro plotted by population growth against wage growth, with Boston and its four peer cities highlighted"></svg>
+            <div class="rca-tip row-tip" id="metroTip" role="tooltip" hidden></div>
+            <div class="quad-tip" id="quadTip" role="tooltip" hidden></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4b City Constraints · the metro dot broken into its places -->
+      <section class="page" id="page-city-in-metro">
+        <div class="page-head page-head--geo">
+          <h2>Is your city pulling with the metro?</h2>
+          <span class="geo-badge"><span class="geo-mark" data-geo="city"></span>City (admin)</span>
+        </div>
+        <p class="lede">That single Boston dot is not one economy. Watch it break apart into the places inside the metro, with Boston itself picked out. The dashed lines stay where they were, because they are still the typical US metro, so every place can be read against two benchmarks at once: its own metro, marked by the dashed ring, and the typical metro.</p>
+
+        <div class="viz-controls viz-controls--export">
+          <button class="replay-btn" id="cimReplayBtn">Replay</button>
+        </div>
+
+        <div class="chart-block">
+          <div class="scatter-wrap" id="cimWrap">
+            <svg class="viz-big metro-scatter city-in-metro" id="cityInMetroSvg" width="880" height="560" viewBox="0 0 880 560" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The Boston metro dot breaking apart into the places inside the metro, plotted by population growth against salary growth"></svg>
+            <div class="quad-tip" id="cimQuadTip" role="tooltip" hidden></div>
+          </div>
+          <div class="scatter-footnote">
+            <span class="rca-key"><svg width="14" height="14" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="#b3b8ba"/></svg>Place inside the metro, sized by population</span>
+            <span class="rca-key"><svg width="16" height="16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="#cf4f2c"/></svg><span class="geo-mark" data-geo="city"></span>Boston</span>
+            <span class="rca-key"><svg width="18" height="18" aria-hidden="true"><circle cx="9" cy="9" r="7" fill="none" stroke="#7d5ba6" stroke-width="1.4" stroke-dasharray="4 4"/></svg><span class="geo-mark" data-geo="metro"></span>The metro as a whole</span>
+            <span class="rca-key"><svg width="26" height="10" aria-hidden="true"><line x1="1" y1="5" x2="25" y2="5" stroke="#1a2226" stroke-width="1.5" stroke-dasharray="6 5"/></svg>Typical US metro</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3 City Constraints · Lorem Ipsum -->
+      <section class="page" id="page-constraints-lorem">
+        <div class="page-head">
+          <h2>Lorem Ipsum</h2>
+        </div>
+        <p class="lede">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Proin tortor purus platea sit eu id nisi litora libero. Neque vulputate consequat ac amet augue blandit maximus aliquet congue.</p>
+      </section>
+
+      <!-- 5 Levers for Change (empty) -->
+      <section class="page" id="page-levers"></section>
+
+      <!-- 5 Extras · well-built pieces that sit outside the storyline -->
+      <section class="page" id="page-extras">
+        <div class="page-head">
+          <h2>Extras</h2>
+        </div>
+        <p class="lede">Pieces that fell out of the main storyline but are worth keeping &mdash; kept here in full working order.</p>
 
         <!-- Subsection: Specialization (RCA) -->
         <div class="export-subsection" id="specializationSection">
@@ -3026,109 +3228,6 @@
           </div>
         </div>
       </section>
-
-
-            <!-- 4 City Constraints (empty) -->
-      <section class="page" id="page-constraints">
-        <div class="page-head page-head--geo">
-          <h2>How is the metro performing?</h2>
-          <span class="geo-badge"><span class="geo-mark" data-geo="metro"></span>Metro (MSA)</span>
-        </div>
-        <p class="lede">Plot every metro by how fast its population grew (x) against how fast its wages grew (y). Both rising is a <strong>positive demand shock</strong>; both falling, a negative one. Population rising while pay lags points to a <strong>supply shift</strong> (amenities, cheaper living); pay rising while population lags, a <strong>constrained supply</strong>. Where does Boston land?</p>
-        <div class="collapsible-info collapsible-info--wide">
-          <button class="collapsible-header">
-            <span class="ci-mark" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 2.75a6.25 6.25 0 0 0-3.75 11.25c.53.4.87 1 .96 1.66l.09.59h5.4l.09-.59c.09-.66.43-1.26.96-1.66A6.25 6.25 0 0 0 12 2.75Z"/>
-                <path d="M9.6 18.6h4.8"/>
-                <path d="M10.5 21h3"/>
-              </svg>
-            </span>
-            <span class="ci-title">Understand the diagnostic hypothesis</span>
-            <svg class="collapsible-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M6 9l6 6 6-6"/>
-            </svg>
-          </button>
-          <div class="collapsible-content">
-            <p>Every diagnosis starts with two questions, each read against the typical city: are people arriving or leaving, and is pay rising or falling? The answers drop the city into one of four quarters, and each quarter points at a different cause.</p>
-
-            <div class="dx-grid">
-              <div class="dx-left">
-                <div class="dx-step">
-                  <h5 class="dx-step-head">1 · Read the two dials, against the typical city</h5>
-                  <div class="dx-dial">
-                    <span class="dx-dial-name">People</span>
-                    <button type="button" class="dx-opt" data-dial="pop" data-val="up">&#9650; arriving</button>
-                    <button type="button" class="dx-opt" data-dial="pop" data-val="down">&#9660; leaving</button>
-                  </div>
-                  <div class="dx-dial">
-                    <span class="dx-dial-name">Paychecks</span>
-                    <button type="button" class="dx-opt" data-dial="pay" data-val="up">&#9650; rising</button>
-                    <button type="button" class="dx-opt" data-dial="pay" data-val="down">&#9660; falling</button>
-                  </div>
-                </div>
-
-                <div class="dx-step dx-verdict" id="dxVerdict">
-                  <h5 class="dx-step-head">2 · What that tells you</h5>
-                  <p class="dx-idle">Set both dials, or drag the dot on the chart.</p>
-                </div>
-              </div>
-
-              <div class="dx-right">
-                <div class="dx-step dx-chart-card">
-                  <svg id="dxChart" viewBox="0 0 300 300" role="img" aria-label="Four-quadrant diagram; drag the dot to place a city"></svg>
-                  <p class="dx-caption">The colours are the four quarters and the dashed crosshair is the typical city. Drag the dot, or set the dials.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="chart-block">
-          <div class="scatter-wrap" id="scatterWrap">
-            <svg class="viz-big metro-scatter" id="metroScatterSvg" width="880" height="560" viewBox="0 0 880 560" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Every US metro plotted by population growth against wage growth, with Boston and its four peer cities highlighted"></svg>
-            <div class="rca-tip row-tip" id="metroTip" role="tooltip" hidden></div>
-            <div class="quad-tip" id="quadTip" role="tooltip" hidden></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- 4b City Constraints · the metro dot broken into its places -->
-      <section class="page" id="page-city-in-metro">
-        <div class="page-head page-head--geo">
-          <h2>Is your city pulling with the metro?</h2>
-          <span class="geo-badge"><span class="geo-mark" data-geo="city"></span>City (admin)</span>
-        </div>
-        <p class="lede">That single Boston dot is not one economy. Watch it break apart into the places inside the metro, with Boston itself picked out. The dashed lines stay where they were, because they are still the typical US metro, so every place can be read against two benchmarks at once: its own metro, marked by the dashed ring, and the typical metro.</p>
-
-        <div class="viz-controls viz-controls--export">
-          <button class="replay-btn" id="cimReplayBtn">Replay</button>
-        </div>
-
-        <div class="chart-block">
-          <div class="scatter-wrap" id="cimWrap">
-            <svg class="viz-big metro-scatter city-in-metro" id="cityInMetroSvg" width="880" height="560" viewBox="0 0 880 560" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="The Boston metro dot breaking apart into the places inside the metro, plotted by population growth against salary growth"></svg>
-            <div class="quad-tip" id="cimQuadTip" role="tooltip" hidden></div>
-          </div>
-          <div class="scatter-footnote">
-            <span class="rca-key"><svg width="14" height="14" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="#b3b8ba"/></svg>Place inside the metro, sized by population</span>
-            <span class="rca-key"><svg width="16" height="16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="#cf4f2c"/></svg><span class="geo-mark" data-geo="city"></span>Boston</span>
-            <span class="rca-key"><svg width="18" height="18" aria-hidden="true"><circle cx="9" cy="9" r="7" fill="none" stroke="#7d5ba6" stroke-width="1.4" stroke-dasharray="4 4"/></svg><span class="geo-mark" data-geo="metro"></span>The metro as a whole</span>
-            <span class="rca-key"><svg width="26" height="10" aria-hidden="true"><line x1="1" y1="5" x2="25" y2="5" stroke="#1a2226" stroke-width="1.5" stroke-dasharray="6 5"/></svg>Typical US metro</span>
-          </div>
-        </div>
-      </section>
-
-      <!-- 3 City Constraints · Lorem Ipsum -->
-      <section class="page" id="page-constraints-lorem">
-        <div class="page-head">
-          <h2>Lorem Ipsum</h2>
-        </div>
-        <p class="lede">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Proin tortor purus platea sit eu id nisi litora libero. Neque vulputate consequat ac amet augue blandit maximus aliquet congue.</p>
-      </section>
-
-      <!-- 5 Levers for Change (empty) -->
-      <section class="page" id="page-levers"></section>
 
     </main>
   </div>
@@ -3318,7 +3417,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://d3js.org/d3.v7.min.js"></script>
-<script src="treemap.js"></script>
+<script src="treemap.js?v=xch3"></script>
 <script>
   /* ---------- treemaps: color by ----------
      Handled entirely in treemap.js — it wires the visible .seg controls and
@@ -3411,9 +3510,12 @@
   /* ---------- journey state ---------- */
   const sectionDefs=[
     {name:"Economic Fundamentals", pages:["page-overview","page-overview-msa","page-overview-city","page-overview-places"], entry:"page-overview"},
-    {name:"Metro Exports",    pages:["page-export-basket"], entry:"page-export-basket"},
+    {name:"Composition and Trade",    pages:["page-export-basket","tradableSection","leanSection","commuteOutSection","commuteInSection","commuteExploreSection"], entry:"page-export-basket"},
     {name:"City Constraints",pages:["page-constraints","page-city-in-metro","page-constraints-lorem"],entry:"page-constraints"},
-    {name:"Levers for Change",pages:["page-levers"],    entry:"page-levers"}
+    {name:"Levers for Change",pages:["page-levers"],    entry:"page-levers"},
+    /* Well-built pieces outside the storyline; the anchor id is listed so
+       goTo() from anywhere routes to this section before scrolling. */
+    {name:"Extras",          pages:["page-extras","specializationSection"], entry:"page-extras"}
   ];
   const visitedPages=new Set();
   let currentPageId=null;
@@ -3422,13 +3524,13 @@
   let introQuestionsAnswered=0; // track for journey display
 
   /* ---- sample state for the prototype: Boston + Chicago explored,
-         sections 1 & 2 completed, Metro Exports in progress ---- */
+         sections 1 & 2 completed, Composition and Trade in progress ---- */
   exploredCities.add("Boston, United States of America");
   exploredCities.add("Chicago, United States of America");
   ["page-overview","page-overview-msa",
    "page-export-basket"].forEach(p=>visitedPages.add(p));
   savedInsights.push({
-    section:"Metro Exports · Put in Practice",
+    section:"Composition and Trade · Put in Practice",
     city:"Boston, United States of America",
     span:"10 years",
     text:"Boston's export basket leans heavily on knowledge services — scientific research, software, and higher education dominate the treemap. The opportunity seems to be in translating that research strength into advanced manufacturing; the constraint is likely housing costs, which the scatter plot hints at through fast wage growth but slow population growth."
@@ -3718,10 +3820,10 @@
 
   // Rail highlight: pick whichever page fills the most of the viewport.
   // A ratio-of-element threshold can never be satisfied by a page taller than
-  // the scroll root (Metro Exports is ~2x), which left the rail stuck on the
+  // the scroll root (Composition and Trade is ~2x), which left the rail stuck on the
   // previous section — so measure visible height instead of element ratio.
   // A rail step may point at a subsection nested inside a page (e.g. the
-  // tradable treemap inside Metro Exports), so the step is resolved separately
+  // tradable treemap inside Composition and Trade), so the step is resolved separately
   // from the section: take the deepest target covering the viewport midline.
   function activeStepId(rootRect, fallbackId){
     const mid = rootRect.top + rootRect.height/2;
@@ -3820,7 +3922,7 @@
 
     // section rows
     document.getElementById("journeySections").innerHTML=secStates.map((s,i)=>{
-      const isExports=s.name==="Metro Exports";
+      const isExports=s.name==="Composition and Trade";
       const isIntro=s.name==="Explore Your Assumption";
       const exploreDone=s.seen>0;
       const insightDone=isExports&&savedInsights.length>0;
@@ -3886,7 +3988,7 @@
   ];
 
   /* ---------- peer chips in the overview panel ----------
-     Deliberately independent of the peer code in Metro Exports: that one is
+     Deliberately independent of the peer code in Composition and Trade: that one is
      about specialisation against a metro peer group, this one introduces the
      idea at both scales. Sharing state between them would couple two sections
      that answer different questions. Figures are illustrative. */
@@ -3943,6 +4045,10 @@
      Values are authored off a per-place wealth index rather than random, so
      the ranking is stable across loads and internally consistent; Boston's own
      figures are pinned to the ones the rest of the page states. */
+  /* Section 1's places and their voronoi cells, shared so the commuting
+     maps draw with exactly the same shapes the reader already knows. */
+  let plGeo = null;
+
   function initPlacesInMetro(){
     const tbl = document.getElementById("placesTable");
     if(!tbl || !window.d3) return;
@@ -4138,10 +4244,14 @@
       Math.min(...xs) - pad, Math.min(...ys) - pad,
       Math.max(...xs) + pad, Math.max(...ys) + pad]);
 
+    plGeo = { home: "Boston", cells: new Map(),
+      places: places.map(q => ({ name: q.name, lat: q.lat, lng: q.lng,
+                                 pop: q.pop, home: q.home })) };
     places.forEach((p, i) => {
       const cell = vor.cellPolygon(i);
       if (!cell) return;
       const latlngs = cell.map(([x, y]) => [-(y), x / k]);
+      plGeo.cells.set(p.name, latlngs);
       const ly = L.polygon(latlngs, Object.assign({
         className: "pl-cell" + (p.home ? " is-home" : ""),
         interactive: !p.home
@@ -4304,6 +4414,290 @@
 
   initPlacesInMetro();
 
+  /* ---------- commuting maps: linework + tapered flow arrows ----------
+     Drawn from the reference prototype's own boundary files (all 130 admin
+     places of the metro as real linework), no raster tiles. Flows are the
+     classic cartographic form: one tapered arrow per exchange, width by
+     volume, animated only as a quiet marching dash toward the destination —
+     marks, not particles. Counts are the reference's LEHD figures; "~"
+     marks the ones it does not list, estimated from size and distance. */
+  const XCH_REAL = {
+    "Cambridge":  { out: 24509, inn: 20085 },
+    "Quincy":     { out:  6015, inn: 20328 },
+    "Somerville": {              inn: 16040 },
+    "Brookline":  {              inn: 14544 },
+    "Newton":     { out:  8306, inn: 14322 },
+    "Waltham":    { out:  7221 }
+  };
+  const xchFmt = (n, est) => (est ? "~" : "") + n.toLocaleString();
+
+  const XCH_GEO = { loaded: false };
+  function loadXchGeo(cb){
+    if (XCH_GEO.loaded) return cb();
+    if (XCH_GEO.loading) return XCH_GEO.loading.push(cb);
+    XCH_GEO.loading = [cb];
+    Promise.all([
+      fetch("data/geo/msa_geo_14460.geojson").then(r => r.json()),
+      fetch("data/geo/msa_places_geo_14460.geojson").then(r => r.json()),
+      fetch("data/geo/place_geo_2507000.geojson").then(r => r.json())
+    ]).then(([msa, places, boston]) => {
+      XCH_GEO.msa = msa; XCH_GEO.places = places; XCH_GEO.boston = boston;
+      XCH_GEO.loaded = true;
+      XCH_GEO.loading.forEach(f => f());
+    }).catch(() => {});
+  }
+
+  function xchDataFor(f, path){
+    const name = f.properties.place_name;
+    const real = XCH_REAL[name] || {};
+    let h = 0;
+    for (const c of name) h = (h * 31 + c.charCodeAt(0)) % 997;
+    const j = 0.8 + (h / 997) * 0.4;
+    const areaKm = d3.geoArea(f) * 6371 * 6371;
+    const c = d3.geoCentroid(f);
+    const dKm = Math.hypot((c[1] - 42.34) * 111,
+                           (c[0] + 71.06) * 111 * Math.cos(42.3 * Math.PI / 180));
+    const fall = 1 / (1 + dKm / 6);
+    return {
+      name,
+      out: real.out !== undefined ? real.out : Math.max(120, Math.round(areaKm * 240 * fall * j)),
+      inn: real.inn !== undefined ? real.inn : Math.max(160, Math.round(areaKm * 360 * fall * j)),
+      outEst: real.out === undefined,
+      innEst: real.inn === undefined
+    };
+  }
+
+  /* a tapered ribbon arrow between two projected points, head included */
+  function arrowPath(a, b, w0){
+    const mx = (a[0] + b[0]) / 2 - (b[1] - a[1]) * .14;
+    const my = (a[1] + b[1]) / 2 + (b[0] - a[0]) * .14;
+    const q = t => [ (1-t)*(1-t)*a[0] + 2*(1-t)*t*mx + t*t*b[0],
+                     (1-t)*(1-t)*a[1] + 2*(1-t)*t*my + t*t*b[1] ];
+    const N = 14, headLen = Math.max(9, w0 * 1.9);
+    // stop the ribbon short of the end to leave room for the head
+    const L = Math.hypot(b[0]-a[0], b[1]-a[1]);
+    const tEnd = Math.max(.55, 1 - headLen / (L || 1));
+    const side = [], back = [];
+    for (let i = 0; i <= N; i++){
+      const t = i / N * tEnd;
+      const p = q(t), p2 = q(Math.min(1, t + .02));
+      const dx = p2[0]-p[0], dy = p2[1]-p[1], dl = Math.hypot(dx,dy) || 1;
+      const nx = -dy/dl, ny = dx/dl;
+      const w = (w0 / 2) * (1 - .55 * (t / tEnd));
+      side.push([p[0] + nx*w, p[1] + ny*w]);
+      back.push([p[0] - nx*w, p[1] - ny*w]);
+    }
+    const tip = q(1), pe = q(tEnd), pe2 = q(Math.min(1, tEnd + .02));
+    const dx = pe2[0]-pe[0], dy = pe2[1]-pe[1], dl = Math.hypot(dx,dy) || 1;
+    const nx = -dy/dl, ny = dx/dl;
+    const hw = Math.max(3.2, w0 * .95);
+    const head = [[pe[0] + nx*hw, pe[1] + ny*hw], tip, [pe[0] - nx*hw, pe[1] - ny*hw]];
+    const pts = side.concat(head, back.reverse());
+    return { ribbon: "M" + pts.map(p => p[0].toFixed(1) + " " + p[1].toFixed(1)).join("L") + "Z",
+             center: "M" + a[0].toFixed(1) + " " + a[1].toFixed(1) +
+                     " Q " + mx.toFixed(1) + " " + my.toFixed(1) +
+                     " " + tip[0].toFixed(1) + " " + tip[1].toFixed(1) };
+  }
+
+  function commuteFlowMap(id, cfg){
+    const host = document.getElementById(id);
+    if (!host || typeof d3 === "undefined") return;
+    loadXchGeo(() => {
+      const W = 1000, H = 460;
+      const feats = XCH_GEO.places.features;
+      const featOf = n => feats.find(f => f.properties.place_name === n);
+      const focusFC = { type: "FeatureCollection",
+        features: [XCH_GEO.boston].concat((cfg.focus || []).map(featOf).filter(Boolean)) };
+      const proj = d3.geoMercator().fitExtent([[14, 14], [W - 14, H - 14]], focusFC);
+      const path = d3.geoPath(proj);
+      const bosC = proj(d3.geoCentroid(XCH_GEO.boston));
+
+      host.innerHTML = "";
+      const svg = d3.select(host).append("svg")
+        .attr("viewBox", "0 0 " + W + " " + H)
+        .attr("class", "xch-svg");
+
+      const data = new Map(feats.map(f => [f.properties.place_name, xchDataFor(f)]));
+      const val = d => cfg.mode === "in" ? d.inn : d.out;
+      const listed = new Set(cfg.focus || []);
+      const hi = cfg.mode === "explore" ? 0
+        : Math.max(...[...listed].map(n => val(data.get(n))));
+      const TINT = "#eef3f4", MID = "#9db9c0", DARK = "#255862";
+      const ramp = v => d3.interpolateRgb(TINT, "#4d7a86")(v / (hi || 1));
+
+      /* 1 · every admin place as quiet linework */
+      const cells = svg.append("g");
+      const cellSel = cells.selectAll("path").data(feats).join("path")
+        .attr("d", path)
+        .attr("fill", f => {
+          const n = f.properties.place_name;
+          if (cfg.mode !== "explore" && listed.has(n)) return ramp(val(data.get(n)));
+          return cfg.mode === "explore" ? "#8aa0a6" : "#ffffff";
+        })
+        .attr("fill-opacity", f => {
+          const n = f.properties.place_name;
+          if (cfg.mode !== "explore" && listed.has(n)) return .8;
+          return cfg.mode === "explore" ? .07 : 0;
+        })
+        .attr("stroke", "#a9b8bc").attr("stroke-width", 1)
+        .style("cursor", cfg.mode === "explore" ? "pointer" : "default");
+
+      /* 2 · the metro's dashed edge, then the admin city */
+      svg.append("path").datum(XCH_GEO.msa).attr("d", path)
+        .attr("fill", "none").attr("stroke", "#4a6a72")
+        .attr("stroke-width", 1.6).attr("stroke-dasharray", "6 6");
+      svg.append("path").datum(XCH_GEO.boston).attr("d", path)
+        .attr("fill", "#255862").attr("fill-opacity", .30)
+        .attr("stroke", "#255862").attr("stroke-width", 2);
+
+      const flows = svg.append("g");
+      const labels = svg.append("g");
+
+      const wScale = c => Math.max(4.5, Math.min(15, 4.5 + 10.5 * Math.sqrt(c / 25000)));
+
+      function drawFlow(name, dir){        /* dir "out": Boston -> place */
+        const f = featOf(name);
+        if (!f) return;
+        const x = data.get(name);
+        const c = dir === "out" ? x.out : x.inn;
+        const pc = proj(d3.geoCentroid(f));
+        const nudge = cfg.mode === "explore" ? (dir === "out" ? -7 : 7) : 0;
+        const a = dir === "out" ? [bosC[0], bosC[1] + nudge] : pc;
+        const b = dir === "out" ? pc : [bosC[0], bosC[1] + nudge];
+        const ap = arrowPath(a, b, wScale(c));
+        const g = flows.append("g").attr("data-flow", name);
+        g.append("path").attr("d", ap.ribbon)
+          .attr("fill", dir === "out" ? "#255862" : "#5b686d")
+          .attr("fill-opacity", .72)
+          .attr("stroke", "#ffffff").attr("stroke-width", .7);
+        g.append("path").attr("d", ap.center).attr("class", "xch-dash")
+          .attr("fill", "none").attr("stroke", "#ffffff")
+          .attr("stroke-width", 1.6).attr("stroke-opacity", .55)
+          .attr("stroke-dasharray", "3 11").attr("stroke-linecap", "round");
+      }
+
+      function drawLabel(name){
+        const f = featOf(name);
+        if (!f) return;
+        const x = data.get(name);
+        const pc = proj(d3.geoCentroid(f));
+        const g = labels.append("g").attr("data-lbl", name)
+          .attr("text-anchor", "middle");
+        g.append("text").attr("x", pc[0]).attr("y", pc[1] - 4)
+          .attr("class", "xch-name").text(name);
+        const t = cfg.mode === "out" ? xchFmt(x.out, x.outEst)
+              : cfg.mode === "in"  ? xchFmt(x.inn, x.innEst)
+              : "↑ " + xchFmt(x.out, x.outEst) + "  ↓ " + xchFmt(x.inn, x.innEst);
+        g.append("text").attr("x", pc[0]).attr("y", pc[1] + 12)
+          .attr("class", "xch-count").text(t);
+      }
+
+      /* Boston label */
+      labels.append("text").attr("x", bosC[0]).attr("y", bosC[1] + 4)
+        .attr("text-anchor", "middle").attr("class", "xch-name xch-name--home")
+        .text("Boston");
+
+      if (cfg.mode !== "explore"){
+        (cfg.focus || []).forEach(n => { drawFlow(n, cfg.mode); drawLabel(n); });
+        if (cfg.legendHi){
+          const lg = document.getElementById(cfg.legendHi);
+          if (lg) lg.textContent = hi.toLocaleString();
+        }
+      }
+
+      /* cursor tooltip, house pattern */
+      const tip = document.createElement("div");
+      tip.className = "rca-tip"; tip.hidden = true;
+      host.style.position = "relative"; host.appendChild(tip);
+      cellSel
+        .on("mouseenter", function(ev, f){
+          const n = f.properties.place_name;
+          const x = data.get(n);
+          if (cfg.mode === "explore" && !picked.includes(n))
+            d3.select(this).attr("fill-opacity", .3).attr("stroke-width", 1.5);
+          tip.innerHTML = "<strong>" + n + "</strong>" +
+            '<div class="tip-row"><span>Residents commuting there</span><span>' +
+              xchFmt(x.out, x.outEst) + "</span></div>" +
+            '<div class="tip-row"><span>Workers commuting from there</span><span>' +
+              xchFmt(x.inn, x.innEst) + "</span></div>" +
+            (cfg.mode === "explore" ? '<div class="tip-sub">click to ' +
+              (picked.includes(n) ? "remove" : "add") + "</div>" : "");
+          tip.hidden = false;
+        })
+        .on("mousemove", function(ev){
+          const w = host.getBoundingClientRect();
+          const left = ev.clientX - w.left + 10;
+          const top = ev.clientY - w.top - tip.offsetHeight - 10;
+          tip.style.left = Math.max(0, Math.min(left, w.width - tip.offsetWidth)) + "px";
+          tip.style.top  = Math.max(0, Math.min(top, w.height - tip.offsetHeight)) + "px";
+        })
+        .on("mouseleave", function(ev, f){
+          tip.hidden = true;
+          if (cfg.mode === "explore") restyle(this, f);
+        });
+
+      /* ---- exploration: section 1's contract on the real shapes ---- */
+      const picked = [];
+      function restyle(node, f){
+        const n = f.properties.place_name;
+        d3.select(node)
+          .attr("fill", picked.includes(n) ? "#e76565" : "#8aa0a6")
+          .attr("fill-opacity", picked.includes(n) ? .38 : .07)
+          .attr("stroke", picked.includes(n) ? "#e76565" : "#a9b8bc")
+          .attr("stroke-width", picked.includes(n) ? 1.4 : 1);
+      }
+      function renderXchTable(){
+        const tbl = document.getElementById("exchangeTable");
+        if (!tbl) return;
+        const cols = picked.map(n => ({ n, x: data.get(n) }));
+        const head = cols.map(c =>
+          "<th>" + c.n +
+          ' <button class="plc-remove" data-name="' + c.n + '" aria-label="Remove ' + c.n + '">&times;</button></th>'
+        ).join("");
+        const empty = cols.length === 0 ? '<th class="plc-empty">click the map &rarr;</th>' : "";
+        const rows = [
+          ["Residents commuting there", c => xchFmt(c.x.out, c.x.outEst)],
+          ["Workers commuting from there", c => xchFmt(c.x.inn, c.x.innEst)],
+          ["Net flow into the city", c => {
+            const net = c.x.inn - c.x.out;
+            return (net >= 0 ? "+" : "−") + Math.abs(net).toLocaleString();
+          }]
+        ];
+        tbl.innerHTML = "<thead><tr><th></th>" + head + empty + "</tr></thead><tbody>" +
+          rows.map(([label, fmt]) =>
+            '<tr><th class="plc-ind" scope="row">' + label + "</th>" +
+            cols.map(c => "<td>" + fmt(c) + "</td>").join("") +
+            (cols.length === 0 ? "<td></td>" : "") + "</tr>").join("") + "</tbody>";
+        tbl.querySelectorAll(".plc-remove").forEach(b =>
+          b.addEventListener("click", () => togglePick(b.dataset.name)));
+      }
+      function togglePick(n){
+        const i = picked.indexOf(n);
+        if (i >= 0) picked.splice(i, 1);
+        else {
+          if (picked.length === 3) picked.shift();
+          picked.push(n);
+        }
+        flows.selectAll("g").remove();
+        labels.selectAll("[data-lbl]").remove();
+        picked.forEach(nm => { drawFlow(nm, "out"); drawFlow(nm, "in"); drawLabel(nm); });
+        cellSel.each(function(f){ restyle(this, f); });
+        renderXchTable();
+      }
+      if (cfg.mode === "explore"){
+        cellSel.on("click", (ev, f) => togglePick(f.properties.place_name));
+        renderXchTable();
+      }
+    });
+  }
+
+  commuteFlowMap("commuteOutMap", { mode: "out", legendHi: "outLegHi",
+    focus: ["Cambridge","Newton","Waltham","Quincy"] });
+  commuteFlowMap("commuteInMap", { mode: "in", legendHi: "inLegHi",
+    focus: ["Quincy","Cambridge","Somerville","Brookline","Newton"] });
+  commuteFlowMap("commuteExploreMap", { mode: "explore",
+    focus: ["Cambridge","Quincy","Waltham","Framingham"] });
+
   function ovZoom(){
     if(!ovWrap||!ovLeaflet) return;
     // Finish the city -> metro zoom by the end of the MSA block, then hold, so
@@ -4424,6 +4818,66 @@
     const i = sectionIndexOf(id);
     if(i >= 0) showSection(i, false);
     enterToolDirect(id);
+  };
+
+  /* ---- sub-step ticks on the tabs: a scroll-spy, not a stepper ----
+     Each section page stays one continuous scroll; the active tab's
+     underline splits into a segment per sub-step and fills as the reader
+     scrolls past each block. The rail markup is the source of truth for
+     the step lists — sectionDefs undercounts Composition and Trade, whose last
+     two steps are in-page anchors rather than page ids. */
+  const SEC_STEPS = sectionDefs.map(sd => {
+    const sec = [...document.querySelectorAll(".rail .sec")]
+      .find(x => (x.dataset.sec || "").split(/\s+/).includes(sd.entry));
+    const steps = sec
+      ? [...sec.querySelectorAll(".steps li[data-step]")]
+          .filter(li => !li.dataset.step.endsWith("-practice"))
+          .map(li => ({ id: li.dataset.step,
+                        title: li.querySelector("button").textContent.trim() }))
+      : [];
+    return steps.length ? steps : [{ id: sd.entry, title: sd.name }];
+  });
+
+  [...secNavEl.children].forEach((btn, i) => {
+    const row = document.createElement("span");
+    row.className = "stepseg-row";
+    SEC_STEPS[i].forEach(st => {
+      const sg = document.createElement("button");
+      sg.type = "button";
+      sg.className = "stepseg";
+      sg.dataset.tip = st.title;
+      sg.setAttribute("aria-label", st.title);
+      sg.addEventListener("click", e => {
+        e.stopPropagation();          // the tab's own handler would rescroll to top
+        showSection(i, false);
+        goTo(st.id);
+      });
+      row.appendChild(sg);
+    });
+    btn.appendChild(row);
+  });
+
+  function paintTicks(){
+    if(activeSec < 0) return;
+    const segs = secNavEl.children[activeSec].querySelectorAll(".stepseg");
+    const steps = SEC_STEPS[activeSec];
+    // current = the last sub-step whose top has crossed 45% of the scroller
+    const mark = pagesEl.getBoundingClientRect().top + pagesEl.clientHeight * .45;
+    let cur = 0;
+    steps.forEach((st, j) => {
+      const el = document.getElementById(st.id);
+      if(el && el.getBoundingClientRect().top <= mark) cur = j;
+    });
+    segs.forEach((sg, j) => {
+      sg.classList.toggle("passed", j < cur);
+      sg.classList.toggle("cur", j === cur);
+    });
+  }
+  pagesEl.addEventListener("scroll", () => requestAnimationFrame(paintTicks), {passive:true});
+  const showSectionPlain = showSection;
+  showSection = function(i, toTop){
+    showSectionPlain(i, toTop);
+    paintTicks();                     // sync: the swap must never outrun the ticks
   };
 
   showSection(0, false);
@@ -4665,7 +5119,7 @@
     const t=document.getElementById("practiceInput");
     if(!t.value.trim()){ t.focus(); return; }
     savedInsights.push({
-      section:"Metro Exports · Put in Practice",
+      section:"Composition and Trade · Put in Practice",
       city:cityT.value, span:spanT.value,
       text:t.value.trim()
     });
