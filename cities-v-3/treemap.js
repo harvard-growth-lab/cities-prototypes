@@ -18,6 +18,14 @@
 
   /* "Color by" modes. Complexity and change are dummy values for the prototype,
      but held stable per industry so a cell keeps its shade across replays. */
+  /* One seeded PRNG for every generated data value, so each figure reads
+     the same on every load. Visual-only jitter may stay random. */
+  let _prng = 20260826;
+  function srand(){
+    _prng = (_prng * 1664525 + 1013904223) >>> 0;
+    return _prng / 4294967296;
+  }
+
   const SECTOR     = "Sector";
   const COMPLEXITY = "Product complexity";
   const TRADABILITY = "Tradability";
@@ -65,11 +73,13 @@
      sectors run high, land-hungry ones low. One function to swap for real
      place-level (2-digit) employment when it arrives. */
   const ADMIN_SHARE = {
-    "Construction": 0.12, "Education & Health": 0.31,
-    "Financial Activities": 0.38, "Leisure & Hospitality": 0.24,
+    /* jobs-weighted over the drawn sectors these come to 24% overall —
+       the same 24% the key graphic, tooltips and quiz state */
+    "Construction": 0.13, "Education & Health": 0.32,
+    "Financial Activities": 0.38, "Leisure & Hospitality": 0.25,
     "Manufacturing": 0.08, "Natural Resources": 0.03,
-    "Other": 0.18, "Professional & Business": 0.33,
-    "Trade & Transportation": 0.15
+    "Other": 0.19, "Professional & Business": 0.34,
+    "Trade & Transportation": 0.16
   };
   const tradByName = new Map();
   let _sectorOf = null;
@@ -92,9 +102,12 @@
   const splitState = { exportTreemapSvg:null, tradableAnimatedSvg:null };
 
   function complexityColor(name){
+    /* seeded, not random: the complexity map and its headline share must
+       read the same on every load */
     if(!complexityByName.has(name)){
-      complexityByName.set(name,
-        complexityPalette[Math.floor(Math.random() * complexityPalette.length)]);
+      let h = 0;
+      for (const c of name) h = (h * 31 + c.charCodeAt(0)) % 997;
+      complexityByName.set(name, complexityPalette[h % complexityPalette.length]);
     }
     return complexityByName.get(name);
   }
@@ -438,9 +451,15 @@
   ];
 
   /* Drop the 150 smallest industries so labels stay legible (161 remain). */
+  /* Calibrated so the drawn metro totals ~2.82M jobs — the world in which
+     the LEHD commuting figures hold: 687,736 jobs (24%) inside the admin
+     city, 206 for every 100 its residents hold. One constant to retire
+     when real employment data lands. */
+  const EMPLOY_CAL = 1.50253;
   const industryData = [...rawData]
     .sort((a, b) => b.employ - a.employ)
-    .slice(0, rawData.length - 150);
+    .slice(0, rawData.length - 150)
+    .map(r => ({ ...r, employ: r.employ * EMPLOY_CAL }));
 
   /* Build the sector -> industries hierarchy for a given set of rows. */
   function hierarchyFor(rows, label){
@@ -604,14 +623,27 @@
             const label = fitLabel(name, { width: a.w, height: a.h });
             g.append("text")
               .attr("x", a.x + 8).attr("y", a.y + 19)
-              .attr("fill", "#1a2226").attr("font-size", 13.5).attr("font-weight", 600)
+              /* inline styles: the svg's white-text CSS must not win here */
+              .style("fill", "#1a2226").style("stroke", "none")
+              .attr("font-size", 13.5).attr("font-weight", 600)
               .text(label)
               .style("opacity", 0)
               .transition().delay(650).duration(450).style("opacity", 1);
+            /* the building glyph carries "inside the admin city"; the bold
+               figure carries the data — no sentence to read */
+            const ic = g.append("g")
+              .attr("transform", "translate(" + (a.x + 8) + "," + (a.y + 26) + ") scale(0.55)")
+              .style("fill", "none").style("stroke", "#1c454d").attr("stroke-width", 2.4)
+              .attr("stroke-linecap", "round").attr("stroke-linejoin", "round")
+              .style("opacity", 0);
+            ["M2 26h20", "M4 26V15h6v11", "M12 26V8h7v18"].forEach(dd =>
+              ic.append("path").attr("d", dd));
+            ic.transition().delay(800).duration(450).style("opacity", 1);
             g.append("text")
-              .attr("x", a.x + 8).attr("y", a.y + 36)
-              .attr("fill", "#5b686d").attr("font-size", 12)
-              .text(Math.round(share * 100) + "% in the city")
+              .attr("x", a.x + 24).attr("y", a.y + 38)
+              .style("fill", "#1c454d").style("stroke", "none")
+              .attr("font-size", 14).attr("font-weight", 700)
+              .text(Math.round(share * 100) + "%")
               .style("opacity", 0)
               .transition().delay(800).duration(450).style("opacity", 1);
           }
@@ -635,11 +667,11 @@
         if (!merged || !admTip) return;
         const share = ADMIN_SHARE[d.data.name] !== undefined ? ADMIN_SHARE[d.data.name] : 0.15;
         admTip.innerHTML = "<strong>" + d.data.name + "</strong>" +
-          '<div class="tip-row"><span>Metro jobs</span><span>' +
-            Math.round(d.value).toLocaleString() + "</span></div>" +
-          '<div class="tip-row"><span>Inside the city</span><span>' +
-            Math.round(d.value * share).toLocaleString() + " \u00b7 " +
-            Math.round(share * 100) + "%</span></div>";
+          '<div class="tip-row"><span>' + cityName + ' metro</span><span>' +
+            Math.round(d.value).toLocaleString() + " jobs</span></div>" +
+          '<div class="tip-row"><span>' + cityName + ' admin</span><span>' +
+            Math.round(d.value * share).toLocaleString() + " jobs \u00b7 " +
+            '<b class="tip-pct">' + Math.round(share * 100) + "%</b></span></div>";
         admTip.hidden = false;
       })
       .on("mousemove.adm", function(ev){
@@ -651,10 +683,8 @@
     const admTotal = d3.sum(root.children, sec => sec.value);
     const admInside = d3.sum(root.children, sec =>
       sec.value * (ADMIN_SHARE[sec.data.name] !== undefined ? ADMIN_SHARE[sec.data.name] : 0.15));
-    const admStat = document.getElementById("admHeadStat");
-    donutStat(admStat, admInside / admTotal, token("--teal", "#255862"),
-      'of the metro\u2019s jobs sit inside <span class="city-short">Boston</span> proper');
-    if (admStat) admStat.hidden = true;   /* revealed by the veil's final beat */
+    /* the reading-key graphic in the lede column owns the 24% now; it is
+       static markup and simply reveals with the veil's final beat */
 
     let hasRun = false;
     const runOnce = () => { hasRun = true; run(); };
@@ -700,14 +730,14 @@
      3 · Specialization (RCA)
 
      RCA = the industry's share of local jobs divided by its share of jobs
-     in the global benchmark. Above 1.0 means the industry is more
+     across US metros (the benchmark). Above 1.0 means the industry is more
      concentrated here than it is worldwide.
 
      Dummy values for the prototype, held stable per industry. A handful of
      plausible Boston strengths are seeded by hand; the rest are random with
      most sitting below 1.0.
      ===================================================================== */
-  const RCA_TOP_N = 12;
+  const RCA_TOP_N = 10;
 
   const rcaSeed = {
     "Colleges Universities and Professional Schools":                             { rca: 5.4, short: "Colleges and universities" },
@@ -743,7 +773,7 @@
   function isTradable(name, sector){
     if (!tradableByName.has(name)) {
       tradableByName.set(name,
-        rcaSeed[name] ? true : Math.random() < (tradableOdds[sector] ?? 0.4));
+        rcaSeed[name] ? true : srand() < (tradableOdds[sector] ?? 0.4));
     }
     return tradableByName.get(name);
   }
@@ -753,8 +783,8 @@
     if (!rcaByName.has(name)) {
       const seeded = rcaSeed[name];
       const v = seeded ? seeded.rca
-        : (Math.random() < 0.80 ? 0.15 + Math.random() * 0.8
-                                : 1.02 + Math.random() * 0.8);
+        : (srand() < 0.80 ? 0.15 + srand() * 0.8
+                          : 1.02 + srand() * 0.8);
       rcaByName.set(name, Math.round(v * 100) / 100);
     }
     return rcaByName.get(name);
@@ -973,7 +1003,7 @@
           (year ? '<div class="tip-row"><span>Year</span><span>' + year + '</span></div>' : '') +
           '<div class="tip-row"><span>RCA</span><span>' + fmtX(d.rca) + '</span></div>' +
           '<div class="tip-sub">' + d.localPct.toFixed(2) + '% of ' + cityName +
-            "'s jobs vs " + d.worldPct.toFixed(2) + "% of the world's</div>" +
+            "'s jobs vs " + d.worldPct.toFixed(2) + "% across US metros</div>" +
           '<div class="tip-row"><span>Employment</span><span>' +
             fmtJobs(d.employ) + ' jobs</span></div>';
         rowTip.hidden = false;
@@ -1020,7 +1050,7 @@
   /* =====================================================================
      4 · Peer comparison
 
-     Same RCA formula, same global benchmark — computed independently for each
+     Same RCA formula, same US-metro benchmark — computed independently for each
      peer city, then compared. The peer marker is a single number (the mean of
      the four), with the individual cities available on hover.
      ===================================================================== */
@@ -1037,8 +1067,8 @@
 
   const PEER_PROFILES = {
     "Washington": { label: "Washington, DC",
-      population: "690K", density: "4,460/km²", wage: "$104,000",
-      home: "$712,000", share: "10.8%", diversity: "0.69" },
+      population: "690K", density: "4,457/km²", wage: "$105,318",
+      home: "$625,470", share: "10.8%", diversity: "0.69" },
     "Seattle": { label: "Seattle, WA",
       population: "755K", density: "3,390/km²", wage: "$112,000",
       home: "$866,000", share: "18.6%", diversity: "0.61" },
@@ -1084,7 +1114,7 @@
       // Where the peer group sits relative to this city. Mostly below (the
       // city is specialised here), sometimes above — those are the rows worth
       // arguing about.
-      const factor = 0.4 + Math.random() * 0.85;
+      const factor = 0.4 + srand() * 0.85;
       // Floor the target, never the resulting average — clamping after the
       // fact would leave the tick showing a number the four cities don't
       // actually average to.
@@ -1092,7 +1122,7 @@
 
       // Spread four cities around that target, then rescale so they average
       // to it exactly — the tooltip numbers must reconcile with the tick.
-      const jitter = PEERS.map(() => 0.62 + Math.random() * 0.76);
+      const jitter = PEERS.map(() => 0.62 + srand() * 0.76);
       const mean = jitter.reduce((s, j) => s + j, 0) / jitter.length;
       const values = jitter.map(j => Math.round(target * (j / mean) * 10) / 10);
 
@@ -1483,7 +1513,7 @@
   const METRO_X_MED = 0.7;    // population CAGR, %/yr
   const METRO_Y_MED = 4.0;    // avg-salary CAGR, %/yr
 
-  const HOME = { name: "Boston", pop: 0.4, pay: 4.5, size: 4.9 };
+  const HOME = { name: "Boston", pop: 0.4, pay: 5.3, size: 4.9 };
   const PEER_POINTS = [
     { name: "Washington",  pop: 0.35, pay: 4.9, size: 6.4 },
     { name: "Seattle",     pop: 1.15, pay: 5.4, size: 4.0 },
@@ -1497,13 +1527,13 @@
     const rest = [];
     for (let i = 0; i < 170; i++) {
       // clustered around the medians, with a long tail on both axes
-      const pop = METRO_X_MED + (Math.random() + Math.random() + Math.random() - 1.5) * 1.1;
-      const pay = METRO_Y_MED + (Math.random() + Math.random() + Math.random() - 1.5) * 1.1;
+      const pop = METRO_X_MED + (srand() + srand() + srand() - 1.5) * 1.1;
+      const pay = METRO_Y_MED + (srand() + srand() + srand() - 1.5) * 1.1;
       rest.push({
         name: "Metro area " + (i + 1),
         pop: Math.round(pop * 100) / 100,
         pay: Math.round(pay * 100) / 100,
-        size: Math.round((0.15 + Math.pow(Math.random(), 3) * 5.5) * 100) / 100,
+        size: Math.round((0.15 + Math.pow(srand(), 3) * 5.5) * 100) / 100,
         other: true
       });
     }
@@ -1829,12 +1859,12 @@
     svg.append("text").attr("class", "ms-axis-title")
       .attr("x", (M.left + W - M.right) / 2).attr("y", H - 14)
       .attr("text-anchor", "middle")
-      .text("Population growth (annual rate, 2014\u20132024)");
+      .text("Population growth (annual rate, 2015\u20132025)");
     svg.append("text").attr("class", "ms-axis-title")
       .attr("transform", "rotate(-90)")
       .attr("x", -(M.top + H - M.bottom) / 2).attr("y", 24)
       .attr("text-anchor", "middle")
-      .text("Average salary growth (annual rate, 2014\u20132024)");
+      .text("Average salary growth (annual rate, 2015\u20132025)");
 
     return { svg, data, x, y, r, W, H, M };
   }
@@ -1915,7 +1945,7 @@
     { name:"Marlborough", dx: 1.08, dy: 0.12, size: 41 },
     { name:"Franklin",    dx: 1.24, dy:-0.24, size: 33 },
     // last so it paints on top of the rest
-    { name:"Boston",      dx:-0.88, dy: 0.22, size:660, home:true }
+    { name:"Boston",      dx:-1.2,  dy: 0.5,  size:660, home:true }
   ];
 
   function renderCityInMetro(){
@@ -2154,7 +2184,7 @@
       items.forEach((d, i) => {
         const b = document.createElement("button");
         b.type = "button";
-        const valTxt = m.isNew && m.isNew(d.data.name) ? "new since 2014" : m.fmt(exVal(m, d));
+        const valTxt = m.isNew && m.isNew(d.data.name) ? "new since 2015" : m.fmt(exVal(m, d));
         b.innerHTML = '<span class="rk">' + (i + 1) + '</span><span>' + d.data.name +
                       '</span><span class="pci">' + valTxt + '</span>';
         b.addEventListener("mouseenter", () => {
@@ -2402,7 +2432,7 @@
      quantitative summary. */
   function jobsShare(pred){
     let hit = 0, tot = 0;
-    rawData.forEach(r => { tot += r.employ; if (pred(r)) hit += r.employ; });
+    industryData.forEach(r => { tot += r.employ; if (pred(r)) hit += r.employ; });
     return tot ? hit / tot : 0;
   }
 
@@ -2436,8 +2466,7 @@
 
   /* ---- the lean map: what the place does more of than its metro ----
      The same sector blocks as the merged admin map, recoloured by each
-     sector's share of the city against its share of the metro (the ratio
-     the reference proto states as "1.9x as large a share here"). House
+     sector's share of the city against its share of the metro (the form the reference proto uses; ours computes ~1.6× from ADMIN_SHARE). House
      diverging pair: russet = leans less, teal = leans more, parity pale. */
   /* The two commuting donuts — real LEHD-style shares from the reference. */
   function initCommuteStats(){
@@ -2458,63 +2487,176 @@
       const sh = ADMIN_SHARE[sec.data.name] !== undefined ? ADMIN_SHARE[sec.data.name] : 0.15;
       return sh / overall;
     };
-    const leanScale = d3.scaleLinear()
-      .domain([-1.6, 0, 0.8])
-      .range(["#7f451e", "#efeeec", token("--teal", "#255862")])
-      .interpolate(d3.interpolateLab)
-      .clamp(true);
+
+    const rows = [...root.children].sort((a, b) => ratioOf(b) - ratioOf(a));
+    const W = 1000, ROW = 36, MT = 26, MB = 66;
+    const H = Math.max(MT + rows.length * ROW + MB, 384);
+    el.setAttribute("viewBox", "0 0 " + W + " " + H);
+    el.setAttribute("height", H);
+    const BASE = 560, K = 150, LOGMIN = -2.1, LOGMAX = 0.9;
+    const xOf = r => BASE + K * Math.max(LOGMIN, Math.min(LOGMAX, Math.log2(r)));
+
+    /* two geometries per sector: its block on the sector map (scaled into
+       this frame) and its bar row. The SOLID band — the city's slice — is
+       the element that morphs; the veiled remainder just fades away. */
+    const sy = (H - 24) / HEIGHT;
+    const geo = new Map(rows.map((d, i) => {
+      const share = ADMIN_SHARE[d.data.name] !== undefined ? ADMIN_SHARE[d.data.name] : 0.15;
+      const bx = d.x0, bw = d.x1 - d.x0;
+      const by = 8 + d.y0 * sy, bh = (d.y1 - d.y0) * sy;
+      const r = ratioOf(d), x = xOf(r);
+      return [d.data.name, {
+        share, r,
+        ghost: { x: bx, y: by, w: bw, h: bh * (1 - share) },
+        solid: { x: bx, y: by + bh * (1 - share), w: bw, h: bh * share },
+        bar:   { x: Math.min(BASE, x), y: MT + i * ROW + 4, w: Math.abs(x - BASE), h: 22 },
+        tipX: x
+      }];
+    }));
 
     const svg = d3.select(el);
-    const g = svg.selectAll("g.lean-cell")
-      .data(root.children, d => d.data.name)
-      .join("g").attr("class", "lean-cell");
-    g.append("rect")
-      .attr("x", d => d.x0).attr("y", d => d.y0)
-      .attr("width", d => d.x1 - d.x0).attr("height", d => d.y1 - d.y0)
-      .attr("fill", d => leanScale(Math.log2(ratioOf(d))))
-      .attr("stroke", "#fff").attr("stroke-width", 1.5);
-    g.each(function(d){
-      const w = d.x1 - d.x0, h = d.y1 - d.y0;
-      if (w < 70 || h < 44) return;
-      const r = ratioOf(d);
-      const nearParity = r > 0.8 && r < 1.25;
-      const ink = nearParity ? "#1a2226" : "#ffffff";
-      const sub = nearParity ? "#5b686d" : "rgba(255,255,255,.85)";
+    svg.selectAll("*").remove();
+
+    /* bar furniture, hidden until the bars state */
+    const furn = svg.append("g").attr("class", "lean-furn").style("opacity", 0);
+    furn.append("line")
+      .attr("x1", BASE).attr("x2", BASE)
+      .attr("y1", MT - 12).attr("y2", MT + rows.length * ROW + 8)
+      .attr("stroke", "#8a989d").attr("stroke-width", 1.5);
+    rows.forEach((d, i) => {
+      const g0 = geo.get(d.data.name);
+      furn.append("text")
+        .attr("x", 300).attr("y", MT + i * ROW + 22)
+        .attr("text-anchor", "end")
+        .style("fill", "#1a2226").style("stroke", "none")
+        .attr("font-size", 13.5).attr("font-weight", 600)
+        .text(d.data.name);
+      furn.append("text")
+        .attr("x", g0.r >= 1 ? g0.tipX + 8 : g0.tipX - 8)
+        .attr("y", MT + i * ROW + 23)
+        .attr("text-anchor", g0.r >= 1 ? "start" : "end")
+        .style("fill", "#1a2226").style("stroke", "none")
+        .attr("font-size", 13).attr("font-weight", 700)
+        .text(g0.r.toFixed(2).replace(/0$/, "") + "×");
+    });
+    furn.append("text")
+      .attr("x", BASE).attr("y", MT + rows.length * ROW + 26)
+      .attr("text-anchor", "middle")
+      .style("fill", "#5b686d").style("stroke", "none").attr("font-size", 12)
+      .text("same as the metro");
+    furn.append("text")
+      .attr("x", BASE).attr("y", MT + rows.length * ROW + 46)
+      .attr("text-anchor", "middle")
+      .style("fill", "#5b686d").style("stroke", "none").attr("font-size", 12)
+      .text("share of " + cityName + " ÷ share of the metro");
+
+    /* the sectors: pale ghost (the metro remainder), solid slice, block name */
+    const secs = svg.selectAll("g.lean-sec").data(rows, d => d.data.name)
+      .join("g").attr("class", "lean-sec");
+    secs.each(function(d){
+      const g0 = geo.get(d.data.name);
       const sel = d3.select(this);
-      sel.append("text")
-        .attr("x", d.x0 + 8).attr("y", d.y0 + 19)
-        .attr("fill", ink).attr("font-size", 13.5).attr("font-weight", 600)
-        .text(fitLabel(d.data.name, { width: w, height: h }));
-      sel.append("text")
-        .attr("x", d.x0 + 8).attr("y", d.y0 + 36)
-        .attr("fill", sub).attr("font-size", 12)
-        .text(r.toFixed(1).replace(/\.0$/, "") + "\u00d7 the metro\u2019s share");
+      sel.append("rect").attr("class", "ln-ghost")
+        .attr("x", g0.ghost.x).attr("y", g0.ghost.y)
+        .attr("width", g0.ghost.w).attr("height", g0.ghost.h)
+        .attr("fill", sectorColors[d.data.name]).attr("fill-opacity", .26)
+        .attr("stroke", "#fff").attr("stroke-width", 1);
+      sel.append("rect").attr("class", "ln-solid")
+        .attr("x", g0.solid.x).attr("y", g0.solid.y)
+        .attr("width", g0.solid.w).attr("height", g0.solid.h)
+        .attr("fill", sectorColors[d.data.name])
+        .attr("stroke", "#fff").attr("stroke-width", .8);
+      if (g0.ghost.w > 70 && (g0.ghost.h + g0.solid.h) > 40)
+        sel.append("text").attr("class", "ln-name")
+          .attr("x", g0.ghost.x + 8).attr("y", g0.ghost.y + 17)
+          .style("fill", "#1a2226").style("stroke", "none")
+          .attr("font-size", 13).attr("font-weight", 600)
+          .text(fitLabel(d.data.name, { width: g0.ghost.w, height: 40 }));
     });
 
+    let view = "blocks", userTouched = false, autoDone = false;
+    const DUR = 850;
+    function setSeg(){
+      document.querySelectorAll("#leanViewSeg .seg-btn").forEach(b => {
+        const on = b.dataset.v === view;
+        b.classList.toggle("is-active", on);
+        b.setAttribute("aria-pressed", String(on));
+      });
+    }
+    function toBars(animate){
+      view = "bars"; setSeg();
+      const t = animate ? DUR : 0;
+      secs.selectAll(".ln-ghost").transition().duration(t * .5).attr("fill-opacity", 0);
+      secs.selectAll(".ln-name").transition().duration(t * .4).style("opacity", 0);
+      secs.each(function(d){
+        const g0 = geo.get(d.data.name);
+        d3.select(this).select(".ln-solid")
+          .transition().duration(t).ease(d3.easeCubicInOut)
+          .attr("x", g0.bar.x).attr("y", g0.bar.y)
+          .attr("width", g0.bar.w).attr("height", g0.bar.h);
+      });
+      furn.transition().delay(t * .55).duration(Math.max(1, t * .5)).style("opacity", 1);
+    }
+    function toBlocks(animate){
+      view = "blocks"; setSeg();
+      const t = animate ? DUR : 0;
+      furn.transition().duration(t * .35).style("opacity", 0);
+      secs.each(function(d){
+        const g0 = geo.get(d.data.name);
+        d3.select(this).select(".ln-solid")
+          .transition().duration(t).ease(d3.easeCubicInOut)
+          .attr("x", g0.solid.x).attr("y", g0.solid.y)
+          .attr("width", g0.solid.w).attr("height", g0.solid.h);
+      });
+      secs.selectAll(".ln-ghost").transition().delay(t * .4).duration(t * .5).attr("fill-opacity", .26);
+      secs.selectAll(".ln-name").transition().delay(t * .5).duration(t * .4).style("opacity", 1);
+    }
+    document.querySelectorAll("#leanViewSeg .seg-btn").forEach(b =>
+      b.addEventListener("click", () => {
+        userTouched = true;
+        if (b.dataset.v !== view) (b.dataset.v === "bars" ? toBars : toBlocks)(true);
+      }));
+
+    /* arrival: the blocks hold for a beat, then the solid slices line up */
+    function autoPlay(){
+      if (autoDone) return;
+      autoDone = true;
+      setTimeout(() => { if (!userTouched && view === "blocks") toBars(true); }, 1200);
+    }
+    new IntersectionObserver((es, obs) => es.forEach(e => {
+      if (e.isIntersecting){ autoPlay(); obs.disconnect(); }
+    }), { threshold: .35 }).observe(el);
+    const scroller = document.getElementById("pages");
+    if (scroller) scroller.addEventListener("scroll", () => {
+      const rct = el.getBoundingClientRect();
+      if (rct.top < window.innerHeight * .7 && rct.bottom > 0) autoPlay();
+    }, { passive: true });
+
     /* the superlative, stated the way the reference states it */
-    const top = root.children.reduce((a, b) => ratioOf(a) > ratioOf(b) ? a : b);
+    const top = rows[0];
     const note = document.getElementById("leanNote");
     if (note){
       const sh = ADMIN_SHARE[top.data.name];
       note.innerHTML = "<strong>" + top.data.name + "</strong> is " +
-        ratioOf(top).toFixed(1) + "\u00d7 as large a share here as in the metro \u2014 " +
-        Math.round(sh * 100) + "% of the metro\u2019s " + top.data.name.toLowerCase() +
+        ratioOf(top).toFixed(1) + "× as large a share here as in the metro — " +
+        Math.round(sh * 100) + "% of the metro’s " + top.data.name.toLowerCase() +
         " sits inside the city, against " + Math.round(overall * 100) +
-        "% of the metro\u2019s jobs overall.";
+        "% of the metro’s jobs overall.";
     }
 
-    /* house tooltip: cursor top-right */
+    /* house tooltip: cursor top-right, works in both states */
     const tip = document.getElementById("leanTip");
     const wrap = document.getElementById("leanWrap");
     if (tip && wrap){
-      g.on("mouseenter", function(ev, d){
-        const r = ratioOf(d);
-        const sh = ADMIN_SHARE[d.data.name] !== undefined ? ADMIN_SHARE[d.data.name] : 0.15;
+      secs.style("cursor", "default")
+       .on("mouseenter", function(ev, d){
+        const g0 = geo.get(d.data.name);
         tip.innerHTML = "<strong>" + d.data.name + "</strong>" +
-          '<div class="tip-row"><span>Lean vs the metro</span><span>' + r.toFixed(2) + "\u00d7</span></div>" +
-          '<div class="tip-row"><span>Of this sector, in the city</span><span>' +
-            Math.round(sh * 100) + "%</span></div>" +
-          '<div class="tip-row"><span>Of all metro jobs, in the city</span><span>' +
+          '<div class="tip-row"><span>Lean vs the metro</span><span><b class="tip-pct">' +
+            g0.r.toFixed(2) + "×</b></span></div>" +
+          '<div class="tip-row"><span>' + cityName + ' admin share of this sector</span><span>' +
+            Math.round(g0.share * 100) + "%</span></div>" +
+          '<div class="tip-row"><span>' + cityName + ' admin share of all metro jobs</span><span>' +
             Math.round(overall * 100) + "%</span></div>";
         tip.hidden = false;
       })

@@ -531,7 +531,36 @@
   /* first nav number lines up with the content's left edge (grid + 48px pad,
      minus the button's own 16px) */
   .secnav{padding-inline:max(22px, calc((100vw - 1200px)/2 + 32px));}
-  .secpager{max-width:1200px;width:100%;margin-inline:auto;padding:26px 48px 34px;}
+  .secpager{
+    max-width:1200px;width:100%;margin-inline:auto;padding:26px 48px 34px;
+    flex-direction:column;align-items:stretch;gap:22px;
+  }
+  .pager-row{display:flex;justify-content:space-between;align-items:center;gap:14px;}
+  .sec-close{
+    display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:0;align-items:stretch;
+    background:#f7f9f9;border:1px solid var(--border);border-radius:10px;
+  }
+  .sec-close .ktest{
+    width:auto;max-width:none;margin:0;border:none;background:none;
+    padding:20px 24px 22px;
+  }
+  .sec-close .ktest--apply{border-left:1px solid var(--border);border-radius:0;}
+  .kc-count{margin-left:auto;font-size:12px;color:var(--ink-soft);font-weight:600;}
+  .kc-view{overflow:hidden;}
+  .kc-track{display:flex;transition:transform .3s ease;}
+  @media (prefers-reduced-motion: reduce){ .kc-track{transition:none;} }
+  .kc-slide{flex:0 0 100%;min-width:0;padding-right:4px;}
+  .kc-nav{display:flex;align-items:center;gap:12px;margin-top:14px;}
+  .kc-arrow{
+    width:30px;height:30px;border-radius:50%;border:1px solid var(--border-strong);
+    background:#fff;font-size:14px;color:var(--teal);cursor:pointer;
+  }
+  .kc-arrow:hover:not(:disabled){border-color:var(--teal);}
+  .kc-arrow:disabled{opacity:.35;cursor:default;}
+  .kc-dots{display:flex;gap:7px;}
+  .kc-dot{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--border-strong);background:#fff;padding:0;cursor:pointer;}
+  .kc-dot.answered{background:var(--teal);border-color:var(--teal);}
+  .kc-dot.on{box-shadow:0 0 0 2.5px rgba(37,88,98,.22);border-color:var(--teal);}
   /* Figures sit slightly inside the 1104 text measure: one centred 1000px
      figure column, so every chart, its controls bar, and its furniture
      (headers, footnotes, wrappers) read as a single aligned block. */
@@ -1093,7 +1122,7 @@
   .xch-dash{animation:xch-march 1.1s linear infinite;}
   @media (prefers-reduced-motion: reduce){ .xch-dash{animation:none;} }
   .xch-split{
-    display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:22px;
+    display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:22px;
     align-items:start;width:1000px;max-width:100%;margin:14px auto 0;
   }
   .commute-map--split{width:100% !important;margin:0 !important;}
@@ -1122,6 +1151,13 @@
     content:"";position:absolute;left:50%;top:100%;transform:translateX(-50%);
     border:5px solid transparent;border-top-color:var(--teal);
   }
+  /* The same prompt card and nudge, reused by the Overview's places picker.
+     The nudge rides a Leaflet marker there, shown only while the picker
+     cells are live (.pl-on), like the cells themselves. */
+  .xch-prompt--plc{margin-top:12px;}
+  #plcSideHint{margin-top:10px;}
+  #ovMap .plc-nudge-wrap{opacity:0;transition:opacity .35s ease;pointer-events:none;}
+  #ovMap.pl-on .plc-nudge-wrap{opacity:1;}
   .ktest{
     width:1000px;max-width:100%;margin:26px auto 0;
     border:1px solid var(--border);border-radius:10px;padding:18px 22px 20px;
@@ -1182,6 +1218,8 @@
     width:1000px;max-width:100%;margin:10px auto 0;
     font-size:12.5px;color:var(--ink-soft);
   }
+  .adm-read svg{display:block;}
+  .lede-stat-row .adm-read{justify-self:start;}
   .adm-key{
     font-size:12.5px;color:var(--ink-soft);margin:12px auto 0;
     width:1000px;max-width:100%;
@@ -1506,6 +1544,10 @@
     box-shadow:var(--shadow-md);pointer-events:none;
   }
   .rca-tip[hidden]{display:none;}
+  .tip-pct{
+    background:var(--teal-tint);color:var(--teal-dark);font-weight:700;
+    padding:1px 7px;border-radius:3px;
+  }
   .rca-tip strong{font-size:14px;font-weight:600;color:#000;}
   .rca-tip p{font-size:14px;line-height:21px;color:#000;margin:7px 0 0;}
 
@@ -2506,15 +2548,15 @@
               <div class="intro-card">
                 <p class="intro-title">Before we look at the data, let’s explore your assumptions</p>
                 <div class="intro-progress"><span class="seg fill"></span><span class="seg"></span><span class="seg"></span><span class="seg"></span><span class="seg"></span><span class="seg"></span><span class="seg"></span></div>
-                <h2 class="intro-q">Over 2017–2023, did Boston (the city proper) gain or lose population — and how does that compare to the country?</h2>
+                <h2 class="intro-q">Over 2015–2025, did Boston (the city proper) gain or lose population — and how does that compare to the country?</h2>
                 <div class="intro-opts">
                   <button data-result="wrong"><span class="opt-letter">A</span>Grew faster than the US</button>
                   <button data-result="wrong"><span class="opt-letter">B</span>Grew, but slower than the US</button>
                   <button data-result="correct"><span class="opt-letter">C</span>Shrank while the US grew</button>
                 </div>
                 <p class="intro-fb"
-                   data-correct="Boston proper shrank about 0.8% a year while the country grew about 0.5% — even as salaries in the city climbed nearly 6% a year. Feet and paychecks are pointing in opposite directions."
-                   data-wrong="Boston proper shrank about 0.8% a year while the country grew about 0.5% — even as salaries in the city climbed nearly 6% a year. Feet and paychecks are pointing in opposite directions."></p>
+                   data-correct="Boston proper shrank about 0.8% a year while the country grew about 0.6% — even as salaries in the city climbed nearly 6% a year. Feet and paychecks are pointing in opposite directions."
+                   data-wrong="Boston proper shrank about 0.8% a year while the country grew about 0.6% — even as salaries in the city climbed nearly 6% a year. Feet and paychecks are pointing in opposite directions."></p>
               </div>
             </div>
 
@@ -2530,7 +2572,7 @@
                   <button class="lock-btn" id="sliderLock" onclick="lockSlider()">Lock it in</button>
                 </div>
                 <p class="intro-fb"
-                   data-reveal="Boston proper is about 655,000 people in a metro of 4.9 million — roughly 13%, spread over seven counties in two states. The labor market you're diagnosing is over seven times the city you can see from City Hall."></p>
+                   data-reveal="Boston proper is about 660,000 people in a metro of 4.9 million — roughly 13%, spread over seven counties in two states. The labor market you're diagnosing is over seven times the city you can see from City Hall."></p>
               </div>
             </div>
 
@@ -2579,16 +2621,16 @@
                       <text class="quad" x="60" y="284">negative demand</text>
                       <text class="quad" x="490" y="284" text-anchor="end">positive supply</text>
                       <g id="ddTruth" style="display:none">
-                        <circle cx="263.75" cy="102.5" r="8" fill="#255862"/>
-                        <text x="276" y="99" style="font-weight:700;fill:#255862;">Boston MSA</text>
+                        <circle cx="263.75" cy="42.5" r="8" fill="#255862"/>
+                        <text x="276" y="39" style="font-weight:700;fill:#255862;">Boston MSA</text>
                       </g>
-                      <circle id="ddDot" class="dd-dot" cx="275" cy="155" r="10" fill="#e3a72f" stroke="#b07d12" stroke-width="2"/>
+                      <circle id="ddDot" class="dd-dot" cx="297.5" cy="140" r="10" fill="#e3a72f" stroke="#b07d12" stroke-width="2"/>
                     </svg>
                     </div>
                     <div class="dd-side">
                       <div class="dd-tiles">
-                        <div class="dd-tile"><div class="lbl">people /yr</div><div class="val" id="ddPop">+0.5%</div><div class="note">typical +0.5%</div></div>
-                        <div class="dd-tile"><div class="lbl">pay /yr</div><div class="val" id="ddWage">+3.8%</div><div class="note">typical +3.8%</div></div>
+                        <div class="dd-tile"><div class="lbl">people /yr</div><div class="val" id="ddPop">+0.7%</div><div class="note">typical +0.7%</div></div>
+                        <div class="dd-tile"><div class="lbl">pay /yr</div><div class="val" id="ddWage">+4.0%</div><div class="note">typical +4.0%</div></div>
                       </div>
                       <div class="dd-signal neutral" id="ddSignal">
                         <div class="head">On the benchmark — no signal yet.</div>
@@ -2602,7 +2644,7 @@
                 <p class="intro-fb"
                    data-right="Right slice."
                    data-wrong="Different slice than you thought."
-                   data-reveal="Boston lands at +0.4% people, +4.5% pay — the slow-people, fast-pay slice. Wages are sprinting while population barely moves: the signature of a constrained labor supply."></p>
+                   data-reveal="Boston lands at +0.4% people, +5.3% pay — the slow-people, fast-pay slice. Wages are sprinting while population barely moves: the signature of a constrained labor supply."></p>
               </div>
             </div>
 
@@ -2634,7 +2676,7 @@
             <div class="intro-slide" id="page-intro-q7">
               <div class="intro-card">
                 <div class="intro-progress"><span class="seg fill"></span><span class="seg fill"></span><span class="seg fill"></span><span class="seg fill"></span><span class="seg fill"></span><span class="seg fill"></span><span class="seg fill"></span></div>
-                <h2 class="intro-q">Strip out what wages explain about home prices; the residual is a metro’s revealed "pull." Which way has Boston’s drifted since 2017?</h2>
+                <h2 class="intro-q">Strip out what wages explain about home prices; the residual is a metro’s revealed "pull." Which way has Boston’s drifted since 2015?</h2>
                 <div class="intro-opts">
                   <button data-result="wrong"><span class="opt-letter">A</span>Up — the deal keeps getting better</button>
                   <button data-result="wrong"><span class="opt-letter">B</span>Flat — pull unchanged</button>
@@ -2670,7 +2712,7 @@
               <div class="ind-row hero">
                 <span class="ind-name">Population</span><span class="ind-val">660K</span>
                 <span class="chg-wrap"><span class="chg-slider" style="--zero:50%"><span class="neg"></span><span class="pos"></span><span class="track"></span><span class="zero"></span><span class="chg-nation" style="--p:77%" data-val="Nation +0.6%/yr"></span><span class="knob dot-city" style="--from:50%;--to:14%" data-val="Admin −0.8%/yr"></span></span><span class="chg-val bad">−0.8%/yr</span></span>
-                <span class="ind-rank">1 / 35</span>
+                <span class="ind-rank">1 / 34</span>
                 <span class="hero-note"><span class="city-short">Boston</span> has been losing residents for a decade.</span>
               </div>
               <div class="ind-row">
@@ -2685,8 +2727,8 @@
               </div>
               <div class="ind-row">
                 <span class="ind-name">Unemployment</span><span class="ind-val">3.5%</span>
-                <span class="chg-wrap"><span class="chg-slider" style="--zero:50%"><span class="neg"></span><span class="pos"></span><span class="track"></span><span class="zero"></span><span class="chg-nation" style="--p:18.5%" data-val="Nation −0.7 pp"></span><span class="knob dot-city" style="--from:50%;--to:54.5%" data-val="Admin +0.1 pp"></span></span><span class="chg-val good">+0.1 pp</span></span>
-                <span class="ind-rank">21 / 35</span>
+                <span class="chg-wrap"><span class="chg-slider" style="--zero:50%"><span class="neg"></span><span class="pos"></span><span class="track"></span><span class="zero"></span><span class="chg-nation" style="--p:18.5%" data-val="Nation −0.7 pp"></span><span class="knob dot-city" style="--from:50%;--to:54.5%" data-val="Admin +0.1 pp"></span></span><span class="chg-val bad">+0.1 pp</span></span>
+                <span class="ind-rank">21 / 34</span>
               </div>
               <div class="ind-row">
                 <span class="ind-name">Diversity index</span><span class="ind-val">0.64</span>
@@ -2704,7 +2746,7 @@
                 <span class="pg-name">Admin peers</span>
               </div>
               <span class="pg-list"></span>
-              <p class="pg-crit">Closest by population, density, wage and home value, as of 2017 &mdash; hover any to compare.</p>
+              <p class="pg-crit">Closest by population, density, wage and home value, as of 2015 &mdash; hover any to compare.</p>
             </div>
 
           </section>
@@ -2730,7 +2772,7 @@
               </button>
               <div class="collapsible-content">
                 <p>A <strong>metropolitan statistical area</strong> is how the US Census draws the functional city: a dense core plus every surrounding county tied to it by commuting. It is the closest official shape to the real labor market — the area within which people can change jobs or homes without changing lives.</p>
-                <p><span class="city-short">Boston</span>’s metro spans dozens of municipalities and about 4.9M people; the administrative city is one of them, home to roughly 13% of the metro’s residents. That is why most of what follows is read at the metro scale.</p>
+                <p><span class="city-short">Boston</span>’s metro spans 197 cities and towns and about 4.9M people; the administrative city is one of them, home to roughly 13% of the metro’s residents. That is why most of what follows is read at the metro scale.</p>
               </div>
             </div>
             <div class="ind-table">
@@ -2752,7 +2794,7 @@
               </div>
               <div class="ind-row">
                 <span class="ind-name">Unemployment</span><span class="ind-val">3.3%</span>
-                <span class="chg-wrap"><span class="chg-slider" style="--zero:50%"><span class="neg"></span><span class="pos"></span><span class="track"></span><span class="zero"></span><span class="chg-nation" style="--p:18.5%" data-val="Nation −0.7 pp"></span><span class="knob dot-metro" style="--from:50%;--to:45.5%" data-val="Metro −0.1 pp"></span></span><span class="chg-val bad">−0.1 pp</span></span>
+                <span class="chg-wrap"><span class="chg-slider" style="--zero:50%"><span class="neg"></span><span class="pos"></span><span class="track"></span><span class="zero"></span><span class="chg-nation" style="--p:18.5%" data-val="Nation −0.7 pp"></span><span class="knob dot-metro" style="--from:50%;--to:45.5%" data-val="Metro −0.1 pp"></span></span><span class="chg-val good">−0.1 pp</span></span>
                 <span class="ind-rank">144 / 371</span>
               </div>
               <div class="ind-row">
@@ -2771,7 +2813,7 @@
                 <span class="pg-name">Metro area peers</span>
               </div>
               <span class="pg-list"></span>
-              <p class="pg-crit">Closest by population, density, wage and home value, as of 2017 &mdash; hover any to compare.</p>
+              <p class="pg-crit">Closest by population, density, wage and home value, as of 2015 &mdash; hover any to compare.</p>
             </div>
 
           </section>
@@ -2804,7 +2846,7 @@
                 <span class="gap-name">Average salary<span class="gap-sub">$100K vs $108K</span></span>
                 <span class="gap-now">
                   <span class="gap-now-mark down" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v10"/><path d="M3.5 8.5 8 13l4.5-4.5"/></svg></span>
-                  <span class="gap-now-body"><span class="gap-now-num">2%</span><span class="gap-now-text">lower than the metro</span></span>
+                  <span class="gap-now-body"><span class="gap-now-num">7%</span><span class="gap-now-text">lower than the metro</span></span>
                 </span>
                 <span class="gap-track" style="--zero:6%;--a:77.6%;--b:84.3%">
                   <span class="neg"></span><span class="pos"></span><span class="track"></span><span class="zero"></span>
@@ -2865,7 +2907,7 @@
               <h2>Admins in your Metro</h2>
               <span class="geo-badge"><span class="geo-mark" data-geo="city"></span>City (admin)</span>
             </div>
-            <p class="lede"><span class="city-short">Boston</span> is one of many places inside its metro &mdash; the map now shows all of them. Pick any place off the map to see how it stacks up; every figure carries its rank among the metro&rsquo;s places.</p>
+            <p class="lede"><span class="city-short">Boston</span> is one of many places inside its metro &mdash; the map now shows all of them. <strong>Click any place on the map</strong> to see how it stacks up; every figure carries its rank among the metro&rsquo;s places.</p>
 
             <div class="ctl plc-ctl">
               <span class="ctl-label">Color map by</span>
@@ -2876,26 +2918,18 @@
                 <span class="lo"></span><i class="plc-ramp"></i><span class="hi"></span>
               </span>
             </div>
-            <table class="plc-table" id="placesTable" aria-live="polite"></table>
-            <p class="places-hint"><span class="sw" style="background:var(--geo-city)"></span><span class="city-short">Boston</span> &nbsp;&middot;&nbsp; <span class="sw" style="background:var(--orange)"></span>your picks &mdash; click the map to add a place, click again to remove. Up to three.</p>
-          </section>
-
-          <section class="ov-block ov-block--check">
-          <div class="ktest" id="check-overview" data-sec="Economic Fundamentals" data-fb="Around 13% — the administrative city is one piece of a much larger labor market, which is why most of the diagnosis reads at the metro scale.">
-            <div class="ktest-head"><span class="ktest-ic">?</span><h3>Test your knowledge</h3></div>
-            <p class="ktest-q">Roughly what share of the Boston metro&rsquo;s residents live in Boston proper?</p>
-            <div class="ktest-opts"><button type="button" data-ok="1">About 13%</button><button type="button" data-ok="0">About half</button><button type="button" data-ok="0">Nearly all of them</button></div>
-            <p class="ktest-fb" hidden></p>
-          </div>
-          <div class="ktest ktest--apply" id="apply-overview" data-sec="Economic Fundamentals">
-            <div class="ktest-head"><span class="ktest-ic">&#9998;</span><h3>Put your insights</h3></div>
-            <p class="ktest-q">What single fact about how your city is doing would you flag for a colleague — and what would you want to check next?</p>
-            <textarea class="ktest-ta" rows="3" placeholder="The population trend surprised me because&hellip;"></textarea>
-            <div class="ktest-actions">
-              <button type="button" class="ktest-save">Save to my journey</button>
-              <span class="ktest-saved" hidden>Saved &#10003;</span>
+            <div class="xch-prompt xch-prompt--plc" id="plcPrompt">
+              <svg class="xp-ico" viewBox="0 0 44 44" width="40" height="40" fill="none" stroke="#255862" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M18 20V8a3 3 0 0 1 6 0v9"/>
+                <path d="M24 17a3 3 0 0 1 6 0v3a3 3 0 0 1 6 0v4c0 7-3 12-10 12h-2c-4 0-6-1.6-8.5-5.5L11 24a2.8 2.8 0 0 1 4.8-2.8L18 24"/>
+                <path d="M10 8 6 4M14 5.5 13 1.5M6.5 12 2.5 11"/>
+              </svg>
+              <p class="xp-main">Click any place on the map</p>
+              <p class="xp-sub">Every place in the metro carries its own figures. Tap one to stack it against <span class="city-short">Boston</span> &mdash; up to three side by side.</p>
             </div>
-          </div>
+            <table class="plc-table" id="placesTable" aria-live="polite" hidden></table>
+            <p class="xch-side-hint" id="plcSideHint" hidden><span class="sw" style="background:var(--orange)"></span>your picks &middot; click a place again &mdash; or its &times; &mdash; to remove it.</p>
+            <p class="places-hint">Showing the 34 largest of the metro&rsquo;s 197 municipalities.</p>
           </section>
 
         </div>
@@ -2944,7 +2978,7 @@
         <div class="viz-controls viz-controls--export">
           <div class="ctl">
             <span class="ctl-label">Year</span>
-            <select><option>2024</option><option>2019</option><option>2014</option></select>
+            <select><option>2025</option><option>2020</option><option>2015</option></select>
           </div>
           <div class="ctl">
             <span class="ctl-label">Color by</span>
@@ -3013,14 +3047,31 @@
           </div>
           <div class="lede-stat-row">
             <p class="lede">The metro’s mix above is drawn industry by industry; the administrative city is read at a coarser grain — whole sectors. Watch the metro’s industries gather into those sectors, and each block then shows how much of its work actually sits inside <span class="city-short">Boston</span> proper.</p>
-            <span class="headstat" id="admHeadStat" hidden></span>
+            <div class="adm-read" id="admHeadStat" hidden aria-label="How to read the blocks">
+              <svg viewBox="0 0 320 96" width="300" height="90">
+                <rect x="2" y="8" width="82" height="80" fill="#255862" fill-opacity=".75"/>
+                <rect x="2" y="8" width="82" height="61" fill="#ffffff" opacity=".72"/>
+                <rect x="2" y="8" width="82" height="80" fill="none" stroke="#c3ccce"/>
+                <g transform="translate(8 70) scale(.55)" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M2 26h20"/><path d="M4 26V15h6v11"/><path d="M12 26V8h7v18"/>
+                </g>
+                <text x="30" y="84" font-size="13.5" font-weight="700" fill="#ffffff">24%</text>
+                <line x1="88" y1="34" x2="106" y2="34" stroke="#8a989d" stroke-width="1.2"/>
+                <text x="111" y="30" font-size="12" fill="#5b686d">happens elsewhere</text>
+                <text x="111" y="43" font-size="12" fill="#5b686d">in the metro</text>
+                <line x1="88" y1="76" x2="106" y2="76" stroke="#8a989d" stroke-width="1.2"/>
+                <text x="111" y="66" font-size="12" font-weight="600" fill="#1a2226">the solid share is inside</text>
+                <text x="111" y="79" font-size="12" font-weight="600" fill="#1a2226"><tspan class="city-short">Boston</tspan> &#8212; overall, 24%</text>
+                <text x="111" y="92" font-size="12" font-weight="600" fill="#1a2226">of the metro&#8217;s jobs</text>
+              </svg>
+            </div>
           </div>
 
 
           <div class="viz-controls viz-controls--export">
             <div class="ctl">
               <span class="ctl-label">Year</span>
-              <select><option>2024</option><option>2019</option><option>2014</option></select>
+              <select><option>2025</option><option>2020</option><option>2015</option></select>
             </div>
             <button class="replay-btn" id="replayBtn">↻ Replay</button>
           </div>
@@ -3029,7 +3080,6 @@
             <svg class="viz-big tradable-treemap-animated" id="tradableAnimatedSvg" width="1000" height="480" viewBox="0 0 1000 480" xmlns="http://www.w3.org/2000/svg" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; background:#ffffff;"></svg>
             <div class="rca-tip" id="tradableTip" role="tooltip" hidden></div>
           </div>
-          <p class="adm-key" id="admKey" hidden>Solid = inside <span class="city-short">Boston</span> (admin) · faded = elsewhere in the metro — hover any sector for its numbers.</p>
 
         </div>
 
@@ -3038,17 +3088,20 @@
           <div class="subsection-header">
             <h3>What <span class="city-short">Boston</span> does more of than its metro</h3>
           </div>
-          <p class="lede">A mix on its own says little &mdash; most places look like the region they sit in, because most of what any place does is serve the people around it. What separates them is where the shares differ. The same blocks, recoloured by each sector&rsquo;s share of <span class="city-short">Boston</span> against its share of the metro: <strong>teal where the city leans on a sector more than the metro does, russet where it leans on it less</strong>.</p>
+          <p class="lede">A mix on its own says little &mdash; most places look like the region they sit in, because most of what any place does is serve the people around it. What separates them is where the shares differ. Each sector, ranked by its share of <span class="city-short">Boston</span> against its share of the metro &mdash; in the same colours the maps above use. <strong>Bars right of the line mark what the city leans on more than its metro does; bars left of it, what it leans on less.</strong></p>
 
-          <div class="tradable-viz-wrapper" id="leanWrap">
-            <svg class="viz-big" id="leanMapSvg" width="1000" height="480" viewBox="0 0 1000 480" xmlns="http://www.w3.org/2000/svg" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; background:#ffffff;"></svg>
-            <div class="rca-tip" id="leanTip" role="tooltip" hidden></div>
+          <div class="viz-controls viz-controls--export">
+            <div class="ctl">
+              <span class="ctl-label">View</span>
+              <div class="seg" id="leanViewSeg" role="group" aria-label="Lean view">
+                <button type="button" class="seg-btn is-active" data-v="blocks" aria-pressed="true">Blocks</button>
+                <button type="button" class="seg-btn" data-v="bars" aria-pressed="false">Ranked bars</button>
+              </div>
+            </div>
           </div>
-
-          <div class="lean-legend">
-            <span class="cl-label">Leans on it less than the metro</span>
-            <span class="lean-gradient"></span>
-            <span class="cl-label">Leans on it more</span>
+          <div class="tradable-viz-wrapper" id="leanWrap">
+            <svg class="viz-big" id="leanMapSvg" width="1000" height="420" viewBox="0 0 1000 420" xmlns="http://www.w3.org/2000/svg" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; background:#ffffff;"></svg>
+            <div class="rca-tip" id="leanTip" role="tooltip" hidden></div>
           </div>
 
           <p class="lean-note" id="leanNote"></p>
@@ -3061,7 +3114,7 @@
             <h3>Not everyone who lives in <span class="city-short">Boston</span> works there</h3>
           </div>
           <div class="lede-stat-row">
-            <p class="lede"><span class="city-short">Boston</span>&rsquo;s residents hold 334,026 jobs, and 54% of them are inside the city itself (55% in 2012). The other 154,904 are somewhere else &mdash; above all Cambridge, Newton, Waltham and Quincy.</p>
+            <p class="lede"><span class="city-short">Boston</span>&rsquo;s residents hold 334,026 jobs, and 54% of them are inside the city itself (55% in 2015). The other 154,904 are somewhere else &mdash; above all Cambridge, Newton, Waltham and Quincy.</p>
             <span class="headstat" id="commuteOutStat" hidden></span>
           </div>
           <div class="commute-map" id="commuteOutMap"></div>
@@ -3106,24 +3159,6 @@
             </aside>
           </div>
           <p class="lean-caveat">Census LEHD origin&ndash;destination counts; a &ldquo;~&rdquo; marks figures the source does not list, estimated to scale.</p>
-        </div>
-
-        <div class="export-subsection">
-          <div class="ktest" id="check-export" data-sec="Composition and Trade" data-fb="Financial Activities — 38% of the metro&rsquo;s finance jobs are inside the city, against 24% of the metro&rsquo;s jobs overall.">
-            <div class="ktest-head"><span class="ktest-ic">?</span><h3>Test your knowledge</h3></div>
-            <p class="ktest-q">Which sector&rsquo;s metro jobs sit most disproportionately inside Boston proper?</p>
-            <div class="ktest-opts"><button type="button" data-ok="0">Manufacturing</button><button type="button" data-ok="1">Financial Activities</button><button type="button" data-ok="0">Natural Resources</button></div>
-            <p class="ktest-fb" hidden></p>
-          </div>
-          <div class="ktest ktest--apply" id="apply-export" data-sec="Composition and Trade">
-            <div class="ktest-head"><span class="ktest-ic">&#9998;</span><h3>Put your insights</h3></div>
-            <p class="ktest-q">Which part of your city&rsquo;s economic mix surprised you, and what does it suggest about what the city could sell more of?</p>
-            <textarea class="ktest-ta" rows="3" placeholder="The exchange with Cambridge suggests&hellip;"></textarea>
-            <div class="ktest-actions">
-              <button type="button" class="ktest-save">Save to my journey</button>
-              <span class="ktest-saved" hidden>Saved &#10003;</span>
-            </div>
-          </div>
         </div>
 
 
@@ -3188,7 +3223,7 @@
 
         <div class="chart-block">
           <div class="scatter-wrap" id="scatterWrap">
-            <svg class="viz-big metro-scatter" id="metroScatterSvg" width="880" height="560" viewBox="0 0 880 560" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Every US metro plotted by population growth against wage growth, with Boston and its four peer cities highlighted"></svg>
+            <svg class="viz-big metro-scatter" id="metroScatterSvg" width="880" height="560" viewBox="0 0 880 560" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="US metros plotted by population growth against wage growth, with Boston and its four peer cities highlighted"></svg>
             <div class="rca-tip row-tip" id="metroTip" role="tooltip" hidden></div>
             <div class="quad-tip" id="quadTip" role="tooltip" hidden></div>
           </div>
@@ -3227,21 +3262,6 @@
           <h2>Lorem Ipsum</h2>
         </div>
         <p class="lede">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Proin tortor purus platea sit eu id nisi litora libero. Neque vulputate consequat ac amet augue blandit maximus aliquet congue.</p>
-        <div class="ktest" id="check-constraints" data-sec="City Constraints" data-fb="When pay is bid up but people cannot move in, the binding constraint is usually the cost and supply of housing — the supply-shock quadrant the scatter shades.">
-            <div class="ktest-head"><span class="ktest-ic">?</span><h3>Test your knowledge</h3></div>
-            <p class="ktest-q">Boston&rsquo;s metro pairs fast salary growth with slow population growth. What does that pattern usually point to?</p>
-            <div class="ktest-opts"><button type="button" data-ok="1">A supply constraint — people are being priced out</button><button type="button" data-ok="0">Weak demand for workers</button><button type="button" data-ok="0">A shrinking export base</button></div>
-            <p class="ktest-fb" hidden></p>
-          </div>
-          <div class="ktest ktest--apply" id="apply-constraints" data-sec="City Constraints">
-            <div class="ktest-head"><span class="ktest-ic">&#9998;</span><h3>Put your insights</h3></div>
-            <p class="ktest-q">After these charts, what do you now suspect is binding your city&rsquo;s growth — and which chart made you think so?</p>
-            <textarea class="ktest-ta" rows="3" placeholder="The scatter position makes me suspect&hellip;"></textarea>
-            <div class="ktest-actions">
-              <button type="button" class="ktest-save">Save to my journey</button>
-              <span class="ktest-saved" hidden>Saved &#10003;</span>
-            </div>
-          </div>
       </section>
 
       <!-- 5 Levers for Change (empty) -->
@@ -3250,21 +3270,6 @@
           <h2>Levers for Change</h2>
         </div>
         <p class="lede">What could loosen the constraint the diagnosis points to. This chapter&rsquo;s content is still being drafted &mdash; its closing checks below already work.</p>
-        <div class="ktest" id="check-levers" data-sec="Levers for Change" data-fb="A supply constraint is loosened on the supply side — zoning, permitting and construction capacity come before demand-side campaigns.">
-            <div class="ktest-head"><span class="ktest-ic">?</span><h3>Test your knowledge</h3></div>
-            <p class="ktest-q">If housing supply is the binding constraint, which lever belongs first on the list?</p>
-            <div class="ktest-opts"><button type="button" data-ok="1">Zoning and permitting reform</button><button type="button" data-ok="0">An export marketing campaign</button><button type="button" data-ok="0">Lower parking fees</button></div>
-            <p class="ktest-fb" hidden></p>
-          </div>
-          <div class="ktest ktest--apply" id="apply-levers" data-sec="Levers for Change">
-            <div class="ktest-head"><span class="ktest-ic">&#9998;</span><h3>Put your insights</h3></div>
-            <p class="ktest-q">Name one lever you would explore first for your city, and the evidence you would need before backing it.</p>
-            <textarea class="ktest-ta" rows="3" placeholder="I would start with&hellip; because&hellip;"></textarea>
-            <div class="ktest-actions">
-              <button type="button" class="ktest-save">Save to my journey</button>
-              <span class="ktest-saved" hidden>Saved &#10003;</span>
-            </div>
-          </div>
       </section>
 
       <!-- 5 Extras · well-built pieces that sit outside the storyline -->
@@ -3315,7 +3320,7 @@
           <div class="viz-controls viz-controls--export">
             <div class="ctl">
               <span class="ctl-label">Year</span>
-              <select><option>2024</option><option>2019</option><option>2014</option></select>
+              <select><option>2025</option><option>2020</option><option>2015</option></select>
             </div>
             <!-- intro transport: lives on the controls bar, only while a
                  box-plot view is up; the five dots track the intro's steps -->
@@ -3555,7 +3560,7 @@
         This is an experimental data inquiry window. Ask a question about the data behind the charts, and I can prepare the answer as a CSV for you to download.
       </div>
       <div class="chat-suggest" id="chatSuggest">
-        <button onclick="sendChat('Boston&#8217;s exports in 2024')">Boston’s exports in 2024</button>
+        <button onclick="sendChat('Boston&#8217;s exports in 2025')">Boston’s exports in 2024</button>
         <button onclick="sendChat('Compare Boston and Chicago export complexity')">Compare Boston and Chicago export complexity</button>
         <button onclick="sendChat('Employment by sector as a CSV')">Employment by sector as a CSV</button>
       </div>
@@ -3571,7 +3576,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://d3js.org/d3.v7.min.js"></script>
-<script src="treemap.js?v=jrny"></script>
+<script src="treemap.js?v=morph"></script>
 <script>
   /* ---------- treemaps: color by ----------
      Handled entirely in treemap.js — it wires the visible .seg controls and
@@ -3733,7 +3738,7 @@
   }
 
   /* Q4 — drag the gold dot; graded by Figure-31 wedge vs Boston's wedge */
-  const DD_MED={pop:0.5,wage:3.8}, DD_BOSTON={pop:0.4,wage:4.5};
+  const DD_MED={pop:0.7,wage:4.0}, DD_BOSTON={pop:0.4,wage:5.3};
   const DD={x0:-1.5,x1:2.5,y0:2.0,y1:5.6,px0:50,px1:500,py0:290,py1:20};
   const ddSX=v=>DD.px0+(v-DD.x0)/(DD.x1-DD.x0)*(DD.px1-DD.px0);
   const ddSY=v=>DD.py0+(v-DD.y0)/(DD.y1-DD.y0)*(DD.py1-DD.py0);
@@ -3830,7 +3835,7 @@
       ["Shift-share, local","−1.0 pp","the industry mix isn't the drag"],
       ["Tradable jobs","100 → 112","the export engine kept growing"]]},
     supply:{prompt:"Residents' side. The cost of living — or what living here is like?",evidence:[
-      ["Home-value growth","+7.1 vs +8.8 %/yr","lags the typical metro"],
+      ["Home-value growth","+7.1 vs +8.6 %/yr","lags the national trend"],
       ["Amenity residual","−12.7 pp","the be-here premium is draining"],
       ["Permits","2.1 vs 4.3 per 1k","slow building — a watch item"]]},
     demand:{prompt:"Firms' side. What the city already does — or what it can't become?",evidence:[
@@ -4179,7 +4184,7 @@
   (function peerPanel(){
     const SUBJECT = {
       city:  { label:"Boston", pop:"660K", dens:"5,391/km\u00b2", pay:"$100,412", home:"$971,204" },
-      metro: { label:"Boston", pop:"4.9M", dens:"2,929/km\u00b2", pay:"$83,286",  home:"$648,110" }
+      metro: { label:"Boston", pop:"4.9M", dens:"2,929/km\u00b2", pay:"$108,000",  home:"$648,110" }
     };
     const PEERS = {
       city: [
@@ -4351,23 +4356,30 @@
     }
 
     function renderTable(){
+      // The exchanges grammar: a visual prompt until the first pick, then
+      // the table with Boston as the anchor column and a short picks hint.
+      const prompt = document.getElementById("plcPrompt");
+      const sideHint = document.getElementById("plcSideHint");
+      const has = picked.length > 0;
+      if (prompt) prompt.hidden = has;
+      tbl.hidden = !has;
+      if (sideHint) sideHint.hidden = !has;
+      if (!has){ tbl.innerHTML = ""; return; }
       const cols = [places[0], ...picked];
       const head = cols.map(p =>
         "<th>" + p.name + (p.home ? "" :
           ' <button class="plc-remove" data-name="' + p.name + '" aria-label="Remove ' + p.name + '">&times;</button>') +
         "</th>").join("");
-      const empty = picked.length === 0
-        ? '<th class="plc-empty">click the map &rarr;</th>' : "";
       const body = ROWS.map(([label, fmt, key]) =>
         '<tr><th class="plc-ind" scope="row">' + label + "</th>" +
         cols.map(p => cellHtml(p, key, fmt)).join("") +
-        (picked.length === 0 ? "<td></td>" : "") +
         "</tr>").join("");
-      tbl.innerHTML = "<thead><tr><th></th>" + head + empty + "</tr></thead><tbody>" + body + "</tbody>";
+      tbl.innerHTML = "<thead><tr><th></th>" + head + "</tr></thead><tbody>" + body + "</tbody>";
     }
 
     /* ---- the cells, on the real map ---- */
     const cellLayers = new Map();          // name -> L.polygon
+    let nudgeMk = null;                    // the on-map "try Cambridge" chip
     const token = (n, fb) => {
       const v = getComputedStyle(document.documentElement).getPropertyValue(n).trim();
       return v || fb;
@@ -4397,6 +4409,7 @@
 
     function toggle(p){
       if (p.home) return;
+      if (nudgeMk){ ovLeaflet.removeLayer(nudgeMk); nudgeMk = null; }
       const i = picked.indexOf(p);
       if (i >= 0) picked.splice(i, 1);
       else {
@@ -4452,6 +4465,18 @@
       }
       cellLayers.set(p.name, ly);
     });
+
+    /* The same friendly pointer the exchanges map uses — prompts must not
+       live only in prose. A marker, so Leaflet keeps it pinned through the
+       block's own pans; CSS shows it only while the picker is live. */
+    const cam = places.find(q => q.name === "Cambridge");
+    if (cam){
+      nudgeMk = L.marker([cam.lat, cam.lng], {
+        interactive: false, keyboard: false,
+        icon: L.divIcon({ className: "plc-nudge-wrap", iconSize: [0, 0],
+          html: '<div class="xch-nudge">Click a place — try Cambridge</div>' })
+      }).addTo(ovLeaflet);
+    }
 
     /* ---- the choropleth dropdown ---- */
     const fillSel = document.getElementById("placesFillSel");
@@ -4905,40 +4930,179 @@
     });
   }
 
-  /* ---------- per-section knowledge checks & insight capture ----------
-     One wiring for every .ktest block; states feed the journey index. */
-  const CHECK_DONE = new Set(), APPLY_DONE = new Set();
-  document.querySelectorAll(".ktest").forEach(k => {
-    const sec = k.dataset.sec;
-    k.querySelectorAll(".ktest-opts button").forEach(b => {
+  /* ---------- section checkpoints: quiz carousel + insight capture ----------
+     Rendered inside the secpager for whichever section is active, so every
+     chapter closes the same way: check what you took, keep what you saw,
+     then move on. State survives re-renders and feeds the journey index. */
+  var CHECK_READY, CHECK_DONE, APPLY_DONE, CHECK_STATE;
+
+  function sectionChecksData(){
+    return {
+      "Economic Fundamentals": {
+        slug: "overview",
+        qs: [
+          { q: "Roughly what share of the Boston metro’s residents live in Boston proper?",
+            opts: [["About 13%",1],["About half",0],["Nearly all of them",0]],
+            fb: "Around 13% — the administrative city is one piece of a much larger labor market, which is why most of the diagnosis reads at the metro scale." },
+          { q: "Which geography does most of the diagnosis read at?",
+            opts: [["The administrative city",0],["The metro — the whole labor market",1],["The state",0]],
+            fb: "The metro: people commute, firms hire and housing responds across the whole labor market, so that is the scale most measures read at." },
+          { q: "What has Boston proper’s population done over the last decade?",
+            opts: [["Shrunk, about −0.8% a year",1],["Grown quickly",0],["Stayed flat",0]],
+            fb: "It has been losing residents at about −0.8% a year — the clearest signal that something is constraining the city." }
+        ],
+        prompt: "What single fact about how your city is doing would you flag for a colleague — and what would you want to check next?",
+        ph: "The population trend surprised me because…"
+      },
+      "Composition and Trade": {
+        slug: "export",
+        qs: [
+          { q: "Which sector’s metro jobs sit most disproportionately inside Boston proper?",
+            opts: [["Manufacturing",0],["Financial Activities",1],["Natural Resources",0]],
+            fb: "Financial Activities — 38% of the metro’s finance jobs are inside the city, against 24% of the metro’s jobs overall." },
+          { q: "Roughly what share of all the metro’s jobs sit inside Boston proper?",
+            opts: [["About 24%",1],["About 54%",0],["About 85%",0]],
+            fb: "About 24% — roughly a quarter of the metro’s work happens inside the administrative boundary." },
+          { q: "Boston is a net … of workers.",
+            opts: [["importer — 206 jobs for every 100 its residents hold",1],["exporter — more residents leave than workers arrive",0],["neither — the flows balance",0]],
+            fb: "A net importer: 687,736 jobs sit inside Boston against 334,026 held by its residents — 206 for every 100." }
+        ],
+        prompt: "Which part of your city’s economic mix surprised you, and what does it suggest about what the city could sell more of?",
+        ph: "The exchange with Cambridge suggests…"
+      },
+      "City Constraints": {
+        slug: "constraints",
+        qs: [
+          { q: "Boston’s metro pairs fast salary growth with slow population growth. What does that usually point to?",
+            opts: [["A supply constraint — people are being priced out",1],["Weak demand for workers",0],["A shrinking export base",0]],
+            fb: "When pay is bid up but people cannot move in, the binding constraint is usually the cost and supply of housing." },
+          { q: "Which signal would point at housing as the wall?",
+            opts: [["Home values rising faster than the national trend",1],["Falling rents",0],["Slow wage growth",0]],
+            fb: "Fast-rising home values alongside strong pay growth is what being priced out looks like in the data." }
+        ],
+        prompt: "After these charts, what do you now suspect is binding your city’s growth — and which chart made you think so?",
+        ph: "The scatter position makes me suspect…"
+      },
+      "Levers for Change": {
+        slug: "levers",
+        qs: [
+          { q: "If housing supply is the binding constraint, which lever belongs first on the list?",
+            opts: [["Zoning and permitting reform",1],["An export marketing campaign",0],["Lower parking fees",0]],
+            fb: "A supply constraint is loosened on the supply side — zoning, permitting and construction capacity come first." },
+          { q: "A good lever targets…",
+            opts: [["the binding constraint the diagnosis found",1],["everything at once",0],["whatever peer cities did",0]],
+            fb: "The diagnosis exists to aim the response: one binding constraint, one lever aimed at it, then re-measure." }
+        ],
+        prompt: "Name one lever you would explore first for your city, and the evidence you would need before backing it.",
+        ph: "I would start with… because…"
+      }
+    };
+  }
+  function checkStateFor(name){
+    if (!CHECK_STATE[name]) CHECK_STATE[name] = { qIdx: 0, answers: {}, insight: "", saved: false };
+    return CHECK_STATE[name];
+  }
+
+  function renderSecClose(name){
+    if (!CHECK_READY) return "";
+    const c = sectionChecksData()[name];
+    if (!c) return "";
+    const st = checkStateFor(name);
+    const slides = c.qs.map((qq, qi) => {
+      const picked = st.answers[qi];
+      const answered = picked !== undefined;
+      const opts = qq.opts.map(([t, ok], oi) =>
+        '<button type="button" data-q="' + qi + '" data-o="' + oi + '"' +
+        (answered ? " disabled" : "") +
+        ' class="' + (answered && ok ? "is-right " : "") +
+        (answered && oi === picked && !ok ? "is-picked " : "") + '">' + t + "</button>").join("");
+      const fb = answered
+        ? '<p class="ktest-fb">' + (qq.opts[picked][1] ? "Right. " : "Not quite. ") + qq.fb + "</p>"
+        : "";
+      return '<div class="kc-slide"><p class="ktest-q">' + qq.q + '</p>' +
+        '<div class="ktest-opts">' + opts + "</div>" + fb + "</div>";
+    }).join("");
+    const dots = c.qs.map((_, qi) =>
+      '<button type="button" class="kc-dot' + (qi === st.qIdx ? " on" : "") +
+      (st.answers[qi] !== undefined ? " answered" : "") +
+      '" data-goq="' + qi + '" aria-label="Question ' + (qi + 1) + '"></button>').join("");
+    const answered = Object.keys(st.answers).length;
+    return '<div class="sec-close">' +
+      '<div class="ktest" id="check-' + c.slug + '">' +
+        '<div class="ktest-head"><span class="ktest-ic">?</span><h3>Test your knowledge</h3>' +
+          '<span class="kc-count">' + answered + " / " + c.qs.length + " answered</span></div>" +
+        '<div class="kc-view"><div class="kc-track" style="transform:translateX(-' + (st.qIdx * 100) + '%)">' +
+          slides + "</div></div>" +
+        '<div class="kc-nav">' +
+          '<button type="button" class="kc-arrow" data-dq="-1"' + (st.qIdx === 0 ? " disabled" : "") + '>&larr;</button>' +
+          '<span class="kc-dots">' + dots + "</span>" +
+          '<button type="button" class="kc-arrow" data-dq="1"' + (st.qIdx === c.qs.length - 1 ? " disabled" : "") + '>&rarr;</button>' +
+        "</div></div>" +
+      '<div class="ktest ktest--apply" id="apply-' + c.slug + '">' +
+        '<div class="ktest-head"><span class="ktest-ic">&#9998;</span><h3>Put your insights</h3></div>' +
+        '<p class="ktest-q">' + c.prompt + "</p>" +
+        '<textarea class="ktest-ta" rows="4" placeholder="' + c.ph + '"' + (st.saved ? " disabled" : "") + ">" +
+          st.insight.replace(/</g, "&lt;") + "</textarea>" +
+        '<div class="ktest-actions">' +
+          '<button type="button" class="ktest-save"' + (st.saved ? " disabled" : "") + ">Save to my journey</button>" +
+          '<span class="ktest-saved"' + (st.saved ? "" : " hidden") + ">Saved &#10003;</span>" +
+        "</div></div>" +
+      "</div>";
+  }
+
+  function wireSecClose(name){
+    if (!CHECK_READY) return;
+    const c = sectionChecksData()[name];
+    const root = document.querySelector(".sec-close");
+    if (!c || !root) return;
+    const st = checkStateFor(name);
+    const rerender = () => {
+      const cur = document.querySelector(".sec-close");
+      if (!cur) return;
+      const holder = document.createElement("div");
+      holder.innerHTML = renderSecClose(name);
+      cur.replaceWith(holder.firstChild);
+      wireSecClose(name);
+    };
+    root.querySelectorAll(".ktest-opts button").forEach(b => {
       b.addEventListener("click", () => {
-        const ok = b.dataset.ok === "1";
-        k.querySelectorAll(".ktest-opts button").forEach(x => {
-          x.classList.toggle("is-right", x.dataset.ok === "1");
-          x.classList.toggle("is-picked", x === b);
-          x.disabled = true;
-        });
-        const fb = k.querySelector(".ktest-fb");
-        fb.hidden = false;
-        fb.textContent = (ok ? "Right. " : "Not quite. ") + k.dataset.fb;
-        CHECK_DONE.add(sec);
+        st.answers[+b.dataset.q] = +b.dataset.o;
+        if (Object.keys(st.answers).length === c.qs.length) CHECK_DONE.add(name);
+        const next = c.qs.findIndex((qq, qi) => st.answers[qi] === undefined);
+        if (next >= 0) setTimeout(() => {
+          if (st.answers[next] === undefined){ st.qIdx = next; rerender(); }
+        }, 1600);
+        rerender();
       });
     });
-    const save = k.querySelector(".ktest-save");
+    root.querySelectorAll(".kc-arrow").forEach(b =>
+      b.addEventListener("click", () => {
+        st.qIdx = Math.max(0, Math.min(c.qs.length - 1, st.qIdx + (+b.dataset.dq)));
+        rerender();
+      }));
+    root.querySelectorAll(".kc-dot").forEach(b =>
+      b.addEventListener("click", () => { st.qIdx = +b.dataset.goq; rerender(); }));
+    const ta = root.querySelector(".ktest-ta");
+    if (ta) ta.addEventListener("input", () => { st.insight = ta.value; });
+    const save = root.querySelector(".ktest-save");
     if (save) save.addEventListener("click", () => {
-      const ta = k.querySelector(".ktest-ta");
-      if (!ta.value.trim()){ ta.focus(); return; }
-      savedInsights.push({
-        section: sec + " \u00b7 Put your insights",
+      if (!st.insight.trim()){ if (ta) ta.focus(); return; }
+      savedInsights.push({ section: name + " · Put your insights",
         city: document.getElementById("citySelectTool").value,
-        span: "10 years",
-        text: ta.value.trim()
-      });
-      APPLY_DONE.add(sec);
-      k.querySelector(".ktest-saved").hidden = false;
-      save.disabled = true;
+        span: "10 years", text: st.insight.trim() });
+      APPLY_DONE.add(name);
+      st.saved = true;
+      rerender();
     });
-  });
+  }
+
+  CHECK_READY = true;
+  CHECK_DONE = new Set(); APPLY_DONE = new Set(); CHECK_STATE = {};
+  /* the nav block below declares activeSec and runs the first showSection
+     before this system exists — re-render its pager once script is done */
+  setTimeout(() => {
+    if (activeSec >= 0){ const cur = activeSec; activeSec = -1; showSection(cur, false); }
+  }, 0);
 
   commuteFlowMap("commuteOutMap", { mode: "out", legendHi: "outLegHi",
     focus: ["Cambridge","Newton","Waltham","Quincy"] });
@@ -5007,10 +5171,14 @@
     });
     const prev = SECTIONS[i-1], next = SECTIONS[i+1];
     secPager.innerHTML =
+      renderSecClose(SECTIONS[i].name) +
+      '<div class="pager-row">' +
       (prev ? '<button type="button" class="pager-btn" data-go="' + (i-1) +
               '">&larr; ' + prev.name + "</button>" : "<span></span>") +
       (next ? '<button type="button" class="pager-btn" data-go="' + (i+1) +
-              '">' + next.name + " &rarr;</button>" : "<span></span>");
+              '">' + next.name + " &rarr;</button>" : "<span></span>") +
+      '</div>';
+    wireSecClose(SECTIONS[i].name);
     if(toTop !== false) pagesEl.scrollTo({top: 0, behavior: "instant"});
     // Leaflet measures a hidden container as 0x0; the existing resize handler
     // re-measures the map and re-runs the scroll zoom.
@@ -5432,9 +5600,9 @@
   function downloadChatCsv(btn){
     const q=btn.closest(".chat-msg").dataset.query||"query";
     const csv="query,city,year,sector,export_value\n"+
-      '"'+q.replace(/"/g,'""')+'",Boston,2024,Scientific Research,98632\n'+
-      '"'+q.replace(/"/g,'""')+'",Boston,2024,Software Publishing,80928\n'+
-      '"'+q.replace(/"/g,'""')+'",Boston,2024,Higher Education,85543\n';
+      '"'+q.replace(/"/g,'""')+'",Boston,2025,Scientific Research,98632\n'+
+      '"'+q.replace(/"/g,'""')+'",Boston,2025,Software Publishing,80928\n'+
+      '"'+q.replace(/"/g,'""')+'",Boston,2025,Higher Education,85543\n';
     const a=document.createElement("a");
     a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
     a.download="data-chat-sample.csv";
