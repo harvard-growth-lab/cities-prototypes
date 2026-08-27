@@ -2457,10 +2457,10 @@
     const mode = colorMode.exportTreemapSvg;
     if (mode === COMPLEXITY)
       donutStat(host, jobsShare(r => pciNumOf(r.name) > 0), "#2f7d6a",
-        "of metro jobs are in industries of above-average complexity");
+        "of metro jobs \u00b7 above-average complexity");
     else if (mode === TRADABILITY)
       donutStat(host, jobsShare(r => tradabilityOf(r.name) >= 0.5), token("--teal", "#255862"),
-        "of metro jobs are in widely traded industries (tradability \u2265 0.5)");
+        "of metro jobs \u00b7 widely traded");
     else host.hidden = true;
   }
 
@@ -2471,9 +2471,9 @@
   /* The two commuting donuts — real LEHD-style shares from the reference. */
   function initCommuteStats(){
     donutStat(document.getElementById("commuteOutStat"), 0.54, token("--teal", "#255862"),
-      'of the jobs <span class="city-short">Boston</span>\u2019s residents hold are inside the city itself');
+      'of residents\u2019 jobs \u00b7 inside <span class="city-short">Boston</span>');
     donutStat(document.getElementById("commuteInStat"), 0.26, token("--teal", "#255862"),
-      'of the jobs inside <span class="city-short">Boston</span> are held by its own residents');
+      'of <span class="city-short">Boston</span>\u2019s jobs \u00b7 held by residents');
   }
 
   function initLeanMap(){
@@ -2481,80 +2481,114 @@
     if (!el) return;
     const root = layout(industryData, "root", WIDTH);
     const total = d3.sum(root.children, sec => sec.value);
-    const overall = d3.sum(root.children, sec =>
-      sec.value * (ADMIN_SHARE[sec.data.name] !== undefined ? ADMIN_SHARE[sec.data.name] : 0.15)) / total;
-    const ratioOf = sec => {
-      const sh = ADMIN_SHARE[sec.data.name] !== undefined ? ADMIN_SHARE[sec.data.name] : 0.15;
-      return sh / overall;
-    };
 
-    const rows = [...root.children].sort((a, b) => ratioOf(b) - ratioOf(a));
+    /* Two ways to count, as in the reference's Count control: jobs located
+       inside the admin boundary (ADMIN_SHARE), or the jobs the city's
+       residents hold wherever those jobs sit. The residence profile is
+       authored as relative propensities and normalised so its jobs-weighted
+       mean lands exactly on the canon: 334,026 resident jobs over the drawn
+       2,824,810 metro total. */
+    const RESIDENT_PROFILE = {
+      Construction: .6, "Education & Health": 1.25, "Financial Activities": 1.15,
+      "Leisure & Hospitality": 1.2, Manufacturing: .45, "Natural Resources": .5,
+      Other: 1.05, "Professional & Business": 1.1, "Trade & Transportation": .8
+    };
+    const RES_OVERALL = 334026 / 2824810;
+    const profOf = sec => RESIDENT_PROFILE[sec.data.name] !== undefined ? RESIDENT_PROFILE[sec.data.name] : 1;
+    const profMean = d3.sum(root.children, sec => sec.value * profOf(sec)) / total;
+    const admShareOf = sec => ADMIN_SHARE[sec.data.name] !== undefined ? ADMIN_SHARE[sec.data.name] : 0.15;
+    const admOverall = d3.sum(root.children, sec => sec.value * admShareOf(sec)) / total;
+
+    const LENSES = {
+      work: { overall: admOverall, shareOf: admShareOf,
+              shareLbl: cityName + " admin share of this sector",
+              allLbl: cityName + " admin share of all metro jobs" },
+      res:  { overall: RES_OVERALL,
+              shareOf: sec => profOf(sec) * (RES_OVERALL / profMean),
+              shareLbl: "held by " + cityName + " residents — this sector",
+              allLbl: "held by " + cityName + " residents — all metro jobs" }
+    };
+    let lens = "work";
+
     const W = 1000, ROW = 36, MT = 26, MB = 66;
-    const H = Math.max(MT + rows.length * ROW + MB, 384);
+    const H = Math.max(MT + root.children.length * ROW + MB, 384);
     el.setAttribute("viewBox", "0 0 " + W + " " + H);
     el.setAttribute("height", H);
     const BASE = 560, K = 150, LOGMIN = -2.1, LOGMAX = 0.9;
     const xOf = r => BASE + K * Math.max(LOGMIN, Math.min(LOGMAX, Math.log2(r)));
-
-    /* two geometries per sector: its block on the sector map (scaled into
-       this frame) and its bar row. The SOLID band — the city's slice — is
-       the element that morphs; the veiled remainder just fades away. */
     const sy = (H - 24) / HEIGHT;
-    const geo = new Map(rows.map((d, i) => {
-      const share = ADMIN_SHARE[d.data.name] !== undefined ? ADMIN_SHARE[d.data.name] : 0.15;
-      const bx = d.x0, bw = d.x1 - d.x0;
-      const by = 8 + d.y0 * sy, bh = (d.y1 - d.y0) * sy;
-      const r = ratioOf(d), x = xOf(r);
-      return [d.data.name, {
-        share, r,
-        ghost: { x: bx, y: by, w: bw, h: bh * (1 - share) },
-        solid: { x: bx, y: by + bh * (1 - share), w: bw, h: bh * share },
-        bar:   { x: Math.min(BASE, x), y: MT + i * ROW + 4, w: Math.abs(x - BASE), h: 22 },
-        tipX: x
-      }];
-    }));
+
+    /* two geometries per sector under the current lens: its block on the
+       sector map and its bar row. The SOLID band — the counted slice — is
+       the element that morphs; the veiled remainder just fades away. */
+    function computeGeo(){
+      const L = LENSES[lens];
+      const ratioOf = sec => L.shareOf(sec) / L.overall;
+      const rows = [...root.children].sort((a, b) => ratioOf(b) - ratioOf(a));
+      const geo = new Map(rows.map((d, i) => {
+        const share = L.shareOf(d), r = ratioOf(d), x = xOf(r);
+        const bx = d.x0, bw = d.x1 - d.x0;
+        const by = 8 + d.y0 * sy, bh = (d.y1 - d.y0) * sy;
+        return [d.data.name, {
+          share, r,
+          ghost: { x: bx, y: by, w: bw, h: bh * (1 - share) },
+          solid: { x: bx, y: by + bh * (1 - share), w: bw, h: bh * share },
+          bar:   { x: Math.min(BASE, x), y: MT + i * ROW + 4, w: Math.abs(x - BASE), h: 22 },
+          tipX: x
+        }];
+      }));
+      return { rows, geo, overall: L.overall };
+    }
+    let cur = computeGeo();
 
     const svg = d3.select(el);
     svg.selectAll("*").remove();
 
-    /* bar furniture, hidden until the bars state */
+    /* bar furniture, hidden until the bars state; rebuilt on lens change
+       because the ranking and the values both move with the count */
     const furn = svg.append("g").attr("class", "lean-furn").style("opacity", 0);
-    furn.append("line")
-      .attr("x1", BASE).attr("x2", BASE)
-      .attr("y1", MT - 12).attr("y2", MT + rows.length * ROW + 8)
-      .attr("stroke", "#8a989d").attr("stroke-width", 1.5);
-    rows.forEach((d, i) => {
-      const g0 = geo.get(d.data.name);
+    function buildFurn(){
+      furn.selectAll("*").remove();
+      furn.append("line")
+        .attr("x1", BASE).attr("x2", BASE)
+        .attr("y1", MT - 12).attr("y2", MT + cur.rows.length * ROW + 8)
+        .attr("stroke", "#8a989d").attr("stroke-width", 1.5);
+      cur.rows.forEach((d, i) => {
+        const g0 = cur.geo.get(d.data.name);
+        furn.append("text")
+          .attr("x", 300).attr("y", MT + i * ROW + 22)
+          .attr("text-anchor", "end")
+          .style("fill", "#1a2226").style("stroke", "none")
+          .attr("font-size", 13.5).attr("font-weight", 600)
+          .text(d.data.name);
+        furn.append("text")
+          .attr("x", g0.r >= 1 ? g0.tipX + 8 : g0.tipX - 8)
+          .attr("y", MT + i * ROW + 23)
+          .attr("text-anchor", g0.r >= 1 ? "start" : "end")
+          .style("fill", "#1a2226").style("stroke", "none")
+          .attr("font-size", 13).attr("font-weight", 700)
+          .text(g0.r.toFixed(2).replace(/0$/, "") + "×");
+      });
       furn.append("text")
-        .attr("x", 300).attr("y", MT + i * ROW + 22)
-        .attr("text-anchor", "end")
-        .style("fill", "#1a2226").style("stroke", "none")
-        .attr("font-size", 13.5).attr("font-weight", 600)
-        .text(d.data.name);
+        .attr("x", BASE).attr("y", MT + cur.rows.length * ROW + 26)
+        .attr("text-anchor", "middle")
+        .style("fill", "#5b686d").style("stroke", "none").attr("font-size", 12)
+        .text("same as the metro");
       furn.append("text")
-        .attr("x", g0.r >= 1 ? g0.tipX + 8 : g0.tipX - 8)
-        .attr("y", MT + i * ROW + 23)
-        .attr("text-anchor", g0.r >= 1 ? "start" : "end")
-        .style("fill", "#1a2226").style("stroke", "none")
-        .attr("font-size", 13).attr("font-weight", 700)
-        .text(g0.r.toFixed(2).replace(/0$/, "") + "×");
-    });
-    furn.append("text")
-      .attr("x", BASE).attr("y", MT + rows.length * ROW + 26)
-      .attr("text-anchor", "middle")
-      .style("fill", "#5b686d").style("stroke", "none").attr("font-size", 12)
-      .text("same as the metro");
-    furn.append("text")
-      .attr("x", BASE).attr("y", MT + rows.length * ROW + 46)
-      .attr("text-anchor", "middle")
-      .style("fill", "#5b686d").style("stroke", "none").attr("font-size", 12)
-      .text("share of " + cityName + " ÷ share of the metro");
+        .attr("x", BASE).attr("y", MT + cur.rows.length * ROW + 46)
+        .attr("text-anchor", "middle")
+        .style("fill", "#5b686d").style("stroke", "none").attr("font-size", 12)
+        .text(lens === "work"
+          ? "share of " + cityName + " ÷ share of the metro"
+          : "share of residents’ work ÷ share of the metro");
+    }
+    buildFurn();
 
-    /* the sectors: pale ghost (the metro remainder), solid slice, block name */
-    const secs = svg.selectAll("g.lean-sec").data(rows, d => d.data.name)
+    /* the sectors: pale ghost (the uncounted remainder), solid slice, name */
+    const secs = svg.selectAll("g.lean-sec").data(root.children, d => d.data.name)
       .join("g").attr("class", "lean-sec");
     secs.each(function(d){
-      const g0 = geo.get(d.data.name);
+      const g0 = cur.geo.get(d.data.name);
       const sel = d3.select(this);
       sel.append("rect").attr("class", "ln-ghost")
         .attr("x", g0.ghost.x).attr("y", g0.ghost.y)
@@ -2574,22 +2608,16 @@
           .text(fitLabel(d.data.name, { width: g0.ghost.w, height: 40 }));
     });
 
-    let view = "blocks", userTouched = false, autoDone = false;
+    let view = "blocks", autoDone = false, replayTimer = null;
     const DUR = 850;
-    function setSeg(){
-      document.querySelectorAll("#leanViewSeg .seg-btn").forEach(b => {
-        const on = b.dataset.v === view;
-        b.classList.toggle("is-active", on);
-        b.setAttribute("aria-pressed", String(on));
-      });
-    }
     function toBars(animate){
-      view = "bars"; setSeg();
+      view = "bars";
+      buildFurn();                       // the lens may have changed meanwhile
       const t = animate ? DUR : 0;
       secs.selectAll(".ln-ghost").transition().duration(t * .5).attr("fill-opacity", 0);
       secs.selectAll(".ln-name").transition().duration(t * .4).style("opacity", 0);
       secs.each(function(d){
-        const g0 = geo.get(d.data.name);
+        const g0 = cur.geo.get(d.data.name);
         d3.select(this).select(".ln-solid")
           .transition().duration(t).ease(d3.easeCubicInOut)
           .attr("x", g0.bar.x).attr("y", g0.bar.y)
@@ -2598,12 +2626,14 @@
       furn.transition().delay(t * .55).duration(Math.max(1, t * .5)).style("opacity", 1);
     }
     function toBlocks(animate){
-      view = "blocks"; setSeg();
+      view = "blocks";
       const t = animate ? DUR : 0;
       furn.transition().duration(t * .35).style("opacity", 0);
       secs.each(function(d){
-        const g0 = geo.get(d.data.name);
-        d3.select(this).select(".ln-solid")
+        const g0 = cur.geo.get(d.data.name);
+        const s = d3.select(this);
+        s.select(".ln-ghost").attr("height", g0.ghost.h);   // lens-true remainder
+        s.select(".ln-solid")
           .transition().duration(t).ease(d3.easeCubicInOut)
           .attr("x", g0.solid.x).attr("y", g0.solid.y)
           .attr("width", g0.solid.w).attr("height", g0.solid.h);
@@ -2611,17 +2641,60 @@
       secs.selectAll(".ln-ghost").transition().delay(t * .4).duration(t * .5).attr("fill-opacity", .26);
       secs.selectAll(".ln-name").transition().delay(t * .5).duration(t * .4).style("opacity", 1);
     }
-    document.querySelectorAll("#leanViewSeg .seg-btn").forEach(b =>
-      b.addEventListener("click", () => {
-        userTouched = true;
-        if (b.dataset.v !== view) (b.dataset.v === "bars" ? toBars : toBlocks)(true);
-      }));
+    /* replay: back to the blocks, hold a beat, morph to the bars again */
+    const replayBtn = document.getElementById("leanReplayBtn");
+    if (replayBtn) replayBtn.addEventListener("click", () => {
+      autoDone = true;                       // consume the arrival play
+      clearTimeout(replayTimer);
+      toBlocks(true);
+      replayTimer = setTimeout(() => { if (view === "blocks") toBars(true); }, DUR + 900);
+    });
+
+    /* the Count control: same chart, different question — where the job
+       sits, or what the residents do. Re-rank and re-scale in place. */
+    function setLens(k, animate){
+      if (k === lens) return;
+      lens = k;
+      cur = computeGeo();
+      document.querySelectorAll("#leanLensSeg .seg-btn").forEach(b => {
+        const on = b.dataset.l === lens;
+        b.classList.toggle("is-active", on);
+        b.setAttribute("aria-pressed", String(on));
+      });
+      const t = animate ? 600 : 0;
+      if (view === "bars"){
+        buildFurn();
+        furn.style("opacity", 1);
+        secs.each(function(d){
+          const g0 = cur.geo.get(d.data.name);
+          d3.select(this).select(".ln-solid")
+            .transition().duration(t).ease(d3.easeCubicInOut)
+            .attr("x", g0.bar.x).attr("y", g0.bar.y)
+            .attr("width", g0.bar.w).attr("height", g0.bar.h);
+        });
+      } else {
+        secs.each(function(d){
+          const g0 = cur.geo.get(d.data.name);
+          const s = d3.select(this);
+          s.select(".ln-solid")
+            .transition().duration(t).ease(d3.easeCubicInOut)
+            .attr("x", g0.solid.x).attr("y", g0.solid.y)
+            .attr("width", g0.solid.w).attr("height", g0.solid.h);
+          s.select(".ln-ghost")
+            .transition().duration(t).ease(d3.easeCubicInOut)
+            .attr("height", g0.ghost.h);
+        });
+      }
+      renderNote();
+    }
+    document.querySelectorAll("#leanLensSeg .seg-btn").forEach(b =>
+      b.addEventListener("click", () => setLens(b.dataset.l, true)));
 
     /* arrival: the blocks hold for a beat, then the solid slices line up */
     function autoPlay(){
       if (autoDone) return;
       autoDone = true;
-      setTimeout(() => { if (!userTouched && view === "blocks") toBars(true); }, 1200);
+      replayTimer = setTimeout(() => { if (view === "blocks") toBars(true); }, 1200);
     }
     new IntersectionObserver((es, obs) => es.forEach(e => {
       if (e.isIntersecting){ autoPlay(); obs.disconnect(); }
@@ -2632,32 +2705,39 @@
       if (rct.top < window.innerHeight * .7 && rct.bottom > 0) autoPlay();
     }, { passive: true });
 
-    /* the superlative, stated the way the reference states it */
-    const top = rows[0];
-    const note = document.getElementById("leanNote");
-    if (note){
-      const sh = ADMIN_SHARE[top.data.name];
-      note.innerHTML = "<strong>" + top.data.name + "</strong> is " +
-        ratioOf(top).toFixed(1) + "× as large a share here as in the metro — " +
-        Math.round(sh * 100) + "% of the metro’s " + top.data.name.toLowerCase() +
-        " sits inside the city, against " + Math.round(overall * 100) +
-        "% of the metro’s jobs overall.";
+    /* the superlative under whichever count is on */
+    function renderNote(){
+      const note = document.getElementById("leanNote");
+      if (!note) return;
+      const top = cur.rows[0], g0 = cur.geo.get(top.data.name);
+      if (lens === "work")
+        note.innerHTML = "<strong>" + top.data.name + "</strong> is " +
+          g0.r.toFixed(1) + "× as large a share here as in the metro — " +
+          Math.round(g0.share * 100) + "% of the metro’s " + top.data.name.toLowerCase() +
+          " sits inside the city, against " + Math.round(cur.overall * 100) +
+          "% of the metro’s jobs overall.";
+      else
+        note.innerHTML = "<strong>" + top.data.name + "</strong> leads what residents do — they hold " +
+          Math.round(g0.share * 100) + "% of the metro’s " + top.data.name.toLowerCase() +
+          " jobs, against " + Math.round(cur.overall * 100) + "% of all metro jobs.";
     }
+    renderNote();
 
-    /* house tooltip: cursor top-right, works in both states */
+    /* house tooltip: cursor top-right, works in both states and both counts */
     const tip = document.getElementById("leanTip");
     const wrap = document.getElementById("leanWrap");
     if (tip && wrap){
       secs.style("cursor", "default")
        .on("mouseenter", function(ev, d){
-        const g0 = geo.get(d.data.name);
+        const g0 = cur.geo.get(d.data.name);
+        const L = LENSES[lens];
         tip.innerHTML = "<strong>" + d.data.name + "</strong>" +
           '<div class="tip-row"><span>Lean vs the metro</span><span><b class="tip-pct">' +
             g0.r.toFixed(2) + "×</b></span></div>" +
-          '<div class="tip-row"><span>' + cityName + ' admin share of this sector</span><span>' +
+          '<div class="tip-row"><span>' + L.shareLbl + '</span><span>' +
             Math.round(g0.share * 100) + "%</span></div>" +
-          '<div class="tip-row"><span>' + cityName + ' admin share of all metro jobs</span><span>' +
-            Math.round(overall * 100) + "%</span></div>";
+          '<div class="tip-row"><span>' + L.allLbl + '</span><span>' +
+            Math.round(cur.overall * 100) + "%</span></div>";
         tip.hidden = false;
       })
       .on("mousemove", function(ev){
