@@ -161,9 +161,7 @@
     background:#fff;
     border-bottom:1px solid var(--border);
     height:72px;flex:0 0 72px;display:flex;align-items:center;gap:14px;
-    /* the logo and the right-edge controls sit on the page's 976px content
-       column — the same edge the section tabs and headings read from */
-    padding:0 max(48px, calc((100vw - 976px)/2 + 48px));
+    padding:0 24px;
     box-shadow:0 1px 0 rgba(37,88,98,.03);z-index:2;
   }
   .landing-header .logo-btn{
@@ -313,11 +311,10 @@
     background:#fff;
     border-bottom:1px solid var(--border);
     height:72px;flex:0 0 72px;display:flex;align-items:center;gap:14px;
-    /* the logo anchors to the page's 976px content column — logo, first tab
-       number and every heading share one left edge. The right-side utilities
-       hold the viewport edge instead: the toolbar carries more than the
-       880 content measure can host, and the spacer absorbs the difference. */
-    padding:0 48px 0 max(48px, calc((100vw - 976px)/2 + 48px));
+    /* app frame: the logo owns a fixed left rail (24 + 164 + 14 = 202px),
+       and everything functional hangs from the line where the rail ends —
+       the dropdowns here, the numbered tabs in the row below */
+    padding:0 24px;
     box-shadow:0 1px 0 rgba(37,88,98,.03);
   }
   .toolbar .spanpick{flex:none;}
@@ -325,7 +322,7 @@
      start exactly where the rail ends (248px) */
   .logo-btn{
     background:none;border:none;padding:0;
-    width:164px;flex:0 0 164px; /* 28px toolbar padding + 164 + 14px gap = 206px rail width */
+    width:164px;flex:0 0 164px; /* 24px padding + 164 + 14px gap = 202px rail */
     display:flex;align-items:center;
   }
   .logo-btn img{height:36px;display:block;}
@@ -563,7 +560,7 @@
   }
   /* first nav number lines up with the content's left edge (grid + 48px pad,
      minus the button's own 16px) */
-  .secnav{padding-inline:max(32px, calc((100vw - 976px)/2 + 32px));padding-right:24px;}
+  .secnav{padding-inline:186px 24px;}
   .secnav-btn{white-space:nowrap;}
   .secpager{
     max-width:976px;width:100%;margin-inline:auto;padding:26px 48px 34px;
