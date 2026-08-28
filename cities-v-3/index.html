@@ -6323,7 +6323,6 @@
     el.className = "ov-spark";
     el.innerHTML = '<div class="ov-spark-viz"></div><p class="ov-spark-cap"></p>';
     sparkEl = el;
-    renderSpark();
     return el;
   }
 
@@ -6391,6 +6390,7 @@
     mapCol.style.display = "none";
     wrap0.classList.add("ov2");
     wrap0.appendChild(wrap);
+    renderSpark();
     built = { wrap: wrap, shells: shells, steps: steps, slots: slots,
               left: left, mapCol: mapCol, mapInner: mapInner };
     window.ovScrollyOn = true;
