@@ -12,8 +12,8 @@
 (function(){
   "use strict";
 
-  const WIDTH  = 1000;   /* the figure measure: slightly inside the 1104 text measure, fonts 1:1 */
-  const HEIGHT = 480;    /* wide-and-short (2.1:1) so the full map fits one view */
+  const WIDTH  = 880;    /* the figure measure: just proud of the 760 text measure, fonts 1:1 */
+  const HEIGHT = 450;    /* wide-and-short (2:1) so the full map fits one view */
   const GREY   = "#9ca3af";
 
   /* "Color by" modes. Complexity and change are dummy values for the prototype,
@@ -686,20 +686,24 @@
     /* the reading-key graphic in the lede column owns the 24% now; it is
        static markup and simply reveals with the veil's final beat */
 
-    let hasRun = false;
-    const runOnce = () => { hasRun = true; run(); };
-    const btn = document.getElementById("replayBtn");
-    if (btn) btn.addEventListener("click", runOnce);
-
-    // Play once when the section first scrolls into view — but never stomp
-    // a run the reader already started (the replay button races this timer).
-    new IntersectionObserver((entries, obs) => {
-      entries.forEach(entry => {
-        if (!entry.isIntersecting) return;
-        setTimeout(() => { if (!hasRun) runOnce(); }, 300);
-        obs.disconnect();
-      });
-    }, { threshold: 0.35 }).observe(el);
+    /* Replay every time the chart comes back on screen — scrolling up and
+       down through the story always re-runs the animation, in both page
+       layouts (the scrolly stage toggles display, which zeroes the rect). */
+    let visible = false, entryTimer = null;
+    const inView = () => {
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.top < window.innerHeight * .8 &&
+             r.bottom > window.innerHeight * .15;
+    };
+    const setVis = v => {
+      if (v === visible) return;
+      visible = v;
+      clearTimeout(entryTimer);
+      if (v) entryTimer = setTimeout(run, 300);
+    };
+    const scroller = document.getElementById("pages");
+    if (scroller) scroller.addEventListener("scroll", () => setVis(inView()), { passive: true });
+    window.addEventListener("resize", () => setVis(inView()));
   }
 
   /* Repaint one treemap for the given "Color by" mode, preserving any
@@ -2510,13 +2514,18 @@
     };
     let lens = "work";
 
-    const W = 1000, ROW = 36, MT = 26, MB = 66;
-    const H = Math.max(MT + root.children.length * ROW + MB, 384);
+    /* the frame IS the treemap's frame: the blocks state sits at the exact
+       coordinates the admin-share animation ends on, so the scroll from one
+       step to the next hands off pixel-identical — no redraw, the same map
+       simply starts to morph. Any spare height centers the bar chart. */
+    const W = 880, ROW = 36, MB = 66;
+    const need = 26 + root.children.length * ROW + MB;
+    const H = Math.max(need, HEIGHT);
+    const MT = 26 + (H - need) / 2;
     el.setAttribute("viewBox", "0 0 " + W + " " + H);
     el.setAttribute("height", H);
-    const BASE = 560, K = 150, LOGMIN = -2.1, LOGMAX = 0.9;
+    const BASE = 500, K = 140, LOGMIN = -2.1, LOGMAX = 0.9;
     const xOf = r => BASE + K * Math.max(LOGMIN, Math.min(LOGMAX, Math.log2(r)));
-    const sy = (H - 24) / HEIGHT;
 
     /* two geometries per sector under the current lens: its block on the
        sector map and its bar row. The SOLID band — the counted slice — is
@@ -2528,7 +2537,7 @@
       const geo = new Map(rows.map((d, i) => {
         const share = L.shareOf(d), r = ratioOf(d), x = xOf(r);
         const bx = d.x0, bw = d.x1 - d.x0;
-        const by = 8 + d.y0 * sy, bh = (d.y1 - d.y0) * sy;
+        const by = d.y0, bh = d.y1 - d.y0;
         return [d.data.name, {
           share, r,
           ghost: { x: bx, y: by, w: bw, h: bh * (1 - share) },
@@ -2556,7 +2565,7 @@
       cur.rows.forEach((d, i) => {
         const g0 = cur.geo.get(d.data.name);
         furn.append("text")
-          .attr("x", 300).attr("y", MT + i * ROW + 22)
+          .attr("x", 280).attr("y", MT + i * ROW + 22)
           .attr("text-anchor", "end")
           .style("fill", "#1a2226").style("stroke", "none")
           .attr("font-size", 13.5).attr("font-weight", 600)
@@ -2608,7 +2617,7 @@
           .text(fitLabel(d.data.name, { width: g0.ghost.w, height: 40 }));
     });
 
-    let view = "blocks", autoDone = false, replayTimer = null;
+    let view = "blocks", visible = false, playTimer = null;
     const DUR = 850;
     function toBars(animate){
       view = "bars";
@@ -2641,14 +2650,6 @@
       secs.selectAll(".ln-ghost").transition().delay(t * .4).duration(t * .5).attr("fill-opacity", .26);
       secs.selectAll(".ln-name").transition().delay(t * .5).duration(t * .4).style("opacity", 1);
     }
-    /* replay: back to the blocks, hold a beat, morph to the bars again */
-    const replayBtn = document.getElementById("leanReplayBtn");
-    if (replayBtn) replayBtn.addEventListener("click", () => {
-      autoDone = true;                       // consume the arrival play
-      clearTimeout(replayTimer);
-      toBlocks(true);
-      replayTimer = setTimeout(() => { if (view === "blocks") toBars(true); }, DUR + 900);
-    });
 
     /* the Count control: same chart, different question — where the job
        sits, or what the residents do. Re-rank and re-scale in place. */
@@ -2690,20 +2691,27 @@
     document.querySelectorAll("#leanLensSeg .seg-btn").forEach(b =>
       b.addEventListener("click", () => setLens(b.dataset.l, true)));
 
-    /* arrival: the blocks hold for a beat, then the solid slices line up */
-    function autoPlay(){
-      if (autoDone) return;
-      autoDone = true;
-      replayTimer = setTimeout(() => { if (view === "blocks") toBars(true); }, 1200);
+    /* every arrival replays: the blocks hold for a beat, then the solid
+       slices line up — scrolling away and back always runs it again */
+    function playSeq(){
+      clearTimeout(playTimer);
+      toBlocks(false);
+      playTimer = setTimeout(() => { if (visible && view === "blocks") toBars(true); }, 650);
     }
-    new IntersectionObserver((es, obs) => es.forEach(e => {
-      if (e.isIntersecting){ autoPlay(); obs.disconnect(); }
-    }), { threshold: .35 }).observe(el);
+    const inView = () => {
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.top < window.innerHeight * .8 &&
+             r.bottom > window.innerHeight * .15;
+    };
+    const setVis = v => {
+      if (v === visible) return;
+      visible = v;
+      clearTimeout(playTimer);
+      if (v) playSeq();
+    };
     const scroller = document.getElementById("pages");
-    if (scroller) scroller.addEventListener("scroll", () => {
-      const rct = el.getBoundingClientRect();
-      if (rct.top < window.innerHeight * .7 && rct.bottom > 0) autoPlay();
-    }, { passive: true });
+    if (scroller) scroller.addEventListener("scroll", () => setVis(inView()), { passive: true });
+    window.addEventListener("resize", () => setVis(inView()));
 
     /* the superlative under whichever count is on */
     function renderNote(){

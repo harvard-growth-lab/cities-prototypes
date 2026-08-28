@@ -161,7 +161,10 @@
     background:#fff;
     border-bottom:1px solid var(--border);
     height:72px;flex:0 0 72px;display:flex;align-items:center;gap:14px;
-    padding:0 40px 0 28px;box-shadow:0 1px 0 rgba(37,88,98,.03);z-index:2;
+    /* the logo and the right-edge controls sit on the page's 976px content
+       column — the same edge the section tabs and headings read from */
+    padding:0 max(48px, calc((100vw - 976px)/2 + 48px));
+    box-shadow:0 1px 0 rgba(37,88,98,.03);z-index:2;
   }
   .landing-header .logo-btn{
     background:none;border:none;padding:0;
@@ -310,8 +313,14 @@
     background:#fff;
     border-bottom:1px solid var(--border);
     height:72px;flex:0 0 72px;display:flex;align-items:center;gap:14px;
-    padding:0 40px 0 28px;box-shadow:0 1px 0 rgba(37,88,98,.03);
+    /* the logo anchors to the page's 976px content column — logo, first tab
+       number and every heading share one left edge. The right-side utilities
+       hold the viewport edge instead: the toolbar carries more than the
+       880 content measure can host, and the spacer absorbs the difference. */
+    padding:0 48px 0 max(48px, calc((100vw - 976px)/2 + 48px));
+    box-shadow:0 1px 0 rgba(37,88,98,.03);
   }
+  .toolbar .spanpick{flex:none;}
   /* logo occupies the same width as the left rail so the dropdowns
      start exactly where the rail ends (248px) */
   .logo-btn{
@@ -493,6 +502,30 @@
   }
   .pager-btn:hover{background:var(--teal);color:#fff;}
 
+  /* the pager's mini journey line */
+  .pager-row{align-items:center;gap:14px;}
+  .pgr-side{flex:1;display:flex;justify-content:flex-start;}
+  .pgr-side--r{justify-content:flex-end;}
+  .pgr-line-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;}
+  .pgr-line{display:flex;align-items:center;}
+  .pgr-stop{
+    width:22px;height:22px;border-radius:50%;background:#fff;
+    border:2px solid var(--c);color:var(--c);cursor:pointer;padding:0;
+    display:inline-flex;align-items:center;justify-content:center;
+    font:inherit;font-size:10.5px;font-weight:700;flex:none;
+    transition:transform .15s ease;
+  }
+  .pgr-stop:hover{transform:scale(1.18);}
+  .pgr-stop.is-past{background:var(--c);color:#fff;}
+  .pgr-stop.is-cur{
+    background:var(--c);color:#fff;transform:scale(1.25);
+    box-shadow:0 0 0 4px color-mix(in srgb, var(--c) 16%, transparent);
+  }
+  .pgr-seg{width:26px;height:2px;background:#dde3e5;flex:none;}
+  .pgr-seg.is-past{background:#9fb0b5;}
+  .pgr-cap{font-size:12px;color:var(--ink-soft);}
+  .pgr-cap b{color:var(--ink);font-weight:600;}
+
   /* The nav takes 49px out of every viewport-height block, so the overview
      blocks hand back padding and a little table air to stay one page each.
      Scoped with .tool-body only to outrank the shared definitions above. */
@@ -514,7 +547,7 @@
      City Overview keeps its own split-pane geometry below, already centred
      on the same 1200 reference. */
   .tool-body .page{
-    max-width:1200px;width:100%;margin-inline:auto;
+    max-width:976px;width:100%;margin-inline:auto;
     padding:52px 48px 60px;
   }
   /* The overview keeps its split-pane character: the map runs full height to
@@ -525,14 +558,15 @@
      reader switches pages. 608 = 48 grid pad + 520 column + 40 gutter. */
   .tool-body .ov-left{
     flex:0 0 auto;
-    width:max(608px, calc((100% - 1200px)/2 + 608px));
-    padding:0 40px 0 max(48px, calc((100% - 1200px)/2 + 48px));
+    width:max(608px, calc((100% - 976px)/2 + 608px));
+    padding:0 40px 0 max(48px, calc((100% - 976px)/2 + 48px));
   }
   /* first nav number lines up with the content's left edge (grid + 48px pad,
      minus the button's own 16px) */
-  .secnav{padding-inline:max(22px, calc((100vw - 1200px)/2 + 32px));}
+  .secnav{padding-inline:max(32px, calc((100vw - 976px)/2 + 32px));padding-right:24px;}
+  .secnav-btn{white-space:nowrap;}
   .secpager{
-    max-width:1200px;width:100%;margin-inline:auto;padding:26px 48px 34px;
+    max-width:976px;width:100%;margin-inline:auto;padding:26px 48px 34px;
     flex-direction:column;align-items:stretch;gap:22px;
   }
   .pager-row{display:flex;justify-content:space-between;align-items:center;gap:14px;}
@@ -565,13 +599,15 @@
      figure column, so every chart, its controls bar, and its furniture
      (headers, footnotes, wrappers) read as a single aligned block. */
   .tool-body .viz-big,
+  /* the figure measure: 880, left-aligned on the same edge as the headings
+     and ledes — one column, air to the right, as the reference reads */
   .tool-body .viz-controls,
   .tool-body .export-viz-row,
   .tool-body .scatter-wrap,
   .tool-body .rca-wrap,
   .tool-body .tradable-split-header,
   .tool-body .rca-footnote,
-  .tool-body .tradable-viz-wrapper{width:1000px;max-width:100%;margin-inline:auto;}
+  .tool-body .tradable-viz-wrapper{width:880px;max-width:100%;margin-inline:0;}
   .tool-body #exportTreemapSvg{width:100%;margin:8px 0 0;}
   .tool-body .tradable-viz-wrapper{margin-block:0 20px;}
   .tool-body .scatter-wrap{margin-block:8px 0;}
@@ -672,7 +708,7 @@
     position:relative;
   }
   .lede{
-    font-size:18px;line-height:29px;color:#000;max-width:680px;margin:16px 0 8px;
+    font-size:18px;line-height:29px;color:#000;max-width:760px;margin:16px 0 8px;
   }
   .viz-big{
     width:100%;max-width:1160px;height:auto;display:block;margin-top:8px;
@@ -1080,30 +1116,30 @@
      or not the current mode shows a stat — the text never reflows. */
   .lede-stat-row{
     display:grid;grid-template-columns:minmax(0,1fr) 320px;
-    gap:36px;align-items:start;
+    gap:36px;align-items:start;max-width:880px;
   }
   .lede-stat-row .lede{margin-block:16px 8px;}
   /* the stat card and reading key open on the same line the text does,
      instead of floating centered in the column */
   .lede-stat-row .headstat,.lede-stat-row .adm-read{margin-top:16px;}
   .headstat{
-    display:inline-flex;align-items:center;gap:12px;background:#fff;
-    border:1px solid var(--border);border-radius:8px;padding:9px 16px;
+    display:inline-flex;align-items:center;gap:12px;
     justify-self:start;
   }
+  .headstat[hidden]{display:none;}
   .ds-donut{transform:rotate(-90deg);flex:none;}
   .ds-track{fill:none;stroke:#e4e9ea;stroke-width:7;}
   .ds-val{fill:none;stroke-width:7;}
   .ds-num{display:block;font-size:21px;font-weight:700;line-height:1.1;color:var(--ink);}
-  .ds-cap{display:block;font-size:12px;color:var(--ink-soft);line-height:1.35;max-width:230px;}
+  .ds-cap{display:block;font-size:12px;color:var(--teal);font-weight:600;line-height:1.35;max-width:230px;}
   .commute-leg{
     display:flex;align-items:center;gap:8px;flex-wrap:wrap;
-    width:1000px;max-width:100%;margin:10px auto 0;
+    width:880px;max-width:100%;margin:10px 0 0;
     font-size:12.5px;color:var(--ink-soft);
   }
   .xch-chips{
     display:flex;gap:8px;flex-wrap:wrap;align-items:center;
-    width:1000px;max-width:100%;margin:12px auto 0;min-height:34px;
+    width:880px;max-width:100%;margin:12px 0 0;min-height:34px;
   }
   .xch-empty{font-size:12.5px;color:var(--ink-soft);}
   .fchip{
@@ -1126,7 +1162,7 @@
   @media (prefers-reduced-motion: reduce){ .xch-dash{animation:none;} }
   .xch-split{
     display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:22px;
-    align-items:start;width:1000px;max-width:100%;margin:14px auto 0;
+    align-items:start;width:880px;max-width:100%;margin:14px 0 0;
   }
   .commute-map--split{width:100% !important;margin:0 !important;}
   .xch-side{display:flex;flex-direction:column;gap:12px;min-width:0;}
@@ -1162,7 +1198,7 @@
   #ovMap .plc-nudge-wrap{opacity:0;transition:opacity .35s ease;pointer-events:none;}
   #ovMap.pl-on .plc-nudge-wrap{opacity:1;}
   .ktest{
-    width:1000px;max-width:100%;margin:26px auto 0;
+    width:880px;max-width:100%;margin:26px 0 0;
     border:1px solid var(--border);border-radius:10px;padding:18px 22px 20px;
     background:#fff;
   }
@@ -1200,7 +1236,7 @@
   .ktest-saved{font-size:13px;font-weight:700;color:var(--rise);}
   .ov-block--check{min-height:auto;justify-content:flex-start;padding:8px 0 40px;}
   .commute-map{
-    width:1000px;max-width:100%;margin:14px auto 0;
+    width:880px;max-width:100%;margin:14px 0 0;
     border:1px solid var(--border-strong);border-radius:8px;overflow:hidden;
     position:relative;background:#fdfdfd;
   }
@@ -1213,19 +1249,15 @@
     background:linear-gradient(to right,#7f451e,#b97f4e,#efeeec,#67929f,var(--teal));
   }
   .lean-note{
-    width:1000px;max-width:100%;margin:16px auto 0;padding:12px 16px;
+    width:880px;max-width:100%;margin:16px 0 0;padding:12px 16px;
     background:var(--teal-tint);border-radius:6px;font-size:14px;color:var(--ink);
   }
   .lean-note strong{font-weight:700;}
-  .lean-caveat{
-    width:1000px;max-width:100%;margin:10px auto 0;
-    font-size:12.5px;color:var(--ink-soft);
-  }
   .adm-read svg{display:block;}
   .lede-stat-row .adm-read{justify-self:start;}
   .adm-key{
-    font-size:12.5px;color:var(--ink-soft);margin:12px auto 0;
-    width:1000px;max-width:100%;
+    font-size:12.5px;color:var(--ink-soft);margin:12px 0 0;
+    width:880px;max-width:100%;
   }
   .tradable-treemap-animated{
     width:100%;display:block;
@@ -1501,15 +1533,19 @@
      are. It changes nothing, so it does not belong in the viz-control bar. */
   .page-head--geo{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
   .geo-badge{
-    display:inline-flex;align-items:center;gap:8px;
-    padding:4px 11px 4px 5px;border:1px solid var(--border);border-radius:4px;
-    background:#fff;font-size:13px;color:var(--ink);
+    display:inline-flex;align-items:center;gap:8px;cursor:pointer;
+    padding:5px 12px 5px 10px;border:1px solid var(--border);border-radius:4px;
+    background:#fff;font-size:13px;color:var(--ink);font-family:inherit;
   }
-  .geo-badge .geo-glyph{height:30px;}
+  .geo-badge svg{display:block;flex:none;}
+  .geo-badge .gb-view{font-size:12px;color:var(--ink-soft);}
+  .geo-badge .gb-name{font-weight:600;}
   /* The scale tag on a section title is readable as city-or-metro before the
      words are, which is the whole point of coding the pair. */
-  .geo-badge:has([data-geo="city"]){border-color:var(--geo-city);color:var(--geo-city);}
-  .geo-badge:has([data-geo="metro"]){border-color:var(--geo-metro);color:var(--geo-metro);}
+  .geo-badge--city{border-color:var(--geo-city);color:var(--geo-city);}
+  .geo-badge--metro{border-color:var(--geo-metro);color:var(--geo-metro);}
+  .geo-badge--city:hover{background:var(--teal-tint);}
+  .geo-badge--metro:hover{background:var(--geo-metro-fill);}
   #pgAdmin .pg-name{color:var(--geo-city);}
   #pgMetro .pg-name{color:var(--geo-metro);}
   .geo-mark{display:inline-flex;}
@@ -1895,6 +1931,9 @@
   }
   .journey-overlay.open{display:flex;animation:overlayIn .18s ease;}
   @keyframes overlayIn{from{opacity:0;}to{opacity:1;}}
+  .geo-window{width:660px;}
+  .geo-map-body{padding:6px 28px 26px;}
+  .geo-map-body svg{display:block;width:100%;height:auto;background:#fdfdfd;border:1px solid var(--border);border-radius:8px;}
   .journey-window{
     background:#fff;border-radius:14px;box-shadow:0 24px 70px rgba(15,35,40,.35);
     width:860px;max-width:100%;max-height:min(760px, 100%);
@@ -1914,6 +1953,13 @@
   .journey-head h2{font-size:22px;font-weight:600;letter-spacing:-.2px;}
   .journey-head .jh-sub{font-size:14px;color:var(--ink-soft);margin-top:3px;}
   .journey-head .jh-sub strong{color:var(--teal);font-weight:600;}
+  .jp-opt{display:inline-flex;border:1px solid var(--border);border-radius:999px;overflow:hidden;flex:none;align-self:flex-start;margin-top:4px;}
+  .jp-opt-btn{
+    border:none;background:none;cursor:pointer;padding:5px 12px;
+    font-size:11.5px;color:var(--ink-soft);
+  }
+  .jp-opt-btn.is-active{background:var(--teal);color:#fff;}
+  .jp-opt-btn:not(.is-active):hover{background:var(--teal-tint);color:var(--teal);}
   .journey-close{
     background:none;border:none;width:34px;height:34px;border-radius:4px;
     display:flex;align-items:center;justify-content:center;color:var(--ink-soft);
@@ -1958,8 +2004,77 @@
     display:flex;justify-content:space-around;align-items:center;
     background:#fbfcfc;border-radius:12px;padding:13px 10px;margin-bottom:20px;
   }
+  .jp-legend[hidden]{display:none;}
   .jp-legend .leg{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:600;color:var(--ink);}
   .jp-legend .leg svg{width:20px;height:20px;}
+  .jp-legend--line .leg{font-size:12.5px;font-weight:500;color:var(--ink-soft);}
+  .jp-legend--line .lg-dot{width:10px;height:10px;border-radius:50%;border:2px solid var(--teal);display:inline-block;flex:none;}
+  .jp-legend--line .lg-dot.done{background:var(--teal);}
+  .jp-legend--line .lg-dash{width:18px;height:0;border-top:3px dashed #9aa5a3;display:inline-block;flex:none;}
+
+  /* ---- Composition & Trade, option 2: the viz stays, text scrolls in
+     its own left rail — never over the chart ---- */
+  .secnav .ct-optwrap{margin-left:auto;display:flex;align-items:center;gap:8px;}
+  .secnav .ct-optlbl{font-size:11.5px;color:var(--ink-soft);}
+  .ct-scrolly{
+    display:grid;grid-template-columns:330px minmax(0,1fr);gap:44px;align-items:start;
+    width:min(1280px, calc(100vw - 48px));
+    margin-inline:calc((100% - min(1280px, 100vw - 48px)) / 2);
+  }
+  .ct-steps{padding-bottom:16vh;min-width:0;}
+  .ct-step{
+    min-height:82vh;display:flex;flex-direction:column;justify-content:center;
+    align-items:flex-start;opacity:.35;transition:opacity .25s ease;
+  }
+  .ct-step.is-on{opacity:1;}
+  /* the rail's own typographic scale: quiet counter, tight title, the
+     Viewing badge as the scale cue, then prose sized to the measure */
+  .ct-eyebrow{font-size:12px;color:var(--ink-soft);margin-bottom:12px;}
+  .ct-step h2,.ct-step h3{
+    font-size:26px;font-weight:700;line-height:1.2;letter-spacing:-.3px;
+    color:var(--ink);margin:0 0 14px;
+  }
+  .ct-step .subsection-header{margin:0;}
+  .ct-step .geo-badge{margin:0 0 18px;}
+  .ct-step .lede{font-size:16px;line-height:1.6;max-width:100%;margin:0 0 10px;}
+  .ct-step .lede-stat-row{display:block;max-width:100%;}
+  .ct-step .lede-stat-row .lede{margin-block:0 10px;}
+  .ct-step .lede-stat-row .headstat,.ct-step .lede-stat-row .adm-read{margin-top:12px;}
+  .ct-step .adm-read svg{max-width:100%;height:auto;}
+  .ct-step .lean-note{width:auto;font-size:14px;line-height:1.55;padding:11px 14px;margin:16px 0 0;}
+  /* the stage: chart centered in the viewport, never under the text */
+  .ct-stage{position:sticky;top:0;min-width:0;}
+  .ct-slot{display:none;}
+  .ct-slot.is-on{
+    display:flex;flex-direction:column;justify-content:center;
+    min-height:calc(100vh - var(--chrome-h));padding-block:8px;
+  }
+  .ct-stage .viz-controls,.ct-stage .export-viz-row,.ct-stage .tradable-viz-wrapper,
+  .ct-stage .commute-map,.ct-stage .commute-leg,.ct-stage .xch-split{width:100%;}
+
+  /* option 2 gives the closing checkpoints the full stage width: the two
+     cards stack, each spanning everything the scrolly above spans */
+  .secpager--wide{max-width:min(1280px, calc(100vw - 48px));}
+  .secpager--wide .sec-close{grid-template-columns:minmax(0,1fr);}
+  .secpager--wide .sec-close .ktest--apply{border-left:none;border-top:1px solid var(--border);}
+
+  /* ---- the journey as one vertical line (sketch: the vertical line) ---- */
+  .jp-line{padding:4px 0 10px;}
+  .jp-line svg{display:block;width:100%;max-width:500px;margin:0 auto;height:auto;}
+  .jl-traveled{fill:none;stroke:#f0e4cb;stroke-width:15;stroke-linecap:round;stroke-linejoin:round;}
+  .jl-seg{fill:none;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;}
+  .jl-stn{fill:#fff;stroke-width:2.5;cursor:pointer;}
+  .jl-stn:hover{stroke-width:4.5;}
+  .jl-lbl{font-size:10.5px;fill:#5b686d;pointer-events:none;}
+  .jl-you{font-weight:700;fill:#1a2226;}
+  .jl-ch{font-size:11.5px;font-weight:700;cursor:pointer;}
+  .jl-ch:hover{text-decoration:underline;}
+  .jl-here{pointer-events:none;transform-box:fill-box;transform-origin:center;animation:jl-pulse 2s ease-in-out infinite;}
+  @keyframes jl-pulse{50%{transform:scale(1.3);}}
+  @media (prefers-reduced-motion: reduce){ .jl-here{animation:none;} }
+  .jl-term{fill:#fff;stroke:#1a2226;stroke-width:2.5;}
+  .jl-termlbl{font-size:12.5px;font-weight:700;fill:#1a2226;}
+  .jl-termsub{font-size:10.5px;fill:#5b686d;}
 
   /* section list */
   .jp-list{display:flex;flex-direction:column;position:relative;}
@@ -2908,7 +3023,7 @@
           <section class="ov-block" id="page-overview-places">
             <div class="page-head page-head--geo">
               <h2>Admins in your Metro</h2>
-              <span class="geo-badge"><span class="geo-mark" data-geo="city"></span>City (admin)</span>
+              <button type="button" class="geo-badge geo-badge--city" onclick="openGeoMap('city')" title="See this geography on the map"><span class="gb-view">Viewing:</span><svg viewBox="0 0 24 30" width="16" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 26h20"/><path d="M4 26V15h6v11"/><path d="M12 26V8h7v18"/><path d="M14.6 12h1.8M14.6 16h1.8M14.6 20h1.8"/></svg><span class="gb-name"><span class="city-short">Boston</span> admin</span></button>
             </div>
             <p class="lede"><span class="city-short">Boston</span> is one of many places inside its metro &mdash; the map now shows all of them. <strong>Click any place on the map</strong> to see how it stacks up; every figure carries its rank among the metro&rsquo;s places.</p>
 
@@ -2972,7 +3087,7 @@
       <section class="page" id="page-export-basket">
         <div class="page-head page-head--geo">
           <h2>What the metro does for a living</h2>
-          <span class="geo-badge"><span class="geo-mark" data-geo="metro"></span>Metro (MSA)</span>
+          <button type="button" class="geo-badge geo-badge--metro" onclick="openGeoMap('metro')" title="See this geography on the map"><span class="gb-view">Viewing:</span><svg viewBox="0 0 30 22" width="25" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="15" cy="11" rx="13" ry="8.6" stroke-dasharray="2.6 3"/><path d="M10.5 15.5h9"/><path d="M12.2 15.5V10h3v5.5"/><path d="M16.6 15.5V7h3v8.5"/></svg><span class="gb-name"><span class="city-short">Boston</span> metro</span></button>
         </div>
         <div class="lede-stat-row">
           <p class="lede">What a place produces shapes much of what follows for it. Some metros grew up around a single industry and still rest on it; others carry a wide range, and with it a workforce holding many different specialised skills. Here is the <span class="city-short">Boston</span> MSA’s mix — every industry sized by employment, grouped into sectors.</p>
@@ -3024,7 +3139,7 @@
 
         <div class="export-viz-row">
         <div class="rca-tip" id="exportTip" role="tooltip" hidden></div>
-        <svg class="viz-big" id="exportTreemapSvg" width="1000" height="480" viewBox="0 0 1000 480" xmlns="http://www.w3.org/2000/svg" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; background:#ffffff;">
+        <svg class="viz-big" id="exportTreemapSvg" width="880" height="450" viewBox="0 0 880 450" xmlns="http://www.w3.org/2000/svg" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; background:#ffffff;">
 </svg>
         <div class="toplist" id="exportTopList" hidden></div>
         </div>
@@ -3076,11 +3191,10 @@
               <span class="ctl-label">Year</span>
               <select><option>2025</option><option>2020</option><option>2015</option></select>
             </div>
-            <button class="replay-btn" id="replayBtn">↻ Replay</button>
           </div>
 
           <div class="tradable-viz-wrapper">
-            <svg class="viz-big tradable-treemap-animated" id="tradableAnimatedSvg" width="1000" height="480" viewBox="0 0 1000 480" xmlns="http://www.w3.org/2000/svg" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; background:#ffffff;"></svg>
+            <svg class="viz-big tradable-treemap-animated" id="tradableAnimatedSvg" width="880" height="450" viewBox="0 0 880 450" xmlns="http://www.w3.org/2000/svg" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; background:#ffffff;"></svg>
             <div class="rca-tip" id="tradableTip" role="tooltip" hidden></div>
           </div>
 
@@ -3101,15 +3215,13 @@
                 <button type="button" class="seg-btn" data-l="res" aria-pressed="false">Jobs residents hold</button>
               </div>
             </div>
-            <button class="replay-btn" id="leanReplayBtn">&#8635; Replay</button>
           </div>
           <div class="tradable-viz-wrapper" id="leanWrap">
-            <svg class="viz-big" id="leanMapSvg" width="1000" height="420" viewBox="0 0 1000 420" xmlns="http://www.w3.org/2000/svg" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; background:#ffffff;"></svg>
+            <svg class="viz-big" id="leanMapSvg" width="880" height="420" viewBox="0 0 880 420" xmlns="http://www.w3.org/2000/svg" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; background:#ffffff;"></svg>
             <div class="rca-tip" id="leanTip" role="tooltip" hidden></div>
           </div>
 
           <p class="lean-note" id="leanNote"></p>
-          <p class="lean-caveat"><span class="city-short">Boston</span> is part of the metro it is compared with, so a place large enough to move its own metro&rsquo;s shares reads closer to parity than it would against the rest of the region.</p>
         </div>
 
         <!-- Subsection: residents who work elsewhere (animated out-commute) -->
@@ -3137,7 +3249,6 @@
           <div class="commute-map" id="commuteInMap"></div>
           <p class="commute-leg"><span class="plc-legend"><span class="lo">0</span><i class="plc-ramp"></i><span class="hi" id="inLegHi"></span></span> workers commuting into <span class="city-short">Boston</span> from there &middot; the grey arrows carry them in, sized by volume &middot; hover any place for its figures.</p>
           <p class="lean-note">That is <strong>206 jobs for every 100 jobs</strong> its residents hold: <span class="city-short">Boston</span> draws workers in on net.</p>
-          <p class="lean-caveat">Call these places its partners. Each has partners of its own, largely overlapping this list, and following the exchanges outward until they close is roughly how the metro is drawn.</p>
         </div>
 
         <!-- Subsection: click-to-add exploration — the city never moves -->
@@ -3162,7 +3273,6 @@
               <p class="xch-side-hint" id="xchSideHint" hidden><span class="sw" style="background:var(--orange)"></span>your picks &middot; click a place again &mdash; or its &times; &mdash; to remove it.</p>
             </aside>
           </div>
-          <p class="lean-caveat">Census LEHD origin&ndash;destination counts; a &ldquo;~&rdquo; marks figures the source does not list, estimated to scale.</p>
         </div>
 
 
@@ -3173,7 +3283,7 @@
       <section class="page" id="page-constraints">
         <div class="page-head page-head--geo">
           <h2>How is the metro performing?</h2>
-          <span class="geo-badge"><span class="geo-mark" data-geo="metro"></span>Metro (MSA)</span>
+          <button type="button" class="geo-badge geo-badge--metro" onclick="openGeoMap('metro')" title="See this geography on the map"><span class="gb-view">Viewing:</span><svg viewBox="0 0 30 22" width="25" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="15" cy="11" rx="13" ry="8.6" stroke-dasharray="2.6 3"/><path d="M10.5 15.5h9"/><path d="M12.2 15.5V10h3v5.5"/><path d="M16.6 15.5V7h3v8.5"/></svg><span class="gb-name"><span class="city-short">Boston</span> metro</span></button>
         </div>
         <p class="lede">Plot every metro by how fast its population grew (x) against how fast its wages grew (y). Both rising is a <strong>positive demand shock</strong>; both falling, a negative one. Population rising while pay lags points to a <strong>supply shift</strong> (amenities, cheaper living); pay rising while population lags, a <strong>constrained supply</strong>. Where does Boston land?</p>
         <div class="collapsible-info collapsible-info--wide">
@@ -3238,7 +3348,7 @@
       <section class="page" id="page-city-in-metro">
         <div class="page-head page-head--geo">
           <h2>Is your city pulling with the metro?</h2>
-          <span class="geo-badge"><span class="geo-mark" data-geo="city"></span>City (admin)</span>
+          <button type="button" class="geo-badge geo-badge--city" onclick="openGeoMap('city')" title="See this geography on the map"><span class="gb-view">Viewing:</span><svg viewBox="0 0 24 30" width="16" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 26h20"/><path d="M4 26V15h6v11"/><path d="M12 26V8h7v18"/><path d="M14.6 12h1.8M14.6 16h1.8M14.6 20h1.8"/></svg><span class="gb-name"><span class="city-short">Boston</span> admin</span></button>
         </div>
         <p class="lede">That single Boston dot is not one economy. Watch it break apart into the places inside the metro, with Boston itself picked out. The dashed lines stay where they were, because they are still the typical US metro, so every place can be read against two benchmarks at once: its own metro, marked by the dashed ring, and the typical metro.</p>
 
@@ -3502,6 +3612,21 @@
 </div>
 
 <!-- ==================== MY LEARNING JOURNEY (modal window) ==================== -->
+<div class="journey-overlay" id="geoMapOverlay">
+  <div class="journey-window geo-window" role="dialog" aria-modal="true" aria-labelledby="geoMapTitle">
+    <div class="journey-head">
+      <div class="jh-titles">
+        <h2 id="geoMapTitle"></h2>
+        <p class="jh-sub" id="geoMapSub"></p>
+      </div>
+      <button class="journey-close" onclick="closeGeoMap()" aria-label="Close">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 2l12 12M14 2 2 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="geo-map-body"><div id="geoMapHost"></div></div>
+  </div>
+</div>
+
 <div class="journey-overlay" id="journeyOverlay">
   <div class="journey-window" role="dialog" aria-modal="true" aria-labelledby="journeyTitle">
     <div class="journey-head">
@@ -3510,7 +3635,11 @@
       </div>
       <div class="jh-titles">
         <h2 id="journeyTitle">My Learning Journey</h2>
-        <p class="jh-sub">The index of the diagnosis &mdash; every section and step, with what you&rsquo;ve read, <strong>answered</strong> and <strong>saved</strong>. Click anything to go there.</p>
+        <p class="jh-sub"><span id="jhSub1">The index of the diagnosis &mdash; every section and step, with what you&rsquo;ve read, <strong>answered</strong> and <strong>saved</strong>. Click anything to go there.</span><span id="jhSub2" hidden>One line runs through the whole diagnosis &mdash; every step is a station on the way to <strong>the verdict</strong>. Click any station to go there.</span></p>
+      </div>
+      <div class="jp-opt" role="group" aria-label="Journey design">
+        <button type="button" class="jp-opt-btn is-active" data-jv="1" aria-pressed="true">option 1</button>
+        <button type="button" class="jp-opt-btn" data-jv="2" aria-pressed="false">option 2</button>
       </div>
       <button class="journey-close" onclick="closeJourney()" aria-label="Close">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 2l12 12M14 2 2 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
@@ -3520,7 +3649,7 @@
     <div class="journey-body">
       <div class="jp-cities" id="jpCities"></div>
 
-      <div class="jp-legend">
+      <div class="jp-legend" id="jpLegendIcons">
         <span class="leg">
           <svg viewBox="0 0 22 18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 3.2C9.2 1.7 6.6 1.2 3.8 1.6c-.9.1-1.8.4-1.8 1.4v11.6c0 .8.7 1.3 1.5 1.2 2.7-.4 5.6.1 7.5 1.6 1.9-1.5 4.8-2 7.5-1.6.8.1 1.5-.4 1.5-1.2V3c0-1-.9-1.3-1.8-1.4-2.8-.4-5.4.1-7.2 1.6Z"/><path d="M11 3.2v14.2"/></svg>
           Explore
@@ -3529,6 +3658,11 @@
           <svg viewBox="0 0 32 26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="6" r="3.6"/><circle cx="22" cy="6" r="3.6"/><path d="M3 24v-4.5a5.5 5.5 0 0 1 5.5-5.5h3a5.5 5.5 0 0 1 5.5 5.5V24"/><path d="M17.5 14.6a5.5 5.5 0 0 1 3-0.6h3A5.5 5.5 0 0 1 29 19.5V24"/></svg>
           Your insight
         </span>
+      </div>
+      <div class="jp-legend jp-legend--line" id="jpLegendLine" hidden>
+        <span class="leg"><i class="lg-dot done"></i>visited station</span>
+        <span class="leg"><i class="lg-dot"></i>station ahead</span>
+        <span class="leg">click a chapter name to board mid-line</span>
       </div>
 
       <div class="jp-list" id="journeySections"></div>
@@ -3580,7 +3714,8 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://d3js.org/d3.v7.min.js"></script>
-<script src="treemap.js?v=lens"></script>
+<script src="data/geo/xch_geo.js"></script>
+<script src="treemap.js?v=handoff"></script>
 <script>
   /* ---------- treemaps: color by ----------
      Handled entirely in treemap.js — it wires the visible .seg controls and
@@ -4050,6 +4185,52 @@
   overlay.addEventListener("click", e=>{ if(e.target===overlay) closeJourney(); });
   document.querySelectorAll(".btn-journey").forEach(b=>b.onclick=openJourney);
 
+  /* ---- the Viewing badge opens the real boundary map, emphasised for
+     whichever geography the section reads at ---- */
+  function openGeoMap(view){
+    const ov = document.getElementById("geoMapOverlay");
+    const city = document.querySelector(".city-short")?.textContent || "Boston";
+    document.getElementById("geoMapTitle").textContent =
+      "Viewing: " + city + (view === "metro" ? " metro" : " admin");
+    document.getElementById("geoMapSub").textContent = view === "metro"
+      ? "The whole labor market — 197 cities and towns inside the dashed edge."
+      : "The administrative city — one municipality among the metro\u2019s 197.";
+    loadXchGeo(() => {
+      const host = document.getElementById("geoMapHost");
+      host.innerHTML = "";
+      const W = 600, H = 430;
+      const proj = d3.geoMercator().fitExtent([[12, 12], [W - 12, H - 12]], XCH_GEO.places);
+      const gpath = d3.geoPath(proj);
+      const svg = d3.select(host).append("svg")
+        .attr("viewBox", "0 0 " + W + " " + H)
+        .attr("width", W).attr("height", H);
+      svg.selectAll("path.gm-place").data(XCH_GEO.places.features).join("path")
+        .attr("d", gpath)
+        .attr("fill", "#eef3f4").attr("fill-opacity", view === "metro" ? .55 : .18)
+        .attr("stroke", "#a9b8bc").attr("stroke-width", .8);
+      svg.append("path").datum(XCH_GEO.msa).attr("d", gpath)
+        .attr("fill", "none").attr("stroke", "#4a6a72")
+        .attr("stroke-width", view === "metro" ? 2.6 : 1.4)
+        .attr("stroke-dasharray", "6 6");
+      svg.append("path").datum(XCH_GEO.boston).attr("d", gpath)
+        .attr("fill", "#255862").attr("fill-opacity", view === "city" ? .5 : .22)
+        .attr("stroke", "#255862").attr("stroke-width", view === "city" ? 2.2 : 1);
+      const c = proj(d3.geoCentroid(XCH_GEO.boston));
+      svg.append("text").attr("x", c[0]).attr("y", c[1] + 4)
+        .attr("text-anchor", "middle").attr("class", "xch-name xch-name--home")
+        .text(city);
+    });
+    ov.classList.add("open");
+    document.addEventListener("keydown", geoEsc);
+  }
+  function closeGeoMap(){
+    document.getElementById("geoMapOverlay").classList.remove("open");
+    document.removeEventListener("keydown", geoEsc);
+  }
+  function geoEsc(e){ if (e.key === "Escape") closeGeoMap(); }
+  document.getElementById("geoMapOverlay").addEventListener("click",
+    e => { if (e.target.id === "geoMapOverlay") closeGeoMap(); });
+
   function journeyGoTo(entry){
     closeJourney();
     if(document.getElementById("landing").classList.contains("hidden")) goTo(entry);
@@ -4065,7 +4246,161 @@
     return '<span class="jp-ic'+(done?' done':'')+'">'+svg+(done?icCheckBadge:'')+'</span>';
   }
 
-  function renderJourney(){
+  function renderJourneyLine(){
+    // cities explored
+    const cWrap=document.getElementById("jpCities");
+    if(exploredCities.size===0){
+      cWrap.innerHTML='<span class="label">No cities explored yet</span>';
+    }else{
+      cWrap.innerHTML='<span class="label">Cities explored</span>'+
+        [...exploredCities].map(c=>
+          '<span class="city-chip" title="'+c+'">'+c.split(",")[0]+'</span>').join("");
+    }
+
+    /* ---- the vertical line: one route through the whole story ----
+       Stations come from the rail, the same source the nav ticks use, so
+       the line can never disagree with the site about its own shape. */
+    const railStepsOf = sd => {
+      const sec = [...document.querySelectorAll(".rail .sec")]
+        .find(x => (x.dataset.sec || "").split(/\s+/).includes(sd.entry));
+      return sec ? [...sec.querySelectorAll(".steps li[data-step]")]
+        .filter(li => !li.dataset.step.endsWith("-practice"))
+        .map(li => ({ id: li.dataset.step,
+                      title: li.querySelector("button").textContent.trim() })) : [];
+    };
+
+    const LINE_C = {
+      "Economic Fundamentals": "#255862",
+      "Composition and Trade": "#b97f4e",
+      "City Constraints":      "#2f7d6a",
+      "Levers for Change":     "#7f451e",
+      "Extras":                "#8a989d"
+    };
+    const shortLbl = t => t.length > 20 ? t.slice(0, 19).replace(/\s+\S*$/, "") + "…" : t;
+
+    /* flatten the story into stations, in reading order */
+    const stations = [{ id: "page-intro-q1", label: "your assumptions", color: "#1a2226",
+                        sec: null, done: introQuestionsAnswered > 0 }];
+    sectionDefs.forEach((sd, si) => {
+      const steps = railStepsOf(sd);
+      const col = LINE_C[sd.name] || "#8a989d";
+      const board = { num: si + 1, name: sd.name, entry: sd.entry };
+      if (!steps.length){
+        stations.push({ id: sd.entry, sec: sd.name, color: col, dashed: true, board,
+                        label: shortLbl(sd.name.toLowerCase()),
+                        done: sd.pages.some(p => visitedPages.has(p)) });
+        return;
+      }
+      steps.forEach((st, i) => {
+        const isCheck = st.id.indexOf("check-") === 0, isApply = st.id.indexOf("apply-") === 0;
+        stations.push({
+          id: st.id, sec: sd.name, color: col, board: i === 0 ? board : null,
+          label: isCheck ? "checkpoint" : isApply ? "your insight" : shortLbl(st.title),
+          done: isCheck ? CHECK_DONE.has(sd.name)
+              : isApply ? APPLY_DONE.has(sd.name)
+              : visitedPages.has(st.id)
+        });
+      });
+    });
+
+    /* serpentine geometry: three stations a row, wide turns at the rails */
+    const SLOTS = [104, 220, 336], W = 440, ROW = 112, TOP = 92, TX = 220;
+    stations.forEach((s, i) => {
+      const row = Math.floor(i / 3), slot = i % 3, ltr = row % 2 === 0;
+      s.row = row; s.ltr = ltr;
+      s.x = ltr ? SLOTS[slot] : SLOTS[2 - slot];
+      s.y = TOP + row * ROW;
+    });
+    const last = stations[stations.length - 1];
+    const termY = last.y + 96;
+    const H = termY + 76;
+
+    const seg = (p, s) => s.row === p.row ? "H" + s.x
+      : (p.ltr ? "H356a56,56 0 0 1 0,112" : "H84a56,56 0 0 0 0,112") + "H" + s.x;
+
+    /* one colored path per chapter — the segment into a station wears that
+       station's chapter color, so each chapter owns its stretch of track */
+    const paths = [];
+    let run = null;
+    for (let i = 1; i < stations.length; i++){
+      const p = stations[i - 1], s = stations[i];
+      if (!run || s.sec !== p.sec){
+        run = { d: "M" + p.x + "," + p.y, color: s.color, dashed: !!s.dashed };
+        paths.push(run);
+      }
+      run.d += seg(p, s);
+    }
+    const termD = "M" + last.x + "," + last.y +
+      (last.x === TX ? "" : "Q" + TX + "," + last.y + " " + TX + "," + (last.y + 60)) +
+      "V" + (termY - 15);
+
+    /* how far down the line the reader has traveled */
+    const curIdx = stations.findIndex(s => s.id === currentPageId);
+    let traveled = "";
+    if (curIdx > 0){
+      traveled = "M" + stations[0].x + "," + stations[0].y;
+      for (let i = 1; i <= curIdx; i++) traveled += seg(stations[i - 1], stations[i]);
+    }
+
+    const constraintsSeen = sectionDefs.some(sd => sd.name === "City Constraints" &&
+      sd.pages.some(p => visitedPages.has(p)));
+    const sub = curIdx >= 0
+      ? (stations.length - 1 - curIdx) + " stations out" +
+        (constraintsSeen ? " · current read: constrained supply" : "")
+      : "the verdict waits at the end of the line";
+
+    let svg = '<svg viewBox="0 0 ' + W + ' ' + H +
+      '" role="img" aria-label="One route through the diagnosis, station by station, ending at your diagnosis">';
+    if (traveled) svg += '<path class="jl-traveled" d="' + traveled + '"/>';
+    paths.forEach(p => {
+      svg += '<path class="jl-seg" stroke="' + p.color + '"' +
+        (p.dashed ? ' stroke-dasharray="2 9"' : '') + ' d="' + p.d + '"/>';
+    });
+    svg += '<path class="jl-seg" stroke="#1a2226" d="' + termD + '"/>';
+
+    stations.forEach((s, i) => {
+      if (s.board){
+        const lx = Math.max(70, Math.min(W - 70, s.x));
+        svg += '<text class="jl-ch" x="' + lx + '" y="' + (s.y - 36) +
+          '" fill="' + s.color + '" text-anchor="middle" onclick="journeyGoTo(\'' +
+          s.board.entry + '\')">' + s.board.num + ' · ' + s.board.name + '</text>';
+      }
+      svg += '<circle class="jl-stn' + (s.done ? ' done' : '') + '" cx="' + s.x + '" cy="' + s.y +
+        '" r="6" stroke="' + s.color + '"' + (s.done ? ' fill="' + s.color + '"' : '') +
+        ' onclick="journeyGoTo(\'' + s.id + '\')"><title>' + s.label + '</title></circle>';
+      svg += '<text class="jl-lbl" x="' + s.x + '" y="' + (s.ltr ? s.y + 22 : s.y - 15) +
+        '" text-anchor="middle">' + s.label + '</text>';
+      if (i === curIdx){
+        svg += '<g class="jl-here"><circle cx="' + s.x + '" cy="' + s.y + '" r="7.5" fill="' + s.color + '"/>' +
+          '<circle cx="' + s.x + '" cy="' + s.y + '" r="2.6" fill="#fff"/></g>' +
+          '<text class="jl-lbl jl-you" x="' + s.x + '" y="' + (s.ltr ? s.y - 15 : s.y + 24) +
+          '" text-anchor="middle">you are here</text>';
+      }
+    });
+
+    svg += '<circle class="jl-term" cx="' + TX + '" cy="' + termY + '" r="12"/>' +
+      '<circle cx="' + TX + '" cy="' + termY + '" r="4.6" fill="#1a2226"/>' +
+      '<text class="jl-termlbl" x="' + TX + '" y="' + (termY + 30) + '" text-anchor="middle">Your diagnosis</text>' +
+      '<text class="jl-termsub" x="' + TX + '" y="' + (termY + 47) + '" text-anchor="middle">' + sub + '</text>' +
+      '</svg>';
+
+    document.getElementById("journeySections").innerHTML = '<div class="jp-line">' + svg + '</div>';
+
+    // saved insights/notes
+    const nWrap=document.getElementById("jpInsightsList");
+    if(savedInsights.length===0){
+      nWrap.innerHTML='<div class="jp-note-empty">Nothing saved yet. When you save a response in '+
+        '“Put insights into action”, it will be collected here.</div>';
+    }else{
+      nWrap.innerHTML=savedInsights.map(ins=>
+        '<div class="jp-note">'+
+          '<div class="meta">'+ins.section+' — '+ins.city.split(",")[0]+' ('+ins.span+')</div>'+
+          '<p class="text">'+ins.text.replace(/</g,"&lt;")+'</p></div>'
+      ).join("");
+    }
+  }
+
+  function renderJourneyIndex(){
     const secStates=sectionDefs.map(s=>{
       const seen=s.pages.filter(p=>visitedPages.has(p)).length;
       const completed=seen===s.pages.length;
@@ -4147,6 +4482,27 @@
       ).join("");
     }
   }
+
+  /* two designs, kept side by side: option 1 is the section index,
+     option 2 the vertical line. The small toggle in the header switches. */
+  var journeyView = "1";
+  function renderJourney(){
+    (journeyView === "2" ? renderJourneyLine : renderJourneyIndex)();
+    document.querySelectorAll(".jp-opt-btn").forEach(b => {
+      const on = b.dataset.jv === journeyView;
+      b.classList.toggle("is-active", on);
+      b.setAttribute("aria-pressed", String(on));
+    });
+    const legIco = document.getElementById("jpLegendIcons");
+    const legLine = document.getElementById("jpLegendLine");
+    if (legIco) legIco.hidden = journeyView === "2";
+    if (legLine) legLine.hidden = journeyView !== "2";
+    const s1 = document.getElementById("jhSub1"), s2 = document.getElementById("jhSub2");
+    if (s1) s1.hidden = journeyView === "2";
+    if (s2) s2.hidden = journeyView !== "2";
+  }
+  document.querySelectorAll(".jp-opt-btn").forEach(b =>
+    b.addEventListener("click", () => { journeyView = b.dataset.jv; renderJourney(); }));
 
   function downloadInsights(){
     const lines=savedInsights.length===0
@@ -4647,6 +5003,16 @@
   const XCH_GEO = { loaded: false };
   function loadXchGeo(cb){
     if (XCH_GEO.loaded) return cb();
+    /* the boundaries ship inline via data/geo/xch_geo.js, so the maps also
+       draw when the page is opened straight from disk, where fetch() is
+       blocked — the fetch below is only a fallback */
+    if (window.XCH_GEO_RAW){
+      XCH_GEO.msa = XCH_GEO_RAW.msa;
+      XCH_GEO.places = XCH_GEO_RAW.places;
+      XCH_GEO.boston = XCH_GEO_RAW.boston;
+      XCH_GEO.loaded = true;
+      return cb();
+    }
     if (XCH_GEO.loading) return XCH_GEO.loading.push(cb);
     XCH_GEO.loading = [cb];
     Promise.all([
@@ -4716,7 +5082,7 @@
     const host = document.getElementById(id);
     if (!host || typeof d3 === "undefined") return;
     loadXchGeo(() => {
-      const W = 1000, H = cfg.mode === "explore" ? 700 : 460;
+      const W = cfg.mode === "explore" ? 700 : 880, H = cfg.mode === "explore" ? 560 : 430;
       const feats = XCH_GEO.places.features;
       const featOf = n => feats.find(f => f.properties.place_name === n);
       const focusFC = { type: "FeatureCollection",
@@ -4728,6 +5094,9 @@
       host.innerHTML = "";
       const svg = d3.select(host).append("svg")
         .attr("viewBox", "0 0 " + W + " " + H)
+        // explicit intrinsic size: Safari computes height:auto from these,
+        // not from the viewBox — without them the maps collapse there
+        .attr("width", W).attr("height", H)
         .attr("class", "xch-svg");
 
       const data = new Map(feats.map(f => [f.properties.place_name, xchDataFor(f)]));
@@ -4815,8 +5184,10 @@
           '<g stroke="#ffffff" stroke-width="4.6">' + BLDG + '</g>' +
           '<g stroke="#255862" stroke-width="1.8">' + BLDG + '</g></g>');
       labels.append("text").attr("x", bosC[0]).attr("y", bosC[1] + 16)
-        .attr("text-anchor", "middle").attr("class", "xch-name xch-name--home")
-        .text("Boston");
+        .attr("text-anchor", "middle")
+        // city-short keeps the label on the current city via syncCity
+        .attr("class", "xch-name xch-name--home city-short")
+        .text(document.querySelector(".city-short")?.textContent || "Boston");
 
       if (cfg.mode !== "explore"){
         (cfg.focus || []).forEach(n => { drawFlow(n, cfg.mode); drawLabel(n); });
@@ -5174,13 +5545,29 @@
       else b.removeAttribute("aria-current");
     });
     const prev = SECTIONS[i-1], next = SECTIONS[i+1];
+    /* the mini line between the pager buttons: the journey's own transit
+       grammar — filled stops behind you, your stop enlarged, open track
+       ahead — so position on the story reads at a glance */
+    const PGR_C = ["#255862","#b97f4e","#2f7d6a","#7f451e","#8a989d"];
+    const stops = SECTIONS.map((sec, k) =>
+      (k ? '<i class="pgr-seg' + (k <= i ? " is-past" : "") + '"></i>' : "") +
+      '<button type="button" class="pgr-stop' +
+      (k < i ? " is-past" : k === i ? " is-cur" : "") +
+      '" data-go="' + k + '" style="--c:' + (PGR_C[k] || "#8a989d") +
+      '" title="' + sec.name + '"><span>' + (k + 1) + '</span></button>'
+    ).join("");
     secPager.innerHTML =
       renderSecClose(SECTIONS[i].name) +
       '<div class="pager-row">' +
+      '<span class="pgr-side">' +
       (prev ? '<button type="button" class="pager-btn" data-go="' + (i-1) +
-              '">&larr; ' + prev.name + "</button>" : "<span></span>") +
+              '">&larr; ' + prev.name + "</button>" : "") + '</span>' +
+      '<div class="pgr-line-wrap"><div class="pgr-line">' + stops + '</div>' +
+      '<span class="pgr-cap"><b>' + SECTIONS[i].name + '</b> &middot; ' +
+      (i + 1) + ' of ' + SECTIONS.length + '</span></div>' +
+      '<span class="pgr-side pgr-side--r">' +
       (next ? '<button type="button" class="pager-btn" data-go="' + (i+1) +
-              '">' + next.name + " &rarr;</button>" : "<span></span>") +
+              '">' + next.name + " &rarr;</button>" : "") + '</span>' +
       '</div>';
     wireSecClose(SECTIONS[i].name);
     if(toTop !== false) pagesEl.scrollTo({top: 0, behavior: "instant"});
@@ -5199,7 +5586,7 @@
   secPager.className = "secpager";
   pagesEl.appendChild(secPager);
   secPager.addEventListener("click", e => {
-    const b = e.target.closest(".pager-btn");
+    const b = e.target.closest(".pager-btn, .pgr-stop");
     if(b) showSection(+b.dataset.go);
   });
 
@@ -5633,6 +6020,155 @@
     }
   });
 
+</script>
+<script>
+/* Composition & Trade page layout, option 2: rebuilds the section as a
+   scrollytelling split — the title, Viewing badge and prose in a dedicated
+   left rail, the charts centered on a sticky stage at the right. The DOM
+   nodes MOVE (never clone), so every chart keeps its listeners and state;
+   option 1 restores the original order from the saved shells. */
+(function(){
+  var page = document.getElementById("page-export-basket");
+  var pagesEl = document.getElementById("pages");
+  if (!page || !pagesEl) return;
+  var TEXT_SEL = ".subsection-header, .lede, .lede-stat-row, .lean-note";
+  var ctLayout = "1", built = null, cur = -1;
+
+  var ICON_CITY = '<svg viewBox="0 0 24 30" width="16" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 26h20"/><path d="M4 26V15h6v11"/><path d="M12 26V8h7v18"/><path d="M14.6 12h1.8M14.6 16h1.8M14.6 20h1.8"/></svg>';
+  function mkBadge(kind){
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "geo-badge geo-badge--" + kind;
+    b.title = "See this geography on the map";
+    b.onclick = function(){ openGeoMap(kind); };
+    b.innerHTML = '<span class="gb-view">Viewing:</span>' + ICON_CITY +
+      '<span class="gb-name"><span class="city-short">' +
+      (document.querySelector(".city-short") ? document.querySelector(".city-short").textContent : "Boston") +
+      "</span> admin</span>";
+    return b;
+  }
+
+  function build(){
+    var subs = [].slice.call(page.querySelectorAll(".export-subsection"));
+    var firstSub = subs[0];
+    var head = page.querySelector(".page-head");
+    var headEls = [head.querySelector("h2"), head.querySelector(".geo-badge")].filter(Boolean);
+    var topKids = [].slice.call(page.children).filter(function(c){
+      return subs.indexOf(c) < 0 && !c.classList.contains("page-head");
+    });
+    var wrap = document.createElement("div"); wrap.className = "ct-scrolly";
+    var col = document.createElement("div"); col.className = "ct-steps";
+    var stage = document.createElement("div"); stage.className = "ct-stage";
+    wrap.appendChild(col); wrap.appendChild(stage);
+    var steps = [], slots = [], shells = [];
+    var total = subs.length + 1;
+    function addStep(kids, n, headMoved, badged){
+      var st = document.createElement("div"); st.className = "ct-step";
+      var sl = document.createElement("div"); sl.className = "ct-slot";
+      var eye = document.createElement("span"); eye.className = "ct-eyebrow";
+      eye.textContent = n + " / " + total;
+      st.appendChild(eye);
+      if (headMoved) headMoved.forEach(function(k){ st.appendChild(k); });
+      kids.forEach(function(k){
+        if (k.matches && k.matches(TEXT_SEL)){
+          st.appendChild(k);
+          if (badged && k.classList.contains("subsection-header")) st.appendChild(mkBadge("city"));
+        } else sl.appendChild(k);
+      });
+      col.appendChild(st); stage.appendChild(sl);
+      steps.push(st); slots.push(sl);
+    }
+    shells.push({ el: head, kids: headEls, headOf: head });
+    shells.push({ el: page, kids: topKids, top: true });
+    addStep(topKids, 1, headEls, false);
+    subs.forEach(function(sub, i){
+      var kids = [].slice.call(sub.children);
+      shells.push({ el: sub, kids: kids });
+      addStep(kids, i + 2, null, true);
+      sub.style.display = "none";
+    });
+    page.insertBefore(wrap, firstSub);
+    built = { wrap: wrap, shells: shells, steps: steps, slots: slots };
+    cur = -1;
+    activate(0);
+  }
+
+  function restore(){
+    if (!built) return;
+    built.shells.forEach(function(sh){
+      if (sh.headOf){
+        var tgl = sh.el.querySelector(".ct-opt");
+        sh.kids.forEach(function(k){ sh.el.insertBefore(k, tgl); });
+      } else if (sh.top){
+        sh.kids.forEach(function(k){ page.insertBefore(k, built.wrap); });
+      } else {
+        sh.kids.forEach(function(k){ sh.el.appendChild(k); });
+        sh.el.style.display = "";
+      }
+    });
+    built.wrap.remove();
+    built = null;
+  }
+
+  function activate(i){
+    if (!built || i === cur) return;
+    cur = i;
+    built.slots.forEach(function(sl, j){ sl.classList.toggle("is-on", j === i); });
+    built.steps.forEach(function(st, j){ st.classList.toggle("is-on", j === i); });
+    /* the charts watch for this to re-check their own visibility — their
+       scroll listeners ran before this one, when the slot was still hidden */
+    window.dispatchEvent(new Event("resize"));
+  }
+  function spy(){
+    if (!built) return;
+    var mid = window.innerHeight * 0.45, best = 0, bd = Infinity;
+    built.steps.forEach(function(st, i){
+      var r = st.getBoundingClientRect();
+      var d = Math.abs((r.top + r.bottom) / 2 - mid);
+      if (d < bd){ bd = d; best = i; }
+    });
+    activate(best);
+  }
+  pagesEl.addEventListener("scroll", spy, { passive: true });
+
+  /* the layout toggle lives in the section nav, shown only while
+     Composition and Trade is the active section */
+  var optWrap = document.createElement("div");
+  optWrap.className = "ct-optwrap";
+  optWrap.innerHTML = '<span class="ct-optlbl">layout</span>' +
+    '<div class="jp-opt" id="ctLayoutSeg" role="group" aria-label="Page layout">' +
+    '<button type="button" class="jp-opt-btn is-active" data-ct="1" aria-pressed="true">option 1</button>' +
+    '<button type="button" class="jp-opt-btn" data-ct="2" aria-pressed="false">option 2</button></div>';
+  var secnavEl = document.getElementById("secnav");
+  if (secnavEl) secnavEl.appendChild(optWrap);
+  var compBtn = [].slice.call(document.querySelectorAll(".secnav-btn"))
+    .find(function(b){ return /Composition/.test(b.textContent || ""); });
+  function syncOptWrap(){
+    var onComp = compBtn && compBtn.classList.contains("is-active");
+    optWrap.style.display = onComp ? "" : "none";
+    var pager = document.querySelector(".secpager");
+    if (pager) pager.classList.toggle("secpager--wide", !!onComp && ctLayout === "2");
+  }
+  if (compBtn) new MutationObserver(syncOptWrap)
+    .observe(compBtn, { attributes: true, attributeFilter: ["class"] });
+  syncOptWrap();
+
+  window.ctSetLayout = function(v){
+    if (v === ctLayout) return;
+    ctLayout = v;
+    if (v === "2"){ build(); spy(); } else restore();
+    syncOptWrap();
+    document.querySelectorAll("#ctLayoutSeg .jp-opt-btn").forEach(function(b){
+      var on = b.dataset.ct === v;
+      b.classList.toggle("is-active", on);
+      b.setAttribute("aria-pressed", String(on));
+    });
+  };
+  document.querySelectorAll("#ctLayoutSeg .jp-opt-btn").forEach(function(b){
+    b.addEventListener("click", function(){ window.ctSetLayout(b.dataset.ct); });
+  });
+  window.ctSetLayout("2");   // the scrolly reads best — it opens as the default
+})();
 </script>
 </body>
 </html>
