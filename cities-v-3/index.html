@@ -2055,6 +2055,19 @@
   .secpager--wide .sec-close{grid-template-columns:minmax(0,1fr);}
   .secpager--wide .sec-close .ktest--apply{border-left:none;border-top:1px solid var(--border);}
 
+  /* ov2: Economic Fundamentals in the same scrolly grammar — the stage
+     hosts the map up top and the step's table beneath it */
+  .ov-wrap.ov2{display:block;}
+  .ov2-scrolly .ct-stagemap{margin-bottom:16px;}
+  .ov2-scrolly .ct-stagemap .ov-map-inner{position:static;height:44vh;min-height:300px;}
+  .ov2-scrolly .ct-slot.is-on{min-height:0;padding-block:0;justify-content:flex-start;}
+  .ov2-scrolly .ct-stage{padding-block:12px;}
+  .ov2-scrolly .ct-slot > *{max-width:720px;}
+  .ov-spark{margin:16px 0 4px;}
+  .ov-spark svg{display:block;max-width:100%;height:auto;}
+  .ov-spark-cap{font-size:13px;line-height:1.5;color:var(--ink-soft);margin-top:6px;max-width:300px;}
+  .ov-spark-cap b{color:var(--fall,#b0572e);}
+
   /* ---- the journey as one vertical line (sketch: the vertical line) ---- */
   .jp-line{padding:4px 0 10px;}
   .jp-line svg{display:block;width:100%;max-width:500px;margin:0 auto;height:auto;}
@@ -3795,7 +3808,8 @@
     if(v && v.classList.contains("open")) toggleExplainers(false);
     // in the scrolly layout the subsections live as steps; the engine
     // resolves their ids to the matching rail step
-    const target = (window.ctStepFor && window.ctStepFor(id)) || document.getElementById(id);
+    const target = (window.ovStepFor && window.ovStepFor(id)) ||
+      (window.ctStepFor && window.ctStepFor(id)) || document.getElementById(id);
     if(!target) return;
     target.scrollIntoView({behavior:"smooth", block:"start"});
     // hide skip button if leaving intro section
@@ -5488,6 +5502,7 @@
     focus: ["Cambridge","Quincy","Waltham","Framingham"] });
 
   function ovZoom(){
+    if(window.ovScrollyOn) return;       // the ov2 engine drives the map
     if(!ovWrap||!ovLeaflet) return;
     // Finish the city -> metro zoom by the end of the MSA block, then hold, so
     // the comparison block reads against a map showing both shapes at once —
@@ -5504,6 +5519,15 @@
     ovLeaflet.setView([lat,lng],zoom,{animate:false});
   }
   pagesEl.addEventListener("scroll", ovZoom, {passive:true});
+  /* map states for the ov2 scrolly — one call per step: city view first,
+     the metro once the story widens, the places picker on the last stop */
+  window.ovMapStep = function(k){
+    if(!ovLeaflet) return;
+    const pz = k === 0 ? 0 : 1;
+    ovLeaflet.setView([42.33 + 0.22 * pz, -71.06 - 0.04 * pz], 11.4 - 2.9 * pz, {animate: true});
+    const mapEl = document.getElementById("ovMap");
+    if (mapEl) mapEl.classList.toggle("pl-on", k === 3);
+  };
   let lastScrollTop=0;
   pagesEl.addEventListener("scroll", ()=>{
     const skipBtn=document.querySelector('.intro-skip');
@@ -5678,7 +5702,8 @@
     const mark = pagesEl.getBoundingClientRect().top + pagesEl.clientHeight * .45;
     let cur = 0;
     steps.forEach((st, j) => {
-      const el = (window.ctStepFor && window.ctStepFor(st.id)) || document.getElementById(st.id);
+      const el = (window.ovStepFor && window.ovStepFor(st.id)) ||
+        (window.ctStepFor && window.ctStepFor(st.id)) || document.getElementById(st.id);
       if(el && el.getBoundingClientRect().width > 0 &&
          el.getBoundingClientRect().top <= mark) cur = j;
     });
@@ -6037,7 +6062,7 @@
   var page = document.getElementById("page-export-basket");
   var pagesEl = document.getElementById("pages");
   if (!page || !pagesEl) return;
-  var TEXT_SEL = ".subsection-header, .lede, .lede-stat-row, .lean-note";
+  var TEXT_SEL = ".subsection-header, .lede, .lede-stat-row, .lean-note, .collapsible-info";
   var ctLayout = "1", built = null, cur = -1;
 
   var ICON_CITY = '<svg viewBox="0 0 24 30" width="16" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 26h20"/><path d="M4 26V15h6v11"/><path d="M12 26V8h7v18"/><path d="M14.6 12h1.8M14.6 16h1.8M14.6 20h1.8"/></svg>';
@@ -6189,6 +6214,167 @@
     b.addEventListener("click", function(){ window.ctSetLayout(b.dataset.ct); });
   });
   window.ctSetLayout("2");   // the scrolly reads best — it opens as the default
+})();
+
+/* Economic Fundamentals layout, option 2: the same scrolly grammar as
+   Composition and Trade — text steps in the left rail (with a population
+   spark up top to lead the eye), and the stage hosting the shared map
+   with each step's table beneath it. Nodes move, never clone. */
+(function(){
+  var wrap0 = document.getElementById("ovWrap");
+  var pagesEl = document.getElementById("pages");
+  if (!wrap0 || !pagesEl) return;
+  var TEXT_SEL = ".page-head, .lede, .collapsible-info";
+  var ovLayout = "1", built = null, cur = -1;
+
+  function popSpark(){
+    var N = 11, P0 = 715, r = -0.008;
+    var pts = [];
+    for (var i = 0; i < N; i++){
+      var v = P0 * Math.pow(1 + r, i);
+      if (i > 0 && i < N - 1) v += Math.sin(i * 2.7) * 1.4;
+      pts.push(v);
+    }
+    var W = 300, H = 86, PL = 8, PR = 48, PY = 14;
+    var mn = Math.min.apply(null, pts), mx = Math.max.apply(null, pts);
+    var X = function(i){ return PL + i * (W - PL - PR) / (N - 1); };
+    var Y = function(v){ return PY + (mx - v) * (H - 2 * PY) / (mx - mn); };
+    var d = pts.map(function(v, i){ return (i ? "L" : "M") + X(i).toFixed(1) + "," + Y(v).toFixed(1); }).join("");
+    var el = document.createElement("div");
+    el.className = "ov-spark";
+    el.innerHTML =
+      '<svg viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H +
+      '" role="img" aria-label="Population, 2015 to 2025, declining from 715 thousand to 660 thousand">' +
+      '<path d="' + d + '" fill="none" stroke="var(--fall,#b0572e)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<circle cx="' + X(0) + '" cy="' + Y(pts[0]) + '" r="2.6" fill="#9aa5a3"/>' +
+      '<text x="' + X(0) + '" y="' + (Y(pts[0]) - 8) + '" font-size="10.5" fill="#8a989d">715K</text>' +
+      '<circle cx="' + X(N - 1) + '" cy="' + Y(pts[N - 1]) + '" r="3.4" fill="var(--fall,#b0572e)"/>' +
+      '<text x="' + (X(N - 1) + 7) + '" y="' + (Y(pts[N - 1]) + 4) + '" font-size="12.5" font-weight="700" fill="var(--fall,#b0572e)">660K</text>' +
+      '<text x="' + PL + '" y="' + (H - 2) + '" font-size="10.5" fill="#8a989d">2015</text>' +
+      '<text x="' + X(N - 1) + '" y="' + (H - 2) + '" font-size="10.5" fill="#8a989d" text-anchor="middle">2025</text>' +
+      '</svg>' +
+      '<p class="ov-spark-cap"><b>A decade of decline</b> — <span class="city-short">Boston</span> has lost residents every year since 2015, about −0.8% a year.</p>';
+    return el;
+  }
+
+  function build(){
+    var left = wrap0.querySelector(".ov-left");
+    var mapCol = wrap0.querySelector(".ov-map");
+    var mapInner = wrap0.querySelector(".ov-map-inner");
+    var blocks = [].slice.call(left.querySelectorAll(".ov-block"));
+    var wrap = document.createElement("div"); wrap.className = "ct-scrolly ov2-scrolly";
+    var col = document.createElement("div"); col.className = "ct-steps";
+    var stage = document.createElement("div"); stage.className = "ct-stage";
+    var stagemap = document.createElement("div"); stagemap.className = "ct-stagemap";
+    stagemap.appendChild(mapInner);
+    stage.appendChild(stagemap);
+    wrap.appendChild(col); wrap.appendChild(stage);
+    var steps = [], slots = [], shells = [];
+    blocks.forEach(function(blk, i){
+      var kids = [].slice.call(blk.children);
+      shells.push({ el: blk, kids: kids });
+      var st = document.createElement("div"); st.className = "ct-step";
+      var sl = document.createElement("div"); sl.className = "ct-slot";
+      var eye = document.createElement("span"); eye.className = "ct-eyebrow";
+      eye.textContent = (i + 1) + " / " + blocks.length;
+      st.appendChild(eye);
+      kids.forEach(function(k){
+        (k.matches && k.matches(TEXT_SEL) ? st : sl).appendChild(k);
+      });
+      if (i === 0) st.appendChild(popSpark());
+      col.appendChild(st); stage.appendChild(sl);
+      steps.push(st); slots.push(sl);
+      blk.style.display = "none";
+    });
+    left.style.display = "none";
+    mapCol.style.display = "none";
+    wrap0.classList.add("ov2");
+    wrap0.appendChild(wrap);
+    built = { wrap: wrap, shells: shells, steps: steps, slots: slots,
+              left: left, mapCol: mapCol, mapInner: mapInner };
+    window.ovScrollyOn = true;
+    cur = -1;
+    activate(0);
+  }
+
+  function restore(){
+    if (!built) return;
+    built.shells.forEach(function(sh){
+      sh.kids.forEach(function(k){ sh.el.appendChild(k); });
+      sh.el.style.display = "";
+    });
+    built.mapCol.appendChild(built.mapInner);
+    built.left.style.display = "";
+    built.mapCol.style.display = "";
+    built.wrap.remove();
+    wrap0.classList.remove("ov2");
+    window.ovScrollyOn = false;
+    var mapEl = document.getElementById("ovMap");
+    if (mapEl) mapEl.classList.remove("pl-on");
+    built = null;
+  }
+
+  function activate(i){
+    if (!built || i === cur) return;
+    cur = i;
+    built.slots.forEach(function(sl, j){ sl.classList.toggle("is-on", j === i); });
+    built.steps.forEach(function(st, j){ st.classList.toggle("is-on", j === i); });
+    if (window.ovMapStep) window.ovMapStep(i);
+    window.dispatchEvent(new Event("resize"));
+  }
+  function spy(){
+    if (!built) return;
+    var mid = window.innerHeight * 0.45, best = 0, bd = Infinity;
+    built.steps.forEach(function(st, i){
+      var r = st.getBoundingClientRect();
+      var d = Math.abs((r.top + r.bottom) / 2 - mid);
+      if (d < bd){ bd = d; best = i; }
+    });
+    activate(best);
+  }
+  pagesEl.addEventListener("scroll", spy, { passive: true });
+
+  /* rail-step ids -> scrolly steps, while built */
+  var OV_IDS = ["page-overview", "page-overview-msa", "page-overview-city", "page-overview-places"];
+  window.ovStepFor = function(id){
+    if (!built) return null;
+    var k = OV_IDS.indexOf(id);
+    return k >= 0 ? built.steps[k] : null;
+  };
+
+  /* the toggle, in the secnav, shown only on Economic Fundamentals */
+  var optWrap = document.createElement("div");
+  optWrap.className = "ct-optwrap";
+  optWrap.innerHTML = '<span class="ct-optlbl">layout</span>' +
+    '<div class="jp-opt" id="ovLayoutSeg" role="group" aria-label="Page layout">' +
+    '<button type="button" class="jp-opt-btn is-active" data-ov="1" aria-pressed="true">option 1</button>' +
+    '<button type="button" class="jp-opt-btn" data-ov="2" aria-pressed="false">option 2</button></div>';
+  var secnavEl = document.getElementById("secnav");
+  if (secnavEl) secnavEl.appendChild(optWrap);
+  var ovBtn = [].slice.call(document.querySelectorAll(".secnav-btn"))
+    .find(function(b){ return /Economic/.test(b.textContent || ""); });
+  function syncWrap(){
+    optWrap.style.display = ovBtn && ovBtn.classList.contains("is-active") ? "" : "none";
+  }
+  if (ovBtn) new MutationObserver(syncWrap)
+    .observe(ovBtn, { attributes: true, attributeFilter: ["class"] });
+  syncWrap();
+
+  window.ovSetLayout = function(v){
+    if (v === ovLayout) return;
+    ovLayout = v;
+    if (v === "2"){ build(); spy(); } else restore();
+    document.querySelectorAll("#ovLayoutSeg .jp-opt-btn").forEach(function(b){
+      var on = b.dataset.ov === v;
+      b.classList.toggle("is-active", on);
+      b.setAttribute("aria-pressed", String(on));
+    });
+    pagesEl.dispatchEvent(new Event("scroll"));
+  };
+  document.querySelectorAll("#ovLayoutSeg .jp-opt-btn").forEach(function(b){
+    b.addEventListener("click", function(){ window.ovSetLayout(b.dataset.ov); });
+  });
+  window.ovSetLayout("2");   // the scrolly opens as the default here too
 })();
 </script>
 </body>
