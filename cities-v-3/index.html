@@ -773,9 +773,8 @@
     font-size:11.5px;color:var(--ink-soft);
   }
   .ind-key-caret{
-    width:0;height:0;flex:none;display:inline-block;
-    border-left:4.5px solid transparent;border-right:4.5px solid transparent;
-    border-bottom:6px solid var(--ink-soft);
+    width:1px;height:10px;border-radius:1px;flex:none;display:inline-block;
+    background:#a4b0b4;
   }
 
   /* ---- city vs metro on one ten-year track ----
@@ -900,29 +899,21 @@
 
   /* change column sliders */
   .chg-wrap{display:flex;align-items:center;gap:10px;}
-  .chg-slider{position:relative;flex:0 0 84px;height:36px;cursor:default;}
-  /* National trend as a caret under the track — an axis annotation, not a
-     third place. Both dot styles are spoken for (solid = admin, dashed
-     border = metro) and both line styles too (dashed = the zero marker), so
-     any mark in those families would impersonate one of them. The caret
-     points at where the nation lands from below the band, which also means
-     it can never collide with a knob that sits on the same value. Soft ink,
-     so it annotates rather than competes; the figure lives in the same
-     data-val tooltip the comparison dots use. */
+  .chg-slider{position:relative;flex:0 0 84px;height:26px;cursor:default;}
+  /* National trend as a tick ON the axis — an annotation, not a third
+     place, and no vertical space of its own. Solid and short where the zero
+     divider is dashed and full-height; a knob on the same value simply
+     covers it. The figure lives in the same data-val tooltip. */
   .chg-nation{
-    position:absolute;top:calc(50% + 11px);left:var(--p);
-    transform:translateX(-50%);width:16px;height:12px;cursor:help;
+    position:absolute;top:50%;left:var(--p);
+    transform:translate(-50%,-50%);width:12px;height:18px;cursor:help;
   }
   .chg-nation::before{
-    content:"";position:absolute;top:1px;left:50%;transform:translateX(-50%);
-    width:0;height:0;
-    border-left:4.5px solid transparent;border-right:4.5px solid transparent;
-    border-bottom:6px solid var(--ink-soft);
+    content:"";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    width:1px;height:10px;border-radius:1px;background:#a4b0b4;
   }
   .chg-nation::after{
-    /* the caret lives below the track, so its bubble must clear the whole
-       slider to open at the same height as the knob bubbles */
-    content:attr(data-val);position:absolute;bottom:calc(100% + 25px);left:50%;
+    content:attr(data-val);position:absolute;bottom:calc(100% + 5px);left:50%;
     transform:translateX(-50%) translateY(4px);
     background:var(--teal);color:#fff;font-size:12px;font-weight:600;
     padding:4px 9px;border-radius:4px;white-space:nowrap;
@@ -1427,7 +1418,6 @@
      the admin names are long enough that sharing wrapped them onto a second
      row, which pushed the whole block past the fold. */
   .pg-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
-  .pg-crit{font-size:12px;line-height:17px;color:var(--ink-soft);margin:8px 0 0;}
   .pg-peer{position:relative;display:inline-flex;}
   .pg-btn{
     font-family:inherit;font-size:13px;color:var(--ink);cursor:help;
@@ -1545,7 +1535,42 @@
   .geo-badge--metro:hover{background:var(--geo-metro-fill);}
   #pgAdmin .pg-name{color:var(--geo-city);}
   #pgMetro .pg-name{color:var(--geo-metro);}
+  #ovMap .msa-fade{transition:opacity .7s ease;}
+  #ovMap .msa-off{opacity:0;}
+  /* zoom and reset controls on the story map */
+  .map-ctls{position:absolute;top:10px;left:10px;z-index:700;display:flex;flex-direction:column;gap:5px;}
+  .map-ctl{
+    width:26px;height:26px;border-radius:5px;border:1px solid var(--border-strong);
+    background:#fff;color:var(--teal);cursor:pointer;padding:0;
+    display:flex;align-items:center;justify-content:center;
+    font:inherit;font-size:15px;font-weight:700;box-shadow:0 1px 3px rgba(15,35,40,.12);
+  }
+  .map-ctl:hover{background:var(--teal-tint);}
+  .map-ctl--x{display:none;}
+  .map-ctls.ov2-on .map-ctl--x{display:flex;}
+  .map-ctl--x .ic-collapse{display:none;}
+  .map-ctls.is-x .map-ctl--x .ic-expand{display:none;}
+  .map-ctls.is-x .map-ctl--x .ic-collapse{display:block;}
+  .map-ctl svg{display:block;}
+  /* on-map callout chips: corner-pinned, leader line to the geography */
+  .map-callouts{position:absolute;inset:0;pointer-events:none;z-index:650;transition:opacity .35s ease;}
+  .map-callouts svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;}
+  .mc-line{stroke-width:1.5;}
+  .mc-line--city{stroke:var(--geo-city);}
+  .mc-line--metro{stroke:var(--geo-metro);stroke-dasharray:4 4;}
+  .mc-dot--city{fill:var(--geo-city);}
+  .mc-dot--metro{fill:var(--geo-metro);}
+  .mc-chip{
+    position:absolute;pointer-events:auto;cursor:pointer;border:none;
+    font:inherit;font-size:10px;font-weight:700;color:#fff;
+    padding:3px 8px;border-radius:3px;box-shadow:0 1px 4px rgba(15,35,40,.25);
+  }
+  .mc-chip--city{background:var(--geo-city);}
+  .mc-chip--metro{background:var(--geo-metro);}
+  #ovMap.pl-on .map-callouts{opacity:0;pointer-events:none;}
   .geo-mark{display:inline-flex;}
+  .geo-mark[data-geo="city"]{color:var(--geo-city);}
+  .geo-mark[data-geo="metro"]{color:var(--geo-metro);}
   .geo-glyph{height:36px;width:auto;display:block;}
   .geo-bg{fill:#fff;stroke:var(--border);}
   /* Both shapes are drawn the way the Leaflet map draws them — the region
@@ -2065,12 +2090,18 @@
     height:calc(100vh - var(--chrome-h));
     display:flex;flex-direction:column;padding-block:10px;
   }
-  .ov2-scrolly .ct-stagemap{flex:1 1 auto;min-height:200px;margin-bottom:14px;display:flex;}
-  .ov2-scrolly .ct-stagemap .ov-map-inner{position:static;height:auto;min-height:0;flex:1;width:100%;}
+  .ov2-scrolly .ct-stagemap{flex:1 1 auto;min-height:200px;max-height:40vh;margin-bottom:14px;display:flex;}
+  .ov2-scrolly .chg-slider{flex:0 0 160px;}
+  /* expanded map: the stage becomes the map's alone until collapsed */
+  .ov2-scrolly.map-x .ct-stagemap{max-height:none;}
+  .ov2-scrolly.map-x .ct-slot.is-on{display:none;}
+  .ov2-scrolly .ct-stagemap .ov-map-inner{
+    position:static;height:auto;min-height:0;flex:1;width:100%;
+    border:1px solid var(--border-strong);border-radius:8px;overflow:hidden;background:#fdfdfd;
+  }
   .ov2-scrolly .ct-slot.is-on{flex:0 0 auto;min-height:0;padding-block:0;justify-content:flex-start;}
   .ov2-scrolly .ct-slot > *{max-width:720px;}
   .ov2-scrolly .ind-row{padding:6px 0;}
-  .ov2-scrolly .ind-row.hero{padding:8px 0;}
   .chg-peer{
     position:absolute;top:50%;left:var(--p);transform:translate(-50%,-50%);
     width:8px;height:8px;border-radius:50%;background:var(--pc);
@@ -2181,19 +2212,7 @@
 
   /* population = the data point to notice: hero row, accent knob with pulse,
      sequenced reveal (population slides first), annotation caption */
-  .ind-row.hero{
-    background:transparent;border-radius:4px;padding:16px 14px;margin:4px -14px;
-    transition:background .5s ease .25s;
-  }
-  .inview .ind-row.hero{background:var(--teal-tint);}
-  .hero-note{
-    grid-column:1/-1;font-size:13px;font-weight:400;color:#255862;
-    margin-top:4px;opacity:0;transition:opacity .5s ease .25s;
-  }
-  /* The table centres every cell after the first, and that rule outranks a
-     bare .hero-note. This one is a sentence, so it stays left. */
-  .ind-row.hero .hero-note{justify-self:stretch;text-align:left;}
-  .inview .hero-note{opacity:1;}
+
 
   /* ---- Sections hidden for now ----
      "Explore Your Assumption" (the intro quiz) and City Overview's "Put in
@@ -2860,11 +2879,10 @@
             <p class="lede">The clearest signal is whether people are arriving or leaving. Within a country, moving is relatively frictionless — so population change is residents <strong>voting with their feet</strong> on whether <span class="city-short">Boston</span> is a good place to live and work.</p>
             <div class="ind-table">
               <div class="ind-head"><span></span><span>Level</span><span>Change in <span class="span-name">10 years</span></span><span>Rank in Nation</span></div>
-              <div class="ind-row hero">
+              <div class="ind-row">
                 <span class="ind-name">Population</span><span class="ind-val">660K</span>
                 <span class="chg-wrap"><span class="chg-slider" style="--zero:50%"><span class="neg"></span><span class="pos"></span><span class="track"></span><span class="zero"></span><span class="chg-nation" style="--p:77%" data-val="Nation +0.6%/yr"></span><span class="knob dot-city" style="--from:50%;--to:14%" data-val="Admin −0.8%/yr"></span></span><span class="chg-val bad">−0.8%/yr</span></span>
                 <span class="ind-rank">1 / 34</span>
-                <span class="hero-note"><span class="city-short">Boston</span> has been losing residents for a decade.</span>
               </div>
               <div class="ind-row">
                 <span class="ind-name">Average salary</span><span class="ind-val">$100K</span>
@@ -2887,7 +2905,7 @@
                 <span class="ind-rank">96 / 130</span>
               </div>
             </div>
-            <p class="ind-key"><span class="ind-key-caret" aria-hidden="true"></span>National trend &mdash; hover any mark for its rate</p>
+            <p class="ind-key"><span class="ind-key-caret" aria-hidden="true"></span>National trend</p>
             <!-- Peers sit under the figures they contextualise: this block is read
                  at one scale, so it names the cities it is measured against at
                  that scale and no other. -->
@@ -2897,7 +2915,6 @@
                 <span class="pg-name">Admin peers</span>
               </div>
               <span class="pg-list"></span>
-              <p class="pg-crit">Closest by population, density, wage and home value, as of 2015 &mdash; hover any to compare, click to plot it against <span class="city-short">Boston</span>.</p>
             </div>
 
           </section>
@@ -2954,7 +2971,7 @@
                 <span class="ind-rank">57 / 384</span>
               </div>
             </div>
-            <p class="ind-key"><span class="ind-key-caret" aria-hidden="true"></span>National trend &mdash; hover any mark for its rate</p>
+            <p class="ind-key"><span class="ind-key-caret" aria-hidden="true"></span>National trend</p>
             <!-- Peers sit under the figures they contextualise: this block is read
                  at one scale, so it names the cities it is measured against at
                  that scale and no other. -->
@@ -2964,7 +2981,6 @@
                 <span class="pg-name">Metro area peers</span>
               </div>
               <span class="pg-list"></span>
-              <p class="pg-crit">Closest by population, density, wage and home value, as of 2015 &mdash; hover any to compare.</p>
             </div>
 
           </section>
@@ -3795,6 +3811,10 @@
     const el=document.getElementById(targetId);
     if(el) el.scrollIntoView({behavior:"instant", block:"start"});
     ovZoom();
+    // in the scrolly, ovZoom stands down — fit the current step instead,
+    // now that the map has real size for the first time
+    if(window.ovScrollyOn && window.ovMapStep)
+      setTimeout(()=>window.ovMapStep(window.ovCurStep || 0), 60);
     // Arriving at the first page leaves scrollTop at 0, so no scroll event
     // fires and the rail would show nothing selected. Sync it explicitly.
     if(typeof updateActivePage==="function") updateActivePage();
@@ -4967,24 +4987,28 @@
       ((p[1]*k-x0)*s+PAD).toFixed(2)+" "+((-p[0]-y0)*s+PAD).toFixed(2)).join("L")+"Z";
     const dMsa=d(msaLite), dCity=d(cityPoly);
 
+    /* every admin/metro label wears the same icons the Viewing badges use
+       in Composition and Trade: the building for the admin city, the dashed
+       edge around it for the metro */
+    const ICO = {
+      city: '<svg viewBox="0 0 24 30" width="15" height="19" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 26h20"/><path d="M4 26V15h6v11"/><path d="M12 26V8h7v18"/><path d="M14.6 12h1.8M14.6 16h1.8M14.6 20h1.8"/></svg>',
+      metro: '<svg viewBox="0 0 30 22" width="24" height="17" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="15" cy="11" rx="13" ry="8.6" stroke-dasharray="2.6 3"/><path d="M10.5 15.5h9"/><path d="M12.2 15.5V10h3v5.5"/><path d="M16.6 15.5V7h3v8.5"/></svg>'
+    };
     document.querySelectorAll("[data-geo]").forEach(el=>{
       const kind=el.dataset.geo;
       if(kind!=="city" && kind!=="metro") return;
-      el.innerHTML=
-        '<svg class="geo-glyph geo-glyph--'+kind+'" viewBox="0 0 '+W.toFixed(2)+' '+H+'" aria-hidden="true">'+
-          '<rect class="geo-bg" x=".5" y=".5" width="'+(W-1).toFixed(2)+'" height="'+(H-1)+'" rx="3"/>'+
-          '<path class="geo-msa" d="'+dMsa+'"/>'+
-          '<path class="geo-city" d="'+dCity+'"/>'+
-        '</svg>';
+      el.innerHTML=ICO[kind];
     });
   })();
 
   if(window.L && document.getElementById("ovMap")){
     ovLeaflet=L.map("ovMap",{
-      zoomControl:false,zoomSnap:0,scrollWheelZoom:false,dragging:false,
-      touchZoom:false,doubleClickZoom:false,boxZoom:false,keyboard:false
+      zoomControl:false,zoomSnap:0,scrollWheelZoom:false,dragging:true,
+      touchZoom:true,doubleClickZoom:true,boxZoom:false,keyboard:false
     }).setView([42.33,-71.06],11.4);
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{
+    /* the reference prototype's basemap: keyed (no watermark) and unlabeled
+       — place names come from our own layers, not the tiles */
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png?key=cb1_2cj5_1_8b7a9623181e81c92fa93a4d",{
       attribution:"&copy; OpenStreetMap contributors &copy; CARTO",
       subdomains:"abcd",maxZoom:19
     }).addTo(ovLeaflet);
@@ -5009,14 +5033,120 @@
        north of the region rather than at its centre, which would land it on
        top of the city; at city zoom it is simply off-screen, which is right —
        the metro has not been introduced yet. */
-    const mapLabel = (latlng, text, cls) =>
-      L.tooltip({
-        permanent:true, direction:"center", interactive:false,
-        className:"map-lbl " + cls
-      }).setLatLng(latlng).setContent(text).addTo(ovLeaflet);
+    /* Callout chips instead of in-shape tooltips: pinned to the frame's
+       corners so no map size can clip them, each with a leader line to its
+       geography, hidden whenever the target leaves the frame. Clicking one
+       opens the same boundary dialog the Viewing badges do. */
+    const co = document.createElement("div");
+    co.className = "map-callouts";
+    co.innerHTML =
+      '<svg aria-hidden="true">' +
+        '<line class="mc-line mc-line--city"/><circle class="mc-dot mc-dot--city" r="2.6"/>' +
+        '<line class="mc-line mc-line--metro"/><circle class="mc-dot mc-dot--metro" r="2.6"/>' +
+      '</svg>' +
+      '<button type="button" class="mc-chip mc-chip--city" onclick="openGeoMap(\'city\')" ' +
+        'title="See this geography on the map"><span class="city-short">Boston</span> admin</button>' +
+      '<button type="button" class="mc-chip mc-chip--metro" onclick="openGeoMap(\'metro\')" ' +
+        'title="See this geography on the map"><span class="city-short">Boston</span> metro</button>';
+    ovLeaflet.getContainer().appendChild(co);
 
-    mapLabel([42.322,-71.075], "Admin Boundary", "map-lbl--city");
-    mapLabel([42.980,-71.150], "Metro Area", "map-lbl--metro");
+    /* zoom in / out / reset — reset refits whatever the story is showing */
+    const ctls = document.createElement("div");
+    ctls.className = "map-ctls";
+    ctls.innerHTML =
+      '<button type="button" class="map-ctl" aria-label="Zoom in">+</button>' +
+      '<button type="button" class="map-ctl" aria-label="Zoom out">\u2212</button>' +
+      '<button type="button" class="map-ctl" aria-label="Reset view">' +
+        '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></button>' +
+      '<button type="button" class="map-ctl map-ctl--x" aria-label="Expand the map">' +
+        '<svg class="ic-expand" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3h7v7M10 21H3v-7M21 3l-7 7M3 21l7-7"/></svg>' +
+        '<svg class="ic-collapse" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10h7V3M20 14h-7v7M11 10 4 3M13 14l7 7"/></svg></button>';
+    ovLeaflet.getContainer().appendChild(ctls);
+    const ctlBtns = ctls.querySelectorAll("button");
+    ctlBtns[0].onclick = () => ovLeaflet.zoomIn();
+    ctlBtns[1].onclick = () => ovLeaflet.zoomOut();
+    ctlBtns[2].onclick = () => {
+      if (window.ovScrollyOn && window.ovMapStep) window.ovMapStep(window.ovCurStep || 0);
+      else ovZoom();
+    };
+    ctlBtns[3].onclick = () => { if (window.ovToggleMapX) window.ovToggleMapX(); };
+
+    const cityCentroid = [
+      cityPoly.reduce((a, p) => a + p[0], 0) / cityPoly.length,
+      cityPoly.reduce((a, p) => a + p[1], 0) / cityPoly.length
+    ];
+    // the admin chip hangs off the shape's westernmost point
+    const cityWest = cityPoly.reduce((a, p) => p[1] < a[1] ? p : a);
+    const msaCentroid = [
+      msaPoly.reduce((a, p) => a + p[0], 0) / msaPoly.length,
+      msaPoly.reduce((a, p) => a + p[1], 0) / msaPoly.length
+    ];
+    function updateCallouts(){
+      const size = ovLeaflet.getSize();
+      if (!size.x || !size.y) return;
+      const svg = co.querySelector("svg");
+      svg.setAttribute("viewBox", "0 0 " + size.x + " " + size.y);
+      /* each chip floats a short leader away from its shape — pushed outward
+         from the shape's centre, then clamped into the frame so no map size
+         can clip it. The leader only stretches when the clamp intervenes. */
+      const inPoly = (x, y, pts) => {
+        let hit = false;
+        for (let i = 0, j = pts.length - 1; i < pts.length; j = i++){
+          if ((pts[i].y > y) !== (pts[j].y > y) &&
+              x < (pts[j].x - pts[i].x) * (y - pts[i].y) / (pts[j].y - pts[i].y) + pts[i].x)
+            hit = !hit;
+        }
+        return hit;
+      };
+      const arm = (which, target, centerPt, polyPts) => {
+        const chip = co.querySelector(".mc-chip--" + which);
+        const line = co.querySelector(".mc-line--" + which);
+        const dot  = co.querySelector(".mc-dot--" + which);
+        const inFrame = target &&
+          target.x > 10 && target.y > 10 &&
+          target.x < size.x - 10 && target.y < size.y - 10;
+        chip.style.display = inFrame ? "" : "none";
+        line.style.display = dot.style.display = inFrame ? "" : "none";
+        if (!inFrame) return;
+        let dx = target.x - centerPt.x, dy = target.y - centerPt.y;
+        const dl = Math.hypot(dx, dy) || 1;
+        dx /= dl; dy /= dl;
+        const w = chip.offsetWidth, h = chip.offsetHeight;
+        /* short leader, stepped further out only until the chip's box clears
+           the boundary shape */
+        let D = 18, lx, ly;
+        for (let t = 0; t < 8; t++){
+          lx = target.x + dx * D - w / 2;
+          ly = target.y + dy * D - h / 2;
+          const pts = [[lx, ly], [lx + w, ly], [lx, ly + h], [lx + w, ly + h], [lx + w / 2, ly + h / 2]];
+          if (!pts.some(c => inPoly(c[0], c[1], polyPts))) break;
+          D += 10;
+        }
+        lx = Math.max(8, Math.min(size.x - 8 - w, lx));
+        ly = Math.max(8, Math.min(size.y - 8 - h, ly));
+        chip.style.left = lx + "px";
+        chip.style.top = ly + "px";
+        line.setAttribute("x1", lx + w / 2); line.setAttribute("y1", ly + h / 2);
+        line.setAttribute("x2", target.x);  line.setAttribute("y2", target.y);
+        dot.setAttribute("cx", target.x);   dot.setAttribute("cy", target.y);
+      };
+      const cityPts = cityPoly.map(v => ovLeaflet.latLngToContainerPoint(v));
+      const msaPts = msaPoly.map(v => ovLeaflet.latLngToContainerPoint(v));
+      arm("city", ovLeaflet.latLngToContainerPoint(cityWest),
+                  ovLeaflet.latLngToContainerPoint(cityCentroid), cityPts);
+      let best = null, bd = Infinity;
+      const mc = ovLeaflet.latLngToContainerPoint(msaCentroid);
+      msaPoly.forEach(v => {
+        const pt = ovLeaflet.latLngToContainerPoint(v);
+        if (pt.x < 10 || pt.y < 10 || pt.x > size.x - 10 || pt.y > size.y - 10) return;
+        const d = Math.hypot(pt.x - size.x * .78, pt.y - size.y * .3);
+        if (d < bd){ bd = d; best = pt; }
+      });
+      arm("metro", window.ovMetroHidden ? null : best, mc, msaPts);
+    }
+    ovLeaflet.on("moveend zoomend viewreset resize", updateCallouts);
+    window.ovUpdateCallouts = updateCallouts;
+    setTimeout(updateCallouts, 200);
   }
 
   initPlacesInMetro();
@@ -5544,12 +5674,45 @@
   pagesEl.addEventListener("scroll", ovZoom, {passive:true});
   /* map states for the ov2 scrolly — one call per step: city view first,
      the metro once the story widens, the places picker on the last stop */
+  let ovFitLast = null;
+  const ovMsaVis = show => {
+    if (!ovMsaLayer) return;
+    const el = ovMsaLayer.getElement && ovMsaLayer.getElement();
+    if (el){
+      el.classList.add("msa-fade");
+      el.classList.toggle("msa-off", !show);
+    } else {
+      ovMsaLayer.setStyle(show ? { opacity: 1, fillOpacity: .04 }
+                               : { opacity: 0, fillOpacity: 0 });
+    }
+  };
   window.ovMapStep = function(k){
     if(!ovLeaflet) return;
-    const pz = k === 0 ? 0 : 1;
-    ovLeaflet.setView([42.33 + 0.22 * pz, -71.06 - 0.04 * pz], 11.4 - 2.9 * pz, {animate: true});
+    /* fit the actual boundary rather than a fixed zoom. Crossing the
+       admin/metro line flies — the zoom out IS the "one piece of a bigger
+       machine" beat — while re-fits and re-asserts stay instant. */
+    const bounds = L.latLngBounds(k === 0 ? cityPoly : msaPoly);
+    const crossing = ovFitLast !== null && ((ovFitLast === 0) !== (k === 0));
+    const reduce = window.matchMedia &&
+      matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (crossing && !reduce)
+      ovLeaflet.flyToBounds(bounds, { padding: [16, 16], duration: 0.9 });
+    else
+      ovLeaflet.fitBounds(bounds, { padding: [16, 16], animate: false });
+    ovFitLast = k;
+    /* the first step is the admin's alone — the metro edge fades in as the
+       flight pulls back to the region */
+    window.ovMetroHidden = k === 0;
+    ovMsaVis(k !== 0);
     const mapEl = document.getElementById("ovMap");
     if (mapEl) mapEl.classList.toggle("pl-on", k === 3);
+    if (window.ovUpdateCallouts) window.ovUpdateCallouts();
+  };
+  window.ovMetroReset = function(){
+    window.ovMetroHidden = false;
+    ovFitLast = null;
+    ovMsaVis(true);
+    if (window.ovUpdateCallouts) window.ovUpdateCallouts();
   };
   let lastScrollTop=0;
   pagesEl.addEventListener("scroll", ()=>{
@@ -6326,6 +6489,49 @@
     return el;
   }
 
+  /* step two's spark: the two geographies on one indexed chart — the
+     metro rising while the admin falls is the section's whole point */
+  function msaSpark(){
+    var N = 11, W = 300, H = 96, PL = 8, PR = 52, PY = 14;
+    var mk = function(rate, amp){
+      var pts = [];
+      for (var i = 0; i < N; i++){
+        var v = 100 * Math.pow(1 + rate, i);
+        if (i > 0 && i < N - 1) v += Math.sin(i * 2.9 + rate * 70) * amp;
+        pts.push(v);
+      }
+      return pts;
+    };
+    var adm = mk(-0.008, 0.3), met = mk(0.004, 0.25);
+    var all = adm.concat(met).concat([100]);
+    var mn = Math.min.apply(null, all), mx = Math.max.apply(null, all);
+    var X = function(i){ return PL + i * (W - PL - PR) / (N - 1); };
+    var Y = function(v){ return PY + (mx - v) * (H - 2 * PY) / (mx - mn || 1); };
+    var path = function(pts){
+      return pts.map(function(v, i){ return (i ? "L" : "M") + X(i).toFixed(1) + "," + Y(v).toFixed(1); }).join("");
+    };
+    var el = document.createElement("div");
+    el.className = "ov-spark";
+    el.innerHTML =
+      '<svg viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H +
+      '" role="img" aria-label="Population indexed to 2015: the metro rises while the admin city falls">' +
+      '<line x1="' + PL + '" y1="' + Y(100).toFixed(1) + '" x2="' + X(N - 1).toFixed(1) + '" y2="' + Y(100).toFixed(1) +
+        '" stroke="#c9d2d4" stroke-width="1" stroke-dasharray="2 3"/>' +
+      '<path d="' + path(met) + '" fill="none" stroke="var(--rise,#2f7d6a)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<path d="' + path(adm) + '" fill="none" stroke="var(--fall,#b0572e)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<circle cx="' + X(N - 1).toFixed(1) + '" cy="' + Y(met[N - 1]).toFixed(1) + '" r="3" fill="var(--rise,#2f7d6a)"/>' +
+      '<circle cx="' + X(N - 1).toFixed(1) + '" cy="' + Y(adm[N - 1]).toFixed(1) + '" r="3" fill="var(--fall,#b0572e)"/>' +
+      '<text x="' + (X(N - 1) + 7).toFixed(1) + '" y="' + (Y(met[N - 1]) + 3.5).toFixed(1) +
+        '" font-size="11" font-weight="700" fill="var(--rise,#2f7d6a)">metro</text>' +
+      '<text x="' + (X(N - 1) + 7).toFixed(1) + '" y="' + (Y(adm[N - 1]) + 3.5).toFixed(1) +
+        '" font-size="11" font-weight="700" fill="var(--fall,#b0572e)">admin</text>' +
+      '<text x="' + PL + '" y="' + (H - 2) + '" font-size="10.5" fill="#8a989d">2015</text>' +
+      '<text x="' + X(N - 1).toFixed(1) + '" y="' + (H - 2) + '" font-size="10.5" fill="#8a989d" text-anchor="middle">2025</text>' +
+      '</svg>' +
+      '<p class="ov-spark-cap"><b>Opposite directions</b> — the metro has kept adding people, about +0.4% a year, while <span class="city-short">Boston</span> admin shrank at −0.8%. The labor market is healthy; the story sits at the city line.</p>';
+    return el;
+  }
+
   function renderPeerMarks(){
     var scope = built ? built.slots[0] : document.getElementById("page-overview");
     if (!scope) return;
@@ -6373,8 +6579,10 @@
     blocks.forEach(function(blk, i){
       var kids = [].slice.call(blk.children);
       shells.push({ el: blk, kids: kids });
-      var st = document.createElement("div"); st.className = "ct-step";
-      var sl = document.createElement("div"); sl.className = "ct-slot";
+      /* inview: the entry-state class normally granted by the page observer,
+         which watches the now-hidden shells — the scrolly grants it itself */
+      var st = document.createElement("div"); st.className = "ct-step inview";
+      var sl = document.createElement("div"); sl.className = "ct-slot inview";
       var eye = document.createElement("span"); eye.className = "ct-eyebrow";
       eye.textContent = (i + 1) + " / " + blocks.length;
       st.appendChild(eye);
@@ -6382,6 +6590,7 @@
         (k.matches && k.matches(TEXT_SEL) ? st : sl).appendChild(k);
       });
       if (i === 0) st.insertBefore(popSpark(), st.querySelector(".pg"));
+      if (i === 1) st.insertBefore(msaSpark(), st.querySelector(".collapsible-info"));
       col.appendChild(st); stage.appendChild(sl);
       steps.push(st); slots.push(sl);
       blk.style.display = "none";
@@ -6391,6 +6600,8 @@
     wrap0.classList.add("ov2");
     wrap0.appendChild(wrap);
     renderSpark();
+    var mctl = document.querySelector(".map-ctls");
+    if (mctl) mctl.classList.add("ov2-on");
     built = { wrap: wrap, shells: shells, steps: steps, slots: slots,
               left: left, mapCol: mapCol, mapInner: mapInner };
     window.ovScrollyOn = true;
@@ -6410,6 +6621,9 @@
     built.wrap.remove();
     wrap0.classList.remove("ov2");
     window.ovScrollyOn = false;
+    if (window.ovMetroReset) window.ovMetroReset();
+    var mctl = document.querySelector(".map-ctls");
+    if (mctl){ mctl.classList.remove("ov2-on"); mctl.classList.remove("is-x"); }
     var mapEl = document.getElementById("ovMap");
     if (mapEl) mapEl.classList.remove("pl-on");
     built = null;
@@ -6420,8 +6634,10 @@
     cur = i;
     built.slots.forEach(function(sl, j){ sl.classList.toggle("is-on", j === i); });
     built.steps.forEach(function(st, j){ st.classList.toggle("is-on", j === i); });
+    window.ovCurStep = i;
+    /* the resize listener below is the single caller of ovMapStep — a
+       second deferred call here would land mid-flight and snap the zoom */
     window.dispatchEvent(new Event("resize"));
-    if (window.ovMapStep) setTimeout(function(){ window.ovMapStep(i); }, 80);
   }
   function spy(){
     if (!built) return;
@@ -6434,6 +6650,24 @@
     activate(best);
   }
   pagesEl.addEventListener("scroll", spy, { passive: true });
+  /* the first fit runs while the tool is still hidden behind the landing
+     (zero-size map), so Leaflet drops it — re-assert the current step's
+     fit whenever the chrome broadcasts a resize */
+  window.addEventListener("resize", function(){
+    if (!built || cur < 0) return;
+    var mapEl = document.getElementById("ovMap");
+    if (!mapEl || !mapEl.offsetWidth) return;
+    setTimeout(function(){ window.ovMapStep(cur); }, 90);
+  });
+
+  /* the expand control: the stage becomes the map's alone, and back */
+  window.ovToggleMapX = function(){
+    if (!built) return;
+    var on = built.wrap.classList.toggle("map-x");
+    var mctl = document.querySelector(".map-ctls");
+    if (mctl) mctl.classList.toggle("is-x", on);
+    window.dispatchEvent(new Event("resize"));
+  };
 
   /* rail-step ids -> scrolly steps, while built */
   var OV_IDS = ["page-overview", "page-overview-msa", "page-overview-city", "page-overview-places"];
