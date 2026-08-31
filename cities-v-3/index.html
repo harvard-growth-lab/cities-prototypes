@@ -1537,6 +1537,122 @@
   #pgMetro .pg-name{color:var(--geo-metro);}
   #ovMap .msa-fade{transition:opacity .7s ease;}
   #ovMap .msa-off{opacity:0;}
+  /* ── narrative flow, option 2: the boundary plate that docks ────────── */
+  #introFlow{
+    position:fixed;inset:0;z-index:200;background:#f7f6f2;
+    transition:background .5s ease,opacity .4s ease;overflow:hidden;
+  }
+  #introFlow.is-docking{background:transparent;}
+  #introFlow.is-done{opacity:0;pointer-events:none;}
+  .if-mono{font-size:10px;letter-spacing:.13em;text-transform:uppercase;
+    color:var(--ink-soft);font-weight:500;}
+  #ifHero{position:absolute;inset:0;pointer-events:none;z-index:30;
+    transition:opacity .45s ease,transform .45s ease;}
+  #introFlow.is-docking #ifHero{opacity:0;transform:translateY(-14px);}
+  /* one column carries the reading: who the place is, then the figure */
+  .if-col{
+    position:absolute;top:50%;transform:translateY(-50%);
+    opacity:0;transition:opacity .7s ease .1s,transform .7s var(--if-ease,cubic-bezier(.22,.68,.16,1)) .1s;
+  }
+  #introFlow.is-in .if-col{opacity:1;transform:translateY(-50%);}
+  .if-col{--if-ease:cubic-bezier(.22,.68,.16,1);}
+  .if-kicker{margin:0 0 14px;}
+  #ifTitle{
+    margin:0 0 14px;font-family:inherit;font-weight:700;line-height:.9;
+    letter-spacing:-.032em;color:var(--teal);white-space:nowrap;
+    transform-origin:0 0;will-change:transform;
+  }
+  .if-place{margin:0;font-size:15px;color:var(--ink);}
+  .if-within{margin:3px 0 0;font-size:14px;color:var(--ink-soft);}
+  .if-within em{font-style:normal;}
+  #ifStat{margin-top:30px;padding-top:22px;border-top:1px solid var(--border-strong);}
+  #ifStat .s-top{display:flex;align-items:flex-end;gap:11px;}
+  #ifStat .s-num{font-size:48px;font-weight:700;letter-spacing:-.03em;line-height:.92;color:var(--ink);}
+  #ifStat .s-cap{font-size:12.5px;line-height:1.25;color:var(--ink-soft);padding-bottom:3px;}
+  #ifStat .s-row{display:flex;align-items:center;gap:14px;margin-top:12px;}
+  #ifStat .s-chg{display:inline-flex;align-items:center;gap:6px;
+    font-size:15px;font-weight:700;color:var(--fall);white-space:nowrap;}
+  #ifStat .s-spark svg{display:block;}
+  #ifStat .s-note{margin:10px 0 0;font-size:13px;line-height:1.5;color:var(--ink-soft);}
+  /* the scroll indicator */
+  #ifCue{
+    position:absolute;left:50%;bottom:26px;transform:translateX(-50%);
+    display:flex;flex-direction:column;align-items:center;gap:7px;color:var(--teal);
+  }
+  #ifCue .if-chev{animation:if-bob 1.9s cubic-bezier(.22,.68,.16,1) infinite;}
+  @keyframes if-bob{0%,100%{transform:translateY(-3px);opacity:.5;}50%{transform:translateY(3px);opacity:1;}}
+  @media (prefers-reduced-motion: reduce){ #ifCue .if-chev{animation:none;} }
+  /* the plate */
+  #ifPlate{
+    position:absolute;z-index:10;overflow:hidden;background:#fbfaf6;
+    border-radius:3px;box-shadow:0 var(--ifsh,0) 40px rgba(20,35,42,.15);
+  }
+  #ifHolder{position:absolute;left:0;top:0;will-change:transform;}
+  #ifHolder #ovMap.is-intro{position:absolute;inset:0;width:100%;height:100%;}
+  #ifHolder #ovMap.is-intro .map-callouts,
+  #ifHolder #ovMap.is-intro .map-ctls,
+  #ifHolder #ovMap.is-intro .leaflet-control-attribution{display:none;}
+  #ifHolder #ovMap.is-intro .leaflet-overlay-pane{opacity:0;transition:opacity .5s ease;}
+  #introFlow.is-docking #ifHolder #ovMap.is-intro .leaflet-overlay-pane{opacity:1;}
+  #ifSvg{position:absolute;left:0;top:0;width:100%;height:100%;
+    pointer-events:none;z-index:500;transition:opacity .45s ease;}
+  #introFlow.is-docking #ifSvg{opacity:0;}
+  .if-wash{fill:#f4f3ee;fill-opacity:.82;}
+  .if-city{fill:var(--teal);fill-opacity:0;transition:fill-opacity .8s ease .2s;}
+  #introFlow.is-in .if-city{fill-opacity:.1;}
+  .if-edge{fill:none;stroke:var(--teal);stroke-width:2;stroke-linejoin:round;
+    vector-effect:non-scaling-stroke;opacity:0;transition:opacity .7s ease;}
+  .if-medge{fill:none;stroke:var(--geo-metro);stroke-width:2;stroke-dasharray:7 7;
+    vector-effect:non-scaling-stroke;opacity:0;transition:opacity .7s ease;}
+  #introFlow.is-in .if-edge,#introFlow.is-in .if-medge{opacity:1;}
+  .if-lead{stroke-width:1.5;opacity:0;transition:opacity .5s ease .35s;}
+  .if-lead--a{stroke:var(--teal);}
+  .if-lead--m{stroke:var(--geo-metro);stroke-dasharray:4 4;}
+  #introFlow.is-in .if-lead{opacity:1;}
+  #introFlow.is-docking .if-lead{opacity:0;}
+  /* the two geographies, named on the map */
+  .if-chip{
+    position:absolute;z-index:520;border:none;cursor:default;
+    font:inherit;font-size:11px;font-weight:700;color:#fff;
+    padding:4px 10px;border-radius:3px;white-space:nowrap;
+    box-shadow:0 1px 4px rgba(15,35,40,.22);
+    opacity:0;transition:opacity .5s ease .3s;
+  }
+  #introFlow.is-in .if-chip{opacity:1;}
+  #introFlow.is-docking .if-chip{opacity:0;transition-delay:0s;}
+  .if-chip--a{background:var(--geo-city);}
+  .if-chip--m{background:var(--geo-metro);}
+  #ifEdge{position:absolute;inset:0;pointer-events:none;
+    box-shadow:inset 0 0 0 1px rgba(28,69,77,0);transition:box-shadow .5s ease;}
+  #introFlow.is-docking #ifEdge{box-shadow:inset 0 0 0 1px rgba(28,69,77,.22);}
+  #ifEdge i{position:absolute;width:9px;height:9px;border:0 solid var(--teal);
+    opacity:0;transition:opacity .5s ease .3s;}
+  #introFlow.is-docking #ifEdge i{opacity:1;}
+  #ifEdge i:nth-child(1){left:7px;top:7px;border-left-width:1px;border-top-width:1px;}
+  #ifEdge i:nth-child(2){right:7px;top:7px;border-right-width:1px;border-top-width:1px;}
+  #ifEdge i:nth-child(3){left:7px;bottom:7px;border-left-width:1px;border-bottom-width:1px;}
+  #ifEdge i:nth-child(4){right:7px;bottom:7px;border-right-width:1px;border-bottom-width:1px;}
+  #ifFoot{
+    position:absolute;left:0;right:0;bottom:0;display:flex;
+    align-items:center;justify-content:space-between;gap:10px;padding:7px 11px;
+    background:linear-gradient(to top,rgba(251,250,246,.97) 62%,rgba(251,250,246,0));
+    opacity:0;transition:opacity .4s ease .35s;pointer-events:none;z-index:530;
+  }
+  #introFlow.is-docking #ifFoot{opacity:1;}
+  #ifFoot .if-live{display:flex;align-items:center;gap:6px;color:var(--teal);}
+  #ifFoot .if-dot{width:5px;height:5px;border-radius:50%;background:var(--fall);
+    animation:if-pulse 2.6s ease infinite;}
+  @keyframes if-pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.35;transform:scale(.72);}}
+  .nf-seg{
+    position:fixed;right:20px;bottom:18px;z-index:40;
+    display:flex;align-items:center;gap:8px;
+    background:rgba(255,255,255,.92);border:1px solid var(--border);
+    border-radius:999px;padding:5px 8px 5px 12px;
+    box-shadow:0 1px 4px rgba(15,35,40,.06);
+  }
+  .nf-seg .ct-optlbl{font-size:11.5px;color:var(--ink-soft);}
+  body:has(#tool.active) .nf-seg{display:none;}
+
   /* zoom and reset controls on the story map */
   .map-ctls{position:absolute;top:10px;left:10px;z-index:700;display:flex;flex-direction:column;gap:5px;}
   .map-ctl{
@@ -2609,6 +2725,16 @@
     </div>
   </div>
 
+</div>
+
+<!-- the narrative-flow switch sits in the corner: a study control, not
+     part of the landing's own composition -->
+<div class="nf-seg" id="nfSeg">
+  <span class="ct-optlbl">narrative</span>
+  <div class="jp-opt" id="introFlowSeg" role="group" aria-label="Narrative flow">
+    <button type="button" class="jp-opt-btn is-active" data-nf="1" aria-pressed="true">option 1</button>
+    <button type="button" class="jp-opt-btn" data-nf="2" aria-pressed="false">option 2</button>
+  </div>
 </div>
 
 <!-- ==================== TOOL VIEW ==================== -->
@@ -3804,6 +3930,10 @@
       if(el) el.scrollIntoView({behavior:"smooth", block:"start"});
       return;
     }
+    /* narrative option 2 hands the arrival to the boundary plate */
+    if(window.introFlow && window.introFlow() === "2" && window.introFlowPlay){
+      if(window.introFlowPlay(targetId)) return;
+    }
     landingAnim=true;
     document.getElementById("tool").classList.add("active");
     exploredCities.add(document.getElementById("citySelectTool").value);
@@ -3830,6 +3960,19 @@
     landing.addEventListener("transitionend", done);
     setTimeout(()=>{ if(landingAnim) done(); }, 950); // safety net
   }
+  /* the tool's own setup, without the landing's slide — the intro flow
+     builds the page behind its plate and reveals it on the dock */
+  function enterToolQuiet(targetId){
+    exploredCities.add(document.getElementById("citySelectTool").value);
+    if(ovLeaflet) ovLeaflet.invalidateSize();
+    const el=document.getElementById(targetId);
+    if(el) el.scrollIntoView({behavior:"instant", block:"start"});
+    ovZoom();
+    if(window.ovScrollyOn && window.ovMapStep)
+      setTimeout(()=>window.ovMapStep(window.ovCurStep || 0), 60);
+    if(typeof updateActivePage==="function") updateActivePage();
+  }
+
   function backToLanding(){
     const landing=document.getElementById("landing");
     if(landingAnim || !landing.classList.contains("hidden")) return;
@@ -5687,7 +5830,7 @@
     }
   };
   window.ovMapStep = function(k){
-    if(!ovLeaflet) return;
+    if(!ovLeaflet || window.ovIntroLock) return;   // the intro owns the camera
     /* fit the actual boundary rather than a fixed zoom. Crossing the
        admin/metro line flies — the zoom out IS the "one piece of a bigger
        machine" beat — while re-fits and re-asserts stay instant. */
@@ -5708,6 +5851,7 @@
     if (mapEl) mapEl.classList.toggle("pl-on", k === 3);
     if (window.ovUpdateCallouts) window.ovUpdateCallouts();
   };
+  window.ovLeafletRef = function(){ return ovLeaflet; };
   window.ovMetroReset = function(){
     window.ovMetroHidden = false;
     ovFitLast = null;
@@ -6710,6 +6854,275 @@
     b.addEventListener("click", function(){ window.ovSetLayout(b.dataset.ov); });
   });
   window.ovSetLayout("2");   // the scrolly opens as the default here too
+})();
+
+/* ════════════════════════════════════════════════════════════════════════
+   Narrative flow, option 2: the map arrives full-bleed and docks.
+
+   Ported from the "boundary to ledger" study. The whole screen is the
+   live map: the region's dashed edge with the city's line inside it, both
+   labelled on the map itself, and the reading — who this place is, and
+   the decline that starts the diagnosis — set in one column beside them.
+   One scroll takes the plate to its place in the page. The app's own map
+   is the plate throughout, so the handoff is that element returning to
+   its slot rather than a cross-fade.
+   ════════════════════════════════════════════════════════════════════ */
+(function(){
+  var flow = "1";
+  window.introFlow = function(){ return flow; };
+
+  document.querySelectorAll("#introFlowSeg .jp-opt-btn").forEach(function(b){
+    b.addEventListener("click", function(){
+      flow = b.dataset.nf;
+      document.querySelectorAll("#introFlowSeg .jp-opt-btn").forEach(function(x){
+        var on = x.dataset.nf === flow;
+        x.classList.toggle("is-active", on);
+        x.setAttribute("aria-pressed", String(on));
+      });
+    });
+  });
+
+  var EASE = "cubic-bezier(.22,.68,.16,1)";
+
+  function ringsOf(geo){
+    var out = [], x0 = 180, y0 = 90, x1 = -180, y1 = -90;
+    (function walk(c){
+      if (!c) return;
+      if (Array.isArray(c) && typeof c[0] === "number"){
+        x0 = Math.min(x0, c[0]); x1 = Math.max(x1, c[0]);
+        y0 = Math.min(y0, c[1]); y1 = Math.max(y1, c[1]);
+      } else if (Array.isArray(c)){
+        if (Array.isArray(c[0]) && typeof c[0][0] === "number"){ out.push(c); c.forEach(walk); }
+        else c.forEach(walk);
+      } else if (c.features) c.features.forEach(walk);
+      else if (c.geometry) walk(c.geometry.coordinates);
+      else if (c.coordinates) walk(c.coordinates);
+    })(geo);
+    return { rings: out, bbox: [x0, y0, x1, y1] };
+  }
+
+  /* the ten-year fall, at a glance: 715K in 2015 to 660K now */
+  function declineSpark(){
+    var N = 11, W = 150, H = 40, PL = 2, PR = 8, PY = 6, pts = [];
+    for (var i = 0; i < N; i++){
+      var v = 715 * Math.pow(1 - 0.008, i);
+      if (i > 0 && i < N - 1) v += Math.sin(i * 2.7) * 1.4;
+      pts.push(v);
+    }
+    var mn = Math.min.apply(null, pts), mx = Math.max.apply(null, pts);
+    var X = function(i){ return PL + i * (W - PL - PR) / (N - 1); };
+    var Y = function(v){ return PY + (mx - v) * (H - 2 * PY) / (mx - mn); };
+    var d = pts.map(function(v, i){
+      return (i ? "L" : "M") + X(i).toFixed(1) + "," + Y(v).toFixed(1); }).join("");
+    return '<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true">' +
+      '<path d="' + d + '" fill="none" stroke="var(--fall)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<circle cx="' + X(0).toFixed(1) + '" cy="' + Y(pts[0]).toFixed(1) + '" r="2.4" fill="#a4b0b4"/>' +
+      '<circle cx="' + X(N-1).toFixed(1) + '" cy="' + Y(pts[N-1]).toFixed(1) + '" r="3.4" fill="var(--fall)"/></svg>';
+  }
+
+  window.introFlowPlay = function(targetId){
+    var map = window.ovLeafletRef && window.ovLeafletRef();
+    var mapEl = document.getElementById("ovMap");
+    var raw = window.XCH_GEO_RAW;
+    if (!map || !mapEl || !raw || !raw.boston || !window.L) return false;
+
+    var cityEl = document.querySelector(".city-short");
+    var cityName = cityEl ? cityEl.textContent : "Boston";
+    var reduce = matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    var A = ringsOf(raw.boston), M = ringsOf(raw.msa);
+    var aBounds = L.latLngBounds([[A.bbox[1], A.bbox[0]], [A.bbox[3], A.bbox[2]]]);
+    var mBounds = L.latLngBounds([[M.bbox[1], M.bbox[0]], [M.bbox[3], M.bbox[2]]]);
+
+    /* the tool builds behind the plate so the card has a real rect */
+    var landing = document.getElementById("landing");
+    var tool = document.getElementById("tool");
+    tool.classList.add("active");
+    landing.classList.add("hidden");
+    tool.style.opacity = "0";
+    if (typeof enterToolQuiet === "function") enterToolQuiet(targetId);
+
+    var slot = document.querySelector(".ct-stagemap .ov-map-inner") ||
+               document.querySelector(".ov-map-inner");
+    var VW = innerWidth, VH = innerHeight;
+    var COL = Math.round(Math.min(520, Math.max(300, VW * 0.32)));
+    var GUT = Math.round(Math.max(26, Math.min(84, VW * 0.055)));
+
+    var ov = document.createElement("div");
+    ov.id = "introFlow";
+    ov.className = "is-map";
+    ov.innerHTML =
+      '<div id="ifHero">' +
+        '<div class="if-col" style="left:' + GUT + 'px;width:' + COL + 'px">' +
+          '<p class="if-mono if-kicker">City Diagnosis · Fig. 1</p>' +
+          '<h1 id="ifTitle">' + cityName + '</h1>' +
+          '<p class="if-place">City of ' + cityName + ', Suffolk County, Massachusetts</p>' +
+          '<p class="if-within">within ' + cityName + '–Cambridge–Newton, MA–NH <em>· CBSA 14460</em></p>' +
+          '<div id="ifStat">' +
+            '<div class="s-top"><span class="s-num">660K</span>' +
+              '<span class="s-cap">residents<br>in 2025</span></div>' +
+            '<div class="s-row">' +
+              '<span class="s-chg">' +
+                '<svg width="10" height="12" viewBox="0 0 11 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 1v10"/><path d="M1.5 7.5 5.5 11.5 9.5 7.5"/></svg>' +
+                '0.8% a year</span>' +
+              '<span class="s-spark">' + declineSpark() + '</span>' +
+            '</div>' +
+            '<p class="s-note">Losing residents every year since 2015 — the signal this diagnosis starts from.</p>' +
+          '</div>' +
+        '</div>' +
+        '<div id="ifCue"><span class="if-mono">Scroll to read the diagnosis</span>' +
+          '<svg class="if-chev" width="18" height="11" viewBox="0 0 18 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5 9 9l7.5-7.5"/></svg></div>' +
+      '</div>' +
+      '<div id="ifPlate"><div id="ifHolder">' +
+        '<svg id="ifSvg">' +
+          '<path class="if-wash" fill-rule="evenodd"/>' +
+          '<path class="if-city"/><path class="if-medge"/><path class="if-edge"/>' +
+          '<line class="if-lead if-lead--a"/><line class="if-lead if-lead--m"/>' +
+        '</svg>' +
+        '<button type="button" class="if-chip if-chip--a">' + cityName + ' admin</button>' +
+        '<button type="button" class="if-chip if-chip--m">' + cityName + ' metro</button>' +
+        '</div>' +
+        '<div id="ifEdge"><i></i><i></i><i></i><i></i></div>' +
+        '<div id="ifFoot"><span class="if-mono">Place 2507000 within CBSA 14460</span>' +
+          '<span class="if-mono if-live"><span class="if-dot"></span>Boundaries</span></div>' +
+      '</div>';
+    document.body.appendChild(ov);
+
+    var plate = ov.querySelector("#ifPlate"), holder = ov.querySelector("#ifHolder");
+    var svg = ov.querySelector("#ifSvg"), titleEl = ov.querySelector("#ifTitle");
+    var wash = svg.querySelector(".if-wash"), cityFill = svg.querySelector(".if-city");
+    var edge = svg.querySelector(".if-edge"), medge = svg.querySelector(".if-medge");
+    var leadA = svg.querySelector(".if-lead--a"), leadM = svg.querySelector(".if-lead--m");
+    var chipA = ov.querySelector(".if-chip--a"), chipM = ov.querySelector(".if-chip--m");
+
+    plate.style.cssText = "left:0;top:0;width:" + VW + "px;height:" + VH + "px;";
+    holder.style.cssText = "width:" + VW + "px;height:" + VH + "px;";
+    var home = mapEl.parentNode;
+    window.ovIntroLock = true;          // the page's own map steps stand down
+    holder.insertBefore(mapEl, svg);
+    mapEl.classList.add("is-intro");
+    map.invalidateSize({ animate: false });
+    /* the shapes take the room the column leaves them */
+    map.fitBounds(mBounds, {
+      paddingTopLeft: [GUT + COL + 40, 96],
+      paddingBottomRight: [Math.round(GUT * 1.2), 118],
+      animate: false
+    });
+
+    svg.setAttribute("viewBox", "0 0 " + VW + " " + VH);
+    var WORLD = "M-9999,-9999H" + (VW + 9999) + "V" + (VH + 9999) + "H-9999Z";
+
+    function pathOf(rings){
+      return rings.map(function(r){
+        return "M" + r.map(function(c){
+          var p = map.latLngToContainerPoint([c[1], c[0]]);
+          return p.x.toFixed(1) + "," + p.y.toFixed(1);
+        }).join("L") + "Z";
+      }).join("");
+    }
+    function label(chip, lead, bb, side){
+      /* the chip hangs a short leader off its shape, clamped to the frame */
+      var tx = side === "a" ? bb.x + bb.width : bb.x + bb.width * .5;
+      var ty = side === "a" ? bb.y + bb.height * .5 : bb.y;
+      var dx = side === "a" ? 34 : 0, dy = side === "a" ? 0 : -30;
+      var w = chip.offsetWidth, h = chip.offsetHeight;
+      var lx = Math.max(8, Math.min(VW - 8 - w, tx + dx - (side === "a" ? 0 : w / 2)));
+      var ly = Math.max(8, Math.min(VH - 8 - h, ty + dy - h / 2));
+      chip.style.left = lx + "px"; chip.style.top = ly + "px";
+      lead.setAttribute("x1", lx + w / 2); lead.setAttribute("y1", ly + h / 2);
+      lead.setAttribute("x2", tx); lead.setAttribute("y2", ty);
+    }
+    function paint(){
+      var da = pathOf(A.rings), dmm = pathOf(M.rings);
+      edge.setAttribute("d", da);
+      cityFill.setAttribute("d", da);
+      medge.setAttribute("d", dmm);
+      wash.setAttribute("d", WORLD + dmm);
+      label(chipA, leadA, edge.getBBox(), "a");
+      label(chipM, leadM, medge.getBBox(), "m");
+    }
+    paint();
+    requestAnimationFrame(function(){ ov.classList.add("is-in"); });
+    var repainting = false;
+    map.on("move zoom", function(){
+      if (repainting) return;
+      repainting = true;
+      requestAnimationFrame(function(){ paint(); repainting = false; });
+    });
+
+    /* the wordmark, as large as its column allows */
+    var heroF = Math.round(Math.max(56, Math.min(150, COL * 0.42)));
+    titleEl.style.fontSize = heroF + "px";
+    var tw = titleEl.getBoundingClientRect().width;
+    if (tw > COL) titleEl.style.fontSize = (heroF = Math.max(44, Math.floor(heroF * COL / tw))) + "px";
+
+    function fitZoom(bnds, sx, sy, pad){
+      var z = map.getZoom();
+      var bs = L.bounds(map.project(bnds.getSouthEast(), z),
+                        map.project(bnds.getNorthWest(), z)).getSize();
+      return map.getScaleZoom(Math.min((sx - pad * 2) / bs.x, (sy - pad * 2) / bs.y), z);
+    }
+
+    var stage = 0;
+    function dock(){
+      stage = 1;
+      var card = slot.getBoundingClientRect();
+      var pick = document.querySelector("#tool .citypick, #tool .toolbar .dd");
+      var tr = pick ? pick.getBoundingClientRect() : { left: 210, top: 14, height: 34 };
+      var dur = reduce ? 0 : 1250;
+
+      /* the wordmark leaves the column to make its own flight */
+      var wr = titleEl.getBoundingClientRect();
+      ov.appendChild(titleEl);
+      titleEl.style.position = "fixed";
+      titleEl.style.left = "0"; titleEl.style.top = "0";
+      titleEl.style.transform = "translate3d(" + wr.left + "px," + wr.top + "px,0)";
+      titleEl.getBoundingClientRect();
+      ov.classList.add("is-docking");
+
+      plate.style.transition = ["left", "top", "width", "height"]
+        .map(function(p){ return p + " " + dur + "ms " + EASE; }).join(",");
+      holder.style.transition = "transform " + dur + "ms " + EASE;
+      plate.style.left = card.left + "px"; plate.style.top = card.top + "px";
+      plate.style.width = card.width + "px"; plate.style.height = card.height + "px";
+      holder.style.transform = "translate(" + (card.width / 2 - VW / 2) + "px," +
+        (card.height / 2 - VH / 2) + "px)";
+      if (reduce) map.setView(aBounds.getCenter(), fitZoom(aBounds, card.width, card.height, 16), { animate: false });
+      else map.flyTo(aBounds.getCenter(), fitZoom(aBounds, card.width, card.height, 16), { duration: dur / 1000 });
+
+      var dockF = 15;
+      titleEl.style.transition = "transform " + dur + "ms " + EASE +
+        ",opacity " + (dur * .4) + "ms linear " + (dur * .55) + "ms";
+      titleEl.style.transform = "translate3d(" + (tr.left + 12) + "px," +
+        (tr.top + tr.height / 2 - dockF * .62) + "px,0) scale(" + (dockF / heroF) + ")";
+      titleEl.style.opacity = "0";
+      tool.style.transition = "opacity " + (dur * .5) + "ms ease " + (dur * .4) + "ms";
+      tool.style.opacity = "1";
+
+      setTimeout(function(){
+        map.off("move zoom");
+        home.insertBefore(mapEl, home.firstChild);
+        mapEl.classList.remove("is-intro");
+        window.ovIntroLock = false;     // the page takes its camera back
+        map.invalidateSize({ animate: false });
+        if (window.ovMapStep) window.ovMapStep(window.ovCurStep || 0);
+        ov.classList.add("is-done");
+        setTimeout(function(){
+          ov.remove();
+          tool.style.transition = ""; tool.style.opacity = "";
+        }, 380);
+      }, dur);
+    }
+
+    function advance(){ if (stage === 0) dock(); }
+    ov.addEventListener("click", advance);
+    window.addEventListener("wheel", advance, { passive: true });
+    window.addEventListener("touchmove", advance, { passive: true });
+    window.addEventListener("keydown", function(e){
+      if (e.key === " " || e.key === "ArrowDown" || e.key === "PageDown" || e.key === "Enter") advance();
+    });
+    return true;
+  };
 })();
 </script>
 </body>
