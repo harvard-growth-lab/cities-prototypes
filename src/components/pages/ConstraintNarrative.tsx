@@ -1,6 +1,7 @@
 import {
   Fragment,
   type CSSProperties,
+  type ReactNode,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -11,14 +12,17 @@ import {
 import { easeCubicInOut } from "d3-ease";
 import {
   CONSTRAINT_FLOWS,
+  DEFAULT_CONSTRAINT_FLOW,
   PLACEHOLDER_BRANCHES,
   TREE_SIDE_COLOR,
   TREE_SIDE_LABEL,
   convertPath,
   diagnose,
+  quadLeaf,
   sideDash,
   sideOfPath,
   treeNodes,
+  type BranchSide,
   type ConstraintFlow,
   type TreeVariant,
 } from "../../data/figures";
@@ -58,6 +62,7 @@ import {
   leafSide,
   DOT_BELOW_HEAD,
   branchBox,
+  fitPose,
   fitScale,
   fitTransform,
   DEFAULT_WALK_SHAPE,
@@ -301,28 +306,25 @@ export function FlowSwitch({
   );
 }
 
-/* ---------- the tree options panel ----------
-   The flow switch stays on the header row: it swaps the whole telling of the
-   section and belongs where it can be seen. The two that shape the TREE —
-   how many branches it has, and what it does on a stage too small to draw it
-   whole — fold away behind one control, with their current settings on its
-   face so the state is legible without opening it. Collapsed, the header is
-   back to one visible switch; open, each option carries the hint that the
-   inline rows have never had room for. */
+/* ---------- the variants disclosure ----------
+   The team's revision (Sept 2026) settled the section on one telling: the
+   guided walk over the four-quadrant tree. The switches that pick a DIFFERENT
+   telling — which flow, which tree shape (and, on the compact flow, which
+   structure) — are studies now, so each header folds them away behind this
+   one control and only the responsiveness switch keeps the header row. The
+   button face carries the current settings so the state is legible without
+   opening it, and marks itself when a setting is off the default. */
 
-function TreeOptions({
-  shape,
-  onShapeChange,
-  fit,
-  onFitChange,
-  tight,
+export function VariantOptions({
+  face,
+  changed,
+  children,
 }: {
-  shape: WalkShapeId;
-  onShapeChange: (s: WalkShapeId) => void;
-  fit: FitMode;
-  onFitChange: (f: FitMode) => void;
-  /** the stage is squeezing the tree — the small-stage switch is live */
-  tight: boolean;
+  /** the current settings, on the button's face */
+  face: string;
+  /** a folded-away control must still say when it is doing something */
+  changed: boolean;
+  children: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const box = useRef<HTMLDivElement>(null);
@@ -344,12 +346,6 @@ function TreeOptions({
     };
   }, [open]);
 
-  const shapeDef = WALK_SHAPES.find((s) => s.id === shape);
-  const fitDef = FIT_MODES.find((m) => m.id === fit);
-  /* anything other than the shipped tree, fitted whole, gets a mark — a
-     folded-away control must still say when it is doing something */
-  const changed = shape !== DEFAULT_WALK_SHAPE || fit !== "fit";
-
   return (
     <div className="jz-opts" ref={box}>
       <button
@@ -359,10 +355,8 @@ function TreeOptions({
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
       >
-        <span className="jz-opts-k">Tree options</span>
-        <span className="jz-opts-now">
-          {shapeDef?.label} · {fitDef?.label}
-        </span>
+        <span className="jz-opts-k">Variants</span>
+        <span className="jz-opts-now">{face}</span>
         <svg viewBox="0 0 10 6" aria-hidden="true">
           <path
             d="M1 1.5 5 4.8 9 1.5"
@@ -373,12 +367,7 @@ function TreeOptions({
           />
         </svg>
       </button>
-      {open && (
-        <div className="jz-opts-panel">
-          <ShapeSwitch shape={shape} onShapeChange={onShapeChange} />
-          <FitSwitch fit={fit} onFitChange={onFitChange} tight={tight} />
-        </div>
-      )}
+      {open && <div className="jz-opts-panel">{children}</div>}
     </div>
   );
 }
@@ -465,6 +454,72 @@ export function ShapeSwitch({
   );
 }
 
+/* ---------- the chart→tree transition switch (guided walk studies) ----------
+   A third axis beside flow and shape: not what the tree IS or how the walk
+   is told, but how the pizza chart is SEEN to become the tree — the hand-off
+   the quadrants make into the branches. Each option is a study; "fade" is
+   the shipped behaviour. The studies play on the full guided walk's
+   whole-tree fit (the rides and sideways modes redraw the tree their own
+   way, and the short flow opens tree-first). */
+
+export type TreeTransition = "fade" | "pour";
+
+export const TREE_TRANSITIONS: {
+  id: TreeTransition;
+  label: string;
+  hint: string;
+  about: string;
+}[] = [
+  {
+    id: "fade",
+    label: "Park & fade",
+    hint: "The chart parks into the inset; the tree draws in place",
+    about:
+      "The shipped hand-off: the full-stage chart fades out, the parked inset keeps the quadrants, and the tree fades in fork by fork",
+  },
+  {
+    id: "pour",
+    label: "Quadrant pour",
+    hint: "Each region detaches and flies onto its branch card",
+    about:
+      "As the chart dissolves, each tinted region detaches, flies down the stage and lands exactly where its branch head fades in — the quadrants ARE the branches",
+  },
+];
+
+export function TransitionSwitch({
+  transition,
+  onTransitionChange,
+}: {
+  transition: TreeTransition;
+  onTransitionChange: (t: TreeTransition) => void;
+}) {
+  return (
+    <div className="jz-modes show">
+      <span className="jz-modes-k">Chart → tree</span>
+      <div
+        className="jz-seg"
+        role="group"
+        aria-label="Chart to tree transition"
+      >
+        {TREE_TRANSITIONS.map((t) => (
+          <button
+            key={t.id}
+            className={"jz-segbtn" + (transition === t.id ? " on" : "")}
+            aria-pressed={transition === t.id}
+            title={t.about}
+            onClick={() => onTransitionChange(t.id)}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+      <span className="jz-modes-hint">
+        {TREE_TRANSITIONS.find((t) => t.id === transition)?.hint}
+      </span>
+    </div>
+  );
+}
+
 /* ------------------------------ the scrolly ------------------------------ */
 
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
@@ -524,6 +579,8 @@ export function ConstraintNarrative({
      switch can never show an empty selection (FIT_MODES is the menu; a mode
      the type knows but the menu does not must not be the default) */
   const [smallFit, setSmallFit] = useState<FitMode>(FIT_MODES[1].id);
+  /* which hand-off study the chart→tree beat plays — see TREE_TRANSITIONS */
+  const [transition, setTransition] = useState<TreeTransition>("fade");
   const svgRef = useRef<SVGSVGElement>(null);
   const stageScale = useStageScale(svgRef);
   const stageHeadroom = useStageHeadroom(svgRef);
@@ -574,6 +631,9 @@ export function ConstraintNarrative({
      whether the camera rides it */
   const sideLayout = sideMode || sideRideMode;
   const rideOn = rideMode || sideRideMode;
+  /* the transition studies play only where the hand-off actually happens on
+     the open stage: the full walk's whole-tree fit */
+  const pourOn = transition === "pour" && !short && fit === "fit";
   /* the shortened flow opens on the whole tree — except under a camera
      ride, which REVEALS the tree as it travels: a ride's gates pace by the
      beat in every flow, and a stop that lands on a later beat still brings
@@ -660,23 +720,67 @@ export function ConstraintNarrative({
      researchers' diagnosis, converted onto this shape. Where it forks ONCE,
      the branch IS the region of the plane the city landed in — there is no
      second question to answer, so the chart alone decides it. */
-  const suggAlt = useMemo(
-    () =>
-      forks2
-        ? convertPath(dx.path, sh.variant)
-        : [placeSector?.side ?? "supply"],
-    [forks2, dx, sh, placeSector],
-  );
+  const suggAlt = useMemo(() => {
+    /* the quadrant structures are sign-aware: the branch is the SECTOR the
+       city's dot landed in, which the alt path's plain demand/supply cannot
+       name. The forked variant then runs the branch's own instrument. */
+    if (sh.variant === "quad2") {
+      const side = (placeSector?.side ?? "supplyneg") as BranchSide;
+      return [side, quadLeaf(side, cityShort, country)];
+    }
+    return forks2
+      ? convertPath(dx.path, sh.variant)
+      : [placeSector?.side ?? "supply"];
+  }, [forks2, dx, sh, placeSector, cityShort, country]);
   const citySide = sideOfPath(suggAlt);
   const suggLeaf = suggAlt[suggAlt.length - 1];
-  /* the app's pick may live on the other structure — read it on this one */
-  const selAlt = useMemo(
-    () => convertPath(selectedPath, sh.variant),
-    [selectedPath, sh],
-  );
+  /* the app's pick may live on the other structure — read it on this one.
+     The alias that carries a pick across structures cannot recover a shock's
+     SIGN, so on the forked quadrant tree an app path that merely mirrors the
+     suggestion reads AS the suggestion — otherwise the sign the conversion
+     guesses would manufacture a "you selected this path" no one chose. */
+  const selAlt = useMemo(() => {
+    if (
+      sh.variant === "quad2" &&
+      convertPath(suggAlt, variant).join("/") === selectedPath.join("/")
+    )
+      return suggAlt;
+    return convertPath(selectedPath, sh.variant);
+  }, [selectedPath, sh, suggAlt, variant]);
   const selLeaf = selAlt[selAlt.length - 1];
   const selSide = sideOfPath(selAlt);
   const isDefaultPath = selAlt.join("/") === suggAlt.join("/");
+  /* which FAMILY of instrument the walked branch's second fork reads: the
+     demand shocks (whatever their sign) read the MSA pizza chart, the supply
+     shocks the housing scatter */
+  const demandFork =
+    citySide === "demand" ||
+    citySide === "demandpos" ||
+    citySide === "demandneg";
+  /* the fork-two legend, per branch — the alt tree's own wording where the
+     instrument is unchanged, bracketed placeholders where the spec's reading
+     is not settled yet */
+  const demandLegend: [string, string] =
+    citySide === "demandneg"
+      ? ["[MSA weak too → Regional (MSA)]", "[MSA healthy → Local (admin)]"]
+      : citySide === "demandpos"
+        ? [
+            "[people outrun pay → housing risk]",
+            "[pay outruns people → no risk]",
+          ]
+        : ["← below · Metro-wide", "above · Place-specific →"];
+  /* what the landing says on the forked quadrant tree — the supply forks
+     reuse the alt housing reason verbatim; the demand forks read differently
+     and the positive-demand diagonal has no settled rule, so those stay
+     bracketed */
+  const quadLandCopy =
+    citySide === "supplypos" || citySide === "supplyneg"
+      ? dx.derived
+        ? dx.steps[1].reason
+        : `[no ${cityShort} data yet — the fallback leaf is marked]`
+      : citySide === "demandneg"
+        ? `[the MSA pizza chart read: ${suggLeaf === "dn-local" ? "the MSA holds up while the admin slips — a local (admin) shock" : "the MSA reads weak too — a regional (MSA) shock"}]`
+        : `[the diagonal read: ${suggLeaf === "dp-housing" ? "the MSA sits on the people-outrun-pay side — housing is a potential constraint" : "the MSA sits on the pay-outruns-people side — housing looks clear"}]`;
 
   /* What the stage is looking at, beat by beat: the whole tree while it is
      being introduced, the root and its branches once fork one is answered,
@@ -743,10 +847,43 @@ export function ConstraintNarrative({
   const focusInto = useMemo(() => intoFor(wholeBox(sh)), [intoFor, sh]);
   /* the "fit whole" pose: the whole tree fitted to its room, capped so a
      very wide stage does not blow it up past reading size */
-  const wholeFit = useMemo(
-    () => fitTransform(wholeBox(sh), focusInto, 1.5),
+  const wholePose = useMemo(
+    () => fitPose(wholeBox(sh), focusInto, 1.5),
     [sh, focusInto],
   );
+  const wholeFit = `translate(${wholePose[1].toFixed(1)}px, ${wholePose[2].toFixed(1)}px) scale(${wholePose[0].toFixed(3)})`;
+  /* ---------- the pour tiles (transition study) ----------
+     Start: each plane sector's bounding box on the full-stage chart. End:
+     the branch head card it becomes, run through the whole-tree pose the
+     treewrap is easing into — both in stage coordinates, so one CSS
+     transform flies a tile from its quadrant onto its card while the pose
+     settles underneath (any mid-flight drift has landed by arrival). */
+  const pourTiles = useMemo(() => {
+    if (!pourOn) return [];
+    const [pk, ptx, pty] = wholePose;
+    const headTop = headRowY(sh) - headRowH(sh) / 2;
+    return sh.plane.map((sec, i) => {
+      const pts = sectorPoly(sec).map(
+        ([px, py]) => [cxu(px), cyu(py)] as [number, number],
+      );
+      const sx = Math.min(...pts.map((p) => p[0]));
+      const sy = Math.min(...pts.map((p) => p[1]));
+      const sw = Math.max(...pts.map((p) => p[0])) - sx;
+      const sHt = Math.max(...pts.map((p) => p[1])) - sy;
+      const ex = ptx + pk * (headX(sh, sec.side) - sh.headW / 2);
+      const ey = pty + pk * headTop;
+      return {
+        key: `${sec.side}-${i}`,
+        side: sec.side,
+        sx,
+        sy,
+        sw,
+        sHt,
+        to: `translate(${(ex - sx).toFixed(1)}px, ${(ey - sy).toFixed(1)}px) scale(${((pk * sh.headW) / sw).toFixed(3)}, ${((pk * headRowH(sh)) / sHt).toFixed(3)})`,
+        delay: i * 0.09,
+      };
+    });
+  }, [pourOn, sh, wholePose]);
   /* the static poses centre the tree in the authored 640; in the opened
      viewBox "centred" puts its foot over the instrument's corner, so they
      are lifted by dy, back to the top of the stage */
@@ -864,6 +1001,9 @@ export function ConstraintNarrative({
      stop (the ride effect below reports the arrivals). */
   const arrivedAt = (k: number) => !rideOn || rideArrived >= k;
   const gFork1 = treeUpFront || (step >= FORK1_BEAT && arrivedAt(1));
+  /* the pour lands the head cards a beat early — the tiles become them; the
+     edges still wait for fork one's answer */
+  const gHeads = gFork1 || (pourOn && step >= TREE_BEAT);
   const gFork2 = treeUpFront || (step >= FORK2_BEAT && arrivedAt(2));
   const gLeaf = treeUpFront || (step >= LEAF_BEAT && arrivedAt(3));
   /* the landing furniture — badges, the walked route's glow — waits for
@@ -1390,20 +1530,28 @@ export function ConstraintNarrative({
         : `[no ${cityShort} data yet — the walk shows the fallback read]`,
     },
     {
-      kicker: forks2 ? "Fork two: one more comparison" : "No second fork",
+      kicker: forks2
+        ? "Fork two: one more comparison"
+        : "No second fork on the tree",
       body: !forks2
-        ? `This structure stops here: the quadrant is the whole diagnosis, so there is no second instrument to read.`
-        : citySide === "demand"
-          ? `Fork two: is the metro growing? The inset reads it against ${pc(med.pop)}.`
-          : `Fork two: what does being there cost? The inset reads home values against ${pc(medCost)}.`,
+        ? `This tree stops at the quadrant — [each shock's second question, and its themes, are asked in the analysis section below].`
+        : citySide === "demandneg"
+          ? `Fork two: local or regional? The inset reads the MSA pizza chart — its population change against its wage change.`
+          : citySide === "demandpos"
+            ? `Fork two: is housing a potential constraint? [read from which side of the quadrant's diagonal the MSA falls on].`
+            : demandFork
+              ? `Fork two: is the metro growing? The inset reads it against ${pc(med.pop)}.`
+              : `Fork two: what does being there cost? The inset reads home values against ${pc(medCost)}.`,
     },
     {
       kicker: "Where we think you are",
       body: !forks2
-        ? `${cityShort} sits in the ${planeRead} quadrant, and on this tree that IS the branch — ${TREE_SIDE_LABEL[citySide]}.`
-        : dx.derived
-          ? dx.steps[1].reason
-          : `[no ${cityShort} data yet — the fallback leaf is marked]`,
+        ? `${cityShort} sits in the ${planeRead} quadrant, and on this tree that is the branch — ${TREE_SIDE_LABEL[citySide]}. [its second question is asked in the analysis below]`
+        : sh.variant === "quad2"
+          ? quadLandCopy
+          : dx.derived
+            ? dx.steps[1].reason
+            : `[no ${cityShort} data yet — the fallback leaf is marked]`,
     },
     { kicker: `The ${numberWord(endings)} diagnoses`, body: "" },
   ];
@@ -1432,17 +1580,24 @@ export function ConstraintNarrative({
           : `[no ${cityShort} data yet — the walk shows the fallback read]`),
     };
     const forkTwoSwap = {
-      kicker:
-        citySide === "supply"
-          ? "Fork two: the housing chart"
+      kicker: !demandFork
+        ? "Fork two: the housing chart"
+        : citySide === "demandneg" || citySide === "demandpos"
+          ? "Fork two: the MSA pizza chart"
           : "Fork two: the population dial",
       body:
-        (citySide === "supply"
+        (!demandFork
           ? `The instrument swaps to the housing chart — home values against the typical metro's ${pc(medCost)}. `
-          : `The instrument swaps to the population dial — the metro against the median (${pc(med.pop)}). `) +
-        (dx.derived
-          ? dx.steps[1].reason
-          : `[no ${cityShort} data yet — the fallback leaf is marked]`),
+          : citySide === "demandneg"
+            ? `The instrument swaps to the MSA pizza chart — the metro's population change against its wage change. `
+            : citySide === "demandpos"
+              ? `The instrument swaps to the MSA pizza chart — [which side of the quadrant's diagonal does the MSA fall on?]. `
+              : `The instrument swaps to the population dial — the metro against the median (${pc(med.pop)}). `) +
+        (sh.variant === "quad2"
+          ? quadLandCopy
+          : dx.derived
+            ? dx.steps[1].reason
+            : `[no ${cityShort} data yet — the fallback leaf is marked]`),
     };
     if (rideOn && forks2) {
       /* the ride un-folds fork two into its own stop, so the swap copy
@@ -1450,15 +1605,18 @@ export function ConstraintNarrative({
       stepCopy[FORK2_BEAT] = forkTwoSwap;
       stepCopy[LEAF_BEAT] = {
         kicker: "Where we think you are",
-        body: dx.derived
-          ? dx.steps[1].reason
-          : `[no ${cityShort} data yet — the fallback leaf is marked]`,
+        body:
+          sh.variant === "quad2"
+            ? quadLandCopy
+            : dx.derived
+              ? dx.steps[1].reason
+              : `[no ${cityShort} data yet — the fallback leaf is marked]`,
       };
     } else {
       stepCopy[LEAF_BEAT] = !forks2
         ? {
-            kicker: "One fork, and that is the diagnosis",
-            body: `No second instrument: the pizza chart answered the only question this structure asks. ${cityShort} sits in the ${planeRead} quadrant — ${TREE_SIDE_LABEL[citySide]}.`,
+            kicker: "One fork, and the tree is walked",
+            body: `No second instrument up here: the pizza chart answered the only question this tree asks. ${cityShort} sits in the ${planeRead} quadrant — ${TREE_SIDE_LABEL[citySide]}. [the shock's second question follows in the analysis]`,
           }
         : forkTwoSwap;
     }
@@ -1569,7 +1727,7 @@ export function ConstraintNarrative({
     if (side === "supplypos" || side === "supplyneg") return "supply";
     return side as keyof typeof TREE_SIDE_COLOR;
   };
-  const quadInset = sh.id === "quad";
+  const quadInset = sh.id === "quad" || sh.id === "quad2";
 
   /* ---------- render ---------- */
   return (
@@ -1593,19 +1751,29 @@ export function ConstraintNarrative({
               </h2>
             </div>
           </div>
-          {/* the two switches ride the header row's right edge — the stage
-              below keeps the vertical room. They are separate controls on
-              purpose: the flow is how the section is told, the shape is what
-              the tree it tells looks like. */}
+          {/* the header row's right edge keeps ONE live control — the
+              responsiveness switch, the only choice the revision left open.
+              The flow and shape studies stay a click away in the variants
+              disclosure beside it. */}
           <div className="jz-switches">
-            <TreeOptions
-              shape={shape}
-              onShapeChange={onShapeChange}
-              fit={fit}
-              onFitChange={setSmallFit}
-              tight={tight}
-            />
-            <FlowSwitch flow={flow} onFlowChange={onFlowChange} />
+            <FitSwitch fit={fit} onFitChange={setSmallFit} tight={tight} />
+            <VariantOptions
+              face={`${CONSTRAINT_FLOWS.find((f) => f.id === flow)?.label} · ${
+                WALK_SHAPES.find((s) => s.id === shape)?.label
+              }`}
+              changed={
+                flow !== DEFAULT_CONSTRAINT_FLOW ||
+                shape !== DEFAULT_WALK_SHAPE ||
+                transition !== "fade"
+              }
+            >
+              <FlowSwitch flow={flow} onFlowChange={onFlowChange} />
+              <ShapeSwitch shape={shape} onShapeChange={onShapeChange} />
+              <TransitionSwitch
+                transition={transition}
+                onTransitionChange={setTransition}
+              />
+            </VariantOptions>
           </div>
         </div>
 
@@ -2161,7 +2329,12 @@ export function ConstraintNarrative({
                   {sh.branches.map((b) => {
                     const st = status(b.id);
                     return (
-                      <g key={`hd-${b.id}`} className={on(gFork1) + st.g}>
+                      <g
+                        key={`hd-${b.id}`}
+                        className={
+                          on(gHeads) + st.g + (pourOn ? " nv-pour-head" : "")
+                        }
+                      >
                         <g className={"nv-card" + (st.lit ? " lit" : "")}>
                           <rect
                             x={b.x - sh.headW / 2}
@@ -2373,6 +2546,38 @@ export function ConstraintNarrative({
                 </g>
               </g>
 
+              {/* ---------- the quadrant pour (transition study) ----------
+                  mounted only across the hand-off beats, so scrolling back
+                  in replays the flight */}
+              {pourOn && step >= TREE_BEAT && step <= FORK1_BEAT && (
+                <g className="nv-pour">
+                  {pourTiles.map((t) => (
+                    <g
+                      key={t.key}
+                      className="nv-pour-tile"
+                      style={
+                        {
+                          "--pour-to": t.to,
+                          animationDelay: `${t.delay}s`,
+                        } as CSSProperties
+                      }
+                    >
+                      <rect
+                        x={t.sx}
+                        y={t.sy}
+                        width={t.sw}
+                        height={t.sHt}
+                        rx={10}
+                        fill={TREE_SIDE_COLOR[t.side]}
+                        stroke={TREE_SIDE_COLOR[t.side]}
+                        strokeDasharray={sideDash(t.side)}
+                        vectorEffect="non-scaling-stroke"
+                      />
+                    </g>
+                  ))}
+                </g>
+              )}
+
               {/* the study modes that redraw the tree in full-stage
                   coordinates — poseless, but the sideways ride hangs its
                   own camera group around the drawing */}
@@ -2568,7 +2773,7 @@ export function ConstraintNarrative({
                         })}
                   </g>
                   <g className={on(step >= FORK2_BEAT)}>
-                    {citySide === "demand" ? (
+                    {demandFork ? (
                       /* the metro's dial, on the same pizza plane */
                       <g>
                         <text
@@ -2608,6 +2813,34 @@ export function ConstraintNarrative({
                           strokeWidth={1.6}
                           strokeDasharray="6 4"
                         />
+                        {(citySide === "demandpos" ||
+                          citySide === "demandneg") && (
+                          /* the quadrant forks read the FULL MSA plane, so
+                             the wage median joins the population median */
+                          <line
+                            x1={pz.x - 4}
+                            x2={pz.x + pz.s + 4}
+                            y1={pzy(0)}
+                            y2={pzy(0)}
+                            stroke="var(--ink)"
+                            strokeWidth={1.6}
+                            strokeDasharray="6 4"
+                          />
+                        )}
+                        {citySide === "demandpos" && (
+                          /* the spec's diagonal: which side of it the MSA
+                             falls on decides the housing-risk fork */
+                          <line
+                            x1={pzx(-1)}
+                            y1={pzy(-1)}
+                            x2={pzx(1)}
+                            y2={pzy(1)}
+                            stroke={TREE_SIDE_COLOR.demand}
+                            strokeWidth={1.4}
+                            strokeDasharray="3 3"
+                            opacity={0.8}
+                          />
+                        )}
                         {msa ? (
                           <g>
                             <circle
@@ -2662,7 +2895,7 @@ export function ConstraintNarrative({
                           y={inset.y + 42}
                           fill={TREE_SIDE_COLOR.demand}
                         >
-                          ← below · Metro-wide
+                          {demandLegend[0]}
                         </text>
                         <text
                           className="nv-elab"
@@ -2671,7 +2904,7 @@ export function ConstraintNarrative({
                           textAnchor="start"
                           fill={TREE_SIDE_COLOR.demand}
                         >
-                          above · Place-specific →
+                          {demandLegend[1]}
                         </text>
                       </g>
                     ) : (

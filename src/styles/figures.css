@@ -1963,3 +1963,66 @@ html[data-jz-instant="1"] .nv-svg {
 .nv-edge.neg.on.dim {
   opacity: 0.22;
 }
+
+/* ----- the revision spec's blocks in the branch analysis -----
+   The fork line that leads the evidence, the flat quad tree's per-outcome
+   groups, and the "what could I do better?" standing block. */
+.ba-forkline {
+  margin: 0 0 18px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.ba-outcome,
+.ba-better {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+.ba-outcome h3,
+.ba-better h3 {
+  margin: 0 0 4px;
+  font-size: 15.5px;
+}
+.ba-outcome-note {
+  margin: 0 0 14px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+/* ----- transition studies: how the chart becomes the tree ----- */
+/* the quadrant pour: a tile per plane region, flying from its spot on the
+   dissolving chart onto the branch-head card it becomes */
+.nv-pour-tile {
+  transform-box: fill-box;
+  transform-origin: 0 0;
+  animation: nv-pour-fly 1.15s cubic-bezier(0.4, 0, 0.2, 1) both;
+  pointer-events: none;
+}
+.nv-pour-tile rect {
+  fill-opacity: 0.2;
+  stroke-opacity: 0.9;
+  stroke-width: 2;
+}
+@keyframes nv-pour-fly {
+  0% {
+    transform: none;
+    opacity: 0.95;
+  }
+  76% {
+    transform: var(--pour-to);
+    opacity: 0.9;
+  }
+  100% {
+    transform: var(--pour-to);
+    opacity: 0;
+  }
+}
+/* the pour hands the heads their entrance: the cards wait for their tiles,
+   then fade in exactly where the tiles land */
+.nv-pour-head.nv-fade {
+  transition: opacity 0.5s ease 0.75s;
+}
+.nv-pour-head.nv-fade:not(.on) {
+  transition-delay: 0s;
+}

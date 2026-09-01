@@ -5,6 +5,9 @@ import "d3-transition";
 import { easeCubicInOut, easeCubicOut, easeSinInOut } from "d3-ease";
 import { stratify, tree as d3tree, type HierarchyNode } from "d3-hierarchy";
 import {
+  CONSTRAINT_FLOWS,
+  DEFAULT_CONSTRAINT_FLOW,
+  DEFAULT_TREE_MODE,
   LEAF_THEMES,
   QUADRANTS,
   THEMES,
@@ -23,7 +26,7 @@ import {
   type TreeSide,
   type TreeVariant,
 } from "../../data/figures";
-import { FlowSwitch } from "./ConstraintNarrative";
+import { FlowSwitch, VariantOptions } from "./ConstraintNarrative";
 import { branchSectionName } from "../../data/content";
 import {
   METROS,
@@ -2347,39 +2350,48 @@ export function ConstraintScrolly({
                 How we diagnose the constraint
               </h2>
             </div>
-            {/* The section's top-level choice, deliberately NOT among the
-                style pills opposite: each mode is a different proposal for
-                how the diagnostic is structured, and the themed one may end
-                up shaping how the whole app is navigated. It sits under the
-                heading, in the reading column, at the weight that decision
-                deserves. */}
-            <div
-              className={"jz-modes" + (phase === "tree" ? " show" : "")}
-              aria-hidden={phase !== "tree"}
-            >
-              <span className="jz-modes-k">Structure</span>
-              <div className="jz-seg" role="group" aria-label="Tree structure">
-                {TREE_MODES.map((m) => (
-                  <button
-                    key={m.id}
-                    className={"jz-segbtn" + (mode === m.id ? " on" : "")}
-                    aria-pressed={mode === m.id}
-                    title={m.about}
-                    onClick={() => onModeChange(m.id)}
-                  >
-                    {m.label}
-                  </button>
-                ))}
-              </div>
-              <span className="jz-modes-hint">
-                {TREE_MODES.find((m) => m.id === mode)?.hint}
-              </span>
-            </div>
           </div>
-          {/* The section's user-flow choice: this telling, or the guided
-              walkthroughs (ConstraintNarrative). On the header row — always
-              visible, since it swaps the whole sequence. */}
-          <FlowSwitch flow={flow} onFlowChange={onFlowChange} />
+          {/* The variant switches — which telling of the section, and which
+              tree structure this telling proposes — folded behind one
+              control (team revision, Sept 2026): the four-quadrant guided
+              walk is the section now, and these are the studies it was
+              chosen from. This flow is itself off the default, so the face
+              always carries its mark. */}
+          <div className="jz-switches">
+            <VariantOptions
+              face={`${CONSTRAINT_FLOWS.find((f) => f.id === flow)?.label} · ${
+                TREE_MODES.find((m) => m.id === mode)?.label
+              }`}
+              changed={
+                flow !== DEFAULT_CONSTRAINT_FLOW || mode !== DEFAULT_TREE_MODE
+              }
+            >
+              <FlowSwitch flow={flow} onFlowChange={onFlowChange} />
+              <div className="jz-modes show">
+                <span className="jz-modes-k">Structure</span>
+                <div
+                  className="jz-seg"
+                  role="group"
+                  aria-label="Tree structure"
+                >
+                  {TREE_MODES.map((m) => (
+                    <button
+                      key={m.id}
+                      className={"jz-segbtn" + (mode === m.id ? " on" : "")}
+                      aria-pressed={mode === m.id}
+                      title={m.about}
+                      onClick={() => onModeChange(m.id)}
+                    >
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
+                <span className="jz-modes-hint">
+                  {TREE_MODES.find((m) => m.id === mode)?.hint}
+                </span>
+              </div>
+            </VariantOptions>
+          </div>
           {/* the styling experiments live in the section header, top-right:
               the chart cluster during the chart phase, the tree cluster
               during the tree phase, cross-fading in one grid cell */}

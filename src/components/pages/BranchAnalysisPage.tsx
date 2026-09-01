@@ -15,7 +15,9 @@ import {
 } from "d3-hierarchy";
 import {
   PLACEHOLDER_BRANCHES,
+  QUAD_BRANCH_SPEC,
   TREE_SIDE_COLOR,
+  branchBetterThemes,
   sideDash,
   sideHollow,
   TREE_SIDE_LABEL,
@@ -24,6 +26,7 @@ import {
   sideOfPath,
   suggestedPath,
   treeNodes,
+  type BranchSide,
   type ThemeDef,
   type TreeNodeData,
   type TreeSide,
@@ -233,20 +236,38 @@ function DiagSchematic({
         >
           The growth question
         </text>
-        {nodes
-          .filter((n) => n.depth === 1)
-          .map((n) => (
-            <text
-              key={n.data.id}
-              className={"ba-lab" + (on.has(n.data.id) ? "" : " faint")}
-              x={n.x + (n.x < root.x ? -11 : 11)}
-              y={n.y + 3.5}
-              textAnchor={n.x < root.x ? "end" : "start"}
-              fill={TREE_SIDE_COLOR[sideOf(n)]}
-            >
-              {n.data.title}
-            </text>
-          ))}
+        {/* the two-branch trees label both heads beside their dots; the
+            quadrant trees have four heads too close for that, so only the
+            branches on the lit route name themselves, centred above their
+            dots and clamped to the map — colour and the trail below carry
+            the rest */}
+        {(() => {
+          const heads = nodes.filter((n) => n.depth === 1);
+          const crowded = heads.length > 2;
+          const innerW = MV.w - MV.pad.left - MV.pad.right;
+          return heads
+            .filter((n) => !crowded || on.has(n.data.id))
+            .map((n) => {
+              const hw = n.data.title.length * 3.2;
+              const lx = crowded
+                ? Math.max(hw, Math.min(innerW - hw, n.x))
+                : n.x + (n.x < root.x ? -11 : 11);
+              return (
+                <text
+                  key={n.data.id}
+                  className={"ba-lab" + (on.has(n.data.id) ? "" : " faint")}
+                  x={lx}
+                  y={crowded ? n.y - 11 : n.y + 3.5}
+                  textAnchor={
+                    crowded ? "middle" : n.x < root.x ? "end" : "start"
+                  }
+                  fill={TREE_SIDE_COLOR[sideOf(n)]}
+                >
+                  {n.data.title}
+                </text>
+              );
+            });
+        })()}
       </g>
     </svg>
   );
@@ -363,11 +384,35 @@ export function BranchAnalysisPage({
   const shownSide = sideOfPath(shown);
 
   /* the themes hanging off the picked leaf — the section's content when the
-     stage's themes toggle is on */
-  const themesOn = showThemes && variant === "alt";
+     stage's themes toggle is on. The revision spec's structures carry them
+     too: the forked quadrant tree under its leaves, the flat quad tree by
+     asking the fork HERE. */
+  const themesOn =
+    showThemes &&
+    (variant === "alt" || variant === "quad" || variant === "quad2");
   const themes = useMemo(
     () => (themesOn ? pathThemes(branchPath) : []),
     [themesOn, branchPath],
+  );
+  /* the revision spec's per-shock layer: the overarching question (the
+     lede), the fork line, and the standing "what could I do better?" block */
+  const spec = QUAD_BRANCH_SPEC[side as BranchSide];
+  const better = useMemo(
+    () => (themesOn ? branchBetterThemes(branchPath) : []),
+    [themesOn, branchPath],
+  );
+  /* the flat quad tree stops at the shock, so ITS second fork is asked here:
+     each outcome of the forked structure becomes a labelled group of theme
+     blocks */
+  const forkHere = themesOn && variant === "quad" && !!spec;
+  const outcomes = useMemo(
+    () => (forkHere ? treeNodes("quad2").filter((n) => n.parent === side) : []),
+    [forkHere, side],
+  );
+  /* everything the evidence rail scroll-spies, in reading order */
+  const railThemes = useMemo(
+    () => [...themes, ...outcomes.flatMap((o) => pathThemes([o.id])), ...better],
+    [themes, outcomes, better],
   );
   /* which theme block the reader is in, for the rail's theme list */
   const [seenThemes, setSeenThemes] = useState<ReadonlySet<string>>(
@@ -383,7 +428,7 @@ export function BranchAnalysisPage({
     });
   }, []);
   /* the topmost theme in view reads as "where you are" */
-  const activeTheme = themes.find((t) => seenThemes.has(t.id))?.id ?? null;
+  const activeTheme = railThemes.find((t) => seenThemes.has(t.id))?.id ?? null;
 
   /* ---------- the end of the section ----------
      A held route is released by READING to the end, not by scrolling past
@@ -421,15 +466,37 @@ export function BranchAnalysisPage({
         <h2>{branchSectionName(side)}</h2>
       </div>
       <p className="lede">
-        <span className="ph">
-          [lead question for the {TREE_SIDE_LABEL[side]} analysis of {cityShort}
-          ]
-        </span>
+        {spec ? (
+          /* the spec's overarching question leads the section; the city's own
+             read of it stays a placeholder */
+          <>
+            {spec.question}{" "}
+            <span className="ph">
+              [the {TREE_SIDE_LABEL[side]} read of {cityShort} — copy to come]
+            </span>
+          </>
+        ) : (
+          <span className="ph">
+            [lead question for the {TREE_SIDE_LABEL[side]} analysis of{" "}
+            {cityShort}]
+          </span>
+        )}
       </p>
 
       <div className="ba-body">
         {themesOn ? (
           <div className="ba-themes">
+            {/* the spec's fork line leads the evidence: on the forked tree it
+                names how you landed here, on the flat quad tree it IS the
+                question, asked here */}
+            {spec && (
+              <p className="ba-forkline">
+                <span className="ph">
+                  [{forkHere ? "the fork, asked here" : "how you landed here"}:{" "}
+                  {spec.forkLine}]
+                </span>
+              </p>
+            )}
             {themes.map((t) => (
               <ThemeBlock
                 key={t.id}
@@ -438,6 +505,66 @@ export function BranchAnalysisPage({
                 onSeen={onSeen}
               />
             ))}
+            {spec && themes.length === 0 && !forkHere && (
+              <p className="ba-forkline">
+                <span className="ph">
+                  [no leaf-specific themes on this landing — the standing block
+                  below carries the evidence]
+                </span>
+              </p>
+            )}
+            {outcomes.map((o) => (
+              <section className="ba-outcome" key={o.id}>
+                <h3 style={{ color: TREE_SIDE_COLOR[side] }}>
+                  If {o.title.toLowerCase()}
+                </h3>
+                <p className="ba-outcome-note">
+                  <span className="ph">
+                    [
+                    {(o.tests ?? o.detail)
+                      .replace(/^\[/, "")
+                      .replace(/\]$/, "")}
+                    ]
+                  </span>
+                </p>
+                {pathThemes([o.id]).map((t) => (
+                  <ThemeBlock
+                    key={t.id}
+                    theme={t}
+                    color={TREE_SIDE_COLOR[side]}
+                    onSeen={onSeen}
+                  />
+                ))}
+                {pathThemes([o.id]).length === 0 && (
+                  <p className="ba-outcome-note">
+                    <span className="ph">
+                      [no leaf-specific themes — see the standing block below]
+                    </span>
+                  </p>
+                )}
+              </section>
+            ))}
+            {better.length > 0 && (
+              <section className="ba-better">
+                <h3 style={{ color: TREE_SIDE_COLOR[side] }}>
+                  What could I do better?
+                </h3>
+                <p className="ba-outcome-note">
+                  <span className="ph">
+                    [asked regardless of the fork — the spec's standing
+                    question on this shock]
+                  </span>
+                </p>
+                {better.map((t) => (
+                  <ThemeBlock
+                    key={`better-${t.id}`}
+                    theme={t}
+                    color={TREE_SIDE_COLOR[side]}
+                    onSeen={onSeen}
+                  />
+                ))}
+              </section>
+            )}
           </div>
         ) : (
           <div className="placeholder-frame">
@@ -497,11 +624,11 @@ export function BranchAnalysisPage({
           {/* the themes under the picked leaf, scroll-spied like the main
               rail one level up — the reader always knows which piece of
               evidence they are in */}
-          {themesOn && themes.length > 0 && (
+          {themesOn && railThemes.length > 0 && (
             <div className="ba-themelist">
               <span className="ba-kicker">Evidence</span>
               <ul>
-                {themes.map((t) => (
+                {railThemes.map((t) => (
                   <li
                     key={t.id}
                     className={t.id === activeTheme ? "active" : ""}

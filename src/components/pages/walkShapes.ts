@@ -39,7 +39,7 @@ export const DOT_LEAF_Y = 458;
 
 /* ---------- the shapes ---------- */
 
-export type WalkShapeId = "two" | "three" | "quad";
+export type WalkShapeId = "two" | "three" | "quad" | "quad2";
 
 export interface WalkLeafDef {
   /** a tree-node id of the shape's variant, so a pick converts app-wide */
@@ -401,10 +401,10 @@ const THREE: WalkShape = {
    colours are in play. */
 const QUAD: WalkShape = {
   id: "quad",
-  label: "Four quadrants",
-  hint: "One fork — the quadrant is the diagnosis",
+  label: "Four quadrants · flat",
+  hint: "One fork on the tree — each shock's second question is asked in the analysis",
   about:
-    "The root forks four ways, straight into the quadrants of the pizza chart, and stops there: no second question",
+    "The root forks four ways, straight into the quadrants of the pizza chart, and stops there: the revision spec's second fork and its themes are asked in the analysis section below",
   variant: "quad",
   rootQuestion: "population × wages — which quadrant?",
   rootX: 384,
@@ -500,11 +500,151 @@ const QUAD: WalkShape = {
   ],
 };
 
-export const WALK_SHAPES: WalkShape[] = [TWO, THREE, QUAD];
+/* The four-quadrant tree, FORKED — the revision spec drawn in full: the root
+   forks into the four shocks, and each shock forks once more with its own
+   instrument (QUAD_BRANCH_SPEC in figures.ts carries the overarching
+   questions; the analysis section carries the themes). Eight leaves share
+   the band the two-branch tree's four use, so the cards run narrow — 12px
+   leaf type, pairs 6px apart inside a branch, ~8px between branches.
+   Bracketed labels mark what the spec left open: which side of the
+   positive-demand diagonal means what, and that fork's "no" leaf's name. */
+const QUAD2: WalkShape = {
+  id: "quad2",
+  label: "Four quadrants · forked",
+  hint: "Each quadrant asks one more question — eight diagnoses",
+  about:
+    "The revision spec in full: the root forks into the four quadrant shocks, and each shock forks once more with its own instrument — eight leaves",
+  variant: "quad2",
+  rootQuestion: "population × wages — which quadrant?",
+  rootX: 384,
+  rootW: 318,
+  headW: 142,
+  headSize: 15.5,
+  headH: 48,
+  qcardW: 168,
+  leafH: 42,
+  leafSize: 12,
+  forkOneLine:
+    "one fork picks the quadrant's shock, and each shock asks one more question",
+  planeCopy: {
+    kicker: "Reading the quadrant",
+    lead: "Each quadrant is its own shock — and each shock gets one more question.",
+  },
+  plane: QUAD.plane,
+  branches: [
+    {
+      id: "demandpos",
+      title: "Positive demand shock",
+      titleLines: ["Positive demand", "shock"],
+      edge: "people ↑ · pay ↑",
+      x: 111,
+      question: () => [
+        "housing a potential",
+        "constraint? [MSA vs diagonal]",
+      ],
+      leaves: [
+        {
+          id: "dp-housing",
+          lines: ["Housing", "risk"],
+          edge: "[people > pay]",
+          x: 66,
+          w: 84,
+        },
+        {
+          id: "dp-clear",
+          lines: ["[no housing", "risk]"],
+          edge: "[pay > people]",
+          x: 156,
+          w: 84,
+        },
+      ],
+    },
+    {
+      id: "supplypos",
+      title: "Positive supply shock",
+      titleLines: ["Positive supply", "shock"],
+      edge: "people ↑ · pay ↓",
+      x: 293,
+      question: (n) => [
+        "housing prices above the",
+        `median admin (${n.medCost})?`,
+      ],
+      leaves: [
+        {
+          id: "sp-col",
+          lines: ["Housing"],
+          edge: "yes — faster",
+          x: 248,
+          w: 84,
+        },
+        {
+          id: "sp-amen",
+          lines: ["Amenities"],
+          edge: "no — slower",
+          x: 338,
+          w: 84,
+        },
+      ],
+    },
+    {
+      id: "demandneg",
+      title: "Negative demand shock",
+      titleLines: ["Negative demand", "shock"],
+      edge: "people ↓ · pay ↓",
+      x: 475,
+      question: () => ["local or regional?", "(MSA pop × wage chart)"],
+      leaves: [
+        {
+          id: "dn-regional",
+          lines: ["Regional", "(MSA)"],
+          edge: "MSA weak too",
+          x: 430,
+          w: 84,
+        },
+        {
+          id: "dn-local",
+          lines: ["Local", "(admin)"],
+          edge: "MSA healthy",
+          x: 520,
+          w: 84,
+        },
+      ],
+    },
+    {
+      id: "supplyneg",
+      title: "Negative supply shock",
+      titleLines: ["Negative supply", "shock"],
+      edge: "people ↓ · pay ↑",
+      x: 657,
+      question: (n) => [
+        "housing prices above the",
+        `median admin (${n.medCost})?`,
+      ],
+      leaves: [
+        {
+          id: "sn-col",
+          lines: ["Housing"],
+          edge: "yes — faster",
+          x: 612,
+          w: 84,
+        },
+        {
+          id: "sn-amen",
+          lines: ["Amenities"],
+          edge: "no — slower",
+          x: 702,
+          w: 84,
+        },
+      ],
+    },
+  ],
+};
 
-/** what the walk opens on — the shipped two-branch tree, listed first so it
- *  leads the pill row */
-export const DEFAULT_WALK_SHAPE: WalkShapeId = "two";
+export const WALK_SHAPES: WalkShape[] = [QUAD2, QUAD, TWO, THREE];
+
+/** what the walk opens on — the revision spec's forked quadrant tree, listed
+ *  first so it leads the pill row */
+export const DEFAULT_WALK_SHAPE: WalkShapeId = "quad2";
 
 export const walkShape = (id: WalkShapeId): WalkShape =>
   WALK_SHAPES.find((s) => s.id === id) ?? TWO;
@@ -767,16 +907,27 @@ export const fitScale = (
   );
 };
 
-export const fitTransform = (
+/** the same fit, as numbers — [k, tx, ty] — for anything that has to map a
+ *  tree point into posed stage coordinates itself (the transition studies) */
+export const fitPose = (
   box: [number, number, number, number],
   into: [number, number, number, number],
   maxScale = 2.4,
-): string => {
+): [number, number, number] => {
   const [bx0, by0, bx1, by1] = box;
   const [ix0, iy0, ix1, iy1] = into;
   const k = fitScale(box, into, maxScale);
   const tx = (ix0 + ix1) / 2 - k * ((bx0 + bx1) / 2);
   const ty = (iy0 + iy1) / 2 - k * ((by0 + by1) / 2);
+  return [k, tx, ty];
+};
+
+export const fitTransform = (
+  box: [number, number, number, number],
+  into: [number, number, number, number],
+  maxScale = 2.4,
+): string => {
+  const [k, tx, ty] = fitPose(box, into, maxScale);
   return `translate(${tx.toFixed(1)}px, ${ty.toFixed(1)}px) scale(${k.toFixed(3)})`;
 };
 

@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PAGE_IDS, cityCountryName, cityShortName } from "../data/content";
 import {
   DEFAULT_CONSTRAINT_FLOW,
   convertPath,
+  suggestedPath,
   type ConstraintFlow,
   type TreeMode,
   type TreeVariant,
@@ -93,6 +94,20 @@ export function ToolView({
   /* the app-wide structure the walk's tree stands for, which the analysis
      schematic follows while a walk is mounted */
   const walkVariant = walkShape(walkShapeId).variant;
+  /* The analysis section mirrors the walk's tree, so the app's pick (held on
+     the app-wide structure) converts into the walk's. The alias cannot
+     recover a shock's SIGN, so a pick that merely mirrors the city's own
+     suggestion reads AS the walk's sign-aware suggestion — otherwise the
+     schematic would mark a quadrant branch no one chose. */
+  const walkPath = useMemo(() => {
+    /* "hasn't deviated" is read against the APP's own default for this city
+       — projecting the walk's suggestion into the app space instead loses
+       the leaf on the one-element quad path and never matches */
+    const appSugg = suggestedPath(cityShort, treeVariant);
+    return appSugg.join("/") === branchPath.join("/")
+      ? suggestedPath(cityShort, walkVariant)
+      : convertPath(branchPath, walkVariant);
+  }, [cityShort, walkVariant, treeVariant, branchPath]);
   /* The shortened walk reads the chart, the tree and the branch analysis as
      ONE piece: the route stays on the diagnosis the whole way down, and only
      the end of the analysis hands the choice over. The release lives here
@@ -213,9 +228,7 @@ export function ToolView({
               back into the app-wide structure */}
           <BranchAnalysisPage
             cityShort={cityShort}
-            branchPath={
-              guidedFlow ? convertPath(branchPath, walkVariant) : branchPath
-            }
+            branchPath={guidedFlow ? walkPath : branchPath}
             onSelectBranch={
               guidedFlow
                 ? (p) => onSelectBranch(convertPath(p, treeVariant))

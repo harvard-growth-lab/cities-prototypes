@@ -15,6 +15,7 @@ import {
   countryMedians,
   homeMsa,
   homePlace,
+  metroUnit,
   placeCost,
 } from "./metros";
 
@@ -42,8 +43,10 @@ export type BranchSide = Exclude<TreeSide, "root">;
  *  straight to two leaves per side — demand → metro-wide/place-specific
  *  shock, supply → housing/amenities; "alt3" is that same tree with a third,
  *  still-unnamed branch hanging off the root (a layout study — see
- *  TREE_NODES_ALT3) */
-export type TreeVariant = "full" | "alt" | "alt3" | "quad";
+ *  TREE_NODES_ALT3); "quad" is the four-quadrant tree, one fork and done;
+ *  "quad2" is that tree under the Sept 2026 revision spec — each shock forks
+ *  once more with its own instrument, eight leaves (TREE_NODES_QUAD2) */
+export type TreeVariant = "full" | "alt" | "alt3" | "quad" | "quad2";
 
 /** The tree section's top-level choice. Not a styling experiment like the
  *  icon/chip/curve toggles — each mode is a different proposal for how the
@@ -417,11 +420,64 @@ export function diagnose(cityShort: string, country = USA): Diagnosis {
   };
 }
 
+/** the sign-aware quadrant branch the city's own dials argue for — which the
+ *  lossy demand→demandpos alias in CROSS_VARIANT cannot recover */
+export function quadSideOf(cityShort: string, country = USA): BranchSide {
+  const place = homePlace(cityShort);
+  if (!place) return "supplyneg"; // the fallback quadrant (PLACE_QUAD, q4)
+  const med = countryMedians(country);
+  const popUp = place.pop >= med.pop;
+  const wageUp = place.wage >= med.wage;
+  return popUp && wageUp
+    ? "demandpos"
+    : !popUp && !wageUp
+      ? "demandneg"
+      : popUp
+        ? "supplypos"
+        : "supplyneg";
+}
+
+/** Which leaf of the forked quadrant tree a shock branch lands on, per the
+ *  revision spec's instruments. The supply forks reuse the alt tree's own
+ *  housing test; the negative-demand fork reads the MSA through the existing
+ *  metro read; the positive-demand diagonal test has no settled reading yet
+ *  — [people outrunning pay → housing risk] is the placeholder rule,
+ *  bracketed wherever it surfaces in copy. */
+export function quadLeaf(
+  side: BranchSide,
+  cityShort: string,
+  country = USA,
+): string {
+  const sub = diagnose(cityShort, country).path[1];
+  switch (side) {
+    case "demandneg":
+      return sub === "placespec" ? "dn-local" : "dn-regional";
+    case "demandpos": {
+      const msa = homeMsa(cityShort);
+      if (!msa) return "dp-housing"; // [no metro data — the fallback leaf]
+      const [mx, my] = metroUnit(msa);
+      return mx >= my ? "dp-housing" : "dp-clear";
+    }
+    case "supplypos":
+      return sub === "amen" ? "sp-amen" : "sp-col";
+    default:
+      return sub === "amen" ? "sn-amen" : "sn-col";
+  }
+}
+
 /** the diagnosed descent, told on whichever structure is being shown */
 export const suggestedPath = (
   cityShort: string,
   variant: TreeVariant = "full",
 ): string[] => {
+  /* the quadrant structures need the SIGN of the shock, which the alt path
+     does not carry — they derive it from the dials, then run the branch's
+     own instrument */
+  if (variant === "quad") return [quadSideOf(cityShort)];
+  if (variant === "quad2") {
+    const side = quadSideOf(cityShort);
+    return [side, quadLeaf(side, cityShort)];
+  }
   const alt = diagnose(cityShort).path;
   return variant === "alt" ? alt : convertPath(alt, variant);
 };
@@ -720,14 +776,136 @@ export const TREE_NODES_QUAD: TreeNodeData[] = [
   },
 ];
 
+/* ---------- the four-quadrant structure, FORKED ----------
+ *  The team's revision spec (Sept 2026) for the quadrant tree: each shock
+ *  keeps its own OVERARCHING QUESTION and forks once more with its own
+ *  instrument (QUAD_BRANCH_SPEC below carries the questions; the themes
+ *  under each leaf are in LEAF_THEMES). The four shock nodes are reused
+ *  verbatim; the eight leaves are new, their ids prefixed by branch so the
+ *  two housing/amenities pairs stay distinct nodes. Bracketed text marks
+ *  what the spec left open — the exact reading of each instrument, and the
+ *  name of the positive-demand fork's "no" leaf. */
+export const TREE_NODES_QUAD2: TreeNodeData[] = [
+  ...TREE_NODES_QUAD,
+  {
+    id: "dp-housing",
+    parent: "demandpos",
+    title: "Housing risk",
+    detail:
+      "[demand is healthy today, but the MSA's side of the quadrant's diagonal says growth is pressing on housing — the threat to future growth is a housing constraint]",
+    tests:
+      "[which side of the pizza-chart quadrant's diagonal the MSA falls on — people outrunning pay reads as housing risk]",
+  },
+  {
+    id: "dp-clear",
+    parent: "demandpos",
+    title: "[No housing risk]",
+    detail:
+      "[the MSA sits on the other side of the diagonal — housing is not the looming constraint, so the threats to future growth are read elsewhere]",
+    tests: "[the other side of the quadrant's diagonal]",
+  },
+  {
+    id: "dn-regional",
+    parent: "demandneg",
+    title: "Regional (MSA)",
+    detail:
+      "[the MSA pizza chart reads weak too — the demand shock reaches past the admin boundary, so the constraint is diagnosed at the metro level]",
+    tests:
+      "Read the MSA pizza chart: MSA population change against MSA wage change. [the MSA in the same weak quadrant → regional]",
+  },
+  {
+    id: "dn-local",
+    parent: "demandneg",
+    title: "Local (admin)",
+    detail:
+      "[the MSA pizza chart reads healthy — the demand loss is specific to the admin city, while the region around it does fine]",
+    tests:
+      "Read the MSA pizza chart: MSA population change against MSA wage change. [the MSA out of the weak quadrant → local]",
+  },
+  {
+    id: "sp-col",
+    parent: "supplypos",
+    title: "Housing",
+    detail:
+      "[people are arriving faster than pay rises AND admin housing prices are climbing above the median admin's — is the boom being taken back at the door?]",
+    tests: "Admin housing-price change above the median admin's.",
+  },
+  {
+    id: "sp-amen",
+    parent: "supplypos",
+    title: "Amenities",
+    detail:
+      "[housing is not absorbing the boom — what is pulling people in, and will it hold?]",
+    tests: "Admin housing-price change at or below the median admin's.",
+  },
+  {
+    id: "sn-col",
+    parent: "supplyneg",
+    title: "Housing",
+    detail:
+      "[pay climbs while people leave, and admin housing prices are climbing above the median admin's — the wage gain is being taken back at the door]",
+    tests: "Admin housing-price change above the median admin's.",
+  },
+  {
+    id: "sn-amen",
+    parent: "supplyneg",
+    title: "Amenities",
+    detail:
+      "[the priced-out story doesn't hold — what living there is like, not what it costs, is pushing people out]",
+    tests: "Admin housing-price change at or below the median admin's.",
+  },
+];
+
+/** The spec's per-branch layer that is NOT another tree level: each shock's
+ *  overarching question, its fork stated with its instrument, and — on the
+ *  positive shocks — the standing "what could I do better?" themes that
+ *  apply REGARDLESS of the fork. Read by the analysis section (both quad
+ *  structures) and by the walks' copy. */
+export interface QuadBranchSpec {
+  /** the overarching question the branch's analysis opens on */
+  question: string;
+  /** the fork and the instrument that decides it, in one line */
+  forkLine: string;
+  /** theme ids that apply regardless of the fork — "what could I do better?" */
+  better: string[];
+}
+export const QUAD_BRANCH_SPEC: Partial<Record<BranchSide, QuadBranchSpec>> = {
+  demandneg: {
+    question: "What is my demand constraint?",
+    forkLine:
+      "Is it local or regional (admin or MSA)? Read the MSA pizza chart — MSA population change vs MSA wage change.",
+    better: [],
+  },
+  demandpos: {
+    question: "What are threats to future growth?",
+    forkLine:
+      "Is housing a potential constraint? Read which side of the pizza-chart quadrant's diagonal the MSA falls on.",
+    better: ["complexity"],
+  },
+  supplyneg: {
+    question: "What is my supply constraint?",
+    forkLine:
+      "Housing or amenities? Does the admin fall above or below the median admin housing-price change?",
+    better: [],
+  },
+  supplypos: {
+    question: "Is it sustainable?",
+    forkLine:
+      "Housing or amenities? Does the admin fall above or below the median admin housing-price change?",
+    better: ["complexity"],
+  },
+};
+
 export const treeNodes = (variant: TreeVariant): TreeNodeData[] =>
   variant === "quad"
     ? TREE_NODES_QUAD
-    : variant === "full"
-      ? TREE_NODES
-      : variant === "alt3"
-        ? TREE_NODES_ALT3
-        : TREE_NODES_ALT;
+    : variant === "quad2"
+      ? TREE_NODES_QUAD2
+      : variant === "full"
+        ? TREE_NODES
+        : variant === "alt3"
+          ? TREE_NODES_ALT3
+          : TREE_NODES_ALT;
 
 /** every root→leaf descent (ids below the root) of a variant, figure order */
 function leafPaths(variant: TreeVariant): string[][] {
@@ -746,25 +924,38 @@ function leafPaths(variant: TreeVariant): string[][] {
  *  different name. Housing and amenities need no entry — they keep their ids
  *  across both trees — but the two demand leaves are alt-only, and without
  *  these a demand pick would land on whichever route happens to be leftmost. */
-const CROSS_VARIANT: Record<string, string> = {
-  /* the shock reached past the city limits ⇄ forces no city controls */
-  metrowide: "external",
-  external: "metrowide",
+const CROSS_VARIANT: Record<string, string[]> = {
+  /* the shock reached past the city limits ⇄ forces no city controls — and,
+     on the forked quadrant tree, the regional read of a negative demand
+     shock */
+  metrowide: ["external", "dn-regional"],
+  external: ["metrowide"],
   /* the city is not generating demand its region manages to ⇄ the city
      cannot move into the adjacent possible */
-  placespec: "coord",
-  coord: "placespec",
+  placespec: ["coord", "dn-local"],
+  coord: ["placespec"],
+  "dn-regional": ["metrowide"],
+  "dn-local": ["placespec"],
   /* the four-quadrant branches carry the demand/supply split inside them, so
      a pick there lands on the matching side of every other structure. The
      reverse is a choice rather than a fact — a plain "demand" read does not
      say which SIGN of demand shock it is — so it resolves to the positive
      one and the reader re-picks if they meant the other. */
-  demandpos: "demand",
-  demandneg: "demand",
-  supplypos: "supply",
-  supplyneg: "supply",
-  demand: "demandpos",
-  supply: "supplypos",
+  demandpos: ["demand"],
+  demandneg: ["demand"],
+  supplypos: ["supply"],
+  supplyneg: ["supply"],
+  demand: ["demandpos"],
+  supply: ["supplypos"],
+  /* the forked quadrant tree's housing/amenities pairs are the alt tree's
+     own leaves, one per supply sign — either way round they say the same
+     thing */
+  col: ["sp-col", "sn-col"],
+  amen: ["sp-amen", "sn-amen"],
+  "sp-col": ["col"],
+  "sn-col": ["col"],
+  "sp-amen": ["amen"],
+  "sn-amen": ["amen"],
 };
 
 /** carry a pick across the variant switch: of the target variant's full
@@ -774,7 +965,7 @@ const CROSS_VARIANT: Record<string, string> = {
  *  demand/existing/external both round-trip. */
 export function convertPath(path: string[], variant: TreeVariant): string[] {
   const want = new Set(
-    path.flatMap((id) => [id, CROSS_VARIANT[id]]).filter(Boolean),
+    path.flatMap((id) => [id, ...(CROSS_VARIANT[id] ?? [])]),
   );
   const score = (p: string[]) => p.filter((id) => want.has(id)).length;
   return leafPaths(variant).reduce((best, p) =>
@@ -837,7 +1028,7 @@ export const THEMES: Record<string, ThemeDef> = {
   },
   industryTrends: {
     id: "industryTrends",
-    title: "Industry and national trends",
+    title: "Industry and national shocks",
     detail:
       "[how much of the decline the city's industry mix would predict on its own — the same shift-share, read for its industry and national components]",
     indicators: ["Nominal and market shares", "Shift-share analysis"],
@@ -906,8 +1097,33 @@ export const LEAF_THEMES: Record<string, string[]> = {
   placespec: ["localShift", "jobAccess"],
   col: ["housingSupply"],
   amen: ["commuting", "amenityQuality"],
+  /* the forked quadrant tree (the revision spec): the same evidence, keyed
+     by its own leaf ids. The positive-demand leaves carry no leaf themes of
+     their own — that branch's standing "what could I do better?" block
+     (QUAD_BRANCH_SPEC.better) is the evidence there. */
+  "dn-regional": [
+    "complexity",
+    "industryTrends",
+    "remoteness",
+    "innovation",
+    "inputs",
+  ],
+  "dn-local": ["localShift", "jobAccess"],
+  "sn-col": ["housingSupply"],
+  "sn-amen": ["commuting", "amenityQuality"],
+  "sp-col": ["housingSupply"],
+  "sp-amen": ["commuting", "amenityQuality"],
+  "dp-housing": [],
+  "dp-clear": [],
 };
 
 /** themes for a picked descent — the leaf at its end decides */
 export const pathThemes = (path: string[]): ThemeDef[] =>
   (LEAF_THEMES[path[path.length - 1]] ?? []).map((id) => THEMES[id]);
+
+/** the spec's standing block on the positive shocks — themes that apply
+ *  regardless of the fork ("what could I do better?") */
+export const branchBetterThemes = (path: string[]): ThemeDef[] =>
+  (QUAD_BRANCH_SPEC[path[0] as BranchSide]?.better ?? []).map(
+    (id) => THEMES[id],
+  );
