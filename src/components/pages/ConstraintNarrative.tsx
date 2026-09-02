@@ -1106,8 +1106,14 @@ export function ConstraintNarrative({
     /* while the camera ride owns the tree phase it moves the dot itself —
        two writers on one transform would fight */
     if (rideOn && step >= TREE_BEAT) return;
+    /* the pour has no root stop: the dot rides the tiles straight to its
+       branch — the first level of the tree — the moment the hand-off plays */
     const arc =
-      step < TREE_BEAT ? null : walk.stations[Math.min(step - TREE_BEAT, 3)];
+      step < TREE_BEAT
+        ? null
+        : walk.stations[
+            Math.min(Math.max(step - TREE_BEAT, pourOn ? 1 : 0), 3)
+          ];
     const target: [number, number] =
       arc != null
         ? walk.at(arc)
@@ -1155,7 +1161,7 @@ export function ConstraintNarrative({
     };
     rafRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafRef.current);
-  }, [step, walk, ux, uy, rideOn]);
+  }, [step, walk, ux, uy, rideOn, pourOn]);
 
   /* ---------- the camera rides (fit: "ride" / "sideride") ----------
      STEPPED, not scrubbed: the camera's target is the current stop's
