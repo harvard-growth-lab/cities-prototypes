@@ -2934,6 +2934,49 @@
      largest industries and rolls the rest into a single block. Areas are
      preserved, so the coarse map covers exactly the same ground as the fine
      one — only the level of detail changes. */
+  /* "Ordered by jobs" has to be readable as an order, and no treemap tiling
+     gives that: squarify chases square cells and throws the sequence away,
+     binary keeps it only loosely, and slice or dice would put 161 industries
+     in slivers under a pixel. This is a strip layout — the classic answer.
+     Cells run largest first, left to right along a row, then on to the next
+     row, and a row closes when adding one more would make its cells worse
+     shaped. Area still encodes jobs; only the reading order is imposed. */
+  function stripLayout(rows, W, H, gap){
+    const g = gap === undefined ? 1 : gap;
+    const items = rows.slice().sort((a, b) => b.employ - a.employ);
+    const total = items.reduce((s, d) => s + d.employ, 0) || 1;
+    const scale = (W * H) / total;
+    const out = new Map();
+    let i = 0, y = 0;
+    while (i < items.length){
+      let sum = 0, best = Infinity, count = 0;
+      for (let k = i; k < items.length; k++){
+        const trySum = sum + items[k].employ * scale;
+        const rowH = trySum / W;
+        let worst = 0;
+        for (let m = i; m <= k; m++){
+          const wI = (items[m].employ * scale) / rowH;
+          worst = Math.max(worst, Math.max(wI / rowH, rowH / wI));
+        }
+        if (worst <= best){ best = worst; sum = trySum; count = k - i + 1; }
+        else break;
+      }
+      if (!count){ count = 1; sum = items[i].employ * scale; }
+      const rowH = sum / W;
+      let x = 0;
+      for (let m = i; m < i + count; m++){
+        const wI = (items[m].employ * scale) / rowH;
+        out.set(items[m].name, {
+          x: x + g / 2, y: y + g / 2,
+          w: Math.max(0, wI - g), h: Math.max(0, rowH - g)
+        });
+        x += wI;
+      }
+      y += rowH; i += count;
+    }
+    return out;
+  }
+
   function twoDigitRows(rows, keepPerSector){
     const keep = keepPerSector || 3, bySector = {};
     rows.forEach(d => { (bySector[d.sector] = bySector[d.sector] || []).push(d); });
@@ -2999,8 +3042,7 @@
     const posFull = new Map(full.leaves().map(n => [n.data.name, box(n)]));
     /* the same industries with the sector walls taken down, so the biggest
        run from the top-left corner in plain order of size */
-    const posFlat = new Map(tmap(industryData, MI_W, MI_H, false).leaves()
-      .map(n => [n.data.name, box(n)]));
+    const posFlat = stripLayout(industryData, MI_W, MI_H);
     let view = "map";
     const spot = d => (view === "alt" ? posFlat : posFull).get(d.name) || posFull.get(d.name);
 
@@ -3057,8 +3099,7 @@
       const coarse = twoDigitRows(revealRows);
       posCoarse = new Map(tmap(coarse, MI_W, MI_H, true).leaves()
         .map(n => [n.data.name, box(n)]));
-      posCoarseFlat = new Map(tmap(coarse, MI_W, MI_H, false).leaves()
-        .map(n => [n.data.name, box(n)]));
+      posCoarseFlat = stripLayout(coarse, MI_W, MI_H);
       coarseShare = d => ADMIN_SHARE[d.sector] !== undefined ? ADMIN_SHARE[d.sector] : 0.15;
 
       /* the sector's own colour, once pale and once full: the pale ground is
@@ -3413,8 +3454,9 @@
     updateExportHeadStat();
     updateTradableHeadStat();
     initIndustryFigure("mi", industryData, "MI");
-    initIndustryFigure("am", adminIndustryData, "AM",
-      { adminReveal: true, revealRows: industryData });
+    /* Admin Industry Mix now runs its own figure — one set of sector rows
+       read three ways — which lives with the section's markup rather than
+       here; nothing to build in this file. */
     initRcaChart();
     initPeerChart();
     initRcaViewToggle();

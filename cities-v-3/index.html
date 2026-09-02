@@ -2547,6 +2547,142 @@
     font-size:12px;font-weight:700;fill:#fff;pointer-events:none;
     paint-order:stroke;stroke:rgba(0,0,0,.28);stroke-width:2.2px;stroke-linejoin:round;
   }
+  /* ── Admin Industry Mix, the dots ───────────────────────────────────── */
+  .am-fig{display:block;}
+  #amDotsSvg .ad-ring{fill:none;stroke:var(--border-strong);stroke-width:1.2;}
+  #amDotsSvg .ad-ring--metro{stroke-dasharray:4 4;}
+  #amDotsSvg .ad-ringlab{font-size:12px;font-weight:700;fill:var(--ink-soft);letter-spacing:.03em;}
+  #amDotsSvg .ad-dot{transition:none;}
+  #amDotsSvg .ad-rownum{font-size:14px;font-weight:700;font-variant-numeric:tabular-nums;}
+  #amDotsSvg .ad-rowsub{font-size:11.5px;fill:var(--ink-soft);}
+
+  /* the key names only what the beat on screen is showing */
+  .am-key .sk-item{display:none;align-items:center;gap:7px;}
+  .am-key[data-step="0"] .ak-all,
+  .am-key[data-step="1"] .ak-in,  .am-key[data-step="1"] .ak-both,
+  .am-key[data-step="2"] .ak-in,  .am-key[data-step="2"] .ak-both, .am-key[data-step="2"] .ak-out,
+  .am-key[data-step="3"] .ak-in,  .am-key[data-step="3"] .ak-both, .am-key[data-step="3"] .ak-out,
+  .am-key[data-step="4"] .ak-jobs-item,
+  .am-key[data-step="5"] .ak-jobs-item, .am-key[data-step="5"] .ak-res-item,
+  .am-key[data-step="6"] .ak-mark-jobs, .am-key[data-step="6"] .ak-mark-res, .am-key[data-step="6"] .ak-base,
+  .am-key[data-step="7"] .ak-flow-in,   .am-key[data-step="7"] .ak-flow-out{display:inline-flex;}
+  /* the swatches are the marks themselves, at the size they are drawn */
+  .am-key .ak-dot{width:9px;height:9px;border-radius:50%;}
+  .am-key .ak-dot--grey{background:#9aa8ad;}
+  .am-key .ak-dot--in{background:var(--geo-city);}
+  .am-key .ak-dot--out{background:var(--orange);}
+  .am-key .ak-dot--ring{background:#fff;border:1.8px solid var(--orange);}
+  .am-key .ak-dash{width:16px;height:0;border-top:1.5px dashed #8e9196;}
+  .am-key .ak-line{width:18px;height:4px;border-radius:2px;}
+  .am-key .ak-line--in{background:var(--geo-city);}
+  .am-key .ak-line--out{background:var(--orange);}
+
+  /* ── Admin Industry Mix, the exchange map ───────────────────────────── */
+  #amMapSvg .am-place{fill:#f1f3f4;stroke:#cfd5d8;stroke-width:.6;}
+  #amMapSvg .am-place.is-partner{fill:#e2e8ea;}
+  #amMapSvg .am-place.is-focus{fill:#d3e0e3;stroke:var(--geo-city);stroke-width:1.1;}
+  #amMapSvg .am-flow{fill:none;stroke-linecap:butt;opacity:.92;cursor:default;}
+  #amMapSvg .am-flow.is-in{stroke:var(--geo-city);}
+  #amMapSvg .am-flow.is-out{stroke:var(--orange);}
+  #amMapSvg .am-head.is-in{fill:var(--geo-city);}
+  #amMapSvg .am-head.is-out{fill:var(--orange);}
+  /* the marching dash: the page's own colour riding each arc, so the
+     direction of travel reads at a glance */
+  #amMapSvg .am-dash{fill:none;stroke:#fff;stroke-opacity:.55;stroke-dasharray:5 13;
+    animation:am-march 1.4s linear infinite;pointer-events:none;}
+  @keyframes am-march{to{stroke-dashoffset:-18;}}
+  #amMapSvg .am-ctx{font-size:10px;fill:#8e9196;paint-order:stroke;stroke:#fff;stroke-width:2.5px;}
+  #amMapSvg .am-pname{font-size:12px;font-weight:600;fill:var(--ink);
+    paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round;}
+  #amMapSvg .am-pname.is-focus{font-size:15px;font-weight:700;fill:var(--geo-city);letter-spacing:.01em;}
+  #amMapSvg .am-pval{font-size:11px;fill:var(--ink-soft);font-variant-numeric:tabular-nums;
+    paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round;}
+  #amMapSvg .am-pval .is-in{fill:var(--geo-city);font-weight:700;}
+  #amMapSvg .am-pval .is-out{fill:var(--orange);font-weight:700;}
+
+  /* ── Admin Industry Mix, the dial ───────────────────────────────────── */
+  .am-ex{display:grid;grid-template-columns:228px minmax(0,1fr);gap:22px;align-items:start;}
+  .am-chips{display:flex;flex-direction:column;gap:3px;}
+  .am-chips-lbl{font-size:11.5px;font-weight:700;letter-spacing:.02em;color:var(--ink-soft);margin-bottom:6px;}
+  .am-chip{
+    display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;text-align:left;
+    appearance:none;font:inherit;font-size:12.5px;color:var(--ink);background:transparent;
+    border:1px solid transparent;border-radius:3px;padding:5px 9px;cursor:pointer;
+    transition:background .15s ease,border-color .15s ease;
+  }
+  .am-chip:hover{background:var(--teal-tint);}
+  .am-chip[aria-pressed="true"]{background:var(--teal-tint);border-color:var(--teal);font-weight:700;}
+  .am-chip .r{font-size:12px;color:var(--ink-soft);font-variant-numeric:tabular-nums;font-weight:500;}
+  .am-chip .r i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:0;}
+  .am-chip.is-all{border-bottom:1px solid var(--border-strong);border-radius:3px 3px 0 0;margin-bottom:6px;padding-bottom:8px;}
+  .am-ex-main{display:grid;grid-template-columns:minmax(0,1fr) 236px;gap:20px;align-items:start;}
+  .am-gauge-wrap{position:relative;}
+  .am-gauge{width:100%;max-width:420px;display:block;margin:0 auto;height:auto;}
+  .am-gauge .zone{stroke:#fff;stroke-width:2;}
+  .am-gauge .tick{stroke:var(--ink);stroke-width:1;}
+  .am-gauge .ticklbl{font-size:12px;fill:var(--ink);font-variant-numeric:tabular-nums;}
+  .am-gauge .zonelbl{font-size:11px;fill:var(--ink-soft);font-weight:600;}
+  .am-gauge .needle{stroke:var(--ink);stroke-width:3;stroke-linecap:round;transform-origin:260px 250px;
+    transition:transform 1s cubic-bezier(.25,.8,.25,1),stroke .4s ease;}
+  .am-gauge .pivot{fill:var(--ink);}
+  .am-gauge .ghost{stroke:#8e9196;stroke-width:2;stroke-dasharray:3 3;}
+  .am-gauge .ghostlbl{font-size:11px;fill:var(--ink-soft);}
+  .am-gauge .big{font-size:40px;font-weight:700;fill:var(--ink);letter-spacing:-.01em;font-variant-numeric:tabular-nums;}
+  .am-gauge .biglbl{font-size:12px;fill:var(--ink-soft);}
+  .am-verdict{font-size:17px;line-height:1.3;font-weight:700;color:var(--ink);margin:2px 0 8px;}
+  .am-verdict .pill{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.03em;
+    padding:2px 7px;border-radius:3px;vertical-align:middle;margin-right:6px;}
+  .am-verdict .pill.is-in{background:var(--teal-tint);color:var(--geo-city);}
+  .am-verdict .pill.is-out{background:#fbe6e6;color:#b23a3a;}
+  .am-verdict .pill.is-bal{background:#eceef0;color:var(--ink-soft);}
+  .am-sentence{font-size:13px;line-height:1.5;color:var(--ink);margin:0 0 10px;}
+  .am-tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px;margin:4px 0 12px;}
+  .am-tile{border-top:1px solid var(--border-strong);padding-top:6px;}
+  .am-tile .v{font-size:22px;font-weight:700;line-height:1.05;letter-spacing:-.01em;font-variant-numeric:tabular-nums;color:var(--ink);}
+  .am-tile .l{font-size:11.5px;color:var(--ink-soft);margin-top:3px;line-height:1.3;}
+  .am-sw{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:0;}
+  .am-sw--jobs{background:var(--geo-city);}
+  .am-sw--res{background:var(--orange);}
+  .am-mini .mrow{display:grid;grid-template-columns:118px 1fr;align-items:center;gap:8px;
+    font-size:11.5px;color:var(--ink-soft);margin:5px 0;}
+  .am-mini .mtrack{position:relative;height:14px;}
+  .am-mini .mbar{position:absolute;left:0;top:0;height:14px;border-radius:0 3px 3px 0;
+    transition:width .8s cubic-bezier(.2,.7,.2,1);}
+  .am-mini .mbar.is-jobs{background:var(--geo-city);}
+  .am-mini .mbar.is-res{background:var(--orange);}
+  .am-mini .mv{position:absolute;top:0;line-height:14px;font-size:11px;padding-left:6px;
+    white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--ink);}
+  @media (prefers-reduced-motion: reduce){
+    .am-gauge .needle{transition:none;}
+    .am-mini .mbar{transition:none;}
+    #amMapSvg .am-dash{animation:none;}
+  }
+
+  /* the dots' captions */
+  #amDotsSvg .ad-cap{font-size:12px;fill:var(--ink-soft);}
+  #amDotsSvg .ad-cap .is-ink{fill:var(--ink);font-weight:700;}
+  #amDotsSvg .ad-cap .is-grey{fill:#6f7c82;font-weight:700;}
+  #amDotsSvg .ad-cap .is-in{fill:var(--geo-city);font-weight:700;}
+  #amDotsSvg .ad-cap .is-out{fill:var(--orange);font-weight:700;}
+  #amDotsSvg .ad-cap .is-soft{fill:var(--ink-soft);}
+
+  /* ── Admin Industry Mix: one set of rows, three readings ────────────── */
+  #amBarsSvg .am-name{font-size:12.5px;fill:var(--ink);}
+  #amBarsSvg .am-val{font-size:12px;font-weight:600;fill:var(--ink);font-variant-numeric:tabular-nums;}
+  #amBarsSvg .am-val-res{font-weight:400;fill:var(--ink-soft);}
+  #amBarsSvg .am-grid{stroke:#e9e9eb;stroke-width:1;}
+  #amBarsSvg .am-grid.is-base{stroke:#8e9196;stroke-dasharray:3 3;}
+  #amBarsSvg .am-ticklab{font-size:11.5px;font-weight:600;fill:#72767b;
+    font-variant-numeric:tabular-nums;}
+  #amBarsSvg .am-colhead{font-size:11.5px;font-weight:600;fill:#72767b;}
+  #amBarsSvg .am-row{cursor:default;}
+  #amBarsSvg .am-link{stroke-width:1.5;}
+  /* the key, which gains its second entry once the residents' count arrives */
+  .am-key{display:flex;gap:22px;flex-wrap:wrap;margin:0;font-size:12.5px;color:var(--ink-soft);}
+  .am-key i{flex:none;display:inline-block;border-radius:2px;}
+  .am-key .ak-jobs{width:15px;height:11px;background:var(--geo-city);}
+  .am-key .ak-res{width:15px;height:6px;background:var(--orange);}
+
   .mi-figure svg .mi-brace{fill:none;stroke:var(--teal);stroke-width:1.5;}
   .mi-figure svg .mi-toplab{font-size:11.5px;font-weight:700;fill:var(--teal);}
   .ct-slot{display:none;}
@@ -3137,10 +3273,15 @@
       <div class="sec" data-sec="page-admin-mix">
         <button class="sec-head" onclick="goTo('page-admin-mix')"><span class="num">3</span>Admin Industry Mix</button>
         <ul class="steps">
-          <li data-step="page-admin-mix"><span class="dot"></span><button onclick="goTo('page-admin-mix')">How much of the metro's work happens in the city?</button></li>
-          <li data-step="adminComplexity"><span class="dot"></span><button onclick="goTo('adminComplexity')">How complex is the work inside the city?</button></li>
-          <li data-step="adminTradable"><span class="dot"></span><button onclick="goTo('adminTradable')">What brings income into the city?</button></li>
-          <li data-step="adminSpecialized"><span class="dot"></span><button onclick="goTo('adminSpecialized')">What is the city most specialized in?</button></li>
+          <li data-step="page-admin-mix"><span class="dot"></span><button onclick="goTo('page-admin-mix')">One city, two workforces</button></li>
+          <li data-step="adminWhoFills"><span class="dot"></span><button onclick="goTo('adminWhoFills')">Who fills those jobs</button></li>
+          <li data-step="adminResidentsOut"><span class="dot"></span><button onclick="goTo('adminResidentsOut')">Where its residents work</button></li>
+          <li data-step="adminBalance"><span class="dot"></span><button onclick="goTo('adminBalance')">Two workforces</button></li>
+          <li data-step="adminJobsHere"><span class="dot"></span><button onclick="goTo('adminJobsHere')">The work that happens here</button></li>
+          <li data-step="adminResidents"><span class="dot"></span><button onclick="goTo('adminResidents')">What its residents do</button></li>
+          <li data-step="adminSpecialized"><span class="dot"></span><button onclick="goTo('adminSpecialized')">What it does more of than its metro</button></li>
+          <li data-step="adminExchange"><span class="dot"></span><button onclick="goTo('adminExchange')">Who it trades workers with</button></li>
+          <li data-step="adminGauge"><span class="dot"></span><button onclick="goTo('adminGauge')">Workplace, or bedroom?</button></li>
           <li data-step="check-adminmix"><span class="dot"></span><button onclick="goTo('check-adminmix')">Test your knowledge</button></li>
           <li data-step="apply-adminmix"><span class="dot"></span><button onclick="goTo('apply-adminmix')">Put your insights</button></li>
         </ul>
@@ -3789,239 +3930,172 @@
 
       <section class="page" id="page-admin-mix">
         <div class="page-head page-head--geo">
-          <h2>How much of the metro&rsquo;s work happens in the city?</h2>
+          <h2>One city, two workforces</h2>
           <button type="button" class="geo-badge geo-badge--city" onclick="openGeoMap('city')" title="See this geography on the map"><span class="gb-view">Viewing:</span><svg viewBox="0 0 24 30" width="16" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 26h20"/><path d="M5 26V13h6v13"/><path d="M13 26V5h7v21"/><path d="M15.4 9h2.2M15.4 13h2.2M15.4 17h2.2"/></svg><span class="gb-name"><span class="city-short">Boston</span> admin</span></button>
         </div>
-        <div class="lede-stat-row">
-          <p class="lede">The mix you have just read belongs to the whole metro. Only part of it happens inside the
-            city line. Watch the industries gather into their sectors, and each block then show how much of that
-            sector&rsquo;s work sits inside <span class="city-short">Boston</span> proper.</p>
-          <!-- how to read a block, drawn rather than described -->
-          <div class="adm-read" id="amRead" aria-label="How to read the blocks">
-            <svg viewBox="0 0 320 96" width="300" height="90">
-              <rect x="2" y="8" width="82" height="80" fill="#255862" fill-opacity=".75"/>
-              <rect x="2" y="8" width="82" height="61" fill="#ffffff" opacity=".72"/>
-              <rect x="2" y="8" width="82" height="80" fill="none" stroke="#c3ccce"/>
-              <g transform="translate(8 70) scale(.55)" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M2 26h20"/><path d="M4 26V15h6v11"/><path d="M12 26V8h7v18"/>
-              </g>
-              <text x="30" y="84" font-size="13.5" font-weight="700" fill="#ffffff">24%</text>
-              <line x1="88" y1="34" x2="106" y2="34" stroke="#8a989d" stroke-width="1.2"/>
-              <text x="111" y="30" font-size="12" fill="#5b686d">happens elsewhere</text>
-              <text x="111" y="43" font-size="12" fill="#5b686d">in the metro</text>
-              <line x1="88" y1="76" x2="106" y2="76" stroke="#8a989d" stroke-width="1.2"/>
-              <text x="111" y="66" font-size="12" font-weight="600" fill="#1a2226">the solid share is inside</text>
-              <text x="111" y="79" font-size="12" font-weight="600" fill="#1a2226"><tspan class="city-short">Boston</tspan> &#8212; overall, 24%</text>
-              <text x="111" y="92" font-size="12" font-weight="600" fill="#1a2226">of the metro&#8217;s jobs</text>
-            </svg>
-          </div>
-        </div>
-        <!-- One figure serves all four beats. The engine lifts it into the
-             scrolly's stage, where it stays put while the text scrolls past
-             and each beat drives it to its own state. -->
+        <p class="lede">Two counts sit behind every city. The jobs inside the boundary, whoever fills them, and the
+          jobs its residents hold, wherever those jobs are. In most places the two are close. In
+          <span class="city-short">Boston</span> they are not.</p>
+        <p class="lede">Start with the jobs. <strong>687,736</strong> sit inside the city line. Each dot is about
+          2,000 of them.</p>
+
+        <!-- One figure serves the section's three beats. The engine lifts it
+             into the stage, where the rows hold their order while what is
+             measured about them changes. -->
         <div class="mi-figure" id="amFigure" data-step="0">
-          <!-- the same arrangement control the metro section carries; here it
-               drives the coarse opening map as well as the finer beat after it -->
           <div class="mi-head">
-            <div class="mi-view" id="amView">
-              <span class="ctl-label">View</span>
-              <div class="seg" role="group" aria-label="How the mix is arranged">
-                <button type="button" class="seg-btn is-active" data-view="map" aria-pressed="true">Sized by jobs</button>
-                <button type="button" class="seg-btn" data-view="alt" aria-pressed="false">Ordered by jobs</button>
-              </div>
-            </div>
-            <div class="tradable-split-header" id="amSplitHead">
-              <div class="split-col split-col--tradable">
-                <span class="split-label">More tradable</span>
-                <span class="split-rule"></span>
-              </div>
-              <div class="split-col split-col--nontradable">
-                <span class="split-label">Less tradable</span>
-                <span class="split-rule"></span>
-              </div>
-            </div>
+            <p class="am-key" id="amKey" data-step="0">
+              <span class="sk-item ak-all"><i class="ak-dot ak-dot--grey"></i>jobs located in <span class="city-short">Boston</span> &middot; one dot is about 2,000 jobs</span>
+              <span class="sk-item ak-in"><i class="ak-dot ak-dot--in"></i>commutes in &middot; 74% of the jobs here</span>
+              <span class="sk-item ak-both"><i class="ak-dot ak-dot--grey"></i>lives and works in <span class="city-short">Boston</span> &middot; 26%</span>
+              <span class="sk-item ak-out"><i class="ak-dot ak-dot--out"></i>commutes out &middot; 46% of residents&rsquo; jobs</span>
+              <span class="sk-item ak-jobs-item"><i class="ak-jobs"></i>jobs located in <span class="city-short">Boston</span></span>
+              <span class="sk-item ak-res-item"><i class="ak-res"></i>jobs held by <span class="city-short">Boston</span> residents</span>
+              <span class="sk-item ak-mark-jobs"><i class="ak-dot ak-dot--in"></i>jobs here, against the metro</span>
+              <span class="sk-item ak-mark-res"><i class="ak-dot ak-dot--ring"></i>residents&rsquo; jobs, against the metro</span>
+              <span class="sk-item ak-base"><i class="ak-dash"></i>1&times; &middot; the same share as the metro</span>
+              <span class="sk-item ak-flow-in"><i class="ak-line ak-line--in"></i>commute into <span class="city-short">Boston</span></span>
+              <span class="sk-item ak-flow-out"><i class="ak-line ak-line--out"></i>residents commuting out</span>
+            </p>
           </div>
           <div class="tradable-viz-wrapper">
-            <svg class="viz-big" id="amTreemapSvg" width="880" height="500" viewBox="0 0 880 500" xmlns="http://www.w3.org/2000/svg" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;"></svg>
-            <div class="rca-tip" id="amTip" role="tooltip" hidden></div>
-          </div>
-          <!-- one caption slot: each beat's key sits in the same place right
-               under the chart, so a hidden one cannot push the visible one
-               away from the figure it belongs to -->
-          <div class="mi-caption">
-            <p class="sector-key" id="amSectorKey"></p>
-            <div class="complexity-legend" id="amComplexityLegend">
-              <div class="lg-ramp">
-                <span class="cl-label">Less complex</span>
-                <span class="cl-gradient"></span>
-                <span class="cl-label">More complex</span>
+            <!-- the section's two figures share the stage: the dots carry the
+                 four commuting beats, the rows the three about industry mix -->
+            <svg class="viz-big am-fig" id="amDotsSvg" width="880" height="540" viewBox="0 0 880 540" xmlns="http://www.w3.org/2000/svg" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;"></svg>
+            <svg class="viz-big am-fig" id="amBarsSvg" width="880" height="560" viewBox="0 0 880 560" xmlns="http://www.w3.org/2000/svg" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;"></svg>
+            <svg class="viz-big am-fig" id="amMapSvg" width="880" height="640" viewBox="0 0 880 640" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Map of the city and neighbouring places with commuting flows in both directions" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;"></svg>
+            <!-- the dial: a sector list, the gauge, and the reading beside it -->
+            <div class="am-ex am-fig" id="amGaugeWrap">
+              <div class="am-chips" id="amChips" role="group" aria-label="Choose a sector">
+                <div class="am-chips-lbl">Sector &middot; jobs here per resident worker</div>
+              </div>
+              <div class="am-ex-main">
+                <div class="am-gauge-wrap">
+                  <svg class="am-gauge" id="amGaugeSvg" viewBox="0 0 520 335" role="img" aria-label="Gauge showing jobs located in the city per resident worker for the chosen sector"></svg>
+                </div>
+                <div class="am-ex-side">
+                  <div class="am-verdict" id="amVerdict"></div>
+                  <p class="am-sentence" id="amSentence"></p>
+                  <div class="am-tiles">
+                    <div class="am-tile"><div class="v" id="amTJobs"></div><div class="l"><span class="am-sw am-sw--jobs"></span>jobs located in <span class="city-short">Boston</span></div></div>
+                    <div class="am-tile"><div class="v" id="amTRes"></div><div class="l"><span class="am-sw am-sw--res"></span>jobs held by residents</div></div>
+                    <div class="am-tile"><div class="v" id="amTNet"></div><div class="l" id="amTNetL">net inflow of workers, at least</div></div>
+                    <div class="am-tile"><div class="v" id="amTShare"></div><div class="l">the city&rsquo;s share of the metro&rsquo;s jobs in this sector, against 25% of all metro jobs</div></div>
+                  </div>
+                  <div class="am-mini" id="amMini"></div>
+                </div>
               </div>
             </div>
-            <p class="spec-key" id="amSpecKey">
-              <span class="sk-item"><i class="sk-peer"></i>peer-metro average</span>
-              <span class="sk-item"><i class="sk-base"></i>as concentrated as the typical US metro</span>
-            </p>
+            <div class="rca-tip" id="amTip" role="tooltip" hidden></div>
           </div>
         </div>
 
-        <!-- Subsection: Tradable Industries Animation -->
-        <div class="export-subsection" id="adminComplexity">
+        <!-- 2 · where the holders of those jobs live -->
+        <div class="export-subsection" id="adminWhoFills">
           <div class="subsection-header">
-            <h3>How complex is the work inside the city?</h3>
+            <h3>Only one in four of those workers lives here</h3>
           </div>
-          <div class="collapsible-info">
-            <button class="collapsible-header">
-              <span class="ci-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.75a6.25 6.25 0 0 0-3.75 11.25c.53.4.87 1 .96 1.66l.09.59h5.4l.09-.59c.09-.66.43-1.26.96-1.66A6.25 6.25 0 0 0 12 2.75Z"/><path d="M9.6 18.6h4.8"/><path d="M10.5 21h3"/></svg></span>
-              <span class="ci-title">What is economic complexity?</span>
-              <svg class="collapsible-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M6 9l6 6 6-6"/>
-              </svg>
-            </button>
-            <div class="collapsible-content">
-              <p><strong>Complexity</strong> measures the knowledge an industry takes to run. Work that needs many people
-                holding many different specialised skills &mdash; medical devices, financial engineering, research
-                instruments &mdash; is complex. Work that almost anywhere can do &mdash; food service, retail, basic
-                construction &mdash; is not.</p>
-              <p>It matters because complex work is hard to copy. Places that hold it tend to pay more, to weather
-                downturns better, and to find it easier to move into the next complex thing, because the know-how
-                is already in the room. A metro&rsquo;s complexity is the mix of its industries weighted by how much
-                of each it does.</p>
-            </div>
-          </div>
-          <p class="lede">The city&rsquo;s own mix, shaded the same way. Dense places tend to hold the knowledge-heavy work, and the deep teal blocks are where that shows.</p>
-          <!-- the ranking as a standing figure: the number carries it, and a
-               teal rule marks it off from the prose without drawing a scale -->
-          <div class="rank-strip">
-            <p class="rs-head">
-              <span class="rs-num">3<span class="rs-ord">rd</span></span>
-              <span class="rs-of">most complex place<br>of the metro&rsquo;s 35</span>
-            </p>
-          </div>
-
+          <p class="lede"><strong>179,122</strong> of the jobs are held by <span class="city-short">Boston</span>
+            residents, and those dots stay put. The other <strong>508,614</strong> move out to where their holders
+            live, elsewhere in the metro.</p>
         </div>
 
-        <!-- Subsection: what the place does more of than its metro -->
-        <div class="export-subsection" id="adminTradable">
+        <!-- 3 · residents leaving for work -->
+        <div class="export-subsection" id="adminResidentsOut">
           <div class="subsection-header">
-            <h3>What brings income into the city?</h3>
+            <h3>Its residents commute out too</h3>
           </div>
-          <div class="collapsible-info">
-            <button class="collapsible-header">
-              <span class="ci-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.75a6.25 6.25 0 0 0-3.75 11.25c.53.4.87 1 .96 1.66l.09.59h5.4l.09-.59c.09-.66.43-1.26.96-1.66A6.25 6.25 0 0 0 12 2.75Z"/><path d="M9.6 18.6h4.8"/><path d="M10.5 21h3"/></svg></span>
-              <span class="ci-title">How do we measure tradability?</span>
-              <svg class="collapsible-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M6 9l6 6 6-6"/>
-              </svg>
-            </button>
-            <div class="collapsible-content">
-              <p>Every industry carries a <strong>tradability score from 0 to 1</strong>: how much of what it makes
-                can be sold to someone outside the metro. It follows from what the industry is &mdash; whether its
-                output can travel, whether the customer has to be standing there, and how tightly the industry
-                clusters nationally, since work that gathers in a few places is nearly always selling beyond them.</p>
-              <p>Anything scoring <strong>0.5 or above</strong> is counted here as more tradable, and anything below
-                it as less. That is a line drawn across a continuous measure, so industries sitting close to it could
-                fall either way.</p>
-              <svg class="tradable-diagram" viewBox="0 0 600 258" role="img" aria-labelledby="tdTitle tdDesc">
-                <title id="tdTitle">How a tradable industry brings income into the city</title>
-                <desc id="tdDesc">Outside customers buy from the city's tradable industries; that income flows in and supports local jobs and businesses.</desc>
-                <defs>
-                  <marker id="tdArrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
-                    <path d="M0 0.5 L7 4 L0 7.5 Z" fill="var(--teal)"/>
-                  </marker>
-                </defs>
-
-                <!-- 1 · outside customers -->
-                <g class="td-card">
-                  <rect x="1" y="16" width="178" height="152" rx="12"/>
-                  <circle class="td-disc" cx="90" cy="58" r="21"/>
-                  <g class="td-ico" transform="translate(90 58)">
-                    <circle r="10.5"/>
-                    <path d="M-10.5 0h21"/>
-                    <path d="M0 -10.5c4.2 4 6.3 6.6 6.3 10.5S4.2 6.5 0 10.5C-4.2 6.5-6.3 3.9-6.3 0S-4.2-6.5 0-10.5Z"/>
-                  </g>
-                  <text class="td-title" x="90" y="110">Outside customers</text>
-                  <text class="td-sub" x="90" y="132">Buyers beyond</text>
-                  <text class="td-sub" x="90" y="148">the city</text>
-                </g>
-
-                <line class="td-flow" x1="184" y1="92" x2="204" y2="92" marker-end="url(#tdArrow)"/>
-
-                <!-- 2 · the tradable industry itself (emphasised) -->
-                <g class="td-card td-card--key">
-                  <rect x="211" y="16" width="178" height="152" rx="12"/>
-                  <circle class="td-disc td-disc--key" cx="300" cy="58" r="21"/>
-                  <g class="td-ico td-ico--key" transform="translate(300 58)">
-                    <path d="M-10 9V-3l6.5-3.8V-3l6.5-3.8V9Z"/>
-                    <path d="M3 9V-9h7v18"/>
-                  </g>
-                  <text class="td-title" x="300" y="110">More tradable industries</text>
-                  <text class="td-sub" x="300" y="132">Manufacturing, software,</text>
-                  <text class="td-sub" x="300" y="148">tourism, consulting</text>
-                </g>
-
-                <line class="td-flow" x1="394" y1="92" x2="414" y2="92" marker-end="url(#tdArrow)"/>
-
-                <!-- 3 · income returning to the city -->
-                <g class="td-card">
-                  <rect x="421" y="16" width="178" height="152" rx="12"/>
-                  <circle class="td-disc" cx="510" cy="58" r="21"/>
-                  <g class="td-ico" transform="translate(510 58)">
-                    <rect x="-11" y="-7" width="22" height="14" rx="2.5"/>
-                    <circle r="3.6"/>
-                  </g>
-                  <text class="td-title" x="510" y="110">Income flows in</text>
-                  <text class="td-sub" x="510" y="132">Supports local jobs</text>
-                  <text class="td-sub" x="510" y="148">and businesses</text>
-                </g>
-
-                <!-- summary strip -->
-                <rect class="td-strip" x="1" y="196" width="598" height="46" rx="10"/>
-                <text class="td-strip-text" x="300" y="224">
-                  Sell outside the city
-                  <tspan class="td-sep">→</tspan> income flows in
-                  <tspan class="td-sep">→</tspan> the local economy grows
-                </text>
-              </svg>
-            </div>
-          </div>
-          <div class="lede-stat-row">
-            <p class="lede">Watch the mix split in two: on the left the industries that sell outward, on the right the
-              ones that serve the people already here. The left half is what brings new income into the
-              <span class="city-short">Boston</span> itself.</p>
-            <span class="headstat" id="tradableHeadStat" hidden></span>
-          </div>
-
+          <p class="lede">Residents hold <strong>334,026</strong> jobs. <strong>154,904</strong> of them are outside
+            the city, and those dots now leave in orange.</p>
+          <p class="lede">The two colours side by side are the exchange: for every resident who commutes out, more
+            than three people commute in.</p>
         </div>
 
-        <!-- Closing beat: out of the tradable half, what the metro is
-             unusually good at. The map redraws as a ranked bar chart. -->
+        <!-- 4 · the balance, as rows -->
+        <div class="export-subsection" id="adminBalance">
+          <div class="subsection-header">
+            <h3>Two workforces</h3>
+          </div>
+          <p class="lede">Sorted into rows, the same dots give the two counts. Jobs located here are the grey and teal
+            rows together: <strong>687,736</strong>. Jobs held by residents are the grey and orange rows:
+            <strong>334,026</strong>.</p>
+          <p class="lede">That is <strong>206 jobs for every 100</strong> its residents hold. The city is a net
+            importer of workers, and the beats that follow ask which work the two groups do.</p>
+        </div>
+
+        <!-- 5 · jobs located here, sector by sector -->
+        <div class="export-subsection" id="adminJobsHere">
+          <div class="subsection-header">
+            <h3>The work that happens in <span class="city-short">Boston</span></h3>
+          </div>
+          <p class="lede">The bigger of the two counts first: the jobs inside the boundary, filled by residents and
+            commuters alike. Health care is the largest at <strong>21%</strong>, then professional services at 15%,
+            then education and finance.</p>
+          <p class="lede">Bars are ranked by jobs located here and hold that order for the next two beats, so a sector
+            never moves. Only what is measured about it changes.</p>
+        </div>
+
+        <!-- 6 · the residents' own count, laid over the same rows -->
+        <div class="export-subsection" id="adminResidents">
+          <div class="subsection-header">
+            <h3>What <span class="city-short">Boston</span>&rsquo;s residents do</h3>
+          </div>
+          <p class="lede">The narrow bar is the second count: the jobs residents hold, wherever those jobs are. It sits
+            inside the wide bar almost everywhere, which is the commuter surplus read sector by sector.</p>
+          <p class="lede">The gaps carry it. Finance and insurance has <strong>3.4 jobs here for every resident</strong>
+            who works in the field. Manufacturing and management of companies are the only two where the narrow bar
+            runs past the wide one.</p>
+        </div>
+
+        <!-- 3 · the same rows, read against the metro -->
         <div class="export-subsection" id="adminSpecialized">
           <div class="subsection-header">
-            <h3>What is the city most specialized in?</h3>
+            <h3>What the city does more of than its metro</h3>
           </div>
           <div class="collapsible-info">
             <button class="collapsible-header">
               <span class="ci-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.75a6.25 6.25 0 0 0-3.75 11.25c.53.4.87 1 .96 1.66l.09.59h5.4l.09-.59c.09-.66.43-1.26.96-1.66A6.25 6.25 0 0 0 12 2.75Z"/><path d="M9.6 18.6h4.8"/><path d="M10.5 21h3"/></svg></span>
-              <span class="ci-title">What is specialization?</span>
+              <span class="ci-title">How the comparison is made</span>
               <svg class="collapsible-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
             </button>
             <div class="collapsible-content">
-              <p>An industry counts as a <strong>specialization</strong> when the metro does more of it than the
-                country does. The measure divides the industry&rsquo;s share of jobs here by its share of jobs
-                nationally: <strong>1.0&times;</strong> is exactly the national rate, <strong>2.0&times;</strong> is
-                twice as concentrated here as anywhere else.</p>
-              <p>It says nothing about size. A small industry can be a powerful specialization and a large one can be
-                entirely ordinary &mdash; this measures what is <em>distinctive</em> about the metro, not what
-                employs the most people.</p>
+              <p>Each sector&rsquo;s share of the city&rsquo;s jobs, divided by its share of the metro&rsquo;s.
+                <strong>1&times;</strong> means the city leans on that sector exactly as much as the metro does;
+                <strong>2&times;</strong> means twice as much.</p>
+              <p>The city is part of the metro it is measured against, so a place this large is pulled toward parity.
+                Read the distance from 1&times;, not the raw figure.</p>
             </div>
           </div>
-          <div class="lede-stat-row">
-            <p class="lede">Selling outward is one thing; being unusually good at it is another. Of the tradable
-              industries above, these are the ones the <span class="city-short">Boston</span> metro does far more of
-              than a typical US metro would. Watch the map redraw as a ranking: each bar runs as far as the metro
-              is concentrated in that industry, and the tick on it is where the four peer metros average.</p>
-          </div>
+          <p class="lede">A mix on its own says little, because most places look like the region around them. The same
+            rows now show each sector&rsquo;s share of the city against its share of the metro.</p>
+          <p class="lede">Finance and insurance is <strong>1.9&times;</strong> the metro&rsquo;s share. Retail,
+            construction, wholesale and manufacturing sit well below parity: the metro does them, the city mostly does
+            not. The hollow marks repeat the reading for residents, and they cluster near 1&times; &mdash; the
+            specialisation belongs to the workplace, not to the people who live here.</p>
+        </div>
 
+        <!-- 8 · the exchange, on the map -->
+        <div class="export-subsection" id="adminExchange">
+          <div class="subsection-header">
+            <h3>Who it trades workers with</h3>
+          </div>
+          <p class="lede">Both directions on one map. Teal arrows bring workers in; orange arrows carry residents out
+            to their jobs. Width is the number of jobs.</p>
+          <p class="lede"><strong>Cambridge</strong> is the one near-even exchange: 24,509 residents work there and
+            20,085 Cantabrigians work here. Everywhere else the teal arrow wins. <strong>Quincy</strong> sends 20,328
+            in and takes 6,015 back.</p>
+        </div>
+
+        <!-- 9 · the reader picks a sector -->
+        <div class="export-subsection" id="adminGauge">
+          <div class="subsection-header">
+            <h3>Workplace, or bedroom?</h3>
+          </div>
+          <p class="lede">Every sector above collapses into one number: jobs located here for each job a resident
+            holds in that field. Above <strong>1&times;</strong> the city imports that sector&rsquo;s workers; below
+            it, the city sends them out.</p>
+          <p class="lede"><strong>Pick a sector</strong> to see where it lands against the city as a whole, which
+            sits at 2.06&times;.</p>
         </div>
 
       </section>
@@ -4565,7 +4639,7 @@
   const sectionDefs=[
     {name:"Economic Fundamentals", pages:["page-overview","page-overview-msa","page-overview-places","check-overview","apply-overview"], entry:"page-overview"},
     {name:"Metro Industries",    pages:["page-export-basket","tradableSection","leanSection","specializedSection","check-export","apply-export"], entry:"page-export-basket"},
-    {name:"Admin Industry Mix", pages:["page-admin-mix","adminComplexity","adminTradable","adminSpecialized","check-adminmix","apply-adminmix"], entry:"page-admin-mix"},
+    {name:"Admin Industry Mix", pages:["page-admin-mix","adminWhoFills","adminResidentsOut","adminBalance","adminJobsHere","adminResidents","adminSpecialized","adminExchange","adminGauge","check-adminmix","apply-adminmix"], entry:"page-admin-mix"},
     {name:"City Constraints",pages:["page-constraints","page-city-in-metro","page-constraints-lorem","check-constraints","apply-constraints"],entry:"page-constraints"},
     {name:"Levers for Change",pages:["page-levers","check-levers","apply-levers"], entry:"page-levers"},
     /* Well-built pieces outside the storyline; the anchor id is listed so
@@ -7056,7 +7130,7 @@
       kids.forEach(function(k){
         if (k.matches && k.matches(TEXT_SEL)){
           st.appendChild(k);
-          if (badged && k.classList.contains("subsection-header")) st.appendChild(mkBadge("metro"));
+          if (badged && k.classList.contains("subsection-header")) st.appendChild(mkBadge(cfg.badge || "metro"));
         } else sl.appendChild(k);
       });
       col.appendChild(st); stage.appendChild(sl);
@@ -7191,7 +7265,9 @@
   }
 
   mount({ pageId: "page-export-basket", ctl: "MI", seg: "ctLayoutSeg" });
-  mount({ pageId: "page-admin-mix",     ctl: "AM", seg: "amLayoutSeg" });
+  /* this section reads the administrative city, so its beats wear the
+     city's mark, not the metro's */
+  mount({ pageId: "page-admin-mix",     ctl: "AM", seg: "amLayoutSeg", badge: "city" });
 })();
 
 /* Economic Fundamentals layout, option 2: the same scrolly grammar as
@@ -7820,6 +7896,681 @@
   }
 })();
 
+  /* LODES 2022, workplace and residence area characteristics for the
+     administrative city against its metro. j = jobs located here,
+     r = jobs its residents hold wherever those are, lj / lr = each
+     count's share of the city over its share of the metro, sm = the city's
+     share of the metro's jobs in the sector. */
+  var AM_TOT = { jobs:687736, res:334026 };
+  var AM_SECTORS = [
+    { n:"Health care & social", j:144183, r:64599, lj:1.284, lr:1.154, sm:0.3215 },
+    { n:"Professional services", j:105332, r:45466, lj:1.231, lr:1.129, sm:0.3080 },
+    { n:"Education", j:73707, r:39561, lj:1.039, lr:1.117, sm:0.2600 },
+    { n:"Finance & insurance", j:70516, r:20599, lj:1.926, lr:1.159, sm:0.4822 },
+    { n:"Accommodation & food", j:51300, r:28109, lj:1.007, lr:1.098, sm:0.2521 },
+    { n:"Public administration", j:38364, r:13915, lj:1.407, lr:1.043, sm:0.3523 },
+    { n:"Retail trade", j:34168, r:24554, lj:0.552, lr:0.803, sm:0.1381 },
+    { n:"Administrative & support", j:33443, r:20650, lj:0.890, lr:1.141, sm:0.2227 },
+    { n:"Information", j:25199, r:12091, lj:1.065, lr:1.076, sm:0.2665 },
+    { n:"Transport & warehousing", j:24262, r:8690, lj:1.356, lr:1.009, sm:0.3394 },
+    { n:"Other services", j:21134, r:11793, lj:0.954, lr:1.078, sm:0.2388 },
+    { n:"Construction", j:14731, r:8555, lj:0.442, lr:0.564, sm:0.1107 },
+    { n:"Real estate", j:14097, r:5784, lj:1.453, lr:1.246, sm:0.3638 },
+    { n:"Arts & recreation", j:11308, r:5523, lj:0.974, lr:0.975, sm:0.2439 },
+    { n:"Wholesale trade", j:9419, r:7275, lj:0.396, lr:0.640, sm:0.0991 },
+    { n:"Manufacturing", j:7961, r:8677, lj:0.186, lr:0.431, sm:0.0465 },
+    { n:"Management of companies", j:6534, r:6726, lj:0.418, lr:0.946, sm:0.1046 },
+    { n:"Utilities, agriculture & mining", j:2078, r:1459, lj:0.526, lr:0.700, sm:0.1316 }
+  ];
+
+/* ---------------------------------------------------------------------
+   Admin Industry Mix — one set of rows, three readings
+
+   The rows are ranked by jobs located in the city and never move again;
+   only what is measured about them changes. Beat one is that count alone,
+   beat two lays the residents' count over it, beat three swaps both for
+   how each stands against the metro. Ranking by one measure and holding
+   it lets the reader track a sector across all three.
+--------------------------------------------------------------------- */
+(function(){
+  var el = document.getElementById("amBarsSvg");
+  if (!el || typeof d3 === "undefined") return;
+  var fig = document.getElementById("amFigure");
+  var tipEl = document.getElementById("amTip");
+  var wrap = el.closest(".tradable-viz-wrapper");
+
+  var W = 880, ML = 176, MR = 132, MT = 34, RH = 27, MB = 16;
+  var rows = AM_SECTORS.slice().sort(function(a, b){ return b.j - a.j; });
+  var H = MT + rows.length * RH + MB;
+  el.setAttribute("viewBox", "0 0 " + W + " " + H);
+  el.setAttribute("height", H);
+
+  var svg = d3.select(el);
+  var tok = function(n, fb){ var v = getComputedStyle(document.documentElement)
+    .getPropertyValue(n).trim(); return v || fb; };
+  var C_JOBS = tok("--geo-city", "#255862"), C_RES = tok("--orange", "#e76565");
+
+  var xJobs = d3.scaleLinear().domain([0, d3.max(rows, function(d){ return d.j; })])
+    .range([ML, W - MR]);
+  /* the ratio is a multiple, so its axis is logarithmic: a sector at half
+     the metro's share sits as far from 1 as one at twice it */
+  var lqAll = rows.reduce(function(a, d){ return a.concat([d.lj, d.lr]); }, []);
+  var xLq = d3.scaleLog()
+    .domain([Math.min(0.18, d3.min(lqAll)), Math.max(2.2, d3.max(lqAll))])
+    .range([ML, W - MR]);
+  var rowY = function(i){ return MT + i * RH + RH / 2; };
+  var fmtK = function(v){ return v >= 1000 ? Math.round(v / 1000) + "K" : String(v); };
+
+  svg.selectAll("*").remove();
+  var gAxis = svg.append("g").attr("class", "am-axis");
+  var gRows = svg.append("g").attr("class", "am-rows");
+
+  var row = gRows.selectAll("g.am-row").data(rows, function(d){ return d.n; })
+    .join("g").attr("class", "am-row");
+  row.append("text").attr("class", "am-name")
+    .attr("x", ML - 12).attr("y", function(d, i){ return rowY(i) + 4; })
+    .attr("text-anchor", "end").text(function(d){ return d.n; });
+  row.append("rect").attr("class", "am-bar")
+    .attr("x", ML).attr("y", function(d, i){ return rowY(i) - 8; })
+    .attr("height", 16).attr("rx", 2).attr("fill", C_JOBS);
+  row.append("rect").attr("class", "am-bar-res")
+    .attr("x", ML).attr("y", function(d, i){ return rowY(i) - 3; })
+    .attr("height", 6).attr("rx", 1.5).attr("fill", C_RES).style("opacity", 0);
+  row.append("circle").attr("class", "am-dot").attr("r", 5)
+    .attr("cy", function(d, i){ return rowY(i); }).attr("fill", C_JOBS).style("opacity", 0);
+  row.append("circle").attr("class", "am-dot-res").attr("r", 5)
+    .attr("cy", function(d, i){ return rowY(i); })
+    .attr("fill", "#fff").attr("stroke", C_RES).attr("stroke-width", 1.8).style("opacity", 0);
+  row.append("line").attr("class", "am-link")
+    .attr("y1", function(d, i){ return rowY(i); }).attr("y2", function(d, i){ return rowY(i); })
+    .attr("stroke", "#9aa8ad").style("opacity", 0);
+  row.append("text").attr("class", "am-val")
+    .attr("x", W - MR + 12).attr("y", function(d, i){ return rowY(i) + 4; });
+  row.append("text").attr("class", "am-val am-val-res")
+    .attr("x", W - 10).attr("y", function(d, i){ return rowY(i) + 4; })
+    .attr("text-anchor", "end").style("opacity", 0);
+
+  function axis(step){
+    gAxis.selectAll("*").remove();
+    var ticks = step === 2 ? [0.25, 0.5, 1, 2] : xJobs.ticks(4);
+    var sc = step === 2 ? xLq : xJobs;
+    var t = gAxis.selectAll("g.am-tick").data(ticks).join("g").attr("class", "am-tick");
+    t.append("line")
+      .attr("class", function(d){ return "am-grid" + (step === 2 && d === 1 ? " is-base" : ""); })
+      .attr("x1", function(d){ return sc(d); }).attr("x2", function(d){ return sc(d); })
+      .attr("y1", MT - 12).attr("y2", MT + rows.length * RH - 6);
+    t.append("text").attr("class", "am-ticklab").attr("text-anchor", "middle")
+      .attr("x", function(d){ return sc(d); }).attr("y", MT - 18)
+      .text(function(d){ return step === 2 ? d + "×" : fmtK(d); });
+    gAxis.append("text").attr("class", "am-colhead")
+      .attr("x", W - MR + 12).attr("y", MT - 18)
+      .text(step === 2 ? "vs metro" : "jobs here");
+    if (step > 0) gAxis.append("text").attr("class", "am-colhead")
+      .attr("x", W - 10).attr("y", MT - 18).attr("text-anchor", "end")
+      .text("residents");
+  }
+
+  var step = -1;
+  var reduce = function(){ return window.matchMedia &&
+    matchMedia("(prefers-reduced-motion: reduce)").matches; };
+
+  function paint(i, animate){
+    var dur = animate ? 820 : 0;
+    var go = function(sel){ return dur ? sel.transition().duration(dur)
+      .ease(d3.easeCubicInOut) : sel; };
+    axis(i);
+
+    go(row.select(".am-bar"))
+      .attr("x", function(d){ return i === 2 ? Math.min(xLq(d.lj), xLq(1)) : ML; })
+      .attr("width", function(d){ return i === 2 ? 0 : Math.max(1, xJobs(d.j) - ML); })
+      .style("opacity", i === 2 ? 0 : 1);
+    go(row.select(".am-bar-res"))
+      .attr("width", function(d){ return Math.max(1, xJobs(d.r) - ML); })
+      .style("opacity", i === 1 ? 1 : 0);
+
+    /* beat three: a dot for each count, joined so the gap between them is
+       the thing being read */
+    go(row.select(".am-dot")).attr("cx", function(d){ return xLq(d.lj); })
+      .style("opacity", i === 2 ? 1 : 0);
+    go(row.select(".am-dot-res")).attr("cx", function(d){ return xLq(d.lr); })
+      .style("opacity", i === 2 ? 1 : 0);
+    go(row.select(".am-link"))
+      .attr("x1", function(d){ return xLq(Math.min(d.lj, d.lr)); })
+      .attr("x2", function(d){ return xLq(Math.max(d.lj, d.lr)); })
+      .style("opacity", i === 2 ? 0.45 : 0);
+
+    row.select(".am-val").text(function(d){
+      return i === 2 ? d.lj.toFixed(2) + "×" : fmtK(d.j); });
+    go(row.select(".am-val-res"))
+      .style("opacity", i === 0 ? 0 : 1);
+    row.select(".am-val-res").text(function(d){
+      return i === 2 ? d.lr.toFixed(2) + "×" : fmtK(d.r); });
+  }
+
+  /* the figure's step attribute belongs to the section's controller, which
+     counts all nine beats; this figure only knows its own three */
+  window.AMBARS = { setStep: function(i){
+    i = Math.max(0, Math.min(2, i | 0));
+    if (i === step) return;
+    var first = step < 0;
+    step = i;
+    paint(i, !first && !reduce());
+  } };
+  window.AMBARS.setStep(0);
+
+  /* one tooltip, naming whichever reading is on screen */
+  if (wrap && tipEl){
+    var rowOf = function(k, v){ return '<div class="tip-row"><span>' + k +
+      '</span><span>' + v + '</span></div>'; };
+    row.on("mouseenter", function(ev, d){
+      var body = step === 2
+        ? rowOf("Jobs here, vs metro", d.lj.toFixed(2) + "×") +
+          rowOf("Residents, vs metro", d.lr.toFixed(2) + "×")
+        : rowOf("Jobs located here", d.j.toLocaleString()) +
+          rowOf("Held by residents", d.r.toLocaleString()) +
+          rowOf("Jobs per resident", (d.j / d.r).toFixed(2));
+      tipEl.innerHTML = "<strong>" + d.n + "</strong>" + body;
+      tipEl.hidden = false;
+      d3.select(this).select(".am-bar").style("stroke", "#1a2226").style("stroke-width", 1.6);
+    }).on("mousemove", function(ev){ cursorTipPosAM(ev, wrap, tipEl); })
+      .on("mouseleave", function(){
+        tipEl.hidden = true;
+        d3.select(this).select(".am-bar").style("stroke", null).style("stroke-width", null);
+      });
+  }
+  function cursorTipPosAM(ev, host, tip){
+    var hr = host.getBoundingClientRect();
+    var x = ev.clientX - hr.left + 14, y = ev.clientY - hr.top - 10;
+    if (x + tip.offsetWidth > hr.width) x = ev.clientX - hr.left - tip.offsetWidth - 14;
+    if (y + tip.offsetHeight > hr.height) y = hr.height - tip.offsetHeight - 6;
+    tip.style.left = Math.max(0, x) + "px";
+    tip.style.top = Math.max(0, y) + "px";
+  }
+})();
+
+/* ---------------------------------------------------------------------
+   Admin Industry Mix, beats 1-4 — the two workforces as dots
+
+   One dot is 2,000 jobs. Every dot is drawn once and only ever moves:
+   the job dots start inside the city, the ones held by out-of-town
+   workers travel to the metro ring, the residents' outside jobs leave in
+   the other direction, and the four beats close by sorting the same dots
+   into the three rows the two counts are made of.
+--------------------------------------------------------------------- */
+(function(){
+  var el = document.getElementById("amDotsSvg");
+  if (!el || typeof d3 === "undefined") return;
+
+  var PER = 2000;
+  var JOBS = 687736, RES = 334026, BOTH = 179122;
+  var IN = JOBS - BOTH, OUT = RES - BOTH;
+  var nBoth = Math.round(BOTH / PER), nIn = Math.round(IN / PER), nOut = Math.round(OUT / PER);
+
+  var W = 880, H = 540;
+  var CITY = { x: 232, y: 250, r: 132 }, METRO = { x: 620, y: 250, r: 176 };
+  var tok = function(n, fb){ var v = getComputedStyle(document.documentElement)
+    .getPropertyValue(n).trim(); return v || fb; };
+  var C_IN = tok("--geo-city", "#255862"), C_OUT = tok("--orange", "#e76565"), C_BOTH = "#9aa8ad";
+
+  /* a deterministic spiral fill, so the clouds look scattered but land the
+     same way on every load and every replay */
+  function pack(cx, cy, r, n, seed){
+    var pts = [], gold = Math.PI * (3 - Math.sqrt(5)), i;
+    for (i = 0; i < n; i++){
+      var t = (i + 0.5) / n;
+      var rad = r * Math.sqrt(t) * 0.94;
+      var a = i * gold + seed;
+      pts.push({ x: cx + rad * Math.cos(a), y: cy + rad * Math.sin(a) });
+    }
+    return pts;
+  }
+  /* the rows the last beat sorts into: 44 to a line, tightest first */
+  function grid(n, x0, y0, cols, dx, dy){
+    var pts = [], i;
+    for (i = 0; i < n; i++)
+      pts.push({ x: x0 + (i % cols) * dx, y: y0 + Math.floor(i / cols) * dy });
+    return pts;
+  }
+
+  var dots = [];
+  pack(CITY.x, CITY.y, CITY.r, nBoth, 0.6).forEach(function(p){
+    dots.push({ kind: "both", home: p }); });
+  pack(CITY.x, CITY.y, CITY.r, nIn, 2.1).forEach(function(p){
+    dots.push({ kind: "in", home: p }); });
+  pack(CITY.x, CITY.y, CITY.r * 0.82, nOut, 4.0).forEach(function(p){
+    dots.push({ kind: "out", home: p }); });
+
+  var away = {
+    in:  pack(METRO.x, METRO.y, METRO.r, nIn, 1.3),
+    out: pack(METRO.x + 6, METRO.y, METRO.r * 0.86, nOut, 3.4)
+  };
+  var COLS = 44, DX = 12, DY = 12, GX = 214;
+  var rowsPos = {
+    in:   grid(nIn,   GX, 96,  COLS, DX, DY),
+    both: grid(nBoth, GX, 268, COLS, DX, DY),
+    out:  grid(nOut,  GX, 400, COLS, DX, DY)
+  };
+  var seen = { in: 0, both: 0, out: 0 };
+  dots.forEach(function(d){ d.slot = seen[d.kind]++; });
+
+  var svg = d3.select(el);
+  svg.selectAll("*").remove();
+  var gRing = svg.append("g").attr("class", "ad-rings");
+  var gDot = svg.append("g").attr("class", "ad-dots");
+  var gLab = svg.append("g").attr("class", "ad-labels");
+
+  gRing.append("circle").attr("class", "ad-ring ad-ring--city")
+    .attr("cx", CITY.x).attr("cy", CITY.y).attr("r", CITY.r + 16);
+  gRing.append("circle").attr("class", "ad-ring ad-ring--metro")
+    .attr("cx", METRO.x).attr("cy", METRO.y).attr("r", METRO.r + 16).style("opacity", 0);
+  gRing.append("text").attr("class", "ad-ringlab")
+    .attr("x", CITY.x).attr("y", CITY.y - CITY.r - 28).attr("text-anchor", "middle")
+    .text("Boston");
+  gRing.append("text").attr("class", "ad-ringlab ad-ringlab--metro")
+    .attr("x", METRO.x).attr("y", METRO.y - METRO.r - 28).attr("text-anchor", "middle")
+    .text("In the metro, outside Boston").style("opacity", 0);
+  /* the captions under each ring: counts and the share they are of */
+  var pct = function(a, b){ return Math.round(a / b * 100) + "%"; };
+  var capCity = gRing.append("text").attr("class", "ad-cap")
+    .attr("x", CITY.x).attr("y", CITY.y + CITY.r + 38).attr("text-anchor", "middle");
+  var capMetro = gRing.append("text").attr("class", "ad-cap")
+    .attr("x", METRO.x).attr("y", METRO.y + METRO.r + 38).attr("text-anchor", "middle").style("opacity", 0);
+  var CAPS = {
+    0: { city: [["688K jobs", "ink"], [" · one dot is about 2,000", "soft"]], metro: null },
+    1: { city: [["179K", "grey"], [" live & work here · " + pct(BOTH, JOBS) + " of the jobs", "soft"]],
+         metro: [["509K", "in"], [" commute in · " + pct(IN, JOBS) + " of the city's jobs", "soft"]] },
+    2: { city: [["179K", "grey"], [" live & work here · " + pct(BOTH, RES) + " of residents' jobs", "soft"]],
+         metro: [["509K", "in"], [" commute in · " + pct(IN, JOBS) + " of jobs here", "soft"],
+                 ["   155K", "out"], [" commute out · " + pct(OUT, RES) + " of residents' jobs", "soft"]] }
+  };
+  function setCap(sel, parts){
+    sel.selectAll("tspan").remove();
+    if (!parts) return;
+    parts.forEach(function(pr){ sel.append("tspan").attr("class", "is-" + pr[1]).text(pr[0]); });
+  }
+
+  var dot = gDot.selectAll("circle").data(dots).join("circle")
+    .attr("class", "ad-dot").attr("r", 3.6)
+    .attr("cx", function(d){ return d.home.x; }).attr("cy", function(d){ return d.home.y; })
+    .attr("fill", C_BOTH);
+
+  /* the row labels and counts, revealed with the last beat */
+  var ROWLAB = [
+    { k: "in",   y: 96,  t: "509K", s: "commute in · " + pct(IN, JOBS) + " of jobs here", c: C_IN },
+    { k: "both", y: 268, t: "179K", s: "live & work here · " + pct(BOTH, JOBS) + " of jobs, " + pct(BOTH, RES) + " of residents'", c: C_BOTH },
+    { k: "out",  y: 400, t: "155K", s: "commute out · " + pct(OUT, RES) + " of residents' jobs", c: C_OUT }
+  ];
+  var lab = gLab.selectAll("g").data(ROWLAB).join("g").style("opacity", 0);
+  lab.append("text").attr("class", "ad-rownum")
+    .attr("x", GX - 16).attr("y", function(d){ return d.y + 4; })
+    .attr("text-anchor", "end").attr("fill", function(d){ return d.c; })
+    .text(function(d){ return d.t; });
+  lab.append("text").attr("class", "ad-rowsub")
+    .attr("x", GX - 16).attr("y", function(d){ return d.y + 19; })
+    .attr("text-anchor", "end").text(function(d){ return d.s; });
+
+  var step = -1;
+  var reduce = function(){ return window.matchMedia &&
+    matchMedia("(prefers-reduced-motion: reduce)").matches; };
+
+  function place(d, i){
+    if (i >= 3) return rowsPos[d.kind][d.slot];
+    if (i >= 2 && d.kind === "out") return away.out[d.slot];
+    if (i >= 1 && d.kind === "in")  return away.in[d.slot];
+    return d.home;
+  }
+  function paint(i, animate){
+    var dur = animate ? 1100 : 0;
+    var sel = dur
+      ? dot.transition().duration(dur).delay(function(d, k){ return dur * 0.25 * (k / dots.length); })
+          .ease(d3.easeCubicInOut)
+      : dot;
+    sel.attr("cx", function(d){ return place(d, i).x; })
+       .attr("cy", function(d){ return place(d, i).y; })
+       .attr("fill", function(d){
+         if (i === 0) return C_BOTH;
+         if (d.kind === "in")  return C_IN;
+         if (d.kind === "out") return i >= 2 ? C_OUT : C_BOTH;
+         return C_BOTH;
+       });
+    var showMetro = i >= 1 && i < 3;
+    var g = function(s){ return dur ? s.transition().duration(dur / 2) : s; };
+    g(gRing.select(".ad-ring--metro")).style("opacity", showMetro ? 1 : 0);
+    g(gRing.select(".ad-ringlab--metro")).style("opacity", showMetro ? 1 : 0);
+    g(gRing.select(".ad-ring--city")).style("opacity", i < 3 ? 1 : 0);
+    g(gRing.select(".ad-ringlab")).style("opacity", i < 3 ? 1 : 0);
+    var cp = CAPS[Math.min(i, 2)];
+    setCap(capCity, i < 3 ? cp.city : null);
+    setCap(capMetro, i < 3 ? cp.metro : null);
+    g(capCity).style("opacity", i < 3 ? 1 : 0);
+    g(capMetro).style("opacity", showMetro ? 1 : 0);
+    g(lab).style("opacity", i >= 3 ? 1 : 0);
+  }
+
+  window.AMDOTS = { setStep: function(i){
+    i = Math.max(0, Math.min(3, i | 0));
+    if (i === step) return;
+    var first = step < 0;
+    step = i;
+    paint(i, !first && !reduce());
+  } };
+  window.AMDOTS.setStep(0);
+  window.AMDOTS.counts = { both: nBoth, in: nIn, out: nOut, total: dots.length };
+})();
+
+
+/* ---------------------------------------------------------------------
+   Admin Industry Mix, beat 8 — the exchange, on the real boundaries
+
+   Built the way the sample builds it: a fixed window over the city and
+   its neighbours, every place in the window drawn as context, the five
+   largest flows each way as quadratic arcs into a downtown anchor with
+   width proportional to jobs, an arrowhead cut from each arc's tangent,
+   and a marching dash riding the arc so the direction reads without
+   being told. Where a partner is in the top five one way only, the other
+   direction is a hairline with its ceiling.
+--------------------------------------------------------------------- */
+  var AM_FLOWS = [
+    { dir:"in",  id:"2555745", name:"Quincy",     jobs:20328 },
+    { dir:"in",  id:"2511000", name:"Cambridge",  jobs:20085 },
+    { dir:"in",  id:"2562535", name:"Somerville", jobs:16040 },
+    { dir:"in",  id:"2509210", name:"Brookline",  jobs:14544 },
+    { dir:"in",  id:"2545560", name:"Newton",     jobs:14322 },
+    { dir:"out", id:"2511000", name:"Cambridge",  jobs:24509 },
+    { dir:"out", id:"2545560", name:"Newton",     jobs:8306 },
+    { dir:"out", id:"2572600", name:"Waltham",    jobs:7221 },
+    { dir:"out", id:"2555745", name:"Quincy",     jobs:6015 },
+    { dir:"out", id:"2562535", name:"Somerville", jobs:5635 }
+  ];
+  /* hand-placed centroids, so the arcs leave each place where the eye
+     expects them to */
+  var AM_CENTROIDS = {
+    "2555745":[-71.0197,42.25],  "2507000":[-71.0921,42.3172], "2511000":[-71.1193,42.3764],
+    "2545560":[-71.2083,42.3316], "2572600":[-71.2422,42.389],  "2562535":[-71.1009,42.3907],
+    "2509210":[-71.1404,42.3246]
+  };
+(function(){
+  var el = document.getElementById("amMapSvg");
+  if (!el) return;
+  var wrap = el.closest(".tradable-viz-wrapper"), tipEl = document.getElementById("amTip");
+  var tok = function(n, fb){ var v = getComputedStyle(document.documentElement)
+    .getPropertyValue(n).trim(); return v || fb; };
+  var fmtK = function(n){ return n >= 100000 ? Math.round(n / 1000) + "K" : n >= 10000 ?
+    (n / 1000).toFixed(0) + "K" : n >= 1000 ? (n / 1000).toFixed(1) + "K" : String(n); };
+  var fmtC = function(n){ return n.toLocaleString("en-US"); };
+  var reduced = function(){ return window.matchMedia &&
+    matchMedia("(prefers-reduced-motion: reduce)").matches; };
+  var NS = "http://www.w3.org/2000/svg";
+  var mk = function(n, a, txt){ var e = document.createElementNS(NS, n);
+    for (var k in a) e.setAttribute(k, a[k]); if (txt != null) e.textContent = txt; return e; };
+  var drawn = false;
+
+  function draw(fc){
+    if (drawn || !fc) return;
+    drawn = true;
+    var VW = 880, VH = 640, pad = 28;
+    var lon0 = -71.315, lon1 = -70.915, lat0 = 42.185, lat1 = 42.445;
+    var cosL = Math.cos(42.32 * Math.PI / 180);
+    var sc = Math.min((VW - 2 * pad) / ((lon1 - lon0) * cosL), (VH - 2 * pad) / (lat1 - lat0));
+    var ox = (VW - (lon1 - lon0) * cosL * sc) / 2, oy = (VH - (lat1 - lat0) * sc) / 2;
+    var P = function(c){ return [ox + (c[0] - lon0) * cosL * sc, oy + (lat1 - c[1]) * sc]; };
+    var ring = function(r){ return r.map(function(c, i){ var q = P(c);
+      return (i ? "L" : "M") + q[0].toFixed(1) + "," + q[1].toFixed(1); }).join("") + "Z"; };
+    var geomPath = function(g){ return g.type === "Polygon" ? g.coordinates.map(ring).join("")
+      : g.coordinates.map(function(poly){ return poly.map(ring).join(""); }).join(""); };
+
+    var partners = {};
+    AM_FLOWS.forEach(function(f){ (partners[f.id] = partners[f.id] || { name:f.name, id:f.id })[f.dir] = f.jobs; });
+    var B = "2507000";
+    while (el.firstChild) el.removeChild(el.firstChild);
+    var gPlaces = mk("g", { "class":"am-places" }); el.appendChild(gPlaces);
+
+    /* every place whose bounds touch the window, the city last so its
+       edge sits on top */
+    var inWin = function(f){ var b = d3.geoBounds(f);
+      return b[1][0] > lon0 && b[0][0] < lon1 && b[1][1] > lat0 && b[0][1] < lat1; };
+    var feats = fc.features.filter(inWin).slice()
+      .sort(function(a, b){ return (a.properties.place_id === B) - (b.properties.place_id === B); });
+    feats.forEach(function(f){
+      var id = f.properties.place_id;
+      var cls = "am-place" + (id === B ? " is-focus" : partners[id] ? " is-partner" : "");
+      var pth = mk("path", { d: geomPath(f.geometry), "class": cls });
+      pth.appendChild(mk("title", {}, f.properties.place_name));
+      gPlaces.appendChild(pth);
+    });
+
+    var ctx = { "Medford":[-71.106,42.418], "Malden":[-71.06,42.43], "Chelsea":[-71.03,42.394],
+      "Everett":[-71.05,42.41], "Milton":[-71.07,42.245], "Watertown":[-71.185,42.37],
+      "Dedham":[-71.165,42.245], "Revere":[-70.99,42.42], "Winthrop":[-70.985,42.375] };
+    for (var n in ctx){ var q = P(ctx[n]);
+      el.appendChild(mk("text", { x:q[0], y:q[1], "class":"am-ctx", "text-anchor":"middle" }, n)); }
+
+    var A = P([-71.062, 42.352]);                       /* the downtown anchor */
+    var gFlow = mk("g", { "class":"am-flows" }); el.appendChild(gFlow);
+    var wOf = function(j){ return Math.max(1.2, j / 2100); };
+    var lay = { "2511000":{lx:-14,ly:-22,an:"end"}, "2562535":{lx:10,ly:-30,an:"start"},
+      "2555745":{lx:12,ly:26,an:"start"}, "2509210":{lx:-18,ly:14,an:"end"},
+      "2545560":{lx:-8,ly:22,an:"end"}, "2572600":{lx:-6,ly:-22,an:"end"} };
+    var ceilings = { "2572600":{ "in":14322 }, "2509210":{ "out":5635 } };
+    var arcs = [];
+    Object.keys(partners).forEach(function(id){
+      var pt = partners[id], c = P(AM_CENTROIDS[id]);
+      var dx = A[0] - c[0], dy = A[1] - c[1], L = Math.hypot(dx, dy);
+      var ux = dx / L, uy = dy / L, nx = -uy, ny = ux;
+      var S0 = [c[0] + ux * 14, c[1] + uy * 14], E0 = [A[0] - ux * 40, A[1] - uy * 40];
+      var mid = [(S0[0] + E0[0]) / 2, (S0[1] + E0[1]) / 2], bend = L * 0.16;
+      var drawOne = function(dir, jobs, ceiling){
+        var sign = dir === "in" ? 1 : -1;
+        var ctl = [mid[0] + nx * bend * sign, mid[1] + ny * bend * sign];
+        var from = dir === "in" ? S0 : E0, to = dir === "in" ? E0 : S0;
+        var w = ceiling ? 1 : wOf(jobs);
+        var d = "M" + from[0].toFixed(1) + "," + from[1].toFixed(1) +
+                " Q" + ctl[0].toFixed(1) + "," + ctl[1].toFixed(1) +
+                " " + to[0].toFixed(1) + "," + to[1].toFixed(1);
+        var path = mk("path", { d:d, "class":"am-flow is-" + dir, "stroke-width": w.toFixed(1) });
+        if (ceiling) path.setAttribute("stroke-dasharray", "2 4");
+        path.__tip = { head: dir === "in" ? pt.name + " → Boston" : "Boston → " + pt.name,
+          body: ceiling ? "under " + fmtC(ceiling) + " jobs (not in the top five)" : fmtC(jobs) + " jobs" };
+        arcs.push({ path:path, w:w });
+        var tx = to[0] - ctl[0], ty = to[1] - ctl[1], tl = Math.hypot(tx, ty);
+        var ax = tx / tl, ay = ty / tl, hx = -ay, hy = ax;
+        var hs = ceiling ? 5 : Math.max(7, w * 1.5), hb = ceiling ? 3 : Math.max(4, w * 0.95);
+        var tip = [to[0] + ax * hs, to[1] + ay * hs];
+        var pts = tip[0].toFixed(1) + "," + tip[1].toFixed(1) + " " +
+          (to[0] + hx * hb).toFixed(1) + "," + (to[1] + hy * hb).toFixed(1) + " " +
+          (to[0] - hx * hb).toFixed(1) + "," + (to[1] - hy * hb).toFixed(1);
+        arcs.push({ head: mk("polygon", { points:pts, "class":"am-head is-" + dir }) });
+        if (!ceiling && !reduced())
+          arcs.push({ dash: mk("path", { d:d, "class":"am-dash", "stroke-width": (w * 0.55).toFixed(1) }) });
+      };
+      if (pt["in"] != null) drawOne("in", pt["in"]); else drawOne("in", 0, ceilings[id]["in"]);
+      if (pt["out"] != null) drawOne("out", pt["out"]); else drawOne("out", 0, ceilings[id]["out"]);
+
+      var l = lay[id], lx = c[0] + l.lx, ly = c[1] + l.ly;
+      el.appendChild(mk("text", { x:lx, y:ly, "class":"am-pname", "text-anchor":l.an }, pt.name));
+      var v = mk("text", { x:lx, y:ly + 14, "class":"am-pval", "text-anchor":l.an });
+      v.appendChild(mk("tspan", { "class":"is-in" }, pt["in"] != null ? fmtK(pt["in"]) : "<" + fmtK(ceilings[id]["in"])));
+      v.appendChild(mk("tspan", {}, " in · "));
+      v.appendChild(mk("tspan", { "class":"is-out" }, pt["out"] != null ? fmtK(pt["out"]) : "<" + fmtK(ceilings[id]["out"])));
+      v.appendChild(mk("tspan", {}, " out"));
+      el.appendChild(v);
+    });
+    /* thick first so the thin ones sit on top; dashes and heads above all */
+    arcs.filter(function(a){ return a.path; }).sort(function(a, b){ return b.w - a.w; })
+      .forEach(function(a){ gFlow.appendChild(a.path); });
+    arcs.filter(function(a){ return a.dash; }).forEach(function(a){ gFlow.appendChild(a.dash); });
+    arcs.filter(function(a){ return a.head; }).forEach(function(a){ gFlow.appendChild(a.head); });
+
+    var bl = P([-71.065, 42.300]);
+    el.appendChild(mk("text", { x:bl[0], y:bl[1], "class":"am-pname is-focus", "text-anchor":"middle" }, "Boston"));
+    el.appendChild(mk("text", { x:bl[0], y:bl[1] + 15, "class":"am-pval", "text-anchor":"middle" },
+      fmtK(687736) + " jobs · " + fmtK(334026) + " resident workers"));
+
+    /* hover: the same reading the sample carries in each arc's title, in
+       the tool's own tip card */
+    if (wrap && tipEl){
+      gFlow.addEventListener("mousemove", function(ev){
+        var t = ev.target.closest(".am-flow"); if (!t || !t.__tip){ tipEl.hidden = true; return; }
+        tipEl.innerHTML = "<strong>" + t.__tip.head + "</strong><div class=\"tip-row\"><span>" +
+          t.__tip.body + "</span></div>";
+        tipEl.hidden = false;
+        var hr = wrap.getBoundingClientRect();
+        var x = ev.clientX - hr.left + 14, y = ev.clientY - hr.top - 10;
+        if (x + tipEl.offsetWidth > hr.width) x = ev.clientX - hr.left - tipEl.offsetWidth - 14;
+        tipEl.style.left = Math.max(0, x) + "px"; tipEl.style.top = Math.max(0, y) + "px";
+      });
+      gFlow.addEventListener("mouseleave", function(){ tipEl.hidden = true; });
+    }
+  }
+
+  window.AMMAP = { draw: function(){
+    if (drawn) return;
+    if (window.XCH_GEO_RAW && XCH_GEO_RAW.places) return draw(XCH_GEO_RAW.places);
+    if (typeof loadXchGeo === "function") loadXchGeo(function(){ draw(XCH_GEO.places); });
+  } };
+})();
+
+/* ---------------------------------------------------------------------
+   Beat 9 — the dial: one number per sector, jobs here per resident's job
+
+   The sample's geometry to the unit: a half ring from 0.4× to 4× on a log
+   scale, four zones with their names along the outside, ticks inside,
+   a dashed ghost at the city's overall reading, and a needle turned by a
+   CSS rotation so it swings rather than jumps. Colour follows meaning:
+   orange where residents outnumber jobs, teal where jobs outnumber
+   residents, grey where the two are close.
+--------------------------------------------------------------------- */
+(function(){
+  var svg = document.getElementById("amGaugeSvg"), chips = document.getElementById("amChips");
+  if (!svg || !chips) return;
+  var $ = function(id){ return document.getElementById(id); };
+  var fmtK = function(n){ return n >= 100000 ? Math.round(n / 1000) + "K" : n >= 10000 ?
+    (n / 1000).toFixed(0) + "K" : n >= 1000 ? (n / 1000).toFixed(1) + "K" : String(n); };
+  var fmtC = function(n){ return n.toLocaleString("en-US"); };
+  var NS = "http://www.w3.org/2000/svg";
+  var mk = function(n, a, txt){ var e = document.createElementNS(NS, n);
+    for (var k in a) e.setAttribute(k, a[k]); if (txt != null) e.textContent = txt; return e; };
+  var tok = function(n, fb){ var v = getComputedStyle(document.documentElement)
+    .getPropertyValue(n).trim(); return v || fb; };
+  var C_IN = tok("--geo-city", "#255862"), C_OUT = tok("--orange", "#e76565");
+  var C_INL = "#8fb5bb", C_BAL = "#c9ced2";
+  var MSA_JOBS = 2747304, LIVEWORK = 179122;
+
+  var ALL = { n:"Boston, all sectors", j:AM_TOT.jobs, r:AM_TOT.res, share:AM_TOT.jobs / MSA_JOBS, all:true };
+  var rows = AM_SECTORS.slice().sort(function(a, b){ return b.j - a.j; });
+  var ratioColor = function(r){ return r < 0.8 ? C_OUT : r <= 1.25 ? C_BAL : r < 2 ? C_INL : C_IN; };
+
+  /* the sector list, each with its reading and the colour of that reading */
+  [ALL].concat(rows).forEach(function(d){
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "am-chip" + (d.all ? " is-all" : ""); b.dataset.n = d.n;
+    b.setAttribute("aria-pressed", "false");
+    var r = d.j / d.r;
+    b.innerHTML = "<span>" + d.n + "</span><span class=\"r\"><i style=\"background:" + ratioColor(r) +
+      "\"></i>" + r.toFixed(2) + "×</span>";
+    b.addEventListener("click", function(){ select(d); });
+    chips.appendChild(b);
+  });
+
+  var G = { cx:260, cy:250, r:190, rIn:150, min:0.4, max:4 };
+  var ang = function(v){ return Math.PI - (Math.log(v) - Math.log(G.min)) /
+    (Math.log(G.max) - Math.log(G.min)) * Math.PI; };
+  var pt = function(a, r){ return [G.cx + Math.cos(a) * r, G.cy - Math.sin(a) * r]; };
+  var arcPath = function(v0, v1, r0, r1){
+    var a0 = ang(v0), a1 = ang(v1);
+    var p0 = pt(a0, r1), p1 = pt(a1, r1), p2 = pt(a1, r0), p3 = pt(a0, r0);
+    return "M" + p0[0] + "," + p0[1] + " A" + r1 + "," + r1 + " 0 0 1 " + p1[0] + "," + p1[1] +
+           " L" + p2[0] + "," + p2[1] + " A" + r0 + "," + r0 + " 0 0 0 " + p3[0] + "," + p3[1] + "Z";
+  };
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+  var zones = [
+    { v0:0.4,  v1:0.8,  fill:C_OUT, label:"Bedroom community" },
+    { v0:0.8,  v1:1.25, fill:C_BAL, label:"Balanced" },
+    { v0:1.25, v1:2,    fill:C_INL, label:"Draws workers in" },
+    { v0:2,    v1:4,    fill:C_IN,  label:"Employment hub" }
+  ];
+  zones.forEach(function(z){ svg.appendChild(mk("path", { d:arcPath(z.v0, z.v1, G.rIn, G.r), fill:z.fill, "class":"zone" })); });
+  zones.forEach(function(z){
+    var mid = Math.exp((Math.log(z.v0) + Math.log(z.v1)) / 2), a = ang(mid), q = pt(a, G.r + 14);
+    var deg = -(a * 180 / Math.PI - 90);
+    svg.appendChild(mk("text", { x:q[0], y:q[1], "class":"zonelbl", "text-anchor":"middle",
+      transform:"rotate(" + deg.toFixed(1) + " " + q[0] + " " + q[1] + ")" }, z.label));
+  });
+  [0.5, 1, 2, 4].forEach(function(v){
+    var a = ang(v), q0 = pt(a, G.rIn - 2), q1 = pt(a, G.rIn - 9), qt = pt(a, G.rIn - 24);
+    svg.appendChild(mk("line", { x1:q0[0], y1:q0[1], x2:q1[0], y2:q1[1], "class":"tick" }));
+    svg.appendChild(mk("text", { x:qt[0], y:qt[1] + 4, "class":"ticklbl", "text-anchor":"middle" }, v + "×"));
+  });
+  var ga = ang(ALL.j / ALL.r), g0 = pt(ga, G.rIn - 4), g1 = pt(ga, G.r + 4);
+  svg.appendChild(mk("line", { x1:g0[0], y1:g0[1], x2:g1[0], y2:g1[1], "class":"ghost" }));
+  svg.appendChild(mk("text", { x:G.cx, y:G.cy + 78, "class":"ghostlbl", "text-anchor":"middle" },
+    "Dashed marker: Boston overall, " + (ALL.j / ALL.r).toFixed(2) + "×"));
+  var needle = mk("line", { x1:G.cx, y1:G.cy, x2:G.cx + G.rIn - 14, y2:G.cy, "class":"needle" });
+  svg.appendChild(needle);
+  svg.appendChild(mk("circle", { cx:G.cx, cy:G.cy, r:6, "class":"pivot" }));
+  var big = mk("text", { x:G.cx, y:G.cy + 40, "class":"big", "text-anchor":"middle" }, "");
+  svg.appendChild(big);
+  svg.appendChild(mk("text", { x:G.cx, y:G.cy + 58, "class":"biglbl", "text-anchor":"middle" },
+    "jobs in Boston per resident worker in the sector"));
+
+  function select(d){
+    var r = d.j / d.r, deg = -(ang(r) * 180 / Math.PI);
+    [].forEach.call(chips.querySelectorAll(".am-chip"), function(b){
+      b.setAttribute("aria-pressed", String(b.dataset.n === d.n)); });
+    needle.style.transform = "rotate(" + deg.toFixed(2) + "deg)";
+    needle.style.stroke = ratioColor(r);
+    big.textContent = r.toFixed(2) + "×";
+    var net = d.j - d.r;
+    var kind = r > 1.1 ? "in" : r < 0.9 ? "out" : "bal";
+    var nm = d.all ? "workers" : d.n.toLowerCase() + " workers";
+    $("amVerdict").innerHTML = kind === "in"
+      ? "<span class=\"pill is-in\">Net importer</span>Boston imports " + nm + "."
+      : kind === "out" ? "<span class=\"pill is-out\">Net exporter</span>Boston sends " + nm + " out."
+      : "<span class=\"pill is-bal\">Balanced</span>Boston roughly breaks even on " + nm + ".";
+    var zone = r < 0.8 ? "a bedroom community" : r <= 1.25 ? "balanced" : r < 2 ? "a place that draws workers in" : "an employment hub";
+    $("amSentence").textContent = d.all
+      ? fmtC(d.j) + " jobs sit inside Boston and its residents hold " + fmtC(d.r) + ". Net of the " +
+        fmtC(AM_TOT.res - LIVEWORK) + " who commute out, " + fmtC(net) + " more people come in than go out. On this reading Boston as a whole is " + zone + "."
+      : fmtC(d.j) + " " + d.n.toLowerCase() + " jobs sit inside Boston; its residents hold " + fmtC(d.r) + " such jobs wherever they are. " +
+        (net >= 0 ? "At least " + fmtC(net) + " people commute in for this work on net." : "At least " + fmtC(-net) + " residents commute out for this work on net.") +
+        " For this sector Boston reads as " + zone + ".";
+    $("amTJobs").textContent = fmtK(d.j); $("amTRes").textContent = fmtK(d.r);
+    $("amTNet").textContent = (net >= 0 ? "+" : "−") + fmtK(Math.abs(net));
+    $("amTNetL").textContent = net >= 0 ? "net inflow of workers, at least" : "net outflow of workers, at least";
+    $("amTShare").textContent = Math.round((d.all ? d.share : d.sm) * 100) + "%";
+    var mx = Math.max(d.j, d.r) * 1.25;
+    $("amMini").innerHTML =
+      "<div class=\"mrow\"><span>Jobs located in Boston</span><div class=\"mtrack\"><div class=\"mbar is-jobs\" style=\"width:" + (d.j / mx * 100).toFixed(1) + "%\"></div><span class=\"mv\" style=\"left:" + (d.j / mx * 100).toFixed(1) + "%\">" + fmtC(d.j) + "</span></div></div>" +
+      "<div class=\"mrow\"><span>Held by Boston residents</span><div class=\"mtrack\"><div class=\"mbar is-res\" style=\"width:" + (d.r / mx * 100).toFixed(1) + "%\"></div><span class=\"mv\" style=\"left:" + (d.r / mx * 100).toFixed(1) + "%\">" + fmtC(d.r) + "</span></div></div>";
+  }
+  select(ALL);
+  window.AMGAUGE = { select:select, reset:function(){ select(ALL); } };
+})();
+
+/* the section's figures under one controller: dots for the first four
+   beats, rows for the next three, then the map and the dial */
+(function(){
+  var fig = document.getElementById("amFigure");
+  var dots = document.getElementById("amDotsSvg"), bars = document.getElementById("amBarsSvg");
+  if (!fig || !dots || !bars) return;
+  var map = document.getElementById("amMapSvg");
+  var gauge = document.getElementById("amGaugeWrap");
+  window.AM = { setStep: function(i){
+    i = Math.max(0, Math.min(8, i | 0));
+    fig.dataset.step = String(i);
+    var key = document.getElementById("amKey");
+    if (key) key.dataset.step = String(i);
+    var which = i < 4 ? "dots" : i < 7 ? "bars" : i === 7 ? "map" : "gauge";
+    dots.style.display  = which === "dots"  ? "" : "none";
+    bars.style.display  = which === "bars"  ? "" : "none";
+    if (map)   map.style.display   = which === "map"   ? "" : "none";
+    if (gauge) gauge.style.display = which === "gauge" ? "" : "none";
+    if (which === "dots" && window.AMDOTS) window.AMDOTS.setStep(i);
+    if (which === "bars" && window.AMBARS) window.AMBARS.setStep(i - 4);
+    if (which === "map" && window.AMMAP) window.AMMAP.draw();
+  } };
+  window.AM.setStep(0);
+})();
 </script>
 </body>
 </html>
