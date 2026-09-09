@@ -1,15 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { flushSync } from "react-dom";
-import {
-  DEFAULT_CITY,
-  PAGE_IDS,
-  SAMPLE_EXPLORED_CITIES,
-  SAMPLE_INSIGHTS,
-  SAMPLE_VISITED_PAGES,
-  SPANS,
-  cityShortName,
-} from "./data/content";
-import type { Insight } from "./data/content";
+import { createPortal } from "react-dom";
+import { DEFAULT_CITY, cityShortName } from "./data/content";
 import {
   DEFAULT_TREE_MODE,
   convertPath,
@@ -19,18 +10,16 @@ import {
   type TreeMode,
 } from "./data/figures";
 import { explainerById } from "./explainers/registry";
-import { Landing } from "./components/Landing";
-import { ToolView } from "./components/ToolView";
-import { JourneyModal } from "./components/modals/JourneyModal";
-import { DataChatModal } from "./components/modals/DataChatModal";
-
-function scrollToPage(id: string, behavior: ScrollBehavior) {
-  document.getElementById(id)?.scrollIntoView({ behavior, block: "start" });
-}
+import { LegacyShell } from "./legacy/LegacyShell";
+import { initLegacy } from "./legacy";
+import type { LegacyApi } from "./legacy/bridge";
+import { ConstraintsSection } from "./components/ConstraintsSection";
+import { ExplainersContent } from "./components/ExplainersContent";
 
 /* ---------- URL hash routing ----------
-   The hash mirrors the section in view ("#overview", "#export-basket", …,
-   "#explainers" for the gallery, or "#explainers/<id>" for one open
+   v-3's page owns navigation (landing <-> tool, the section switch, the
+   scroll spy). The hash mirrors what it shows ("#overview", "#tradableSection",
+   …, "#explainers" for the gallery, or "#explainers/<id>" for one open
    explainer); no hash means the landing. Deep links open the tool directly
    at that section. Every view the reader can navigate to has to be in the
    hash — an open explainer held only in component state would be invisible
@@ -39,9 +28,12 @@ function scrollToPage(id: string, behavior: ScrollBehavior) {
 const EXPLAINERS_SLUG = "explainers";
 
 const slugForPage = (id: string) => id.replace(/^page-/, "");
-const pageForSlug = (slug: string) => {
-  const id = `page-${slug}`;
-  return PAGE_IDS.includes(id) ? id : null;
+/** "overview" → page-overview; a rail step inside a section ("tradableSection",
+ *  "check-overview") keeps its own id as its slug */
+const pageForSlug = (slug: string, ids: ReadonlySet<string>) => {
+  const prefixed = `page-${slug}`;
+  if (ids.has(prefixed)) return prefixed;
+  return ids.has(slug) ? slug : null;
 };
 
 /** "explainers" → the gallery; "explainers/diagnostic-tree" → that
@@ -60,58 +52,52 @@ const explainersSlug = (id: string | null) =>
 
 const readHash = () => decodeURIComponent(window.location.hash.slice(1));
 
-export default function App() {
-  const [city, setCity] = useState(DEFAULT_CITY);
-  const [span, setSpan] = useState(SPANS[0]);
+/** the elements inside v-3's markup that React draws into */
+interface Slots {
+  constraints: HTMLElement;
+  explainers: HTMLElement;
+}
 
-  /* a valid hash on load deep-links straight into the tool, skipping the
-     landing slide */
+export default function App() {
+  /* v-3's body is in the DOM from the first render; the slots exist once
+     that commit has happened, and the portals below render into them */
+  const [slots, setSlots] = useState<Slots | null>(null);
+  useLayoutEffect(() => {
+    const constraints = document.getElementById("constraints-slot");
+    const explainers = document.getElementById("explainersView");
+    if (constraints && explainers) setSlots({ constraints, explainers });
+  }, []);
+
+  const legacy = useRef<LegacyApi | null>(null);
   const initialRoute = useRef(
     (() => {
       const slug = readHash();
       const ex = parseExplainers(slug);
-      return {
-        page: pageForSlug(slug),
-        explainers: ex.open,
-        explainerId: ex.id,
-      };
+      return { slug, explainers: ex.open, explainerId: ex.id };
     })(),
   ).current;
-  const deepLinked = initialRoute.page !== null || initialRoute.explainers;
 
-  /* landing <-> tool transition. The tool stays mounted (and, once entered,
-     active) underneath; the landing is a fixed overlay that slides up out of
-     the way and back down. */
-  const [toolActive, setToolActive] = useState(deepLinked);
-  const [landingHidden, setLandingHidden] = useState(deepLinked);
-  const [landingUp, setLandingUp] = useState(false);
-  const landingAnim = useRef<"enter" | "return" | null>(null);
-  const pendingScroll = useRef<string | null>(initialRoute.page);
-
-  const [explainersOpen, setExplainersOpen] = useState(initialRoute.explainers);
+  /* what v-3 reports, mirrored for the hash */
+  const [city, setCity] = useState(DEFAULT_CITY);
+  const [landingHidden, setLandingHidden] = useState(false);
+  const landingHiddenRef = useRef(false);
+  landingHiddenRef.current = landingHidden;
+  const [explainersOpen, setExplainersOpen] = useState(false);
   const [openExplainer, setOpenExplainer] = useState<string | null>(initialRoute.explainerId);
-  const [journeyOpen, setJourneyOpen] = useState(false);
-  const [chatOpen, setChatOpen] = useState(false);
+  const [currentPageId, setCurrentPageId] = useState<string | null>(null);
+  /* the hash effects wait for v-3 to be booted */
+  const [ready, setReady] = useState(false);
 
   /* The scroll spy rewrites the hash on every section that drifts past, so
      the hash effect REPLACES by default — pushing there would bury the real
-     history under scroll noise. A deliberate navigation (opening the
-     Explainers tab, opening an explainer, going back to the gallery) flags
-     the next write as a push, so the Back button retraces those steps. */
+     history under scroll noise. A deliberate navigation (opening or leaving
+     the Explainers tab, opening an explainer, going back to the gallery)
+     flags the next write as a push, so the Back button retraces those
+     steps. */
   const historyMode = useRef<"push" | "replace">("replace");
   const pushNext = () => {
     historyMode.current = "push";
   };
-
-  /* journey state (pre-seeded with the prototype's sample progress) */
-  const [currentPageId, setCurrentPageId] = useState<string | null>(initialRoute.page);
-  const [visitedPages, setVisitedPages] = useState<ReadonlySet<string>>(
-    () => new Set(SAMPLE_VISITED_PAGES),
-  );
-  const [exploredCities, setExploredCities] = useState<ReadonlySet<string>>(
-    () => new Set(SAMPLE_EXPLORED_CITIES),
-  );
-  const [insights] = useState<Insight[]>(SAMPLE_INSIGHTS);
 
   /* which structure the diagnostic tree proposes. One mode rather than two
      coupled flags: themes only exist under the alt leaves, so the pair could
@@ -139,97 +125,50 @@ export default function App() {
     setBranchPath(suggestedPath(cityShortName(city), treeVariantRef.current));
   }, [city]);
 
-  const addExploredCity = (c: string) => {
-    setExploredCities((prev) => (prev.has(c) ? prev : new Set(prev).add(c)));
-  };
-
-  /** leave the Explainers section entirely — the tab AND whichever explainer
-      was open inside it, which otherwise stays mounted and reappears the next
-      time the section is shown */
-  const closeExplainers = useCallback(() => {
-    setExplainersOpen(false);
-    setOpenExplainer(null);
-  }, []);
-
-  const goTo = useCallback(
-    (id: string) => {
-      // the target is display:none while the explainers page is open, so the
-      // close must be committed before scrolling to it
-      if (explainersOpen) flushSync(closeExplainers);
-      scrollToPage(id, "smooth");
-    },
-    [explainersOpen, closeExplainers],
-  );
-
-  const finishLandingAnim = useCallback(() => {
-    if (!landingAnim.current) return;
-    const direction = landingAnim.current;
-    landingAnim.current = null;
-    if (direction === "enter") {
+  /* boot v-3 once its markup and the React slots are in the DOM */
+  useEffect(() => {
+    if (!slots) return;
+    const api = initLegacy({
+      onCity: setCity,
+      onPage: setCurrentPageId,
+      onExplainers: (open) => {
+        pushNext();
+        setExplainersOpen(open);
+        /* leaving the tab leaves whichever explainer was open inside it,
+           which otherwise stays mounted and reappears the next time */
+        if (!open) setOpenExplainer(null);
+      },
+    });
+    legacy.current = api;
+    /* the landing's state is a class v-3 toggles; watch it rather than ask */
+    const landing = document.getElementById("landing");
+    const watch = landing
+      ? new MutationObserver(() => setLandingHidden(landing.classList.contains("hidden")))
+      : null;
+    if (landing) watch!.observe(landing, { attributes: true, attributeFilter: ["class"] });
+    /* a valid hash on load deep-links straight into the tool, skipping the
+       landing's slide */
+    const ids = new Set(api.sectionDefs.flatMap((s) => s.pages));
+    const page = pageForSlug(initialRoute.slug, ids);
+    if (page || initialRoute.explainers) {
+      document.documentElement.dataset.v3Instant = "1";
+      api.enterTool(page);
+      if (initialRoute.explainers) api.toggleExplainers(true);
       setLandingHidden(true);
-      setLandingUp(false);
+      window.setTimeout(() => {
+        delete document.documentElement.dataset.v3Instant;
+      }, 1000);
     }
-  }, []);
+    setReady(true);
+    return () => watch?.disconnect();
+  }, [slots, initialRoute]);
 
-  const enterTool = useCallback(
-    /* a null target enters the tool without aiming at a page — the route
-       asked for the Explainers section, which sits outside the page column */
-    (targetId: string | null) => {
-      if (landingHidden) {
-        if (targetId) goTo(targetId);
-        return;
-      }
-      if (landingAnim.current) return;
-      landingAnim.current = "enter";
-      /* a page target means the reader asked for the tool body, which is
-         display:none while Explainers is up. Batched with the rest, so it is
-         committed before the layout effect scrolls; without it the scroll
-         lands on a hidden element and the reader arrives back inside the
-         explainer they thought they had left. */
-      if (targetId) closeExplainers();
-      setToolActive(true);
-      addExploredCity(city);
-      pendingScroll.current = targetId;
-      setLandingUp(true);
-      window.setTimeout(finishLandingAnim, 950); // safety net if transitionend is missed
-    },
-    [landingHidden, city, goTo, finishLandingAnim, closeExplainers],
-  );
-
-  /* jump instantly to the target page as soon as the tool is displayed, so it
-     is already in place while the landing slides away above it. Keyed on the
-     slide starting as well as on toolActive: after the first entry the tool
-     stays mounted and active, so every later trip in from the landing would
-     otherwise leave the pending target unconsumed and drop the reader
-     wherever the page column happened to be parked. */
-  useLayoutEffect(() => {
-    if (toolActive && pendingScroll.current) {
-      const id = pendingScroll.current;
-      pendingScroll.current = null;
-      scrollToPage(id, "instant");
-    }
-  }, [toolActive, landingUp]);
-
-  const backToLanding = useCallback(() => {
-    if (landingAnim.current || !landingHidden) return;
-    landingAnim.current = "return";
-    /* going home leaves the Explainers section too — otherwise the tool
-       still holds an open explainer behind the landing, and the reader's
-       next trip into the tool arrives there instead of at their target */
-    closeExplainers();
-    setLandingHidden(false); // reappear...
-    setLandingUp(true); // ...above the viewport...
-    requestAnimationFrame(() =>
-      requestAnimationFrame(() => setLandingUp(false)), // ...then slide down
-    );
-    window.setTimeout(finishLandingAnim, 950);
-  }, [landingHidden, finishLandingAnim, closeExplainers]);
-
-  /* keep the URL in step with the app. Writing history entries directly
+  /* keep the URL in step with the page. Writing history entries directly
      (rather than assigning location.hash) avoids re-triggering our own
      hashchange listener; replace vs push is set by historyMode, so scroll
      drift stays out of history while deliberate moves stay in it. */
   useEffect(() => {
+    if (!ready) return;
     const slug = !landingHidden
       ? ""
       : explainersOpen
@@ -244,109 +183,77 @@ export default function App() {
     const url = slug ? `#${slug}` : pathname + search;
     if (push) history.pushState(null, "", url);
     else history.replaceState(null, "", url);
-  }, [landingHidden, explainersOpen, openExplainer, currentPageId]);
+  }, [ready, landingHidden, explainersOpen, openExplainer, currentPageId]);
 
-  /* hand-edited URLs and browser back/forward navigate the app */
+  /* hand-edited URLs and browser back/forward navigate the page */
   useEffect(() => {
+    if (!ready) return;
     const onHashChange = () => {
+      const api = legacy.current;
+      if (!api) return;
       const slug = readHash();
       if (!slug) {
-        backToLanding();
+        api.backToLanding();
         return;
       }
       const ex = parseExplainers(slug);
       if (ex.open) {
-        setExplainersOpen(true);
         setOpenExplainer(ex.id);
         // a Forward/pasted jump straight into Explainers from the landing
         // still has to get the tool on screen first
-        if (!landingHidden) enterTool(null);
+        if (!landingHiddenRef.current) api.enterTool(null);
+        api.toggleExplainers(true);
         return;
       }
-      const id = pageForSlug(slug);
+      const ids = new Set(api.sectionDefs.flatMap((s) => s.pages));
+      const id = pageForSlug(slug, ids);
       if (!id) return;
-      if (landingHidden) goTo(id);
-      else enterTool(id);
+      if (landingHiddenRef.current) api.goTo(id);
+      else api.enterTool(id);
     };
     window.addEventListener("hashchange", onHashChange);
     return () => window.removeEventListener("hashchange", onHashChange);
-  }, [landingHidden, goTo, enterTool, backToLanding]);
+  }, [ready]);
 
-  const changeCity = (c: string) => {
-    setCity(c);
-    if (toolActive) addExploredCity(c);
-  };
-
-  const onPageInView = useCallback((id: string) => {
-    setCurrentPageId(id);
-    setVisitedPages((prev) => (prev.has(id) ? prev : new Set(prev).add(id)));
-  }, []);
-
-  const journeyNavigate = (entry: string) => {
-    setJourneyOpen(false);
-    if (landingHidden) goTo(entry);
-    else enterTool(entry);
-  };
+  const markPage = useCallback((id: string) => legacy.current?.markPage(id), []);
 
   return (
     <>
-      <Landing
-        hidden={landingHidden}
-        up={landingUp}
-        city={city}
-        span={span}
-        onCityChange={changeCity}
-        onSpanChange={setSpan}
-        onEnterTool={enterTool}
-        onOpenJourney={() => setJourneyOpen(true)}
-        onSlideTransitionEnd={finishLandingAnim}
-      />
+      <LegacyShell />
 
-      <ToolView
-        active={toolActive}
-        landingHidden={landingHidden}
-        city={city}
-        span={span}
-        onCityChange={changeCity}
-        onSpanChange={setSpan}
-        explainersOpen={explainersOpen}
-        /* the tab button enters and leaves the section as a whole, so it
-           always lands on the gallery rather than resuming mid-explainer */
-        onToggleExplainers={() => {
-          pushNext();
-          setExplainersOpen((v) => !v);
-          setOpenExplainer(null);
-        }}
-        openExplainer={openExplainer}
-        onOpenExplainer={(id) => {
-          pushNext();
-          setOpenExplainer(id);
-        }}
-        onOpenChat={() => setChatOpen(true)}
-        onOpenJourney={() => setJourneyOpen(true)}
-        onBackToLanding={backToLanding}
-        onGoTo={goTo}
-        currentPageId={currentPageId}
-        onPageInView={onPageInView}
-        branchPath={branchPath}
-        onSelectBranch={setBranchPath}
-        treeMode={treeMode}
-        onTreeModeChange={changeTreeMode}
-        treeVariant={treeVariant}
-        showThemes={showThemes}
-      />
+      {slots &&
+        createPortal(
+          <ConstraintsSection
+            city={city}
+            treeMode={treeMode}
+            onTreeModeChange={changeTreeMode}
+            treeVariant={treeVariant}
+            showThemes={showThemes}
+            branchPath={branchPath}
+            onSelectBranch={setBranchPath}
+            onPhaseInView={markPage}
+          />,
+          slots.constraints,
+        )}
 
-      <JourneyModal
-        open={journeyOpen}
-        onClose={() => setJourneyOpen(false)}
-        onNavigate={journeyNavigate}
-        visitedPages={visitedPages}
-        currentPageId={currentPageId}
-        exploredCities={exploredCities}
-        insights={insights}
-      />
-
-      <DataChatModal open={chatOpen} onClose={() => setChatOpen(false)} />
+      {slots &&
+        createPortal(
+          <ExplainersContent
+            container={slots.explainers}
+            openId={openExplainer}
+            onOpen={(id) => {
+              pushNext();
+              setOpenExplainer(id);
+            }}
+            onClose={() => legacy.current?.toggleExplainers(false)}
+            onHome={() => {
+              legacy.current?.toggleExplainers(false);
+              legacy.current?.backToLanding();
+            }}
+            onJourney={() => legacy.current?.openJourney()}
+          />,
+          slots.explainers,
+        )}
     </>
   );
 }

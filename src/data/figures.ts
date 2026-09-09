@@ -15,7 +15,6 @@ import {
   countryMedians,
   homeMsa,
   homePlace,
-  metroUnit,
   placeCost,
 } from "./metros";
 
@@ -440,24 +439,19 @@ export function quadSideOf(cityShort: string, country = USA): BranchSide {
 /** Which leaf of the forked quadrant tree a shock branch lands on, per the
  *  revision spec's instruments. The supply forks reuse the alt tree's own
  *  housing test; the negative-demand fork reads the MSA through the existing
- *  metro read; the positive-demand diagonal test has no settled reading yet
- *  — [people outrunning pay → housing risk] is the placeholder rule,
- *  bracketed wherever it surfaces in copy. */
+ *  metro read. The positive demand shock has no second layer (team revision,
+ *  Sept 2026): its head is the ending, so it answers null. */
 export function quadLeaf(
   side: BranchSide,
   cityShort: string,
   country = USA,
-): string {
+): string | null {
   const sub = diagnose(cityShort, country).path[1];
   switch (side) {
     case "demandneg":
       return sub === "placespec" ? "dn-local" : "dn-regional";
-    case "demandpos": {
-      const msa = homeMsa(cityShort);
-      if (!msa) return "dp-housing"; // [no metro data — the fallback leaf]
-      const [mx, my] = metroUnit(msa);
-      return mx >= my ? "dp-housing" : "dp-clear";
-    }
+    case "demandpos":
+      return null;
     case "supplypos":
       return sub === "amen" ? "sp-amen" : "sp-col";
     default:
@@ -476,7 +470,9 @@ export const suggestedPath = (
   if (variant === "quad") return [quadSideOf(cityShort)];
   if (variant === "quad2") {
     const side = quadSideOf(cityShort);
-    return [side, quadLeaf(side, cityShort)];
+    const leaf = quadLeaf(side, cityShort);
+    /* a branch with no second layer ends at its head */
+    return leaf ? [side, leaf] : [side];
   }
   const alt = diagnose(cityShort).path;
   return variant === "alt" ? alt : convertPath(alt, variant);
@@ -778,32 +774,17 @@ export const TREE_NODES_QUAD: TreeNodeData[] = [
 
 /* ---------- the four-quadrant structure, FORKED ----------
  *  The team's revision spec (Sept 2026) for the quadrant tree: each shock
- *  keeps its own OVERARCHING QUESTION and forks once more with its own
- *  instrument (QUAD_BRANCH_SPEC below carries the questions; the themes
- *  under each leaf are in LEAF_THEMES). The four shock nodes are reused
- *  verbatim; the eight leaves are new, their ids prefixed by branch so the
- *  two housing/amenities pairs stay distinct nodes. Bracketed text marks
- *  what the spec left open — the exact reading of each instrument, and the
- *  name of the positive-demand fork's "no" leaf. */
+ *  keeps its own OVERARCHING QUESTION, and all but the positive demand shock
+ *  fork once more with their own instrument (QUAD_BRANCH_SPEC below carries
+ *  the questions; the themes under each leaf are in LEAF_THEMES). The four
+ *  shock nodes are reused verbatim; the six leaves are new, their ids
+ *  prefixed by branch so the two housing/amenities pairs stay distinct
+ *  nodes. The positive demand shock has no second layer — its head is the
+ *  ending, and the analysis opens straight on its standing question.
+ *  Bracketed text marks what the spec left open — the exact reading of each
+ *  instrument. */
 export const TREE_NODES_QUAD2: TreeNodeData[] = [
   ...TREE_NODES_QUAD,
-  {
-    id: "dp-housing",
-    parent: "demandpos",
-    title: "Housing risk",
-    detail:
-      "[demand is healthy today, but the MSA's side of the quadrant's diagonal says growth is pressing on housing — the threat to future growth is a housing constraint]",
-    tests:
-      "[which side of the pizza-chart quadrant's diagonal the MSA falls on — people outrunning pay reads as housing risk]",
-  },
-  {
-    id: "dp-clear",
-    parent: "demandpos",
-    title: "[No housing risk]",
-    detail:
-      "[the MSA sits on the other side of the diagonal — housing is not the looming constraint, so the threats to future growth are read elsewhere]",
-    tests: "[the other side of the quadrant's diagonal]",
-  },
   {
     id: "dn-regional",
     parent: "demandneg",
@@ -864,8 +845,9 @@ export const TREE_NODES_QUAD2: TreeNodeData[] = [
 export interface QuadBranchSpec {
   /** the overarching question the branch's analysis opens on */
   question: string;
-  /** the fork and the instrument that decides it, in one line */
-  forkLine: string;
+  /** the fork and the instrument that decides it, in one line — absent on a
+   *  shock with no second layer (the positive demand shock) */
+  forkLine?: string;
   /** theme ids that apply regardless of the fork — "what could I do better?" */
   better: string[];
 }
@@ -876,10 +858,11 @@ export const QUAD_BRANCH_SPEC: Partial<Record<BranchSide, QuadBranchSpec>> = {
       "Is it local or regional (admin or MSA)? Read the MSA pizza chart — MSA population change vs MSA wage change.",
     better: [],
   },
+  /* no second layer on the positive demand shock (team revision, Sept 2026):
+     the quadrant is the diagnosis, and the analysis opens straight on the
+     standing question */
   demandpos: {
     question: "What are threats to future growth?",
-    forkLine:
-      "Is housing a potential constraint? Read which side of the pizza-chart quadrant's diagonal the MSA falls on.",
     better: ["complexity"],
   },
   supplyneg: {
@@ -1113,8 +1096,6 @@ export const LEAF_THEMES: Record<string, string[]> = {
   "sn-amen": ["commuting", "amenityQuality"],
   "sp-col": ["housingSupply"],
   "sp-amen": ["commuting", "amenityQuality"],
-  "dp-housing": [],
-  "dp-clear": [],
 };
 
 /** themes for a picked descent — the leaf at its end decides */

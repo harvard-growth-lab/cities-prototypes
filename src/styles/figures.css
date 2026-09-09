@@ -1516,12 +1516,6 @@
 .nv-fade.lit .nv-qq {
   opacity: 1;
 }
-.nv-qread {
-  font-size: 9.5px;
-  font-weight: 700;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-}
 /* the placeholder idiom, on the stage (SVG cousin of .ph) */
 .nv-ph {
   font-size: 11.5px;

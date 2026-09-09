@@ -2,10 +2,12 @@
 
 A shared repository for housing prototypes related to the 2026–2027 Bloomberg Cities project.
 
-This branch is a React + TypeScript (Vite) port of the `V2_With_intoquiz` static prototype from
-the `nt-prototypes` branch: a landing page that slides up into the Cities Tool — an intro quiz,
-a scroll-driven city → MSA map overview, export visualizations, a "Put in Practice" reflection,
-a Visual Explainers gallery, a My Learning Journey window, and an experimental Data Chat.
+This branch is `cities-v-3` from `main` — the static prototype: its landing, masthead, section
+tabs and pager, journey window and dialogs, and every section but one — with **City Constraints**
+built here in React: the pizza chart, the four-quadrant diagnostic tree told as a guided walk, and
+the branch analysis. v-3's page runs as-is inside a Vite + React app (`src/legacy/`, generated
+from `main` by `scripts/v3/port.mjs`; the README there says how and how to re-sync), and React
+draws City Constraints and the Explainers content into slots in it.
 
 ## Running
 
@@ -18,30 +20,23 @@ npm run build    # tsc -b + vite build
 ## Project structure
 
 ```
+scripts/v3/port.mjs         regenerates src/legacy from a checkout of main's cities-v-3
+public/legacy/              the logo and the all-metros page the Extras section frames (verbatim)
 src/
-  main.tsx                  entry point; imports the split stylesheets
-  App.tsx                   view switching (landing <-> tool), city/span, journey state
-  data/content.ts           all copy, options, indicator data, and sample journey state
-  lib/downloads.ts          insights .txt and chat .csv download helpers
-  styles/                   the original prototype CSS, split by area
+  main.tsx                  entry point; v-3's stylesheet first, then this branch's
+  App.tsx                   mounts v-3's body, portals the two React pieces in, boots v-3;
+                            hash routing (deep links, Back) layered over v-3's navigation
+  data/content.ts           the sample cities; data/figures.ts, data/metros.ts the tree and its data
+  legacy/                   main's page — generated files + the bridge to the React pieces
+    README.md               what is generated, what the bridge does, what is not v-3's
+    LegacyShell.tsx         mounts v-3's body; index.ts boots its scripts once
+    bridge.ts               the seam: what v-3 tells React, what React drives
+  styles/figures.css        the constraints section; styles/explainers.css the gallery
   components/
-    Landing.tsx             fixed landing view (hero, selectors, jump row)
-    ToolView.tsx            toolbar + rail + scrolling pages; scroll spy
-    Toolbar.tsx  Rail.tsx
-    ExplainersView.tsx      Visual Explainers gallery (pixel-city thumbnails)
-    icons.tsx               SVG icons shared across components
-    pages/
-      IntroQuiz.tsx         gapminder-style intro question carousel
-      OverviewSection.tsx   two indicator blocks + sticky zooming Leaflet map
-      OverviewMap.tsx       Leaflet map, city -> MSA zoom driven by scroll
-      IndicatorTable.tsx    animated change-slider tables
-      ExportPages.tsx       export basket + complexity viz pages
-      VizActions.tsx        Data / Image / Share-link button cluster
-      PracticePage.tsx      "Put in Practice" reflection card
-    modals/
-      JourneyModal.tsx      My Learning Journey window
-      DataChatModal.tsx     Data Chat (beta) window
+    ConstraintsSection.tsx  City Constraints: the walk (or the compact telling) + branch analysis
+    ExplainersContent.tsx   the Explainers view: v-3's masthead, the gallery, one explainer
+    pages/                  ConstraintNarrative, ConstraintScrolly, BranchAnalysisPage, the walk's layouts
+  explainers/               the Visual Explainers (diagnostic tree, read a city)
 ```
 
-Chart images, the Growth Lab logo, and the map backdrop are placeholder assets served from
-Figma URLs (see `src/data/content.ts` and the `--map-asset` variable in `src/styles/base.css`).
+The Growth Lab logo and the landing image are v-3's own, copied by the port script.

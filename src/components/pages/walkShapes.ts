@@ -21,20 +21,30 @@ import type { BranchSide, TreeVariant } from "../../data/figures";
 
 /* ---------- rows: shared by every shape ---------- */
 
+/* Three ranks spread evenly down the stage (Sept 2026 revision): the head
+   row sits at the vertical midpoint between the root and the leaves, so the
+   two forks get the same drop. There used to be a fourth rank — a question
+   card under each head — which came off the tree to reduce clutter; the
+   root and leaf rows stayed where they were, since the stage poses are
+   tuned to the tree's extents. */
 export const ROOT_ROW = { y: 84, h: 34 };
-export const HEAD_ROW = { y: 188, h: 32 };
-export const QCARD_ROW = { y: 300, h: 42 };
+export const HEAD_ROW = { y: 250, h: 32 };
 export const LEAF_ROW = { y: 420 };
 
-/** the elbow buses: root → heads, and sub-question → leaves */
-export const ROOT_BUS = 132;
-export const LEAF_BUS = 368;
+/** the elbow buses — root → heads, and heads → leaves — each halfway down
+ *  its gap (root bottom 101 → head top 226; head bottom 274 → leaf top 399
+ *  on the mounted shape) */
+export const ROOT_BUS = 164;
+export const LEAF_BUS = 336;
+/** where the second fork's stem hands over to the elbows: the fork-two stop
+ *  draws a head's stem down to the bus, the leaf stop fans out from it */
+export const FORK2_Y = LEAF_BUS;
 
 /* where the walking dot rests at each station: under the root question,
-   below its branch head, facing the sub-question, then at its leaf */
+   below its branch head (see DOT_BELOW_HEAD), partway down the stem at the
+   second fork, then at its leaf */
 export const DOT_ROOT_Y = 120;
-export const DOT_HEAD_Y = 222;
-export const DOT_QCARD_Y = 258;
+export const DOT_FORK2_Y = 312;
 export const DOT_LEAF_Y = 458;
 
 /* ---------- the shapes ---------- */
@@ -46,7 +56,9 @@ export interface WalkLeafDef {
   id: string;
   /** the card's label, one entry per line — the narrower shapes wrap */
   lines: string[];
-  /** the edge label above it: the answer that reaches this leaf */
+  /** the answer that reaches this leaf. No longer DRAWN — the second
+   *  fork's edge labels came off with its question cards (Sept 2026
+   *  revision); kept as the fork's authored wording, like `question` */
   edge: string;
   /** the card's centre and width */
   x: number;
@@ -60,13 +72,18 @@ export interface WalkBranchDef {
   titleLines?: string[];
   /** the root → head edge label: the answer that reaches this branch */
   edge: string;
-  /** the fork-two card under the head, one entry per line. Takes the medians
-   *  it reads against, since the question names the number it compares to. */
+  /** the second fork's question, one entry per line. Takes the medians it
+   *  reads against, since the question names the number it compares to.
+   *  No longer DRAWN — the question cards came off the tree (Sept 2026
+   *  revision, to reduce clutter); the rail's fork-two stop carries the
+   *  logic instead. Kept as the fork's authored wording. */
   question: (n: { medPop: string; medCost: string }) => string[];
-  /** the head's centre — its sub-question card and its leaves' bus share it */
+  /** the head's centre — its stem and its leaves' bus share it */
   x: number;
-  /** EMPTY for a structure that forks once and stops: the head is then the
-   *  diagnosis itself, and the walk skips the question and leaf rows */
+  /** EMPTY where the branch stops at its head — every branch of a structure
+   *  that forks once, or one branch of a forking tree with no second layer
+   *  (the positive demand shock): the head is then the diagnosis itself,
+   *  and the walk ends there */
   leaves: WalkLeafDef[];
 }
 
@@ -117,7 +134,6 @@ export interface WalkShapeDef {
   /** the head row's y — a shape that forks once drops it down the stage, so
    *  the tree still fills the height a three-row one does */
   headY?: number;
-  qcardW: number;
   leafH: number;
   leafSize: number;
   /** how the walk describes its own root fork, in the rail copy */
@@ -148,7 +164,6 @@ const TWO: WalkShape = {
   rootX: 405,
   rootW: 318,
   headW: 152,
-  qcardW: 208,
   leafH: 30,
   leafSize: 16,
   forkOneLine:
@@ -270,7 +285,6 @@ const THREE: WalkShape = {
   rootX: 383,
   rootW: 318,
   headW: 152,
-  qcardW: 208,
   leafH: 42,
   leafSize: 13.5,
   forkOneLine:
@@ -413,7 +427,6 @@ const QUAD: WalkShape = {
   headSize: 15.5,
   headH: 48,
   headY: 300,
-  qcardW: 208,
   leafH: 30,
   leafSize: 16,
   forkOneLine:
@@ -503,17 +516,18 @@ const QUAD: WalkShape = {
 /* The four-quadrant tree, FORKED — the revision spec drawn in full: the root
    forks into the four shocks, and each shock forks once more with its own
    instrument (QUAD_BRANCH_SPEC in figures.ts carries the overarching
-   questions; the analysis section carries the themes). Eight leaves share
-   the band the two-branch tree's four use, so the cards run narrow — 12px
-   leaf type, pairs 6px apart inside a branch, ~8px between branches.
-   Bracketed labels mark what the spec left open: which side of the
-   positive-demand diagonal means what, and that fork's "no" leaf's name. */
+   questions; the analysis section carries the themes). The positive demand
+   shock has no second layer (team revision, Sept 2026) — its head is the
+   ending — so seven endings share the band the two-branch tree's four use,
+   and the cards run narrow — 12px leaf type, pairs 6px apart inside a
+   branch, ~8px between branches. Bracketed labels mark what the spec left
+   open: the exact reading of each remaining instrument. */
 const QUAD2: WalkShape = {
   id: "quad2",
   label: "Four quadrants · forked",
-  hint: "Each quadrant asks one more question — eight diagnoses",
+  hint: "Three quadrants ask one more question — seven diagnoses",
   about:
-    "The revision spec in full: the root forks into the four quadrant shocks, and each shock forks once more with its own instrument — eight leaves",
+    "The revision spec in full: the root forks into the four quadrant shocks, and every shock but the positive demand one forks once more with its own instrument — seven endings",
   variant: "quad2",
   rootQuestion: "population × wages — which quadrant?",
   rootX: 384,
@@ -521,14 +535,13 @@ const QUAD2: WalkShape = {
   headW: 142,
   headSize: 15.5,
   headH: 48,
-  qcardW: 168,
   leafH: 42,
   leafSize: 12,
   forkOneLine:
-    "one fork picks the quadrant's shock, and each shock asks one more question",
+    "one fork picks the quadrant's shock, and all but the positive demand shock ask one more question",
   planeCopy: {
     kicker: "Reading the quadrant",
-    lead: "Each quadrant is its own shock — and each shock gets one more question.",
+    lead: "Each quadrant is its own shock — and all but one get one more question.",
   },
   plane: QUAD.plane,
   branches: [
@@ -538,26 +551,9 @@ const QUAD2: WalkShape = {
       titleLines: ["Positive demand", "shock"],
       edge: "people ↑ · pay ↑",
       x: 111,
-      question: () => [
-        "housing a potential",
-        "constraint? [MSA vs diagonal]",
-      ],
-      leaves: [
-        {
-          id: "dp-housing",
-          lines: ["Housing", "risk"],
-          edge: "[people > pay]",
-          x: 66,
-          w: 84,
-        },
-        {
-          id: "dp-clear",
-          lines: ["[no housing", "risk]"],
-          edge: "[pay > people]",
-          x: 156,
-          w: 84,
-        },
-      ],
+      /* no second layer (team revision, Sept 2026): the head is the ending */
+      question: () => [],
+      leaves: [],
     },
     {
       id: "supplypos",
@@ -659,13 +655,24 @@ export const walkShape = (id: WalkShapeId): WalkShape =>
 export const shapeLeaves = (s: WalkShape): WalkLeafDef[] =>
   s.branches.flatMap((b) => b.leaves);
 
-/** leaf id → the branch it hangs off */
+/** ending id → its branch: the branch a leaf hangs off, or — where a branch
+ *  ends at its head — that head's own id */
 export const leafSide = (s: WalkShape, leaf: string): BranchSide =>
-  s.branches.find((b) => b.leaves.some((l) => l.id === leaf))?.id ?? "supply";
+  s.branches.find((b) => b.leaves.some((l) => l.id === leaf))?.id ??
+  s.branches.find((b) => b.id === leaf)?.id ??
+  "supply";
 
 /** does this structure fork twice, or stop at the branch heads? */
 export const hasLeaves = (s: WalkShape): boolean =>
   s.branches.some((b) => b.leaves.length > 0);
+/** does THIS branch fork again, or end at its head? A forking tree can carry
+ *  a branch that stops early (the positive demand shock), so the walk asks
+ *  per branch, not per tree. */
+export const branchForks = (s: WalkShape, side: string): boolean =>
+  (s.branches.find((b) => b.id === side)?.leaves.length ?? 0) > 0;
+/** an ending id names a leaf, or a head whose branch stops there */
+export const isHeadEnding = (s: WalkShape, id: string): boolean =>
+  s.branches.some((b) => b.id === id && b.leaves.length === 0);
 
 export const headRowY = (s: WalkShape): number => s.headY ?? HEAD_ROW.y;
 export const headRowH = (s: WalkShape): number => s.headH ?? HEAD_ROW.h;
@@ -681,6 +688,11 @@ export const landingX = (s: WalkShape, route: string[]): number =>
   hasLeaves(s)
     ? leafX(s, route[route.length - 1])
     : headX(s, route[0] as BranchSide);
+/** where one ending sits across — a leaf's centre, or the head's where its
+ *  branch stops there — so a badge centres under whichever a route reached
+ *  (badges share one row, landingY, whatever they point at) */
+export const endingX = (s: WalkShape, id: string): number =>
+  isHeadEnding(s, id) ? headX(s, id as BranchSide) : leafX(s, id);
 
 /** the x extents of the leaf row — the widest rank, so this is the tree's
  *  own band. Both shapes span 19–749 by construction: the stage poses that
@@ -887,8 +899,12 @@ export const branchBox = (
 export const wholeBox = (s: WalkShape): [number, number, number, number] => {
   const [x0, x1] = shapeBand(s);
   const [y0, y1] = shapeExtent(s);
+  /* every ending: the leaves, plus any head whose branch stops there */
   const landings = hasLeaves(s)
-    ? shapeLeaves(s).map((l) => l.x)
+    ? [
+        ...shapeLeaves(s).map((l) => l.x),
+        ...s.branches.filter((b) => !b.leaves.length).map((b) => b.x),
+      ]
     : s.branches.map((b) => b.x);
   const bx0 = Math.min(...landings.map((x) => badgeCX(x, BADGE_W) - BADGE_W / 2));
   const bx1 = Math.max(...landings.map((x) => badgeCX(x, BADGE_W) + BADGE_W / 2));
@@ -941,7 +957,9 @@ const NUMBER_WORD: Record<number, string> = {
   2: "two",
   3: "three",
   4: "four",
+  5: "five",
   6: "six",
+  7: "seven",
   8: "eight",
 };
 export const numberWord = (n: number) => NUMBER_WORD[n] ?? String(n);

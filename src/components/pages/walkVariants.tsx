@@ -9,7 +9,13 @@ import {
   sideDash,
   type BranchSide,
 } from "../../data/figures";
-import { type WalkLeafDef, type WalkShape } from "./walkShapes";
+import {
+  branchForks,
+  hasLeaves,
+  isHeadEnding,
+  type WalkLeafDef,
+  type WalkShape,
+} from "./walkShapes";
 
 /** what every alternate drawing needs to know about the walk right now */
 export interface WalkViewProps {
@@ -31,6 +37,8 @@ export interface WalkViewProps {
   /** which tree station the traveller is at: 0 root … 3 leaf */
   stationIdx: number;
   forks2: boolean;
+  /** whether the WALKED branch forks again — false where it stops at its head */
+  cityForks: boolean;
   cityShort: string;
   citySide: BranchSide;
   suggLeaf: string;
@@ -59,16 +67,18 @@ const splitQ = (q: string): string[] => {
 /* ====================================================================== */
 
 /* the columns, left to right; rows spread around the stage's middle. Sized
-   to spend the whole band left of the inset: generous heads, a question
-   card tall enough for its three lines, and leaves that wrap onto two lines
-   rather than shrinking their type. */
+   to spend the whole band left of the inset: generous heads, and leaves that
+   wrap onto two lines rather than shrinking their type. The third column
+   used to hold a question card per branch — those came off the tree (Sept
+   2026 revision, to reduce clutter), so S_Q is now only where the stem out
+   of a head hands over to the elbow into its leaves. The head column sits
+   halfway between the root and the leaves, so both forks get the same run
+   and each bus is halfway along its own gap. */
 const S_CY = 320;
 const S_ROOT = { x: 112, w: 178, h: 48 };
-const S_BUS1 = 232;
-const S_Q = { x: 560, w: 168, h: 62 };
-/* the second fork gets the reach the first has: question card → bus → leaf
-   spans about what root → bus → head does, so the two forks read alike */
-const S_BUS2 = 664;
+const S_BUS1 = 270;
+const S_Q = { x: 592 };
+const S_BUS2 = 618;
 const S_LEAF = { x: 752, w: 128 };
 const S_SPACING: Record<number, number> = { 1: 0, 2: 270, 3: 215, 4: 155 };
 /* a leaf's vertical pitch, and its card heights plain vs wrapped */
@@ -76,27 +86,9 @@ const S_LEAF_STEP = 74;
 const S_LEAF_H = 32;
 const S_LEAF_H2 = 42;
 
-/** greedy word-wrap to a character budget — the question column re-wraps
- *  its authored two lines into three rather than shrinking the type */
-const wrapText = (text: string, budget: number): string[] => {
-  const out: string[] = [];
-  let line = "";
-  for (const w of text.split(" ")) {
-    const next = line ? `${line} ${w}` : w;
-    if (next.length > budget && line) {
-      out.push(line);
-      line = w;
-    } else {
-      line = next;
-    }
-  }
-  if (line) out.push(line);
-  return out;
-};
-
 /** the sideways head column, shared by the render and the route helpers */
 const sideHeads = (forks2: boolean) => ({
-  HX: forks2 ? 352 : 450,
+  HX: forks2 ? 444 : 450,
   HW: forks2 ? 210 : 280,
   HH: forks2 ? 44 : 60,
 });
@@ -142,22 +134,28 @@ const sideRouteYs = (
 
 /** Where the walking dot RESTS at each sideways station — under the root,
  *  under the head (right of it in a one-fork shape, where the badge takes
- *  the room below), under the question, beside the landing leaf. The
+ *  the room below), under the second fork's hand-over, beside the landing
+ *  leaf. The
  *  drawing and the camera ride both read these, so they cannot disagree. */
 export const sideRests = (
   sh: WalkShape,
   citySide: string,
   suggLeaf: string,
-  forks2: boolean,
 ): [number, number][] => {
   const { ry, ly } = sideRouteYs(sh, citySide, suggLeaf);
-  const { HX, HW, HH } = sideHeads(forks2);
+  const { HX, HW, HH } = sideHeads(hasLeaves(sh));
+  /* where the branch stops at its head — every branch of a one-fork tree, or
+     the positive demand shock on the forked one — the head IS the landing,
+     so the dot parks past it on the right, where a landing dot parks (the
+     badge takes the room below), and the later stations hold there */
+  if (!branchForks(sh, citySide)) {
+    const head: [number, number] = [HX + HW / 2 + 26, ry];
+    return [[S_ROOT.x, S_CY + S_ROOT.h / 2 + 22], head, head, head];
+  }
   return [
     [S_ROOT.x, S_CY + S_ROOT.h / 2 + 22],
-    /* one fork: the head IS the landing, so the dot parks past it on the
-       right, where a landing dot parks — the badge takes the room below */
-    forks2 ? [HX, ry + HH / 2 + 18] : [HX + HW / 2 + 26, ry],
-    [S_Q.x, ry + S_Q.h / 2 + 16],
+    [HX, ry + HH / 2 + 18],
+    [S_Q.x, ry + 18],
     /* clear of the card's edge with the halo on: the dot is r7 in an r9 halo */
     [S_LEAF.x + S_LEAF.w / 2 + 26, ly],
   ];
@@ -165,16 +163,15 @@ export const sideRests = (
 
 /** the city's route through the sideways tree, for the camera ride: from
  *  the rest under the root, out past the card's shoulder to the bus, along
- *  its row THROUGH the head and question cards, and onto the landing card
+ *  its row THROUGH the head card, and onto the landing card
  *  (the dot parks at the station rests, not on the path's card centres) */
 export const sideRoute = (
   sh: WalkShape,
   citySide: string,
   suggLeaf: string,
-  forks2: boolean,
 ): [number, number][] => {
   const { ry, ly } = sideRouteYs(sh, citySide, suggLeaf);
-  const { HX } = sideHeads(forks2);
+  const { HX } = sideHeads(hasLeaves(sh));
   const pts: [number, number][] = [
     [S_ROOT.x, S_CY + S_ROOT.h / 2 + 22],
     [S_ROOT.x + S_ROOT.w / 2 + 8, S_CY],
@@ -182,7 +179,8 @@ export const sideRoute = (
     [S_BUS1, ry],
     [HX, ry],
   ];
-  if (!forks2) return pts;
+  /* a branch that stops at its head ends the route there */
+  if (!branchForks(sh, citySide)) return pts;
   pts.push([S_Q.x, ry], [S_BUS2, ry], [S_BUS2, ly], [S_LEAF.x, ly]);
   return pts;
 };
@@ -261,15 +259,15 @@ export function SidewaysTree(p: WalkViewProps) {
 
   /* the traveller's rests come from the shared table, so the camera ride
      parks the dot exactly where the walk would */
-  const stations = sideRests(sh, p.citySide, p.suggLeaf, p.forks2);
-  const atStation = Math.min(p.stationIdx, p.forks2 ? 3 : 1);
+  const stations = sideRests(sh, p.citySide, p.suggLeaf);
+  const atStation = Math.min(p.stationIdx, p.cityForks ? 3 : 1);
   const [tx, ty] = stations[atStation];
   /* the name takes the dot's open side: under it at the landings (and for
      the whole ride, where the dot never stops moving), beside it on the
      way down */
   const nameBelow = p.ridden
     ? true
-    : p.forks2
+    : p.cityForks
       ? atStation >= 3
       : atStation >= 1;
 
@@ -278,12 +276,14 @@ export function SidewaysTree(p: WalkViewProps) {
     label: string,
     color: string,
     drop = 0,
+    /** the ending is a head card, not a leaf — hang under its height */
+    head = false,
   ) => {
     const w = (label.length + 2) * 7.8 + 30;
     /* centred on what it points at; clamped only at the stage's own edges
        (sideBox leaves room for it at the leaf column) */
     const cx = Math.max(w / 2 + 20, Math.min(at[0], 1156 - w / 2));
-    const y = at[1] + (p.forks2 ? S_LEAF_H2 / 2 : HH / 2) + 24 + drop;
+    const y = at[1] + (head ? HH / 2 : S_LEAF_H2 / 2) + 24 + drop;
     return (
       <g className="jz-youare">
         <rect
@@ -300,10 +300,13 @@ export function SidewaysTree(p: WalkViewProps) {
       </g>
     );
   };
-  const landAt = (leaf: string): [number, number] =>
-    p.forks2
-      ? leafPos(leaf)
-      : [HX, rowY(rowOf.get(leaf as BranchSide) ?? cityRow)];
+  /* a head ending — every landing on a one-fork tree, or a forking tree's
+     branch that stops at its head — lands on the head card itself */
+  const atHead = (id: string) => isHeadEnding(sh, id);
+  const landAt = (id: string): [number, number] =>
+    atHead(id)
+      ? [HX, rowY(rowOf.get(id as BranchSide) ?? cityRow)]
+      : leafPos(id);
   const collide =
     Math.abs(landAt(p.selLeaf)[1] - landAt(p.suggLeaf)[1]) < 56 &&
     Math.abs(landAt(p.selLeaf)[0] - landAt(p.suggLeaf)[0]) < 240;
@@ -317,13 +320,12 @@ export function SidewaysTree(p: WalkViewProps) {
           stroke={TREE_SIDE_COLOR[p.citySide]}
           d={`M${S_ROOT.x + S_ROOT.w / 2 + 4},${S_CY} H${S_BUS1} V${rowY(cityRow)} H${HX - HW / 2 - 6}`}
         />
-        {p.forks2 && (
+        {p.cityForks && (
           <path
             className="tree-home"
             stroke={TREE_SIDE_COLOR[p.citySide]}
             d={
-              `M${HX + HW / 2 + 4},${rowY(cityRow)} H${S_Q.x - S_Q.w / 2 - 6}` +
-              ` M${S_Q.x + S_Q.w / 2 + 4},${rowY(cityRow)} H${S_BUS2} V${leafPos(p.suggLeaf)[1]} H${S_LEAF.x - S_LEAF.w / 2 - 6}`
+              `M${HX + HW / 2 + 4},${rowY(cityRow)} H${S_BUS2} V${leafPos(p.suggLeaf)[1]} H${S_LEAF.x - S_LEAF.w / 2 - 6}`
             }
           />
         )}
@@ -366,7 +368,7 @@ export function SidewaysTree(p: WalkViewProps) {
         );
       })}
 
-      {/* stems: head → sub-question */}
+      {/* stems: head → the second fork's hand-over */}
       {p.forks2 &&
         sh.branches
           .filter((b) => b.leaves.length > 0)
@@ -384,12 +386,12 @@ export function SidewaysTree(p: WalkViewProps) {
                 }
                 stroke={TREE_SIDE_COLOR[b.id]}
                 pathLength={1}
-                d={`M${HX + HW / 2 + 2},${y} H${S_Q.x - S_Q.w / 2 - 4}`}
+                d={`M${HX + HW / 2 + 2},${y} H${S_Q.x}`}
               />
             );
           })}
 
-      {/* elbows: sub-question → leaves */}
+      {/* elbows: the hand-over → leaves */}
       {p.forks2 &&
         sh.branches.flatMap((b, bi) =>
           b.leaves.map((l, li) => {
@@ -405,7 +407,7 @@ export function SidewaysTree(p: WalkViewProps) {
                 }
                 stroke={TREE_SIDE_COLOR[b.id]}
                 pathLength={1}
-                d={`M${S_Q.x + S_Q.w / 2 + 2},${rowY(bi)} H${S_BUS2} V${leafY(bi, li, b.leaves.length)} H${S_LEAF.x - S_LEAF.w / 2 - 4}`}
+                d={`M${S_Q.x},${rowY(bi)} H${S_BUS2} V${leafY(bi, li, b.leaves.length)} H${S_LEAF.x - S_LEAF.w / 2 - 4}`}
               />
             );
           }),
@@ -477,57 +479,6 @@ export function SidewaysTree(p: WalkViewProps) {
         );
       })}
 
-      {/* sub-question cards, third column */}
-      {p.forks2 &&
-        sh.branches
-          .filter((b) => b.leaves.length > 0)
-          .map((b) => {
-            const st = status(b.id);
-            const y = rowY(rowOf.get(b.id) ?? 0);
-            const lines = wrapText(
-              b.question({ medPop: p.medPop, medCost: p.medCost }).join(" "),
-              26,
-            );
-            return (
-              <g key={`sq-${b.id}`} className={on(gates.fork2) + st.g}>
-                <g className={"nv-card nv-q" + (st.lit ? " lit" : "")}>
-                  <rect
-                    x={S_Q.x - S_Q.w / 2}
-                    y={y - S_Q.h / 2}
-                    width={S_Q.w}
-                    height={S_Q.h}
-                    rx={9}
-                    stroke={TREE_SIDE_COLOR[b.id]}
-                  />
-                  {lines.map((line, i, all) => (
-                    <text
-                      key={i}
-                      className="nv-qq"
-                      x={S_Q.x}
-                      y={y - 6 + 4 - (all.length - 1) * 6.5 + i * 13}
-                      textAnchor="middle"
-                      fontSize={10.5}
-                      fill={TREE_SIDE_COLOR[b.id]}
-                    >
-                      {line}
-                    </text>
-                  ))}
-                  {b.id === p.citySide && (
-                    <text
-                      className={"nv-qread " + on(gates.leaf)}
-                      x={S_Q.x}
-                      y={y + S_Q.h / 2 - 8}
-                      textAnchor="middle"
-                      fill="var(--teal)"
-                    >
-                      read: the inset chart ↓
-                    </text>
-                  )}
-                </g>
-              </g>
-            );
-          })}
-
       {/* leaves, last column */}
       {sh.branches.flatMap((b, bi) =>
         b.leaves.map((l, li) => {
@@ -539,18 +490,6 @@ export function SidewaysTree(p: WalkViewProps) {
           const picked = p.leafPickable && l.id === p.selLeaf;
           return (
             <g key={`slf-${l.id}`} className={on(gates.leaf) + st.g}>
-              {/* the answer that reaches this leaf rides above its card: the
-                  run in from the bus is too short to carry it, and beside
-                  the card is the traveller's */}
-              <text
-                className="nv-elab"
-                x={S_LEAF.x}
-                y={y - lh / 2 - 7}
-                textAnchor="middle"
-                fill={TREE_SIDE_COLOR[b.id]}
-              >
-                {l.edge}
-              </text>
               <g
                 className={
                   "nv-card nv-leaf" +
@@ -594,6 +533,8 @@ export function SidewaysTree(p: WalkViewProps) {
           landAt(p.suggLeaf),
           "where we think you are",
           TREE_SIDE_COLOR[p.citySide],
+          0,
+          atHead(p.suggLeaf),
         )}
         {/* only where the tree forked twice — a one-fork walk offers no
             pick, and its "selection" is the app's path through a lossy
@@ -606,6 +547,7 @@ export function SidewaysTree(p: WalkViewProps) {
             "you selected this path",
             TREE_SIDE_COLOR[p.selSide],
             collide ? 30 : 0,
+            atHead(p.selLeaf),
           )}
       </g>
 

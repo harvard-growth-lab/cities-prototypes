@@ -44,42 +44,43 @@ import {
   type WalkViewProps,
 } from "./walkVariants";
 import {
+  badgeCX,
+  branchBox,
+  branchForks,
+  DEFAULT_WALK_SHAPE,
+  DOT_BELOW_HEAD,
+  DOT_FORK2_Y,
   DOT_LEAF_Y,
-  DOT_QCARD_Y,
   DOT_ROOT_Y,
-  LEAF_BUS,
-  LEAF_ROW,
-  QCARD_ROW,
-  ROOT_BUS,
-  ROOT_ROW,
+  endingX,
+  FIT_MODES,
+  fitPose,
+  fitScale,
+  fitTransform,
+  FORK2_Y,
   hasLeaves,
   headRowH,
   headRowY,
   headX,
-  landingX,
   landingY,
+  LEAF_BUS,
+  LEAF_ROW,
   leafSide,
-  DOT_BELOW_HEAD,
-  branchBox,
-  fitPose,
-  fitScale,
-  fitTransform,
-  DEFAULT_WALK_SHAPE,
   numberWord,
   planeBranches,
   planeCuts,
   planeNeedsRim,
-  FIT_MODES,
   rayExit,
+  ROOT_BUS,
+  ROOT_ROW,
   sectorAnchor,
-  sectorRim,
   sectorAt,
   sectorPoly,
-  badgeCX,
+  sectorRim,
   shapeLeaves,
+  type FitMode,
   walkShape,
   wholeBox,
-  type FitMode,
 } from "./walkShapes";
 import {
   DATA_WINDOW_LABEL,
@@ -148,7 +149,8 @@ const PLANE_BEAT = 4;
 const TREE_BEAT = 5;
 /** fork one is answered: the branch heads and the edges down to them */
 const FORK1_BEAT = 6;
-/** fork two is asked: the question cards, and the inset swaps instrument */
+/** fork two is asked: each head's stem reaches down to the bus, and the
+ *  inset swaps instrument (the rail carries the question itself) */
 const FORK2_BEAT = 7;
 /** the leaves arrive and the traveller lands on the diagnosed one */
 const LEAF_BEAT = 8;
@@ -204,9 +206,9 @@ const dotR = (s: number) => 1.3 + 10.7 * Math.sqrt(s / maxSize);
 
 /* ---------- tree geometry (no cohort stacks — one dot walks it) ----------
    Which cards the tree carries, and where they sit, comes from the SHAPE
-   (walkShapes.ts) — the row heights below are what every shape shares. The
-   question cards are deliberately the SMALLEST boxes on the tree: the fork
-   logic is connective tissue, and the answers (heads, leaves) are what the
+   (walkShapes.ts) — the rows are what every shape shares. Three ranks,
+   evenly spaced: the fork logic is connective tissue (edge labels on the
+   buses, and the rail's copy), and the answers (heads, leaves) are what the
    eye should land on. */
 
 /* the instrument panel: sized for a pizza square big enough to read, with
@@ -252,8 +254,6 @@ const elbow = (x0: number, y0: number, busY: number, x1: number, y1: number) =>
   `M${x0},${y0} V${busY} H${x1} V${y1}`;
 
 const ROOT_BOT = ROOT_ROW.y + ROOT_ROW.h / 2;
-const QCARD_TOP = QCARD_ROW.y - QCARD_ROW.h / 2;
-const QCARD_BOT = QCARD_ROW.y + QCARD_ROW.h / 2;
 
 /** bracketed segments render as the repo's placeholder idiom */
 function Body({ text }: { text: string }) {
@@ -496,9 +496,11 @@ export function ConstraintNarrative({
      defined in walkShapes.ts as studies. */
   const sh = walkShape(DEFAULT_WALK_SHAPE);
   const leaves = useMemo(() => shapeLeaves(sh), [sh]);
-  /* how many endings the structure has: its leaves, or — where it forks once
-     — its branch heads, which are the endings */
-  const endings = leaves.length || sh.branches.length;
+  /* how many endings the structure has: its leaves plus any head whose
+     branch stops there, or — where it forks once — its branch heads */
+  const endings = leaves.length
+    ? leaves.length + sh.branches.filter((b) => !b.leaves.length).length
+    : sh.branches.length;
   /* the leaf row is the one rank whose height varies with the shape — the
      narrow shapes wrap their titles onto a second line */
   const LEAF_TOP = LEAF_ROW.y - sh.leafH / 2;
@@ -622,7 +624,9 @@ export function ConstraintNarrative({
        name. The forked variant then runs the branch's own instrument. */
     if (sh.variant === "quad2") {
       const side = (placeSector?.side ?? "supplyneg") as BranchSide;
-      return [side, quadLeaf(side, cityShort, country)];
+      const leaf = quadLeaf(side, cityShort, country);
+      /* a branch with no second layer ends at its head */
+      return leaf ? [side, leaf] : [side];
     }
     return forks2
       ? convertPath(dx.path, sh.variant)
@@ -630,6 +634,10 @@ export function ConstraintNarrative({
   }, [forks2, dx, sh, placeSector, cityShort, country]);
   const citySide = sideOfPath(suggAlt);
   const suggLeaf = suggAlt[suggAlt.length - 1];
+  /* whether the WALKED branch forks again: the tree may (forks2) while the
+     city's own branch stops at its head — the positive demand shock has no
+     second layer, so a city there lands on the head itself */
+  const cityForks = forks2 && branchForks(sh, citySide);
   /* the app's pick may live on the other structure — read it on this one.
      The alias that carries a pick across structures cannot recover a shock's
      SIGN, so on the forked quadrant tree an app path that merely mirrors the
@@ -659,12 +667,7 @@ export function ConstraintNarrative({
   const demandLegend: [string, string] =
     citySide === "demandneg"
       ? ["[MSA weak too → Regional (MSA)]", "[MSA healthy → Local (admin)]"]
-      : citySide === "demandpos"
-        ? [
-            "[people outrun pay → housing risk]",
-            "[pay outruns people → no risk]",
-          ]
-        : ["← below · Metro-wide", "above · Place-specific →"];
+      : ["← below · Metro-wide", "above · Place-specific →"];
   /* what the landing says on the forked quadrant tree — the supply forks
      reuse the alt housing reason verbatim; the demand forks read differently
      and the positive-demand diagonal has no settled rule, so those stay
@@ -676,7 +679,8 @@ export function ConstraintNarrative({
         : `[no ${cityShort} data yet — the fallback leaf is marked]`
       : citySide === "demandneg"
         ? `[the MSA pizza chart read: ${suggLeaf === "dn-local" ? "the MSA holds up while the admin slips — a local (admin) shock" : "the MSA reads weak too — a regional (MSA) shock"}]`
-        : `[the diagonal read: ${suggLeaf === "dp-housing" ? "the MSA sits on the people-outrun-pay side — housing is a potential constraint" : "the MSA sits on the pay-outruns-people side — housing looks clear"}]`;
+        : /* the positive demand shock: no second layer, the head is the landing */
+          `${cityShort} sits in the ${planeRead} quadrant — ${TREE_SIDE_LABEL[citySide]}. No second question on this branch: the quadrant is the diagnosis. [its themes are asked in the analysis below]`;
 
   /* What the stage is looking at, beat by beat: the whole tree while it is
      being introduced, the root and its branches once fork one is answered,
@@ -919,6 +923,7 @@ export function ConstraintNarrative({
     landed: gLand,
     stationIdx: Math.min(Math.max(step - TREE_BEAT, 0), 3),
     forks2,
+    cityForks,
     cityShort,
     citySide,
     suggLeaf,
@@ -937,7 +942,7 @@ export function ConstraintNarrative({
      Between tree stations the dot doesn't fly point-to-point — it WALKS the
      tree, tracing the elbow route through each card. CSS transitions can only
      cut straight lines between transforms, so the walk is driven imperatively:
-     one polyline (the city's full route, root → head → question → leaf) with
+     one polyline (the city's full route, root → head → fork two → leaf) with
      each station a point along it, and a rAF tween that moves the dot by arc
      length. Off-tree moves (the chart steps, chart → root) stay straight. */
   const walk = useMemo(() => {
@@ -946,9 +951,9 @@ export function ConstraintNarrative({
       [sh.rootX, ROOT_BUS],
       [headX(sh, citySide), ROOT_BUS],
       [headX(sh, citySide), HEAD_BOT + DOT_BELOW_HEAD],
-      ...(forks2
+      ...(cityForks
         ? ([
-            [headX(sh, citySide), DOT_QCARD_Y],
+            [headX(sh, citySide), DOT_FORK2_Y],
             [headX(sh, citySide), LEAF_BUS],
             [leafBox(suggLeaf).x, LEAF_BUS],
             [leafBox(suggLeaf).x, DOT_LEAF_Y],
@@ -956,22 +961,23 @@ export function ConstraintNarrative({
         : []),
     ];
     const aw = arcWalk(pts);
-    /* station arcs: root, below-the-head, facing-the-question, the leaf. A
-       one-fork tree has only the first two, so its later beats hold the dot
-       at the head it already reached rather than inventing stations. */
+    /* station arcs: root, below-the-head, the second fork, the leaf. A
+       branch that stops at its head has only the first two, so its later
+       beats hold the dot at the head it already reached rather than
+       inventing stations. */
     return {
       at: aw.at,
       total: aw.total,
-      stations: forks2
+      stations: cityForks
         ? [0, aw.cum[3], aw.cum[4], aw.cum[7]]
         : [0, aw.total, aw.total, aw.total],
     };
-  }, [sh, forks2, citySide, suggLeaf, HEAD_BOT, leafBox]);
+  }, [sh, cityForks, citySide, suggLeaf, HEAD_BOT, leafBox]);
 
   /* the sideways ride steers by the sideways tree's own route */
   const sideArc = useMemo(
-    () => arcWalk(sideRoute(sh, citySide, suggLeaf, forks2)),
-    [sh, citySide, suggLeaf, forks2],
+    () => arcWalk(sideRoute(sh, citySide, suggLeaf)),
+    [sh, citySide, suggLeaf],
   );
 
   const travelerRef = useRef<SVGGElement>(null);
@@ -1105,12 +1111,12 @@ export function ConstraintNarrative({
        DOT parks at the walk's rests once it has arrived, so it never sits
        covering a card's title */
     const stationArcs = sideRideMode
-      ? forks2
+      ? cityForks
         ? [0, sideArc.cum[4], sideArc.cum[5], sideArc.cum[8]]
         : [0, sideArc.total, sideArc.total, sideArc.total]
       : walk.stations;
     const rests: [number, number][] = sideRideMode
-      ? sideRests(sh, citySide, suggLeaf, forks2)
+      ? sideRests(sh, citySide, suggLeaf)
       : walk.stations.map((a) => walk.at(a));
     /* reading zoom per station; the sideways tree is airier, so its ride
        stays a step wider to keep neighbours in frame. Smaller screens
@@ -1153,10 +1159,10 @@ export function ConstraintNarrative({
       const fcxT = (ix0 + ix1) / 2;
       const fcyT = (iy0 + iy1) / 2;
       const kFit = fitScale(wb, focusIntoRef.current, 2.4);
-      /* a one-fork tree has two rests, not four: the stops past its head
-         all park the dot beside the head (the sideways drawing clamps the
-         same way), never at the question or leaf columns it does not have */
-      const lastRest = forks2 ? 3 : 1;
+      /* a branch that stops at its head has two rests, not four: the stops
+         past its head all park the dot beside the head (the sideways drawing
+         clamps the same way), never at the fork or leaf it does not have */
+      const lastRest = cityForks ? 3 : 1;
       const restAt = (i: number) => rests[Math.min(i, lastRest)];
       if (!st.init) {
         st.init = true;
@@ -1283,7 +1289,7 @@ export function ConstraintNarrative({
       g.style.transform = "";
       g.style.transition = "";
     };
-  }, [rideOn, sideRideMode, walk, sideArc, beats, sh, forks2]);
+  }, [rideOn, sideRideMode, walk, sideArc, beats, sh, forks2, cityForks]);
 
   /* ---------- ride scroll snapping ----------
      The rides are stepped for the reader too: when a scroll gesture comes
@@ -1432,15 +1438,17 @@ export function ConstraintNarrative({
         : `[no ${cityShort} data yet — the walk shows the fallback read]`,
     },
     {
-      kicker: forks2
-        ? "Fork two: one more comparison"
-        : "No second fork on the tree",
+      kicker: !forks2
+        ? "No second fork on the tree"
+        : !cityForks
+          ? "No second fork on this branch"
+          : "Fork two: one more comparison",
       body: !forks2
         ? `This tree stops at the quadrant — [each shock's second question, and its themes, are asked in the analysis section below].`
-        : citySide === "demandneg"
-          ? `Fork two: local or regional? The inset reads the MSA pizza chart — its population change against its wage change.`
-          : citySide === "demandpos"
-            ? `Fork two: is housing a potential constraint? [read from which side of the quadrant's diagonal the MSA falls on].`
+        : !cityForks
+          ? `A ${TREE_SIDE_LABEL[citySide]} has no second question: the quadrant is the diagnosis, and the walk ends at its head. [its themes are asked in the analysis section below]`
+          : citySide === "demandneg"
+            ? `Fork two: local or regional? The inset reads the MSA pizza chart — its population change against its wage change.`
             : demandFork
               ? `Fork two: is the metro growing? The inset reads it against ${pc(med.pop)}.`
               : `Fork two: what does being there cost? The inset reads home values against ${pc(medCost)}.`,
@@ -1482,18 +1490,20 @@ export function ConstraintNarrative({
           : `[no ${cityShort} data yet — the walk shows the fallback read]`),
     };
     const forkTwoSwap = {
-      kicker: !demandFork
-        ? "Fork two: the housing chart"
-        : citySide === "demandneg" || citySide === "demandpos"
-          ? "Fork two: the MSA pizza chart"
-          : "Fork two: the population dial",
-      body:
-        (!demandFork
-          ? `The instrument swaps to the housing chart — home values against the typical metro's ${pc(medCost)}. `
+      kicker: !cityForks
+        ? "No second fork on this branch"
+        : !demandFork
+          ? "Fork two: the housing chart"
           : citySide === "demandneg"
-            ? `The instrument swaps to the MSA pizza chart — the metro's population change against its wage change. `
-            : citySide === "demandpos"
-              ? `The instrument swaps to the MSA pizza chart — [which side of the quadrant's diagonal does the MSA fall on?]. `
+            ? "Fork two: the MSA pizza chart"
+            : "Fork two: the population dial",
+      body:
+        (!cityForks
+          ? `No second instrument on this branch — the walk ends at the head. `
+          : !demandFork
+            ? `The instrument swaps to the housing chart — home values against the typical metro's ${pc(medCost)}. `
+            : citySide === "demandneg"
+              ? `The instrument swaps to the MSA pizza chart — the metro's population change against its wage change. `
               : `The instrument swaps to the population dial — the metro against the median (${pc(med.pop)}). `) +
         (sh.variant === "quad2"
           ? quadLandCopy
@@ -2023,23 +2033,18 @@ export function ConstraintNarrative({
                         HEAD_TOP - 6,
                       )}
                     />
+                    {/* head → leaf as ONE path: with no card between them the
+                        stem and the elbow meet end to end, and two separate
+                        strokes would double their round caps at the join */}
                     <path
                       className="tree-home"
                       stroke={TREE_SIDE_COLOR[citySide]}
                       d={
-                        forks2
-                          ? `M${headX(sh, citySide)},${HEAD_BOT + 4} V${QCARD_TOP - 6}`
-                          : ""
-                      }
-                    />
-                    <path
-                      className="tree-home"
-                      stroke={TREE_SIDE_COLOR[citySide]}
-                      d={
-                        forks2
-                          ? elbow(
+                        cityForks
+                          ? `M${headX(sh, citySide)},${HEAD_BOT + 4} V${FORK2_Y} ` +
+                            elbow(
                               headX(sh, citySide),
-                              QCARD_BOT + 4,
+                              FORK2_Y,
                               LEAF_BUS,
                               leafBox(suggLeaf).x,
                               LEAF_TOP - 6,
@@ -2085,7 +2090,7 @@ export function ConstraintNarrative({
                     );
                   })}
 
-                  {/* stems: head → sub-question */}
+                  {/* stems: head → the second fork's row */}
                   {sh.branches
                     .filter((b) => b.leaves.length > 0)
                     .map((b) => {
@@ -2101,12 +2106,15 @@ export function ConstraintNarrative({
                           }
                           stroke={TREE_SIDE_COLOR[b.id]}
                           pathLength={1}
-                          d={`M${b.x},${HEAD_BOT + 2} V${QCARD_TOP - 4}`}
+                          d={`M${b.x},${HEAD_BOT + 2} V${FORK2_Y}`}
                         />
                       );
                     })}
 
-                  {/* edges: sub-question → leaves */}
+                  {/* edges: the second fork's row → leaves. Unlabelled (Sept 2026
+                      revision): with the question cards gone, the answers that
+                      used to ride these buses went too — the rail carries the
+                      fork's logic */}
                   {sh.branches.flatMap((b) =>
                     b.leaves.map((l) => {
                       const st = status(l.id);
@@ -2123,21 +2131,12 @@ export function ConstraintNarrative({
                             pathLength={1}
                             d={elbow(
                               b.x,
-                              QCARD_BOT + 2,
+                              FORK2_Y,
                               LEAF_BUS,
                               box.x,
                               LEAF_TOP - 4,
                             )}
                           />
-                          <text
-                            className="nv-elab"
-                            x={box.x}
-                            y={LEAF_BUS - 7}
-                            textAnchor="middle"
-                            fill={TREE_SIDE_COLOR[b.id]}
-                          >
-                            {l.edge}
-                          </text>
                         </g>
                       );
                     }),
@@ -2253,59 +2252,6 @@ export function ConstraintNarrative({
                     );
                   })}
 
-                  {/* the two sub-question cards; only the walked side names its
-                  instrument — the other's never opens */}
-                  {sh.branches
-                    .filter((b) => b.leaves.length > 0)
-                    .map((b) => {
-                      const st = status(b.id);
-                      const lines = b.question({
-                        medPop: pc(med.pop),
-                        medCost: pc(medCost),
-                      });
-                      return (
-                        <g key={`q-${b.id}`} className={on(gFork2) + st.g}>
-                          <g
-                            className={"nv-card nv-q" + (st.lit ? " lit" : "")}
-                          >
-                            <rect
-                              x={b.x - sh.qcardW / 2}
-                              y={QCARD_ROW.y - QCARD_ROW.h / 2}
-                              width={sh.qcardW}
-                              height={QCARD_ROW.h}
-                              rx={9}
-                              stroke={TREE_SIDE_COLOR[b.id]}
-                            />
-                            {lines.map((line, i) => (
-                              <text
-                                key={i}
-                                className="nv-qq"
-                                x={b.x}
-                                y={QCARD_ROW.y - 4 + i * 12}
-                                textAnchor="middle"
-                                fill={TREE_SIDE_COLOR[b.id]}
-                              >
-                                {line}
-                              </text>
-                            ))}
-                            {b.id === citySide && (
-                              <text
-                                className={
-                                  "nv-qread " + on(!short || step >= LEAF_BEAT)
-                                }
-                                x={b.x}
-                                y={QCARD_ROW.y + 17}
-                                textAnchor="middle"
-                                fill="var(--teal)"
-                              >
-                                read: the inset chart ↗
-                              </text>
-                            )}
-                          </g>
-                        </g>
-                      );
-                    })}
-
                   {/* leaves */}
                   {sh.branches.flatMap((b) =>
                     b.leaves.map((l) => {
@@ -2372,6 +2318,11 @@ export function ConstraintNarrative({
                         color: string,
                         drop = 0,
                       ) => {
+                        /* one badge row for every ending: a head that stops
+                       early (the positive demand shock) gets its badge on the
+                       same row as the leaves', under its empty column — up
+                       beside the head it would sit on the neighbours' edge
+                       labels */
                         const y = landingY(sh) + 38 + drop;
                         /* the pill renders "↑ " + label in 13px caps with 1.2px
                        tracking — size for the FULL string, plus real margins,
@@ -2380,9 +2331,7 @@ export function ConstraintNarrative({
                         /* centred on the leaf it points at; the stage-band
                        clamp only steps in where centring would push the pill
                        off the stage's edge */
-                        const at = forks2
-                          ? leafBox(leaf).x
-                          : landingX(sh, [leaf]);
+                        const at = endingX(sh, leaf);
                         const cx = badgeCX(at, w);
                         return (
                           <g key={`${leaf}-${label}`} className="jz-youare">
@@ -2414,14 +2363,8 @@ export function ConstraintNarrative({
                        landing manufactures a difference no one chose */
                       if (step >= CHOICE_BEAT && forks2 && !isDefaultPath) {
                         const collide =
-                          Math.abs(
-                            (forks2
-                              ? leafBox(selLeaf).x
-                              : landingX(sh, [selLeaf])) -
-                              (forks2
-                                ? leafBox(suggLeaf).x
-                                : landingX(sh, [suggLeaf])),
-                          ) < 240;
+                          Math.abs(endingX(sh, selLeaf) - endingX(sh, suggLeaf)) <
+                          240;
                         out.push(
                           badge(
                             selLeaf,

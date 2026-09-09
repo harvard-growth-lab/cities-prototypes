@@ -488,8 +488,9 @@ export function BranchAnalysisPage({
           <div className="ba-themes">
             {/* the spec's fork line leads the evidence: on the forked tree it
                 names how you landed here, on the flat quad tree it IS the
-                question, asked here */}
-            {spec && (
+                question, asked here. A shock with no second layer (the
+                positive demand shock) has none to lead with. */}
+            {spec?.forkLine && (
               <p className="ba-forkline">
                 <span className="ph">
                   [{forkHere ? "the fork, asked here" : "how you landed here"}:{" "}

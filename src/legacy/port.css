@@ -1,0 +1,16 @@
+/* What the port needs on top of v-3's own stylesheet. */
+
+/* no box of its own: #landing and #tool lay out as on main */
+.v3-shell{display:contents;}
+
+/* a deep link enters the tool without the landing's slide */
+html[data-v3-instant] #landing{transition:none !important;}
+
+/* The constraints stage (src/styles/figures.css) used to sit under this
+   app's 72px toolbar; in v-3's frame the masthead scrolls away and only the
+   section bar stays put, inside the scroller — so the stage sticks under
+   that bar, with the same 24px of air below as before. */
+.jz-sticky{
+  top:var(--chrome-h);
+  height:calc(100dvh - var(--chrome-h) - 24px);
+}
