@@ -14,7 +14,6 @@ import { ExplainersView } from "./ExplainersView";
 import {
   DEFAULT_WALK_SHAPE,
   walkShape,
-  type WalkShapeId,
 } from "./pages/walkShapes";
 import { ConstraintScrolly } from "./pages/ConstraintScrolly";
 import { ConstraintNarrative } from "./pages/ConstraintNarrative";
@@ -86,14 +85,11 @@ export function ToolView({
   /* both guided tellings ("guided" and its shortened cut) mount the narrative,
      so they gate the same things */
   const guidedFlow = constraintFlow !== "compact";
-  /* how many branches the walk's tree has — the walks' own axis, separate
-     from the flow switch beside it. It lives here rather than in the
-     narrative because the branch-analysis section below has to mirror
-     whatever the walk drew. */
-  const [walkShapeId, setWalkShapeId] = useState<WalkShapeId>(DEFAULT_WALK_SHAPE);
-  /* the app-wide structure the walk's tree stands for, which the analysis
-     schematic follows while a walk is mounted */
-  const walkVariant = walkShape(walkShapeId).variant;
+  /* The walk tells ONE tree now (team revision, Sept 2026) — the
+     four-quadrant forked structure — so the shape is settled rather than
+     chosen. This still reads it through walkShape() because the
+     branch-analysis section below has to mirror whatever the walk drew. */
+  const walkVariant = walkShape(DEFAULT_WALK_SHAPE).variant;
   /* The analysis section mirrors the walk's tree, so the app's pick (held on
      the app-wide structure) converts into the walk's. The alias cannot
      recover a shock's SIGN, so a pick that merely mirrors the city's own
@@ -216,8 +212,6 @@ export function ToolView({
               variant={treeVariant}
               flow={constraintFlow}
               onFlowChange={changeConstraintFlow}
-              shape={walkShapeId}
-              onShapeChange={setWalkShapeId}
               routePinned={routeHeld}
             />
           )}

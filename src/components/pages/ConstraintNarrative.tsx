@@ -52,7 +52,6 @@ import {
   QCARD_ROW,
   ROOT_BUS,
   ROOT_ROW,
-  WALK_SHAPES,
   hasLeaves,
   headRowH,
   headRowY,
@@ -81,7 +80,6 @@ import {
   walkShape,
   wholeBox,
   type FitMode,
-  type WalkShapeId,
 } from "./walkShapes";
 import {
   DATA_WINDOW_LABEL,
@@ -308,12 +306,13 @@ export function FlowSwitch({
 
 /* ---------- the variants disclosure ----------
    The team's revision (Sept 2026) settled the section on one telling: the
-   guided walk over the four-quadrant tree. The switches that pick a DIFFERENT
-   telling — which flow, which tree shape (and, on the compact flow, which
-   structure) — are studies now, so each header folds them away behind this
-   one control and only the responsiveness switch keeps the header row. The
-   button face carries the current settings so the state is legible without
-   opening it, and marks itself when a setting is off the default. */
+   guided walk over the four-quadrant forked tree, whose quadrants pour into
+   its branches. The tree-shape and chart→tree switches are gone with that
+   decision; what is left here picks a DIFFERENT telling — which user flow,
+   and on the compact flow which structure — so each header folds those away
+   behind this one control and only the responsiveness switch keeps the
+   header row. The button face carries the current setting so the state is
+   legible without opening it, and marks itself when it is off the default. */
 
 export function VariantOptions({
   face,
@@ -417,109 +416,6 @@ export function FitSwitch({
   );
 }
 
-/* ---------- the tree-shape switch (guided walks only) ----------
-   A separate control from the flow switch above, because it is a separate
-   question: the flow decides how the section is TOLD, the shape decides how
-   many branches the tree it tells has. Only the walks mount it — the initial
-   draft's tree is solved by d3 from the app-wide structure, and carries its
-   own "Structure" control for that. */
-
-export function ShapeSwitch({
-  shape,
-  onShapeChange,
-}: {
-  shape: WalkShapeId;
-  onShapeChange: (s: WalkShapeId) => void;
-}) {
-  return (
-    <div className="jz-modes show">
-      <span className="jz-modes-k">Tree shape</span>
-      <div className="jz-seg" role="group" aria-label="Tree shape">
-        {WALK_SHAPES.map((sp) => (
-          <button
-            key={sp.id}
-            className={"jz-segbtn" + (shape === sp.id ? " on" : "")}
-            aria-pressed={shape === sp.id}
-            title={sp.about}
-            onClick={() => onShapeChange(sp.id)}
-          >
-            {sp.label}
-          </button>
-        ))}
-      </div>
-      <span className="jz-modes-hint">
-        {WALK_SHAPES.find((sp) => sp.id === shape)?.hint}
-      </span>
-    </div>
-  );
-}
-
-/* ---------- the chart→tree transition switch (guided walk studies) ----------
-   A third axis beside flow and shape: not what the tree IS or how the walk
-   is told, but how the pizza chart is SEEN to become the tree — the hand-off
-   the quadrants make into the branches. Each option is a study; "fade" is
-   the shipped behaviour. The studies play on the full guided walk's
-   whole-tree fit (the rides and sideways modes redraw the tree their own
-   way, and the short flow opens tree-first). */
-
-export type TreeTransition = "fade" | "pour";
-
-export const TREE_TRANSITIONS: {
-  id: TreeTransition;
-  label: string;
-  hint: string;
-  about: string;
-}[] = [
-  {
-    id: "fade",
-    label: "Park & fade",
-    hint: "The chart parks into the inset; the tree draws in place",
-    about:
-      "The shipped hand-off: the full-stage chart fades out, the parked inset keeps the quadrants, and the tree fades in fork by fork",
-  },
-  {
-    id: "pour",
-    label: "Quadrant pour",
-    hint: "Each region detaches and flies onto its branch card",
-    about:
-      "As the chart dissolves, each tinted region detaches, flies down the stage and lands exactly where its branch head fades in — the quadrants ARE the branches",
-  },
-];
-
-export function TransitionSwitch({
-  transition,
-  onTransitionChange,
-}: {
-  transition: TreeTransition;
-  onTransitionChange: (t: TreeTransition) => void;
-}) {
-  return (
-    <div className="jz-modes show">
-      <span className="jz-modes-k">Chart → tree</span>
-      <div
-        className="jz-seg"
-        role="group"
-        aria-label="Chart to tree transition"
-      >
-        {TREE_TRANSITIONS.map((t) => (
-          <button
-            key={t.id}
-            className={"jz-segbtn" + (transition === t.id ? " on" : "")}
-            aria-pressed={transition === t.id}
-            title={t.about}
-            onClick={() => onTransitionChange(t.id)}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
-      <span className="jz-modes-hint">
-        {TREE_TRANSITIONS.find((t) => t.id === transition)?.hint}
-      </span>
-    </div>
-  );
-}
-
 /* ------------------------------ the scrolly ------------------------------ */
 
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
@@ -533,8 +429,6 @@ export function ConstraintNarrative({
   variant,
   flow,
   onFlowChange,
-  shape,
-  onShapeChange,
   routePinned,
 }: {
   cityShort: string;
@@ -547,9 +441,6 @@ export function ConstraintNarrative({
   variant: TreeVariant;
   flow: ConstraintFlow;
   onFlowChange: (f: ConstraintFlow) => void;
-  /** how many branches the walk's tree has — its own axis, see walkShapes */
-  shape: WalkShapeId;
-  onShapeChange: (s: WalkShapeId) => void;
   /** hold the app's pick on the diagnosed route (the shortened walk, until
    *  the analysis section below has been read to its end) */
   routePinned: boolean;
@@ -579,8 +470,6 @@ export function ConstraintNarrative({
      switch can never show an empty selection (FIT_MODES is the menu; a mode
      the type knows but the menu does not must not be the default) */
   const [smallFit, setSmallFit] = useState<FitMode>(FIT_MODES[1].id);
-  /* which hand-off study the chart→tree beat plays — see TREE_TRANSITIONS */
-  const [transition, setTransition] = useState<TreeTransition>("fade");
   const svgRef = useRef<SVGSVGElement>(null);
   const stageScale = useStageScale(svgRef);
   const stageHeadroom = useStageHeadroom(svgRef);
@@ -601,7 +490,11 @@ export function ConstraintNarrative({
   /* the tree this walk tells: its branches, its cards and where they sit.
      Everything below reads the tree from here rather than from constants, so
      a shape switch is a data swap and nothing else. */
-  const sh = walkShape(shape);
+  /* The walk tells ONE tree (team revision, Sept 2026): the four-quadrant
+     forked structure. It is no longer a choice, so the shape is read straight
+     from the default rather than from a control — the other shapes stay
+     defined in walkShapes.ts as studies. */
+  const sh = walkShape(DEFAULT_WALK_SHAPE);
   const leaves = useMemo(() => shapeLeaves(sh), [sh]);
   /* how many endings the structure has: its leaves, or — where it forks once
      — its branch heads, which are the endings */
@@ -631,9 +524,12 @@ export function ConstraintNarrative({
      whether the camera rides it */
   const sideLayout = sideMode || sideRideMode;
   const rideOn = rideMode || sideRideMode;
-  /* the transition studies play only where the hand-off actually happens on
-     the open stage: the full walk's whole-tree fit */
-  const pourOn = transition === "pour" && !short && fit === "fit";
+  /* THE hand-off (team revision, Sept 2026): as the chart dissolves, each
+     tinted region flies onto the branch head it becomes and the city's dot
+     rides down with it. It needs the open stage, so the tellings that do not
+     have one — the tree-first short walk, the zoom/sideways fits, which
+     redraw the tree their own way — keep the plain fade instead. */
+  const pourOn = !short && fit === "fit";
   /* the shortened flow opens on the whole tree — except under a camera
      ride, which REVEALS the tree as it travels: a ride's gates pace by the
      beat in every flow, and a stop that lands on a later beat still brings
@@ -1759,26 +1655,15 @@ export function ConstraintNarrative({
           </div>
           {/* the header row's right edge keeps ONE live control — the
               responsiveness switch, the only choice the revision left open.
-              The flow and shape studies stay a click away in the variants
+              The user-flow study stays a click away in the variants
               disclosure beside it. */}
           <div className="jz-switches">
             <FitSwitch fit={fit} onFitChange={setSmallFit} tight={tight} />
             <VariantOptions
-              face={`${CONSTRAINT_FLOWS.find((f) => f.id === flow)?.label} · ${
-                WALK_SHAPES.find((s) => s.id === shape)?.label
-              }`}
-              changed={
-                flow !== DEFAULT_CONSTRAINT_FLOW ||
-                shape !== DEFAULT_WALK_SHAPE ||
-                transition !== "fade"
-              }
+              face={CONSTRAINT_FLOWS.find((f) => f.id === flow)?.label ?? ""}
+              changed={flow !== DEFAULT_CONSTRAINT_FLOW}
             >
               <FlowSwitch flow={flow} onFlowChange={onFlowChange} />
-              <ShapeSwitch shape={shape} onShapeChange={onShapeChange} />
-              <TransitionSwitch
-                transition={transition}
-                onTransitionChange={setTransition}
-              />
             </VariantOptions>
           </div>
         </div>

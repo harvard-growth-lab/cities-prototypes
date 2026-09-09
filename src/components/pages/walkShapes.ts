@@ -640,10 +640,15 @@ const QUAD2: WalkShape = {
   ],
 };
 
+/* No longer a menu: the tree-shape switch was retired when the team settled
+   on the forked quadrant tree (Sept 2026), so the walk mounts
+   DEFAULT_WALK_SHAPE and nothing reads the rest. They stay defined as layout
+   studies — re-offering one is a matter of mapping this array in a switch
+   again (see git history for the control). */
 export const WALK_SHAPES: WalkShape[] = [QUAD2, QUAD, TWO, THREE];
 
-/** what the walk opens on — the revision spec's forked quadrant tree, listed
- *  first so it leads the pill row */
+/** the tree the walk tells — the revision spec's forked quadrant structure,
+ *  and now the only one the section mounts */
 export const DEFAULT_WALK_SHAPE: WalkShapeId = "quad2";
 
 export const walkShape = (id: WalkShapeId): WalkShape =>
