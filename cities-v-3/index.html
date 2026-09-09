@@ -2697,7 +2697,7 @@
   .am-key[data-step="7"] .ak-flow-in,   .am-key[data-step="7"] .ak-flow-out,
   #amFigure[data-count="j"] .am-key[data-step="10"] .ak-div-hi-j,
   #amFigure[data-count="r"] .am-key[data-step="10"] .ak-div-hi-r,
-  .am-key[data-step="10"] .ak-div-lo, .am-key[data-step="10"] .ak-base{display:inline-flex;}
+  .am-key[data-step="10"] .ak-div-lo{display:inline-flex;}
   /* opt-2's count beat: the key names whichever count is on */
   .am-key[data-step="9"] .ak-jobs-item, .am-key[data-step="9"] .ak-res-count{display:inline-flex;}
   .am-key .ak-sw{width:15px;height:11px;border-radius:2px;}
@@ -2721,7 +2721,10 @@
   .am2-stats .l{font-size:13px;line-height:1.4;color:var(--ink-soft);}
   /* the dial in the text column */
   .ct-step .lean-note.am2-panel{background:none;border:0;padding:0;margin:14px 0 0;font-size:inherit;line-height:inherit;}
-  .am2-pick{font-size:14px;line-height:1.5;margin:0 0 8px;color:var(--ink);}
+  .am2-pick{display:flex;align-items:flex-start;gap:9px;font-size:14px;line-height:1.5;margin:0 0 8px;color:var(--ink);}
+  .am2-pick .xp-ico{flex:none;color:var(--geo-city);margin-top:-2px;}
+  /* the invitation is spent once a sector has been picked */
+  .am2-pick.is-off .xp-ico{animation:none;opacity:.35;}
   .am2-dial{width:100%;max-width:300px;height:auto;display:block;margin:0 0 6px;}
   .am2-dial .zone{stroke:#fff;stroke-width:1.5;}
   .am2-dial .tick{stroke:var(--ink);stroke-width:1;}
@@ -4355,7 +4358,7 @@
               <span class="sk-item ak-res-count"><i class="ak-sw" style="background:var(--orange)"></i>jobs held by <span class="city-short">Boston</span> residents</span>
               <span class="sk-item ak-div-hi-j"><i class="ak-sw" style="background:var(--geo-city)"></i>a larger share of the jobs here than of the metro&rsquo;s</span>
               <span class="sk-item ak-div-hi-r"><i class="ak-sw" style="background:var(--orange)"></i>a larger share of residents&rsquo; jobs than of the metro&rsquo;s</span>
-              <span class="sk-item ak-div-lo"><i class="ak-sw" style="background:#8d949d"></i>a smaller share</span>
+              <span class="sk-item ak-div-lo"><i class="ak-sw" style="background:#6f9aa3"></i>a smaller share</span>
             </p>
             <!-- opt-2's one control: which count the bars show. The site puts
                  this switch, and nothing else, on this part of its page -->
@@ -4526,19 +4529,21 @@
           <div class="subsection-header">
             <h3>What <span class="city-short">Boston</span> does more of than its metro</h3>
           </div>
-          <p class="lede">A mix on its own says little, because most places look like the region around them. The
-            same sectors, now one bar each, measured from the line where the city&rsquo;s share of a sector equals
-            the metro&rsquo;s: to the right, in teal, where the city holds a larger share of a sector&rsquo;s jobs
-            than the metro does; to the left, in grey, where a smaller one.</p>
+          <p class="lede">Most places look like the region around them; what separates them is where the shares
+            differ. Each bar runs from the line where the city&rsquo;s share of a sector equals the metro&rsquo;s.</p>
           <p class="lede">Finance and insurance is 1.9&times; the metro&rsquo;s share of the jobs here. Retail,
-            construction, wholesale and manufacturing sit well below the line: the metro does them, the city mostly
-            does not. Compare what residents do instead and the bars turn orange, the residents&rsquo; colour, and
-            draw in toward the line &mdash; the specialisation belongs to the workplace, not to the people who live
-            here.</p>
+            construction, wholesale and manufacturing sit well below the line. Compare what residents do instead
+            and the bars draw in toward it: the specialisation belongs to the workplace, not to the people who
+            live here.</p>
           <!-- the dial, in the text column: a click on a bar turns it -->
           <div class="lean-note am2-panel" id="am2Panel">
-            <p class="am2-pick"><strong>Click a sector</strong> to see where it lands: jobs here for each job a
-              resident holds in that field, against the city as a whole at 2.06&times;.</p>
+            <p class="am2-pick" id="am2Pick"><svg class="xp-ico" viewBox="0 0 44 44" width="26" height="26" fill="none"
+                stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M18 20V8a3 3 0 0 1 6 0v9"/>
+                <path d="M24 17a3 3 0 0 1 6 0v3a3 3 0 0 1 6 0v4c0 7-3 12-10 12h-2c-4 0-6-1.6-8.5-5.5L11 24a2.8 2.8 0 0 1 4.8-2.8L18 24"/>
+                <path d="M10 8 6 4M14 5.5 13 1.5M6.5 12 2.5 11"/>
+              </svg><span>Click a sector to see where it lands: jobs here for each job a resident holds in that
+              field, against the city as a whole at 2.06&times;.</span></p>
             <svg class="am2-dial" id="am2Dial" viewBox="0 0 260 172" role="img" aria-label="Dial showing jobs located in the city per job a resident holds, for the chosen sector"></svg>
             <div class="am-verdict am2-verdict" id="am2Verdict"></div>
             <p class="am2-sentence" id="am2Sentence"></p>
@@ -8658,7 +8663,7 @@
         /* above the line, the colour of the count being compared — teal for
            the jobs located here, orange for the jobs residents hold, as on
            the map and the dial; below the line, grey */
-        .attr("fill", function(d){ return d[lq] >= 1 ? (key === "j" ? C_JOBS : C_RES) : "#8d949d"; })
+        .attr("fill", function(d){ return d[lq] >= 1 ? (key === "j" ? C_JOBS : C_RES) : "#6f9aa3"; })
         .style("opacity", 1);
       go(row.select(".am-bar-res")).style("opacity", 0);
       go(row.select(".am-val"))
@@ -8669,7 +8674,9 @@
       /* two bars to a row, on one scale: the jobs located here above, in
          teal, the jobs residents hold below, in orange; the switch ranks
          the sectors by either count */
-      var sc = d3.scaleLinear().domain([0, d3.max(rows, function(d){ return Math.max(d.j, d.r); })]).range([ML, W - MR]);
+      /* no value column on this beat — the hover card carries the counts —
+         so the bars run to the figure's own edge */
+      var sc = d3.scaleLinear().domain([0, d3.max(rows, function(d){ return Math.max(d.j, d.r); })]).range([ML, W - 24]);
       var order2 = rows.slice().sort(function(a, b){ return b[key] - a[key]; });
       var pos2 = {}; order2.forEach(function(d, k){ pos2[d.n] = k; });
       var t2 = gAxis.selectAll("g.am-tick").data(sc.ticks(4)).join("g").attr("class", "am-tick");
@@ -8678,8 +8685,6 @@
         .attr("y1", MT - 12).attr("y2", MT + rows.length * RH - 6);
       t2.append("text").attr("class", "am-ticklab").attr("text-anchor", "middle")
         .attr("x", function(d){ return sc(d); }).attr("y", MT - 18).text(function(d){ return fmtK(d); });
-      gAxis.append("text").attr("class", "am-colhead").attr("x", W - 10).attr("y", MT - 18).attr("text-anchor", "end")
-        .text("jobs here · residents");
       go(row).attr("transform", function(d){ return "translate(0," + rowY(pos2[d.n]) + ")"; });
       go(row.select(".am-bar"))
         .attr("x", ML).attr("y", -11).attr("height", 10).attr("rx", 2)
@@ -8689,8 +8694,7 @@
         .attr("x", ML).attr("y", 1).attr("height", 10).attr("rx", 2)
         .attr("width", function(d){ return Math.max(1, sc(d.r) - ML); })
         .attr("fill", C_RES).style("opacity", 1);
-      go(row.select(".am-val")).attr("x", W - 10).attr("text-anchor", "end");
-      row.select(".am-val").text(function(d){ return fmtK(d.j) + " · " + fmtK(d.r); });
+      row.select(".am-val").text("");
     }
     row.classed("is-picked", function(d){ return !!picked && d.n === picked; });
   }
@@ -8986,7 +8990,7 @@
      opt-2 pulls back to as much of the metro as still leaves the flows
      legible — about two and a half times the area */
   var WIN = { city:  { lon0:-71.315, lon1:-70.915, lat0:42.185, lat1:42.445 },
-              metro: { lon0:-71.50,  lon1:-70.70,  lat0:42.13,  lat1:42.56 } };
+              metro: { lon0:-71.42,  lon1:-70.76,  lat0:42.16,  lat1:42.52 } };
 
   function draw(fc){
     if (drawnExt === ext || !fc) return;
@@ -9352,6 +9356,7 @@
       "<div class=\"mrow\"><span>Jobs located in Boston</span><div class=\"mtrack\"><div class=\"mbar is-jobs\" style=\"width:" + (d.j / mx * 100).toFixed(1) + "%\"></div><span class=\"mv\" style=\"left:" + (d.j / mx * 100).toFixed(1) + "%\">" + fmtC(d.j) + "</span></div></div>" +
       "<div class=\"mrow\"><span>Held by Boston residents</span><div class=\"mtrack\"><div class=\"mbar is-res\" style=\"width:" + (d.r / mx * 100).toFixed(1) + "%\"></div><span class=\"mv\" style=\"left:" + (d.r / mx * 100).toFixed(1) + "%\">" + fmtC(d.r) + "</span></div></div>";
     if (window.AMBARS && window.AMBARS.pick) window.AMBARS.pick(d.all ? null : d.n);
+    var pick = $("am2Pick"); if (pick) pick.classList.toggle("is-off", !d.all);
   }
   select(null);
   window.AM2 = { select: select, reset: function(){ select(null); } };
