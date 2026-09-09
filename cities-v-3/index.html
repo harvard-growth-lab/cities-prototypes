@@ -7690,8 +7690,11 @@
        config lists them per layout, and a layout with no list reads the
        states as the beats come */
     var map = cfg.states ? cfg.states[ctLayout] : null;
+    var want = map && map[i] != null ? map[i] : i;
+    var figEl = page.querySelector(".mi-figure");
+    if (figEl) figEl.dataset.wantStep = String(want);
     if (ctl && cfg.altNarrative && ctl.setOpt) ctl.setOpt(ctLayout === "3" ? "2" : "1");
-    if (ctl) ctl.setStep(map && map[i] != null ? map[i] : i);
+    if (ctl) ctl.setStep(want);
     /* the charts watch for this to re-check their own visibility — their
        scroll listeners ran before this one, when the slot was still hidden */
     window.dispatchEvent(new Event("resize"));
@@ -7808,7 +7811,9 @@
   optWrap.querySelectorAll(".jp-opt-btn").forEach(function(b){
     b.addEventListener("click", function(){ setLayout(b.dataset.ct); });
   });
-  setLayout("2");   // the scrolly reads best — it opens as the default
+  /* the scrolly reads best, so a section opens on one of its scrolly
+     layouts; which one is the section's own choice */
+  setLayout(cfg.defaultLayout || "2");
   }
 
   mount({ pageId: "page-export-basket", ctl: "MI", seg: "ctLayoutSeg", altNarrative: true, noClassic: true,
@@ -7818,7 +7823,7 @@
   /* opt-2 of the admin section: the map, the bars one count at a time,
      the same bars against the metro (with the dial on a click) */
   mount({ pageId: "page-admin-mix",     ctl: "AM", seg: "amLayoutSeg", badge: "city", altNarrative: true, noClassic: true,
-          states: { "3": [7, 9, 10] } });
+          states: { "3": [7, 9, 10] }, defaultLayout: "3" });
 })();
 
 /* Economic Fundamentals layout, option 2: the same scrolly grammar as
@@ -9385,7 +9390,13 @@
     fig.dataset.opt = String(o);
     if (window.AMMAP && window.AMMAP.setExtent) window.AMMAP.setExtent(String(o) === "2" ? "metro" : "city");
   } };
-  window.AM.setStep(0);
+  /* this controller is defined after the section is mounted, so the beat
+     the mount settled on is waiting on the figure */
+  if (fig.dataset.opt == null && document.getElementById("amLayoutSeg")){
+    var b = document.querySelector("#amLayoutSeg .jp-opt-btn.is-active");
+    if (b) window.AM.setOpt(b.dataset.ct === "3" ? "2" : "1");
+  }
+  window.AM.setStep(fig.dataset.wantStep != null ? +fig.dataset.wantStep : 0);
 })();
 </script>
 </body>
