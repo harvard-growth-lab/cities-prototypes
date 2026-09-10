@@ -2707,11 +2707,18 @@
      step rules for .mi-view must not raise it on the beats they share */
   #amFigure .am-count{opacity:0;pointer-events:none;}
   #amFigure[data-step="9"] .mi-head, #amFigure[data-step="10"] .mi-head{min-height:96px;}
+  /* on the chart beats the key is read alongside the bars, so it takes the
+     body's size and ink rather than a caption's */
+  #amFigure[data-step="9"] .am-key, #amFigure[data-step="10"] .am-key{font-size:13px;color:var(--ink);}
+  #amCount .ctl-label{font-size:13px;font-weight:600;letter-spacing:0;}
   #amFigure[data-step="9"] .mi-head > .am-count, #amFigure[data-step="10"] .mi-head > .am-count{
     top:0;bottom:auto;opacity:1;pointer-events:auto;}
   /* the bars answer a click on the comparison beat */
   #amFigure[data-step="10"] #amBarsSvg .am-row{cursor:pointer;}
   #amBarsSvg .am-row.is-picked .am-bar, #amBarsSvg .am-row.is-picked .am-bar-res{stroke:var(--ink);stroke-width:1.5;}
+  /* the whole row answers the cursor, names and values included */
+  #amBarsSvg .am-rowbg{fill:transparent;}
+  #amBarsSvg .am-row:hover .am-rowbg{fill:var(--teal-tint);}
   #amBarsSvg .am-row.is-picked .am-name{font-weight:700;fill:var(--ink);}
   /* the numbers beside opt-2's opening text: three plain readings, the
      percentage on the line that needs one */
@@ -2755,6 +2762,10 @@
   #amMapSvg .am-place{fill:#f1f3f4;stroke:#cfd5d8;stroke-width:.6;}
   #amMapSvg .am-place.is-partner{fill:#e2e8ea;}
   #amMapSvg .am-place.is-focus{fill:#d3e0e3;stroke:var(--geo-city);stroke-width:1.1;}
+  #amMapSvg .am-place{cursor:default;transition:fill .12s ease;}
+  #amMapSvg .am-place.is-hot{fill:#c8d8dc;stroke:var(--geo-city);stroke-width:1.1;}
+  #amTip .tip-foot{font-size:12.5px;line-height:1.45;color:var(--ink-soft);
+    margin:7px 0 0;padding-top:7px;border-top:1px solid var(--border);}
   #amMapSvg .am-msa{fill:none;stroke:var(--geo-metro);stroke-width:1.3;stroke-dasharray:6 6;}
   #amMapSvg .am-flow{fill:none;stroke-linecap:butt;opacity:.92;cursor:default;}
   #amMapSvg .am-flow.is-in{stroke:var(--geo-city);}
@@ -4398,7 +4409,7 @@
                 </div>
               </div>
             </div>
-            <div class="rca-tip" id="amTip" role="tooltip" hidden></div>
+            <div class="rca-tip row-tip" id="amTip" role="tooltip" hidden></div>
           </div>
         </div>
 
@@ -4516,12 +4527,10 @@
           <div class="subsection-header">
             <h3>The work that happens in <span class="city-short">Boston</span></h3>
           </div>
-          <p class="lede">Two bars for every sector. The teal bar is the jobs inside the boundary, filled by
-            residents and commuters alike: health care is the largest at 21% of them, then professional services,
-            education and finance. The orange bar is the jobs residents hold, wherever those jobs are.</p>
-          <p class="lede">The orange bar is shorter than the teal one almost everywhere; the gap is the commuter
-            surplus, sector by sector. Manufacturing and management of companies are the two where it runs past.
-            Rank the sectors by either count above the chart.</p>
+          <p class="lede">Two bars for every sector: the jobs inside the boundary in teal, the jobs residents hold
+            in orange. Health care is the largest at 21% of the jobs here. The orange bar is shorter almost
+            everywhere, and the gap is the commuter surplus &mdash; except in manufacturing and management of
+            companies, where it runs past.</p>
         </div>
 
         <!-- opt-2 · the same bars against the metro, and the dial on a click -->
@@ -4530,11 +4539,9 @@
             <h3>What <span class="city-short">Boston</span> does more of than its metro</h3>
           </div>
           <p class="lede">Most places look like the region around them; what separates them is where the shares
-            differ. Each bar runs from the line where the city&rsquo;s share of a sector equals the metro&rsquo;s.</p>
-          <p class="lede">Finance and insurance is 1.9&times; the metro&rsquo;s share of the jobs here. Retail,
-            construction, wholesale and manufacturing sit well below the line. Compare what residents do instead
-            and the bars draw in toward it: the specialisation belongs to the workplace, not to the people who
-            live here.</p>
+            differ. Each bar runs from the line where the city&rsquo;s share matches the metro&rsquo;s: finance is
+            1.9&times; it, retail and construction well under. Compare what residents do and the bars draw in
+            &mdash; the specialisation is the workplace&rsquo;s.</p>
           <!-- the dial, in the text column: a click on a bar turns it -->
           <div class="lean-note am2-panel" id="am2Panel">
             <p class="am2-pick" id="am2Pick"><svg class="xp-ico" viewBox="0 0 44 44" width="26" height="26" fill="none"
@@ -4542,27 +4549,11 @@
                 <path d="M18 20V8a3 3 0 0 1 6 0v9"/>
                 <path d="M24 17a3 3 0 0 1 6 0v3a3 3 0 0 1 6 0v4c0 7-3 12-10 12h-2c-4 0-6-1.6-8.5-5.5L11 24a2.8 2.8 0 0 1 4.8-2.8L18 24"/>
                 <path d="M10 8 6 4M14 5.5 13 1.5M6.5 12 2.5 11"/>
-              </svg><span>Click a sector to see where it lands: jobs here for each job a resident holds in that
-              field, against the city as a whole at 2.06&times;.</span></p>
+              </svg><span>Click a sector to see where it lands</span></p>
             <svg class="am2-dial" id="am2Dial" viewBox="0 0 260 172" role="img" aria-label="Dial showing jobs located in the city per job a resident holds, for the chosen sector"></svg>
             <div class="am-verdict am2-verdict" id="am2Verdict"></div>
             <p class="am2-sentence" id="am2Sentence"></p>
             <div class="am-mini" id="am2Mini"></div>
-          </div>
-          <div class="collapsible-info">
-            <button class="collapsible-header">
-              <span class="ci-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.75a6.25 6.25 0 0 0-3.75 11.25c.53.4.87 1 .96 1.66l.09.59h5.4l.09-.59c.09-.66.43-1.26.96-1.66A6.25 6.25 0 0 0 12 2.75Z"/><path d="M9.6 18.6h4.8"/><path d="M10.5 21h3"/></svg></span>
-              <span class="ci-title">How the comparison is made</span>
-              <svg class="collapsible-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
-            </button>
-            <div class="collapsible-content">
-              <p>Each sector&rsquo;s share of the city&rsquo;s jobs, divided by its share of the metro&rsquo;s.
-                <strong>1&times;</strong> means the city leans on that sector exactly as much as the metro does;
-                <strong>2&times;</strong> means twice as much. On what residents do, the same reading for the jobs
-                residents hold.</p>
-              <p>The city is part of the metro it is measured against, so a place this large is pulled toward parity.
-                Read the distance from 1&times;, not the raw figure.</p>
-            </div>
           </div>
         </div>
 
@@ -7228,22 +7219,39 @@
      scrolls past each block. The rail markup is the source of truth for
      the step lists — sectionDefs undercounts Metro Industries, whose last
      two steps are in-page anchors rather than page ids. */
-  const SEC_STEPS = sectionDefs.map(sd => {
+  /* The rail is the source of truth, read live: a section that offers two
+     narratives hides the rail entries of the one not in play, so the ticks
+     follow whichever option the reader is on. The two closing checkpoints
+     are not steps in the argument, so they are left out. */
+  const stepsFor = i => {
+    const sd = sectionDefs[i];
     const sec = [...document.querySelectorAll(".rail .sec")]
       .find(x => (x.dataset.sec || "").split(/\s+/).includes(sd.entry));
     const steps = sec
       ? [...sec.querySelectorAll(".steps li[data-step]")]
-          .filter(li => !li.dataset.step.endsWith("-practice"))
+          .filter(li => !li.hidden && !li.dataset.step.endsWith("-practice") &&
+                        !/^(check|apply)-/.test(li.dataset.step))
           .map(li => ({ id: li.dataset.step,
                         title: li.querySelector("button").textContent.trim() }))
       : [];
     return steps.length ? steps : [{ id: sd.entry, title: sd.name }];
-  });
+  };
+  const SEC_STEPS = sectionDefs.map((sd, i) => stepsFor(i));
 
   [...secNavEl.children].forEach((btn, i) => {
     const row = document.createElement("span");
     row.className = "stepseg-row";
-    SEC_STEPS[i].forEach(st => {
+    btn.appendChild(row);
+  });
+  /* (re)draw one tab's ticks, and only when its step list has changed */
+  function renderTicks(i){
+    const steps = stepsFor(i), row = secNavEl.children[i].querySelector(".stepseg-row");
+    if (!row) return steps;
+    const sig = steps.map(st => st.id).join("|");
+    if (row.dataset.sig === sig) return SEC_STEPS[i];
+    row.dataset.sig = sig;
+    row.textContent = "";
+    steps.forEach(st => {
       const sg = document.createElement("button");
       sg.type = "button";
       sg.className = "stepseg";
@@ -7256,13 +7264,19 @@
       });
       row.appendChild(sg);
     });
-    btn.appendChild(row);
-  });
+    SEC_STEPS[i] = steps;
+    return steps;
+  }
+  sectionDefs.forEach((sd, i) => renderTicks(i));
 
   function paintTicks(){
     if(activeSec < 0) return;
-    const segs = secNavEl.children[activeSec].querySelectorAll(".stepseg");
+    /* every tab, not just the active one: a section's option is chosen
+       after this nav is built, and a tab the reader has not opened yet
+       should already show that option's steps */
+    sectionDefs.forEach((sd, i) => renderTicks(i));
     const steps = SEC_STEPS[activeSec];
+    const segs = secNavEl.children[activeSec].querySelectorAll(".stepseg");
     // current = the last sub-step whose top has crossed 45% of the scroller
     const mark = pagesEl.getBoundingClientRect().top + pagesEl.clientHeight * .45;
     let cur = 0;
@@ -8532,6 +8546,9 @@
   var row = gRows.selectAll("g.am-row").data(rows, function(d){ return d.n; })
     .join("g").attr("class", "am-row")
     .attr("transform", function(d, i){ return "translate(0," + rowY(i) + ")"; });
+  /* a band behind each row: it carries the hover and widens the target */
+  row.insert("rect", ":first-child").attr("class", "am-rowbg")
+    .attr("x", 8).attr("y", -RH / 2 + 1).attr("width", W - 16).attr("height", RH - 2).attr("rx", 3);
   row.append("text").attr("class", "am-name")
     .attr("x", ML - 12).attr("y", 4)
     .attr("text-anchor", "end").text(function(d){ return d.n; });
@@ -8980,6 +8997,7 @@
   var fmtK = function(n){ return n >= 100000 ? Math.round(n / 1000) + "K" : n >= 10000 ?
     (n / 1000).toFixed(0) + "K" : n >= 1000 ? (n / 1000).toFixed(1) + "K" : String(n); };
   var fmtC = function(n){ return n.toLocaleString("en-US"); };
+  var CITY = (document.querySelector(".city-short") || {}).textContent || "Boston";
   var reduced = function(){ return window.matchMedia &&
     matchMedia("(prefers-reduced-motion: reduce)").matches; };
   var NS = "http://www.w3.org/2000/svg";
@@ -9030,11 +9048,39 @@
       return b[1][0] > lon0 && b[0][0] < lon1 && b[1][1] > lat0 && b[0][1] < lat1; };
     var feats = fc.features.filter(inWin).slice()
       .sort(function(a, b){ return (a.properties.place_id === B) - (b.properties.place_id === B); });
+    /* every place carries its own reading: the city's two counts, a
+       partner's exchange in both directions and which way it runs, and for
+       the rest an honest note that they are not in the top five */
+    var ceilingsFor = { "2572600":{ "in":14322 }, "2509210":{ "out":5635 } };
+    var tipFor = function(id, name){
+      if (id === B) return { head: name,
+        rows: [["Jobs located here", fmtC(AM_TOT.jobs)], ["Jobs held by residents", fmtC(AM_TOT.res)]],
+        note: "2.06 jobs here for every job a resident holds — the city draws workers in." };
+      var pt = partners[id];
+      if (!pt) return { head: name, note: "Not one of " + CITY + "'s five largest exchanges in either direction." };
+      var inJ = pt["in"], outJ = pt["out"];
+      var cap = ceilingsFor[id] || {};
+      var rows = [
+        ["Commute in to " + CITY, inJ != null ? fmtC(inJ) : "under " + fmtC(cap["in"])],
+        [CITY + " residents working here", outJ != null ? fmtC(outJ) : "under " + fmtC(cap["out"])]
+      ];
+      var note;
+      if (inJ != null && outJ != null){
+        var net = inJ - outJ;
+        note = Math.abs(net) < Math.max(inJ, outJ) * 0.12
+          ? "A near-even exchange: about as many go each way."
+          : net > 0 ? fmtC(net) + " more come to " + CITY + " than go the other way."
+                    : fmtC(-net) + " more " + CITY + " residents work here than come from here.";
+      } else {
+        note = "Only one direction is in " + CITY + "'s top five; the other is smaller than the fifth.";
+      }
+      return { head: name, rows: rows, note: note };
+    };
     feats.forEach(function(f){
-      var id = f.properties.place_id;
+      var id = f.properties.place_id, name = f.properties.place_name;
       var cls = "am-place" + (id === B ? " is-focus" : partners[id] ? " is-partner" : "");
       var pth = mk("path", { d: geomPath(f.geometry), "class": cls });
-      pth.appendChild(mk("title", {}, f.properties.place_name));
+      pth.__tip = tipFor(id, name);
       gPlaces.appendChild(pth);
     });
     if (msaPath) gPlaces.appendChild(msaPath);
@@ -9062,7 +9108,7 @@
       : { "2511000":{lx:-14,ly:-22,an:"end"}, "2562535":{lx:10,ly:-30,an:"start"},
           "2555745":{lx:12,ly:26,an:"start"}, "2509210":{lx:-18,ly:14,an:"end"},
           "2545560":{lx:-8,ly:22,an:"end"}, "2572600":{lx:-6,ly:-22,an:"end"} };
-    var ceilings = { "2572600":{ "in":14322 }, "2509210":{ "out":5635 } };
+    var ceilings = ceilingsFor;
     var arcs = [];
     Object.keys(partners).forEach(function(id){
       var pt = partners[id], c = P(AM_CENTROIDS[id]);
@@ -9122,17 +9168,34 @@
     /* hover: the same reading the sample carries in each arc's title, in
        the tool's own tip card */
     if (wrap && tipEl){
+      var place = function(ev){
+        var hr = wrap.getBoundingClientRect();
+        var x = ev.clientX - hr.left + 14, y = ev.clientY - hr.top - 10;
+        if (x + tipEl.offsetWidth > hr.width) x = ev.clientX - hr.left - tipEl.offsetWidth - 14;
+        tipEl.style.left = Math.max(0, x) + "px";
+        tipEl.style.top = Math.max(0, Math.min(y, hr.height - tipEl.offsetHeight)) + "px";
+      };
       gFlow.addEventListener("mousemove", function(ev){
         var t = ev.target.closest(".am-flow"); if (!t || !t.__tip){ tipEl.hidden = true; return; }
         tipEl.innerHTML = "<strong>" + t.__tip.head + "</strong><div class=\"tip-row\"><span>" +
           t.__tip.body + "</span></div>";
-        tipEl.hidden = false;
-        var hr = wrap.getBoundingClientRect();
-        var x = ev.clientX - hr.left + 14, y = ev.clientY - hr.top - 10;
-        if (x + tipEl.offsetWidth > hr.width) x = ev.clientX - hr.left - tipEl.offsetWidth - 14;
-        tipEl.style.left = Math.max(0, x) + "px"; tipEl.style.top = Math.max(0, y) + "px";
+        tipEl.hidden = false; place(ev);
       });
       gFlow.addEventListener("mouseleave", function(){ tipEl.hidden = true; });
+      gPlaces.addEventListener("mousemove", function(ev){
+        var t = ev.target.closest(".am-place"); if (!t || !t.__tip){ tipEl.hidden = true; return; }
+        var d = t.__tip;
+        tipEl.innerHTML = "<strong>" + d.head + "</strong>" +
+          (d.rows || []).map(function(r){ return '<div class="tip-row"><span>' + r[0] +
+            '</span><span>' + r[1] + '</span></div>'; }).join("") +
+          (d.note ? '<p class="tip-foot">' + d.note + '</p>' : "");
+        tipEl.hidden = false; place(ev);
+        [].forEach.call(gPlaces.querySelectorAll(".am-place"), function(p){ p.classList.toggle("is-hot", p === t); });
+      });
+      gPlaces.addEventListener("mouseleave", function(){
+        tipEl.hidden = true;
+        [].forEach.call(gPlaces.querySelectorAll(".am-place"), function(p){ p.classList.remove("is-hot"); });
+      });
     }
   }
 
@@ -9347,7 +9410,7 @@
       : "<span class=\"pill is-bal\">Balanced</span>Boston roughly breaks even on " + nm + ".";
     var zone = r < 0.8 ? "a dormitory community" : r <= 1.25 ? "balanced" : r < 2 ? "a place that draws workers in" : "an employment hub";
     $("am2Sentence").textContent = d.all
-      ? fmtC(d.j) + " jobs sit inside Boston and its residents hold " + fmtC(d.r) + ". On this reading Boston as a whole is " + zone + "."
+      ? ""
       : fmtC(d.j) + " " + d.n.toLowerCase() + " jobs sit inside Boston; its residents hold " + fmtC(d.r) + " such jobs wherever they are. " +
         (net >= 0 ? "At least " + fmtC(net) + " people commute in for this work on net." : "At least " + fmtC(-net) + " residents commute out for this work on net.") +
         " For this sector Boston reads as " + zone + ".";
