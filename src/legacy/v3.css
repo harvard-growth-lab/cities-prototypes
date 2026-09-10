@@ -143,7 +143,7 @@
   /* two-zone hero: the story reads on the left, the action stands on the
      right, both on one shared measure */
   .hero-grid{
-    display:grid;grid-template-columns:minmax(0,620px) 440px;
+    display:grid;grid-template-columns:minmax(0,600px) 470px;
     justify-content:space-between;gap:56px;
     align-items:center;width:min(1140px,100%);
   }
@@ -175,19 +175,41 @@
 
   /* the diagnose panel: one location, its verdict, its numbers, the action */
   .diagnose-panel{
-    background:#fff;border:1px solid var(--border);border-radius:12px;
-    box-shadow:var(--shadow-md);width:100%;padding:30px 28px;
-    display:flex;flex-direction:column;gap:20px;text-align:left;
+    background:#fff;border:1px solid var(--border);border-radius:14px;
+    box-shadow:0 18px 48px rgba(37,88,98,.18);width:100%;padding:26px 26px 24px;
+    display:flex;flex-direction:column;gap:18px;text-align:left;
   }
-  .diagnose-panel .field{display:flex;flex-direction:column;gap:8px;}
-  .diagnose-panel label{font-size:13px;font-weight:600;letter-spacing:.3px;color:var(--ink);}
-  #citySelect{width:100%;}
+  /* the verdict: the city's name on the plane, with its mark beside it */
+  .lx-verdict{
+    display:flex;align-items:center;gap:16px;
+    background:var(--teal-tint);border-radius:10px;padding:16px 18px 16px 16px;
+  }
+  .lx-ico{
+    flex:none;width:56px;height:56px;border-radius:50%;background:#fff;
+    color:var(--teal);display:flex;align-items:center;justify-content:center;
+    box-shadow:0 2px 8px rgba(37,88,98,.14);
+  }
+  /* the diagnosis wears its own mark: one drawn per quadrant name */
+  .lx-ico svg{width:36px;height:36px;display:none;}
+  .lx-verdict[data-quad="fortress"] .lx-ico svg[data-for="fortress"],
+  .lx-verdict[data-quad="magnet"]   .lx-ico svg[data-for="magnet"],
+  .lx-verdict[data-quad="sponge"]   .lx-ico svg[data-for="sponge"],
+  .lx-verdict[data-quad="leak"]     .lx-ico svg[data-for="leak"]{display:block;}
+  .lx-words{flex:1 1 auto;min-width:0;}
+  .lx-title{
+    font-size:25px;font-weight:700;line-height:1.12;letter-spacing:-.4px;
+    color:var(--ink);margin:0 0 6px;
+  }
+  .lx-title em{font-style:normal;color:var(--teal);}
+  .lx-tag{font-size:14px;line-height:1.45;color:var(--ink);margin:0;}
   .btn-diagnose{
     width:100%;display:flex;align-items:center;justify-content:center;gap:10px;
-    background:var(--teal);color:#fff;border:0;border-radius:6px;
-    font-family:inherit;font-size:16px;font-weight:600;letter-spacing:.2px;
-    padding:13px 18px;cursor:pointer;transition:background .16s ease;
+    background:var(--teal);color:#fff;border:0;border-radius:8px;
+    font-family:inherit;font-size:17px;font-weight:700;letter-spacing:.2px;
+    padding:15px 18px;cursor:pointer;transition:background .16s ease,transform .16s ease;
+    box-shadow:0 6px 18px rgba(37,88,98,.28);
   }
+  .btn-diagnose:hover{transform:translateY(-1px);}
   .btn-diagnose:hover{background:#1d4750;}
   .btn-diagnose .city-build{width:22px;height:22px;flex:none;}
   .btn-diagnose .bd-chev{width:14px;height:9px;flex:none;}
@@ -219,14 +241,14 @@
   /* the two axes of the diagnosis, side by side and given equal billing:
      are people arriving, and is pay rising. Each reading carries its own
      pictogram, verdict word, colour and tint. */
-  .verdict-viz{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px;}
-  .verdict-stat{min-width:0;padding:16px 15px 15px;border-radius:8px;}
+  .verdict-viz{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px;}
+  .verdict-stat{min-width:0;padding:13px 14px 12px;border-radius:8px;}
   .verdict-stat[data-dir="down"]{background:rgba(192,36,74,.07);}
   .verdict-stat[data-dir="up"]{background:rgba(61,154,67,.09);}
   .verdict-big{display:flex;align-items:baseline;gap:8px;}
   .verdict-stat[data-dir="down"] .verdict-big{color:var(--fall);}
   .verdict-stat[data-dir="up"] .verdict-big{color:var(--rise);}
-  .verdict-num{font-size:40px;font-weight:700;line-height:1;letter-spacing:-1.1px;}
+  .verdict-num{font-size:34px;font-weight:700;line-height:1;letter-spacing:-1px;}
   .verdict-span{display:block;font-size:13px;font-weight:600;color:var(--ink);margin-top:7px;}
   .verdict-vs{display:block;font-size:11.5px;font-weight:600;color:var(--ink-soft);margin-top:3px;}
   .verdict-note{grid-column:1 / -1;font-size:11.5px;font-weight:600;color:var(--ink-soft);}
@@ -448,6 +470,8 @@
   .secnav-btn:hover{color:var(--teal);}
   .secnav-btn:hover .num{border-color:var(--teal);color:var(--teal);}
   .secnav-btn.is-active{color:var(--teal);border-bottom-color:var(--teal);}
+  /* the extras' tab appears only while the reader is in the extras */
+  .secnav-btn--aside:not(.is-active){display:none;}
   .secnav-btn.is-active .num{background:var(--teal);border-color:var(--teal);color:#fff;}
 
   /* ---- sub-step ticks: the active tab's underline, taught to count ----
@@ -840,8 +864,7 @@
   .ov-wrap:not(.ov2) .ov-block > .page-head + *{margin-top:16px;}
   /* the metro page's own rules set the explainer and the table with ids,
      which outrank the step above — restated here at the same rank */
-  .ov-wrap:not(.ov2) #page-overview-msa .collapsible-info{margin:16px 0 0;}
-  .ov-wrap:not(.ov2) #page-overview-msa .collapsible-info + .lede{margin-top:18px;}
+  .ov-wrap:not(.ov2) #page-overview-msa .collapsible-info{margin:18px 0 0;}
   .ov-wrap:not(.ov2) #page-overview-msa .ind-table{margin-top:28px;}
   .ov-wrap:not(.ov2) .ov-block .pg{padding-top:12px;}
   /* a shade over a third to the map: 36% of the viewport, 518px at 1440 */
@@ -1428,7 +1451,7 @@
   .spec-key .sk-peer{width:2px;height:14px;background:#1a2226;}
   .spec-key .sk-base{width:0;height:14px;border-left:1px dashed #8e9196;}
 
-  .tradable-split-header{
+  .tradable-split-header{pointer-events:none;
     width:80%;margin:26px auto 12px;
     display:grid;grid-template-columns:1fr 1fr;gap:.682%;
     opacity:0;transform:translateY(8px);
@@ -2111,23 +2134,39 @@
      prose it sits beside, and in a 330px rail it dominates the beat. Here
      it is a line of small type over a rule: no box, no ground, no shadow,
      and the mark shrinks to the size of the words it opens. */
-  .ct-step .collapsible-info{
+  .ct-step .collapsible-info,
+  .ov-wrap:not(.ov2) .collapsible-info{
     max-width:none;margin:14px 0 16px;
     border:0;border-bottom:1px solid var(--border-strong);
-    border-radius:0;background:none;
+    border-radius:8px 8px 0 0;background:none;
+    transition:background .15s ease;
   }
-  .ct-step .collapsible-info:hover{box-shadow:none;}
-  .ct-step .collapsible-header{
-    padding:0 0 10px;gap:8px;font-size:14px;line-height:1.4;font-weight:600;
+  /* the rule always; the tint only while the reader is on the panel or has
+     it open */
+  .ct-step .collapsible-info:hover,
+  .ov-wrap:not(.ov2) .collapsible-info:hover,
+  .ct-step .collapsible-info:has(.collapsible-header.active),
+  .ov-wrap:not(.ov2) .collapsible-info:has(.collapsible-header.active){
+    background:var(--teal-tint);box-shadow:none;
   }
-  .ct-step .ci-mark{
+  .ct-step .collapsible-header,
+  .ov-wrap:not(.ov2) .collapsible-header{
+    padding:10px 12px;gap:10px;font-size:16px;line-height:1.35;font-weight:600;
+  }
+  .ct-step .ci-mark,
+  .ov-wrap:not(.ov2) .ci-mark{
     width:auto;height:auto;border-radius:0;background:none;box-shadow:none;
   }
-  .ct-step .ci-mark svg{width:15px;height:15px;}
-  .ct-step .collapsible-icon{width:14px;height:14px;}
-  .ct-step .collapsible-content{padding:0 0 14px;}
-  .ct-step .collapsible-content p{font-size:14px;line-height:1.55;margin:0 0 9px;}
-  .ct-step .collapsible-content p:last-child{margin-bottom:0;}
+  .ct-step .ci-mark svg,
+  .ov-wrap:not(.ov2) .ci-mark svg{width:19px;height:19px;}
+  .ct-step .collapsible-icon,
+  .ov-wrap:not(.ov2) .collapsible-icon{width:17px;height:17px;}
+  .ct-step .collapsible-content,
+  .ov-wrap:not(.ov2) .collapsible-content{padding:0 12px 14px;}
+  .ct-step .collapsible-content p,
+  .ov-wrap:not(.ov2) .collapsible-content p{font-size:16px;line-height:1.5;margin:0 0 10px;}
+  .ct-step .collapsible-content p:last-child,
+  .ov-wrap:not(.ov2) .collapsible-content p:last-child{margin-bottom:0;}
   .ct-step .tradable-diagram{max-width:100%;margin:12px 0 2px;}
 
   /* Explainer diagram: outside customers -> tradable industry -> income in */
@@ -2455,13 +2494,82 @@
      so whichever one a beat shows lands the same distance above the chart */
   .mi-head{position:relative;min-height:42px;margin:0 0 10px;}
   .mi-head > *{position:absolute;left:0;right:0;bottom:0;margin:0;}
+  /* nothing in the slot may take the pointer while invisible: the headers
+     fade rather than leave, and a faded one was swallowing clicks meant for
+     the controls beneath it */
+  .mi-head > .tradable-split-header,
+  .mi-head > .mi-cluster-head,
+  .mi-head > .mi-trad-head{pointer-events:none;}
   /* the arrangement control, on the figure's own left edge */
   .mi-view{
     display:flex;align-items:center;gap:10px;
     opacity:0;pointer-events:none;transition:opacity .35s ease;
   }
-  .mi-figure[data-step="0"] .mi-view,
-  .mi-figure[data-step="1"] .mi-view{opacity:1;pointer-events:auto;}
+  .mi-figure[data-step="0"] .mi-view:not(.mi-sort),
+  .mi-figure[data-step="1"] .mi-view:not(.mi-sort),
+  .mi-figure[data-step="4"] .mi-view:not(.mi-sort),
+  .mi-figure[data-step="5"] .mi-view:not(.mi-sort),
+  .mi-figure[data-step="7"] .mi-view:not(.mi-sort){opacity:1;pointer-events:auto;}
+  /* the ranking's own control, on the beats that show a ranking */
+  .mi-figure[data-step="3"] .mi-sort,
+  .mi-figure[data-step="6"] .mi-sort{opacity:1;pointer-events:auto;}
+  #miTreemapSvg .mi-jobs{font-size:11.5px;fill:var(--ink-soft);font-variant-numeric:tabular-nums;}
+  /* the jobs bars sit beside the ranking's own bars, so they stay quieter
+     than the teal — but dark enough to read as a bar at 4px */
+  #miTreemapSvg .mi-jobsbar{fill:#8d949d;}
+  #miTreemapSvg .mi-colhead{font-size:11px;font-weight:600;fill:#72767b;}
+  /* opt-2's one option shows the rest, on the opening frame and on the
+     clusters it opens */
+  .mi-view .mi-scope{display:none;margin-left:6px;}   /* beside the View group, not across the row */
+  .mi-figure[data-opt="2"][data-step="7"] .mi-view .mi-scope,
+  .mi-figure[data-opt="2"][data-step="4"] .mi-view .mi-scope{display:flex;}
+  /* on that beat the head holds two rows: the controls above, the clusters'
+     header below */
+  /* the names close onto the chart: the slot takes over the chart's own top
+     margin rather than pushing it down, so the figure itself does not move */
+  #miFigure[data-step="4"] .mi-head,
+  #miFigure[data-step="7"] .mi-head{min-height:107px;margin-bottom:3px;}
+  #miFigure[data-step="4"] .tradable-viz-wrapper .viz-big,
+  #miFigure[data-step="7"] .tradable-viz-wrapper .viz-big{margin-top:0;}
+  #miFigure[data-step="4"] .mi-head > .mi-view,
+  #miFigure[data-step="7"] .mi-head > .mi-view{top:0;bottom:auto;}
+  /* the opening frame's header: on for the most tradable alone */
+  .mi-trad-head{display:flex;flex-direction:column;gap:8px;opacity:0;pointer-events:none;transition:opacity .35s ease;}
+  .mi-figure[data-step="7"] .mi-trad-head{opacity:1;}
+  /* ── the three clusters (opt-3's opening beat) ──────────────────────── */
+  /* the lead's two rows swap by the hidden attribute, which the rail's own
+     display rule would otherwise override */
+  .mi-default[hidden], .mi-alt[hidden],
+  .mi-rail-default[hidden], .mi-rail-alt[hidden]{display:none !important;}
+  .mi-cluster-head{display:flex;flex-direction:column;gap:8px;opacity:0;pointer-events:none;transition:opacity .35s ease;}
+  .mcl-axis{display:flex;align-items:center;gap:12px;}
+  .mcl-line{flex:1 1 auto;height:2px;border-radius:1px;background:var(--teal);opacity:.35;}
+  /* opt-1 drops the rule between the two directions: the words hold the two
+     ends of the chart on their own */
+  .mi-figure[data-opt="1"] .mcl-line{display:none;}
+  .mi-figure[data-opt="1"] .mcl-axis{justify-content:space-between;}
+  .mcl-cols{display:flex;gap:8px;}
+  .mi-figure[data-step="4"] .mi-cluster-head{opacity:1;}
+  /* bars have no columns: the clusters' header stands down while they are up */
+  .mi-figure[data-step="4"][data-view="alt"] .mi-cluster-head{opacity:0;}
+  .mcl-col{display:flex;flex-direction:column;min-width:0;flex:0 0 auto;}
+  /* the direction is the header's point; the cluster names are captions */
+  .mcl-dir{font-size:16px;font-weight:700;color:var(--teal);letter-spacing:.01em;white-space:nowrap;}
+  /* the cluster names sit right on top of the column they name, with no rule
+     under them — the columns themselves are the division the reader sees */
+  .mcl-lab{font-size:13px;font-weight:500;color:var(--ink);line-height:1.15;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .mcl-lab .pct{font-weight:400;}
+  /* the sector legend keeps the bottom on the clusters' beat, as on the first */
+  .mi-figure[data-step="4"] .sector-key,
+  .mi-figure[data-step="7"] .sector-key{opacity:1;}
+  /* the three-segment stat in the beat's text */
+  .cl-stat{display:inline-flex;align-items:center;gap:12px;}
+  .cl-stat[hidden]{display:none;}
+  .cl-donut{flex:none;transform:rotate(-90deg);}
+  .cl-rows{display:flex;flex-direction:column;gap:3px;font-size:12.5px;color:var(--ink);}
+  .cl-row i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;vertical-align:-1px;}
+  .cl-row b{font-weight:600;color:var(--ink-soft);}
   .mi-caption{position:relative;min-height:34px;margin-top:10px;}
   .mi-caption > *{position:absolute;left:0;top:0;right:0;margin:0;}
   .ct-stage:has(.mi-figure) .ct-slot.is-on{min-height:0;padding-block:0;}
@@ -2473,16 +2581,28 @@
   .mi-figure .sector-key,
   .mi-figure .spec-key{opacity:0;transition:opacity .5s ease;}
   .mi-figure[data-step="0"] .sector-key{opacity:1;}
-  .mi-figure[data-step="1"] .complexity-legend{opacity:1;}
-  .mi-figure[data-step="3"] .spec-key{opacity:1;}
+  .mi-figure[data-step="1"] .complexity-legend,
+  .mi-figure[data-step="5"] .complexity-legend{opacity:1;}
+  .mi-figure[data-step="3"] .spec-key:not(.spec-key--gap),
+  .mi-figure[data-step="6"] .spec-key:not(.spec-key--gap){opacity:1;}
+  /* under the peers order the other key takes the slot */
+  .mi-figure[data-step="3"][data-sort="gap"] .spec-key:not(.spec-key--gap),
+  .mi-figure[data-step="6"][data-sort="gap"] .spec-key:not(.spec-key--gap){opacity:0;}
+  .mi-figure[data-step="3"][data-sort="gap"] .spec-key--gap,
+  .mi-figure[data-step="6"][data-sort="gap"] .spec-key--gap{opacity:1;}
+  .spec-key .sk-ahead{width:15px;height:11px;border-radius:2px;background:var(--teal);}
+  .spec-key .sk-behind{width:15px;height:11px;border-radius:2px;background:var(--orange);}
   /* ── the rank, as a standing figure ─────────────────────────────────
      A track and a marker read as a control the reader could drag, which
      this is not. The number does the work, set off by a teal rule and
      carrying its caption in the same hue. */
-  .rank-strip{
-    width:100%;margin:18px 0 4px;padding-left:14px;
-    border-left:3px solid var(--teal);
-  }
+  .rank-strip{width:100%;margin:18px 0 4px;}
+  /* the rank card: the anchor card's grammar with the number as its figure */
+  .rank-card{gap:18px;padding:16px 20px 16px 18px;}
+  .rc-fig{flex:none;display:flex;flex-direction:column;align-items:center;min-width:64px;}
+  .rc-fig .rs-num{font-size:34px;}
+  .rc-of{display:none;}
+  .rc-sub{margin:6px 0 0;font-size:13px;color:#2c2823;}
   .rs-head{display:flex;align-items:center;gap:12px;margin:0;}
   .rs-num{
     font-size:38px;font-weight:700;line-height:1;color:var(--teal);
@@ -2558,7 +2678,58 @@
   .am-key[data-step="4"] .ak-jobs-item,
   .am-key[data-step="5"] .ak-jobs-item, .am-key[data-step="5"] .ak-res-item,
   .am-key[data-step="6"] .ak-mark-jobs, .am-key[data-step="6"] .ak-mark-res, .am-key[data-step="6"] .ak-base,
-  .am-key[data-step="7"] .ak-flow-in,   .am-key[data-step="7"] .ak-flow-out{display:inline-flex;}
+  .am-key[data-step="7"] .ak-flow-in,   .am-key[data-step="7"] .ak-flow-out,
+  #amFigure[data-count="j"] .am-key[data-step="10"] .ak-div-hi-j,
+  #amFigure[data-count="r"] .am-key[data-step="10"] .ak-div-hi-r,
+  .am-key[data-step="10"] .ak-div-lo{display:inline-flex;}
+  /* opt-2's count beat: the key names whichever count is on */
+  .am-key[data-step="9"] .ak-jobs-item, .am-key[data-step="9"] .ak-res-count{display:inline-flex;}
+  .am-key .ak-sw{width:15px;height:11px;border-radius:2px;}
+  /* the count switch shares the head with the key on the two chart beats:
+     the switch on top, the key on the floor, as the metro figure does */
+  /* the switch belongs to opt-2's two chart beats only; the metro figure's
+     step rules for .mi-view must not raise it on the beats they share */
+  #amFigure .am-count{opacity:0;pointer-events:none;}
+  #amFigure[data-step="9"] .mi-head, #amFigure[data-step="10"] .mi-head{min-height:96px;}
+  /* on the chart beats the key is read alongside the bars, so it takes the
+     body's size and ink rather than a caption's */
+  #amFigure[data-step="9"] .am-key, #amFigure[data-step="10"] .am-key{font-size:13px;color:var(--ink);}
+  #amCount .ctl-label{font-size:13px;font-weight:600;letter-spacing:0;}
+  #amFigure[data-step="9"] .mi-head > .am-count, #amFigure[data-step="10"] .mi-head > .am-count{
+    top:0;bottom:auto;opacity:1;pointer-events:auto;}
+  /* the bars answer a click on the comparison beat */
+  #amFigure[data-step="10"] #amBarsSvg .am-row{cursor:pointer;}
+  #amBarsSvg .am-row.is-picked .am-bar, #amBarsSvg .am-row.is-picked .am-bar-res{stroke:var(--ink);stroke-width:1.5;}
+  /* the whole row answers the cursor, names and values included */
+  #amBarsSvg .am-rowbg{fill:transparent;}
+  #amBarsSvg .am-row:hover .am-rowbg{fill:var(--teal-tint);}
+  #amBarsSvg .am-row.is-picked .am-name{font-weight:700;fill:var(--ink);}
+  /* the numbers beside opt-2's opening text: three plain readings, the
+     percentage on the line that needs one */
+  .am2-stats{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 12px;align-items:baseline;margin-top:8px;}
+  .am2-stats .v{font-size:19px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .am2-stats .v i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:7px;vertical-align:1px;}
+  .am2-stats .l{font-size:13px;line-height:1.4;color:var(--ink-soft);}
+  /* the dial in the text column */
+  .ct-step .lean-note.am2-panel{background:none;border:0;padding:0;margin:14px 0 0;font-size:inherit;line-height:inherit;}
+  .am2-pick{display:flex;align-items:flex-start;gap:9px;font-size:14px;line-height:1.5;margin:0 0 8px;color:var(--ink);}
+  .am2-pick .xp-ico{flex:none;color:var(--geo-city);margin-top:-2px;}
+  /* the invitation is spent once a sector has been picked */
+  .am2-pick.is-off .xp-ico{animation:none;opacity:.35;}
+  .am2-dial{width:100%;max-width:300px;height:auto;display:block;margin:0 0 6px;}
+  .am2-dial .zone{stroke:#fff;stroke-width:1.5;}
+  .am2-dial .tick{stroke:var(--ink);stroke-width:1;}
+  .am2-dial .ticklbl{font-size:11px;fill:var(--ink);font-variant-numeric:tabular-nums;}
+  .am2-dial .zonelbl{font-size:11px;fill:var(--ink);font-weight:600;}
+  .am2-dial .needle{stroke:var(--ink);stroke-width:2.5;stroke-linecap:round;transform-origin:130px 128px;
+    transition:transform .8s cubic-bezier(.2,.7,.2,1),stroke .3s ease;}
+  .am2-dial .pivot{fill:var(--ink);}
+  .am2-dial .ghost{stroke:#8e9196;stroke-width:1.5;stroke-dasharray:3 3;}
+  .am2-dial .big{font-size:24px;font-weight:700;fill:var(--ink);letter-spacing:-.01em;font-variant-numeric:tabular-nums;}
+  .am2-dial .biglbl{font-size:10.5px;fill:var(--ink-soft);}
+  .am2-verdict{font-size:15px;margin:2px 0 6px;}
+  #am2Mini .mrow{grid-template-columns:104px 1fr;font-size:11px;}
+  @media (prefers-reduced-motion: reduce){ .am2-dial .needle{transition:none;} }
   /* the swatches are the marks themselves, at the size they are drawn */
   .am-key .ak-dot{width:9px;height:9px;border-radius:50%;}
   .am-key .ak-dot--grey{background:#9aa8ad;}
@@ -2574,6 +2745,11 @@
   #amMapSvg .am-place{fill:#f1f3f4;stroke:#cfd5d8;stroke-width:.6;}
   #amMapSvg .am-place.is-partner{fill:#e2e8ea;}
   #amMapSvg .am-place.is-focus{fill:#d3e0e3;stroke:var(--geo-city);stroke-width:1.1;}
+  #amMapSvg .am-place{cursor:default;transition:fill .12s ease;}
+  #amMapSvg .am-place.is-hot{fill:#c8d8dc;stroke:var(--geo-city);stroke-width:1.1;}
+  #amTip .tip-foot{font-size:12.5px;line-height:1.45;color:var(--ink-soft);
+    margin:7px 0 0;padding-top:7px;border-top:1px solid var(--border);}
+  #amMapSvg .am-msa{fill:none;stroke:var(--geo-metro);stroke-width:1.3;stroke-dasharray:6 6;}
   #amMapSvg .am-flow{fill:none;stroke-linecap:butt;opacity:.92;cursor:default;}
   #amMapSvg .am-flow.is-in{stroke:var(--geo-city);}
   #amMapSvg .am-flow.is-out{stroke:var(--orange);}
@@ -2614,7 +2790,9 @@
   .am-gauge .zone{stroke:#fff;stroke-width:2;}
   .am-gauge .tick{stroke:var(--ink);stroke-width:1;}
   .am-gauge .ticklbl{font-size:12px;fill:var(--ink);font-variant-numeric:tabular-nums;}
-  .am-gauge .zonelbl{font-size:11px;fill:var(--ink-soft);font-weight:600;}
+  /* the full gauge draws a 520-wide box into 420px, so its type is set a
+     little larger to land at the same size on screen as the small dial's */
+  .am-gauge .zonelbl{font-size:14px;fill:var(--ink);font-weight:600;}
   .am-gauge .needle{stroke:var(--ink);stroke-width:3;stroke-linecap:round;transform-origin:260px 250px;
     transition:transform 1s cubic-bezier(.25,.8,.25,1),stroke .4s ease;}
   .am-gauge .pivot{fill:var(--ink);}
@@ -2671,7 +2849,7 @@
   #amBarsSvg .am-row{cursor:default;}
   #amBarsSvg .am-link{stroke-width:1.5;}
   /* the key, which gains its second entry once the residents' count arrives */
-  .am-key{display:flex;gap:22px;flex-wrap:wrap;margin:0;font-size:12.5px;color:var(--ink-soft);}
+  .am-key{display:flex;gap:6px 22px;flex-wrap:wrap;margin:0;font-size:12.5px;color:var(--ink-soft);}
   .am-key i{flex:none;display:inline-block;border-radius:2px;}
   .am-key .ak-jobs{width:15px;height:11px;background:var(--geo-city);}
   .am-key .ak-res{width:15px;height:6px;background:var(--orange);}

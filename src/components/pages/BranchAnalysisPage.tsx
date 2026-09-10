@@ -14,20 +14,20 @@ import {
   type HierarchyPointNode,
 } from "d3-hierarchy";
 import {
+  DATA_LEVEL_LABEL,
   PLACEHOLDER_BRANCHES,
   QUAD_BRANCH_SPEC,
   TREE_SIDE_COLOR,
-  branchBetterThemes,
   sideDash,
   sideHollow,
   TREE_SIDE_LABEL,
   completeToLeaf,
-  pathThemes,
+  pathModules,
   sideOfPath,
   suggestedPath,
   treeNodes,
   type BranchSide,
-  type ThemeDef,
+  type ModuleDef,
   type TreeNodeData,
   type TreeSide,
   type TreeVariant,
@@ -35,10 +35,11 @@ import {
 import { branchSectionName } from "../../data/content";
 import { NodeGlyph } from "./treeIcons";
 
-/* The third City Constraints step. Empty for now — its name and the
-   "where you are" schematic follow the branch picked on the diagnostic tree
-   in the previous step. The schematic previews paths on hover and commits
-   one on click (area-linked, like the big tree). */
+/* The third City Constraints step: the MODULES to look into at the end of
+   the branch picked on the diagnostic tree in the previous step — each a
+   theme grouping the data points worth reading there — beside the "where
+   you are" schematic that follows the pick. The schematic previews paths on
+   hover and commits one on click (area-linked, like the big tree). */
 
 type MiniNode = HierarchyPointNode<TreeNodeData>;
 
@@ -273,20 +274,20 @@ function DiagSchematic({
   );
 }
 
-/* ---------- the themes layer: the section's actual skeleton ----------
-   Each theme reached from the picked leaf becomes a block of indicator
-   frames. Where two leaves rest on the same underlying data, the themes are
-   named for the question each one answers, so a block never has to explain
-   that it is a repeat of one somewhere else. */
+/* ---------- the modules: the section's actual skeleton ----------
+   Each module reached from the picked ending becomes a block: the question
+   it helps answer, the level its data is read at, and a frame per data
+   point naming the signal to read off it. Modules are an overview of where
+   to look, not a verdict — nothing here says a module IS the constraint. */
 
-function ThemeBlock({
-  theme,
+function ModuleBlock({
+  def,
   color,
   onSeen,
 }: {
-  theme: ThemeDef;
+  def: ModuleDef;
   color: string;
-  /** reports the block entering view, for the rail's theme list */
+  /** reports the block entering view, for the rail's module list */
   onSeen: (id: string, on: boolean) => void;
 }) {
   const ref = useRef<HTMLElement>(null);
@@ -295,43 +296,61 @@ function ThemeBlock({
     if (!el) return;
     const scroller = el.closest(".pages") as HTMLElement | null;
     const io = new IntersectionObserver(
-      (entries) => entries.forEach((e) => onSeen(theme.id, e.isIntersecting)),
+      (entries) => entries.forEach((e) => onSeen(def.id, e.isIntersecting)),
       { root: scroller, threshold: 0.3 },
     );
     io.observe(el);
     return () => io.disconnect();
-  }, [theme.id, onSeen]);
+  }, [def.id, onSeen]);
 
   return (
-    <section className="ba-theme" id={`theme-${theme.id}`} ref={ref}>
-      <div className="ba-theme-head">
-        <span className="ba-theme-ico" style={{ color }} aria-hidden="true">
-          <NodeGlyph id={theme.id} />
+    <section className="ba-module" id={`module-${def.id}`} ref={ref}>
+      <div className="ba-mod-head">
+        <span className="ba-mod-ico" style={{ color }} aria-hidden="true">
+          <NodeGlyph id={def.id} />
         </span>
-        <h3 style={{ color }}>{theme.title}</h3>
+        <h3 style={{ color }}>{def.title}</h3>
+        <span className="ba-level">{DATA_LEVEL_LABEL[def.level]}</span>
       </div>
-      <p className="ba-theme-lede">
-        <span className="ph">{theme.detail}</span>
-      </p>
-      {theme.seeAlso && (
-        <p className="ba-theme-see">
+      <p className="ba-mod-q">
+        {def.question ?? (
           <span className="ph">
-            [you already saw this in {theme.seeAlso} — link back rather than
-            re-plot]
+            [the question this module helps answer — to come]
           </span>
-        </p>
-      )}
-      <div className="ba-inds">
-        {theme.indicators.map((ind) => (
-          <div className="ba-ind" key={ind}>
-            <span className="ba-ind-name">{ind}</span>
-            <span className="ph-sub">[data view — to come]</span>
+        )}
+      </p>
+      <div className="ba-views">
+        {def.views.map((v) => (
+          <div className="ba-view" key={v.name}>
+            <span className="ba-view-name">{v.name}</span>
+            <span className="ba-view-ph">[data view — to come]</span>
+            {(v.signal || v.level) && (
+              <span className="ba-view-meta">
+                {v.signal && (
+                  <span className="ba-view-signal">
+                    <b>Signal</b>
+                    {v.signal}
+                  </span>
+                )}
+                {v.level && (
+                  <span className="ba-level small">
+                    {DATA_LEVEL_LABEL[v.level]}
+                  </span>
+                )}
+              </span>
+            )}
           </div>
         ))}
       </div>
     </section>
   );
 }
+
+/* the intro line counts its modules in words — no ending shows more than a
+   handful */
+const COUNT_WORD = ["no", "one", "two", "three", "four", "five", "six"];
+const countModules = (n: number) =>
+  n === 1 ? "one module" : `${COUNT_WORD[n] ?? n} modules`;
 
 export function BranchAnalysisPage({
   cityShort,
@@ -349,7 +368,8 @@ export function BranchAnalysisPage({
   onSelectBranch: (path: string[]) => void;
   /** which tree structure the schematic mirrors (the stage's toggle) */
   variant: TreeVariant;
-  /** show the themes under the picked leaf instead of the empty frame */
+  /** show the modules under the alt tree's leaves instead of the empty
+   *  frame — the quadrant trees always carry theirs */
   showThemes: boolean;
   /** the shortened walk withholds the choice of branch until this section has
    *  been read to its end — chart, tree and analysis are one piece there */
@@ -383,43 +403,27 @@ export function BranchAnalysisPage({
   const shown = preview ?? branchPath;
   const shownSide = sideOfPath(shown);
 
-  /* the themes hanging off the picked leaf — the section's content when the
-     stage's themes toggle is on. The revision spec's structures carry them
-     too: the forked quadrant tree under its leaves, the flat quad tree by
-     asking the fork HERE. */
-  const themesOn =
-    showThemes &&
-    (variant === "alt" || variant === "quad" || variant === "quad2");
-  const themes = useMemo(
-    () => (themesOn ? pathThemes(branchPath) : []),
-    [themesOn, branchPath],
+  /* the modules shown at the picked ending — the section's content. The
+     quadrant trees always carry them (the revision made them the section);
+     the alt tree carries them when the stage's themes toggle is on, and the
+     paper tree has none. */
+  const modulesOn =
+    variant === "quad" ||
+    variant === "quad2" ||
+    (showThemes && variant === "alt");
+  const modules = useMemo(
+    () => (modulesOn ? pathModules(branchPath) : []),
+    [modulesOn, branchPath],
   );
   /* the revision spec's per-shock layer: the overarching question (the
-     lede), the fork line, and the standing "what could I do better?" block */
+     lede) and the fork line */
   const spec = QUAD_BRANCH_SPEC[side as BranchSide];
-  const better = useMemo(
-    () => (themesOn ? branchBetterThemes(branchPath) : []),
-    [themesOn, branchPath],
-  );
-  /* the flat quad tree stops at the shock, so ITS second fork is asked here:
-     each outcome of the forked structure becomes a labelled group of theme
-     blocks */
-  const forkHere = themesOn && variant === "quad" && !!spec;
-  const outcomes = useMemo(
-    () => (forkHere ? treeNodes("quad2").filter((n) => n.parent === side) : []),
-    [forkHere, side],
-  );
-  /* everything the evidence rail scroll-spies, in reading order */
-  const railThemes = useMemo(
-    () => [...themes, ...outcomes.flatMap((o) => pathThemes([o.id])), ...better],
-    [themes, outcomes, better],
-  );
-  /* which theme block the reader is in, for the rail's theme list */
-  const [seenThemes, setSeenThemes] = useState<ReadonlySet<string>>(
+  /* which module block the reader is in, for the rail's module list */
+  const [seenModules, setSeenModules] = useState<ReadonlySet<string>>(
     () => new Set(),
   );
   const onSeen = useCallback((id: string, on: boolean) => {
-    setSeenThemes((prev) => {
+    setSeenModules((prev) => {
       if (prev.has(id) === on) return prev;
       const next = new Set(prev);
       if (on) next.add(id);
@@ -427,8 +431,9 @@ export function BranchAnalysisPage({
       return next;
     });
   }, []);
-  /* the topmost theme in view reads as "where you are" */
-  const activeTheme = railThemes.find((t) => seenThemes.has(t.id))?.id ?? null;
+  /* the topmost module in view reads as "where you are" */
+  const activeModule =
+    modules.find((m) => seenModules.has(m.id))?.id ?? null;
 
   /* ---------- the end of the section ----------
      A held route is released by READING to the end, not by scrolling past
@@ -484,88 +489,36 @@ export function BranchAnalysisPage({
       </p>
 
       <div className="ba-body">
-        {themesOn ? (
-          <div className="ba-themes">
-            {/* the spec's fork line leads the evidence: on the forked tree it
-                names how you landed here, on the flat quad tree it IS the
-                question, asked here. A shock with no second layer (the
-                positive demand shock) has none to lead with. */}
-            {spec?.forkLine && (
+        {modulesOn ? (
+          <div className="ba-modules">
+            <div className="ba-lead">
+              {/* the spec's fork line names how you landed here; a shock
+                  with no second layer (the positive demand shock) has none */}
+              {spec?.forkLine && (
+                <p className="ba-forkline">
+                  <span className="ph">
+                    [how you landed here: {spec.forkLine}]
+                  </span>
+                </p>
+              )}
+              {/* what the modules are, before the first one: an overview of
+                  where to look, not a verdict on any of them */}
               <p className="ba-forkline">
                 <span className="ph">
-                  [{forkHere ? "the fork, asked here" : "how you landed here"}:{" "}
-                  {spec.forkLine}]
+                  {modules.length
+                    ? `[${countModules(modules.length)} to look into on this branch — an overview of where to look, not a verdict: none of them says the module is definitively the problem]`
+                    : "[no modules on this landing yet]"}
                 </span>
               </p>
-            )}
-            {themes.map((t) => (
-              <ThemeBlock
-                key={t.id}
-                theme={t}
+            </div>
+            {modules.map((m) => (
+              <ModuleBlock
+                key={m.id}
+                def={m}
                 color={TREE_SIDE_COLOR[side]}
                 onSeen={onSeen}
               />
             ))}
-            {spec && themes.length === 0 && !forkHere && (
-              <p className="ba-forkline">
-                <span className="ph">
-                  [no leaf-specific themes on this landing — the standing block
-                  below carries the evidence]
-                </span>
-              </p>
-            )}
-            {outcomes.map((o) => (
-              <section className="ba-outcome" key={o.id}>
-                <h3 style={{ color: TREE_SIDE_COLOR[side] }}>
-                  If {o.title.toLowerCase()}
-                </h3>
-                <p className="ba-outcome-note">
-                  <span className="ph">
-                    [
-                    {(o.tests ?? o.detail)
-                      .replace(/^\[/, "")
-                      .replace(/\]$/, "")}
-                    ]
-                  </span>
-                </p>
-                {pathThemes([o.id]).map((t) => (
-                  <ThemeBlock
-                    key={t.id}
-                    theme={t}
-                    color={TREE_SIDE_COLOR[side]}
-                    onSeen={onSeen}
-                  />
-                ))}
-                {pathThemes([o.id]).length === 0 && (
-                  <p className="ba-outcome-note">
-                    <span className="ph">
-                      [no leaf-specific themes — see the standing block below]
-                    </span>
-                  </p>
-                )}
-              </section>
-            ))}
-            {better.length > 0 && (
-              <section className="ba-better">
-                <h3 style={{ color: TREE_SIDE_COLOR[side] }}>
-                  What could I do better?
-                </h3>
-                <p className="ba-outcome-note">
-                  <span className="ph">
-                    [asked regardless of the fork — the spec's standing
-                    question on this shock]
-                  </span>
-                </p>
-                {better.map((t) => (
-                  <ThemeBlock
-                    key={`better-${t.id}`}
-                    theme={t}
-                    color={TREE_SIDE_COLOR[side]}
-                    onSeen={onSeen}
-                  />
-                ))}
-              </section>
-            )}
           </div>
         ) : (
           <div className="placeholder-frame">
@@ -622,24 +575,24 @@ export function BranchAnalysisPage({
               {previewing ? "click to select" : "you are here"}
             </span>
           </div>
-          {/* the themes under the picked leaf, scroll-spied like the main
-              rail one level up — the reader always knows which piece of
-              evidence they are in */}
-          {themesOn && railThemes.length > 0 && (
-            <div className="ba-themelist">
-              <span className="ba-kicker">Evidence</span>
+          {/* the modules at the picked ending, scroll-spied like the main
+              rail one level up — the reader always knows which module they
+              are in; the count is its data points */}
+          {modulesOn && modules.length > 0 && (
+            <div className="ba-modlist">
+              <span className="ba-kicker">Modules</span>
               <ul>
-                {railThemes.map((t) => (
+                {modules.map((m) => (
                   <li
-                    key={t.id}
-                    className={t.id === activeTheme ? "active" : ""}
+                    key={m.id}
+                    className={m.id === activeModule ? "active" : ""}
                   >
                     <span
-                      className="ba-themedot"
+                      className="ba-moddot"
                       style={{ background: TREE_SIDE_COLOR[side] }}
                     />
-                    <a href={`#theme-${t.id}`}>{t.title}</a>
-                    <span className="ba-themecount">{t.indicators.length}</span>
+                    <a href={`#module-${m.id}`}>{m.title}</a>
+                    <span className="ba-modcount">{m.views.length}</span>
                   </li>
                 ))}
               </ul>

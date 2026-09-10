@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { cityCountryName, cityShortName } from "../data/content";
 import {
+  CONSTRAINT_FLOWS,
   DEFAULT_CONSTRAINT_FLOW,
   convertPath,
   suggestedPath,
@@ -47,9 +48,15 @@ export function ConstraintsSection({
   /* which telling of the section is mounted. Local — nothing outside the
      section reads it. The two flows' scroll tracks differ in height, so the
      swap re-anchors the section in view. */
-  const [constraintFlow, setConstraintFlow] = useState<ConstraintFlow>(
-    DEFAULT_CONSTRAINT_FLOW,
-  );
+  const [constraintFlow, setConstraintFlow] = useState<ConstraintFlow>(() => {
+    /* a flow named in the URL's query (?flow=zoom) opens the section on
+       that telling, so a variant can be linked to — and screenshot —
+       without opening the disclosure first */
+    const q = new URLSearchParams(window.location.search).get("flow");
+    return CONSTRAINT_FLOWS.some((f) => f.id === q)
+      ? (q as ConstraintFlow)
+      : DEFAULT_CONSTRAINT_FLOW;
+  });
   /* both guided tellings ("guided" and its shortened cut) mount the narrative,
      so they gate the same things */
   const guidedFlow = constraintFlow !== "compact";

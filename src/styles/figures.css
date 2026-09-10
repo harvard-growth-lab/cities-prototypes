@@ -343,7 +343,7 @@
   fill-opacity: 0.03;
   stroke-opacity: 0.35;
 }
-/* ----- the themes layer: evidence chips under the alt tree's leaves -----
+/* ----- the themes layer: module chips under the alt tree's leaves -----
    Flatter and quieter than the tree above them, and with no arrows at all:
    a theme is not another step of the diagnostic, it is the data behind the
    leaf it hangs off. Every chip is styled identically — two leaves resting
@@ -1393,6 +1393,22 @@
   stroke: #fff;
   stroke-width: 4px;
 }
+/* ----- the quadrant vocabulary (Sept 2026 design pass) -----
+   A quadrant leads with the landing's mark and city type, and its two dials
+   are drawn with the sections' own stat-chip icons (quadIcons.tsx) — the
+   mark in the quiet ink the sections use for labels, the trend chips in the
+   rise/fall scale. The shock it is appears only in the chart's corners. */
+.nv-lab-shock {
+  font-size: 11.5px;
+  font-weight: 400;
+  fill: var(--ink-soft);
+  paint-order: stroke;
+  stroke: #fff;
+  stroke-width: 4px;
+}
+.nv-dial-mark {
+  color: var(--ink-soft);
+}
 .nv-tag {
   font-size: 13.5px;
   font-weight: 700;
@@ -1555,7 +1571,7 @@ html[data-jz-instant="1"] .nv-svg {
   transition: none !important;
 }
 
-/* ============ the branch-analysis page (empty; named by the picked branch) ============ */
+/* ============ the branch-analysis page (the modules at the picked ending) ============ */
 .ba-body {
   flex: 1;
   min-height: 0;
@@ -1574,8 +1590,8 @@ html[data-jz-instant="1"] .nv-svg {
   width: 400px;
   flex: 0 0 400px;
   align-self: flex-start;
-  /* the themes layer makes this section many screens tall — the schematic
-     and the evidence list have to ride along to stay useful */
+  /* the modules make this section many screens tall — the schematic and
+     the module list have to ride along to stay useful */
   position: sticky;
   top: 0;
   display: flex;
@@ -1706,7 +1722,7 @@ html[data-jz-instant="1"] .nv-svg {
 /* Narrow screens: the analysis reads in one column, and the context card —
    400px of sticky sidebar on a wide screen — becomes a low pull-up pinned
    to the bottom of the viewport: the trail and a toggle, with the schematic,
-   legend and evidence list folded away until asked for. */
+   legend and module list folded away until asked for. */
 @media (max-width: 920px) {
   .ba-body {
     flex-direction: column;
@@ -1752,7 +1768,7 @@ html[data-jz-instant="1"] .nv-svg {
     height: auto;
   }
   .ba-context .ba-legend,
-  .ba-context .ba-themelist,
+  .ba-context .ba-modlist,
   .ba-context .ba-note {
     display: none;
   }
@@ -1768,7 +1784,7 @@ html[data-jz-instant="1"] .nv-svg {
   .ba-context.open .ba-legend {
     display: flex;
   }
-  .ba-context.open .ba-themelist,
+  .ba-context.open .ba-modlist,
   .ba-context.open .ba-note {
     display: block;
   }
@@ -1784,57 +1800,80 @@ html[data-jz-instant="1"] .nv-svg {
   line-height: 22px;
 }
 
-/* ----- the themes layer in the analysis section ----- */
-.ba-themes {
+/* ----- the modules in the analysis section -----
+   A block per module: its glyph, title and data level on one row, the
+   question it helps answer, then a dashed frame per data point carrying the
+   view to come and the signal to read off it. */
+.ba-modules {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 30px;
 }
-.ba-theme {
+/* the two lines before the first module — how you landed here, and what a
+   module is — sit close, and the flex gap spaces them from the blocks */
+.ba-lead {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ba-module {
   scroll-margin-top: 20px;
 }
-.ba-theme-head {
+.ba-mod-head {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 10px;
   flex-wrap: wrap;
 }
-.ba-theme-ico {
+.ba-mod-ico {
   flex: 0 0 auto;
-  align-self: center;
   display: block;
 }
-.ba-theme-ico svg {
+.ba-mod-ico svg {
   display: block;
   width: 19px;
   height: 19px;
   overflow: visible;
 }
-.ba-theme-head h3 {
+.ba-mod-head h3 {
   margin: 0;
   font-size: 20px;
   font-weight: 700;
 }
-.ba-theme-lede {
+/* the level a module's data is read at — the MSA, the admin city, or both.
+   The small cut marks a data point whose level differs from its module's,
+   and rides in the compact flow's caption. */
+.ba-level {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  border: 1px solid var(--border-strong);
+  border-radius: 7px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+.ba-level.small {
+  font-size: 9.5px;
+  padding: 1px 6px;
+}
+.ba-mod-q {
   margin: 8px 0 0;
   font-size: 15px;
   line-height: 23px;
 }
-.ba-theme-see {
-  margin: 6px 0 0;
-  font-size: 13px;
-  line-height: 20px;
-}
-/* one frame per data view named in the researchers' notes */
-.ba-inds {
+/* one frame per data point — two to a row beside the context card, so a
+   six-point module stays on one screen */
+.ba-views {
   margin-top: 14px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(228px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(204px, 1fr));
   gap: 12px;
 }
-.ba-ind {
+.ba-view {
   min-height: 132px;
   border: 1px dashed var(--border-strong);
   border-radius: 10px;
@@ -1848,13 +1887,35 @@ html[data-jz-instant="1"] .nv-svg {
   text-align: center;
   color: var(--ink-soft);
 }
-.ba-ind-name {
+.ba-view-name {
   font-size: 13.5px;
   font-weight: 700;
   color: var(--ink);
   line-height: 19px;
 }
-.ba-themelist {
+.ba-view-ph {
+  font-style: italic;
+}
+/* the signal to read off the view, and — where it differs from the
+   module's — the level its data is read at */
+.ba-view-meta {
+  margin-top: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  line-height: 17px;
+}
+.ba-view-signal b {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-right: 5px;
+}
+/* the rail's module list — the section's own scroll-spy */
+.ba-modlist {
   margin-top: 4px;
   padding-top: 12px;
   border-top: 1px solid var(--border);
@@ -1862,7 +1923,7 @@ html[data-jz-instant="1"] .nv-svg {
   flex-direction: column;
   gap: 8px;
 }
-.ba-themelist ul {
+.ba-modlist ul {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -1870,7 +1931,7 @@ html[data-jz-instant="1"] .nv-svg {
   flex-direction: column;
   gap: 2px;
 }
-.ba-themelist li {
+.ba-modlist li {
   display: flex;
   align-items: center;
   gap: 9px;
@@ -1878,35 +1939,39 @@ html[data-jz-instant="1"] .nv-svg {
   opacity: 0.55;
   transition: opacity 0.2s ease;
 }
-.ba-themelist li.active {
+.ba-modlist li.active {
   opacity: 1;
 }
-.ba-themedot {
+.ba-moddot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
   flex: 0 0 auto;
   opacity: 0.45;
 }
-.ba-themelist li.active .ba-themedot {
+.ba-modlist li.active .ba-moddot {
   opacity: 1;
 }
-.ba-themelist a {
+.ba-modlist a {
   font-size: 14px;
   color: var(--ink);
   text-decoration: none;
 }
-.ba-themelist li.active a {
+.ba-modlist li.active a {
   font-weight: 700;
 }
-.ba-themelist a:hover {
+.ba-modlist a:hover {
   text-decoration: underline;
 }
-.ba-themecount {
+.ba-modcount {
   margin-left: auto;
   font-size: 11px;
   font-weight: 700;
   color: var(--ink-soft);
+}
+/* the compact flow's caption: the signal after each data point */
+.jz-cap-signal {
+  font-style: italic;
 }
 
 /* ============ the study's stage modes (nine-more-trees.html) ============
@@ -1935,6 +2000,21 @@ html[data-jz-instant="1"] .nv-svg {
 .nv-hidedot .nv-treewrap .nv-traveler {
   opacity: 0;
 }
+/* the zoomed walk's opening stop: the tree with no city on it. The
+   traveller's transform is imperative (see .nv-traveler .core above), but
+   its opacity is free to ease — so the dot fades in at the root on the
+   next stop rather than popping */
+.nv-traveler {
+  transition: opacity 0.6s ease;
+}
+/* both dots — the authored tree's and the sideways drawing's own. The hide
+   is a cut, not a fade: at the tree beat the ride parks the dot at the root
+   the moment it takes over, and a dot still fading out would be seen
+   jumping there from its spot on the chart */
+.nv-nocity .nv-traveler {
+  opacity: 0;
+  transition: none;
+}
 
 /* negative-shock edges: the draw-in animation runs on stroke-dasharray
    (pathLength=1), which a real dash pattern would fight — so these edges
@@ -1958,30 +2038,12 @@ html[data-jz-instant="1"] .nv-svg {
   opacity: 0.22;
 }
 
-/* ----- the revision spec's blocks in the branch analysis -----
-   The fork line that leads the evidence, the flat quad tree's per-outcome
-   groups, and the "what could I do better?" standing block. */
+/* the lines that lead the modules: how you landed here, and what a module
+   is (an overview, not a verdict) */
 .ba-forkline {
-  margin: 0 0 18px;
+  margin: 0;
   font-size: 13px;
   line-height: 1.5;
-}
-.ba-outcome,
-.ba-better {
-  margin-top: 30px;
-  padding-top: 20px;
-  border-top: 1px solid var(--border);
-}
-.ba-outcome h3,
-.ba-better h3 {
-  margin: 0 0 4px;
-  font-size: 15.5px;
-}
-.ba-outcome-note {
-  margin: 0 0 14px;
-  font-size: 12.5px;
-  line-height: 1.5;
-  color: var(--ink-soft);
 }
 
 /* ----- transition studies: how the chart becomes the tree ----- */
@@ -2018,5 +2080,17 @@ html[data-jz-instant="1"] .nv-svg {
   transition: opacity 0.5s ease 0.75s;
 }
 .nv-pour-head.nv-fade:not(.on) {
+  transition-delay: 0s;
+}
+/* and everything below the root draws only once the tiles have landed: on
+   the hand-off beat the fork-one edges — and, where the tree arrives whole,
+   the stems and leaves under the heads — hold until the heads are in */
+.nv-pour-wait.nv-fade,
+.nv-pour-wait .nv-edge,
+.nv-edge.nv-pour-wait {
+  transition-delay: 0.85s;
+}
+.nv-pour-wait.nv-fade:not(.on),
+.nv-edge.nv-pour-wait:not(.on) {
   transition-delay: 0s;
 }

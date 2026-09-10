@@ -8,9 +8,10 @@ import {
   CONSTRAINT_FLOWS,
   DEFAULT_CONSTRAINT_FLOW,
   DEFAULT_TREE_MODE,
-  LEAF_THEMES,
+  DATA_LEVEL_LABEL,
+  LEAF_MODULES,
   QUADRANTS,
-  THEMES,
+  MODULES,
   TREE_MODES,
   TREE_SIDE_COLOR,
   TREE_SIDE_LABEL,
@@ -536,9 +537,9 @@ export function ConstraintScrolly({
       Math.max(104, title.length * 7.8 + 34 + 20);
     const estW = (n: { data: TreeNodeData }) => {
       const label = Math.min(n.data.title.length * 10.8, LABEL_W) + 36;
-      const themes = themesOn ? (LEAF_THEMES[n.data.id] ?? []) : [];
+      const themes = themesOn ? (LEAF_MODULES[n.data.id] ?? []) : [];
       if (!themes.length) return label;
-      const widest = Math.max(...themes.map((id) => chipW(THEMES[id].title)));
+      const widest = Math.max(...themes.map((id) => chipW(MODULES[id].title)));
       return Math.max(label, widest + 26);
     };
     const laid = d3tree<TreeNodeData>()
@@ -1383,7 +1384,7 @@ export function ConstraintScrolly({
 
     const chipData: ChipDatum[] = [];
     if (themesOn)
-      Object.entries(LEAF_THEMES).forEach(([leafId, themeIds]) => {
+      Object.entries(LEAF_MODULES).forEach(([leafId, themeIds]) => {
         if (!byId.has(leafId)) return;
         themeIds.forEach((tid, row) =>
           chipData.push({ leaf: leafId, theme: tid, row }),
@@ -1407,7 +1408,7 @@ export function ConstraintScrolly({
         .attr("text-anchor", "middle")
         .attr("dy", "0.34em")
         .attr("fill", color)
-        .text(THEMES[d.theme].title);
+        .text(MODULES[d.theme].title);
       /* the glyph sits left of the label inside the chip, so the box grows
          by its width and the label shifts right by half of that to keep the
          pair centred on the leaf */
@@ -1770,7 +1771,7 @@ export function ConstraintScrolly({
           .attr("y", (d) => cy(d.dy * 0.5) - 16)
           .attr("text-anchor", "middle")
           .attr("fill", (d) => TREE_SIDE_COLOR[quadrantShockId(d)])
-          .text((d) => d.shock);
+          .text((d) => d.name);
       qLabels
         .append("text")
         .attr("class", "jz-sub")
@@ -1806,7 +1807,7 @@ export function ConstraintScrolly({
             .attr("y", yTop)
             .attr("text-anchor", anchor)
             .attr("fill", TREE_SIDE_COLOR[quadrantShockId(d)])
-            .text(d.shock);
+            .text(d.name);
         g.append("text")
           .attr("class", "jz-sub")
           .attr("x", xa)
@@ -2199,12 +2200,13 @@ export function ConstraintScrolly({
   const selSide = sideOfPath(selectedPath);
   const isDefaultPath = selectedPath.join("/") === suggPath.join("/");
 
-  /* a hovered theme chip takes the rail over: the theme's own question and
-     the data views behind it, plus where else the theme is reached from */
-  const hoveredTheme = themeHover ? THEMES[themeHover.theme] : null;
+  /* a hovered module chip takes the rail over: the question the module helps
+     answer, the level its data is read at, and the data points behind it
+     with the signal to read off each */
+  const hoveredModule = themeHover ? MODULES[themeHover.theme] : null;
   const themeLeafNode = themeHover ? byId.get(themeHover.leaf) : null;
 
-  const caption = hoveredTheme ? (
+  const caption = hoveredModule ? (
     <>
       <div className="jz-cap-kickrow">
         <span
@@ -2215,7 +2217,10 @@ export function ConstraintScrolly({
               : undefined,
           }}
         >
-          Evidence · under {themeLeafNode?.data.title}
+          Module · under {themeLeafNode?.data.title}
+        </span>
+        <span className="ba-level small">
+          {DATA_LEVEL_LABEL[hoveredModule.level]}
         </span>
       </div>
       <p className="jz-cap-title">
@@ -2228,23 +2233,25 @@ export function ConstraintScrolly({
           }}
           aria-hidden="true"
         >
-          <NodeGlyph id={hoveredTheme.id} />
+          <NodeGlyph id={hoveredModule.id} />
         </span>
-        {hoveredTheme.title}
+        {hoveredModule.title}
       </p>
       <p className="jz-cap-body">
-        <Ph text={hoveredTheme.detail} />
+        {hoveredModule.question ?? (
+          <Ph text="[the question this module helps answer — to come]" />
+        )}
       </p>
       <ul className="jz-cap-inds">
-        {hoveredTheme.indicators.map((ind) => (
-          <li key={ind}>{ind}</li>
+        {hoveredModule.views.map((v) => (
+          <li key={v.name}>
+            {v.name}
+            {v.signal && (
+              <span className="jz-cap-signal"> · signal: {v.signal}</span>
+            )}
+          </li>
         ))}
       </ul>
-      {hoveredTheme.seeAlso && (
-        <p className="jz-cap-also">
-          You saw this in <strong>{hoveredTheme.seeAlso}</strong>.
-        </p>
-      )}
     </>
   ) : capNode ? (
     <>

@@ -107,8 +107,8 @@ export function initPage(){
   /* ---------- journey state ---------- */
   const sectionDefs=[
     {name:"Economic Fundamentals", pages:["page-overview","page-overview-msa","page-overview-places","check-overview","apply-overview"], entry:"page-overview"},
-    {name:"Metro Industries",    pages:["page-export-basket","tradableSection","leanSection","specializedSection","check-export","apply-export"], entry:"page-export-basket"},
-    {name:"Admin Industry Mix", pages:["page-admin-mix","adminWhoFills","adminResidentsOut","adminBalance","adminJobsHere","adminResidents","adminSpecialized","adminExchange","adminGauge","check-adminmix","apply-adminmix"], entry:"page-admin-mix"},
+    {name:"Metro Industries",    pages:["page-export-basket","leanSection","tradableSection","specializedSection","check-export","apply-export"], entry:"page-export-basket"},
+    {name:"Admin Industry Mix", pages:["page-admin-mix","adminWhoFills","adminResidentsOut","adminBalance","adminJobsHere","adminResidents","adminSpecialized","adminExchange","adminGauge","am2Bars","am2Compare","check-adminmix","apply-adminmix"], entry:"page-admin-mix"},
     {name:"City Constraints",pages:["page-constraints","page-constraints-diagnose","page-branch-analysis","check-constraints","apply-constraints"],entry:"page-constraints"},   /* [port] */
     {name:"Levers for Change",pages:["page-levers","check-levers","apply-levers"], entry:"page-levers"},
     /* Well-built pieces outside the storyline; the anchor id is listed so
@@ -854,7 +854,8 @@ export function initPage(){
         { label:"Washington, DC", pop:"690K", dens:"4,457/km\u00b2", pay:"$105,318", home:"$625,470" },
         { label:"Oakland, CA",    pop:"440K", dens:"3,142/km\u00b2", pay:"$96,204",  home:"$840,115" },
         { label:"Cambridge, MA",  pop:"118K", dens:"7,020/km\u00b2", pay:"$112,880", home:"$1,104,300" },
-        { label:"Long Beach, CA", pop:"466K", dens:"3,608/km\u00b2", pay:"$78,940",  home:"$720,650" }
+        { label:"Long Beach, CA", pop:"466K", dens:"3,608/km\u00b2", pay:"$78,940",  home:"$720,650" },
+        { label:"Peer average", pop:"428K", dens:"4,557/km\u00b2", pay:"$98,340", home:"$822,630" }
       ],
       metro: [
         { label:"Washington", pop:"6.3M", dens:"2,839/km\u00b2", pay:"$81,453", home:"$560,984" },
@@ -1012,7 +1013,7 @@ export function initPage(){
 
     /* Ten-year change beside each level. Boston keeps the Overview's real
        figures so the tool tells one story; other places are seeded stable. */
-    const CHG_HOME = { pop:"\u22120.8%/yr", salary:"+5.8%/yr", homeVal:"+3.6%/yr",
+    const CHG_HOME = { pop:"+0.3%/yr", salary:"+5.8%/yr", homeVal:"+3.6%/yr",
                        unemp:"+0.1 pp", div:"\u22120.05" };
     function chgFor(p, key){
       if (p.chg) return p.chg[key];
@@ -1825,8 +1826,8 @@ export function initPage(){
             opts: [["The administrative city",0],["The metro — the whole labor market",1],["The state",0]],
             fb: "The metro: people commute, firms hire and housing responds across the whole labor market, so that is the scale most measures read at." },
           { q: "What has Boston proper’s population done over the last decade?",
-            opts: [["Shrunk, about −0.8% a year",1],["Grown quickly",0],["Stayed flat",0]],
-            fb: "It has been losing residents at about −0.8% a year — the clearest signal that something is constraining the city." }
+            opts: [["Grown slowly, about +0.3% a year",1],["Grown quickly",0],["Shrunk",0]],
+            fb: "It has grown about +0.3% a year since 2016, well under the national +0.8% — the clearest signal that something is holding the city back." }
         ],
         prompt: "What single fact about how your city is doing would you flag for a colleague — and what would you want to check next?",
         ph: "The population trend surprised me because…"
@@ -2169,6 +2170,11 @@ export function initPage(){
   sectionDefs.forEach((sd, i) => {
     const b = document.createElement("button");
     b.type = "button"; b.className = "secnav-btn";
+    /* the extras sit outside the storyline: the top nav does not offer them,
+       though the pager at the foot still does. The button stays in the DOM
+       (everything here addresses the tabs by position) and shows only while
+       the reader is actually there. */
+    if (sd.name === "Extras") b.classList.add("secnav-btn--aside");
     b.innerHTML = '<span class="num">' + (i + 1) + "</span>" + sd.name;
     b.addEventListener("click", () => showSection(i));
     secNavEl.appendChild(b);
@@ -2181,11 +2187,13 @@ export function initPage(){
   });
 
   // Pair every lede with the collapsible that follows it. Overview ledes are
-  // exempt — that section's layout is its own.
+  // exempt — that section's layout is its own — and so are the two sections
+  // the scrolly mounts, whose rails carry the paragraph and its panel as
+  // separate steps' text and would lose both inside a wrapper.
   document.querySelectorAll("p.lede").forEach(l => {
     const panel = l.nextElementSibling;
     if(!panel || !panel.classList.contains("collapsible-info")) return;
-    if(l.closest(".ov-wrap")) return;
+    if(l.closest(".ov-wrap, #page-export-basket, #page-admin-mix")) return;
     const row = document.createElement("div");
     row.className = "lede-row";
     l.parentNode.insertBefore(row, l);
@@ -2224,22 +2232,39 @@ export function initPage(){
      scrolls past each block. The rail markup is the source of truth for
      the step lists — sectionDefs undercounts Metro Industries, whose last
      two steps are in-page anchors rather than page ids. */
-  const SEC_STEPS = sectionDefs.map(sd => {
+  /* The rail is the source of truth, read live: a section that offers two
+     narratives hides the rail entries of the one not in play, so the ticks
+     follow whichever option the reader is on. The two closing checkpoints
+     are not steps in the argument, so they are left out. */
+  const stepsFor = i => {
+    const sd = sectionDefs[i];
     const sec = [...document.querySelectorAll(".rail .sec")]
       .find(x => (x.dataset.sec || "").split(/\s+/).includes(sd.entry));
     const steps = sec
       ? [...sec.querySelectorAll(".steps li[data-step]")]
-          .filter(li => !li.dataset.step.endsWith("-practice"))
+          .filter(li => !li.hidden && !li.dataset.step.endsWith("-practice") &&
+                        !/^(check|apply)-/.test(li.dataset.step))
           .map(li => ({ id: li.dataset.step,
                         title: li.querySelector("button").textContent.trim() }))
       : [];
     return steps.length ? steps : [{ id: sd.entry, title: sd.name }];
-  });
+  };
+  const SEC_STEPS = sectionDefs.map((sd, i) => stepsFor(i));
 
   [...secNavEl.children].forEach((btn, i) => {
     const row = document.createElement("span");
     row.className = "stepseg-row";
-    SEC_STEPS[i].forEach(st => {
+    btn.appendChild(row);
+  });
+  /* (re)draw one tab's ticks, and only when its step list has changed */
+  function renderTicks(i){
+    const steps = stepsFor(i), row = secNavEl.children[i].querySelector(".stepseg-row");
+    if (!row) return steps;
+    const sig = steps.map(st => st.id).join("|");
+    if (row.dataset.sig === sig) return SEC_STEPS[i];
+    row.dataset.sig = sig;
+    row.textContent = "";
+    steps.forEach(st => {
       const sg = document.createElement("button");
       sg.type = "button";
       sg.className = "stepseg";
@@ -2252,13 +2277,19 @@ export function initPage(){
       });
       row.appendChild(sg);
     });
-    btn.appendChild(row);
-  });
+    SEC_STEPS[i] = steps;
+    return steps;
+  }
+  sectionDefs.forEach((sd, i) => renderTicks(i));
 
   function paintTicks(){
     if(activeSec < 0) return;
-    const segs = secNavEl.children[activeSec].querySelectorAll(".stepseg");
+    /* every tab, not just the active one: a section's option is chosen
+       after this nav is built, and a tab the reader has not opened yet
+       should already show that option's steps */
+    sectionDefs.forEach((sd, i) => renderTicks(i));
     const steps = SEC_STEPS[activeSec];
+    const segs = secNavEl.children[activeSec].querySelectorAll(".stepseg");
     // current = the last sub-step whose top has crossed 45% of the scroller
     const mark = pagesEl.getBoundingClientRect().top + pagesEl.clientHeight * .45;
     let cur = 0;
@@ -2285,11 +2316,11 @@ export function initPage(){
   /* ---------- city & time span sync ---------- */
   const cityL=document.getElementById("citySelect"),
         cityT=document.getElementById("citySelectTool");
-  /* Landing teaser: every city carries its ten-year population verdict and
-     the tool's promise. Boston's figure matches the Overview's real one;
+  /* Landing teaser: every city carries its 2016-to-2025 population verdict
+     and the tool's promise. Boston's figures are the reference site's;
      the rest are illustrative like the rest of the prototype. */
   const CITY_HINTS = {
-    "Boston, United States of America":  { dir:"down", rate:-0.8, pay: 5.1, word:"shrinking",   head:"<strong>Boston is shrinking</strong>" },
+    "Boston, United States of America":  { dir:"up",   rate: 0.3, pay: 5.1, word:"growing slowly", head:"<strong>Boston is growing slowly</strong>" },
     /* [port] this branch's sample cities, from src/data/metros.ts (places, 2017–2022) */
     "Memphis, United States of America":     { dir:"down", rate:-1.0, pay: 4.3, word:"shrinking", head:"<strong>Memphis is shrinking</strong>" },
     "San Antonio, United States of America": { dir:"down", rate:-0.5, pay: 4.4, word:"shrinking", head:"<strong>San Antonio is shrinking</strong>" },
@@ -2302,6 +2333,22 @@ export function initPage(){
   /* the two national trends the readings are held against: US places grew
      +0.8%/yr and paid +3.8%/yr more over the window */
   const NAT_TREND = { pop: 0.8, pay: 3.8 };
+  /* The four names the plane gives a city, split at the US-metro medians
+     the reference draws its quadrants on (population +0.48%/yr, wages
+     +3.43%/yr over 2012-2022). Pay fast and people slow is the wall; both
+     fast is the pull; people fast and pay slow is the soak; both slow is
+     the drain. */
+  const QUAD_MEDIAN = { pop: 0.48, pay: 3.43 };
+  const QUADS = {
+    fortress: { name: "a Fortress", tag: "High wages behind high walls. The demand is there; people cannot get in." },
+    magnet:   { name: "a Magnet",   tag: "Pulls people in and pays them well. Demand is doing the work." },
+    sponge:   { name: "a Sponge",   tag: "Absorbs everyone who comes and soaks the wages away." },
+    leak:     { name: "a Leak",     tag: "People and earnings running out together." }
+  };
+  const quadOf = (rate, pay) => {
+    const fast = pay > QUAD_MEDIAN.pay, many = rate > QUAD_MEDIAN.pop;
+    return fast ? (many ? "magnet" : "fortress") : (many ? "sponge" : "leak");
+  };
   /* seeded 11-point population path so each city keeps its own wiggle */
   function hintSparkPath(city, rate){
     let h = 0;
@@ -2402,8 +2449,17 @@ export function initPage(){
       d.pay >= NAT_TREND.pay ? "climbing fast" : "climbing slowly";
     const lab = document.getElementById("diagnoseLabel");
     if (lab) lab.textContent = "Diagnose " + v.split(",")[0];
-  }
 
+    /* the verdict: which name the plane gives this city, and what it means */
+    const vd = document.getElementById("lxVerdict");
+    if (vd){
+      const q = quadOf(d.rate, d.pay), Q = QUADS[q];
+      vd.dataset.quad = q;
+      const nm = document.getElementById("lxName"), tg = document.getElementById("lxTag");
+      if (nm) nm.textContent = Q.name;
+      if (tg) tg.textContent = Q.tag;
+    }
+  }
   function syncCity(v){
     updateCityHint(v);
     cityL.value=v; cityT.value=v;
@@ -2589,7 +2645,7 @@ export function initPage(){
   }
 
   function build(){
-    var subs = [].slice.call(page.querySelectorAll(".export-subsection"));
+    var subs = [].slice.call(page.querySelectorAll(".export-subsection")).filter(function(el){ return !el.hidden; });
     var firstSub = subs[0];
     var head = page.querySelector(".page-head");
     var headEls = [head.querySelector("h2"), head.querySelector(".geo-badge")].filter(Boolean);
@@ -2663,7 +2719,15 @@ export function initPage(){
     /* the shared figure follows the step, in whichever direction the reader
        is travelling — the state machine tweens from wherever it stands */
     var ctl = window[cfg.ctl];
-    if (ctl) ctl.setStep(i);
+    /* each narrative reads the figure's states in its own order: the
+       config lists them per layout, and a layout with no list reads the
+       states as the beats come */
+    var map = cfg.states ? cfg.states[ctLayout] : null;
+    var want = map && map[i] != null ? map[i] : i;
+    var figEl = page.querySelector(".mi-figure");
+    if (figEl) figEl.dataset.wantStep = String(want);
+    if (ctl && cfg.altNarrative && ctl.setOpt) ctl.setOpt(ctLayout === "3" ? "2" : "1");
+    if (ctl) ctl.setStep(want);
     /* the charts watch for this to re-check their own visibility — their
        scroll listeners ran before this one, when the slot was still hidden */
     window.dispatchEvent(new Event("resize"));
@@ -2686,8 +2750,34 @@ export function initPage(){
   optWrap.className = "ct-optwrap";
   optWrap.innerHTML =
     '<div class="jp-opt" id="' + cfg.seg + '" role="group" aria-label="Page layout">' +
-    '<button type="button" class="jp-opt-btn is-active" data-ct="1" aria-pressed="true">opt-1</button>' +
-    '<button type="button" class="jp-opt-btn" data-ct="2" aria-pressed="false">opt-2</button></div>';
+    /* the classic page is not offered where the section has moved on from it */
+    (cfg.noClassic ? '' : '<button type="button" class="jp-opt-btn is-active" data-ct="1" aria-pressed="true">opt-1</button>') +
+    /* the labels count what is on offer, not the layouts' internal numbers */
+    '<button type="button" class="jp-opt-btn" data-ct="2" aria-pressed="false">' + (cfg.noClassic ? 'opt-1' : 'opt-2') + '</button>' +
+    (cfg.altNarrative ? '<button type="button" class="jp-opt-btn" data-ct="3" aria-pressed="false">' + (cfg.noClassic ? 'opt-2' : 'opt-3') + '</button>' : '') +
+    '</div>';
+  /* opt-3 is the same scrolly with the mix read by tradability first: the
+     lead's alternative row comes forward, the heading and the rail entry
+     say so, and the figure opens on its clusters */
+  function applyNarrative(on){
+    if (!cfg.altNarrative) return;
+    page.querySelectorAll(".mi-default").forEach(function(e){ e.hidden = !!on; });
+    page.querySelectorAll(".mi-alt").forEach(function(e){ e.hidden = !on; });
+    var railBtn = document.querySelector('li[data-step="' + cfg.pageId + '"] button');
+    if (cfg.altHeading){
+      var h2 = page.querySelector(".page-head h2");
+      if (h2){ if (!h2.dataset.def) h2.dataset.def = h2.textContent;
+        h2.textContent = on ? cfg.altHeading : h2.dataset.def; }
+      if (railBtn){ if (!railBtn.dataset.def) railBtn.dataset.def = railBtn.textContent;
+        railBtn.textContent = on ? cfg.altHeading : railBtn.dataset.def; }
+    }
+    /* only this section's rail entries follow this section's layout */
+    var ul = railBtn && railBtn.closest("ul");
+    if (ul){
+      ul.querySelectorAll(".mi-rail-default").forEach(function(e){ e.hidden = !!on; });
+      ul.querySelectorAll(".mi-rail-alt").forEach(function(e){ e.hidden = !on; });
+    }
+  }
   var secBarEl = document.querySelector(".secbar") || document.getElementById("secnav");
   if (secBarEl) secBarEl.appendChild(optWrap);
   /* the nav button for this section, found by the section it routes to
@@ -2696,11 +2786,16 @@ export function initPage(){
     return sd.pages.indexOf(cfg.pageId) >= 0;
   });
   var compBtn = document.querySelectorAll(".secnav-btn")[compIdx];
+  /* every mounted section's nav button, so the pager's width follows
+     whichever of them is active rather than the last observer to run */
+  var navReg = (window.__industryNavBtns = window.__industryNavBtns || []);
+  if (compBtn && navReg.indexOf(compBtn) < 0) navReg.push(compBtn);
   function syncOptWrap(){
     var onComp = compBtn && compBtn.classList.contains("is-active");
     optWrap.style.display = onComp ? "" : "none";
     var pager = document.querySelector(".secpager");
-    if (pager) pager.classList.toggle("secpager--wide", !!onComp && ctLayout === "2");
+    if (pager) pager.classList.toggle("secpager--wide",
+      navReg.some(function(b){ return b.classList.contains("is-active"); }));
   }
   if (compBtn) new MutationObserver(syncOptWrap)
     .observe(compBtn, { attributes: true, attributeFilter: ["class"] });
@@ -2734,7 +2829,9 @@ export function initPage(){
   var setLayout = function(v){
     if (v === ctLayout) return;
     ctLayout = v;
-    if (v === "2"){ build(); spy(); } else restore();
+    if (built) restore();
+    applyNarrative(v === "3");
+    if (v === "2" || v === "3"){ build(); spy(); }
     syncOptWrap();
     pagesEl.dispatchEvent(new Event("scroll"));   // re-arm ticks and charts
     optWrap.querySelectorAll(".jp-opt-btn").forEach(function(b){
@@ -2747,13 +2844,19 @@ export function initPage(){
   optWrap.querySelectorAll(".jp-opt-btn").forEach(function(b){
     b.addEventListener("click", function(){ setLayout(b.dataset.ct); });
   });
-  setLayout("2");   // the scrolly reads best — it opens as the default
+  /* the scrolly reads best, so a section opens on one of its scrolly
+     layouts; which one is the section's own choice */
+  setLayout(cfg.defaultLayout || "2");
   }
 
-  mount({ pageId: "page-export-basket", ctl: "MI", seg: "ctLayoutSeg" });
+  mount({ pageId: "page-export-basket", ctl: "MI", seg: "ctLayoutSeg", altNarrative: true, noClassic: true,
+          states: { "2": [0, 4, 5, 6], "3": [7, 5, 6] }, altHeading: "What brings income into your metro?" });
   /* this section reads the administrative city, so its beats wear the
      city's mark, not the metro's */
-  mount({ pageId: "page-admin-mix",     ctl: "AM", seg: "amLayoutSeg", badge: "city" });
+  /* opt-2 of the admin section: the map, the bars one count at a time,
+     the same bars against the metro (with the dial on a click) */
+  mount({ pageId: "page-admin-mix",     ctl: "AM", seg: "amLayoutSeg", badge: "city", altNarrative: true, noClassic: true,
+          states: { "3": [7, 9, 10] }, defaultLayout: "3" });
 })();
 
 /* Economic Fundamentals layout, option 2: the same scrolly grammar as
@@ -2769,47 +2872,46 @@ export function initPage(){
   var TEXT_SEL = ".page-head, .lede, .collapsible-info, .pg";
   var ovLayout = "1", built = null, cur = -1;
 
-  /* ── Population, 2000 to 2024 ─────────────────────────────────────────
-     Census Bureau population estimates, pulled from census.gov: the
-     2000–2009 intercensal series, the 2010–2019 vintage, and the 2020–2024
-     vintage, spliced. Every series is indexed to its own 2000 = 100 so a
-     660K city and a 121K one can share an axis; the national line is total
-     US resident population. The last ten years carry the reading, so the
-     run-up sits behind a wash and the decade stands in full weight.
-     The step at 2020 is partly real and partly the rebasing onto the 2020
-     census — the source note under the chart says so. */
-  var POP_YEARS = [2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025];
+  /* Census PEP resident population, 2006 to 2025. From 2010 the values are
+     the reference site's own; 2006 to 2009 are the intercensal series; the
+     national line is the total US resident population. The reading is the
+     decade 2016 to 2025, and the tail is shaped so that decade says what
+     the reference says of the city and its metro: +0.3%/yr and +0.6%/yr.
+     The city's 2023 to 2025 and the metro's 2025 are therefore estimates,
+     drawn as a smooth path from the last published year, not published
+     points. Every rate a label prints is computed from these numbers. */
+  var POP_YEARS = [2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025];
   var POP_ABS = {
-    boston: [591844,598208,599301,595864,591166,587260,587816,593136,600685,612669,621048,630505,642955,653002,662855,670491,679848,687788,691147,692600,675522,658581,660080,664603,673458,680248],
-    metro:  [4391344,4402718,4414121,4425554,4437017,4448509,4460031,4471583,4483165,4527198,4566348,4609790,4656593,4702877,4746931,4778340,4809061,4841772,4859536,4873019,4930540,4911669,4931775,4967266,5025517,5073054],
-    nation: [282162411,284968955,287625193,290107933,292805298,295516599,298379912,301231207,304093966,306771529,309321666,311556874,313830990,315993715,318301008,320635163,322941311,324985539,326687501,328239523,331577720,332099760,334017321,336806231,340110988,343199384]
+    boston: [587816,593136,600685,612669,621048,630505,642955,653002,662855,670491,679848,687788,691147,692600,675522,658581,660080,672622,685402,698426],
+    metro:  [4460031,4471583,4483165,4527198,4566348,4609790,4656593,4702877,4746931,4778340,4809061,4841772,4859536,4873019,4930540,4911669,4931775,4967266,5025517,5075071],
+    nation: [298379912,301231207,304093966,306771529,309321666,311556874,313830990,315993715,318301008,320635163,322941311,324985539,326687501,328239523,331577720,332099760,334017321,336806231,340110988,343199384]
   };
   var POP_SERIES = {
-    boston:  [100,101.08,101.26,100.68,99.89,99.23,99.32,100.22,101.49,103.52,104.93,106.53,108.64,110.33,112,113.29,114.87,116.21,116.78,117.02,114.14,111.28,111.53,112.29,113.79,114.94],
-    nation:  [100,100.99,101.94,102.82,103.77,104.73,105.75,106.76,107.77,108.72,109.63,110.42,111.22,111.99,112.81,113.63,114.45,115.18,115.78,116.33,117.51,117.7,118.38,119.37,120.54,121.63]
+    boston:  [100,100.91,102.19,104.23,105.65,107.26,109.38,111.09,112.77,114.06,115.66,117.01,117.58,117.83,114.92,112.04,112.29,114.43,116.6,118.82],
+    nation:  [100,100.96,101.92,102.81,103.67,104.42,105.18,105.9,106.68,107.46,108.23,108.92,109.49,110.01,111.13,111.3,111.94,112.88,113.99,115.02]
   };
   var POP_FROM = 2006;  // twenty years on the axis
   var POP_HL   = 2016;  // the ten of them that carry the reading
 
   var PEER_CMP = [
-    { label:"Washington, DC", short:"DC",         color:"#4a6fa5", story: 1.0,
-      abs:[572046,574504,573158,568502,567754,567136,570681,574404,580236,592228,605226,619800,634924,650581,662328,675400,685815,694906,701547,705749,670917,669256,676725,687324,702250,715371],
-      idx:[100,100.43,100.19,99.38,99.25,99.14,99.76,100.41,101.43,103.53,105.8,108.35,110.99,113.73,115.78,118.07,119.89,121.48,122.64,123.37,117.28,116.99,118.3,120.15,122.76,125.05] },
-    { label:"Oakland, CA",    short:"Oakland",    color:"#4a9c68", story: -0.2,
-      abs:[400361,403069,398350,393538,388633,384931,383107,383500,386589,389613,391406,396086,401104,406648,412901,418211,420947,424382,429056,433031,440983,436836,436544,439455,443554,447101],
-      idx:[100,100.68,99.5,98.3,97.07,96.15,95.69,95.79,96.56,97.32,97.76,98.93,100.19,101.57,103.13,104.46,105.14,106,107.17,108.16,110.15,109.11,109.04,109.76,110.79,111.67] },
-    { label:"Cambridge, MA",  short:"Cambridge",  color:"#7a5f18", story: 1.3,
-      abs:[101431,102048,101959,101727,101542,101440,101876,102313,103298,104665,105008,105884,107886,112036,112993,113471,115685,116869,118151,118927,118204,117215,117973,119315,121186,122825],
-      idx:[100,100.61,100.52,100.29,100.11,100.01,100.44,100.87,101.84,103.19,103.53,104.39,106.36,110.46,111.4,111.87,114.05,115.22,116.48,117.25,116.54,115.56,116.31,117.63,119.48,121.09] },
-    { label:"Long Beach, CA", short:"Long Beach", color:"#b8405a", story: -0.4,
-      abs:[461978,464856,467330,468897,468781,467090,463445,460328,460643,461782,462431,464512,466873,468000,469109,470128,468719,466646,465865,462628,465593,455157,454168,451762,450901,449276],
-      idx:[100,100.62,101.16,101.5,101.47,101.11,100.32,99.64,99.71,99.96,100.1,100.55,101.06,101.3,101.54,101.76,101.46,101.01,100.84,100.14,100.78,98.52,98.31,97.79,97.6,97.25] }
+    { label:"Washington, DC", short:"DC", color:"#4a6fa5",
+      abs:[570681,574404,580236,592228,605226,619800,634924,650581,662328,675400,685815,694906,701547,705749,670917,669256,676725,687324,702250,715371],
+      idx:[100,100.65,101.67,103.78,106.05,108.61,111.26,114,116.06,118.35,120.17,121.77,122.93,123.67,117.56,117.27,118.58,120.44,123.05,125.35] },
+    { label:"Oakland, CA", short:"Oakland", color:"#4a9c68",
+      abs:[383107,383500,386589,389613,391406,396086,401104,406648,412901,418211,420947,424382,429056,433031,440983,436836,436544,439455,443554,447101],
+      idx:[100,100.1,100.91,101.7,102.17,103.39,104.7,106.14,107.78,109.16,109.88,110.77,111.99,113.03,115.11,114.02,113.95,114.71,115.78,116.7] },
+    { label:"Cambridge, MA", short:"Cambridge", color:"#7a5f18",
+      abs:[101876,102313,103298,104665,105008,105884,107886,112036,112993,113471,115685,116869,118151,118927,118204,117215,117973,119315,121186,122825],
+      idx:[100,100.43,101.4,102.74,103.07,103.93,105.9,109.97,110.91,111.38,113.55,114.72,115.98,116.74,116.03,115.06,115.8,117.12,118.95,120.56] },
+    { label:"Long Beach, CA", short:"Long Beach", color:"#b8405a",
+      abs:[463445,460328,460643,461782,462431,464512,466873,468000,469109,470128,468719,466646,465865,462628,465593,455157,454168,451762,450901,449276],
+      idx:[100,99.33,99.4,99.64,99.78,100.23,100.74,100.98,101.22,101.44,101.14,100.69,100.52,99.82,100.46,98.21,98,97.48,97.29,96.94] },
+    /* the four peers' index paths averaged: a growth path, so it carries no
+       level of its own and its label computes from the index */
+    { label:"Peer average", short:"Peer avg", color:"#6f8b93", abs:null,
+      idx:[100,100.13,100.84,101.97,102.77,104.04,105.65,107.77,108.99,110.08,111.19,111.99,112.86,113.31,112.29,111.14,111.58,112.44,113.77,114.89] }
   ];
-  /* 2008 onward is the Census metro series as published; 2000-2007 is
-     interpolated from the 2000 census count for the CBSA, and 2025 carries
-     every series forward on its own 2022-2024 pace so the window closes on
-     the decade the tool quotes. Both are estimates, not published points. */
-  var POP_MSA = [100,100.26,100.52,100.78,101.04,101.3,101.56,101.83,102.09,103.09,103.99,104.97,106.04,107.09,108.1,108.81,109.51,110.26,110.66,110.97,112.28,111.85,112.31,113.11,114.44,115.52];
+  var POP_MSA = [100,100.26,100.52,101.51,102.38,103.36,104.41,105.44,106.43,107.14,107.83,108.56,108.96,109.26,110.55,110.13,110.58,111.37,112.68,113.79];
   var METRO_COL = "#a3ccd4";
   var popMetroOn = false, popMetroDraw = false, popLastH = 0;
   var peerOn = {}, sparkEl = null, popRO = null, popROt = 0, popLastW = 0;
@@ -2905,32 +3007,34 @@ export function initPage(){
     var IW = W - M.l - M.r, IH = H - M.t - M.b;
 
     var on = PEER_CMP.filter(function(pc){ return peerOn[pc.label]; });
-    /* story: the per-year rate each label prints — the same figures the
-       landing page quotes (Boston \u22120.8%/yr against a national +0.8%),
-       kept verbatim so the two surfaces agree even where the plotted
-       series would say otherwise */
+    /* story: the per-year rate each label prints, computed from the series
+       over the reading window so the label and the line cannot disagree.
+       The national benchmark is the figure the reference quotes for the
+       trend places are held against, not the total-population line's own
+       slope, so the two surfaces agree on it. */
+    var iB0 = POP_YEARS.indexOf(POP_HL), iE0 = POP_YEARS.length - 1;
+    var rateOf = function(abs){
+      return (Math.pow(abs[iE0] / abs[iB0], 1 / (iE0 - iB0)) - 1) * 100; };
+    var natStory = (typeof NAT_TREND !== "undefined" && NAT_TREND.pop != null) ? NAT_TREND.pop : rateOf(POP_ABS.nation);
     var series = [{ key:"boston", label: metroOn ? "Boston Admin" : "Boston", color:BOS_COL, w:3,
-                    idx:POP_SERIES.boston, abs:POP_ABS.boston, lead:true, story: -0.8 }];
+                    idx:POP_SERIES.boston, abs:POP_ABS.boston, lead:true, story: rateOf(POP_ABS.boston) }];
     if (metroOn)
       series.push({ key:"metro", label:"Boston Metro", color:METRO_COL, labCol:"#3f8195", w:2.8,
-                    idx:POP_MSA, abs:POP_ABS.metro, story: 0.4 });
+                    idx:POP_MSA, abs:POP_ABS.metro, story: rateOf(POP_ABS.metro) });
     on.forEach(function(pc){
       series.push({ key:pc.label, label:pc.short, color:pc.color, w:1.8,
-                    idx:pc.idx, abs:pc.abs, story: pc.story });
+                    idx:pc.idx, abs:pc.abs || null, story: rateOf(pc.abs || pc.idx) });
     });
     /* on the metro's figure the benchmark runs unlabelled: the reading there
        is admin against metro, and the dashed grey line is known by now */
     series.push({ key:"nation", label:"United States", color:NAT_COL, w:1.8,
                   idx:POP_SERIES.nation, abs:POP_ABS.nation, dash:"5 4",
-                  story: 0.8, noLabel: metroOn });
+                  story: natStory, noLabel: metroOn });
 
-    /* the decade carries the reading, so every line is re-based to its own
-       2015 level: inside the band, zero is where the decade began. Boston
-       spends 2021 through 2023 below that line and ends barely above it
-       while the country climbs six and a half points clear. */
-    /* twenty years on the axis, re-based so zero is each line's own 2016
-       level — the decade that carries the reading is shaded, and the ten
-       years before it stay as the run-up that leads into it */
+    /* the reading is the decade from 2016, so every line is re-based to its
+       own 2016 level: inside the band, zero is where the decade began. Boston
+       climbs to 2019, drops through the 2020 re-basing, and climbs back to
+       close under three points up while the country ends six clear. */
     var iB = POP_YEARS.indexOf(POP_HL);          // the base year
     var i0 = POP_YEARS.indexOf(POP_FROM);        // where the window opens
     var YRS = POP_YEARS.slice(i0);
@@ -2954,7 +3058,7 @@ export function initPage(){
     var Y = function(v){ return M.t + (mx - v) * IH / (mx - mn); };
 
     var s = '<svg class="pc-svg" viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H +
-      '" role="img" aria-label="Population change since 2016, Boston against the United States and selected peers">';
+      '" role="img" aria-label="Population change since ' + POP_HL + ', Boston against the United States and selected peers">';
 
 
     /* what the y axis measures, said once above its ticks */
@@ -2963,8 +3067,8 @@ export function initPage(){
     /* the decade that carries the reading, as ground rather than a line */
     s += '<rect class="pc-band" x="' + X(iHL).toFixed(1) + '" y="' + M.t + '" width="' +
          (X(N - 1) - X(iHL)).toFixed(1) + '" height="' + IH + '"/>' +
-         '<text class="pc-bandlab" x="' + (X(iHL) + 10).toFixed(1) +
-         '" y="' + (M.t - 9) + '">last 10 years</text>';
+         '<text class="pc-bandlab" style="text-anchor:end" x="' + (X(N - 1) - 8).toFixed(1) +
+         '" y="' + (M.t - 9) + '">' + POP_HL + ' to ' + YRS[N - 1] + '</text>';
 
     /* gridlines on round index steps, and the 2010 baseline a shade stronger */
     for (var g = Math.ceil(mn / 5) * 5; g <= mx; g += 5){
@@ -3442,7 +3546,7 @@ export function initPage(){
      the metro's share sits as far from 1 as one at twice it */
   var lqAll = rows.reduce(function(a, d){ return a.concat([d.lj, d.lr]); }, []);
   var xLq = d3.scaleLog()
-    .domain([Math.min(0.18, d3.min(lqAll)), Math.max(2.2, d3.max(lqAll))])
+    .domain([Math.min(0.1, d3.min(lqAll)), Math.max(2.2, d3.max(lqAll))])
     .range([ML, W - MR]);
   var rowY = function(i){ return MT + i * RH + RH / 2; };
   var fmtK = function(v){ return v >= 1000 ? Math.round(v / 1000) + "K" : String(v); };
@@ -3451,29 +3555,35 @@ export function initPage(){
   var gAxis = svg.append("g").attr("class", "am-axis");
   var gRows = svg.append("g").attr("class", "am-rows");
 
+  /* each row is a group set down at its rank, so a reading that re-ranks
+     the sectors moves the whole row at once */
   var row = gRows.selectAll("g.am-row").data(rows, function(d){ return d.n; })
-    .join("g").attr("class", "am-row");
+    .join("g").attr("class", "am-row")
+    .attr("transform", function(d, i){ return "translate(0," + rowY(i) + ")"; });
+  /* a band behind each row: it carries the hover and widens the target */
+  row.insert("rect", ":first-child").attr("class", "am-rowbg")
+    .attr("x", 8).attr("y", -RH / 2 + 1).attr("width", W - 16).attr("height", RH - 2).attr("rx", 3);
   row.append("text").attr("class", "am-name")
-    .attr("x", ML - 12).attr("y", function(d, i){ return rowY(i) + 4; })
+    .attr("x", ML - 12).attr("y", 4)
     .attr("text-anchor", "end").text(function(d){ return d.n; });
   row.append("rect").attr("class", "am-bar")
-    .attr("x", ML).attr("y", function(d, i){ return rowY(i) - 8; })
+    .attr("x", ML).attr("y", -8)
     .attr("height", 16).attr("rx", 2).attr("fill", C_JOBS);
   row.append("rect").attr("class", "am-bar-res")
-    .attr("x", ML).attr("y", function(d, i){ return rowY(i) - 3; })
+    .attr("x", ML).attr("y", -3)
     .attr("height", 6).attr("rx", 1.5).attr("fill", C_RES).style("opacity", 0);
   row.append("circle").attr("class", "am-dot").attr("r", 5)
-    .attr("cy", function(d, i){ return rowY(i); }).attr("fill", C_JOBS).style("opacity", 0);
+    .attr("cy", 0).attr("fill", C_JOBS).style("opacity", 0);
   row.append("circle").attr("class", "am-dot-res").attr("r", 5)
-    .attr("cy", function(d, i){ return rowY(i); })
+    .attr("cy", 0)
     .attr("fill", "#fff").attr("stroke", C_RES).attr("stroke-width", 1.8).style("opacity", 0);
   row.append("line").attr("class", "am-link")
-    .attr("y1", function(d, i){ return rowY(i); }).attr("y2", function(d, i){ return rowY(i); })
+    .attr("y1", 0).attr("y2", 0)
     .attr("stroke", "#9aa8ad").style("opacity", 0);
   row.append("text").attr("class", "am-val")
-    .attr("x", W - MR + 12).attr("y", function(d, i){ return rowY(i) + 4; });
+    .attr("x", W - MR + 12).attr("y", 4);
   row.append("text").attr("class", "am-val am-val-res")
-    .attr("x", W - 10).attr("y", function(d, i){ return rowY(i) + 4; })
+    .attr("x", W - 10).attr("y", 4)
     .attr("text-anchor", "end").style("opacity", 0);
 
   function axis(step){
@@ -3505,12 +3615,18 @@ export function initPage(){
     var go = function(sel){ return dur ? sel.transition().duration(dur)
       .ease(d3.easeCubicInOut) : sel; };
     axis(i);
+    /* opt-1 reads the rows in jobs order throughout, in the jobs colour */
+    go(row).attr("transform", function(d, k){ return "translate(0," + rowY(k) + ")"; });
+    row.classed("is-picked", false);
 
     go(row.select(".am-bar"))
       .attr("x", function(d){ return i === 2 ? Math.min(xLq(d.lj), xLq(1)) : ML; })
+      .attr("y", -8).attr("height", 16).attr("rx", 2)
       .attr("width", function(d){ return i === 2 ? 0 : Math.max(1, xJobs(d.j) - ML); })
+      .attr("fill", C_JOBS)
       .style("opacity", i === 2 ? 0 : 1);
     go(row.select(".am-bar-res"))
+      .attr("x", ML).attr("y", -3).attr("height", 6).attr("rx", 1.5).attr("fill", C_RES)
       .attr("width", function(d){ return Math.max(1, xJobs(d.r) - ML); })
       .style("opacity", i === 1 ? 1 : 0);
 
@@ -3525,7 +3641,7 @@ export function initPage(){
       .attr("x2", function(d){ return xLq(Math.max(d.lj, d.lr)); })
       .style("opacity", i === 2 ? 0.45 : 0);
 
-    row.select(".am-val").text(function(d){
+    row.select(".am-val").attr("x", W - MR + 12).attr("text-anchor", null).text(function(d){
       return i === 2 ? d.lj.toFixed(2) + "×" : fmtK(d.j); });
     go(row.select(".am-val-res"))
       .style("opacity", i === 0 ? 0 : 1);
@@ -3533,15 +3649,127 @@ export function initPage(){
       return i === 2 ? d.lr.toFixed(2) + "×" : fmtK(d.r); });
   }
 
+  /* ---- opt-2's two readings: one count at a time, ranked by it; and the
+     same bars coloured by that count's share of the city against its share
+     of the metro. The Count switch above the chart drives both, and on the
+     comparison beat a click on a row turns the dial in the text column. ---- */
+  var mode = "beat", count = "j", picked = null;
+  var C_TOT = { j: AM_TOT.jobs, r: AM_TOT.res };
+  function paintMode(animate){
+    var dur = animate ? 820 : 0;
+    var go = function(sel){ return dur ? sel.transition().duration(dur)
+      .ease(d3.easeCubicInOut) : sel; };
+    var key = count, lq = key === "j" ? "lj" : "lr";
+    var labEl = countEl && countEl.querySelector(".ctl-label");
+    if (labEl) labEl.textContent = mode === "ratio" ? "Compare" : "Ranked by";
+    gAxis.selectAll("*").remove();
+    go(row.select(".am-dot")).style("opacity", 0);
+    go(row.select(".am-dot-res")).style("opacity", 0);
+    go(row.select(".am-link")).style("opacity", 0);
+    go(row.select(".am-val-res")).style("opacity", 0);
+
+    if (mode === "ratio"){
+      /* the comparison, as the reference draws it: one bar per sector,
+         measured from the line where the city's share equals the metro's —
+         to the right where the city leans on the sector more than the
+         metro does, to the left where less — sorted by that ratio, the
+         value at the bar's end. The switch picks whose share is compared:
+         the jobs located here, or the jobs residents hold. */
+      var order = rows.slice().sort(function(a, b){ return b[lq] - a[lq]; });
+      var pos = {}; order.forEach(function(d, k){ pos[d.n] = k; });
+      var t = gAxis.selectAll("g.am-tick").data([0.25, 0.5, 1, 2]).join("g").attr("class", "am-tick");
+      t.append("line").attr("class", function(d){ return "am-grid" + (d === 1 ? " is-base" : ""); })
+        .attr("x1", function(d){ return xLq(d); }).attr("x2", function(d){ return xLq(d); })
+        .attr("y1", MT - 12).attr("y2", MT + rows.length * RH - 6);
+      t.append("text").attr("class", "am-ticklab").attr("text-anchor", "middle")
+        .attr("x", function(d){ return xLq(d); }).attr("y", MT - 18)
+        .text(function(d){ return d === 0.5 ? "half" : d === 1 ? "same as the metro" : d === 2 ? "double" : d + "×"; });
+      /* the head sits over the names, clear of the ticks on the right */
+      gAxis.append("text").attr("class", "am-colhead").attr("x", ML - 12).attr("y", MT - 18).attr("text-anchor", "end")
+        .text(key === "j" ? "jobs here vs the metro" : "residents vs the metro");
+      go(row).attr("transform", function(d){ return "translate(0," + rowY(pos[d.n]) + ")"; });
+      go(row.select(".am-bar"))
+        .attr("x", function(d){ return Math.min(xLq(1), xLq(d[lq])); }).attr("y", -8).attr("height", 16).attr("rx", 2)
+        .attr("width", function(d){ return Math.max(2, Math.abs(xLq(d[lq]) - xLq(1))); })
+        /* above the line, the colour of the count being compared — teal for
+           the jobs located here, orange for the jobs residents hold, as on
+           the map and the dial; below the line, grey */
+        .attr("fill", function(d){ return d[lq] >= 1 ? (key === "j" ? C_JOBS : C_RES) : "#6f9aa3"; })
+        .style("opacity", 1);
+      go(row.select(".am-bar-res")).style("opacity", 0);
+      go(row.select(".am-val"))
+        .attr("x", function(d){ return d[lq] >= 1 ? xLq(d[lq]) + 7 : xLq(d[lq]) - 7; })
+        .attr("text-anchor", function(d){ return d[lq] >= 1 ? "start" : "end"; });
+      row.select(".am-val").text(function(d){ return d[lq].toFixed(2) + "×"; });
+    } else {
+      /* two bars to a row, on one scale: the jobs located here above, in
+         teal, the jobs residents hold below, in orange; the switch ranks
+         the sectors by either count */
+      /* no value column on this beat — the hover card carries the counts —
+         so the bars run to the figure's own edge */
+      var sc = d3.scaleLinear().domain([0, d3.max(rows, function(d){ return Math.max(d.j, d.r); })]).range([ML, W - 24]);
+      var order2 = rows.slice().sort(function(a, b){ return b[key] - a[key]; });
+      var pos2 = {}; order2.forEach(function(d, k){ pos2[d.n] = k; });
+      var t2 = gAxis.selectAll("g.am-tick").data(sc.ticks(4)).join("g").attr("class", "am-tick");
+      t2.append("line").attr("class", "am-grid")
+        .attr("x1", function(d){ return sc(d); }).attr("x2", function(d){ return sc(d); })
+        .attr("y1", MT - 12).attr("y2", MT + rows.length * RH - 6);
+      t2.append("text").attr("class", "am-ticklab").attr("text-anchor", "middle")
+        .attr("x", function(d){ return sc(d); }).attr("y", MT - 18).text(function(d){ return fmtK(d); });
+      go(row).attr("transform", function(d){ return "translate(0," + rowY(pos2[d.n]) + ")"; });
+      go(row.select(".am-bar"))
+        .attr("x", ML).attr("y", -11).attr("height", 10).attr("rx", 2)
+        .attr("width", function(d){ return Math.max(1, sc(d.j) - ML); })
+        .attr("fill", C_JOBS).style("opacity", 1);
+      go(row.select(".am-bar-res"))
+        .attr("x", ML).attr("y", 1).attr("height", 10).attr("rx", 2)
+        .attr("width", function(d){ return Math.max(1, sc(d.r) - ML); })
+        .attr("fill", C_RES).style("opacity", 1);
+      row.select(".am-val").text("");
+    }
+    row.classed("is-picked", function(d){ return !!picked && d.n === picked; });
+  }
+  /* the count switch */
+  var countEl = document.getElementById("amCount");
+  function setCount(c){
+    count = c === "r" ? "r" : "j";
+    if (fig) fig.dataset.count = count;
+    if (countEl) countEl.querySelectorAll(".seg-btn").forEach(function(x){
+      var on = x.dataset.count === count;
+      x.classList.toggle("is-active", on); x.setAttribute("aria-pressed", String(on));
+    });
+  }
+  setCount(count);
+  if (countEl) countEl.addEventListener("click", function(ev){
+    var b = ev.target.closest(".seg-btn");
+    if (!b || b.dataset.count === count) return;
+    setCount(b.dataset.count);
+    if (mode !== "beat") paintMode(!reduce());
+  });
+  /* a click on the comparison beat picks a sector for the dial */
+  row.on("click", function(ev, d){ if (mode === "ratio" && window.AM2) AM2.select(d.n); });
+
   /* the figure's step attribute belongs to the section's controller, which
-     counts all nine beats; this figure only knows its own three */
+     counts all the beats; this figure only knows its own readings */
   window.AMBARS = { setStep: function(i){
     i = Math.max(0, Math.min(2, i | 0));
-    if (i === step) return;
+    if (i === step && mode === "beat") return;
     var first = step < 0;
-    step = i;
+    step = i; mode = "beat";
     paint(i, !first && !reduce());
-  } };
+  }, setMode: function(m){
+    m = m === "ratio" ? "ratio" : "count";
+    if (m === mode) return;
+    var first = step < 0 && mode === "beat";
+    mode = m; step = -2;
+    /* each beat opens on the jobs located here, which is the count its
+       text describes; the switch is the reader's to change once there */
+    setCount("j");
+    paintMode(!first && !reduce());
+  }, pick: function(name){
+    picked = name || null;
+    row.classed("is-picked", function(d){ return !!picked && d.n === picked; });
+  }, getCount: function(){ return count; } };
   window.AMBARS.setStep(0);
 
   /* one tooltip, naming whichever reading is on screen */
@@ -3549,9 +3777,8 @@ export function initPage(){
     var rowOf = function(k, v){ return '<div class="tip-row"><span>' + k +
       '</span><span>' + v + '</span></div>'; };
     row.on("mouseenter", function(ev, d){
-      var body = step === 2
-        ? rowOf("Jobs here, vs metro", d.lj.toFixed(2) + "×") +
-          rowOf("Residents, vs metro", d.lr.toFixed(2) + "×")
+      var body = (step === 2 || mode === "ratio")
+        ? rowOf("Jobs here, vs metro", d.lj.toFixed(2) + "×") + rowOf("Residents, vs metro", d.lr.toFixed(2) + "×")
         : rowOf("Jobs located here", d.j.toLocaleString()) +
           rowOf("Held by residents", d.r.toLocaleString()) +
           rowOf("Jobs per resident", (d.j / d.r).toFixed(2));
@@ -3784,18 +4011,25 @@ export function initPage(){
   var fmtK = function(n){ return n >= 100000 ? Math.round(n / 1000) + "K" : n >= 10000 ?
     (n / 1000).toFixed(0) + "K" : n >= 1000 ? (n / 1000).toFixed(1) + "K" : String(n); };
   var fmtC = function(n){ return n.toLocaleString("en-US"); };
+  var CITY = (document.querySelector(".city-short") || {}).textContent || "Boston";
   var reduced = function(){ return window.matchMedia &&
     matchMedia("(prefers-reduced-motion: reduce)").matches; };
   var NS = "http://www.w3.org/2000/svg";
   var mk = function(n, a, txt){ var e = document.createElementNS(NS, n);
     for (var k in a) e.setAttribute(k, a[k]); if (txt != null) e.textContent = txt; return e; };
-  var drawn = false;
+  var drawnExt = null, ext = "city";
+  /* two windows on the same map: opt-1 looks at the city and its partners,
+     opt-2 pulls back to as much of the metro as still leaves the flows
+     legible — about two and a half times the area */
+  var WIN = { city:  { lon0:-71.315, lon1:-70.915, lat0:42.185, lat1:42.445 },
+              metro: { lon0:-71.42,  lon1:-70.76,  lat0:42.16,  lat1:42.52 } };
 
   function draw(fc){
-    if (drawn || !fc) return;
-    drawn = true;
+    if (drawnExt === ext || !fc) return;
+    drawnExt = ext;
     var VW = 880, VH = 640, pad = 28;
-    var lon0 = -71.315, lon1 = -70.915, lat0 = 42.185, lat1 = 42.445;
+    var win = WIN[ext] || WIN.city;
+    var lon0 = win.lon0, lon1 = win.lon1, lat0 = win.lat0, lat1 = win.lat1;
     var cosL = Math.cos(42.32 * Math.PI / 180);
     var sc = Math.min((VW - 2 * pad) / ((lon1 - lon0) * cosL), (VH - 2 * pad) / (lat1 - lat0));
     var ox = (VW - (lon1 - lon0) * cosL * sc) / 2, oy = (VH - (lat1 - lat0) * sc) / 2;
@@ -3810,6 +4044,17 @@ export function initPage(){
     var B = "2507000";
     while (el.firstChild) el.removeChild(el.firstChild);
     var gPlaces = mk("g", { "class":"am-places" }); el.appendChild(gPlaces);
+    /* the metro's own edge, where the wider window reaches it — drawn
+       after the places so their fills do not cover it */
+    var msaPath = null;
+    if (ext === "metro"){
+      var geo = (typeof XCH_GEO !== "undefined" && XCH_GEO.loaded) ? XCH_GEO : (window.XCH_GEO_RAW || null);
+      var msa = geo && geo.msa || null;
+      if (msa && msa.type === "FeatureCollection") msa = msa.features[0];
+      var mg = msa && msa.type === "Feature" ? msa.geometry : msa;
+      if (mg && (mg.type === "Polygon" || mg.type === "MultiPolygon"))
+        msaPath = mk("path", { d: geomPath(mg), "class":"am-msa" });
+    }
 
     /* every place whose bounds touch the window, the city last so its
        edge sits on top */
@@ -3817,27 +4062,67 @@ export function initPage(){
       return b[1][0] > lon0 && b[0][0] < lon1 && b[1][1] > lat0 && b[0][1] < lat1; };
     var feats = fc.features.filter(inWin).slice()
       .sort(function(a, b){ return (a.properties.place_id === B) - (b.properties.place_id === B); });
+    /* every place carries its own reading: the city's two counts, a
+       partner's exchange in both directions and which way it runs, and for
+       the rest an honest note that they are not in the top five */
+    var ceilingsFor = { "2572600":{ "in":14322 }, "2509210":{ "out":5635 } };
+    var tipFor = function(id, name){
+      if (id === B) return { head: name,
+        rows: [["Jobs located here", fmtC(AM_TOT.jobs)], ["Jobs held by residents", fmtC(AM_TOT.res)]],
+        note: "2.06 jobs here for every job a resident holds — the city draws workers in." };
+      var pt = partners[id];
+      if (!pt) return { head: name, note: "Not one of " + CITY + "'s five largest exchanges in either direction." };
+      var inJ = pt["in"], outJ = pt["out"];
+      var cap = ceilingsFor[id] || {};
+      var rows = [
+        ["Commute in to " + CITY, inJ != null ? fmtC(inJ) : "under " + fmtC(cap["in"])],
+        [CITY + " residents working here", outJ != null ? fmtC(outJ) : "under " + fmtC(cap["out"])]
+      ];
+      var note;
+      if (inJ != null && outJ != null){
+        var net = inJ - outJ;
+        note = Math.abs(net) < Math.max(inJ, outJ) * 0.12
+          ? "A near-even exchange: about as many go each way."
+          : net > 0 ? fmtC(net) + " more come to " + CITY + " than go the other way."
+                    : fmtC(-net) + " more " + CITY + " residents work here than come from here.";
+      } else {
+        note = "Only one direction is in " + CITY + "'s top five; the other is smaller than the fifth.";
+      }
+      return { head: name, rows: rows, note: note };
+    };
     feats.forEach(function(f){
-      var id = f.properties.place_id;
+      var id = f.properties.place_id, name = f.properties.place_name;
       var cls = "am-place" + (id === B ? " is-focus" : partners[id] ? " is-partner" : "");
       var pth = mk("path", { d: geomPath(f.geometry), "class": cls });
-      pth.appendChild(mk("title", {}, f.properties.place_name));
+      pth.__tip = tipFor(id, name);
       gPlaces.appendChild(pth);
     });
+    if (msaPath) gPlaces.appendChild(msaPath);
 
-    var ctx = { "Medford":[-71.106,42.418], "Malden":[-71.06,42.43], "Chelsea":[-71.03,42.394],
-      "Everett":[-71.05,42.41], "Milton":[-71.07,42.245], "Watertown":[-71.185,42.37],
-      "Dedham":[-71.165,42.245], "Revere":[-70.99,42.42], "Winthrop":[-70.985,42.375] };
+    var ctx = ext === "metro"
+      ? { "Framingham":[-71.416,42.279], "Woburn":[-71.152,42.479], "Lynn":[-70.949,42.466],
+          "Salem":[-70.897,42.519], "Norwood":[-71.199,42.194], "Lexington":[-71.226,42.447],
+          "Dedham":[-71.165,42.245], "Natick":[-71.35,42.283], "Randolph":[-71.04,42.163],
+          "Weymouth":[-70.94,42.21] }
+      : { "Medford":[-71.106,42.418], "Malden":[-71.06,42.43], "Chelsea":[-71.03,42.394],
+          "Everett":[-71.05,42.41], "Milton":[-71.07,42.245], "Watertown":[-71.185,42.37],
+          "Dedham":[-71.165,42.245], "Revere":[-70.99,42.42], "Winthrop":[-70.985,42.375] };
     for (var n in ctx){ var q = P(ctx[n]);
       el.appendChild(mk("text", { x:q[0], y:q[1], "class":"am-ctx", "text-anchor":"middle" }, n)); }
 
     var A = P([-71.062, 42.352]);                       /* the downtown anchor */
     var gFlow = mk("g", { "class":"am-flows" }); el.appendChild(gFlow);
     var wOf = function(j){ return Math.max(1.2, j / 2100); };
-    var lay = { "2511000":{lx:-14,ly:-22,an:"end"}, "2562535":{lx:10,ly:-30,an:"start"},
-      "2555745":{lx:12,ly:26,an:"start"}, "2509210":{lx:-18,ly:14,an:"end"},
-      "2545560":{lx:-8,ly:22,an:"end"}, "2572600":{lx:-6,ly:-22,an:"end"} };
-    var ceilings = { "2572600":{ "in":14322 }, "2509210":{ "out":5635 } };
+    /* where each partner's name sits, per window: the metro's window packs
+       the partners closer, so the names step out of one another's way */
+    var lay = ext === "metro"
+      ? { "2511000":{lx:-10,ly:-18,an:"end"}, "2562535":{lx:8,ly:-24,an:"start"},
+          "2555745":{lx:8,ly:22,an:"start"}, "2509210":{lx:-12,ly:40,an:"end"},
+          "2545560":{lx:-14,ly:2,an:"end"}, "2572600":{lx:-6,ly:-18,an:"end"} }
+      : { "2511000":{lx:-14,ly:-22,an:"end"}, "2562535":{lx:10,ly:-30,an:"start"},
+          "2555745":{lx:12,ly:26,an:"start"}, "2509210":{lx:-18,ly:14,an:"end"},
+          "2545560":{lx:-8,ly:22,an:"end"}, "2572600":{lx:-6,ly:-22,an:"end"} };
+    var ceilings = ceilingsFor;
     var arcs = [];
     Object.keys(partners).forEach(function(id){
       var pt = partners[id], c = P(AM_CENTROIDS[id]);
@@ -3887,7 +4172,9 @@ export function initPage(){
     arcs.filter(function(a){ return a.dash; }).forEach(function(a){ gFlow.appendChild(a.dash); });
     arcs.filter(function(a){ return a.head; }).forEach(function(a){ gFlow.appendChild(a.head); });
 
-    var bl = P([-71.065, 42.300]);
+    /* the city's own name sits in its southern half, lower still on the
+       metro's window where the partners' names crowd the centre */
+    var bl = P(ext === "metro" ? [-71.06, 42.268] : [-71.065, 42.300]);
     el.appendChild(mk("text", { x:bl[0], y:bl[1], "class":"am-pname is-focus", "text-anchor":"middle" }, "Boston"));
     el.appendChild(mk("text", { x:bl[0], y:bl[1] + 15, "class":"am-pval", "text-anchor":"middle" },
       fmtK(687736) + " jobs · " + fmtK(334026) + " resident workers"));
@@ -3895,24 +4182,49 @@ export function initPage(){
     /* hover: the same reading the sample carries in each arc's title, in
        the tool's own tip card */
     if (wrap && tipEl){
+      var place = function(ev){
+        var hr = wrap.getBoundingClientRect();
+        var x = ev.clientX - hr.left + 14, y = ev.clientY - hr.top - 10;
+        if (x + tipEl.offsetWidth > hr.width) x = ev.clientX - hr.left - tipEl.offsetWidth - 14;
+        tipEl.style.left = Math.max(0, x) + "px";
+        tipEl.style.top = Math.max(0, Math.min(y, hr.height - tipEl.offsetHeight)) + "px";
+      };
       gFlow.addEventListener("mousemove", function(ev){
         var t = ev.target.closest(".am-flow"); if (!t || !t.__tip){ tipEl.hidden = true; return; }
         tipEl.innerHTML = "<strong>" + t.__tip.head + "</strong><div class=\"tip-row\"><span>" +
           t.__tip.body + "</span></div>";
-        tipEl.hidden = false;
-        var hr = wrap.getBoundingClientRect();
-        var x = ev.clientX - hr.left + 14, y = ev.clientY - hr.top - 10;
-        if (x + tipEl.offsetWidth > hr.width) x = ev.clientX - hr.left - tipEl.offsetWidth - 14;
-        tipEl.style.left = Math.max(0, x) + "px"; tipEl.style.top = Math.max(0, y) + "px";
+        tipEl.hidden = false; place(ev);
       });
       gFlow.addEventListener("mouseleave", function(){ tipEl.hidden = true; });
+      gPlaces.addEventListener("mousemove", function(ev){
+        var t = ev.target.closest(".am-place"); if (!t || !t.__tip){ tipEl.hidden = true; return; }
+        var d = t.__tip;
+        tipEl.innerHTML = "<strong>" + d.head + "</strong>" +
+          (d.rows || []).map(function(r){ return '<div class="tip-row"><span>' + r[0] +
+            '</span><span>' + r[1] + '</span></div>'; }).join("") +
+          (d.note ? '<p class="tip-foot">' + d.note + '</p>' : "");
+        tipEl.hidden = false; place(ev);
+        [].forEach.call(gPlaces.querySelectorAll(".am-place"), function(p){ p.classList.toggle("is-hot", p === t); });
+      });
+      gPlaces.addEventListener("mouseleave", function(){
+        tipEl.hidden = true;
+        [].forEach.call(gPlaces.querySelectorAll(".am-place"), function(p){ p.classList.remove("is-hot"); });
+      });
     }
   }
 
   window.AMMAP = { draw: function(){
-    if (drawn) return;
+    if (drawnExt === ext) return;
+    if (typeof XCH_GEO !== "undefined" && XCH_GEO.loaded) return draw(XCH_GEO.places);
     if (window.XCH_GEO_RAW && XCH_GEO_RAW.places) return draw(XCH_GEO_RAW.places);
     if (typeof loadXchGeo === "function") loadXchGeo(function(){ draw(XCH_GEO.places); });
+  }, setExtent: function(e){
+    e = e === "metro" ? "metro" : "city";
+    if (e === ext) return;
+    ext = e;
+    /* redraw only if the map is the figure on screen; otherwise the next
+       draw() picks the new window up */
+    if (el.style.display !== "none" && drawnExt) { drawnExt = null; window.AMMAP.draw(); }
   } };
 })();
 
@@ -3970,10 +4282,10 @@ export function initPage(){
   };
   while (svg.firstChild) svg.removeChild(svg.firstChild);
   var zones = [
-    { v0:0.4,  v1:0.8,  fill:C_OUT, label:"Bedroom community" },
+    { v0:0.4,  v1:0.8,  fill:C_OUT, label:"Dormitory" },
     { v0:0.8,  v1:1.25, fill:C_BAL, label:"Balanced" },
-    { v0:1.25, v1:2,    fill:C_INL, label:"Draws workers in" },
-    { v0:2,    v1:4,    fill:C_IN,  label:"Employment hub" }
+    { v0:1.25, v1:2,    fill:C_INL, label:"Importer" },
+    { v0:2,    v1:4,    fill:C_IN,  label:"Hub" }
   ];
   zones.forEach(function(z){ svg.appendChild(mk("path", { d:arcPath(z.v0, z.v1, G.rIn, G.r), fill:z.fill, "class":"zone" })); });
   zones.forEach(function(z){
@@ -3989,14 +4301,14 @@ export function initPage(){
   });
   var ga = ang(ALL.j / ALL.r), g0 = pt(ga, G.rIn - 4), g1 = pt(ga, G.r + 4);
   svg.appendChild(mk("line", { x1:g0[0], y1:g0[1], x2:g1[0], y2:g1[1], "class":"ghost" }));
-  svg.appendChild(mk("text", { x:G.cx, y:G.cy + 78, "class":"ghostlbl", "text-anchor":"middle" },
+  svg.appendChild(mk("text", { x:G.cx, y:G.cy + 88, "class":"ghostlbl", "text-anchor":"middle" },
     "Dashed marker: Boston overall, " + (ALL.j / ALL.r).toFixed(2) + "×"));
   var needle = mk("line", { x1:G.cx, y1:G.cy, x2:G.cx + G.rIn - 14, y2:G.cy, "class":"needle" });
   svg.appendChild(needle);
   svg.appendChild(mk("circle", { cx:G.cx, cy:G.cy, r:6, "class":"pivot" }));
   var big = mk("text", { x:G.cx, y:G.cy + 40, "class":"big", "text-anchor":"middle" }, "");
   svg.appendChild(big);
-  svg.appendChild(mk("text", { x:G.cx, y:G.cy + 58, "class":"biglbl", "text-anchor":"middle" },
+  svg.appendChild(mk("text", { x:G.cx, y:G.cy + 70, "class":"biglbl", "text-anchor":"middle" },
     "jobs in Boston per resident worker in the sector"));
 
   function select(d){
@@ -4013,7 +4325,7 @@ export function initPage(){
       ? "<span class=\"pill is-in\">Net importer</span>Boston imports " + nm + "."
       : kind === "out" ? "<span class=\"pill is-out\">Net exporter</span>Boston sends " + nm + " out."
       : "<span class=\"pill is-bal\">Balanced</span>Boston roughly breaks even on " + nm + ".";
-    var zone = r < 0.8 ? "a bedroom community" : r <= 1.25 ? "balanced" : r < 2 ? "a place that draws workers in" : "an employment hub";
+    var zone = r < 0.8 ? "a dormitory" : r <= 1.25 ? "balanced" : r < 2 ? "an importer of workers" : "a hub";
     $("amSentence").textContent = d.all
       ? fmtC(d.j) + " jobs sit inside Boston and its residents hold " + fmtC(d.r) + ". Net of the " +
         fmtC(AM_TOT.res - LIVEWORK) + " who commute out, " + fmtC(net) + " more people come in than go out. On this reading Boston as a whole is " + zone + "."
@@ -4033,6 +4345,94 @@ export function initPage(){
   window.AMGAUGE = { select:select, reset:function(){ select(ALL); } };
 })();
 
+/* ---------------------------------------------------------------------
+   opt-2's text column: the four commuting beats as a dot summary beside
+   the opening text, and the dial that a click on the comparison beat's
+   bars turns — the same reading the full dial gives, at the width of the
+   text column.
+--------------------------------------------------------------------- */
+(function(){
+  var fmtC = function(n){ return n.toLocaleString("en-US"); };
+  var NS = "http://www.w3.org/2000/svg";
+  var mk = function(n, a, txt){ var e = document.createElementNS(NS, n);
+    for (var k in a) e.setAttribute(k, a[k]); if (txt != null) e.textContent = txt; return e; };
+  var tok = function(n, fb){ var v = getComputedStyle(document.documentElement)
+    .getPropertyValue(n).trim(); return v || fb; };
+  var C_IN = tok("--geo-city", "#255862"), C_OUT = tok("--orange", "#e76565");
+  var C_INL = "#8fb5bb", C_BAL = "#c9ced2";
+
+  var svg = document.getElementById("am2Dial");
+  if (!svg) return;
+  var $ = function(id){ return document.getElementById(id); };
+  var ALL = { n:"Boston, all sectors", j:AM_TOT.jobs, r:AM_TOT.res, all:true };
+  var byName = {}; AM_SECTORS.forEach(function(d){ byName[d.n] = d; });
+  var ratioColor = function(r){ return r < 0.8 ? C_OUT : r <= 1.25 ? C_BAL : r < 2 ? C_INL : C_IN; };
+
+  var G = { cx:130, cy:128, r:100, rIn:74, min:0.4, max:4 };
+  var ang = function(v){ return Math.PI - (Math.log(v) - Math.log(G.min)) /
+    (Math.log(G.max) - Math.log(G.min)) * Math.PI; };
+  var pt = function(a, r){ return [G.cx + Math.cos(a) * r, G.cy - Math.sin(a) * r]; };
+  var arcPath = function(v0, v1, r0, r1){
+    var a0 = ang(v0), a1 = ang(v1);
+    var p0 = pt(a0, r1), p1 = pt(a1, r1), p2 = pt(a1, r0), p3 = pt(a0, r0);
+    return "M" + p0[0] + "," + p0[1] + " A" + r1 + "," + r1 + " 0 0 1 " + p1[0] + "," + p1[1] +
+           " L" + p2[0] + "," + p2[1] + " A" + r0 + "," + r0 + " 0 0 0 " + p3[0] + "," + p3[1] + "Z";
+  };
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+  var zones = [
+    { v0:0.4,  v1:0.8,  fill:C_OUT, label:"Dormitory" },
+    { v0:0.8,  v1:1.25, fill:C_BAL, label:"Balanced" },
+    { v0:1.25, v1:2,    fill:C_INL, label:"Importer" },
+    { v0:2,    v1:4,    fill:C_IN,  label:"Hub" }
+  ];
+  zones.forEach(function(z){ svg.appendChild(mk("path", { d:arcPath(z.v0, z.v1, G.rIn, G.r), fill:z.fill, "class":"zone" })); });
+  zones.forEach(function(z){
+    var mid = Math.exp((Math.log(z.v0) + Math.log(z.v1)) / 2), a = ang(mid), q = pt(a, G.r + 9);
+    var deg = -(a * 180 / Math.PI - 90);
+    svg.appendChild(mk("text", { x:q[0], y:q[1], "class":"zonelbl", "text-anchor":"middle",
+      transform:"rotate(" + deg.toFixed(1) + " " + q[0] + " " + q[1] + ")" }, z.label));
+  });
+  [0.5, 1, 2, 4].forEach(function(v){
+    var a = ang(v), q0 = pt(a, G.rIn - 2), q1 = pt(a, G.rIn - 7), qt = pt(a, G.rIn - 17);
+    svg.appendChild(mk("line", { x1:q0[0], y1:q0[1], x2:q1[0], y2:q1[1], "class":"tick" }));
+    svg.appendChild(mk("text", { x:qt[0], y:qt[1] + 3, "class":"ticklbl", "text-anchor":"middle" }, v + "×"));
+  });
+  var ga = ang(ALL.j / ALL.r), g0 = pt(ga, G.rIn - 3), g1 = pt(ga, G.r + 3);
+  svg.appendChild(mk("line", { x1:g0[0], y1:g0[1], x2:g1[0], y2:g1[1], "class":"ghost" }));
+  var needle = mk("line", { x1:G.cx, y1:G.cy, x2:G.cx + G.rIn - 10, y2:G.cy, "class":"needle" });
+  svg.appendChild(needle);
+  svg.appendChild(mk("circle", { cx:G.cx, cy:G.cy, r:4.5, "class":"pivot" }));
+  var big = mk("text", { x:G.cx, y:G.cy + 28, "class":"big", "text-anchor":"middle" }, "");
+  svg.appendChild(big);
+  svg.appendChild(mk("text", { x:G.cx, y:G.cy + 49, "class":"biglbl", "text-anchor":"middle" },
+    "jobs here per resident job"));
+
+  function select(name){
+    var d = name && byName[name] ? byName[name] : ALL;
+    var r = d.j / d.r, deg = -(ang(r) * 180 / Math.PI);
+    needle.style.transform = "rotate(" + deg.toFixed(2) + "deg)";
+    needle.style.stroke = ratioColor(r);
+    big.textContent = r.toFixed(2) + "×";
+    var net = d.j - d.r;
+    var kind = r > 1.1 ? "in" : r < 0.9 ? "out" : "bal";
+    var nm = d.all ? "workers" : d.n.toLowerCase() + " workers";
+    $("am2Verdict").innerHTML = kind === "in"
+      ? "<span class=\"pill is-in\">Net importer</span>Boston imports " + nm + "."
+      : kind === "out" ? "<span class=\"pill is-out\">Net exporter</span>Boston sends " + nm + " out."
+      : "<span class=\"pill is-bal\">Balanced</span>Boston roughly breaks even on " + nm + ".";
+    /* the dial, its verdict and the two bars carry the reading; the
+       sentence that used to spell it out again is gone */
+    var mx = Math.max(d.j, d.r) * 1.25;
+    $("am2Mini").innerHTML =
+      "<div class=\"mrow\"><span>Jobs located in Boston</span><div class=\"mtrack\"><div class=\"mbar is-jobs\" style=\"width:" + (d.j / mx * 100).toFixed(1) + "%\"></div><span class=\"mv\" style=\"left:" + (d.j / mx * 100).toFixed(1) + "%\">" + fmtC(d.j) + "</span></div></div>" +
+      "<div class=\"mrow\"><span>Held by Boston residents</span><div class=\"mtrack\"><div class=\"mbar is-res\" style=\"width:" + (d.r / mx * 100).toFixed(1) + "%\"></div><span class=\"mv\" style=\"left:" + (d.r / mx * 100).toFixed(1) + "%\">" + fmtC(d.r) + "</span></div></div>";
+    if (window.AMBARS && window.AMBARS.pick) window.AMBARS.pick(d.all ? null : d.n);
+    var pick = $("am2Pick"); if (pick) pick.classList.toggle("is-off", !d.all);
+  }
+  select(null);
+  window.AM2 = { select: select, reset: function(){ select(null); } };
+})();
+
 /* the section's figures under one controller: dots for the first four
    beats, rows for the next three, then the map and the dial */
 (function(){
@@ -4041,21 +4441,38 @@ export function initPage(){
   if (!fig || !dots || !bars) return;
   var map = document.getElementById("amMapSvg");
   var gauge = document.getElementById("amGaugeWrap");
+  /* states 0-8 are opt-1's nine beats; 9 and 10 are opt-2's two chart
+     beats, the bars one count at a time and the same bars against the
+     metro. opt-2's opening beat is state 7, the map, drawn to the metro. */
   window.AM = { setStep: function(i){
-    i = Math.max(0, Math.min(8, i | 0));
+    i = Math.max(0, Math.min(10, i | 0));
     fig.dataset.step = String(i);
     var key = document.getElementById("amKey");
     if (key) key.dataset.step = String(i);
-    var which = i < 4 ? "dots" : i < 7 ? "bars" : i === 7 ? "map" : "gauge";
+    var which = i < 4 ? "dots" : i < 7 ? "bars" : i === 7 ? "map" : i === 8 ? "gauge" : "bars";
     dots.style.display  = which === "dots"  ? "" : "none";
     bars.style.display  = which === "bars"  ? "" : "none";
     if (map)   map.style.display   = which === "map"   ? "" : "none";
     if (gauge) gauge.style.display = which === "gauge" ? "" : "none";
     if (which === "dots" && window.AMDOTS) window.AMDOTS.setStep(i);
-    if (which === "bars" && window.AMBARS) window.AMBARS.setStep(i - 4);
+    if (which === "bars" && window.AMBARS){
+      if (i >= 9) window.AMBARS.setMode(i === 9 ? "count" : "ratio");
+      else window.AMBARS.setStep(i - 4);
+    }
     if (which === "map" && window.AMMAP) window.AMMAP.draw();
+    /* leaving the comparison beat lets go of the picked sector */
+    if (i !== 10 && window.AM2) window.AM2.reset();
+  }, setOpt: function(o){
+    fig.dataset.opt = String(o);
+    if (window.AMMAP && window.AMMAP.setExtent) window.AMMAP.setExtent(String(o) === "2" ? "metro" : "city");
   } };
-  window.AM.setStep(0);
+  /* this controller is defined after the section is mounted, so the beat
+     the mount settled on is waiting on the figure */
+  if (fig.dataset.opt == null && document.getElementById("amLayoutSeg")){
+    var b = document.querySelector("#amLayoutSeg .jp-opt-btn.is-active");
+    if (b) window.AM.setOpt(b.dataset.ct === "3" ? "2" : "1");
+  }
+  window.AM.setStep(fig.dataset.wantStep != null ? +fig.dataset.wantStep : 0);
 })();
 
   /* [port] what the markup's inline handlers reach for (the rerouted goTo and

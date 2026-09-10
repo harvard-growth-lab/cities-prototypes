@@ -65,9 +65,10 @@ export const TREE_MODES: {
 }[] = [
   {
     id: "themes",
-    label: "Alt + themes",
-    hint: "Four leaves + the evidence under each",
-    about: "The four leaves, each carrying the evidence you would read there",
+    label: "Alt + modules",
+    hint: "Four leaves + the modules under each",
+    about:
+      "The four leaves, each carrying the modules you would look into there",
   },
   {
     id: "paper",
@@ -95,7 +96,7 @@ export const modeThemes = (m: TreeMode): boolean => m === "themes";
 /** what the section opens on — and, like the flows, listed first in
  *  TREE_MODES so the default leads the pill row. The paper figure stays one
  *  switch away, but the proposal shown first is the four-leaf tree carrying
- *  the evidence under each leaf — so the structure is read as the
+ *  the modules under each leaf — so the structure is read as the
  *  diagnostic, not as a variant of it. */
 export const DEFAULT_TREE_MODE: TreeMode = "themes";
 
@@ -109,12 +110,17 @@ export const DEFAULT_TREE_MODE: TreeMode = "themes";
  *  the reference toured the entire dataset; this page diagnoses one city.
  *  "short" retells it tree-first in three stops: the whole tree up front,
  *  then an instrument per fork moving the city's dot down it, with the route
- *  pinned to the diagnosis until the analysis section has been read. */
-export type ConstraintFlow = "compact" | "guided" | "short";
+ *  pinned to the diagnosis until the analysis section has been read.
+ *  "zoom" — the section's default (Sept 2026) — keeps the guided walk's
+ *  chart phase and changes how the tree opens: it arrives whole with no
+ *  city on it, the city then enters at the root, and each scroll zooms the
+ *  camera one station down its path before opening back out onto the lit
+ *  route. */
+export type ConstraintFlow = "compact" | "guided" | "short" | "zoom";
 
 /** what the section opens on — also listed FIRST in CONSTRAINT_FLOWS, since
  *  the pill row renders in array order and the default leads it */
-export const DEFAULT_CONSTRAINT_FLOW: ConstraintFlow = "guided";
+export const DEFAULT_CONSTRAINT_FLOW: ConstraintFlow = "zoom";
 
 /* the default leads the row; the rest keep their original order */
 export const CONSTRAINT_FLOWS: {
@@ -123,6 +129,13 @@ export const CONSTRAINT_FLOWS: {
   hint: string;
   about: string;
 }[] = [
+  {
+    id: "zoom",
+    label: "Zoomed walk",
+    hint: "The chart, then the whole tree — your city enters and the camera walks its path",
+    about:
+      "The chart builds dial by dial and pours into the tree, which arrives whole with no city on it; your city then enters at the root, and each scroll zooms the camera one station along its route — its branch, the second fork, the landing — and back out onto the lit path",
+  },
   {
     id: "guided",
     label: "Guided walk",
@@ -205,11 +218,47 @@ export const TREE_SIDE_LABEL: Record<TreeSide, string> = {
   demand: "demand side",
   supply: "supply side",
   third: "[third branch]",
+  demandpos: "magnet city",
+  demandneg: "leak city",
+  supplypos: "sponge city",
+  supplyneg: "fortress city",
+};
+
+/* ---------- the landing's four city types ----------
+ *  One per quadrant of the population × wage plane. The pizza chart and the
+ *  tree lead with these; the shock each one IS rides underneath as a
+ *  caption, and the running copy names both where it helps. [Mapped by
+ *  meaning, since the landing names the four without their dials: a magnet
+ *  pulls people and pay up together, a sponge soaks up arrivals on thinner
+ *  pay, a fortress shuts the door so only pay rises, a leak lets people and
+ *  pay drain away together — confirm against the landing copy] */
+export type QuadSide = "demandpos" | "demandneg" | "supplypos" | "supplyneg";
+export const QUAD_NAME: Record<QuadSide, string> = {
+  demandpos: "Magnet",
+  supplypos: "Sponge",
+  supplyneg: "Fortress",
+  demandneg: "Leak",
+};
+/** the shock behind each city type — the caption under its name */
+export const QUAD_SHOCK: Record<QuadSide, string> = {
   demandpos: "positive demand shock",
-  demandneg: "negative demand shock",
   supplypos: "positive supply shock",
   supplyneg: "negative supply shock",
+  demandneg: "negative demand shock",
 };
+/** the two dials that define each quadrant: which way people and pay moved */
+export const QUAD_DIR: Record<QuadSide, { pop: 1 | -1; pay: 1 | -1 }> = {
+  demandpos: { pop: 1, pay: 1 },
+  supplypos: { pop: 1, pay: -1 },
+  supplyneg: { pop: -1, pay: 1 },
+  demandneg: { pop: -1, pay: -1 },
+};
+const isQuadSide = (id: string): id is QuadSide => id in QUAD_NAME;
+/** a branch id's city type, or nothing for a branch that is not a quadrant */
+export const quadName = (id: string): string | undefined =>
+  isQuadSide(id) ? QUAD_NAME[id] : undefined;
+export const quadShock = (id: string): string | undefined =>
+  isQuadSide(id) ? QUAD_SHOCK[id] : undefined;
 
 /** Branches that draw but do not pick: a placeholder has no test behind it
  *  and no analysis section to navigate to, so the tree shows it and the
@@ -245,6 +294,8 @@ export interface QuadrantDef {
   /** which half of each axis: +1 above/right of average, −1 below/left */
   dx: 1 | -1;
   dy: 1 | -1;
+  /** the landing's city type for this quadrant — what the chart leads with */
+  name: string;
   shock: string;
   sub: string;
   /** the branch of the tree this quadrant defaults to — DERIVED, see below */
@@ -271,6 +322,7 @@ const QUADRANT_DEFS: Omit<QuadrantDef, "side">[] = [
     id: "q1",
     dx: 1,
     dy: 1,
+    name: "Magnet",
     shock: "Positive demand shock",
     sub: "population ↑ · wages ↑",
     path: ["demand", "newact", "coord"],
@@ -281,6 +333,7 @@ const QUADRANT_DEFS: Omit<QuadrantDef, "side">[] = [
     id: "q2",
     dx: 1,
     dy: -1,
+    name: "Sponge",
     shock: "Positive supply shock",
     sub: "population ↑ · wages ↓",
     path: ["supply", "col", "housing"],
@@ -291,6 +344,7 @@ const QUADRANT_DEFS: Omit<QuadrantDef, "side">[] = [
     id: "q3",
     dx: -1,
     dy: -1,
+    name: "Leak",
     shock: "Negative demand shock",
     sub: "population ↓ · wages ↓",
     path: ["demand", "existing", "external"],
@@ -301,6 +355,7 @@ const QUADRANT_DEFS: Omit<QuadrantDef, "side">[] = [
     id: "q4",
     dx: -1,
     dy: 1,
+    name: "Fortress",
     shock: "Negative supply shock",
     sub: "population ↓ · wages ↑",
     path: ["supply", "col", "housing"],
@@ -734,14 +789,16 @@ export const TREE_NODES_ALT3: TreeNodeData[] = [
  *  One fork and then nothing: the quadrant a city lands in on the population
  *  × wage plane IS the diagnosis, so every branch is also a leaf. The four
  *  are the paper's own four shock readings (see QUADRANT_DEFS), promoted from
- *  a label on the chart to a branch of the tree. Nothing here is a
- *  placeholder — the structure is a real proposal, just a flatter one. */
+ *  a label on the chart to a branch of the tree, and titled with the
+ *  landing's city types (QUAD_NAME) — the shock each one is stays in its
+ *  detail. Nothing here is a placeholder — the structure is a real proposal,
+ *  just a flatter one. */
 export const TREE_NODES_QUAD: TreeNodeData[] = [
   nodeById.get("root")!,
   {
     id: "demandpos",
     parent: "root",
-    title: "Positive demand shock",
+    title: "Magnet",
     detail:
       "Population and pay are both running ahead of the typical metro. Demand for what the city sells is growing; the question is what that demand is running into.",
     tests: "Population growth and wage growth both above the median metro's.",
@@ -749,7 +806,7 @@ export const TREE_NODES_QUAD: TreeNodeData[] = [
   {
     id: "supplypos",
     parent: "root",
-    title: "Positive supply shock",
+    title: "Sponge",
     detail:
       "People are arriving faster than pay is rising — the city got easier to live in or cheaper to live in, and labor supply moved before labor demand did.",
     tests: "Population growth above the median metro's, wage growth below it.",
@@ -757,7 +814,7 @@ export const TREE_NODES_QUAD: TreeNodeData[] = [
   {
     id: "demandneg",
     parent: "root",
-    title: "Negative demand shock",
+    title: "Leak",
     detail:
       "Population and pay are falling together. Something took demand out of the city's export base, and the labor market shrank with it.",
     tests: "Population growth and wage growth both below the median metro's.",
@@ -765,7 +822,7 @@ export const TREE_NODES_QUAD: TreeNodeData[] = [
   {
     id: "supplyneg",
     parent: "root",
-    title: "Negative supply shock",
+    title: "Fortress",
     detail:
       "Pay is climbing while people leave — the city is holding its demand but losing its workforce, so what living there costs or offers is the suspect.",
     tests: "Population growth below the median metro's, wage growth above it.",
@@ -776,11 +833,11 @@ export const TREE_NODES_QUAD: TreeNodeData[] = [
  *  The team's revision spec (Sept 2026) for the quadrant tree: each shock
  *  keeps its own OVERARCHING QUESTION, and all but the positive demand shock
  *  fork once more with their own instrument (QUAD_BRANCH_SPEC below carries
- *  the questions; the themes under each leaf are in LEAF_THEMES). The four
- *  shock nodes are reused verbatim; the six leaves are new, their ids
+ *  the questions; the modules shown at each ending are in LEAF_MODULES).
+ *  The four shock nodes are reused verbatim; the six leaves are new, their ids
  *  prefixed by branch so the two housing/amenities pairs stay distinct
  *  nodes. The positive demand shock has no second layer — its head is the
- *  ending, and the analysis opens straight on its standing question.
+ *  ending, and the analysis opens straight on its modules.
  *  Bracketed text marks what the spec left open — the exact reading of each
  *  instrument. */
 export const TREE_NODES_QUAD2: TreeNodeData[] = [
@@ -838,44 +895,38 @@ export const TREE_NODES_QUAD2: TreeNodeData[] = [
 ];
 
 /** The spec's per-branch layer that is NOT another tree level: each shock's
- *  overarching question, its fork stated with its instrument, and — on the
- *  positive shocks — the standing "what could I do better?" themes that
- *  apply REGARDLESS of the fork. Read by the analysis section (both quad
- *  structures) and by the walks' copy. */
+ *  overarching question, and its fork stated with its instrument. Read by
+ *  the analysis section, which leads with the question and names the fork
+ *  the reader came down. (The modules shown at the end of a branch are a
+ *  separate table — LEAF_MODULES — keyed by the ending, not the shock.) */
 export interface QuadBranchSpec {
   /** the overarching question the branch's analysis opens on */
   question: string;
   /** the fork and the instrument that decides it, in one line — absent on a
    *  shock with no second layer (the positive demand shock) */
   forkLine?: string;
-  /** theme ids that apply regardless of the fork — "what could I do better?" */
-  better: string[];
 }
 export const QUAD_BRANCH_SPEC: Partial<Record<BranchSide, QuadBranchSpec>> = {
   demandneg: {
     question: "What is my demand constraint?",
     forkLine:
       "Is it local or regional (admin or MSA)? Read the MSA pizza chart — MSA population change vs MSA wage change.",
-    better: [],
   },
   /* no second layer on the positive demand shock (team revision, Sept 2026):
      the quadrant is the diagnosis, and the analysis opens straight on the
-     standing question */
+     head's own modules */
   demandpos: {
     question: "What are threats to future growth?",
-    better: ["complexity"],
   },
   supplyneg: {
     question: "What is my supply constraint?",
     forkLine:
       "Housing or amenities? Does the admin fall above or below the median admin housing-price change?",
-    better: [],
   },
   supplypos: {
     question: "Is it sustainable?",
     forkLine:
       "Housing or amenities? Does the admin fall above or below the median admin housing-price change?",
-    better: ["complexity"],
   },
 };
 
@@ -956,155 +1007,194 @@ export function convertPath(path: string[], variant: TreeVariant): string[] {
   );
 }
 
-/* ---------- themes: the evidence hanging under each alt-tree leaf ----------
- *  Themes are NOT another level of the diagnostic — they are the data views
- *  you would read once a leaf is reached. Two of them hang off two leaves
- *  each, which is why they live in a flat registry keyed by id rather than
- *  as tree nodes: a theme is authored once and referenced from wherever it
- *  is reached. (Theme ids share a couple of names with tree-node ids —
- *  housing, amenities — but they are separate namespaces; nothing keys
- *  across the two.) */
+/* ---------- modules: what to look into once the tree is walked ----------
+ *  A module is a theme that groups the data points worth reading at the end
+ *  of a branch — the analysis section's content once a leaf is reached
+ *  (team revision, Sept 2026). Modules are NOT another level of the
+ *  diagnostic and NOT verdicts: none says "this is definitively the
+ *  problem". They are an overview of where to look, and which ones are
+ *  shown depends on the branch taken (LEAF_MODULES). Most are reached from
+ *  several endings, so they live in a flat registry keyed by id and are
+ *  referenced from wherever they are reached. (Two module ids share a name
+ *  with a tree node — inputs, demand — but they are separate namespaces;
+ *  nothing keys across the two, and the shared glyph is deliberate.) */
 
-export interface ThemeDef {
-  id: string;
-  title: string;
-  /** what the theme asks — bracketed placeholder until the copy exists */
-  detail: string;
-  /** the data views that make the case, from the researchers' notes */
-  indicators: string[];
-  /** this ground is already covered earlier in the tool */
-  seeAlso?: string;
+/** the level a module's data is read at — the MSA, the admin city, or both */
+export type DataLevel = "msa" | "admin" | "both";
+export const DATA_LEVEL_LABEL: Record<DataLevel, string> = {
+  msa: "MSA-level data",
+  admin: "Admin-level data",
+  both: "MSA + admin data",
+};
+
+/** one data point of a module — a chart, map or table to come */
+export interface ModuleView {
+  name: string;
+  /** what to read off it — the spec's "signal", where it gave one */
+  signal?: string;
+  /** set where this view's data level differs from its module's */
+  level?: DataLevel;
 }
 
-export const THEMES: Record<string, ThemeDef> = {
-  /* Two pairs below run on the same underlying data — the shift-share pair
-     and the accessibility pair. Rather than repeat a title and then have to
-     mark the repeat, each is named for the question IT answers, and the
-     shared data is called out in the copy. Nothing in the UI has to treat
-     these as a special case. */
-  localShift: {
-    id: "localShift",
-    title: "Local competitive shift",
-    detail:
-      "[what the city lost that its own industries' national trends do not explain — the shift-share's local component, isolated]",
-    indicators: ["Nominal and market shares", "Shift-share analysis"],
-  },
-  jobAccess: {
-    id: "jobAccess",
-    title: "Job accessibility",
-    detail:
-      "[how much of the labor market a resident can actually reach — jobs that exist but cannot be commuted to are jobs the city has effectively lost]",
-    indicators: ["Map of accessible jobs within 20 / 30 / 40 minutes"],
-  },
-  complexity: {
-    id: "complexity",
-    title: "Complexity",
-    detail:
-      "[whether the city's productive know-how is deepening or thinning, and what it could plausibly move into next]",
-    indicators: [
-      "Complexity rank over time",
-      "ECI vs population",
-      "New industries over time and their complexity",
-      "Complexity outlook index",
+export interface ModuleDef {
+  id: string;
+  title: string;
+  level: DataLevel;
+  /** the question the module helps answer, in the spec's own words — absent
+   *  where the spec listed the data points but not the question */
+  question?: string;
+  /** the data points, in the spec's order */
+  views: ModuleView[];
+}
+
+export const MODULES: Record<string, ModuleDef> = {
+  shocks: {
+    id: "shocks",
+    title: "Shocks",
+    level: "msa",
+    question:
+      "Did you face an external shock, or is something wrong within your MSA? Which industries drove the shock?",
+    views: [
+      {
+        name: "Market share, nominal and marginal (4-digit tradables)",
+        signal: "high or low? any breaks in the series?",
+      },
+      {
+        name: "Shift-share analysis at the MSA (4-digit tradables)",
+        signal: "local share + or −",
+      },
     ],
-    seeAlso: "City Exports · export complexity",
   },
-  industryTrends: {
-    id: "industryTrends",
-    title: "Industry and national shocks",
-    detail:
-      "[how much of the decline the city's industry mix would predict on its own — the same shift-share, read for its industry and national components]",
-    indicators: ["Nominal and market shares", "Shift-share analysis"],
-  },
-  remoteness: {
-    id: "remoteness",
-    title: "Remoteness",
-    detail:
-      "[how far the city sits from the demand it would need to sell into]",
-    indicators: ["Market access"],
+  inputs: {
+    id: "inputs",
+    title: "Inputs",
+    level: "msa",
+    question:
+      "Are my tradable industries intense in certain inputs, over time?",
+    views: [
+      {
+        name: "Rajan-Zingales (inputs)",
+        signal:
+          "highlight where your tradable industries are intense in certain inputs over time",
+      },
+    ],
   },
   innovation: {
     id: "innovation",
     title: "Innovation",
-    detail:
-      "[whether new firms and new ideas are appearing at the rate the city's know-how should support]",
-    indicators: ["Firm creation", "Patent space"],
-    seeAlso: "City Exports · export basket",
+    level: "msa",
+    question:
+      "Is my constraint related to a lack of innovation and firm creation?",
+    views: [
+      { name: "Firm creation", signal: "high or low" },
+      { name: "MSA in patent space", signal: "specialization in the tech class" },
+    ],
   },
-  inputs: {
-    id: "inputs",
-    title: "Vertical / horizontal inputs",
-    detail:
-      "[inputs firms cannot buy at a reasonable price — horizontal ones hit every firm, vertical ones choke a single industry]",
-    indicators: ["Input price rankings", "Rajan-Zingales dependence"],
+  complexity: {
+    id: "complexity",
+    title: "Complexity",
+    level: "msa",
+    question: "Is my constraint related to my complexity?",
+    views: [
+      { name: "Complexity of the MSA", signal: "high / low" },
+      { name: "Complexity rank over time", signal: "up / down" },
+      {
+        name: "Remoteness (market access)",
+        signal: "remoteness index vs ECI scatter",
+      },
+      { name: "ECI vs population" },
+      { name: "COI", signal: "high / low" },
+    ],
+  },
+  mismatch: {
+    id: "mismatch",
+    title: "MSA / admin mismatch",
+    level: "both",
+    question: "Is my constraint related to dynamics between my admin and MSA?",
+    views: [
+      { name: "Admin vs MSA industry mix (2-digit)" },
+      { name: "Shift-share and industry growth (2-digit), MSA and admin" },
+      { name: "Commuters and out-commuters over time", level: "admin" },
+    ],
+  },
+  housingDemand: {
+    id: "housingDemand",
+    title: "Housing demand",
+    level: "admin",
+    /* the spec's wording, verbatim — it reads like the housing-supply
+       question, so [confirm this is the question meant] */
+    question: "Is my constraint related to housing supply?",
+    views: [
+      { name: "Housing prices over time", signal: "up / down" },
+      { name: "Real wages" },
+      { name: "Housing supply elasticity" },
+      { name: "Housing price growth map", signal: "up / down" },
+    ],
+  },
+  amenities: {
+    id: "amenities",
+    title: "Amenities",
+    level: "admin",
+    question: "Is my constraint related to amenities?",
+    views: [
+      { name: "Overall amenities score" },
+      { name: "Education" },
+      { name: "Crime" },
+      { name: "Transportation" },
+      { name: "Air quality index" },
+      { name: "Quality of life (e.g. restaurants)" },
+    ],
   },
   housingSupply: {
     id: "housingSupply",
-    title: "Housing supply and prices",
-    detail:
-      "[whether growth is turning into prices instead of people — the boom arrives, the cranes do not. Cost is read from home values in the US and from rents in Mexico]",
-    indicators: [
-      "Housing prices over time",
-      "Housing price growth map",
-      "Housing construction map",
-      "[rent index — the cost measure outside the US]",
+    title: "Housing supply",
+    level: "admin",
+    views: [
+      { name: "Housing prices over time", signal: "up / down" },
+      { name: "Housing supply elasticity" },
+      {
+        name: "Spatial dimensions of housing growth in your admin / housing construction map",
+      },
+      { name: "Housing price growth map", signal: "up / down" },
     ],
   },
-  commuting: {
-    id: "commuting",
-    title: "Commuting burden",
-    detail:
-      "[what the daily commute costs a resident in time — the same accessibility map, read as a reason to leave rather than as labor demand out of reach]",
-    indicators: ["Map of accessible jobs within 20 / 30 / 40 minutes"],
-  },
-  amenityQuality: {
-    id: "amenityQuality",
-    title: "Amenity quality",
-    detail:
-      "[what living in the city is like on top of what it costs — public goods, safety, natural conditions]",
-    indicators: ["Overall amenities score", "Education", "Crime", "Weather"],
+  demand: {
+    id: "demand",
+    title: "Demand",
+    level: "admin",
+    views: [
+      { name: "Shift-share and industry growth (2-digit), MSA and place" },
+    ],
   },
 };
 
-/** which themes hang off each alt-tree leaf, in reading order. Every slot
- *  carries its own title, so no label appears twice anywhere in the tree
- *  and nothing needs a "this one is repeated" marker. */
-export const LEAF_THEMES: Record<string, string[]> = {
-  metrowide: [
-    "complexity",
-    "industryTrends",
-    "remoteness",
-    "innovation",
-    "inputs",
-  ],
-  placespec: ["localShift", "jobAccess"],
-  col: ["housingSupply"],
-  amen: ["commuting", "amenityQuality"],
-  /* the forked quadrant tree (the revision spec): the same evidence, keyed
-     by its own leaf ids. The positive-demand leaves carry no leaf themes of
-     their own — that branch's standing "what could I do better?" block
-     (QUAD_BRANCH_SPEC.better) is the evidence there. */
-  "dn-regional": [
-    "complexity",
-    "industryTrends",
-    "remoteness",
-    "innovation",
-    "inputs",
-  ],
-  "dn-local": ["localShift", "jobAccess"],
-  "sn-col": ["housingSupply"],
-  "sn-amen": ["commuting", "amenityQuality"],
-  "sp-col": ["housingSupply"],
-  "sp-amen": ["commuting", "amenityQuality"],
+/** which modules an ending shows, in reading order — keyed by the node a
+ *  descent ends on: a leaf of the forked quadrant tree, or the positive
+ *  demand head, whose branch stops there. Complexity closes every list. */
+const DN_REGIONAL = ["shocks", "inputs", "innovation", "complexity"];
+const DN_LOCAL = ["mismatch", "complexity"];
+const SN_HOUSING = ["housingSupply", "complexity"];
+const SN_AMENITIES = ["amenities", "complexity"];
+export const LEAF_MODULES: Record<string, string[]> = {
+  "dn-regional": DN_REGIONAL,
+  "dn-local": DN_LOCAL,
+  demandpos: ["shocks", "housingDemand", "amenities", "complexity"],
+  "sn-col": SN_HOUSING,
+  "sn-amen": SN_AMENITIES,
+  /* the positive supply shock reads ACROSS the fork: its housing leaf looks
+     at amenities, its amenities leaf at housing supply — as specified;
+     [confirm the crossing is intended] */
+  "sp-col": ["amenities", "demand", "complexity"],
+  "sp-amen": ["housingSupply", "demand", "complexity"],
+  /* the alt tree (the initial draft's compact flow) carries no sign on its
+     shocks: its demand leaves read as the negative demand shock's, its
+     supply leaves as the negative supply shock's */
+  metrowide: DN_REGIONAL,
+  placespec: DN_LOCAL,
+  col: SN_HOUSING,
+  amen: SN_AMENITIES,
 };
 
-/** themes for a picked descent — the leaf at its end decides */
-export const pathThemes = (path: string[]): ThemeDef[] =>
-  (LEAF_THEMES[path[path.length - 1]] ?? []).map((id) => THEMES[id]);
-
-/** the spec's standing block on the positive shocks — themes that apply
- *  regardless of the fork ("what could I do better?") */
-export const branchBetterThemes = (path: string[]): ThemeDef[] =>
-  (QUAD_BRANCH_SPEC[path[0] as BranchSide]?.better ?? []).map(
-    (id) => THEMES[id],
-  );
+/** the modules for a picked descent — the node it ends on decides */
+export const pathModules = (path: string[]): ModuleDef[] =>
+  (LEAF_MODULES[path[path.length - 1]] ?? []).map((id) => MODULES[id]);

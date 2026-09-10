@@ -6,9 +6,11 @@ import type { Ref } from "react";
 import {
   PLACEHOLDER_BRANCHES,
   TREE_SIDE_COLOR,
+  quadName,
   sideDash,
   type BranchSide,
 } from "../../data/figures";
+import { QuadMark, QuadMetrics, nameWidth } from "./quadIcons";
 import {
   branchForks,
   hasLeaves,
@@ -90,7 +92,8 @@ const S_LEAF_H2 = 42;
 const sideHeads = (forks2: boolean) => ({
   HX: forks2 ? 444 : 450,
   HW: forks2 ? 210 : 280,
-  HH: forks2 ? 44 : 60,
+  /* room for the city type and its two dials */
+  HH: forks2 ? 50 : 66,
 });
 
 /** the sideways tree's landmarks in stage coords — its columns and the
@@ -351,19 +354,21 @@ export function SidewaysTree(p: WalkViewProps) {
             {/* the answer rides the run into the head — trailing off to
                 the left, except on a row so close to the root's that it
                 would cross the root card, where it sits above the head */}
-            <text
-              className="nv-elab"
-              x={Math.abs(rowY(bi) - S_CY) < 60 ? HX : S_BUS1 - 8}
-              y={
-                Math.abs(rowY(bi) - S_CY) < 60
-                  ? rowY(bi) - HH / 2 - 8
-                  : rowY(bi) - 8
-              }
-              textAnchor={Math.abs(rowY(bi) - S_CY) < 60 ? "middle" : "end"}
-              fill={TREE_SIDE_COLOR[b.id]}
-            >
-              {b.edge}
-            </text>
+            {!quadName(b.id) && (
+              <text
+                className="nv-elab"
+                x={Math.abs(rowY(bi) - S_CY) < 60 ? HX : S_BUS1 - 8}
+                y={
+                  Math.abs(rowY(bi) - S_CY) < 60
+                    ? rowY(bi) - HH / 2 - 8
+                    : rowY(bi) - 8
+                }
+                textAnchor={Math.abs(rowY(bi) - S_CY) < 60 ? "middle" : "end"}
+                fill={TREE_SIDE_COLOR[b.id]}
+              >
+                {b.edge}
+              </text>
+            )}
           </g>
         );
       })}
@@ -429,7 +434,7 @@ export function SidewaysTree(p: WalkViewProps) {
             y={S_CY - S_ROOT.h / 2}
             width={S_ROOT.w}
             height={S_ROOT.h}
-            rx={9}
+            rx={6}
             stroke="#8a867e"
           />
           {splitQ(sh.rootQuestion).map((line, i, all) => (
@@ -458,22 +463,57 @@ export function SidewaysTree(p: WalkViewProps) {
                 y={rowY(bi) - HH / 2}
                 width={HW}
                 height={HH}
-                rx={8}
+                rx={6}
                 stroke={TREE_SIDE_COLOR[b.id]}
                 strokeDasharray={sideDash(b.id)}
               />
-              {(b.titleLines ?? [b.title]).map((line, li, all) => (
-                <text
-                  key={li}
-                  x={HX}
-                  y={rowY(bi) + 5 - (all.length - 1) * 9 + li * 18}
-                  textAnchor="middle"
-                  fontSize={Math.min(sh.headSize ?? 17.5, 16.5)}
-                  fill={TREE_SIDE_COLOR[b.id]}
-                >
-                  {line}
-                </text>
-              ))}
+              {quadName(b.id) ? (
+                /* the landing's mark, the city type and its two dials as
+                   stat-chip icons — the upright tree's head, sideways */
+                <>
+                  {(() => {
+                    const fs = Math.min(sh.headSize ?? 17.5, 16.5);
+                    const mark = fs * 1.3;
+                    const gap = 6;
+                    const w = mark + gap + nameWidth(quadName(b.id)!, fs);
+                    const x0 = HX - w / 2;
+                    return (
+                      <>
+                        <QuadMark
+                          side={b.id}
+                          x={x0}
+                          y={rowY(bi) - 4 - mark * 0.78}
+                          size={mark}
+                          color={TREE_SIDE_COLOR[b.id]}
+                        />
+                        <text
+                          x={x0 + mark + gap}
+                          y={rowY(bi) - 4}
+                          textAnchor="start"
+                          fontSize={fs}
+                          fill={TREE_SIDE_COLOR[b.id]}
+                        >
+                          {quadName(b.id)}
+                        </text>
+                      </>
+                    );
+                  })()}
+                  <QuadMetrics side={b.id} x={HX} y={rowY(bi) + 13} />
+                </>
+              ) : (
+                (b.titleLines ?? [b.title]).map((line, li, all) => (
+                  <text
+                    key={li}
+                    x={HX}
+                    y={rowY(bi) + 5 - (all.length - 1) * 9 + li * 18}
+                    textAnchor="middle"
+                    fontSize={Math.min(sh.headSize ?? 17.5, 16.5)}
+                    fill={TREE_SIDE_COLOR[b.id]}
+                  >
+                    {line}
+                  </text>
+                ))
+              )}
             </g>
           </g>
         );
@@ -506,7 +546,7 @@ export function SidewaysTree(p: WalkViewProps) {
                   y={y - lh / 2}
                   width={S_LEAF.w}
                   height={lh}
-                  rx={8}
+                  rx={6}
                   stroke={TREE_SIDE_COLOR[b.id]}
                 />
                 {lines.map((line, i, all) => (

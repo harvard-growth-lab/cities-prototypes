@@ -3024,6 +3024,7 @@ export function loadTreemaps(){
     const svg = d3.select(el);
     const TEAL = token("--teal", "#255862");
     const MUTED = "#a9c2c7";
+    const ORANGE = token("--orange", "#e76565");
 
     const box = (n, dx) => ({ x: n.x0 + (dx || 0), y: n.y0,
                               w: Math.max(0, n.x1 - n.x0), h: Math.max(0, n.y1 - n.y0) });
@@ -3048,9 +3049,8 @@ export function loadTreemaps(){
     const posFull = new Map(full.leaves().map(n => [n.data.name, box(n)]));
     /* the same industries with the sector walls taken down, so the biggest
        run from the top-left corner in plain order of size */
-    const posFlat = stripLayout(industryData, MI_W, MI_H);
     let view = "map";
-    const spot = d => (view === "alt" ? posFlat : posFull).get(d.name) || posFull.get(d.name);
+    const spot = d => posFull.get(d.name);
 
     const GAP = 8, HALF = (MI_W - GAP) / 2;
     const outward = industryData.filter(d => tradabilityOf(d.name) >= 0.5);
@@ -3061,40 +3061,180 @@ export function loadTreemaps(){
     tmap(local, HALF, MI_H, false).leaves()
       .forEach(n => posSplit.set(n.data.name, box(n, HALF + GAP)));
 
-    const ranked = specializedWithPeers(industryData).sort((a, b) => b.rca - a.rca).slice(0, MI_TOP_N);
-    const rankIdx = new Map(ranked.map((d, i) => [d.name, i]));
-    const rankRow = new Map(ranked.map(d => [d.name, d]));
+    /* ---- three clusters by tradability, the most tradable on the left.
+       Column width is the cluster's share of jobs; inside each column the
+       industries keep their sector walls, so colour stays the sector's and
+       position alone carries tradability. ---- */
+    const CL_HI = 0.5, CL_LO = 0.35;
+    const clusterOf = d => { const t = tradabilityOf(d.name); return t >= CL_HI ? 0 : t >= CL_LO ? 1 : 2; };
+    const clusterRows = [0, 1, 2].map(k => industryData.filter(d => clusterOf(d) === k));
+    const jobsTotal = d3.sum(industryData, d => d.employ) || 1;
+    const clusterShare = clusterRows.map(l => d3.sum(l, d => d.employ) / jobsTotal);
+    const CGAP = 8, CW = MI_W - 2 * CGAP;
+    const posCluster = new Map(), posClusterFlat = new Map();
+    {
+      let x0 = 0;
+      clusterRows.forEach((l, k) => {
+        const w = Math.max(36, CW * clusterShare[k]);
+        if (l.length){
+          tmap(l, w, MI_H, true).leaves()
+            .forEach(n => posCluster.set(n.data.name, box(n, x0)));
+          /* the same column in plain size order, for the Ordered view */
+          const off = x0;
+          stripLayout(l, w, MI_H).forEach((b, name) =>
+            posClusterFlat.set(name, { x: b.x + off, y: b.y, w: b.w, h: b.h }));
+        }
+        x0 += w + CGAP;
+      });
+    }
+    const clusterSpot = d => posCluster.get(d.name) || posFull.get(d.name);
+    /* how the clusters are coloured: only the most tradable cluster keeps its
+       sector colours, and the other two step down through two tones of grey —
+       the darker for the band that sells some of what it makes outward, the
+       lighter for the work that stays. The two greys are near-neutral and a
+       good way apart in lightness, so they hold for colour-blind readers and
+       in print, where a fade would not. */
+    const GREY_MID = "#6b7480";
+    const clusterFill = d => clusterOf(d) === 0 ? sectorColors[d.sector]
+                           : clusterOf(d) === 1 ? GREY_MID : GREY;
+    /* the tradable cluster alone, filling the width: the tradability-first
+       narrative's second beat colours it by complexity */
+    const tradRows = clusterRows[0];
+    const posTrad = new Map(tradRows.length
+      ? tmap(tradRows, MI_W, MI_H, true).leaves().map(n => [n.data.name, box(n)]) : []);
+    const posTradFlat = tradRows.length ? stripLayout(tradRows, MI_W, MI_H) : new Map();
+    const tradSpot = d => posTrad.get(d.name);
+
+    /* ---- Ordered by jobs: the same cells as a ranked bar chart. The top
+       rows by jobs become bars, named on the left and valued at the end;
+       every other cell keeps its place in the map and fades, so it can come
+       back when the map does. One ranking is over the whole mix, one over
+       the tradable cluster for the beat that shows that alone. ---- */
+    const NB = 25, BML = 292, BMT = 48, BRH = 18.0, BBAR = 12, BPR = 812;
+    const byJobsAll = industryData.slice().sort((a, b) => b.employ - a.employ);
+    const barScale = d3.scaleLinear()
+      .domain([0, (byJobsAll[0] ? byJobsAll[0].employ : 1) * 1.04]).range([BML + 12, BPR]);
+    const barRankAll = new Map(byJobsAll.slice(0, NB).map((d, i) => [d.name, i]));
+    const byJobsTrad = clusterRows[0].slice().sort((a, b) => b.employ - a.employ);
+    const barRankTrad = new Map(byJobsTrad.slice(0, NB).map((d, i) => [d.name, i]));
+    const barY = i => BMT + i * BRH + BRH / 2;
+    const asBars = (d, rankMap, fill, fallback) => {
+      const r = rankMap.get(d.name);
+      return r == null
+        ? { box: fallback, fill, op: 0, rx: 0 }
+        : { box: { x: barScale(0), y: barY(r) - BBAR / 2,
+                   w: Math.max(2, barScale(d.employ) - barScale(0)), h: BBAR }, fill, op: 1, rx: 3 };
+    };
+    window[ctlName + "_CLUSTERS"] = { share: clusterShare, gap: CGAP, width: MI_W };
+
     const ML = 292, MT = 62, RH = 34, BAR_H = 17, PLOT_R = 812;
-    const xr = d3.scaleLinear()
-      .domain([1, d3.max(ranked, d => Math.max(d.rca, d.peerAvg)) * 1.06])
-      .range([ML + 12, PLOT_R]);
     const rowY = i => MT + i * RH + RH / 2;
+    /* A ranking over a set of industries: the top twelve by concentration,
+       with the scale they need. Two are kept. One is over the whole mix, for
+       the narrative that reads sector first; the other is over the tradable
+       cluster alone, for the narrative that reads tradability first, so its
+       bars only ever rise from cells that were on screen the beat before. */
+    function ranking(rows){
+      const ranked = specializedWithPeers(rows).sort((a, b) => b.rca - a.rca).slice(0, MI_TOP_N);
+      return { ranked,
+        rankIdx: new Map(ranked.map((d, i) => [d.name, i])),   /* by concentration: the badges' order */
+        pos: new Map(ranked.map((d, i) => [d.name, i])),       /* the order on screen, which sorting changes */
+        rankRow: new Map(ranked.map(d => [d.name, d])),
+        xr: d3.scaleLinear()
+          .domain([1, (d3.max(ranked, d => Math.max(d.rca, d.peerAvg)) || 2) * 1.06])
+          .range([ML + 12, PLOT_R]),
+        /* the gap against the peer average, symmetric so the average sits
+           mid-chart: ahead to the right, behind to the left */
+        xg: (function(){
+          const g = Math.max(0.5, (d3.max(ranked, d => Math.abs(d.rca - d.peerAvg)) || 0.5) * 1.15);
+          return d3.scaleLinear().domain([-g, g]).range([ML + 12, PLOT_R]);
+        })() };
+    }
+    const gapOf = d => d.rca - d.peerAvg;
+    const gapBox = (R, d, pos) => {
+      const g = gapOf(d), x0 = Math.min(R.xg(0), R.xg(g));
+      return { x: x0, y: rowY(pos) - BAR_H / 2, w: Math.max(2, Math.abs(R.xg(g) - R.xg(0))), h: BAR_H };
+    };
+    /* the three orders a reader can ask for: how concentrated, how big, and
+       how far ahead of or behind the peers */
+    const SORTS = {
+      rca:  (a, b) => b.rca - a.rca,
+      jobs: (a, b) => b.employ - a.employ,
+      gap:  (a, b) => (b.rca - b.peerAvg) - (a.rca - a.peerAvg)
+    };
+    let sortKey = "rca";
+    function reorder(R){
+      const order = R.ranked.slice().sort(SORTS[sortKey] || SORTS.rca);
+      R.pos = new Map(order.map((d, i) => [d.name, i]));
+    }
+    const R1 = ranking(industryData), R2 = ranking(clusterRows[0]);
+    const ranked = R1.ranked, rankIdx = R1.rankIdx, rankRow = R1.rankRow, xr = R1.xr;
 
     /* every industry, with everything each state needs to place and paint it */
     const cells = industryData.map(d => ({
       name: d.name, sector: d.sector, employ: d.employ,
       rank: rankIdx.has(d.name) ? rankIdx.get(d.name) : -1,
-      row: rankRow.get(d.name) || null
+      row: rankRow.get(d.name) || null,
+      rank2: R2.rankIdx.has(d.name) ? R2.rankIdx.get(d.name) : -1,
+      row2: R2.rankRow.get(d.name) || null
     }));
 
     const STATE = {
-      0: d => ({ box: spot(d), fill: sectorColors[d.sector], op: 1, rx: 0 }),
-      1: d => ({ box: spot(d), fill: complexityColor(d.name), op: 1, rx: 0 }),
+      0: d => view === "alt" ? asBars(d, barRankAll, sectorColors[d.sector], spot(d))
+                             : { box: spot(d), fill: sectorColors[d.sector], op: 1, rx: 0 },
+      1: d => view === "alt" ? asBars(d, barRankAll, complexityColor(d.name), spot(d))
+                             : { box: spot(d), fill: complexityColor(d.name), op: 1, rx: 0 },
       2: d => ({ box: posSplit.get(d.name) || posFull.get(d.name),
                  fill: tradabilityOf(d.name) >= 0.5 ? sectorColors[d.sector] : GREY,
                  op: 1, rx: 0 }),
       3: d => d.rank < 0
         ? { box: posSplit.get(d.name) || posFull.get(d.name), fill: GREY, op: 0, rx: 0 }
-        : { box: { x: xr(1), y: rowY(d.rank) - BAR_H / 2,
-                   w: Math.max(2, xr(d.row.rca) - xr(1)), h: BAR_H },
-            fill: d.rank < 3 ? TEAL : MUTED, op: 1, rx: 3 }
+        : sortKey === "gap"
+          ? { box: gapBox(R1, d.row, R1.pos.get(d.name)), fill: gapOf(d.row) >= 0 ? TEAL : ORANGE, op: 1, rx: 3 }
+          : { box: { x: xr(1), y: rowY(R1.pos.get(d.name)) - BAR_H / 2,
+                     w: Math.max(2, xr(d.row.rca) - xr(1)), h: BAR_H },
+              fill: d.rank < 3 ? TEAL : MUTED, op: 1, rx: 3 },
+      /* the three clusters: sector colour where the work can travel, grey
+         where it serves the people already here */
+      4: d => view === "alt"
+        ? asBars(d, barRankAll, clusterFill(d), clusterSpot(d))
+        : { box: clusterSpot(d), fill: clusterFill(d), op: 1, rx: 0 },
+      /* the tradable cluster on its own, the full width, read by complexity;
+         everything else stays where the clusters left it and fades */
+      5: d => clusterOf(d) === 0
+        ? (view === "alt"
+            ? asBars(d, barRankTrad, complexityColor(d.name), tradSpot(d) || posFull.get(d.name))
+            : { box: tradSpot(d) || posFull.get(d.name), fill: complexityColor(d.name), op: 1, rx: 0 })
+        : { box: clusterSpot(d), fill: GREY, op: 0, rx: 0 },
+      /* the most tradable cluster alone, the full width, in sector colours:
+         opt-2's opening frame. The rest wait unseen where the clusters would
+         put them, so "Show all industries" fades them in without a journey */
+      7: d => clusterOf(d) === 0
+        ? (view === "alt"
+            ? asBars(d, barRankTrad, sectorColors[d.sector], tradSpot(d) || posFull.get(d.name))
+            : { box: tradSpot(d) || posFull.get(d.name), fill: sectorColors[d.sector], op: 1, rx: 0 })
+        : { box: clusterSpot(d), fill: GREY, op: 0, rx: 0 },
+      /* the ranking over the tradable cluster: what opt-2's third beat shows */
+      6: d => d.rank2 < 0
+        ? { box: clusterSpot(d), fill: GREY, op: 0, rx: 0 }
+        : sortKey === "gap"
+          ? { box: gapBox(R2, d.row2, R2.pos.get(d.name)), fill: gapOf(d.row2) >= 0 ? TEAL : ORANGE, op: 1, rx: 3 }
+          : { box: { x: R2.xr(1), y: rowY(R2.pos.get(d.name)) - BAR_H / 2,
+                     w: Math.max(2, R2.xr(d.row2.rca) - R2.xr(1)), h: BAR_H },
+              fill: d.rank2 < 3 ? TEAL : MUTED, op: 1, rx: 3 }
     };
 
     /* ---- the marks ---- */
     svg.selectAll("*").remove();
     const gAxis = svg.append("g").attr("class", "mi-axis").style("opacity", 0);
+    const gAxis2 = svg.append("g").attr("class", "mi-axis").style("opacity", 0);
+    const gAxisGap  = svg.append("g").attr("class", "mi-axis").style("opacity", 0);
+    const gAxisGap2 = svg.append("g").attr("class", "mi-axis").style("opacity", 0);
     const gCells = svg.append("g").attr("class", "mi-cells");
     const gRows  = svg.append("g").attr("class", "mi-rows").style("opacity", 0);
+    const gRows2 = svg.append("g").attr("class", "mi-rows").style("opacity", 0);
+    const gBarsAll  = svg.append("g").attr("class", "mi-rows mi-bars").style("opacity", 0);
+    const gBarsTrad = svg.append("g").attr("class", "mi-rows mi-bars").style("opacity", 0);
     let coarseCell = null, posCoarse = null, posCoarseFlat = null, coarseShare = null;
     if (opts.adminReveal){
       /* This beat asks how much of the METRO's work happens in the city, so
@@ -3138,48 +3278,126 @@ export function loadTreemaps(){
     cell.append("rect").attr("class", "mi-rect cell");
     cell.append("text").attr("class", "mi-lab");
 
-    /* the ranking's own furniture, drawn once and revealed with state 3 */
-    gAxis.selectAll("g.mi-tick").data(xr.ticks(5).filter(t => t >= 1)).join("g")
-      .attr("class", "mi-tick")
-      .call(g => g.append("line").attr("class", d => "mi-grid" + (d === 1 ? " is-base" : ""))
-        .attr("x1", d => xr(d)).attr("x2", d => xr(d))
-        .attr("y1", MT - 18).attr("y2", MT + ranked.length * RH))
-      .call(g => g.append("text").attr("class", "mi-ticklab")
-        .attr("x", d => xr(d)).attr("y", MT - 24).attr("text-anchor", "middle")
-        .text(d => d + "×"));
-    gAxis.append("text").attr("class", "mi-axname")
-      .attr("x", ML + 12).attr("y", MT - 42)
-      .text("Times more concentrated here than in a typical US metro");
-    /* the leading three, named where they sit */
-    const topN = Math.min(3, ranked.length);
-    if (topN){
-      const y0 = rowY(0) - BAR_H / 2 - 5, y1 = rowY(topN - 1) + BAR_H / 2 + 5;
-      gAxis.append("path").attr("class", "mi-brace").attr("d", "M4," + y0 + "V" + y1);
-      gAxis.append("text").attr("class", "mi-toplab")
-        .attr("x", 4).attr("y", y0 - 9)
-        .text("Most specialized tradable industries");
+    /* the ranking's own furniture, drawn once per ranking and revealed with
+       its state: the axis and its name, the leading three braced, and each
+       row's name, value, peer tick and badge */
+    function drawGapAxis(R, AG){
+      const ticks = R.xg.ticks(5);
+      AG.selectAll("g.mi-tick").data(ticks).join("g").attr("class", "mi-tick")
+        .call(g => g.append("line").attr("class", d => "mi-grid" + (d === 0 ? " is-base" : ""))
+          .attr("x1", d => R.xg(d)).attr("x2", d => R.xg(d))
+          .attr("y1", MT - 18).attr("y2", MT + R.ranked.length * RH))
+        .call(g => g.append("text").attr("class", "mi-ticklab")
+          .attr("x", d => R.xg(d)).attr("y", MT - 24).attr("text-anchor", "middle")
+          .text(d => (d > 0 ? "+" : "") + d + "\u00d7"));
+      AG.append("text").attr("class", "mi-axname")
+        .attr("x", ML + 12).attr("y", MT - 42)
+        .text("Concentration against the four peers\u2019 average: ahead to the right, behind to the left");
+      AG.append("text").attr("class", "mi-colhead")
+        .attr("x", MI_W - 6).attr("y", MT - 24).attr("text-anchor", "end").text("jobs");
     }
+    function drawRanking(R, A, G){
+      A.selectAll("g.mi-tick").data(R.xr.ticks(5).filter(t => t >= 1)).join("g")
+        .attr("class", "mi-tick")
+        .call(g => g.append("line").attr("class", d => "mi-grid" + (d === 1 ? " is-base" : ""))
+          .attr("x1", d => R.xr(d)).attr("x2", d => R.xr(d))
+          .attr("y1", MT - 18).attr("y2", MT + R.ranked.length * RH))
+        .call(g => g.append("text").attr("class", "mi-ticklab")
+          .attr("x", d => R.xr(d)).attr("y", MT - 24).attr("text-anchor", "middle")
+          .text(d => d + "\u00d7"));
+      A.append("text").attr("class", "mi-axname")
+        .attr("x", ML + 12).attr("y", MT - 42)
+        .text("Times more concentrated here than in a typical US metro");
+      /* the jobs column: its head, and each row's count at the right edge */
+      A.append("text").attr("class", "mi-colhead")
+        .attr("x", MI_W - 6).attr("y", MT - 24).attr("text-anchor", "end").text("jobs");
+      /* the leading three by concentration, braced only while that is the order */
+      const topN = Math.min(3, R.ranked.length);
+      R.brace = A.append("g").attr("class", "mi-bracewrap");
+      if (topN){
+        const y0 = rowY(0) - BAR_H / 2 - 5, y1 = rowY(topN - 1) + BAR_H / 2 + 5;
+        R.brace.append("path").attr("class", "mi-brace").attr("d", "M4," + y0 + "V" + y1);
+        R.brace.append("text").attr("class", "mi-toplab")
+          .attr("x", 4).attr("y", y0 - 9)
+          .text("Most specialized tradable industries");
+      }
+      const row = G.selectAll("g.mi-row").data(R.ranked, d => d.name)
+        .join("g").attr("class", "mi-row")
+        .attr("transform", d => "translate(0," + rowY(R.pos.get(d.name)) + ")");
+      const top = d => R.rankIdx.get(d.name) < 3;
+      row.append("text").attr("class", d => "mi-name" + (top(d) ? " is-top" : ""))
+        .attr("x", ML - 10).attr("y", 4).attr("text-anchor", "end").text(d => d.label);
+      row.append("text").attr("class", d => "mi-val" + (top(d) ? " is-top" : ""))
+        .attr("x", d => Math.max(R.xr(d.rca), R.xr(d.peerAvg)) + 9).attr("y", 4)
+        .text(d => d.rca.toFixed(1) + "\u00d7");
+      row.append("line").attr("class", "mi-peer")
+        .attr("x1", d => R.xr(d.peerAvg)).attr("x2", d => R.xr(d.peerAvg))
+        .attr("y1", -BAR_H / 2 - 4).attr("y2", BAR_H / 2 + 4);
+      /* the jobs column: the count, and a short bar beneath it so size reads
+         as a second small chart in every order the rows can take */
+      const jb = d3.scaleLinear().domain([0, d3.max(R.ranked, d => d.employ) || 1]).range([0, 58]);
+      row.append("text").attr("class", "mi-jobs")
+        .attr("x", MI_W - 6).attr("y", 1).attr("text-anchor", "end")
+        .text(d => d.employ >= 1000 ? Math.round(d.employ / 1000) + "K" : Math.round(d.employ));
+      row.append("rect").attr("class", "mi-jobsbar")
+        .attr("x", d => MI_W - 6 - jb(d.employ)).attr("y", 5)
+        .attr("width", d => Math.max(1, jb(d.employ))).attr("height", 4).attr("rx", 2);
+      row.filter(top).call(g => {
+        g.append("circle").attr("class", "mi-badge-bg").attr("cx", 14).attr("cy", 0).attr("r", 9);
+        g.append("text").attr("class", "mi-badge").attr("x", 14).attr("y", 3.5)
+          .attr("text-anchor", "middle").text(d => R.rankIdx.get(d.name) + 1);
+      });
+      R.row = row;
+    }
+    /* the rows to their places in the current order */
+    function placeRanking(R, animate){
+      if (!R.row) return;
+      const dur = animate ? 800 : 0;
+      const t = sel => dur ? sel.transition().duration(dur).ease(d3.easeCubicInOut) : sel;
+      t(R.row).attr("transform", d => "translate(0," + rowY(R.pos.get(d.name)) + ")");
+      (dur ? R.brace.transition().duration(dur / 2) : R.brace)
+        .style("opacity", sortKey === "rca" ? 1 : 0);
+      /* under the peers order the value is the gap, printed at the bar's
+         far end; the peer tick stands down, since the average is the line */
+      const gap = sortKey === "gap";
+      const val = R.row.select(".mi-val");
+      val.text(d => gap ? ((gapOf(d) >= 0 ? "+" : "\u2212") + Math.abs(gapOf(d)).toFixed(1) + "\u00d7")
+                        : d.rca.toFixed(1) + "\u00d7");
+      t(val).attr("x", d => gap ? (gapOf(d) >= 0 ? R.xg(gapOf(d)) + 8 : R.xg(gapOf(d)) - 8)
+                                : Math.max(R.xr(d.rca), R.xr(d.peerAvg)) + 9)
+        .attr("text-anchor", d => gap && gapOf(d) < 0 ? "end" : "start");
+      t(R.row.select(".mi-peer")).style("opacity", gap ? 0 : 1);
+    }
+    drawRanking(R1, gAxis, gRows);
+    drawRanking(R2, gAxis2, gRows2);
+    drawGapAxis(R1, gAxisGap);
+    drawGapAxis(R2, gAxisGap2);
 
-    const row = gRows.selectAll("g.mi-row").data(ranked, d => d.name)
-      .join("g").attr("class", "mi-row");
-    row.append("text").attr("class", d => "mi-name" + (rankIdx.get(d.name) < 3 ? " is-top" : ""))
-      .attr("x", ML - 10).attr("y", d => rowY(rankIdx.get(d.name)) + 4)
-      .attr("text-anchor", "end").text(d => d.label);
-    row.append("text").attr("class", d => "mi-val" + (rankIdx.get(d.name) < 3 ? " is-top" : ""))
-      .attr("x", d => Math.max(xr(d.rca), xr(d.peerAvg)) + 9)
-      .attr("y", d => rowY(rankIdx.get(d.name)) + 4)
-      .text(d => d.rca.toFixed(1) + "×");
-    row.append("line").attr("class", "mi-peer")
-      .attr("x1", d => xr(d.peerAvg)).attr("x2", d => xr(d.peerAvg))
-      .attr("y1", d => rowY(rankIdx.get(d.name)) - BAR_H / 2 - 4)
-      .attr("y2", d => rowY(rankIdx.get(d.name)) + BAR_H / 2 + 4);
-    row.filter(d => rankIdx.get(d.name) < 3).call(g => {
-      g.append("circle").attr("class", "mi-badge-bg")
-        .attr("cx", 14).attr("cy", d => rowY(rankIdx.get(d.name))).attr("r", 9);
-      g.append("text").attr("class", "mi-badge")
-        .attr("x", 14).attr("y", d => rowY(rankIdx.get(d.name)) + 3.5)
-        .attr("text-anchor", "middle").text(d => rankIdx.get(d.name) + 1);
-    });
+    /* the bars' furniture: a jobs axis, the names on the left, the value at
+       each bar's end */
+    const fmtJobs = v => v >= 1000 ? Math.round(v / 1000) + "K" : String(Math.round(v));
+    const shortName = n => n.length > 36 ? n.slice(0, 35).replace(/\s+\S*$/, "") + "\u2026" : n;
+    function drawBars(list, G){
+      const rows = list.slice(0, NB);
+      G.selectAll("g.mi-tick").data(barScale.ticks(4)).join("g").attr("class", "mi-tick")
+        .call(g => g.append("line").attr("class", d => "mi-grid" + (d === 0 ? " is-base" : ""))
+          .attr("x1", d => barScale(d)).attr("x2", d => barScale(d))
+          .attr("y1", BMT - 14).attr("y2", BMT + rows.length * BRH))
+        .call(g => g.append("text").attr("class", "mi-ticklab")
+          .attr("x", d => barScale(d)).attr("y", BMT - 20).attr("text-anchor", "middle")
+          .text(d => fmtJobs(d)));
+      G.append("text").attr("class", "mi-axname")
+        .attr("x", BML + 12).attr("y", BMT - 36).text("Jobs in the metro");
+      const row = G.selectAll("g.mi-row").data(rows, d => d.name).join("g").attr("class", "mi-row");
+      row.append("text").attr("class", "mi-name")
+        .attr("x", BML - 10).attr("y", (d, i) => barY(i) + 4).attr("text-anchor", "end")
+        .text(d => shortName(d.name));
+      row.append("text").attr("class", "mi-val")
+        .attr("x", d => barScale(d.employ) + 8).attr("y", (d, i) => barY(i) + 4)
+        .text(d => fmtJobs(d.employ));
+    }
+    drawBars(byJobsAll, gBarsAll);
+    drawBars(byJobsTrad, gBarsTrad);
 
     let step = -1;
     const reduced = () => window.matchMedia &&
@@ -3200,18 +3418,26 @@ export function loadTreemaps(){
       /* labels ride the cells while there is room for them, and stand down
          once the mix becomes a ranking that carries its own names */
       const labs = cell.select(".mi-lab");
-      if (i === 3){
+      const barsOn = view === "alt" && (i === 0 || i === 1 || i === 4 || i === 5 || i === 7);
+      if (i === 3 || i === 6 || barsOn){
         (dur ? labs.transition().duration(dur / 3) : labs).style("opacity", 0);
       } else {
         labs.attr("x", d => at(d).box.x + 4).attr("y", d => at(d).box.y + 11)
           .text(d => fitLabel(d.name, { width: at(d).box.w, height: at(d).box.h }));
         (dur ? labs.transition().delay(dur / 2).duration(dur / 2) : labs)
-          .style("opacity", 1);
+          .style("opacity", d => at(d).op > 0 ? 1 : 0);
       }
       const show = (g, on) => (dur ? g.transition().duration(dur / 2) : g)
         .style("opacity", on ? 1 : 0);
-      show(gAxis, i === 3);
+      const gapMode = sortKey === "gap";
+      show(gAxis, i === 3 && !gapMode);
+      show(gAxisGap, i === 3 && gapMode);
       show(gRows, i === 3);
+      show(gAxis2, i === 6 && !gapMode);
+      show(gAxisGap2, i === 6 && gapMode);
+      show(gRows2, i === 6);
+      show(gBarsAll, barsOn && i !== 5 && i !== 7);
+      show(gBarsTrad, barsOn && (i === 5 || i === 7));
       /* on the reveal section the opening beat rests on the admin bands: the
          cells fade first, the blocks behind them come forward, and the veil
          drops last. Leaving the beat runs the same three in reverse. */
@@ -3233,17 +3459,121 @@ export function loadTreemaps(){
       }
     }
 
+    function setView(v){
+      if (v === view) return;
+      view = v;
+      fig.dataset.view = view;
+      const ve = document.getElementById(p + "View");
+      if (ve) ve.querySelectorAll(".seg-btn").forEach(x => {
+        const on = x.dataset.view === view;
+        x.classList.toggle("is-active", on);
+        x.setAttribute("aria-pressed", String(on));
+      });
+    }
+
+    /* opt-2 opens on the most tradable alone and offers the rest on request:
+       the scope is that choice. It is not sticky — every arrival at the beat
+       opens on the most tradable, as the beat's text says it does. */
+    let scope = "trad";
+    const scopeBtn = document.getElementById(p + "ScopeBtn");
+    function showScope(){
+      fig.dataset.scope = scope;
+      if (!scopeBtn) return;
+      const all = scope === "all";
+      scopeBtn.classList.toggle("is-active", all);
+      scopeBtn.setAttribute("aria-pressed", String(all));
+      scopeBtn.textContent = all ? "Back to the most tradable" : "Show all industries";
+    }
+    function setScope(sc){
+      sc = sc === "all" ? "all" : "trad";
+      if (sc === scope) return;
+      scope = sc; showScope();
+      if (step !== 7 && step !== 4) return;
+      /* the rest arrive in one tween: the coloured cells shrink into their
+         column, the greys fade in where they stand; and back the same way */
+      const to = scope === "all" ? 4 : 7;
+      step = to;
+      fig.dataset.step = String(to);
+      paint(to, !reduced());
+    }
+    if (scopeBtn) scopeBtn.addEventListener("click", () => setScope(scope === "all" ? "trad" : "all"));
+    showScope();
+
     window[ctlName] = { setStep: function(i){
-      i = Math.max(0, Math.min(3, i | 0));
+      i = Math.max(0, Math.min(7, i | 0));
       if (i === step) return;
       const first = step < 0;
       step = i;
       fig.dataset.step = String(i);
+      if (i === 7 && scope !== "trad"){ scope = "trad"; showScope(); }
+      /* the clusters are a movement between columns, and the ranked bars
+         have none: the beat opens as the map however the last one was left */
+      if (i === 4) setView("map");
       /* the reveal section opens on the metro's own mix and only then shows
          the city's part of it, so its first beat is played, not painted */
       if (first && i === 0 && opts.adminReveal){ paintMetroFirst(); return; }
       paint(i, !first && !reduced());
-    } };
+    }, setScope: setScope,
+    /* which narrative is reading the figure, for the furniture that differs
+       between them (opt-1 has no rule between its direction words) */
+    setOpt: function(o){ fig.dataset.opt = String(o); } };
+
+    /* the clusters' furniture: the header's columns and the captions share
+       the columns' widths, and the captions carry each cluster's share */
+    (function clusterFurniture(){
+      const head = document.getElementById(p + "ClusterHead");
+      const pct = v => Math.round(v * 100) + "%";
+      const colsEl = head && (head.querySelector(".mcl-cols") || head);
+      if (colsEl) [].forEach.call(colsEl.children, (c, k) => {
+        const pc = c.querySelector(".pct"); if (pc) pc.textContent = "(" + pct(clusterShare[k]) + ")";
+      });
+      /* the header of the opening frame, which shows the most tradable alone */
+      const tradHead = document.getElementById(p + "TradHead");
+      if (tradHead){ const pc = tradHead.querySelector(".pct");
+        if (pc) pc.textContent = "(" + pct(clusterShare[0]) + " of metro jobs)"; }
+      /* each name sits over its own column, so the header is measured from
+         the chart rather than from the slot that holds it — the slot runs a
+         little wider, and a share of that width would drift the names right */
+      function sizeClusterHead(){
+        if (!head || !colsEl) return;
+        const w = el.getBoundingClientRect().width || MI_W, sc = w / MI_W;
+        head.style.width = w + "px";
+        colsEl.style.gap = (CGAP * sc) + "px";
+        [].forEach.call(colsEl.children, (c, k) => {
+          c.style.flexBasis = (Math.max(36, CW * clusterShare[k]) * sc) + "px";
+        });
+      }
+      sizeClusterHead();
+      window.addEventListener("resize", sizeClusterHead);
+      /* the three-segment donut in the beat's text: one for each way the
+         clusters are coloured, each segment wearing the tone its column
+         wears on the map */
+      const names = ["Sells outside the metro", "Some of both", "Serves the metro"];
+      const donut = (host, cols) => {
+        if (!host || !window.d3) return;
+        const R = 30, r = 19;
+        const arc = d3.arc().innerRadius(r).outerRadius(R);
+        /* a hair of white between the segments, so the two greys meet as two
+           tones rather than as one band */
+        const pie = d3.pie().sort(null).padAngle(0.06).value(d => d)(clusterShare);
+        let svg = '<svg class="cl-donut" viewBox="0 0 64 64" width="64" height="64" aria-hidden="true">' +
+          '<g transform="translate(32,32)">';
+        pie.forEach((a, k) => { svg += '<path d="' + arc(a) + '" fill="' + cols[k] + '"/>'; });
+        svg += '</g></svg>';
+        host.innerHTML = svg + '<span class="cl-rows">' + names.map((n, k) =>
+          '<span class="cl-row"><i style="background:' + cols[k] + '"></i>' + n +
+          ' <b>(' + pct(clusterShare[k]) + ')</b></span>').join("") + '</span>';
+        host.hidden = false;
+      };
+      const teal = token("--teal", "#255862");
+      /* opt-1: the colour stands for the sectors the left column keeps, and
+         the two greys are the ones the other two columns are painted in */
+      donut(document.getElementById(p + "ClusterStatGrad"), [teal, GREY_MID, GREY]);
+      /* opt-2 opens on the most tradable alone, so its stat is that one share */
+      if (typeof donutStat === "function")
+        donutStat(document.getElementById(p + "TradStat"), clusterShare[0], teal,
+          "of metro jobs \u00b7 in the most tradable industries");
+    })();
 
     /* the coarse map, laid out for whichever arrangement is chosen. `split`
        says whether the blocks are showing their two shades yet. */
@@ -3340,17 +3670,26 @@ export function loadTreemaps(){
         const r = this.querySelector(".mi-rect");
         hot = r;
         let body = "";
-        if (step === 3 && d.row){
-          body = rowOf("Concentrated here", d.row.rca.toFixed(1) + "\u00d7 the US average") +
-                 rowOf("Peer metros average", d.row.peerAvg.toFixed(1) + "\u00d7") +
-                 rowOf("Share of metro jobs", pct(d.row.localPct)) +
-                 rowOf("Share in a typical metro", pct(d.row.worldPct));
+        const rrow = step === 6 ? d.row2 : d.row;
+        if ((step === 3 || step === 6) && rrow){
+          body = rowOf("Concentrated here", rrow.rca.toFixed(1) + "\u00d7 the US average") +
+                 rowOf("Peer metros average", rrow.peerAvg.toFixed(1) + "\u00d7") +
+                 rowOf("Share of metro jobs", pct(rrow.localPct)) +
+                 rowOf("Share in a typical metro", pct(rrow.worldPct));
         } else {
           body = rowOf("Sector", d.sector) +
                  rowOf("Jobs", Math.round(d.employ).toLocaleString());
-          if (step === 1) body += rowOf("Complexity (PCI)", pciNumOf(d.name).toFixed(2));
+          if (step === 1 || step === 5) body += rowOf("Complexity (PCI)", pciNumOf(d.name).toFixed(2));
+          /* the split reads two ways, the clusters three — the card says
+             what the beat on screen is actually showing */
           if (step === 2) body += rowOf("Tradability", tradabilityOf(d.name).toFixed(2)) +
             rowOf("Reads as", tradabilityOf(d.name) >= 0.5 ? "sells outward" : "serves locally");
+          if (step === 4 || step === 7){
+            const t = tradabilityOf(d.name);
+            body += rowOf("Tradability", t.toFixed(2)) +
+              rowOf("Reads as", t >= CL_HI ? "sells outside the metro"
+                              : t >= CL_LO ? "some of both" : "serves the metro");
+          }
         }
         tip.innerHTML = '<strong>' + (d.row ? d.row.label : d.name) + '</strong>' + body;
         tip.hidden = false;
@@ -3368,13 +3707,32 @@ export function loadTreemaps(){
       const b = ev.target.closest(".seg-btn");
       if (!b || b.dataset.view === view) return;
       view = b.dataset.view;
+      fig.dataset.view = view;
       viewEl.querySelectorAll(".seg-btn").forEach(x => {
         const on = x.dataset.view === view;
         x.classList.toggle("is-active", on);
         x.setAttribute("aria-pressed", String(on));
       });
       if (opts.adminReveal && step === 0){ placeCoarse(!reduced(), true); return; }
-      if (step === 0 || step === 1) paint(step, !reduced());
+      if (step === 0 || step === 1 || step === 4 || step === 5 || step === 7) paint(step, !reduced());
+    });
+
+    /* sort: the same rows in another order, bars and names travelling together */
+    const sortEl = document.getElementById(p + "Sort");
+    if (sortEl) sortEl.addEventListener("click", ev => {
+      const b = ev.target.closest(".seg-btn");
+      if (!b || b.dataset.sort === sortKey) return;
+      sortKey = b.dataset.sort;
+      fig.dataset.sort = sortKey;
+      sortEl.querySelectorAll(".seg-btn").forEach(x => {
+        const on = x.dataset.sort === sortKey;
+        x.classList.toggle("is-active", on);
+        x.setAttribute("aria-pressed", String(on));
+      });
+      reorder(R1); reorder(R2);
+      const anim = !reduced();
+      placeRanking(R1, anim); placeRanking(R2, anim);
+      if (step === 3 || step === 6) paint(step, anim);
     });
 
     window[ctlName].setStep(0);
@@ -3386,14 +3744,6 @@ export function loadTreemaps(){
     const wrap = document.querySelector(".export-viz-row");
     if (!svgEl || !tip || !wrap) return;
     exportClearHover = attachCellTip(svgEl, wrap, tip);
-  }
-
-  /* the share of the metro's jobs that sit on the tradable side of the split */
-  function updateTradableHeadStat(){
-    const host = document.getElementById("tradableHeadStat");
-    if (!host) return;
-    donutStat(host, jobsShare(r => tradabilityOf(r.name) >= 0.5),
-      token("--teal", "#255862"), "of metro jobs \u00b7 in more tradable industries");
   }
 
   function initTradableTooltip(){
@@ -3458,7 +3808,6 @@ export function loadTreemaps(){
     initLeanMap();
     initCommuteStats();
     updateExportHeadStat();
-    updateTradableHeadStat();
     initIndustryFigure("mi", industryData, "MI");
     /* Admin Industry Mix now runs its own figure — one set of sector rows
        read three ways — which lives with the section's markup rather than

@@ -32,10 +32,10 @@ export const HEAD_ROW = { y: 250, h: 32 };
 export const LEAF_ROW = { y: 420 };
 
 /** the elbow buses — root → heads, and heads → leaves — each halfway down
- *  its gap (root bottom 101 → head top 226; head bottom 274 → leaf top 399
- *  on the mounted shape) */
-export const ROOT_BUS = 164;
-export const LEAF_BUS = 336;
+ *  its gap (root bottom 101 → head top 223; head bottom 277 → leaf top 399
+ *  on the mounted shape, whose heads run 54 tall) */
+export const ROOT_BUS = 162;
+export const LEAF_BUS = 338;
 /** where the second fork's stem hands over to the elbows: the fork-two stop
  *  draws a head's stem down to the bus, the leaf stop fans out from it */
 export const FORK2_Y = LEAF_BUS;
@@ -44,7 +44,7 @@ export const FORK2_Y = LEAF_BUS;
    below its branch head (see DOT_BELOW_HEAD), partway down the stem at the
    second fork, then at its leaf */
 export const DOT_ROOT_Y = 120;
-export const DOT_FORK2_Y = 312;
+export const DOT_FORK2_Y = 316;
 export const DOT_LEAF_Y = 458;
 
 /* ---------- the shapes ---------- */
@@ -70,7 +70,9 @@ export interface WalkBranchDef {
   title: string;
   /** the head card's label, one entry per line — defaults to [title] */
   titleLines?: string[];
-  /** the root → head edge label: the answer that reaches this branch */
+  /** the root → head edge label: the answer that reaches this branch. Not
+   *  drawn for a quadrant branch — its head card carries the two dials as
+   *  icons instead (Sept 2026 design pass) */
   edge: string;
   /** the second fork's question, one entry per line. Takes the medians it
    *  reads against, since the question names the number it compares to.
@@ -418,14 +420,15 @@ const QUAD: WalkShape = {
   label: "Four quadrants · flat",
   hint: "One fork on the tree — each shock's second question is asked in the analysis",
   about:
-    "The root forks four ways, straight into the quadrants of the pizza chart, and stops there: the revision spec's second fork and its themes are asked in the analysis section below",
+    "The root forks four ways, straight into the quadrants of the pizza chart, and stops there: the revision spec's second fork and its modules are asked in the analysis section below",
   variant: "quad",
   rootQuestion: "population × wages — which quadrant?",
   rootX: 384,
   rootW: 318,
   headW: 142,
   headSize: 15.5,
-  headH: 48,
+  /* room for the city type and its two dials */
+  headH: 54,
   headY: 300,
   leafH: 30,
   leafSize: 16,
@@ -442,7 +445,7 @@ const QUAD: WalkShape = {
       to: 90,
       sub: "population ↑ · wages ↑",
       tag: "→ positive demand shock",
-      legend: "people ↑ pay ↑ → Positive demand shock",
+      legend: "people ↑ pay ↑ → Magnet",
       read: "population ↑ · wages ↑",
     },
     {
@@ -451,7 +454,7 @@ const QUAD: WalkShape = {
       to: 180,
       sub: "population ↓ · wages ↑",
       tag: "→ negative supply shock",
-      legend: "people ↓ pay ↑ → Negative supply shock",
+      legend: "people ↓ pay ↑ → Fortress",
       read: "population ↓ · wages ↑",
     },
     {
@@ -460,7 +463,7 @@ const QUAD: WalkShape = {
       to: 270,
       sub: "population ↓ · wages ↓",
       tag: "→ negative demand shock",
-      legend: "people ↓ pay ↓ → Negative demand shock",
+      legend: "people ↓ pay ↓ → Leak",
       read: "population ↓ · wages ↓",
     },
     {
@@ -469,15 +472,14 @@ const QUAD: WalkShape = {
       to: 360,
       sub: "population ↑ · wages ↓",
       tag: "→ positive supply shock",
-      legend: "people ↑ pay ↓ → Positive supply shock",
+      legend: "people ↑ pay ↓ → Sponge",
       read: "population ↑ · wages ↓",
     },
   ],
   branches: [
     {
       id: "demandpos",
-      title: "Positive demand shock",
-      titleLines: ["Positive demand", "shock"],
+      title: "Magnet",
       edge: "people ↑ · pay ↑",
       x: 111,
       question: () => [],
@@ -485,8 +487,7 @@ const QUAD: WalkShape = {
     },
     {
       id: "supplypos",
-      title: "Positive supply shock",
-      titleLines: ["Positive supply", "shock"],
+      title: "Sponge",
       edge: "people ↑ · pay ↓",
       x: 293,
       question: () => [],
@@ -494,8 +495,7 @@ const QUAD: WalkShape = {
     },
     {
       id: "demandneg",
-      title: "Negative demand shock",
-      titleLines: ["Negative demand", "shock"],
+      title: "Leak",
       edge: "people ↓ · pay ↓",
       x: 475,
       question: () => [],
@@ -503,8 +503,7 @@ const QUAD: WalkShape = {
     },
     {
       id: "supplyneg",
-      title: "Negative supply shock",
-      titleLines: ["Negative supply", "shock"],
+      title: "Fortress",
       edge: "people ↓ · pay ↑",
       x: 657,
       question: () => [],
@@ -516,7 +515,7 @@ const QUAD: WalkShape = {
 /* The four-quadrant tree, FORKED — the revision spec drawn in full: the root
    forks into the four shocks, and each shock forks once more with its own
    instrument (QUAD_BRANCH_SPEC in figures.ts carries the overarching
-   questions; the analysis section carries the themes). The positive demand
+   questions; the analysis section carries the modules). The positive demand
    shock has no second layer (team revision, Sept 2026) — its head is the
    ending — so seven endings share the band the two-branch tree's four use,
    and the cards run narrow — 12px leaf type, pairs 6px apart inside a
@@ -534,7 +533,8 @@ const QUAD2: WalkShape = {
   rootW: 318,
   headW: 142,
   headSize: 15.5,
-  headH: 48,
+  /* room for the city type and its two dials */
+  headH: 54,
   leafH: 42,
   leafSize: 12,
   forkOneLine:
@@ -547,8 +547,7 @@ const QUAD2: WalkShape = {
   branches: [
     {
       id: "demandpos",
-      title: "Positive demand shock",
-      titleLines: ["Positive demand", "shock"],
+      title: "Magnet",
       edge: "people ↑ · pay ↑",
       x: 111,
       /* no second layer (team revision, Sept 2026): the head is the ending */
@@ -557,8 +556,7 @@ const QUAD2: WalkShape = {
     },
     {
       id: "supplypos",
-      title: "Positive supply shock",
-      titleLines: ["Positive supply", "shock"],
+      title: "Sponge",
       edge: "people ↑ · pay ↓",
       x: 293,
       question: (n) => [
@@ -584,8 +582,7 @@ const QUAD2: WalkShape = {
     },
     {
       id: "demandneg",
-      title: "Negative demand shock",
-      titleLines: ["Negative demand", "shock"],
+      title: "Leak",
       edge: "people ↓ · pay ↓",
       x: 475,
       question: () => ["local or regional?", "(MSA pop × wage chart)"],
@@ -608,8 +605,7 @@ const QUAD2: WalkShape = {
     },
     {
       id: "supplyneg",
-      title: "Negative supply shock",
-      titleLines: ["Negative supply", "shock"],
+      title: "Fortress",
       edge: "people ↓ · pay ↑",
       x: 657,
       question: (n) => [

@@ -15,8 +15,8 @@ rm -rf /tmp/v3 && mkdir -p /tmp/v3 && git archive origin/main cities-v-3 | tar -
 node scripts/v3/port.mjs --src /tmp/v3/cities-v-3
 ```
 
-Last port: `origin/main` at `1e931db` (2026-09-02, "Admin Industry Mix rebuilt
-on the two-workforces prototype").
+Last port: `origin/main` at `2994068` (2026-09-09, "One word to a zone on the
+dial, large enough to read"). The port before it was `1e931db` (2026-09-02).
 
 ## What is generated, and how it differs from upstream
 

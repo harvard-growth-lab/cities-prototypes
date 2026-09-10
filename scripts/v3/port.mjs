@@ -286,8 +286,8 @@ const PAGE_PATCHES = [
      take theirs from this branch's place data (src/data/metros.ts, the
      2017–2022 window the tree reads) */
   ["sub", "city hints for the sample cities",
-    '    "Boston, United States of America":  { dir:"down", rate:-0.8, pay: 5.1, word:"shrinking",   head:"<strong>Boston is shrinking</strong>" },',
-    lines('    "Boston, United States of America":  { dir:"down", rate:-0.8, pay: 5.1, word:"shrinking",   head:"<strong>Boston is shrinking</strong>" },',
+    '    "Boston, United States of America":  { dir:"up",   rate: 0.3, pay: 5.1, word:"growing slowly", head:"<strong>Boston is growing slowly</strong>" },',
+    lines('    "Boston, United States of America":  { dir:"up",   rate: 0.3, pay: 5.1, word:"growing slowly", head:"<strong>Boston is growing slowly</strong>" },',
           '    /* [port] this branch\'s sample cities, from src/data/metros.ts (places, 2017–2022) */',
           '    "Memphis, United States of America":     { dir:"down", rate:-1.0, pay: 4.3, word:"shrinking", head:"<strong>Memphis is shrinking</strong>" },',
           '    "San Antonio, United States of America": { dir:"down", rate:-0.5, pay: 4.4, word:"shrinking", head:"<strong>San Antonio is shrinking</strong>" },',
