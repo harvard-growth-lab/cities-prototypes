@@ -2726,14 +2726,14 @@
   .am2-dial{width:100%;max-width:300px;height:auto;display:block;margin:0 0 6px;}
   .am2-dial .zone{stroke:#fff;stroke-width:1.5;}
   .am2-dial .tick{stroke:var(--ink);stroke-width:1;}
-  .am2-dial .ticklbl{font-size:9.5px;fill:var(--ink);font-variant-numeric:tabular-nums;}
-  .am2-dial .zonelbl{font-size:8.5px;fill:var(--ink-soft);font-weight:600;}
+  .am2-dial .ticklbl{font-size:11px;fill:var(--ink);font-variant-numeric:tabular-nums;}
+  .am2-dial .zonelbl{font-size:11px;fill:var(--ink);font-weight:600;}
   .am2-dial .needle{stroke:var(--ink);stroke-width:2.5;stroke-linecap:round;transform-origin:130px 128px;
     transition:transform .8s cubic-bezier(.2,.7,.2,1),stroke .3s ease;}
   .am2-dial .pivot{fill:var(--ink);}
   .am2-dial .ghost{stroke:#8e9196;stroke-width:1.5;stroke-dasharray:3 3;}
   .am2-dial .big{font-size:24px;font-weight:700;fill:var(--ink);letter-spacing:-.01em;font-variant-numeric:tabular-nums;}
-  .am2-dial .biglbl{font-size:9px;fill:var(--ink-soft);}
+  .am2-dial .biglbl{font-size:10.5px;fill:var(--ink-soft);}
   .am2-verdict{font-size:15px;margin:2px 0 6px;}
   #am2Mini .mrow{grid-template-columns:104px 1fr;font-size:11px;}
   @media (prefers-reduced-motion: reduce){ .am2-dial .needle{transition:none;} }
@@ -2797,7 +2797,9 @@
   .am-gauge .zone{stroke:#fff;stroke-width:2;}
   .am-gauge .tick{stroke:var(--ink);stroke-width:1;}
   .am-gauge .ticklbl{font-size:12px;fill:var(--ink);font-variant-numeric:tabular-nums;}
-  .am-gauge .zonelbl{font-size:11px;fill:var(--ink-soft);font-weight:600;}
+  /* the full gauge draws a 520-wide box into 420px, so its type is set a
+     little larger to land at the same size on screen as the small dial's */
+  .am-gauge .zonelbl{font-size:14px;fill:var(--ink);font-weight:600;}
   .am-gauge .needle{stroke:var(--ink);stroke-width:3;stroke-linecap:round;transform-origin:260px 250px;
     transition:transform 1s cubic-bezier(.25,.8,.25,1),stroke .4s ease;}
   .am-gauge .pivot{fill:var(--ink);}
@@ -4379,7 +4381,7 @@
               </div>
               <div class="am-ex-main">
                 <div class="am-gauge-wrap">
-                  <svg class="am-gauge" id="amGaugeSvg" viewBox="0 0 520 335" role="img" aria-label="Gauge showing jobs located in the city per resident worker for the chosen sector"></svg>
+                  <svg class="am-gauge" id="amGaugeSvg" viewBox="0 0 520 356" role="img" aria-label="Gauge showing jobs located in the city per resident worker for the chosen sector"></svg>
                 </div>
                 <div class="am-ex-side">
                   <div class="am-verdict" id="amVerdict"></div>
@@ -4535,7 +4537,7 @@
                 <path d="M24 17a3 3 0 0 1 6 0v3a3 3 0 0 1 6 0v4c0 7-3 12-10 12h-2c-4 0-6-1.6-8.5-5.5L11 24a2.8 2.8 0 0 1 4.8-2.8L18 24"/>
                 <path d="M10 8 6 4M14 5.5 13 1.5M6.5 12 2.5 11"/>
               </svg><span>Click a sector to see where it lands</span></p>
-            <svg class="am2-dial" id="am2Dial" viewBox="0 0 260 172" role="img" aria-label="Dial showing jobs located in the city per job a resident holds, for the chosen sector"></svg>
+            <svg class="am2-dial" id="am2Dial" viewBox="0 0 260 188" role="img" aria-label="Dial showing jobs located in the city per job a resident holds, for the chosen sector"></svg>
             <div class="am-verdict am2-verdict" id="am2Verdict"></div>
             <div class="am-mini" id="am2Mini"></div>
           </div>
@@ -9239,10 +9241,10 @@
   };
   while (svg.firstChild) svg.removeChild(svg.firstChild);
   var zones = [
-    { v0:0.4,  v1:0.8,  fill:C_OUT, label:"Dormitory community" },
+    { v0:0.4,  v1:0.8,  fill:C_OUT, label:"Dormitory" },
     { v0:0.8,  v1:1.25, fill:C_BAL, label:"Balanced" },
-    { v0:1.25, v1:2,    fill:C_INL, label:"Draws workers in" },
-    { v0:2,    v1:4,    fill:C_IN,  label:"Employment hub" }
+    { v0:1.25, v1:2,    fill:C_INL, label:"Importer" },
+    { v0:2,    v1:4,    fill:C_IN,  label:"Hub" }
   ];
   zones.forEach(function(z){ svg.appendChild(mk("path", { d:arcPath(z.v0, z.v1, G.rIn, G.r), fill:z.fill, "class":"zone" })); });
   zones.forEach(function(z){
@@ -9258,14 +9260,14 @@
   });
   var ga = ang(ALL.j / ALL.r), g0 = pt(ga, G.rIn - 4), g1 = pt(ga, G.r + 4);
   svg.appendChild(mk("line", { x1:g0[0], y1:g0[1], x2:g1[0], y2:g1[1], "class":"ghost" }));
-  svg.appendChild(mk("text", { x:G.cx, y:G.cy + 78, "class":"ghostlbl", "text-anchor":"middle" },
+  svg.appendChild(mk("text", { x:G.cx, y:G.cy + 88, "class":"ghostlbl", "text-anchor":"middle" },
     "Dashed marker: Boston overall, " + (ALL.j / ALL.r).toFixed(2) + "×"));
   var needle = mk("line", { x1:G.cx, y1:G.cy, x2:G.cx + G.rIn - 14, y2:G.cy, "class":"needle" });
   svg.appendChild(needle);
   svg.appendChild(mk("circle", { cx:G.cx, cy:G.cy, r:6, "class":"pivot" }));
   var big = mk("text", { x:G.cx, y:G.cy + 40, "class":"big", "text-anchor":"middle" }, "");
   svg.appendChild(big);
-  svg.appendChild(mk("text", { x:G.cx, y:G.cy + 58, "class":"biglbl", "text-anchor":"middle" },
+  svg.appendChild(mk("text", { x:G.cx, y:G.cy + 70, "class":"biglbl", "text-anchor":"middle" },
     "jobs in Boston per resident worker in the sector"));
 
   function select(d){
@@ -9282,7 +9284,7 @@
       ? "<span class=\"pill is-in\">Net importer</span>Boston imports " + nm + "."
       : kind === "out" ? "<span class=\"pill is-out\">Net exporter</span>Boston sends " + nm + " out."
       : "<span class=\"pill is-bal\">Balanced</span>Boston roughly breaks even on " + nm + ".";
-    var zone = r < 0.8 ? "a dormitory community" : r <= 1.25 ? "balanced" : r < 2 ? "a place that draws workers in" : "an employment hub";
+    var zone = r < 0.8 ? "a dormitory" : r <= 1.25 ? "balanced" : r < 2 ? "an importer of workers" : "a hub";
     $("amSentence").textContent = d.all
       ? fmtC(d.j) + " jobs sit inside Boston and its residents hold " + fmtC(d.r) + ". Net of the " +
         fmtC(AM_TOT.res - LIVEWORK) + " who commute out, " + fmtC(net) + " more people come in than go out. On this reading Boston as a whole is " + zone + "."
@@ -9337,10 +9339,10 @@
   };
   while (svg.firstChild) svg.removeChild(svg.firstChild);
   var zones = [
-    { v0:0.4,  v1:0.8,  fill:C_OUT, label:"Dormitory community" },
+    { v0:0.4,  v1:0.8,  fill:C_OUT, label:"Dormitory" },
     { v0:0.8,  v1:1.25, fill:C_BAL, label:"Balanced" },
-    { v0:1.25, v1:2,    fill:C_INL, label:"Draws workers in" },
-    { v0:2,    v1:4,    fill:C_IN,  label:"Employment hub" }
+    { v0:1.25, v1:2,    fill:C_INL, label:"Importer" },
+    { v0:2,    v1:4,    fill:C_IN,  label:"Hub" }
   ];
   zones.forEach(function(z){ svg.appendChild(mk("path", { d:arcPath(z.v0, z.v1, G.rIn, G.r), fill:z.fill, "class":"zone" })); });
   zones.forEach(function(z){
@@ -9359,10 +9361,10 @@
   var needle = mk("line", { x1:G.cx, y1:G.cy, x2:G.cx + G.rIn - 10, y2:G.cy, "class":"needle" });
   svg.appendChild(needle);
   svg.appendChild(mk("circle", { cx:G.cx, cy:G.cy, r:4.5, "class":"pivot" }));
-  var big = mk("text", { x:G.cx, y:G.cy + 26, "class":"big", "text-anchor":"middle" }, "");
+  var big = mk("text", { x:G.cx, y:G.cy + 28, "class":"big", "text-anchor":"middle" }, "");
   svg.appendChild(big);
-  var biglbl = mk("text", { x:G.cx, y:G.cy + 40, "class":"biglbl", "text-anchor":"middle" }, "");
-  svg.appendChild(biglbl);
+  svg.appendChild(mk("text", { x:G.cx, y:G.cy + 49, "class":"biglbl", "text-anchor":"middle" },
+    "jobs here per resident job"));
 
   function select(name){
     var d = name && byName[name] ? byName[name] : ALL;
@@ -9370,8 +9372,6 @@
     needle.style.transform = "rotate(" + deg.toFixed(2) + "deg)";
     needle.style.stroke = ratioColor(r);
     big.textContent = r.toFixed(2) + "×";
-    biglbl.textContent = d.all ? "jobs here per resident job · all sectors"
-                               : "jobs here per resident job · " + d.n.toLowerCase();
     var net = d.j - d.r;
     var kind = r > 1.1 ? "in" : r < 0.9 ? "out" : "bal";
     var nm = d.all ? "workers" : d.n.toLowerCase() + " workers";
