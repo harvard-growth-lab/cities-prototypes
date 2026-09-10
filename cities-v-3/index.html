@@ -2744,7 +2744,6 @@
   .am2-dial .big{font-size:24px;font-weight:700;fill:var(--ink);letter-spacing:-.01em;font-variant-numeric:tabular-nums;}
   .am2-dial .biglbl{font-size:9px;fill:var(--ink-soft);}
   .am2-verdict{font-size:15px;margin:2px 0 6px;}
-  .am2-sentence{font-size:13px;line-height:1.5;color:var(--ink-soft);margin:0 0 6px;}
   #am2Mini .mrow{grid-template-columns:104px 1fr;font-size:11px;}
   @media (prefers-reduced-motion: reduce){ .am2-dial .needle{transition:none;} }
   /* the swatches are the marks themselves, at the size they are drawn */
@@ -4553,7 +4552,6 @@
               </svg><span>Click a sector to see where it lands</span></p>
             <svg class="am2-dial" id="am2Dial" viewBox="0 0 260 172" role="img" aria-label="Dial showing jobs located in the city per job a resident holds, for the chosen sector"></svg>
             <div class="am-verdict am2-verdict" id="am2Verdict"></div>
-            <p class="am2-sentence" id="am2Sentence"></p>
             <div class="am-mini" id="am2Mini"></div>
           </div>
         </div>
@@ -9409,12 +9407,8 @@
       ? "<span class=\"pill is-in\">Net importer</span>Boston imports " + nm + "."
       : kind === "out" ? "<span class=\"pill is-out\">Net exporter</span>Boston sends " + nm + " out."
       : "<span class=\"pill is-bal\">Balanced</span>Boston roughly breaks even on " + nm + ".";
-    var zone = r < 0.8 ? "a dormitory community" : r <= 1.25 ? "balanced" : r < 2 ? "a place that draws workers in" : "an employment hub";
-    $("am2Sentence").textContent = d.all
-      ? ""
-      : fmtC(d.j) + " " + d.n.toLowerCase() + " jobs sit inside Boston; its residents hold " + fmtC(d.r) + " such jobs wherever they are. " +
-        (net >= 0 ? "At least " + fmtC(net) + " people commute in for this work on net." : "At least " + fmtC(-net) + " residents commute out for this work on net.") +
-        " For this sector Boston reads as " + zone + ".";
+    /* the dial, its verdict and the two bars carry the reading; the
+       sentence that used to spell it out again is gone */
     var mx = Math.max(d.j, d.r) * 1.25;
     $("am2Mini").innerHTML =
       "<div class=\"mrow\"><span>Jobs located in Boston</span><div class=\"mtrack\"><div class=\"mbar is-jobs\" style=\"width:" + (d.j / mx * 100).toFixed(1) + "%\"></div><span class=\"mv\" style=\"left:" + (d.j / mx * 100).toFixed(1) + "%\">" + fmtC(d.j) + "</span></div></div>" +
