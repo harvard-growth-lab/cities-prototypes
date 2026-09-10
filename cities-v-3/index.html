@@ -196,12 +196,12 @@
     color:var(--teal);display:flex;align-items:center;justify-content:center;
     box-shadow:0 2px 8px rgba(37,88,98,.14);
   }
+  /* the diagnosis wears its own mark: one drawn per quadrant name */
   .lx-ico svg{width:36px;height:36px;display:none;}
-  .diagnose-panel[data-icon="general"] .lx-ico svg[data-for="general"]{display:block;}
-  .diagnose-panel[data-icon="named"] .lx-verdict[data-quad="fortress"] .lx-ico svg[data-for="fortress"],
-  .diagnose-panel[data-icon="named"] .lx-verdict[data-quad="magnet"]   .lx-ico svg[data-for="magnet"],
-  .diagnose-panel[data-icon="named"] .lx-verdict[data-quad="sponge"]   .lx-ico svg[data-for="sponge"],
-  .diagnose-panel[data-icon="named"] .lx-verdict[data-quad="leak"]     .lx-ico svg[data-for="leak"]{display:block;}
+  .lx-verdict[data-quad="fortress"] .lx-ico svg[data-for="fortress"],
+  .lx-verdict[data-quad="magnet"]   .lx-ico svg[data-for="magnet"],
+  .lx-verdict[data-quad="sponge"]   .lx-ico svg[data-for="sponge"],
+  .lx-verdict[data-quad="leak"]     .lx-ico svg[data-for="leak"]{display:block;}
   .lx-words{flex:1 1 auto;min-width:0;}
   .lx-title{
     font-size:25px;font-weight:700;line-height:1.12;letter-spacing:-.4px;
@@ -209,15 +209,6 @@
   }
   .lx-title em{font-style:normal;color:var(--teal);}
   .lx-tag{font-size:14px;line-height:1.45;color:var(--ink);margin:0;}
-  /* a study control, not a feature: two words of the smallest legible size */
-  .lx-iconopt{display:flex;justify-content:flex-end;align-items:center;gap:9px;margin-top:-8px;}
-  .lx-iconopt span{font-size:9.5px;letter-spacing:.02em;color:#9aa8ad;}
-  .lx-iconopt button{
-    background:none;border:0;padding:0;font-family:inherit;font-size:9.5px;
-    letter-spacing:.02em;color:#9aa8ad;cursor:pointer;
-  }
-  .lx-iconopt button.is-on{color:var(--teal);font-weight:700;}
-  .lx-iconopt button:not(.is-on):hover{color:var(--ink-soft);}
   .btn-diagnose{
     width:100%;display:flex;align-items:center;justify-content:center;gap:10px;
     background:var(--teal);color:#fff;border:0;border-radius:8px;
@@ -3377,7 +3368,7 @@
         </div>
       </div>
 
-      <aside class="diagnose-panel" data-icon="named">
+      <aside class="diagnose-panel">
         <div class="field">
           <label for="citySelect">Select a location</label>
           <select id="citySelect" class="dd">
@@ -3412,18 +3403,12 @@
              it means, under the two readings that earn it. The icon is the
              study's variable: one general mark, or one drawn for each name. -->
         <div class="lx-verdict" id="lxVerdict" data-quad="fortress">
-          <span class="lx-ico" aria-hidden="true"><svg data-for="general" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="17" cy="17" r="10.5"/><path d="M24.5 24.5 33 33"/><path d="M11 21V15h3v6M15.5 21v-9h3.5v9M20.5 21v-5h2.5v5"/></svg><svg data-for="fortress" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 33V13h5V9h4v4h10V9h4v4h5v20"/><path d="M6 33h28"/><path d="M14 33v-7a3 3 0 0 1 6 0v7"/><path d="M11 18h4M25 18h4M11 24h4M25 24h4"/></svg><svg data-for="magnet" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M10 8v13a10 10 0 0 0 20 0V8"/><path d="M16 8v13a4 4 0 0 0 8 0V8"/><path d="M10 8h6M24 8h6"/><path d="M10 13h6M24 13h6" stroke-width="3"/></svg><svg data-for="sponge" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="14" width="28" height="18" rx="4"/><circle cx="13" cy="20" r="1.4" fill="currentColor" stroke="none"/><circle cx="21" cy="24" r="1.4" fill="currentColor" stroke="none"/><circle cx="27" cy="19" r="1.4" fill="currentColor" stroke="none"/><circle cx="15" cy="27" r="1.4" fill="currentColor" stroke="none"/><path d="M20 5v5M14 7l1.5 3M26 7l-1.5 3"/></svg><svg data-for="leak" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9h22l-2.5 17H11.5Z"/><path d="M9 9a11 3.2 0 0 0 22 0"/><path d="M20 30c0 2.6-1.6 4-1.6 5.4a1.6 1.6 0 0 0 3.2 0C21.6 34 20 32.6 20 30Z" fill="currentColor" stroke="none"/><path d="M27 29.5c0 1.8-1.1 2.8-1.1 3.8a1.1 1.1 0 0 0 2.2 0c0-1-1.1-2-1.1-3.8Z" fill="currentColor" stroke="none"/></svg></span>
+          <span class="lx-ico" aria-hidden="true"><svg data-for="fortress" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 33V13h5V9h4v4h10V9h4v4h5v20"/><path d="M6 33h28"/><path d="M14 33v-7a3 3 0 0 1 6 0v7"/><path d="M11 18h4M25 18h4M11 24h4M25 24h4"/></svg><svg data-for="magnet" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M10 8v13a10 10 0 0 0 20 0V8"/><path d="M16 8v13a4 4 0 0 0 8 0V8"/><path d="M10 8h6M24 8h6"/><path d="M10 13h6M24 13h6" stroke-width="3"/></svg><svg data-for="sponge" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="14" width="28" height="18" rx="4"/><circle cx="13" cy="20" r="1.4" fill="currentColor" stroke="none"/><circle cx="21" cy="24" r="1.4" fill="currentColor" stroke="none"/><circle cx="27" cy="19" r="1.4" fill="currentColor" stroke="none"/><circle cx="15" cy="27" r="1.4" fill="currentColor" stroke="none"/><path d="M20 5v5M14 7l1.5 3M26 7l-1.5 3"/></svg><svg data-for="leak" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9h22l-2.5 17H11.5Z"/><path d="M9 9a11 3.2 0 0 0 22 0"/><path d="M20 30c0 2.6-1.6 4-1.6 5.4a1.6 1.6 0 0 0 3.2 0C21.6 34 20 32.6 20 30Z" fill="currentColor" stroke="none"/><path d="M27 29.5c0 1.8-1.1 2.8-1.1 3.8a1.1 1.1 0 0 0 2.2 0c0-1-1.1-2-1.1-3.8Z" fill="currentColor" stroke="none"/></svg></span>
           <div class="lx-words">
             <h2 class="lx-title"><span class="city-short">Boston</span> is <em id="lxName">a Fortress</em></h2>
             <p class="lx-tag" id="lxTag">High wages behind high walls. The demand is there; people cannot get in.</p>
           </div>
         </div>
-        <div class="lx-iconopt" role="group" aria-label="Icon treatment">
-          <span>icon</span>
-          <button type="button" class="is-on" data-icon="named" aria-pressed="true">one per name</button>
-          <button type="button" data-icon="general" aria-pressed="false">one for all</button>
-        </div>
-
         <button class="btn-diagnose" id="diagnoseBtn" onclick="enterTool('page-overview')">
           <svg class="city-build" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true">
             <path d="M2 17h16"/>
@@ -7442,19 +7427,6 @@
       if (tg) tg.textContent = Q.tag;
     }
   }
-  /* the icon study: one mark for every diagnosis, or one drawn per name */
-  document.querySelectorAll(".lx-iconopt button").forEach(b => {
-    b.addEventListener("click", () => {
-      const panel = b.closest(".diagnose-panel");
-      panel.dataset.icon = b.dataset.icon;
-      panel.querySelectorAll(".lx-iconopt button").forEach(x => {
-        const on = x === b;
-        x.classList.toggle("is-on", on);
-        x.setAttribute("aria-pressed", String(on));
-      });
-    });
-  });
-
   function syncCity(v){
     updateCityHint(v);
     cityL.value=v; cityT.value=v;
