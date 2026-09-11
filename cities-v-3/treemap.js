@@ -3133,11 +3133,42 @@
        it would drop cells the clusters count as tradable, so a set picked by
        the score is judged on concentration alone. Shares are of all metro
        jobs, which is what the card says they are. */
+    /* rcaOf and peersFor draw from the one seeded sequence the rest of the
+       tool shares, and cache what they draw. Before this ranking, only
+       industries the older flag admits were ever asked about, so asking about
+       the others here would move every later draw — the metro scatter's
+       background metros among them. So a value already drawn is used as it
+       stands, and one not yet drawn comes from a generator seeded on the
+       industry's own name, with the same formula, touching neither the shared
+       sequence nor its caches. */
+    const nameRand = key => {
+      let h = 2166136261;
+      for (const c of key){ h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); }
+      let st = (h >>> 0) || 1;
+      return () => (st = (st * 1664525 + 1013904223) >>> 0) / 4294967296;
+    };
+    const rcaQuiet = name => {
+      if (rcaByName.has(name)) return rcaByName.get(name);
+      if (rcaSeed[name]) return rcaSeed[name].rca;
+      const r = nameRand(name + "|rca");
+      const v = r() < 0.80 ? 0.15 + r() * 0.8 : 1.02 + r() * 0.8;
+      return Math.round(v * 100) / 100;
+    };
+    const peersQuiet = (name, cityRca) => {
+      if (peerByName.has(name)) return peerByName.get(name);
+      const r = nameRand(name + "|peers");
+      const target = Math.max(1.15, cityRca * (0.4 + r() * 0.85));
+      const jitter = PEERS.map(() => 0.62 + r() * 0.76);
+      const mean = jitter.reduce((a, j) => a + j, 0) / jitter.length;
+      const values = jitter.map(j => Math.round(target * (j / mean) * 10) / 10);
+      const avg = Math.round((values.reduce((a, v) => a + v, 0) / values.length) * 10) / 10;
+      return { values: values, avg: avg };
+    };
     function specializedAmong(rows){
       const total = d3.sum(industryData, d => d.employ) || 1;
       const shown = v => Math.round(v * 10) / 10;
-      return rows.filter(d => rcaOf(d.name) > 1).map(d => {
-        const rca = rcaOf(d.name), localPct = d.employ / total * 100, pr = peersFor(d.name, rca);
+      return rows.filter(d => rcaQuiet(d.name) > 1).map(d => {
+        const rca = rcaQuiet(d.name), localPct = d.employ / total * 100, pr = peersQuiet(d.name, rca);
         return { name: d.name, sector: d.sector, employ: d.employ, rca: rca,
           localPct: localPct, worldPct: localPct / rca,
           label: (rcaSeed[d.name] || {}).short ||
@@ -3384,7 +3415,7 @@
         .attr("width", d => Math.max(1, tw(tradabilityOf(d.name))));
       row.append("line").attr("class", "mi-tradtick")
         .attr("x1", TC_R - TC_W + tw(CL_HI)).attr("x2", TC_R - TC_W + tw(CL_HI))
-        .attr("y1", 3).attr("y2", 11);
+        .attr("y1", 10).attr("y2", 13.5);
       row.filter(top).call(g => {
         g.append("circle").attr("class", "mi-badge-bg").attr("cx", 14).attr("cy", 0).attr("r", 9);
         g.append("text").attr("class", "mi-badge").attr("x", 14).attr("y", 3.5)
@@ -3533,8 +3564,15 @@
       fig.dataset.color = colorBy;
       /* those show only while the first beat is coloured by complexity. They
          are only touched on that beat: showing or hiding them in a beat above
-         the reader would shift the page under them */
-      if (step === 7 || step < 0) complexityBits.forEach(el => { el.hidden = colorBy !== "complexity"; });
+         the reader would shift the page under them. They open and close in
+         place, so the centred text re-settles smoothly rather than jumping,
+         and while closed they leave the tab order and the reading order */
+      if (step === 7 || step < 0) complexityBits.forEach(el => {
+        const off = colorBy !== "complexity";
+        el.classList.toggle("is-off", off);
+        el.setAttribute("aria-hidden", String(off));
+        el.inert = off;
+      });
       if (colorEl) colorEl.querySelectorAll(".seg-btn[data-color]").forEach(x => {
         const on = x.dataset.color === colorBy;
         x.classList.toggle("is-active", on);
@@ -3701,15 +3739,21 @@
        each sector's share of metro jobs beside its name */
     const key = document.getElementById(p + "SectorKey");
     if (key){
-      const jobs = {};
+      const jobs = {}, trad = {};
       industryData.forEach(d => { jobs[d.sector] = (jobs[d.sector] || 0) + d.employ; });
+      (clusterRows[0] || []).forEach(d => { trad[d.sector] = (trad[d.sector] || 0) + d.employ; });
       const tot = Object.values(jobs).reduce((a, b) => a + b, 0) || 1;
+      const totTrad = Object.values(trad).reduce((a, b) => a + b, 0) || 1;
+      /* two shares per sector: of every metro job, and of the jobs in the most
+         tradable industries alone, for the first beat, whose map shows only
+         those; a sector with none of them leaves that beat's key */
       key.innerHTML = Object.keys(jobs)
         .sort((a, b) => jobs[b] - jobs[a])
         .map(sec =>
-          '<span class="sk-sec"><i class="sk-sw" style="background:' +
+          '<span class="sk-sec' + (trad[sec] ? '' : ' sk-no-trad') + '"><i class="sk-sw" style="background:' +
           (sectorColors[sec] || "#ccc") + '"></i>' + sec +
-          ' <span class="sk-share">' + Math.round(jobs[sec] / tot * 100) + '%</span></span>')
+          ' <span class="sk-share sk-all">' + Math.round(jobs[sec] / tot * 100) + '%</span>' +
+          '<span class="sk-share sk-trad">' + Math.round((trad[sec] || 0) / totTrad * 100) + '%</span></span>')
         .join("");
     }
 
@@ -3756,7 +3800,8 @@
                               : t >= CL_LO ? "some of both" : "serves the metro");
           }
         }
-        tip.innerHTML = '<strong>' + (d.row ? d.row.label : d.name) + '</strong>' + body;
+        const labRow = step === 6 ? d.row2 : d.row;
+        tip.innerHTML = '<strong>' + (labRow ? labRow.label : d.name) + '</strong>' + body;
         tip.hidden = false;
         this.parentNode.appendChild(this);          // hovered mark to the front
         d3.select(r).style("stroke", "#1a2226").style("stroke-width", 2.5);

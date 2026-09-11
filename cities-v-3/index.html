@@ -2509,9 +2509,12 @@
   .mi-head > .mi-trad-head{pointer-events:none;}
   /* the arrangement control, on the figure's own left edge */
   .mi-view{
-    display:flex;align-items:center;gap:10px;
+    display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;
     opacity:0;pointer-events:none;transition:opacity .35s ease;
   }
+  /* a control group keeps its width: a narrow row wraps to a second line
+     instead of shrinking a group until its own buttons are cut off */
+  .mi-view .seg{flex:none;}
   .mi-figure[data-step="0"] .mi-view:not(.mi-sort),
   .mi-figure[data-step="1"] .mi-view:not(.mi-sort),
   .mi-figure[data-step="4"] .mi-view:not(.mi-sort),
@@ -2530,7 +2533,9 @@
   #miTreemapSvg .mi-trad{font-size:11.5px;fill:var(--ink-soft);font-variant-numeric:tabular-nums;}
   #miTreemapSvg .mi-tradtrack{fill:#e6eaec;}
   #miTreemapSvg .mi-tradbar{fill:#8d949d;}
-  #miTreemapSvg .mi-tradtick{stroke:#1a2226;stroke-width:1.2;}
+  #miTreemapSvg .mi-tradtick{stroke:#72767b;stroke-width:1;}
+  .spec-key .sk-tradnotch{position:relative;width:24px;height:4px;border-radius:2px;background:#8d949d;margin-bottom:5px;}
+  .spec-key .sk-tradnotch::after{content:"";position:absolute;left:11.5px;top:5px;width:1px;height:4px;background:#72767b;}
   #miTreemapSvg .mi-colsub{font-size:10px;fill:#8e9196;}
   /* on that beat the head holds two rows: the controls above, the clusters'
      header below */
@@ -2538,6 +2543,15 @@
      margin rather than pushing it down, so the figure itself does not move */
   #miFigure[data-step="4"] .mi-head,
   #miFigure[data-step="7"] .mi-head{min-height:107px;margin-bottom:3px;}
+  /* where the row wraps (a stage under about 490px wide for View and Color
+     by, under about 400px for Sort by) the slot grows to hold both lines */
+  @media (max-width: 920px){
+    #miFigure[data-step="4"] .mi-head,
+    #miFigure[data-step="7"] .mi-head{min-height:146px;}
+  }
+  @media (max-width: 830px){
+    #miFigure[data-step="6"] .mi-head{min-height:80px;}
+  }
   #miFigure[data-step="4"] .tradable-viz-wrapper .viz-big,
   #miFigure[data-step="7"] .tradable-viz-wrapper .viz-big{margin-top:0;}
   #miFigure[data-step="4"] .mi-head > .mi-view,
@@ -2633,9 +2647,13 @@
   .rc-fig .rs-num{font-size:34px;}
   .rc-of{display:none;}
   .rc-sub{margin:6px 0 0;font-size:13px;color:#2c2823;}
-  .rank-card[hidden], #miComplexityInfo[hidden]{display:none !important;}
-  .rank-card:not([hidden]), #miComplexityInfo:not([hidden]){animation:fadeIn .35s ease both;}
-  @media (prefers-reduced-motion: reduce){ .rank-card:not([hidden]), #miComplexityInfo:not([hidden]){animation:none;} }
+  /* the first beat's complexity pieces open and close in place, so the
+     centred text re-settles smoothly rather than jumping */
+  #miRankCard, #miComplexityInfo{max-height:900px;overflow:hidden;
+    transition:max-height .45s ease, opacity .3s ease, margin .45s ease, padding .45s ease, border-width .45s ease;}
+  #miRankCard.is-off, #miComplexityInfo.is-off{max-height:0;opacity:0;
+    margin-top:0;margin-bottom:0;padding-top:0;padding-bottom:0;border-width:0;}
+  @media (prefers-reduced-motion: reduce){ #miRankCard, #miComplexityInfo{transition:none;} }
   .rs-head{display:flex;align-items:center;gap:12px;margin:0;}
   .rs-num{
     font-size:38px;font-weight:700;line-height:1;color:var(--teal);
@@ -2654,6 +2672,10 @@
     flex:none;width:13px;height:13px;border-radius:3px;display:inline-block;
   }
   .sector-key .sk-share{color:var(--ink-soft);font-variant-numeric:tabular-nums;}
+  #miSectorKey .sk-trad{display:none;}
+  #miFigure[data-step="7"] #miSectorKey .sk-all,
+  #miFigure[data-step="7"] #miSectorKey .sk-no-trad{display:none;}
+  #miFigure[data-step="7"] #miSectorKey .sk-trad{display:inline;}
   .mi-figure .complexity-legend{display:flex;margin:0;}
   .mi-figure svg .mi-lab{
     font-size:11px;fill:#fff;pointer-events:none;
@@ -3939,7 +3961,7 @@
         </div>
         <!-- the complexity rank is the complexity colouring's takeaway: it comes
              forward when the reader colours the map by complexity -->
-        <div class="rank-strip anchor-card rank-card" id="miRankCard" hidden>
+        <div class="rank-strip anchor-card rank-card is-off" id="miRankCard" aria-hidden="true" inert>
             <div class="rc-fig" aria-hidden="true">
               <span class="rs-num">9<span class="rs-ord">th</span></span>
               <span class="rc-of">of 384</span>
@@ -3951,7 +3973,7 @@
           </div>
         <!-- the complexity explainer, like the rank above it, comes forward only
              when the reader colours the map by complexity -->
-        <div class="collapsible-info" id="miComplexityInfo" hidden>
+        <div class="collapsible-info is-off" id="miComplexityInfo" aria-hidden="true" inert>
             <button class="collapsible-header">
               <span class="ci-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.75a6.25 6.25 0 0 0-3.75 11.25c.53.4.87 1 .96 1.66l.09.59h5.4l.09-.59c.09-.66.43-1.26.96-1.66A6.25 6.25 0 0 0 12 2.75Z"/><path d="M9.6 18.6h4.8"/><path d="M10.5 21h3"/></svg></span>
               <span class="ci-title">What is economic complexity?</span>
@@ -4055,12 +4077,14 @@
             <p class="spec-key" id="miSpecKey">
               <span class="sk-item"><i class="sk-peer"></i>peer-metro average</span>
               <span class="sk-item"><i class="sk-base"></i>as concentrated as the typical US metro</span>
+              <span class="sk-item"><i class="sk-tradnotch"></i>tradability from 0 to 1, notch at 0.5</span>
             </p>
             <!-- the key for the peers order, where the bar is the gap itself -->
             <p class="spec-key spec-key--gap" id="miSpecKeyGap">
               <span class="sk-item"><i class="sk-ahead"></i>more concentrated here than in the peer metros</span>
               <span class="sk-item"><i class="sk-behind"></i>less than in the peer metros</span>
               <span class="sk-item"><i class="sk-base"></i>the peer average</span>
+              <span class="sk-item"><i class="sk-tradnotch"></i>tradability from 0 to 1, notch at 0.5</span>
             </p>
           </div>
         </div>
