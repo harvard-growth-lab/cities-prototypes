@@ -2525,11 +2525,13 @@
      than the teal — but dark enough to read as a bar at 4px */
   #miTreemapSvg .mi-jobsbar{fill:#8d949d;}
   #miTreemapSvg .mi-colhead{font-size:11px;font-weight:600;fill:#72767b;}
-  /* opt-2's one option shows the rest, on the opening frame and on the
-     clusters it opens */
-  .mi-view .mi-scope{display:none;margin-left:6px;}   /* beside the View group, not across the row */
-  .mi-figure[data-opt="2"][data-step="7"] .mi-view .mi-scope,
-  .mi-figure[data-opt="2"][data-step="4"] .mi-view .mi-scope{display:flex;}
+  .mi-view .mi-colorlab{margin-left:14px;}
+  /* the tradability column, built as the jobs column is */
+  #miTreemapSvg .mi-trad{font-size:11.5px;fill:var(--ink-soft);font-variant-numeric:tabular-nums;}
+  #miTreemapSvg .mi-tradtrack{fill:#e6eaec;}
+  #miTreemapSvg .mi-tradbar{fill:#8d949d;}
+  #miTreemapSvg .mi-tradtick{stroke:#1a2226;stroke-width:1.2;}
+  #miTreemapSvg .mi-colsub{font-size:10px;fill:#8e9196;}
   /* on that beat the head holds two rows: the controls above, the clusters'
      header below */
   /* the names close onto the chart: the slot takes over the chart's own top
@@ -2553,8 +2555,10 @@
   .mcl-line{flex:1 1 auto;height:2px;border-radius:1px;background:var(--teal);opacity:.35;}
   /* opt-1 drops the rule between the two directions: the words hold the two
      ends of the chart on their own */
-  .mi-figure[data-opt="1"] .mcl-line{display:none;}
-  .mi-figure[data-opt="1"] .mcl-axis{justify-content:space-between;}
+  .mi-cluster-head .mcl-line{display:none;}
+  .mi-cluster-head .mcl-axis{justify-content:space-between;}
+  /* the score's two ends, named at the ends of the direction words */
+  .mcl-end{color:var(--ink);}
   .mcl-cols{display:flex;gap:8px;}
   .mi-figure[data-step="4"] .mi-cluster-head{opacity:1;}
   /* bars have no columns: the clusters' header stands down while they are up */
@@ -2570,6 +2574,25 @@
   /* the sector legend keeps the bottom on the clusters' beat, as on the first */
   .mi-figure[data-step="4"] .sector-key,
   .mi-figure[data-step="7"] .sector-key{opacity:1;}
+  /* coloured by complexity, the map beats swap the sector key for the ramp */
+  .mi-figure[data-color="complexity"][data-step="4"] .sector-key,
+  .mi-figure[data-color="complexity"][data-step="7"] .sector-key{opacity:0;}
+  .mi-figure[data-color="complexity"][data-step="4"] .complexity-legend,
+  .mi-figure[data-color="complexity"][data-step="7"] .complexity-legend{opacity:1;}
+  /* the second beat's scale: 1 to 0, three bands, the metro's own examples */
+  .tscale{display:flex;flex-direction:column;gap:7px;margin-top:14px;max-width:360px;}
+  .tscale[hidden]{display:none;}
+  .tscale .ts-ends{display:flex;align-items:baseline;gap:7px;font-size:12.5px;color:var(--ink-soft);}
+  .tscale .ts-ends b{font-size:18px;font-weight:700;color:var(--ink);line-height:1;}
+  .tscale .ts-ends .ts-far{margin-left:auto;}
+  .tscale .ts-track{display:flex;gap:2px;height:10px;}
+  .tscale .ts-track i{display:block;border-radius:2px;}
+  .tscale .ts-rows{display:flex;flex-direction:column;gap:8px;margin-top:5px;}
+  .tscale .ts-row{display:flex;gap:9px;align-items:flex-start;font-size:13px;line-height:1.4;color:var(--ink);}
+  .tscale .ts-row > i{flex:none;width:11px;height:11px;border-radius:2px;margin-top:4px;}
+  .tscale .ts-name{font-weight:600;}
+  .tscale .ts-range{color:var(--ink-soft);font-variant-numeric:tabular-nums;}
+  .tscale .ts-eg{display:block;color:var(--ink-soft);font-size:12.5px;}
   /* the three-segment stat in the beat's text */
   .cl-stat{display:inline-flex;align-items:center;gap:12px;}
   .cl-stat[hidden]{display:none;}
@@ -2610,6 +2633,9 @@
   .rc-fig .rs-num{font-size:34px;}
   .rc-of{display:none;}
   .rc-sub{margin:6px 0 0;font-size:13px;color:#2c2823;}
+  .rank-card[hidden], #miComplexityInfo[hidden]{display:none !important;}
+  .rank-card:not([hidden]), #miComplexityInfo:not([hidden]){animation:fadeIn .35s ease both;}
+  @media (prefers-reduced-motion: reduce){ .rank-card:not([hidden]), #miComplexityInfo:not([hidden]){animation:none;} }
   .rs-head{display:flex;align-items:center;gap:12px;margin:0;}
   .rs-num{
     font-size:38px;font-weight:700;line-height:1;color:var(--teal);
@@ -3451,10 +3477,8 @@
       <div class="sec" data-sec="page-export-basket">
         <button class="sec-head" onclick="goTo('page-export-basket')"><span class="num">2</span>Metro Industries</button>
         <ul class="steps">
-          <li data-step="page-export-basket"><span class="dot"></span><button onclick="goTo('page-export-basket')">What the metro does for a living</button></li>
-          <li data-step="leanSection" class="mi-rail-default"><span class="dot"></span><button onclick="goTo('leanSection')">What brings income into the metro?</button></li>
-          <li data-step="tradableSection" class="mi-rail-default"><span class="dot"></span><button onclick="goTo('tradableSection')">How complex are the tradable industries?</button></li>
-          <li data-step="miTradComplexity" class="mi-rail-alt" hidden><span class="dot"></span><button onclick="goTo('miTradComplexity')">How complex is the tradable industry?</button></li>
+          <li data-step="page-export-basket"><span class="dot"></span><button onclick="goTo('page-export-basket')">What brings income into your metro?</button></li>
+          <li data-step="leanSection"><span class="dot"></span><button onclick="goTo('leanSection')">How tradable is the metro&rsquo;s work?</button></li>
           <li data-step="specializedSection"><span class="dot"></span><button onclick="goTo('specializedSection')">Which tradable industries is the metro most specialized in?</button></li>
           <li data-step="check-export"><span class="dot"></span><button onclick="goTo('check-export')">Test your knowledge</button></li>
           <li data-step="apply-export"><span class="dot"></span><button onclick="goTo('apply-export')">Put your insights</button></li>
@@ -3903,100 +3927,47 @@
       <!-- 2 Metro Industries · What the metro does for a living -->
       <section class="page" id="page-export-basket">
         <div class="page-head page-head--geo">
-          <h2>What the metro does for a living</h2>
+          <h2>What brings income into your metro?</h2>
           <button type="button" class="geo-badge geo-badge--metro" onclick="openGeoMap('metro')" title="See this geography on the map"><span class="gb-view">Viewing:</span><svg viewBox="0 0 30 22" width="25" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="15" cy="11" rx="13" ry="8.6" stroke-dasharray="2.6 3"/><path d="M10.5 15.5h9"/><path d="M12.2 15.5V10h3v5.5"/><path d="M16.6 15.5V7h3v8.5"/></svg><span class="gb-name"><span class="city-short">Boston</span> metro</span></button>
         </div>
-        <div class="lede-stat-row mi-default">
-          <p class="lede">What a place produces shapes much of what follows for it. Some metros grew up around a single industry and still rest on it; others carry a wide range, and with it a workforce holding many different specialised skills. Here is the <span class="city-short">Boston</span> MSA’s mix — every industry sized by employment, grouped into sectors.</p>
-          <span class="headstat" id="exportHeadStat" hidden></span>
+        <!-- beat 1: the most tradable industries alone. The complexity pieces
+             sit here, since this is where the reader first meets the colour -->
+        <div class="lede-stat-row">
+          <p class="lede">Your most tradable industries: the work that sells most of what it makes to customers
+            outside the metro, and so brings new income in. Each block is an industry, sized by its jobs and
+            coloured by its sector. Colour them by complexity to see how much know-how each one takes.</p>
         </div>
-        <!-- opt-3 reads the mix by tradability first: this row replaces the
-             one above while that narrative is on, and stands down after -->
-        <div class="lede-stat-row mi-alt" hidden>
-          <p class="lede">Your most tradable industries. To buy from outside, a place has to sell outside, and these
-            are the industries that do the selling: most of what each makes goes to customers beyond the metro.
-            Restaurants, schools and clinics serve the people already here; they grow with the metro rather than
-            setting how large it can be, and the chart sets them aside until you ask for them.</p>
-          <span class="headstat" id="miTradStat" hidden></span>
-        </div>
-        <!-- the explainer that beat three carries in opt-1, here on the first beat -->
-        <div class="collapsible-info mi-alt" hidden>
+        <!-- the complexity rank is the complexity colouring's takeaway: it comes
+             forward when the reader colours the map by complexity -->
+        <div class="rank-strip anchor-card rank-card" id="miRankCard" hidden>
+            <div class="rc-fig" aria-hidden="true">
+              <span class="rs-num">9<span class="rs-ord">th</span></span>
+              <span class="rc-of">of 384</span>
+            </div>
+            <div class="ac-body">
+              <p class="ac-head"><span class="ac-anchor" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18"/><path d="M8.5 20v-8h7v8"/><path d="M3 20v-4.5h5.5"/><path d="M15.5 14H21v6"/><path d="m12 3.2 1.1 2.2 2.4.4-1.7 1.7.4 2.4L12 8.8l-2.2 1.1.4-2.4-1.7-1.7 2.4-.4z"/></svg></span><span>of 384 US metros</span></p>
+              <p class="rc-sub">Complexity rank, 2024</p>
+            </div>
+          </div>
+        <!-- the complexity explainer, like the rank above it, comes forward only
+             when the reader colours the map by complexity -->
+        <div class="collapsible-info" id="miComplexityInfo" hidden>
             <button class="collapsible-header">
               <span class="ci-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.75a6.25 6.25 0 0 0-3.75 11.25c.53.4.87 1 .96 1.66l.09.59h5.4l.09-.59c.09-.66.43-1.26.96-1.66A6.25 6.25 0 0 0 12 2.75Z"/><path d="M9.6 18.6h4.8"/><path d="M10.5 21h3"/></svg></span>
-              <span class="ci-title">How do we measure tradability?</span>
+              <span class="ci-title">What is economic complexity?</span>
               <svg class="collapsible-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M6 9l6 6 6-6"/>
               </svg>
             </button>
             <div class="collapsible-content">
-              <p>Every industry carries a <strong>tradability score from 0 to 1</strong>: how much of what it makes
-                can be sold to someone outside the metro. It follows from what the industry is &mdash; whether its
-                output can travel, whether the customer has to be standing there, and how tightly the industry
-                clusters nationally, since work that gathers in a few places is nearly always selling beyond them.</p>
-              <p>Anything scoring <strong>0.5 or above</strong> is counted here as selling outside the metro, and
-                anything <strong>below 0.35</strong> as serving it; the band between is some of both. Those are lines
-                drawn across a continuous measure, so industries sitting close to either could fall the other way.</p>
-              <svg class="tradable-diagram" viewBox="0 0 600 258" role="img" aria-labelledby="tdTitle-alt tdDesc-alt">
-                <title id="tdTitle-alt">How a tradable industry brings income into the city</title>
-                <desc id="tdDesc-alt">Outside customers buy from the city's tradable industries; that income flows in and supports local jobs and businesses.</desc>
-                <defs>
-                  <marker id="tdArrow-alt" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
-                    <path d="M0 0.5 L7 4 L0 7.5 Z" fill="var(--teal)"/>
-                  </marker>
-                </defs>
-
-                <!-- 1 · outside customers -->
-                <g class="td-card">
-                  <rect x="1" y="16" width="178" height="152" rx="12"/>
-                  <circle class="td-disc" cx="90" cy="58" r="21"/>
-                  <g class="td-ico" transform="translate(90 58)">
-                    <circle r="10.5"/>
-                    <path d="M-10.5 0h21"/>
-                    <path d="M0 -10.5c4.2 4 6.3 6.6 6.3 10.5S4.2 6.5 0 10.5C-4.2 6.5-6.3 3.9-6.3 0S-4.2-6.5 0-10.5Z"/>
-                  </g>
-                  <text class="td-title" x="90" y="110">Outside customers</text>
-                  <text class="td-sub" x="90" y="132">Buyers beyond</text>
-                  <text class="td-sub" x="90" y="148">the city</text>
-                </g>
-
-                <line class="td-flow" x1="184" y1="92" x2="204" y2="92" marker-end="url(#tdArrow-alt)"/>
-
-                <!-- 2 · the tradable industry itself (emphasised) -->
-                <g class="td-card td-card--key">
-                  <rect x="211" y="16" width="178" height="152" rx="12"/>
-                  <circle class="td-disc td-disc--key" cx="300" cy="58" r="21"/>
-                  <g class="td-ico td-ico--key" transform="translate(300 58)">
-                    <path d="M-10 9V-3l6.5-3.8V-3l6.5-3.8V9Z"/>
-                    <path d="M3 9V-9h7v18"/>
-                  </g>
-                  <text class="td-title" x="300" y="110">More tradable industries</text>
-                  <text class="td-sub" x="300" y="132">Manufacturing, software,</text>
-                  <text class="td-sub" x="300" y="148">tourism, consulting</text>
-                </g>
-
-                <line class="td-flow" x1="394" y1="92" x2="414" y2="92" marker-end="url(#tdArrow-alt)"/>
-
-                <!-- 3 · income returning to the city -->
-                <g class="td-card">
-                  <rect x="421" y="16" width="178" height="152" rx="12"/>
-                  <circle class="td-disc" cx="510" cy="58" r="21"/>
-                  <g class="td-ico" transform="translate(510 58)">
-                    <rect x="-11" y="-7" width="22" height="14" rx="2.5"/>
-                    <circle r="3.6"/>
-                  </g>
-                  <text class="td-title" x="510" y="110">Income flows in</text>
-                  <text class="td-sub" x="510" y="132">Supports local jobs</text>
-                  <text class="td-sub" x="510" y="148">and businesses</text>
-                </g>
-
-                <!-- summary strip -->
-                <rect class="td-strip" x="1" y="196" width="598" height="46" rx="10"/>
-                <text class="td-strip-text" x="300" y="224">
-                  Sell outside the city
-                  <tspan class="td-sep">→</tspan> income flows in
-                  <tspan class="td-sep">→</tspan> the local economy grows
-                </text>
-              </svg>
+              <p><strong>Complexity</strong> measures the knowledge an industry takes to run. Work that needs many people
+                holding many different specialised skills &mdash; medical devices, financial engineering, research
+                instruments &mdash; is complex. Work that almost anywhere can do &mdash; food service, retail, basic
+                construction &mdash; is not.</p>
+              <p>It matters because complex work is hard to copy. Places that hold it tend to pay more, to weather
+                downturns better, and to find it easier to move into the next complex thing, because the know-how
+                is already in the room. A metro&rsquo;s complexity is the mix of its industries weighted by how much
+                of each it does.</p>
             </div>
           </div>
         <!-- One figure serves all four beats. The engine lifts it into the
@@ -4014,10 +3985,10 @@
                 <button type="button" class="seg-btn is-active" data-view="map" aria-pressed="true">Sized by jobs</button>
                 <button type="button" class="seg-btn" data-view="alt" aria-pressed="false">Ordered by jobs</button>
               </div>
-              <!-- opt-2 opens on the most tradable alone; this one option adds
-                   the rest, and once pressed offers the way back -->
-              <div class="mi-scope" id="miScope">
-                <div class="seg"><button type="button" class="seg-btn" id="miScopeBtn" aria-pressed="false">Show all industries</button></div>
+              <span class="ctl-label mi-colorlab">Color by</span>
+              <div class="seg" id="miColor" role="group" aria-label="What the cells are coloured by">
+                <button type="button" class="seg-btn is-active" data-color="sector" aria-pressed="true">Sector</button>
+                <button type="button" class="seg-btn" data-color="complexity" aria-pressed="false">Complexity</button>
               </div>
             </div>
             <!-- the ranking's order: by concentration, by size, or by the gap
@@ -4027,6 +3998,7 @@
               <div class="seg" role="group" aria-label="Order of the ranking">
                 <button type="button" class="seg-btn is-active" data-sort="rca" aria-pressed="true">Concentration</button>
                 <button type="button" class="seg-btn" data-sort="jobs" aria-pressed="false">Jobs</button>
+                <button type="button" class="seg-btn" data-sort="trad" aria-pressed="false">Tradability</button>
                 <button type="button" class="seg-btn" data-sort="gap" aria-pressed="false">Against peers</button>
               </div>
             </div>
@@ -4046,9 +4018,9 @@
               <!-- the axis is the header's point: one line across the width,
                    more tradable to the left, less to the right -->
               <div class="mcl-axis">
-                <span class="mcl-dir">&larr; more tradable</span>
+                <span class="mcl-dir"><span class="mcl-end">1</span> &larr; more tradable</span>
                 <span class="mcl-line"></span>
-                <span class="mcl-dir">less tradable &rarr;</span>
+                <span class="mcl-dir">less tradable &rarr; <span class="mcl-end">0</span></span>
               </div>
               <div class="mcl-cols">
                 <div class="mcl-col mcl-col--hi"><span class="mcl-lab">Sells outside the metro <span class="pct"></span></span></div>
@@ -4094,18 +4066,18 @@
         </div>
 
         <!-- Subsection: Tradable Industries Animation -->
-        <div class="export-subsection mi-default" id="leanSection">
+        <div class="export-subsection" id="leanSection">
           <div class="subsection-header">
-            <h3>What brings income into the metro?</h3>
+            <h3>How tradable is the metro&rsquo;s work?</h3>
           </div>
           
           <div class="lede-stat-row">
-            <p class="lede">Watch the mix gather into three clusters by how much of what each industry makes can be
-              sold outside the metro. Only the cluster on the left keeps its sector colours, and it is the work that
-              brings new income into the <span class="city-short">Boston</span> metro. The middle cluster, which sells
-              some of what it makes outward, turns grey; the industries that serve the people already here turn a
-              lighter grey still.</p>
-            <span class="headstat cl-stat" id="miClusterStatGrad" hidden></span>
+            <p class="lede">Every industry has a tradability score from 0 to 1. At 1, almost everything it makes is
+              sold to customers outside the metro; at 0, it only serves the people who live here. Along that score
+              the metro&rsquo;s work falls into three clusters, the most tradable on the left.</p>
+            <!-- the score, drawn: 1 to 0 as the map reads, each band as wide as
+                 its stretch of the score, with the metro's own examples -->
+            <div class="tscale" id="miTradScale" hidden></div>
           </div>
           <div class="collapsible-info">
             <button class="collapsible-header">
@@ -4190,105 +4162,17 @@
         </div>
 
         <!-- Subsection: what the place does more of than its metro -->
-        <div class="export-subsection mi-default" id="tradableSection">
-          <div class="subsection-header">
-            <h3>How complex are the tradable industries?</h3>
-          </div>
-          
-          <p class="lede">The industries that sell outside the metro, on their own, now the full width and shaded by
-            how much knowledge each takes rather than which sector it belongs to. The deep teal blocks are the work that takes the
-            most, and it is the work that sets how much the metro can sell.</p>
-          <!-- the ranking as a standing figure: the number carries it, and a
-               teal rule marks it off from the prose without drawing a scale -->
-          <!-- the beat's takeaway, in the same card the overview gives its
-               anchor reading: the figure on the left, the icon and the line,
-               and the rows that back it -->
-          <div class="rank-strip anchor-card rank-card">
-            <div class="rc-fig" aria-hidden="true">
-              <span class="rs-num">9<span class="rs-ord">th</span></span>
-              <span class="rc-of">of 384</span>
-            </div>
-            <div class="ac-body">
-              <p class="ac-head"><span class="ac-anchor" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18"/><path d="M8.5 20v-8h7v8"/><path d="M3 20v-4.5h5.5"/><path d="M15.5 14H21v6"/><path d="m12 3.2 1.1 2.2 2.4.4-1.7 1.7.4 2.4L12 8.8l-2.2 1.1.4-2.4-1.7-1.7 2.4-.4z"/></svg></span><span>of 384 US metros</span></p>
-              <p class="rc-sub">Complexity rank, 2024</p>
-            </div>
-          </div>
-          <div class="collapsible-info">
-            <button class="collapsible-header">
-              <span class="ci-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.75a6.25 6.25 0 0 0-3.75 11.25c.53.4.87 1 .96 1.66l.09.59h5.4l.09-.59c.09-.66.43-1.26.96-1.66A6.25 6.25 0 0 0 12 2.75Z"/><path d="M9.6 18.6h4.8"/><path d="M10.5 21h3"/></svg></span>
-              <span class="ci-title">What is economic complexity?</span>
-              <svg class="collapsible-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M6 9l6 6 6-6"/>
-              </svg>
-            </button>
-            <div class="collapsible-content">
-              <p><strong>Complexity</strong> measures the knowledge an industry takes to run. Work that needs many people
-                holding many different specialised skills &mdash; medical devices, financial engineering, research
-                instruments &mdash; is complex. Work that almost anywhere can do &mdash; food service, retail, basic
-                construction &mdash; is not.</p>
-              <p>It matters because complex work is hard to copy. Places that hold it tend to pay more, to weather
-                downturns better, and to find it easier to move into the next complex thing, because the know-how
-                is already in the room. A metro&rsquo;s complexity is the mix of its industries weighted by how much
-                of each it does.</p>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- Closing beat: out of the tradable cluster, what the metro is
-             unusually good at. The map redraws as a ranked bar chart. -->
-        <!-- opt-2's second beat: the tradable cluster alone, read by complexity -->
-        <div class="export-subsection mi-alt" id="miTradComplexity" hidden>
-          <div class="subsection-header">
-            <h3>How complex is the tradable industry?</h3>
-          </div>
-          
-          <p class="lede">The same industries, recoloured by complexity. Green
-            industries rest on capabilities that are slow to build; orange ones on capabilities almost anywhere
-            has. This is the part of the mix that sets how much the metro can sell, so its complexity is the
-            number that matters most.</p>
-          <!-- the same reading as opt-1's complexity beat: the metro's rank -->
-          <div class="rank-strip anchor-card rank-card">
-            <div class="rc-fig" aria-hidden="true">
-              <span class="rs-num">9<span class="rs-ord">th</span></span>
-              <span class="rc-of">of 384</span>
-            </div>
-            <div class="ac-body">
-              <p class="ac-head"><span class="ac-anchor" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18"/><path d="M8.5 20v-8h7v8"/><path d="M3 20v-4.5h5.5"/><path d="M15.5 14H21v6"/><path d="m12 3.2 1.1 2.2 2.4.4-1.7 1.7.4 2.4L12 8.8l-2.2 1.1.4-2.4-1.7-1.7 2.4-.4z"/></svg></span><span>of 384 US metros</span></p>
-              <p class="rc-sub">Complexity rank, 2024</p>
-            </div>
-          </div>
-          <div class="collapsible-info ">
-            <button class="collapsible-header">
-              <span class="ci-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.75a6.25 6.25 0 0 0-3.75 11.25c.53.4.87 1 .96 1.66l.09.59h5.4l.09-.59c.09-.66.43-1.26.96-1.66A6.25 6.25 0 0 0 12 2.75Z"/><path d="M9.6 18.6h4.8"/><path d="M10.5 21h3"/></svg></span>
-              <span class="ci-title">What is economic complexity?</span>
-              <svg class="collapsible-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M6 9l6 6 6-6"/>
-              </svg>
-            </button>
-            <div class="collapsible-content">
-              <p><strong>Complexity</strong> measures the knowledge an industry takes to run. Work that needs many people
-                holding many different specialised skills &mdash; medical devices, financial engineering, research
-                instruments &mdash; is complex. Work that almost anywhere can do &mdash; food service, retail, basic
-                construction &mdash; is not.</p>
-              <p>It matters because complex work is hard to copy. Places that hold it tend to pay more, to weather
-                downturns better, and to find it easier to move into the next complex thing, because the know-how
-                is already in the room. A metro&rsquo;s complexity is the mix of its industries weighted by how much
-                of each it does.</p>
-            </div>
-          </div>
-        </div>
-
+        <!-- beat 3: the two tradable clusters turn into the ranking -->
         <div class="export-subsection" id="specializedSection">
           <div class="subsection-header">
             <h3>Which tradable industries is the metro most specialized in?</h3>
           </div>
           
           <div class="lede-stat-row">
-            <p class="lede">Selling outward is one thing; being unusually good at it is another. Of the tradable
-              industries above, these are the ones the <span class="city-short">Boston</span> metro does far more of
-              than a typical US metro would. Watch the map redraw as a ranking: each bar runs as far as the metro
-              is concentrated in that industry, and the tick on it is where the four peer metros average.</p>
+            <p class="lede">Selling outward is one thing; being unusually good at it is another. The two tradable
+              clusters turn into a ranking of the industries the <span class="city-short">Boston</span> metro does far
+              more of than a typical US metro. Each bar runs as far as the metro is concentrated in that industry, and
+              the tradability column gives each one&rsquo;s score from 0 to 1.</p>
           </div>
           <div class="collapsible-info">
             <button class="collapsible-header">
@@ -5083,7 +4967,7 @@
   /* ---------- journey state ---------- */
   const sectionDefs=[
     {name:"Economic Fundamentals", pages:["page-overview","page-overview-msa","page-overview-places","check-overview","apply-overview"], entry:"page-overview"},
-    {name:"Metro Industries",    pages:["page-export-basket","leanSection","tradableSection","specializedSection","check-export","apply-export"], entry:"page-export-basket"},
+    {name:"Metro Industries",    pages:["page-export-basket","leanSection","specializedSection","check-export","apply-export"], entry:"page-export-basket"},
     {name:"Admin Industry Mix", pages:["page-admin-mix","adminWhoFills","adminResidentsOut","adminBalance","adminJobsHere","adminResidents","adminSpecialized","adminExchange","adminGauge","am2Bars","am2Compare","check-adminmix","apply-adminmix"], entry:"page-admin-mix"},
     {name:"City Constraints",pages:["page-constraints","page-city-in-metro","page-constraints-lorem","check-constraints","apply-constraints"],entry:"page-constraints"},
     {name:"Levers for Change",pages:["page-levers","check-levers","apply-levers"], entry:"page-levers"},
@@ -7751,7 +7635,8 @@
   if (compBtn && navReg.indexOf(compBtn) < 0) navReg.push(compBtn);
   function syncOptWrap(){
     var onComp = compBtn && compBtn.classList.contains("is-active");
-    optWrap.style.display = onComp ? "" : "none";
+    /* a section that reads one way offers no layout choice */
+    optWrap.style.display = onComp && !cfg.noToggle ? "" : "none";
     var pager = document.querySelector(".secpager");
     if (pager) pager.classList.toggle("secpager--wide",
       navReg.some(function(b){ return b.classList.contains("is-active"); }));
@@ -7808,8 +7693,10 @@
   setLayout(cfg.defaultLayout || "2");
   }
 
-  mount({ pageId: "page-export-basket", ctl: "MI", seg: "ctLayoutSeg", altNarrative: true, noClassic: true,
-          states: { "2": [0, 4, 5, 6], "3": [7, 5, 6] }, altHeading: "What brings income into your metro?" });
+  /* Metro Industries reads one way: the most tradable industries, the
+     three clusters, the ranking the two tradable clusters turn into */
+  mount({ pageId: "page-export-basket", ctl: "MI", seg: "ctLayoutSeg", noClassic: true, noToggle: true,
+          states: { "2": [7, 4, 6] } });
   /* this section reads the administrative city, so its beats wear the
      city's mark, not the metro's */
   /* opt-2 of the admin section: the map, the bars one count at a time,

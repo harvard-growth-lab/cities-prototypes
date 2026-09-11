@@ -3044,6 +3044,10 @@
     /* the same industries with the sector walls taken down, so the biggest
        run from the top-left corner in plain order of size */
     let view = "map";
+    /* what the map beats colour their cells by: the sector, or how much
+       know-how each industry takes */
+    let colorBy = "sector";
+    const fillBy = d => colorBy === "complexity" ? complexityColor(d.name) : sectorColors[d.sector];
     const spot = d => posFull.get(d.name);
 
     const GAP = 8, HALF = (MI_W - GAP) / 2;
@@ -3082,15 +3086,9 @@
       });
     }
     const clusterSpot = d => posCluster.get(d.name) || posFull.get(d.name);
-    /* how the clusters are coloured: only the most tradable cluster keeps its
-       sector colours, and the other two step down through two tones of grey —
-       the darker for the band that sells some of what it makes outward, the
-       lighter for the work that stays. The two greys are near-neutral and a
-       good way apart in lightness, so they hold for colour-blind readers and
-       in print, where a fade would not. */
-    const GREY_MID = "#6b7480";
-    const clusterFill = d => clusterOf(d) === 0 ? sectorColors[d.sector]
-                           : clusterOf(d) === 1 ? GREY_MID : GREY;
+    /* all three clusters wear one colouring: the columns already carry the
+       tradability, so colour is free to say sector, or complexity */
+    const clusterFill = fillBy;
     /* the tradable cluster alone, filling the width: the tradability-first
        narrative's second beat colours it by complexity */
     const tradRows = clusterRows[0];
@@ -3121,15 +3119,35 @@
     };
     window[ctlName + "_CLUSTERS"] = { share: clusterShare, gap: CGAP, width: MI_W };
 
-    const ML = 292, MT = 62, RH = 34, BAR_H = 17, PLOT_R = 812;
+    const ML = 292, MT = 62, RH = 34, BAR_H = 17, PLOT_R = 712;
+    /* the tradability column, between the bars and the jobs column */
+    const TC_R = 796, TC_W = 56;
     const rowY = i => MT + i * RH + RH / 2;
     /* A ranking over a set of industries: the top twelve by concentration,
        with the scale they need. Two are kept. One is over the whole mix, for
        the narrative that reads sector first; the other is over the tradable
        cluster alone, for the narrative that reads tradability first, so its
        bars only ever rise from cells that were on screen the beat before. */
-    function ranking(rows){
-      const ranked = specializedWithPeers(rows).sort((a, b) => b.rca - a.rca).slice(0, MI_TOP_N);
+    /* the specializations among a set of industries. The tool's older
+       tradable flag is a separate draw from the 0-1 score, and filtering on
+       it would drop cells the clusters count as tradable, so a set picked by
+       the score is judged on concentration alone. Shares are of all metro
+       jobs, which is what the card says they are. */
+    function specializedAmong(rows){
+      const total = d3.sum(industryData, d => d.employ) || 1;
+      const shown = v => Math.round(v * 10) / 10;
+      return rows.filter(d => rcaOf(d.name) > 1).map(d => {
+        const rca = rcaOf(d.name), localPct = d.employ / total * 100, pr = peersFor(d.name, rca);
+        return { name: d.name, sector: d.sector, employ: d.employ, rca: rca,
+          localPct: localPct, worldPct: localPct / rca,
+          label: (rcaSeed[d.name] || {}).short ||
+                 (d.name.length > 40 ? d.name.slice(0, 37) + "\u2026" : d.name),
+          peerAvg: pr.avg, peerValues: pr.values, ahead: shown(rca) >= shown(pr.avg) };
+      });
+    }
+    function ranking(rows, among){
+      const base = among ? specializedAmong(rows) : specializedWithPeers(rows);
+      const ranked = base.sort((a, b) => b.rca - a.rca).slice(0, MI_TOP_N);
       return { ranked,
         rankIdx: new Map(ranked.map((d, i) => [d.name, i])),   /* by concentration: the badges' order */
         pos: new Map(ranked.map((d, i) => [d.name, i])),       /* the order on screen, which sorting changes */
@@ -3154,14 +3172,18 @@
     const SORTS = {
       rca:  (a, b) => b.rca - a.rca,
       jobs: (a, b) => b.employ - a.employ,
-      gap:  (a, b) => (b.rca - b.peerAvg) - (a.rca - a.peerAvg)
+      gap:  (a, b) => (b.rca - b.peerAvg) - (a.rca - a.peerAvg),
+      trad: (a, b) => tradabilityOf(b.name) - tradabilityOf(a.name)
     };
     let sortKey = "rca";
     function reorder(R){
       const order = R.ranked.slice().sort(SORTS[sortKey] || SORTS.rca);
       R.pos = new Map(order.map((d, i) => [d.name, i]));
     }
-    const R1 = ranking(industryData), R2 = ranking(clusterRows[0]);
+    /* the ranking the third beat shows is over the two tradable clusters —
+       the most tradable and the ones that sell some of both — so its bars
+       rise only from cells that were in those two columns a beat before */
+    const R1 = ranking(industryData), R2 = ranking(clusterRows[0].concat(clusterRows[1]), true);
     const ranked = R1.ranked, rankIdx = R1.rankIdx, rankRow = R1.rankRow, xr = R1.xr;
 
     /* every industry, with everything each state needs to place and paint it */
@@ -3188,8 +3210,7 @@
           : { box: { x: xr(1), y: rowY(R1.pos.get(d.name)) - BAR_H / 2,
                      w: Math.max(2, xr(d.row.rca) - xr(1)), h: BAR_H },
               fill: d.rank < 3 ? TEAL : MUTED, op: 1, rx: 3 },
-      /* the three clusters: sector colour where the work can travel, grey
-         where it serves the people already here */
+      /* the three clusters by tradability, the most tradable on the left */
       4: d => view === "alt"
         ? asBars(d, barRankAll, clusterFill(d), clusterSpot(d))
         : { box: clusterSpot(d), fill: clusterFill(d), op: 1, rx: 0 },
@@ -3200,22 +3221,26 @@
             ? asBars(d, barRankTrad, complexityColor(d.name), tradSpot(d) || posFull.get(d.name))
             : { box: tradSpot(d) || posFull.get(d.name), fill: complexityColor(d.name), op: 1, rx: 0 })
         : { box: clusterSpot(d), fill: GREY, op: 0, rx: 0 },
-      /* the most tradable cluster alone, the full width, in sector colours:
-         opt-2's opening frame. The rest wait unseen where the clusters would
-         put them, so "Show all industries" fades them in without a journey */
+      /* the most tradable cluster alone, the full width: the first beat. The
+         rest wait unseen where the clusters will put them, already in the
+         colour they will wear, so the second beat fades them in in place */
       7: d => clusterOf(d) === 0
         ? (view === "alt"
-            ? asBars(d, barRankTrad, sectorColors[d.sector], tradSpot(d) || posFull.get(d.name))
-            : { box: tradSpot(d) || posFull.get(d.name), fill: sectorColors[d.sector], op: 1, rx: 0 })
-        : { box: clusterSpot(d), fill: GREY, op: 0, rx: 0 },
-      /* the ranking over the tradable cluster: what opt-2's third beat shows */
+            ? asBars(d, barRankTrad, fillBy(d), tradSpot(d) || posFull.get(d.name))
+            : { box: tradSpot(d) || posFull.get(d.name), fill: fillBy(d), op: 1, rx: 0 })
+        : { box: clusterSpot(d), fill: fillBy(d), op: 0, rx: 0 },
+      /* the ranking the two tradable clusters turn into. Arriving, it runs in
+         two movements: everything that will not be a bar fades where it
+         stands, then the ranked cells travel out of their columns and settle
+         into bars */
       6: d => d.rank2 < 0
-        ? { box: clusterSpot(d), fill: GREY, op: 0, rx: 0 }
+        ? { box: clusterSpot(d), fill: fillBy(d), op: 0, rx: 0 }
         : sortKey === "gap"
-          ? { box: gapBox(R2, d.row2, R2.pos.get(d.name)), fill: gapOf(d.row2) >= 0 ? TEAL : ORANGE, op: 1, rx: 3 }
+          ? { box: gapBox(R2, d.row2, R2.pos.get(d.name)), fill: gapOf(d.row2) >= 0 ? TEAL : ORANGE,
+              op: 1, rx: 3, delay: arriving ? 300 : 0 }
           : { box: { x: R2.xr(1), y: rowY(R2.pos.get(d.name)) - BAR_H / 2,
                      w: Math.max(2, R2.xr(d.row2.rca) - R2.xr(1)), h: BAR_H },
-              fill: d.rank2 < 3 ? TEAL : MUTED, op: 1, rx: 3 }
+              fill: d.rank2 < 3 ? TEAL : MUTED, op: 1, rx: 3, delay: arriving ? 300 : 0 }
     };
 
     /* ---- the marks ---- */
@@ -3289,6 +3314,14 @@
         .text("Concentration against the four peers\u2019 average: ahead to the right, behind to the left");
       AG.append("text").attr("class", "mi-colhead")
         .attr("x", MI_W - 6).attr("y", MT - 24).attr("text-anchor", "end").text("jobs");
+      tradHead(AG);
+    }
+    /* the tradability column's head: the name, and the score's range under it */
+    function tradHead(A){
+      A.append("text").attr("class", "mi-colhead")
+        .attr("x", TC_R).attr("y", MT - 24).attr("text-anchor", "end").text("tradability");
+      A.append("text").attr("class", "mi-colsub")
+        .attr("x", TC_R).attr("y", MT - 11).attr("text-anchor", "end").text("0 to 1");
     }
     function drawRanking(R, A, G){
       A.selectAll("g.mi-tick").data(R.xr.ticks(5).filter(t => t >= 1)).join("g")
@@ -3305,6 +3338,7 @@
       /* the jobs column: its head, and each row's count at the right edge */
       A.append("text").attr("class", "mi-colhead")
         .attr("x", MI_W - 6).attr("y", MT - 24).attr("text-anchor", "end").text("jobs");
+      tradHead(A);
       /* the leading three by concentration, braced only while that is the order */
       const topN = Math.min(3, R.ranked.length);
       R.brace = A.append("g").attr("class", "mi-bracewrap");
@@ -3336,6 +3370,21 @@
       row.append("rect").attr("class", "mi-jobsbar")
         .attr("x", d => MI_W - 6 - jb(d.employ)).attr("y", 5)
         .attr("width", d => Math.max(1, jb(d.employ))).attr("height", 4).attr("rx", 2);
+      /* the tradability column, built the way the jobs column is: the score,
+         and a short track beneath it from 0 to 1, filled as far as the score
+         reaches, with a tick at 0.5 where the most tradable cluster begins */
+      const tw = d3.scaleLinear().domain([0, 1]).range([0, TC_W]);
+      row.append("text").attr("class", "mi-trad")
+        .attr("x", TC_R).attr("y", 1).attr("text-anchor", "end")
+        .text(d => tradabilityOf(d.name).toFixed(2));
+      row.append("rect").attr("class", "mi-tradtrack")
+        .attr("x", TC_R - TC_W).attr("y", 5).attr("width", TC_W).attr("height", 4).attr("rx", 2);
+      row.append("rect").attr("class", "mi-tradbar")
+        .attr("x", TC_R - TC_W).attr("y", 5).attr("height", 4).attr("rx", 2)
+        .attr("width", d => Math.max(1, tw(tradabilityOf(d.name))));
+      row.append("line").attr("class", "mi-tradtick")
+        .attr("x1", TC_R - TC_W + tw(CL_HI)).attr("x2", TC_R - TC_W + tw(CL_HI))
+        .attr("y1", 3).attr("y2", 11);
       row.filter(top).call(g => {
         g.append("circle").attr("class", "mi-badge-bg").attr("cx", 14).attr("cy", 0).attr("r", 9);
         g.append("text").attr("class", "mi-badge").attr("x", 14).attr("y", 3.5)
@@ -3393,15 +3442,18 @@
     drawBars(byJobsAll, gBarsAll);
     drawBars(byJobsTrad, gBarsTrad);
 
-    let step = -1;
+    let step = -1, painted = -1, arriving = false;
     const reduced = () => window.matchMedia &&
       matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     function paint(i, animate){
+      /* only a first arrival at the ranking is staged; re-sorting it is not */
+      arriving = !!animate && i === 6 && painted !== 6;
       const at = STATE[i];
       const dur = animate ? 950 : 0;
       const rects = cell.select(".mi-rect");
-      const sel = dur ? rects.transition().duration(dur).ease(d3.easeCubicInOut) : rects;
+      const sel = dur ? rects.transition().delay(d => at(d).delay || 0)
+        .duration(dur).ease(d3.easeCubicInOut) : rects;
       sel.attr("x", d => at(d).box.x).attr("y", d => at(d).box.y)
          .attr("width", d => at(d).box.w).attr("height", d => at(d).box.h)
          .attr("fill", d => at(d).fill).attr("rx", d => at(d).rx)
@@ -3421,15 +3473,18 @@
         (dur ? labs.transition().delay(dur / 2).duration(dur / 2) : labs)
           .style("opacity", d => at(d).op > 0 ? 1 : 0);
       }
-      const show = (g, on) => (dur ? g.transition().duration(dur / 2) : g)
+      const show = (g, on, delay) => (dur ? g.transition().delay(on ? (delay || 0) : 0).duration(dur / 2) : g)
         .style("opacity", on ? 1 : 0);
       const gapMode = sortKey === "gap";
+      /* on arrival the ranking's names and columns come in once the bars
+         have nearly settled */
+      const late = arriving ? dur * 0.7 : 0;
       show(gAxis, i === 3 && !gapMode);
       show(gAxisGap, i === 3 && gapMode);
       show(gRows, i === 3);
-      show(gAxis2, i === 6 && !gapMode);
-      show(gAxisGap2, i === 6 && gapMode);
-      show(gRows2, i === 6);
+      show(gAxis2, i === 6 && !gapMode, late);
+      show(gAxisGap2, i === 6 && gapMode, late);
+      show(gRows2, i === 6, late);
       show(gBarsAll, barsOn && i !== 5 && i !== 7);
       show(gBarsTrad, barsOn && (i === 5 || i === 7));
       /* on the reveal section the opening beat rests on the admin bands: the
@@ -3451,6 +3506,7 @@
         rects.style("pointer-events", d => onZero || at(d).op === 0 ? "none" : null);
         labs.style("opacity", onZero ? 0 : null);
       }
+      painted = i;
     }
 
     function setView(v){
@@ -3458,40 +3514,40 @@
       view = v;
       fig.dataset.view = view;
       const ve = document.getElementById(p + "View");
-      if (ve) ve.querySelectorAll(".seg-btn").forEach(x => {
+      if (ve) ve.querySelectorAll(".seg-btn[data-view]").forEach(x => {
         const on = x.dataset.view === view;
         x.classList.toggle("is-active", on);
         x.setAttribute("aria-pressed", String(on));
       });
     }
 
-    /* opt-2 opens on the most tradable alone and offers the rest on request:
-       the scope is that choice. It is not sticky — every arrival at the beat
-       opens on the most tradable, as the beat's text says it does. */
-    let scope = "trad";
-    const scopeBtn = document.getElementById(p + "ScopeBtn");
-    function showScope(){
-      fig.dataset.scope = scope;
-      if (!scopeBtn) return;
-      const all = scope === "all";
-      scopeBtn.classList.toggle("is-active", all);
-      scopeBtn.setAttribute("aria-pressed", String(all));
-      scopeBtn.textContent = all ? "Back to the most tradable" : "Show all industries";
+    /* colour by: sector or complexity, on the two map beats. Each beat
+       opens on sector, which is what its text describes; the reader changes
+       it once there */
+    const colorEl = document.getElementById(p + "Color");
+    /* the complexity rank and the complexity explainer in the first beat's text */
+    const complexityBits = [p + "RankCard", p + "ComplexityInfo"]
+      .map(id => document.getElementById(id)).filter(Boolean);
+    function setColorBy(c){
+      colorBy = c === "complexity" ? "complexity" : "sector";
+      fig.dataset.color = colorBy;
+      /* those show only while the first beat is coloured by complexity. They
+         are only touched on that beat: showing or hiding them in a beat above
+         the reader would shift the page under them */
+      if (step === 7 || step < 0) complexityBits.forEach(el => { el.hidden = colorBy !== "complexity"; });
+      if (colorEl) colorEl.querySelectorAll(".seg-btn[data-color]").forEach(x => {
+        const on = x.dataset.color === colorBy;
+        x.classList.toggle("is-active", on);
+        x.setAttribute("aria-pressed", String(on));
+      });
     }
-    function setScope(sc){
-      sc = sc === "all" ? "all" : "trad";
-      if (sc === scope) return;
-      scope = sc; showScope();
-      if (step !== 7 && step !== 4) return;
-      /* the rest arrive in one tween: the coloured cells shrink into their
-         column, the greys fade in where they stand; and back the same way */
-      const to = scope === "all" ? 4 : 7;
-      step = to;
-      fig.dataset.step = String(to);
-      paint(to, !reduced());
-    }
-    if (scopeBtn) scopeBtn.addEventListener("click", () => setScope(scope === "all" ? "trad" : "all"));
-    showScope();
+    setColorBy(colorBy);
+    if (colorEl) colorEl.addEventListener("click", ev => {
+      const b = ev.target.closest(".seg-btn[data-color]");
+      if (!b || b.dataset.color === colorBy) return;
+      setColorBy(b.dataset.color);
+      if (step === 7 || step === 4) paint(step, !reduced());
+    });
 
     window[ctlName] = { setStep: function(i){
       i = Math.max(0, Math.min(7, i | 0));
@@ -3499,7 +3555,8 @@
       const first = step < 0;
       step = i;
       fig.dataset.step = String(i);
-      if (i === 7 && scope !== "trad"){ scope = "trad"; showScope(); }
+      /* each map beat opens coloured by sector, as its text describes */
+      if (i === 7 || i === 4) setColorBy("sector");
       /* the clusters are a movement between columns, and the ranked bars
          have none: the beat opens as the map however the last one was left */
       if (i === 4) setView("map");
@@ -3507,10 +3564,7 @@
          the city's part of it, so its first beat is played, not painted */
       if (first && i === 0 && opts.adminReveal){ paintMetroFirst(); return; }
       paint(i, !first && !reduced());
-    }, setScope: setScope,
-    /* which narrative is reading the figure, for the furniture that differs
-       between them (opt-1 has no rule between its direction words) */
-    setOpt: function(o){ fig.dataset.opt = String(o); } };
+    } };
 
     /* the clusters' furniture: the header's columns and the captions share
        the columns' widths, and the captions carry each cluster's share */
@@ -3539,34 +3593,49 @@
       }
       sizeClusterHead();
       window.addEventListener("resize", sizeClusterHead);
-      /* the three-segment donut in the beat's text: one for each way the
-         clusters are coloured, each segment wearing the tone its column
-         wears on the map */
-      const names = ["Sells outside the metro", "Some of both", "Serves the metro"];
-      const donut = (host, cols) => {
-        if (!host || !window.d3) return;
-        const R = 30, r = 19;
-        const arc = d3.arc().innerRadius(r).outerRadius(R);
-        /* a hair of white between the segments, so the two greys meet as two
-           tones rather than as one band */
-        const pie = d3.pie().sort(null).padAngle(0.06).value(d => d)(clusterShare);
-        let svg = '<svg class="cl-donut" viewBox="0 0 64 64" width="64" height="64" aria-hidden="true">' +
-          '<g transform="translate(32,32)">';
-        pie.forEach((a, k) => { svg += '<path d="' + arc(a) + '" fill="' + cols[k] + '"/>'; });
-        svg += '</g></svg>';
-        host.innerHTML = svg + '<span class="cl-rows">' + names.map((n, k) =>
-          '<span class="cl-row"><i style="background:' + cols[k] + '"></i>' + n +
-          ' <b>(' + pct(clusterShare[k]) + ')</b></span>').join("") + '</span>';
-        host.hidden = false;
-      };
-      const teal = token("--teal", "#255862");
-      /* opt-1: the colour stands for the sectors the left column keeps, and
-         the two greys are the ones the other two columns are painted in */
-      donut(document.getElementById(p + "ClusterStatGrad"), [teal, GREY_MID, GREY]);
-      /* opt-2 opens on the most tradable alone, so its stat is that one share */
-      if (typeof donutStat === "function")
-        donutStat(document.getElementById(p + "TradStat"), clusterShare[0], teal,
-          "of metro jobs \u00b7 in the most tradable industries");
+      /* the second beat's scale: the score runs from 1 on the left to 0 on
+         the right, as the map does, each band drawn as wide as its stretch of
+         the score, and each named with two of the metro's largest industries
+         in it, so 0 and 1 arrive with things the reader already knows */
+      const scaleHost = document.getElementById(p + "TradScale");
+      if (scaleHost){
+        /* only a generic tail is cut ("Restaurants and Other Eating Places"
+           reads as "Restaurants"); a name that would lose its meaning in the
+           cutting is passed over for the next largest industry instead */
+        /* a single word left before the generic tail stands on its own
+           ("Restaurants"); a longer one would be left hanging ("Executive
+           Legislative"), so that name is kept whole and, being long, gives
+           way to the next industry */
+        const shortOf = n => {
+          const t = n.replace(/ \(.*\)$/, "").trim(), m = t.match(/^(\S+) and Other /);
+          return m ? m[1] : t;
+        };
+        /* examples come from the far end of each outer band, so the two ends
+           of the score are illustrated by industries that sit near them —
+           a band's largest industry can sit right at its edge — falling back
+           to the whole band where its tail is thin */
+        const tail = { 0: d => tradabilityOf(d.name) >= 0.7, 1: () => true, 2: d => tradabilityOf(d.name) <= 0.2 };
+        const examples = k => {
+          const pick = list => list.slice().sort((a, b) => b.employ - a.employ)
+            .map(d => shortOf(d.name)).filter(t => t.length <= 30);
+          const inTail = pick(clusterRows[k].filter(tail[k]));
+          return (inTail.length >= 2 ? inTail : pick(clusterRows[k])).slice(0, 2).join(", ");
+        };
+        const bands = [
+          { k: 0, name: "Sells outside the metro", range: "0.5 to 1",    span: 1 - CL_HI,     tone: "#255862" },
+          { k: 1, name: "Some of both",            range: "0.35 to 0.5", span: CL_HI - CL_LO, tone: "#59838c" },
+          { k: 2, name: "Serves the metro",        range: "0 to 0.35",   span: CL_LO,         tone: "#b9ccd0" }
+        ];
+        scaleHost.innerHTML =
+          '<span class="ts-ends"><b>1</b><span>more tradable</span><span class="ts-far">less tradable</span><b>0</b></span>' +
+          '<span class="ts-track">' + bands.map(b =>
+            '<i style="flex:' + b.span + ' 1 0;background:' + b.tone + '"></i>').join("") + '</span>' +
+          '<span class="ts-rows">' + bands.map(b =>
+            '<span class="ts-row"><i style="background:' + b.tone + '"></i><span>' +
+            '<span class="ts-name">' + b.name + '</span> <span class="ts-range">' + b.range + '</span>' +
+            '<span class="ts-eg">e.g. ' + examples(b.k) + '</span></span></span>').join("") + '</span>';
+        scaleHost.hidden = false;
+      }
     })();
 
     /* the coarse map, laid out for whichever arrangement is chosen. `split`
@@ -3669,11 +3738,13 @@
           body = rowOf("Concentrated here", rrow.rca.toFixed(1) + "\u00d7 the US average") +
                  rowOf("Peer metros average", rrow.peerAvg.toFixed(1) + "\u00d7") +
                  rowOf("Share of metro jobs", pct(rrow.localPct)) +
-                 rowOf("Share in a typical metro", pct(rrow.worldPct));
+                 rowOf("Share in a typical metro", pct(rrow.worldPct)) +
+                 (step === 6 ? rowOf("Tradability", tradabilityOf(d.name).toFixed(2)) : "");
         } else {
           body = rowOf("Sector", d.sector) +
                  rowOf("Jobs", Math.round(d.employ).toLocaleString());
-          if (step === 1 || step === 5) body += rowOf("Complexity (PCI)", pciNumOf(d.name).toFixed(2));
+          if (step === 1 || step === 5 || ((step === 4 || step === 7) && colorBy === "complexity"))
+            body += rowOf("Complexity (PCI)", pciNumOf(d.name).toFixed(2));
           /* the split reads two ways, the clusters three — the card says
              what the beat on screen is actually showing */
           if (step === 2) body += rowOf("Tradability", tradabilityOf(d.name).toFixed(2)) +
@@ -3698,11 +3769,11 @@
        mix; switching it repaints the beat in place */
     const viewEl = document.getElementById(p + "View");
     if (viewEl) viewEl.addEventListener("click", ev => {
-      const b = ev.target.closest(".seg-btn");
+      const b = ev.target.closest(".seg-btn[data-view]");
       if (!b || b.dataset.view === view) return;
       view = b.dataset.view;
       fig.dataset.view = view;
-      viewEl.querySelectorAll(".seg-btn").forEach(x => {
+      viewEl.querySelectorAll(".seg-btn[data-view]").forEach(x => {
         const on = x.dataset.view === view;
         x.classList.toggle("is-active", on);
         x.setAttribute("aria-pressed", String(on));
@@ -3729,7 +3800,10 @@
       if (step === 3 || step === 6) paint(step, anim);
     });
 
-    window[ctlName].setStep(0);
+    /* the section may have mounted before this figure existed, in which
+       case the beat it settled on is waiting on the figure: open there, not
+       on state 0, or the first beat shows a state its controls do not drive */
+    window[ctlName].setStep(fig.dataset.wantStep != null ? +fig.dataset.wantStep : 0);
   }
 
   function initExportTooltip(){
