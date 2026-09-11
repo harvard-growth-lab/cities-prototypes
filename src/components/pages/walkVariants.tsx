@@ -4,7 +4,6 @@
 
 import type { Ref } from "react";
 import {
-  PLACEHOLDER_BRANCHES,
   TREE_SIDE_COLOR,
   quadName,
   sideDash,
@@ -44,12 +43,6 @@ export interface WalkViewProps {
   cityShort: string;
   citySide: BranchSide;
   suggLeaf: string;
-  selLeaf: string;
-  selSide: BranchSide;
-  isDefaultPath: boolean;
-  leafPickable: boolean;
-  pickLeaf: (leaf: string) => void;
-  setHoverLeaf: (id: string | null) => void;
   status: (id: string) => { g: string; lit: boolean };
   medPop: string;
   medCost: string;
@@ -310,10 +303,6 @@ export function SidewaysTree(p: WalkViewProps) {
     atHead(id)
       ? [HX, rowY(rowOf.get(id as BranchSide) ?? cityRow)]
       : leafPos(id);
-  const collide =
-    Math.abs(landAt(p.selLeaf)[1] - landAt(p.suggLeaf)[1]) < 56 &&
-    Math.abs(landAt(p.selLeaf)[0] - landAt(p.suggLeaf)[0]) < 240;
-
   return (
     <g className={on(gates.tree)}>
       {/* the walked route's glow, from the landing on */}
@@ -526,21 +515,9 @@ export function SidewaysTree(p: WalkViewProps) {
           const y = leafY(bi, li, b.leaves.length);
           const lines = sideLeafLines(l);
           const lh = lines.length > 1 ? S_LEAF_H2 : S_LEAF_H;
-          const clickable = p.leafPickable && !PLACEHOLDER_BRANCHES.has(b.id);
-          const picked = p.leafPickable && l.id === p.selLeaf;
           return (
             <g key={`slf-${l.id}`} className={on(gates.leaf) + st.g}>
-              <g
-                className={
-                  "nv-card nv-leaf" +
-                  (st.lit ? " lit" : "") +
-                  (clickable ? " clickable" : "") +
-                  (picked ? " picked" : "")
-                }
-                onMouseEnter={() => clickable && p.setHoverLeaf(l.id)}
-                onMouseLeave={() => p.setHoverLeaf(null)}
-                onClick={() => clickable && p.pickLeaf(l.id)}
-              >
+              <g className={"nv-card nv-leaf" + (st.lit ? " lit" : "")}>
                 <rect
                   x={S_LEAF.x - S_LEAF.w / 2}
                   y={y - lh / 2}
@@ -567,7 +544,8 @@ export function SidewaysTree(p: WalkViewProps) {
         }),
       )}
 
-      {/* the personal badges */}
+      {/* the personal badge: the data-driven read. The tree never marks a
+          pick — that is the sandbox's job. */}
       <g className={on(p.landed)}>
         {badge(
           landAt(p.suggLeaf),
@@ -576,19 +554,6 @@ export function SidewaysTree(p: WalkViewProps) {
           0,
           atHead(p.suggLeaf),
         )}
-        {/* only where the tree forked twice — a one-fork walk offers no
-            pick, and its "selection" is the app's path through a lossy
-            alias, a difference no one chose */}
-        {gates.choice &&
-          p.forks2 &&
-          !p.isDefaultPath &&
-          badge(
-            landAt(p.selLeaf),
-            "you selected this path",
-            TREE_SIDE_COLOR[p.selSide],
-            collide ? 30 : 0,
-            atHead(p.selLeaf),
-          )}
       </g>
 
       {/* the traveller, walking left to right — or carried by the ride */}

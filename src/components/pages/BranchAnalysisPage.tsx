@@ -34,6 +34,44 @@ import {
 } from "../../data/figures";
 import { branchSectionName } from "../../data/content";
 import { NodeGlyph } from "./treeIcons";
+import { QuadGlyph } from "./quadIcons";
+import { VariantOptions } from "./ConstraintNarrative";
+
+/* ---------- how the section is laid out ----------
+   The problem this picks between: an ending carries several modules, each
+   with several data points, and every data point is eventually a real chart
+   — so the honest vertical length of one ending is many screens. The four
+   layouts are four answers to that, and they differ on the axis that
+   matters: what bounds the scroll.
+
+   Modules are INDEPENDENT — no order is meant to be read into them, and a
+   flat presentation is as true as a sequence — with one exception:
+   complexity is the hand-off to what comes next, so every layout puts it
+   last (the tab strip alone also marks the gap before it). */
+export type BaLayout = "float" | "tabs" | "stack" | "strip";
+export const BA_LAYOUTS: { id: BaLayout; label: string; hint: string }[] = [
+  {
+    id: "float",
+    label: "Floating rail",
+    hint: "One long read, full width. The schematic leaves the column and floats over it, so the modules get the whole page and data points sit three or four across.",
+  },
+  {
+    id: "tabs",
+    label: "One module at a time",
+    hint: "The modules become a tab strip; the open one gets the whole stage. Nothing scrolls past a screen, and the reader chooses the order — which is honest, since the modules carry none.",
+  },
+  {
+    id: "stack",
+    label: "Collapsed stack",
+    hint: "Every module is one row — its question and how many data points it holds — and opens in place. The reader sets the depth, and the whole ending is legible before any of it is read.",
+  },
+  {
+    id: "strip",
+    label: "Sideways data points",
+    hint: "Modules stack down the page, but each one's data points run sideways in a strip. A module stays about a screen tall whether it holds two data points or eight.",
+  },
+];
+export const DEFAULT_BA_LAYOUT: BaLayout = "float";
 
 /* The third City Constraints step: the MODULES to look into at the end of
    the branch picked on the diagnostic tree in the previous step — each a
@@ -188,7 +226,10 @@ function DiagSchematic({
             }
             d={elbow(n)}
             stroke={TREE_SIDE_COLOR[sideOf(n)]}
-            strokeDasharray={sideDash(n.data.id) ? "4 3" : undefined}
+            /* the sign belongs to the BRANCH, so every rank under a negative
+               shock is dashed — read off the node's side, not its own id,
+               which for a leaf ("sn-amen") names no side at all */
+            strokeDasharray={sideDash(sideOf(n)) ? "4 3" : undefined}
           />
         ))}
         {nodes.map((n) => (
@@ -280,20 +321,84 @@ function DiagSchematic({
    point naming the signal to read off it. Modules are an overview of where
    to look, not a verdict — nothing here says a module IS the constraint. */
 
+/** the data points of one module — the same frames in every layout, only
+ *  the box around them changes (a grid that wraps, or a strip that scrolls) */
+function ModuleViews({ def, strip }: { def: ModuleDef; strip?: boolean }) {
+  return (
+    <div className={"ba-views" + (strip ? " strip" : "")}>
+      {def.views.map((v) => (
+        <div className="ba-view" key={v.name}>
+          <span className="ba-view-name">{v.name}</span>
+          <span className="ba-view-ph">[data view — to come]</span>
+          {(v.signal || v.level) && (
+            <span className="ba-view-meta">
+              {v.signal && (
+                <span className="ba-view-signal">
+                  <b>Signal</b>
+                  {v.signal}
+                </span>
+              )}
+              {v.level && (
+                <span className="ba-level small">
+                  {DATA_LEVEL_LABEL[v.level]}
+                </span>
+              )}
+            </span>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ModuleHead({ def, color }: { def: ModuleDef; color: string }) {
+  return (
+    <div className="ba-mod-head">
+      <span className="ba-mod-ico" style={{ color }} aria-hidden="true">
+        <NodeGlyph id={def.id} />
+      </span>
+      <h3 style={{ color }}>{def.title}</h3>
+      <span className="ba-level">{DATA_LEVEL_LABEL[def.level]}</span>
+    </div>
+  );
+}
+
+function ModuleQuestion({ def }: { def: ModuleDef }) {
+  return (
+    <p className="ba-mod-q">
+      {def.question ?? (
+        <span className="ph">
+          [the question this module helps answer — to come]
+        </span>
+      )}
+    </p>
+  );
+}
+
 function ModuleBlock({
   def,
   color,
   onSeen,
+  strip,
+  id,
 }: {
   def: ModuleDef;
   color: string;
-  /** reports the block entering view, for the rail's module list */
-  onSeen: (id: string, on: boolean) => void;
+  /** reports the block entering view, for the rail's module list — the
+   *  sandbox's copy of an ending has no rail, and passes none */
+  onSeen?: (id: string, on: boolean) => void;
+  /** lay the data points out sideways instead of in a wrapping grid */
+  strip?: boolean;
+  /** the anchor the rail's module list links to. Only the section's own
+   *  blocks carry one: the sandbox can show the same ending further down
+   *  the page, and two blocks with one id would send the link to the
+   *  wrong one. */
+  id?: string;
 }) {
   const ref = useRef<HTMLElement>(null);
   useEffect(() => {
     const el = ref.current;
-    if (!el) return;
+    if (!el || !onSeen) return;
     const scroller = el.closest(".pages") as HTMLElement | null;
     const io = new IntersectionObserver(
       (entries) => entries.forEach((e) => onSeen(def.id, e.isIntersecting)),
@@ -304,45 +409,132 @@ function ModuleBlock({
   }, [def.id, onSeen]);
 
   return (
-    <section className="ba-module" id={`module-${def.id}`} ref={ref}>
-      <div className="ba-mod-head">
-        <span className="ba-mod-ico" style={{ color }} aria-hidden="true">
-          <NodeGlyph id={def.id} />
-        </span>
-        <h3 style={{ color }}>{def.title}</h3>
-        <span className="ba-level">{DATA_LEVEL_LABEL[def.level]}</span>
-      </div>
-      <p className="ba-mod-q">
-        {def.question ?? (
-          <span className="ph">
-            [the question this module helps answer — to come]
-          </span>
-        )}
-      </p>
-      <div className="ba-views">
-        {def.views.map((v) => (
-          <div className="ba-view" key={v.name}>
-            <span className="ba-view-name">{v.name}</span>
-            <span className="ba-view-ph">[data view — to come]</span>
-            {(v.signal || v.level) && (
-              <span className="ba-view-meta">
-                {v.signal && (
-                  <span className="ba-view-signal">
-                    <b>Signal</b>
-                    {v.signal}
-                  </span>
-                )}
-                {v.level && (
-                  <span className="ba-level small">
-                    {DATA_LEVEL_LABEL[v.level]}
-                  </span>
-                )}
-              </span>
+    <section className="ba-module" id={id} ref={ref}>
+      <ModuleHead def={def} color={color} />
+      <ModuleQuestion def={def} />
+      <ModuleViews def={def} strip={strip} />
+    </section>
+  );
+}
+
+/* ---------- "one module at a time" ----------
+   A tab per module, the open one given the whole stage. */
+function ModuleTabs({
+  modules,
+  color,
+  openId,
+  onOpen,
+}: {
+  modules: ModuleDef[];
+  color: string;
+  openId: string | null;
+  onOpen: (id: string) => void;
+}) {
+  const open = modules.find((m) => m.id === openId) ?? modules[0];
+  return (
+    <div className="ba-tabwrap">
+      <div className="ba-tabs" role="tablist">
+        {modules.map((m, i) => (
+          <Fragment key={m.id}>
+            {/* complexity is the hand-off, not another peer — the seam says
+                so rather than a heading nobody reads */}
+            {m.id === "complexity" && i > 0 && (
+              <span className="ba-tabseam" aria-hidden="true" />
             )}
-          </div>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={m.id === open?.id}
+              className={"ba-tab" + (m.id === open?.id ? " on" : "")}
+              style={
+                m.id === open?.id ? { borderColor: color, color } : undefined
+              }
+              onClick={() => onOpen(m.id)}
+            >
+              <span className="ba-tab-ico" style={{ color }} aria-hidden="true">
+                <NodeGlyph id={m.id} />
+              </span>
+              {m.title}
+              <span className="ba-tab-n">{m.views.length}</span>
+            </button>
+          </Fragment>
         ))}
       </div>
-    </section>
+      {open && (
+        <section className="ba-module open" id={`module-${open.id}`}>
+          <ModuleQuestion def={open} />
+          <ModuleViews def={open} />
+        </section>
+      )}
+    </div>
+  );
+}
+
+/* ---------- the collapsed stack ----------
+   Every module is one row that opens in place, so the whole ending is
+   legible before any of it is read. */
+function ModuleStack({
+  modules,
+  color,
+  openIds,
+  onToggle,
+}: {
+  modules: ModuleDef[];
+  color: string;
+  openIds: ReadonlySet<string>;
+  onToggle: (id: string) => void;
+}) {
+  return (
+    <div className="ba-stack">
+      {modules.map((m) => {
+        const open = openIds.has(m.id);
+        return (
+          <section
+            key={m.id}
+            className={"ba-row" + (open ? " open" : "")}
+            id={`module-${m.id}`}
+          >
+            <button
+              type="button"
+              className="ba-row-head"
+              aria-expanded={open}
+              onClick={() => onToggle(m.id)}
+            >
+              <span
+                className="ba-mod-ico"
+                style={{ color }}
+                aria-hidden="true"
+              >
+                <NodeGlyph id={m.id} />
+              </span>
+              <span className="ba-row-title" style={{ color }}>
+                {m.title}
+              </span>
+              <span className="ba-row-q">
+                {m.question ?? "[question to come]"}
+              </span>
+              <span className="ba-level">{DATA_LEVEL_LABEL[m.level]}</span>
+              <span className="ba-row-n">{m.views.length}</span>
+              <span
+                className={"ba-row-chev" + (open ? " open" : "")}
+                aria-hidden="true"
+              >
+                <svg viewBox="0 0 10 6">
+                  <path
+                    d="M1 1.5 5 4.8 9 1.5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </span>
+            </button>
+            {open && <ModuleViews def={m} />}
+          </section>
+        );
+      })}
+    </div>
   );
 }
 
@@ -351,6 +543,95 @@ function ModuleBlock({
 const COUNT_WORD = ["no", "one", "two", "three", "four", "five", "six"];
 const countModules = (n: number) =>
   n === 1 ? "one module" : `${COUNT_WORD[n] ?? n} modules`;
+
+/* complexity is the transition to what comes next, so it goes last however
+   the spec happened to order the rest */
+const orderModules = (modules: ModuleDef[]) => [
+  ...modules.filter((m) => m.id !== "complexity"),
+  ...modules.filter((m) => m.id === "complexity"),
+];
+
+/** the opening line: the revision spec's overarching question for the
+ *  shock, and the city's own read of it (a placeholder for now) */
+function AnalysisLede({
+  cityShort,
+  side,
+}: {
+  cityShort: string;
+  side: BranchSide;
+}) {
+  const spec = QUAD_BRANCH_SPEC[side];
+  return (
+    <p className="lede">
+      {spec ? (
+        <>
+          {spec.question}{" "}
+          <span className="ph">
+            [the {TREE_SIDE_LABEL[side]} read of {cityShort} — copy to come]
+          </span>
+        </>
+      ) : (
+        <span className="ph">
+          [lead question for the {TREE_SIDE_LABEL[side]} analysis of {cityShort}
+          ]
+        </span>
+      )}
+    </p>
+  );
+}
+
+/** the two lines before the first module: how you landed here (the spec's
+ *  fork line — a shock with no second layer, the positive demand shock, has
+ *  none), and what a module is: an overview of where to look, not a verdict
+ *  on any of them */
+function AnalysisLead({ side, count }: { side: BranchSide; count: number }) {
+  const spec = QUAD_BRANCH_SPEC[side];
+  return (
+    <div className="ba-lead">
+      {spec?.forkLine && (
+        <p className="ba-forkline">
+          <span className="ph">[how you landed here: {spec.forkLine}]</span>
+        </p>
+      )}
+      <p className="ba-forkline">
+        <span className="ph">
+          {count
+            ? `[${countModules(count)} to look into on this branch — an overview of where to look, not a verdict: none of them says the module is definitively the problem]`
+            : "[no modules on this landing yet]"}
+        </span>
+      </p>
+    </div>
+  );
+}
+
+/** one ending's analysis as this section reads it — the lede, how you
+ *  landed here, and every module with its data points — without the
+ *  section's chrome (its heading, its layout switch, the floating
+ *  schematic). The sandbox opens this under its tree, so an ending read
+ *  there is the same read the section gives, in the place the reader
+ *  already is. */
+export function EndingAnalysis({
+  cityShort,
+  path,
+}: {
+  cityShort: string;
+  /** the descent below the root — a full ending, on the quadrant tree */
+  path: string[];
+}) {
+  const side = sideOfPath(path);
+  const ordered = useMemo(() => orderModules(pathModules(path)), [path]);
+  return (
+    <>
+      <AnalysisLede cityShort={cityShort} side={side} />
+      <div className="ba-modules">
+        <AnalysisLead side={side} count={ordered.length} />
+        {ordered.map((m) => (
+          <ModuleBlock key={m.id} def={m} color={TREE_SIDE_COLOR[side]} />
+        ))}
+      </div>
+    </>
+  );
+}
 
 export function BranchAnalysisPage({
   cityShort,
@@ -361,6 +642,7 @@ export function BranchAnalysisPage({
   routeHeld = false,
   onReachEnd,
   treePickable = true,
+  floatSuppressed = false,
 }: {
   cityShort: string;
   /** the descent picked on the diagnostic tree (ids below the root) */
@@ -381,6 +663,10 @@ export function BranchAnalysisPage({
    *  every flow but the shortened walk, where this schematic is the only
    *  place a branch can be chosen */
   treePickable?: boolean;
+  /** something else owns the viewport right now — the walk's tree is still
+   *  on screen above, or the sandbox has come up from below — so the
+   *  floating schematic stays down rather than landing on it */
+  floatSuppressed?: boolean;
 }) {
   const side = sideOfPath(branchPath);
   const titleOf = useMemo(
@@ -415,9 +701,6 @@ export function BranchAnalysisPage({
     () => (modulesOn ? pathModules(branchPath) : []),
     [modulesOn, branchPath],
   );
-  /* the revision spec's per-shock layer: the overarching question (the
-     lede) and the fork line */
-  const spec = QUAD_BRANCH_SPEC[side as BranchSide];
   /* which module block the reader is in, for the rail's module list */
   const [seenModules, setSeenModules] = useState<ReadonlySet<string>>(
     () => new Set(),
@@ -432,8 +715,7 @@ export function BranchAnalysisPage({
     });
   }, []);
   /* the topmost module in view reads as "where you are" */
-  const activeModule =
-    modules.find((m) => seenModules.has(m.id))?.id ?? null;
+  const activeModule = modules.find((m) => seenModules.has(m.id))?.id ?? null;
 
   /* ---------- the end of the section ----------
      A held route is released by READING to the end, not by scrolling past
@@ -464,61 +746,142 @@ export function BranchAnalysisPage({
      Wide screens ignore it — the toggle is not even drawn there. */
   const [ctxOpen, setCtxOpen] = useState(false);
 
+  /* ---------- which layout the section is laid out in ----------
+     A study, not a setting: the four are four answers to the same problem
+     (an ending's honest length), parked behind one small disclosure so the
+     team can read the same content four ways. */
+  const [layout, setLayout] = useState<BaLayout>(DEFAULT_BA_LAYOUT);
+  /* the tab layout's open module, and the stack's open set. Both reset when
+     the pick changes the modules under them. */
+  const [openTab, setOpenTab] = useState<string | null>(null);
+  const [openRows, setOpenRows] = useState<ReadonlySet<string>>(
+    () => new Set(),
+  );
+  useEffect(() => {
+    setOpenTab(null);
+    setOpenRows(new Set());
+  }, [branchPath.join("/")]);
+  const toggleRow = useCallback(
+    (id: string) =>
+      setOpenRows((prev) => {
+        const next = new Set(prev);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        return next;
+      }),
+    [],
+  );
+  const ordered = useMemo(() => orderModules(modules), [modules]);
+  /* the floating card is a panel over the page, so it can be put away */
+  const [floatOpen, setFloatOpen] = useState(true);
+  /* ...and because it floats over the VIEWPORT rather than inside the
+     section, it has to know when the section has been scrolled away from —
+     otherwise it hangs over whatever comes next. This is only the coarse
+     gate (any of the section on screen); WHEN the card arrives is decided a
+     level up, by `floatSuppressed`: not until the walk's tree has scrolled
+     off the top, and not once the sandbox has come up from the bottom. */
+  const sectionRef = useRef<HTMLElement>(null);
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => entries.forEach((e) => setInView(e.isIntersecting)),
+      { root: el.closest(".pages"), threshold: 0 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
   return (
-    <section className="page" id="page-branch-analysis">
-      <div className="page-head">
-        <span className="eyebrow">City Constraints</span>
-        <h2>{branchSectionName(side)}</h2>
-      </div>
-      <p className="lede">
-        {spec ? (
-          /* the spec's overarching question leads the section; the city's own
-             read of it stays a placeholder */
-          <>
-            {spec.question}{" "}
-            <span className="ph">
-              [the {TREE_SIDE_LABEL[side]} read of {cityShort} — copy to come]
-            </span>
-          </>
-        ) : (
-          <span className="ph">
-            [lead question for the {TREE_SIDE_LABEL[side]} analysis of{" "}
-            {cityShort}]
-          </span>
+    <section
+      className={"page ba-page ba-lay-" + layout}
+      id="page-branch-analysis"
+      ref={sectionRef}
+    >
+      <div className="ba-headrow">
+        <div className="page-head">
+          <span className="eyebrow">City Constraints</span>
+          {/* the city type's mark leads its name, in the branch's hue — the
+              same mark its head carries on the tree */}
+          <h2>
+            <QuadGlyph side={side} color={TREE_SIDE_COLOR[side]} />
+            {branchSectionName(side)}
+          </h2>
+        </div>
+        {modulesOn && (
+          <div className="jz-switches ba-switches">
+            <VariantOptions
+              face={BA_LAYOUTS.find((l) => l.id === layout)?.label ?? ""}
+              changed={layout !== DEFAULT_BA_LAYOUT}
+            >
+              {/* `show` is not decoration: .jz-modes is opacity 0 and
+                  pointer-events NONE until it carries it (the walk's header
+                  fades the control in with that class). Without it the
+                  options render — the panel's own rule restores the opacity
+                  — but every click falls through them to the panel. */}
+              <div
+                className="jz-modes show"
+                role="group"
+                aria-label="Analysis layout"
+              >
+                <span className="jz-modes-k">Layout</span>
+                <div className="jz-seg">
+                  {BA_LAYOUTS.map((l) => (
+                    <button
+                      key={l.id}
+                      type="button"
+                      className={"jz-segbtn" + (l.id === layout ? " on" : "")}
+                      aria-pressed={l.id === layout}
+                      title={l.hint}
+                      onClick={() => setLayout(l.id)}
+                    >
+                      {l.label}
+                    </button>
+                  ))}
+                </div>
+                <span className="jz-modes-hint">
+                  {BA_LAYOUTS.find((l) => l.id === layout)?.hint}
+                </span>
+              </div>
+            </VariantOptions>
+          </div>
         )}
-      </p>
+      </div>
+      {/* the spec's overarching question leads the section; the city's own
+          read of it stays a placeholder */}
+      <AnalysisLede cityShort={cityShort} side={side} />
 
       <div className="ba-body">
         {modulesOn ? (
           <div className="ba-modules">
-            <div className="ba-lead">
-              {/* the spec's fork line names how you landed here; a shock
-                  with no second layer (the positive demand shock) has none */}
-              {spec?.forkLine && (
-                <p className="ba-forkline">
-                  <span className="ph">
-                    [how you landed here: {spec.forkLine}]
-                  </span>
-                </p>
-              )}
-              {/* what the modules are, before the first one: an overview of
-                  where to look, not a verdict on any of them */}
-              <p className="ba-forkline">
-                <span className="ph">
-                  {modules.length
-                    ? `[${countModules(modules.length)} to look into on this branch — an overview of where to look, not a verdict: none of them says the module is definitively the problem]`
-                    : "[no modules on this landing yet]"}
-                </span>
-              </p>
-            </div>
-            {modules.map((m) => (
-              <ModuleBlock
-                key={m.id}
-                def={m}
+            <AnalysisLead side={side} count={modules.length} />
+            {layout === "tabs" ? (
+              <ModuleTabs
+                modules={ordered}
                 color={TREE_SIDE_COLOR[side]}
-                onSeen={onSeen}
+                openId={openTab}
+                onOpen={setOpenTab}
               />
-            ))}
+            ) : layout === "stack" ? (
+              <ModuleStack
+                modules={ordered}
+                color={TREE_SIDE_COLOR[side]}
+                openIds={openRows}
+                onToggle={toggleRow}
+              />
+            ) : (
+              ordered.map((m) => (
+                <ModuleBlock
+                  key={m.id}
+                  def={m}
+                  color={TREE_SIDE_COLOR[side]}
+                  onSeen={onSeen}
+                  strip={layout === "strip"}
+                  id={`module-${m.id}`}
+                />
+              ))
+            )}
           </div>
         ) : (
           <div className="placeholder-frame">
@@ -530,13 +893,36 @@ export function BranchAnalysisPage({
           </div>
         )}
 
-        <aside className={"ba-context" + (ctxOpen ? " open" : "")}>
+        {/* the schematic FLOATS (Sept 2026): it used to be a 400px column
+            that took a third of the page off the modules for the whole
+            section. As a panel over the page the modules get the full width
+            — which is what lets a data point be three or four across — and
+            the reader can put it away entirely. */}
+        <aside
+          className={
+            "ba-context ba-float" +
+            (ctxOpen ? " open" : "") +
+            (floatOpen ? "" : " shut") +
+            (inView && !floatSuppressed ? " up" : "")
+          }
+        >
           <div className="ba-ctx-head">
             <span className="ba-kicker">
               {previewing
                 ? "Previewing another path"
                 : "Where you are in the diagnostic"}
             </span>
+            <button
+              type="button"
+              className="ba-float-toggle"
+              aria-expanded={floatOpen}
+              title={
+                floatOpen ? "Put the schematic away" : "Show the schematic"
+              }
+              onClick={() => setFloatOpen((v) => !v)}
+            >
+              {floatOpen ? "–" : "+"}
+            </button>
             <button
               type="button"
               className="ba-ctx-toggle"
@@ -564,6 +950,9 @@ export function BranchAnalysisPage({
               <Fragment key={id}>
                 {i > 0 && <span className="crumb-sep">›</span>}
                 <span style={{ color: TREE_SIDE_COLOR[shownSide] }}>
+                  {/* the head crumb carries its city type's mark (the
+                      glyph is empty for every other crumb) */}
+                  <QuadGlyph side={id} />
                   {titleOf.get(id)}
                 </span>
               </Fragment>
@@ -582,16 +971,35 @@ export function BranchAnalysisPage({
             <div className="ba-modlist">
               <span className="ba-kicker">Modules</span>
               <ul>
-                {modules.map((m) => (
+                {ordered.map((m) => (
                   <li
                     key={m.id}
-                    className={m.id === activeModule ? "active" : ""}
+                    className={
+                      (
+                        layout === "tabs"
+                          ? m.id === (openTab ?? ordered[0]?.id)
+                          : m.id === activeModule
+                      )
+                        ? "active"
+                        : ""
+                    }
                   >
                     <span
                       className="ba-moddot"
                       style={{ background: TREE_SIDE_COLOR[side] }}
                     />
-                    <a href={`#module-${m.id}`}>{m.title}</a>
+                    {/* in the folded layouts the link has to OPEN the
+                        module, not just scroll to a row that is shut */}
+                    <a
+                      href={`#module-${m.id}`}
+                      onClick={() => {
+                        if (layout === "tabs") setOpenTab(m.id);
+                        if (layout === "stack" && !openRows.has(m.id))
+                          toggleRow(m.id);
+                      }}
+                    >
+                      {m.title}
+                    </a>
                     <span className="ba-modcount">{m.views.length}</span>
                   </li>
                 ))}

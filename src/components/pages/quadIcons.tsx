@@ -179,6 +179,36 @@ export function QuadMark({
   );
 }
 
+/** the same mark for HTML: inline beside a city type's name wherever prose
+ *  or a heading names it (the analysis section's title, its trail, the
+ *  sandbox's read). Sized by the text it sits in (see .qmark) and coloured
+ *  by it — or by `color` where the text is not the branch's hue. Nothing
+ *  for a side that is not a quadrant, so callers can pass any side. */
+export function QuadGlyph({
+  side,
+  color,
+}: {
+  side: string;
+  color?: string;
+}) {
+  const art = MARK_ART[side as QuadSide];
+  if (!art) return null;
+  return (
+    <svg
+      viewBox="0 0 40 40"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="qmark"
+      aria-hidden="true"
+      style={color ? { color } : undefined}
+      dangerouslySetInnerHTML={{ __html: art }}
+    />
+  );
+}
+
 /** the name's width at a given size, close enough to centre a mark beside
  *  it (Source Sans 3 bold; SVG text cannot be measured before it renders) */
 const NAME_EM: Record<string, number> = {

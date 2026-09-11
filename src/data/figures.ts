@@ -436,52 +436,64 @@ export function diagnose(cityShort: string, country = USA): Diagnosis {
   ];
 
   if (together) {
-    /* fork 2, demand: the METRO's population growth alone decides. Its pay
-       is deliberately not consulted — the question is whether the wider
-       labor market is growing, and population is what answers that */
-    const metroBelow = !!metro && metro.pop < med.pop;
+    /* fork 2, demand (revised Sept 2026): the MSA is read on the SAME pizza
+       plane the city was — both dials, not population alone. The question is
+       whether the shock reached past the city limits, and the answer is
+       whether the metro landed in the city's own quadrant: a metro sharing
+       it is the whole labor market moving, a metro anywhere else held up
+       while the admin city did not. */
+    const cityQuad = quadOf(place.pop, place.wage, med);
+    const msaQuad = metro ? quadOf(metro.pop, metro.wage, med) : null;
+    const metroWide = msaQuad === cityQuad;
     steps.push({
       fork: "branch",
-      reason: metro
-        ? metroBelow
-          ? `The metro's population is growing ${pct(metro.pop)}, below the median metro's ${pct(med.pop)} — the whole labor market isn't growing, so the shock reached past the city limits.`
-          : `The metro's population is growing ${pct(metro.pop)}, at or above the median metro's ${pct(med.pop)} — the metro is fine, so the problem is local to the city.`
-        : "[no metro data for this city — the sub-fork falls back to place-specific]",
+      reason:
+        metro && msaQuad
+          ? metroWide
+            ? `The MSA reads ${pct(metro.pop)} people · ${pct(metro.wage)} pay — the same ${QUAD_NAME[cityQuad]} quadrant the city is in, so the whole labor market moved and the shock reached past the city limits.`
+            : `The MSA reads ${pct(metro.pop)} people · ${pct(metro.wage)} pay — ${QUAD_NAME[msaQuad]}, not the city's ${QUAD_NAME[cityQuad]}: the metro held up while the admin city slipped, so the problem is local to the city.`
+          : "[no metro data for this city — the sub-fork falls back to place-specific]",
     });
     return {
-      path: ["demand", metroBelow ? "metrowide" : "placespec"],
+      path: ["demand", metroWide ? "metrowide" : "placespec"],
       steps,
       derived: true,
     };
   }
 
-  /* fork 2, supply: is cost of living being bid up faster than the typical
-     metro? Home values in the US, rents in Mexico */
+  /* fork 2, supply (revised Sept 2026): a four-quadrant plane, not a single
+     threshold — the admin city's cost of living against the typical metro's
+     on one axis, its population against the typical metro's on the other.
+     Home values in the US, rents in Mexico. */
   const measure = costMeasure(country);
-  const pricedOut = !!cost && cost.growth > med.cost;
+  const hr = cost ? housingQuadOf(place.pop, cost.growth, med) : null;
   steps.push({
     fork: "branch",
-    reason: cost
-      ? pricedOut
-        ? `${measure.sentenceCase} are climbing ${pct(cost.growth)}, faster than the median metro's ${pct(med.cost)} — people are being priced out.`
-        : `${measure.sentenceCase} are climbing only ${pct(cost.growth)} against the median metro's ${pct(med.cost)} — the priced-out story doesn't hold, so the fading pull is something else.`
+    reason: hr
+      ? `${measure.sentenceCase} are climbing ${pct(cost!.growth)} against the median metro's ${pct(med.cost)}, with population ${pct(place.pop)} against ${pct(med.pop)} — ${HOUSING_QUAD[hr.quad].label}: ${HOUSING_QUAD[hr.quad].read}. ` +
+        (hr.priceUp
+          ? "Cost of living is the story the numbers tell."
+          : "The priced-out story doesn't hold, so the fading pull is something else.")
       : `[no ${measure.lower} data for this city — the sub-fork falls back to cost]`,
   });
   return {
-    path: ["supply", pricedOut ? "col" : "amen"],
+    path: ["supply", hr?.leaf ?? "amen"],
     steps,
     derived: true,
   };
 }
 
-/** the sign-aware quadrant branch the city's own dials argue for — which the
- *  lossy demand→demandpos alias in CROSS_VARIANT cannot recover */
-export function quadSideOf(cityShort: string, country = USA): BranchSide {
-  const place = homePlace(cityShort);
-  if (!place) return "supplyneg"; // the fallback quadrant (PLACE_QUAD, q4)
-  const med = countryMedians(country);
-  const popUp = place.pop >= med.pop;
-  const wageUp = place.wage >= med.wage;
+/** the quadrant a (population, wage) pair falls in against a country's
+ *  medians — the cut fork one makes on the city, reused by the demand fork
+ *  to read the MSA on that same plane. "Above" means at-or-above: a value
+ *  sitting exactly on the median counts as the healthy side. */
+export const quadOf = (
+  pop: number,
+  wage: number,
+  med: { pop: number; wage: number },
+): QuadSide => {
+  const popUp = pop >= med.pop;
+  const wageUp = wage >= med.wage;
   return popUp && wageUp
     ? "demandpos"
     : !popUp && !wageUp
@@ -489,6 +501,102 @@ export function quadSideOf(cityShort: string, country = USA): BranchSide {
       : popUp
         ? "supplypos"
         : "supplyneg";
+};
+
+/** the sign-aware quadrant branch the city's own dials argue for — which the
+ *  lossy demand→demandpos alias in CROSS_VARIANT cannot recover */
+export function quadSideOf(cityShort: string, country = USA): BranchSide {
+  const place = homePlace(cityShort);
+  if (!place) return "supplyneg"; // the fallback quadrant (PLACE_QUAD, q4)
+  return quadOf(place.pop, place.wage, countryMedians(country));
+}
+
+/** where the MSA sits on the SAME pizza plane the admin city was read on.
+ *  The demand fork asks whether the shock reached past the city limits, and
+ *  the answer is whether the metro landed in the city's own quadrant. */
+export function msaQuadOf(
+  cityShort: string,
+  country = USA,
+): QuadSide | null {
+  const msa = homeMsa(cityShort);
+  return msa ? quadOf(msa.pop, msa.wage, countryMedians(country)) : null;
+}
+
+/* ---------- the supply branches' second plane: price × population ----------
+ *  PROVISIONAL (Sept 2026). What is settled is the SHAPE: the supply forks
+ *  read a four-quadrant home-price × population plane at the admin level,
+ *  cut at the national medians, rather than the single price threshold this
+ *  replaced. The routing below is the conservative reading of that plane —
+ *  a city whose home values outrun the typical metro's is a housing story
+ *  whichever way its population is moving, and one whose prices are in check
+ *  is not. The population axis says WHICH housing story it is (squeezed by
+ *  arrivals, or pricing its own residents out) and carries the copy, but
+ *  does not flip the leaf. Refine here when the spec lands. */
+export type HousingQuad = "squeezed" | "pricedout" | "absorbing" | "slack";
+
+export const HOUSING_QUAD: Record<
+  HousingQuad,
+  { label: string; read: string; leaf: "col" | "amen" }
+> = {
+  squeezed: {
+    label: "Squeezed",
+    read: "people arriving and prices chasing them",
+    leaf: "col",
+  },
+  pricedout: {
+    label: "Priced out",
+    read: "prices climbing even as people leave",
+    leaf: "col",
+  },
+  absorbing: {
+    label: "Absorbing",
+    read: "growing with prices in check",
+    leaf: "amen",
+  },
+  slack: {
+    label: "Slack",
+    read: "cheap, and still emptying out",
+    leaf: "amen",
+  },
+};
+
+export interface HousingRead {
+  quad: HousingQuad;
+  /** home-value growth above the typical metro's */
+  priceUp: boolean;
+  /** population growth at or above the typical metro's */
+  popUp: boolean;
+  /** the supply leaf this quadrant routes to */
+  leaf: "col" | "amen";
+}
+
+/** the quadrant of the price × population plane a pair falls in */
+export const housingQuadOf = (
+  pop: number,
+  price: number,
+  med: { pop: number; cost: number },
+): HousingRead => {
+  const priceUp = price > med.cost;
+  const popUp = pop >= med.pop;
+  const quad: HousingQuad = priceUp
+    ? popUp
+      ? "squeezed"
+      : "pricedout"
+    : popUp
+      ? "absorbing"
+      : "slack";
+  return { quad, priceUp, popUp, leaf: HOUSING_QUAD[quad].leaf };
+};
+
+/** the admin city's read of that plane, or nothing where a series is missing */
+export function housingRead(
+  cityShort: string,
+  country = USA,
+): HousingRead | null {
+  const place = homePlace(cityShort);
+  const cost = placeCost(cityShort);
+  if (!place || !cost) return null;
+  return housingQuadOf(place.pop, cost.growth, countryMedians(country));
 }
 
 /** Which leaf of the forked quadrant tree a shock branch lands on, per the
@@ -910,7 +1018,7 @@ export const QUAD_BRANCH_SPEC: Partial<Record<BranchSide, QuadBranchSpec>> = {
   demandneg: {
     question: "What is my demand constraint?",
     forkLine:
-      "Is it local or regional (admin or MSA)? Read the MSA pizza chart — MSA population change vs MSA wage change.",
+      "Is it local or regional (admin or MSA)? Read the MSA on the same pizza chart — in the city's own quadrant it is regional, anywhere else it is local.",
   },
   /* no second layer on the positive demand shock (team revision, Sept 2026):
      the quadrant is the diagnosis, and the analysis opens straight on the
@@ -921,12 +1029,12 @@ export const QUAD_BRANCH_SPEC: Partial<Record<BranchSide, QuadBranchSpec>> = {
   supplyneg: {
     question: "What is my supply constraint?",
     forkLine:
-      "Housing or amenities? Does the admin fall above or below the median admin housing-price change?",
+      "Housing or amenities? Which quadrant of the housing-price × population plane the admin lands in, against the national medians.",
   },
   supplypos: {
     question: "Is it sustainable?",
     forkLine:
-      "Housing or amenities? Does the admin fall above or below the median admin housing-price change?",
+      "Housing or amenities? Which quadrant of the housing-price × population plane the admin lands in, against the national medians.",
   },
 };
 

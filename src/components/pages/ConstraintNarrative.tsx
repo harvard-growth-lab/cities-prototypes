@@ -1,5 +1,6 @@
 import {
   Fragment,
+  type AnimationEvent,
   type CSSProperties,
   type ReactNode,
   useCallback,
@@ -15,26 +16,22 @@ import {
   convertPath,
   DEFAULT_CONSTRAINT_FLOW,
   diagnose,
-  PLACEHOLDER_BRANCHES,
+  HOUSING_QUAD,
+  housingRead,
   quadLeaf,
   quadName,
   quadShock,
   sideDash,
   sideOfPath,
   TREE_SIDE_COLOR,
-  TREE_SIDE_LABEL,
   treeNodes,
   type BranchSide,
   type ConstraintFlow,
   type TreeVariant,
 } from "../../data/figures";
 import {
-  BranchMinimap,
-  LEGIBLE_PX,
-  StageFit,
-  type MiniFrameMap,
-  useChartOverlap,
-  useMediaQuery,
+  STAGE_GONE_MARGIN,
+  useInScroller,
   useStageHeadroom,
   useStageScale,
 } from "./walkFit";
@@ -55,7 +52,6 @@ import {
   DOT_LEAF_Y,
   DOT_ROOT_Y,
   endingX,
-  FIT_MODES,
   fitPose,
   fitScale,
   fitTransform,
@@ -67,7 +63,6 @@ import {
   landingY,
   LEAF_BUS,
   LEAF_ROW,
-  leafSide,
   numberWord,
   planeBranches,
   planeCuts,
@@ -107,17 +102,18 @@ import { branchSectionName } from "../../data/content";
    selected city. So the city's dot is the protagonist and the field is
    backdrop:
 
-     0  dial one: people        the x axis draws; the dot sits on it
-     1  dial two: pay           the plane completes; the dot lifts to its spot
-     2  the metro               the city's MSA joins it, a hollow dot beside
-     3  the benchmark           the median crosshair + the grey field around it
-     4  reading the plane       the regions the shape cuts it into; yours marked
-     5  the tree begins         the chart parks; the dot carries to the root
-     6  the root question       (zoomed walk only) the city enters at the root
-     7  fork one                the dot drops to its side, on its own numbers
-     8  fork two + instrument   the side's question, read on its own chart
-     9  the landing             the dot reaches its leaf — where we think you are
-    10  four leaves, four cities  the other samples land; click to re-pick
+     0  the intro               what the section does, on an empty stage
+     1  dial one: people        the x axis draws; the dot sits on it
+     2  dial two: pay           the plane completes; the dot lifts to its spot
+     3  the metro               the city's MSA joins it, a hollow dot beside
+     4  the benchmark           the median crosshair + the grey field around it
+     5  reading the plane       the regions the shape cuts it into; yours marked
+     6  the tree begins         the chart parks; the dot carries to the root
+     7  the root question       (station table only) the city at the root
+     8  fork one                the dot drops to its side, on its own numbers
+     9  fork two + instrument   the side's question, read on its own chart
+    10  the landing             the dot reaches its leaf — where we think you are
+    11  the endings             the whole tree again, the diagnosed route lit
 
    Every number on the walk is real (metros.ts / diagnose()); a city without
    data walks the fallback read behind bracketed placeholders. The tree is
@@ -139,43 +135,66 @@ const cyu = (v: number) => CQ.cy - v * CQ.r;
    flow chooses is which beats get a stop: a stop landing on a later beat
    reveals the skipped ones with it, and the traveller covers the extra
    stations in one move — a shorter walk loses scrolling, not animation. */
-/* The chart half's beats: the two dials are 0 and 1; after them the metro
+/* The chart half's beats: an intro first (Sept 2026 — what the section
+   does, before any instrument draws), then the two dials, then the metro
    joins the plane, then the benchmark, then the plane's reading. The tree
    half's beats follow, named as well since the schedules below are written
    in them. */
+/** the intro: how this section works, on an otherwise empty stage */
+const INTRO_BEAT = 0;
+/** dial one: the population axis draws and the dot sits on it */
+const DIAL1_BEAT = 1;
+/** dial two: the plane completes and the dot lifts to its spot */
+const DIAL2_BEAT = 2;
 /** the city's MSA joins the plane beside the city's own dot */
-const MSA_BEAT = 2;
+const MSA_BEAT = 3;
 /** the benchmark: the median crosshair and the grey field */
-const BENCH_BEAT = 3;
+const BENCH_BEAT = 4;
 /** reading the plane: the regions the shape cuts it into, yours marked */
-const PLANE_BEAT = 4;
+const PLANE_BEAT = 5;
 /** the tree opens — and, in the guided walk, fork one is answered on the
  *  same stop: the chart parks into the inset, the root card and the branch
  *  heads arrive, the edges draw down to them and the city's branch lights.
  *  (Merged from two stops, Sept 2026: a tree with heads but no paths was a
  *  stop that showed nothing the next one did not.) */
-const TREE_BEAT = 5;
-/** the root question as its OWN stop — only the zoomed walk takes it: the
- *  city enters the tree here, its dot arriving at the root card, and the
- *  pizza chart arrives in the inset as the instrument about to answer the
- *  root question. The camera holds the whole tree on this stop (ZOOM_BEATS
- *  says why it does not close in) — the zoom starts a stop later */
-const ROOT_BEAT = 6;
+const TREE_BEAT = 6;
+/** the root station. No flow stops here any more (Sept 2026: the zoomed
+ *  walk's "the city enters at the root" stop was cut — the quadrant already
+ *  says which branch is the city's, so entering at the root and then walking
+ *  to that branch spent a stop re-asking a question the chart had answered).
+ *  It survives as the number the station table is written in: station 0 is
+ *  the root, and `stationFor` reads a beat's station as its distance from
+ *  here. */
+const ROOT_BEAT = 7;
 /** fork one as its OWN stop — the tree-first tellings take it: they open
  *  on the whole tree with the dot at the root, and the pizza chart answers
  *  the root question here */
-const FORK1_BEAT = 7;
+const FORK1_BEAT = 8;
 /** fork two is asked: each head's stem reaches down to the bus, and the
  *  inset swaps instrument (the rail carries the question itself) */
-const FORK2_BEAT = 8;
+const FORK2_BEAT = 9;
 /** the leaves arrive and the traveller lands on the diagnosed one */
-const LEAF_BEAT = 9;
+const LEAF_BEAT = 10;
 /** the four diagnoses — the only beat that hands the pick to the reader */
-const CHOICE_BEAT = 10;
+const CHOICE_BEAT = 11;
 
 /* the guided walk: four chart beats, then the tree with fork one answered,
    fork two, the landing, the choice — FORK1_BEAT is not a stop here */
-const FULL_BEATS = [0, 1, 2, 3, 4, TREE_BEAT, FORK2_BEAT, LEAF_BEAT, CHOICE_BEAT];
+const CHART_BEATS = [
+  INTRO_BEAT,
+  DIAL1_BEAT,
+  DIAL2_BEAT,
+  MSA_BEAT,
+  BENCH_BEAT,
+  PLANE_BEAT,
+];
+const FULL_BEATS = [
+  ...CHART_BEATS,
+  TREE_BEAT,
+  FORK2_BEAT,
+  LEAF_BEAT,
+  CHOICE_BEAT,
+];
 /* "short" is a different telling, not just fewer stops: the chart never runs
    full-stage. Three stops, all of them tree beats — the whole tree up front
    with the city's dot at the root, the pizza chart arriving beside it to
@@ -191,25 +210,21 @@ const SHORT_BEATS = [TREE_BEAT, FORK1_BEAT, LEAF_BEAT];
 const RIDE_SHORT_BEATS = [TREE_BEAT, FORK1_BEAT, FORK2_BEAT, LEAF_BEAT];
 /* the zoomed walk (the section's default, Sept 2026): the guided walk's
    four chart stops — the quadrants are still walked through — and then a
-   different opening for the tree: it arrives WHOLE with no city on it (the
-   chart pours into its heads), the city enters at the root, and from there
-   the camera walks its path one station per stop — its branch, the second
-   fork, the landing — and opens back out onto the lit route. Nothing on the
-   tree is revealed along the way: it is drawn whole from its first stop,
-   and what the zoom adds is where the reader is looking. The root stop does
-   not zoom: the root's four drops span the tree's whole width, so any frame
-   that actually closes in slices the outer heads (that version was tried
-   and cut) — instead the whole-tree fit holds while the city's dot and the
-   pizza chart arrive, and the first zoom rides the route from the root to
-   the branch. */
+   different opening for the tree: it arrives WHOLE, the chart pours into its
+   heads, and the city rides down with the pour onto the branch its quadrant
+   became. From there the camera walks its path one station per stop — its
+   branch, the second fork, the landing — and opens back out onto the lit
+   route. Nothing on the tree is revealed along the way: it is drawn whole
+   from its first stop, and what the zoom adds is where the reader is
+   looking. The tree stop itself does not zoom — it is the hand-off, and the
+   reader needs the whole tree to see the quadrant land on it; the first zoom
+   is the stop after, closing on the branch the city is already standing
+   on. (The root's four drops span the tree's whole width, so a frame that
+   closes on the ROOT slices the outer heads — that version was tried and
+   cut, and the stop it belonged to went with it.) */
 const ZOOM_BEATS = [
-  0,
-  1,
-  2,
-  3,
-  4,
+  ...CHART_BEATS,
   TREE_BEAT,
-  ROOT_BEAT,
   FORK1_BEAT,
   FORK2_BEAT,
   LEAF_BEAT,
@@ -234,9 +249,119 @@ const ZOOM_BIAS_Y = [-36, -20, 20, -60];
 const beatsFor = (flow: ConstraintFlow) =>
   flow === "short" ? SHORT_BEATS : flow === "zoom" ? ZOOM_BEATS : FULL_BEATS;
 
-/* ~40vh of scroll per stop (the compact flow's rate) + the sticky stage */
+/* the scroll per stop, in vh: half again the compact flow's 40 for a plain
+   walk (the text blocks need the room), and 1.7× it where the camera rides
+   between stops, so a leg has room to settle. The track's height follows
+   from it — see the steps column in the render. */
 const STEP_VH = 40;
-const trackVh = (stops: number) => stops * STEP_VH + 100;
+const stopVhFor = (ride: boolean) => STEP_VH * (ride ? 1.7 : 1.5);
+
+/* the text column's light, in stops from a block's own middle: fully lit
+   within LIT_PLATEAU, at rest beyond LIT_REST (see the scroll effect).
+   Rest past 0.5 is what makes the cross-fade — a block is still fading as
+   its neighbour comes up. Half lit each at the boundary with these two. */
+const LIT_PLATEAU = 0.15;
+const LIT_REST = 0.85;
+
+/* the intro's three placeholders — the chart, the tree, the analysis — each
+   with a line glyph, drawn on the stage before anything real does */
+const INTRO_PARTS = [
+  {
+    id: "chart",
+    title: "the pizza chart",
+    ph: "[two readings place the city]",
+    icon: (
+      <g fill="none" stroke="currentColor" strokeWidth={2}>
+        <circle r={24} />
+        <path d="M-24,0 h48 M0,-24 v48" />
+        <circle r={4} cx={10} cy={-9} fill="currentColor" stroke="none" />
+      </g>
+    ),
+  },
+  {
+    id: "tree",
+    title: "the diagnostic tree",
+    ph: "[its quadrant picks a branch]",
+    icon: (
+      <g fill="none" stroke="currentColor" strokeWidth={2} strokeLinejoin="round">
+        <path d="M0,-26 v10 M-36,-16 h72 M-36,-16 v10 M-12,-16 v10 M12,-16 v10 M36,-16 v10" />
+        {[-36, -12, 12, 36].map((x) => (
+          <rect key={x} x={x - 9} y={-6} width={18} height={12} rx={3} />
+        ))}
+        <path d="M12,6 v8 M2,14 h20 M2,14 v6 M22,14 v6" />
+      </g>
+    ),
+  },
+  {
+    id: "analysis",
+    title: "the analysis",
+    ph: "[the ending's modules]",
+    icon: (
+      <g fill="none" stroke="currentColor" strokeWidth={2} strokeDasharray="4 3">
+        {[-42, -13, 16].map((x) => (
+          <rect key={x} x={x} y={-20} width={26} height={18} rx={3} />
+        ))}
+        {[-42, -13, 16].map((x) => (
+          <rect key={`b${x}`} x={x} y={2} width={26} height={18} rx={3} />
+        ))}
+      </g>
+    ),
+  },
+];
+
+/** the geography a step reads, hung on its title the way the tool's own
+ *  scrolly rails do (v3's .geo-badge) — a note on the title, not a control */
+function GeoBadge({
+  geo,
+  cityShort,
+}: {
+  geo: "city" | "metro";
+  cityShort: string;
+}) {
+  return (
+    <span className={"geo-badge geo-badge--" + geo}>
+      <span className="gb-view">Viewing:</span>
+      {geo === "metro" ? (
+        <svg
+          viewBox="0 0 30 22"
+          width="25"
+          height="18"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <ellipse cx="15" cy="11" rx="13" ry="8.6" strokeDasharray="2.6 3" />
+          <path d="M10.5 15.5h9" />
+          <path d="M12.2 15.5V10h3v5.5" />
+          <path d="M16.6 15.5V7h3v8.5" />
+        </svg>
+      ) : (
+        <svg
+          viewBox="0 0 24 30"
+          width="16"
+          height="20"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.9"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M2 26h20" />
+          <path d="M5 26V13h6v13" />
+          <path d="M13 26V5h7v21" />
+          <path d="M15.4 9h2.2M15.4 13h2.2M15.4 17h2.2" />
+        </svg>
+      )}
+      <span className="gb-name">
+        {cityShort} {geo === "metro" ? "metro" : "admin"}
+      </span>
+    </span>
+  );
+}
 
 /* the shortened walk's opening pose: the whole tree slightly enlarged and
    centred on the stage; the next stop eases it back home to the left,
@@ -431,54 +556,44 @@ export function VariantOptions({
   );
 }
 
-/* ---------- the small-stage switch (guided walks only) ----------
-   A third axis again, and a different question from either of the others:
-   not what the tree IS or how it is told, but what to do when the stage is
-   too small to draw it whole. See FIT_MODES for what each answer does.
-   And the switch is live only while that question is: on a stage wide
-   enough to draw the tree whole there is nothing for the answers to do,
-   so the pills wait disabled and the hint says what would wake them. */
-
-export function FitSwitch({
-  fit,
-  onFitChange,
-  tight,
-}: {
-  fit: FitMode;
-  onFitChange: (f: FitMode) => void;
-  /** the stage is actually squeezing the tree (its smallest card title is
-   *  rendering under the LEGIBLE_PX floor) */
-  tight: boolean;
-}) {
-  return (
-    <div className="jz-modes show">
-      <span className="jz-modes-k">Responsiveness</span>
-      <div className="jz-seg" role="group" aria-label="Responsive behaviour">
-        {FIT_MODES.map((m) => (
-          <button
-            key={m.id}
-            className={"jz-segbtn" + (fit === m.id ? " on" : "")}
-            aria-pressed={fit === m.id}
-            disabled={!tight}
-            title={m.about}
-            onClick={() => onFitChange(m.id)}
-          >
-            {m.label}
-          </button>
-        ))}
-      </div>
-      <span className="jz-modes-hint">
-        {tight
-          ? FIT_MODES.find((m) => m.id === fit)?.hint
-          : `Wide enough for the whole tree — these wake when the stage squeezes its smallest title under ${LEGIBLE_PX}px`}
-      </span>
-    </div>
-  );
-}
-
 /* ------------------------------ the scrolly ------------------------------ */
 
 const clamp01 = (v: number) => Math.max(0, Math.min(1, v));
+
+/* ---------- the camera's motion ----------
+   A critically damped spring per camera quantity — the arc the dot has
+   walked, the frame's centre, the zoom (in log space). A spring eases IN
+   from rest as well as out, keeps its momentum when a stop changes
+   mid-move (a fast scroll re-aims the camera without a hitch), and never
+   overshoots. One time constant for all of them keeps the pan, the zoom
+   and the dot's walk in phase, so a leg reads as one movement rather than
+   three filters decaying at their own rates. The integrator is the
+   SmoothDamp form (Game Programming Gems 4): `smoothTime` is roughly the
+   time to cover 60% of the gap; the move is all but over at three times
+   that. */
+const RIDE_SMOOTH_S = 0.42;
+const smoothDamp = (
+  cur: number,
+  tgt: number,
+  vel: number,
+  dt: number,
+  smoothTime = RIDE_SMOOTH_S,
+): [number, number] => {
+  const w = 2 / smoothTime;
+  const x = w * dt;
+  const e = 1 / (1 + x + 0.48 * x * x + 0.235 * x * x * x);
+  const ch = cur - tgt;
+  const tmp = (vel + w * ch) * dt;
+  let v = (vel - w * tmp) * e;
+  let out = tgt + (ch + tmp) * e;
+  /* a long frame can carry the closed form past the target — clamp there,
+     and drop the velocity with it */
+  if (tgt - cur > 0 === out > tgt) {
+    out = tgt;
+    v = 0;
+  }
+  return [out, v];
+};
 
 export function ConstraintNarrative({
   cityShort,
@@ -486,6 +601,7 @@ export function ConstraintNarrative({
   selectedPath,
   onSelectPath,
   onPhaseInView,
+  onStageInView,
   variant,
   flow,
   onFlowChange,
@@ -497,6 +613,9 @@ export function ConstraintNarrative({
   selectedPath: string[];
   onSelectPath: (path: string[]) => void;
   onPhaseInView: (pageId: string) => void;
+  /** whether the pinned stage — the tree — is still on screen; the section
+   *  below keeps its floating schematic down until it is not */
+  onStageInView?: (inView: boolean) => void;
   /** the app-wide tree structure — leaf picks convert into it */
   variant: TreeVariant;
   flow: ConstraintFlow;
@@ -506,12 +625,18 @@ export function ConstraintNarrative({
   routePinned: boolean;
 }) {
   const trackRef = useRef<HTMLDivElement>(null);
+  /* the text column: its blocks are lit from the scroll position directly
+     (see the scroll effect), so the column is written to, not re-rendered */
+  const stepsRef = useRef<HTMLDivElement>(null);
+  /* the pinned stage, reported up: the analysis's schematic floats only
+     once the tree has (mostly) scrolled off — see STAGE_GONE_MARGIN */
+  const stageRef = useRef<HTMLDivElement>(null);
+  useInScroller(stageRef, onStageInView, STAGE_GONE_MARGIN);
   const onPhaseRef = useRef(onPhaseInView);
   onPhaseRef.current = onPhaseInView;
   /* the scroll STOP; `step` below is the BEAT it lands on, and everything
      that renders reads the beat (see the schedule at the top of the file) */
   const [stepIdx, setStepIdx] = useState(0);
-  const [hoverLeaf, setHoverLeaf] = useState<string | null>(null);
   /* how far a camera ride has PULLED UP: the highest station the camera
      has arrived at under the current stop. The reveal gates read it so a
      rank's cards fade in as the dot reaches them, not the moment the
@@ -519,33 +644,9 @@ export function ConstraintNarrative({
      effect's loop. */
   const [rideArrived, setRideArrived] = useState(0);
   const arrivedRef = useRef(0);
-  /* How the tree meets a stage smaller than the one it was drawn for — in
-     two parts, because WHICH answer is the reader's call but WHETHER one is
-     needed is the stage's. While the whole tree renders over the legibility
-     floor the section stays on the plain fit and the small-stage switch
-     sleeps; a resize that squeezes it under swaps the remembered answer in,
-     and a resize back out swaps it away again. Local to the section —
-     nothing downstream reads it. */
-  /* the remembered small-stage answer — always one the switch OFFERS, so the
-     switch can never show an empty selection (FIT_MODES is the menu; a mode
-     the type knows but the menu does not must not be the default) */
-  const [smallFit, setSmallFit] = useState<FitMode>(FIT_MODES[1].id);
   const svgRef = useRef<SVGSVGElement>(null);
   const stageScale = useStageScale(svgRef);
   const stageHeadroom = useStageHeadroom(svgRef);
-  /* the narrow layout (≤920px) lays the instrument OVER the stage's bottom-
-     left corner instead of beside it, so the stage can run down to the
-     caption — and opens the viewBox to the height that buys (see `dy`) */
-  const narrow = useMediaQuery("(max-width: 920px)");
-  const railChartRef = useRef<HTMLDivElement>(null);
-  const [chartStripPx, chartOverlapPx] = useChartOverlap(svgRef, railChartRef);
-  /* a small-stage answer picked on a narrow window is for that window:
-     widening back out returns the stage to the whole tree */
-  const wasNarrow = useRef(narrow);
-  useEffect(() => {
-    if (wasNarrow.current && !narrow) setSmallFit("fit");
-    wasNarrow.current = narrow;
-  }, [narrow]);
   const short = flow === "short";
   const zoom = flow === "zoom";
   /* the tree-first telling — the shortened walk: the tree opens the walk,
@@ -553,26 +654,27 @@ export function ConstraintNarrative({
      it keeps the guided walk's chart phase and changes only how the tree
      opens.) */
   const treeFirst = short;
-  /* the tellings that park the city at the ROOT before fork one — the
-     shortened walk from its first stop, the zoomed walk on its root stop
-     once the chart phase is over */
-  const rootStop = short || zoom;
+  /* the tellings that park the city at the ROOT before fork one — only the
+     shortened walk, which has no chart phase to answer fork one for it. The
+     zoomed walk arrives from the chart with the quadrant already read, so
+     its city lands straight on the branch. */
+  const rootStop = short;
   /* the beat fork one is answered on: the guided walk folds it into the tree
      beat, the root-stop walks give it a stop of its own */
   const fork1At = rootStop ? FORK1_BEAT : TREE_BEAT;
   /* the beat the instrument inset arrives on: with fork one — except in the
-     zoomed walk, where it comes a stop early, beside the root question it
-     is about to answer */
-  const insetAt = zoom ? ROOT_BEAT : fork1At;
-  /* the beat the route starts lighting: the zoomed walk lights the root as
-     the city enters at it, a stop before the branch is chosen */
-  const litFrom = zoom ? ROOT_BEAT : fork1At;
+     zoomed walk, whose fork-one stop comes AFTER the tree stop that already
+     answered it, so the chart returns there as the evidence for a branch the
+     city is standing on rather than as a question */
+  const insetAt = zoom ? FORK1_BEAT : fork1At;
+  /* the beat the route starts lighting: with fork one's answer, which is
+     what there is to light */
+  const litFrom = fork1At;
   /* which tree station a beat parks the traveller at — root, below the
-     head, the second fork, the leaf. The guided walk has no root stop: fork
-     one is answered on the tree beat, so the dot goes straight to its branch
-     head; the root-stop walks start at the root (the zoomed one holds it
-     there, unseen, through the tree beat and enters on the root stop) and
-     walk to the head on their fork-one stop. */
+     head, the second fork, the leaf. The guided and zoomed walks have no
+     root stop: fork one is answered by the quadrant on the tree beat, so the
+     dot goes straight to its branch head; the shortened walk starts at the
+     root and walks to the head on its fork-one stop. */
   const stationFor = useCallback(
     (stp: number) =>
       stp < TREE_BEAT
@@ -601,16 +703,12 @@ export function ConstraintNarrative({
      forks once has no question or leaf row, so its heads drop down the stage
      and carry the diagnosis themselves */
   const forks2 = hasLeaves(sh);
-  /* the squeeze reading everything responsive keys on: the smallest CARD
-     title (not the 11px edge labels — the titles are what a reader has to
-     read to use the tree) at the scale the stage is actually drawing */
-  const smallestCard = Math.min(sh.leafSize || 99, sh.headSize ?? 17.5);
-  const tight = smallestCard * stageScale < LEGIBLE_PX;
-  const fit: FitMode = tight
-    ? FIT_MODES.some((m) => m.id === smallFit)
-      ? smallFit
-      : FIT_MODES[1].id
-    : "fit";
+  /* the stage answer is settled (Sept 2026, user call: the responsiveness
+     switch is gone): the whole tree is always fitted to the stage, and the
+     zoomed walk's camera ride is what keeps it legible. The small-stage
+     modes (focus, sideways, the sideways ride) stay in walkShapes and
+     walkVariants as studies, unreachable from here. */
+  const fit = "fit" as FitMode;
   const focusMode = fit === "focus";
   const sideMode = fit === "side";
   /* the zoomed walk IS a camera ride, on any stage: only the sideways ride
@@ -622,9 +720,9 @@ export function ConstraintNarrative({
   const sideLayout = sideMode || sideRideMode;
   const rideOn = rideMode || sideRideMode;
   /* THE hand-off (team revision, Sept 2026): as the chart dissolves, each
-     tinted region flies onto the branch head it becomes — and, in the guided
-     walk, the city's dot rides down with it (the zoomed walk holds its dot
-     back until the root stop). It needs the open stage, so the tellings that
+     tinted region flies onto the branch head it becomes, and the city's dot
+     rides down with it onto the branch its own quadrant became. It needs the
+     open stage, so the tellings that
      do not have one — the tree-first short walk, the small-stage fits, which
      redraw the tree their own way — keep the plain fade instead. */
   const pourOn = !treeFirst && fit === "fit";
@@ -634,6 +732,7 @@ export function ConstraintNarrative({
     () => (short && rideOn && forks2 ? RIDE_SHORT_BEATS : beatsFor(flow)),
     [short, rideOn, forks2, flow],
   );
+  const stopVh = stopVhFor(rideOn);
   const step = beats[Math.min(stepIdx, beats.length - 1)];
   /* the tellings that draw the tree WHOLE the moment it appears. The zoomed
      walk keeps it whole under its camera from the tree beat on — there the
@@ -651,26 +750,71 @@ export function ConstraintNarrative({
   /* the stop where the rail's second step ("How we diagnose") takes over:
      the guided walk flips when its four chart stops end; the tree-first
      walks open on the whole tree, so everything past that pose is diagnosis */
-  const diagStop = treeFirst ? 1 : TREE_BEAT;
-  /* the zoomed walk's opening stop shows the tree with no city on it: the
-     traveller stays unseen and nothing names the city until the root stop */
-  const noCity = zoom && step === TREE_BEAT;
+  const diagStop = treeFirst ? 1 : Math.max(0, beats.indexOf(TREE_BEAT));
 
-  /* ---------- scroll → step (same mechanism as the compact flow) ---------- */
+  /* ---------- scroll → step ----------
+     The blocks ARE the stops (Sept 2026): the committed stop is the block
+     whose top the stage's centre line has passed, and each block's light is
+     a smooth function of how far its own centre is from that line, in units
+     of its own height. A block is at least one stop tall (--nv-stop) and
+     grows past that when its content needs to — a caption with the
+     instrument panel under it at the column's full width — so the math
+     reads the blocks rather than dividing the track evenly, and a taller
+     block simply holds its stop for longer. */
   useEffect(() => {
     const track = trackRef.current!;
     const scroller = track.closest(".pages") as HTMLElement | null;
+    /* one column (the stage stacked over the steps): the reading line is
+       the middle of the band UNDER the stage, not the stage's own middle */
+    const stacked = window.matchMedia("(max-width: 920px)");
     let ticking = false;
     const update = () => {
       ticking = false;
       const sTop = scroller ? scroller.getBoundingClientRect().top : 0;
       const sH = scroller ? scroller.clientHeight : window.innerHeight;
       const r = track.getBoundingClientRect();
-      const total = r.height - sH;
-      const p = total > 0 ? clamp01((sTop - r.top) / total) : 0;
-      const s = Math.min(beats.length - 1, Math.floor(p * beats.length));
+      const st = stageRef.current?.getBoundingClientRect();
+      const mid = !st
+        ? sTop + sH / 2
+        : stacked.matches
+          ? (st.bottom + sTop + sH) / 2
+          : st.top + st.height / 2;
+      const kids = stepsRef.current?.children;
+      const n = kids ? kids.length : 0;
+      let s = 0;
+      for (let i = 0; i < n; i++) {
+        const el = kids![i] as HTMLElement;
+        const b = el.getBoundingClientRect();
+        /* the stop: the last block whose top the line has passed — the
+           first before any has, the last once all have */
+        if (b.top <= mid) s = i;
+        /* ---------- the text column's light, continuous ----------
+           The stop is a step function of the scroll — it has to be, the
+           stage plays one pose per stop — but the text must not read as one:
+           a block that sits dim for a whole stop and flips on at the boundary
+           makes the scroll feel like it snaps. So each block's light is a
+           smooth function of how far its own middle is from the reading
+           line, in units of its own height: full only around the middle,
+           easing out to the rest state well PAST the boundary — so at the
+           boundary the outgoing block is still half lit while the incoming
+           one is already half lit, and the two cross-fade rather than trade
+           places. The first and last blocks stay lit past their outer edge,
+           so the section arrives and leaves on a lit block. Written straight
+           to the DOM every scroll frame — a React state per block per frame
+           would be the wrong tool. */
+        let d = b.height > 0 ? (mid - (b.top + b.height / 2)) / b.height : 0;
+        if (i === 0) d = Math.max(0, d);
+        if (i === n - 1) d = Math.min(0, d);
+        d = Math.abs(d);
+        /* smoothstep: full within LIT_PLATEAU of the middle, at rest
+           LIT_REST out — past the boundary at 0.5, which is what makes
+           neighbours overlap */
+        const t = clamp01((d - LIT_PLATEAU) / (LIT_REST - LIT_PLATEAU));
+        const lit = 1 - t * t * (3 - 2 * t);
+        el.style.setProperty("--nv-lit", lit.toFixed(3));
+      }
+      s = Math.min(beats.length - 1, s);
       setStepIdx(s);
-      const mid = sTop + sH / 2;
       if (r.top <= mid && r.bottom >= mid)
         onPhaseRef.current(
           s < diagStop ? "page-constraints" : "page-constraints-diagnose",
@@ -692,13 +836,6 @@ export function ConstraintNarrative({
     };
   }, [beats, diagStop]);
 
-  useEffect(() => {
-    if (step < CHOICE_BEAT) setHoverLeaf(null);
-  }, [step]);
-  /* a shape switch rebuilds the tree under the pointer — a hovered leaf from
-     the other shape must not be re-asserted against the new one */
-  useEffect(() => setHoverLeaf(null), [sh]);
-
   /* ---------- the city's own read (real numbers where they exist) ---------- */
   const place = useMemo(() => homePlace(cityShort), [cityShort]);
   const msa = useMemo(() => homeMsa(cityShort), [cityShort]);
@@ -715,7 +852,6 @@ export function ConstraintNarrative({
      shape rather than the four quadrants. */
   const placeSector = sectorAt(sh, placeSpot[0], placeSpot[1]);
 
-  const planeRead = placeSector?.read ?? placeSector?.sub ?? "";
   const dx = useMemo(() => diagnose(cityShort, country), [cityShort, country]);
   /* Which branch the city takes. Where the tree forks twice that is the
      researchers' diagnosis, converted onto this shape. Where it forks ONCE,
@@ -741,50 +877,45 @@ export function ConstraintNarrative({
      city's own branch stops at its head — the positive demand shock has no
      second layer, so a city there lands on the head itself */
   const cityForks = forks2 && branchForks(sh, citySide);
-  /* the app's pick may live on the other structure — read it on this one.
-     The alias that carries a pick across structures cannot recover a shock's
-     SIGN, so on the forked quadrant tree an app path that merely mirrors the
-     suggestion reads AS the suggestion — otherwise the sign the conversion
-     guesses would manufacture a "you selected this path" no one chose. */
-  const selAlt = useMemo(() => {
+  /* The tree is a statement of the diagnosis, never a mirror of the app's
+     pick (Sept 2026): whatever the reader chooses elsewhere — the analysis
+     section's schematic, the sandbox — this tree keeps lighting the
+     diagnosed route and never grows a "you selected this path" badge. A tree
+     that changed under the reader made the section's navigation unstable;
+     the sandbox below is where a pick is made and marked. The ONE thing in
+     here that reads the pick is the rail's "up next", which names the
+     analysis section that actually follows — a section, not a route. The
+     alias that carries a pick across structures cannot recover a shock's
+     SIGN, so on the forked quadrant tree an app path that merely mirrors
+     the suggestion reads AS the suggestion. */
+  const nextSide = useMemo(() => {
     if (
       sh.variant === "quad2" &&
       convertPath(suggAlt, variant).join("/") === selectedPath.join("/")
     )
-      return suggAlt;
-    return convertPath(selectedPath, sh.variant);
+      return sideOfPath(suggAlt);
+    return sideOfPath(convertPath(selectedPath, sh.variant));
   }, [selectedPath, sh, suggAlt, variant]);
-  const selLeaf = selAlt[selAlt.length - 1];
-  const selSide = sideOfPath(selAlt);
-  const isDefaultPath = selAlt.join("/") === suggAlt.join("/");
   /* which FAMILY of instrument the walked branch's second fork reads: the
      demand shocks (whatever their sign) read the MSA pizza chart, the supply
-     shocks the housing scatter */
+     shocks the price × population plane */
   const demandFork =
     citySide === "demand" ||
     citySide === "demandpos" ||
     citySide === "demandneg";
+  /* the supply forks' second read, a quadrant now (Sept 2026): where the
+     admin city lands on the price × population plane */
+  const houseRead = useMemo(() => housingRead(cityShort), [cityShort]);
   /* the fork-two legend, per branch — the alt tree's own wording where the
      instrument is unchanged, bracketed placeholders where the spec's reading
      is not settled yet */
   const demandLegend: [string, string] =
-    citySide === "demandneg"
-      ? ["[MSA weak too → Regional (MSA)]", "[MSA healthy → Local (admin)]"]
+    citySide === "demandneg" || citySide === "demandpos"
+      ? [
+          `MSA in ${quadName(citySide)} too → Regional (MSA)`,
+          `MSA anywhere else → Local (admin)`,
+        ]
       : ["← below · Metro-wide", "above · Place-specific →"];
-  /* what the landing says on the forked quadrant tree — the supply forks
-     reuse the alt housing reason verbatim; the demand forks read differently
-     and the positive-demand diagonal has no settled rule, so those stay
-     bracketed */
-  const quadLandCopy =
-    citySide === "supplypos" || citySide === "supplyneg"
-      ? dx.derived
-        ? dx.steps[1].reason
-        : `[no ${cityShort} data yet — the fallback leaf is marked]`
-      : citySide === "demandneg"
-        ? `[the MSA pizza chart read: ${suggLeaf === "dn-local" ? "the MSA holds up while the admin slips — a local (admin) shock" : "the MSA reads weak too — a regional (MSA) shock"}]`
-        : /* the positive demand shock: no second layer, the head is the landing */
-          `${cityShort} sits in the ${planeRead} quadrant — ${TREE_SIDE_LABEL[citySide]}. No second question on this branch: the quadrant is the diagnosis. [its modules follow in the analysis below]`;
-
   /* What the stage is looking at, beat by beat: the whole tree while it is
      being introduced, the root and its branches once fork one is answered,
      then just the branch the city took. Only "focus" mode acts on it; the
@@ -824,26 +955,9 @@ export function ConstraintNarrative({
   const dy = (H * (stageHeadroom - 1)) / 2;
   const intoFor = useCallback(
     (
-      box: [number, number, number, number],
-    ): [number, number, number, number] => {
-      const k = stageScale || 1;
-      const above: [number, number, number, number] = [
-        24,
-        18 - dy,
-        W - 24,
-        H - 18 + dy - (narrow ? chartOverlapPx / k : 0),
-      ];
-      const beside: [number, number, number, number] = [
-        24 + (narrow ? (chartStripPx + 16) / k : 0),
-        18 - dy,
-        W - 24,
-        H - 18 + dy,
-      ];
-      return fitScale(box, above, 99) >= fitScale(box, beside, 99)
-        ? above
-        : beside;
-    },
-    [narrow, dy, stageScale, chartOverlapPx, chartStripPx],
+      _box: [number, number, number, number],
+    ): [number, number, number, number] => [24, 18 - dy, W - 24, H - 18 + dy],
+    [dy],
   );
   /* the ride's room: it frames the whole tree at its full stops and centres
      its zoomed ones, so it reads the room the whole tree would get */
@@ -865,6 +979,7 @@ export function ConstraintNarrative({
     if (!pourOn) return [];
     const [pk, ptx, pty] = wholePose;
     const headTop = headRowY(sh) - headRowH(sh) / 2;
+    const last = sh.plane.length - 1;
     return sh.plane.map((sec, i) => {
       const pts = sectorPoly(sec).map(
         ([px, py]) => [cxu(px), cyu(py)] as [number, number],
@@ -884,9 +999,69 @@ export function ConstraintNarrative({
         sHt,
         to: `translate(${(ex - sx).toFixed(1)}px, ${(ey - sy).toFixed(1)}px) scale(${((pk * sh.headW) / sw).toFixed(3)}, ${((pk * headRowH(sh)) / sHt).toFixed(3)})`,
         delay: i * 0.09,
+        /* the rewind unwinds in the order it was laid down — the tile that
+           landed last is the first to fly home. Tighter than the pour's own
+           stagger: the chart is held back until the last tile is home, so
+           the spread is time the reader spends looking at an empty stage */
+        back: (last - i) * 0.06,
       };
     });
   }, [pourOn, sh, wholePose]);
+
+  /* ---------- which way the pour is flying ----------
+     The hand-off is a CROSSING, not a stop: it plays forward as the walk
+     enters the tree phase and rewinds as it leaves. Keyed to the crossing
+     rather than to the tree beat, so scrolling back up from a later stop —
+     which lands on the tree beat with the tree already standing — does not
+     replay a flight the reader has already watched, and scrolling off the
+     top of the beat flies the heads back onto the chart instead of cutting
+     them. */
+  const spread = Math.max(0, sh.plane.length - 1);
+  /* how long the whole crossing owns the stage — the backstop that takes the
+     tiles off it. The rewind runs longer: it hands the chart back in two
+     movements rather than one, and the fade only starts once the last tile
+     is home (see `pourHome`) */
+  const pourMs = 1150 + spread * 90 + 80;
+  const backMs = 900 + spread * 60 + 550 + 100;
+  const [pourRun, setPourRun] = useState<{ dir: 1 | -1; id: number } | null>(
+    null,
+  );
+  /* the rewind's hand-off point: every tile is back on its quadrant. The
+     chart waits for it before the rest of it fades in, so the quadrants
+     arrive first and the plane is rebuilt around them rather than under
+     them. Counted off the tiles' own animation ends rather than timed, so
+     the CSS keeps sole ownership of the pace. */
+  const [pourHome, setPourHome] = useState(false);
+  const homeCount = useRef(0);
+  const onTileHome = (e: AnimationEvent<SVGGElement>) => {
+    if (e.animationName !== "nv-pour-home") return;
+    if (++homeCount.current >= pourTiles.length) setPourHome(true);
+  };
+  const prevStepRef = useRef(step);
+  useEffect(() => {
+    const was = prevStepRef.current >= TREE_BEAT;
+    prevStepRef.current = step;
+    const now = step >= TREE_BEAT;
+    if (!pourOn || was === now) return;
+    homeCount.current = 0;
+    setPourHome(false);
+    setPourRun((r) => ({ dir: now ? 1 : -1, id: (r?.id ?? 0) + 1 }));
+  }, [step, pourOn]);
+  /* the tiles leave the stage when their flight is over: forward, the heads
+     have taken their entrance; backward, the chart has its quadrants back.
+     This also backstops the rewind — if the tiles' animation never runs (an
+     instant navigation kills it) no landing is ever counted, and clearing
+     the run is what lets the chart back on stage */
+  useEffect(() => {
+    if (!pourRun) return;
+    const t = setTimeout(
+      () => setPourRun(null),
+      pourRun.dir < 0 ? backMs : pourMs,
+    );
+    return () => clearTimeout(t);
+  }, [pourRun, pourMs, backMs]);
+  /* the chart holds off while its quadrants are still in the air */
+  const pourHold = !!pourRun && pourRun.dir < 0 && !pourHome;
   /* the static poses centre the tree in the authored 640; in the opened
      viewBox "centred" puts its foot over the instrument's corner, so they
      are lifted by dy, back to the top of the stage */
@@ -924,12 +1099,6 @@ export function ConstraintNarrative({
     [sh],
   );
 
-  /* The tree is never an interactive chooser in any flow. The shortened walk
-     already disables selection and hover, and the guided/compact walks should
-     keep the tree as a read-only route rather than letting the user pick a
-     branch from the diagram itself. */
-  const leafPickable = false;
-
   const onSelectRef = useRef(onSelectPath);
   onSelectRef.current = onSelectPath;
   useEffect(() => {
@@ -942,65 +1111,37 @@ export function ConstraintNarrative({
       onSelectRef.current(target);
   }, [routePinned, selectedPath, suggAlt, variant]);
 
-  const pickLeaf = (leaf: string) => {
-    if (!leafPickable) return;
-    const side = leafSide(sh, leaf);
-    onSelectPath(convertPath([side, leaf], variant));
-  };
-
   /* ---------- per-element emphasis ----------
      steps 5–7: the walk — the city's route full, everything else muted;
      step 8: the choice — hover/selection lights, the rest recedes */
-  /* in the tree-first walks the tree is fully drawn from the start, so reveal
-     order can no longer imply progress — the lit set follows the dot instead:
-     the root alone while the zoomed walk's city has just entered at it, the
-     branch once fork one is answered, the leaf only once fork two has
-     resolved */
+  /* where the tree is fully drawn from the start, reveal order can no longer
+     imply progress — the lit set follows the dot instead: the branch from the
+     moment the quadrant names it, the leaf only once fork two has resolved
+     (a walk that lit its leaf on the tree beat would answer fork two before
+     asking it) */
   const cityPath = useMemo(
     () =>
       new Set<string>(
-        zoom && step < FORK1_BEAT
-          ? ["root"]
-          : rootStop && step < LEAF_BEAT
-            ? ["root", citySide]
-            : ["root", citySide, suggLeaf],
+        step < LEAF_BEAT
+          ? ["root", citySide]
+          : ["root", citySide, suggLeaf],
       ),
-    [zoom, rootStop, step, citySide, suggLeaf],
+    [step, citySide, suggLeaf],
   );
-  /* the selection lights and survives dimming only where the tree forked
-     twice: a one-fork walk offers no pick, and its "selection" is the app's
-     path through a lossy alias (demand → demandpos …) — lighting it would
-     mark a branch no one chose (see the badge below, same reasoning) */
-  const keep = useMemo(
-    () => new Set<string>(["root", ...suggAlt, ...(forks2 ? selAlt : [])]),
-    [suggAlt, selAlt, forks2],
-  );
+  /* from the choice beat on the whole tree is on show: the diagnosed route
+     stays lit, and the rest dims rather than mutes */
+  const keep = useMemo(() => new Set<string>(["root", ...suggAlt]), [suggAlt]);
   const status = (id: string): { g: string; lit: boolean } => {
     if (step < litFrom) return { g: "", lit: false };
     if (step < CHOICE_BEAT)
       return cityPath.has(id)
         ? { g: "", lit: true }
         : { g: " nv-mute", lit: false };
-    const active = hoverLeaf
-      ? new Set<string>(["root", leafSide(sh, hoverLeaf), hoverLeaf])
-      : new Set<string>(["root", ...(forks2 ? selAlt : suggAlt)]);
-    if (active.has(id)) return { g: "", lit: true };
-    return { g: keep.has(id) ? "" : " nv-dim", lit: false };
+    if (keep.has(id)) return { g: "", lit: true };
+    return { g: " nv-dim", lit: false };
   };
 
-  const phase: "chart" | "tree" = stepIdx < diagStop ? "chart" : "tree";
   const on = (b: boolean) => "nv-fade" + (b ? " on" : "");
-  /* show the tree schematic only when the stage is zoomed into part of the
-     tree; if the whole tree is visible, the schematic is redundant */
-  const wholeTreeVisible =
-    step < TREE_BEAT ||
-    (fit === "fit" && !rideOn) ||
-    fit === "side" ||
-    (focusMode && (step < LEAF_BEAT || (step >= CHOICE_BEAT && forks2))) ||
-    (rideOn &&
-      ((step >= CHOICE_BEAT && forks2) || (zoom && step <= ROOT_BEAT)));
-  const showTreeSchematic =
-    step >= TREE_BEAT && (focusMode || rideOn) && !wholeTreeVisible;
 
   /* ---------- the reveal gates ----------
      The beat is the gate everywhere; a camera ride ALSO waits for the
@@ -1041,12 +1182,6 @@ export function ConstraintNarrative({
     cityShort,
     citySide,
     suggLeaf,
-    selLeaf,
-    selSide,
-    isDefaultPath,
-    leafPickable,
-    pickLeaf,
-    setHoverLeaf,
     status,
     medPop: pc(med.pop),
     medCost: pc(medCost),
@@ -1098,10 +1233,6 @@ export function ConstraintNarrative({
   const focusRef = useRef<SVGGElement>(null);
   const sideFocusRef = useRef<SVGGElement>(null);
   const sideDotRef = useRef<SVGGElement>(null);
-  /* the minimap's frame while a ride is on: the ride draws what its camera
-     sees, every animation frame, through these */
-  const miniRectRef = useRef<SVGRectElement>(null);
-  const miniMapRef = useRef<MiniFrameMap | null>(null);
   const dyRef = useRef(dy);
   dyRef.current = dy;
   const posRef = useRef<[number, number] | null>(null);
@@ -1129,7 +1260,7 @@ export function ConstraintNarrative({
     const target: [number, number] =
       arc != null
         ? walk.at(arc)
-        : step === 0
+        : step <= DIAL1_BEAT
           ? [cxu(ux), cyu(-1)]
           : [cxu(ux), cyu(uy)];
     const set = ([x, y]: [number, number]) => {
@@ -1180,10 +1311,11 @@ export function ConstraintNarrative({
      station on the route, and moving to the next stop plays the travel as
      an animation — the damped arc walks the polyline through every elbow
      on the way, so forks arrive and the branch not taken slides off the
-     frame's edge. (The scroll itself is snapped to stops by the effect
-     below, so the two stay in step.) The choice stop opens back out to the
-     whole tree. Driven imperatively on an idle-stopping rAF loop; the
-     group's own 0.9s transition is disabled for the duration. */
+     frame's edge. The scroll itself is free — a gesture may rest anywhere
+     in the track, and the camera simply plays to whichever stop that is.
+     The choice stop opens back out to the whole tree. Driven imperatively
+     on an idle-stopping rAF loop; the group's own 0.9s transition is
+     disabled for the duration. */
   const stepRef = useRef(step);
   stepRef.current = step;
   /* the camera's state survives re-renders AND effect re-subscriptions — a
@@ -1202,9 +1334,22 @@ export function ConstraintNarrative({
     dy: 0,
     fx: 0,
     fy: 0,
+    /* the springs' velocities — the arc's, the centre's, the zoom's (in
+       log space) — so a re-aim mid-move carries its momentum */
+    va: 0,
+    vcx: 0,
+    vcy: 0,
+    vk: 0,
+    /* the hand-off: when the ride took the dot over, and where the chart
+       had left it — the entrance below is timed and placed off these */
+    enterT: 0,
+    fromX: 0,
+    fromY: 0,
   });
   const focusIntoRef = useRef(focusInto);
   focusIntoRef.current = focusInto;
+  /* the loop's starter, kept where a step change can reach it (below) */
+  const kickRef = useRef<(() => void) | null>(null);
   /* a change of WORLD — mode, tree, city — is the one time it may cut */
   useEffect(() => {
     camRef.current.init = false;
@@ -1255,8 +1400,13 @@ export function ConstraintNarrative({
       last = now;
       const stp = stepRef.current;
       if (stp < TREE_BEAT) {
-        /* still on the chart beats: the tree group holds home */
+        /* still on the chart beats: the tree group holds home, and the dot's
+           opacity goes back to the stylesheet's */
         g.style.transform = "none";
+        if (dotEl) {
+          dotEl.style.opacity = "";
+          dotEl.style.transition = "";
+        }
         st.init = false;
         running = false;
         bumpArrived(0);
@@ -1264,10 +1414,10 @@ export function ConstraintNarrative({
       }
       const sIdx = stationFor(stp);
       /* the stops that frame the whole tree: the choice — and the zoomed
-         walk's two opening stops (the empty tree, then the city entering at
-         the root), which the next gesture zooms in from */
+         walk's opening stop, the hand-off, which the next gesture zooms in
+         from */
       const wholeStop =
-        (stp >= CHOICE_BEAT && forks2) || (zoom && stp <= ROOT_BEAT);
+        (stp >= CHOICE_BEAT && forks2) || (zoom && stp <= TREE_BEAT);
       const arcT = stationArcs[sIdx];
       const [ix0, iy0, ix1, iy1] = focusIntoRef.current;
       const fcxT = (ix0 + ix1) / 2;
@@ -1288,26 +1438,88 @@ export function ConstraintNarrative({
          clamps the same way), never at the fork or leaf it does not have */
       const lastRest = cityForks ? 3 : 1;
       const restAt = (i: number) => rests[Math.min(i, lastRest)];
-      if (!st.init) {
+      /* a fresh camera opens AT its stop — the centre is seeded once the
+         target is known below — rather than drifting in from the route */
+      const fresh = !st.init;
+      if (fresh) {
         st.init = true;
-        st.a = arcT;
-        const [sx, sy] = route.at(arcT);
-        st.cx = sx;
-        st.cy = sy;
+        /* the zoomed walk enters the tree ON the hand-off beat, with its
+           branch already chosen — so it does not pop onto that branch, it
+           walks in from the root while the pour carries its quadrant to the
+           same head. Every other ride opens parked at its station. */
+        st.a = zoom && stp === TREE_BEAT ? 0 : arcT;
+        st.enterT = now;
+        [st.fromX, st.fromY] = posRef.current ?? rests[0];
         st.k = wholeStop ? kFit : stopK(sIdx);
         [st.dx, st.dy] = restAt(sIdx);
         st.fx = fcxT;
         st.fy = fcyT;
+        st.va = st.vcx = st.vcy = st.vk = 0;
       }
-      /* the arc chases the station along the path — this is the ride */
-      st.a += (arcT - st.a) * (1 - Math.exp(-dt * 3.1));
+      /* ---------- the entrance (zoomed walk, hand-off beat) ----------
+         The dot used to be handed from the chart to the tree in one frame:
+         the ride took it over at the root while it was still sitting on the
+         pizza chart, so it was seen leaping from its quadrant to the root
+         and then setting off — a jump and a walk, neither of which was the
+         quadrant becoming the branch. Now it is three movements and no jump:
+           1. the dot fades OUT where the chart left it, as the tiles lift;
+           2. it waits, unseen, at the root while the tiles land on the heads;
+           3. it fades in at the root and walks down to the branch its own
+              quadrant just became.
+         The chart's own dot is gone by then, so nothing is seen twice, and
+         the walk begins only once there is a tree to walk. Elsewhere in the
+         ride the spring runs as before. */
+      const entering = zoom && stp === TREE_BEAT && sIdx === 1;
+      const sinceEnter = (now - st.enterT) / 1000;
+      const HOLD_S = 0.3; // the fade-out at the chart spot
+      const WAIT_S = 0.85; // the tiles' flight — the dot appears as they land
+      const FADE_S = 0.35; // the fade-in at the root
+      let entrance: "out" | "wait" | "in" | "walk" | null = null;
+      if (entering && sinceEnter < HOLD_S) entrance = "out";
+      else if (entering && sinceEnter < WAIT_S) entrance = "wait";
+      else if (entering && sinceEnter < WAIT_S + FADE_S) entrance = "in";
+      else if (entering && sinceEnter < WAIT_S + FADE_S + 1.4)
+        entrance = "walk";
+      if (dotEl) {
+        /* the stylesheet eases the traveller's opacity over 0.6s (its
+           between-stop fades want that); these writes land every frame and
+           must not be eased on top, or the fade-out lags behind the tiles
+           and the dot is still ghosting in while it walks */
+        dotEl.style.transition = entrance ? "none" : "";
+        dotEl.style.opacity =
+          entrance === "out"
+            ? String(1 - sinceEnter / HOLD_S)
+            : entrance === "wait"
+              ? "0"
+              : entrance === "in"
+                ? String(Math.min(1, (sinceEnter - WAIT_S) / FADE_S))
+                : "";
+      }
+      /* the arc draws up to the station along the path — this is the ride:
+         on a spring, so the dot sets off gently and eases in to the station
+         rather than lurching off at full speed. During the entrance it holds
+         at the root, fully visible, before it sets off — the reader should
+         see the city AT the root question before they see it answer it. */
+      if (entrance === "out" || entrance === "wait" || entrance === "in") {
+        st.a = 0;
+        st.va = 0;
+      } else {
+        [st.a, st.va] = smoothDamp(st.a, arcT, st.va, dt);
+      }
       /* the pull-up report: within the leg's last stretch the rank's
          reveal fires, so its cards finish fading in as the dot arrives.
          Scrolling back drops the mark with the stop, so a re-approach
-         reveals on arrival again. */
-      bumpArrived(
-        Math.abs(arcT - st.a) < 130 ? sIdx : Math.min(arrivedRef.current, sIdx),
-      );
+         reveals on arrival again. The report is a state change — a full
+         re-render of the stage, one long frame — so the zoomed walk, whose
+         tree is already whole and reads only the LANDING's arrival (the
+         badge), reports that one alone, and only once the dot has all but
+         stopped, so the frame it costs never lands mid-flight. */
+      const near = zoom ? 20 : 130;
+      const reached =
+        Math.abs(arcT - st.a) < near
+          ? sIdx
+          : Math.min(arrivedRef.current, sIdx);
+      bumpArrived(zoom && reached < 3 ? 0 : reached);
       const [px, py] = route.at(st.a);
       /* The dot. The sideways rests live BELOW the cards, off the route
          that runs along the card centreline, so the sideways dot does not
@@ -1338,11 +1550,15 @@ export function ConstraintNarrative({
         : arrived
           ? ryS
           : py;
-      /* The camera. Along the vertical tree it rides the route itself. The
-         sideways route's elbows would swing it up to the centreline and back
-         down on every leg — a visible lurch on the first fork, whose leg
-         runs a whole row's height — so sideways it tracks the dot's own
-         straight run instead, biased a little toward the cards above. */
+      /* The camera. On the small-stage ride it rides the route itself, dot
+         and all. The sideways route's elbows would swing it up to the
+         centreline and back down on every leg — a visible lurch on the
+         first fork, whose leg runs a whole row's height — so sideways it
+         tracks the dot's own straight run instead, biased a little toward
+         the cards above. The zoomed walk aims at the STATION and pans
+         straight to it while the dot walks the elbows: the camera has no
+         corners to turn, and the dot, on the same spring, stays inside the
+         frame for the whole leg. */
       const k = wholeStop ? kFit : stopK(sIdx);
       /* the zoomed walk keeps its frame inside the tree's box, as a map
          viewer would: an outer branch sits off-centre in the frame rather
@@ -1358,17 +1574,27 @@ export function ConstraintNarrative({
         : sideRideMode
           ? (dxT + px) / 2
           : zoom
-            ? zoomCx(px)
+            ? zoomCx(rxS)
             : px;
       const cy = wholeStop
         ? wcy
         : sideRideMode
           ? dyT - 24
-          : py + (zoom ? ZOOM_BIAS_Y[sIdx] : 0);
-      const f = 1 - Math.exp(-dt * 9);
-      st.cx += (cx - st.cx) * f;
-      st.cy += (cy - st.cy) * f;
-      st.k += (k - st.k) * (1 - Math.exp(-dt * 4.2));
+          : zoom
+            ? ryS + ZOOM_BIAS_Y[sIdx]
+            : py;
+      if (fresh) {
+        st.cx = cx;
+        st.cy = cy;
+      }
+      /* pan and zoom ride the same spring as the walk, so the three arrive
+         together; the zoom eases in log space, so a step in and the step
+         back out feel like the same move played in reverse */
+      [st.cx, st.vcx] = smoothDamp(st.cx, cx, st.vcx, dt);
+      [st.cy, st.vcy] = smoothDamp(st.cy, cy, st.vcy, dt);
+      const [lk, vk] = smoothDamp(Math.log(st.k), Math.log(k), st.vk, dt);
+      st.k = Math.exp(lk);
+      st.vk = vk;
       const ff = 1 - Math.exp(-dt * 5);
       st.fx += (fcxT - st.fx) * ff;
       st.fy += (fcyT - st.fy) * ff;
@@ -1376,38 +1602,32 @@ export function ConstraintNarrative({
         st.fy -
         st.k * st.cy
       ).toFixed(2)}px) scale(${st.k.toFixed(4)})`;
-      /* the minimap's frame: the stage's viewBox pulled back through the
-         camera into tree coords, then onto the map */
-      const miniRect = miniRectRef.current;
-      const miniMap = miniMapRef.current;
-      if (miniRect && miniMap) {
-        const tx = st.fx - st.k * st.cx;
-        const ty = st.fy - st.k * st.cy;
-        const vdy = dyRef.current;
-        const [mx0, my0, mw, mh] = miniMap([
-          (0 - tx) / st.k,
-          (-vdy - ty) / st.k,
-          (W - tx) / st.k,
-          (H + vdy - ty) / st.k,
-        ]);
-        miniRect.setAttribute("x", mx0.toFixed(1));
-        miniRect.setAttribute("y", my0.toFixed(1));
-        miniRect.setAttribute("width", mw.toFixed(1));
-        miniRect.setAttribute("height", mh.toFixed(1));
-      }
       const fd = 1 - Math.exp(-dt * 11);
-      st.dx += (dxT - st.dx) * fd;
-      st.dy += (dyT - st.dy) * fd;
+      if (entrance === "out") {
+        /* fading out on the chart: hold the chart spot exactly, and seed
+           the smoother at the root so the fade-in starts THERE */
+        st.dx = st.fromX;
+        st.dy = st.fromY;
+      } else if (entrance === "wait" || entrance === "in") {
+        [st.dx, st.dy] = rests[0];
+      } else {
+        st.dx += (dxT - st.dx) * fd;
+        st.dy += (dyT - st.dy) * fd;
+      }
       dotEl?.setAttribute(
         "transform",
         `translate(${st.dx.toFixed(1)},${st.dy.toFixed(1)})`,
       );
       if (
+        entrance === null &&
         Math.abs(arcT - st.a) < 0.4 &&
+        Math.abs(st.va) < 1 &&
         Math.hypot(cx - st.cx, cy - st.cy) < 0.3 &&
+        Math.hypot(st.vcx, st.vcy) < 1 &&
         Math.hypot(dxT - st.dx, dyT - st.dy) < 0.3 &&
         Math.hypot(fcxT - st.fx, fcyT - st.fy) < 0.3 &&
-        Math.abs(k - st.k) < 0.0015
+        Math.abs(k - st.k) < 0.0015 &&
+        Math.abs(st.vk) < 0.002
       ) {
         running = false;
         return;
@@ -1424,9 +1644,11 @@ export function ConstraintNarrative({
     const target: HTMLElement | Window = scroller ?? window;
     target.addEventListener("scroll", kick, { passive: true });
     window.addEventListener("resize", kick);
+    kickRef.current = kick;
     kick();
     return () => {
       cancelAnimationFrame(raf);
+      kickRef.current = null;
       target.removeEventListener("scroll", kick);
       window.removeEventListener("resize", kick);
       g.style.transform = "";
@@ -1445,72 +1667,20 @@ export function ConstraintNarrative({
     stationFor,
   ]);
 
-  /* ---------- ride scroll snapping ----------
-     The rides are stepped for the reader too: when a scroll gesture comes
-     to rest anywhere inside the track, the page glides to the nearest
-     stop's centre — every gesture ends ON a station, never between two.
-     A new gesture cancels the glide and wins. */
+  /* A scroll event wakes the loop, but the step it lands on is committed
+     by React AFTER that frame's callbacks — so a single event (one instant
+     jump: a keyboard page, a scrollbar click, a deep link) could wake the
+     loop while it still read the chart phase, let it idle out, and leave
+     the tree unposed with nothing to wake it again. A stream of wheel
+     events masked this. The committed step wakes it too. */
   useEffect(() => {
-    if (!rideOn) return;
-    const track = trackRef.current!;
-    const scroller = track.closest(".pages") as HTMLElement | null;
-    if (!scroller) return;
-    let idle: ReturnType<typeof setTimeout> | undefined;
-    let raf = 0;
-    let animating = false;
-    const cancelGlide = () => {
-      cancelAnimationFrame(raf);
-      animating = false;
-    };
-    const glideTo = (top: number) => {
-      const from = scroller.scrollTop;
-      const dist = top - from;
-      if (Math.abs(dist) < 3) return;
-      const dur = Math.min(750, 260 + Math.abs(dist) * 0.55);
-      const t0 = performance.now();
-      animating = true;
-      const tick = (now: number) => {
-        if (!animating) return;
-        const q = Math.min(1, (now - t0) / dur);
-        scroller.scrollTop = from + dist * easeCubicInOut(q);
-        if (q < 1) raf = requestAnimationFrame(tick);
-        else animating = false;
-      };
-      raf = requestAnimationFrame(tick);
-    };
-    const snap = () => {
-      const sH = scroller.clientHeight;
-      const trackTop =
-        track.getBoundingClientRect().top -
-        scroller.getBoundingClientRect().top +
-        scroller.scrollTop;
-      const total = track.offsetHeight - sH;
-      if (total <= 0) return;
-      const p = (scroller.scrollTop - trackTop) / total;
-      /* only while the sticky stage is engaged — entering and leaving the
-         section must never be hijacked */
-      if (p <= 0.001 || p >= 0.999) return;
-      const n = beats.length;
-      const kIdx = Math.min(n - 1, Math.max(0, Math.round(p * n - 0.5)));
-      glideTo(trackTop + ((kIdx + 0.5) / n) * total);
-    };
-    const onScroll = () => {
-      if (animating) return;
-      clearTimeout(idle);
-      idle = setTimeout(snap, 150);
-    };
-    const interrupt = () => cancelGlide();
-    scroller.addEventListener("scroll", onScroll, { passive: true });
-    scroller.addEventListener("wheel", interrupt, { passive: true });
-    scroller.addEventListener("touchstart", interrupt, { passive: true });
-    return () => {
-      clearTimeout(idle);
-      cancelGlide();
-      scroller.removeEventListener("scroll", onScroll);
-      scroller.removeEventListener("wheel", interrupt);
-      scroller.removeEventListener("touchstart", interrupt);
-    };
-  }, [rideOn, beats]);
+    kickRef.current?.();
+  }, [step]);
+
+  /* the rides are NOT scroll-snapped (Sept 2026): a gesture that comes to
+     rest between two stops stays where it stopped — the stage still reads
+     the committed stop, and the camera plays to it, but the page never
+     glides out from under the reader's hand. */
 
   /* ---------- instrument scales (the city's fork-two chart) ---------- */
   /* supply: home-value growth vs the typical metro */
@@ -1520,18 +1690,47 @@ export function ConstraintNarrative({
   const sideInst = sideLayout;
   const heroInst = short && !sideLayout;
   const compactRailInset = !sideInst && !heroInst && stageScale < 0.86;
-  const standardInset = !sideInst && !heroInst && !compactRailInset;
   const inset = sideInst ? INSET_SIDE : heroInst ? INSET_HERO : INSET;
   const compactRailSquare = Math.min(inset.w - 84, inset.h - 138);
+  /* the plane's left edge leaves room for its axis furniture, read from
+     the panel's 14-unit margin outward: the rotated y label (12px, ~9 deep
+     plus ~3 of descender), ~10 clear, then the tick labels ("+12%" at the
+     15px .jz-ms-tick, ~35 wide) ending hzTickGap short of the axis — see
+     hzTickX and hzLabX. The right edges stay where they were, so the plane
+     gives up the room on its left (Sept 2026: at the old 34 the label ran
+     through the ticks). */
+  const hzTickGap = heroInst || sideInst ? 8 : 4;
+  const hzLeft = inset.x + 71 + hzTickGap;
   const hz = sideInst
-    ? { x: inset.x + 52, y: inset.y + 58, w: inset.w - 88, h: 230 }
+    ? { x: hzLeft, y: inset.y + 58, w: inset.x + inset.w - 36 - hzLeft, h: 230 }
     : heroInst
-      ? { x: inset.x + 50, y: inset.y + 56, w: inset.w - 84, h: 330 }
+      ? { x: hzLeft, y: inset.y + 56, w: inset.x + inset.w - 34 - hzLeft, h: 330 }
       : compactRailInset
-        ? { x: inset.x + 44, y: inset.y + 54, w: inset.w - 72, h: 252 }
-        : { x: inset.x + 62, y: inset.y + 58, w: inset.w - 98, h: 230 };
-  const zy = (z: number) => hz.y + hz.h - ((z - 2) / 11) * hz.h; // 2…13 %/yr
-  const zx = (p: number) => hz.x + ((p + 1.5) / 2.5) * hz.w; // −1.5…+1.0 %/yr
+        ? { x: hzLeft, y: inset.y + 54, w: inset.x + inset.w - 28 - hzLeft, h: 252 }
+        : { x: hzLeft, y: inset.y + 58, w: inset.x + inset.w - 36 - hzLeft, h: 230 };
+  const hzTickX = hz.x - hzTickGap;
+  const hzLabX = hzTickX - 48;
+  /* the supply plane is CENTRED ON ITS MEDIANS, so the two cuts cross in the
+     middle and the four quadrants get equal room — the old scale was built
+     for a single price threshold and put the population cut 80% of the way
+     across, squashing two of the four. The population span is wide enough
+     for the admin cities, which sit well below the metro median by
+     construction (Boston −0.8, San Jose −1.1 against a +0.5 median). */
+  const ZSPAN = { pop: 1.7, home: 6 };
+  const zy = (z: number) =>
+    hz.y + hz.h - ((z - (medCost - ZSPAN.home)) / (2 * ZSPAN.home)) * hz.h;
+  const zx = (p: number) =>
+    hz.x + ((p - (med.pop - ZSPAN.pop)) / (2 * ZSPAN.pop)) * hz.w;
+  /* the plane carries the whole metro field behind the city, the way the
+     pizza chart does — so the quadrant the city lands in is read against
+     something. Both series run past the frame's ends, so the cloud is
+     clamped just inside the rim rather than drawn outside it. */
+  const zclamp = (v: number, lo: number, hi: number) =>
+    Math.max(lo, Math.min(hi, v));
+  const zxc = (p: number) =>
+    zx(zclamp(p, med.pop - ZSPAN.pop * 0.97, med.pop + ZSPAN.pop * 0.97));
+  const zyc = (z: number) =>
+    zy(zclamp(z, medCost - ZSPAN.home * 0.97, medCost + ZSPAN.home * 0.97));
   /* demand: the metro's population dial on the same pizza plane */
   const pz = sideInst
     ? { x: inset.x + 66, y: inset.y + 92, s: 220 }
@@ -1547,63 +1746,60 @@ export function ConstraintNarrative({
   const pzx = (u: number) => pz.x + ((u + 1) / 2) * pz.s;
   const pzy = (u: number) => pz.y + ((1 - u) / 2) * pz.s;
 
-  /* ---------- rail copy ---------- */
+  /* ---------- rail copy ----------
+     Placeholder throughout (Sept 2026): each step's caption says, in a
+     line, what its copy will cover, and no more. The numbers and the
+     reasoning that used to be spelled out here belong to the instrument on
+     the stage, not to the caption. Every body is bracketed, which Body
+     renders as a placeholder; the kickers stay, since they are the steps'
+     labels rather than their prose. */
   const stepCopy: { kicker: string; body: string }[] = [
     {
+      /* the intro (Sept 2026): what the section does, before anything
+         draws — the one caption that says a little more, since it is the
+         reader's way in */
+      kicker: "Where is your constraint?",
+      body: "[placeholder: how this section works. two readings place your city on the pizza chart. the quadrant it lands in picks a branch of the diagnostic tree. the walk follows your city down the tree to one ending, and the analysis below reads that ending.]",
+    },
+    {
       kicker: "Dial one: people",
-      body: place
-        ? `Is ${cityShort} gaining people, or losing them? ${pc(place.pop)}.`
-        : `Is ${cityShort} gaining people, or losing them? [sample spot]`,
+      body: "[placeholder: population change, against the median metro]",
     },
     {
       kicker: "Dial two: pay",
-      body: place
-        ? `Wages: ${pc(place.wage)}. Two dials place ${cityShort} on the plane.`
-        : `Wages, the second dial. [sample spot]`,
+      body: "[placeholder: wage change, against the median metro]",
     },
     {
       kicker: "The metro around it",
-      body: msa
-        ? `The wider metro — the ${cityShort} MSA — joins the plane: ${pc(msa.pop)} · ${pc(msa.wage)}.`
-        : `The wider metro would join the plane here. [no ${cityShort} metro data yet]`,
+      body: "[placeholder: the metro joins the plane]",
     },
     {
       kicker: "The benchmark",
-      body: `The crosshair: the typical US metro (${pc(med.pop)} · ${pc(med.wage)}). The grey field: everyone else.`,
+      body: "[placeholder: the median metro, and the field around it]",
     },
     {
-      /* what the plane divides into, and which region the city landed in —
-         both the shape's to say, since it is the shape that cuts the plane */
+      /* which region of the plane the city landed in — the shape's to say,
+         since it is the shape that cuts the plane */
       kicker: sh.planeCopy.kicker,
-      body:
-        `${sh.planeCopy.lead} ` +
-        (place
-          ? `${cityShort}: ${planeRead}.`
-          : `[no ${cityShort} data yet — the sample spot reads as ${planeRead}]`),
+      body: "[placeholder: which quadrant the city is in]",
     },
     {
       /* the tree beat answers fork one too (the guided walk's only telling
-         of it): the root asks which quadrant, and the city's dials answer */
-      kicker: "The tree begins: fork one",
-      body:
-        `The chart parks aside and the root asks which quadrant. ` +
-        (dx.derived
-          ? dx.steps[0].reason
-          : `[no ${cityShort} data yet — the walk shows the fallback read]`),
+         of it) */
+      kicker: "How we diagnose the constraint",
+      body: "[placeholder: the chart becomes the tree. the root question is answered by the quadrant.]",
     },
     {
       /* the root question as its own stop: the zoomed walk's (overwritten
          below); the other flows never land on this beat */
       kicker: "The root question",
-      body: sh.rootQuestion,
+      body: "[placeholder: the root question]",
     },
     {
       /* fork one as its own stop: the shortened walk's (overwritten below);
          the guided walk skips this beat */
       kicker: "Fork one: demand or supply",
-      body: dx.derived
-        ? dx.steps[0].reason
-        : `[no ${cityShort} data yet — the walk shows the fallback read]`,
+      body: "[placeholder: fork one, answered by the quadrant]",
     },
     {
       kicker: !forks2
@@ -1612,91 +1808,48 @@ export function ConstraintNarrative({
           ? "No second fork on this branch"
           : "Fork two: one more comparison",
       body: !forks2
-        ? `This tree stops at the quadrant — [each shock's second question, and its modules, are asked in the analysis section below].`
+        ? "[placeholder: this tree stops at the quadrant]"
         : !cityForks
-          ? `A ${TREE_SIDE_LABEL[citySide]} has no second question: the quadrant is the diagnosis, and the walk ends at its head. [its modules follow in the analysis section below]`
-          : citySide === "demandneg"
-            ? `Fork two: local or regional? The inset reads the MSA pizza chart — its population change against its wage change.`
-            : demandFork
-              ? `Fork two: is the metro growing? The inset reads it against ${pc(med.pop)}.`
-              : `Fork two: what does being there cost? The inset reads home values against ${pc(medCost)}.`,
+          ? "[placeholder: no second fork on this branch]"
+          : "[placeholder: fork two, answered by the inset]",
     },
     {
       kicker: "Where we think you are",
-      body: !forks2
-        ? `${cityShort} sits in the ${planeRead} quadrant, and on this tree that is the branch — ${TREE_SIDE_LABEL[citySide]}. [its second question is asked in the analysis below]`
-        : sh.variant === "quad2"
-          ? quadLandCopy
-          : dx.derived
-            ? dx.steps[1].reason
-            : `[no ${cityShort} data yet — the fallback leaf is marked]`,
+      body: "[placeholder: the landing, and why]",
     },
-    { kicker: `The ${numberWord(endings)} diagnoses`, body: "" },
+    {
+      kicker: `The ${numberWord(endings)} diagnoses`,
+      body: "[placeholder: the endings, and the one the data argues for]",
+    },
   ];
 
-  /* the shortened walk swaps the telling, not just the count — no full-stage
-     chart phase — so each stop's copy carries the instrument AND the answer
-     this city reads off it */
-  /* the tree-first tellings' fork-two stop: which instrument swaps into the
-     inset, and what it compares. The shortened walk adds the landing to it
-     (fork two and the landing share a stop there); the zoomed walk gives
-     the landing the next stop. */
+  /* the tree-first tellings' fork-two stop names the instrument that swaps
+     into the inset; what it says stays the same placeholder */
   const forkTwoInstrument = {
     kicker: !cityForks
       ? "No second fork on this branch"
       : !demandFork
-        ? "Fork two: the housing chart"
+        ? "Fork two: the housing plane"
         : citySide === "demandneg"
           ? "Fork two: the MSA pizza chart"
           : "Fork two: the population dial",
     body: !cityForks
-      ? `No second instrument on this branch — the walk ends at the head. `
-      : !demandFork
-        ? `The instrument swaps to the housing chart — home values against the typical metro's ${pc(medCost)}. `
-        : citySide === "demandneg"
-          ? `The instrument swaps to the MSA pizza chart — the metro's population change against its wage change. `
-          : `The instrument swaps to the population dial — the metro against the median (${pc(med.pop)}). `,
+      ? "[placeholder: no second fork on this branch]"
+      : "[placeholder: fork two, answered by the inset]",
   };
-  const landingCopy =
-    sh.variant === "quad2"
-      ? quadLandCopy
-      : dx.derived
-        ? dx.steps[1].reason
-        : `[no ${cityShort} data yet — the fallback leaf is marked]`;
   if (zoom) {
     stepCopy[TREE_BEAT] = {
-      kicker: "The chart becomes the tree",
-      body: `${pourOn ? "Each quadrant pours into the branch it is" : "Its four quadrants are the tree's four branches"}. The whole diagnostic at a glance, with no city on it yet — ${sh.forkOneLine}. The root asks: ${sh.rootQuestion}`,
-    };
-    stepCopy[ROOT_BEAT] = {
-      kicker: `${cityShort} enters at the root`,
-      body:
-        `${cityShort} starts at the root question, and the pizza chart — parked in the inset — is the instrument that answers it: ` +
-        (place
-          ? `${cityShort} reads ${pc(place.pop)} people · ${pc(place.wage)} pay. `
-          : `[no ${cityShort} data yet — the sample spot stands in] `) +
-        `From here, each scroll zooms the camera one station down its path.`,
+      kicker: "How we diagnose the constraint",
+      body: "[placeholder: the chart becomes the tree. its four quadrants are the four branches.]",
     };
     stepCopy[FORK1_BEAT] = {
       kicker: "Fork one: the quadrant",
-      body:
-        `The pizza chart answers the root question: ` +
-        (place
-          ? `${cityShort} reads ${pc(place.pop)} people · ${pc(place.wage)} pay — ${planeRead} → ${quadName(citySide) ?? TREE_SIDE_LABEL[citySide]}. `
-          : `[no ${cityShort} data yet — the fallback branch is walked] `) +
-        sh.planeCopy.lead,
+      body: "[placeholder: fork one, answered by the quadrant]",
     };
-    stepCopy[FORK2_BEAT] = {
-      kicker: forkTwoInstrument.kicker,
-      body:
-        forkTwoInstrument.body +
-        (cityForks
-          ? `${cityShort}'s reading on it picks the leaf.`
-          : `[its modules follow in the analysis section below]`),
-    };
+    stepCopy[FORK2_BEAT] = forkTwoInstrument;
     stepCopy[CHOICE_BEAT] = {
       kicker: `Back out: the ${numberWord(endings)} diagnoses`,
-      body: "",
+      body: "[placeholder: the endings, and the one the data argues for]",
     };
   }
   if (short) {
@@ -1705,140 +1858,58 @@ export function ConstraintNarrative({
           /* a ride doesn't open on the whole tree — it reveals the forks
              as the camera reaches them */
           kicker: "The walk begins at the root",
-          body: `${cityShort} starts at the root question; the ride reveals each fork as it arrives — and each is answered by an instrument, not a guess.`,
+          body: "[placeholder: the walk starts at the root]",
         }
       : {
           kicker: "The whole tree, up front",
-          body: `The entire diagnostic: ${sh.forkOneLine}. ${cityShort} starts at the root — each fork is answered by an instrument, not a guess.`,
+          body: "[placeholder: the whole tree, up front]",
         };
     stepCopy[FORK1_BEAT] = {
       kicker: "Fork one: the pizza chart",
-      body:
-        `The tree makes room for the pizza chart. ${sh.planeCopy.lead} ` +
-        (dx.derived
-          ? dx.steps[0].reason
-          : `[no ${cityShort} data yet — the walk shows the fallback read]`),
+      body: "[placeholder: fork one, answered by the pizza chart]",
     };
+    /* fork two and the landing share a stop here, unless the ride un-folds
+       fork two into its own stop and the landing keeps the arrival */
     const forkTwoSwap = {
       kicker: forkTwoInstrument.kicker,
-      body: forkTwoInstrument.body + landingCopy,
+      body: cityForks
+        ? "[placeholder: fork two, answered by the inset, and the landing]"
+        : "[placeholder: no second fork on this branch, and the landing]",
     };
     if (rideOn && forks2) {
-      /* the ride un-folds fork two into its own stop, so the swap copy
-         moves there and the landing stop keeps the arrival */
       stepCopy[FORK2_BEAT] = forkTwoSwap;
       stepCopy[LEAF_BEAT] = {
         kicker: "Where we think you are",
-        body: landingCopy,
+        body: "[placeholder: the landing, and why]",
       };
     } else {
       stepCopy[LEAF_BEAT] = !forks2
         ? {
             kicker: "One fork, and the tree is walked",
-            body: `No second instrument up here: the pizza chart answered the only question this tree asks. ${cityShort} sits in the ${planeRead} quadrant — ${TREE_SIDE_LABEL[citySide]}. [the shock's second question follows in the analysis]`,
+            body: "[placeholder: one fork, and the landing]",
           }
         : forkTwoSwap;
     }
   }
 
-  /* ---------- rail caption ---------- */
-  /* one dot per SCROLL STOP — the shortened walk shows three, not nine */
-  const railDots = (
-    <span className="jz-dots">
-      {beats.map((_, i) => (
-        <i
-          key={i}
-          className={i === stepIdx ? "on" : i < stepIdx ? "done" : ""}
-        />
-      ))}
-    </span>
-  );
-  const kickerColor =
-    step >= LEAF_BEAT
-      ? TREE_SIDE_COLOR[
-          step >= CHOICE_BEAT && hoverLeaf
-            ? leafSide(sh, hoverLeaf)
-            : step >= CHOICE_BEAT && forks2
-              ? selSide
-              : citySide
-        ]
-      : step >= fork1At
-        ? TREE_SIDE_COLOR[citySide]
-        : undefined;
-  /* the closing panel: the trail, and what happens next. The guided walk
-     reaches it on the choice beat; the shortened walk has no choice beat, so
-     it closes on its last stop instead */
-  const closing = stepIdx === beats.length - 1 && step >= LEAF_BEAT;
-  /* the trail names whatever the tree is lighting. In the shortened walk the
-     tree is a statement of the diagnosis rather than a control, and it stays
-     lit on the diagnosed route even after the analysis below has been given
-     the choice — so the crumb follows the diagnosis there, and the reader's
-     own pick is the analysis section's story to tell. A one-fork tree is in
-     the same position whatever the flow: it never offered a pick, so its
-     crumb follows the landing too. */
-  const trailPath = flow === "short" || !forks2 ? suggAlt : selAlt;
+  /* ---------- the text column ----------
+     One block per stop, in the tool's own scrolly grammar (v3's .ct-step):
+     a counter, the beat's title, the geography it reads, and the caption.
+     The closing block also names the diagnosed route and points at the
+     section that follows. */
+  const trailPath = suggAlt;
   const trailSide = sideOfPath(trailPath);
-  const caption = !closing ? (
-    <>
-      <div className="jz-cap-kickrow">
-        <span className="fig-kicker" style={{ color: kickerColor }}>
-          {stepCopy[step].kicker}
-        </span>
-        {railDots}
-      </div>
-      <p className="jz-cap-body">
-        <Body text={stepCopy[step].body} />
-      </p>
-    </>
-  ) : (
-    <>
-      <div className="jz-cap-kickrow">
-        <span className="fig-kicker" style={{ color: kickerColor }}>
-          {stepCopy[step].kicker}
-        </span>
-        {railDots}
-      </div>
-      {flow === "short" && (
-        <p className="jz-cap-body">
-          <Body text={stepCopy[step].body} />
-        </p>
-      )}
-      <div className="fig-trail">
-        {["root", ...trailPath].map((id, i) => (
-          <Fragment key={id}>
-            {i > 0 && <span className="crumb-sep">›</span>}
-            <span
-              style={{
-                color: TREE_SIDE_COLOR[id === "root" ? "root" : trailSide],
-              }}
-            >
-              {id === "root" ? "The growth question" : altById.get(id)?.title}
-            </span>
-          </Fragment>
-        ))}
-      </div>
-      <p className="jz-cap-body">
-        {forks2 ? "Two questions" : "One question"}, {numberWord(endings)}{" "}
-        diagnoses —{" "}
-        {flow === "short" || !forks2 || isDefaultPath ? (
-          `${cityShort}'s numbers argue for the lit path.`
-        ) : (
-          <Body
-            text={`[your pick — the data-driven default remains ${altById.get(suggLeaf)?.title.toLowerCase()}]`}
-          />
-        )}
-      </p>
-      <p className="jz-cap-body">
-        <Body
-          text={
-            flow === "short"
-              ? "[the other three stay closed — the end of the analysis below is where the route opens]"
-              : ""
-          }
-        />
-      </p>
-    </>
-  );
+  /* which geography a beat reads — the badge the tool hangs on a step's
+     title. The dials and the plane read the admin city; the metro beat and
+     a demand shock's second fork read the MSA; the intro, the benchmark and
+     the closing name none. */
+  const geoFor = (beat: number): "city" | "metro" | null => {
+    if (beat === INTRO_BEAT || beat === BENCH_BEAT || beat >= CHOICE_BEAT)
+      return null;
+    if (beat === MSA_BEAT) return "metro";
+    if (beat === FORK2_BEAT) return demandFork ? "metro" : "city";
+    return "city";
+  };
   const insetShown = step >= insetAt;
   const insetExtra = heroInst ? 28 : 24;
   const quadTone = (side: string): keyof typeof TREE_SIDE_COLOR => {
@@ -1851,37 +1922,120 @@ export function ConstraintNarrative({
   /* ---------- render ---------- */
   return (
     <div
-      className="jz-scrolly nv-scrolly"
+      className="jz-scrolly nv-scrolly nv-grid"
       ref={trackRef}
-      style={{
-        height: `${trackVh(beats.length) * (rideOn ? 1.7 : 1)}vh`,
-      }}
+      style={{ "--nv-stop": `${stopVh}vh` } as CSSProperties}
     >
-      <div className="jz-sticky">
-        <div className="jz-head">
-          <div className="jz-titles">
-            <span className="eyebrow">City Constraints</span>
-            <div className="jz-h2s">
-              <h2 className={phase === "chart" ? "on" : ""}>
-                Where is your constraint?
-              </h2>
-              <h2 className={phase === "tree" ? "on" : ""}>
-                How we diagnose the constraint
-              </h2>
+      {/* ---------- the text column ----------
+          the tool's scrolly grammar (Metro Industries, Economic
+          Fundamentals): the steps stack down the left and scroll past the
+          sticky figure, the one in view at full strength and the rest
+          dimmed — so the reader sees where the walk is going before it gets
+          there. Each block is exactly one stop of scroll tall, which is
+          what keeps the block in view and the stop it drives in step. The
+          dimming is continuous with the scroll (--nv-lit, written by the
+          scroll effect), not a flip at the stop boundary. */}
+      <div className="ct-steps nv-steps" ref={stepsRef}>
+        {beats.map((beat, i) => {
+          const copy = stepCopy[beat];
+          const isOn = i === stepIdx;
+          const last = i === beats.length - 1;
+          const geo = geoFor(beat);
+          return (
+            <div
+              key={beat}
+              className={"ct-step nv-step" + (isOn ? " is-on" : "")}
+              aria-current={isOn ? "step" : undefined}
+            >
+              <div className="ct-eyebrow">
+                {i + 1} / {beats.length}
+              </div>
+              <h2>{copy.kicker}</h2>
+              {geo && <GeoBadge geo={geo} cityShort={cityShort} />}
+              {/* the closing block names the diagnosed route */}
+              {last && beat >= LEAF_BEAT && (
+                <div className="fig-trail nv-trail">
+                  {["root", ...trailPath].map((id, j) => (
+                    <Fragment key={id}>
+                      {j > 0 && <span className="crumb-sep">›</span>}
+                      <span
+                        style={{
+                          color:
+                            TREE_SIDE_COLOR[id === "root" ? "root" : trailSide],
+                        }}
+                      >
+                        {id === "root"
+                          ? "The growth question"
+                          : altById.get(id)?.title}
+                      </span>
+                    </Fragment>
+                  ))}
+                </div>
+              )}
+              {copy.body && (
+                <p className="lede">
+                  <Body text={copy.body} />
+                </p>
+              )}
+              {last && flow === "short" && (
+                <p className="lede">
+                  <Body text="[placeholder: the route opens at the end of the analysis]" />
+                </p>
+              )}
+              {/* the instrument a fork is read on, under the caption that
+                  reads it — the way the first section keeps its chart in
+                  the text column. Only the block in view carries it: the
+                  panel shows whichever instrument the CURRENT beat asks
+                  for, which a dimmed neighbour has no business showing.
+                  Its ROOM, though, is held on every block that can carry
+                  one: the blocks are flex-centred at a fixed height, so a
+                  panel that mounted only on the block in view re-centred
+                  that block's caption by half the panel's height at every
+                  stop boundary, and the column read as snapping to the
+                  stage's stops. The box keeps the panel's aspect ratio
+                  empty or full, at the column's full width, so the text
+                  scrolls like a page and the panel simply appears beneath
+                  it; a block that needs more than one stop for it grows,
+                  and the scroll→stop effect above reads the blocks. */}
+              {beat >= insetAt && (
+                <div
+                  className="nv-step-inst"
+                  aria-hidden="true"
+                  style={{
+                    aspectRatio: `${inset.w} / ${inset.h + insetExtra}`,
+                  }}
+                >
+                  {isOn && insetShown && (
+                    <svg
+                      viewBox={`${inset.x} ${inset.y} ${inset.w} ${inset.h + insetExtra}`}
+                    >
+                      <use href="#nv-inset-panel-def" />
+                    </svg>
+                  )}
+                </div>
+              )}
+              {last && (
+                <div className="jz-next show nv-next">
+                  <span className="jz-next-k">Up next</span>
+                  <span
+                    className="jz-next-name"
+                    style={{ color: TREE_SIDE_COLOR[nextSide] }}
+                  >
+                    {branchSectionName(nextSide)} →
+                  </span>
+                </div>
+              )}
             </div>
-          </div>
-          {/* the header row's right edge keeps ONE live control — the
-              responsiveness switch, the only choice the revision left open.
-              The user-flow study stays a click away in the variants
-              disclosure beside it. */}
+          );
+        })}
+      </div>
+
+      <div className="jz-sticky nv-stage" ref={stageRef}>
+        {/* the stage's own control row, the way the treemap keeps its
+            "View" switch above the figure: the user-flow study, folded
+            behind the variants disclosure */}
+        <div className="nv-stagebar">
           <div className="jz-switches">
-            {/* the zoomed walk rides on every stage, so its pills say so —
-                "Fit whole" would be selling a fit the camera never holds */}
-            <FitSwitch
-              fit={rideMode ? "ride" : fit}
-              onFitChange={setSmallFit}
-              tight={tight}
-            />
             <VariantOptions
               face={CONSTRAINT_FLOWS.find((f) => f.id === flow)?.label ?? ""}
               changed={flow !== DEFAULT_CONSTRAINT_FLOW}
@@ -1902,10 +2056,7 @@ export function ConstraintNarrative({
                 (sideLayout ? " nv-hidetree" : "") +
                 (sideLayout && (treeFirst || step >= TREE_BEAT)
                   ? " nv-hidedot"
-                  : "") +
-                /* the zoomed walk opens on the tree with no city on it —
-                   the traveller waits unseen until the root stop */
-                (noCity ? " nv-nocity" : "")
+                  : "")
               }
               viewBox={`0 ${-dy} ${W} ${H + 2 * dy}`}
               role="img"
@@ -1919,10 +2070,77 @@ export function ConstraintNarrative({
                 transition: "transform 0.6s ease",
               }}
             >
+              {/* ============ the intro: what the section does ============
+                  Three placeholders in a row — the chart, the tree, the
+                  analysis — on an otherwise empty stage, so the first stop
+                  introduces the walk instead of starting it. */}
+              <g className={"nv-intro " + on(step === INTRO_BEAT)}>
+                <defs>
+                  <marker
+                    id="nv-intro-head"
+                    viewBox="0 0 8 8"
+                    refX="7"
+                    refY="4"
+                    markerWidth="8"
+                    markerHeight="8"
+                    orient="auto"
+                  >
+                    <path
+                      d="M0,0.5 L7,4 L0,7.5"
+                      fill="none"
+                      stroke="#9aa8ad"
+                      strokeWidth="1.4"
+                    />
+                  </marker>
+                </defs>
+                <text
+                  className="nv-intro-k"
+                  x={W / 2}
+                  y={168}
+                  textAnchor="middle"
+                >
+                  how this section works
+                </text>
+                {INTRO_PARTS.map((part, i) => (
+                  <g key={part.id} transform={`translate(${W / 2 + (i - 1) * 330} 330)`}>
+                    <rect
+                      className="nv-intro-box"
+                      x={-130}
+                      y={-100}
+                      width={260}
+                      height={150}
+                      rx={10}
+                    />
+                    <g className="nv-intro-ico" transform="translate(0 -46)">
+                      {part.icon}
+                    </g>
+                    <text
+                      className="nv-intro-t"
+                      x={0}
+                      y={28}
+                      textAnchor="middle"
+                    >
+                      {part.title}
+                    </text>
+                    <text className="nv-ph" x={0} y={78} textAnchor="middle">
+                      {part.ph}
+                    </text>
+                    {i < 2 && (
+                      <path
+                        className="nv-intro-arrow"
+                        d="M140,-25 h44"
+                        markerEnd="url(#nv-intro-head)"
+                      />
+                    )}
+                  </g>
+                ))}
+              </g>
+
               {/* ============ scene A: the chart, built dial by dial ============ */}
               <g
                 className={
-                  "nv-chart" + (treeFirst || step >= TREE_BEAT ? " off" : "")
+                  "nv-chart" +
+                  (treeFirst || step >= TREE_BEAT || pourHold ? " off" : "")
                 }
               >
                 {/* the plane's tints — it reads at once; yours marked. Drawn
@@ -1975,7 +2193,7 @@ export function ConstraintNarrative({
                     />
                   ))}
                 {/* gridlines + ticks: x from step 0, y joins at step 1 */}
-                <g className={on(step >= 1)}>
+                <g className={on(step >= DIAL2_BEAT)}>
                   {[-1, -0.5, 0.5, 1].map((t) => (
                     <line
                       key={`gx${t}`}
@@ -2014,17 +2232,21 @@ export function ConstraintNarrative({
                     y1={cyu(1)}
                     y2={cyu(-1)}
                   />
+                  {/* 64 clears the tick labels (right-aligned 12 in from
+                      the axis, ~39 wide at 15px) by the same ~8 the x-axis
+                      title keeps below its ticks; at 50 the rotated title
+                      ran through the "+5.6%" and "+3.4%" labels */}
                   <text
                     className="jz-ms-title"
                     transform="rotate(-90)"
                     x={-CQ.cy}
-                    y={cxu(-1) - 50}
+                    y={cxu(-1) - 64}
                     textAnchor="middle"
                   >
                     {`Average wage growth (annual rate, ${DATA_WINDOW_LABEL})`}
                   </text>
                 </g>
-                <g className={on(step >= 0)}>
+                <g className={on(step >= DIAL1_BEAT)}>
                   {[-1, -0.5, 0.5, 1].map((t) => (
                     <text
                       key={`tx${t}`}
@@ -2368,18 +2590,23 @@ export function ConstraintNarrative({
                     .filter((b) => b.leaves.length > 0)
                     .map((b) => {
                       const st = status(b.id);
+                      /* a negative shock is dashed the whole way down, not
+                         just on its first edge — the sign belongs to the
+                         branch, so every rank of it carries the same line */
+                      const neg = sideDash(b.id) != null;
                       return (
                         <path
                           key={`st-${b.id}`}
                           className={
                             "nv-edge" +
+                            (neg ? " neg" : "") +
                             (gFork2 ? " on" : "") +
                             (st.lit ? " lit" : "") +
                             st.g +
                             pourWait
                           }
                           stroke={TREE_SIDE_COLOR[b.id]}
-                          pathLength={1}
+                          pathLength={neg ? undefined : 1}
                           d={`M${b.x},${HEAD_BOT + 2} V${FORK2_Y}`}
                         />
                       );
@@ -2393,6 +2620,7 @@ export function ConstraintNarrative({
                     b.leaves.map((l) => {
                       const st = status(l.id);
                       const box = leafBox(l.id);
+                      const neg = sideDash(b.id) != null;
                       return (
                         <g
                           key={`le-${l.id}`}
@@ -2401,11 +2629,12 @@ export function ConstraintNarrative({
                           <path
                             className={
                               "nv-edge" +
+                              (neg ? " neg" : "") +
                               (gLeaf ? " on" : "") +
                               (st.lit ? " lit" : "")
                             }
                             stroke={TREE_SIDE_COLOR[b.id]}
-                            pathLength={1}
+                            pathLength={neg ? undefined : 1}
                             d={elbow(
                               b.x,
                               FORK2_Y,
@@ -2426,13 +2655,14 @@ export function ConstraintNarrative({
                     ref={travelerRef}
                     className={
                       "jz-placedot nv-traveler" +
-                      (step === LEAF_BEAT ? " pulse" : "")
+                      (step === LEAF_BEAT ? " pulse" : "") +
+                      (step === INTRO_BEAT ? " nv-hide" : "")
                     }
                   >
                     <circle className="halo" r={9} />
                     <circle className="core" r={step >= TREE_BEAT ? 7 : 8} />
                     {/* axis mode: the first dial's reading, above the dot */}
-                    <g className={on(step === 0)}>
+                    <g className={on(step === DIAL1_BEAT)}>
                       <text x={0} y={-30} textAnchor="middle">
                         {cityShort}
                       </text>
@@ -2441,7 +2671,7 @@ export function ConstraintNarrative({
                       </text>
                     </g>
                     {/* plane mode: name + both dials, riding right of the dot */}
-                    <g className={on(step >= 1 && step < TREE_BEAT)}>
+                    <g className={on(step >= DIAL2_BEAT && step < TREE_BEAT)}>
                       <text x={14} y={-12}>
                         {cityShort}
                       </text>
@@ -2469,9 +2699,7 @@ export function ConstraintNarrative({
                       y={ROOT_ROW.y - 28}
                       textAnchor="middle"
                     >
-                      {noCity
-                        ? "THE GROWTH QUESTION"
-                        : `THE GROWTH QUESTION, ASKED OF ${cityShort.toUpperCase()}`}
+                      {`THE GROWTH QUESTION, ASKED OF ${cityShort.toUpperCase()}`}
                     </text>
                     <g className="nv-card nv-q">
                       <rect
@@ -2576,11 +2804,6 @@ export function ConstraintNarrative({
                     b.leaves.map((l) => {
                       const st = status(l.id);
                       const box = leafBox(l.id);
-                      /* a placeholder branch has no analysis section behind it —
-                     it draws, it does not pick */
-                      const clickable =
-                        leafPickable && !PLACEHOLDER_BRANCHES.has(b.id);
-                      const picked = leafPickable && l.id === selLeaf;
                       return (
                         <g
                           key={`lf-${l.id}`}
@@ -2588,14 +2811,8 @@ export function ConstraintNarrative({
                         >
                           <g
                             className={
-                              "nv-card nv-leaf" +
-                              (st.lit ? " lit" : "") +
-                              (clickable ? " clickable" : "") +
-                              (picked ? " picked" : "")
+                              "nv-card nv-leaf" + (st.lit ? " lit" : "")
                             }
-                            onMouseEnter={() => clickable && setHoverLeaf(l.id)}
-                            onMouseLeave={() => setHoverLeaf(null)}
-                            onClick={() => clickable && pickLeaf(l.id)}
                           >
                             <rect
                               x={box.x - box.w / 2}
@@ -2631,7 +2848,8 @@ export function ConstraintNarrative({
                     }),
                   )}
 
-                  {/* the personal badges: the data-driven read + a differing pick */}
+                  {/* the personal badge: the data-driven read. The tree never
+                      marks a pick — that is the sandbox's job (see nextSide). */}
                   <g className={on(gLand)}>
                     {(() => {
                       const badge = (
@@ -2678,24 +2896,6 @@ export function ConstraintNarrative({
                           TREE_SIDE_COLOR[citySide],
                         ),
                       ];
-                      /* only where the tree actually forked twice: a one-fork
-                       walk offers no pick, and its "selection" is only the
-                       app's path converted through a lossy alias (demand →
-                       demandpos …), so comparing it to the chart-derived
-                       landing manufactures a difference no one chose */
-                      if (step >= CHOICE_BEAT && forks2 && !isDefaultPath) {
-                        const collide =
-                          Math.abs(endingX(sh, selLeaf) - endingX(sh, suggLeaf)) <
-                          240;
-                        out.push(
-                          badge(
-                            selLeaf,
-                            "you selected this path",
-                            TREE_SIDE_COLOR[selSide],
-                            collide ? 34 : 0,
-                          ),
-                        );
-                      }
                       return out;
                     })()}
                   </g>
@@ -2703,18 +2903,29 @@ export function ConstraintNarrative({
               </g>
 
               {/* ---------- the quadrant pour (transition study) ----------
-                  mounted only on the hand-off beat, so scrolling back in
-                  replays the flight */}
-              {pourOn && step === TREE_BEAT && (
-                <g className="nv-pour">
+                  mounted for the length of one crossing, in whichever
+                  direction the reader crossed; the id remounts the group so
+                  a direction flip mid-flight restarts rather than resumes */}
+              {pourRun && (
+                <g
+                  key={pourRun.id}
+                  className={
+                    "nv-pour" +
+                    (pourRun.dir < 0 ? " back" : "") +
+                    (pourHome ? " home" : "")
+                  }
+                  onAnimationEnd={onTileHome}
+                >
                   {pourTiles.map((t) => (
                     <g
                       key={t.key}
-                      className="nv-pour-tile"
+                      className={
+                        "nv-pour-tile" + (pourRun.dir < 0 ? " back" : "")
+                      }
                       style={
                         {
                           "--pour-to": t.to,
-                          animationDelay: `${t.delay}s`,
+                          animationDelay: `${pourRun.dir < 0 ? t.back : t.delay}s`,
                         } as CSSProperties
                       }
                     >
@@ -2939,6 +3150,57 @@ export function ConstraintNarrative({
                         >
                           THE MSA PIZZA CHART · THE DEMAND FORK
                         </text>
+                        {/* the same four quadrants the city was read in, so
+                            the MSA's answer is read the same way fork one's
+                            was — the city's own quadrant tinted hardest,
+                            since landing in it is what makes this regional */}
+                        {(citySide === "demandneg" ||
+                          citySide === "demandpos") &&
+                          (
+                            [
+                              ["demandpos", 1, 1],
+                              ["supplyneg", -1, 1],
+                              ["demandneg", -1, -1],
+                              ["supplypos", 1, -1],
+                            ] as [BranchSide, number, number][]
+                          ).map(([qs, qx, qy]) => (
+                            <rect
+                              key={`mq-${qs}`}
+                              x={qx > 0 ? pzx(0) : pz.x}
+                              y={qy > 0 ? pz.y : pzy(0)}
+                              width={pz.s / 2}
+                              height={pz.s / 2}
+                              fill={TREE_SIDE_COLOR[qs]}
+                              fillOpacity={qs === citySide ? 0.18 : 0.06}
+                              stroke={TREE_SIDE_COLOR[qs]}
+                              strokeOpacity={qs === citySide ? 0.9 : 0.35}
+                              strokeWidth={qs === citySide ? 2 : 1}
+                              strokeDasharray={sideDash(qs) ?? undefined}
+                            />
+                          ))}
+                        {(citySide === "demandneg" ||
+                          citySide === "demandpos") &&
+                          (
+                            [
+                              ["demandpos", 1, 1],
+                              ["supplyneg", -1, 1],
+                              ["demandneg", -1, -1],
+                              ["supplypos", 1, -1],
+                            ] as [BranchSide, number, number][]
+                          ).map(([qs, qx, qy]) => (
+                            <text
+                              key={`mqt-${qs}`}
+                              className="nv-elab"
+                              x={qx > 0 ? pz.x + pz.s - 6 : pz.x + 6}
+                              y={qy > 0 ? pz.y + 14 : pz.y + pz.s - 6}
+                              textAnchor={qx > 0 ? "end" : "start"}
+                              fill={TREE_SIDE_COLOR[qs]}
+                              opacity={qs === citySide ? 1 : 0.5}
+                              fontWeight={qs === citySide ? 700 : 600}
+                            >
+                              {quadName(qs)}
+                            </text>
+                          ))}
                         <rect
                           x={pz.x}
                           y={pz.y}
@@ -3007,16 +3269,25 @@ export function ConstraintNarrative({
                               stroke="#fff"
                               strokeWidth={1.5}
                             />
-                            <text
-                              className="nv-lab"
-                              x={pzx(metroUnit(msa)[0]) + 9}
-                              y={pzy(metroUnit(msa)[1]) - 7}
-                              fontSize={13.5}
-                              fontWeight={700}
-                              fill="var(--ink)"
-                            >
-                              {`${cityShort} MSA ${pc(msa.pop)}`}
-                            </text>
+                            {/* the fork reads BOTH dials, so the label
+                                carries both — stacked, the way the plane's
+                                own dot labels are, since one line of it is
+                                wider than the panel */}
+                            {[`${cityShort} MSA`, ...metroStatsRows(msa)].map(
+                              (line, li) => (
+                                <text
+                                  key={`msal-${li}`}
+                                  className="nv-lab"
+                                  x={pzx(metroUnit(msa)[0]) + 9}
+                                  y={pzy(metroUnit(msa)[1]) - 20 + li * 14}
+                                  fontSize={li === 0 ? 13.5 : 12}
+                                  fontWeight={li === 0 ? 700 : 500}
+                                  fill="var(--ink)"
+                                >
+                                  {line}
+                                </text>
+                              ),
+                            )}
                           </g>
                         ) : (
                           <text
@@ -3064,15 +3335,84 @@ export function ConstraintNarrative({
                         </text>
                       </g>
                     ) : (
-                      /* the housing read: one value against one threshold */
+                      /* the supply fork's own four-quadrant plane: home-value
+                         growth against the typical metro's, population growth
+                         against the typical metro's. Which quadrant the admin
+                         city lands in is the fork. */
                       <g>
                         <text
                           className="nv-captitle"
                           x={inset.x + 14}
                           y={inset.y + 22}
                         >
-                          THE HOUSING SCATTER · THE SUPPLY FORK
+                          THE HOUSING PLANE · THE SUPPLY FORK
                         </text>
+                        {(
+                          [
+                            ["squeezed", 1, 1],
+                            ["pricedout", -1, 1],
+                            ["slack", -1, -1],
+                            ["absorbing", 1, -1],
+                          ] as [keyof typeof HOUSING_QUAD, number, number][]
+                        ).map(([q, qx, qy]) => {
+                          const x0 = qx > 0 ? zx(med.pop) : hz.x;
+                          const y0 = qy > 0 ? hz.y : zy(medCost);
+                          const here = houseRead?.quad === q;
+                          /* the two housing quadrants share the supply hue,
+                             the two amenity ones the demand hue — the tint
+                             IS the answer, so the plane reads before the
+                             label does */
+                          const col =
+                            TREE_SIDE_COLOR[
+                              HOUSING_QUAD[q].leaf === "col"
+                                ? "supply"
+                                : "demand"
+                            ];
+                          return (
+                            <g key={`hq-${q}`}>
+                              <rect
+                                x={x0}
+                                y={y0}
+                                width={
+                                  qx > 0
+                                    ? hz.x + hz.w - zx(med.pop)
+                                    : zx(med.pop) - hz.x
+                                }
+                                height={
+                                  qy > 0
+                                    ? zy(medCost) - hz.y
+                                    : hz.y + hz.h - zy(medCost)
+                                }
+                                fill={col}
+                                fillOpacity={here ? 0.16 : 0.05}
+                                stroke={col}
+                                strokeOpacity={here ? 0.85 : 0.25}
+                                strokeWidth={here ? 2 : 1}
+                              />
+                              <text
+                                className="nv-elab"
+                                x={qx > 0 ? hz.x + hz.w - 7 : hz.x + 7}
+                                y={qy > 0 ? hz.y + 15 : hz.y + hz.h - 7}
+                                textAnchor={qx > 0 ? "end" : "start"}
+                                fill={col}
+                                opacity={here ? 1 : 0.55}
+                                fontWeight={here ? 700 : 600}
+                              >
+                                {HOUSING_QUAD[q].label}
+                              </text>
+                            </g>
+                          );
+                        })}
+                        {METROS.map((m, i) => (
+                          <circle
+                            key={`hzm-${i}`}
+                            cx={zxc(m.pop)}
+                            cy={zyc(m.home)}
+                            r={heroInst ? 2 : 1.4}
+                            fill="#c8cdd0"
+                            opacity={0.5}
+                          />
+                        ))}
                         {[4, 8, 12].map((t) => (
                           <g key={`hzt-${t}`}>
                             <line
@@ -3084,7 +3424,7 @@ export function ConstraintNarrative({
                             />
                             <text
                               className="jz-ms-tick"
-                              x={standardInset ? hz.x - 1 : hz.x - 8}
+                              x={hzTickX}
                               y={zy(t) + 4}
                               textAnchor="end"
                               fontSize={11}
@@ -3102,6 +3442,16 @@ export function ConstraintNarrative({
                           strokeWidth={1.5}
                           strokeDasharray="6 4"
                         />
+                        {/* the second cut — the plane is a plane now */}
+                        <line
+                          x1={zx(med.pop)}
+                          x2={zx(med.pop)}
+                          y1={hz.y}
+                          y2={hz.y + hz.h}
+                          stroke="var(--ink)"
+                          strokeWidth={1.5}
+                          strokeDasharray="6 4"
+                        />
                         <text
                           className="nv-ph"
                           x={hz.x + 2}
@@ -3109,24 +3459,27 @@ export function ConstraintNarrative({
                         >
                           {`typical metro ${pc(medCost)}`}
                         </text>
+                        {/* the cut IS the fork: above it either quadrant
+                            routes to Housing, below it either to Amenities */}
                         <text
                           className="nv-elab"
                           x={hz.x + hz.w - 2}
                           y={zy(medCost) - 8}
                           textAnchor="end"
                           fill={TREE_SIDE_COLOR.supply}
+                          opacity={houseRead?.priceUp ? 1 : 0.6}
                         >
-                          faster → Housing
+                          above → Housing
                         </text>
                         <text
                           className="nv-elab"
                           x={hz.x + hz.w - 2}
-                          y={zy(medCost) + 18}
+                          y={zy(medCost) + 17}
                           textAnchor="end"
-                          fill={TREE_SIDE_COLOR.supply}
-                          opacity={0.75}
+                          fill={TREE_SIDE_COLOR.demand}
+                          opacity={houseRead && !houseRead.priceUp ? 1 : 0.6}
                         >
-                          slower → Amenities
+                          below → Amenities
                         </text>
                         {cost && place ? (
                           <g>
@@ -3140,11 +3493,11 @@ export function ConstraintNarrative({
                             />
                             <text
                               className="nv-lab"
+                              /* always ABOVE the dot: below the price cut the
+                                 dot sits in the bottom row, where a label
+                                 under it lands on that quadrant's name */
                               x={zx(place.pop) + 9}
-                              y={
-                                zy(cost.growth) +
-                                (cost.growth > medCost ? -8 : 14)
-                              }
+                              y={zy(cost.growth) - 9}
                               fontSize={13.5}
                               fontWeight={700}
                               fill="var(--ink)"
@@ -3162,7 +3515,24 @@ export function ConstraintNarrative({
                             {`[no ${cityShort} home-value series yet]`}
                           </text>
                         )}
-                        <text className="nv-ph" x={hz.x} y={hz.y + hz.h + 32}>
+                        <text
+                          className="nv-axlab"
+                          x={hz.x + hz.w / 2}
+                          y={hz.y + hz.h + 17}
+                          textAnchor="middle"
+                        >
+                          population growth →
+                        </text>
+                        <text
+                          className="nv-axlab"
+                          x={hzLabX}
+                          y={hz.y + hz.h / 2}
+                          textAnchor="middle"
+                          transform={`rotate(-90 ${hzLabX} ${hz.y + hz.h / 2})`}
+                        >
+                          home-value growth →
+                        </text>
+                        <text className="nv-ph" x={hz.x} y={hz.y + hz.h + 34}>
                           {`home values at the city level, ${DATA_WINDOW_LABEL}`}
                         </text>
                       </g>
@@ -3171,90 +3541,24 @@ export function ConstraintNarrative({
                 </g>
               </defs>
             </svg>
-            {/* what the frame is leaving out, and how hard the stage is
-                squeezing the tree. The minimap is the answer to zooming: the
-                reader keeps the map even when the stage only shows a branch
-                of it. */}
-            <BranchMinimap
-              shape={sh}
-              route={forks2 ? suggAlt : [citySide]}
-              frame={focusMode && showTreeSchematic ? frame : null}
-              show={showTreeSchematic}
-              orientation={sideLayout ? "sideways" : "vertical"}
-              live={rideOn}
-              liveFrameRef={miniRectRef}
-              mapRef={miniMapRef}
-            />
-            {!sideLayout && !rideMode && (
-              <StageFit
-                scale={stageScale}
-                smallest={smallestCard}
-                /* the escape is offered only while the reader HOLDS the
-                   whole-tree fit against the squeeze — in any other mode a
-                   small-stage answer is already on stage */
-                onPick={
-                  fit === "fit" ? () => setSmallFit(FIT_MODES[1].id) : undefined
-                }
-              />
-            )}
+            {/* no minimap (Sept 2026): the zoomed walk used to keep a
+                schematic of the whole tree in the corner while the stage
+                showed one branch of it. The tree section now shows the
+                stage alone. */}
           </div>
-
-          <aside
-            className={"jz-rail" + (insetShown ? " with-inset" : "")}
-            /* the narrow layout sizes the chart box by height, to the
-               PANEL's proportions (they differ between the hero and the
-               standard one) — and indents the caption past it, so both
-               children read these. The viewBox's breathing room under the
-               panel is hung below the box, so the panel's bottom edge is
-               the box's. */
-            style={
-              {
-                "--inset-ratio": inset.w / inset.h,
-                "--inset-slack": (inset.h + insetExtra) / inset.h,
-              } as CSSProperties
-            }
-          >
-            <div
-              ref={railChartRef}
-              className={"jz-railchart" + (insetShown ? " show" : "")}
-              aria-hidden={!insetShown}
-            >
-              <svg
-                viewBox={`${inset.x} ${inset.y} ${inset.w} ${inset.h + insetExtra}`}
-              >
-                <use href="#nv-inset-panel-def" />
-              </svg>
-            </div>
-            <div className="jz-railtext">{caption}</div>
-            <div
-              className={"jz-next" + (step >= LEAF_BEAT ? " show" : "")}
-              aria-hidden={step < LEAF_BEAT}
-            >
-              <span className="jz-next-k">Up next</span>
-              <span
-                className="jz-next-name"
-                style={{ color: TREE_SIDE_COLOR[selSide] }}
-              >
-                {branchSectionName(selSide)} →
-              </span>
-              <span className="ph">
-                {flow === "short"
-                  ? "[the tree stays on the diagnosis — the route opens at the end of the analysis]"
-                  : ""}
-              </span>
-            </div>
-          </aside>
         </div>
       </div>
 
-      {/* the rail's two steps: same anchors as the compact flow */}
+      {/* the top bar's two steps: same anchors as the compact flow. The
+          bottom one sits where the tree stop's block does, so "How we
+          diagnose" lands on the tree with the stage pinned. */}
       <section id="page-constraints" className="jz-anchor jz-anchor-top" />
       <section
         id="page-constraints-diagnose"
         className="jz-anchor"
         style={{
-          top: `${STEP_VH * (diagStop + 0.25)}vh`,
-          height: `${STEP_VH}vh`,
+          top: `${(diagStop + 0.25) * stopVh}vh`,
+          height: `${stopVh}vh`,
         }}
       />
     </div>

@@ -13,6 +13,7 @@ import { DEFAULT_WALK_SHAPE, walkShape } from "./pages/walkShapes";
 import { ConstraintScrolly } from "./pages/ConstraintScrolly";
 import { ConstraintNarrative } from "./pages/ConstraintNarrative";
 import { BranchAnalysisPage } from "./pages/BranchAnalysisPage";
+import { TreeSandboxPage } from "./pages/TreeSandboxPage";
 
 interface ConstraintsSectionProps {
   city: string;
@@ -85,6 +86,13 @@ export function ConstraintsSection({
      because it spans both parts — the narrative pins the route, the
      analysis is what lifts the pin. */
   const [routeReleased, setRouteReleased] = useState(false);
+  /* the analysis section's schematic floats over the viewport, and it must
+     not be up while either neighbour is: the walk's pinned stage above —
+     the tree itself, which the schematic would only duplicate while it is
+     still on screen — or the sandbox below, which owns the same corner.
+     The stage starts as "up": the walk reports its true state on mount. */
+  const [sandboxUp, setSandboxUp] = useState(false);
+  const [stageUp, setStageUp] = useState(true);
   useEffect(() => setRouteReleased(false), [constraintFlow, city]);
   const routeHeld = constraintFlow === "short" && !routeReleased;
   const changeConstraintFlow = useCallback((f: ConstraintFlow) => {
@@ -103,8 +111,8 @@ export function ConstraintsSection({
           cityShort={cityShort}
           country={country}
           selectedPath={branchPath}
-          onSelectPath={onSelectBranch}
           onPhaseInView={onPhaseInView}
+          onStageInView={setStageUp}
           variant={treeVariant}
           showThemes={showThemes}
           mode={treeMode}
@@ -119,6 +127,7 @@ export function ConstraintsSection({
           selectedPath={branchPath}
           onSelectPath={onSelectBranch}
           onPhaseInView={onPhaseInView}
+          onStageInView={setStageUp}
           variant={treeVariant}
           flow={constraintFlow}
           onFlowChange={changeConstraintFlow}
@@ -143,7 +152,18 @@ export function ConstraintsSection({
         routeHeld={routeHeld}
         onReachEnd={() => setRouteReleased(true)}
         treePickable={constraintFlow !== "short"}
+        floatSuppressed={stageUp || sandboxUp}
       />
+
+      {/* the room off the flow: the whole tree again, live, after the guided
+          read has finished with its one ending. It is deliberately AFTER the
+          analysis and before the checkpoint — a reader who never opens it has
+          missed nothing, and a reader who does has somewhere to put the
+          "what about the others?" the guided read provokes. Nothing in it
+          reaches the section above: an ending's analysis opens inside the
+          sandbox, under its tree, so the page never sends the reader back
+          up. */}
+      <TreeSandboxPage cityShort={cityShort} onInView={setSandboxUp} />
     </>
   );
 }

@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { STAGE_GONE_MARGIN, useInScroller } from "./walkFit";
 import { pointer, select, type Selection } from "d3-selection";
 import { Delaunay } from "d3-delaunay";
 import "d3-transition";
@@ -167,26 +168,28 @@ const SIDE_QUADS: Record<TreeSide, QuadrantDef["id"][]> = {
 type Node = HierarchyNode<TreeNodeData> & { x: number; y: number };
 type Phase = "chart" | "tree";
 
+/* placeholder throughout, like the guided walk's rail: a line per step on
+   what its copy will cover, and no more */
 const STEP_COPY: { kicker: string; body: string }[] = [
   {
     kicker: "The pizza chart",
-    body: "[step 1: introducing the pizza chart to the user. explain how to read it: each quadrant pairs a population move with a wage move, vs the average city]",
+    body: "[placeholder: how to read the pizza chart]",
   },
   {
     kicker: "Your metro area",
-    body: "[step 2: show the MSA on the pizza chart.]",
+    body: "[placeholder: the metro on the pizza chart]",
   },
   {
     kicker: "Your place",
-    body: "[step 3: show the user's place on the pizza chart. This quadrant picks the tree fork (except in edge cases, to be clarified later)]",
+    body: "[placeholder: the place on the pizza chart, and the fork its quadrant picks]",
   },
   {
     kicker: "The diagnostic tree",
-    body: "[step 4: introduce the diagnostic tree, which breaks down the growth question into demand and supply. Hover any node or link to read it.]",
+    body: "[placeholder: the diagnostic tree]",
   },
   {
     kicker: "Where we think you are",
-    body: "Each fork below is one comparison against the typical US metro. Click an end leaf to follow a different path instead, or hover any node to read it.",
+    body: "[placeholder: the landing, and how to pick another path]",
   },
 ];
 
@@ -398,8 +401,8 @@ export function ConstraintScrolly({
   cityShort,
   country,
   selectedPath,
-  onSelectPath,
   onPhaseInView,
+  onStageInView,
   variant,
   showThemes,
   mode,
@@ -410,11 +413,14 @@ export function ConstraintScrolly({
   cityShort: string;
   /** the city's country — the forks compare against its median metro */
   country: string;
-  /** the descent picked for the next section (ids below the root) */
+  /** the app's pick — read only by the rail's "up next", which names the
+   *  section that follows; the tree itself never marks it (Sept 2026) */
   selectedPath: string[];
-  onSelectPath: (path: string[]) => void;
   /** reports which of the two rail steps the track is on (scroll-spy) */
   onPhaseInView: (pageId: string) => void;
+  /** whether the pinned stage — the tree — is still on screen; the section
+   *  below keeps its floating schematic down until it is not */
+  onStageInView?: (inView: boolean) => void;
   /** which tree structure the stage shows — shared with the next section */
   variant: TreeVariant;
   /** the themes layer: chip stacks under the alt tree's leaves */
@@ -429,6 +435,9 @@ export function ConstraintScrolly({
   const trackRef = useRef<HTMLDivElement>(null);
   const onPhaseRef = useRef(onPhaseInView);
   onPhaseRef.current = onPhaseInView;
+  /* the pinned stage, reported up (see the guided walk) */
+  const stageRef = useRef<HTMLDivElement>(null);
+  useInScroller(stageRef, onStageInView, STAGE_GONE_MARGIN);
   const svgRef = useRef<SVGSVGElement>(null);
   const scene = useRef<any>(null);
   const timers = useRef<number[]>([]);
@@ -808,7 +817,7 @@ export function ConstraintScrolly({
   const applyPath = (animate: boolean, delay0 = 0) => {
     const sc = scene.current;
     if (document.documentElement.dataset.jzInstant === "1") animate = false;
-    const ids = selectedRef.current;
+    const ids = suggPath;
     const pathSide = (ids[0] as TreeSide) ?? "supply";
     /* the data-driven suggestion never dims — its glow + badge must stay
        readable even when the user's pick is the lit path */
@@ -910,7 +919,7 @@ export function ConstraintScrolly({
        suggestion keep their markings and only fall back to idle, not dim */
     const home =
       stepRef.current >= 4
-        ? new Set(["root", ...selectedRef.current, ...suggPath])
+        ? new Set(["root", ...suggPath])
         : new Set<string>();
     /* settle any in-flight intro animation before emphasising */
     sc.nodes
@@ -1040,47 +1049,31 @@ export function ConstraintScrolly({
     applyQuadRef.current(quadHover);
   }, [quadHover]);
 
-  /* clicking an END LEAF picks the descent the next section analyses. Inner
-     nodes are hover-to-read only — the app needs a full route to a leaf to
-     navigate to, so a partial path can never be committed. Picking waits for
-     the path phase (step >= 4): while the tree is only being introduced the
-     data-driven default hasn't been shown yet, so there is nothing to pick
-     against */
-  const selectedRef = useRef(selectedPath);
-  selectedRef.current = selectedPath;
+  /* the tree never picks (Sept 2026, user call): it is a statement of the
+     diagnosis, and the sandbox after the analysis is where a route is
+     chosen. The chips and nodes keep their click hooks wired here so the
+     scene's handlers stay in one place, but the hook does nothing. */
   const clickRef = useRef<(id: string) => void>(() => {});
-  clickRef.current = (id) => {
-    if (!TREE_PICKABLE || stepRef.current < 4) return;
-    const n = byId.get(id);
-    if (!n || n.depth === 0 || n.children?.length) return;
-    onSelectPath(
-      n
-        .ancestors()
-        .filter((a) => a.depth >= 1)
-        .map((a) => a.data.id)
-        .reverse(),
-    );
-  };
-  /* the dashed box belongs to the path phase (step >= 4) — while the tree is
-     only being introduced, no leaf reads as picked yet */
+  /* the dashed box marks the diagnosed leaf from the path phase (step >= 4)
+     — while the tree is only being introduced, no leaf reads as landed yet */
   const applyPicked = () => {
-    const sel = selectedRef.current;
+    const sel = suggPath;
     const on = stepRef.current >= 4;
     scene.current?.nodes.classed(
       "picked",
       (d: Node) => on && d.data.id === sel[sel.length - 1],
     );
   };
-  /* selection changed: move the picked marker, rebuild the badge + underlay,
-     and re-derive the current emphasis (keeping any live hover) on top */
+  /* the diagnosis changed (a city switch): move the marker, rebuild the
+     badge + underlay, and re-derive the current emphasis on top */
   useEffect(() => {
     const sc = scene.current;
     if (!sc) return;
     applyPicked();
-    sc.rebuildHome(selectedPath);
+    sc.rebuildHome();
     if (stepRef.current >= 3) applyHoverRef.current(hoverIdRef.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedPath]);
+  }, [suggPath]);
 
   /* ---------- draw both scenes once ---------- */
   useEffect(() => {
@@ -1496,7 +1489,7 @@ export function ConstraintScrolly({
         ? stackBottom.get(n.data.id)! + 26
         : n.y + (bounds.get(n.data.id)?.bottom ?? 0) + 24;
 
-    const rebuildHome = (path: string[]) => {
+    const rebuildHome = () => {
       gHome.selectAll("*").remove();
       gBadges.selectAll("*").remove();
       /* a badge pill, only under LEAF nodes: a mid-node pick is already
@@ -1549,35 +1542,11 @@ export function ConstraintScrolly({
               : `M${p.x},${y0} V${busY.get(p.data.id)} H${d.x} V${y1}`,
           );
       });
-      const sugg = mkBadge(
+      mkBadge(
         suggPath[suggPath.length - 1],
         suggColor,
         "where we think you are",
       );
-
-      /* a differing pick gets its own badge — its route is the lit one on
-         the stage. When the two pills would land on the same row close
-         together, the pick's drops a step. The test is on where the BADGES
-         sit, not where their leaves do: with themes on, two same-depth
-         leaves can carry stacks of different heights and so put their
-         badges on quite different rows */
-      if (path.join("/") !== suggPath.join("/")) {
-        const pickColor = TREE_SIDE_COLOR[(path[0] as TreeSide) ?? "supply"];
-        const pn = byId.get(path[path.length - 1]);
-        if (!pn) return;
-        const collide =
-          !!sugg &&
-          !pn.children?.length &&
-          !sugg.children?.length &&
-          Math.abs(badgeY(pn) - badgeY(sugg)) < 30 &&
-          Math.abs(pn.x - sugg.x) < 240;
-        mkBadge(
-          path[path.length - 1],
-          pickColor,
-          "you selected this path",
-          collide ? 40 : 0,
-        );
-      }
     };
 
     /* ----- scene A: the pizza chart, on top ----- */
@@ -1721,7 +1690,9 @@ export function ConstraintScrolly({
         .attr("class", "jz-ms-title")
         .attr("transform", "rotate(-90)")
         .attr("x", -CQ.cy)
-        .attr("y", cx(-1) - 50)
+        /* 64 keeps the rotated title clear of the tick labels (see the
+           narrative's chart, which shares this frame) */
+        .attr("y", cx(-1) - 64)
         .attr("text-anchor", "middle")
         .text("Average wage growth (annual rate, 2017–2023)");
     }
@@ -2043,7 +2014,7 @@ export function ConstraintScrolly({
     moveTip = (e) => {
       const id = e && targetAt(e);
       const n = id ? byId.get(id) : null;
-      const sel = selectedRef.current;
+      const sel = suggPath;
       /* an already-selected leaf gets no tip — clicking it would change
          nothing, and its badge marks it anyway. No tip before the path phase
          either: selection is locked until the default path has been shown */
@@ -2089,7 +2060,7 @@ export function ConstraintScrolly({
       gHome: svg.selectAll(".jz-homeg"),
       rebuildHome,
     };
-    rebuildHome(selectedRef.current);
+    rebuildHome();
     applyPicked();
 
     /* entry: fade the chart in the first time the stage is on screen */
@@ -2197,8 +2168,9 @@ export function ConstraintScrolly({
      minimap quadrant is hovered */
   const capNode = hoverNode ?? (quadHover ? byId.get(quadHover)! : null);
   const hlSide = hoverNode ? sideOf(hoverNode) : quadHover;
+  /* the section that follows reads the app's pick — its own schematic can
+     move it — so "up next" names that; nothing else in here reads the pick */
   const selSide = sideOfPath(selectedPath);
-  const isDefaultPath = selectedPath.join("/") === suggPath.join("/");
 
   /* a hovered module chip takes the rail over: the question the module helps
      answer, the level its data is read at, and the data points behind it
@@ -2291,9 +2263,7 @@ export function ConstraintScrolly({
           <span className="jz-kick-ico" aria-hidden="true">
             {STEP_ICONS[step]}
           </span>
-          {step === 4 && !isDefaultPath
-            ? "Where you are"
-            : STEP_COPY[step].kicker}
+          {STEP_COPY[step].kicker}
         </span>
         <span className="jz-dots">
           {STEP_COPY.map((_, i) => (
@@ -2303,7 +2273,7 @@ export function ConstraintScrolly({
       </div>
       {step === 4 && (
         <div className="fig-trail">
-          {["root", ...selectedPath].map((id, i) => {
+          {["root", ...suggPath].map((id, i) => {
             const n = byId.get(id)!;
             return (
               <Fragment key={id}>
@@ -2317,11 +2287,7 @@ export function ConstraintScrolly({
         </div>
       )}
       <p className="jz-cap-body">
-        {step === 4 && !isDefaultPath ? (
-          <Ph
-            text={`[your pick — the data-driven default remains ${byId.get(suggPath[suggPath.length - 1])!.data.title.toLowerCase()}; ___ tests for this node]`}
-          />
-        ) : STEP_COPY[step].body.startsWith("[") ? (
+        {STEP_COPY[step].body.startsWith("[") ? (
           <Ph text={STEP_COPY[step].body} />
         ) : (
           STEP_COPY[step].body
@@ -2330,7 +2296,7 @@ export function ConstraintScrolly({
       {/* the reasoning behind the lit path: one line per fork, each naming
           the comparison and the numbers that turned it. Only on the alt
           structure — the forks are defined against its two levels */}
-      {step === 4 && isDefaultPath && variant === "alt" && dx.derived && (
+      {step === 4 && variant === "alt" && dx.derived && (
         <ol className="jz-forks">
           {dx.steps.map((s, i) => (
             <li key={i}>
@@ -2345,7 +2311,7 @@ export function ConstraintScrolly({
 
   return (
     <div className="jz-scrolly" ref={trackRef}>
-      <div className="jz-sticky">
+      <div className="jz-sticky" ref={stageRef}>
         <div className="jz-head">
           <div className="jz-titles">
             <span className="eyebrow">City Constraints</span>
@@ -2495,7 +2461,9 @@ export function ConstraintScrolly({
               >
                 {branchSectionName(selSide)} →
               </span>
-              <span className="ph">[click a node to switch your branch]</span>
+              <span className="ph">
+                [placeholder: the analysis of this ending follows]
+              </span>
             </div>
           </aside>
         </div>

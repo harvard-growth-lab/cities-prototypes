@@ -1067,6 +1067,24 @@
   text-transform: uppercase;
 }
 /* breadcrumb separators: the trail reads as a progressive descent */
+/* the city type's mark inline beside its name — the landing's mark at text
+   size, in the text's colour. Sized in em so a heading gets a heading's mark
+   and a crumb a crumb's; the trail's is a touch larger than its 12px caps,
+   which would draw it too fine to read. */
+.qmark {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.12em;
+  margin-right: 0.38em;
+  flex: none;
+}
+.fig-trail .qmark {
+  width: 1.35em;
+  height: 1.35em;
+  vertical-align: -0.32em;
+  margin-right: 0.3em;
+}
 .fig-trail .crumb-sep {
   color: var(--ink-soft);
   font-weight: 700;
@@ -1538,16 +1556,6 @@
   font-style: italic;
   fill: var(--ink-soft);
 }
-.nv-leaf.clickable {
-  cursor: pointer;
-}
-.nv-leaf.clickable:hover rect {
-  stroke-width: 2.2;
-}
-.nv-leaf.picked rect {
-  stroke-dasharray: 4 3;
-  stroke-width: 1.8;
-}
 .nv-inset-panel {
   fill: rgba(255, 255, 255, 0.96);
   stroke: var(--border-strong);
@@ -1572,36 +1580,127 @@ html[data-jz-instant="1"] .nv-svg {
 }
 
 /* ============ the branch-analysis page (the modules at the picked ending) ============ */
+/* ----- the analysis section's own measure -----
+   Every section after Metro Industries sits on a centred 976 column (see
+   v3.css for why that measure is the published one). This section departs
+   from it: its content is a GRID of data-point frames, not a column of
+   prose, and at 976 only two fit across — which makes a six-point module
+   three rows tall and the ending many screens long before a single chart is
+   real. The wider frame is also what lets the schematic leave the column and
+   float. Prose inside keeps its own measure (.lede is capped), so the
+   departure costs the reading nothing. */
+.tool-body .page.ba-page {
+  max-width: min(1440px, calc(100vw - 48px));
+}
+
+/* the section header carries its layout study in the corner, the way the
+   walk's stage carries its variants */
+.ba-headrow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.ba-switches {
+  flex: 0 0 auto;
+  padding-top: 2px;
+}
 .ba-body {
   flex: 1;
   min-height: 0;
-  display: flex;
-  gap: 36px;
-  align-items: stretch;
-  max-width: 1280px;
+  display: block;
+  /* the modules get the whole page now that the schematic floats — wide
+     enough for three or four data points across, capped where a line of
+     body copy stops being readable */
+  max-width: 1420px;
   margin-top: 14px;
 }
 .ba-body .placeholder-frame {
-  flex: 1;
   margin-top: 0;
   max-width: none;
 }
+/* ----- the floating schematic -----
+   A panel over the page rather than a column beside it: it follows the
+   viewport, can be put away, and costs the modules nothing while it is up. */
 .ba-context {
-  width: 400px;
-  flex: 0 0 400px;
-  align-self: flex-start;
-  /* the modules make this section many screens tall — the schematic and
-     the module list have to ride along to stay useful */
-  position: sticky;
-  top: 0;
+  width: 330px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   background: #fff;
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 18px 20px 16px;
+  padding: 14px 16px 13px;
   box-shadow: var(--shadow-sm);
+}
+.ba-float {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  /* above the variants disclosure (30) — a schematic the reader has open is
+     what they are looking at, and a dropped-down options panel must not
+     cover it — but below the app's own bar (45) and its modals (50) */
+  z-index: 34;
+  /* it floats over the VIEWPORT, so it is only up while its own section is
+     — otherwise it hangs over whatever the reader scrolled on to */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px);
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease,
+    visibility 0s linear 0.25s;
+  max-height: calc(100vh - 120px);
+  overflow: auto;
+  box-shadow:
+    0 10px 30px rgba(26, 34, 38, 0.16),
+    var(--shadow-sm);
+  transition:
+    width 0.25s ease,
+    padding 0.25s ease;
+}
+.ba-float.up {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease,
+    visibility 0s;
+}
+/* put away: the header row alone, still naming where you are */
+.ba-float.shut {
+  width: auto;
+  max-width: 300px;
+  padding: 9px 12px;
+  gap: 0;
+}
+.ba-float.shut > *:not(.ba-ctx-head) {
+  display: none;
+}
+.ba-float.shut .ba-kicker {
+  font-size: 10px;
+}
+.ba-float-toggle {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--ink-soft);
+  background: none;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  cursor: pointer;
+}
+.ba-float-toggle:hover {
+  color: var(--ink);
+  border-color: var(--ink-soft);
 }
 .ba-kicker {
   font-size: 11px;
@@ -1724,21 +1823,22 @@ html[data-jz-instant="1"] .nv-svg {
    to the bottom of the viewport: the trail and a toggle, with the schematic,
    legend and module list folded away until asked for. */
 @media (max-width: 920px) {
-  .ba-body {
-    flex-direction: column;
-    gap: 16px;
+  /* the float spans the width down here — a pull-up pinned to the bottom of
+     the viewport rather than a card in the corner, since there is no corner
+     to spare */
+  .ba-float {
+    right: 8px;
+    left: 8px;
+    bottom: 8px;
+    max-height: 70vh;
+  }
+  .ba-float.shut {
+    max-width: none;
   }
   /* folded: a thumbnail of the schematic at the left, the kicker and the
      trail beside it — two short rows. Expanded: the wide card's full stack. */
   .ba-context {
-    order: 1;
-    width: 100%;
-    flex: 0 0 auto;
-    align-self: stretch;
-    position: sticky;
-    top: auto;
-    bottom: 8px;
-    z-index: 4;
+    width: auto;
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
     grid-template-areas:
@@ -1798,6 +1898,157 @@ html[data-jz-instant="1"] .nv-svg {
   max-width: 560px;
   font-size: 14.5px;
   line-height: 22px;
+}
+
+/* ============ the four analysis layouts ============
+   They differ on one axis: what bounds the scroll when an ending carries
+   several modules and each carries several data points. */
+
+/* ----- "one module at a time": a tab strip, then the open one full-stage ----- */
+.ba-tabwrap {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.ba-tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.ba-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  background: #fff;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  padding: 7px 14px 7px 11px;
+  cursor: pointer;
+}
+.ba-tab:hover {
+  color: var(--ink);
+  border-color: var(--ink-soft);
+}
+.ba-tab.on {
+  font-weight: 700;
+  border-width: 2px;
+  padding: 6px 13px 6px 10px;
+}
+.ba-tab-ico svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+  overflow: visible;
+}
+.ba-tab-n {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  background: var(--wash, #f4f2ee);
+  border-radius: 999px;
+  padding: 1px 6px;
+}
+/* the seam in the strip: complexity sits after a gap, not in the run */
+.ba-tabseam {
+  width: 1px;
+  height: 22px;
+  margin: 0 6px;
+  background: var(--border-strong);
+}
+.ba-module.open {
+  margin: 0;
+}
+
+/* ----- the collapsed stack: one row per module, opening in place ----- */
+.ba-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ba-row {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+  padding: 0;
+  scroll-margin-top: 20px;
+}
+.ba-row.open {
+  border-color: var(--border-strong);
+  padding-bottom: 16px;
+}
+.ba-row-head {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr) auto auto auto;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  background: none;
+  border: 0;
+  padding: 13px 16px;
+  cursor: pointer;
+  font: inherit;
+}
+.ba-row-head:hover {
+  background: rgba(26, 34, 38, 0.02);
+}
+.ba-row-title {
+  font-size: 16px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.ba-row-q {
+  font-size: 13.5px;
+  line-height: 19px;
+  color: var(--ink-soft);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ba-row.open .ba-row-q {
+  white-space: normal;
+}
+.ba-row-n {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  background: var(--wash, #f4f2ee);
+  border-radius: 999px;
+  padding: 2px 7px;
+}
+.ba-row-chev {
+  color: var(--ink-soft);
+  transition: transform 0.2s ease;
+}
+.ba-row-chev svg {
+  display: block;
+  width: 11px;
+  height: 7px;
+}
+.ba-row-chev.open {
+  transform: rotate(180deg);
+}
+.ba-row .ba-views {
+  margin: 0 16px;
+}
+
+/* ----- sideways data points: a module stays about a screen tall ----- */
+.ba-views.strip {
+  display: flex;
+  grid-template-columns: none;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  padding-bottom: 10px;
+}
+.ba-views.strip > .ba-view {
+  flex: 0 0 clamp(236px, 24vw, 320px);
+  scroll-snap-align: start;
 }
 
 /* ----- the modules in the analysis section -----
@@ -2007,15 +2258,6 @@ html[data-jz-instant="1"] .nv-svg {
 .nv-traveler {
   transition: opacity 0.6s ease;
 }
-/* both dots — the authored tree's and the sideways drawing's own. The hide
-   is a cut, not a fade: at the tree beat the ride parks the dot at the root
-   the moment it takes over, and a dot still fading out would be seen
-   jumping there from its spot on the chart */
-.nv-nocity .nv-traveler {
-  opacity: 0;
-  transition: none;
-}
-
 /* negative-shock edges: the draw-in animation runs on stroke-dasharray
    (pathLength=1), which a real dash pattern would fight — so these edges
    skip pathLength, carry the sign's dash (same "7 4" as TREE_SIDE_DASH),
@@ -2036,6 +2278,17 @@ html[data-jz-instant="1"] .nv-svg {
 }
 .nv-edge.neg.on.dim {
   opacity: 0.22;
+}
+/* ...and they mute and dim like every other edge. The rule above outranks
+   the shared .nv-mute / .nv-dim ones (three classes to their two, and later
+   in the file), so without these a dashed edge on a branch the city did not
+   take stayed at full strength while its solid neighbours faded — the sign
+   read as emphasis. */
+.nv-edge.neg.on.nv-mute {
+  opacity: 0.4;
+}
+.nv-edge.neg.on.nv-dim {
+  opacity: 0.25;
 }
 
 /* the lines that lead the modules: how you landed here, and what a module
@@ -2074,6 +2327,39 @@ html[data-jz-instant="1"] .nv-svg {
     opacity: 0;
   }
 }
+/* scrolling back off the hand-off beat rewinds it: a tile lifts off the
+   head card it became and flies home to its quadrant. Not
+   `animation-direction: reverse` — that plays the pour's fade-out at the
+   wrong end, leaving the tile to wink out on arrival. The rewind lands and
+   HOLDS instead: the quadrants come home first and the rest of the chart is
+   rebuilt around them, which is the order the reader walked it in. */
+.nv-pour-tile.back {
+  animation-name: nv-pour-home;
+  animation-duration: 0.9s;
+}
+@keyframes nv-pour-home {
+  0% {
+    transform: var(--pour-to);
+    opacity: 0;
+  }
+  26% {
+    transform: var(--pour-to);
+    opacity: 0.9;
+  }
+  100% {
+    transform: none;
+    opacity: 0.95;
+  }
+}
+/* and once the last one is home the group cross-fades into the chart coming
+   up underneath it — a transition, not an animation, so the hand-off is tied
+   to the landing itself rather than to a second guess at when it happens */
+.nv-pour.back {
+  transition: opacity 0.55s ease;
+}
+.nv-pour.back.home {
+  opacity: 0;
+}
 /* the pour hands the heads their entrance: the cards wait for their tiles,
    then fade in exactly where the tiles land */
 .nv-pour-head.nv-fade {
@@ -2093,4 +2379,836 @@ html[data-jz-instant="1"] .nv-svg {
 .nv-pour-wait.nv-fade:not(.on),
 .nv-edge.nv-pour-wait:not(.on) {
   transition-delay: 0s;
+}
+
+/* ============ the tree sandbox ============
+   A room off the linear flow, and it has to LOOK like one. Everything else
+   in the tool is content on the page's white ground; this is a panel dropped
+   onto it — its own tinted ground, its own frame, a corner badge naming it,
+   and a heading that is not a section heading. The reader should be able to
+   tell at a glance that nothing in here is being said TO them: it is a thing
+   to poke at. */
+.ts-page {
+  padding-top: 8px;
+  padding-bottom: 40px;
+}
+.tool-body .page.ts-page {
+  max-width: min(1440px, calc(100vw - 48px));
+}
+.ts-panel {
+  position: relative;
+  background:
+    radial-gradient(
+      circle at 1px 1px,
+      rgba(26, 34, 38, 0.09) 1px,
+      transparent 0
+    )
+    0 0 / 17px 17px,
+    #f6f4f0;
+  border: 1px solid var(--border-strong);
+  border-radius: 16px;
+  padding: 22px 24px 24px;
+  box-shadow: inset 0 1px 0 #fff;
+}
+.ts-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.ts-head h2 {
+  margin: 8px 0 0;
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.ts-head-l {
+  min-width: 0;
+  flex: 1 1 420px;
+}
+/* the corner badge: the one label that says this is not the flow */
+.ts-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--ink);
+  border-radius: 5px;
+  padding: 3px 8px;
+}
+.ts-sub {
+  margin: 8px 0 0;
+  max-width: 680px;
+  font-size: 14.5px;
+  line-height: 22px;
+}
+.ts-tools {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  border: 1px solid var(--border-strong);
+  border-radius: 9px;
+  padding: 4px 6px;
+}
+.ts-tool {
+  width: 26px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--ink-soft);
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.ts-tool.wide {
+  width: auto;
+  padding: 0 9px;
+  font-size: 11.5px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+.ts-tool:hover {
+  color: var(--ink);
+  background: rgba(26, 34, 38, 0.06);
+}
+.ts-zoomval {
+  min-width: 42px;
+  text-align: center;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.ts-body {
+  display: flex;
+  gap: 20px;
+  align-items: stretch;
+}
+/* the stage: white, so the tree sits on the same ground it does everywhere
+   else and only the panel around it is the sandbox */
+.ts-stage {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.ts-svg {
+  display: block;
+  width: 100%;
+  height: clamp(300px, 46vh, 460px);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.ts-svg:active {
+  cursor: grabbing;
+}
+.ts-legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 9px 14px;
+  border-top: 1px solid var(--border);
+  font-size: 11.5px;
+  color: var(--ink-soft);
+}
+.ts-leg-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.ts-leg-halo {
+  width: 18px;
+  height: 8px;
+  border-radius: 4px;
+  opacity: 0.22;
+}
+.ts-leg-dot {
+  width: 18px;
+  height: 3px;
+  border-radius: 2px;
+}
+.ts-leg-hint {
+  margin-left: auto;
+  font-style: italic;
+}
+
+/* ----- the drawing ----- */
+/* the diagnosed route's halo — wide, soft, and UNDER everything, so it reads
+   as a property of the tree rather than as something the reader did */
+.ts-halo {
+  fill: none;
+  stroke-width: 13;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.2;
+}
+.ts-edge {
+  fill: none;
+  stroke-width: 1.6;
+  opacity: 0.3;
+  transition:
+    opacity 0.18s ease,
+    stroke-width 0.18s ease;
+}
+.ts-edge.on {
+  opacity: 1;
+  stroke-width: 2.6;
+}
+.ts-edge.hov {
+  opacity: 0.75;
+}
+.ts-card {
+  fill: #fff;
+  stroke: var(--border-strong);
+  stroke-width: 1.4;
+}
+.ts-root .ts-card {
+  stroke-dasharray: 5 4;
+}
+.ts-roottext {
+  font-size: 13px;
+  font-style: italic;
+  fill: var(--ink-soft);
+}
+.ts-node {
+  cursor: pointer;
+  outline: none;
+  transition: opacity 0.18s ease;
+}
+/* the keyboard's hover: a ring on the focused card, the same one the
+   pointer's hover thickens */
+.ts-node:focus-visible .ts-card {
+  stroke-width: 2.6;
+  filter: drop-shadow(0 0 0 2px rgba(26, 34, 38, 0.18));
+}
+.ts-node.dim {
+  opacity: 0.42;
+}
+.ts-node.on .ts-card {
+  stroke-width: 2.6;
+}
+.ts-node:hover .ts-card {
+  stroke-width: 2.2;
+}
+.ts-headtitle {
+  font-weight: 700;
+}
+.ts-leaftitle {
+  font-weight: 700;
+}
+/* the chip that rides the diagnosed cards — small, and never on the card the
+   reader merely clicked */
+.ts-chip text {
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+/* the root and the forks: drawn, never targets — no pointer, no hover, no
+   focus ring — but they recede off the picked route like everything else */
+.ts-still {
+  transition: opacity 0.18s ease;
+}
+.ts-still.dim {
+  opacity: 0.42;
+}
+.ts-still.on .ts-card {
+  stroke-width: 2.6;
+}
+/* the pill under the ending the reader picked */
+.ts-pick {
+  pointer-events: none;
+}
+.ts-pick text {
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+/* ----- what the picked ending holds ----- */
+.ts-read {
+  flex: 0 0 316px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 15px 16px 16px;
+}
+.ts-read-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.ts-read-kicker {
+  font-size: 15px;
+  font-weight: 700;
+}
+.ts-sep {
+  margin: 0 6px;
+  opacity: 0.5;
+}
+.ts-yours {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #fff;
+  border-radius: 9px;
+  padding: 3px 8px;
+}
+.ts-back {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--teal);
+  background: none;
+  border: 1px solid var(--border-strong);
+  border-radius: 7px;
+  padding: 3px 8px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.ts-back:hover {
+  border-color: var(--teal);
+}
+.ts-shock {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 20px;
+  color: var(--ink-soft);
+}
+.ts-modlist {
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ts-kicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.ts-modlist ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.ts-modlist li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 9px;
+  font-size: 13.5px;
+}
+.ts-modico svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+  overflow: visible;
+}
+.ts-modname {
+  font-weight: 600;
+}
+.ts-modlevel {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1px 5px;
+  white-space: nowrap;
+}
+.ts-modcount {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+.ts-fork {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 18px;
+  color: var(--ink-soft);
+}
+.ts-fork b {
+  display: block;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.ts-list {
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  /* an ending's modules can run long once they are open — the panel
+     scrolls rather than the page growing under the tree */
+  max-height: 340px;
+  overflow: auto;
+}
+.ts-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 6px;
+}
+.ts-groupname {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 700;
+  text-align: left;
+  background: none;
+  border: 0;
+  padding: 2px 0;
+  cursor: pointer;
+}
+.ts-groupname:hover {
+  text-decoration: underline;
+}
+.ts-groupshock {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--ink-soft);
+}
+/* one ending: a row that opens it */
+.ts-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  color: var(--ink);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 6px 8px;
+  cursor: pointer;
+}
+.ts-row:hover {
+  background: rgba(26, 34, 38, 0.04);
+  border-color: var(--border);
+}
+.ts-rowdot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.ts-rowname {
+  font-weight: 600;
+}
+.ts-rowchip {
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: #fff;
+  border-radius: 8px;
+  padding: 2px 7px;
+}
+.ts-rowcount {
+  font-size: 11px;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+/* one module: a row that opens to its data points */
+.ts-mod {
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: #fff;
+}
+.ts-mod.open {
+  border-color: var(--border-strong);
+}
+.ts-modhead {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto auto;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  font: inherit;
+  font-size: 13.5px;
+  text-align: left;
+  color: var(--ink);
+  background: none;
+  border: 0;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+.ts-modhead:hover {
+  background: rgba(26, 34, 38, 0.03);
+}
+.ts-chev {
+  color: var(--ink-soft);
+  transition: transform 0.2s ease;
+}
+.ts-chev svg {
+  display: block;
+  width: 10px;
+  height: 6px;
+}
+.ts-chev.open {
+  transform: rotate(180deg);
+}
+.ts-modbody {
+  padding: 2px 12px 10px 34px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ts-modq {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 18px;
+  color: var(--ink-soft);
+}
+.ts-views {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.ts-views li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 9px;
+  border: 1px dashed var(--border-strong);
+  border-radius: 7px;
+  font-size: 12.5px;
+}
+.ts-viewname {
+  font-weight: 600;
+}
+.ts-viewmeta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 11.5px;
+  color: var(--ink-soft);
+}
+.ts-viewmeta b {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.ts-modlevel.small {
+  font-size: 8.5px;
+  padding: 0 4px;
+}
+.ts-open {
+  margin-top: auto;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink);
+  background: #fff;
+  border: 1.6px solid var(--border-strong);
+  border-radius: 9px;
+  padding: 9px 12px;
+  cursor: pointer;
+}
+.ts-open:hover:not(:disabled) {
+  background: rgba(26, 34, 38, 0.03);
+}
+.ts-open:disabled {
+  color: var(--ink-soft);
+  border-style: dashed;
+  cursor: default;
+}
+
+.ts-open.open {
+  background: rgba(26, 34, 38, 0.03);
+}
+/* where the button's effect lands — the block is below the fold, so the
+   label says so rather than leaving the click to look like a dud */
+.ts-open-hint {
+  display: block;
+  margin-top: 2px;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.4px;
+  color: var(--ink-soft);
+}
+
+/* ----- an ending's analysis, opened under the tree ----- */
+/* the same read the section above gives an ending, expanded here rather
+   than up there. White, like the stage and the read panel, so it reads as
+   one more part of the room and not as the page coming back. */
+.ts-analysis {
+  margin-top: 20px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 24px 22px;
+  scroll-margin-top: 12px;
+}
+.ts-an-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.ts-an-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.ts-an-title .ts-read-kicker {
+  font-size: 17px;
+}
+.ts-analysis .lede {
+  margin: 16px 0 4px;
+  font-size: 16.5px;
+  line-height: 26px;
+}
+.ts-analysis .ba-modules {
+  margin-top: 16px;
+}
+.ts-an-foot {
+  margin-top: 28px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+@media (max-width: 920px) {
+  .ts-body {
+    flex-direction: column;
+  }
+  .ts-read {
+    flex: 0 0 auto;
+  }
+}
+
+/* ============ the walk in the tool's scrolly grammar (Sept 2026) ============
+   Text down the left, the figure sticky on the right, inactive steps dimmed —
+   the frame Metro Industries and Economic Fundamentals use (v3's .ct-scrolly
+   and .ct-step, whose typography this borrows by class), so the walk reads
+   as one more section of the tool rather than a page of its own. The base
+   .jz-* rules are shared with the compact flow and stay as they are;
+   everything here is scoped to .nv-grid. The steps column sets the track's
+   height: at least one stop of scroll per block (--nv-stop; a block grows
+   past it when its content needs to, and the scroll→stop effect reads the
+   blocks), padded so the block in view sits centred on the sticky stage at
+   the middle of its stop. */
+.nv-scrolly.nv-grid {
+  /* the stage's room is the scroller below the tool's tab bar — the same
+     band the legacy sections pin their stages to (top at --chrome-h, down
+     to the viewport's bottom). The steps column is padded by half that band
+     above and below, so a block's centre meets the stage's centre exactly
+     at the middle of its stop. */
+  --nv-view: calc(100dvh - var(--chrome-h, 57px));
+  --nv-padtop: calc(var(--chrome-h, 57px) + var(--nv-view) / 2);
+  /* the least room a block keeps above and below its content — so a
+     caption with a panel under it ends this far short of the next caption,
+     the way the text-only blocks sit in their own room. A block that
+     cannot fit its content inside it grows past its stop. */
+  --nv-step-pad: 48px;
+  height: auto;
+  display: grid;
+  grid-template-columns: 330px minmax(0, 1fr);
+  gap: 44px;
+  align-items: start;
+  width: min(1280px, calc(100vw - 48px));
+  margin-inline: auto;
+}
+.nv-grid .nv-steps {
+  padding-top: var(--nv-padtop);
+  padding-bottom: calc(var(--nv-view) / 2);
+  min-width: 0;
+}
+.nv-grid .nv-step,
+.nv-grid .nv-step.is-on {
+  /* one stop tall, or taller if the content needs it — the panel keeps
+     the column's full width, so a short viewport lengthens the block
+     rather than shrinking the chart */
+  min-height: var(--nv-stop);
+  height: auto;
+  box-sizing: border-box;
+  padding-block: var(--nv-step-pad);
+  /* lit by the scroll, continuously: --nv-lit runs 0→1 as the block's stop
+     comes up under the stage (the scroll effect writes it every frame), so
+     a block brightens as it approaches and fades as it leaves rather than
+     flipping at the boundary. Between v3's rest (.35) and full. No
+     transition — a per-frame value must not lag a tween behind the hand. */
+  opacity: calc(0.35 + 0.65 * var(--nv-lit, 0));
+  transition: none;
+}
+.nv-grid .nv-step .ct-eyebrow {
+  margin-bottom: 10px;
+}
+.nv-grid .nv-step .geo-badge {
+  cursor: default;
+}
+.nv-trail {
+  margin: -4px 0 12px;
+}
+/* the instrument under the caption that reads it. The box is the panel's
+   size (its aspect ratio is set inline from the inset's frame) whether the
+   panel is mounted or not, so mounting it never moves the caption above;
+   the svg fills the box rather than sizing it. */
+.nv-step-inst {
+  position: relative;
+  width: 100%;
+  margin-top: 18px;
+  /* never shrinks: the chart takes the column's full width, and the block
+     grows to hold it (the block is min-height, not height) */
+  flex: none;
+}
+.nv-step-inst svg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* the panel arrives under a caption that has not moved; a short fade
+     rather than a pop, so the one thing that does change at the stop
+     boundary reads as arriving, not as the column jumping */
+  animation: nv-inst-in 0.3s ease;
+}
+@keyframes nv-inst-in {
+  from {
+    opacity: 0;
+  }
+}
+.nv-next {
+  margin-top: 18px;
+  width: 100%;
+}
+/* the stage: pinned for the length of the walk, the figure centred in it */
+.nv-grid .jz-sticky {
+  position: sticky;
+  top: var(--chrome-h, 57px);
+  height: var(--nv-view);
+  min-height: 0;
+  padding: 0 0 8px;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+}
+.nv-stagebar {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  min-height: 44px;
+  padding: 10px 0 0;
+  /* the chart-phase zoom is a transform on the stage svg, whose box then
+     reaches up under this row — the disclosure must stay on top of it */
+  position: relative;
+  z-index: 3;
+}
+.nv-grid .jz-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  padding-bottom: 2px;
+}
+/* the intro storyboard: three dashed placeholders and a glyph each */
+.nv-intro-k {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  fill: var(--ink-soft);
+}
+.nv-intro-box {
+  fill: none;
+  stroke: var(--border-strong);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+}
+.nv-intro-ico {
+  color: var(--teal);
+}
+.nv-intro-t {
+  font-size: 15px;
+  font-weight: 700;
+  fill: var(--ink);
+}
+.nv-intro-arrow {
+  fill: none;
+  stroke: var(--border-strong);
+  stroke-width: 1.6;
+}
+/* the traveller waits out the intro */
+.nv-traveler.nv-hide {
+  opacity: 0;
+}
+
+@media (max-width: 920px) {
+  /* one column: the stage takes the top half of the viewport and the
+     steps run under it */
+  .nv-scrolly.nv-grid {
+    --nv-view: 52vh;
+    --nv-padtop: 0px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+  .nv-grid .jz-sticky {
+    order: -1;
+    height: var(--nv-view);
+    z-index: 2;
+  }
+  .nv-grid .nv-steps {
+    padding-top: 0;
+    padding-bottom: 40vh;
+  }
+  .nv-grid .nv-step {
+    height: auto;
+    min-height: var(--nv-stop);
+    justify-content: flex-start;
+    padding: 24px 0;
+  }
 }

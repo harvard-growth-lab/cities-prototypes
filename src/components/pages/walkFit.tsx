@@ -6,7 +6,13 @@
  *  frame should be at a given beat is walkShapes' job (wholeBox / rootBox /
  *  branchBox / fitTransform); what mode is on is the section's. */
 
-import { useLayoutEffect, useRef, useState, type RefObject } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type RefObject,
+} from "react";
 import { TREE_SIDE_COLOR, sideHollow, type TreeSide } from "../../data/figures";
 import {
   headRowH,
@@ -417,3 +423,37 @@ export function BranchMinimap({
     </div>
   );
 }
+
+/** Reports whether `ref`'s element is on screen inside the tool's scroller
+ *  (`.pages`): true while any of it shows inside the root (shrunk by
+ *  `rootMargin`, if given), false once it has left. The first reading
+ *  arrives on mount. The callback is read through a ref, so a new function
+ *  each render does not re-arm the observer. Used by the walks to say when
+ *  their pinned stage — the tree — has scrolled away, which is what lets
+ *  the analysis's schematic float up. */
+export function useInScroller(
+  ref: RefObject<Element | null>,
+  onChange: ((inView: boolean) => void) | undefined,
+  rootMargin?: string,
+) {
+  const cb = useRef(onChange);
+  cb.current = onChange;
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => entries.forEach((e) => cb.current?.(e.isIntersecting)),
+      { root: el.closest(".pages"), rootMargin, threshold: 0 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [ref, rootMargin]);
+}
+
+/** When the walk's stage counts as gone: not at its last pixel — the tree is
+ *  drawn above the stage's foot, so by the time the box has fully left the
+ *  reader has been looking at the analysis for a while — but once only its
+ *  bottom quarter is still in the scroller, which is about when the leaf row
+ *  goes. One number to tune; the analysis's schematic floats up when the
+ *  stage has crossed it, and drops the moment it comes back. */
+export const STAGE_GONE_MARGIN = "-25% 0px 0px 0px";
