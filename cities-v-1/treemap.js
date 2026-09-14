@@ -486,9 +486,24 @@
   }
 
   /* Truncate a label to what actually fits, or drop it when the cell is tiny. */
-  function fitLabel(name, box){
-    if (box.width < 40 || box.height < 20) return "";
-    const chars = Math.floor((box.width - 8) * 0.125);
+  /* The cell labels are drawn in the figure's own 880-unit box, so on a
+     phone an 11-unit label renders at under 5px. The stylesheet raises the
+     unit size at narrow widths; this reads that back, because the budget
+     fitLabel spends — 8 units a character, a 20-unit floor under the cell,
+     a baseline 11 units down — was written for 11-unit type and has to
+     scale with it or the names overrun the cells they name.
+     At 11 the arithmetic is exactly what it always was. */
+  const LAB_BASE = 11;
+  function labUnit(){
+    const el = document.getElementById("miTreemapSvg");
+    if (!el) return LAB_BASE;
+    const v = parseFloat(getComputedStyle(el).getPropertyValue("--mi-lab"));
+    return v > 0 ? v : LAB_BASE;
+  }
+  function fitLabel(name, box, unit){
+    const u = unit || LAB_BASE;
+    if (box.width < 40 || box.height < 20 * (u / LAB_BASE)) return "";
+    const chars = Math.floor((box.width - 8) / (8 * (u / LAB_BASE)));
     if (chars <= 3) return "";
     return name.length > chars ? name.slice(0, chars - 3) + "…" : name;
   }
@@ -3499,8 +3514,9 @@
       if (i === 3 || i === 6 || barsOn){
         (dur ? labs.transition().duration(dur / 3) : labs).style("opacity", 0);
       } else {
-        labs.attr("x", d => at(d).box.x + 4).attr("y", d => at(d).box.y + 11)
-          .text(d => fitLabel(d.name, { width: at(d).box.w, height: at(d).box.h }));
+        const lu = labUnit();
+        labs.attr("x", d => at(d).box.x + 4).attr("y", d => at(d).box.y + lu)
+          .text(d => fitLabel(d.name, { width: at(d).box.w, height: at(d).box.h }, lu));
         (dur ? labs.transition().delay(dur / 2).duration(dur / 2) : labs)
           .style("opacity", d => at(d).op > 0 ? 1 : 0);
       }

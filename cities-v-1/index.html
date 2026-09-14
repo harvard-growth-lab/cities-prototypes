@@ -2700,6 +2700,7 @@
   #miFigure[data-step="7"] #miSectorKey .sk-no-trad{display:none;}
   #miFigure[data-step="7"] #miSectorKey .sk-trad{display:inline;}
   .mi-figure .complexity-legend{display:flex;margin:0;}
+  .mi-figure{--mi-lab:11px;}
   .mi-figure svg .mi-lab{
     font-size:11px;fill:#fff;pointer-events:none;
     paint-order:stroke;stroke:rgba(0,0,0,.2);stroke-width:1px;stroke-linejoin:round;
@@ -3400,6 +3401,1010 @@
   .citypick--bar .citypick-btn{height:34px;padding:0 30px 0 12px;}
   .citypick--bar .citypick-txt{flex-direction:row;align-items:baseline;gap:9px;font-size:14px;}
   .citypick--bar .citypick-menu{width:320px;right:auto;}
+
+  /* ═══════════════════════════════════════════════════════════════════
+     RESPONSIVE
+     The site is a data visualisation: the chart is the product, so every
+     rule below either hands the figure width or buys it back from chrome
+     that was composed for a 1440px desk. Three widths — 1199 compressed,
+     899 stacked, 599 mobile — and one principle: the figure never shrinks
+     to pay for furniture.
+
+     The figures are SVGs on a fixed 880-unit box scaled by .viz-big, so
+     narrowing the page is not a layout problem but a typographic one: at
+     390px the box renders at 0.43x and an 11px label lands at 4.7px. Three
+     levers in order — give the figure the width, raise the type inside the
+     box to hold its rendered size, and only where the geometry cannot be
+     helped, let the panel pan sideways.
+     ═══════════════════════════════════════════════════════════════════ */
+
+  /* ---- the section bar, at every width ----
+     The row overflowed from about 1350px — below no breakpoint and above
+     all of them. Three fixes reclaim ~170px: the location chip reserved
+     392px for a button that draws at ~258; the chip prints the city and
+     leaves the country to the open menu; and the chip row becomes a
+     scroller, invisible until there is something to scroll. */
+  /* the chip row becomes a scroller at every width — invisible until there
+     is something to scroll, so the desktop grid above is untouched, but a
+     row that spills by 20px now scrolls instead of printing over the
+     study switch. The reclaiming of the chip's reserved column happens at
+     1199 and below, where the row actually runs out of space: above it the
+     392px slot is what puts the chip over the text column. */
+  .secnav{
+    overflow-x:auto;overflow-y:hidden;
+    overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+  }
+  .secnav::-webkit-scrollbar{display:none;}
+  .secnav-btn{flex:0 0 auto;}
+  /* the mark is 1079x230, so a 164px slot always clipped 5px of it */
+  .logo-btn,.landing-header .logo-btn{width:auto;flex:0 0 auto;}
+
+  /* ═══════════ 1199 and under · compressed desktop ═══════════
+     Columns stay side by side; the chrome starts giving its gutters to
+     them. The section names do NOT become numbers — "3" is not a
+     wayfinder, and this site's argument is the order of its five
+     sections. They become a filmstrip: every name intact at every width,
+     the one you are on centred by showSection, the edges faded so the row
+     says there is more. */
+  @media (max-width:1199px){
+    :root{--frame-pad:24px;--chrome-h:59px;}
+    .secbar{height:56px;}
+    /* the chip reserved 392px for a button that draws at ~258, and the row
+       has run out of room: give the slot back and let the country go to the
+       open menu, which names it under every option anyway */
+    .secbar .citypick--bar{width:auto;min-width:0;}
+    .secbar .citypick--bar .citypick-txt{gap:0;}
+    .secbar .citypick--bar .cp-rest{display:none;}
+    .secbar .ct-optwrap{margin-left:10px;}
+    .secnav{
+      /* offsetParent for the centring maths: without this the chips
+         measure against .secbar, which is sticky, and the location
+         chip's width poisons every offsetLeft */
+      position:relative;margin-left:24px;justify-content:flex-start;
+      -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 10px,#000 calc(100% - 22px),transparent 100%);
+              mask-image:linear-gradient(90deg,transparent 0,#000 10px,#000 calc(100% - 22px),transparent 100%);
+    }
+    .secnav-btn{padding:6px 9px;font-size:13px;gap:6px;}
+    .secnav-btn .num{width:20px;height:20px;flex:0 0 20px;font-size:10.5px;}
+    .secbar .citypick--bar .citypick-btn{height:32px;font-size:13px;}
+
+    /* the rail gives up 392→236px on a fluid measure and the gap halves,
+       so the stage falls only to 0.87 of the 880 box at 1199 */
+    :is(#page-export-basket, #page-admin-mix) .ct-scrolly{
+      grid-template-columns:clamp(236px, 27vw, 392px) minmax(0,1fr);
+      gap:28px;
+    }
+    #page-export-basket .ct-panel{padding:18px 16px 16px;}
+
+    /* the type inside the box: one multiplier for the band, x1.25, set
+       against its narrow end. At 900 an 11px class lands at 8.6px, at
+       1199 at 11.9px. .mi-axname is the exception — its long gap-axis
+       string already reaches x≈798 of 880, so it takes x1.1 and no more. */
+    .mi-figure{--mi-lab:13px;}
+    .mi-figure svg .mi-lab{font-size:var(--mi-lab);}
+    .mi-figure svg .mi-ticklab{font-size:15px;}
+    .mi-figure svg .mi-axname{font-size:13.5px;}
+    .mi-figure svg .mi-name{font-size:16px;}
+    .mi-figure svg .mi-val{font-size:15.5px;}
+    .mi-figure svg .mi-badge{font-size:13.5px;}
+    .mi-figure svg .mi-toplab{font-size:14.5px;}
+    .mi-figure svg .mi-adm-name{font-size:17px;}
+    .mi-figure svg .mi-adm-pct{font-size:17.5px;}
+    .mi-figure svg .mi-share-pct{font-size:15px;}
+    #miTreemapSvg .mi-jobs{font-size:14.5px;}
+    #miTreemapSvg .mi-trad{font-size:14.5px;}
+    #miTreemapSvg .mi-colhead{font-size:13.5px;}
+    #miTreemapSvg .mi-colsub{font-size:12.5px;}
+    #amDotsSvg .ad-ringlab{font-size:15px;}
+    #amDotsSvg .ad-rownum{font-size:17.5px;}
+    #amDotsSvg .ad-rowsub{font-size:14.5px;}
+    #amBarsSvg .am-name{font-size:15.5px;}
+    #amBarsSvg .am-val{font-size:15px;}
+    #amBarsSvg .am-ticklab{font-size:14.5px;}
+    #amBarsSvg .am-colhead{font-size:14.5px;}
+    #amGaugeWrap.am-ex{grid-template-columns:186px minmax(0,1fr);gap:16px;}
+    #amGaugeWrap .am-ex-main{grid-template-columns:minmax(0,1fr) 196px;gap:14px;}
+  }
+
+  /* ═══════════ 899 and under · stacked, the figure pinned ═══════════
+     Text and chart stop being side by side, so the chrome stops behaving
+     like a desk. The figure does not become a small thing between
+     paragraphs: it pins under the bar as a full-width band and the prose
+     scrolls beneath it, which is what a scrollytelling chart is for. */
+  @media (max-width:899px){
+    :root{--frame-pad:20px;--chrome-h:55px;}
+    /* every sideways scroll that is wanted lives in an inner container —
+       the chip row, the places table, the quiz track, the RCA panel — so
+       the page itself has no business drifting. */
+    .pages{overflow-x:hidden;}
+    /* 100vh on a phone is the large viewport: the foot of the tool hides
+       under the browser's own bar until you scroll. svh is the honest one;
+       browsers without it keep the 100vh above. */
+    #tool{height:100svh;}
+    .secbar{height:52px;}
+    .secnav{margin-left:14px;}
+    .secnav-btn{font-size:13px;padding:6px 9px;}
+    .secbar .citypick--bar .citypick-btn{height:32px;font-size:13px;}
+    .toolbar,.landing-header{height:60px;flex-basis:60px;gap:10px;}
+    .logo-btn img,.landing-header .logo-btn img{height:30px;}
+    .toolbar-links{display:none;}
+
+    /* the stack. The builder appends the steps before the stage, so a
+       plain block stack would read text-then-chart; ordering the stage
+       first puts the figure back on top, where the beats drive it. */
+    :is(#page-export-basket, #page-admin-mix) .ct-scrolly{
+      display:flex;flex-direction:column;gap:0;
+    }
+    :is(#page-export-basket, #page-admin-mix) .ct-scrolly > .ct-stage{order:-1;}
+    :is(#page-export-basket, #page-admin-mix) .ct-steps{padding-block:0 18vh;min-width:0;}
+
+    /* the band: pinned under the chrome, full width, opaque, with a
+       hairline and a short shadow so the prose reads as passing beneath */
+    :is(#page-export-basket, #page-admin-mix) .ct-stage{
+      position:sticky;top:var(--chrome-h);z-index:12;
+      display:block;min-height:0;background:#fff;
+      border-bottom:1px solid var(--border);
+      box-shadow:0 6px 12px -9px rgba(26,34,38,.30);
+    }
+    /* the desktop rule centres the figure in a full viewport; the band
+       has no room to centre anything */
+    .ct-stage:has(.mi-figure){display:block;min-height:0;justify-content:flex-start;}
+    /* the panel bleeds to both screen edges: the frame becomes the band,
+       and the padding the frame was holding goes to the figure */
+    :is(#page-export-basket, #page-admin-mix) .ct-panel{
+      margin-inline:calc(-1 * var(--frame-pad));
+      padding:10px 10px 8px;border:0;border-radius:0;background:#fff;
+    }
+    .tool-body .tradable-viz-wrapper{margin-block:0 4px;}
+    .viz-big{margin-top:4px;}
+    .ct-stage:has(.mi-figure) .ct-slot.is-on{min-height:0;padding-block:0;}
+
+    /* the steps, under the band. spy() picks the step nearest 45% of the
+       viewport and stays as it is; what moves is where the prose sits
+       inside its block — at the foot rather than the centre, so the
+       active step shows its text clear of the band. */
+    :is(#page-export-basket, #page-admin-mix) .ct-step{
+      min-height:76vh;justify-content:flex-end;padding-bottom:5vh;
+    }
+    :is(#page-export-basket, #page-admin-mix) .ct-step h2,
+    :is(#page-export-basket, #page-admin-mix) .ct-step h3{font-size:26px;margin-bottom:12px;}
+    :is(#page-export-basket, #page-admin-mix) .ct-step .lede{font-size:17px;}
+
+    /* the figure's furniture, re-measured: both slots hold absolutely
+       positioned children, so the reserved height has to be restated
+       wherever the control rows now wrap */
+    .mi-view{gap:5px 8px;}
+    .mi-view .ctl-label{font-size:11px;}
+    .mi-view .seg-btn{height:28px;padding:0 10px;font-size:11.5px;}
+    #miFigure .mi-head{min-height:56px;margin-bottom:8px;}
+    #miFigure[data-step="3"] .mi-head,
+    #miFigure[data-step="6"] .mi-head{min-height:34px;}
+    #miFigure[data-step="4"] .mi-head,
+    #miFigure[data-step="7"] .mi-head{min-height:104px;}
+    #amFigure .mi-head{min-height:56px;margin-bottom:8px;}
+    #amFigure[data-step="9"] .mi-head,
+    #amFigure[data-step="10"] .mi-head{min-height:92px;}
+    .mi-caption{min-height:52px;margin-top:8px;}
+    .sector-key,.spec-key,.am-key{font-size:11.5px;gap:5px 14px;}
+    .mcl-lab{font-size:11.5px;}
+    #amGaugeWrap.am-ex{grid-template-columns:minmax(0,1fr);gap:10px;}
+    #amGaugeWrap .am-chips{flex-direction:row;flex-wrap:wrap;gap:4px;}
+    #amGaugeWrap .am-ex-main{grid-template-columns:minmax(0,1fr);gap:10px;}
+    #amGaugeWrap .am-gauge{max-width:340px;}
+    #amGaugeWrap .am-tiles{grid-template-columns:1fr 1fr;gap:8px 12px;}
+
+    /* the pager: the line says where you are, and the two moves sit under
+       it on the edges they belong to, rather than squeezing the line
+       between them until none of the three is readable */
+    .secpager{padding:22px var(--frame-pad) 28px;gap:18px;}
+    .pager-row{
+      display:grid;grid-template-columns:1fr 1fr;
+      grid-template-areas:"line line" "prev next";
+      gap:16px 12px;align-items:center;
+    }
+    .pgr-line-wrap{grid-area:line;}
+    .pgr-side{grid-area:prev;flex:none;min-width:0;justify-content:flex-start;}
+    .pgr-side--r{grid-area:next;justify-content:flex-end;}
+    .pager-btn{max-width:100%;}
+    .pgr-cap{text-align:center;line-height:1.5;}
+
+    /* the modals become sheets before they become unreadable: the head
+       loses its 44px badge, which was decoration, not information */
+    .journey-overlay{padding:22px 14px;}
+    .journey-head{padding:18px 20px 16px;gap:12px;}
+    .journey-head .jh-icon{display:none;}
+    .journey-head .jh-titles{min-width:0;}
+    .journey-head h2{font-size:19px;}
+    .journey-body{padding:18px 20px 24px;}
+    .jp-steps{padding-left:34px;}
+    .geo-map-body{padding:6px 18px 18px;}
+    .chat-body{padding:16px 18px;}
+    .chat-foot{padding:12px 14px 14px;}
+    .ex-grid{grid-template-columns:repeat(2,1fr);gap:36px 28px;padding:0 var(--frame-pad);}
+  }
+
+  /* ═══════════ 599 and under · mobile ═══════════ */
+  @media (max-width:599px){
+    :root{--frame-pad:14px;--chrome-h:51px;}
+    .secbar{height:48px;}
+    /* the chip shrinks to the city and its two marks, capped so no city
+       name can push the filmstrip off the row */
+    .secbar .citypick--bar .citypick-btn{
+      height:30px;max-width:42vw;padding:0 26px 0 30px;font-size:13px;
+      background-position:right 9px center, left 9px center;
+    }
+    .secbar .citypick--bar .citypick-txt{
+      display:block;min-width:0;font-size:13px;
+      overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    }
+    .secbar .citypick--bar .citypick-menu{width:min(320px, calc(100vw - 2 * var(--frame-pad)));}
+    /* each chip takes the full height of the bar: the tint reads as a tab
+       rather than a pill, and the target is 48px instead of 30 */
+    .secnav{margin-left:8px;}
+    .secnav-btn{align-self:stretch;padding:0 9px;border-radius:0;font-size:12.5px;gap:6px;}
+    .secnav-btn.is-active{box-shadow:inset 0 -2px 0 var(--teal);}
+    .secnav-btn .num{width:18px;height:18px;flex:0 0 18px;font-size:10px;}
+    .secbar .ct-optwrap{margin-left:8px;}
+    .secbar .ct-optwrap .jp-opt{flex-direction:column;align-items:flex-end;gap:2px;line-height:1.2;}
+    /* masthead: the mark, and the journey as its icon. font-size:0
+       collapses the button's bare text node; the svg carries width and
+       height attributes, so it is untouched. */
+    .toolbar,.landing-header{height:56px;flex-basis:56px;gap:8px;}
+    .logo-btn img,.landing-header .logo-btn img{height:24px;}
+    .btn-journey{height:38px;width:38px;padding:0;gap:0;font-size:0;justify-content:center;}
+    .btn-journey svg{width:18px;height:18px;flex:none;}
+
+    :is(#page-export-basket, #page-admin-mix) .ct-panel{padding:8px 4px 6px;}
+    :is(#page-export-basket, #page-admin-mix) .ct-step{min-height:70vh;padding-bottom:4vh;}
+    :is(#page-export-basket, #page-admin-mix) .ct-step h2,
+    :is(#page-export-basket, #page-admin-mix) .ct-step h3{font-size:22px;}
+    .ct-eyebrow{font-size:12px;margin-bottom:10px;}
+
+    /* the type inside the box, second tier. At 390px the figure is 382px
+       wide, a 0.434 render of the 880 box, so holding 9px on screen wants
+       roughly x2. Most classes cannot take it: the sizes below are each
+       class's ceiling, worked from the geometry treemap.js bakes in —
+       .mi-name 18px (31 chars of the longest label fills the 282-unit
+       gutter), .mi-colhead 14px ("tradability" would meet the last tick),
+       .mi-lab 14px (fitLabel budgets 8 units a character and sets the
+       baseline at box.y+11), .mi-val 16px (it reaches the tradability
+       track). Everything else has margin and simply doubles. */
+    /* the cell names carry the treemap on a phone: 20 units holds ~8.7px
+       on screen, and fitLabel now spends its budget at the same size */
+    .mi-figure{--mi-lab:20px;}
+    .mi-figure svg .mi-lab{font-size:var(--mi-lab);}
+    .mi-figure svg .mi-ticklab{font-size:19px;}
+    .mi-figure svg .mi-axname{font-size:14px;}
+    .mi-figure svg .mi-name{font-size:18px;}
+    .mi-figure svg .mi-val{font-size:16px;}
+    .mi-figure svg .mi-badge{font-size:14px;}
+    .mi-figure svg .mi-toplab{font-size:15px;}
+    .mi-figure svg .mi-adm-name{font-size:18px;}
+    .mi-figure svg .mi-adm-pct{font-size:19px;}
+    .mi-figure svg .mi-share-pct{font-size:16px;}
+    #miTreemapSvg .mi-jobs{font-size:17px;}
+    #miTreemapSvg .mi-trad{font-size:17px;}
+    #miTreemapSvg .mi-colhead{font-size:14px;}
+    #miTreemapSvg .mi-colsub{font-size:13px;}
+    #amDotsSvg .ad-ringlab{font-size:18px;}
+    #amDotsSvg .ad-rownum{font-size:19px;}
+    #amDotsSvg .ad-rowsub{font-size:16px;}
+    #amBarsSvg .am-name{font-size:17px;}
+    #amBarsSvg .am-val{font-size:16px;}
+    #amBarsSvg .am-ticklab{font-size:15px;}
+    #amBarsSvg .am-colhead{font-size:15px;}
+
+    .mi-view{gap:4px 7px;}
+    .mi-view .ctl-label{font-size:10.5px;letter-spacing:.3px;}
+    .mi-view .seg-btn{height:26px;padding:0 8px;font-size:11px;}
+    #miFigure .mi-head{min-height:62px;margin-bottom:6px;}
+    #miFigure[data-step="3"] .mi-head,
+    #miFigure[data-step="6"] .mi-head{min-height:36px;}
+    #miFigure[data-step="4"] .mi-head,
+    #miFigure[data-step="7"] .mi-head{min-height:118px;}
+    #amFigure .mi-head{min-height:64px;margin-bottom:6px;}
+    #amFigure[data-step="9"] .mi-head,
+    #amFigure[data-step="10"] .mi-head{min-height:104px;}
+    .mi-caption{min-height:62px;margin-top:6px;}
+    .sector-key,.spec-key,.am-key{font-size:11px;gap:4px 12px;}
+    .sector-key .sk-sw{width:11px;height:11px;}
+    /* the ramp's 1fr columns cannot shrink past their min-content, so
+       "More complex" pushed 56px off the panel. Let them shrink. */
+    .lg-ramp{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:8px;}
+    .complexity-legend .cl-label,
+    .change-legend .cl-label,
+    .change-legend .chg-key{font-size:12.5px;}
+    .mcl-lab,.mcl-axis{font-size:11px;}
+    #amGaugeWrap .am-tiles{grid-template-columns:1fr;}
+
+    /* the last resort, and only on four beats. The two rankings and the
+       admin bars are tables in SVG clothing: names to x=282, plot to 712,
+       tradability at 796, jobs at 874. No bump inside the ceilings above
+       gets them to 9px on a 390px screen, so these pan sideways in a
+       600-unit window instead of shrinking to nothing. */
+    #miFigure[data-step="3"] .tradable-viz-wrapper,
+    #miFigure[data-step="6"] .tradable-viz-wrapper,
+    #amFigure[data-step="9"] .tradable-viz-wrapper,
+    #amFigure[data-step="10"] .tradable-viz-wrapper{
+      overflow-x:auto;overflow-y:visible;
+      overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;
+      scrollbar-width:thin;
+    }
+    #miFigure[data-step="3"] .viz-big,
+    #miFigure[data-step="6"] .viz-big,
+    #amFigure[data-step="9"] .viz-big,
+    #amFigure[data-step="10"] .viz-big{min-width:600px;}
+
+    .secpager{padding:18px var(--frame-pad) 24px;gap:14px;}
+    .pgr-seg{width:14px;}
+    .pgr-cap{font-size:11.5px;}
+    .pager-btn{padding:9px 10px;font-size:13px;}
+    .journey-overlay{padding:0;}
+    .journey-window,.chat-window{width:100%;max-width:none;height:100%;max-height:100%;border-radius:0;}
+    .geo-window{width:100%;}
+    .journey-head{flex-wrap:wrap;padding:14px 16px 12px;}
+    .journey-head .jh-titles{flex:1 1 auto;min-width:0;}
+    .journey-body{padding:16px 16px 22px;}
+    .jp-steps{padding-left:24px;}
+    .jp-legend{flex-wrap:wrap;justify-content:flex-start;gap:10px 18px;padding:12px 14px;}
+    .chat-body{padding:14px 14px;}
+    .chat-msg{max-width:92%;}
+    .ex-grid{grid-template-columns:1fr;gap:30px;}
+    .intro-skip{bottom:max(16px, env(safe-area-inset-bottom));font-size:14px;}
+  }
+
+  /* =====================================================================
+     RESPONSIVE · ECONOMIC FUNDAMENTALS
+     The first section is a split composition — the reading on the left, a
+     full-height map on the right — and a split cannot survive a phone. It
+     folds in two moves. At 1200 the map yields width, because in this
+     layout the figures live in the reading column and the map is the
+     locator. At 900 the two columns become one and the map stops being a
+     column: it becomes a band pinned under the chrome with the beats
+     scrolling beneath it, the same grammar the scrolly sections use. It is
+     the same element throughout, so the admin-to-metro flight still runs on
+     one map — Leaflet only has to be told its size changed (see jsNeeded).
+     ===================================================================== */
+
+  /* ── 1200 and down: compressed desktop ─────────────────────────────── */
+  @media (max-width: 1199px){
+    /* the map is the side that gives: a third of the frame rather than a
+       380px floor, so the reading column keeps the 500px measure the
+       population chart is drawn at and the figure never downscales */
+    .ov-wrap:not(.ov2) .ov-map{flex:0 0 clamp(300px, 32%, 460px);}
+    .ov-wrap:not(.ov2) .ov-block{
+      margin-left:var(--frame-pad);margin-right:clamp(20px, 3vw, 44px);
+    }
+
+    /* the two metro scatters are a fixed 880-unit drawing on a 976px page:
+       below that viewport the 48px page padding is the only thing standing
+       between the chart and its own width. Hand most of it back. Scoped to
+       the two ids rather than .page so this cannot collide with whatever
+       the shared frame does to page padding. */
+    #page-constraints,
+    #page-city-in-metro{padding-inline:var(--frame-pad);}
+  }
+
+  /* ── 900 and down: the split stacks, the map becomes a band ────────── */
+  @media (max-width: 899px){
+    /* one column, map first. Still sticky, only now it sticks across the
+       whole section as a band rather than beside it, and the reading runs
+       underneath — which is the shape a phone can hold. */
+    .ov-wrap:not(.ov2){flex-direction:column;align-items:stretch;}
+    .ov-wrap:not(.ov2) .ov-map{
+      order:-1;flex:0 0 auto;
+      position:sticky;top:var(--chrome-h);z-index:6;
+      border-bottom:1px solid var(--border);
+    }
+    /* relative, not static: the zoom controls and the callout chips are
+       appended into the Leaflet container and must keep their frame.
+       svh rather than vh so a phone's disappearing URL bar cannot resize
+       the map on every scroll tick — the vh line is the fallback and has
+       to come first. */
+    .ov-wrap:not(.ov2) .ov-map-inner{
+      position:relative;top:auto;
+      height:46vh;
+      height:46svh;
+      min-height:200px;max-height:380px;
+    }
+
+    /* the beats hand back the screen the band took and stop centring:
+       text centred in a full viewport under a band opens on a void */
+    .ov-wrap:not(.ov2) .ov-block{
+      min-height:calc(54vh - var(--chrome-h));
+      min-height:calc(54svh - var(--chrome-h));
+      justify-content:flex-start;
+      max-width:none;
+      margin-inline:var(--frame-pad);
+      padding:26px 0 34px;
+    }
+    .ov-wrap:not(.ov2) .ov-block > * + *{margin-top:22px;}
+    /* the msa block sets its own padding by id, which outranks the rule
+       above — restated here so the three beats keep one rhythm */
+    #page-overview-msa{padding-top:26px;padding-bottom:34px;}
+
+    /* the map is the instrument on the third beat; give it thumb-sized
+       controls now that it is being touched rather than clicked */
+    .map-ctl{width:34px;height:34px;}
+
+    /* ── the two metro scatters ───────────────────────────────────────
+       These are authored at a fixed 880x560 viewBox and nothing in CSS can
+       re-lay them out, so width is the only lever on their legibility. At
+       a 660px measure the scale factor is 0.75 and every declared size
+       still clears 9px on screen (13px ticks land at 9.75, the 12px peer
+       and reference labels at 9.0). Below that the panel scrolls sideways
+       rather than shrinking past reading. That is the last resort and it
+       is taken here only because the drawing is fixed: preferred order was
+       full width first, type second, and full width alone runs out at
+       roughly a 700px viewport. .chart-block is the scroller, not
+       .scatter-wrap, so the quadrant buttons — positioned in % of
+       .scatter-wrap by placeQuadrantButtons — keep resolving against the
+       chart's real width and stay in their quadrants. */
+    .tool-body .chart-block{
+      overflow-x:auto;overscroll-behavior-x:contain;
+      -webkit-overflow-scrolling:touch;
+    }
+    .tool-body .chart-block .scatter-wrap{
+      width:100%;min-width:660px;max-width:880px;
+    }
+    /* the footnote is reading, not chart: it holds still while the plot
+       scrolls under it */
+    .tool-body .chart-block .scatter-footnote{
+      position:sticky;left:0;width:calc(100vw - 64px);max-width:880px;
+    }
+    /* quadrant labels are overlays on a plot barely wider than they are */
+    .q-btn{max-width:170px;padding:7px 9px;}
+    .q-btn-name{font-size:13px;}
+
+    /* ── ov2, the opt-2 scrolly ───────────────────────────────────────
+       Its stage is authored as exactly one viewport holding map and table
+       together; as a band it has to choose. Steps one and two are the
+       chart's, with the map parked inside the figure as a locator strip;
+       the last step is the map's, and its table scrolls inside the band. */
+    .ct-scrolly.ov2-scrolly{margin-inline:var(--frame-pad);}
+    .ov2-scrolly .ct-stage{
+      height:46vh;
+      height:46svh;
+      padding-block:6px;
+    }
+    .ov2-scrolly .ct-stagemap{max-height:none;min-height:0;margin-bottom:8px;}
+    .pc-mapslot .ct-stagemap,
+    .ov2-scrolly .pc-mapslot .ct-stagemap{height:104px;}
+    /* the three numbers ride under the locator as a strip rather than
+       beside it as a column — there is no room for a 236px side rail */
+    .ov2-scrolly .pc-foot{flex-direction:column;gap:8px;margin-top:8px;}
+    .ov2-scrolly .pc-foot .q-stats{
+      flex:none;flex-direction:row;flex-wrap:wrap;gap:4px 18px;
+    }
+    .ov2-scrolly .pc-foot .q-stat{padding:0;border-top:0;gap:8px;}
+    .ov2-scrolly .pc-foot .q-si{flex:0 0 22px;width:22px;height:22px;}
+    .ov2-scrolly .pc-foot .q-si svg{width:13px;height:13px;}
+    .ov2-scrolly[data-ovstep="2"] .ct-stage{
+      height:auto;max-height:62vh;max-height:62svh;
+    }
+    .ov2-scrolly[data-ovstep="2"] .ct-stagemap{flex:0 0 28vh;flex:0 0 28svh;}
+    .ov2-scrolly[data-ovstep="2"] .ct-slot.is-on{min-height:0;overflow:auto;}
+  }
+
+  /* ── 600 and down: mobile ──────────────────────────────────────────── */
+  @media (max-width: 599px){
+    /* the frame closes to a thumb's margin and the figure takes the rest:
+       at 390 the reading column is 358px, which is over the measure the
+       population chart needs to draw itself 1:1 rather than shrink */
+    .ov-wrap:not(.ov2) .ov-block{margin-inline:var(--frame-pad);padding:20px 0 30px;}
+    #page-overview-msa{padding-top:20px;padding-bottom:30px;}
+    .ov-wrap:not(.ov2) .ov-map-inner{
+      height:40vh;
+      height:40svh;
+      min-height:170px;max-height:320px;
+    }
+    .ov-wrap .page-head h2{font-size:23px;letter-spacing:-.2px;}
+    .ov-wrap .page-head{gap:8px;}
+
+    /* the three numbers keep their two-line form and close up */
+    .ov-wrap:not(.ov2) .q-stats{gap:12px 18px;}
+    .ov-wrap:not(.ov2) .q-si{width:22px;height:22px;}
+    .ov-wrap:not(.ov2) .q-si svg{width:13px;height:13px;}
+
+    /* the anchor card: a smaller ring, and a label allowed to wrap rather
+       than push its figure off the card */
+    .anchor-card{gap:14px;padding:14px 16px;}
+    .ac-ring{width:72px;height:72px;}
+    .ac-head{font-size:15.5px;gap:8px;}
+    .ac-anchor{width:23px;height:23px;}
+    .ac-anchor svg{width:13px;height:13px;}
+    .ac-rows{
+      grid-template-columns:minmax(0,1fr) auto;
+      justify-content:stretch;gap:6px 14px;margin-top:9px;
+    }
+
+    /* peers: the label wraps, the chips take a thumb, and the hover card
+       stands down — it has nowhere to hang at this width and no hover to
+       open it. The chips still read as the set they always were. */
+    .pg-name{white-space:normal;}
+    .pg-btn{padding:8px 12px;}
+    .pg-card{display:none;}
+    /* centred tooltips hang off both edges here; hang them from the left */
+    .pg-why::after{
+      left:0;transform:translate(0,3px);width:min(240px, calc(100vw - 48px));
+    }
+    .pg-why:hover::after,.pg-why:focus::after{transform:translate(0,0);}
+    .plc-why::after{max-width:calc(100vw - 48px);}
+
+    /* the places table: six columns of numbers do not fold, so the panel
+       scrolls — and the indicator column stays put, so a row never loses
+       its name three columns in */
+    .plc-wrap{overscroll-behavior-x:contain;}
+    .plc-wrap .plc-table tbody th,
+    .plc-wrap .plc-table thead th:first-child{
+      position:sticky;left:0;z-index:2;background:#fff;
+      box-shadow:1px 0 0 var(--border);
+    }
+    .plc-wrap .plc-table th,
+    .plc-wrap .plc-table td{padding:9px 14px 9px 0;}
+    .plc-ctl{gap:8px;}
+    .plc-ctl select{max-width:100%;}
+
+    /* the chart's read-out has to fit the screen it is read on */
+    .pc-tip{min-width:0;max-width:calc(100vw - 48px);}
+
+    /* the scatters keep the 660 floor set above; only the page frame and
+       the overlay labels close up. No full-bleed here: the chart already
+       scrolls, so pulling it under the frame would buy 32px of swipe and
+       cost the plot its clean edge. */
+    #page-constraints,
+    #page-city-in-metro{padding-inline:var(--frame-pad);}
+    .tool-body .chart-block .scatter-footnote{
+      width:calc(100vw - 32px);gap:14px;font-size:12.5px;
+    }
+    .q-btn{max-width:150px;}
+    .q-btn-metrics{gap:3px 8px;}
+
+    /* ov2 at phone width: the locator shrinks one more notch */
+    .ct-scrolly.ov2-scrolly{margin-inline:var(--frame-pad);}
+    .pc-mapslot .ct-stagemap,
+    .ov2-scrolly .pc-mapslot .ct-stagemap{height:84px;}
+    .ov2-scrolly .ct-slot > *{max-width:none;}
+  }
+
+    /* ═══════════════════════════════════════════════════════════════════
+       RESPONSIVE · the plain pages and their figures
+       City Constraints (the metro scatter and the city inside it), the
+       Lorem page, Levers, Extras (the two RCA charts and the distribution
+       frame), and the checkpoint block every section closes on.
+
+       Four steps, written max-width so they nest: 1199 compresses, 899
+       stacks, 599 is the phone. Every figure here is an SVG on a fixed
+       880-unit viewBox scaled by width, so narrowing the page shrinks the
+       type inside the chart along with it — an 11px label at a 390px
+       viewport renders at 4.5px, and scaling is therefore not the same
+       thing as responsiveness. Two levers answer that, in order: give the
+       figure the whole screen back, then raise the in-SVG font-size
+       declarations by roughly the reciprocal of the scale so the RENDERED
+       size holds near 9px. A third lever — letting a panel scroll inside
+       itself — is used once, on the RCA rows, and only because their
+       300-unit label gutter is set in the SVG and cannot be reclaimed.
+       ═══════════════════════════════════════════════════════════════════ */
+
+    /* ── 1199 · compressed desktop ─────────────────────────────────────
+       The page is still capped at 976, so this padding costs the figure
+       nothing until the viewport drops under the cap; it just stops the
+       gutters reading as dead space. */
+    @media (max-width:1199px){
+      .tool-body .page{padding:44px 40px 52px;}
+      .secpager{padding:24px 40px 32px;}
+    }
+
+    /* ── 899 · stacked ─────────────────────────────────────────────────
+       Text and figure stop sitting side by side. At the narrow end of this
+       step the 880-unit box draws at 0.62, so the chart type comes up
+       about a sixth to hold ~9px; at the wide end it renders a shade
+       larger than desktop, which a tablet can carry. */
+    @media (max-width:899px){
+      .tool-body .page{padding:36px 28px 44px;}
+      .secpager{padding:22px 28px 30px;}
+      .page-head h2,
+      .export-subsection h3{font-size:26px;}
+
+      /* the lede and its explainer stop being a column pair */
+      .lede-row{grid-template-columns:minmax(0,1fr);gap:14px 0;}
+      .lede-row > .collapsible-content{padding:16px 18px;}
+      .collapsible-content{padding:0 16px 16px;}
+      .dx-grid{grid-template-columns:minmax(0,1fr);gap:20px;}
+      .dx-right{max-width:380px;}
+
+      /* the scatters */
+      .metro-scatter .ms-tick{font-size:15px;}
+      .metro-scatter .ms-axis-title{font-size:16px;}
+      .metro-scatter .ms-axis-years,
+      .metro-scatter .ms-typical,
+      .metro-scatter .ms-peer-label,
+      .city-in-metro .cim-ring-label{font-size:14px;}
+      .metro-scatter .ms-home-label{font-size:17px;}
+
+      /* the RCA rows. 15px is the ceiling the geometry allows: past 16px
+         the axis title runs into the "RCA = 1" marker, and a 38-character
+         label in the Show all state runs off the left edge. */
+      .rca-chart .rca-tick,
+      .rca-chart .rca-benchmark-label,
+      .rca-top-tag{font-size:14px;}
+      .rca-chart .rca-axis-title,
+      .rca-chart .rca-col-head,
+      .rca-chart .rca-jobs,
+      .rca-chart .rca-label,
+      .rca-chart .rca-value{font-size:15px;}
+
+      .dd-chart text{font-size:13px;}
+      .dd-chart .quad{font-size:11.5px;}
+
+      /* The four quadrant boxes are HTML at a fixed px size laid over the
+         plot, so they do not shrink with it — they have to be told to, or
+         the two pairs walk into each other. */
+      .q-btn{max-width:168px;padding:7px 9px;gap:4px;}
+      .q-btn-name{font-size:13px;}
+      .q-btn-metrics{gap:2px 8px;}
+      .q-metric{font-size:11px;}
+    }
+
+    /* ── 599 · the phone ──────────────────────────────────────────────── */
+    @media (max-width:599px){
+      :root{
+        /* The css font-size whose RENDERED size lands near 9px once an
+           880-unit viewBox has been scaled to fill the screen. Exactly it
+           is 7920/W; this is that curve straightened into a line across
+           320–600, and every rule below clamps it to the largest size that
+           figure's own geometry can actually carry. Without the ramp the
+           type would be right at 390 and comically large at 599. */
+        --sfit:calc(38px - 4.1vw);
+        /* The same idea for the RCA rows, whose scale stops falling at
+           500px because the panel below floors the chart there. */
+        --rfit:calc(27px - 2.3vw);
+      }
+
+      .tool-body .page{padding:28px 14px 40px;}
+      .secpager{padding:18px 14px 26px;}
+      .page-head h2{font-size:23px;}
+      .export-subsection{margin-top:28px;}
+      .export-subsection h3{font-size:22px;}
+      .lede{font-size:17px;line-height:27px;}
+      .lede-row{margin:12px 0;}
+      .collapsible-header{font-size:16px;padding:12px 14px;gap:10px;}
+      .ci-mark{width:26px;height:26px;}
+      .collapsible-content{padding:0 14px 14px;}
+      .lede-row > .collapsible-content{padding:14px;border-radius:4px;}
+      .collapsible-content p{font-size:16px;line-height:26px;}
+
+      /* ---- the figures take the screen back ----
+         The page keeps a 14px gutter for prose; each chart steps out of it,
+         so the viewBox gets the whole viewport instead of the viewport
+         minus 28. On a 390px screen that is the difference between 0.41x
+         and 0.44x — small, but it is free, and it compounds with the type
+         below. */
+      .tool-body .scatter-wrap > .metro-scatter,
+      .tool-body .rca-dist-wrap{
+        width:calc(100% + 28px);max-width:none;margin-inline:-14px;
+      }
+
+      /* The quadrant boxes come off the plot and line up under it, two by
+         two. They are real buttons already, so nothing but the positioning
+         changes: position:static makes the inline left/top/right/bottom
+         that placeQuadrantButtons writes inert, and no JS has to know. */
+      .tool-body .scatter-wrap{display:flex;flex-wrap:wrap;gap:8px;}
+      .tool-body .scatter-wrap > .metro-scatter{flex:0 0 auto;order:0;}
+      .scatter-wrap > .q-btn{
+        position:static;order:1;
+        flex:1 1 calc(50% - 4px);max-width:none;margin:0;padding:8px 10px;
+      }
+
+      /* ---- the RCA rows: the one figure that will not fit ----
+         Last resort, and taken only here. 300 of its 880 units are a label
+         gutter set inside the SVG, and the longest industry name caps the
+         label type at about 15.5px before it runs off the left edge — so
+         at a 390px screen the labels would render at 6.6px whatever the
+         stylesheet does. The panel scrolls inside itself instead, with the
+         chart floored at 500px. A horizontal bar chart is the one shape
+         that survives this: the labels, the benchmark and most of every
+         bar are on screen at rest, and what is off the edge lies the way
+         the reader is already scrolling. */
+      .tool-body .rca-wrap{
+        overflow-x:auto;overflow-y:hidden;
+        -webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;
+        width:calc(100% + 28px);max-width:none;
+        margin-inline:-14px;padding-inline:14px;
+      }
+      .tool-body .rca-wrap > .rca-chart{width:100%;min-width:500px;max-width:none;}
+
+      /* ---- the in-chart type ---- */
+      .metro-scatter .ms-tick{font-size:clamp(14px, var(--sfit), 20px);}
+      /* 19 is the ceiling: the rotated y title is 45 characters in a
+         432-unit span, and past 20px it runs out of its own axis. */
+      .metro-scatter .ms-axis-title{font-size:clamp(14px, var(--sfit), 19px);}
+      .metro-scatter .ms-axis-years,
+      .metro-scatter .ms-typical,
+      .metro-scatter .ms-peer-label,
+      .city-in-metro .cim-ring-label{font-size:clamp(13px, var(--sfit), 18px);}
+      .metro-scatter .ms-home-label{font-size:clamp(16px, calc(var(--sfit) + 3px), 22px);}
+
+      .rca-chart .rca-tick,
+      .rca-chart .rca-benchmark-label,
+      .rca-top-tag{font-size:clamp(13px, var(--rfit), 15px);}
+      .rca-chart .rca-axis-title,
+      .rca-chart .rca-col-head,
+      .rca-chart .rca-jobs,
+      .rca-chart .rca-label,
+      .rca-chart .rca-value{font-size:clamp(13px, var(--rfit), 15.5px);}
+
+      /* The diagnostic dot is the one figure a phone makes bigger — a
+         300-unit box in a 360px column is an upscale — so it is capped
+         rather than raised, and centred on the tray. */
+      .dx-grid{gap:16px;}
+      .dx-right{max-width:340px;margin-inline:auto;}
+      .dx-chart-card{padding:12px 12px 10px;}
+
+      .dd-grid{gap:12px;}
+      .dd-grid .dd-plot{flex:1 1 100%;min-width:0;}
+      .dd-grid .dd-side{flex:1 1 100%;max-width:none;}
+      .dd-chart text{font-size:15px;}
+      .dd-chart .quad{font-size:12.5px;}
+
+      /* ---- controls and keys ---- */
+      .viz-controls{gap:10px 14px;padding:10px 12px;margin:14px 0;}
+      /* 16px or iOS zooms the page the moment the select is touched */
+      .viz-controls select{font-size:16px;height:34px;}
+      .viz-controls .seg-btn{padding:0 10px;}
+      .viz-controls .replay-btn,
+      .viz-controls .design-list,
+      .viz-controls .design-opt{margin-left:0;}
+      .subsection-header{gap:10px;}
+      .scatter-footnote,
+      .rca-footnote{gap:8px 16px;font-size:12.5px;margin-top:10px;}
+
+      /* the hover panels are wider than the phone they would open on */
+      .quad-tip{width:min(270px, calc(100vw - 40px));}
+      .rca-tip{width:min(330px, calc(100vw - 40px));}
+      .row-tip{min-width:0;max-width:calc(100vw - 40px);}
+
+      /* ---- the checkpoints ---- */
+      .ktest{padding:14px 14px 16px;margin-top:20px;}
+      .sec-close .ktest{padding:16px 14px 18px;}
+      .ktest-head{flex-wrap:wrap;gap:8px;}
+      .ktest-head h3{font-size:15.5px;}
+      .ktest-q{font-size:14px;}
+      .ktest-opts button{font-size:14px;padding:10px 12px;}
+      /* 16px or iOS zooms the page on focus and offers no way back */
+      .ktest-ta{font-size:16px;}
+      .ktest-actions{flex-wrap:wrap;}
+
+      /* the journey line takes its own row above the two section buttons */
+      .pager-row{flex-wrap:wrap;gap:14px;}
+      .pgr-line-wrap{order:-1;flex:1 1 100%;}
+      .pgr-side{flex:1 1 auto;}
+      .pgr-stop{width:20px;height:20px;font-size:10px;}
+      .pgr-seg{width:14px;}
+      .pgr-cap{font-size:11.5px;text-align:center;}
+      .pager-btn{font-size:13px;padding:9px 12px;}
+
+      /* the ring stays beside the verdict — that pairing is the point —
+         at a size that leaves the sentence a line it can hold */
+      .anchor-card{gap:14px;padding:14px 14px 14px 12px;}
+      .ac-ring{width:68px;height:68px;}
+      .ac-head{font-size:15px;}
+      .rank-strip{margin:14px 0 4px;}
+      .rank-card{gap:12px;padding:14px;}
+      .rc-fig{min-width:52px;}
+      .rc-fig .rs-num{font-size:28px;}
+
+      /* two specs meet on the scatters: one floors them at 660 and
+         scrolls the block from 900 down, the other gives them the whole
+         screen here and holds the labels with the --sfit ramp. Below 600
+         the second wins, so the floor and its scroller stand down —
+         otherwise the quadrant buttons reflow inside a 660px box that
+         nobody can see. */
+      .tool-body .chart-block{overflow-x:visible;}
+      .tool-body .chart-block .scatter-wrap{min-width:0;max-width:none;}
+      .tool-body .chart-block .scatter-footnote{position:static;width:auto;}
+    }
+
+  /* ==========================================================================
+     RESPONSIVE — LANDING + INTRO QUIZ
+     Append at the end of the <style> block (after the .citypick rules, ~3402).
+     Breakpoints are the house set: 1199 / 899 / 599, written max-width so the
+     narrower one always lands on top of the wider one.
+
+     Two things this block deliberately does NOT do:
+     - it never writes `display` on .intro-page. That section is parked behind
+       a `display:none !important` at ~3104; these rules wake up correctly when
+       that rule is deleted and stay invisible until then.
+     - it never gives .intro-track a px width or .intro-slide anything but
+       `flex:0 0 100%`. introSlide() moves the track by -N*100% of its own box,
+       so the slide width is whatever the viewport makes it, at every size,
+       with no JS and no resize handler. Break either and the carousel drifts.
+     ========================================================================== */
+
+  /* ---------- 900–1199: compressed desktop ---------- */
+  @media (max-width:1199px){
+
+    /* the hero keeps two zones, but the panel stops being a fixed 470 slab and
+       starts yielding: the story column is what the reader is here for first */
+    .hero-grid{
+      grid-template-columns:minmax(0,1fr) minmax(340px,420px);
+      gap:40px;
+    }
+    .landing-hero h1{font-size:clamp(34px,3.6vw,46px);}
+    .landing-hero p.intro{font-size:17px;line-height:27px;}
+    .toolbar-links{gap:20px;}
+    .landing-header .logo-btn{width:148px;flex:0 0 148px;}
+
+    /* give the carousel's edge buttons their own lane instead of letting the
+       max(14px, 50% - 455px) fallback drop them onto the card. 72px of page
+       padding = 14px offset + 46px button + 12px of air. */
+    .tool-body .intro-page{padding-inline:72px;}
+    .intro-nav.prev{left:14px;}
+    .intro-nav.next{right:14px;}
+    .intro-q{font-size:27px;}
+  }
+
+  /* ---------- 600–899: STACKED ---------- */
+  @media (max-width:899px){
+
+    /* --- the landing gets a scroll, because stacked it is ~1250px tall ---
+       #landing stays a fixed, viewport-tall panel so the translateY(-100%)
+       enter animation still reads; the hero inside it is the scroller.
+       justify-content must leave centre here: a centred overflowing column
+       puts its own top out of reach. */
+    #landing{bottom:auto;height:100dvh;}
+    .landing-hero{
+      justify-content:flex-start;
+      overflow-y:auto;-webkit-overflow-scrolling:touch;
+      padding:28px 24px 40px;
+    }
+
+    /* one column, and the panel moves up to sit directly under the copy,
+       ahead of the jump links — the diagnosis is the page's job, wayfinding
+       is the footnote. display:contents promotes .hero-copy's children into
+       the grid so they can be ordered around the panel; drop these five lines
+       and the panel simply falls to the bottom, which also works. */
+    .hero-grid{
+      grid-template-columns:minmax(0,1fr);
+      gap:0;
+      width:min(680px,100%);
+      align-items:stretch;
+    }
+    .hero-copy{display:contents;}
+    .landing-kicker{order:1;}
+    .landing-hero h1{order:2;font-size:clamp(32px,5vw,42px);}
+    .hero-copy .intro{order:3;}
+    .diagnose-panel{order:4;margin-top:26px;box-shadow:0 10px 30px rgba(37,88,98,.14);}
+    .jump-quiet{order:5;margin-top:30px;}
+
+    /* --- the intro page: stop spending a third of the screen on padding --- */
+    .tool-body .intro-page{padding:36px 20px 104px;}
+    .intro-slide{padding:0 12px;}          /* unchanged; stated so it is not lost */
+
+    /* the nav pair leaves the card's flanks and becomes a bottom-centred pair
+       inside the page's own 104px bottom runway; .intro-skip drops out of
+       position:fixed and back into the flow just above it, so the three
+       controls stop stacking on top of each other */
+    .intro-nav{top:auto;bottom:26px;transform:none;}
+    .intro-nav.prev{left:calc(50% - 58px);right:auto;}
+    .intro-nav.next{right:calc(50% - 58px);left:auto;}
+    .intro-skip{position:static;transform:none;margin-top:26px;}
+
+    .intro-q{font-size:25px;line-height:1.3;margin:12px 0 24px;}
+    .intro-title{font-size:20px;margin-bottom:14px;}
+    .intro-opts button{font-size:16px;padding:14px 16px;gap:13px;}
+    .intro-fb{font-size:15px;line-height:24px;margin-top:18px;}
+
+    /* --- q4: the chart stops sharing a row with its readouts ---
+       lever (a). Side by side, .dd-plot was being handed ~310px for a 520-unit
+       viewBox — scale 0.6, 11px labels rendering at 6.6px. Stacked and capped
+       at 640 it runs 1.0–1.23x, so the declared sizes are the rendered sizes
+       and no font bump is needed in this band. */
+    .dd-grid{flex-direction:column;flex-wrap:nowrap;}
+    .dd-grid .dd-plot{flex:0 0 auto;width:100%;max-width:640px;min-width:0;margin-inline:auto;}
+    .dd-grid .dd-side{flex:0 0 auto;width:100%;max-width:640px;margin-inline:auto;}
+    #ddDot{r:13px;}   /* SVG2 geometry property; harmless no-op if unsupported */
+
+    .slider-row{gap:16px;}
+  }
+
+  /* ---------- below 600: mobile ---------- */
+  @media (max-width:599px){
+
+    :root{--landing-pad:16px;}
+
+    /* the masthead sheds what it cannot carry. .btn-journey's label is a bare
+       text node with no element to hide, so font-size:0 collapses it and the
+       svg — which carries width/height attributes — survives at full size. */
+    .landing-header{height:56px;flex:0 0 56px;gap:10px;}
+    .landing-header .logo-btn{width:124px;flex:0 0 124px;}
+    .landing-header .logo-btn img{height:28px;}
+    .landing-header .toolbar-links{display:none;}
+    .landing-header .btn-journey{
+      width:42px;padding:0;gap:0;font-size:0;justify-content:center;flex:none;
+    }
+
+    .landing-hero{padding:22px 16px 36px;}
+    .landing-hero h1{font-size:clamp(29px,7.4vw,36px);letter-spacing:-.3px;}
+    .landing-hero p.intro{font-size:16px;line-height:25px;margin-top:16px;}
+    /* EDITORIAL, and the only content this spec hides: the second hero
+       paragraph is placeholder lorem and costs ~220px of scroll between the
+       headline and the button the page exists for. Delete this one rule if
+       that paragraph ever says something. */
+    .hero-copy .intro + .intro{display:none;}
+    .jump-quiet{margin-top:24px;gap:8px 14px;}
+
+    /* the panel: the two readings stay side by side — population against wage
+       IS the graphic, and stacking them would turn a comparison into a list.
+       The type comes down instead. */
+    .diagnose-panel{padding:18px 16px 16px;gap:14px;border-radius:12px;}
+    .verdict-viz{gap:8px;}
+    .verdict-stat{padding:11px 11px 10px;}
+    .stat-head{gap:6px;margin-bottom:9px;}
+    .stat-ico,.stat-ico svg{width:36px;height:18px;}
+    .stat-verdict{font-size:11.5px;}
+    .verdict-num{font-size:27px;letter-spacing:-.6px;}
+    .verdict-span{font-size:12px;margin-top:5px;}
+    .verdict-vs{font-size:11px;}
+    .lx-verdict{gap:12px;padding:13px 14px 13px 13px;}
+    .lx-ico{width:44px;height:44px;}
+    .lx-ico svg{width:28px;height:28px;}
+    .lx-title{font-size:20px;margin-bottom:5px;}
+    .lx-tag{font-size:13px;}
+    .btn-diagnose{font-size:16px;padding:14px 14px;}
+
+    /* --- the intro page at phone width --- */
+    .tool-body .intro-page{padding:26px 14px 100px;}
+    .intro-slide{padding:0;}               /* every pixel goes to the card */
+    .intro-card{max-width:none;}
+    .intro-progress{max-width:220px;margin-bottom:20px;}
+    .intro-title{font-size:18px;}
+    /* !important because q4 and q6 carry style="font-size:26px" inline on
+       their .intro-q and inline styles outrank media queries. The cleaner fix
+       is to delete those two attributes (markup 3670, 3741) and drop the
+       !important — do that if the markup is in play. */
+    .intro-q{font-size:22px;line-height:1.32;margin:10px 0 20px;}
+    .intro-opts{gap:11px;}
+    .intro-opts button{font-size:15.5px;line-height:22px;padding:13px 14px;gap:11px;}
+    .opt-letter{width:28px;height:28px;flex:0 0 28px;font-size:13.5px;}
+    .intro-fb{font-size:14.5px;line-height:23px;}
+    .intro-nav{width:42px;height:42px;bottom:22px;}
+    .intro-nav.prev{left:calc(50% - 53px);}
+    .intro-nav.next{right:calc(50% - 53px);}
+    .intro-skip{font-size:14px;}
+
+    /* --- q4 legibility: lever (a) then lever (b), never (c) ---
+       Capping the plot at 440px pins the scale into a narrow band — 0.85 at
+       599px down to 0.64 at 360px — so one font multiplier covers the whole
+       range instead of the type swinging with the viewport. 14.5 x 0.64 =
+       9.3px at a 360px phone, 14.5 x 0.85 = 12.3px at 599. Everything in the
+       chart stays at or above the ~9px floor, and nothing has to scroll
+       sideways. */
+    .dd-grid .dd-plot{max-width:440px;}
+    .dd-grid .dd-side{max-width:440px;}
+    .dd-chart text{font-size:14.5px;}      /* was 11px  -> 9.3–12.3px rendered */
+    .dd-chart .quad{font-size:13.5px;}     /* was 10px  -> 8.6–11.5px rendered */
+    .dd-tile{padding:8px 10px;}
+    .dd-tile .val{font-size:19px;}
+    .dd-signal{font-size:13px;padding:9px 11px;}
+    .dd-cap{font-size:12px;}
+    #ddDot{r:14px;}
+
+    /* q2 */
+    .slider-row{gap:12px;}
+    .slider-val{font-size:28px;min-width:74px;}
+    .lock-btn{padding:11px 18px;font-size:15px;}
+
+    /* q6 */
+    .tw-tree{padding:9px 7px 4px;}
+    .tw-question{font-size:17px;margin-bottom:12px;}
+    .tw-ev-top{flex-wrap:wrap;gap:2px 10px;}
+    .tw-ev-value{white-space:normal;}
+    .tw-choices button{font-size:15px;padding:12px 14px;}
+    .tw-verdict{padding:12px 14px;}
+    .tw-verdict h3{font-size:16.5px;}
+  }
 </style>
 </head>
 <body>
@@ -3667,7 +4672,7 @@
             <div class="intro-slide" id="page-intro-q4">
               <div class="intro-card">
                 <div class="intro-progress"><span class="seg fill"></span><span class="seg fill"></span><span class="seg fill"></span><span class="seg fill"></span><span class="seg"></span><span class="seg"></span><span class="seg"></span></div>
-                <h2 class="intro-q" style="font-size:26px;">Drag the gold dot to where you think the Boston metro sits on the people × pay plane — then lock it in.</h2>
+                <h2 class="intro-q">Drag the gold dot to where you think the Boston metro sits on the people × pay plane — then lock it in.</h2>
                 <div class="intro-instrument">
                   <div class="dd-grid">
                     <div class="dd-plot">
@@ -3738,7 +4743,7 @@
             <div class="intro-slide" id="page-intro-q6">
               <div class="intro-card">
                 <div class="intro-progress"><span class="seg fill"></span><span class="seg fill"></span><span class="seg fill"></span><span class="seg fill"></span><span class="seg fill"></span><span class="seg fill"></span><span class="seg"></span></div>
-                <h2 class="intro-q" style="font-size:26px;">Walk the diagnostic tree yourself — at each fork, pick the branch the evidence on the table points to.</h2>
+                <h2 class="intro-q">Walk the diagnostic tree yourself — at each fork, pick the branch the evidence on the table points to.</h2>
                 <div class="intro-instrument" id="twWidget"></div>
                 <p class="intro-fb"
                    data-reveal="For Boston the evidence lights root → labor supply → amenities: the export engine is growing, home-value growth lags the nation, and the amenity residual is bleeding away."></p>
@@ -7040,6 +8045,17 @@
       if(k === i) b.setAttribute("aria-current", "page");
       else b.removeAttribute("aria-current");
     });
+    /* below 1200 the chip row is a filmstrip: bring the section you are
+       on to the middle of it, so the bar answers "where am I" without a
+       swipe. .secnav is position:relative under that breakpoint, so
+       offsetLeft measures against the scroller, not the sticky bar. */
+    const actBtn = secNavEl.children[i];
+    if(actBtn && secNavEl.scrollWidth > secNavEl.clientWidth + 1){
+      secNavEl.scrollTo({
+        left: Math.max(0, actBtn.offsetLeft - (secNavEl.clientWidth - actBtn.offsetWidth) / 2),
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"
+      });
+    }
     const prev = SECTIONS[i-1], next = SECTIONS[i+1];
     /* the mini line between the pager buttons — one state language only:
        a teal check is behind you, the enlarged ring is where you stand,
@@ -7212,7 +8228,13 @@
     /* the closed button stays plain — city and country, as the native
        select always printed it; the verdicts live in the open menu */
     function renderBtn(){
-      btn.innerHTML = '<span class="citypick-txt">' + sel.value + '</span>';
+      /* the city carries the row; the country is its own span so the
+         narrow bar can stand it down without losing it from the menu */
+      var _cv = sel.value, _ci = _cv.indexOf(",");
+      btn.innerHTML = '<span class="citypick-txt">' +
+        (_ci < 0 ? _cv
+          : _cv.slice(0, _ci) + '<span class="cp-rest">' + _cv.slice(_ci) + '</span>') +
+        '</span>';
     }
     function renderMenu(){
       menu.textContent = "";
@@ -7291,13 +8313,23 @@
   }
   /* scrolling down on the landing flows into City Overview */
   const landingEl=document.getElementById("landing");
+  /* below 900 the hero is its own scroller, so the enter gesture waits its
+     turn: it fires once the landing has been read to the end. On desktop the
+     hero never overflows, so this is always true and nothing changes. */
+  const landingHeroEl=document.querySelector(".landing-hero");
+  const landingAtEnd=()=>{
+    const el=landingHeroEl;
+    if(!el) return true;
+    const slack=el.scrollHeight-el.clientHeight;
+    return slack<=1 || el.scrollTop>=slack-2;
+  };
   landingEl.addEventListener("wheel", e=>{
-    if(e.deltaY>8) enterTool("page-overview");
+    if(e.deltaY>8 && landingAtEnd()) enterTool("page-overview");
   }, {passive:true});
   let touchY=null;
   landingEl.addEventListener("touchstart", e=>{ touchY=e.touches[0].clientY; }, {passive:true});
   landingEl.addEventListener("touchmove", e=>{
-    if(touchY!==null && touchY-e.touches[0].clientY>30){ touchY=null; enterTool("page-overview"); }
+    if(touchY!==null && touchY-e.touches[0].clientY>30 && landingAtEnd()){ touchY=null; enterTool("page-overview"); }
   }, {passive:true});
   document.addEventListener("keydown", e=>{
     if(document.getElementById("landing").classList.contains("hidden")) return;
