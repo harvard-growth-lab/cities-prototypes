@@ -456,64 +456,45 @@
   .secbar .citypick{flex:none;align-self:center;}
   .secbar .citypick--bar{min-width:0;}
   .secbar .citypick--bar .citypick-btn{height:34px;font-size:13.5px;}
+  /* the location chip: the admin city's buildings mark on the left, the
+     chevron on the right, a quiet border and 4px corners */
+  .secbar .citypick--bar .citypick-btn{
+    border-color:var(--border);border-radius:4px;padding-left:36px;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%23255862' stroke-width='1.5' stroke-linecap='round'/></svg>"),
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='17' viewBox='0 0 24 30' fill='none' stroke='%231a2226' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'><path d='M2 26h20'/><path d='M4 26V15h6v11'/><path d='M12 26V8h7v18'/><path d='M14.6 12h1.8M14.6 16h1.8M14.6 20h1.8'/></svg>");
+    background-repeat:no-repeat;background-position:right 13px center, left 12px center;
+  }
+  .secbar .citypick--bar .citypick-btn:hover,
+  .secbar .citypick--bar .citypick-btn:focus{border-color:var(--teal);}
   .secnav{
-    display:flex;gap:1px;align-items:stretch;height:100%;flex:0 1 auto;
+    display:flex;gap:4px;align-items:center;height:100%;flex:0 1 auto;
     min-width:0;background:none;border:0;
     margin-left:18px;padding-left:18px;border-left:1px solid var(--border);
   }
+  /* the section names as chips: a check where the reader has been, the
+     current one lifted on a tint, the ones ahead numbered and quiet */
   .secnav-btn{
-    display:inline-flex;align-items:center;gap:8px;padding:0 13px;
-    background:none;border:none;border-bottom:3px solid transparent;
+    display:inline-flex;align-items:center;gap:8px;padding:6px 12px;
+    background:none;border:none;border-radius:6px;
     font:inherit;font-size:13.5px;font-weight:600;color:var(--ink-soft);cursor:pointer;
-    white-space:nowrap;transition:color .15s ease,border-color .15s ease;
+    white-space:nowrap;transition:color .15s ease,background-color .15s ease;
   }
   .secnav-btn .num{
     width:20px;height:20px;flex:0 0 20px;border-radius:50%;
-    border:1px solid var(--border);font-size:11px;font-weight:700;
-    color:var(--ink-soft);
-    display:inline-flex;align-items:center;justify-content:center;background:#fff;
-    transition:all .15s ease;
+    border:1.5px solid currentColor;font-size:11px;font-weight:700;
+    color:inherit;background:none;
+    display:inline-flex;align-items:center;justify-content:center;
+    transition:background-color .15s ease,border-color .15s ease;
   }
-  .secnav-btn:hover{color:var(--teal);}
-  .secnav-btn:hover .num{border-color:var(--teal);color:var(--teal);}
-  .secnav-btn.is-active{color:var(--teal);border-bottom-color:var(--teal);}
+  .secnav-btn .num svg{display:block;}
+  .secnav-btn:hover{color:var(--ink);}
+  .secnav-btn.is-done{color:var(--teal);}
+  .secnav-btn.is-done .num{background:#e2ebec;border-color:transparent;}
+  .secnav-btn.is-active{color:var(--ink);font-weight:700;background:#f4f6f5;}
+  .secnav-btn.is-active .num{background:var(--teal);border-color:var(--teal);color:#fff;}
   /* the extras' tab appears only while the reader is in the extras */
   .secnav-btn--aside:not(.is-active){display:none;}
-  .secnav-btn.is-active .num{background:var(--teal);border-color:var(--teal);color:#fff;}
 
-  /* ---- sub-step ticks: the active tab's underline, taught to count ----
-     One segment per sub-step. Filled = behind you, tall = where you are,
-     hollow = ahead. The ticks are a scroll-spy over the section page's own
-     continuous scroll — never a stepper: clicking one scrolls the page. */
-  .secnav-btn{position:relative;}
-  .secnav-btn.is-active{border-bottom-color:transparent;}
-  /* the ticks used to hang 3px below the button, over the bar's own border
-     and into the page — they now finish flush with it */
-  .stepseg-row{
-    position:absolute;left:13px;right:13px;bottom:0;
-    display:flex;gap:2px;height:10px;align-items:flex-end;
-  }
-  .stepseg{position:relative;flex:1;height:10px;background:none;border:none;padding:0;cursor:pointer;}
-  .stepseg::before{
-    content:"";position:absolute;left:0;right:0;bottom:0;height:3px;border-radius:1px;
-    background:var(--border);transition:background .15s ease,opacity .15s ease;
-  }
-  .stepseg.passed::before{background:var(--teal);opacity:.45;}
-  .stepseg.cur::before{background:var(--teal);}
-  .stepseg:hover::before{background:var(--teal-dark);}
-  .stepseg::after{
-    content:attr(data-tip);position:absolute;top:calc(100% + 6px);left:50%;
-    transform:translateX(-50%) translateY(-3px);
-    background:var(--teal);color:#fff;font-size:12px;font-weight:600;
-    padding:4px 9px;border-radius:4px;white-space:nowrap;
-    opacity:0;pointer-events:none;z-index:30;
-    transition:opacity .15s ease,transform .15s ease;
-  }
-  .stepseg:hover::after{opacity:1;transform:translateX(-50%) translateY(0);}
-  /* inactive tabs preview their shape (and remembered progress) on hover */
-  .secnav-btn:not(.is-active) .stepseg-row{opacity:0;pointer-events:none;transition:opacity .15s ease;}
-  .secnav-btn:not(.is-active):hover .stepseg-row{opacity:1;pointer-events:auto;}
-  .secnav-btn:not(.is-active) .stepseg:not(.passed):not(.cur)::before{background:var(--border-strong);height:3px;}
 
   /* sections that are not the current page */
   .pages .sec-off{display:none !important;}
@@ -2493,6 +2474,18 @@
     min-height:calc(100vh - var(--chrome-h));
   }
   .ct-stage .mi-figure{width:100%;flex:0 0 auto;}
+  /* ── Metro Industries on the redesign's frame ──────────────────────────
+     The page area under the bar takes a faint tint, the text column sits on
+     it bare, and the visualisation — the figure with its controls, title and
+     key, and whatever a beat adds beneath — sits in one white framed panel.
+     Each step's Viewing badge is closed by a rule before the prose. */
+  .pages:has(#page-export-basket:not(.sec-off)){background:#f9fafb;}
+  #page-export-basket .ct-panel{
+    background:#fff;border:1px solid var(--border);border-radius:10px;padding:28px 32px 24px;
+  }
+  #page-export-basket .ct-step > .geo-badge + *{
+    align-self:stretch;border-top:1px solid var(--border);padding-top:18px;
+  }
   /* the captions stack in one place rather than in sequence: only one shows
      at a time, so the others must not take room under the chart */
   /* One slot above the chart holds whichever header the beat needs, so a
@@ -7008,6 +7001,12 @@
       sec.els.forEach(el => el.classList.toggle("sec-off", k !== i)));
     [...secNavEl.children].forEach((b, k) => {
       b.classList.toggle("is-active", k === i);
+      /* the sections behind the reader wear a check in place of their number */
+      b.classList.toggle("is-done", k < i);
+      const n = b.querySelector(".num");
+      if(n) n.innerHTML = k < i
+        ? '<svg viewBox="0 0 10 8" width="9" height="7" aria-hidden="true"><path d="M1 4.2 3.7 6.8 9 1.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>'
+        : String(k + 1);
       if(k === i) b.setAttribute("aria-current", "page");
       else b.removeAttribute("aria-current");
     });
@@ -7105,91 +7104,6 @@
     const i = sectionIndexOf(id);
     if(i >= 0) showSection(i, false);
     enterToolDirect(id);
-  };
-
-  /* ---- sub-step ticks on the tabs: a scroll-spy, not a stepper ----
-     Each section page stays one continuous scroll; the active tab's
-     underline splits into a segment per sub-step and fills as the reader
-     scrolls past each block. The rail markup is the source of truth for
-     the step lists — sectionDefs undercounts Metro Industries, whose last
-     two steps are in-page anchors rather than page ids. */
-  /* The rail is the source of truth, read live: a section that offers two
-     narratives hides the rail entries of the one not in play, so the ticks
-     follow whichever option the reader is on. The two closing checkpoints
-     are not steps in the argument, so they are left out. */
-  const stepsFor = i => {
-    const sd = sectionDefs[i];
-    const sec = [...document.querySelectorAll(".rail .sec")]
-      .find(x => (x.dataset.sec || "").split(/\s+/).includes(sd.entry));
-    const steps = sec
-      ? [...sec.querySelectorAll(".steps li[data-step]")]
-          .filter(li => !li.hidden && !li.dataset.step.endsWith("-practice") &&
-                        !/^(check|apply)-/.test(li.dataset.step))
-          .map(li => ({ id: li.dataset.step,
-                        title: li.querySelector("button").textContent.trim() }))
-      : [];
-    return steps.length ? steps : [{ id: sd.entry, title: sd.name }];
-  };
-  const SEC_STEPS = sectionDefs.map((sd, i) => stepsFor(i));
-
-  [...secNavEl.children].forEach((btn, i) => {
-    const row = document.createElement("span");
-    row.className = "stepseg-row";
-    btn.appendChild(row);
-  });
-  /* (re)draw one tab's ticks, and only when its step list has changed */
-  function renderTicks(i){
-    const steps = stepsFor(i), row = secNavEl.children[i].querySelector(".stepseg-row");
-    if (!row) return steps;
-    const sig = steps.map(st => st.id).join("|");
-    if (row.dataset.sig === sig) return SEC_STEPS[i];
-    row.dataset.sig = sig;
-    row.textContent = "";
-    steps.forEach(st => {
-      const sg = document.createElement("button");
-      sg.type = "button";
-      sg.className = "stepseg";
-      sg.dataset.tip = st.title;
-      sg.setAttribute("aria-label", st.title);
-      sg.addEventListener("click", e => {
-        e.stopPropagation();          // the tab's own handler would rescroll to top
-        showSection(i, false);
-        goTo(st.id);
-      });
-      row.appendChild(sg);
-    });
-    SEC_STEPS[i] = steps;
-    return steps;
-  }
-  sectionDefs.forEach((sd, i) => renderTicks(i));
-
-  function paintTicks(){
-    if(activeSec < 0) return;
-    /* every tab, not just the active one: a section's option is chosen
-       after this nav is built, and a tab the reader has not opened yet
-       should already show that option's steps */
-    sectionDefs.forEach((sd, i) => renderTicks(i));
-    const steps = SEC_STEPS[activeSec];
-    const segs = secNavEl.children[activeSec].querySelectorAll(".stepseg");
-    // current = the last sub-step whose top has crossed 45% of the scroller
-    const mark = pagesEl.getBoundingClientRect().top + pagesEl.clientHeight * .45;
-    let cur = 0;
-    steps.forEach((st, j) => {
-      const el = (window.ovStepFor && window.ovStepFor(st.id)) ||
-        (window.ctStepFor && window.ctStepFor(st.id)) || document.getElementById(st.id);
-      if(el && el.getBoundingClientRect().width > 0 &&
-         el.getBoundingClientRect().top <= mark) cur = j;
-    });
-    segs.forEach((sg, j) => {
-      sg.classList.toggle("passed", j < cur);
-      sg.classList.toggle("cur", j === cur);
-    });
-  }
-  pagesEl.addEventListener("scroll", () => requestAnimationFrame(paintTicks), {passive:true});
-  const showSectionPlain = showSection;
-  showSection = function(i, toTop){
-    showSectionPlain(i, toTop);
-    paintTicks();                     // sync: the swap must never outrun the ticks
   };
 
   showSection(0, false);
@@ -7525,8 +7439,11 @@
     var wrap = document.createElement("div"); wrap.className = "ct-scrolly";
     var col = document.createElement("div"); col.className = "ct-steps";
     var stage = document.createElement("div"); stage.className = "ct-stage";
-    wrap.appendChild(col); wrap.appendChild(stage);
-    if (fig) stage.appendChild(fig);
+    /* the figure and the slots beneath it share one panel, so a frame can
+       go around the visualisation and nothing else */
+    var panel = document.createElement("div"); panel.className = "ct-panel";
+    wrap.appendChild(col); wrap.appendChild(stage); stage.appendChild(panel);
+    if (fig) panel.appendChild(fig);
     var steps = [], slots = [], shells = [];
     var total = subs.length + 1;
     function addStep(kids, n, headMoved, badged){
@@ -7542,7 +7459,7 @@
           if (badged && k.classList.contains("subsection-header")) st.appendChild(mkBadge(cfg.badge || "metro"));
         } else sl.appendChild(k);
       });
-      col.appendChild(st); stage.appendChild(sl);
+      col.appendChild(st); panel.appendChild(sl);
       steps.push(st); slots.push(sl);
     }
     shells.push({ el: head, kids: headEls, headOf: head });
