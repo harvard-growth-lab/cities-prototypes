@@ -47,14 +47,14 @@
     /* total fixed chrome above the scroll: topbar 72 + section nav 49 */
     /* only the section bar stays put now — the masthead scrolls away,
        so sticky figures measure against the bar's height alone */
-    --chrome-h:57px;
+    --chrome-h:67px;
     /* one horizontal frame for the whole tool: the nav rows, the pages, the
        scrolly and the split layout all start on this edge, so the logo, the
        location menu and the section tabs line up with the content beneath
        them at any width. A page-sized margin — a tenth of the viewport,
        155px at 1440 — rather than a centred 1280 measure, so the reading
        column no longer hangs from the screen's edge. */
-    --frame-pad:clamp(48px, 10.75vw, 160px);
+    --frame-pad:40px;
     /* the landing composes on its own, narrower measure (the hero grid),
        so its masthead hangs from that edge rather than the tool's */
     --landing-pad:max(24px, calc((100vw - 1140px) / 2));
@@ -448,7 +448,7 @@
      rather than a ragged end. */
   .secbar{
     position:sticky;top:0;z-index:30;
-    display:flex;align-items:stretch;height:54px;flex:none;
+    display:flex;align-items:stretch;height:64px;flex:none;
     padding-inline:var(--frame-pad);background:#fff;
     border-bottom:1px solid var(--border);
     box-shadow:0 1px 0 rgba(37,88,98,.04);
@@ -480,7 +480,7 @@
     white-space:nowrap;transition:color .15s ease,background-color .15s ease;
   }
   .secnav-btn .num{
-    width:20px;height:20px;flex:0 0 20px;border-radius:50%;
+    width:22px;height:22px;flex:0 0 22px;border-radius:50%;
     border:1.5px solid currentColor;font-size:11px;font-weight:700;
     color:inherit;background:none;
     display:inline-flex;align-items:center;justify-content:center;
@@ -578,7 +578,7 @@
     max-width:none;width:auto;margin-inline:var(--frame-pad);padding:26px 0 34px;
   }
   /* Metro Industries in its scrolly layout: the checkpoints span the stage */
-  .secpager--wide{max-width:min(1280px, calc(100vw - 48px));}
+  .secpager--wide{max-width:min(1360px, calc(100vw - 80px));}
   .pager-row{display:flex;justify-content:space-between;align-items:center;gap:14px;}
   /* the two closing checkpoints stack, each spanning the full frame:
      the quiz first, the reflection under it */
@@ -1743,7 +1743,7 @@
      the title above it: no box, no ground, hung on the title's own left edge
      and still clickable to open the map. */
   .ct-step .geo-badge{
-    border:0;background:none;padding:0;margin:0 0 14px;
+    border:0;background:none;padding:0;margin:0 0 16px;
     align-self:flex-start;
   }
   .ct-step .geo-badge:hover{background:none;text-decoration:underline;}
@@ -2152,7 +2152,7 @@
   .ct-step .collapsible-content,
   .ov-wrap:not(.ov2) .collapsible-content{padding:0 12px 14px;}
   .ct-step .collapsible-content p,
-  .ov-wrap:not(.ov2) .collapsible-content p{font-size:16px;line-height:1.5;margin:0 0 10px;}
+  .ov-wrap:not(.ov2) .collapsible-content p{font-size:16px;line-height:1.6;margin:0 0 12px;}
   .ct-step .collapsible-content p:last-child,
   .ov-wrap:not(.ov2) .collapsible-content p:last-child{margin-bottom:0;}
   .ct-step .tradable-diagram{max-width:100%;margin:12px 0 2px;}
@@ -2417,16 +2417,16 @@
   .ct-step.is-on{opacity:1;}
   /* the rail's own typographic scale: quiet counter, tight title, the
      Viewing badge as the scale cue, then prose sized to the measure */
-  .ct-eyebrow{font-size:12px;color:var(--ink-soft);margin-bottom:12px;}
+  .ct-eyebrow{font-size:13px;font-weight:600;color:var(--ink-soft);margin-bottom:14px;}
   .ct-step h2,.ct-step h3{
-    font-size:26px;font-weight:700;line-height:1.2;letter-spacing:-.3px;
-    color:var(--ink);margin:0 0 14px;
+    font-size:30px;font-weight:700;line-height:1.16;letter-spacing:-.4px;
+    color:var(--ink);margin:0 0 16px;
   }
   .ct-step .subsection-header{margin:0;}
   .ct-step .geo-badge{margin:0 0 18px;}
   /* size, leading and colour come from the shared paragraph rule above; the
      rail only sets what is its own — the measure and the space beneath */
-  .ct-step .lede{max-width:100%;margin:0 0 10px;}
+  .ct-step .lede{max-width:100%;margin:0 0 14px;font-size:17px;line-height:1.62;}
   /* ── the question column ──────────────────────────────────────────────
      The reading is stated once in a tinted callout, then the three numbers
      it rests on sit in a card below it — icon, label, value on one line. */
@@ -2461,10 +2461,10 @@
   }
   .pg-why:hover::after,.pg-why:focus::after{opacity:1;transform:translate(-50%,0);}
   .ct-step .lede-stat-row{display:block;max-width:100%;}
-  .ct-step .lede-stat-row .lede{margin-block:0 10px;}
+  .ct-step .lede-stat-row .lede{margin-block:0 14px;}
   .ct-step .lede-stat-row .headstat,.ct-step .lede-stat-row .adm-read{margin-top:12px;}
   .ct-step .adm-read svg{max-width:100%;height:auto;}
-  .ct-step .lean-note{width:auto;font-size:14px;line-height:1.55;padding:11px 14px;margin:16px 0 0;}
+  .ct-step .lean-note{width:auto;font-size:15px;line-height:1.6;padding:11px 14px;margin:16px 0 0;}
   /* the stage: chart centered in the viewport, never under the text */
   .ct-stage{position:sticky;top:var(--chrome-h);min-width:0;}
   /* Metro Industries: the figure is the stage, and the step slots below it
@@ -2480,6 +2480,11 @@
      key, and whatever a beat adds beneath — sits in one white framed panel.
      Each step's Viewing badge is closed by a rule before the prose. */
   .pages:has(#page-export-basket:not(.sec-off)){background:#f9fafb;}
+  #page-export-basket .ct-scrolly{
+    grid-template-columns:392px minmax(0,1fr);gap:56px;
+    width:min(1360px, calc(100vw - 80px));
+    margin-inline:calc((100% - min(1360px, 100vw - 80px)) / 2);
+  }
   #page-export-basket .ct-panel{
     background:#fff;border:1px solid var(--border);border-radius:10px;padding:28px 32px 24px;
   }
