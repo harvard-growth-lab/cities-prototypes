@@ -2156,6 +2156,23 @@
   .ct-step .collapsible-content p:last-child,
   .ov-wrap:not(.ov2) .collapsible-content p:last-child{margin-bottom:0;}
   .ct-step .tradable-diagram{max-width:100%;margin:12px 0 2px;}
+  /* Metro Industries: the explainer is a line of teal text after the prose,
+     and its answer opens behind a teal bar — no box, no second rule, so the
+     rule under the Viewing badge stays the only line in the column */
+  #page-export-basket .ct-step .collapsible-info,
+  #page-export-basket .ct-step .collapsible-info:hover,
+  #page-export-basket .ct-step .collapsible-info:has(.collapsible-header.active){
+    margin:4px 0 0;border:0;border-radius:0;background:none;box-shadow:none;
+  }
+  #page-export-basket .ct-step .collapsible-info.is-off{margin:0;}
+  #page-export-basket .ct-step .collapsible-header{padding:6px 0;gap:8px;color:var(--teal);}
+  #page-export-basket .ct-step .collapsible-header:hover .ci-title{text-decoration:underline;text-underline-offset:3px;}
+  #page-export-basket .ct-step .ci-title{flex:0 1 auto;}
+  #page-export-basket .ct-step .ci-mark svg{width:17px;height:17px;}
+  #page-export-basket .ct-step .collapsible-icon{width:15px;height:15px;}
+  #page-export-basket .ct-step .collapsible-content{
+    margin:10px 0 8px;padding:2px 0 2px 14px;border-left:2px solid var(--teal);
+  }
 
   /* Explainer diagram: outside customers -> tradable industry -> income in */
   .tradable-diagram{
