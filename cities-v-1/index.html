@@ -67,13 +67,14 @@
        desk turning prose into a poster. */
     --t-xs:    clamp(0.75rem,   0.729rem + 0.093vw, 0.8125rem);  /* 12 → 13 */
     --t-sm:    clamp(0.8125rem, 0.792rem + 0.093vw, 0.875rem);   /* 13 → 14 */
+    --t-note:  clamp(0.875rem,  0.854rem + 0.093vw, 0.9375rem);  /* 14 → 15 */
     --t-base:  clamp(1rem,      0.979rem + 0.093vw, 1.0625rem);  /* 16 → 17 */
     --t-lede:  clamp(1.0625rem, 1.042rem + 0.093vw, 1.125rem);   /* 17 → 18 */
     --t-title: clamp(1.125rem,  1.042rem + 0.370vw, 1.375rem);   /* 18 → 22 */
     --t-h3:    clamp(1.375rem,  1.25rem  + 0.556vw, 1.75rem);    /* 22 → 28 */
     --t-h2:    clamp(1.375rem,  1.208rem + 0.741vw, 1.875rem);   /* 22 → 30 */
     --t-q:     clamp(1.375rem,  1.188rem + 0.833vw, 1.9375rem);  /* 22 → 31 */
-    --t-hero:  clamp(1.8125rem, 1.208rem + 2.685vw, 3.625rem);   /* 29 → 58 */
+    --t-hero:  clamp(1.8125rem, 0.958rem + 3.796vw, 4.375rem);   /* 29 → 70 */
     /* the measure the section bar and the page grid share */
     --grid-max:1360px;
     /* the landing composes on its own, narrower measure (the hero grid),
@@ -183,11 +184,11 @@
     margin-bottom:14px;
   }
   .landing-hero h1{
-    color:var(--teal);font-size:clamp(44px,4.8vw,70px);font-weight:700;line-height:1.08;
+    color:var(--teal);font-size:var(--t-hero);font-weight:700;line-height:1.08;
     letter-spacing:-.6px;
   }
   .landing-hero p.intro{
-    font-size:18px;line-height:29px;letter-spacing:.1px;color:#000;
+    font-size:var(--t-lede);line-height:1.6;letter-spacing:.1px;color:#000;
     margin:20px 0 0;
   }
   .hero-copy .intro + .intro{margin-top:12px;}
@@ -758,7 +759,7 @@
   #page-overview .lede,
   #page-overview-msa .lede{
     font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
-    font-size:16px;line-height:1.5;font-weight:400;letter-spacing:normal;
+    font-size:var(--t-base);line-height:1.5;font-weight:400;letter-spacing:normal;
     color:#2c2823;
   }
   .viz-big{
@@ -2250,7 +2251,7 @@
   .narrative .nar-label{
     font-size:11px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--ink-soft);
   }
-  .narrative p{font-size:16px;line-height:27px;letter-spacing:.1px;color:#000;}
+  .narrative p{font-size:var(--t-base);line-height:1.65;letter-spacing:.1px;color:#000;}
   .takeaway{
     border-left:3px solid var(--orange);background:var(--orange-tint);
     border-radius:0 8px 8px 0;padding:14px 16px;
@@ -2508,7 +2509,7 @@
   .ct-step .lede-stat-row .lede{margin-block:0 14px;}
   .ct-step .lede-stat-row .headstat,.ct-step .lede-stat-row .adm-read{margin-top:12px;}
   .ct-step .adm-read svg{max-width:100%;height:auto;}
-  .ct-step .lean-note{width:auto;font-size:15px;line-height:1.6;padding:11px 14px;margin:16px 0 0;}
+  .ct-step .lean-note{width:auto;font-size:var(--t-note);line-height:1.6;padding:11px 14px;margin:16px 0 0;}
   /* the stage: chart centered in the viewport, never under the text */
   .ct-stage{position:sticky;top:var(--chrome-h);min-width:0;}
   /* Metro Industries: the figure is the stage, and the step slots below it
@@ -3101,14 +3102,16 @@
 
   /* keep the non-scrolling landing inside one viewport on shorter screens */
   @media (max-height: 960px){
-    .landing-hero h1{font-size:var(--t-hero);}
+    /* a short window is its own axis: the headline gives back the height it
+       is costing the panel under it, on the same rem + vw footing */
+    .landing-hero h1{font-size:clamp(2.5rem, 2.083rem + 1.852vw, 3.75rem);}
     .landing-hero p.intro{margin:16px 0 0;}
     .jump-quiet{margin-top:26px;}
   }
   @media (max-height: 820px){
     /* never hide the copy — tighten the type instead */
     .jump-quiet{margin-top:20px;}
-    .landing-hero h1{font-size:clamp(36px,3.8vw,52px);}
+    .landing-hero h1{font-size:clamp(2.25rem, 1.917rem + 1.481vw, 3.25rem);}
     .diagnose-panel{padding:18px 20px;}
   }
 
@@ -3397,6 +3400,10 @@
     gap:10px;text-align:left;font-family:inherit;padding:9px 30px 9px 12px;
   }
   .citypick-txt{display:flex;flex-direction:column;gap:2px;font-size:14.5px;font-weight:600;color:var(--ink);}
+  /* the country is its own span now, so the bar can stand it down. Off the
+     bar the two belong on one line: as flex items they would stack, and the
+     country would read as a sentence beginning with a comma. */
+  .citypick:not(.citypick--bar) .citypick-txt{display:block;}
   .citypick-sub{font-size:12px;font-weight:600;}
   .citypick-sub.down{color:var(--fall);}
   .citypick-sub.up{color:var(--rise);}
@@ -4240,7 +4247,6 @@
       grid-template-columns:minmax(0,1fr) minmax(340px,420px);
       gap:40px;
     }
-    .landing-hero p.intro{font-size:17px;line-height:27px;}
     .toolbar-links{gap:20px;}
     .landing-header .logo-btn{width:148px;flex:0 0 148px;}
 
@@ -4334,7 +4340,7 @@
 
     .landing-hero{padding:22px 16px 36px;}
     .landing-hero h1{letter-spacing:-.3px;}
-    .landing-hero p.intro{font-size:16px;line-height:25px;margin-top:16px;}
+    .landing-hero p.intro{margin-top:16px;}
     /* EDITORIAL, and the only content this spec hides: the second hero
        paragraph is placeholder lorem and costs ~220px of scroll between the
        headline and the button the page exists for. Delete this one rule if
