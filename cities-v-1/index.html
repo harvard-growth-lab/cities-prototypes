@@ -453,8 +453,12 @@
     border-bottom:1px solid var(--border);
     box-shadow:0 1px 0 rgba(37,88,98,.04);
   }
+  /* the bar shares the page's grid: the location chip sits over the text
+     column, and the section names span the visualisation panel from its
+     left edge to its right */
   .secbar .citypick{flex:none;align-self:center;}
-  .secbar .citypick--bar{min-width:0;}
+  .secbar .citypick--bar{width:392px;min-width:0;}
+  .secbar .citypick--bar .citypick-btn{width:auto;display:inline-flex;}
   .secbar .citypick--bar .citypick-btn{height:34px;font-size:13.5px;}
   /* the location chip: the admin city's buildings mark on the left, the
      chevron on the right, a quiet border and 4px corners */
@@ -467,9 +471,8 @@
   .secbar .citypick--bar .citypick-btn:hover,
   .secbar .citypick--bar .citypick-btn:focus{border-color:var(--teal);}
   .secnav{
-    display:flex;gap:4px;align-items:center;height:100%;flex:0 1 auto;
-    min-width:0;background:none;border:0;
-    margin-left:18px;padding-left:18px;border-left:1px solid var(--border);
+    display:flex;gap:4px;align-items:center;justify-content:space-between;
+    height:100%;flex:1 1 auto;min-width:0;background:none;border:0;margin-left:56px;
   }
   /* the section names as chips: a check where the reader has been, the
      current one lifted on a tint, the ones ahead numbered and quiet */
@@ -2408,8 +2411,8 @@
   /* pinned to the bar's own corner rather than queued after the tabs, so it
      can never crowd the last of them however many sections there are */
   .secbar .ct-optwrap{
-    position:absolute;right:14px;top:50%;transform:translateY(-50%);
-    margin:0;padding:0;display:flex;align-items:center;
+    position:static;transform:none;flex:none;align-self:center;
+    margin:0 0 0 14px;padding:0;display:flex;align-items:center;
   }
   /* a study control, not a feature: two words of the smallest legible size,
      no pill, no label, no chrome to spend the bar's space on */
