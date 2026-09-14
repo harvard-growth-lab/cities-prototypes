@@ -55,6 +55,25 @@
        155px at 1440 — rather than a centred 1280 measure, so the reading
        column no longer hangs from the screen's edge. */
     --frame-pad:40px;
+    /* ── the type scale ──────────────────────────────────────────────
+       One size per role, each a clamp that grows with the window between
+       360 and 1440 and then stops. The middle term is rem + vw, never vw
+       alone: a bare vw pins the text to the viewport and ignores both
+       browser zoom and the size a reader has set for themselves, which
+       is the one setting a person with low vision has already used
+       before they arrive. The floors are the readable minimums — body
+       text never goes under 16px, where iOS starts zooming form fields
+       and most readers start squinting — and the ceilings stop a wide
+       desk turning prose into a poster. */
+    --t-xs:    clamp(0.75rem,   0.729rem + 0.093vw, 0.8125rem);  /* 12 → 13 */
+    --t-sm:    clamp(0.8125rem, 0.792rem + 0.093vw, 0.875rem);   /* 13 → 14 */
+    --t-base:  clamp(1rem,      0.979rem + 0.093vw, 1.0625rem);  /* 16 → 17 */
+    --t-lede:  clamp(1.0625rem, 1.042rem + 0.093vw, 1.125rem);   /* 17 → 18 */
+    --t-title: clamp(1.125rem,  1.042rem + 0.370vw, 1.375rem);   /* 18 → 22 */
+    --t-h3:    clamp(1.375rem,  1.25rem  + 0.556vw, 1.75rem);    /* 22 → 28 */
+    --t-h2:    clamp(1.375rem,  1.208rem + 0.741vw, 1.875rem);   /* 22 → 30 */
+    --t-q:     clamp(1.375rem,  1.188rem + 0.833vw, 1.9375rem);  /* 22 → 31 */
+    --t-hero:  clamp(1.8125rem, 1.208rem + 2.685vw, 3.625rem);   /* 29 → 58 */
     /* the measure the section bar and the page grid share */
     --grid-max:1360px;
     /* the landing composes on its own, narrower measure (the hero grid),
@@ -513,7 +532,7 @@
     padding:26px 72px 34px 56px;border-top:1px solid var(--border);background:#fff;
   }
   .pager-btn{
-    padding:10px 18px;font:inherit;font-size:14px;font-weight:600;color:var(--teal);
+    padding:10px 18px;font:inherit;font-size:var(--t-sm);font-weight:600;color:var(--teal);
     background:#fff;border:1px solid var(--teal);border-radius:4px;cursor:pointer;
     transition:background .15s ease,color .15s ease;
   }
@@ -540,7 +559,7 @@
   }
   .pgr-seg{width:26px;height:2px;background:#dde3e5;flex:none;}
   .pgr-seg.is-past{background:var(--teal);}
-  .pgr-cap{font-size:12px;color:var(--ink-soft);}
+  .pgr-cap{font-size:var(--t-xs);color:var(--ink-soft);}
   .pgr-cap b{color:var(--ink);font-weight:600;}
 
   /* The nav takes 49px out of every viewport-height block, so the overview
@@ -728,7 +747,7 @@
     position:relative;
   }
   .lede{
-    font-size:18px;line-height:29px;color:#000;max-width:760px;margin:16px 0 8px;
+    font-size:var(--t-lede);line-height:1.6;color:#000;max-width:760px;margin:16px 0 8px;
   }
   /* the overview's paragraph is set the way the reference build sets its
      body paragraphs — Inter, regular weight, its warm ink rather than pure
@@ -1116,7 +1135,7 @@
   .chg-val.bad{color:var(--fall);}
   .page-head{margin-bottom:6px;}
   .page-head .eyebrow{display:block;margin-bottom:6px;}
-  .page-head h2{font-size:28px;font-weight:600;letter-spacing:-.3px;}
+  .page-head h2{font-size:var(--t-h3);font-weight:600;letter-spacing:-.3px;}
 
   .viz-controls{
     display:flex;align-items:center;gap:20px;margin:20px 0 18px;flex-wrap:wrap;max-width:1200px;
@@ -1231,7 +1250,7 @@
   /* Match the section headings elsewhere (.page-head h2) — colour is inherited
      so it picks up the same ink, rather than a hardcoded #000. */
   .export-subsection h3{
-    font-size:28px;font-weight:600;letter-spacing:-.3px;margin:0;
+    font-size:var(--t-h3);font-weight:600;letter-spacing:-.3px;margin:0;
   }
   .replay-btn{
     padding:6px 12px;font-size:12px;font-weight:600;color:var(--teal);background:none;border:1px solid var(--teal);border-radius:4px;cursor:pointer;transition:all 0.2s ease;
@@ -2096,7 +2115,7 @@
   .collapsible-header{
     width:100%;padding:14px 16px;background:none;border:none;cursor:pointer;
     display:flex;align-items:center;gap:12px;text-align:left;
-    font-family:inherit;font-size:18px;line-height:26px;font-weight:400;
+    font-family:inherit;font-size:var(--t-lede);line-height:1.45;font-weight:400;
     color:var(--ink);
   }
 
@@ -2121,7 +2140,7 @@
   }
   .collapsible-content.show{display:block;}
   .collapsible-content p{
-    font-size:18px;line-height:29px;color:var(--ink);margin:0 0 12px;
+    font-size:var(--t-lede);line-height:1.6;color:var(--ink);margin:0 0 12px;
   }
   .collapsible-content p:last-child{margin-bottom:0;}
 
@@ -2147,7 +2166,7 @@
   }
   .ct-step .collapsible-header,
   .ov-wrap:not(.ov2) .collapsible-header{
-    padding:10px 12px;gap:10px;font-size:16px;line-height:1.35;font-weight:600;
+    padding:10px 12px;gap:10px;font-size:var(--t-base);line-height:1.35;font-weight:600;
   }
   .ct-step .ci-mark,
   .ov-wrap:not(.ov2) .ci-mark{
@@ -2160,7 +2179,7 @@
   .ct-step .collapsible-content,
   .ov-wrap:not(.ov2) .collapsible-content{padding:0 12px 14px;}
   .ct-step .collapsible-content p,
-  .ov-wrap:not(.ov2) .collapsible-content p{font-size:16px;line-height:1.6;margin:0 0 12px;}
+  .ov-wrap:not(.ov2) .collapsible-content p{font-size:var(--t-base);line-height:1.6;margin:0 0 12px;}
   .ct-step .collapsible-content p:last-child,
   .ov-wrap:not(.ov2) .collapsible-content p:last-child{margin-bottom:0;}
   .ct-step .tradable-diagram{max-width:100%;margin:12px 0 2px;}
@@ -2442,16 +2461,16 @@
   .ct-step.is-on{opacity:1;}
   /* the rail's own typographic scale: quiet counter, tight title, the
      Viewing badge as the scale cue, then prose sized to the measure */
-  .ct-eyebrow{font-size:13px;font-weight:600;color:var(--ink-soft);margin-bottom:14px;}
+  .ct-eyebrow{font-size:var(--t-xs);font-weight:600;color:var(--ink-soft);margin-bottom:14px;}
   .ct-step h2,.ct-step h3{
-    font-size:30px;font-weight:700;line-height:1.16;letter-spacing:-.4px;
+    font-size:var(--t-h2);font-weight:700;line-height:1.16;letter-spacing:-.4px;
     color:var(--ink);margin:0 0 16px;
   }
   .ct-step .subsection-header{margin:0;}
   .ct-step .geo-badge{margin:0 0 18px;}
   /* size, leading and colour come from the shared paragraph rule above; the
      rail only sets what is its own — the measure and the space beneath */
-  .ct-step .lede{max-width:100%;margin:0 0 14px;font-size:17px;line-height:1.62;}
+  .ct-step .lede{max-width:100%;margin:0 0 14px;font-size:var(--t-lede);line-height:1.62;}
   /* ── the question column ──────────────────────────────────────────────
      The reading is stated once in a tinted callout, then the three numbers
      it rests on sit in a card below it — icon, label, value on one line. */
@@ -3082,7 +3101,7 @@
 
   /* keep the non-scrolling landing inside one viewport on shorter screens */
   @media (max-height: 960px){
-    .landing-hero h1{font-size:clamp(40px,4.2vw,60px);}
+    .landing-hero h1{font-size:var(--t-hero);}
     .landing-hero p.intro{margin:16px 0 0;}
     .jump-quiet{margin-top:26px;}
   }
@@ -3127,7 +3146,7 @@
   }
   .intro-slide{flex:0 0 100%;display:flex;justify-content:center;padding:0 12px;}
   .intro-card{max-width:760px;width:100%;}
-  .intro-title{font-size:22px;font-weight:600;color:var(--teal);margin-bottom:18px;}
+  .intro-title{font-size:var(--t-title);font-weight:600;color:var(--teal);margin-bottom:18px;}
   .intro-progress{display:flex;gap:6px;max-width:300px;margin-bottom:26px;}
   .intro-progress .seg{height:6px;flex:1;border-radius:999px;background:#dcebdc;}
   .intro-progress .seg.fill{background:#2e7d33;}
@@ -3143,7 +3162,7 @@
   .intro-nav.prev{left:max(14px, calc(50% - 455px));}
   .intro-nav.next{right:max(14px, calc(50% - 455px));}
 
-  .intro-q{font-size:31px;font-weight:600;line-height:1.28;margin:14px 0 30px;color:var(--ink);}
+  .intro-q{font-size:var(--t-q);font-weight:600;line-height:1.28;margin:14px 0 30px;color:var(--ink);}
   .intro-opts{display:flex;flex-direction:column;gap:14px;}
   .intro-opts button{
     display:flex;align-items:center;gap:16px;text-align:left;
@@ -3568,8 +3587,7 @@
       min-height:76vh;justify-content:flex-end;padding-bottom:5vh;
     }
     :is(#page-export-basket, #page-admin-mix) .ct-step h2,
-    :is(#page-export-basket, #page-admin-mix) .ct-step h3{font-size:26px;margin-bottom:12px;}
-    :is(#page-export-basket, #page-admin-mix) .ct-step .lede{font-size:17px;}
+    :is(#page-export-basket, #page-admin-mix) .ct-step h3{margin-bottom:12px;}
 
     /* the figure's furniture, re-measured: both slots hold absolutely
        positioned children, so the reserved height has to be restated
@@ -3657,9 +3675,7 @@
 
     :is(#page-export-basket, #page-admin-mix) .ct-panel{padding:8px 4px 6px;}
     :is(#page-export-basket, #page-admin-mix) .ct-step{min-height:70vh;padding-bottom:4vh;}
-    :is(#page-export-basket, #page-admin-mix) .ct-step h2,
-    :is(#page-export-basket, #page-admin-mix) .ct-step h3{font-size:22px;}
-    .ct-eyebrow{font-size:12px;margin-bottom:10px;}
+    .ct-eyebrow{margin-bottom:10px;}
 
     /* the type inside the box, second tier. At 390px the figure is 382px
        wide, a 0.434 render of the 880 box, so holding 9px on screen wants
@@ -3738,8 +3754,7 @@
 
     .secpager{padding:18px var(--frame-pad) 24px;gap:14px;}
     .pgr-seg{width:14px;}
-    .pgr-cap{font-size:11.5px;}
-    .pager-btn{padding:9px 10px;font-size:13px;}
+    .pager-btn{padding:9px 10px;}
     .journey-overlay{padding:0;}
     .journey-window,.chat-window{width:100%;max-width:none;height:100%;max-height:100%;border-radius:0;}
     .geo-window{width:100%;}
@@ -3899,7 +3914,7 @@
       height:40svh;
       min-height:170px;max-height:320px;
     }
-    .ov-wrap .page-head h2{font-size:23px;letter-spacing:-.2px;}
+    .ov-wrap .page-head h2{letter-spacing:-.2px;}
     .ov-wrap .page-head{gap:8px;}
 
     /* the three numbers keep their two-line form and close up */
@@ -4004,8 +4019,6 @@
     @media (max-width:899px){
       .tool-body .page{padding:36px 28px 44px;}
       .secpager{padding:22px 28px 30px;}
-      .page-head h2,
-      .export-subsection h3{font-size:26px;}
 
       /* the lede and its explainer stop being a column pair */
       .lede-row{grid-template-columns:minmax(0,1fr);gap:14px 0;}
@@ -4064,16 +4077,12 @@
 
       .tool-body .page{padding:28px 14px 40px;}
       .secpager{padding:18px 14px 26px;}
-      .page-head h2{font-size:23px;}
       .export-subsection{margin-top:28px;}
-      .export-subsection h3{font-size:22px;}
-      .lede{font-size:17px;line-height:27px;}
       .lede-row{margin:12px 0;}
-      .collapsible-header{font-size:16px;padding:12px 14px;gap:10px;}
+      .collapsible-header{padding:12px 14px;gap:10px;}
       .ci-mark{width:26px;height:26px;}
       .collapsible-content{padding:0 14px 14px;}
       .lede-row > .collapsible-content{padding:14px;border-radius:4px;}
-      .collapsible-content p{font-size:16px;line-height:26px;}
 
       /* ---- the figures take the screen back ----
          The page keeps a 14px gutter for prose; each chart steps out of it,
@@ -4182,8 +4191,8 @@
       .pgr-side{flex:1 1 auto;}
       .pgr-stop{width:20px;height:20px;font-size:10px;}
       .pgr-seg{width:14px;}
-      .pgr-cap{font-size:11.5px;text-align:center;}
-      .pager-btn{font-size:13px;padding:9px 12px;}
+      .pgr-cap{text-align:center;}
+      .pager-btn{padding:9px 12px;}
 
       /* the ring stays beside the verdict — that pairing is the point —
          at a size that leaves the sentence a line it can hold */
@@ -4231,7 +4240,6 @@
       grid-template-columns:minmax(0,1fr) minmax(340px,420px);
       gap:40px;
     }
-    .landing-hero h1{font-size:clamp(34px,3.6vw,46px);}
     .landing-hero p.intro{font-size:17px;line-height:27px;}
     .toolbar-links{gap:20px;}
     .landing-header .logo-btn{width:148px;flex:0 0 148px;}
@@ -4242,7 +4250,6 @@
     .tool-body .intro-page{padding-inline:72px;}
     .intro-nav.prev{left:14px;}
     .intro-nav.next{right:14px;}
-    .intro-q{font-size:27px;}
   }
 
   /* ---------- 600–899: STACKED ---------- */
@@ -4273,7 +4280,7 @@
     }
     .hero-copy{display:contents;}
     .landing-kicker{order:1;}
-    .landing-hero h1{order:2;font-size:clamp(32px,5vw,42px);}
+    .landing-hero h1{order:2;}
     .hero-copy .intro{order:3;}
     .diagnose-panel{order:4;margin-top:26px;box-shadow:0 10px 30px rgba(37,88,98,.14);}
     .jump-quiet{order:5;margin-top:30px;}
@@ -4291,8 +4298,8 @@
     .intro-nav.next{right:calc(50% - 58px);left:auto;}
     .intro-skip{position:static;transform:none;margin-top:26px;}
 
-    .intro-q{font-size:25px;line-height:1.3;margin:12px 0 24px;}
-    .intro-title{font-size:20px;margin-bottom:14px;}
+    .intro-q{line-height:1.3;margin:12px 0 24px;}
+    .intro-title{margin-bottom:14px;}
     .intro-opts button{font-size:16px;padding:14px 16px;gap:13px;}
     .intro-fb{font-size:15px;line-height:24px;margin-top:18px;}
 
@@ -4326,7 +4333,7 @@
     }
 
     .landing-hero{padding:22px 16px 36px;}
-    .landing-hero h1{font-size:clamp(29px,7.4vw,36px);letter-spacing:-.3px;}
+    .landing-hero h1{letter-spacing:-.3px;}
     .landing-hero p.intro{font-size:16px;line-height:25px;margin-top:16px;}
     /* EDITORIAL, and the only content this spec hides: the second hero
        paragraph is placeholder lorem and costs ~220px of scroll between the
@@ -4359,12 +4366,11 @@
     .intro-slide{padding:0;}               /* every pixel goes to the card */
     .intro-card{max-width:none;}
     .intro-progress{max-width:220px;margin-bottom:20px;}
-    .intro-title{font-size:18px;}
     /* !important because q4 and q6 carry style="font-size:26px" inline on
        their .intro-q and inline styles outrank media queries. The cleaner fix
        is to delete those two attributes (markup 3670, 3741) and drop the
        !important — do that if the markup is in play. */
-    .intro-q{font-size:22px;line-height:1.32;margin:10px 0 20px;}
+    .intro-q{line-height:1.32;margin:10px 0 20px;}
     .intro-opts{gap:11px;}
     .intro-opts button{font-size:15.5px;line-height:22px;padding:13px 14px;gap:11px;}
     .opt-letter{width:28px;height:28px;flex:0 0 28px;font-size:13.5px;}
