@@ -56,20 +56,24 @@
        column no longer hangs from the screen's edge. */
     --frame-pad:40px;
     /* ── the type scale ──────────────────────────────────────────────
-       One size per role, each a clamp that grows with the window between
-       360 and 1440 and then stops. The middle term is rem + vw, never vw
-       alone: a bare vw pins the text to the viewport and ignores both
-       browser zoom and the size a reader has set for themselves, which
-       is the one setting a person with low vision has already used
-       before they arrive. The floors are the readable minimums — body
-       text never goes under 16px, where iOS starts zooming form fields
-       and most readers start squinting — and the ceilings stop a wide
-       desk turning prose into a poster. */
+       One size per role, each a clamp whose middle term is rem + vw,
+       never vw alone: a bare vw pins the text to the viewport and ignores
+       both browser zoom and the size a reader has set for themselves
+       (W3C failure F94). Every max stays under 2.5× its min, which is the
+       closed-form condition for passing 1.4.4 at any zoom.
+
+       The body follows what sans reading text does on the sites that do
+       it well — USWDS, Observable, Our World in Data, the BBC, the
+       Guardian: 16px on a phone, 17px on a laptop, and no lower than 16
+       anywhere, since iOS zooms form fields under it. The ramp is
+       deliberately long and shallow: flat at 16 through about 580px,
+       16.4 at a 970px window, 17.0 on a 14-inch laptop at 1512, easing to
+       17.5 on a 1920 monitor. Body carries none of the drama; the
+       headings do, on a steeper ramp that stops at 1440. */
     --t-xs:    clamp(0.75rem,   0.729rem + 0.093vw, 0.8125rem);  /* 12 → 13 */
     --t-sm:    clamp(0.8125rem, 0.792rem + 0.093vw, 0.875rem);   /* 13 → 14 */
     --t-note:  clamp(0.875rem,  0.854rem + 0.093vw, 0.9375rem);  /* 14 → 15 */
-    --t-base:  clamp(1rem,      0.979rem + 0.093vw, 1.0625rem);  /* 16 → 17 */
-    --t-lede:  clamp(1.0625rem, 1.042rem + 0.093vw, 1.125rem);   /* 17 → 18 */
+    --t-base:  clamp(1rem,      0.96rem  + 0.110vw, 1.125rem);   /* 16 → 17 at 1512 → 17.5 at 1920 */
     --t-title: clamp(1.125rem,  1.042rem + 0.370vw, 1.375rem);   /* 18 → 22 */
     --t-h3:    clamp(1.375rem,  1.25rem  + 0.556vw, 1.75rem);    /* 22 → 28 */
     --t-h2:    clamp(1.375rem,  1.208rem + 0.741vw, 1.875rem);   /* 22 → 30 */
@@ -188,7 +192,7 @@
     letter-spacing:-.6px;
   }
   .landing-hero p.intro{
-    font-size:var(--t-lede);line-height:1.6;letter-spacing:.1px;color:#000;
+    font-size:var(--t-base);line-height:1.6;letter-spacing:.1px;color:#000;
     margin:20px 0 0;
   }
   .hero-copy .intro + .intro{margin-top:12px;}
@@ -748,7 +752,7 @@
     position:relative;
   }
   .lede{
-    font-size:var(--t-lede);line-height:1.6;color:#000;max-width:760px;margin:16px 0 8px;
+    font-size:var(--t-base);line-height:1.6;color:#000;max-width:760px;margin:16px 0 8px;
   }
   /* the overview's paragraph is set the way the reference build sets its
      body paragraphs — Inter, regular weight, its warm ink rather than pure
@@ -2116,7 +2120,7 @@
   .collapsible-header{
     width:100%;padding:14px 16px;background:none;border:none;cursor:pointer;
     display:flex;align-items:center;gap:12px;text-align:left;
-    font-family:inherit;font-size:var(--t-lede);line-height:1.45;font-weight:400;
+    font-family:inherit;font-size:var(--t-base);line-height:1.45;font-weight:400;
     color:var(--ink);
   }
 
@@ -2141,7 +2145,7 @@
   }
   .collapsible-content.show{display:block;}
   .collapsible-content p{
-    font-size:var(--t-lede);line-height:1.6;color:var(--ink);margin:0 0 12px;
+    font-size:var(--t-base);line-height:1.6;color:var(--ink);margin:0 0 12px;
   }
   .collapsible-content p:last-child{margin-bottom:0;}
 
@@ -2471,7 +2475,7 @@
   .ct-step .geo-badge{margin:0 0 18px;}
   /* size, leading and colour come from the shared paragraph rule above; the
      rail only sets what is its own — the measure and the space beneath */
-  .ct-step .lede{max-width:100%;margin:0 0 14px;font-size:var(--t-lede);line-height:1.62;}
+  .ct-step .lede{max-width:100%;margin:0 0 14px;font-size:var(--t-base);line-height:1.62;}
   /* ── the question column ──────────────────────────────────────────────
      The reading is stated once in a tinted callout, then the three numbers
      it rests on sit in a card below it — icon, label, value on one line. */
