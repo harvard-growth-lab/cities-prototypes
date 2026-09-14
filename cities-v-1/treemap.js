@@ -7,90 +7,124 @@
                                 Tradable (left, still sector-grouped/coloured)
                                 Non-tradable (right, greyed)
 
-   Both use a 880x550 viewBox so they share the prototype's proportions.
+   Both use a 1000x480 viewBox so they share the prototype's proportions.
    ========================================================================= */
 (function(){
   "use strict";
 
-  const WIDTH  = 880;
-  const HEIGHT = 550;
+  const WIDTH  = 880;    /* the figure measure: just proud of the 760 text measure, fonts 1:1 */
+  const HEIGHT = 450;    /* wide-and-short (2:1) so the full map fits one view */
   const GREY   = "#9ca3af";
 
   /* "Color by" modes. Complexity and change are dummy values for the prototype,
      but held stable per industry so a cell keeps its shade across replays. */
+  /* One seeded PRNG for every generated data value, so each figure reads
+     the same on every load. Visual-only jitter may stay random. */
+  let _prng = 20260826;
+  function srand(){
+    _prng = (_prng * 1664525 + 1013904223) >>> 0;
+    return _prng / 4294967296;
+  }
+
   const SECTOR     = "Sector";
   const COMPLEXITY = "Product complexity";
-  const CHANGE     = "Change";
+  const TRADABILITY = "Tradability";
 
-  const complexityPalette = ["#d38b52","#e8c39b","#d3e5df","#6fab97","#2f7d6a"];
+  /* sampled from the reference build's complexity scale (cities.taimur.sh),
+     which runs a diverging orange -> pale -> teal from least to most complex.
+     The legend's gradient under the figure uses the same five stops. */
+  const complexityPalette = ["#e4a368","#efc9a5","#f8e7d7","#89ccc7","#029287"];
   const complexityByName = new Map();
 
-  /* Change 2014 -> 2024. Deliberately a different axis from the complexity
-     ramp (terracotta -> green): this one runs on the theme's own two accent
-     tokens, --orange (shrinking) through a light neutral to --teal (growing).
-     Read from :root so the scale tracks the theme rather than duplicating it.
-     "New" industries have no 2014 baseline, so they have no growth rate to
-     place on the ramp and take an off-scale swatch instead. */
-  const CHANGE_MID = "#f4f1ee";
-  const CHANGE_NEW = "#7a67a3";
-
+  /* Tradability 0 -> 1: how much of an industry's output is sold outside
+     the region. A diverging ramp — russet (locally consumed) through a
+     neutral gray to the theme teal (widely traded) — because the midpoint
+     means "neither". Poles are lightness-matched (OKLab L .45/.43) and sit
+     on opposite sides of the blue–yellow axis, so the direction survives
+     red-green colourblindness (poles ΔE 9.9 protan, target ≥8); the russet
+     pole keeps ΔE 24 from the complexity ramp's terracotta. */
   function token(name, fallback){
     const v = getComputedStyle(document.documentElement)
       .getPropertyValue(name).trim();
     return v || fallback;
   }
 
-  let _changeScale = null;
-  function changeScale(v){
-    if (!_changeScale) {
-      _changeScale = d3.scaleLinear()
-        .domain([-0.6, 0, 0.9])
-        .range([token("--orange", "#e76565"), CHANGE_MID, token("--teal", "#255862")])
+  let _tradScale = null;
+  function tradabilityScale(v){
+    if (!_tradScale) {
+      _tradScale = d3.scaleLinear()
+        .domain([0, 0.25, 0.5, 0.75, 1])
+        .range(["#7f451e", "#b97f4e", "#efeeec",
+                "#67929f", token("--teal", "#255862")])
         .interpolate(d3.interpolateLab)
         .clamp(true);
     }
-    return _changeScale(v);
+    return _tradScale(v);
   }
 
-  /* Dummy 2014->2024 growth per industry; null means "new since 2014". */
-  const growthByName = new Map();
+  /* Dummy tradability per industry: a sector prior (manufacturing travels,
+     restaurants don't) plus a stable per-name spread, so a cell keeps its
+     shade across replays and the ranked views agree with the ramp. */
+  const TRADABILITY_PRIOR = {
+    "Construction": 0.15, "Education & Health": 0.45,
+    "Financial Activities": 0.62, "Leisure & Hospitality": 0.22,
+    "Manufacturing": 0.78, "Natural Resources": 0.70,
+    "Other": 0.35, "Professional & Business": 0.60,
+    "Trade & Transportation": 0.50
+  };
+  /* Dummy admin share of each sector's metro jobs — downtown-weighted
+     sectors run high, land-hungry ones low. One function to swap for real
+     place-level (2-digit) employment when it arrives. */
+  const ADMIN_SHARE = {
+    /* jobs-weighted over the drawn sectors these come to 24% overall —
+       the same 24% the key graphic, tooltips and quiz state */
+    "Construction": 0.13, "Education & Health": 0.32,
+    "Financial Activities": 0.38, "Leisure & Hospitality": 0.25,
+    "Manufacturing": 0.08, "Natural Resources": 0.03,
+    "Other": 0.19, "Professional & Business": 0.34,
+    "Trade & Transportation": 0.16
+  };
+  const tradByName = new Map();
+  let _sectorOf = null;
+  function tradabilityOf(name){
+    if(!tradByName.has(name)){
+      if (!_sectorOf) _sectorOf = new Map(rawData.map(r => [r.name, r.sector]));
+      const prior = TRADABILITY_PRIOR[_sectorOf.get(name)] ?? 0.35;
+      let h = 2166136261;
+      for (const c of name){ h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); }
+      const jitter = ((h >>> 0) / 4294967296 - 0.5) * 0.5;
+      tradByName.set(name, Math.min(0.98, Math.max(0.02, prior + jitter)));
+    }
+    return tradByName.get(name);
+  }
 
-  const colorMode  = { exportTreemapSvg:SECTOR, tradableAnimatedSvg:SECTOR };
+  const colorMode  = { exportTreemapSvg:SECTOR, tradableAnimatedSvg:SECTOR,
+                       complexityTreemapSvg:COMPLEXITY };
 
   /* Which cells are currently on the grey (non-tradable) side, per svg, so a
      later "Color by" change can recolour without losing the split. */
   const splitState = { exportTreemapSvg:null, tradableAnimatedSvg:null };
 
   function complexityColor(name){
+    /* seeded, not random: the complexity map and its headline share must
+       read the same on every load */
     if(!complexityByName.has(name)){
-      complexityByName.set(name,
-        complexityPalette[Math.floor(Math.random() * complexityPalette.length)]);
+      let h = 0;
+      for (const c of name) h = (h * 31 + c.charCodeAt(0)) % 997;
+      complexityByName.set(name, complexityPalette[h % complexityPalette.length]);
     }
     return complexityByName.get(name);
   }
 
-  function growthOf(name){
-    if(!growthByName.has(name)){
-      // ~8% are new since 2014 (no baseline); the rest spread across the ramp.
-      growthByName.set(name,
-        Math.random() < 0.08 ? null : (Math.random() * 1.5 - 0.6));
-    }
-    return growthByName.get(name);
-  }
+  function tradabilityColor(name){ return tradabilityScale(tradabilityOf(name)); }
 
-  function changeColor(name){
-    const g = growthOf(name);
-    return g === null ? CHANGE_NEW : changeScale(g);
-  }
-
-  /* Fill for one industry cell. Non-tradable cells keep their own colour and
-     are dimmed with opacity instead of repainted grey — grey threw away the
-     sector reading, and the point is that these industries are still there,
-     just not part of the export base. */
-  function cellFill(svgId, d){
+  /* Fill for one industry cell. Non-tradable cells stay grey in every mode —
+     grey encodes "non-tradable", not a sector. */
+  function cellFill(svgId, d, grey){
+    if (grey) return GREY;
     const mode = colorMode[svgId];
     if (mode === COMPLEXITY) return complexityColor(d.data.name);
-    if (mode === CHANGE)     return changeColor(d.data.name);
+    if (mode === TRADABILITY) return tradabilityColor(d.data.name);
     return sectorColors[d.parent.data.name];
   }
 
@@ -105,18 +139,6 @@
     "Professional & Business": "#b94a44",
     "Trade & Transportation": "#e0938a"
   };
-
-  /* Non-tradable at sector grain: these serve the people already here, so they
-     scale with the city rather than setting how large it can get. Dummy split —
-     it counts education & health as local, which understates hospital and
-     university towns. */
-  const LOCAL_SECTORS = new Set([
-    "Construction", "Education & Health", "Leisure & Hospitality",
-    "Trade & Transportation", "Other"
-  ]);
-  const DIM = 0.22;
-  const HOLD = 900;   // beat on the full basket before the non-tradables recede
-  const FADE = 900;
 
   const rawData = [
     {name: "Oilseed and Grain Farming", employ: 49.09, sector: "Natural Resources"},
@@ -433,9 +455,15 @@
   ];
 
   /* Drop the 150 smallest industries so labels stay legible (161 remain). */
+  /* Calibrated so the drawn metro totals ~2.82M jobs — the world in which
+     the LEHD commuting figures hold: 687,736 jobs (24%) inside the admin
+     city, 206 for every 100 its residents hold. One constant to retire
+     when real employment data lands. */
+  const EMPLOY_CAL = 1.50253;
   const industryData = [...rawData]
     .sort((a, b) => b.employ - a.employ)
-    .slice(0, rawData.length - 150);
+    .slice(0, rawData.length - 150)
+    .map(r => ({ ...r, employ: r.employ * EMPLOY_CAL }));
 
   /* Build the sector -> industries hierarchy for a given set of rows. */
   function hierarchyFor(rows, label){
@@ -497,7 +525,7 @@
       .attr("class", "cell industry-rect")
       .attr("x", d => d.x0).attr("y", d => d.y0)
       .attr("width", d => d.x1 - d.x0).attr("height", d => d.y1 - d.y0)
-      .attr("fill", d => cellFill(svgEl.id, d));
+      .attr("fill", d => cellFill(svgEl.id, d, false));
 
     cells.append("text")
       .attr("class", "industry-text")
@@ -514,56 +542,154 @@
     if (el) draw(el);
   }
 
-  /* ---------- 2. tradable split ---------- */
-  function initTradableTreemap(){
+  /* the complexity beat: the same mix drawn again, shaded by how much
+     knowledge each industry takes rather than which sector it sits in */
+  function renderComplexityTreemap(){
+    const el = document.getElementById("complexityTreemapSvg");
+    if (el) draw(el);
+  }
+  function initComplexityTooltip(){
+    const svgEl = document.getElementById("complexityTreemapSvg");
+    const tip = document.getElementById("complexityTip");
+    const wrap = svgEl && svgEl.closest(".tradable-viz-wrapper");
+    if (!svgEl || !tip || !wrap) return;
+    attachCellTip(svgEl, wrap, tip);
+  }
+
+  /* ---------- 2. animated split ---------- */
+  /* ---------- 3. the tradable split ----------
+     Ported from v-2: the metro's mix parts into two halves, the industries
+     that sell outward keeping their sector colours on the left and the ones
+     serving the people already here going grey on the right. Which side an
+     industry lands on follows its own tradability score, so the split is the
+     same one the beat's donut and the tooltips report. */
+  function initTradableAnimation(){
     const el = document.getElementById("tradableAnimatedSvg");
     if (!el) return;
 
-    const { root, sectorLayer, cells } = draw(el);
-    const isLocal = d => LOCAL_SECTORS.has(d.parent.data.name);
+    const { svg, root, sectorLayer, cells } = draw(el);
+    const allLeaves = root.leaves();
 
-    const box = new Map();
-    root.leaves().forEach(n => box.set(n.data.name, {
-      x: n.x0, y: n.y0, width: n.x1 - n.x0, height: n.y1 - n.y0,
-      local: LOCAL_SECTORS.has(n.parent.data.name)
-    }));
-    splitState[el.id] = box;
-
-    /* The whole basket, then the part of it that earns from outside. Holding the
-       full treemap for a beat before the non-tradables recede is what makes the
-       fade read as a subset being lifted out, rather than as a chart that simply
-       arrived with two shades in it. Plays once, on arrival — there is no replay,
-       so nothing here needs to be restorable. */
-    function run(){
-      // The sector block behind a dimmed cell has to fade too, or it shows
-      // through the transparency at full strength and cancels the fade.
+    function reset(){
+      sectorLayer.selectAll(".sector-rect").interrupt();
       sectorLayer.selectAll(".sector-rect")
-        .transition().delay(HOLD).duration(FADE).ease(d3.easeCubicInOut)
-        .style("opacity", d => LOCAL_SECTORS.has(d.data.name) ? 0 : 1);
+        .data(root.children, d => d.key)
+        .join("rect")
+        .attr("class", "sector-rect")
+        .attr("x", d => d.x0).attr("y", d => d.y0)
+        .attr("width", d => d.x1 - d.x0).attr("height", d => d.y1 - d.y0)
+        .attr("fill", d => sectorColors[d.data.name])
+        .style("opacity", 1);
+
+      cells.select(".cell").interrupt()
+        .attr("x", d => d.x0).attr("y", d => d.y0)
+        .attr("width", d => d.x1 - d.x0).attr("height", d => d.y1 - d.y0)
+        .attr("fill", d => cellFill(el.id, d, false));
+
+      cells.select(".industry-text").interrupt()
+        .style("opacity", 1)
+        .attr("x", d => d.x0 + 4).attr("y", d => d.y0 + 11)
+        .text(d => fitLabel(d.data.name, { width: d.x1 - d.x0, height: d.y1 - d.y0 }));
+
+      el.classList.remove("animated");
+      document.querySelectorAll(".tradable-split-header")
+        .forEach(h => h.classList.remove("is-on"));
+    }
+
+    function run(){
+      reset();
+
+      /* which side an industry lands on is its own tradability score, not a
+         random draw as in v-2 — the halves then agree with the donut above
+         the chart and with every tooltip */
+      const nonTradableNames = new Set(
+        allLeaves.filter(d => tradabilityOf(d.data.name) < 0.5).map(d => d.data.name));
+
+      const tradable    = allLeaves.filter(d => !nonTradableNames.has(d.data.name));
+      const nonTradable = allLeaves.filter(d =>  nonTradableNames.has(d.data.name));
+
+      // Equal-width halves, both using the full height.
+      const gap = 6;
+      const half = (WIDTH - gap) / 2;
+      const rightX = half + gap;
+
+      // Left keeps the sector grouping; right is a flat grey treemap.
+      const left = layout(
+        tradable.map(d => ({ name: d.data.name, employ: d.value, sector: d.parent.data.name })),
+        "L", half
+      );
+      const right = d3.hierarchy({
+        name: "R",
+        children: nonTradable.map(d => ({ name: d.data.name, value: d.value }))
+      }).sum(d => d.value);
+      d3.treemap().size([half, HEIGHT])
+        .paddingTop(1).paddingRight(1).paddingBottom(1).paddingLeft(1)(right);
+
+      const box = new Map();
+      left.leaves().forEach(n => box.set(n.data.name,
+        { x: n.x0, y: n.y0, width: n.x1 - n.x0, height: n.y1 - n.y0, grey: false }));
+      right.leaves().forEach(n => box.set(n.data.name,
+        { x: rightX + n.x0, y: n.y0, width: n.x1 - n.x0, height: n.y1 - n.y0, grey: true }));
+
+      // Sector blocks now describe the left half only.
+      left.children.forEach(s => { s.key = "L:" + s.data.name; });
+      const blocks = sectorLayer.selectAll(".sector-rect").data(left.children, d => d.key);
+
+      blocks.exit().transition().duration(500).style("opacity", 0).remove();
+
+      blocks.enter().append("rect")
+        .attr("class", "sector-rect")
+        .attr("x", d => d.x0).attr("y", d => d.y0)
+        .attr("width", d => d.x1 - d.x0).attr("height", d => d.y1 - d.y0)
+        .attr("fill", d => sectorColors[d.data.name])
+        .style("opacity", 0)
+        .transition().delay(700).duration(700).style("opacity", 1);
+
+      blocks.transition().duration(1200).ease(d3.easeCubicInOut)
+        .attr("x", d => d.x0).attr("y", d => d.y0)
+        .attr("width", d => d.x1 - d.x0).attr("height", d => d.y1 - d.y0);
+
+      cells.select(".industry-text").transition().duration(300).style("opacity", 0);
 
       cells.select(".cell")
-        .transition().delay(HOLD).duration(FADE).ease(d3.easeCubicInOut)
-        .style("opacity", d => isLocal(d) ? DIM : 1);
-
-      cells.select(".industry-text")
-        .transition().delay(HOLD).duration(FADE).ease(d3.easeCubicInOut)
-        .style("opacity", d => isLocal(d) ? DIM : 1);
-    }
-
-    /* Waiting for the chart to be on screen is the point: the fade is the
-       explanation, so playing it while the section is still below the fold
-       would spend it on nobody. Disconnects after the one play. */
-    if (window.IntersectionObserver) {
-      new IntersectionObserver((entries, obs) => {
-        entries.forEach(entry => {
-          if (!entry.isIntersecting) return;
-          obs.disconnect();
-          run();
+        .transition().duration(1200).ease(d3.easeCubicInOut)
+        .attr("x", d => box.get(d.data.name).x)
+        .attr("y", d => box.get(d.data.name).y)
+        .attr("width", d => box.get(d.data.name).width)
+        .attr("height", d => box.get(d.data.name).height)
+        .attr("fill", d => cellFill(el.id, d, box.get(d.data.name).grey))
+        .on("end", function(d, i){
+          if (i !== cells.size() - 1) return;   // run the follow-up once
+          cells.select(".industry-text")
+            .attr("x", d => box.get(d.data.name).x + 4)
+            .attr("y", d => box.get(d.data.name).y + 11)
+            .text(d => fitLabel(d.data.name, box.get(d.data.name)))
+            .transition().duration(400).style("opacity", 1);
         });
-      }, { threshold: 0.35 }).observe(el);
-    } else {
-      run();
+
+      splitState[el.id] = box;
+      if (tradableClearHover) tradableClearHover();
+      el.classList.add("animated");
+      /* the scrolly lifts both the chart and its split headers out of the
+         subsection, so the reveal is set on the headers themselves rather
+         than on an ancestor the two no longer share */
+      const section = el.closest(".export-subsection");
+      if (section) section.classList.add("animated");
+      document.querySelectorAll(".tradable-split-header")
+        .forEach(h => h.classList.add("is-on"));
     }
+
+    const btn = document.getElementById("replayBtn");
+    if (btn) btn.addEventListener("click", run);
+
+    // Play once when the section first scrolls into view.
+    new IntersectionObserver((entries, obs) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        setTimeout(run, 300);
+        obs.disconnect();
+      });
+    }, { threshold: 0.35 }).observe(el);
   }
 
   /* Repaint one treemap for the given "Color by" mode, preserving any
@@ -573,7 +699,12 @@
     colorMode[svgId] = mode;
     const split = splitState[svgId];
     d3.select("#" + svgId).selectAll(".cell")
-      .attr("fill", d => cellFill(svgId, d));
+      .attr("fill", d => cellFill(svgId, d, split ? !!(split.get(d.data.name) || {}).grey : false));
+
+    if (svgId === "exportTreemapSvg"){
+      refreshExportOption();
+      updateExportHeadStat();
+    }
 
     if (legends) {
       const show = (id, on) => {
@@ -581,7 +712,7 @@
         if (el) el.classList.toggle("show", on);
       };
       show(legends.complexity, mode === COMPLEXITY);
-      show(legends.change,     mode === CHANGE);
+      show(legends.change,     mode === TRADABILITY);
     }
   }
 
@@ -589,14 +720,14 @@
      3 · Specialization (RCA)
 
      RCA = the industry's share of local jobs divided by its share of jobs
-     in the global benchmark. Above 1.0 means the industry is more
+     across US metros (the benchmark). Above 1.0 means the industry is more
      concentrated here than it is worldwide.
 
      Dummy values for the prototype, held stable per industry. A handful of
      plausible Boston strengths are seeded by hand; the rest are random with
      most sitting below 1.0.
      ===================================================================== */
-  const RCA_TOP_N = 12;
+  const RCA_TOP_N = 10;
 
   const rcaSeed = {
     "Colleges Universities and Professional Schools":                             { rca: 5.4, short: "Colleges and universities" },
@@ -632,7 +763,7 @@
   function isTradable(name, sector){
     if (!tradableByName.has(name)) {
       tradableByName.set(name,
-        rcaSeed[name] ? true : Math.random() < (tradableOdds[sector] ?? 0.4));
+        rcaSeed[name] ? true : srand() < (tradableOdds[sector] ?? 0.4));
     }
     return tradableByName.get(name);
   }
@@ -642,8 +773,8 @@
     if (!rcaByName.has(name)) {
       const seeded = rcaSeed[name];
       const v = seeded ? seeded.rca
-        : (Math.random() < 0.80 ? 0.15 + Math.random() * 0.8
-                                : 1.02 + Math.random() * 0.8);
+        : (srand() < 0.80 ? 0.15 + srand() * 0.8
+                          : 1.02 + srand() * 0.8);
       rcaByName.set(name, Math.round(v * 100) / 100);
     }
     return rcaByName.get(name);
@@ -651,14 +782,16 @@
 
   const totalCityJobs = industryData.reduce((s, d) => s + d.employ, 0);
 
-  function specialized(){
-    return industryData
+  function specialized(rows){
+    const set = rows || industryData;
+    const total = set.reduce((a, d) => a + d.employ, 0) || 1;
+    return set
       .filter(d => isTradable(d.name, d.sector) && rcaOf(d.name) > 1)
       .map(d => {
         const rca = rcaOf(d.name);
         // Shares behind the ratio, so a tooltip can show numbers that
         // actually divide out to the multiplier rather than asserting it.
-        const localPct = d.employ / totalCityJobs * 100;
+        const localPct = d.employ / total * 100;
         return {
           name: d.name,
           sector: d.sector,
@@ -707,15 +840,17 @@
     svg.append("text").attr("class", "rca-axis-title")
       .attr("x", (x(1) + RCA_LABEL_ZONE + plotR) / 2).attr("y", baseline)
       .attr("text-anchor", "middle")
-      .text("Times more concentrated in this city than in the world");
+      .text("Times more concentrated in this metro than in the US metros");
 
     const bench = svg.append("g").attr("class", "rca-bench-hit");
     bench.append("rect")
-      .attr("x", x(1) - 6).attr("y", MT - 55)
-      .attr("width", 74).attr("height", 24);
+      .attr("x", x(1) - 6).attr("y", MT - 29)
+      .attr("width", 74).attr("height", 16);
+    /* the marker sits just above the line it names, dressed like a tick —
+       an axis annotation, not a second title */
     bench.append("text")
       .attr("class", "rca-benchmark-label" + (plainLabel ? " rca-benchmark-label--plain" : ""))
-      .attr("x", x(1) + 7).attr("y", baseline).attr("text-anchor", "start")
+      .attr("x", x(1) + 7).attr("y", MT - 17).attr("text-anchor", "start")
       .text("RCA = 1");
 
     return bench;
@@ -725,7 +860,7 @@
      a title over the three rows rather than a note against any one of them. */
   function topTag(svg, rows, x0, y, versusPeers){
     if (rows.length < 3) return;
-    let text = "Most concentrated";
+    let text = "Most concentrated tradable industries";
     if (versusPeers) {
       const ahead = rows.slice(0, 3).filter(d => d.ahead).length;
       text = ahead === 3 ? "All three beat their peers"
@@ -860,19 +995,13 @@
           (year ? '<div class="tip-row"><span>Year</span><span>' + year + '</span></div>' : '') +
           '<div class="tip-row"><span>RCA</span><span>' + fmtX(d.rca) + '</span></div>' +
           '<div class="tip-sub">' + d.localPct.toFixed(2) + '% of ' + cityName +
-            "'s jobs vs " + d.worldPct.toFixed(2) + "% of the world's</div>" +
+            "'s jobs vs " + d.worldPct.toFixed(2) + "% across US metros</div>" +
           '<div class="tip-row"><span>Employment</span><span>' +
             fmtJobs(d.employ) + ' jobs</span></div>';
         rowTip.hidden = false;
       })
       .on("mousemove", function(ev){
-        const w = wrap.getBoundingClientRect();
-        const left = ev.clientX - w.left + 16;
-        const top  = ev.clientY - w.top + 14;
-        rowTip.style.left =
-          Math.max(0, Math.min(left, w.width - rowTip.offsetWidth)) + "px";
-        rowTip.style.top =
-          Math.max(0, Math.min(top, w.height - rowTip.offsetHeight)) + "px";
+        cursorTipPos(ev, wrap, rowTip);
       })
       .on("mouseleave", function(){ rowTip.hidden = true; });
     }
@@ -898,6 +1027,10 @@
        bars are filled by sector too — and with bar as the default, dropping the
        whole footnote would leave the chart's only colour key off the page. */
     const isBar = (rcaDesign === "bar");
+    /* the bar form reads without a legend — sector colour is decoration the
+       row labels already carry, and the footnote returns with the dot form */
+    const foot = document.getElementById("rcaFootnote");
+    if (foot) foot.hidden = isBar;
     const setKey = (id, shown) => {
       const k = document.getElementById(id);
       if (k) k.hidden = !shown;
@@ -909,7 +1042,7 @@
   /* =====================================================================
      4 · Peer comparison
 
-     Same RCA formula, same global benchmark — computed independently for each
+     Same RCA formula, same US-metro benchmark — computed independently for each
      peer city, then compared. The peer marker is a single number (the mean of
      the four), with the individual cities available on hover.
      ===================================================================== */
@@ -926,8 +1059,8 @@
 
   const PEER_PROFILES = {
     "Washington": { label: "Washington, DC",
-      population: "690K", density: "4,460/km²", wage: "$104,000",
-      home: "$712,000", share: "10.8%", diversity: "0.69" },
+      population: "690K", density: "4,457/km²", wage: "$105,318",
+      home: "$625,470", share: "10.8%", diversity: "0.69" },
     "Seattle": { label: "Seattle, WA",
       population: "755K", density: "3,390/km²", wage: "$112,000",
       home: "$866,000", share: "18.6%", diversity: "0.61" },
@@ -973,7 +1106,7 @@
       // Where the peer group sits relative to this city. Mostly below (the
       // city is specialised here), sometimes above — those are the rows worth
       // arguing about.
-      const factor = 0.4 + Math.random() * 0.85;
+      const factor = 0.4 + srand() * 0.85;
       // Floor the target, never the resulting average — clamping after the
       // fact would leave the tick showing a number the four cities don't
       // actually average to.
@@ -981,7 +1114,7 @@
 
       // Spread four cities around that target, then rescale so they average
       // to it exactly — the tooltip numbers must reconcile with the tick.
-      const jitter = PEERS.map(() => 0.62 + Math.random() * 0.76);
+      const jitter = PEERS.map(() => 0.62 + srand() * 0.76);
       const mean = jitter.reduce((s, j) => s + j, 0) / jitter.length;
       const values = jitter.map(j => Math.round(target * (j / mean) * 10) / 10);
 
@@ -994,11 +1127,11 @@
     return peerByName.get(name);
   }
 
-  function specializedWithPeers(){
+  function specializedWithPeers(rows){
     // Compare on the values the reader actually sees. Testing the raw numbers
     // would flag a row orange while its two labels read identically.
     const shown = v => Math.round(v * 10) / 10;
-    return specialized().map(d => {
+    return specialized(rows).map(d => {
       const p = peersFor(d.name, d.rca);
       return Object.assign({}, d, {
         peerAvg: p.avg,
@@ -1152,13 +1285,7 @@
         rowTip.hidden = false;
       })
       .on("mousemove", function(ev){
-        const w = wrap.getBoundingClientRect();
-        const left = ev.clientX - w.left + 16;
-        const top  = ev.clientY - w.top + 14;
-        rowTip.style.left =
-          Math.max(0, Math.min(left, w.width - rowTip.offsetWidth)) + "px";
-        rowTip.style.top =
-          Math.max(0, Math.min(top, w.height - rowTip.offsetHeight)) + "px";
+        cursorTipPos(ev, wrap, rowTip);
       })
       .on("mouseleave", function(){ rowTip.hidden = true; });
     }
@@ -1237,10 +1364,8 @@
       if (cur !== "dist") distBack = cur;
       distDesign = design;
       if (distFrame){
-        /* the classic box keeps the four peer metros on stage; the friendly
-           band stays clean */
-        const url = "rca-distributions.html?dots=" + (design === "box" ? "peers" : "none")
-                  + "&design=" + design;
+        /* both box plots keep the four peer metros on stage */
+        const url = "rca-distributions.html?dots=peers&design=" + design;
         if (distFrame.getAttribute("src") !== url) distFrame.setAttribute("src", url);
       }
       show("dist");
@@ -1278,7 +1403,64 @@
       if (btn && seg.contains(btn)) show(btn.dataset.rcaviewGo);
     });
 
-    show("self");
+    /* ---- intro transport + row-count control for the embedded chart.
+       The frame exposes window.__intro (play/pause/resume + step events)
+       and window.__chart (row limit); the bar's five dots follow the
+       intro's steps. ---- */
+    const introBtn    = document.getElementById("rcaIntroBtn");
+    const introDotsEl = document.getElementById("rcaIntroDots");
+    const rowsBtn     = document.getElementById("distRowsBtn");
+    const frameIntro  = () => distFrame && distFrame.contentWindow && distFrame.contentWindow.__intro;
+    const frameChart  = () => distFrame && distFrame.contentWindow && distFrame.contentWindow.__chart;
+    function frameHeight(){
+      const c = frameChart();
+      if (!c) return;
+      const b = c.contentBottom();
+      if (b > 200) distFrame.style.height = (b + 14) + "px";
+    }
+    function introUi(st){
+      if (introBtn) introBtn.innerHTML =
+        !st.running ? "&#9654; Play intro"
+        : st.paused ? "&#9654; Resume intro"
+        :             "&#10074;&#10074; Pause intro";
+      if (introDotsEl) [...introDotsEl.children].forEach((d, i) => {
+        d.classList.toggle("on", i < st.step);
+        d.classList.toggle("cur", st.running && !st.paused && i === st.step - 1);
+      });
+      frameHeight();
+    }
+    function bindDistFrame(){
+      const api = frameIntro();
+      if (!api) return;
+      api.onChange = introUi;
+      introUi(api.state());
+      const c = frameChart();
+      if (rowsBtn && c) rowsBtn.textContent =
+        c.limit() ? "Show all " + c.total() : "Show top 10";
+    }
+    if (distFrame){
+      distFrame.addEventListener("load", bindDistFrame);
+      bindDistFrame();
+    }
+    if (introBtn) introBtn.addEventListener("click", () => {
+      const api = frameIntro();
+      if (!api) return;
+      const st = api.state();
+      if (!st.running) api.play();
+      else if (st.paused) api.resume();
+      else api.pause();
+    });
+    if (rowsBtn) rowsBtn.addEventListener("click", () => {
+      const c = frameChart();
+      if (!c) return;
+      c.setLimit(c.limit() ? null : 10);
+      rowsBtn.textContent = c.limit() ? "Show all " + c.total() : "Show top 10";
+      frameHeight();
+    });
+
+    /* the friendly box plot is the section's opening view; Bar and the
+       classic box stay one click away on the design list */
+    openDist("band");
   }
 
   function initRcaChart(){
@@ -1323,7 +1505,7 @@
   const METRO_X_MED = 0.7;    // population CAGR, %/yr
   const METRO_Y_MED = 4.0;    // avg-salary CAGR, %/yr
 
-  const HOME = { name: "Boston", pop: 0.4, pay: 4.5, size: 4.9 };
+  const HOME = { name: "Boston", pop: 0.4, pay: 5.3, size: 4.9 };
   const PEER_POINTS = [
     { name: "Washington",  pop: 0.35, pay: 4.9, size: 6.4 },
     { name: "Seattle",     pop: 1.15, pay: 5.4, size: 4.0 },
@@ -1337,13 +1519,13 @@
     const rest = [];
     for (let i = 0; i < 170; i++) {
       // clustered around the medians, with a long tail on both axes
-      const pop = METRO_X_MED + (Math.random() + Math.random() + Math.random() - 1.5) * 1.1;
-      const pay = METRO_Y_MED + (Math.random() + Math.random() + Math.random() - 1.5) * 1.1;
+      const pop = METRO_X_MED + (srand() + srand() + srand() - 1.5) * 1.1;
+      const pay = METRO_Y_MED + (srand() + srand() + srand() - 1.5) * 1.1;
       rest.push({
         name: "Metro area " + (i + 1),
         pop: Math.round(pop * 100) / 100,
         pay: Math.round(pay * 100) / 100,
-        size: Math.round((0.15 + Math.pow(Math.random(), 3) * 5.5) * 100) / 100,
+        size: Math.round((0.15 + Math.pow(srand(), 3) * 5.5) * 100) / 100,
         other: true
       });
     }
@@ -1669,12 +1851,12 @@
     svg.append("text").attr("class", "ms-axis-title")
       .attr("x", (M.left + W - M.right) / 2).attr("y", H - 14)
       .attr("text-anchor", "middle")
-      .text("Population growth (annual rate, 2014\u20132024)");
+      .text("Population growth (annual rate, 2015\u20132025)");
     svg.append("text").attr("class", "ms-axis-title")
       .attr("transform", "rotate(-90)")
       .attr("x", -(M.top + H - M.bottom) / 2).attr("y", 24)
       .attr("text-anchor", "middle")
-      .text("Average salary growth (annual rate, 2014\u20132024)");
+      .text("Average salary growth (annual rate, 2015\u20132025)");
 
     return { svg, data, x, y, r, W, H, M };
   }
@@ -1755,7 +1937,7 @@
     { name:"Marlborough", dx: 1.08, dy: 0.12, size: 41 },
     { name:"Franklin",    dx: 1.24, dy:-0.24, size: 33 },
     // last so it paints on top of the rest
-    { name:"Boston",      dx:-0.88, dy: 0.22, size:660, home:true }
+    { name:"Boston",      dx:-1.2,  dy: 0.5,  size:660, home:true }
   ];
 
   function renderCityInMetro(){
@@ -1869,15 +2051,1884 @@
     }, { threshold: 0.35 }).observe(el);
   }
 
+
+  /* ---------- export treemap: transformation options 1-4 ----------
+     Stakeholder-facing, numbered on the right of the controls bar. Each
+     number transforms the export treemap (or annotates it) around whichever
+     "Color by" is active: 1 = ranked list beside the map, 2 = one-axis
+     swarm. The metric follows the
+     colour mode: complexity -> PCI, tradability -> traded share, sector -> jobs.
+     Clicking the active number restores the plain map. */
+  let exportOpt = 0;
+  let exportView = "map";   /* the treemap is always the default view */
+  let exportListOn = false; /* option 1's side list, off until asked for */
+  const EOPT_DUR = 950;
+
+  function pciNumOf(name){
+    /* numeric complexity consistent with the assigned colour bin */
+    const bin = complexityPalette.indexOf(complexityColor(name));
+    let h = 2166136261;
+    for (const c of name) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); }
+    return Math.round((bin - 2 + (h >>> 0) / 4294967296) * 100) / 100;
+  }
+
+  function exportMetric(){
+    const mode = colorMode.exportTreemapSvg;
+    if (mode === COMPLEXITY) return {
+      kind: "pci", axis: "Product complexity (PCI)",
+      listTitle: "Top 5 most complex industries",
+      corner: "big and complex",
+      val: n => pciNumOf(n),
+      fmt: v => "PCI " + v.toFixed(2), barFmt: v => v.toFixed(2)
+    };
+    if (mode === TRADABILITY) return {
+      kind: "trd", axis: "Tradability (0 local \u2192 1 traded)",
+      listTitle: "Top 5 most traded industries",
+      corner: "big and traded",
+      val: n => tradabilityOf(n),
+      fmt: v => v.toFixed(2), barFmt: v => v.toFixed(2)
+    };
+    return {
+      kind: "jobs", axis: "Jobs (log scale)",
+      listTitle: "Top 5 industries by jobs",
+      fmt: v => Math.round(v).toLocaleString() + " jobs",
+      barFmt: v => Math.round(v).toLocaleString(), log: true
+    };
+  }
+  const exVal  = (m, d) => m.val ? m.val(d.data.name) : d.value;
+  const exRank = (m, d) => m.rank ? m.rank(d.data.name) : exVal(m, d);
+
+  function exportAltLabel(){
+    const m = exportMetric();
+    if (exportOpt === 2) return m.kind === "pci" ? "Ordered by complexity"
+                       : m.kind === "trd" ? "Ordered by tradability" : "Ordered by jobs";
+    if (exportOpt === 3) return m.kind === "pci" ? "Most complex, ranked"
+                       : m.kind === "trd" ? "Most traded, ranked" : "Biggest, ranked";
+    if (exportOpt === 4) return m.kind === "pci" ? "Complexity vs. jobs"
+                       : m.kind === "trd" ? "Tradability vs. jobs" : "Jobs by sector";
+    return "";
+  }
+
+  function updateExportViewSeg(){
+    const wrap = document.getElementById("exportViewWrap");
+    if (!wrap) return;
+    const show = exportOpt >= 2;
+    wrap.hidden = !show;
+    if (!show) return;
+    wrap.querySelector('[data-view="alt"]').textContent = exportAltLabel();
+    wrap.querySelectorAll(".seg-btn").forEach(b => {
+      const on = (b.dataset.view === "alt") === (exportView === "alt");
+      b.classList.toggle("is-active", on);
+      b.setAttribute("aria-pressed", String(on));
+    });
+  }
+
+  function applyExportOption(animate){
+    const svgEl = document.getElementById("exportTreemapSvg");
+    const listWrap = document.getElementById("exportTopList");
+    if (!svgEl || !listWrap) return;
+    const svg = d3.select(svgEl);
+    const cells = svg.selectAll("g.industry");
+    if (cells.empty()) return;
+    const m = exportMetric();
+    const dur = animate ? EOPT_DUR : 0;
+    const leaves = cells.data();
+    if (exportClearHover) exportClearHover();   /* no highlight survives a view change */
+    const W2 = WIDTH, H2 = HEIGHT;
+
+    svg.selectAll(".opt-overlay").interrupt().transition().duration(200).attr("opacity", 0).remove();
+    listWrap.hidden = true; listWrap.textContent = "";
+    cells.style("opacity", 1);
+
+    const restoreMap = () => {
+      svg.selectAll(".sector-layer").interrupt().transition().duration(dur * .6).style("opacity", 1);
+      cells.select("rect").interrupt().transition().duration(dur).ease(d3.easeCubicInOut)
+        .attr("x", d => d.x0).attr("y", d => d.y0)
+        .attr("width", d => d.x1 - d.x0).attr("height", d => d.y1 - d.y0)
+        .attr("rx", 0).attr("opacity", 1)
+        .attr("stroke", null).attr("stroke-width", null);
+      cells.select("text").interrupt().transition()
+        .delay(dur ? dur - 150 : 0).duration(300).attr("opacity", 1);
+    };
+
+    if (exportOpt === 0){ restoreMap(); return; }
+
+    const vizRow = document.querySelector(".export-viz-row");
+    if (vizRow) vizRow.classList.toggle("with-list", exportOpt === 1 && exportListOn);
+
+    if (exportOpt === 1){
+      restoreMap();
+      if (!exportListOn) return;
+      const ranked = [...leaves].sort((a, b) => exRank(m, b) - exRank(m, a));
+      const groups = [];
+      if (m.kind === "trd"){
+        /* tradability cuts both ways: the local tail is often the story */
+        groups.push(["Top 5 most traded", ranked.slice(0, 5)]);
+        groups.push(["Top 5 most local", ranked.slice(-5).reverse()]);
+      } else {
+        groups.push([m.listTitle, ranked.slice(0, 5)]);
+      }
+      groups.forEach(([gTitle, items], gi) => {
+      const title = document.createElement("div");
+      title.className = "toplist-title";
+      title.textContent = gTitle + (gi === 0 ? " (hover to locate)" : "");
+      listWrap.appendChild(title);
+      items.forEach((d, i) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        const valTxt = m.isNew && m.isNew(d.data.name) ? "new since 2015" : m.fmt(exVal(m, d));
+        b.innerHTML = '<span class="rk">' + (i + 1) + '</span><span>' + d.data.name +
+                      '</span><span class="pci">' + valTxt + '</span>';
+        b.addEventListener("mouseenter", () => {
+          cells.style("opacity", c => c === d ? 1 : .18)
+            .select("rect").style("stroke", c => c === d ? "#1a2226" : null)
+            .style("stroke-width", c => c === d ? 2.5 : null);
+          svg.selectAll(".sector-layer").style("opacity", .18);
+        });
+        b.addEventListener("mouseleave", () => {
+          cells.style("opacity", 1).select("rect").style("stroke", null).style("stroke-width", null);
+          svg.selectAll(".sector-layer").style("opacity", 1);
+        });
+        listWrap.appendChild(b);
+      });
+      });
+      listWrap.hidden = false;
+      return;
+    }
+
+    /* options 2-4 rest on the treemap until the reader flips their toggle */
+    if (exportView !== "alt"){ restoreMap(); return; }
+
+    /* the morphs: sector blocks and cell labels step aside */
+    svg.selectAll(".sector-layer").interrupt().transition().duration(300).style("opacity", 0);
+    cells.select("text").interrupt().transition().duration(250).attr("opacity", 0);
+    const ov = svg.append("g").attr("class", "opt-ax opt-overlay").attr("opacity", 0);
+    const moveRect = (sel, fx, fy, fw, fh, frx) => sel.select("rect").interrupt()
+      .transition().duration(dur).ease(d3.easeCubicInOut)
+      .attr("x", fx).attr("y", fy).attr("width", fw).attr("height", fh)
+      .attr("rx", frx).attr("opacity", 1).attr("stroke", null).attr("stroke-width", null);
+
+    if (exportOpt === 2){
+      const vals = leaves.map(d => exVal(m, d));
+      const x = m.log
+        ? d3.scaleLog([Math.max(1, d3.min(vals)), d3.max(vals)], [46, W2 - 26])
+        : d3.scaleLinear([d3.min(vals), d3.max(vals)], [46, W2 - 26]);
+      const r = d3.scaleSqrt([0, d3.max(leaves, d => d.value)], [2, 34]);
+      const nodes = leaves.map(d => ({d, x: x(exVal(m, d)), y: H2 * .46, r: r(d.value)}));
+      const sim = d3.forceSimulation(nodes)
+        .force("x", d3.forceX(n => x(exVal(m, n.d))).strength(1))
+        .force("y", d3.forceY(H2 * .46).strength(.08))
+        .force("c", d3.forceCollide(n => n.r + .6)).stop();
+      for (let i = 0; i < 200; i++) sim.tick();
+      /* no dot may leave the sheet: pin centres a radius inside every edge */
+      nodes.forEach(n => {
+        n.x = Math.max(n.r + 2, Math.min(W2 - n.r - 2, n.x));
+        n.y = Math.max(n.r + 2, Math.min(H2 - 60 - n.r, n.y));
+      });
+      const pos = new Map(nodes.map(n => [n.d, n]));
+      moveRect(cells,
+        d => pos.get(d).x - pos.get(d).r, d => pos.get(d).y - pos.get(d).r,
+        d => pos.get(d).r * 2, d => pos.get(d).r * 2, d => pos.get(d).r);
+      ov.append("line").attr("x1", 26).attr("x2", W2 - 16).attr("y1", H2 - 46).attr("y2", H2 - 46);
+      ov.append("text").attr("class", "axname").attr("x", W2 / 2).attr("y", H2 - 24)
+        .attr("text-anchor", "middle").text(m.axis + " →");
+      const lead = [...leaves].sort((a, b) => exRank(m, b) - exRank(m, a))[0];
+      const lp = pos.get(lead), t = lead.data.name;
+      const est = t.length * 6.4;
+      const labY = Math.max(16, lp.y - lp.r - 24);
+      const lx = Math.max(est / 2 + 8, Math.min(lp.x, W2 - 10 - est / 2));
+      ov.append("circle").attr("class", "opt-lead-ring")
+        .attr("cx", lp.x).attr("cy", lp.y).attr("r", lp.r + 3.5);
+      ov.append("line").attr("class", "opt-lead-stem")
+        .attr("x1", lp.x).attr("y1", lp.y - lp.r - 5)
+        .attr("x2", lx).attr("y2", labY + 4);
+      ov.append("text").attr("class", "opt-dotlab").attr("x", lx).attr("y", labY)
+        .attr("text-anchor", "middle").text(t);
+      ov.transition().delay(Math.max(0, dur - 200)).duration(400).attr("opacity", 1);
+      return;
+    }
+
+    if (exportOpt === 4){
+      const R = 8;
+      const jobs = leaves.map(d => d.value);
+      if (m.kind === "jobs"){
+        /* sector strip plot: a row per sector, jobs along x */
+        const sectors = [...new Set(leaves.map(d => d.parent.data.name))];
+        const band = d3.scalePoint().domain(sectors).range([34, H2 - 72]).padding(.5);
+        const x = d3.scaleLog([Math.max(1, d3.min(jobs)), d3.max(jobs)], [120, W2 - 26]);
+        const jit = d => { let h = 0; for (const c of d.data.name) h = (h * 31 + c.charCodeAt(0)) | 0;
+                           return ((h >>> 0) % 21) - 10; };
+        moveRect(cells,
+          d => x(Math.max(1, d.value)) - R, d => band(d.parent.data.name) + jit(d) - R,
+          R * 2, R * 2, R);
+        sectors.forEach(s => {
+          ov.append("text").attr("x", 4).attr("y", band(s) + 4).attr("font-size", 10)
+            .text(s.length > 16 ? s.slice(0, 15) + "…" : s);
+        });
+        ov.append("line").attr("x1", 110).attr("x2", W2 - 16).attr("y1", H2 - 48).attr("y2", H2 - 48);
+        ov.append("text").attr("class", "axname").attr("x", (W2 + 100) / 2).attr("y", H2 - 26)
+          .attr("text-anchor", "middle").text("Jobs (log) →");
+      } else {
+        const vals = leaves.map(d => exVal(m, d));
+        const x = d3.scaleLinear([d3.min(vals), d3.max(vals)], [56, W2 - 26]);
+        const y = d3.scaleLog([Math.max(1, d3.min(jobs)), d3.max(jobs)], [H2 - 62, 22]);
+        moveRect(cells,
+          d => x(exVal(m, d)) - R, d => y(Math.max(1, d.value)) - R, R * 2, R * 2, R);
+        ov.append("line").attr("x1", 46).attr("x2", W2 - 16).attr("y1", H2 - 48).attr("y2", H2 - 48);
+        ov.append("line").attr("x1", 46).attr("x2", 46).attr("y1", 14).attr("y2", H2 - 48);
+        ov.append("text").attr("x", 50).attr("y", H2 - 28).text("← " + m.axis + " →");
+        ov.append("text").attr("class", "axname").attr("x", 14).attr("y", 26)
+          .attr("transform", "rotate(-90 14 26)").attr("text-anchor", "end").text("jobs (log)");
+        const medX = d3.median(vals), medY = d3.median(jobs);
+        ov.append("line").attr("class", "opt-quad")
+          .attr("x1", x(medX)).attr("x2", x(medX)).attr("y1", 14).attr("y2", H2 - 48);
+        ov.append("line").attr("class", "opt-quad")
+          .attr("x1", 46).attr("x2", W2 - 16).attr("y1", y(medY)).attr("y2", y(medY));
+        ov.append("text").attr("class", "opt-quadlab").attr("x", W2 - 20).attr("y", 30)
+          .attr("text-anchor", "end").text(m.corner + " → the corner that matters");
+      }
+      ov.transition().delay(Math.max(0, dur - 200)).duration(400).attr("opacity", 1);
+      return;
+    }
+
+    if (exportOpt === 3){
+      const top = [...leaves].sort((a, b) => exRank(m, b) - exRank(m, a)).slice(0, 12);
+      const rows = new Map(top.map((d, i) => [d, i]));
+      const GUT = 330, rowH = (H2 - 66) / 12, barH = Math.min(26, rowH - 8);
+      const xw = d3.scaleLinear([0, exVal(m, top[0])], [GUT, W2 - 96]);
+      const rowY = i => 16 + i * rowH;
+      cells.filter(d => !rows.has(d)).select("rect").interrupt()
+        .transition().duration(dur * .8)
+        .attr("x", d => (d.x0 + d.x1) / 2).attr("y", d => (d.y0 + d.y1) / 2)
+        .attr("width", 0).attr("height", 0).attr("opacity", 0);
+      moveRect(cells.filter(d => rows.has(d)),
+        GUT, d => rowY(rows.get(d)), d => Math.max(2, xw(exVal(m, d)) - GUT), barH, 2);
+      top.forEach((d, i) => {
+        const n = d.data.name;
+        ov.append("text").attr("class", "opt-bar-name").attr("x", GUT - 8)
+          .attr("y", rowY(i) + barH / 2 + 4).attr("text-anchor", "end")
+          .text(n.length > 52 ? n.slice(0, 51) + "…" : n);
+        const valTxt = m.isNew && m.isNew(d.data.name) ? "new" : m.barFmt(exVal(m, d));
+        ov.append("text").attr("class", "opt-bar-val")
+          .attr("x", xw(exVal(m, d)) + 6).attr("y", rowY(i) + barH / 2 + 4).text(valTxt);
+      });
+      ov.append("text").attr("class", "axname").attr("x", GUT).attr("y", H2 - 14)
+        .text("bar length = " + m.axis.toLowerCase());
+      ov.transition().delay(Math.max(0, dur - 200)).duration(400).attr("opacity", 1);
+      return;
+    }
+
+  }
+
+  function refreshExportOption(){
+    if (!exportOpt) return;
+    updateExportViewSeg();
+    updateTopBtn();
+    applyExportOption(true);
+  }
+
+  function updateTopBtn(){
+    const b = document.getElementById("exportTopBtn");
+    if (!b) return;
+    b.hidden = exportOpt !== 1;
+    /* the switch names what it will actually show under the active Color by */
+    const mk = exportMetric().kind;
+    const lab = b.querySelector(".switch-label");
+    if (lab) lab.textContent =
+        mk === "pci" ? "Show Most Complex Industries"
+      : mk === "trd" ? "Show Most & Least Traded Industries"
+      :                "Show Largest Industries";
+    b.setAttribute("aria-pressed", String(exportListOn));
+  }
+
+  /* one labelled slot in the bar carries whichever control the active
+     option brings: "Top industries" for the list, "View" for the morphs */
+  function updateExportOptCtl(){
+    const ctl = document.getElementById("exportOptCtl");
+    if (!ctl) return;
+    ctl.hidden = !exportOpt;
+    ctl.dataset.opt = String(exportOpt);   /* lets CSS hard-guard per option */
+    /* option 1's button names itself; the morph options keep a View label */
+    const lab = document.getElementById("exportOptCtlLabel");
+    if (lab){ lab.hidden = exportOpt === 1; lab.textContent = "View"; }
+  }
+
+  /* One tooltip serves every form a treemap's cells take — tiles, swarm
+     dots, ranked bars, the tradable/local split — because the morphs reuse
+     the same elements. Same card pattern as the RCA row tooltips. */
+  let exportClearHover = null;     /* lets view changes clear a live highlight */
+  let tradableClearHover = null;   /* same, for the split animation */
+
+  /* Cursor tooltips prefer the top-right corner of the cursor; when the
+     cursor is too close to the frame's top the tip flips BELOW it — never
+     pinned to an edge while the cursor keeps moving. */
+  function cursorTipPos(ev, wrap, tip){
+    const w = wrap.getBoundingClientRect();
+    let left = ev.clientX - w.left + 10;
+    if (left + tip.offsetWidth > w.width) left = ev.clientX - w.left - tip.offsetWidth - 10;
+    let top = ev.clientY - w.top - tip.offsetHeight - 10;
+    if (top < 0) top = ev.clientY - w.top + 14;
+    tip.style.left = Math.max(0, left) + "px";
+    tip.style.top  = Math.max(0, Math.min(top, w.height - tip.offsetHeight)) + "px";
+  }
+
+  function attachCellTip(svgEl, wrap, tip){
+    /* Self-healing highlight: re-parenting a hovered node (the bring-to-
+       front) can swallow its mouseleave, so never trust leave alone — track
+       the hot mark and clear it on the next enter, on leaving the svg, and
+       on any view change. */
+    let hot = null;
+    const clearHot = () => {
+      tip.hidden = true;
+      if (!hot) return;
+      d3.select(hot).select("rect").style("stroke", null).style("stroke-width", null);
+      hot = null;
+    };
+    d3.select(svgEl).on("mouseleave.celltip", () => { tip.hidden = true; clearHot(); });
+    d3.select(svgEl).selectAll("g.industry")
+      .on("mouseenter", function(ev, d){
+        clearHot();
+        hot = this;
+        const name = d.data.name;
+        const mode = colorMode[svgEl.id];
+        let extra = "";
+        if (mode === COMPLEXITY)
+          extra = '<div class="tip-row"><span>Complexity (PCI)</span><span>' +
+                  pciNumOf(name).toFixed(2) + '</span></div>';
+        if (mode === TRADABILITY)
+          extra = '<div class="tip-row"><span>Tradability</span><span>' +
+                  tradabilityOf(name).toFixed(2) + '</span></div>';
+        tip.innerHTML = '<strong>' + name + '</strong>' +
+          '<div class="tip-row"><span>Sector</span><span>' + d.parent.data.name + '</span></div>' +
+          '<div class="tip-row"><span>Jobs</span><span>' +
+            Math.round(d.value).toLocaleString() + '</span></div>' + extra;
+        tip.hidden = false;
+        /* the mark answers the cursor: ink outline, brought to the front
+           because swarm dots overlap (inline style so it beats the CSS) */
+        this.parentNode.appendChild(this);
+        d3.select(this).select("rect").style("stroke", "#1a2226").style("stroke-width", 2.5);
+      })
+      .on("mousemove", function(ev){
+        cursorTipPos(ev, wrap, tip);
+      })
+      .on("mouseleave", function(){
+        tip.hidden = true;
+        clearHot();
+      });
+    return clearHot;
+  }
+
+  /* ---- share strips: one headline percentage per treemap reading ----
+     A jobs-weighted share of the metro above a stated threshold, drawn as a
+     number plus a 100% bar, so every colour ramp also gets its one-line
+     quantitative summary. */
+  function jobsShare(pred){
+    let hit = 0, tot = 0;
+    industryData.forEach(r => { tot += r.employ; if (pred(r)) hit += r.employ; });
+    return tot ? hit / tot : 0;
+  }
+
+  function donutStat(host, pct, color, caption){
+    if (!host) return;
+    const r = 15.5, c = 2 * Math.PI * r;
+    host.innerHTML =
+      '<svg class="ds-donut" width="40" height="40" viewBox="0 0 40 40" aria-hidden="true">' +
+        '<circle class="ds-track" cx="20" cy="20" r="' + r + '"/>' +
+        '<circle class="ds-val" cx="20" cy="20" r="' + r + '" style="stroke:' + color +
+          '" stroke-dasharray="' + (c * pct).toFixed(2) + ' ' + (c * (1 - pct)).toFixed(2) + '"/>' +
+      '</svg>' +
+      '<span class="ds-txt"><span class="ds-num">' + Math.round(pct * 100) + '%</span>' +
+      '<span class="ds-cap">' + caption + '</span></span>';
+    host.hidden = false;
+  }
+
+  /* The export map's stat follows the Color-by mode and hides with it. */
+  function updateExportHeadStat(){
+    const host = document.getElementById("exportHeadStat");
+    if (!host) return;
+    const mode = colorMode.exportTreemapSvg;
+    if (mode === COMPLEXITY)
+      donutStat(host, jobsShare(r => pciNumOf(r.name) > 0), "#2f7d6a",
+        "of metro jobs \u00b7 above-average complexity");
+    else if (mode === TRADABILITY)
+      donutStat(host, jobsShare(r => tradabilityOf(r.name) >= 0.5), token("--teal", "#255862"),
+        "of metro jobs \u00b7 widely traded");
+    else host.hidden = true;
+  }
+
+  /* ---- the lean map: what the place does more of than its metro ----
+     The same sector blocks as the merged admin map, recoloured by each
+     sector's share of the city against its share of the metro (the form the reference proto uses; ours computes ~1.6× from ADMIN_SHARE). House
+     diverging pair: russet = leans less, teal = leans more, parity pale. */
+  /* The two commuting donuts — real LEHD-style shares from the reference. */
+  function initCommuteStats(){
+    donutStat(document.getElementById("commuteOutStat"), 0.54, token("--teal", "#255862"),
+      'of residents\u2019 jobs \u00b7 inside <span class="city-short">Boston</span>');
+    donutStat(document.getElementById("commuteInStat"), 0.26, token("--teal", "#255862"),
+      'of <span class="city-short">Boston</span>\u2019s jobs \u00b7 held by residents');
+  }
+
+  function initLeanMap(){
+    const el = document.getElementById("leanMapSvg");
+    if (!el) return;
+    const root = layout(industryData, "root", WIDTH);
+    const total = d3.sum(root.children, sec => sec.value);
+
+    /* Two ways to count, as in the reference's Count control: jobs located
+       inside the admin boundary (ADMIN_SHARE), or the jobs the city's
+       residents hold wherever those jobs sit. The residence profile is
+       authored as relative propensities and normalised so its jobs-weighted
+       mean lands exactly on the canon: 334,026 resident jobs over the drawn
+       2,824,810 metro total. */
+    const RESIDENT_PROFILE = {
+      Construction: .6, "Education & Health": 1.25, "Financial Activities": 1.15,
+      "Leisure & Hospitality": 1.2, Manufacturing: .45, "Natural Resources": .5,
+      Other: 1.05, "Professional & Business": 1.1, "Trade & Transportation": .8
+    };
+    const RES_OVERALL = 334026 / 2824810;
+    const profOf = sec => RESIDENT_PROFILE[sec.data.name] !== undefined ? RESIDENT_PROFILE[sec.data.name] : 1;
+    const profMean = d3.sum(root.children, sec => sec.value * profOf(sec)) / total;
+    const admShareOf = sec => ADMIN_SHARE[sec.data.name] !== undefined ? ADMIN_SHARE[sec.data.name] : 0.15;
+    const admOverall = d3.sum(root.children, sec => sec.value * admShareOf(sec)) / total;
+
+    const LENSES = {
+      work: { overall: admOverall, shareOf: admShareOf,
+              shareLbl: cityName + " admin share of this sector",
+              allLbl: cityName + " admin share of all metro jobs" },
+      res:  { overall: RES_OVERALL,
+              shareOf: sec => profOf(sec) * (RES_OVERALL / profMean),
+              shareLbl: "held by " + cityName + " residents — this sector",
+              allLbl: "held by " + cityName + " residents — all metro jobs" }
+    };
+    let lens = "work";
+
+    /* the frame IS the treemap's frame: the blocks state sits at the exact
+       coordinates the admin-share animation ends on, so the scroll from one
+       step to the next hands off pixel-identical — no redraw, the same map
+       simply starts to morph. Any spare height centers the bar chart. */
+    const W = 880, ROW = 36, MB = 66;
+    const need = 26 + root.children.length * ROW + MB;
+    const H = Math.max(need, HEIGHT);
+    const MT = 26 + (H - need) / 2;
+    el.setAttribute("viewBox", "0 0 " + W + " " + H);
+    el.setAttribute("height", H);
+    const BASE = 500, K = 140, LOGMIN = -2.1, LOGMAX = 0.9;
+    const xOf = r => BASE + K * Math.max(LOGMIN, Math.min(LOGMAX, Math.log2(r)));
+
+    /* two geometries per sector under the current lens: its block on the
+       sector map and its bar row. The SOLID band — the counted slice — is
+       the element that morphs; the veiled remainder just fades away. */
+    function computeGeo(){
+      const L = LENSES[lens];
+      const ratioOf = sec => L.shareOf(sec) / L.overall;
+      const rows = [...root.children].sort((a, b) => ratioOf(b) - ratioOf(a));
+      const geo = new Map(rows.map((d, i) => {
+        const share = L.shareOf(d), r = ratioOf(d), x = xOf(r);
+        const bx = d.x0, bw = d.x1 - d.x0;
+        const by = d.y0, bh = d.y1 - d.y0;
+        return [d.data.name, {
+          share, r,
+          ghost: { x: bx, y: by, w: bw, h: bh * (1 - share) },
+          solid: { x: bx, y: by + bh * (1 - share), w: bw, h: bh * share },
+          bar:   { x: Math.min(BASE, x), y: MT + i * ROW + 4, w: Math.abs(x - BASE), h: 22 },
+          tipX: x
+        }];
+      }));
+      return { rows, geo, overall: L.overall };
+    }
+    let cur = computeGeo();
+
+    const svg = d3.select(el);
+    svg.selectAll("*").remove();
+
+    /* bar furniture, hidden until the bars state; rebuilt on lens change
+       because the ranking and the values both move with the count */
+    const furn = svg.append("g").attr("class", "lean-furn").style("opacity", 0);
+    function buildFurn(){
+      furn.selectAll("*").remove();
+      furn.append("line")
+        .attr("x1", BASE).attr("x2", BASE)
+        .attr("y1", MT - 12).attr("y2", MT + cur.rows.length * ROW + 8)
+        .attr("stroke", "#8a989d").attr("stroke-width", 1.5);
+      cur.rows.forEach((d, i) => {
+        const g0 = cur.geo.get(d.data.name);
+        furn.append("text")
+          .attr("x", 280).attr("y", MT + i * ROW + 22)
+          .attr("text-anchor", "end")
+          .style("fill", "#1a2226").style("stroke", "none")
+          .attr("font-size", 13.5).attr("font-weight", 600)
+          .text(d.data.name);
+        furn.append("text")
+          .attr("x", g0.r >= 1 ? g0.tipX + 8 : g0.tipX - 8)
+          .attr("y", MT + i * ROW + 23)
+          .attr("text-anchor", g0.r >= 1 ? "start" : "end")
+          .style("fill", "#1a2226").style("stroke", "none")
+          .attr("font-size", 13).attr("font-weight", 700)
+          .text(g0.r.toFixed(2).replace(/0$/, "") + "×");
+      });
+      furn.append("text")
+        .attr("x", BASE).attr("y", MT + cur.rows.length * ROW + 26)
+        .attr("text-anchor", "middle")
+        .style("fill", "#5b686d").style("stroke", "none").attr("font-size", 12)
+        .text("same as the metro");
+      furn.append("text")
+        .attr("x", BASE).attr("y", MT + cur.rows.length * ROW + 46)
+        .attr("text-anchor", "middle")
+        .style("fill", "#5b686d").style("stroke", "none").attr("font-size", 12)
+        .text(lens === "work"
+          ? "share of " + cityName + " ÷ share of the metro"
+          : "share of residents’ work ÷ share of the metro");
+    }
+    buildFurn();
+
+    /* the sectors: pale ghost (the uncounted remainder), solid slice, name */
+    const secs = svg.selectAll("g.lean-sec").data(root.children, d => d.data.name)
+      .join("g").attr("class", "lean-sec");
+    secs.each(function(d){
+      const g0 = cur.geo.get(d.data.name);
+      const sel = d3.select(this);
+      sel.append("rect").attr("class", "ln-ghost")
+        .attr("x", g0.ghost.x).attr("y", g0.ghost.y)
+        .attr("width", g0.ghost.w).attr("height", g0.ghost.h)
+        .attr("fill", sectorColors[d.data.name]).attr("fill-opacity", .26)
+        .attr("stroke", "#fff").attr("stroke-width", 1);
+      sel.append("rect").attr("class", "ln-solid")
+        .attr("x", g0.solid.x).attr("y", g0.solid.y)
+        .attr("width", g0.solid.w).attr("height", g0.solid.h)
+        .attr("fill", sectorColors[d.data.name])
+        .attr("stroke", "#fff").attr("stroke-width", .8);
+      if (g0.ghost.w > 70 && (g0.ghost.h + g0.solid.h) > 40)
+        sel.append("text").attr("class", "ln-name")
+          .attr("x", g0.ghost.x + 8).attr("y", g0.ghost.y + 17)
+          .style("fill", "#1a2226").style("stroke", "none")
+          .attr("font-size", 13).attr("font-weight", 600)
+          .text(fitLabel(d.data.name, { width: g0.ghost.w, height: 40 }));
+    });
+
+    let view = "blocks", visible = false, playTimer = null;
+    const DUR = 850;
+    function toBars(animate){
+      view = "bars";
+      buildFurn();                       // the lens may have changed meanwhile
+      const t = animate ? DUR : 0;
+      secs.selectAll(".ln-ghost").transition().duration(t * .5).attr("fill-opacity", 0);
+      secs.selectAll(".ln-name").transition().duration(t * .4).style("opacity", 0);
+      secs.each(function(d){
+        const g0 = cur.geo.get(d.data.name);
+        d3.select(this).select(".ln-solid")
+          .transition().duration(t).ease(d3.easeCubicInOut)
+          .attr("x", g0.bar.x).attr("y", g0.bar.y)
+          .attr("width", g0.bar.w).attr("height", g0.bar.h);
+      });
+      furn.transition().delay(t * .55).duration(Math.max(1, t * .5)).style("opacity", 1);
+    }
+    function toBlocks(animate){
+      view = "blocks";
+      const t = animate ? DUR : 0;
+      furn.transition().duration(t * .35).style("opacity", 0);
+      secs.each(function(d){
+        const g0 = cur.geo.get(d.data.name);
+        const s = d3.select(this);
+        s.select(".ln-ghost").attr("height", g0.ghost.h);   // lens-true remainder
+        s.select(".ln-solid")
+          .transition().duration(t).ease(d3.easeCubicInOut)
+          .attr("x", g0.solid.x).attr("y", g0.solid.y)
+          .attr("width", g0.solid.w).attr("height", g0.solid.h);
+      });
+      secs.selectAll(".ln-ghost").transition().delay(t * .4).duration(t * .5).attr("fill-opacity", .26);
+      secs.selectAll(".ln-name").transition().delay(t * .5).duration(t * .4).style("opacity", 1);
+    }
+
+    /* the Count control: same chart, different question — where the job
+       sits, or what the residents do. Re-rank and re-scale in place. */
+    function setLens(k, animate){
+      if (k === lens) return;
+      lens = k;
+      cur = computeGeo();
+      document.querySelectorAll("#leanLensSeg .seg-btn").forEach(b => {
+        const on = b.dataset.l === lens;
+        b.classList.toggle("is-active", on);
+        b.setAttribute("aria-pressed", String(on));
+      });
+      const t = animate ? 600 : 0;
+      if (view === "bars"){
+        buildFurn();
+        furn.style("opacity", 1);
+        secs.each(function(d){
+          const g0 = cur.geo.get(d.data.name);
+          d3.select(this).select(".ln-solid")
+            .transition().duration(t).ease(d3.easeCubicInOut)
+            .attr("x", g0.bar.x).attr("y", g0.bar.y)
+            .attr("width", g0.bar.w).attr("height", g0.bar.h);
+        });
+      } else {
+        secs.each(function(d){
+          const g0 = cur.geo.get(d.data.name);
+          const s = d3.select(this);
+          s.select(".ln-solid")
+            .transition().duration(t).ease(d3.easeCubicInOut)
+            .attr("x", g0.solid.x).attr("y", g0.solid.y)
+            .attr("width", g0.solid.w).attr("height", g0.solid.h);
+          s.select(".ln-ghost")
+            .transition().duration(t).ease(d3.easeCubicInOut)
+            .attr("height", g0.ghost.h);
+        });
+      }
+      renderNote();
+    }
+    document.querySelectorAll("#leanLensSeg .seg-btn").forEach(b =>
+      b.addEventListener("click", () => setLens(b.dataset.l, true)));
+
+    /* every arrival replays: the blocks hold for a beat, then the solid
+       slices line up — scrolling away and back always runs it again */
+    function playSeq(){
+      clearTimeout(playTimer);
+      toBlocks(false);
+      playTimer = setTimeout(() => { if (visible && view === "blocks") toBars(true); }, 650);
+    }
+    const inView = () => {
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.top < window.innerHeight * .8 &&
+             r.bottom > window.innerHeight * .15;
+    };
+    const setVis = v => {
+      if (v === visible) return;
+      visible = v;
+      clearTimeout(playTimer);
+      if (v) playSeq();
+    };
+    const scroller = document.getElementById("pages");
+    if (scroller) scroller.addEventListener("scroll", () => setVis(inView()), { passive: true });
+    window.addEventListener("resize", () => setVis(inView()));
+
+    /* the superlative under whichever count is on */
+    function renderNote(){
+      const note = document.getElementById("leanNote");
+      if (!note) return;
+      const top = cur.rows[0], g0 = cur.geo.get(top.data.name);
+      if (lens === "work")
+        note.innerHTML = "<strong>" + top.data.name + "</strong> is " +
+          g0.r.toFixed(1) + "× as large a share here as in the metro — " +
+          Math.round(g0.share * 100) + "% of the metro’s " + top.data.name.toLowerCase() +
+          " sits inside the city, against " + Math.round(cur.overall * 100) +
+          "% of the metro’s jobs overall.";
+      else
+        note.innerHTML = "<strong>" + top.data.name + "</strong> leads what residents do — they hold " +
+          Math.round(g0.share * 100) + "% of the metro’s " + top.data.name.toLowerCase() +
+          " jobs, against " + Math.round(cur.overall * 100) + "% of all metro jobs.";
+    }
+    renderNote();
+
+    /* house tooltip: cursor top-right, works in both states and both counts */
+    const tip = document.getElementById("leanTip");
+    const wrap = document.getElementById("leanWrap");
+    if (tip && wrap){
+      secs.style("cursor", "default")
+       .on("mouseenter", function(ev, d){
+        const g0 = cur.geo.get(d.data.name);
+        const L = LENSES[lens];
+        tip.innerHTML = "<strong>" + d.data.name + "</strong>" +
+          '<div class="tip-row"><span>Lean vs the metro</span><span><b class="tip-pct">' +
+            g0.r.toFixed(2) + "×</b></span></div>" +
+          '<div class="tip-row"><span>' + L.shareLbl + '</span><span>' +
+            Math.round(g0.share * 100) + "%</span></div>" +
+          '<div class="tip-row"><span>' + L.allLbl + '</span><span>' +
+            Math.round(cur.overall * 100) + "%</span></div>";
+        tip.hidden = false;
+      })
+      .on("mousemove", function(ev){
+        cursorTipPos(ev, wrap, tip);
+      })
+      .on("mouseleave", function(){ tip.hidden = true; });
+    }
+  }
+
+  /* ---------- 4 · from the tradable map to what the metro leads on ----------
+     The closing beat of Metro Industries. It opens as a treemap of the
+     tradable industries the metro is specialised in, then every cell travels
+     to its own row and stretches into a bar: how many times more concentrated
+     the industry is here than in a typical US metro. The four peer metros'
+     average rides each row as a tick, and the top three are picked out. */
+  const SPEC_TOP_N = 12;
+
+  function initSpecializationMorph(){
+    const el = document.getElementById("specMorphSvg");
+    if (!el || typeof d3 === "undefined") return;
+
+    const all = specializedWithPeers().sort((a, b) => b.rca - a.rca);
+    if (!all.length) return;
+    const rows = all.slice(0, SPEC_TOP_N);
+    const keep = new Set(rows.map(d => d.name));
+
+    const W = 880, ML = 292, MT = 62, MB = 30, RH = 34, PLOT_R = 812;
+    const H = MT + rows.length * RH + MB;
+    el.setAttribute("viewBox", "0 0 " + W + " " + H);
+    el.setAttribute("height", H);
+
+    const svg = d3.select(el);
+    const x = d3.scaleLinear()
+      .domain([1, d3.max(all, d => Math.max(d.rca, d.peerAvg)) * 1.06])
+      .range([ML + 12, PLOT_R]);
+    const rowY = i => MT + i * RH + RH / 2;
+    const BAR_H = 17;
+    const TEAL = token("--teal", "#255862");
+
+    /* the opening treemap, laid out over the plot's own box so nothing has
+       to jump before the morph begins */
+    const tm = d3.hierarchy({ name: "S", children: all.map(d =>
+        ({ name: d.name, value: d.employ, sector: d.sector })) }).sum(d => d.value);
+    d3.treemap().size([W, H - 6]).paddingTop(1).paddingRight(1)
+      .paddingBottom(1).paddingLeft(1)(tm);
+    const cellBox = new Map();
+    tm.leaves().forEach(n => cellBox.set(n.data.name,
+      { x: n.x0, y: n.y0, w: n.x1 - n.x0, h: n.y1 - n.y0, sector: n.data.sector }));
+
+    let axisG = null, drawn = false;
+
+    function build(){
+      svg.selectAll("*").remove();
+      axisG = svg.append("g").attr("class", "spec-axis").style("opacity", 0);
+      const g = svg.append("g").attr("class", "spec-cells");
+
+      const cell = g.selectAll("g.spec-cell").data(all, d => d.name)
+        .join("g").attr("class", "spec-cell");
+      cell.append("rect").attr("class", "spec-rect")
+        .attr("x", d => cellBox.get(d.name).x).attr("y", d => cellBox.get(d.name).y)
+        .attr("width", d => cellBox.get(d.name).w).attr("height", d => cellBox.get(d.name).h)
+        .attr("fill", d => sectorColors[d.sector] || TEAL)
+        .attr("rx", 0);
+      cell.append("text").attr("class", "spec-cell-lab")
+        .attr("x", d => cellBox.get(d.name).x + 4).attr("y", d => cellBox.get(d.name).y + 11)
+        .text(d => fitLabel(d.label, { width: cellBox.get(d.name).w, height: cellBox.get(d.name).h }));
+      drawn = false;
+    }
+
+    function axis(){
+      axisG.selectAll("*").remove();
+      const ticks = x.ticks(5).filter(t => t >= 1);
+      const t = axisG.selectAll("g.spec-tick").data(ticks).join("g").attr("class", "spec-tick");
+      t.append("line").attr("class", d => "spec-grid" + (d === 1 ? " is-base" : ""))
+        .attr("x1", d => x(d)).attr("x2", d => x(d))
+        .attr("y1", MT - 18).attr("y2", MT + rows.length * RH);
+      t.append("text").attr("class", "spec-ticklab")
+        .attr("x", d => x(d)).attr("y", MT - 24).attr("text-anchor", "middle")
+        .text(d => d + "×");
+      axisG.append("text").attr("class", "spec-axname")
+        .attr("x", ML + 12).attr("y", MT - 42)
+        .text("Times more concentrated here than in a typical US metro");
+    }
+
+    function toBars(animate){
+      if (drawn) return;
+      drawn = true;
+      /* a reader who has asked for less motion gets the ranking itself, not
+         the journey to it — and the end state is then reachable without
+         waiting on a frame loop */
+      const reduce = window.matchMedia &&
+        matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const run = animate !== false && !reduce;
+
+      axis();
+      const cells = svg.selectAll("g.spec-cell");
+      const idx = new Map(rows.map((d, i) => [d.name, i]));
+      const bars = cells.filter(d => keep.has(d.name));
+      const barX = x(1);
+      const geom = {
+        x: barX,
+        y: d => rowY(idx.get(d.name)) - BAR_H / 2,
+        w: d => Math.max(2, x(d.rca) - barX),
+        fill: d => idx.get(d.name) < 3 ? TEAL : "#a9c2c7"
+      };
+
+      if (!run){
+        cells.filter(d => !keep.has(d.name)).remove();
+        svg.selectAll(".spec-cell-lab").remove();
+        bars.select(".spec-rect")
+          .attr("x", geom.x).attr("y", geom.y).attr("width", geom.w)
+          .attr("height", BAR_H).attr("rx", 3).attr("fill", geom.fill);
+        axisG.style("opacity", 1);
+        decorate(bars, idx, false);
+        return;
+      }
+
+      /* everything outside the ranking leaves first, so the rows it makes
+         room for are not travelling through a crowd */
+      cells.filter(d => !keep.has(d.name)).transition().duration(520)
+        .style("opacity", 0).remove();
+      svg.selectAll(".spec-cell-lab").transition().duration(260).style("opacity", 0);
+
+      let ended = false;
+      bars.select(".spec-rect").transition().delay(320).duration(1150)
+        .ease(d3.easeCubicInOut)
+        .attr("x", geom.x).attr("y", geom.y).attr("width", geom.w)
+        .attr("height", BAR_H).attr("rx", 3).attr("fill", geom.fill)
+        .on("end", function(){
+          if (ended) return;          // once for the group, not once per bar
+          ended = true;
+          decorate(bars, idx, true);
+        });
+
+      axisG.transition().delay(420).duration(600).style("opacity", 1);
+    }
+
+    /* the row's furniture arrives once the bars have stopped moving: name,
+       multiplier, the peer tick, and a rank badge on the leading three */
+    function decorate(bars, idx, animate){
+      const fade = (sel, delay) => animate
+        ? sel.style("opacity", 0).transition().delay(delay).duration(420).style("opacity", 1)
+        : sel;
+      bars.each(function(d){
+        const i = idx.get(d.name), g = d3.select(this), y = rowY(i), top3 = i < 3;
+        fade(g.append("text").attr("class", "spec-name" + (top3 ? " is-top" : ""))
+          .attr("x", ML - 10).attr("y", y + 4).attr("text-anchor", "end")
+          .text(d.label), 0);
+        fade(g.append("text").attr("class", "spec-val" + (top3 ? " is-top" : ""))
+          .attr("x", Math.max(x(d.rca), x(d.peerAvg)) + 9).attr("y", y + 4)
+          .text(d.rca.toFixed(1) + "\u00d7"), 120);
+        /* the peer metros' average, as a tick standing across the bar */
+        fade(g.append("line").attr("class", "spec-peer")
+          .attr("x1", x(d.peerAvg)).attr("x2", x(d.peerAvg))
+          .attr("y1", y - BAR_H / 2 - 4).attr("y2", y + BAR_H / 2 + 4), 260);
+        /* the leading three carry a numbered badge ahead of their label */
+        if (top3){
+          fade(g.append("circle").attr("class", "spec-badge-bg")
+            .attr("cx", 14).attr("cy", y).attr("r", 9), 0);
+          fade(g.append("text").attr("class", "spec-badge")
+            .attr("x", 14).attr("y", y + 3.5).attr("text-anchor", "middle")
+            .text(i + 1), 0);
+        }
+      });
+    }
+
+    build();
+    const btn = document.getElementById("specReplayBtn");
+    if (btn) btn.addEventListener("click", () => { build(); setTimeout(() => toBars(true), 420); });
+
+    new IntersectionObserver((entries, obs) => {
+      entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        setTimeout(() => toBars(true), 420);
+        obs.disconnect();
+      });
+    }, { threshold: 0.3 }).observe(el);
+  }
+
+  /* =====================================================================
+     Metro Industries — one figure, four states
+
+     The section's four beats share a single treemap that lives in the
+     scrolly's stage. Scrolling drives it between states, and every move is a
+     transition of the same cells, so nothing is ever redrawn from scratch:
+
+       0 · the metro's mix, coloured by sector
+       1 · the same mix, recoloured by how complex each industry is
+       2 · the mix parts into what sells outward and what serves locally
+       3 · the tradable, specialised half ranks itself as bars
+
+     It is driven by scroll position, so it plays in reverse on the way back
+     up; that is why nothing is ever removed, only faded. */
+  const MI_W = 880, MI_H = 500, MI_TOP_N = 12;
+
+  /* The coarse grain. The mix is drawn industry by industry everywhere else;
+     the admin beat opens one level up, where each sector shows only its
+     largest industries and rolls the rest into a single block. Areas are
+     preserved, so the coarse map covers exactly the same ground as the fine
+     one — only the level of detail changes. */
+  /* "Ordered by jobs" has to be readable as an order, and no treemap tiling
+     gives that: squarify chases square cells and throws the sequence away,
+     binary keeps it only loosely, and slice or dice would put 161 industries
+     in slivers under a pixel. This is a strip layout — the classic answer.
+     Cells run largest first, left to right along a row, then on to the next
+     row, and a row closes when adding one more would make its cells worse
+     shaped. Area still encodes jobs; only the reading order is imposed. */
+  function stripLayout(rows, W, H, gap){
+    const g = gap === undefined ? 1 : gap;
+    const items = rows.slice().sort((a, b) => b.employ - a.employ);
+    const total = items.reduce((s, d) => s + d.employ, 0) || 1;
+    const scale = (W * H) / total;
+    const out = new Map();
+    let i = 0, y = 0;
+    while (i < items.length){
+      let sum = 0, best = Infinity, count = 0;
+      for (let k = i; k < items.length; k++){
+        const trySum = sum + items[k].employ * scale;
+        const rowH = trySum / W;
+        let worst = 0;
+        for (let m = i; m <= k; m++){
+          const wI = (items[m].employ * scale) / rowH;
+          worst = Math.max(worst, Math.max(wI / rowH, rowH / wI));
+        }
+        if (worst <= best){ best = worst; sum = trySum; count = k - i + 1; }
+        else break;
+      }
+      if (!count){ count = 1; sum = items[i].employ * scale; }
+      const rowH = sum / W;
+      let x = 0;
+      for (let m = i; m < i + count; m++){
+        const wI = (items[m].employ * scale) / rowH;
+        out.set(items[m].name, {
+          x: x + g / 2, y: y + g / 2,
+          w: Math.max(0, wI - g), h: Math.max(0, rowH - g)
+        });
+        x += wI;
+      }
+      y += rowH; i += count;
+    }
+    return out;
+  }
+
+  function twoDigitRows(rows, keepPerSector){
+    const keep = keepPerSector || 3, bySector = {};
+    rows.forEach(d => { (bySector[d.sector] = bySector[d.sector] || []).push(d); });
+    const out = [];
+    Object.keys(bySector).forEach(sec => {
+      const list = bySector[sec].slice().sort((a, b) => b.employ - a.employ);
+      list.slice(0, keep).forEach(d => out.push({ name: d.name, sector: sec, employ: d.employ }));
+      const rest = list.slice(keep);
+      if (rest.length) out.push({
+        /* the catch-all sector would otherwise read "Other Other" */
+        name: sec === "Other" ? "All other industries" : "Other " + sec,
+        sector: sec, coarse: true,
+        employ: rest.reduce((a, d) => a + d.employ, 0)
+      });
+    });
+    return out;
+  }
+
+  /* The administrative city's own mix, derived from the metro's until real
+     place-level employment is wired in: every industry keeps a share of its
+     metro jobs, and the less tradable it is the larger that share, because
+     local-serving work sits where the people are while exporters spread
+     across the region. It lands near the 24% of metro jobs the section's
+     other figures already quote for the admin. */
+  const adminIndustryData = industryData.map(d => Object.assign({}, d, {
+    employ: d.employ * (0.17 + 0.15 * (1 - tradabilityOf(d.name)))
+  }));
+
+  /* The same figure serves any section built on this grammar; `p` is the id
+     prefix its markup uses and `rows` the industry set it reads, so the metro
+     and the administrative city each get their own instance. */
+  function initIndustryFigure(p, rows, ctlName, opts){
+    opts = opts || {};
+    const el = document.getElementById(p + "TreemapSvg");
+    const fig = document.getElementById(p + "Figure");
+    if (!el || !fig || typeof d3 === "undefined") return;
+    const industryData = rows;
+
+    const svg = d3.select(el);
+    const TEAL = token("--teal", "#255862");
+    const MUTED = "#a9c2c7";
+    const ORANGE = token("--orange", "#e76565");
+
+    const box = (n, dx) => ({ x: n.x0 + (dx || 0), y: n.y0,
+                              w: Math.max(0, n.x1 - n.x0), h: Math.max(0, n.y1 - n.y0) });
+    /* the reference build separates sectors by 8px and cells by 1, with no
+       stroke on the cells — so the clustering reads as grouping rather than
+       as a grid. paddingOuter is half the sector gutter, since two
+       neighbouring sectors each contribute their own. */
+    function tmap(rows, w, h, grouped){
+      const node = grouped
+        ? d3.hierarchy(hierarchyFor(rows, "MI")).sum(d => d.value)
+        : d3.hierarchy({ name: "MI", children: rows.map(r => ({ name: r.name, value: r.employ })) })
+            .sum(d => d.value);
+      const t = d3.treemap().size([w, h]).paddingInner(1);
+      /* 3.5 either side plus the 1 of paddingInner is the reference's 8 */
+      if (grouped) t.paddingOuter(3.5);
+      t(node);
+      return node;
+    }
+
+    /* ---- the three geometries, worked out once ---- */
+    const full = tmap(industryData, MI_W, MI_H, true);
+    const posFull = new Map(full.leaves().map(n => [n.data.name, box(n)]));
+    /* the same industries with the sector walls taken down, so the biggest
+       run from the top-left corner in plain order of size */
+    let view = "map";
+    /* what the map beats colour their cells by: the sector, or how much
+       know-how each industry takes */
+    let colorBy = "sector";
+    const fillBy = d => colorBy === "complexity" ? complexityColor(d.name) : sectorColors[d.sector];
+    const spot = d => posFull.get(d.name);
+
+    const GAP = 8, HALF = (MI_W - GAP) / 2;
+    const outward = industryData.filter(d => tradabilityOf(d.name) >= 0.5);
+    const local   = industryData.filter(d => tradabilityOf(d.name) <  0.5);
+    const posSplit = new Map();
+    tmap(outward, HALF, MI_H, true).leaves()
+      .forEach(n => posSplit.set(n.data.name, box(n)));
+    tmap(local, HALF, MI_H, false).leaves()
+      .forEach(n => posSplit.set(n.data.name, box(n, HALF + GAP)));
+
+    /* ---- three clusters by tradability, the most tradable on the left.
+       Column width is the cluster's share of jobs; inside each column the
+       industries keep their sector walls, so colour stays the sector's and
+       position alone carries tradability. ---- */
+    const CL_HI = 0.5, CL_LO = 0.35;
+    const clusterOf = d => { const t = tradabilityOf(d.name); return t >= CL_HI ? 0 : t >= CL_LO ? 1 : 2; };
+    const clusterRows = [0, 1, 2].map(k => industryData.filter(d => clusterOf(d) === k));
+    const jobsTotal = d3.sum(industryData, d => d.employ) || 1;
+    const clusterShare = clusterRows.map(l => d3.sum(l, d => d.employ) / jobsTotal);
+    const CGAP = 8, CW = MI_W - 2 * CGAP;
+    const posCluster = new Map(), posClusterFlat = new Map();
+    {
+      let x0 = 0;
+      clusterRows.forEach((l, k) => {
+        const w = Math.max(36, CW * clusterShare[k]);
+        if (l.length){
+          tmap(l, w, MI_H, true).leaves()
+            .forEach(n => posCluster.set(n.data.name, box(n, x0)));
+          /* the same column in plain size order, for the Ordered view */
+          const off = x0;
+          stripLayout(l, w, MI_H).forEach((b, name) =>
+            posClusterFlat.set(name, { x: b.x + off, y: b.y, w: b.w, h: b.h }));
+        }
+        x0 += w + CGAP;
+      });
+    }
+    const clusterSpot = d => posCluster.get(d.name) || posFull.get(d.name);
+    /* all three clusters wear one colouring: the columns already carry the
+       tradability, so colour is free to say sector, or complexity */
+    const clusterFill = fillBy;
+    /* the tradable cluster alone, filling the width: the tradability-first
+       narrative's second beat colours it by complexity */
+    const tradRows = clusterRows[0];
+    const posTrad = new Map(tradRows.length
+      ? tmap(tradRows, MI_W, MI_H, true).leaves().map(n => [n.data.name, box(n)]) : []);
+    const posTradFlat = tradRows.length ? stripLayout(tradRows, MI_W, MI_H) : new Map();
+    const tradSpot = d => posTrad.get(d.name);
+
+    /* ---- Ordered by jobs: the same cells as a ranked bar chart. The top
+       rows by jobs become bars, named on the left and valued at the end;
+       every other cell keeps its place in the map and fades, so it can come
+       back when the map does. One ranking is over the whole mix, one over
+       the tradable cluster for the beat that shows that alone. ---- */
+    const NB = 25, BML = 292, BMT = 48, BRH = 18.0, BBAR = 12, BPR = 812;
+    const byJobsAll = industryData.slice().sort((a, b) => b.employ - a.employ);
+    const barScale = d3.scaleLinear()
+      .domain([0, (byJobsAll[0] ? byJobsAll[0].employ : 1) * 1.04]).range([BML + 12, BPR]);
+    const barRankAll = new Map(byJobsAll.slice(0, NB).map((d, i) => [d.name, i]));
+    const byJobsTrad = clusterRows[0].slice().sort((a, b) => b.employ - a.employ);
+    const barRankTrad = new Map(byJobsTrad.slice(0, NB).map((d, i) => [d.name, i]));
+    const barY = i => BMT + i * BRH + BRH / 2;
+    const asBars = (d, rankMap, fill, fallback) => {
+      const r = rankMap.get(d.name);
+      return r == null
+        ? { box: fallback, fill, op: 0, rx: 0 }
+        : { box: { x: barScale(0), y: barY(r) - BBAR / 2,
+                   w: Math.max(2, barScale(d.employ) - barScale(0)), h: BBAR }, fill, op: 1, rx: 3 };
+    };
+    window[ctlName + "_CLUSTERS"] = { share: clusterShare, gap: CGAP, width: MI_W };
+
+    const ML = 292, MT = 62, RH = 34, BAR_H = 17, PLOT_R = 712;
+    /* the tradability column, between the bars and the jobs column */
+    const TC_R = 796, TC_W = 56;
+    const rowY = i => MT + i * RH + RH / 2;
+    /* A ranking over a set of industries: the top twelve by concentration,
+       with the scale they need. Two are kept. One is over the whole mix, for
+       the narrative that reads sector first; the other is over the tradable
+       cluster alone, for the narrative that reads tradability first, so its
+       bars only ever rise from cells that were on screen the beat before. */
+    /* the specializations among a set of industries. The tool's older
+       tradable flag is a separate draw from the 0-1 score, and filtering on
+       it would drop cells the clusters count as tradable, so a set picked by
+       the score is judged on concentration alone. Shares are of all metro
+       jobs, which is what the card says they are. */
+    /* rcaOf and peersFor draw from the one seeded sequence the rest of the
+       tool shares, and cache what they draw. Before this ranking, only
+       industries the older flag admits were ever asked about, so asking about
+       the others here would move every later draw — the metro scatter's
+       background metros among them. So a value already drawn is used as it
+       stands, and one not yet drawn comes from a generator seeded on the
+       industry's own name, with the same formula, touching neither the shared
+       sequence nor its caches. */
+    const nameRand = key => {
+      let h = 2166136261;
+      for (const c of key){ h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); }
+      let st = (h >>> 0) || 1;
+      return () => (st = (st * 1664525 + 1013904223) >>> 0) / 4294967296;
+    };
+    const rcaQuiet = name => {
+      if (rcaByName.has(name)) return rcaByName.get(name);
+      if (rcaSeed[name]) return rcaSeed[name].rca;
+      const r = nameRand(name + "|rca");
+      const v = r() < 0.80 ? 0.15 + r() * 0.8 : 1.02 + r() * 0.8;
+      return Math.round(v * 100) / 100;
+    };
+    const peersQuiet = (name, cityRca) => {
+      if (peerByName.has(name)) return peerByName.get(name);
+      const r = nameRand(name + "|peers");
+      const target = Math.max(1.15, cityRca * (0.4 + r() * 0.85));
+      const jitter = PEERS.map(() => 0.62 + r() * 0.76);
+      const mean = jitter.reduce((a, j) => a + j, 0) / jitter.length;
+      const values = jitter.map(j => Math.round(target * (j / mean) * 10) / 10);
+      const avg = Math.round((values.reduce((a, v) => a + v, 0) / values.length) * 10) / 10;
+      return { values: values, avg: avg };
+    };
+    function specializedAmong(rows){
+      const total = d3.sum(industryData, d => d.employ) || 1;
+      const shown = v => Math.round(v * 10) / 10;
+      return rows.filter(d => rcaQuiet(d.name) > 1).map(d => {
+        const rca = rcaQuiet(d.name), localPct = d.employ / total * 100, pr = peersQuiet(d.name, rca);
+        return { name: d.name, sector: d.sector, employ: d.employ, rca: rca,
+          localPct: localPct, worldPct: localPct / rca,
+          label: (rcaSeed[d.name] || {}).short ||
+                 (d.name.length > 40 ? d.name.slice(0, 37) + "\u2026" : d.name),
+          peerAvg: pr.avg, peerValues: pr.values, ahead: shown(rca) >= shown(pr.avg) };
+      });
+    }
+    function ranking(rows, among){
+      const base = among ? specializedAmong(rows) : specializedWithPeers(rows);
+      const ranked = base.sort((a, b) => b.rca - a.rca).slice(0, MI_TOP_N);
+      return { ranked,
+        rankIdx: new Map(ranked.map((d, i) => [d.name, i])),   /* by concentration: the badges' order */
+        pos: new Map(ranked.map((d, i) => [d.name, i])),       /* the order on screen, which sorting changes */
+        rankRow: new Map(ranked.map(d => [d.name, d])),
+        xr: d3.scaleLinear()
+          .domain([1, (d3.max(ranked, d => Math.max(d.rca, d.peerAvg)) || 2) * 1.06])
+          .range([ML + 12, PLOT_R]),
+        /* the gap against the peer average, symmetric so the average sits
+           mid-chart: ahead to the right, behind to the left */
+        xg: (function(){
+          const g = Math.max(0.5, (d3.max(ranked, d => Math.abs(d.rca - d.peerAvg)) || 0.5) * 1.15);
+          return d3.scaleLinear().domain([-g, g]).range([ML + 12, PLOT_R]);
+        })() };
+    }
+    const gapOf = d => d.rca - d.peerAvg;
+    const gapBox = (R, d, pos) => {
+      const g = gapOf(d), x0 = Math.min(R.xg(0), R.xg(g));
+      return { x: x0, y: rowY(pos) - BAR_H / 2, w: Math.max(2, Math.abs(R.xg(g) - R.xg(0))), h: BAR_H };
+    };
+    /* the three orders a reader can ask for: how concentrated, how big, and
+       how far ahead of or behind the peers */
+    const SORTS = {
+      rca:  (a, b) => b.rca - a.rca,
+      jobs: (a, b) => b.employ - a.employ,
+      gap:  (a, b) => (b.rca - b.peerAvg) - (a.rca - a.peerAvg),
+      trad: (a, b) => tradabilityOf(b.name) - tradabilityOf(a.name)
+    };
+    let sortKey = "rca";
+    function reorder(R){
+      const order = R.ranked.slice().sort(SORTS[sortKey] || SORTS.rca);
+      R.pos = new Map(order.map((d, i) => [d.name, i]));
+    }
+    /* the ranking the third beat shows is over the two tradable clusters —
+       the most tradable and the ones that sell some of both — so its bars
+       rise only from cells that were in those two columns a beat before */
+    const R1 = ranking(industryData), R2 = ranking(clusterRows[0].concat(clusterRows[1]), true);
+    const ranked = R1.ranked, rankIdx = R1.rankIdx, rankRow = R1.rankRow, xr = R1.xr;
+
+    /* every industry, with everything each state needs to place and paint it */
+    const cells = industryData.map(d => ({
+      name: d.name, sector: d.sector, employ: d.employ,
+      rank: rankIdx.has(d.name) ? rankIdx.get(d.name) : -1,
+      row: rankRow.get(d.name) || null,
+      rank2: R2.rankIdx.has(d.name) ? R2.rankIdx.get(d.name) : -1,
+      row2: R2.rankRow.get(d.name) || null
+    }));
+
+    const STATE = {
+      0: d => view === "alt" ? asBars(d, barRankAll, sectorColors[d.sector], spot(d))
+                             : { box: spot(d), fill: sectorColors[d.sector], op: 1, rx: 0 },
+      1: d => view === "alt" ? asBars(d, barRankAll, complexityColor(d.name), spot(d))
+                             : { box: spot(d), fill: complexityColor(d.name), op: 1, rx: 0 },
+      2: d => ({ box: posSplit.get(d.name) || posFull.get(d.name),
+                 fill: tradabilityOf(d.name) >= 0.5 ? sectorColors[d.sector] : GREY,
+                 op: 1, rx: 0 }),
+      3: d => d.rank < 0
+        ? { box: posSplit.get(d.name) || posFull.get(d.name), fill: GREY, op: 0, rx: 0 }
+        : sortKey === "gap"
+          ? { box: gapBox(R1, d.row, R1.pos.get(d.name)), fill: gapOf(d.row) >= 0 ? TEAL : ORANGE, op: 1, rx: 3 }
+          : { box: { x: xr(1), y: rowY(R1.pos.get(d.name)) - BAR_H / 2,
+                     w: Math.max(2, xr(d.row.rca) - xr(1)), h: BAR_H },
+              fill: d.rank < 3 ? TEAL : MUTED, op: 1, rx: 3 },
+      /* the three clusters by tradability, the most tradable on the left */
+      4: d => view === "alt"
+        ? asBars(d, barRankAll, clusterFill(d), clusterSpot(d))
+        : { box: clusterSpot(d), fill: clusterFill(d), op: 1, rx: 0 },
+      /* the tradable cluster on its own, the full width, read by complexity;
+         everything else stays where the clusters left it and fades */
+      5: d => clusterOf(d) === 0
+        ? (view === "alt"
+            ? asBars(d, barRankTrad, complexityColor(d.name), tradSpot(d) || posFull.get(d.name))
+            : { box: tradSpot(d) || posFull.get(d.name), fill: complexityColor(d.name), op: 1, rx: 0 })
+        : { box: clusterSpot(d), fill: GREY, op: 0, rx: 0 },
+      /* the most tradable cluster alone, the full width: the first beat. The
+         rest wait unseen where the clusters will put them, already in the
+         colour they will wear, so the second beat fades them in in place */
+      7: d => clusterOf(d) === 0
+        ? (view === "alt"
+            ? asBars(d, barRankTrad, fillBy(d), tradSpot(d) || posFull.get(d.name))
+            : { box: tradSpot(d) || posFull.get(d.name), fill: fillBy(d), op: 1, rx: 0 })
+        : { box: clusterSpot(d), fill: fillBy(d), op: 0, rx: 0 },
+      /* the ranking the two tradable clusters turn into. Arriving, it runs in
+         two movements: everything that will not be a bar fades where it
+         stands, then the ranked cells travel out of their columns and settle
+         into bars */
+      6: d => d.rank2 < 0
+        ? { box: clusterSpot(d), fill: fillBy(d), op: 0, rx: 0 }
+        : sortKey === "gap"
+          ? { box: gapBox(R2, d.row2, R2.pos.get(d.name)), fill: gapOf(d.row2) >= 0 ? TEAL : ORANGE,
+              op: 1, rx: 3, delay: arriving ? 300 : 0 }
+          : { box: { x: R2.xr(1), y: rowY(R2.pos.get(d.name)) - BAR_H / 2,
+                     w: Math.max(2, R2.xr(d.row2.rca) - R2.xr(1)), h: BAR_H },
+              fill: d.rank2 < 3 ? TEAL : MUTED, op: 1, rx: 3, delay: arriving ? 300 : 0 }
+    };
+
+    /* ---- the marks ---- */
+    svg.selectAll("*").remove();
+    const gAxis = svg.append("g").attr("class", "mi-axis").style("opacity", 0);
+    const gAxis2 = svg.append("g").attr("class", "mi-axis").style("opacity", 0);
+    const gAxisGap  = svg.append("g").attr("class", "mi-axis").style("opacity", 0);
+    const gAxisGap2 = svg.append("g").attr("class", "mi-axis").style("opacity", 0);
+    const gCells = svg.append("g").attr("class", "mi-cells");
+    const gRows  = svg.append("g").attr("class", "mi-rows").style("opacity", 0);
+    const gRows2 = svg.append("g").attr("class", "mi-rows").style("opacity", 0);
+    const gBarsAll  = svg.append("g").attr("class", "mi-rows mi-bars").style("opacity", 0);
+    const gBarsTrad = svg.append("g").attr("class", "mi-rows mi-bars").style("opacity", 0);
+    let coarseCell = null, posCoarse = null, posCoarseFlat = null, coarseShare = null;
+    if (opts.adminReveal){
+      /* This beat asks how much of the METRO's work happens in the city, so
+         it opens on the metro's own mix, aggregated one level up. The beats
+         after it read the administrative city, which is the set this figure
+         otherwise carries. */
+      const revealRows = opts.revealRows || industryData;
+      const coarse = twoDigitRows(revealRows);
+      posCoarse = new Map(tmap(coarse, MI_W, MI_H, true).leaves()
+        .map(n => [n.data.name, box(n)]));
+      posCoarseFlat = stripLayout(coarse, MI_W, MI_H);
+      coarseShare = d => ADMIN_SHARE[d.sector] !== undefined ? ADMIN_SHARE[d.sector] : 0.15;
+
+      /* the sector's own colour, once pale and once full: the pale ground is
+         the whole of that work across the metro, and the full band standing
+         on the foot of the block is the part of it inside the city */
+      const pale = sec => d3.interpolateRgb(sectorColors[sec] || "#ccc", "#ffffff")(0.66);
+
+      const gCoarse = svg.insert("g", ".mi-cells").attr("class", "mi-coarse");
+      coarseCell = gCoarse.selectAll("g.mi-cell").data(coarse, d => d.name)
+        .join("g").attr("class", "mi-cell");
+      coarseCell.append("rect").attr("class", "mi-rect")
+        .attr("fill", d => sectorColors[d.sector] || "#ccc");
+      coarseCell.append("rect").attr("class", "mi-share")
+        .attr("fill", d => sectorColors[d.sector] || "#ccc")
+        .attr("height", 0);
+      coarseCell.append("text").attr("class", "mi-lab");
+      /* one figure per sector, on its largest block */
+      const biggest = {};
+      coarse.forEach(d => {
+        const cur = biggest[d.sector];
+        if (!cur || d.employ > cur.employ) biggest[d.sector] = d;
+      });
+      coarseCell.filter(d => biggest[d.sector] === d)
+        .append("text").attr("class", "mi-share-pct")
+        .text(d => Math.round(coarseShare(d) * 100) + "% here");
+    }
+
+    const cell = gCells.selectAll("g.mi-cell").data(cells, d => d.name)
+      .join("g").attr("class", "mi-cell");
+    cell.append("rect").attr("class", "mi-rect cell");
+    cell.append("text").attr("class", "mi-lab");
+
+    /* the ranking's own furniture, drawn once per ranking and revealed with
+       its state: the axis and its name, the leading three braced, and each
+       row's name, value, peer tick and badge */
+    function drawGapAxis(R, AG){
+      const ticks = R.xg.ticks(5);
+      AG.selectAll("g.mi-tick").data(ticks).join("g").attr("class", "mi-tick")
+        .call(g => g.append("line").attr("class", d => "mi-grid" + (d === 0 ? " is-base" : ""))
+          .attr("x1", d => R.xg(d)).attr("x2", d => R.xg(d))
+          .attr("y1", MT - 18).attr("y2", MT + R.ranked.length * RH))
+        .call(g => g.append("text").attr("class", "mi-ticklab")
+          .attr("x", d => R.xg(d)).attr("y", MT - 24).attr("text-anchor", "middle")
+          .text(d => (d > 0 ? "+" : "") + d + "\u00d7"));
+      AG.append("text").attr("class", "mi-axname")
+        .attr("x", ML + 12).attr("y", MT - 42)
+        .text("Concentration against the four peers\u2019 average: ahead to the right, behind to the left");
+      AG.append("text").attr("class", "mi-colhead")
+        .attr("x", MI_W - 6).attr("y", MT - 24).attr("text-anchor", "end").text("jobs");
+      tradHead(AG);
+    }
+    /* the tradability column's head: the name, and the score's range under it */
+    function tradHead(A){
+      A.append("text").attr("class", "mi-colhead")
+        .attr("x", TC_R).attr("y", MT - 24).attr("text-anchor", "end").text("tradability");
+      A.append("text").attr("class", "mi-colsub")
+        .attr("x", TC_R).attr("y", MT - 11).attr("text-anchor", "end").text("0 to 1");
+    }
+    function drawRanking(R, A, G){
+      A.selectAll("g.mi-tick").data(R.xr.ticks(5).filter(t => t >= 1)).join("g")
+        .attr("class", "mi-tick")
+        .call(g => g.append("line").attr("class", d => "mi-grid" + (d === 1 ? " is-base" : ""))
+          .attr("x1", d => R.xr(d)).attr("x2", d => R.xr(d))
+          .attr("y1", MT - 18).attr("y2", MT + R.ranked.length * RH))
+        .call(g => g.append("text").attr("class", "mi-ticklab")
+          .attr("x", d => R.xr(d)).attr("y", MT - 24).attr("text-anchor", "middle")
+          .text(d => d + "\u00d7"));
+      A.append("text").attr("class", "mi-axname")
+        .attr("x", ML + 12).attr("y", MT - 42)
+        .text("Times more concentrated here than in a typical US metro");
+      /* the jobs column: its head, and each row's count at the right edge */
+      A.append("text").attr("class", "mi-colhead")
+        .attr("x", MI_W - 6).attr("y", MT - 24).attr("text-anchor", "end").text("jobs");
+      tradHead(A);
+      /* the leading three by concentration, braced only while that is the order */
+      const topN = Math.min(3, R.ranked.length);
+      R.brace = A.append("g").attr("class", "mi-bracewrap");
+      if (topN){
+        const y0 = rowY(0) - BAR_H / 2 - 5, y1 = rowY(topN - 1) + BAR_H / 2 + 5;
+        R.brace.append("path").attr("class", "mi-brace").attr("d", "M4," + y0 + "V" + y1);
+        R.brace.append("text").attr("class", "mi-toplab")
+          .attr("x", 4).attr("y", y0 - 9)
+          .text("Most specialized tradable industries");
+      }
+      const row = G.selectAll("g.mi-row").data(R.ranked, d => d.name)
+        .join("g").attr("class", "mi-row")
+        .attr("transform", d => "translate(0," + rowY(R.pos.get(d.name)) + ")");
+      const top = d => R.rankIdx.get(d.name) < 3;
+      row.append("text").attr("class", d => "mi-name" + (top(d) ? " is-top" : ""))
+        .attr("x", ML - 10).attr("y", 4).attr("text-anchor", "end").text(d => d.label);
+      row.append("text").attr("class", d => "mi-val" + (top(d) ? " is-top" : ""))
+        .attr("x", d => Math.max(R.xr(d.rca), R.xr(d.peerAvg)) + 9).attr("y", 4)
+        .text(d => d.rca.toFixed(1) + "\u00d7");
+      row.append("line").attr("class", "mi-peer")
+        .attr("x1", d => R.xr(d.peerAvg)).attr("x2", d => R.xr(d.peerAvg))
+        .attr("y1", -BAR_H / 2 - 4).attr("y2", BAR_H / 2 + 4);
+      /* the jobs column: the count, and a short bar beneath it so size reads
+         as a second small chart in every order the rows can take */
+      const jb = d3.scaleLinear().domain([0, d3.max(R.ranked, d => d.employ) || 1]).range([0, 58]);
+      row.append("text").attr("class", "mi-jobs")
+        .attr("x", MI_W - 6).attr("y", 1).attr("text-anchor", "end")
+        .text(d => d.employ >= 1000 ? Math.round(d.employ / 1000) + "K" : Math.round(d.employ));
+      row.append("rect").attr("class", "mi-jobsbar")
+        .attr("x", d => MI_W - 6 - jb(d.employ)).attr("y", 5)
+        .attr("width", d => Math.max(1, jb(d.employ))).attr("height", 4).attr("rx", 2);
+      /* the tradability column, built the way the jobs column is: the score,
+         and a short track beneath it from 0 to 1, filled as far as the score
+         reaches, with a tick at 0.5 where the most tradable cluster begins */
+      const tw = d3.scaleLinear().domain([0, 1]).range([0, TC_W]);
+      row.append("text").attr("class", "mi-trad")
+        .attr("x", TC_R).attr("y", 1).attr("text-anchor", "end")
+        .text(d => tradabilityOf(d.name).toFixed(2));
+      row.append("rect").attr("class", "mi-tradtrack")
+        .attr("x", TC_R - TC_W).attr("y", 5).attr("width", TC_W).attr("height", 4).attr("rx", 2);
+      row.append("rect").attr("class", "mi-tradbar")
+        .attr("x", TC_R - TC_W).attr("y", 5).attr("height", 4).attr("rx", 2)
+        .attr("width", d => Math.max(1, tw(tradabilityOf(d.name))));
+      row.append("line").attr("class", "mi-tradtick")
+        .attr("x1", TC_R - TC_W + tw(CL_HI)).attr("x2", TC_R - TC_W + tw(CL_HI))
+        .attr("y1", 10).attr("y2", 13.5);
+      row.filter(top).call(g => {
+        g.append("circle").attr("class", "mi-badge-bg").attr("cx", 14).attr("cy", 0).attr("r", 9);
+        g.append("text").attr("class", "mi-badge").attr("x", 14).attr("y", 3.5)
+          .attr("text-anchor", "middle").text(d => R.rankIdx.get(d.name) + 1);
+      });
+      R.row = row;
+    }
+    /* the rows to their places in the current order */
+    function placeRanking(R, animate){
+      if (!R.row) return;
+      const dur = animate ? 800 : 0;
+      const t = sel => dur ? sel.transition().duration(dur).ease(d3.easeCubicInOut) : sel;
+      t(R.row).attr("transform", d => "translate(0," + rowY(R.pos.get(d.name)) + ")");
+      (dur ? R.brace.transition().duration(dur / 2) : R.brace)
+        .style("opacity", sortKey === "rca" ? 1 : 0);
+      /* under the peers order the value is the gap, printed at the bar's
+         far end; the peer tick stands down, since the average is the line */
+      const gap = sortKey === "gap";
+      const val = R.row.select(".mi-val");
+      val.text(d => gap ? ((gapOf(d) >= 0 ? "+" : "\u2212") + Math.abs(gapOf(d)).toFixed(1) + "\u00d7")
+                        : d.rca.toFixed(1) + "\u00d7");
+      t(val).attr("x", d => gap ? (gapOf(d) >= 0 ? R.xg(gapOf(d)) + 8 : R.xg(gapOf(d)) - 8)
+                                : Math.max(R.xr(d.rca), R.xr(d.peerAvg)) + 9)
+        .attr("text-anchor", d => gap && gapOf(d) < 0 ? "end" : "start");
+      t(R.row.select(".mi-peer")).style("opacity", gap ? 0 : 1);
+    }
+    drawRanking(R1, gAxis, gRows);
+    drawRanking(R2, gAxis2, gRows2);
+    drawGapAxis(R1, gAxisGap);
+    drawGapAxis(R2, gAxisGap2);
+
+    /* the bars' furniture: a jobs axis, the names on the left, the value at
+       each bar's end */
+    const fmtJobs = v => v >= 1000 ? Math.round(v / 1000) + "K" : String(Math.round(v));
+    const shortName = n => n.length > 36 ? n.slice(0, 35).replace(/\s+\S*$/, "") + "\u2026" : n;
+    function drawBars(list, G){
+      const rows = list.slice(0, NB);
+      G.selectAll("g.mi-tick").data(barScale.ticks(4)).join("g").attr("class", "mi-tick")
+        .call(g => g.append("line").attr("class", d => "mi-grid" + (d === 0 ? " is-base" : ""))
+          .attr("x1", d => barScale(d)).attr("x2", d => barScale(d))
+          .attr("y1", BMT - 14).attr("y2", BMT + rows.length * BRH))
+        .call(g => g.append("text").attr("class", "mi-ticklab")
+          .attr("x", d => barScale(d)).attr("y", BMT - 20).attr("text-anchor", "middle")
+          .text(d => fmtJobs(d)));
+      G.append("text").attr("class", "mi-axname")
+        .attr("x", BML + 12).attr("y", BMT - 36).text("Jobs in the metro");
+      const row = G.selectAll("g.mi-row").data(rows, d => d.name).join("g").attr("class", "mi-row");
+      row.append("text").attr("class", "mi-name")
+        .attr("x", BML - 10).attr("y", (d, i) => barY(i) + 4).attr("text-anchor", "end")
+        .text(d => shortName(d.name));
+      row.append("text").attr("class", "mi-val")
+        .attr("x", d => barScale(d.employ) + 8).attr("y", (d, i) => barY(i) + 4)
+        .text(d => fmtJobs(d.employ));
+    }
+    drawBars(byJobsAll, gBarsAll);
+    drawBars(byJobsTrad, gBarsTrad);
+
+    let step = -1, painted = -1, arriving = false;
+    const reduced = () => window.matchMedia &&
+      matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    function paint(i, animate){
+      /* only a first arrival at the ranking is staged; re-sorting it is not */
+      arriving = !!animate && i === 6 && painted !== 6;
+      const at = STATE[i];
+      const dur = animate ? 950 : 0;
+      const rects = cell.select(".mi-rect");
+      const sel = dur ? rects.transition().delay(d => at(d).delay || 0)
+        .duration(dur).ease(d3.easeCubicInOut) : rects;
+      sel.attr("x", d => at(d).box.x).attr("y", d => at(d).box.y)
+         .attr("width", d => at(d).box.w).attr("height", d => at(d).box.h)
+         .attr("fill", d => at(d).fill).attr("rx", d => at(d).rx)
+         .style("opacity", d => at(d).op);
+      /* a cell faded out of the ranking must not answer the cursor */
+      rects.style("pointer-events", d => at(d).op > 0 ? null : "none");
+
+      /* labels ride the cells while there is room for them, and stand down
+         once the mix becomes a ranking that carries its own names */
+      const labs = cell.select(".mi-lab");
+      const barsOn = view === "alt" && (i === 0 || i === 1 || i === 4 || i === 5 || i === 7);
+      if (i === 3 || i === 6 || barsOn){
+        (dur ? labs.transition().duration(dur / 3) : labs).style("opacity", 0);
+      } else {
+        labs.attr("x", d => at(d).box.x + 4).attr("y", d => at(d).box.y + 11)
+          .text(d => fitLabel(d.name, { width: at(d).box.w, height: at(d).box.h }));
+        (dur ? labs.transition().delay(dur / 2).duration(dur / 2) : labs)
+          .style("opacity", d => at(d).op > 0 ? 1 : 0);
+      }
+      const show = (g, on, delay) => (dur ? g.transition().delay(on ? (delay || 0) : 0).duration(dur / 2) : g)
+        .style("opacity", on ? 1 : 0);
+      const gapMode = sortKey === "gap";
+      /* on arrival the ranking's names and columns come in once the bars
+         have nearly settled */
+      const late = arriving ? dur * 0.7 : 0;
+      show(gAxis, i === 3 && !gapMode);
+      show(gAxisGap, i === 3 && gapMode);
+      show(gRows, i === 3);
+      show(gAxis2, i === 6 && !gapMode, late);
+      show(gAxisGap2, i === 6 && gapMode, late);
+      show(gRows2, i === 6, late);
+      show(gBarsAll, barsOn && i !== 5 && i !== 7);
+      show(gBarsTrad, barsOn && (i === 5 || i === 7));
+      /* on the reveal section the opening beat rests on the admin bands: the
+         cells fade first, the blocks behind them come forward, and the veil
+         drops last. Leaving the beat runs the same three in reverse. */
+      if (opts.adminReveal && coarseCell){
+        const onZero = i === 0;
+        /* the coarse map is the beat's own grain: on its beat it splits into
+           the two shades, and it steps aside for the finer beats after it */
+        if (onZero) placeCoarse(animate, true);
+        (dur ? coarseCell.transition().duration(dur / 2) : coarseCell)
+          .style("opacity", onZero ? 1 : 0);
+        if (dur){
+          rects.transition().delay(onZero ? 0 : dur / 4).duration(dur / 2)
+            .style("opacity", d => onZero ? 0 : at(d).op);
+        } else {
+          rects.style("opacity", d => onZero ? 0 : at(d).op);
+        }
+        rects.style("pointer-events", d => onZero || at(d).op === 0 ? "none" : null);
+        labs.style("opacity", onZero ? 0 : null);
+      }
+      painted = i;
+    }
+
+    function setView(v){
+      if (v === view) return;
+      view = v;
+      fig.dataset.view = view;
+      const ve = document.getElementById(p + "View");
+      if (ve) ve.querySelectorAll(".seg-btn[data-view]").forEach(x => {
+        const on = x.dataset.view === view;
+        x.classList.toggle("is-active", on);
+        x.setAttribute("aria-pressed", String(on));
+      });
+    }
+
+    /* colour by: sector or complexity, on the two map beats. Each beat
+       opens on sector, which is what its text describes; the reader changes
+       it once there */
+    const colorEl = document.getElementById(p + "Color");
+    /* the complexity rank and the complexity explainer in the first beat's text */
+    const complexityBits = [p + "RankCard", p + "ComplexityInfo"]
+      .map(id => document.getElementById(id)).filter(Boolean);
+    function setColorBy(c){
+      colorBy = c === "complexity" ? "complexity" : "sector";
+      fig.dataset.color = colorBy;
+      /* those show only while the first beat is coloured by complexity. They
+         are only touched on that beat: showing or hiding them in a beat above
+         the reader would shift the page under them. They open and close in
+         place, so the centred text re-settles smoothly rather than jumping,
+         and while closed they leave the tab order and the reading order */
+      if (step === 7 || step < 0) complexityBits.forEach(el => {
+        const off = colorBy !== "complexity";
+        el.classList.toggle("is-off", off);
+        el.setAttribute("aria-hidden", String(off));
+        el.inert = off;
+      });
+      if (colorEl) colorEl.querySelectorAll(".seg-btn[data-color]").forEach(x => {
+        const on = x.dataset.color === colorBy;
+        x.classList.toggle("is-active", on);
+        x.setAttribute("aria-pressed", String(on));
+      });
+    }
+    setColorBy(colorBy);
+    if (colorEl) colorEl.addEventListener("click", ev => {
+      const b = ev.target.closest(".seg-btn[data-color]");
+      if (!b || b.dataset.color === colorBy) return;
+      setColorBy(b.dataset.color);
+      if (step === 7 || step === 4) paint(step, !reduced());
+    });
+
+    window[ctlName] = { setStep: function(i){
+      i = Math.max(0, Math.min(7, i | 0));
+      if (i === step) return;
+      const first = step < 0;
+      step = i;
+      fig.dataset.step = String(i);
+      /* each map beat opens coloured by sector, as its text describes */
+      if (i === 7 || i === 4) setColorBy("sector");
+      /* the clusters are a movement between columns, and the ranked bars
+         have none: the beat opens as the map however the last one was left */
+      if (i === 4) setView("map");
+      /* the reveal section opens on the metro's own mix and only then shows
+         the city's part of it, so its first beat is played, not painted */
+      if (first && i === 0 && opts.adminReveal){ paintMetroFirst(); return; }
+      paint(i, !first && !reduced());
+    } };
+
+    /* the clusters' furniture: the header's columns and the captions share
+       the columns' widths, and the captions carry each cluster's share */
+    (function clusterFurniture(){
+      const head = document.getElementById(p + "ClusterHead");
+      const pct = v => Math.round(v * 100) + "%";
+      const colsEl = head && (head.querySelector(".mcl-cols") || head);
+      if (colsEl) [].forEach.call(colsEl.children, (c, k) => {
+        const pc = c.querySelector(".pct"); if (pc) pc.textContent = "(" + pct(clusterShare[k]) + ")";
+      });
+      /* the header of the opening frame, which shows the most tradable alone */
+      const tradHead = document.getElementById(p + "TradHead");
+      if (tradHead){ const pc = tradHead.querySelector(".pct");
+        if (pc) pc.textContent = "(" + pct(clusterShare[0]) + " of metro jobs)"; }
+      /* each name sits over its own column, so the header is measured from
+         the chart rather than from the slot that holds it — the slot runs a
+         little wider, and a share of that width would drift the names right */
+      function sizeClusterHead(){
+        if (!head || !colsEl) return;
+        const w = el.getBoundingClientRect().width || MI_W, sc = w / MI_W;
+        head.style.width = w + "px";
+        colsEl.style.gap = (CGAP * sc) + "px";
+        [].forEach.call(colsEl.children, (c, k) => {
+          c.style.flexBasis = (Math.max(36, CW * clusterShare[k]) * sc) + "px";
+        });
+      }
+      sizeClusterHead();
+      window.addEventListener("resize", sizeClusterHead);
+      /* the second beat's scale: the score runs from 1 on the left to 0 on
+         the right, as the map does, each band drawn as wide as its stretch of
+         the score, and each named with two of the metro's largest industries
+         in it, so 0 and 1 arrive with things the reader already knows */
+      const scaleHost = document.getElementById(p + "TradScale");
+      if (scaleHost){
+        /* only a generic tail is cut ("Restaurants and Other Eating Places"
+           reads as "Restaurants"); a name that would lose its meaning in the
+           cutting is passed over for the next largest industry instead */
+        /* a single word left before the generic tail stands on its own
+           ("Restaurants"); a longer one would be left hanging ("Executive
+           Legislative"), so that name is kept whole and, being long, gives
+           way to the next industry */
+        const shortOf = n => {
+          const t = n.replace(/ \(.*\)$/, "").trim(), m = t.match(/^(\S+) and Other /);
+          return m ? m[1] : t;
+        };
+        /* examples come from the far end of each outer band, so the two ends
+           of the score are illustrated by industries that sit near them —
+           a band's largest industry can sit right at its edge — falling back
+           to the whole band where its tail is thin */
+        const tail = { 0: d => tradabilityOf(d.name) >= 0.7, 1: () => true, 2: d => tradabilityOf(d.name) <= 0.2 };
+        const examples = k => {
+          const pick = list => list.slice().sort((a, b) => b.employ - a.employ)
+            .map(d => shortOf(d.name)).filter(t => t.length <= 30);
+          const inTail = pick(clusterRows[k].filter(tail[k]));
+          return (inTail.length >= 2 ? inTail : pick(clusterRows[k])).slice(0, 2).join(", ");
+        };
+        const bands = [
+          { k: 0, name: "Sells outside the metro", range: "0.5 to 1",    span: 1 - CL_HI,     tone: "#255862" },
+          { k: 1, name: "Some of both",            range: "0.35 to 0.5", span: CL_HI - CL_LO, tone: "#59838c" },
+          { k: 2, name: "Serves the metro",        range: "0 to 0.35",   span: CL_LO,         tone: "#b9ccd0" }
+        ];
+        scaleHost.innerHTML =
+          '<span class="ts-ends"><b>1</b><span>more tradable</span><span class="ts-far">less tradable</span><b>0</b></span>' +
+          '<span class="ts-track">' + bands.map(b =>
+            '<i style="flex:' + b.span + ' 1 0;background:' + b.tone + '"></i>').join("") + '</span>' +
+          '<span class="ts-rows">' + bands.map(b =>
+            '<span class="ts-row"><i style="background:' + b.tone + '"></i><span>' +
+            '<span class="ts-name">' + b.name + '</span> <span class="ts-range">' + b.range + '</span>' +
+            '<span class="ts-eg">e.g. ' + examples(b.k) + '</span></span></span>').join("") + '</span>';
+        scaleHost.hidden = false;
+      }
+    })();
+
+    /* the coarse map, laid out for whichever arrangement is chosen. `split`
+       says whether the blocks are showing their two shades yet. */
+    function placeCoarse(animate, split){
+      if (!coarseCell) return;
+      const at = d => (view === "alt" ? posCoarseFlat : posCoarse).get(d.name);
+      const pale = sec => d3.interpolateRgb(sectorColors[sec] || "#ccc", "#ffffff")(0.66);
+      const dur = animate ? 900 : 0;
+
+      const r = coarseCell.select(".mi-rect");
+      (dur ? r.transition().duration(dur).ease(d3.easeCubicInOut) : r)
+        .attr("x", d => at(d).x).attr("y", d => at(d).y)
+        .attr("width", d => at(d).w).attr("height", d => at(d).h)
+        .attr("fill", d => split ? pale(d.sector) : (sectorColors[d.sector] || "#ccc"));
+
+      /* the city's band grows up from the foot of its own block */
+      const band = coarseCell.select(".mi-share")
+        .attr("x", d => at(d).x).attr("width", d => at(d).w);
+      (dur ? band.transition().delay(split ? dur * 0.35 : 0).duration(dur * 0.65)
+                 .ease(d3.easeCubicInOut) : band)
+        .attr("y", d => at(d).y + at(d).h * (split ? 1 - coarseShare(d) : 1))
+        .attr("height", d => split ? at(d).h * coarseShare(d) : 0);
+
+      const t = coarseCell.select(".mi-lab");
+      t.attr("x", d => at(d).x + 5).attr("y", d => at(d).y + 13)
+        .text(d => fitLabel(d.name, { width: at(d).w, height: at(d).h }));
+      (dur ? t.transition().delay(dur / 2).duration(dur / 2) : t).style("opacity", 1);
+
+      const pct = coarseCell.select(".mi-share-pct");
+      pct.attr("x", d => at(d).x + 6).attr("y", d => at(d).y + at(d).h - 7);
+      (dur ? pct.transition().delay(split ? dur * 0.8 : 0).duration(dur * 0.4) : pct)
+        .style("opacity", split ? 1 : 0);
+    }
+
+    /* the opening frame of the reveal: the metro's mix at the coarse grain,
+       with the sector blocks and the veil still to come. The reveal waits for
+       the figure to be on screen, and plays again on every return. */
+    function paintMetroFirst(){
+      placeCoarse(false, false);
+      coarseCell.style("opacity", 1);
+      cell.select(".mi-rect").style("opacity", 0);
+      cell.select(".mi-lab").style("opacity", 0);
+    }
+    if (opts.adminReveal){
+      let played = false;
+      const play = () => {
+        if (played || step !== 0) return;
+        played = true;
+        paint(0, !reduced());
+      };
+      if (window.IntersectionObserver){
+        new IntersectionObserver(es => es.forEach(e => {
+          if (e.isIntersecting) setTimeout(play, 420);
+          else played = false;            // leaving arms it to play again
+        }), { threshold: 0.35 }).observe(el);
+      } else {
+        setTimeout(play, 600);
+      }
+    }
+
+    /* the sector key, in the order the map itself is biggest-first, with
+       each sector's share of metro jobs beside its name */
+    const key = document.getElementById(p + "SectorKey");
+    if (key){
+      const jobs = {}, trad = {};
+      industryData.forEach(d => { jobs[d.sector] = (jobs[d.sector] || 0) + d.employ; });
+      (clusterRows[0] || []).forEach(d => { trad[d.sector] = (trad[d.sector] || 0) + d.employ; });
+      const tot = Object.values(jobs).reduce((a, b) => a + b, 0) || 1;
+      const totTrad = Object.values(trad).reduce((a, b) => a + b, 0) || 1;
+      /* two shares per sector: of every metro job, and of the jobs in the most
+         tradable industries alone, for the first beat, whose map shows only
+         those; a sector with none of them leaves that beat's key */
+      key.innerHTML = Object.keys(jobs)
+        .sort((a, b) => jobs[b] - jobs[a])
+        .map(sec =>
+          '<span class="sk-sec' + (trad[sec] ? '' : ' sk-no-trad') + '"><i class="sk-sw" style="background:' +
+          (sectorColors[sec] || "#ccc") + '"></i>' + sec +
+          ' <span class="sk-share sk-all">' + Math.round(jobs[sec] / tot * 100) + '%</span>' +
+          '<span class="sk-share sk-trad">' + Math.round((trad[sec] || 0) / totTrad * 100) + '%</span></span>')
+        .join("");
+    }
+
+    /* ---- the tooltip, reading whatever the figure is currently showing ----
+       The same cells mean different things state to state, so the card names
+       the measure in play rather than always reciting jobs. */
+    const wrap = el.closest(".tradable-viz-wrapper");
+    const tip = document.getElementById(p + "Tip");
+    if (wrap && tip){
+      const rowOf = (k, v) => '<div class="tip-row"><span>' + k + '</span><span>' + v + '</span></div>';
+      const pct = v => v.toFixed(2) + "%";
+      let hot = null;
+      const cool = () => {
+        tip.hidden = true;
+        if (hot) d3.select(hot).style("stroke", "#1a2226").style("stroke", null).style("stroke-width", null);
+        hot = null;
+      };
+      d3.select(el).on("mouseleave.mitip", cool);
+      cell.on("mouseenter", function(ev, d){
+        cool();
+        const r = this.querySelector(".mi-rect");
+        hot = r;
+        let body = "";
+        const rrow = step === 6 ? d.row2 : d.row;
+        if ((step === 3 || step === 6) && rrow){
+          body = rowOf("Concentrated here", rrow.rca.toFixed(1) + "\u00d7 the US average") +
+                 rowOf("Peer metros average", rrow.peerAvg.toFixed(1) + "\u00d7") +
+                 rowOf("Share of metro jobs", pct(rrow.localPct)) +
+                 rowOf("Share in a typical metro", pct(rrow.worldPct)) +
+                 (step === 6 ? rowOf("Tradability", tradabilityOf(d.name).toFixed(2)) : "");
+        } else {
+          body = rowOf("Sector", d.sector) +
+                 rowOf("Jobs", Math.round(d.employ).toLocaleString());
+          if (step === 1 || step === 5 || ((step === 4 || step === 7) && colorBy === "complexity"))
+            body += rowOf("Complexity (PCI)", pciNumOf(d.name).toFixed(2));
+          /* the split reads two ways, the clusters three — the card says
+             what the beat on screen is actually showing */
+          if (step === 2) body += rowOf("Tradability", tradabilityOf(d.name).toFixed(2)) +
+            rowOf("Reads as", tradabilityOf(d.name) >= 0.5 ? "sells outward" : "serves locally");
+          if (step === 4 || step === 7){
+            const t = tradabilityOf(d.name);
+            body += rowOf("Tradability", t.toFixed(2)) +
+              rowOf("Reads as", t >= CL_HI ? "sells outside the metro"
+                              : t >= CL_LO ? "some of both" : "serves the metro");
+          }
+        }
+        const labRow = step === 6 ? d.row2 : d.row;
+        tip.innerHTML = '<strong>' + (labRow ? labRow.label : d.name) + '</strong>' + body;
+        tip.hidden = false;
+        this.parentNode.appendChild(this);          // hovered mark to the front
+        d3.select(r).style("stroke", "#1a2226").style("stroke-width", 2.5);
+      })
+      .on("mousemove", function(ev){ cursorTipPos(ev, wrap, tip); })
+      .on("mouseleave", cool);
+    }
+
+    /* the arrangement control belongs to the two beats that show the whole
+       mix; switching it repaints the beat in place */
+    const viewEl = document.getElementById(p + "View");
+    if (viewEl) viewEl.addEventListener("click", ev => {
+      const b = ev.target.closest(".seg-btn[data-view]");
+      if (!b || b.dataset.view === view) return;
+      view = b.dataset.view;
+      fig.dataset.view = view;
+      viewEl.querySelectorAll(".seg-btn[data-view]").forEach(x => {
+        const on = x.dataset.view === view;
+        x.classList.toggle("is-active", on);
+        x.setAttribute("aria-pressed", String(on));
+      });
+      if (opts.adminReveal && step === 0){ placeCoarse(!reduced(), true); return; }
+      if (step === 0 || step === 1 || step === 4 || step === 5 || step === 7) paint(step, !reduced());
+    });
+
+    /* sort: the same rows in another order, bars and names travelling together */
+    const sortEl = document.getElementById(p + "Sort");
+    if (sortEl) sortEl.addEventListener("click", ev => {
+      const b = ev.target.closest(".seg-btn");
+      if (!b || b.dataset.sort === sortKey) return;
+      sortKey = b.dataset.sort;
+      fig.dataset.sort = sortKey;
+      sortEl.querySelectorAll(".seg-btn").forEach(x => {
+        const on = x.dataset.sort === sortKey;
+        x.classList.toggle("is-active", on);
+        x.setAttribute("aria-pressed", String(on));
+      });
+      reorder(R1); reorder(R2);
+      const anim = !reduced();
+      placeRanking(R1, anim); placeRanking(R2, anim);
+      if (step === 3 || step === 6) paint(step, anim);
+    });
+
+    /* the section may have mounted before this figure existed, in which
+       case the beat it settled on is waiting on the figure: open there, not
+       on state 0, or the first beat shows a state its controls do not drive */
+    window[ctlName].setStep(fig.dataset.wantStep != null ? +fig.dataset.wantStep : 0);
+  }
+
+  function initExportTooltip(){
+    const svgEl = document.getElementById("exportTreemapSvg");
+    const tip = document.getElementById("exportTip");
+    const wrap = document.querySelector(".export-viz-row");
+    if (!svgEl || !tip || !wrap) return;
+    exportClearHover = attachCellTip(svgEl, wrap, tip);
+  }
+
+  function initTradableTooltip(){
+    const svgEl = document.getElementById("tradableAnimatedSvg");
+    const tip = document.getElementById("tradableTip");
+    const wrap = document.querySelector(".tradable-viz-wrapper");
+    if (!svgEl || !tip || !wrap) return;
+    tradableClearHover = attachCellTip(svgEl, wrap, tip);
+  }
+
+
+  function initExportOptions(){
+    /* the numbered design list is gone from the bar — the section ships on
+       option 2 alone — so the wiring no longer depends on finding it */
+    const btns = document.querySelectorAll("#exportOptList .design-opt");
+    btns.forEach(b => b.addEventListener("click", () => {
+      const n = +b.dataset.opt;
+      exportOpt = (exportOpt === n) ? 0 : n;
+      exportView = "map";                       /* every option opens on the treemap */
+      exportListOn = false;                     /* the list is always opt-in */
+      btns.forEach(x => x.classList.toggle("is-on", +x.dataset.opt === exportOpt));
+      updateExportViewSeg();
+      updateTopBtn();
+      updateExportOptCtl();
+      applyExportOption(true);
+    }));
+    const topBtn = document.getElementById("exportTopBtn");
+    if (topBtn) topBtn.addEventListener("click", () => {
+      exportListOn = !exportListOn;
+      updateTopBtn();
+      applyExportOption(true);
+    });
+
+    /* option 2 is the section's default: its View toggle sits on the bar
+       from the start, with the treemap still the resting view */
+    exportOpt = 2;
+    btns.forEach(x => x.classList.toggle("is-on", +x.dataset.opt === 2));
+    updateExportViewSeg();
+    updateTopBtn();
+    updateExportOptCtl();
+    applyExportOption(false);
+    const wrap = document.getElementById("exportViewWrap");
+    if (wrap) wrap.addEventListener("click", e => {
+      const b = e.target.closest(".seg-btn");
+      if (!b || b.dataset.view === exportView) return;
+      exportView = b.dataset.view;
+      updateExportViewSeg();
+      applyExportOption(true);
+    });
+  }
+
   function init(){
     if (typeof d3 === "undefined") return;
     renderStaticTreemap();
-    initTradableTreemap();
+    renderComplexityTreemap();
+    initComplexityTooltip();
+    initTradableAnimation();
     initColorBySegments();
+    initExportOptions();
+    initExportTooltip();
+    initTradableTooltip();
+    initLeanMap();
+    initCommuteStats();
+    updateExportHeadStat();
+    initIndustryFigure("mi", industryData, "MI");
+    /* Admin Industry Mix now runs its own figure — one set of sector rows
+       read three ways — which lives with the section's markup rather than
+       here; nothing to build in this file. */
     initRcaChart();
     initPeerChart();
-    initPeerCityChips();
     initRcaViewToggle();
+    initPeerCityChips();
     renderMetroScatter();
     renderCityInMetro();
     initDxExplainer();

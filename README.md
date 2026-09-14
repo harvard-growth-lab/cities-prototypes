@@ -6,10 +6,15 @@ in their own folder rather than on a branch. A branch would not be hosted.
 
 ```
 index.html      landing page listing the prototypes, served at the Pages root
-cities-v-1/     the Cities Tool — the main line
+cities-v-1/     the Cities Tool — the main line, where the layout work happens
 cities-v-2/     alternative structure for City Overview (design option B)
 cities-v-3/     option B recoloured and repaged (design option C)
 ```
+
+On 2026-09-14 `cities-v-1/` was re-created as an exact copy of `cities-v-3/`,
+so the main line now carries option C's colour and navigation. It is the folder
+the overall layout updates go into; content and figures are not part of that
+work. The earlier main line is in git history, last at `aa3512b`.
 
 ## Design options
 
@@ -34,8 +39,7 @@ model are part of the option. It also inherits option B's drift from
 `cities-v-1/` outside City Overview.
 
 Smaller options — a different chart design within a section — do not need a
-folder. Two of them already ship inside `cities-v-1/` as **"Bar design option"**
-toggles in the chart toolbars.
+folder; they ship as toggles in the chart toolbars.
 
 ## Running it
 
