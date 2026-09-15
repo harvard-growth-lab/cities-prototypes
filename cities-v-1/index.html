@@ -2788,14 +2788,14 @@
     flex:none;width:13px;height:13px;border-radius:3px;display:inline-block;
   }
   .sector-key .sk-share{color:var(--ink-soft);font-variant-numeric:tabular-nums;}
-  #miSectorKey .sk-trad{display:none;}
-  #miFigure[data-step="7"] #miSectorKey .sk-all,
+  /* Neither map beat keys a share any more: the blocks carry the proportion
+     by the area they take, and a column of percentages beside the colours
+     was answering a question the picture had already answered. The key
+     names the colours and stops. The opening beat still drops the sectors
+     with no tradable work, which is about which colours appear, not about
+     how much of the mix each one is. */
+  #miSectorKey .sk-share{display:none;}
   #miFigure[data-step="7"] #miSectorKey .sk-no-trad{display:none;}
-  #miFigure[data-step="7"] #miSectorKey .sk-trad{display:inline;}
-  /* the cluster beat asks where the work sits, not how much of the mix each
-     sector is — the three columns already carry that — so the key names the
-     colours and says nothing more */
-  #miFigure[data-step="4"] #miSectorKey .sk-share{display:none;}
   .mi-figure .complexity-legend{display:flex;margin:0;}
   .mi-figure{--mi-lab:11px;}
   .mi-figure svg .mi-lab{
