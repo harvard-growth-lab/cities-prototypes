@@ -2188,21 +2188,22 @@
   .ct-step .collapsible-content p:last-child,
   .ov-wrap:not(.ov2) .collapsible-content p:last-child{margin-bottom:0;}
   .ct-step .tradable-diagram{max-width:100%;margin:12px 0 2px;}
-  /* Metro Industries: the explainer is a line of teal text after the prose,
-     and its answer opens behind a teal bar — no box, no second rule, so the
-     rule under the Viewing badge stays the only line in the column */
-  #page-export-basket .ct-step .collapsible-info,
-  #page-export-basket .ct-step .collapsible-info:hover,
-  #page-export-basket .ct-step .collapsible-info:has(.collapsible-header.active){
+  /* The two figure sections read the same: the explainer is a line of teal
+     text after the prose, and its answer opens behind a teal bar — no box,
+     no second rule, so the rule under the Viewing badge stays the only line
+     in the column */
+  :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-info,
+  :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-info:hover,
+  :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-info:has(.collapsible-header.active){
     margin:4px 0 0;border:0;border-radius:0;background:none;box-shadow:none;
   }
-  #page-export-basket .ct-step .collapsible-info.is-off{margin:0;}
-  #page-export-basket .ct-step .collapsible-header{padding:6px 0;gap:8px;color:var(--teal);}
-  #page-export-basket .ct-step .collapsible-header:hover .ci-title{text-decoration:underline;text-underline-offset:3px;}
-  #page-export-basket .ct-step .ci-title{flex:0 1 auto;}
-  #page-export-basket .ct-step .ci-mark svg{width:17px;height:17px;}
-  #page-export-basket .ct-step .collapsible-icon{width:15px;height:15px;}
-  #page-export-basket .ct-step .collapsible-content{
+  :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-info.is-off{margin:0;}
+  :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-header{padding:6px 0;gap:8px;color:var(--teal);}
+  :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-header:hover .ci-title{text-decoration:underline;text-underline-offset:3px;}
+  :is(#page-export-basket, #page-admin-mix) .ct-step .ci-title{flex:0 1 auto;}
+  :is(#page-export-basket, #page-admin-mix) .ct-step .ci-mark svg{width:17px;height:17px;}
+  :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-icon{width:15px;height:15px;}
+  :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-content{
     margin:10px 0 8px;padding:2px 0 2px 14px;border-left:2px solid var(--teal);
   }
 
@@ -2523,21 +2524,25 @@
     min-height:calc(100vh - var(--chrome-h));
   }
   .ct-stage .mi-figure{width:100%;flex:0 0 auto;}
-  /* ── Metro Industries on the redesign's frame ──────────────────────────
-     The page area under the bar takes a faint tint, the text column sits on
-     it bare, and the visualisation — the figure with its controls, title and
-     key, and whatever a beat adds beneath — sits in one white framed panel.
-     Each step's Viewing badge is closed by a rule before the prose. */
-  .pages:has(#page-export-basket:not(.sec-off)){background:#f9fafb;}
-  #page-export-basket .ct-scrolly{
+  /* ── the two figure sections on the redesign's frame ───────────────────
+     Metro Industries and Admin Industry Mix are the same composition — a
+     reading column beside one figure a scroll drives — so they are dressed
+     the same. The page area under the bar takes a faint tint, the text
+     column sits on it bare, and the visualisation — the figure with its
+     controls, title and key, and whatever a beat adds beneath — sits in one
+     white framed panel. Each step's Viewing badge is closed by a rule
+     before the prose. */
+  .pages:has(#page-export-basket:not(.sec-off)),
+  .pages:has(#page-admin-mix:not(.sec-off)){background:#f9fafb;}
+  :is(#page-export-basket, #page-admin-mix) .ct-scrolly{
     grid-template-columns:392px minmax(0,1fr);gap:56px;
     width:min(var(--grid-max), calc(100vw - 2 * var(--frame-pad)));
     margin-inline:calc((100% - min(var(--grid-max), 100vw - 2 * var(--frame-pad))) / 2);
   }
-  #page-export-basket .ct-panel{
+  :is(#page-export-basket, #page-admin-mix) .ct-panel{
     background:#fff;border:1px solid var(--border);border-radius:10px;padding:28px 32px 24px;
   }
-  #page-export-basket .ct-step > .geo-badge + *{
+  :is(#page-export-basket, #page-admin-mix) .ct-step > .geo-badge + *{
     align-self:stretch;border-top:1px solid var(--border);padding-top:18px;
   }
   /* the captions stack in one place rather than in sequence: only one shows
@@ -3505,7 +3510,7 @@
       grid-template-columns:clamp(236px, 27vw, 392px) minmax(0,1fr);
       gap:28px;
     }
-    #page-export-basket .ct-panel{padding:18px 16px 16px;}
+    :is(#page-export-basket, #page-admin-mix) .ct-panel{padding:18px 16px 16px;}
 
     /* the type inside the box: one multiplier for the band, x1.25, set
        against its narrow end. At 900 an 11px class lands at 8.6px, at
