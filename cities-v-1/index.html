@@ -3602,22 +3602,25 @@
     .logo-btn img,.landing-header .logo-btn img{height:30px;}
     .toolbar-links{display:none;}
 
-    /* the stack. The builder appends the steps before the stage, so a
-       plain block stack would read text-then-chart; ordering the stage
-       first puts the figure back on top, where the beats drive it. */
+    /* the stack. The builder already appends the steps before the stage,
+       so flow order is text-then-figure and nothing has to be reordered:
+       the prose reads at the top of the screen and the figure holds the
+       bottom of it. */
     :is(#page-export-basket, #page-admin-mix) .ct-scrolly{
       display:flex;flex-direction:column;gap:0;
     }
-    :is(#page-export-basket, #page-admin-mix) .ct-scrolly > .ct-stage{order:-1;}
-    :is(#page-export-basket, #page-admin-mix) .ct-steps{padding-block:0 18vh;min-width:0;}
+    :is(#page-export-basket, #page-admin-mix) .ct-steps{padding-block:0 6vh;min-width:0;}
 
-    /* the band: pinned under the chrome, full width, opaque, with a
-       hairline and a short shadow so the prose reads as passing beneath */
+    /* the band, pinned to the foot of the viewport rather than the head.
+       Sticky with bottom:0 pulls the figure up into view while its
+       container still covers the screen, so it is there from the first
+       beat and lets go at the last — full width, opaque, with a hairline
+       and a shadow cast upward so the prose reads as passing behind it. */
     :is(#page-export-basket, #page-admin-mix) .ct-stage{
-      position:sticky;top:var(--chrome-h);z-index:12;
+      position:sticky;top:auto;bottom:0;z-index:12;
       display:block;min-height:0;background:#fff;
-      border-bottom:1px solid var(--border);
-      box-shadow:0 6px 12px -9px rgba(26,34,38,.30);
+      border-top:1px solid var(--border);
+      box-shadow:0 -6px 12px -9px rgba(26,34,38,.30);
     }
     /* the desktop rule centres the figure in a full viewport; the band
        has no room to centre anything */
@@ -3636,8 +3639,10 @@
        viewport and stays as it is; what moves is where the prose sits
        inside its block — at the foot rather than the centre, so the
        active step shows its text clear of the band. */
+    /* the text belongs in the screen the band is not using, so each block
+       carries its prose at the top rather than the foot */
     :is(#page-export-basket, #page-admin-mix) .ct-step{
-      min-height:76vh;justify-content:flex-end;padding-bottom:5vh;
+      min-height:70vh;justify-content:flex-start;padding-top:4vh;padding-bottom:0;
     }
     :is(#page-export-basket, #page-admin-mix) .ct-step h2,
     :is(#page-export-basket, #page-admin-mix) .ct-step h3{margin-bottom:12px;}
@@ -3728,7 +3733,7 @@
     .btn-journey svg{width:18px;height:18px;flex:none;}
 
     :is(#page-export-basket, #page-admin-mix) .ct-panel{padding:8px 4px 6px;}
-    :is(#page-export-basket, #page-admin-mix) .ct-step{min-height:70vh;padding-bottom:4vh;}
+    :is(#page-export-basket, #page-admin-mix) .ct-step{min-height:64vh;padding-top:3vh;}
     .ct-eyebrow{margin-bottom:10px;}
 
     /* the type inside the box, second tier. At 390px the figure is 382px
