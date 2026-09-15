@@ -490,7 +490,15 @@
      left edge to its right */
   .secbar .citypick{flex:none;align-self:center;}
   .secbar .citypick--bar{width:392px;min-width:0;}
-  .secbar .citypick--bar .citypick-btn{width:auto;display:inline-flex;}
+  /* One length, whichever city is chosen. Sized to its content the chip
+     swung 113px across the list — Chicago 269, Nairobi 156 — and a control
+     that resizes under the reader reads as a label rather than a control.
+     The slot is the reading column's 392px, so the chip lines up with the
+     prose beneath it and simply fills it. */
+  .secbar .citypick--bar .citypick-btn{width:100%;display:flex;}
+  .secbar .citypick--bar .citypick-txt{
+    min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
   .secbar .citypick--bar .citypick-btn{font-size:13.5px;}
   /* the location chip: the admin city's buildings mark on the left, the
      chevron on the right, 4px corners — and a boundary that carries. The
@@ -3511,10 +3519,11 @@
   @media (max-width:1199px){
     :root{--frame-pad:24px;--chrome-h:59px;}
     .secbar{height:56px;}
-    /* the chip reserved 392px for a button that draws at ~258, and the row
-       has run out of room: give the slot back and let the country go to the
-       open menu, which names it under every option anyway */
-    .secbar .citypick--bar{width:auto;min-width:0;}
+    /* the row has run out of room, so the country goes to the open menu,
+       which names it under every option anyway — and the slot narrows to
+       one that holds the longest city with air around it, rather than
+       shrink-wrapping to whichever word is showing */
+    .secbar .citypick--bar{width:184px;min-width:0;}
     .secbar .citypick--bar .cp-rest{display:none;}
     .secbar .ct-optwrap{margin-left:10px;}
     .secnav{
@@ -3687,10 +3696,11 @@
   @media (max-width:599px){
     :root{--frame-pad:14px;--chrome-h:51px;}
     .secbar{height:48px;}
-    /* the chip shrinks to the city and its two marks, capped so no city
-       name can push the filmstrip off the row */
+    /* the chip shrinks to the city and its two marks — one width still,
+       so the filmstrip beside it never shifts when the city changes */
+    .secbar .citypick--bar{width:158px;}
     .secbar .citypick--bar .citypick-btn{
-      height:30px;max-width:42vw;padding:0 26px 0 30px;font-size:13px;
+      height:30px;padding:0 26px 0 30px;font-size:13px;
       background-position:right 9px center, left 9px center;
     }
     .secbar .citypick--bar .citypick-txt{
