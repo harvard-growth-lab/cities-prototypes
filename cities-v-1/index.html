@@ -841,7 +841,7 @@
   .ov-wrap:not(.ov2) .ov-block{
     width:auto;max-width:760px;
     margin-left:calc(var(--frame-pad) + var(--chip-text-inset));
-    margin-right:clamp(36px, 5vw, 80px);
+    margin-right:clamp(28px, 3vw, 56px);
   }
   /* the three numbers under the reading run across in one row: each is its
      disc beside a label set over its value, so the strip is two lines tall
@@ -912,7 +912,10 @@
   .ov-wrap:not(.ov2) #page-overview-msa .ind-table{margin-top:28px;}
   .ov-wrap:not(.ov2) .ov-block .pg{padding-top:12px;}
   /* a shade over a third to the map: 36% of the viewport, 518px at 1440 */
-  .ov-wrap:not(.ov2) .ov-map{flex:0 0 clamp(380px, 36%, 640px);}
+  /* the map takes a little more so the two sides are not shouting across a
+     gap: at 36% the reading capped at its 760 measure and the slack all fell
+     between them. Still the smaller half — this section is the reading's. */
+  .ov-wrap:not(.ov2) .ov-map{flex:0 0 clamp(420px, 42%, 680px);}
   /* the tile credit is hidden for the prototype's sake — CARTO and
      OpenStreetMap both require it on anything published, so it has to
      come back (or move into an about/credits page) before this ships */
