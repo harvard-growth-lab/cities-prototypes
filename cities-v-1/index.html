@@ -2796,6 +2796,19 @@
      how much of the mix each one is. */
   #miSectorKey .sk-share{display:none;}
   #miFigure[data-step="7"] #miSectorKey .sk-no-trad{display:none;}
+  /* the prose points at the chart: a phrase naming a sector stands the rest
+     of the mix down, so the sentence and the picture say the same thing at
+     the same moment. The dim sits on the cell group, while the paint sets
+     opacity on the rect inside it, so the two multiply instead of fighting. */
+  .mi-hl{
+    border-bottom:1.5px dotted var(--border-strong);cursor:pointer;
+    transition:background-color .15s ease,border-color .15s ease;
+  }
+  .mi-hl:hover,.mi-hl.is-lit{background:var(--teal-tint);border-bottom-color:var(--teal);}
+  .mi-hl:focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:2px;}
+  #miTreemapSvg .mi-cell{transition:opacity .18s ease;}
+  #miTreemapSvg .mi-cell.is-dim{opacity:.13;}
+  @media (prefers-reduced-motion: reduce){ #miTreemapSvg .mi-cell{transition:none;} }
   .mi-figure .complexity-legend{display:flex;margin:0;}
   .mi-figure{--mi-lab:11px;}
   .mi-figure svg .mi-lab{
@@ -5100,9 +5113,13 @@
         <!-- beat 1: the most tradable industries alone. The complexity pieces
              sit here, since this is where the reader first meets the colour -->
         <div class="lede-stat-row">
-          <p class="lede">Your most tradable industries: the work that sells most of what it makes to customers
-            outside the metro, and so brings new income in. Each block is an industry, sized by its jobs and
-            coloured by its sector. Colour them by complexity to see how much know-how each one takes.</p>
+          <p class="lede">Tradable industries sell most of what they make to customers outside the metro, so
+            what they earn is new income arriving here &mdash; 44% of the metro&rsquo;s jobs.
+            <span class="mi-hl" data-sector="Professional &amp; Business" tabindex="0">Professional &amp; business
+            services</span> and <span class="mi-hl" data-sector="Manufacturing" tabindex="0">manufacturing</span>
+            do close to three fifths of that work, with <span class="mi-hl" data-sector="Trade &amp; Transportation"
+            tabindex="0">trade &amp; transportation</span> and <span class="mi-hl" data-sector="Financial Activities"
+            tabindex="0">financial activities</span> behind them.</p>
         </div>
         <!-- the complexity rank is the complexity colouring's takeaway: it comes
              forward when the reader colours the map by complexity -->

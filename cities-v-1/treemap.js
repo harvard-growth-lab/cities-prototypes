@@ -3499,6 +3499,9 @@
     drawBars(byJobsTrad, gBarsTrad);
 
     let step = -1, painted = -1, arriving = false;
+    /* set once the tooltips are wired; the beat change calls it so a phrase
+       left lit cannot dim the next beat */
+    let clearHighlight = null;
     const reduced = () => window.matchMedia &&
       matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -3621,6 +3624,8 @@
     window[ctlName] = { setStep: function(i){
       i = Math.max(0, Math.min(7, i | 0));
       if (i === step) return;
+      /* a phrase left lit must not dim the beat that follows it */
+      if (clearHighlight) clearHighlight();
       const first = step < 0;
       step = i;
       fig.dataset.step = String(i);
@@ -3869,6 +3874,34 @@
       })
       .on("mousemove", function(ev){ cursorTipPos(ev, wrap, tip); })
       .on("mouseleave", cool);
+
+      /* the prose points at the chart. A phrase in the lede naming a sector
+         stands the rest of the mix down, so the reader does not have to
+         translate "manufacturing" into a colour before they can find it.
+         Hover and focus for pointer and keyboard; click as well, because a
+         phone has no hover and the reference this follows forgets that. */
+      const hlSpans = [].slice.call(document.querySelectorAll(".mi-hl[data-sector]"));
+      const clearHl = () => {
+        cell.classed("is-dim", false);
+        hlSpans.forEach(x => x.classList.remove("is-lit"));
+      };
+      const litHl = span => {
+        const want = span.dataset.sector.split("|");
+        cell.classed("is-dim", d => want.indexOf(d.sector) < 0);
+        span.classList.add("is-lit");
+      };
+      hlSpans.forEach(span => {
+        const on = () => { if (fig.dataset.step !== "7") return; clearHl(); litHl(span); };
+        span.addEventListener("mouseenter", on);
+        span.addEventListener("focus", on);
+        span.addEventListener("mouseleave", clearHl);
+        span.addEventListener("blur", clearHl);
+        span.addEventListener("click", () => {
+          if (span.classList.contains("is-lit")) clearHl(); else on();
+        });
+      });
+      /* leaving the beat must not leave the mix half dimmed */
+      clearHighlight = clearHl;
 
       /* the ranking rows carry the same card, raised from the row rather than
          the bar — hovering a name or a jobs count is hovering the industry */
