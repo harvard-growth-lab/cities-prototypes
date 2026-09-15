@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>City Diagnosis — Growth Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Inter:wght@400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=Inter:wght@400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style>
   :root{
@@ -2477,7 +2477,7 @@
   .ct-step.is-on{opacity:1;}
   /* the rail's own typographic scale: quiet counter, tight title, the
      Viewing badge as the scale cue, then prose sized to the measure */
-  .ct-eyebrow{font-size:var(--t-xs);font-weight:600;color:var(--ink-soft);margin-bottom:14px;}
+  .ct-eyebrow{font-size:var(--t-xs);font-weight:500;color:var(--ink-soft);margin-bottom:14px;}
   .ct-step h2,.ct-step h3{
     font-size:var(--t-h2);font-weight:700;line-height:1.16;letter-spacing:-.4px;
     color:var(--ink);margin:0 0 16px;
@@ -8558,7 +8558,7 @@
       var st = document.createElement("div"); st.className = "ct-step";
       var sl = document.createElement("div"); sl.className = "ct-slot";
       var eye = document.createElement("span"); eye.className = "ct-eyebrow";
-      eye.textContent = secName + n + " of " + total;
+      eye.textContent = secName + n + "/" + total;
       st.appendChild(eye);
       if (headMoved) headMoved.forEach(function(k){ st.appendChild(k); });
       kids.forEach(function(k){
