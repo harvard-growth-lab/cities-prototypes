@@ -3318,13 +3318,24 @@
     const gBarsTrad = svg.append("g").attr("class", "mi-rows mi-bars").style("opacity", 0);
     /* the sector names, written on the blocks they belong to */
     const gSecLab = svg.append("g").attr("class", "mi-seclab").style("opacity", 0);
-    /* white or ink, whichever the fill can carry — the reference this
-       follows switches per sector rather than picking one and hoping */
-    const inkOn = hex => {
-      const c = d3.color(hex); if (!c) return "#1a2226";
-      const lin = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
-      const L = 0.2126 * lin(c.r) + 0.7152 * lin(c.g) + 0.0722 * lin(c.b);
-      return (1.05 / (L + 0.05)) >= ((L + 0.05) / 0.05) ? "#fff" : "#1a2226";
+    /* The reference writes its names ON the coloured block and switches
+       between white and near-black to suit it. Ours sit in a strip above
+       the block, where the ground is the panel's white — so the choice is
+       not white-or-black but how dark the sector's own colour has to be
+       to carry on white. Darkening the hue rather than going to ink makes
+       the name itself the key: the words are the colour they name. */
+    const lum = c => {
+      const f = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+      return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b);
+    };
+    const onWhite = c => 1.05 / (lum(c) + 0.05);
+    const labelInk = hex => {
+      const base = d3.color(hex); if (!base) return "#1a2226";
+      for (let k = 0; k <= 3.2; k += 0.2){
+        const c = d3.color(base.darker(k).formatHex());
+        if (onWhite(c) >= 4.5) return c.formatHex();
+      }
+      return "#1a2226";
     };
     function drawSectorLabels(){
       /* only where the block can hold the words: a clipped sector name is
@@ -3334,7 +3345,7 @@
       gSecLab.selectAll("text").data(items, d => d.name).join("text")
         .attr("class", "mi-seclab-t")
         .attr("x", d => d.b.x + 5).attr("y", d => d.b.y + 12)
-        .attr("fill", d => inkOn(sectorColors[d.name]))
+        .attr("fill", d => labelInk(sectorColors[d.name]))
         .text(d => d.name);
     }
     /* 11px semibold runs about 0.55em a character, plus the 6px inset and a
