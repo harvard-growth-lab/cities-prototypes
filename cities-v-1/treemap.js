@@ -3365,13 +3365,13 @@
         .attr("x", ML + 12).attr("y", MT - 42)
         .text("Concentration against the four peers\u2019 average: ahead to the right, behind to the left");
       AG.append("text").attr("class", "mi-colhead")
-        .attr("x", MI_W - 6).attr("y", MT - 24).attr("text-anchor", "end").text("jobs");
+        .attr("x", MI_W - 6).attr("y", MT - 24).attr("text-anchor", "end").text("Jobs");
       tradHead(AG);
     }
     /* the tradability column's head: the name, and the score's range under it */
     function tradHead(A){
       A.append("text").attr("class", "mi-colhead")
-        .attr("x", TC_R).attr("y", MT - 24).attr("text-anchor", "end").text("tradability");
+        .attr("x", TC_R).attr("y", MT - 24).attr("text-anchor", "end").text("Tradability");
       A.append("text").attr("class", "mi-colsub")
         .attr("x", TC_R).attr("y", MT - 11).attr("text-anchor", "end").text("0 to 1");
     }
@@ -3389,7 +3389,7 @@
         .text("Times more concentrated here than in a typical US metro");
       /* the jobs column: its head, and each row's count at the right edge */
       A.append("text").attr("class", "mi-colhead")
-        .attr("x", MI_W - 6).attr("y", MT - 24).attr("text-anchor", "end").text("jobs");
+        .attr("x", MI_W - 6).attr("y", MT - 24).attr("text-anchor", "end").text("Jobs");
       tradHead(A);
       /* the leading three by concentration, braced only while that is the order */
       const topN = Math.min(3, R.ranked.length);
