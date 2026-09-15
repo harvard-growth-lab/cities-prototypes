@@ -17,9 +17,6 @@
     --orange-tint:#fdf0ec;
     --border:#e2e7e8;
     --border-strong:#c3ccce;
-    /* the edge of a control the reader is meant to find: 3.17:1 on white,
-       where --border-strong manages 1.63 and WCAG 1.4.11 asks 3 */
-    --ctl-edge:#8a9296;
     --ink:#1a2226;
     --ink-soft:#5b686d;
     /* Direction is its own scale, kept deliberately clear of the brand reds.
@@ -502,13 +499,10 @@
   }
   .secbar .citypick--bar .citypick-btn{font-size:13.5px;}
   /* the location chip: the admin city's buildings mark on the left, the
-     chevron on the right, 4px corners — and a boundary that carries. The
-     city is the one thing on this page a reader can change and have the
-     whole tool answer, so its outline is the lightest grey that clears the
-     3:1 WCAG asks of a control's edge (1.25:1 before, which read as a label
-     with a chevron rather than a control). */
+     chevron on the right, 4px corners, and the same border every other
+     dropdown in the tool wears. */
   .secbar .citypick--bar .citypick-btn{
-    border-color:var(--ctl-edge);border-radius:4px;padding-left:36px;
+    border-color:var(--border-strong);border-radius:4px;padding-left:36px;
     height:38px;
     background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%23255862' stroke-width='1.5' stroke-linecap='round'/></svg>"),
       url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='17' viewBox='0 0 24 30' fill='none' stroke='%231a2226' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'><path d='M2 26h20'/><path d='M4 26V15h6v11'/><path d='M12 26V8h7v18'/><path d='M14.6 12h1.8M14.6 16h1.8M14.6 20h1.8'/></svg>");
