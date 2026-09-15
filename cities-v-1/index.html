@@ -1168,7 +1168,7 @@
   .viz-controls .ctl{display:flex;align-items:center;gap:9px;}
   .viz-controls .ctl-label,
   .mi-view .ctl-label{
-    font-size:12px;font-weight:700;letter-spacing:.5px;color:var(--teal);
+    font-size:13px;font-weight:600;letter-spacing:normal;color:#2c2823;
   }
   .viz-controls select{
     height:30px;border:1px solid var(--border-strong);border-radius:4px;background:#fff;
@@ -1721,7 +1721,7 @@
      free. Default is the plain picker: colour is opt-in. */
   .plc-ctl{display:flex;align-items:center;gap:10px;margin:14px 0 0;flex-wrap:wrap;}
   .plc-ctl .ctl-label{
-    font-size:12px;font-weight:700;letter-spacing:.5px;color:var(--teal);
+    font-size:13px;font-weight:600;letter-spacing:normal;color:#2c2823;
   }
   .plc-ctl select{
     height:30px;border:1px solid var(--border-strong);border-radius:4px;background:#fff;
@@ -2834,7 +2834,7 @@
   /* on the chart beats the key is read alongside the bars, so it takes the
      body's size and ink rather than a caption's */
   #amFigure[data-step="9"] .am-key, #amFigure[data-step="10"] .am-key{font-size:13px;color:var(--ink);}
-  #amCount .ctl-label{font-size:13px;font-weight:600;letter-spacing:0;}
+  #amCount .ctl-label{font-size:13px;font-weight:600;letter-spacing:normal;color:#2c2823;}
   #amFigure[data-step="9"] .mi-head > .am-count, #amFigure[data-step="10"] .mi-head > .am-count{
     top:0;bottom:auto;opacity:1;pointer-events:auto;}
   /* the bars answer a click on the comparison beat */
@@ -3651,7 +3651,6 @@
        positioned children, so the reserved height has to be restated
        wherever the control rows now wrap */
     .mi-view{gap:5px 8px;}
-    .mi-view .ctl-label{font-size:11px;}
     .mi-view .seg-btn{height:28px;padding:0 10px;font-size:11.5px;}
     #miFigure .mi-head{min-height:56px;margin-bottom:8px;}
     #miFigure[data-step="3"] .mi-head,
@@ -3771,7 +3770,6 @@
     #amBarsSvg .am-colhead{font-size:15px;}
 
     .mi-view{gap:4px 7px;}
-    .mi-view .ctl-label{font-size:10.5px;letter-spacing:.3px;}
     .mi-view .seg-btn{height:26px;padding:0 8px;font-size:11px;}
     #miFigure .mi-head{min-height:62px;margin-bottom:6px;}
     #miFigure[data-step="3"] .mi-head,
