@@ -3512,6 +3512,15 @@
   }
   .secnav::-webkit-scrollbar{display:none;}
   .secnav-btn{flex:0 0 auto;}
+  /* the row reads as two groups: the three sections that describe the place,
+     then a seam, then the one that diagnoses it and the one that follows
+     from that. A hairline and a wider gap do it without any chip changing,
+     so nothing has to be learned. */
+  .secnav-btn:nth-child(4){position:relative;margin-left:22px;}
+  .secnav-btn:nth-child(4)::before{
+    content:"";position:absolute;left:-12px;top:50%;transform:translateY(-50%);
+    width:1px;height:26px;background:var(--border);
+  }
   /* the mark is 1079x230, so a 164px slot always clipped 5px of it */
   .logo-btn,.landing-header .logo-btn{width:auto;flex:0 0 auto;}
 
