@@ -3700,10 +3700,12 @@
           { k: 1, name: "Some of both",            range: "0.35 to 0.5", span: CL_HI - CL_LO, tone: "#59838c" },
           { k: 2, name: "Serves the metro",        range: "0 to 0.35",   span: CL_LO,         tone: "#b9ccd0" }
         ];
+        /* the ends and the banded track are gone: the figure's own header
+           already runs 1 to 0 across the top of the three columns, and the
+           columns are the bands. What is left is the part the chart cannot
+           say — what each band is called, the score it covers, and two of
+           the metro's own industries from inside it. */
         scaleHost.innerHTML =
-          '<span class="ts-ends"><b>1</b><span>more tradable</span><span class="ts-far">less tradable</span><b>0</b></span>' +
-          '<span class="ts-track">' + bands.map(b =>
-            '<i style="flex:' + b.span + ' 1 0;background:' + b.tone + '"></i>').join("") + '</span>' +
           '<span class="ts-rows">' + bands.map(b =>
             '<span class="ts-row"><i style="background:' + b.tone + '"></i><span>' +
             '<span class="ts-name">' + b.name + '</span> <span class="ts-range">' + b.range + '</span>' +
