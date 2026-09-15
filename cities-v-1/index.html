@@ -3527,14 +3527,16 @@
     .secbar .citypick--bar{width:184px;min-width:0;}
     .secbar .citypick--bar .cp-rest{display:none;}
     .secbar .ct-optwrap{margin-left:10px;}
+    /* Where the row runs out of width the section you are on keeps its
+       name and the rest stand down to their mark — a check behind you, a
+       number ahead. The row then fits without scrolling, and the one label
+       left is the one that answers "where am I". The scroller underneath
+       stays as the backstop for a very narrow phone. */
     .secnav{
-      /* offsetParent for the centring maths: without this the chips
-         measure against .secbar, which is sticky, and the location
-         chip's width poisons every offsetLeft */
       position:relative;margin-left:24px;justify-content:flex-start;
-      -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 10px,#000 calc(100% - 22px),transparent 100%);
-              mask-image:linear-gradient(90deg,transparent 0,#000 10px,#000 calc(100% - 22px),transparent 100%);
     }
+    .secnav-btn:not(.is-active) .secnav-lbl{display:none;}
+    .secnav-btn:not(.is-active){padding:6px;gap:0;}
     .secnav-btn{padding:6px 9px;font-size:13px;gap:6px;}
     .secnav-btn .num{width:20px;height:20px;flex:0 0 20px;font-size:10.5px;}
     .secbar .citypick--bar .citypick-btn{height:32px;font-size:13px;}
@@ -8158,7 +8160,7 @@
        (everything here addresses the tabs by position) and shows only while
        the reader is actually there. */
     if (sd.name === "Extras") b.classList.add("secnav-btn--aside");
-    b.innerHTML = '<span class="num">' + (i + 1) + "</span>" + sd.name;
+    b.innerHTML = '<span class="num">' + (i + 1) + '</span><span class="secnav-lbl">' + sd.name + "</span>";
     b.addEventListener("click", () => showSection(i));
     secNavEl.appendChild(b);
   });
