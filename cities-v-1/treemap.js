@@ -3295,6 +3295,12 @@
     const gAxis2 = svg.append("g").attr("class", "mi-axis").style("opacity", 0);
     const gAxisGap  = svg.append("g").attr("class", "mi-axis").style("opacity", 0);
     const gAxisGap2 = svg.append("g").attr("class", "mi-axis").style("opacity", 0);
+    /* the row highlight lives below the cells: above them it would paint
+       over the bars, and any translucency would shift the sector colour the
+       bar is encoding */
+    const gHi = svg.append("g").attr("class", "mi-hilite-layer");
+    const hiRect = gHi.append("rect").attr("class", "mi-hilite")
+      .attr("x", 0).attr("width", MI_W).attr("height", RH).style("opacity", 0);
     const gCells = svg.append("g").attr("class", "mi-cells");
     const gRows  = svg.append("g").attr("class", "mi-rows").style("opacity", 0);
     const gRows2 = svg.append("g").attr("class", "mi-rows").style("opacity", 0);
@@ -3798,6 +3804,7 @@
       let hot = null, hotRow = null;
       const cool = () => {
         tip.hidden = true;
+        hiRect.style("opacity", 0);
         if (hotRow){ hotRow.classList.remove("is-hot"); hotRow = null; }
         if (hot) d3.select(hot).style("stroke", "#1a2226").style("stroke", null).style("stroke-width", null);
         hot = null;
@@ -3854,7 +3861,10 @@
         if (!hotRow && (step === 3 || step === 6)){
           const R = step === 6 ? R2 : R1;
           const g = R && R.row && R.row.filter(x => x.name === d.name).node();
-          if (g){ hotRow = g; g.classList.add("is-hot"); }
+          if (g){
+            hotRow = g; g.classList.add("is-hot");
+            hiRect.attr("y", rowY(R.pos.get(d.name)) - RH / 2).style("opacity", 1);
+          }
         }
       })
       .on("mousemove", function(ev){ cursorTipPos(ev, wrap, tip); })
@@ -3875,6 +3885,7 @@
             if (hotRow) hotRow.classList.remove("is-hot");
             hotRow = this;
             this.classList.add("is-hot");
+            hiRect.attr("y", rowY(R.pos.get(d.name)) - RH / 2).style("opacity", 1);
           })
           .on("mousemove.mirow", function(ev){ cursorTipPos(ev, wrap, tip); })
           .on("mouseleave.mirow", cool);

@@ -2817,8 +2817,11 @@
   .mi-figure svg .mi-peer{stroke:#1a2226;stroke-width:2;stroke-linecap:round;}
   /* the whole row answers the cursor, not just the bar: a name at one end
      and a jobs count at the other belong to the same reading */
+  /* the band is only ever a hit target — the tint it used to carry sat in
+     the rows layer, which paints over the cells, so it covered the very
+     bars it was meant to point at. The tint now lives under them. */
   #miTreemapSvg .mi-rowbg{fill:transparent;}
-  #miTreemapSvg .mi-row.is-hot .mi-rowbg{fill:var(--teal-tint);}
+  #miTreemapSvg .mi-hilite{fill:var(--teal-tint);pointer-events:none;}
   #miTreemapSvg .mi-row.is-hot .mi-name,
   #miTreemapSvg .mi-row.is-hot .mi-jobs,
   #miTreemapSvg .mi-row.is-hot .mi-trad{fill:var(--teal-dark);}
