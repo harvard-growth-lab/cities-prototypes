@@ -2799,11 +2799,14 @@
   #miTreemapSvg .mi-seclab-t{
     font-size:11px;font-weight:600;pointer-events:none;
   }
-  /* opt-2 writes the name on the block itself, where it has a fill under it
-     and needs to survive whatever colour that is */
+  /* opt-2 shares the block with the cell labels, so the name cannot wear the
+     same dress as they do. It gets a dark chip and sits two units above them
+     in size - the halo goes with the chip, since a 2.5px stroke on text this
+     small closes the counters of e, a and o, and a chip makes it redundant. */
   #miTreemapSvg .mi-seclab-t.is-inside{
-    paint-order:stroke;stroke-width:2.5px;stroke-linejoin:round;
+    font-size:var(--mi-lab);fill:#fff;stroke:none;
   }
+  #miTreemapSvg .mi-seclab-chip{pointer-events:none;}
   #miFigure[data-step="7"] #miSectorKey .sk-no-trad{display:none;}
   /* the prose points at the chart: a phrase naming a sector stands the rest
      of the mix down, so the sentence and the picture say the same thing at

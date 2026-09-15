@@ -3353,12 +3353,17 @@
       return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b);
     };
     const onWhite = c => 1.05 / (lum(c) + 0.05);
-    /* on a fill, the reference's own rule: white or near-black, whichever
-       the block can carry */
-    const onBlock = hex => {
-      const c = d3.color(hex); if (!c) return "#1a2226";
-      return onWhite(c) >= 4.5 ? "#1a2226" : "#fff";
-    };
+    /* opt-2 used to pick white or near-black off the fill's own luminance.
+       Measured on the running page, that rule failed 4.5:1 on all nine
+       fills - it compared each fill against white rather than against the
+       ink, so it put near-black on the dark red and white on the light
+       yellow, the two worst choices available. Two of the nine (#4f8fa3 at
+       4.45 and #8b7ba8 at 4.23) cannot reach 4.5:1 with either ink at all,
+       so no rule of this shape can work and the name needs a ground of its
+       own. SEC_CHIP is that ground: white on it is 16.14:1 everywhere, and
+       its own edge against the fill runs 3.17:1 to 9.93:1, so it clears the
+       3:1 the boundary wants on every sector. */
+    const SEC_CHIP = "#1a2226";
     const labelInk = hex => {
       const base = d3.color(hex); if (!base) return "#1a2226";
       for (let k = 0; k <= 3.2; k += 0.2){
@@ -3367,51 +3372,90 @@
       }
       return "#1a2226";
     };
+    /* opt-1 writes on a strip of its own above the block, so it stays at the
+       11 units the strip was cut for. opt-2 shares the surface with the cell
+       labels, so it has to sit above them in size as well as in weight -
+       anything smaller reads as one more industry name. */
+    /* the chip is what separates the two registers, so the words themselves
+       can stay the size of the cell labels. Setting them larger cost names:
+       at 1100 a 15-unit name lost four of beat 2's nine blocks, Professional
+       & Business among them, because the blocks are fixed in user units
+       while the type is not. Same size, dark ground, white ink. */
+    const CHIP_PAD = 4, CHIP_INSET = 2, CHIP_AIR = 2, CHIP_R = 3;
+    const secUnit = () => labUnit();
     function drawSectorLabels(which){
       /* only where the block can hold the words: a clipped sector name is
          worse than none, since the reader cannot tell which it was */
       hideLab = new Set();
-      if (nameMode === "off"){ gSecLab.selectAll("text").remove(); return; }
+      if (nameMode === "off"){ gSecLab.selectAll("g.mi-seclab-g").remove(); return; }
       const above = nameMode === "above";
+      const u = above ? LAB_BASE : secUnit();
+      /* the chip's own geometry, in the same user units as the blocks */
+      const CH = Math.round(u * 1.5);
+      const dy = Math.round(u * 1.08);
       const secs = which === 4
         ? (above ? secClusterA : secClusterB)
         : null;
       const src = secs
         ? [...secs].map(([k, v]) => ({ key: k, name: v.name, b: v.b }))
         : [...(above ? secTradA : secTradB)].map(([name, b]) => ({ key: name, name: name, b: b }));
-      const items = src.filter(d => d.b.h >= 46 && d.b.w >= name_w(d.name));
-      const sel = gSecLab.selectAll("text").data(items, d => d.key).join("text")
+      /* a generous first pass only - the real gate is the measured width
+         below, so this must not throw away a name the block could hold */
+      const items = src.filter(d =>
+        d.b.h >= Math.max(46, CH + 12) && d.b.w >= name_w(d.name, u));
+      const gsel = gSecLab.selectAll("g.mi-seclab-g").data(items, d => d.key)
+        .join(enter => {
+          const g = enter.append("g").attr("class", "mi-seclab-g");
+          g.append("rect").attr("class", "mi-seclab-chip");
+          g.append("text");
+          return g;
+        });
+      const txt = gsel.select("text")
         .attr("class", "mi-seclab-t" + (above ? "" : " is-inside"))
-        .attr("x", d => d.b.x + (above ? 5 : 6))
-        .attr("y", d => d.b.y + (above ? 12 : 15))
-        .attr("fill", d => above ? labelInk(sectorColors[d.name]) : onBlock(sectorColors[d.name]))
-        .attr("stroke", d => above ? null : (onBlock(sectorColors[d.name]) === "#fff"
-          ? "rgba(0,0,0,.28)" : "rgba(255,255,255,.45)"))
+        .attr("x", d => d.b.x + (above ? 5 : CHIP_INSET + CHIP_PAD))
+        .attr("y", d => d.b.y + (above ? 12 : CHIP_INSET + dy))
+        .attr("fill", above ? (d => labelInk(sectorColors[d.name])) : null)
         .text(d => d.name);
       /* name_w is only a cheap pre-filter; what the block has to hold is the
          width the browser actually sets, so measure it and drop the ones that
          would run past their own block into the sector beside them */
       const realW = new Map();
-      sel.each(function(d){
-        const w = this.getComputedTextLength ? this.getComputedTextLength() : name_w(d.name);
+      txt.each(function(d){
+        const w = this.getComputedTextLength ? this.getComputedTextLength() : name_w(d.name, u);
         realW.set(d.key, w);
       });
-      sel.filter(d => (realW.get(d.key) || 0) + 12 > d.b.w).remove();
-      /* opt-2 covers whatever cell lies under the words */
+      /* what the block has to clear: opt-1 needs the words plus a little air,
+         opt-2 needs the whole chip and its insets */
+      const need = d => (realW.get(d.key) || 0) +
+        (above ? 12 : CHIP_INSET * 2 + CHIP_PAD * 2 + CHIP_AIR);
+      gsel.select("rect.mi-seclab-chip")
+        .attr("display", above ? "none" : null)
+        .attr("x", d => d.b.x + CHIP_INSET)
+        .attr("y", d => d.b.y + CHIP_INSET)
+        .attr("width", d => (realW.get(d.key) || 0) + CHIP_PAD * 2)
+        .attr("height", CH)
+        .attr("rx", CHIP_R).attr("ry", CHIP_R)
+        .attr("fill", SEC_CHIP);
+      /* a chip with no word in it names nothing, so the rect and the text
+         leave together */
+      gsel.filter(d => need(d) > d.b.w).remove();
+      /* opt-2 covers whatever cell lies under the chip - the chip, not the
+         words, since the chip is what the reader cannot see through */
       if (!above) items.forEach(d => {
-        const w = realW.get(d.key);
-        if (w == null || w + 12 > d.b.w) return;
-        const x1 = d.b.x + 6 + w, y1 = d.b.y + 19;
+        if (need(d) > d.b.w) return;
+        const x0 = d.b.x + CHIP_INSET, y0 = d.b.y + CHIP_INSET;
+        const x1 = x0 + (realW.get(d.key) || 0) + CHIP_PAD * 2, y1 = y0 + CH;
         (which === 4 ? clusterRows.flat() : tradRows).forEach(r => {
           const b = (which === 4 ? posClusterB : posTradB).get(r.name);
           if (b && b.x < x1 && b.y < y1 &&
-              b.x + b.w > d.b.x && b.y + b.h > d.b.y) hideLab.add(r.name);
+              b.x + b.w > x0 && b.y + b.h > y0) hideLab.add(r.name);
         });
       });
     }
-    /* 11px semibold runs about 0.55em a character, plus the 6px inset and a
-       little air at the end */
-    const name_w = s => s.length * 6.1 + 14;
+    /* semibold runs about 0.55em a character, plus the inset and a little air
+       at the end; the estimate has to follow the size the name is set at, or
+       it throws away names the block could hold */
+    const name_w = (s, u) => s.length * 6.1 * ((u || LAB_BASE) / LAB_BASE) + 14;
     let coarseCell = null, posCoarse = null, posCoarseFlat = null, coarseShare = null;
     if (opts.adminReveal){
       /* This beat asks how much of the METRO's work happens in the city, so
