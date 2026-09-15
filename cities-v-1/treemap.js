@@ -3041,7 +3041,10 @@
        stroke on the cells — so the clustering reads as grouping rather than
        as a grid. paddingOuter is half the sector gutter, since two
        neighbouring sectors each contribute their own. */
-    function tmap(rows, w, h, grouped){
+    /* padTop reserves a strip along the top of each sector block for its
+       name, so the label has somewhere to sit that is not on top of the
+       first industry's own label */
+    function tmap(rows, w, h, grouped, padTop){
       const node = grouped
         ? d3.hierarchy(hierarchyFor(rows, "MI")).sum(d => d.value)
         : d3.hierarchy({ name: "MI", children: rows.map(r => ({ name: r.name, value: r.employ })) })
@@ -3049,6 +3052,8 @@
       const t = d3.treemap().size([w, h]).paddingInner(1);
       /* 3.5 either side plus the 1 of paddingInner is the reference's 8 */
       if (grouped) t.paddingOuter(3.5);
+      if (grouped && padTop) t.paddingTop(d =>
+        d.depth === 1 && (d.y1 - d.y0) >= 46 && (d.x1 - d.x0) >= 60 ? padTop : 3.5);
       t(node);
       return node;
     }
@@ -3059,6 +3064,7 @@
     /* the same industries with the sector walls taken down, so the biggest
        run from the top-left corner in plain order of size */
     let view = "map";
+    fig.dataset.view = view;
     /* what the map beats colour their cells by: the sector, or how much
        know-how each industry takes */
     let colorBy = "sector";
@@ -3107,8 +3113,12 @@
     /* the tradable cluster alone, filling the width: the tradability-first
        narrative's second beat colours it by complexity */
     const tradRows = clusterRows[0];
-    const posTrad = new Map(tradRows.length
-      ? tmap(tradRows, MI_W, MI_H, true).leaves().map(n => [n.data.name, box(n)]) : []);
+    const SEC_STRIP = 17;
+    const tradTree = tradRows.length ? tmap(tradRows, MI_W, MI_H, true, SEC_STRIP) : null;
+    const posTrad = new Map(tradTree ? tradTree.leaves().map(n => [n.data.name, box(n)]) : []);
+    /* the sector blocks themselves, so the mix can name its own colours
+       instead of sending the reader to a key and back */
+    const secTrad = new Map(tradTree ? tradTree.children.map(c => [c.data.name, box(c)]) : []);
     const posTradFlat = tradRows.length ? stripLayout(tradRows, MI_W, MI_H) : new Map();
     const tradSpot = d => posTrad.get(d.name);
 
@@ -3306,6 +3316,30 @@
     const gRows2 = svg.append("g").attr("class", "mi-rows").style("opacity", 0);
     const gBarsAll  = svg.append("g").attr("class", "mi-rows mi-bars").style("opacity", 0);
     const gBarsTrad = svg.append("g").attr("class", "mi-rows mi-bars").style("opacity", 0);
+    /* the sector names, written on the blocks they belong to */
+    const gSecLab = svg.append("g").attr("class", "mi-seclab").style("opacity", 0);
+    /* white or ink, whichever the fill can carry — the reference this
+       follows switches per sector rather than picking one and hoping */
+    const inkOn = hex => {
+      const c = d3.color(hex); if (!c) return "#1a2226";
+      const lin = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+      const L = 0.2126 * lin(c.r) + 0.7152 * lin(c.g) + 0.0722 * lin(c.b);
+      return (1.05 / (L + 0.05)) >= ((L + 0.05) / 0.05) ? "#fff" : "#1a2226";
+    };
+    function drawSectorLabels(){
+      /* only where the block can hold the words: a clipped sector name is
+         worse than none, since the reader cannot tell which it was */
+      const items = [...secTrad].map(([name, b]) => ({ name: name, b: b }))
+        .filter(d => d.b.h >= 46 && d.b.w >= name_w(d.name));
+      gSecLab.selectAll("text").data(items, d => d.name).join("text")
+        .attr("class", "mi-seclab-t")
+        .attr("x", d => d.b.x + 5).attr("y", d => d.b.y + 12)
+        .attr("fill", d => inkOn(sectorColors[d.name]))
+        .text(d => d.name);
+    }
+    /* 11px semibold runs about 0.55em a character, plus the 6px inset and a
+       little air at the end */
+    const name_w = s => s.length * 6.1 + 14;
     let coarseCell = null, posCoarse = null, posCoarseFlat = null, coarseShare = null;
     if (opts.adminReveal){
       /* This beat asks how much of the METRO's work happens in the city, so
@@ -3552,6 +3586,11 @@
       show(gRows2, i === 6, late);
       show(gBarsAll, barsOn && i !== 5 && i !== 7);
       show(gBarsTrad, barsOn && (i === 5 || i === 7));
+      /* the names belong to the sector-coloured map: under Ordered by jobs
+         the blocks are gone, and under Complexity the colour is not the
+         sector's any more, so the labels would be naming the wrong thing */
+      if (i === 7 && !gSecLab.selectAll("text").size()) drawSectorLabels();
+      show(gSecLab, i === 7 && view === "map" && colorBy === "sector");
       /* on the reveal section the opening beat rests on the admin bands: the
          cells fade first, the blocks behind them come forward, and the veil
          drops last. Leaving the beat runs the same three in reverse. */
