@@ -1980,6 +1980,32 @@
     background:var(--teal-tint);color:var(--teal-dark);font-weight:700;
     padding:1px 7px;border-radius:3px;
   }
+  /* the ranking's card: a title, the sector it belongs to, then the row's
+     four readings — the headline one set larger, the rest aligned under it */
+  .rca-tip .tip-head{margin-bottom:10px;}
+  .rca-tip .tip-rank{
+    display:inline-block;min-width:18px;height:18px;line-height:18px;text-align:center;
+    background:var(--teal);color:#fff;font-size:11px;font-weight:700;border-radius:9px;
+    padding:0 5px;margin-right:7px;vertical-align:2px;
+  }
+  .rca-tip .tip-sector{
+    display:flex;align-items:center;gap:7px;margin-top:5px;
+    font-size:12.5px;color:var(--ink-soft);
+  }
+  .rca-tip .tip-sector i{width:10px;height:10px;border-radius:2px;flex:none;}
+  .rca-tip .tip-lead{
+    display:flex;align-items:baseline;gap:8px;
+    padding:9px 0 10px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  }
+  .rca-tip .tip-lead b{font-size:21px;font-weight:700;color:var(--ink);line-height:1;font-variant-numeric:tabular-nums;}
+  .rca-tip .tip-lead span{font-size:12.5px;color:var(--ink-soft);line-height:1.35;}
+  .rca-tip .tip-grid{display:grid;grid-template-columns:auto auto;gap:6px 14px;margin-top:10px;}
+  .rca-tip .tip-grid dt{font-size:12.5px;color:var(--ink-soft);}
+  .rca-tip .tip-grid dd{
+    margin:0;font-size:12.5px;font-weight:600;color:var(--ink);
+    text-align:right;font-variant-numeric:tabular-nums;
+  }
+  .rca-tip .tip-grid dd em{font-style:normal;font-weight:400;color:var(--ink-soft);}
   .rca-tip strong{font-size:14px;font-weight:600;color:#000;}
   .rca-tip p{font-size:14px;line-height:21px;color:#000;margin:7px 0 0;}
 
@@ -2611,20 +2637,24 @@
   /* the ranking's own control, on the beats that show a ranking */
   .mi-figure[data-step="3"] .mi-sort,
   .mi-figure[data-step="6"] .mi-sort{opacity:1;pointer-events:auto;}
-  #miTreemapSvg .mi-jobs{font-size:11.5px;fill:var(--ink-soft);font-variant-numeric:tabular-nums;}
+  /* Jobs and tradability are two of the four things this chart says, so they
+     are set as data — ink, 600 — and the axis that measures the bars is set
+     as scaffolding. It was the other way round: 12px/600 tick labels over
+     11.5px/400 muted figures, so the ruler outweighed the readings. */
+  #miTreemapSvg .mi-jobs{font-size:13px;font-weight:600;fill:var(--ink);font-variant-numeric:tabular-nums;}
   /* the jobs bars sit beside the ranking's own bars, so they stay quieter
      than the teal — but dark enough to read as a bar at 4px */
-  #miTreemapSvg .mi-jobsbar{fill:#8d949d;}
-  #miTreemapSvg .mi-colhead{font-size:11px;font-weight:600;fill:#72767b;}
+  #miTreemapSvg .mi-jobsbar{fill:#7c848c;}
+  #miTreemapSvg .mi-colhead{font-size:12px;font-weight:600;fill:var(--ink);}
   .mi-view .mi-colorlab{margin-left:14px;}
   /* the tradability column, built as the jobs column is */
-  #miTreemapSvg .mi-trad{font-size:11.5px;fill:var(--ink-soft);font-variant-numeric:tabular-nums;}
+  #miTreemapSvg .mi-trad{font-size:13px;font-weight:600;fill:var(--ink);font-variant-numeric:tabular-nums;}
   #miTreemapSvg .mi-tradtrack{fill:#e6eaec;}
-  #miTreemapSvg .mi-tradbar{fill:#8d949d;}
+  #miTreemapSvg .mi-tradbar{fill:#7c848c;}
   #miTreemapSvg .mi-tradtick{stroke:#72767b;stroke-width:1;}
   .spec-key .sk-tradnotch{position:relative;width:24px;height:4px;border-radius:2px;background:#8d949d;margin-bottom:5px;}
   .spec-key .sk-tradnotch::after{content:"";position:absolute;left:11.5px;top:5px;width:1px;height:4px;background:#72767b;}
-  #miTreemapSvg .mi-colsub{font-size:10px;fill:#8e9196;}
+  #miTreemapSvg .mi-colsub{font-size:10.5px;fill:#8e9196;}
   /* on that beat the head holds two rows: the controls above, the clusters'
      header below */
   /* the names close onto the chart: the slot takes over the chart's own top
@@ -2778,13 +2808,20 @@
   .mi-figure svg .mi-rect{stroke:none;}
   .mi-figure svg .mi-grid{stroke:#e9e9eb;stroke-width:1;}
   .mi-figure svg .mi-grid.is-base{stroke:#8e9196;stroke-dasharray:3 3;}
-  .mi-figure svg .mi-ticklab{font-size:12px;font-weight:600;fill:#72767b;}
-  .mi-figure svg .mi-axname{font-size:12.5px;font-weight:600;fill:var(--ink);}
+  .mi-figure svg .mi-ticklab{font-size:11px;font-weight:500;fill:#9aa3a6;}
+  .mi-figure svg .mi-axname{font-size:12px;font-weight:600;fill:var(--ink-soft);}
   .mi-figure svg .mi-name{font-size:13px;fill:var(--ink);}
   .mi-figure svg .mi-name.is-top{font-weight:700;}
-  .mi-figure svg .mi-val{font-size:12.5px;font-weight:600;fill:var(--ink-soft);}
+  .mi-figure svg .mi-val{font-size:12.5px;font-weight:600;fill:var(--ink);}
   .mi-figure svg .mi-val.is-top{fill:var(--teal);font-weight:700;}
   .mi-figure svg .mi-peer{stroke:#1a2226;stroke-width:2;stroke-linecap:round;}
+  /* the whole row answers the cursor, not just the bar: a name at one end
+     and a jobs count at the other belong to the same reading */
+  #miTreemapSvg .mi-rowbg{fill:transparent;}
+  #miTreemapSvg .mi-row.is-hot .mi-rowbg{fill:var(--teal-tint);}
+  #miTreemapSvg .mi-row.is-hot .mi-name,
+  #miTreemapSvg .mi-row.is-hot .mi-jobs,
+  #miTreemapSvg .mi-row.is-hot .mi-trad{fill:var(--teal-dark);}
   .mi-figure svg .mi-badge-bg{fill:var(--teal);}
   .mi-figure svg .mi-badge{font-size:11px;font-weight:700;fill:#fff;}
   /* the admin reveal: the sector blocks behind the cells, the veil over what
@@ -3572,7 +3609,7 @@
        string already reaches x≈798 of 880, so it takes x1.1 and no more. */
     .mi-figure{--mi-lab:13px;}
     .mi-figure svg .mi-lab{font-size:var(--mi-lab);}
-    .mi-figure svg .mi-ticklab{font-size:15px;}
+    .mi-figure svg .mi-ticklab{font-size:13px;}
     .mi-figure svg .mi-axname{font-size:13.5px;}
     .mi-figure svg .mi-name{font-size:16px;}
     .mi-figure svg .mi-val{font-size:15.5px;}
@@ -3581,9 +3618,9 @@
     .mi-figure svg .mi-adm-name{font-size:17px;}
     .mi-figure svg .mi-adm-pct{font-size:17.5px;}
     .mi-figure svg .mi-share-pct{font-size:15px;}
-    #miTreemapSvg .mi-jobs{font-size:14.5px;}
-    #miTreemapSvg .mi-trad{font-size:14.5px;}
-    #miTreemapSvg .mi-colhead{font-size:13.5px;}
+    #miTreemapSvg .mi-jobs{font-size:16px;}
+    #miTreemapSvg .mi-trad{font-size:16px;}
+    #miTreemapSvg .mi-colhead{font-size:14.5px;}
     #miTreemapSvg .mi-colsub{font-size:12.5px;}
     #amDotsSvg .ad-ringlab{font-size:15px;}
     #amDotsSvg .ad-rownum{font-size:17.5px;}
@@ -3765,7 +3802,7 @@
        on screen, and fitLabel now spends its budget at the same size */
     .mi-figure{--mi-lab:20px;}
     .mi-figure svg .mi-lab{font-size:var(--mi-lab);}
-    .mi-figure svg .mi-ticklab{font-size:19px;}
+    .mi-figure svg .mi-ticklab{font-size:15px;}
     .mi-figure svg .mi-axname{font-size:14px;}
     .mi-figure svg .mi-name{font-size:18px;}
     .mi-figure svg .mi-val{font-size:16px;}
@@ -3774,9 +3811,9 @@
     .mi-figure svg .mi-adm-name{font-size:18px;}
     .mi-figure svg .mi-adm-pct{font-size:19px;}
     .mi-figure svg .mi-share-pct{font-size:16px;}
-    #miTreemapSvg .mi-jobs{font-size:17px;}
-    #miTreemapSvg .mi-trad{font-size:17px;}
-    #miTreemapSvg .mi-colhead{font-size:14px;}
+    #miTreemapSvg .mi-jobs{font-size:19px;}
+    #miTreemapSvg .mi-trad{font-size:19px;}
+    #miTreemapSvg .mi-colhead{font-size:15.5px;}
     #miTreemapSvg .mi-colsub{font-size:13px;}
     #amDotsSvg .ad-ringlab{font-size:18px;}
     #amDotsSvg .ad-rownum{font-size:19px;}

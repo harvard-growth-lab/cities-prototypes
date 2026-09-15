@@ -3398,6 +3398,10 @@
       const row = G.selectAll("g.mi-row").data(R.ranked, d => d.name)
         .join("g").attr("class", "mi-row")
         .attr("transform", d => "translate(0," + rowY(R.pos.get(d.name)) + ")");
+      /* the band the cursor actually hits: full width, so the name at one end
+         and the jobs count at the other belong to the same target */
+      row.append("rect").attr("class", "mi-rowbg")
+        .attr("x", 0).attr("y", -RH / 2).attr("width", MI_W).attr("height", RH);
       const top = d => R.rankIdx.get(d.name) < 3;
       row.append("text").attr("class", d => "mi-name" + (top(d) ? " is-top" : ""))
         .attr("x", ML - 10).attr("y", 4).attr("text-anchor", "end").text(d => d.label);
@@ -3520,8 +3524,13 @@
         (dur ? labs.transition().delay(dur / 2).duration(dur / 2) : labs)
           .style("opacity", d => at(d).op > 0 ? 1 : 0);
       }
-      const show = (g, on, delay) => (dur ? g.transition().delay(on ? (delay || 0) : 0).duration(dur / 2) : g)
-        .style("opacity", on ? 1 : 0);
+      const show = (g, on, delay) => {
+        /* a faded group still sits over everything beneath it, so the pointer
+           has to be handed back with the opacity */
+        g.style("pointer-events", on ? null : "none");
+        return (dur ? g.transition().delay(on ? (delay || 0) : 0).duration(dur / 2) : g)
+          .style("opacity", on ? 1 : 0);
+      };
       const gapMode = sortKey === "gap";
       /* on arrival the ranking's names and columns come in once the bars
          have nearly settled */
@@ -3780,10 +3789,16 @@
     const tip = document.getElementById(p + "Tip");
     if (wrap && tip){
       const rowOf = (k, v) => '<div class="tip-row"><span>' + k + '</span><span>' + v + '</span></div>';
+      const cellOf = (k, v) => '<dt>' + k + '</dt><dd>' + v + '</dd>';
       const pct = v => v.toFixed(2) + "%";
-      let hot = null;
+      const tradWord = t => t >= CL_HI ? "sells outside" : t >= CL_LO ? "some of both" : "serves the metro";
+      /* the number the ranking is ordered by, given the size it is ordered by */
+      const tipLead = r => '<div class="tip-lead"><b>' + r.rca.toFixed(1) +
+        '\u00d7</b><span>more concentrated here than in<br>a typical US metro</span></div>';
+      let hot = null, hotRow = null;
       const cool = () => {
         tip.hidden = true;
+        if (hotRow){ hotRow.classList.remove("is-hot"); hotRow = null; }
         if (hot) d3.select(hot).style("stroke", "#1a2226").style("stroke", null).style("stroke-width", null);
         hot = null;
       };
@@ -3795,11 +3810,18 @@
         let body = "";
         const rrow = step === 6 ? d.row2 : d.row;
         if ((step === 3 || step === 6) && rrow){
-          body = rowOf("Concentrated here", rrow.rca.toFixed(1) + "\u00d7 the US average") +
-                 rowOf("Peer metros average", rrow.peerAvg.toFixed(1) + "\u00d7") +
-                 rowOf("Share of metro jobs", pct(rrow.localPct)) +
-                 rowOf("Share in a typical metro", pct(rrow.worldPct)) +
-                 (step === 6 ? rowOf("Tradability", tradabilityOf(d.name).toFixed(2)) : "");
+          /* the card carries what the row itself shows, in the order the eye
+             meets it: the headline concentration, then the peer line it is
+             measured against, then the two columns on the right */
+          body = tipLead(rrow) +
+            '<dl class="tip-grid">' +
+            cellOf("Peer metros average", rrow.peerAvg.toFixed(1) + "\u00d7") +
+            (step === 6 ? cellOf("Tradability",
+                tradabilityOf(d.name).toFixed(2) +
+                ' <em>' + tradWord(tradabilityOf(d.name)) + '</em>') : "") +
+            cellOf("Jobs here", Math.round(d.employ).toLocaleString()) +
+            cellOf("Share of metro jobs", pct(rrow.localPct)) +
+            '</dl>';
         } else {
           body = rowOf("Sector", d.sector) +
                  rowOf("Jobs", Math.round(d.employ).toLocaleString());
@@ -3817,13 +3839,46 @@
           }
         }
         const labRow = step === 6 ? d.row2 : d.row;
-        tip.innerHTML = '<strong>' + (labRow ? labRow.label : d.name) + '</strong>' + body;
+        const rank = (step === 6 && R2.rankIdx.has(d.name) && R2.rankIdx.get(d.name) < 3)
+          ? '<span class="tip-rank">' + (R2.rankIdx.get(d.name) + 1) + '</span>' : '';
+        const head = '<div class="tip-head"><strong>' + rank +
+          (labRow ? labRow.label : d.name) + '</strong>' +
+          ((step === 3 || step === 6)
+            ? '<span class="tip-sector"><i style="background:' + sectorColors[d.sector] + '"></i>' +
+              d.sector + '</span>' : '') + '</div>';
+        tip.innerHTML = head + body;
         tip.hidden = false;
         this.parentNode.appendChild(this);          // hovered mark to the front
         d3.select(r).style("stroke", "#1a2226").style("stroke-width", 2.5);
+        /* coming in off the bar rather than the band, light the band anyway */
+        if (!hotRow && (step === 3 || step === 6)){
+          const R = step === 6 ? R2 : R1;
+          const g = R && R.row && R.row.filter(x => x.name === d.name).node();
+          if (g){ hotRow = g; g.classList.add("is-hot"); }
+        }
       })
       .on("mousemove", function(ev){ cursorTipPos(ev, wrap, tip); })
       .on("mouseleave", cool);
+
+      /* the ranking rows carry the same card, raised from the row rather than
+         the bar — hovering a name or a jobs count is hovering the industry */
+      [R1, R2].forEach(function(R){
+        if (!R || !R.row) return;
+        R.row.style("cursor", "default")
+          .on("mouseenter.mirow", function(ev, d){
+            /* the cell's handler opens with cool(), so the band has to be lit
+               after it has run, not before — and it lights a row of its own,
+               which this one replaces */
+            const cellG = cell.filter(c => c.name === d.name).node();
+            if (cellG) cellG.dispatchEvent(new MouseEvent("mouseenter"));
+            else cool();
+            if (hotRow) hotRow.classList.remove("is-hot");
+            hotRow = this;
+            this.classList.add("is-hot");
+          })
+          .on("mousemove.mirow", function(ev){ cursorTipPos(ev, wrap, tip); })
+          .on("mouseleave.mirow", cool);
+      });
     }
 
     /* the arrangement control belongs to the two beats that show the whole
