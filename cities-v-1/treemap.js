@@ -3065,9 +3065,16 @@
        run from the top-left corner in plain order of size */
     let view = "map";
     fig.dataset.view = view;
+    fig.dataset.names = "above";
     /* what the map beats colour their cells by: the sector, or how much
        know-how each industry takes */
     let colorBy = "sector";
+    /* how the sectors are named on the map: a strip above each block, the
+       name written on the block, or not at all */
+    let nameMode = "above";
+    /* in opt-2 the name sits over the block's first cell, so that cell's own
+       label stands down rather than printing under it */
+    let hideLab = new Set();
     const fillBy = d => colorBy === "complexity" ? complexityColor(d.name) : sectorColors[d.sector];
     const spot = d => posFull.get(d.name);
 
@@ -3096,16 +3103,21 @@
     /* the sector blocks inside each cluster column, keyed by column and
        sector — a sector can appear in all three, and where it does, saying
        so is part of the beat's point */
-    const secCluster = new Map();
+    const secClusterA = new Map(), secClusterB = new Map();
+    const posClusterA = new Map(), posClusterB = new Map();
     {
       let x0 = 0;
       clusterRows.forEach((l, k) => {
         const w = Math.max(36, CW * clusterShare[k]);
         if (l.length){
-          const tree = tmap(l, w, MI_H, true, SEC_STRIP);
-          tree.leaves().forEach(n => posCluster.set(n.data.name, box(n, x0)));
-          tree.children.forEach(c =>
-            secCluster.set(k + "|" + c.data.name, { name: c.data.name, b: box(c, x0) }));
+          const tA = tmap(l, w, MI_H, true, SEC_STRIP), tB = tmap(l, w, MI_H, true);
+          tA.leaves().forEach(n => posClusterA.set(n.data.name, box(n, x0)));
+          tB.leaves().forEach(n => posClusterB.set(n.data.name, box(n, x0)));
+          tA.children.forEach(c =>
+            secClusterA.set(k + "|" + c.data.name, { name: c.data.name, b: box(c, x0) }));
+          tB.children.forEach(c =>
+            secClusterB.set(k + "|" + c.data.name, { name: c.data.name, b: box(c, x0) }));
+          tB.leaves().forEach(n => posCluster.set(n.data.name, box(n, x0)));
           /* the same column in plain size order, for the Ordered view */
           const off = x0;
           stripLayout(l, w, MI_H).forEach((b, name) =>
@@ -3114,20 +3126,25 @@
         x0 += w + CGAP;
       });
     }
-    const clusterSpot = d => posCluster.get(d.name) || posFull.get(d.name);
+    const clusterSpot = d =>
+      (nameMode === "above" ? posClusterA : posClusterB).get(d.name) || posFull.get(d.name);
     /* all three clusters wear one colouring: the columns already carry the
        tradability, so colour is free to say sector, or complexity */
     const clusterFill = fillBy;
     /* the tradable cluster alone, filling the width: the tradability-first
        narrative's second beat colours it by complexity */
     const tradRows = clusterRows[0];
-    const tradTree = tradRows.length ? tmap(tradRows, MI_W, MI_H, true, SEC_STRIP) : null;
-    const posTrad = new Map(tradTree ? tradTree.leaves().map(n => [n.data.name, box(n)]) : []);
-    /* the sector blocks themselves, so the mix can name its own colours
-       instead of sending the reader to a key and back */
-    const secTrad = new Map(tradTree ? tradTree.children.map(c => [c.data.name, box(c)]) : []);
+    /* two geometries for the same mix: one that reserves a strip along the
+       top of each sector block for its name (opt-1), one that does not
+       (opt-2 writes on the block, opt-3 does not write at all) */
+    const tradTreeA = tradRows.length ? tmap(tradRows, MI_W, MI_H, true, SEC_STRIP) : null;
+    const tradTreeB = tradRows.length ? tmap(tradRows, MI_W, MI_H, true) : null;
+    const posTradA = new Map(tradTreeA ? tradTreeA.leaves().map(n => [n.data.name, box(n)]) : []);
+    const posTradB = new Map(tradTreeB ? tradTreeB.leaves().map(n => [n.data.name, box(n)]) : []);
+    const secTradA = new Map(tradTreeA ? tradTreeA.children.map(c => [c.data.name, box(c)]) : []);
+    const secTradB = new Map(tradTreeB ? tradTreeB.children.map(c => [c.data.name, box(c)]) : []);
     const posTradFlat = tradRows.length ? stripLayout(tradRows, MI_W, MI_H) : new Map();
-    const tradSpot = d => posTrad.get(d.name);
+    const tradSpot = d => (nameMode === "above" ? posTradA : posTradB).get(d.name);
 
     /* ---- Ordered by jobs: the same cells as a ranked bar chart. The top
        rows by jobs become bars, named on the left and valued at the end;
@@ -3336,6 +3353,12 @@
       return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b);
     };
     const onWhite = c => 1.05 / (lum(c) + 0.05);
+    /* on a fill, the reference's own rule: white or near-black, whichever
+       the block can carry */
+    const onBlock = hex => {
+      const c = d3.color(hex); if (!c) return "#1a2226";
+      return onWhite(c) >= 4.5 ? "#1a2226" : "#fff";
+    };
     const labelInk = hex => {
       const base = d3.color(hex); if (!base) return "#1a2226";
       for (let k = 0; k <= 3.2; k += 0.2){
@@ -3347,15 +3370,44 @@
     function drawSectorLabels(which){
       /* only where the block can hold the words: a clipped sector name is
          worse than none, since the reader cannot tell which it was */
-      const src = which === 4
-        ? [...secCluster].map(([k, v]) => ({ key: k, name: v.name, b: v.b }))
-        : [...secTrad].map(([name, b]) => ({ key: name, name: name, b: b }));
+      hideLab = new Set();
+      if (nameMode === "off"){ gSecLab.selectAll("text").remove(); return; }
+      const above = nameMode === "above";
+      const secs = which === 4
+        ? (above ? secClusterA : secClusterB)
+        : null;
+      const src = secs
+        ? [...secs].map(([k, v]) => ({ key: k, name: v.name, b: v.b }))
+        : [...(above ? secTradA : secTradB)].map(([name, b]) => ({ key: name, name: name, b: b }));
       const items = src.filter(d => d.b.h >= 46 && d.b.w >= name_w(d.name));
-      gSecLab.selectAll("text").data(items, d => d.key).join("text")
-        .attr("class", "mi-seclab-t")
-        .attr("x", d => d.b.x + 5).attr("y", d => d.b.y + 12)
-        .attr("fill", d => labelInk(sectorColors[d.name]))
+      const sel = gSecLab.selectAll("text").data(items, d => d.key).join("text")
+        .attr("class", "mi-seclab-t" + (above ? "" : " is-inside"))
+        .attr("x", d => d.b.x + (above ? 5 : 6))
+        .attr("y", d => d.b.y + (above ? 12 : 15))
+        .attr("fill", d => above ? labelInk(sectorColors[d.name]) : onBlock(sectorColors[d.name]))
+        .attr("stroke", d => above ? null : (onBlock(sectorColors[d.name]) === "#fff"
+          ? "rgba(0,0,0,.28)" : "rgba(255,255,255,.45)"))
         .text(d => d.name);
+      /* name_w is only a cheap pre-filter; what the block has to hold is the
+         width the browser actually sets, so measure it and drop the ones that
+         would run past their own block into the sector beside them */
+      const realW = new Map();
+      sel.each(function(d){
+        const w = this.getComputedTextLength ? this.getComputedTextLength() : name_w(d.name);
+        realW.set(d.key, w);
+      });
+      sel.filter(d => (realW.get(d.key) || 0) + 12 > d.b.w).remove();
+      /* opt-2 covers whatever cell lies under the words */
+      if (!above) items.forEach(d => {
+        const w = realW.get(d.key);
+        if (w == null || w + 12 > d.b.w) return;
+        const x1 = d.b.x + 6 + w, y1 = d.b.y + 19;
+        (which === 4 ? clusterRows.flat() : tradRows).forEach(r => {
+          const b = (which === 4 ? posClusterB : posTradB).get(r.name);
+          if (b && b.x < x1 && b.y < y1 &&
+              b.x + b.w > d.b.x && b.y + b.h > d.b.y) hideLab.add(r.name);
+        });
+      });
     }
     /* 11px semibold runs about 0.55em a character, plus the 6px inset and a
        little air at the end */
@@ -3578,12 +3630,16 @@
          once the mix becomes a ranking that carries its own names */
       const labs = cell.select(".mi-lab");
       const barsOn = view === "alt" && (i === 0 || i === 1 || i === 4 || i === 5 || i === 7);
+      /* which cell labels stand down is decided by where the sector names
+         land, so the names have to be placed before the labels are written */
+      if (i === 7 || i === 4) drawSectorLabels(i); else hideLab = new Set();
       if (i === 3 || i === 6 || barsOn){
         (dur ? labs.transition().duration(dur / 3) : labs).style("opacity", 0);
       } else {
         const lu = labUnit();
         labs.attr("x", d => at(d).box.x + 4).attr("y", d => at(d).box.y + lu)
-          .text(d => fitLabel(d.name, { width: at(d).box.w, height: at(d).box.h }, lu));
+          .text(d => hideLab.has(d.name)
+            ? "" : fitLabel(d.name, { width: at(d).box.w, height: at(d).box.h }, lu));
         (dur ? labs.transition().delay(dur / 2).duration(dur / 2) : labs)
           .style("opacity", d => at(d).op > 0 ? 1 : 0);
       }
@@ -3611,8 +3667,8 @@
          sector's any more, so the labels would be naming the wrong thing */
       /* both map beats name their blocks; the sets differ, so redraw on
          arrival rather than once */
-      if ((i === 7 || i === 4) && painted !== i) drawSectorLabels(i);
-      show(gSecLab, (i === 7 || i === 4) && view === "map" && colorBy === "sector");
+      show(gSecLab, (i === 7 || i === 4) && view === "map" &&
+        colorBy === "sector" && nameMode !== "off");
       /* on the reveal section the opening beat rests on the admin bands: the
          cells fade first, the blocks behind them come forward, and the veil
          drops last. Leaving the beat runs the same three in reverse. */
@@ -3650,6 +3706,23 @@
     /* colour by: sector or complexity, on the two map beats. Each beat
        opens on sector, which is what its text describes; the reader changes
        it once there */
+    /* the naming study: three options on the same two beats. Switching the
+       strip on or off moves the cells, so the beat repaints rather than
+       just redrawing the labels. */
+    const namesEl = document.getElementById(p + "Names");
+    if (namesEl) namesEl.addEventListener("click", ev => {
+      const b = ev.target.closest(".seg-btn[data-names]");
+      if (!b || b.dataset.names === nameMode) return;
+      nameMode = b.dataset.names;
+      fig.dataset.names = nameMode;
+      namesEl.querySelectorAll(".seg-btn[data-names]").forEach(x => {
+        const on = x.dataset.names === nameMode;
+        x.classList.toggle("is-active", on);
+        x.setAttribute("aria-pressed", String(on));
+      });
+      if (step === 7 || step === 4) paint(step, !reduced());
+    });
+
     const colorEl = document.getElementById(p + "Color");
     /* the complexity rank and the complexity explainer in the first beat's text */
     const complexityBits = [p + "RankCard", p + "ComplexityInfo"]

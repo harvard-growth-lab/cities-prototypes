@@ -2645,6 +2645,12 @@
   #miTreemapSvg .mi-jobsbar{fill:#7c848c;}
   #miTreemapSvg .mi-colhead{font-size:14px;font-weight:600;fill:var(--ink);}
   .mi-view .mi-colorlab{margin-left:14px;}
+  /* the naming study belongs to the two beats that draw blocks */
+  #miFigure:not([data-step="7"]):not([data-step="4"]) #miNames,
+  #miFigure:not([data-step="7"]):not([data-step="4"]) #miNames + .ctl-label,
+  #miFigure[data-color="complexity"] #miNames{display:none;}
+  #miFigure:not([data-step="7"]):not([data-step="4"]) .mi-colorlab + .seg + .mi-colorlab,
+  #miFigure[data-color="complexity"] .mi-colorlab + .seg + .mi-colorlab{display:none;}
   /* the tradability column, built as the jobs column is */
   #miTreemapSvg .mi-trad{font-size:13px;font-weight:600;fill:var(--ink);font-variant-numeric:tabular-nums;}
   #miTreemapSvg .mi-tradtrack{fill:#e6eaec;}
@@ -2792,6 +2798,11 @@
   #miSectorKey .sk-share{display:none;}
   #miTreemapSvg .mi-seclab-t{
     font-size:11px;font-weight:600;pointer-events:none;
+  }
+  /* opt-2 writes the name on the block itself, where it has a fill under it
+     and needs to survive whatever colour that is */
+  #miTreemapSvg .mi-seclab-t.is-inside{
+    paint-order:stroke;stroke-width:2.5px;stroke-linejoin:round;
   }
   #miFigure[data-step="7"] #miSectorKey .sk-no-trad{display:none;}
   /* the prose points at the chart: a phrase naming a sector stands the rest
@@ -5171,6 +5182,14 @@
               <div class="seg" id="miColor" role="group" aria-label="What the cells are coloured by">
                 <button type="button" class="seg-btn is-active" data-color="sector" aria-pressed="true">Sector</button>
                 <button type="button" class="seg-btn" data-color="complexity" aria-pressed="false">Complexity</button>
+              </div>
+              <!-- a study control: three ways of naming the sectors on the
+                   map, to be compared and then settled -->
+              <span class="ctl-label mi-colorlab">Sector names</span>
+              <div class="seg" id="miNames" role="group" aria-label="How the sectors are named">
+                <button type="button" class="seg-btn is-active" data-names="above" aria-pressed="true">opt-1</button>
+                <button type="button" class="seg-btn" data-names="inside" aria-pressed="false">opt-2</button>
+                <button type="button" class="seg-btn" data-names="off" aria-pressed="false">opt-3</button>
               </div>
             </div>
             <!-- the ranking's order: by concentration, by size, or by the gap
