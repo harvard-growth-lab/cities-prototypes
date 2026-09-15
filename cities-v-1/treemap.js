@@ -3938,7 +3938,7 @@
     initCommuteStats();
     updateExportHeadStat();
     initIndustryFigure("mi", industryData, "MI");
-    /* Admin Industry Mix now runs its own figure — one set of sector rows
+    /* Admin Industries now runs its own figure — one set of sector rows
        read three ways — which lives with the section's markup rather than
        here; nothing to build in this file. */
     initRcaChart();
