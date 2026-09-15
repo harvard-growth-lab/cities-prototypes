@@ -2542,7 +2542,16 @@
   :is(#page-export-basket, #page-admin-mix) .ct-panel{
     background:#fff;border:1px solid var(--border);border-radius:10px;padding:28px 32px 24px;
   }
-  :is(#page-export-basket, #page-admin-mix) .ct-step > .geo-badge + *{
+  /* The line closes the Viewing badge, so it belongs to whatever the step
+     actually shows next — and on a section that carries two narratives the
+     next sibling can be the one the toggle has hidden, which is how the
+     admin page lost its line while still computing a border on a
+     display:none paragraph. Step past what is hidden. The run is two today
+     (opt-2's first beat); three is the headroom. */
+  :is(#page-export-basket, #page-admin-mix) .ct-step > .geo-badge + *:not([hidden]),
+  :is(#page-export-basket, #page-admin-mix) .ct-step > .geo-badge + [hidden] + *:not([hidden]),
+  :is(#page-export-basket, #page-admin-mix) .ct-step > .geo-badge + [hidden] + [hidden] + *:not([hidden]),
+  :is(#page-export-basket, #page-admin-mix) .ct-step > .geo-badge + [hidden] + [hidden] + [hidden] + *:not([hidden]){
     align-self:stretch;border-top:1px solid var(--border);padding-top:18px;
   }
   /* the captions stack in one place rather than in sequence: only one shows
