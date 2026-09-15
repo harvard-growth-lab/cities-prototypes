@@ -81,10 +81,6 @@
     --t-hero:  clamp(1.8125rem, 0.958rem + 3.796vw, 4.375rem);   /* 29 → 70 */
     /* the measure the section bar and the page grid share */
     --grid-max:1360px;
-    /* the location chip's own left gutter — its 1px border plus the 36px
-       the buildings mark holds — so a reading column can start where the
-       chip's words start rather than where its box does */
-    --chip-text-inset:37px;
     /* the landing composes on its own, narrower measure (the hero grid),
        so its masthead hangs from that edge rather than the tool's */
     --landing-pad:max(24px, calc((100vw - 1140px) / 2));
@@ -835,12 +831,14 @@
      and owns the space beneath it */
   .ov-wrap:not(.ov2) .ov-block > .ct-eyebrow{margin-bottom:14px;}
   .ov-wrap:not(.ov2) .ov-block > .ct-eyebrow + .page-head{margin-top:0;}
-  /* the reading hangs from the line the location chip's text hangs from,
-     not from the line its border does: the two are read one under the
-     other, so it is the words that have to agree */
+  /* one left edge for the whole tool: the frame, which is where the
+     location control starts and where every other section's content
+     starts. This column briefly hung from the chip's text instead, 37px
+     further in, which lined it up with the one thing above it and out of
+     line with everything else. */
   .ov-wrap:not(.ov2) .ov-block{
     width:auto;max-width:760px;
-    margin-left:calc(var(--frame-pad) + var(--chip-text-inset));
+    margin-left:var(--frame-pad);
     margin-right:clamp(28px, 3vw, 56px);
   }
   /* the three numbers under the reading run across in one row: each is its
