@@ -3084,6 +3084,8 @@
        Column width is the cluster's share of jobs; inside each column the
        industries keep their sector walls, so colour stays the sector's and
        position alone carries tradability. ---- */
+    /* the strip each sector block keeps along its top for its own name */
+    const SEC_STRIP = 17;
     const CL_HI = 0.5, CL_LO = 0.35;
     const clusterOf = d => { const t = tradabilityOf(d.name); return t >= CL_HI ? 0 : t >= CL_LO ? 1 : 2; };
     const clusterRows = [0, 1, 2].map(k => industryData.filter(d => clusterOf(d) === k));
@@ -3091,13 +3093,19 @@
     const clusterShare = clusterRows.map(l => d3.sum(l, d => d.employ) / jobsTotal);
     const CGAP = 8, CW = MI_W - 2 * CGAP;
     const posCluster = new Map(), posClusterFlat = new Map();
+    /* the sector blocks inside each cluster column, keyed by column and
+       sector — a sector can appear in all three, and where it does, saying
+       so is part of the beat's point */
+    const secCluster = new Map();
     {
       let x0 = 0;
       clusterRows.forEach((l, k) => {
         const w = Math.max(36, CW * clusterShare[k]);
         if (l.length){
-          tmap(l, w, MI_H, true).leaves()
-            .forEach(n => posCluster.set(n.data.name, box(n, x0)));
+          const tree = tmap(l, w, MI_H, true, SEC_STRIP);
+          tree.leaves().forEach(n => posCluster.set(n.data.name, box(n, x0)));
+          tree.children.forEach(c =>
+            secCluster.set(k + "|" + c.data.name, { name: c.data.name, b: box(c, x0) }));
           /* the same column in plain size order, for the Ordered view */
           const off = x0;
           stripLayout(l, w, MI_H).forEach((b, name) =>
@@ -3113,7 +3121,6 @@
     /* the tradable cluster alone, filling the width: the tradability-first
        narrative's second beat colours it by complexity */
     const tradRows = clusterRows[0];
-    const SEC_STRIP = 17;
     const tradTree = tradRows.length ? tmap(tradRows, MI_W, MI_H, true, SEC_STRIP) : null;
     const posTrad = new Map(tradTree ? tradTree.leaves().map(n => [n.data.name, box(n)]) : []);
     /* the sector blocks themselves, so the mix can name its own colours
@@ -3337,12 +3344,14 @@
       }
       return "#1a2226";
     };
-    function drawSectorLabels(){
+    function drawSectorLabels(which){
       /* only where the block can hold the words: a clipped sector name is
          worse than none, since the reader cannot tell which it was */
-      const items = [...secTrad].map(([name, b]) => ({ name: name, b: b }))
-        .filter(d => d.b.h >= 46 && d.b.w >= name_w(d.name));
-      gSecLab.selectAll("text").data(items, d => d.name).join("text")
+      const src = which === 4
+        ? [...secCluster].map(([k, v]) => ({ key: k, name: v.name, b: v.b }))
+        : [...secTrad].map(([name, b]) => ({ key: name, name: name, b: b }));
+      const items = src.filter(d => d.b.h >= 46 && d.b.w >= name_w(d.name));
+      gSecLab.selectAll("text").data(items, d => d.key).join("text")
         .attr("class", "mi-seclab-t")
         .attr("x", d => d.b.x + 5).attr("y", d => d.b.y + 12)
         .attr("fill", d => labelInk(sectorColors[d.name]))
@@ -3600,8 +3609,10 @@
       /* the names belong to the sector-coloured map: under Ordered by jobs
          the blocks are gone, and under Complexity the colour is not the
          sector's any more, so the labels would be naming the wrong thing */
-      if (i === 7 && !gSecLab.selectAll("text").size()) drawSectorLabels();
-      show(gSecLab, i === 7 && view === "map" && colorBy === "sector");
+      /* both map beats name their blocks; the sets differ, so redraw on
+         arrival rather than once */
+      if ((i === 7 || i === 4) && painted !== i) drawSectorLabels(i);
+      show(gSecLab, (i === 7 || i === 4) && view === "map" && colorBy === "sector");
       /* on the reveal section the opening beat rests on the admin bands: the
          cells fade first, the blocks behind them come forward, and the veil
          drops last. Leaving the beat runs the same three in reverse. */
