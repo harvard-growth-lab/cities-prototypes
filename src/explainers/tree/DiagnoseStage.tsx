@@ -612,9 +612,15 @@ function instHomeDot(
 export function DiagnoseStage({
   scene,
   live = true,
+  compact = false,
 }: {
   scene: DiagScene;
   live?: boolean;
+  /** a phone stage: in the tree phases the parked chart and the instrument
+   *  leave the frame and the viewBox crops to the tree, so it draws half
+   *  again as large — a 640-unit chart in a 360px column is otherwise 4px
+   *  type */
+  compact?: boolean;
 }) {
   /* hover is GRACED (user-set, "make hovering smooth"): clearing waits
      120ms so sliding between neighboring dots re-targets without the
@@ -653,6 +659,9 @@ export function DiagnoseStage({
      scroll back above the scrolly, so shuttling over the boundary strokes
      the line on and off instead of ever presenting it pre-drawn. */
   const wage = scene.layout === "wage";
+  /* the phone crop: the band the two corner cards occupy, gone once the
+     stage is the tree's (the root card starts at 241) */
+  const crop = compact && !wage ? 220 : 0;
   const parkOn = !wage;
   const flowOf = (s: SideKey): Flow => scene.flow?.[s] ?? "park";
   /* the parked card stays lit while it still holds anyone */
@@ -759,7 +768,7 @@ export function DiagnoseStage({
   return (
     <div className="diag-stage">
       <svg
-        viewBox={`0 0 ${W} ${H}`}
+        viewBox={`0 ${crop} ${W} ${H - crop}`}
         role="img"
         aria-label="The diagnostic tree, assembled from the data"
       >
@@ -996,6 +1005,7 @@ export function DiagnoseStage({
             opacity: parkOn ? (scene.recap ? 0.3 : parkHolds ? 1 : 0.5) : 0,
           }}
           transition={TWEEN}
+          style={{ display: crop ? "none" : undefined }}
         >
           <rect
             x={PARK.x}
@@ -1098,6 +1108,7 @@ export function DiagnoseStage({
           initial={false}
           animate={{ opacity: instAny ? (scene.recap ? 0.3 : 1) : 0 }}
           transition={TWEEN}
+          style={{ display: crop ? "none" : undefined }}
         >
           {/* the slot: its border and header take the branch's color, so
               swapping instruments repaints the whole panel */}

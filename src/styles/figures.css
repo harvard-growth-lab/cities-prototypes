@@ -3040,16 +3040,24 @@ html[data-jz-instant="1"] .nv-svg {
    everything here is scoped to .nv-grid. The steps column sets the track's
    height: at least one stop of scroll per block (--nv-stop; a block grows
    past it when its content needs to, and the scroll→stop effect reads the
-   blocks), padded so the block in view sits centred on the sticky stage at
-   the middle of its stop. */
+   blocks), padded so the section opens on its first caption centred on
+   screen. */
 .nv-scrolly.nv-grid {
   /* the stage's room is the scroller below the tool's tab bar — the same
      band the legacy sections pin their stages to (top at --chrome-h, down
-     to the viewport's bottom). The steps column is padded by half that band
-     above and below, so a block's centre meets the stage's centre exactly
-     at the middle of its stop. */
+     to the viewport's bottom). Its centre is the reading line: a block's
+     centre crosses it at the middle of the block's stop. */
   --nv-view: calc(100dvh - var(--chrome-h, 57px));
-  --nv-padtop: calc(var(--chrome-h, 57px) + var(--nv-view) / 2);
+  --nv-line: calc(var(--chrome-h, 57px) + var(--nv-view) / 2);
+  /* what sits above the track when the tab opens the section at its top:
+     v3's toolbar (72px, scrolls away) and section bar (54px, sticks) */
+  --nv-head: 126px;
+  /* the first block's centre sits on the line at that opening scroll.
+     (Padding by half the band put the block's TOP there, and the tab
+     opened on its caption at the foot of the screen.) The bottom padding
+     is unchanged: the last block's bottom meets the line as the stage
+     unpins. */
+  --nv-padtop: max(0px, var(--nv-line) - var(--nv-stop) / 2 - var(--nv-head));
   /* the least room a block keeps above and below its content — so a
      caption with a panel under it ends this far short of the next caption,
      the way the text-only blocks sit in their own room. A block that
@@ -3067,6 +3075,11 @@ html[data-jz-instant="1"] .nv-svg {
   padding-top: var(--nv-padtop);
   padding-bottom: calc(var(--nv-view) / 2);
   min-width: 0;
+}
+/* the top bar's first step jumps where the tab does: goTo scrolls this
+   anchor to the scroller's top, which puts the first caption on the line */
+.nv-grid .jz-anchor-top {
+  top: calc(var(--nv-padtop) + var(--nv-stop) / 2 - var(--nv-line));
 }
 .nv-grid .nv-step,
 .nv-grid .nv-step.is-on {
@@ -3189,9 +3202,13 @@ html[data-jz-instant="1"] .nv-svg {
 
 @media (max-width: 920px) {
   /* one column: the stage takes the top half of the viewport and the
-     steps run under it */
+     steps run under it. A caption block is exactly one BAND tall — the
+     room under the stage — so a caption and its instrument panel are on
+     screen together at every stop: the panel yields to the caption (it is
+     the flexible item), beside it here, under it on a phone. */
   .nv-scrolly.nv-grid {
-    --nv-view: 52vh;
+    --nv-view: 52svh;
+    --nv-band: calc(100svh - var(--nv-view) - var(--chrome-h, 54px));
     --nv-padtop: 0px;
     grid-template-columns: minmax(0, 1fr);
     gap: 0;
@@ -3200,15 +3217,269 @@ html[data-jz-instant="1"] .nv-svg {
     order: -1;
     height: var(--nv-view);
     z-index: 2;
+    /* the chart-phase zoom is a transform on the stage svg: on a narrow
+       stage it reaches past the edges, and must not widen the scroller */
+    overflow-x: clip;
   }
   .nv-grid .nv-steps {
     padding-top: 0;
     padding-bottom: 40vh;
   }
-  .nv-grid .nv-step {
-    height: auto;
-    min-height: var(--nv-stop);
+  /* a tablet has the width for two columns inside the block: the caption
+     reads on the left, the panel stands beside it at the band's height */
+  .nv-grid .nv-step,
+  .nv-grid .nv-step.is-on {
+    height: var(--nv-band);
+    min-height: var(--nv-band);
+    box-sizing: border-box;
+    padding: 18px 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 44%);
+    grid-auto-rows: auto;
+    column-gap: 22px;
+    align-content: start;
+    justify-content: stretch;
+  }
+  .nv-grid .nv-step > :not(.nv-step-inst) {
+    grid-column: 1;
+  }
+  .nv-grid .nv-step-inst {
+    grid-column: 2;
+    grid-row: 1 / span 8;
+    align-self: start;
+    margin-top: 0;
+    /* never taller than the band: the box keeps the column's width and the
+       drawing letterboxes inside it when the band is the tighter measure */
+    max-height: calc(var(--nv-band) - 36px);
+    min-height: 0;
+  }
+  .nv-grid .nv-step h2 {
+    font-size: 22px;
+  }
+  /* the stage is stacked over the steps, so the tab's jump lands on the
+     track's top, not on a line computed for the side-by-side layout */
+  .nv-grid .jz-anchor-top {
+    top: 0;
+  }
+}
+
+/* ============ phones (≤640px) ============
+   The two breakpoints (920 narrow, 640 phone) are the port's
+   (src/legacy/port.css) and the React section's (walkFit.tsx,
+   useMediaQuery). Down here everything is one column with 16px gutters;
+   the walk's stage takes 44svh and a caption block is one screen of the
+   band under it, so a stop is one screen of scroll rather than 68vh. The
+   stage is a camera on phones: the whole-tree stops are an overview and the
+   zoomed stops frame one card and its parent (ConstraintNarrative,
+   ZOOM_FRAME_W_PHONE). */
+@media (max-width: 640px) {
+  .nv-scrolly.nv-grid {
+    --nv-view: 42svh;
+    width: auto;
+    margin-inline: 16px;
+  }
+  .nv-grid .jz-sticky {
+    border-bottom: 1px solid var(--border);
+  }
+  .nv-stagebar {
+    min-height: 36px;
+    padding-top: 6px;
+  }
+  .nv-grid .nv-steps {
+    padding-bottom: 30svh;
+  }
+  /* one column again: the caption first, the panel under it taking
+     whatever of the band the caption leaves (a flex item that shrinks —
+     the text never does), and the caption's type a size smaller so the
+     panel keeps more of the band */
+  .nv-grid .nv-step,
+  .nv-grid .nv-step.is-on {
+    display: flex;
+    flex-direction: column;
     justify-content: flex-start;
-    padding: 24px 0;
+    padding: 14px 0;
+  }
+  .nv-grid .nv-step > :not(.nv-step-inst) {
+    flex: 0 0 auto;
+  }
+  .nv-grid .nv-step-inst {
+    flex: 0 1 auto;
+    min-height: 0;
+    max-height: none;
+    margin-top: 10px;
+  }
+  .nv-grid .nv-step .ct-eyebrow {
+    font-size: 11px;
+    margin-bottom: 6px;
+  }
+  .nv-grid .nv-step h2 {
+    font-size: 20px;
+    margin-bottom: 8px;
+  }
+  .nv-grid .nv-step .geo-badge {
+    margin-bottom: 10px;
+  }
+  .nv-grid .nv-step .lede {
+    font-size: 15px;
+    line-height: 1.45;
+    margin: 6px 0 2px;
+  }
+  .nv-grid .nv-step .nv-trail {
+    margin: -2px 0 8px;
+  }
+  /* the compact flow's title is set nowrap for its cross-fade */
+  .jz-h2s h2 {
+    white-space: normal;
+    font-size: 18px;
+  }
+  .jz-sticky {
+    padding: 8px 12px;
+  }
+
+  /* ---- the analysis ---- */
+  .tool-body .page.ba-page,
+  .tool-body .page.ts-page {
+    max-width: none;
+  }
+  .ba-headrow {
+    gap: 12px;
+  }
+  .ba-views {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ba-views.strip > .ba-view {
+    flex: 0 0 78vw;
+  }
+  .ba-view {
+    min-height: 110px;
+  }
+  .ba-row-head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+    padding: 12px 12px;
+  }
+  .ba-row-title {
+    white-space: normal;
+  }
+  .ba-row-q {
+    flex: 1 0 100%;
+    white-space: normal;
+  }
+  .ba-level,
+  .ts-modlevel {
+    white-space: normal;
+  }
+  .ba-float {
+    right: 6px;
+    left: 6px;
+    bottom: 6px;
+  }
+  .ba-context {
+    padding: 8px 10px;
+    column-gap: 10px;
+  }
+  .ba-context .ba-mini {
+    width: 72px;
+  }
+  .ba-context .ba-kicker {
+    font-size: 10px;
+  }
+
+  /* ---- the sandbox ---- */
+  .ts-panel {
+    padding: 16px 12px 18px;
+    border-radius: 12px;
+  }
+  .ts-head {
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .ts-head h2 {
+    font-size: 21px;
+  }
+  .ts-head-l {
+    flex: 1 1 200px;
+  }
+  .ts-sub {
+    font-size: 14px;
+    line-height: 21px;
+  }
+  /* the frame follows the drawing's own proportions instead of a fixed
+     band, so the whole tree fills the width; the reader pinches in from
+     there, or picks an ending from the strip under it */
+  .ts-svg {
+    height: auto;
+    aspect-ratio: auto;
+    min-height: 200px;
+    max-height: 56svh;
+    touch-action: pan-y;
+  }
+  .ts-read {
+    flex: none;
+    padding: 12px 12px 14px;
+  }
+  .ts-row,
+  .ts-modhead {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+  }
+  .ts-analysis {
+    padding: 14px 12px 18px;
+  }
+}
+
+/* the trail's chip is a button while a path is previewed: the preview's
+   own commit, which a finger needs (no hover, so a tap previews and this
+   picks) and a mouse may use too */
+.ba-use-btn {
+  font: inherit;
+  font-size: inherit;
+  border: 0;
+  cursor: pointer;
+}
+.ba-use-btn:hover {
+  filter: brightness(0.92);
+}
+
+/* ---- touch: the sandbox's hint says what the fingers do ---- */
+.ts-leg-hint-touch {
+  display: none;
+}
+@media (hover: none) {
+  .ts-leg-hint-mouse {
+    display: none;
+  }
+  .ts-leg-hint-touch {
+    display: inline;
+  }
+}
+/* the endings as a strip of buttons under the tree — the touch path to a
+   pick, where a leaf card is too small a target (phones only) */
+.ts-endings {
+  display: none;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px 12px 12px;
+  border-top: 1px solid var(--border);
+}
+.ts-ending {
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+  background: #fff;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 999px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+.ts-ending.on {
+  color: #fff;
+}
+@media (max-width: 640px) {
+  .ts-endings {
+    display: flex;
   }
 }

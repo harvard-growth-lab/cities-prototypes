@@ -212,8 +212,9 @@ if (starts.length !== 2 || ends.length !== 2) throw new Error(`expected two inli
 const script1 = LN.slice(starts[0] + 1, ends[0]).join("\n");
 const script2 = LN.slice(starts[1] + 1, ends[1]).join("\n");
 
-/* [type, label, ...args]: "sub" replaces one exact string; "cut" replaces the
-   block from one line to the line before another. Applied in order. */
+/* [type, label, ...args]: "sub" replaces one exact string; "suball" replaces
+   every occurrence, insisting on exactly n of them; "cut" replaces the block
+   from one line to the line before another. Applied in order. */
 const PAGE_PATCHES = [
   ["sub", "collapsibles run now",
     lines('  window.addEventListener("load", () => {',
@@ -305,15 +306,120 @@ const PAGE_PATCHES = [
     lines("      skipBtn.classList.toggle('hidden', !isIntroPage);",
           "    }",
           "  })();")],
+
+  /* ---- small screens (Sept 2026; the CSS side is src/legacy/port.css) ---- */
+
+  /* the landing scrolls on narrow screens (its hero stacks and no longer
+     fits one viewport), so a wheel or an upward swipe there has to scroll
+     it rather than enter the tool — the Diagnose button and the jump links
+     do that */
+  ["sub", "landing wheel/swipe entry only where the landing does not scroll",
+    lines('  landingEl.addEventListener("wheel", e=>{',
+          '    if(e.deltaY>8) enterTool("page-overview");',
+          "  }, {passive:true});",
+          "  let touchY=null;",
+          '  landingEl.addEventListener("touchstart", e=>{ touchY=e.touches[0].clientY; }, {passive:true});',
+          '  landingEl.addEventListener("touchmove", e=>{',
+          '    if(touchY!==null && touchY-e.touches[0].clientY>30){ touchY=null; enterTool("page-overview"); }',
+          "  }, {passive:true});"),
+    lines('  /* [port] below 920px the landing is a scrolling page (src/legacy/port.css):',
+          "     a wheel or a swipe scrolls it, and the buttons enter the tool */",
+          '  const landingScrolls=()=>window.matchMedia("(max-width: 920px)").matches;',
+          '  landingEl.addEventListener("wheel", e=>{',
+          '    if(!landingScrolls() && e.deltaY>8) enterTool("page-overview");',
+          "  }, {passive:true});",
+          "  let touchY=null;",
+          '  landingEl.addEventListener("touchstart", e=>{ touchY=e.touches[0].clientY; }, {passive:true});',
+          '  landingEl.addEventListener("touchmove", e=>{',
+          "    if(landingScrolls()) return;",
+          '    if(touchY!==null && touchY-e.touches[0].clientY>30){ touchY=null; enterTool("page-overview"); }',
+          "  }, {passive:true});")],
+
+  /* each tab carries its name twice — the full name and a short one — and
+     the stylesheet shows one or the other by width */
+  ["sub", "section tabs carry a short name",
+    "    b.innerHTML = '<span class=\"num\">' + (i + 1) + \"</span>\" + sd.name;",
+    lines("    /* [port] the short name shows below 640px (src/legacy/port.css) */",
+          "    const shortName = ({\"Economic Fundamentals\":\"Fundamentals\",\"Metro Industries\":\"Industries\",",
+          "      \"Admin Industry Mix\":\"Admin mix\",\"City Constraints\":\"Constraints\",\"Levers for Change\":\"Levers\"})[sd.name] || sd.name;",
+          "    b.innerHTML = '<span class=\"num\">' + (i + 1) + '</span><span class=\"secnav-name\">' + sd.name +",
+          "      '</span><span class=\"secnav-short\" aria-hidden=\"true\">' + shortName + '</span>';")],
+
+  /* the section bar's city button prints city and country as two spans, so
+     a phone can show the city alone */
+  ["sub", "city button: city and country apart",
+    "      btn.innerHTML = '<span class=\"citypick-txt\">' + sel.value + '</span>';",
+    lines("      /* [port] on the bar the two halves are spans, so a phone shows the city alone */",
+          "      const cc = bar ? sel.value.split(/,\\s*/) : null;",
+          "      btn.innerHTML = cc && cc.length > 1",
+          "        ? '<span class=\"citypick-txt\"><span class=\"citypick-city\">' + cc[0] + '</span><span class=\"citypick-ctry\">' + cc.slice(1).join(\", \") + '</span></span>'",
+          "        : '<span class=\"citypick-txt\">' + sel.value + '</span>';")],
+
+  /* the tab strip scrolls sideways once it no longer fits: the active tab
+     is brought into the middle of the strip on every switch */
+  ["sub", "active tab scrolled into view",
+    lines('    [...secNavEl.children].forEach((b, k) => {',
+          '      b.classList.toggle("is-active", k === i);',
+          '      if(k === i) b.setAttribute("aria-current", "page");',
+          '      else b.removeAttribute("aria-current");',
+          "    });"),
+    lines('    [...secNavEl.children].forEach((b, k) => {',
+          '      b.classList.toggle("is-active", k === i);',
+          '      if(k === i) b.setAttribute("aria-current", "page");',
+          '      else b.removeAttribute("aria-current");',
+          "    });",
+          "    /* [port] the strip scrolls sideways on narrow screens (src/legacy/port.css):",
+          "       centre the active tab in it */",
+          "    const tab = secNavEl.children[i];",
+          "    if(tab && secNavEl.scrollWidth > secNavEl.clientWidth + 1){",
+          "      const nr = secNavEl.getBoundingClientRect(), tr = tab.getBoundingClientRect();",
+          '      secNavEl.scrollTo({ left: secNavEl.scrollLeft + (tr.left - nr.left) - (nr.width - tr.width) / 2, behavior: "smooth" });',
+          "    }")],
 ];
 
-let page = script1;
-for (const p of PAGE_PATCHES) {
-  const [kind, label] = p;
-  page = kind === "sub"
-    ? subOnce(page, p[2], p[3], `patch "${label}"`)
-    : cutBetween(page, p[2], p[3], p[4], `patch "${label}"`);
+/* the same, for the second inline script (the section scrollies) */
+const PAGE2_PATCHES = [
+  /* the two scrolly spies (Metro Industries / Admin Mix, and Economic
+     Fundamentals' opt-2) pick the step nearest 45% of the viewport. Below
+     920px the stage is pinned ON TOP of the steps (src/legacy/port.css), so
+     the reading line is 45% of the band UNDER the stage — otherwise the
+     figure changes a screen before its caption arrives. */
+  ["suball", "scrolly spies read the band under a stacked stage",
+    lines("  function spy(){",
+          "    if (!built) return;",
+          "    var mid = window.innerHeight * 0.45, best = 0, bd = Infinity;"),
+    lines("  function spy(){",
+          "    if (!built) return;",
+          "    var mid = window.innerHeight * 0.45, best = 0, bd = Infinity;",
+          "    /* [port] one-column layout: the stage is pinned above the steps, so the",
+          "       reading line is 45% of the band under it, not of the viewport */",
+          '    if (window.matchMedia("(max-width: 920px)").matches) {',
+          '      var stk = built.steps[0] && built.steps[0].closest(".ct-scrolly");',
+          '      var stg = stk && stk.querySelector(".ct-stage");',
+          "      if (stg) { var sb = stg.getBoundingClientRect().bottom; mid = sb + (window.innerHeight - sb) * 0.45; }",
+          "    }"),
+    2],
+
+  /* the population chart sizes to its host but never under 500 units, which
+     on a 360px phone draws it 40% too wide; a phone column is ~320 */
+  ["sub", "population chart fits a phone column",
+    "    var W = Math.max(500, Math.round(avail));",
+    "    var W = Math.max(320, Math.round(avail));   /* [port] was 500 */"],
+];
+
+function applyPatches(text, patches) {
+  for (const p of patches) {
+    const [kind, label] = p;
+    text = kind === "sub"
+      ? subOnce(text, p[2], p[3], `patch "${label}"`)
+      : kind === "suball"
+        ? subAll(text, p[2], p[3], p[4], `patch "${label}"`)
+        : cutBetween(text, p[2], p[3], p[4], `patch "${label}"`);
+  }
+  return text;
 }
+const page = applyPatches(script1, PAGE_PATCHES);
+const page2 = applyPatches(script2, PAGE2_PATCHES);
 
 const pageModule = lines(
   `/* ${GEN("index.html (the two inline <script> blocks)")}`,
@@ -337,7 +443,7 @@ const pageModule = lines(
   "  }",
   "",
   "  /* ===== [port] cities-v-3's second inline script starts here ===== */",
-  script2,
+  page2,
   "",
   "  /* [port] what the markup's inline handlers reach for (the rerouted goTo and",
   "     enterTool, since this runs last), and what the React app drives */",

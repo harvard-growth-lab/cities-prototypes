@@ -330,3 +330,30 @@
     padding-top: 5rem;
   }
 }
+
+/* ————— phones: the stage takes more of the (visible) viewport, and its
+   corner chart and instrument leave it so the tree can fill the frame
+   (DiagnoseStage, `compact`) ————— */
+@media (max-width: 640px) {
+  .tree-act .ta-stage {
+    height: 52svh;
+  }
+  .tree-act .ta-stage-card svg {
+    max-height: 50svh;
+  }
+  .tree-act .ta-steps {
+    padding: 56svh 0 20vh;
+  }
+  .tree-act .ta-step {
+    min-height: 50svh;
+  }
+  .tree-hero h1 {
+    font-size: clamp(30px, 8.5vw, 4.1rem);
+  }
+  .tree-page .hud-pill,
+  .tree-page .hud-verdict {
+    white-space: normal;
+    font-size: 0.78rem;
+    padding: 0.22rem 0.7rem;
+  }
+}

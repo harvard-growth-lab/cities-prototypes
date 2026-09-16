@@ -49,9 +49,15 @@ export function useStageScale(ref: RefObject<SVGSVGElement | null>) {
     const el = ref.current;
     if (!el) return;
     const measure = () => {
-      const w = el.getBoundingClientRect().width;
-      if (!w) return;
-      const k = w / W;
+      const { width: w, height: h } = el.getBoundingClientRect();
+      if (!w || !h) return;
+      /* the svg is `meet`-fitted: whichever axis is tighter sets the scale.
+         A stage wider than the tree's own proportion (a phone on its side,
+         the stacked layouts) is HEIGHT-bound, and reading the width there
+         over-reported the scale by the letterbox — 3× in landscape. The
+         viewBox grows to the stage's aspect (dx/dy in the narrative), so
+         on a stage that is taller the height term never binds. */
+      const k = Math.min(w / W, h / H);
       /* a threshold, not a continuous read — re-rendering the whole stage on
          every pixel of a drag would cost more than it tells anyone */
       if (Math.abs(k - seen.current) > 0.02) {
@@ -96,6 +102,41 @@ export function useStageHeadroom(ref: RefObject<SVGSVGElement | null>) {
   }, [ref]);
   return room;
 }
+
+/** The sideways twin of the headroom: how much WIDER the stage is than its
+ *  viewBox needs at the height it has — the room a short, wide stage (a
+ *  phone on its side, a stacked stage on a short window) has beside the
+ *  tree. Exactly 1 on a stage that is taller than the tree's proportion,
+ *  where the headroom above does the growing instead. */
+export function useStageWidthroom(ref: RefObject<SVGSVGElement | null>) {
+  const [room, setRoom] = useState(1);
+  const seen = useRef(1);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const measure = () => {
+      const { width: w, height: h } = el.getBoundingClientRect();
+      if (!w || !h) return;
+      const k = Math.max(1, w / ((h * W) / H));
+      if (Math.abs(k - seen.current) > 0.02) {
+        seen.current = k;
+        setRoom(k);
+      }
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [ref]);
+  return room;
+}
+
+/** The two breakpoints the section shares with its stylesheets
+ *  (src/styles/figures.css, src/legacy/port.css): below NARROW the stage
+ *  stacks over the captions; below PHONE it is one column with 16px gutters
+ *  and the stage is a camera rather than a map. */
+export const NARROW_QUERY = "(max-width: 920px)";
+export const PHONE_QUERY = "(max-width: 640px)";
 
 /** a media query, live: the section's narrow layout is a CSS breakpoint, and
  *  the stage geometry that layout implies has to follow the same line */

@@ -24,7 +24,7 @@ dial, large enough to read"). The port before it was `1e931db` (2026-09-02).
 | --- | --- | --- |
 | `html/body.html` | v-3's `<body>` | City Constraints' markup replaced by the slot `#constraints-slot`; the (hidden) rail lists this branch's constraints steps; the explainers view emptied for React; the Explainers button restored to the masthead (v-3 kept its styles and its toggle, but dropped the button); the two city pickers list this branch's four sample cities; asset and iframe paths under `legacy/` |
 | `v3.css` | v-3's `<style>` | verbatim, but the landing image comes through `--map-asset` (a bundled import) |
-| `v3-page.js` | the two inline scripts, in order, as one `initPage()` | every edit is a `PAGE_PATCHES` entry in the script and marked `[port]` in the output: the constraints ids in `pageIds` / `sectionDefs` / the section switch; three calls that tell React about the city, the page in view and the Explainers tab; verdicts for the new sample cities in the landing teaser; the rail highlight resolving scrolly steps; init that main ran on `load` / `DOMContentLoaded` running immediately; the exports at the end |
+| `v3-page.js` | the two inline scripts, in order, as one `initPage()` | every edit is a `PAGE_PATCHES` (first script) or `PAGE2_PATCHES` (second script) entry in the script and marked `[port]` in the output: the constraints ids in `pageIds` / `sectionDefs` / the section switch; three calls that tell React about the city, the page in view and the Explainers tab; verdicts for the new sample cities in the landing teaser; the rail highlight resolving scrolly steps; init that main ran on `load` / `DOMContentLoaded` running immediately; the exports at the end; and the small-screen patches (Sept 2026): the scrolly spies reading the band under a stacked stage, the landing's wheel/swipe entry off where the landing scrolls, the tabs carrying a short name and the active tab scrolled into the strip, the city button as two spans, the population chart's 320 floor |
 | `treemap.js` | the Metro Industries / Extras charts | the IIFE returns its `init()` instead of running it on `DOMContentLoaded` |
 | `xch_geo.js` | the metro's boundaries | verbatim |
 | `assets/`, `public/legacy/` | the landing image, the logo, the framed all-metros page | verbatim |
@@ -55,4 +55,11 @@ React pieces into their slots, then runs `initLegacy()` once.
   as they do on main.
 - `port.css`: the constraints stage sticks under v-3's section bar
   (`--chrome-h`) rather than under this app's old toolbar, and a deep link
-  enters without the landing's slide.
+  enters without the landing's slide. Since Sept 2026 it also holds every
+  **small-screen** rule for the shell — v-3's stylesheet has no width
+  queries of its own — at two breakpoints shared with the React section:
+  920px (the scrollies stack, stage pinned on top; the chrome shrinks; the
+  landing scrolls) and 640px (one column, 16px gutters, short tab names, the
+  dense figures scroll sideways inside their stage). These are candidates to
+  move upstream into `cities-v-3` on main; until then, a re-port keeps them
+  because they live here rather than in the generated files.

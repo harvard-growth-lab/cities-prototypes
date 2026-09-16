@@ -30,10 +30,14 @@ import {
   type TreeVariant,
 } from "../../data/figures";
 import {
+  NARROW_QUERY,
+  PHONE_QUERY,
   STAGE_GONE_MARGIN,
   useInScroller,
+  useMediaQuery,
   useStageHeadroom,
   useStageScale,
+  useStageWidthroom,
 } from "./walkFit";
 import {
   SidewaysTree,
@@ -246,6 +250,17 @@ const ZOOM_FRAME_W = [560, 515, 435, 500];
    little to keep the bus in, the fork station drops onto the stem and its
    leaves, the landing lifts so the head the leaf hangs off stays in view */
 const ZOOM_BIAS_Y = [-36, -20, 20, -60];
+/* On a phone the stage is a CAMERA, not a map: a 312px stage cannot show the
+   whole tree legibly under any shape (12-unit leaf type at the whole-tree
+   fit lands at ~4px), so the whole-tree stops are an overview and each
+   zoomed stop frames one card and its parent — the head with a sliver of
+   its neighbours, the stem with its two leaves, the landing with its badge.
+   Narrower frames, a taller cap (the 3.4 was set for a 900px stage) and
+   biases scaled to the frame. */
+const ZOOM_FRAME_W_PHONE = [560, 300, 240, 280];
+const ZOOM_BIAS_Y_PHONE = [-36, -10, 10, -30];
+const ZOOM_CAP = 3.4;
+const ZOOM_CAP_PHONE = 6;
 const beatsFor = (flow: ConstraintFlow) =>
   flow === "short" ? SHORT_BEATS : flow === "zoom" ? ZOOM_BEATS : FULL_BEATS;
 
@@ -647,6 +662,13 @@ export function ConstraintNarrative({
   const svgRef = useRef<SVGSVGElement>(null);
   const stageScale = useStageScale(svgRef);
   const stageHeadroom = useStageHeadroom(svgRef);
+  const stageWidthroom = useStageWidthroom(svgRef);
+  /* the phone tier (src/styles/figures.css): the camera's frames and the
+     hand-off follow it. A ref too, for the ride loop, which runs outside
+     React's render */
+  const phone = useMediaQuery(PHONE_QUERY);
+  const phoneRef = useRef(phone);
+  phoneRef.current = phone;
   const short = flow === "short";
   const zoom = flow === "zoom";
   /* the tree-first telling — the shortened walk: the tree opens the walk,
@@ -724,8 +746,10 @@ export function ConstraintNarrative({
      rides down with it onto the branch its own quadrant became. It needs the
      open stage, so the tellings that
      do not have one — the tree-first short walk, the small-stage fits, which
-     redraw the tree their own way — keep the plain fade instead. */
-  const pourOn = !treeFirst && fit === "fit";
+     redraw the tree their own way — keep the plain fade instead. A phone
+     stage is not open either: at a quarter scale the tiles fly across
+     300px onto 37px cards, motion without meaning. */
+  const pourOn = !treeFirst && fit === "fit" && !phone;
   /* the stops this telling gets — a ride on the shortened flow adds the
      fork-two stop the flow otherwise folds into the landing */
   const beats = useMemo(
@@ -766,13 +790,32 @@ export function ConstraintNarrative({
     const scroller = track.closest(".pages") as HTMLElement | null;
     /* one column (the stage stacked over the steps): the reading line is
        the middle of the band UNDER the stage, not the stage's own middle */
-    const stacked = window.matchMedia("(max-width: 920px)");
+    const stacked = window.matchMedia(NARROW_QUERY);
     let ticking = false;
     const update = () => {
       ticking = false;
       const sTop = scroller ? scroller.getBoundingClientRect().top : 0;
       const sH = scroller ? scroller.clientHeight : window.innerHeight;
       const r = track.getBoundingClientRect();
+      /* hidden: the tool shows one section at a time (v3's .sec-off is
+         display:none), and a hidden track measures 0×0 with every block's
+         top at 0 — which the loop below would read as "the line has passed
+         every block" and park the walk on its LAST stop. That is what the
+         first click on the tab then played backwards, from the back-out
+         pose down to the storyboard. Hold the opening stop instead, lit,
+         so the stage is already in its opening pose when the section
+         appears. */
+      if (r.height === 0) {
+        const hidden = stepsRef.current?.children;
+        if (hidden)
+          for (let i = 0; i < hidden.length; i++)
+            (hidden[i] as HTMLElement).style.setProperty(
+              "--nv-lit",
+              i === 0 ? "1" : "0",
+            );
+        setStepIdx(0);
+        return;
+      }
       const st = stageRef.current?.getBoundingClientRect();
       const mid = !st
         ? sTop + sH / 2
@@ -829,10 +872,19 @@ export function ConstraintNarrative({
     const target: HTMLElement | Window = scroller ?? window;
     target.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
+    /* the tab system shows and hides the section, and the blocks grow with
+       their content — any change of the track's size re-reads the stops,
+       scroll event or not */
+    const ro =
+      typeof ResizeObserver !== "undefined"
+        ? new ResizeObserver(onScroll)
+        : null;
+    ro?.observe(track);
     update();
     return () => {
       target.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
+      ro?.disconnect();
     };
   }, [beats, diagStop]);
 
@@ -953,11 +1005,20 @@ export function ConstraintNarrative({
      tall ones (a branch) the second. On a wide stage both are the whole
      room. */
   const dy = (H * (stageHeadroom - 1)) / 2;
+  /* and sideways, on a stage wider than the tree's proportion (a phone on
+     its side): the viewBox grows by sx each side, so the ride's frames span
+     the stage's real width rather than a letterboxed 1180 */
+  const sx = (W * (stageWidthroom - 1)) / 2;
   const intoFor = useCallback(
     (
       _box: [number, number, number, number],
-    ): [number, number, number, number] => [24, 18 - dy, W - 24, H - 18 + dy],
-    [dy],
+    ): [number, number, number, number] => [
+      24 - sx,
+      18 - dy,
+      W - 24 + sx,
+      H - 18 + dy,
+    ],
+    [sx, dy],
   );
   /* the ride's room: it frames the whole tree at its full stops and centres
      its zoomed ones, so it reads the room the whole tree would get */
@@ -1429,9 +1490,15 @@ export function ConstraintNarrative({
          should show (ZOOM_FRAME_W), so it is a real step in from the
          whole-tree fit on any stage; the small-stage rides keep their
          per-station table */
+      const onPhone = phoneRef.current;
+      const frameW = onPhone ? ZOOM_FRAME_W_PHONE : ZOOM_FRAME_W;
+      const biasY = onPhone ? ZOOM_BIAS_Y_PHONE : ZOOM_BIAS_Y;
       const stopK = (i: number) =>
         zoom && !sideRideMode
-          ? Math.min(3.4, Math.max(kFit * 1.3, (ix1 - ix0) / ZOOM_FRAME_W[i]))
+          ? Math.min(
+              onPhone ? ZOOM_CAP_PHONE : ZOOM_CAP,
+              Math.max(kFit * 1.3, (ix1 - ix0) / frameW[i]),
+            )
           : STOP_ZOOM[i];
       /* a branch that stops at its head has two rests, not four: the stops
          past its head all park the dot beside the head (the sideways drawing
@@ -1581,7 +1648,7 @@ export function ConstraintNarrative({
         : sideRideMode
           ? dyT - 24
           : zoom
-            ? ryS + ZOOM_BIAS_Y[sIdx]
+            ? ryS + biasY[sIdx]
             : py;
       if (fresh) {
         st.cx = cx;
@@ -2058,7 +2125,7 @@ export function ConstraintNarrative({
                   ? " nv-hidedot"
                   : "")
               }
-              viewBox={`0 ${-dy} ${W} ${H + 2 * dy}`}
+              viewBox={`${-sx} ${-dy} ${W + 2 * sx} ${H + 2 * dy}`}
               role="img"
               aria-label={`${cityShort} walks the diagnostic tree: two dials place it on the pizza chart, and each fork is answered with its own numbers until it lands on a diagnosis`}
               style={{
@@ -3549,15 +3616,18 @@ export function ConstraintNarrative({
         </div>
       </div>
 
-      {/* the top bar's two steps: same anchors as the compact flow. The
-          bottom one sits where the tree stop's block does, so "How we
-          diagnose" lands on the tree with the stage pinned. */}
+      {/* the top bar's two steps: same anchors as the compact flow, placed
+          so a jump lands the way the tab does — the step's caption centred
+          on the stage's line (the top one's rule is in figures.css). The
+          bottom one centres the tree stop's block (the blocks above it are
+          text, one stop each), so "How we diagnose" lands on the tree with
+          the stage pinned. */}
       <section id="page-constraints" className="jz-anchor jz-anchor-top" />
       <section
         id="page-constraints-diagnose"
         className="jz-anchor"
         style={{
-          top: `${(diagStop + 0.25) * stopVh}vh`,
+          top: `calc(var(--nv-padtop) + ${diagStop + 0.5} * var(--nv-stop) - var(--nv-line))`,
           height: `${stopVh}vh`,
         }}
       />

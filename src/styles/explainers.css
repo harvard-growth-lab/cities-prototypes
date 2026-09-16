@@ -13,8 +13,10 @@
 .ex-head h2{
   font-size:27px;font-weight:600;color:var(--teal);letter-spacing:3px;text-transform:uppercase;
 }
+/* as many 280px-or-wider columns as fit (auto-FILL, so two cards on a wide
+   screen keep the three-column measure rather than stretching to half) */
 .ex-grid{
-  display:grid;grid-template-columns:repeat(3,1fr);gap:52px 44px;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:52px 44px;
   max-width:1300px;margin:44px auto 90px;padding:0 52px;
 }
 /* Each card is a SUBGRID of three rows — thumb, title row, description —
@@ -51,3 +53,18 @@
   padding:6px 13px;backdrop-filter:blur(6px);
 }
 .ex-back:hover{color:#1a5a8e;border-color:#1a5a8e;}
+
+/* ---- small screens (the breakpoints are src/legacy/port.css's) ---- */
+@media (max-width:920px){
+  .ex-grid{padding:0 24px;gap:40px 28px;}
+}
+@media (max-width:640px){
+  .ex-head{margin:30px 16px 4px;gap:12px;}
+  .ex-head svg{width:34px;height:29px;}
+  .ex-head h2{font-size:clamp(18px,5vw,27px);letter-spacing:2px;}
+  .ex-grid{padding:0 16px;gap:36px 24px;margin:26px auto 60px;}
+  .ex-title{font-size:21px;}
+  /* the masthead scrolls away with the page here, so the pill sits at the
+     foot of the screen where a thumb can reach it */
+  .ex-back{top:auto;bottom:14px;left:14px;}
+}

@@ -15,7 +15,19 @@ draws City Constraints and the Explainers content into slots in it.
 npm install
 npm run dev      # start the Vite dev server
 npm run build    # tsc -b + vite build
+node scripts/shots.mjs ./shots --widths 390,768,1440   # screenshot every view; flags sideways overflow
 ```
+
+## Small screens
+
+Two breakpoints, shared by `src/legacy/port.css` (the shell), `src/styles/figures.css`
+(City Constraints) and the React section (`walkFit.tsx`, `useMediaQuery`): **920px**, below
+which every scrolly stacks — the stage pinned on top, the captions scrolling under it, the
+reading line in the band below the stage — and **640px**, below which everything is one
+column with 16px gutters, the tabs use short names and the walk's stage is a camera (each
+zoomed stop frames one card and its parent) rather than a map. `scripts/shots.mjs` drives
+the dev server through the local Chrome and reports any route whose content reaches past
+the viewport.
 
 ## Project structure
 

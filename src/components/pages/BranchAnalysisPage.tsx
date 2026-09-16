@@ -164,16 +164,34 @@ function DiagSchematic({
        it answers the pointer with nothing — same rule the walk's tree uses */
     return PLACEHOLDER_BRANCHES.has(ids[0]) ? null : ids;
   };
+  /* a finger has no hover: on touch the FIRST tap previews a path and the
+     second tap (or the "use this path" button in the trail) commits it —
+     otherwise preview and pick collapse into one tap and the preview is
+     never seen. Touch pointers are ignored by the move and leave handlers
+     (pointermove fires once at touchstart, pointerleave right after the
+     tap), so the preview a tap sets stays put. */
+  const lastPointer = useRef<string>("mouse");
   const handleMove = (e: React.PointerEvent<SVGSVGElement>) => {
-    if (!interactive) return;
+    if (!interactive || e.pointerType === "touch") return;
     const ids = targetPath(e);
     if ((ids?.join("/") ?? null) !== (preview?.join("/") ?? null))
       onPreview(ids);
   };
+  const handleLeave = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (e.pointerType !== "touch") onPreview(null);
+  };
   const handleClick = (e: React.MouseEvent<SVGSVGElement>) => {
     if (!interactive) return;
     const ids = targetPath(e);
-    if (ids && ids.join("/") !== path.join("/")) onPick(ids);
+    if (!ids) return;
+    if (
+      lastPointer.current === "touch" &&
+      ids.join("/") !== (preview?.join("/") ?? "")
+    ) {
+      onPreview(ids);
+      return;
+    }
+    if (ids.join("/") !== path.join("/")) onPick(ids);
   };
 
   const on = new Set(["root", ...path]);
@@ -206,8 +224,11 @@ function DiagSchematic({
           ? "Schematic of the diagnostic tree with your selected branch highlighted; hover to preview, click to pick a different path"
           : "Schematic of the diagnostic tree with the diagnosed branch highlighted"
       }
+      onPointerDown={(e) => {
+        lastPointer.current = e.pointerType;
+      }}
       onPointerMove={handleMove}
-      onPointerLeave={() => onPreview(null)}
+      onPointerLeave={handleLeave}
       onClick={handleClick}
     >
       <g transform={`translate(${MV.pad.left},${MV.pad.top})`}>
@@ -957,12 +978,25 @@ export function BranchAnalysisPage({
                 </span>
               </Fragment>
             ))}
-            <span
-              className="ba-here-chip"
-              style={{ background: TREE_SIDE_COLOR[shownSide] }}
-            >
-              {previewing ? "click to select" : "you are here"}
-            </span>
+            {previewing && preview ? (
+              /* the preview's own commit — the one path to a pick a finger
+                 has, and a second one for a mouse */
+              <button
+                type="button"
+                className="ba-here-chip ba-use-btn"
+                style={{ background: TREE_SIDE_COLOR[shownSide] }}
+                onClick={() => onSelectBranch(preview)}
+              >
+                use this path
+              </button>
+            ) : (
+              <span
+                className="ba-here-chip"
+                style={{ background: TREE_SIDE_COLOR[shownSide] }}
+              >
+                you are here
+              </span>
+            )}
           </div>
           {/* the modules at the picked ending, scroll-spied like the main
               rail one level up — the reader always knows which module they

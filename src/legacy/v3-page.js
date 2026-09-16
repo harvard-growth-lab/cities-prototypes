@@ -2130,6 +2130,13 @@ export function initPage(){
       if(k === i) b.setAttribute("aria-current", "page");
       else b.removeAttribute("aria-current");
     });
+    /* [port] the strip scrolls sideways on narrow screens (src/legacy/port.css):
+       centre the active tab in it */
+    const tab = secNavEl.children[i];
+    if(tab && secNavEl.scrollWidth > secNavEl.clientWidth + 1){
+      const nr = secNavEl.getBoundingClientRect(), tr = tab.getBoundingClientRect();
+      secNavEl.scrollTo({ left: secNavEl.scrollLeft + (tr.left - nr.left) - (nr.width - tr.width) / 2, behavior: "smooth" });
+    }
     const prev = SECTIONS[i-1], next = SECTIONS[i+1];
     /* the mini line between the pager buttons — one state language only:
        a teal check is behind you, the enlarged ring is where you stand,
@@ -2175,7 +2182,11 @@ export function initPage(){
        (everything here addresses the tabs by position) and shows only while
        the reader is actually there. */
     if (sd.name === "Extras") b.classList.add("secnav-btn--aside");
-    b.innerHTML = '<span class="num">' + (i + 1) + "</span>" + sd.name;
+    /* [port] the short name shows below 640px (src/legacy/port.css) */
+    const shortName = ({"Economic Fundamentals":"Fundamentals","Metro Industries":"Industries",
+      "Admin Industry Mix":"Admin mix","City Constraints":"Constraints","Levers for Change":"Levers"})[sd.name] || sd.name;
+    b.innerHTML = '<span class="num">' + (i + 1) + '</span><span class="secnav-name">' + sd.name +
+      '</span><span class="secnav-short" aria-hidden="true">' + shortName + '</span>';
     b.addEventListener("click", () => showSection(i));
     secNavEl.appendChild(b);
   });
@@ -2391,7 +2402,11 @@ export function initPage(){
     /* the closed button stays plain — city and country, as the native
        select always printed it; the verdicts live in the open menu */
     function renderBtn(){
-      btn.innerHTML = '<span class="citypick-txt">' + sel.value + '</span>';
+      /* [port] on the bar the two halves are spans, so a phone shows the city alone */
+      const cc = bar ? sel.value.split(/,\s*/) : null;
+      btn.innerHTML = cc && cc.length > 1
+        ? '<span class="citypick-txt"><span class="citypick-city">' + cc[0] + '</span><span class="citypick-ctry">' + cc.slice(1).join(", ") + '</span></span>'
+        : '<span class="citypick-txt">' + sel.value + '</span>';
     }
     function renderMenu(){
       menu.textContent = "";
@@ -2471,12 +2486,16 @@ export function initPage(){
   }
   /* scrolling down on the landing flows into City Overview */
   const landingEl=document.getElementById("landing");
+  /* [port] below 920px the landing is a scrolling page (src/legacy/port.css):
+     a wheel or a swipe scrolls it, and the buttons enter the tool */
+  const landingScrolls=()=>window.matchMedia("(max-width: 920px)").matches;
   landingEl.addEventListener("wheel", e=>{
-    if(e.deltaY>8) enterTool("page-overview");
+    if(!landingScrolls() && e.deltaY>8) enterTool("page-overview");
   }, {passive:true});
   let touchY=null;
   landingEl.addEventListener("touchstart", e=>{ touchY=e.touches[0].clientY; }, {passive:true});
   landingEl.addEventListener("touchmove", e=>{
+    if(landingScrolls()) return;
     if(touchY!==null && touchY-e.touches[0].clientY>30){ touchY=null; enterTool("page-overview"); }
   }, {passive:true});
   document.addEventListener("keydown", e=>{
@@ -2735,6 +2754,13 @@ export function initPage(){
   function spy(){
     if (!built) return;
     var mid = window.innerHeight * 0.45, best = 0, bd = Infinity;
+    /* [port] one-column layout: the stage is pinned above the steps, so the
+       reading line is 45% of the band under it, not of the viewport */
+    if (window.matchMedia("(max-width: 920px)").matches) {
+      var stk = built.steps[0] && built.steps[0].closest(".ct-scrolly");
+      var stg = stk && stk.querySelector(".ct-stage");
+      if (stg) { var sb = stg.getBoundingClientRect().bottom; mid = sb + (window.innerHeight - sb) * 0.45; }
+    }
     built.steps.forEach(function(st, i){
       var r = st.getBoundingClientRect();
       var d = Math.abs((r.top + r.bottom) / 2 - mid);
@@ -2982,7 +3008,7 @@ export function initPage(){
     /* not laid out yet: the first figure asks for another frame; a hidden
        second one simply waits for the next real redraw */
     if (!avail){ if (sparkEl.id === "popChart") requestAnimationFrame(renderSpark); return; }
-    var W = Math.max(500, Math.round(avail));
+    var W = Math.max(320, Math.round(avail));   /* [port] was 500 */
     /* a compact figure: a little under half as tall as it is wide, held
        between what still reads and what starts to loom */
     var H = Math.round(Math.max(236, Math.min(330, W * 0.42)));
@@ -3388,6 +3414,13 @@ export function initPage(){
   function spy(){
     if (!built) return;
     var mid = window.innerHeight * 0.45, best = 0, bd = Infinity;
+    /* [port] one-column layout: the stage is pinned above the steps, so the
+       reading line is 45% of the band under it, not of the viewport */
+    if (window.matchMedia("(max-width: 920px)").matches) {
+      var stk = built.steps[0] && built.steps[0].closest(".ct-scrolly");
+      var stg = stk && stk.querySelector(".ct-stage");
+      if (stg) { var sb = stg.getBoundingClientRect().bottom; mid = sb + (window.innerHeight - sb) * 0.45; }
+    }
     built.steps.forEach(function(st, i){
       var r = st.getBoundingClientRect();
       var d = Math.abs((r.top + r.bottom) / 2 - mid);

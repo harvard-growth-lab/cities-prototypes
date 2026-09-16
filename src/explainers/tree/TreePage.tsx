@@ -1,6 +1,7 @@
 import { MotionConfig } from "framer-motion";
 import { ScrollyAct, type ActStep } from "./ScrollyAct";
 import { DiagnoseStage, type DiagScene } from "./DiagnoseStage";
+import { PHONE_QUERY, useMediaQuery } from "../../components/pages/walkFit";
 import { POP_MED, HOME_GATE, PLACE_HOME_N, N_CITIES, DEMAND_N, SUPPLY_N, METRO_DOTS, START, END, sPct } from "./data";
 import "./tree.css";
 
@@ -226,6 +227,8 @@ const STEPS: ActStep<DiagScene>[] = [
   },
 ];
 export function TreePage() {
+  /* the phone tier (tree.css): the stage crops to the tree */
+  const phone = useMediaQuery(PHONE_QUERY);
   return (
     <MotionConfig reducedMotion="user">
       <div className="tree-page">
@@ -257,7 +260,9 @@ export function TreePage() {
         </header>
 
         <ScrollyAct steps={STEPS}>
-          {(scene, _active, engaged) => <DiagnoseStage scene={scene} live={engaged} />}
+          {(scene, _active, engaged) => (
+            <DiagnoseStage scene={scene} live={engaged} compact={phone} />
+          )}
         </ScrollyAct>
 
         {/* fine-print data note: the filters that produce the field

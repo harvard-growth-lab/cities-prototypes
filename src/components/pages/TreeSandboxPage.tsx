@@ -290,23 +290,89 @@ export function TreeSandboxPage({
     return () => svg.removeEventListener("wheel", onWheel);
   }, [W, H, bx0, by0, cx, cy, clampView]);
 
+  /* Touch (Sept 2026): one finger belongs to the page — below 640px the
+     frame is `touch-action: pan-y`, so a vertical swipe over the tree
+     scrolls past it and the browser cancels the pointer — while a sideways
+     drag pans, a tap picks, and two fingers pinch: zoom about their
+     midpoint, and pan with it. A mouse keeps drag-to-pan and the wheel. */
+  const pointers = useRef(new Map<number, { x: number; y: number }>());
+  const pinch = useRef<{
+    d0: number;
+    k0: number;
+    /* the tree point under the fingers' midpoint, which stays under it */
+    tx: number;
+    ty: number;
+  } | null>(null);
+  const clientToFrame = (
+    svg: SVGSVGElement,
+    x: number,
+    y: number,
+  ): [number, number] => {
+    const r = svg.getBoundingClientRect();
+    return [
+      ((x - r.left) / r.width) * W + bx0,
+      ((y - r.top) / r.height) * H + by0,
+    ];
+  };
   const onDown = (e: React.PointerEvent<SVGSVGElement>) => {
-    if (e.button !== 0) return;
+    if (e.pointerType === "mouse" && e.button !== 0) return;
     /* without this a drag across the panel selects its heading and copy —
        the pointer is a pan handle in here, not a text cursor */
     e.preventDefault();
+    e.currentTarget.setPointerCapture(e.pointerId);
+    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pointers.current.size === 2) {
+      /* a second finger: the drag becomes a pinch, and nothing gets picked */
+      const [a, b] = [...pointers.current.values()];
+      const [mx, my] = clientToFrame(
+        e.currentTarget,
+        (a.x + b.x) / 2,
+        (a.y + b.y) / 2,
+      );
+      pinch.current = {
+        d0: Math.max(1, Math.hypot(a.x - b.x, a.y - b.y)),
+        k0: view.k,
+        tx: cx + (mx - cx - view.x) / view.k,
+        ty: cy + (my - cy - view.y) / view.k,
+      };
+      drag.current = null;
+      pressed.current = null;
+      swallow.current = true;
+      return;
+    }
     swallow.current = false;
     pressed.current =
       (e.target as Element).closest<SVGGElement>(".ts-node")?.dataset.path ??
       null;
     drag.current = { x: e.clientX, y: e.clientY, vx: view.x, vy: view.y };
-    e.currentTarget.setPointerCapture(e.pointerId);
   };
   const onMove = (e: React.PointerEvent<SVGSVGElement>) => {
-    const d = drag.current;
     const svg = svgRef.current;
-    if (!d || !svg) return;
-    if (Math.hypot(e.clientX - d.x, e.clientY - d.y) > DRAG_PX)
+    if (!svg) return;
+    if (pointers.current.has(e.pointerId))
+      pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    const pz = pinch.current;
+    if (pz && pointers.current.size >= 2) {
+      const [a, b] = [...pointers.current.values()];
+      const k = Math.min(
+        K_MAX,
+        Math.max(K_MIN, (pz.k0 * Math.hypot(a.x - b.x, a.y - b.y)) / pz.d0),
+      );
+      const [mx, my] = clientToFrame(svg, (a.x + b.x) / 2, (a.y + b.y) / 2);
+      setView(
+        clampView({
+          k,
+          x: mx - cx - k * (pz.tx - cx),
+          y: my - cy - k * (pz.ty - cy),
+        }),
+      );
+      return;
+    }
+    const d = drag.current;
+    if (!d) return;
+    /* a finger wobbles more than a mouse on a tap */
+    const slack = e.pointerType === "touch" ? 10 : DRAG_PX;
+    if (Math.hypot(e.clientX - d.x, e.clientY - d.y) > slack)
       swallow.current = true;
     const r = svg.getBoundingClientRect();
     setView((v) =>
@@ -317,11 +383,24 @@ export function TreeSandboxPage({
       }),
     );
   };
-  const onUp = () => {
+  const releasePointer = (e: React.PointerEvent<SVGSVGElement>) => {
+    pointers.current.delete(e.pointerId);
+    if (pointers.current.size < 2) pinch.current = null;
+  };
+  const onUp = (e: React.PointerEvent<SVGSVGElement>) => {
+    releasePointer(e);
     drag.current = null;
     const path = pressed.current;
     pressed.current = null;
     if (path != null && !swallow.current) choose(JSON.parse(path));
+  };
+  /* the browser took the gesture (a vertical swipe over the tree scrolls
+     the page): nothing was picked */
+  const onCancel = (e: React.PointerEvent<SVGSVGElement>) => {
+    releasePointer(e);
+    drag.current = null;
+    pressed.current = null;
+    swallow.current = true;
   };
 
   /** an ending was chosen — by pointer or by keyboard. Only endings carry a
@@ -415,7 +494,7 @@ export function TreeSandboxPage({
               onPointerDown={onDown}
               onPointerMove={onMove}
               onPointerUp={onUp}
-              onPointerCancel={onUp}
+              onPointerCancel={onCancel}
             >
               <g
                 transform={`translate(${cx + view.x} ${cy + view.y}) scale(${view.k}) translate(${-cx} ${-cy})`}
@@ -657,9 +736,50 @@ export function TreeSandboxPage({
                 <i className="ts-leg-dot" style={{ background: color }} />
                 what you are looking at
               </span>
-              <span className="ts-leg-hint">
+              <span className="ts-leg-hint ts-leg-hint-mouse">
                 scroll to zoom · drag to pan · click any ending
               </span>
+              <span className="ts-leg-hint ts-leg-hint-touch">
+                pinch to zoom · two fingers pan · tap any ending
+              </span>
+            </div>
+
+            {/* the endings as buttons — the touch path to a pick where a
+                leaf card is a 20px target (phones only, by the stylesheet) */}
+            <div className="ts-endings" role="group" aria-label="Endings">
+              {sh.branches
+                .filter((b) => !PLACEHOLDER_BRANCHES.has(b.id))
+                .flatMap((b) =>
+                  (b.leaves.length
+                    ? b.leaves.map((l) => ({
+                        path: [b.id, l.id],
+                        label: `${b.title} · ${l.lines.join(" ")}`,
+                      }))
+                    : [{ path: [b.id], label: b.title }]
+                  ).map((end) => {
+                    const lit = onPick(end.path[end.path.length - 1]);
+                    const tint = TREE_SIDE_COLOR[b.id];
+                    return (
+                      <button
+                        key={end.path.join("/")}
+                        type="button"
+                        className={"ts-ending" + (lit ? " on" : "")}
+                        style={
+                          lit
+                            ? { background: tint, borderColor: tint }
+                            : { borderColor: tint }
+                        }
+                        aria-pressed={lit}
+                        onClick={() => {
+                          swallow.current = false;
+                          choose(end.path);
+                        }}
+                      >
+                        {end.label}
+                      </button>
+                    );
+                  }),
+                )}
             </div>
           </div>
 

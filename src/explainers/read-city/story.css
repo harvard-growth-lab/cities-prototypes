@@ -409,9 +409,31 @@
 }
 
 @media (max-width: 720px) {
+  /* the scene is a 16:9 band inside the stage, and a full-height stage
+     letterboxes ~480px of black around it on a phone: the stage shortens
+     to the band plus room for a card, in visible-viewport units so the
+     address bar's coming and going does not resize a pinned scene */
+  .story-page {
+    --stage-h: max(62svh, calc(56.25vw + 120px));
+  }
   .story-page .story-stage canvas {
     object-fit: contain;
-    object-position: center 24%;
+    object-position: center 30%;
+  }
+  .story-page .story-hero h1 {
+    font-size: clamp(34px, 9vw, 96px);
+  }
+  .story-page .story-step.title h3 {
+    font-size: clamp(26px, 7vw, 56px);
+  }
+  .story-page .hud-chip {
+    min-width: 110px;
+    font-size: 11px;
+    padding: 6px 11px;
+  }
+  .story-page .hud-verdict {
+    max-width: 160px;
+    font-size: 13px;
   }
   .story-page .story-steps {
     gap: 62vh;
