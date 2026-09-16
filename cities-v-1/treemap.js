@@ -3151,7 +3151,11 @@
        every other cell keeps its place in the map and fades, so it can come
        back when the map does. One ranking is over the whole mix, one over
        the tradable cluster for the beat that shows that alone. ---- */
-    const NB = 25, BML = 292, BMT = 48, BRH = 18.0, BBAR = 12, BPR = 812;
+    /* the bars stop short of the right edge so the tradability column has a
+       place to stand: ordered by jobs answers "what is biggest", and the
+       column beside it answers "and does it sell outward", which is the
+       question this beat is actually asking */
+    const NB = 25, BML = 292, BMT = 48, BRH = 18.0, BBAR = 12, BPR = 700;
     const byJobsAll = industryData.slice().sort((a, b) => b.employ - a.employ);
     const barScale = d3.scaleLinear()
       .domain([0, (byJobsAll[0] ? byJobsAll[0].employ : 1) * 1.04]).range([BML + 12, BPR]);
@@ -3643,6 +3647,13 @@
           .text(d => fmtJobs(d)));
       G.append("text").attr("class", "mi-axname")
         .attr("x", BML + 12).attr("y", BMT - 36).text("Jobs in the metro");
+      /* the same column the ranking carries, at this view's tighter row: the
+         track lies beside the score rather than under it, because 18 units of
+         row will not hold a line of type and a rule stacked */
+      G.append("text").attr("class", "mi-colhead")
+        .attr("x", TC_R).attr("y", BMT - 20).attr("text-anchor", "end").text("Tradability");
+      G.append("text").attr("class", "mi-colsub")
+        .attr("x", TC_R).attr("y", BMT - 8).attr("text-anchor", "end").text("0 to 1");
       const row = G.selectAll("g.mi-row").data(rows, d => d.name).join("g").attr("class", "mi-row");
       row.append("text").attr("class", "mi-name")
         .attr("x", BML - 10).attr("y", (d, i) => barY(i) + 4).attr("text-anchor", "end")
@@ -3650,6 +3661,21 @@
       row.append("text").attr("class", "mi-val")
         .attr("x", d => barScale(d.employ) + 8).attr("y", (d, i) => barY(i) + 4)
         .text(d => fmtJobs(d.employ));
+      const BTW = 32, BTX = TC_R - 24 - BTW;
+      const btw = d3.scaleLinear().domain([0, 1]).range([0, BTW]);
+      row.append("text").attr("class", "mi-trad")
+        .attr("x", TC_R).attr("y", (d, i) => barY(i) + 4).attr("text-anchor", "end")
+        .text(d => tradabilityOf(d.name).toFixed(2));
+      row.append("rect").attr("class", "mi-tradtrack")
+        .attr("x", BTX).attr("y", (d, i) => barY(i) - 2)
+        .attr("width", BTW).attr("height", 4).attr("rx", 2);
+      row.append("rect").attr("class", "mi-tradbar")
+        .attr("x", BTX).attr("y", (d, i) => barY(i) - 2)
+        .attr("width", d => Math.max(1, btw(tradabilityOf(d.name)))).attr("height", 4).attr("rx", 2);
+      /* the notch at 0.5, where the most tradable cluster begins */
+      row.append("line").attr("class", "mi-tradtick")
+        .attr("x1", BTX + btw(CL_HI)).attr("x2", BTX + btw(CL_HI))
+        .attr("y1", (d, i) => barY(i) + 3).attr("y2", (d, i) => barY(i) + 6.5);
     }
     drawBars(byJobsAll, gBarsAll);
     drawBars(byJobsTrad, gBarsTrad);
