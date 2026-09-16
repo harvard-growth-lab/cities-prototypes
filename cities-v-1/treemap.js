@@ -3164,12 +3164,13 @@
        place to stand: ordered by jobs answers "what is biggest", and the
        column beside it answers "and does it sell outward", which is the
        question this beat is actually asking */
-    const NB = 25, BML = 292, BMT = 48, BRH = 18.0, BBAR = 12, BPR = 700;
+    const NB = 25, BML = 292, BMT = 48, BRH = 18.0, BBAR = 12, BPR = 640;
     const byJobsAll = industryData.slice().sort((a, b) => b.employ - a.employ);
     const barScale = d3.scaleLinear()
       .domain([0, (byJobsAll[0] ? byJobsAll[0].employ : 1) * 1.04]).range([BML + 12, BPR]);
     /* which tradability tiers the bar view is showing; all three to begin with */
     let tierOn = [true, true, true];
+    let closeMenuRef = null;
     const tierList = () => byJobsAll.filter(d => tierOn[clusterOf(d)]);
     let barRankAll = new Map(byJobsAll.slice(0, NB).map((d, i) => [d.name, i]));
     const byJobsTrad = clusterRows[0].slice().sort((a, b) => b.employ - a.employ);
@@ -3740,8 +3741,24 @@
       /* the same column the ranking carries, at this view's tighter row: the
          track lies beside the score rather than under it, because 18 units of
          row will not hold a line of type and a rule stacked */
-      G.append("text").attr("class", "mi-colhead")
-        .attr("x", TC_R).attr("y", BMT - 36).attr("text-anchor", "end").text("Tradability");
+      if (G === gBarsAll){
+        /* the head is the filter's control: the chart names what can be
+           narrowed, instead of a second control standing beside it */
+        const hg = G.append("g").attr("class", "mi-tradmenu")
+          .attr("tabindex", 0).attr("role", "button")
+          .attr("aria-haspopup", "true").attr("aria-expanded", "false");
+        const ht = hg.append("text").attr("class", "mi-colhead")
+          .attr("x", TC_R - 13).attr("y", BMT - 36).attr("text-anchor", "end").text("Tradability");
+        hg.append("path").attr("class", "mi-tradmenu-caret")
+          .attr("d", `M${TC_R - 9},${BMT - 42} l3.5,3.5 l3.5,-3.5`);
+        const tw = ht.node().getComputedTextLength ? ht.node().getComputedTextLength() : 70;
+        hg.insert("rect", "text").attr("class", "mi-tradmenu-hit")
+          .attr("x", TC_R - 13 - tw - 6).attr("y", BMT - 52)
+          .attr("width", tw + 25).attr("height", 22).attr("rx", 3);
+      } else {
+        G.append("text").attr("class", "mi-colhead")
+          .attr("x", TC_R).attr("y", BMT - 36).attr("text-anchor", "end").text("Tradability");
+      }
       const row = G.selectAll("g.mi-row").data(rows, d => d.name).join("g").attr("class", "mi-row");
       row.append("text").attr("class", "mi-name")
         .attr("x", BML - 10).attr("y", (d, i) => barY(i) + 4).attr("text-anchor", "end")
@@ -3749,7 +3766,13 @@
       row.append("text").attr("class", "mi-val")
         .attr("x", d => barScale(d.employ) + 8).attr("y", (d, i) => barY(i) + 4)
         .text(d => fmtJobs(d.employ));
-      const BTW = 32, BTX = TC_R - 24 - BTW;
+      /* The score is right-aligned at TC_R and the track sits to its left, so
+         the gap between them is whatever the number does not use. At 24 units
+         reserved it did not fit: "0.16" is about 30 units at 13 and 37 at 19,
+         so the number ran back over the track on all 25 rows at every width.
+         48 units holds it at the largest step with room to spare, and the bars
+         give up 60 units of length to pay for the wider column. */
+      const SCORE_SLOT = 48, BTW = 40, BTX = TC_R - SCORE_SLOT - BTW;
       const btw = d3.scaleLinear().domain([0, 1]).range([0, BTW]);
       row.append("text").attr("class", "mi-trad")
         .attr("x", TC_R).attr("y", (d, i) => barY(i) + 4).attr("text-anchor", "end")
@@ -3848,6 +3871,7 @@
          sector's any more, so the labels would be naming the wrong thing */
       /* both map beats name their blocks; the sets differ, so redraw on
          arrival rather than once */
+      if (closeMenuRef && !(i === 4 && view === "alt")) closeMenuRef();
       show(gCards, i === 4 && view === "map");
       show(gSecLab, (i === 7 || i === 4) && view === "map" &&
         colorBy === "sector" && nameMode !== "off");
@@ -3910,17 +3934,46 @@
        the beat is really about - what is the biggest work that sells outward.
        All three start checked, and the last one cannot be unchecked, since an
        empty chart answers nothing. */
-    const tierEl = document.getElementById(p + "Tier");
-    if (tierEl){
-      tierEl.querySelectorAll(".tier-btn[data-tier]").forEach(b => {
-        const k = +b.dataset.tier;
-        const sh = b.querySelector(".ts");
-        if (sh && clusterShare[k] != null) sh.textContent = Math.round(clusterShare[k] * 100) + "%";
+    const menuEl = document.getElementById(p + "TradMenu");
+    if (menuEl){
+      const headG = () => el.querySelector("g.mi-tradmenu");
+      const isOpen = () => !menuEl.hidden;
+      const closeMenu = () => {
+        menuEl.hidden = true;
+        const g = headG();
+        if (g){ g.classList.remove("is-open"); g.setAttribute("aria-expanded", "false"); }
+      };
+      const openMenu = () => {
+        const g = headG(); if (!g) return;
+        const host = el.parentNode;                       /* the viz wrapper */
+        const hb = g.getBoundingClientRect(), pb = host.getBoundingClientRect();
+        menuEl.hidden = false;
+        /* under the head, right edges together, and never off the wrapper */
+        const mw = menuEl.offsetWidth;
+        let left = hb.right - pb.left - mw;
+        left = Math.max(4, Math.min(left, pb.width - mw - 4));
+        menuEl.style.left = left + "px";
+        menuEl.style.top = (hb.bottom - pb.top + 6) + "px";
+        g.classList.add("is-open");
+        g.setAttribute("aria-expanded", "true");
+      };
+      /* the head is redrawn whenever the filter moves, so the click is caught
+         on the figure rather than bound to a node that will not survive */
+      el.addEventListener("click", ev => {
+        if (!ev.target.closest || !ev.target.closest("g.mi-tradmenu")) return;
+        isOpen() ? closeMenu() : openMenu();
       });
-      tierEl.addEventListener("click", ev => {
-        const b = ev.target.closest(".tier-btn[data-tier]");
+      el.addEventListener("keydown", ev => {
+        if (ev.key !== "Enter" && ev.key !== " ") return;
+        if (!ev.target.closest || !ev.target.closest("g.mi-tradmenu")) return;
+        ev.preventDefault();
+        isOpen() ? closeMenu() : openMenu();
+      });
+      menuEl.addEventListener("click", ev => {
+        const b = ev.target.closest(".tm-item[data-tier]");
         if (!b) return;
         const k = +b.dataset.tier;
+        /* an empty chart answers nothing, so the last one stays on */
         if (tierOn[k] && tierOn.filter(Boolean).length === 1) return;
         tierOn[k] = !tierOn[k];
         b.classList.toggle("is-on", tierOn[k]);
@@ -3929,7 +3982,16 @@
         barRankAll = new Map(list.slice(0, NB).map((d, i) => [d.name, i]));
         drawBars(list, gBarsAll);
         paint(step, !reduced());
+        openMenu();                                        /* re-anchor */
       });
+      document.addEventListener("click", ev => {
+        if (!isOpen()) return;
+        if (menuEl.contains(ev.target)) return;
+        if (ev.target.closest && ev.target.closest("g.mi-tradmenu")) return;
+        closeMenu();
+      });
+      document.addEventListener("keydown", ev => { if (ev.key === "Escape") closeMenu(); });
+      closeMenuRef = closeMenu;
     }
 
     const colorEl = document.getElementById(p + "Color");
