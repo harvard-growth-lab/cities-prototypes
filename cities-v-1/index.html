@@ -12,8 +12,6 @@
     --teal:#255862;
     --teal-dark:#1c454d;
     --teal-tint:#eef3f4;
-    /* the diagnosis section's own colour: 4.96:1 on white */
-    --rust:#b8511f;--rust-dark:#8f3f18;--rust-tint:#fbeee7;
     --orange:#e76565;
     --orange-dark:#cf4f2c;
     --orange-tint:#fdf0ec;
@@ -3708,17 +3706,6 @@
      longer fitted a 1440 laptop, which is the width this bar is for */
   .secnav{gap:9px;}
   .secnav-btn{padding:6px 9px;}
-  /* Section 4 is the diagnosis - a tool inside the tool rather than another
-     chapter - so it carries its own colour at every state, not only when the
-     reader is in it. #b8511f is 4.96:1 on white. */
-  .secnav-btn:nth-child(4):not(.is-active):not(.is-done){color:var(--rust);}
-  .secnav-btn:nth-child(4):not(.is-active):not(.is-done) .num{
-    border-color:var(--rust);color:var(--rust);
-  }
-  .secnav-btn:nth-child(4).is-active{color:var(--rust-dark);background:var(--rust-tint);}
-  .secnav-btn:nth-child(4).is-active .num{background:var(--rust);border-color:var(--rust);color:#fff;}
-  .secnav-btn:nth-child(4).is-done{color:var(--rust);}
-  .secnav-btn:nth-child(4).is-done .num{background:var(--rust-tint);border-color:transparent;color:var(--rust);}
   /* Measured: the five names, their marks, the seam and the connectors need
      912px of row, which a 1440 viewport gives exactly and a 1366 does not.
      Below that the chips collapse to marks and the active name - the pattern
