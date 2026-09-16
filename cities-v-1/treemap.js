@@ -3392,6 +3392,15 @@
        & Business among them, because the blocks are fixed in user units
        while the type is not. Same size, dark ground, white ink. */
     const TAB_PADL = 3, TAB_PADR = 5, TAB_AIR = 4, TAB_R = 3;
+    /* The tab was white, and white is the one value none of the nine fills
+       use, so nine white notches read as holes punched in the map - and on
+       the two pale fills it disappeared altogether, so the treatment was not
+       even consistent. The ground is now the block's own colour taken most of
+       the way to white: the tab is made of the block, never white, and never
+       the brightest thing on the picture. Near-black on it runs 12.5:1 to
+       14.8:1, where the white tab's sector-hued ink only reached 4.62. */
+    const TAB_TINT = 0.82;
+    const tabGround = hex => d3.interpolateRgb(hex, "#ffffff")(TAB_TINT);
     const secUnit = () => labUnit();
     function drawSectorLabels(which){
       /* only where the block can hold the words: a clipped sector name is
@@ -3424,7 +3433,7 @@
         .attr("class", "mi-seclab-t" + (above ? "" : " is-inside"))
         .attr("x", d => d.b.x + (above ? 5 : TAB_PADL))
         .attr("y", d => d.b.y + (above ? 12 : dy))
-        .attr("fill", d => labelInk(sectorColors[d.name]))
+        .attr("fill", d => above ? labelInk(sectorColors[d.name]) : "#1a2226")
         .text(d => d.name);
       /* name_w is only a cheap pre-filter; what the block has to hold is the
          width the browser actually sets, so measure it and drop the ones that
@@ -3444,6 +3453,7 @@
          only on the one corner that is free of them */
       gsel.select("path.mi-seclab-tab")
         .attr("display", above ? "none" : null)
+        .attr("fill", d => tabGround(sectorColors[d.name]))
         .attr("d", d => {
           const x0 = d.b.x, y0 = d.b.y, w = tabW(d);
           return `M${x0},${y0} H${x0 + w} V${y0 + TH - TAB_R}` +
