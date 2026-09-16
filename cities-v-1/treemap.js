@@ -3275,6 +3275,19 @@
           peerAvg: pr.avg, peerValues: pr.values, ahead: shown(rca) >= shown(pr.avg) };
       });
     }
+    /* The ranking's second option: the tradability column names the tier
+       ("Traded", "Partly traded", "Local") instead of printing the score, and
+       its head opens the tier filter. The filter starts with Local off, so
+       opt-2's default ranking is exactly opt-1's - the beat is about tradable
+       work, and adding Local by default would rewrite its headline. */
+    let rankMode = "score";
+    let tierOn6 = [true, true, false];
+    const TIER_NAMES = ["Traded", "Partly traded", "Local"];
+    const tierLabel = d => TIER_NAMES[clusterOf(d)];
+    /* a word is wider than a number, so the plot gives up 82 units to the
+       column while the words are showing */
+    const plotR = () => rankMode === "tier" ? PLOT_R - 82 : PLOT_R;
+    let wireRowsRef = null, rebuildR2Ref = null;
     function ranking(rows, among){
       const base = among ? specializedAmong(rows) : specializedWithPeers(rows);
       const ranked = base.sort((a, b) => b.rca - a.rca).slice(0, MI_TOP_N);
@@ -3284,12 +3297,12 @@
         rankRow: new Map(ranked.map(d => [d.name, d])),
         xr: d3.scaleLinear()
           .domain([1, (d3.max(ranked, d => Math.max(d.rca, d.peerAvg)) || 2) * 1.06])
-          .range([ML + 12, PLOT_R]),
+          .range([ML + 12, plotR()]),
         /* the gap against the peer average, symmetric so the average sits
            mid-chart: ahead to the right, behind to the left */
         xg: (function(){
           const g = Math.max(0.5, (d3.max(ranked, d => Math.abs(d.rca - d.peerAvg)) || 0.5) * 1.15);
-          return d3.scaleLinear().domain([-g, g]).range([ML + 12, PLOT_R]);
+          return d3.scaleLinear().domain([-g, g]).range([ML + 12, plotR()]);
         })() };
     }
     const gapOf = d => d.rca - d.peerAvg;
@@ -3599,13 +3612,30 @@
         .text("Against the peer average");
       AG.append("text").attr("class", "mi-colhead")
         .attr("x", MI_W - 6).attr("y", HEAD_Y).attr("text-anchor", "end").text("Jobs");
-      tradHead(AG);
-      headRules(AG, ML + 12, PLOT_R);
+      tradHead(AG, R);
+      headRules(AG, ML + 12, plotR());
     }
     /* the tradability column's head, its range on the same line, and the rules
        that make the three columns read as a table head */
     const JOBS_L = 812, JOBS_R = MI_W - 6;
-    function tradHead(A){
+    /* the head as a button: the word, a caret, and a hit area round both. ctx
+       says which filter it opens, since the jobs order and the ranking keep
+       their own tier sets. */
+    function menuHead(G, xRight, yBase, ctx){
+      const hg = G.append("g").attr("class", "mi-tradmenu " + ctx)
+        .attr("tabindex", 0).attr("role", "button")
+        .attr("aria-haspopup", "true").attr("aria-expanded", "false");
+      const ht = hg.append("text").attr("class", "mi-colhead")
+        .attr("x", xRight - 13).attr("y", yBase).attr("text-anchor", "end").text("Tradability");
+      hg.append("path").attr("class", "mi-tradmenu-caret")
+        .attr("d", `M${xRight - 9},${yBase - 6} l3.5,3.5 l3.5,-3.5`);
+      const tw = ht.node().getComputedTextLength ? ht.node().getComputedTextLength() : 70;
+      hg.insert("rect", "text").attr("class", "mi-tradmenu-hit")
+        .attr("x", xRight - 13 - tw - 6).attr("y", yBase - 16)
+        .attr("width", tw + 25).attr("height", 22).attr("rx", 3);
+    }
+    function tradHead(A, R){
+      if (R === R2 && rankMode === "tier"){ menuHead(A, TC_R, HEAD_Y, "is-rank"); return; }
       A.append("text").attr("class", "mi-colhead")
         .attr("x", TC_R).attr("y", HEAD_Y).attr("text-anchor", "end").text("Tradability");
     }
@@ -3635,8 +3665,8 @@
       /* the jobs column: its head, and each row's count at the right edge */
       A.append("text").attr("class", "mi-colhead")
         .attr("x", MI_W - 6).attr("y", HEAD_Y).attr("text-anchor", "end").text("Jobs");
-      tradHead(A);
-      headRules(A, ML + 12, PLOT_R);
+      tradHead(A, R);
+      headRules(A, ML + 12, plotR());
       /* the leading three by concentration, braced only while that is the order */
       const topN = Math.min(3, R.ranked.length);
       R.brace = A.append("g").attr("class", "mi-bracewrap");
@@ -3677,9 +3707,10 @@
          and a short track beneath it from 0 to 1, filled as far as the score
          reaches, with a tick at 0.5 where the most tradable cluster begins */
       const tw = d3.scaleLinear().domain([0, 1]).range([0, TC_W]);
-      row.append("text").attr("class", "mi-trad")
-        .attr("x", TC_R).attr("y", 1).attr("text-anchor", "end")
-        .text(d => tradabilityOf(d.name).toFixed(2));
+      const tierMode = R === R2 && rankMode === "tier";
+      row.append("text").attr("class", "mi-trad" + (tierMode ? " is-tier" : ""))
+        .attr("x", TC_R).attr("y", tierMode ? 4 : 1).attr("text-anchor", "end")
+        .text(d => tierMode ? tierLabel(d) : tradabilityOf(d.name).toFixed(2));
       row.append("rect").attr("class", "mi-tradtrack")
         .attr("x", TC_R - TC_W).attr("y", 5).attr("width", TC_W).attr("height", 4).attr("rx", 2);
       row.append("rect").attr("class", "mi-tradbar")
@@ -3695,6 +3726,26 @@
       });
       R.row = row;
     }
+    /* The ranking over a different pool. R2 is mutated in place rather than
+       replaced, because every state closure holds it; the cells relearn
+       their place in it; and its three groups are cleared and drawn again,
+       since the axis furniture is appended rather than joined. */
+    function rebuildR2(animate){
+      const pool = clusterRows.filter((_, k) => tierOn6[k]).flat();
+      Object.assign(R2, ranking(pool, true));
+      cells.forEach(c => {
+        c.rank2 = R2.rankIdx.has(c.name) ? R2.rankIdx.get(c.name) : -1;
+        c.row2 = R2.rankRow.get(c.name) || null;
+      });
+      gAxis2.selectAll("*").remove(); gAxisGap2.selectAll("*").remove(); gRows2.selectAll("*").remove();
+      drawGapAxis(R2, gAxisGap2);
+      drawRanking(R2, gAxis2, gRows2);
+      reorder(R2);
+      placeRanking(R2, false);
+      if (wireRowsRef) wireRowsRef(R2);
+      if (step === 6) paint(6, animate);
+    }
+    rebuildR2Ref = rebuildR2;
     /* the rows to their places in the current order */
     function placeRanking(R, animate){
       if (!R.row) return;
@@ -3744,17 +3795,7 @@
       if (G === gBarsAll){
         /* the head is the filter's control: the chart names what can be
            narrowed, instead of a second control standing beside it */
-        const hg = G.append("g").attr("class", "mi-tradmenu")
-          .attr("tabindex", 0).attr("role", "button")
-          .attr("aria-haspopup", "true").attr("aria-expanded", "false");
-        const ht = hg.append("text").attr("class", "mi-colhead")
-          .attr("x", TC_R - 13).attr("y", BMT - 36).attr("text-anchor", "end").text("Tradability");
-        hg.append("path").attr("class", "mi-tradmenu-caret")
-          .attr("d", `M${TC_R - 9},${BMT - 42} l3.5,3.5 l3.5,-3.5`);
-        const tw = ht.node().getComputedTextLength ? ht.node().getComputedTextLength() : 70;
-        hg.insert("rect", "text").attr("class", "mi-tradmenu-hit")
-          .attr("x", TC_R - 13 - tw - 6).attr("y", BMT - 52)
-          .attr("width", tw + 25).attr("height", 22).attr("rx", 3);
+        menuHead(G, TC_R, BMT - 36, "is-bars");
       } else {
         G.append("text").attr("class", "mi-colhead")
           .attr("x", TC_R).attr("y", BMT - 36).attr("text-anchor", "end").text("Tradability");
@@ -3871,7 +3912,7 @@
          sector's any more, so the labels would be naming the wrong thing */
       /* both map beats name their blocks; the sets differ, so redraw on
          arrival rather than once */
-      if (closeMenuRef && !(i === 4 && view === "alt")) closeMenuRef();
+      if (closeMenuRef && !((i === 4 && view === "alt") || i === 6)) closeMenuRef();
       show(gCards, i === 4 && view === "map");
       show(gSecLab, (i === 7 || i === 4) && view === "map" &&
         colorBy === "sector" && nameMode !== "off");
@@ -3936,15 +3977,41 @@
        empty chart answers nothing. */
     const menuEl = document.getElementById(p + "TradMenu");
     if (menuEl){
-      const headG = () => el.querySelector("g.mi-tradmenu");
+      /* which head opened it: the jobs order and the ranking's opt-2 keep
+         separate tier sets and separate words for them */
+      let menuCtx = "bars";
+      const ctxOf = g => g && g.classList.contains("is-rank") ? "rank" : "bars";
+      const tiersOf = ctx => ctx === "rank" ? tierOn6 : tierOn;
+      /* the ranking draws a head in each of its two axis groups, one per
+         order, so take the one that is actually showing */
+      const headG = () => {
+        const all = [].slice.call(el.querySelectorAll("g.mi-tradmenu." + (menuCtx === "rank" ? "is-rank" : "is-bars")));
+        const shown = all.filter(g => {
+          let n = g; while (n && n !== el){ if (n.nodeType === 1 && +getComputedStyle(n).opacity === 0) return false; n = n.parentNode; }
+          return true;
+        });
+        return shown[0] || all[0] || null;
+      };
       const isOpen = () => !menuEl.hidden;
       const closeMenu = () => {
         menuEl.hidden = true;
-        const g = headG();
-        if (g){ g.classList.remove("is-open"); g.setAttribute("aria-expanded", "false"); }
+        el.querySelectorAll("g.mi-tradmenu").forEach(g => {
+          g.classList.remove("is-open"); g.setAttribute("aria-expanded", "false");
+        });
+      };
+      const syncItems = () => {
+        const on = tiersOf(menuCtx);
+        menuEl.querySelectorAll(".tm-item[data-tier]").forEach(b => {
+          const k = +b.dataset.tier;
+          b.classList.toggle("is-on", !!on[k]);
+          b.setAttribute("aria-pressed", String(!!on[k]));
+          const lab = b.querySelector(".tm-lab");
+          if (lab) lab.textContent = menuCtx === "rank" ? b.dataset.labRank : b.dataset.labBars;
+        });
       };
       const openMenu = () => {
         const g = headG(); if (!g) return;
+        syncItems();
         const host = el.parentNode;                       /* the viz wrapper */
         const hb = g.getBoundingClientRect(), pb = host.getBoundingClientRect();
         menuEl.hidden = false;
@@ -3959,29 +4026,39 @@
       };
       /* the head is redrawn whenever the filter moves, so the click is caught
          on the figure rather than bound to a node that will not survive */
+      const toggleFrom = g => {
+        const ctx = ctxOf(g);
+        if (isOpen() && ctx === menuCtx){ closeMenu(); return; }
+        closeMenu(); menuCtx = ctx; openMenu();
+      };
       el.addEventListener("click", ev => {
-        if (!ev.target.closest || !ev.target.closest("g.mi-tradmenu")) return;
-        isOpen() ? closeMenu() : openMenu();
+        const g = ev.target.closest && ev.target.closest("g.mi-tradmenu");
+        if (g) toggleFrom(g);
       });
       el.addEventListener("keydown", ev => {
         if (ev.key !== "Enter" && ev.key !== " ") return;
-        if (!ev.target.closest || !ev.target.closest("g.mi-tradmenu")) return;
+        const g = ev.target.closest && ev.target.closest("g.mi-tradmenu");
+        if (!g) return;
         ev.preventDefault();
-        isOpen() ? closeMenu() : openMenu();
+        toggleFrom(g);
       });
       menuEl.addEventListener("click", ev => {
         const b = ev.target.closest(".tm-item[data-tier]");
         if (!b) return;
-        const k = +b.dataset.tier;
+        const k = +b.dataset.tier, on = tiersOf(menuCtx);
         /* an empty chart answers nothing, so the last one stays on */
-        if (tierOn[k] && tierOn.filter(Boolean).length === 1) return;
-        tierOn[k] = !tierOn[k];
-        b.classList.toggle("is-on", tierOn[k]);
-        b.setAttribute("aria-pressed", String(tierOn[k]));
-        const list = tierList();
-        barRankAll = new Map(list.slice(0, NB).map((d, i) => [d.name, i]));
-        drawBars(list, gBarsAll);
-        paint(step, !reduced());
+        if (on[k] && on.filter(Boolean).length === 1) return;
+        on[k] = !on[k];
+        b.classList.toggle("is-on", on[k]);
+        b.setAttribute("aria-pressed", String(on[k]));
+        if (menuCtx === "rank"){
+          if (rebuildR2Ref) rebuildR2Ref(!reduced());
+        } else {
+          const list = tierList();
+          barRankAll = new Map(list.slice(0, NB).map((d, i) => [d.name, i]));
+          drawBars(list, gBarsAll);
+          paint(step, !reduced());
+        }
         openMenu();                                        /* re-anchor */
       });
       document.addEventListener("click", ev => {
@@ -3993,6 +4070,25 @@
       document.addEventListener("keydown", ev => { if (ev.key === "Escape") closeMenu(); });
       closeMenuRef = closeMenu;
     }
+
+    /* the ranking's own study: score or tier word in the tradability column.
+       Going back to opt-1 also resets the filter, so opt-1 is always the
+       ranking as shipped. */
+    const rankOptEl = document.getElementById(p + "RankOpt");
+    if (rankOptEl) rankOptEl.addEventListener("click", ev => {
+      const b = ev.target.closest(".seg-btn[data-rank]");
+      if (!b || b.dataset.rank === rankMode) return;
+      rankMode = b.dataset.rank;
+      fig.dataset.rank = rankMode;
+      if (rankMode === "score") tierOn6 = [true, true, false];
+      rankOptEl.querySelectorAll(".seg-btn[data-rank]").forEach(x => {
+        const on = x.dataset.rank === rankMode;
+        x.classList.toggle("is-active", on);
+        x.setAttribute("aria-pressed", String(on));
+      });
+      if (closeMenuRef) closeMenuRef();
+      if (rebuildR2Ref) rebuildR2Ref(!reduced());
+    });
 
     const colorEl = document.getElementById(p + "Color");
     /* the complexity rank and the complexity explainer in the first beat's text */
@@ -4349,7 +4445,7 @@
 
       /* the ranking rows carry the same card, raised from the row rather than
          the bar — hovering a name or a jobs count is hovering the industry */
-      [R1, R2].forEach(function(R){
+      function wireRows(R){
         if (!R || !R.row) return;
         R.row.style("cursor", "default")
           .on("mouseenter.mirow", function(ev, d){
@@ -4366,7 +4462,9 @@
           })
           .on("mousemove.mirow", function(ev){ cursorTipPos(ev, wrap, tip); })
           .on("mouseleave.mirow", cool);
-      });
+      }
+      wireRows(R1); wireRows(R2);
+      wireRowsRef = wireRows;
     }
 
     /* the arrangement control belongs to the two beats that show the whole

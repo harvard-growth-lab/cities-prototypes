@@ -2672,20 +2672,31 @@
     font-size:9.5px;font-weight:400;color:#a7aeb1;letter-spacing:normal;
     margin-left:auto;margin-right:1px;align-self:center;
   }
-  .mi-view #miNames{
+  .mi-view #miNames,
+  .mi-view #miRankOpt{
     border:0;background:none;padding:0;height:auto;gap:7px;align-self:center;
   }
-  .mi-view #miNames .seg-btn{
+  .mi-view #miNames .seg-btn,
+  .mi-view #miRankOpt .seg-btn{
     height:auto;padding:0;border:0;background:none;border-radius:0;
     font-size:9.5px;font-weight:400;color:#a7aeb1;letter-spacing:normal;
     line-height:1.2;box-shadow:none;
   }
-  .mi-view #miNames .seg-btn:hover{color:var(--ink-soft);}
-  .mi-view #miNames .seg-btn.is-active{
+  .mi-view #miNames .seg-btn:hover,
+  .mi-view #miRankOpt .seg-btn:hover{color:var(--ink-soft);}
+  .mi-view #miNames .seg-btn.is-active,
+  .mi-view #miRankOpt .seg-btn.is-active{
     background:none;color:var(--ink-soft);font-weight:600;
     text-decoration:underline;text-underline-offset:2px;
   }
-  .mi-view #miNames .seg-btn:focus-visible{outline:1px solid var(--teal);outline-offset:2px;}
+  .mi-view #miNames .seg-btn:focus-visible,
+  .mi-view #miRankOpt .seg-btn:focus-visible{outline:1px solid var(--teal);outline-offset:2px;}
+  /* opt-2 names the tier instead of printing the score: the word replaces
+     the number and the track under it, which was the number drawn */
+  #miTreemapSvg .mi-trad.is-tier{font-size:12.5px;font-variant-numeric:normal;}
+  #miFigure[data-rank="tier"] .mi-rows:not(.mi-bars) .mi-tradtrack,
+  #miFigure[data-rank="tier"] .mi-rows:not(.mi-bars) .mi-tradbar,
+  #miFigure[data-rank="tier"] .mi-rows:not(.mi-bars) .mi-tradtick{display:none;}
   /* the tradability column, built as the jobs column is */
   #miTreemapSvg .mi-trad{font-size:13px;font-weight:600;fill:var(--ink);font-variant-numeric:tabular-nums;}
   #miTreemapSvg .mi-tradtrack{fill:#e6eaec;}
@@ -5351,6 +5362,13 @@
                 <button type="button" class="seg-btn" data-sort="trad" aria-pressed="false">Tradability</button>
                 <button type="button" class="seg-btn" data-sort="gap" aria-pressed="false">Against peers</button>
               </div>
+              <!-- a study control: the tradability column as a score, or as
+                   the tier's name with the head opening the tier filter -->
+              <span class="ctl-label mi-studylab">Tradability column</span>
+              <div class="seg" id="miRankOpt" role="group" aria-label="How tradability is shown in the ranking">
+                <button type="button" class="seg-btn is-active" data-rank="score" aria-pressed="true">opt-1</button>
+                <button type="button" class="seg-btn" data-rank="tier" aria-pressed="false">opt-2</button>
+              </div>
             </div>
             <div class="tradable-split-header" id="miSplitHead">
               <div class="split-col split-col--tradable">
@@ -5386,9 +5404,9 @@
             <div class="rca-tip" id="miTip" role="tooltip" hidden></div>
             <!-- the tradability filter, opened from the column head it filters -->
             <div class="trad-menu" id="miTradMenu" role="group" aria-label="Which tradability tiers to show" hidden>
-              <button type="button" class="tm-item is-on" data-tier="0" aria-pressed="true"><span class="tm-tick" aria-hidden="true"><svg viewBox="0 0 10 8" width="9" height="7"><path d="M1 4.2 3.7 6.8 9 1.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Sells outside the metro</button>
-              <button type="button" class="tm-item is-on" data-tier="1" aria-pressed="true"><span class="tm-tick" aria-hidden="true"><svg viewBox="0 0 10 8" width="9" height="7"><path d="M1 4.2 3.7 6.8 9 1.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Some of both</button>
-              <button type="button" class="tm-item is-on" data-tier="2" aria-pressed="true"><span class="tm-tick" aria-hidden="true"><svg viewBox="0 0 10 8" width="9" height="7"><path d="M1 4.2 3.7 6.8 9 1.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Serves the metro</button>
+              <button type="button" class="tm-item is-on" data-tier="0" aria-pressed="true" data-lab-bars="Sells outside the metro" data-lab-rank="Traded"><span class="tm-tick" aria-hidden="true"><svg viewBox="0 0 10 8" width="9" height="7"><path d="M1 4.2 3.7 6.8 9 1.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="tm-lab">Sells outside the metro</span></button>
+              <button type="button" class="tm-item is-on" data-tier="1" aria-pressed="true" data-lab-bars="Some of both" data-lab-rank="Partly traded"><span class="tm-tick" aria-hidden="true"><svg viewBox="0 0 10 8" width="9" height="7"><path d="M1 4.2 3.7 6.8 9 1.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="tm-lab">Some of both</span></button>
+              <button type="button" class="tm-item is-on" data-tier="2" aria-pressed="true" data-lab-bars="Serves the metro" data-lab-rank="Local"><span class="tm-tick" aria-hidden="true"><svg viewBox="0 0 10 8" width="9" height="7"><path d="M1 4.2 3.7 6.8 9 1.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="tm-lab">Serves the metro</span></button>
             </div>
           </div>
           <!-- one caption slot: each beat's key sits in the same place right
