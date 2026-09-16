@@ -2820,6 +2820,10 @@
   .mi-hl:focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:2px;}
   #miTreemapSvg .mi-cell{transition:opacity .18s ease;}
   #miTreemapSvg .mi-cell.is-dim{opacity:.13;}
+  /* the ranking keeps its names outside the bars, so a row has to stand down
+     with its cell or the dimming only half happens */
+  #miTreemapSvg .mi-row{transition:opacity .18s ease;}
+  #miTreemapSvg .mi-row.is-dim{opacity:.2;}
   @media (prefers-reduced-motion: reduce){ #miTreemapSvg .mi-cell{transition:none;} }
   .mi-figure .complexity-legend{display:flex;margin:0;}
   .mi-figure{--mi-lab:11px;}
@@ -5277,9 +5281,12 @@
           </div>
           
           <div class="lede-stat-row">
-            <p class="lede">Every industry has a tradability score from 0 to 1. At 1, almost everything it makes is
-              sold to customers outside the metro; at 0, it only serves the people who live here. Along that score
-              the metro&rsquo;s work falls into three clusters, the most tradable on the left.</p>
+            <p class="lede">Most of the metro&rsquo;s work does not sell outward. <span class="mi-hl"
+              data-on="4" data-cluster="2" tabindex="0">Serving the people already here</span> &mdash; restaurants,
+              schools, hospitals &mdash; is 31% of jobs, and <span class="mi-hl" data-on="4" data-cluster="1"
+              tabindex="0">another quarter</span> does some of both. Only <span class="mi-hl" data-on="4"
+              data-cluster="0" tabindex="0">44% sells outside the metro</span>, and that is the part bringing new
+              income in.</p>
             <!-- the score, drawn: 1 to 0 as the map reads, each band as wide as
                  its stretch of the score, with the metro's own examples -->
             <div class="tscale" id="miTradScale" hidden></div>
@@ -5374,10 +5381,14 @@
           </div>
           
           <div class="lede-stat-row">
-            <p class="lede">Selling outward is one thing; being unusually good at it is another. The two tradable
-              clusters turn into a ranking of the industries the <span class="city-short">Boston</span> metro does far
-              more of than a typical US metro. Each bar runs as far as the metro is concentrated in that industry, and
-              the tradability column gives each one&rsquo;s score from 0 to 1.</p>
+            <p class="lede">The metro is most concentrated in <span class="mi-hl" data-on="6"
+              data-ind="Colleges Universities and Professional Schools" tabindex="0">colleges and universities</span>,
+              5.4 times the national rate, then <span class="mi-hl" data-on="6"
+              data-ind="Scientific Research and Development Services" tabindex="0">scientific R&amp;D</span> at 4.1 and
+              <span class="mi-hl" data-on="6" data-ind="Other Financial Investment Activities" tabindex="0">financial
+              investment</span> at 3.6. Concentration is not size: R&amp;D reaches 4.1 times on 4,000 jobs, while
+              <span class="mi-hl" data-on="6" data-ind="Management Scientific and Technical Consulting Services"
+              tabindex="0">management consulting</span> employs 65,000 at 2.4.</p>
           </div>
           <div class="collapsible-info">
             <button class="collapsible-header">

@@ -4066,18 +4066,38 @@
          translate "manufacturing" into a colour before they can find it.
          Hover and focus for pointer and keyboard; click as well, because a
          phone has no hover and the reference this follows forgets that. */
-      const hlSpans = [].slice.call(document.querySelectorAll(".mi-hl[data-sector]"));
+      const hlSpans = [].slice.call(document.querySelectorAll(".mi-hl"));
+      /* each beat points at what it is about: the mix beat names sectors, the
+         tradability beat names one of the three clusters, and the ranking
+         names industries outright */
+      const hlRows = () => [R1, R2].filter(R => R && R.row);
       const clearHl = () => {
         cell.classed("is-dim", false);
+        hlRows().forEach(R => R.row.classed("is-dim", false));
         hlSpans.forEach(x => x.classList.remove("is-lit"));
       };
+      const hlStep = span => span.dataset.on || "7";
       const litHl = span => {
-        const want = span.dataset.sector.split("|");
-        cell.classed("is-dim", d => want.indexOf(d.sector) < 0);
+        const ds = span.dataset;
+        let keep = null;
+        if (ds.sector){
+          const want = ds.sector.split("|");
+          cell.classed("is-dim", d => want.indexOf(d.sector) < 0);
+        } else if (ds.cluster){
+          const k = +ds.cluster;
+          keep = new Set((clusterRows[k] || []).map(r => r.name));
+          cell.classed("is-dim", d => !keep.has(d.name));
+        } else if (ds.ind){
+          keep = new Set(ds.ind.split("|"));
+          cell.classed("is-dim", d => !keep.has(d.name));
+        }
+        /* the ranking carries its names outside the bars, so the rows have to
+           stand down with the cells or the dimming says nothing */
+        if (keep) hlRows().forEach(R => R.row.classed("is-dim", d => !keep.has(d.name)));
         span.classList.add("is-lit");
       };
       hlSpans.forEach(span => {
-        const on = () => { if (fig.dataset.step !== "7") return; clearHl(); litHl(span); };
+        const on = () => { if (fig.dataset.step !== hlStep(span)) return; clearHl(); litHl(span); };
         span.addEventListener("mouseenter", on);
         span.addEventListener("focus", on);
         span.addEventListener("mouseleave", clearHl);
