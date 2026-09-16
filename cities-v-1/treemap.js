@@ -4493,7 +4493,10 @@
     /* sort: the same rows in another order, bars and names travelling together */
     const sortEl = document.getElementById(p + "Sort");
     if (sortEl) sortEl.addEventListener("click", ev => {
-      const b = ev.target.closest(".seg-btn");
+      /* the opt-1/opt-2 study shares this row and this button class: a click
+         on it must not read as a sort with no key, which cleared every sort
+         button's selected state and hid the brace */
+      const b = ev.target.closest(".seg-btn[data-sort]");
       if (!b || b.dataset.sort === sortKey) return;
       sortKey = b.dataset.sort;
       fig.dataset.sort = sortKey;
