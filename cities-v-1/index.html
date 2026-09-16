@@ -2830,6 +2830,35 @@
   }
   /* the ground is set per block, from that block's own colour */
   #miTreemapSvg .mi-seclab-tab{pointer-events:none;}
+  /* The tier filter belongs to the jobs order on the tradability beat, and
+     nowhere else: on the map the three tiers are the three columns, so a
+     filter there would be filtering away the chart itself. */
+  .mi-tierlab,.tierfilter{display:none;}
+  #miFigure[data-step="4"][data-view="alt"] .mi-tierlab{display:inline;}
+  #miFigure[data-step="4"][data-view="alt"] .tierfilter{display:inline-flex;}
+  .mi-view .tierfilter{gap:5px;align-self:center;}
+  .mi-view .tier-btn{
+    appearance:none;display:inline-flex;align-items:center;gap:6px;
+    height:30px;padding:0 10px;border:1px solid var(--border-strong);
+    border-radius:4px;background:#fff;font:inherit;font-size:12px;font-weight:600;
+    color:var(--ink-soft);cursor:pointer;white-space:nowrap;
+    transition:background .15s ease,color .15s ease,border-color .15s ease;
+  }
+  .mi-view .tier-btn .tk{
+    width:13px;height:13px;flex:none;border-radius:3px;
+    border:1px solid var(--ctl-edge,#8a9296);background:#fff;color:#fff;
+    display:inline-flex;align-items:center;justify-content:center;
+  }
+  .mi-view .tier-btn .tk svg{display:none;}
+  .mi-view .tier-btn.is-on{color:var(--ink);border-color:var(--teal);background:var(--teal-tint);}
+  .mi-view .tier-btn.is-on .tk{background:var(--teal);border-color:var(--teal);}
+  .mi-view .tier-btn.is-on .tk svg{display:block;}
+  .mi-view .tier-btn:hover{border-color:var(--teal);}
+  .mi-view .tier-btn:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+  .mi-view .tier-btn .ts{font-weight:400;color:var(--ink-soft);font-variant-numeric:tabular-nums;}
+  /* the rule over each tier's stretch of the tradability column, dimmed when
+     that tier is filtered out */
+  #miTreemapSvg .mi-tierrule{stroke:#9aa3a6;stroke-width:2;stroke-linecap:round;}
   #miFigure[data-step="7"] #miSectorKey .sk-no-trad{display:none;}
   /* the prose points at the chart: a phrase naming a sector stands the rest
      of the mix down, so the sentence and the picture say the same thing at
@@ -5217,6 +5246,16 @@
               <div class="seg" id="miColor" role="group" aria-label="What the cells are coloured by">
                 <button type="button" class="seg-btn is-active" data-color="sector" aria-pressed="true">Sector</button>
                 <button type="button" class="seg-btn" data-color="complexity" aria-pressed="false">Complexity</button>
+              </div>
+              <!-- the tradability tiers, as a filter on the jobs order -->
+              <span class="ctl-label mi-tierlab">Show</span>
+              <div class="tierfilter" id="miTier" role="group" aria-label="Which tradability tiers to show">
+                <button type="button" class="tier-btn is-on" data-tier="0" aria-pressed="true">
+                  <span class="tk" aria-hidden="true"><svg viewBox="0 0 10 8" width="9" height="7"><path d="M1 4.2 3.7 6.8 9 1.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Sells outside<span class="ts"></span></button>
+                <button type="button" class="tier-btn is-on" data-tier="1" aria-pressed="true">
+                  <span class="tk" aria-hidden="true"><svg viewBox="0 0 10 8" width="9" height="7"><path d="M1 4.2 3.7 6.8 9 1.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Some of both<span class="ts"></span></button>
+                <button type="button" class="tier-btn is-on" data-tier="2" aria-pressed="true">
+                  <span class="tk" aria-hidden="true"><svg viewBox="0 0 10 8" width="9" height="7"><path d="M1 4.2 3.7 6.8 9 1.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>Serves the metro<span class="ts"></span></button>
               </div>
               <!-- a study control: three ways of naming the sectors on the
                    map, to be compared and then settled -->

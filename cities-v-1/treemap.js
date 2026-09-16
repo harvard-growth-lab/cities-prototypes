@@ -3159,7 +3159,10 @@
     const byJobsAll = industryData.slice().sort((a, b) => b.employ - a.employ);
     const barScale = d3.scaleLinear()
       .domain([0, (byJobsAll[0] ? byJobsAll[0].employ : 1) * 1.04]).range([BML + 12, BPR]);
-    const barRankAll = new Map(byJobsAll.slice(0, NB).map((d, i) => [d.name, i]));
+    /* which tradability tiers the bar view is showing; all three to begin with */
+    let tierOn = [true, true, true];
+    const tierList = () => byJobsAll.filter(d => tierOn[clusterOf(d)]);
+    let barRankAll = new Map(byJobsAll.slice(0, NB).map((d, i) => [d.name, i]));
     const byJobsTrad = clusterRows[0].slice().sort((a, b) => b.employ - a.employ);
     const barRankTrad = new Map(byJobsTrad.slice(0, NB).map((d, i) => [d.name, i]));
     const barY = i => BMT + i * BRH + BRH / 2;
@@ -3649,6 +3652,9 @@
     const fmtJobs = v => v >= 1000 ? Math.round(v / 1000) + "K" : String(Math.round(v));
     const shortName = n => n.length > 36 ? n.slice(0, 35).replace(/\s+\S*$/, "") + "\u2026" : n;
     function drawBars(list, G){
+      /* built fresh each time: the tier filter re-ranks the whole view, so
+         there is nothing here worth updating in place */
+      G.selectAll("*").remove();
       const rows = list.slice(0, NB);
       G.selectAll("g.mi-tick").data(barScale.ticks(4)).join("g").attr("class", "mi-tick")
         .call(g => g.append("line").attr("class", d => "mi-grid" + (d === 0 ? " is-base" : ""))
@@ -3684,10 +3690,25 @@
       row.append("rect").attr("class", "mi-tradbar")
         .attr("x", BTX).attr("y", (d, i) => barY(i) - 2)
         .attr("width", d => Math.max(1, btw(tradabilityOf(d.name)))).attr("height", 4).attr("rx", 2);
-      /* the notch at 0.5, where the most tradable cluster begins */
-      row.append("line").attr("class", "mi-tradtick")
-        .attr("x1", BTX + btw(CL_HI)).attr("x2", BTX + btw(CL_HI))
-        .attr("y1", (d, i) => barY(i) + 3).attr("y2", (d, i) => barY(i) + 6.5);
+      /* both tier lines, not just one: with a notch at 0.35 and at 0.5 the
+         column says which of the three tiers a row is in, which is what the
+         filter beside it is selecting on */
+      [CL_LO, CL_HI].forEach(v => {
+        row.append("line").attr("class", "mi-tradtick")
+          .attr("x1", BTX + btw(v)).attr("x2", BTX + btw(v))
+          .attr("y1", (d, i) => barY(i) + 3).attr("y2", (d, i) => barY(i) + 6.5);
+      });
+      /* the tier heads, once, so the two notches are named rather than guessed */
+      if (G === gBarsAll){
+        const seg = [[0, CL_LO], [CL_LO, CL_HI], [CL_HI, 1]];
+        seg.forEach((sg, k) => {
+          const x0 = BTX + btw(sg[0]), x1 = BTX + btw(sg[1]);
+          G.append("line").attr("class", "mi-tierrule")
+            .attr("x1", x0 + 0.5).attr("x2", x1 - 0.5)
+            .attr("y1", BMT - 13).attr("y2", BMT - 13)
+            .attr("stroke-opacity", tierOn[2 - k] ? 1 : 0.25);
+        });
+      }
     }
     drawBars(byJobsAll, gBarsAll);
     drawBars(byJobsTrad, gBarsTrad);
@@ -3810,6 +3831,33 @@
       });
       if (step === 7 || step === 4) paint(step, !reduced());
     });
+
+    /* The tradability tiers, as a filter on the jobs order. Ordered by jobs
+       answers "what is biggest"; unchecking a tier asks the narrower question
+       the beat is really about - what is the biggest work that sells outward.
+       All three start checked, and the last one cannot be unchecked, since an
+       empty chart answers nothing. */
+    const tierEl = document.getElementById(p + "Tier");
+    if (tierEl){
+      tierEl.querySelectorAll(".tier-btn[data-tier]").forEach(b => {
+        const k = +b.dataset.tier;
+        const sh = b.querySelector(".ts");
+        if (sh && clusterShare[k] != null) sh.textContent = Math.round(clusterShare[k] * 100) + "%";
+      });
+      tierEl.addEventListener("click", ev => {
+        const b = ev.target.closest(".tier-btn[data-tier]");
+        if (!b) return;
+        const k = +b.dataset.tier;
+        if (tierOn[k] && tierOn.filter(Boolean).length === 1) return;
+        tierOn[k] = !tierOn[k];
+        b.classList.toggle("is-on", tierOn[k]);
+        b.setAttribute("aria-pressed", String(tierOn[k]));
+        const list = tierList();
+        barRankAll = new Map(list.slice(0, NB).map((d, i) => [d.name, i]));
+        drawBars(list, gBarsAll);
+        paint(step, !reduced());
+      });
+    }
 
     const colorEl = document.getElementById(p + "Color");
     /* the complexity rank and the complexity explainer in the first beat's text */
