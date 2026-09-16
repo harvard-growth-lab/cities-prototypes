@@ -3277,11 +3277,13 @@
     }
     /* The ranking's second option: the tradability column names the tier
        ("Traded", "Partly traded", "Local") instead of printing the score, and
-       its head opens the tier filter. The filter starts with Local off, so
-       opt-2's default ranking is exactly opt-1's - the beat is about tradable
-       work, and adding Local by default would rewrite its headline. */
+       its head opens the tier filter. All three tiers start checked, as they
+       do on the jobs order, so opt-2 opens on the metro's twelve most
+       specialised industries of any kind and the reader narrows from there.
+       opt-1 is untouched by this: it is still drawn over the two tradable
+       tiers alone. */
     let rankMode = "score";
-    let tierOn6 = [true, true, false];
+    let tierOn6 = [true, true, true];
     const TIER_NAMES = ["Traded", "Partly traded", "Local"];
     const tierLabel = d => TIER_NAMES[clusterOf(d)];
     /* a word is wider than a number, so the plot gives up 82 units to the
@@ -3731,7 +3733,11 @@
        their place in it; and its three groups are cleared and drawn again,
        since the axis furniture is appended rather than joined. */
     function rebuildR2(animate){
-      const pool = clusterRows.filter((_, k) => tierOn6[k]).flat();
+      /* opt-1 is the ranking as shipped, over the two tradable tiers; only
+         opt-2 ranks over whatever the filter has checked */
+      const pool = rankMode === "tier"
+        ? clusterRows.filter((_, k) => tierOn6[k]).flat()
+        : clusterRows[0].concat(clusterRows[1]);
       Object.assign(R2, ranking(pool, true));
       cells.forEach(c => {
         c.rank2 = R2.rankIdx.has(c.name) ? R2.rankIdx.get(c.name) : -1;
@@ -4080,7 +4086,7 @@
       if (!b || b.dataset.rank === rankMode) return;
       rankMode = b.dataset.rank;
       fig.dataset.rank = rankMode;
-      if (rankMode === "score") tierOn6 = [true, true, false];
+      if (rankMode === "score") tierOn6 = [true, true, true];
       rankOptEl.querySelectorAll(".seg-btn[data-rank]").forEach(x => {
         const on = x.dataset.rank === rankMode;
         x.classList.toggle("is-active", on);
