@@ -2693,7 +2693,9 @@
   .mi-view #miRankOpt .seg-btn:focus-visible{outline:1px solid var(--teal);outline-offset:2px;}
   /* opt-2 names the tier instead of printing the score: the word replaces
      the number and the track under it, which was the number drawn */
-  #miTreemapSvg .mi-trad.is-tier{font-size:12.5px;font-variant-numeric:normal;}
+  /* one step quieter than the value and the name: at 600 in full ink the word
+     was a third equally loud column and read as a second name */
+  #miTreemapSvg .mi-trad.is-tier{font-size:12.5px;font-weight:500;fill:var(--ink-soft);font-variant-numeric:normal;}
   #miFigure[data-rank="tier"] .mi-rows:not(.mi-bars) .mi-tradtrack,
   #miFigure[data-rank="tier"] .mi-rows:not(.mi-bars) .mi-tradbar,
   #miFigure[data-rank="tier"] .mi-rows:not(.mi-bars) .mi-tradtick{display:none;}

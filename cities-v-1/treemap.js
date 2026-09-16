@@ -3286,9 +3286,12 @@
     let tierOn6 = [true, true, true];
     const TIER_NAMES = ["Traded", "Partly traded", "Local"];
     const tierLabel = d => TIER_NAMES[clusterOf(d)];
-    /* a word is wider than a number, so the plot gives up 82 units to the
-       column while the words are showing */
-    const plotR = () => rankMode === "tier" ? PLOT_R - 82 : PLOT_R;
+    /* A word is wider than a number, so the plot gives up room to the column
+       while the words are showing - 54 units, not more. At 82 the value
+       labels sat 70.8 from the words where opt-1's scores sit 44.6; the widest
+       bar lands 0.0687 of the span short of the edge and the widest label
+       runs 37.8 past it, so 54 puts the gap at 44.7. */
+    const plotR = () => rankMode === "tier" ? PLOT_R - 54 : PLOT_R;
     let wireRowsRef = null, rebuildR2Ref = null;
     function ranking(rows, among){
       const base = among ? specializedAmong(rows) : specializedWithPeers(rows);
@@ -3629,12 +3632,14 @@
         .attr("aria-haspopup", "true").attr("aria-expanded", "false");
       const ht = hg.append("text").attr("class", "mi-colhead")
         .attr("x", xRight - 13).attr("y", yBase).attr("text-anchor", "end").text("Tradability");
+      /* the caret ends flush with the column's edge, and the hit area stops
+         at the separator rather than crossing it */
       hg.append("path").attr("class", "mi-tradmenu-caret")
-        .attr("d", `M${xRight - 9},${yBase - 6} l3.5,3.5 l3.5,-3.5`);
+        .attr("d", `M${xRight - 7},${yBase - 6} l3.5,3.5 l3.5,-3.5`);
       const tw = ht.node().getComputedTextLength ? ht.node().getComputedTextLength() : 70;
       hg.insert("rect", "text").attr("class", "mi-tradmenu-hit")
         .attr("x", xRight - 13 - tw - 6).attr("y", yBase - 16)
-        .attr("width", tw + 25).attr("height", 22).attr("rx", 3);
+        .attr("width", tw + 21).attr("height", 22).attr("rx", 3);
     }
     function tradHead(A, R){
       if (R === R2 && rankMode === "tier"){ menuHead(A, TC_R, HEAD_Y, "is-rank"); return; }
@@ -3643,11 +3648,16 @@
     }
     function headRules(A, plotL, plotR){
       const y = HEAD_RULE_Y;
-      [[plotL, plotR], [TC_R - TC_W - 8, TC_R], [JOBS_L, JOBS_R]].forEach(seg => {
+      /* the tradability column is 56 wide under a score and 80 under a word,
+         so its rule and the separator before it follow the mode; 712 clears
+         the widest word by 4 and the head by 8, as the jobs rule clears its
+         column, and the separator keeps its 14 ahead of the rule */
+      const tradL = rankMode === "tier" ? 712 : TC_R - TC_W - 8;
+      [[plotL, plotR], [tradL, TC_R], [JOBS_L, JOBS_R]].forEach(seg => {
         A.append("line").attr("class", "mi-headrule")
           .attr("x1", seg[0]).attr("x2", seg[1]).attr("y1", y).attr("y2", y);
       });
-      [TC_R - TC_W - 22, JOBS_L - 14].forEach(x => {
+      [tradL - 14, JOBS_L - 14].forEach(x => {
         A.append("line").attr("class", "mi-headsep")
           .attr("x1", x).attr("x2", x).attr("y1", HEAD_Y - 11).attr("y2", y);
       });
