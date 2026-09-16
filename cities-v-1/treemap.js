@@ -3353,22 +3353,26 @@
       return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b);
     };
     const onWhite = c => 1.05 / (lum(c) + 0.05);
-    /* opt-2 used to pick white or near-black off the fill's own luminance.
-       Measured on the running page, that rule failed 4.5:1 on all nine
-       fills - it compared each fill against white rather than against the
-       ink, so it put near-black on the dark red and white on the light
-       yellow, the two worst choices available. Two of the nine (#4f8fa3 at
-       4.45 and #8b7ba8 at 4.23) cannot reach 4.5:1 with either ink at all,
-       so no rule of this shape can work and the name needs a ground of its
-       own. SEC_CHIP is that ground: white on it is 16.14:1 everywhere, and
-       its own edge against the fill runs 3.17:1 to 9.93:1, so it clears the
-       3:1 the boundary wants on every sector. */
-    const SEC_CHIP = "#1a2226";
+    /* Why the name needs a ground at all: written straight onto the fill it
+       cannot be read. Two of the nine (#4f8fa3 and #8b7ba8) fail 4.5:1
+       against white AND against near-black, so no choice-of-two ink rule can
+       work on this palette. */
+    /* The near-black chip was legible and wrong: it floated two units inside
+       the block, leaving a rim of fill showing all round it, and a shape that
+       floats reads as something laid on top of the picture. Nine of them over
+       three tradability columns looked like hardware bolted to the map.
+       The name now sits in a tab flush with the block's own top-left corner,
+       so two of its four sides are the block's edges and it reads as part of
+       the block's construction. The ground is the white the gutters already
+       are, and the ink is the sector's own hue - the same ink opt-1 sets on
+       its strip, so the name is its sector's colour whichever option is on. */
+    /* 4.6 rather than 4.5: at 4.5 two of the nine cleared the bar by 0.03,
+       which is a rounding accident rather than a margin */
     const labelInk = hex => {
       const base = d3.color(hex); if (!base) return "#1a2226";
-      for (let k = 0; k <= 3.2; k += 0.2){
+      for (let k = 0; k <= 3.2; k += 0.1){
         const c = d3.color(base.darker(k).formatHex());
-        if (onWhite(c) >= 4.5) return c.formatHex();
+        if (onWhite(c) >= 4.6) return c.formatHex();
       }
       return "#1a2226";
     };
@@ -3381,7 +3385,7 @@
        at 1100 a 15-unit name lost four of beat 2's nine blocks, Professional
        & Business among them, because the blocks are fixed in user units
        while the type is not. Same size, dark ground, white ink. */
-    const CHIP_PAD = 4, CHIP_INSET = 2, CHIP_AIR = 2, CHIP_R = 3;
+    const TAB_PADL = 3, TAB_PADR = 5, TAB_AIR = 4, TAB_R = 3;
     const secUnit = () => labUnit();
     function drawSectorLabels(which){
       /* only where the block can hold the words: a clipped sector name is
@@ -3390,9 +3394,9 @@
       if (nameMode === "off"){ gSecLab.selectAll("g.mi-seclab-g").remove(); return; }
       const above = nameMode === "above";
       const u = above ? LAB_BASE : secUnit();
-      /* the chip's own geometry, in the same user units as the blocks */
-      const CH = Math.round(u * 1.5);
-      const dy = Math.round(u * 1.08);
+      /* the tab's own geometry, in the same user units as the blocks */
+      const TH = Math.round(u * 1.36);
+      const dy = TH - Math.round(u * 0.41);
       const secs = which === 4
         ? (above ? secClusterA : secClusterB)
         : null;
@@ -3402,19 +3406,19 @@
       /* a generous first pass only - the real gate is the measured width
          below, so this must not throw away a name the block could hold */
       const items = src.filter(d =>
-        d.b.h >= Math.max(46, CH + 12) && d.b.w >= name_w(d.name, u));
+        d.b.h >= Math.max(46, TH + 11) && d.b.w >= name_w(d.name, u));
       const gsel = gSecLab.selectAll("g.mi-seclab-g").data(items, d => d.key)
         .join(enter => {
           const g = enter.append("g").attr("class", "mi-seclab-g");
-          g.append("rect").attr("class", "mi-seclab-chip");
+          g.append("path").attr("class", "mi-seclab-tab");
           g.append("text");
           return g;
         });
       const txt = gsel.select("text")
         .attr("class", "mi-seclab-t" + (above ? "" : " is-inside"))
-        .attr("x", d => d.b.x + (above ? 5 : CHIP_INSET + CHIP_PAD))
-        .attr("y", d => d.b.y + (above ? 12 : CHIP_INSET + dy))
-        .attr("fill", above ? (d => labelInk(sectorColors[d.name])) : null)
+        .attr("x", d => d.b.x + (above ? 5 : TAB_PADL))
+        .attr("y", d => d.b.y + (above ? 12 : dy))
+        .attr("fill", d => labelInk(sectorColors[d.name]))
         .text(d => d.name);
       /* name_w is only a cheap pre-filter; what the block has to hold is the
          width the browser actually sets, so measure it and drop the ones that
@@ -3426,25 +3430,27 @@
       });
       /* what the block has to clear: opt-1 needs the words plus a little air,
          opt-2 needs the whole chip and its insets */
-      const need = d => (realW.get(d.key) || 0) +
-        (above ? 12 : CHIP_INSET * 2 + CHIP_PAD * 2 + CHIP_AIR);
-      gsel.select("rect.mi-seclab-chip")
+      const tabW = d => (realW.get(d.key) || 0) + TAB_PADL + TAB_PADR;
+      const need = d => above
+        ? (realW.get(d.key) || 0) + 12
+        : tabW(d) + TAB_AIR;
+      /* sharp where the tab meets the block's own top and left edges, rounded
+         only on the one corner that is free of them */
+      gsel.select("path.mi-seclab-tab")
         .attr("display", above ? "none" : null)
-        .attr("x", d => d.b.x + CHIP_INSET)
-        .attr("y", d => d.b.y + CHIP_INSET)
-        .attr("width", d => (realW.get(d.key) || 0) + CHIP_PAD * 2)
-        .attr("height", CH)
-        .attr("rx", CHIP_R).attr("ry", CHIP_R)
-        .attr("fill", SEC_CHIP);
-      /* a chip with no word in it names nothing, so the rect and the text
-         leave together */
+        .attr("d", d => {
+          const x0 = d.b.x, y0 = d.b.y, w = tabW(d);
+          return `M${x0},${y0} H${x0 + w} V${y0 + TH - TAB_R}` +
+                 ` a${TAB_R},${TAB_R} 0 0 1 ${-TAB_R},${TAB_R} H${x0} Z`;
+        });
+      /* a tab with no word on it names nothing, so the two leave together */
       gsel.filter(d => need(d) > d.b.w).remove();
-      /* opt-2 covers whatever cell lies under the chip - the chip, not the
-         words, since the chip is what the reader cannot see through */
+      /* opt-2 covers whatever cell lies under the tab - the tab, not the
+         words, since the tab is what the reader cannot see through */
       if (!above) items.forEach(d => {
         if (need(d) > d.b.w) return;
-        const x0 = d.b.x + CHIP_INSET, y0 = d.b.y + CHIP_INSET;
-        const x1 = x0 + (realW.get(d.key) || 0) + CHIP_PAD * 2, y1 = y0 + CH;
+        const x0 = d.b.x, y0 = d.b.y;
+        const x1 = x0 + tabW(d), y1 = y0 + TH;
         (which === 4 ? clusterRows.flat() : tradRows).forEach(r => {
           const b = (which === 4 ? posClusterB : posTradB).get(r.name);
           if (b && b.x < x1 && b.y < y1 &&
