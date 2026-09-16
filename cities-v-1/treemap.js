@@ -3582,7 +3582,7 @@
     const JOBS_L = 812, JOBS_R = MI_W - 6;
     function tradHead(A){
       A.append("text").attr("class", "mi-colhead")
-        .attr("x", TC_R).attr("y", HEAD_Y).attr("text-anchor", "end").text("Tradability (0-1)");
+        .attr("x", TC_R).attr("y", HEAD_Y).attr("text-anchor", "end").text("Tradability");
     }
     function headRules(A, plotL, plotR){
       const y = HEAD_RULE_Y;
@@ -3717,7 +3717,7 @@
          track lies beside the score rather than under it, because 18 units of
          row will not hold a line of type and a rule stacked */
       G.append("text").attr("class", "mi-colhead")
-        .attr("x", TC_R).attr("y", BMT - 36).attr("text-anchor", "end").text("Tradability (0-1)");
+        .attr("x", TC_R).attr("y", BMT - 36).attr("text-anchor", "end").text("Tradability");
       const row = G.selectAll("g.mi-row").data(rows, d => d.name).join("g").attr("class", "mi-row");
       row.append("text").attr("class", "mi-name")
         .attr("x", BML - 10).attr("y", (d, i) => barY(i) + 4).attr("text-anchor", "end")
