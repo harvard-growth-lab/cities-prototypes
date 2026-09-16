@@ -12,6 +12,8 @@
     --teal:#255862;
     --teal-dark:#1c454d;
     --teal-tint:#eef3f4;
+    /* the diagnosis section's own colour: 4.96:1 on white */
+    --rust:#b8511f;--rust-dark:#8f3f18;--rust-tint:#fbeee7;
     --orange:#e76565;
     --orange-dark:#cf4f2c;
     --orange-tint:#fdf0ec;
@@ -2681,6 +2683,10 @@
   .spec-key .sk-tradnotch{position:relative;width:24px;height:4px;border-radius:2px;background:#8d949d;margin-bottom:5px;}
   .spec-key .sk-tradnotch::after{content:"";position:absolute;left:11.5px;top:5px;width:1px;height:4px;background:#72767b;}
   #miTreemapSvg .mi-colsub{font-size:10.5px;fill:#8e9196;}
+  /* the head reads as a table head: a rule under each column, a separator
+     between them */
+  #miTreemapSvg .mi-headrule{stroke:#cfd6d9;stroke-width:1;}
+  #miTreemapSvg .mi-headsep{stroke:#e2e7e8;stroke-width:1;}
   /* on that beat the head holds two rows: the controls above, the clusters'
      header below */
   /* the names close onto the chart: the slot takes over the chart's own top
@@ -3643,11 +3649,52 @@
      then a seam, then the one that diagnoses it and the one that follows
      from that. A hairline and a wider gap do it without any chip changing,
      so nothing has to be learned. */
-  .secnav-btn:nth-child(4){position:relative;margin-left:22px;}
+  .secnav-btn{position:relative;}
+  .secnav-btn:nth-child(4){margin-left:19px;}
   .secnav-btn:nth-child(4)::before{
-    content:"";position:absolute;left:-12px;top:50%;transform:translateY(-50%);
-    width:1px;height:26px;background:var(--border);
+    content:"";position:absolute;left:-11px;top:50%;transform:translateY(-50%);
+    width:1px;height:26px;background:var(--border-strong);
   }
+  /* a rule between consecutive sections, so the row reads as one run rather
+     than five loose chips - and deliberately not across the seam, where the
+     point is that the two groups are not continuous */
+  .secnav-btn:nth-child(1)::after,
+  .secnav-btn:nth-child(2)::after,
+  .secnav-btn:nth-child(4)::after{
+    content:"";position:absolute;right:-8px;top:50%;
+    width:8px;height:1.5px;background:var(--border-strong);
+  }
+  /* the gap has to hold the connector and no more: at 14 the five names no
+     longer fitted a 1440 laptop, which is the width this bar is for */
+  .secnav{gap:9px;}
+  .secnav-btn{padding:6px 9px;}
+  /* Section 4 is the diagnosis - a tool inside the tool rather than another
+     chapter - so it carries its own colour at every state, not only when the
+     reader is in it. #b8511f is 4.96:1 on white. */
+  .secnav-btn:nth-child(4):not(.is-active):not(.is-done){color:var(--rust);}
+  .secnav-btn:nth-child(4):not(.is-active):not(.is-done) .num{
+    border-color:var(--rust);color:var(--rust);
+  }
+  .secnav-btn:nth-child(4).is-active{color:var(--rust-dark);background:var(--rust-tint);}
+  .secnav-btn:nth-child(4).is-active .num{background:var(--rust);border-color:var(--rust);color:#fff;}
+  .secnav-btn:nth-child(4).is-done{color:var(--rust);}
+  .secnav-btn:nth-child(4).is-done .num{background:var(--rust-tint);border-color:transparent;color:var(--rust);}
+  /* Measured: the five names, their marks, the seam and the connectors need
+     912px of row, which a 1440 viewport gives exactly and a 1366 does not.
+     Below that the chips collapse to marks and the active name - the pattern
+     the narrow bar already used - rather than letting the row scroll and cut
+     "Levers for Change" in half. */
+  @media (max-width:1439px){
+    .secnav{gap:4px;}
+    .secnav-btn{padding:6px 9px;}
+    .secnav-btn:not(.is-active) .secnav-lbl{display:none;}
+    .secnav-btn:not(.is-active){padding:6px;gap:0;}
+    .secnav-btn:nth-child(1)::after,
+    .secnav-btn:nth-child(2)::after,
+    .secnav-btn:nth-child(4)::after{display:none;}
+    .secnav-btn:nth-child(4){margin-left:18px;}
+  }
+
   /* the mark is 1079x230, so a 164px slot always clipped 5px of it */
   .logo-btn,.landing-header .logo-btn{width:auto;flex:0 0 auto;}
 
@@ -3678,6 +3725,11 @@
     }
     .secnav-btn:not(.is-active) .secnav-lbl{display:none;}
     .secnav-btn:not(.is-active){padding:6px;gap:0;}
+    .secnav{gap:4px;}
+    .secnav-btn:nth-child(1)::after,
+    .secnav-btn:nth-child(2)::after,
+    .secnav-btn:nth-child(4)::after{display:none;}
+    .secnav-btn:nth-child(4){margin-left:20px;}
     .secnav-btn{padding:6px 9px;font-size:13px;gap:6px;}
     .secnav-btn .num{width:20px;height:20px;flex:0 0 20px;font-size:10.5px;}
     .secbar .citypick--bar .citypick-btn{height:32px;font-size:13px;}
@@ -4183,7 +4235,7 @@
 
     /* ═══════════════════════════════════════════════════════════════════
        RESPONSIVE · the plain pages and their figures
-       City Constraints (the metro scatter and the city inside it), the
+       Constraints Diagnosis (the metro scatter and the city inside it), the
        Lorem page, Levers, Extras (the two RCA charts and the distribution
        frame), and the checkpoint block every section closes on.
 
@@ -4644,7 +4696,7 @@
           <button type="button" onclick="enterTool('page-overview')">Economic Fundamentals</button>
           <button type="button" onclick="enterTool('page-export-basket')">Metro Industries</button>
           <button type="button" onclick="enterTool('page-admin-mix')">Admin Industries</button>
-          <button type="button" onclick="enterTool('page-constraints')">City Constraints</button>
+          <button type="button" onclick="enterTool('page-constraints')">Constraints Diagnosis</button>
           <button type="button" onclick="enterTool('page-levers')">Levers for Change</button>
         </div>
       </div>
@@ -4757,7 +4809,7 @@
         </ul>
       </div>
       <div class="sec" data-sec="page-constraints page-city-in-metro page-constraints-lorem">
-        <button class="sec-head" onclick="goTo('page-constraints')"><span class="num">4</span>City Constraints</button>
+        <button class="sec-head" onclick="goTo('page-constraints')"><span class="num">4</span>Constraints Diagnosis</button>
         <ul class="steps">
           <li data-step="page-constraints"><span class="dot"></span><button onclick="goTo('page-constraints')">How is the metro performing?</button></li>
           <li data-step="page-city-in-metro"><span class="dot"></span><button onclick="goTo('page-city-in-metro')">Is your city pulling with the metro?</button></li>
@@ -5328,8 +5380,7 @@
               </div>
             </div>
             <p class="spec-key" id="miSpecKey">
-              <span class="sk-item"><i class="sk-peer"></i>peer-metro average</span>
-              <span class="sk-item"><i class="sk-tradnotch"></i>tradability from 0 to 1, notch at 0.5</span>
+              <span class="sk-item"><i class="sk-peer"></i>Peer metro average</span>
             </p>
             <!-- the key for the peers order, where the bar is the gap itself -->
             <p class="spec-key spec-key--gap" id="miSpecKeyGap">
@@ -5709,7 +5760,7 @@
 
       </section>
 
-            <!-- 4 City Constraints (empty) -->
+            <!-- 4 Constraints Diagnosis (empty) -->
       <section class="page" id="page-constraints">
         <div class="page-head page-head--geo">
           <h2>How is the metro performing?</h2>
@@ -5774,7 +5825,7 @@
         </div>
       </section>
 
-      <!-- 4b City Constraints · the metro dot broken into its places -->
+      <!-- 4b Constraints Diagnosis · the metro dot broken into its places -->
       <section class="page" id="page-city-in-metro">
         <div class="page-head page-head--geo">
           <h2>Is your city pulling with the metro?</h2>
@@ -5800,7 +5851,7 @@
         </div>
       </section>
 
-      <!-- 3 City Constraints · Lorem Ipsum -->
+      <!-- 3 Constraints Diagnosis · Lorem Ipsum -->
       <section class="page" id="page-constraints-lorem">
         <div class="page-head">
           <h2>Lorem Ipsum</h2>
@@ -6249,7 +6300,7 @@
     {name:"Economic Fundamentals", pages:["page-overview","page-overview-msa","page-overview-places","check-overview","apply-overview"], entry:"page-overview"},
     {name:"Metro Industries",    pages:["page-export-basket","leanSection","specializedSection","check-export","apply-export"], entry:"page-export-basket"},
     {name:"Admin Industries", pages:["page-admin-mix","adminWhoFills","adminResidentsOut","adminBalance","adminJobsHere","adminResidents","adminSpecialized","adminExchange","adminGauge","am2Bars","am2Compare","check-adminmix","apply-adminmix"], entry:"page-admin-mix"},
-    {name:"City Constraints",pages:["page-constraints","page-city-in-metro","page-constraints-lorem","check-constraints","apply-constraints"],entry:"page-constraints"},
+    {name:"Constraints Diagnosis",pages:["page-constraints","page-city-in-metro","page-constraints-lorem","check-constraints","apply-constraints"],entry:"page-constraints"},
     {name:"Levers for Change",pages:["page-levers","check-levers","apply-levers"], entry:"page-levers"},
     /* Well-built pieces outside the storyline; the anchor id is listed so
        goTo() from anywhere routes to this section before scrolling. */
@@ -6712,7 +6763,7 @@
     const LINE_C = {
       "Economic Fundamentals": "#255862",
       "Metro Industries": "#b97f4e",
-      "City Constraints":      "#2f7d6a",
+      "Constraints Diagnosis":      "#2f7d6a",
       "Levers for Change":     "#7f451e",
       "Extras":                "#8a989d"
     };
@@ -6782,7 +6833,7 @@
       for (let i = 1; i <= curIdx; i++) traveled += seg(stations[i - 1], stations[i]);
     }
 
-    const constraintsSeen = sectionDefs.some(sd => sd.name === "City Constraints" &&
+    const constraintsSeen = sectionDefs.some(sd => sd.name === "Constraints Diagnosis" &&
       sd.pages.some(p => visitedPages.has(p)));
     const sub = curIdx >= 0
       ? (stations.length - 1 - curIdx) + " stations out" +
@@ -7024,7 +7075,7 @@
   })();
 
   /* ---------- Places in your metro: cells on the real map ----------
-     Same 34 places as the City Constraints scatter, so the tool tells one MSA
+     Same 34 places as the Constraints Diagnosis scatter, so the tool tells one MSA
      story. The cells are a Voronoi tessellation around authored town centres —
      fake boundaries, and the note under the table says so — but they are drawn
      as Leaflet polygons on the section's own sticky map, so they live in the
@@ -7989,7 +8040,7 @@
         prompt: "Which part of your city’s economic mix surprised you, and what does it suggest about what the city could sell more of?",
         ph: "The exchange with Cambridge suggests…"
       },
-      "City Constraints": {
+      "Constraints Diagnosis": {
         slug: "constraints",
         qs: [
           { q: "Boston’s metro pairs fast salary growth with slow population growth. What does that usually point to?",

@@ -3176,6 +3176,34 @@
     window[ctlName + "_CLUSTERS"] = { share: clusterShare, gap: CGAP, width: MI_W };
 
     const ML = 292, MT = 62, RH = 34, BAR_H = 17, PLOT_R = 712;
+    /* Trimming by character count let the widest names run past the left edge
+       of the frame - "Sporting Goods Hobby and Musical Inst..." reached -17.6
+       of an 880-unit box and was cut by it. The gutter is fixed in user units
+       while .mi-name's size is not, so the only honest test is a measured one.
+       It cannot be done at build time: the figure is built while its page is
+       still hidden, and getComputedTextLength returns 0 in a display:none
+       subtree, which silently passed every name through untrimmed. So the
+       names are trimmed on paint, when the figure is on screen, and the
+       character rule stands in until then. */
+    const NAME_MAX = ML - 10 - 30;
+    const charFit = n => n.length > 34 ? n.slice(0, 33).replace(/\s+\S*$/, "") + "\u2026" : n;
+    function refitNames(){
+      svg.selectAll("text.mi-name").each(function(){
+        const full = this.getAttribute("data-full");
+        if (!full || !this.getComputedTextLength) return;
+        this.textContent = full;
+        const w0 = this.getComputedTextLength();
+        if (w0 === 0){ this.textContent = charFit(full); return; }
+        if (w0 <= NAME_MAX) return;
+        let cut = full;
+        while (cut.length > 4){
+          cut = cut.slice(0, -1).replace(/\s+$/, "");
+          this.textContent = cut + "\u2026";
+          if (this.getComputedTextLength() <= NAME_MAX) return;
+        }
+      });
+    }
+
     /* the tradability column, between the bars and the jobs column */
     const TC_R = 796, TC_W = 56;
     const rowY = i => MT + i * RH + RH / 2;
@@ -3542,13 +3570,25 @@
       AG.append("text").attr("class", "mi-colhead")
         .attr("x", MI_W - 6).attr("y", MT - 24).attr("text-anchor", "end").text("Jobs");
       tradHead(AG);
+      headRules(AG, ML + 12, PLOT_R);
     }
-    /* the tradability column's head: the name, and the score's range under it */
+    /* the tradability column's head, its range on the same line, and the rules
+       that make the three columns read as a table head */
+    const JOBS_L = 812, JOBS_R = MI_W - 6;
     function tradHead(A){
       A.append("text").attr("class", "mi-colhead")
-        .attr("x", TC_R).attr("y", MT - 24).attr("text-anchor", "end").text("Tradability");
-      A.append("text").attr("class", "mi-colsub")
-        .attr("x", TC_R).attr("y", MT - 11).attr("text-anchor", "end").text("0 to 1");
+        .attr("x", TC_R).attr("y", MT - 24).attr("text-anchor", "end").text("Tradability (0-1)");
+    }
+    function headRules(A, plotL, plotR){
+      const y = MT - 14;
+      [[plotL, plotR], [TC_R - TC_W - 8, TC_R], [JOBS_L, JOBS_R]].forEach(seg => {
+        A.append("line").attr("class", "mi-headrule")
+          .attr("x1", seg[0]).attr("x2", seg[1]).attr("y1", y).attr("y2", y);
+      });
+      [TC_R - TC_W - 22, JOBS_L - 14].forEach(x => {
+        A.append("line").attr("class", "mi-headsep")
+          .attr("x1", x).attr("x2", x).attr("y1", MT - 36).attr("y2", y);
+      });
     }
     function drawRanking(R, A, G){
       A.selectAll("g.mi-tick").data(R.xr.ticks(5).filter(t => t >= 1)).join("g")
@@ -3561,11 +3601,12 @@
           .text(d => d + "\u00d7"));
       A.append("text").attr("class", "mi-axname")
         .attr("x", ML + 12).attr("y", MT - 42)
-        .text("Times more concentrated here than in a typical US metro");
+        .text("Times more concentrated than the US metro average");
       /* the jobs column: its head, and each row's count at the right edge */
       A.append("text").attr("class", "mi-colhead")
         .attr("x", MI_W - 6).attr("y", MT - 24).attr("text-anchor", "end").text("Jobs");
       tradHead(A);
+      headRules(A, ML + 12, PLOT_R);
       /* the leading three by concentration, braced only while that is the order */
       const topN = Math.min(3, R.ranked.length);
       R.brace = A.append("g").attr("class", "mi-bracewrap");
@@ -3585,7 +3626,8 @@
         .attr("x", 0).attr("y", -RH / 2).attr("width", MI_W).attr("height", RH);
       const top = d => R.rankIdx.get(d.name) < 3;
       row.append("text").attr("class", d => "mi-name" + (top(d) ? " is-top" : ""))
-        .attr("x", ML - 10).attr("y", 4).attr("text-anchor", "end").text(d => d.label);
+        .attr("x", ML - 10).attr("y", 4).attr("text-anchor", "end")
+        .attr("data-full", d => d.label).text(d => charFit(d.label));
       row.append("text").attr("class", d => "mi-val" + (top(d) ? " is-top" : ""))
         .attr("x", d => Math.max(R.xr(d.rca), R.xr(d.peerAvg)) + 9).attr("y", 4)
         .text(d => d.rca.toFixed(1) + "\u00d7");
@@ -3599,8 +3641,8 @@
         .attr("x", MI_W - 6).attr("y", 1).attr("text-anchor", "end")
         .text(d => d.employ >= 1000 ? Math.round(d.employ / 1000) + "K" : Math.round(d.employ));
       row.append("rect").attr("class", "mi-jobsbar")
-        .attr("x", d => MI_W - 6 - jb(d.employ)).attr("y", 5)
-        .attr("width", d => Math.max(1, jb(d.employ))).attr("height", 4).attr("rx", 2);
+        .attr("x", d => MI_W - 6 - Math.max(4, jb(d.employ))).attr("y", 5)
+        .attr("width", d => Math.max(4, jb(d.employ))).attr("height", 4).attr("rx", 2);
       /* the tradability column, built the way the jobs column is: the score,
          and a short track beneath it from 0 to 1, filled as far as the score
          reaches, with a tick at 0.5 where the most tradable cluster begins */
@@ -3650,7 +3692,7 @@
     /* the bars' furniture: a jobs axis, the names on the left, the value at
        each bar's end */
     const fmtJobs = v => v >= 1000 ? Math.round(v / 1000) + "K" : String(Math.round(v));
-    const shortName = n => n.length > 36 ? n.slice(0, 35).replace(/\s+\S*$/, "") + "\u2026" : n;
+    const shortName = n => charFit(n);
     function drawBars(list, G){
       /* built fresh each time: the tier filter re-ranks the whole view, so
          there is nothing here worth updating in place */
@@ -3669,13 +3711,11 @@
          track lies beside the score rather than under it, because 18 units of
          row will not hold a line of type and a rule stacked */
       G.append("text").attr("class", "mi-colhead")
-        .attr("x", TC_R).attr("y", BMT - 20).attr("text-anchor", "end").text("Tradability");
-      G.append("text").attr("class", "mi-colsub")
-        .attr("x", TC_R).attr("y", BMT - 8).attr("text-anchor", "end").text("0 to 1");
+        .attr("x", TC_R).attr("y", BMT - 20).attr("text-anchor", "end").text("Tradability (0-1)");
       const row = G.selectAll("g.mi-row").data(rows, d => d.name).join("g").attr("class", "mi-row");
       row.append("text").attr("class", "mi-name")
         .attr("x", BML - 10).attr("y", (d, i) => barY(i) + 4).attr("text-anchor", "end")
-        .text(d => shortName(d.name));
+        .attr("data-full", d => d.label || d.name).text(d => charFit(d.label || d.name));
       row.append("text").attr("class", "mi-val")
         .attr("x", d => barScale(d.employ) + 8).attr("y", (d, i) => barY(i) + 4)
         .text(d => fmtJobs(d.employ));
@@ -3742,6 +3782,8 @@
       /* which cell labels stand down is decided by where the sector names
          land, so the names have to be placed before the labels are written */
       if (i === 7 || i === 4) drawSectorLabels(i); else hideLab = new Set();
+      /* the names can only be measured once the figure is on screen */
+      refitNames();
       if (i === 3 || i === 6 || barsOn){
         (dur ? labs.transition().duration(dur / 3) : labs).style("opacity", 0);
       } else {
