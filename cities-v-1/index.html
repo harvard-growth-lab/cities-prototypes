@@ -2645,7 +2645,17 @@
   /* the jobs bars sit beside the ranking's own bars, so they stay quieter
      than the teal — but dark enough to read as a bar at 4px */
   #miTreemapSvg .mi-jobsbar{fill:#7c848c;}
-  #miTreemapSvg .mi-colhead{font-size:14px;font-weight:600;fill:var(--ink);}
+  /* The axis title and the two column heads are one thing - the labels of the
+     three columns - so they share one declaration rather than three that drift.
+     12.5 sits just under the row names' 13, and the muted fill keeps the
+     furniture behind the data: at 14 in ink the heads were larger and darker
+     than the names they head. */
+  #miTreemapSvg .mi-axname,
+  #miTreemapSvg .mi-colhead,
+  .mi-figure svg .mi-axname,
+  .mi-figure svg .mi-colhead{
+    font-size:12.5px;font-weight:600;fill:var(--ink-soft);letter-spacing:0;
+  }
   .mi-view .mi-colorlab{margin-left:14px;}
   /* the naming study belongs to the two beats that draw blocks */
   #miFigure:not([data-step="7"]):not([data-step="4"]) #miNames,
@@ -2899,7 +2909,7 @@
   .mi-figure svg .mi-grid{stroke:#e9e9eb;stroke-width:1;}
   .mi-figure svg .mi-grid.is-base{stroke:#8e9196;stroke-dasharray:3 3;}
   .mi-figure svg .mi-ticklab{font-size:11px;font-weight:500;fill:#9aa3a6;}
-  .mi-figure svg .mi-axname{font-size:12px;font-weight:600;fill:var(--ink-soft);}
+
   .mi-figure svg .mi-name{font-size:13px;fill:var(--ink);}
   .mi-figure svg .mi-name.is-top{font-weight:700;}
   .mi-figure svg .mi-val{font-size:12.5px;font-weight:600;fill:var(--ink);}
@@ -3749,7 +3759,10 @@
     .mi-figure{--mi-lab:13px;}
     .mi-figure svg .mi-lab{font-size:var(--mi-lab);}
     .mi-figure svg .mi-ticklab{font-size:13px;}
-    .mi-figure svg .mi-axname{font-size:13.5px;}
+    #miTreemapSvg .mi-axname,
+    #miTreemapSvg .mi-colhead,
+    .mi-figure svg .mi-axname,
+    .mi-figure svg .mi-colhead{font-size:14px;}
     .mi-figure svg .mi-name{font-size:16px;}
     .mi-figure svg .mi-val{font-size:15.5px;}
     .mi-figure svg .mi-badge{font-size:13.5px;}
@@ -3759,7 +3772,7 @@
     .mi-figure svg .mi-share-pct{font-size:15px;}
     #miTreemapSvg .mi-jobs{font-size:16px;}
     #miTreemapSvg .mi-trad{font-size:16px;}
-    #miTreemapSvg .mi-colhead{font-size:16.5px;}
+
     #miTreemapSvg .mi-colsub{font-size:12.5px;}
     #amDotsSvg .ad-ringlab{font-size:15px;}
     #amDotsSvg .ad-rownum{font-size:17.5px;}
@@ -3942,7 +3955,10 @@
     .mi-figure{--mi-lab:20px;}
     .mi-figure svg .mi-lab{font-size:var(--mi-lab);}
     .mi-figure svg .mi-ticklab{font-size:15px;}
-    .mi-figure svg .mi-axname{font-size:14px;}
+    #miTreemapSvg .mi-axname,
+    #miTreemapSvg .mi-colhead,
+    .mi-figure svg .mi-axname,
+    .mi-figure svg .mi-colhead{font-size:15px;}
     .mi-figure svg .mi-name{font-size:18px;}
     .mi-figure svg .mi-val{font-size:16px;}
     .mi-figure svg .mi-badge{font-size:14px;}
@@ -3952,7 +3968,7 @@
     .mi-figure svg .mi-share-pct{font-size:16px;}
     #miTreemapSvg .mi-jobs{font-size:19px;}
     #miTreemapSvg .mi-trad{font-size:19px;}
-    #miTreemapSvg .mi-colhead{font-size:17.5px;}
+
     #miTreemapSvg .mi-colsub{font-size:13px;}
     #amDotsSvg .ad-ringlab{font-size:18px;}
     #amDotsSvg .ad-rownum{font-size:19px;}

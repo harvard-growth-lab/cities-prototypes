@@ -3176,6 +3176,11 @@
     window[ctlName + "_CLUSTERS"] = { share: clusterShare, gap: CGAP, width: MI_W };
 
     const ML = 292, MT = 62, RH = 34, BAR_H = 17, PLOT_R = 712;
+    /* the three heads share a baseline, and the rules sit under them - the tick
+       row keeps its own line below, so the labels of the columns and the
+       readings of the scale never sit on the same line */
+    const HEAD_Y = MT - 46, HEAD_RULE_Y = MT - 36;
+
     /* Trimming by character count let the widest names run past the left edge
        of the frame - "Sporting Goods Hobby and Musical Inst..." reached -17.6
        of an 880-unit box and was cut by it. The gutter is fixed in user units
@@ -3565,10 +3570,10 @@
           .attr("x", d => R.xg(d)).attr("y", MT - 24).attr("text-anchor", "middle")
           .text(d => (d > 0 ? "+" : "") + d + "\u00d7"));
       AG.append("text").attr("class", "mi-axname")
-        .attr("x", ML + 12).attr("y", MT - 42)
-        .text("Concentration against the four peers\u2019 average: ahead to the right, behind to the left");
+        .attr("x", ML + 12).attr("y", HEAD_Y)
+        .text("Against the peer average");
       AG.append("text").attr("class", "mi-colhead")
-        .attr("x", MI_W - 6).attr("y", MT - 24).attr("text-anchor", "end").text("Jobs");
+        .attr("x", MI_W - 6).attr("y", HEAD_Y).attr("text-anchor", "end").text("Jobs");
       tradHead(AG);
       headRules(AG, ML + 12, PLOT_R);
     }
@@ -3577,17 +3582,17 @@
     const JOBS_L = 812, JOBS_R = MI_W - 6;
     function tradHead(A){
       A.append("text").attr("class", "mi-colhead")
-        .attr("x", TC_R).attr("y", MT - 24).attr("text-anchor", "end").text("Tradability (0-1)");
+        .attr("x", TC_R).attr("y", HEAD_Y).attr("text-anchor", "end").text("Tradability (0-1)");
     }
     function headRules(A, plotL, plotR){
-      const y = MT - 14;
+      const y = HEAD_RULE_Y;
       [[plotL, plotR], [TC_R - TC_W - 8, TC_R], [JOBS_L, JOBS_R]].forEach(seg => {
         A.append("line").attr("class", "mi-headrule")
           .attr("x1", seg[0]).attr("x2", seg[1]).attr("y1", y).attr("y2", y);
       });
       [TC_R - TC_W - 22, JOBS_L - 14].forEach(x => {
         A.append("line").attr("class", "mi-headsep")
-          .attr("x1", x).attr("x2", x).attr("y1", MT - 36).attr("y2", y);
+          .attr("x1", x).attr("x2", x).attr("y1", HEAD_Y - 11).attr("y2", y);
       });
     }
     function drawRanking(R, A, G){
@@ -3600,11 +3605,11 @@
           .attr("x", d => R.xr(d)).attr("y", MT - 24).attr("text-anchor", "middle")
           .text(d => d + "\u00d7"));
       A.append("text").attr("class", "mi-axname")
-        .attr("x", ML + 12).attr("y", MT - 42)
-        .text("Times more concentrated than the US metro average");
+        .attr("x", ML + 12).attr("y", HEAD_Y)
+        .text("Times more concentrated");
       /* the jobs column: its head, and each row's count at the right edge */
       A.append("text").attr("class", "mi-colhead")
-        .attr("x", MI_W - 6).attr("y", MT - 24).attr("text-anchor", "end").text("Jobs");
+        .attr("x", MI_W - 6).attr("y", HEAD_Y).attr("text-anchor", "end").text("Jobs");
       tradHead(A);
       headRules(A, ML + 12, PLOT_R);
       /* the leading three by concentration, braced only while that is the order */
@@ -3707,11 +3712,12 @@
           .text(d => fmtJobs(d)));
       G.append("text").attr("class", "mi-axname")
         .attr("x", BML + 12).attr("y", BMT - 36).text("Jobs in the metro");
+      /* same line as the axis title, as on the ranking */
       /* the same column the ranking carries, at this view's tighter row: the
          track lies beside the score rather than under it, because 18 units of
          row will not hold a line of type and a rule stacked */
       G.append("text").attr("class", "mi-colhead")
-        .attr("x", TC_R).attr("y", BMT - 20).attr("text-anchor", "end").text("Tradability (0-1)");
+        .attr("x", TC_R).attr("y", BMT - 36).attr("text-anchor", "end").text("Tradability (0-1)");
       const row = G.selectAll("g.mi-row").data(rows, d => d.name).join("g").attr("class", "mi-row");
       row.append("text").attr("class", "mi-name")
         .attr("x", BML - 10).attr("y", (d, i) => barY(i) + 4).attr("text-anchor", "end")
