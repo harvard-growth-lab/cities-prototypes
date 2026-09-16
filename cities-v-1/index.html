@@ -9593,24 +9593,10 @@
     return k >= 0 ? built.steps[k] : null;
   };
 
-  /* the toggle, in the secnav, shown only on Economic Fundamentals */
-  var optWrap = document.createElement("div");
-  optWrap.className = "ct-optwrap";
-  optWrap.innerHTML =
-    '<div class="jp-opt" id="ovLayoutSeg" role="group" aria-label="Page layout">' +
-    '<button type="button" class="jp-opt-btn is-active" data-ov="1" aria-pressed="true">opt-1</button>' +
-    '<button type="button" class="jp-opt-btn" data-ov="2" aria-pressed="false">opt-2</button></div>';
-  var secBarEl = document.querySelector(".secbar") || document.getElementById("secnav");
-  if (secBarEl) secBarEl.appendChild(optWrap);
-  var ovBtn = [].slice.call(document.querySelectorAll(".secnav-btn"))
-    .find(function(b){ return /Economic/.test(b.textContent || ""); });
-  function syncWrap(){
-    optWrap.style.display = ovBtn && ovBtn.classList.contains("is-active") ? "" : "none";
-  }
-  if (ovBtn) new MutationObserver(syncWrap)
-    .observe(ovBtn, { attributes: true, attributeFilter: ["class"] });
-  syncWrap();
-
+  /* The layout study is over: this section ships the split layout it opens
+     on, so there is no toggle in the section bar any more. ovSetLayout is
+     left in place - it is how the other layout can still be reached from the
+     console if the question is ever reopened - but nothing calls it now. */
   window.ovSetLayout = function(v){
     if (v === ovLayout) return;
     ovLayout = v;
@@ -9622,9 +9608,6 @@
     });
     pagesEl.dispatchEvent(new Event("scroll"));
   };
-  document.querySelectorAll("#ovLayoutSeg .jp-opt-btn").forEach(function(b){
-    b.addEventListener("click", function(){ window.ovSetLayout(b.dataset.ov); });
-  });
   /* This section opens on the split layout: the map holds its own column
      beside the reading, which is the composition the beats were written for.
      ovLayout already starts at "1", so there is no layout to switch — but
