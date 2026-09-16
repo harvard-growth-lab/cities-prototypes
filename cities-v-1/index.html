@@ -2729,8 +2729,22 @@
   .mcl-line{flex:1 1 auto;height:2px;border-radius:1px;background:var(--teal);opacity:.35;}
   /* opt-1 drops the rule between the two directions: the words hold the two
      ends of the chart on their own */
-  .mi-cluster-head .mcl-line{display:none;}
   .mi-cluster-head .mcl-axis{justify-content:space-between;}
+  /* the scale as one line with a head at each end, since the point of this
+     beat is the direction the three bands run in */
+  .mcl-axis--arrow .mcl-line{
+    display:block;position:relative;flex:1 1 auto;height:1.5px;
+    background:var(--ink);opacity:1;border-radius:0;margin:0 16px;
+  }
+  .mcl-axis--arrow .mcl-line::before,
+  .mcl-axis--arrow .mcl-line::after{
+    content:"";position:absolute;top:50%;width:0;height:0;
+    border-top:5px solid transparent;border-bottom:5px solid transparent;
+    transform:translateY(-50%);
+  }
+  .mcl-axis--arrow .mcl-line::before{left:-1px;border-right:9px solid var(--ink);}
+  .mcl-axis--arrow .mcl-line::after{right:-1px;border-left:9px solid var(--ink);}
+  .mcl-axis--arrow .mcl-dir{font-size:13px;font-weight:700;color:var(--ink);}
   /* the score's two ends, named at the ends of the direction words */
   .mcl-end{color:var(--ink);}
   .mcl-cols{display:flex;gap:8px;}
@@ -2875,6 +2889,11 @@
   /* the rule over each tier's stretch of the tradability column, dimmed when
      that tier is filtered out */
   #miTreemapSvg .mi-tierrule{stroke:#9aa3a6;stroke-width:2;stroke-linecap:round;}
+  /* the three grounds, and the header each one carries */
+  #miTreemapSvg .mi-card{fill:#eff0f0;}
+  #miTreemapSvg .mi-card-pct{font-size:18px;font-weight:700;fill:var(--ink);}
+  #miTreemapSvg .mi-card-lab{font-size:12px;font-weight:500;fill:var(--ink-soft);}
+  #miTreemapSvg .mi-cards{pointer-events:none;}
   #miFigure[data-step="7"] #miSectorKey .sk-no-trad{display:none;}
   /* the prose points at the chart: a phrase naming a sector stands the rest
      of the mix down, so the sentence and the picture say the same thing at
@@ -5360,15 +5379,10 @@
             <div class="mi-cluster-head" id="miClusterHead">
               <!-- the axis is the header's point: one line across the width,
                    more tradable to the left, less to the right -->
-              <div class="mcl-axis">
-                <span class="mcl-dir"><span class="mcl-end">1</span> &larr; more tradable</span>
+              <div class="mcl-axis mcl-axis--arrow">
+                <span class="mcl-dir">More tradable</span>
                 <span class="mcl-line"></span>
-                <span class="mcl-dir">less tradable &rarr; <span class="mcl-end">0</span></span>
-              </div>
-              <div class="mcl-cols">
-                <div class="mcl-col mcl-col--hi"><span class="mcl-lab">Sells outside the metro <span class="pct"></span></span></div>
-                <div class="mcl-col mcl-col--mid"><span class="mcl-lab">Some of both <span class="pct"></span></span></div>
-                <div class="mcl-col mcl-col--lo"><span class="mcl-lab">Serves the metro <span class="pct"></span></span></div>
+                <span class="mcl-dir">Less tradable</span>
               </div>
             </div>
             <!-- the header of opt-2's opening frame: the most tradable alone,

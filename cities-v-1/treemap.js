@@ -3035,8 +3035,8 @@
     const MUTED = "#a9c2c7";
     const ORANGE = token("--orange", "#e76565");
 
-    const box = (n, dx) => ({ x: n.x0 + (dx || 0), y: n.y0,
-                              w: Math.max(0, n.x1 - n.x0), h: Math.max(0, n.y1 - n.y0) });
+    const box = (n, dx, dy) => ({ x: n.x0 + (dx || 0), y: n.y0 + (dy || 0),
+                                  w: Math.max(0, n.x1 - n.x0), h: Math.max(0, n.y1 - n.y0) });
     /* the reference build separates sectors by 8px and cells by 1, with no
        stroke on the cells — so the clustering reads as grouping rather than
        as a grid. paddingOuter is half the sector gutter, since two
@@ -3105,19 +3105,28 @@
        so is part of the beat's point */
     const secClusterA = new Map(), secClusterB = new Map();
     const posClusterA = new Map(), posClusterB = new Map();
+    /* Each band is a card: a ground of its own carrying the share and the name,
+       with the treemap inset inside it. The header moves off the page and into
+       the card, so a column and its label are one object rather than two that
+       have to be kept in step across the HTML/SVG boundary. */
+    const CARD_PAD = 10, CARD_HEAD = 60;
+    const CARD_Y = CARD_HEAD, CARD_H = MI_H - CARD_HEAD - CARD_PAD;
+    const cardBox = [];
     {
       let x0 = 0;
       clusterRows.forEach((l, k) => {
         const w = Math.max(36, CW * clusterShare[k]);
+        cardBox.push({ x: x0, w: w, k: k });
+        const iw = Math.max(20, w - CARD_PAD * 2), ix = x0 + CARD_PAD;
         if (l.length){
-          const tA = tmap(l, w, MI_H, true, SEC_STRIP), tB = tmap(l, w, MI_H, true);
-          tA.leaves().forEach(n => posClusterA.set(n.data.name, box(n, x0)));
-          tB.leaves().forEach(n => posClusterB.set(n.data.name, box(n, x0)));
+          const tA = tmap(l, iw, CARD_H, true, SEC_STRIP), tB = tmap(l, iw, CARD_H, true);
+          tA.leaves().forEach(n => posClusterA.set(n.data.name, box(n, ix, CARD_Y)));
+          tB.leaves().forEach(n => posClusterB.set(n.data.name, box(n, ix, CARD_Y)));
           tA.children.forEach(c =>
-            secClusterA.set(k + "|" + c.data.name, { name: c.data.name, b: box(c, x0) }));
+            secClusterA.set(k + "|" + c.data.name, { name: c.data.name, b: box(c, ix, CARD_Y) }));
           tB.children.forEach(c =>
-            secClusterB.set(k + "|" + c.data.name, { name: c.data.name, b: box(c, x0) }));
-          tB.leaves().forEach(n => posCluster.set(n.data.name, box(n, x0)));
+            secClusterB.set(k + "|" + c.data.name, { name: c.data.name, b: box(c, ix, CARD_Y) }));
+          tB.leaves().forEach(n => posCluster.set(n.data.name, box(n, ix, CARD_Y)));
           /* the same column in plain size order, for the Ordered view */
           const off = x0;
           stripLayout(l, w, MI_H).forEach((b, name) =>
@@ -3372,6 +3381,21 @@
     /* the row highlight lives below the cells: above them it would paint
        over the bars, and any translucency would shift the sector colour the
        bar is encoding */
+    /* behind every other layer: the three grounds and their headers */
+    const gCards = svg.append("g").attr("class", "mi-cards").style("opacity", 0);
+    {
+      const NAMES = ["Sells outside the metro", "Some of both", "Serves the metro"];
+      cardBox.forEach(c => {
+        const g = gCards.append("g");
+        g.append("rect").attr("class", "mi-card")
+          .attr("x", c.x).attr("y", 0).attr("width", c.w).attr("height", MI_H).attr("rx", 8);
+        g.append("text").attr("class", "mi-card-pct")
+          .attr("x", c.x + CARD_PAD + 2).attr("y", 30)
+          .text(Math.round(clusterShare[c.k] * 100) + "% of jobs");
+        g.append("text").attr("class", "mi-card-lab")
+          .attr("x", c.x + CARD_PAD + 2).attr("y", 48).text(NAMES[c.k]);
+      });
+    }
     const gHi = svg.append("g").attr("class", "mi-hilite-layer");
     const hiRect = gHi.append("rect").attr("class", "mi-hilite")
       .attr("x", 0).attr("width", MI_W).attr("height", RH).style("opacity", 0);
@@ -3824,6 +3848,7 @@
          sector's any more, so the labels would be naming the wrong thing */
       /* both map beats name their blocks; the sets differ, so redraw on
          arrival rather than once */
+      show(gCards, i === 4 && view === "map");
       show(gSecLab, (i === 7 || i === 4) && view === "map" &&
         colorBy === "sector" && nameMode !== "off");
       /* on the reveal section the opening beat rests on the admin bands: the
@@ -3963,7 +3988,10 @@
     (function clusterFurniture(){
       const head = document.getElementById(p + "ClusterHead");
       const pct = v => Math.round(v * 100) + "%";
-      const colsEl = head && (head.querySelector(".mcl-cols") || head);
+      /* the cluster header's columns moved into the cards, so this is null on
+         that beat now - it must not fall back to the head itself, or the
+         arrow row gets sized as if it were the three columns */
+      const colsEl = head && head.querySelector(".mcl-cols");
       if (colsEl) [].forEach.call(colsEl.children, (c, k) => {
         const pc = c.querySelector(".pct"); if (pc) pc.textContent = "(" + pct(clusterShare[k]) + ")";
       });
@@ -3976,8 +4004,12 @@
          little wider, and a share of that width would drift the names right */
       function sizeClusterHead(){
         if (!head || !colsEl) return;
+        /* only the columns need measuring against the chart. The head itself
+           must NOT be given a measured width: this runs while the page is
+           still hidden, where the chart measures 0 and the fallback pinned the
+           row at 880px against a 620px figure, so the arrow ran off the panel
+           and took "Less tradable" with it. */
         const w = el.getBoundingClientRect().width || MI_W, sc = w / MI_W;
-        head.style.width = w + "px";
         colsEl.style.gap = (CGAP * sc) + "px";
         [].forEach.call(colsEl.children, (c, k) => {
           c.style.flexBasis = (Math.max(36, CW * clusterShare[k]) * sc) + "px";
