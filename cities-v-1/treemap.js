@@ -3339,6 +3339,8 @@
     const gHi = svg.append("g").attr("class", "mi-hilite-layer");
     const hiRect = gHi.append("rect").attr("class", "mi-hilite")
       .attr("x", 0).attr("width", MI_W).attr("height", RH).style("opacity", 0);
+    /* the bands a named phrase lights, in the same layer for the same reason */
+    const gLit = gHi.append("g").attr("class", "mi-litrows");
     const gCells = svg.append("g").attr("class", "mi-cells");
     const gRows  = svg.append("g").attr("class", "mi-rows").style("opacity", 0);
     const gRows2 = svg.append("g").attr("class", "mi-rows").style("opacity", 0);
@@ -4099,27 +4101,37 @@
       const hlRows = () => [R1, R2].filter(R => R && R.row);
       const clearHl = () => {
         cell.classed("is-dim", false);
-        hlRows().forEach(R => R.row.classed("is-dim", false));
+        hlRows().forEach(R => R.row.classed("is-lit", false));
+        gLit.selectAll("rect").remove();
         hlSpans.forEach(x => x.classList.remove("is-lit"));
       };
       const hlStep = span => span.dataset.on || "7";
+      /* the band behind a lit row has to be drawn under the cells, since the
+         ranking's rows paint over them - the same reason the hover band lives
+         in this layer */
+      const litBands = (R, keep) => {
+        const ys = [];
+        R.row.each(function(d){
+          if (!keep.has(d.name)) return;
+          const m = /translate\(0,\s*([-\d.]+)\)/.exec(this.getAttribute("transform") || "");
+          if (m) ys.push(+m[1]);
+        });
+        gLit.selectAll("rect").data(ys).join("rect")
+          .attr("x", 0).attr("width", MI_W).attr("height", RH).attr("y", y => y - RH / 2);
+      };
       const litHl = span => {
         const ds = span.dataset;
-        let keep = null;
         if (ds.sector){
+          /* the map stands the rest of the mix down: there are no rows to light
+             and a treemap has no other way to point */
           const want = ds.sector.split("|");
           cell.classed("is-dim", d => want.indexOf(d.sector) < 0);
-        } else if (ds.cluster){
-          const k = +ds.cluster;
-          keep = new Set((clusterRows[k] || []).map(r => r.name));
-          cell.classed("is-dim", d => !keep.has(d.name));
         } else if (ds.ind){
-          keep = new Set(ds.ind.split("|"));
-          cell.classed("is-dim", d => !keep.has(d.name));
+          /* the ranking lights what is named instead, and leaves the rest alone */
+          const keep = new Set(ds.ind.split("|"));
+          const R = hlStep(span) === "3" ? R1 : R2;
+          if (R && R.row){ litBands(R, keep); R.row.classed("is-lit", d => keep.has(d.name)); }
         }
-        /* the ranking carries its names outside the bars, so the rows have to
-           stand down with the cells or the dimming says nothing */
-        if (keep) hlRows().forEach(R => R.row.classed("is-dim", d => !keep.has(d.name)));
         span.classList.add("is-lit");
       };
       hlSpans.forEach(span => {

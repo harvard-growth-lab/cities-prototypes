@@ -2842,10 +2842,15 @@
   .mi-hl:focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:2px;}
   #miTreemapSvg .mi-cell{transition:opacity .18s ease;}
   #miTreemapSvg .mi-cell.is-dim{opacity:.13;}
-  /* the ranking keeps its names outside the bars, so a row has to stand down
-     with its cell or the dimming only half happens */
-  #miTreemapSvg .mi-row{transition:opacity .18s ease;}
-  #miTreemapSvg .mi-row.is-dim{opacity:.2;}
+  /* The ranking follows the redesign's method rather than the map's: instead of
+     standing every other row down, the named row is lit. A soft band behind it,
+     its name at full strength, its figure in teal - additive, so nothing the
+     reader was already looking at gets taken away. */
+  #miTreemapSvg .mi-litrows rect{fill:var(--teal-tint);pointer-events:none;}
+  #miTreemapSvg .mi-row .mi-name,
+  #miTreemapSvg .mi-row .mi-val{transition:fill .15s ease;}
+  #miTreemapSvg .mi-row.is-lit .mi-name{font-weight:700;fill:var(--ink);}
+  #miTreemapSvg .mi-row.is-lit .mi-val{fill:var(--teal);}
   @media (prefers-reduced-motion: reduce){ #miTreemapSvg .mi-cell{transition:none;} }
   .mi-figure .complexity-legend{display:flex;margin:0;}
   .mi-figure{--mi-lab:11px;}
@@ -5303,12 +5308,9 @@
           </div>
           
           <div class="lede-stat-row">
-            <p class="lede">Most of the metro&rsquo;s work does not sell outward. <span class="mi-hl"
-              data-on="4" data-cluster="2" tabindex="0">Serving the people already here</span> &mdash; restaurants,
-              schools, hospitals &mdash; is 31% of jobs, and <span class="mi-hl" data-on="4" data-cluster="1"
-              tabindex="0">another quarter</span> does some of both. Only <span class="mi-hl" data-on="4"
-              data-cluster="0" tabindex="0">44% sells outside the metro</span>, and that is the part bringing new
-              income in.</p>
+            <p class="lede">Most of the metro&rsquo;s work does not sell outward. Serving the people already here
+              &mdash; restaurants, schools, hospitals &mdash; is 31% of jobs, and another quarter does some of both.
+              Only 44% sells outside the metro, and that is the part bringing new income in.</p>
             <!-- the score, drawn: 1 to 0 as the map reads, each band as wide as
                  its stretch of the score, with the metro's own examples -->
             <div class="tscale" id="miTradScale" hidden></div>
