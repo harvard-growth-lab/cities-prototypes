@@ -3188,8 +3188,10 @@
     const ML = 292, MT = 62, RH = 34, BAR_H = 17, PLOT_R = 712;
     /* the three heads share a baseline, and the rules sit under them - the tick
        row keeps its own line below, so the labels of the columns and the
-       readings of the scale never sit on the same line */
-    const HEAD_Y = MT - 46, HEAD_RULE_Y = MT - 36;
+       readings of the scale never sit on the same line. The tick row sits
+       midway between the rule and the first row, 14 clear of each, and the
+       grid starts under it. */
+    const HEAD_Y = MT - 46, HEAD_RULE_Y = MT - 36, TICK_Y = MT - 14, GRID_TOP = MT - 8;
 
     /* Trimming by character count let the widest names run past the left edge
        of the frame - "Sporting Goods Hobby and Musical Inst..." reached -17.6
@@ -3369,10 +3371,10 @@
       3: d => d.rank < 0
         ? { box: posSplit.get(d.name) || posFull.get(d.name), fill: GREY, op: 0, rx: 0 }
         : sortKey === "gap"
-          ? { box: gapBox(R1, d.row, R1.pos.get(d.name)), fill: gapOf(d.row) >= 0 ? TEAL : ORANGE, op: 1, rx: 3 }
+          ? { box: gapBox(R1, d.row, R1.pos.get(d.name)), fill: gapOf(d.row) >= 0 ? TEAL : ORANGE, op: 1, rx: 0 }
           : { box: { x: xr(1), y: rowY(R1.pos.get(d.name)) - BAR_H / 2,
                      w: Math.max(2, xr(d.row.rca) - xr(1)), h: BAR_H },
-              fill: d.rank < 3 ? TEAL : MUTED, op: 1, rx: 3 },
+              fill: d.rank < 3 ? TEAL : MUTED, op: 1, rx: 0 },
       /* the three clusters by tradability, the most tradable on the left */
       4: d => view === "alt"
         ? asBars(d, barRankAll, clusterFill(d), clusterSpot(d))
@@ -3400,10 +3402,10 @@
         ? { box: clusterSpot(d), fill: fillBy(d), op: 0, rx: 0 }
         : sortKey === "gap"
           ? { box: gapBox(R2, d.row2, R2.pos.get(d.name)), fill: gapOf(d.row2) >= 0 ? TEAL : ORANGE,
-              op: 1, rx: 3, delay: arriving ? 300 : 0 }
+              op: 1, rx: 0, delay: arriving ? 300 : 0 }
           : { box: { x: R2.xr(1), y: rowY(R2.pos.get(d.name)) - BAR_H / 2,
                      w: Math.max(2, R2.xr(d.row2.rca) - R2.xr(1)), h: BAR_H },
-              fill: d.rank2 < 3 ? TEAL : MUTED, op: 1, rx: 3, delay: arriving ? 300 : 0 }
+              fill: d.rank2 < 3 ? TEAL : MUTED, op: 1, rx: 0, delay: arriving ? 300 : 0 }
     };
 
     /* ---- the marks ---- */
@@ -3623,9 +3625,9 @@
       AG.selectAll("g.mi-tick").data(ticks).join("g").attr("class", "mi-tick")
         .call(g => g.append("line").attr("class", d => "mi-grid" + (d === 0 ? " is-base" : ""))
           .attr("x1", d => R.xg(d)).attr("x2", d => R.xg(d))
-          .attr("y1", MT - 18).attr("y2", MT + R.ranked.length * RH))
+          .attr("y1", GRID_TOP).attr("y2", MT + R.ranked.length * RH))
         .call(g => g.append("text").attr("class", "mi-ticklab")
-          .attr("x", d => R.xg(d)).attr("y", MT - 24).attr("text-anchor", "middle")
+          .attr("x", d => R.xg(d)).attr("y", TICK_Y).attr("text-anchor", "middle")
           .text(d => (d > 0 ? "+" : "") + d + "\u00d7"));
       AG.append("text").attr("class", "mi-axname")
         .attr("x", ML + 12).attr("y", HEAD_Y)
@@ -3663,18 +3665,15 @@
     }
     function headRules(A, plotL, plotEnd, tier){
       const y = HEAD_RULE_Y;
-      /* the tradability column is 56 wide under a score and 80 under a word,
-         so its rule and the separator before it follow the mode; 712 clears
+      /* one rule under each column, and nothing between them: the breaks in
+         the rule are the separators. The tradability column is 56 wide under
+         a score and 80 under a word, so its rule follows the mode; 712 clears
          the widest word by 4 and the head by 8, as the jobs rule clears its
-         column, and the separator keeps its 14 ahead of the rule */
+         column */
       const tradL = tier ? 712 : TC_R - TC_W - 8;
       [[plotL, plotEnd], [tradL, TC_R], [JOBS_L, JOBS_R]].forEach(seg => {
         A.append("line").attr("class", "mi-headrule")
           .attr("x1", seg[0]).attr("x2", seg[1]).attr("y1", y).attr("y2", y);
-      });
-      [tradL - 14, JOBS_L - 14].forEach(x => {
-        A.append("line").attr("class", "mi-headsep")
-          .attr("x1", x).attr("x2", x).attr("y1", HEAD_Y - 11).attr("y2", y);
       });
     }
     function drawRanking(R, A, G){
@@ -3686,9 +3685,9 @@
         .attr("class", "mi-tick")
         .call(g => g.append("line").attr("class", d => "mi-grid" + (d === 1 ? " is-base" : ""))
           .attr("x1", d => R.xr(d)).attr("x2", d => R.xr(d))
-          .attr("y1", MT - 18).attr("y2", MT + R.ranked.length * RH))
+          .attr("y1", GRID_TOP).attr("y2", MT + R.ranked.length * RH))
         .call(g => g.append("text").attr("class", "mi-ticklab")
-          .attr("x", d => R.xr(d)).attr("y", MT - 24).attr("text-anchor", "middle")
+          .attr("x", d => R.xr(d)).attr("y", TICK_Y).attr("text-anchor", "middle")
           .text(d => d + "\u00d7"));
       A.append("text").attr("class", "mi-axname")
         .attr("x", ML + 12).attr("y", HEAD_Y)
@@ -3735,7 +3734,7 @@
         .text(d => d.employ >= 1000 ? Math.round(d.employ / 1000) + "K" : Math.round(d.employ));
       row.append("rect").attr("class", "mi-jobsbar")
         .attr("x", d => MI_W - 6 - Math.max(4, jb(d.employ))).attr("y", tierMode ? 7 : 5)
-        .attr("width", d => Math.max(4, jb(d.employ))).attr("height", 4).attr("rx", 2);
+        .attr("width", d => Math.max(4, jb(d.employ))).attr("height", 4).attr("rx", 0);
       /* the tradability column, built the way the jobs column is: the score,
          and a short track beneath it from 0 to 1, filled as far as the score
          reaches, with a tick at 0.5 where the most tradable cluster begins */

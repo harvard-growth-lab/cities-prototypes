@@ -2712,10 +2712,10 @@
   .spec-key .sk-tradnotch{position:relative;width:24px;height:4px;border-radius:2px;background:#8d949d;margin-bottom:5px;}
   .spec-key .sk-tradnotch::after{content:"";position:absolute;left:11.5px;top:5px;width:1px;height:4px;background:#72767b;}
   #miTreemapSvg .mi-colsub{font-size:10.5px;fill:#8e9196;}
-  /* the head reads as a table head: a rule under each column, a separator
-     between them */
-  #miTreemapSvg .mi-headrule{stroke:#cfd6d9;stroke-width:1;}
-  #miTreemapSvg .mi-headsep{stroke:#e2e7e8;stroke-width:1;}
+  /* the head reads as a table head: a rule under each column, with the
+     breaks between the rules as the only separators. Dark enough to hold
+     the head together at a hairline, lighter than the tick labels. */
+  #miTreemapSvg .mi-headrule{stroke:#b3bcbf;stroke-width:1;}
   /* on that beat the head holds two rows: the controls above, the clusters'
      header below */
   /* the names close onto the chart: the slot takes over the chart's own top
@@ -2882,7 +2882,10 @@
   /* The filter lives on the column head it filters, so the chart says what can
      be narrowed rather than a control beside it. The head is the button; the
      menu opens under it. */
-  #miTreemapSvg .mi-tradmenu{cursor:pointer;pointer-events:auto;}
+  /* the pointer follows the layer: a faded layer hands it back, and the head
+     must not take it again, or the bar chart's hidden head, drawn over the
+     ranking's, would catch the ranking's clicks and open with its own words */
+  #miTreemapSvg .mi-tradmenu{cursor:pointer;}
   #miTreemapSvg .mi-tradmenu-hit{fill:transparent;}
   #miTreemapSvg .mi-tradmenu-caret{stroke:var(--ink-soft);stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round;}
   #miTreemapSvg .mi-tradmenu:hover .mi-colhead,
