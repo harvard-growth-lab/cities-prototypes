@@ -5013,8 +5013,8 @@
                   <button data-result="wrong"><span class="opt-letter">D</span>Building contractors</button>
                 </div>
                 <p class="intro-fb"
-                   data-correct="Hospitals — 126,000 jobs treating patients who arrive from everywhere, which makes them exporters. Restaurants employ more people (175,000), but they mostly serve the neighbors: they circulate oxygen, they don’t earn it."
-                   data-wrong="Hospitals — 126,000 jobs treating patients who arrive from everywhere, which makes them exporters. Restaurants employ more people (175,000), but they mostly serve the neighbors: they circulate oxygen, they don’t earn it."></p>
+                   data-correct="Hospitals — 126,000 jobs treating patients who arrive from everywhere, which makes them tradable. Restaurants employ more people (175,000), but they mostly serve the neighbors: they circulate oxygen, they don’t earn it."
+                   data-wrong="Hospitals — 126,000 jobs treating patients who arrive from everywhere, which makes them tradable. Restaurants employ more people (175,000), but they mostly serve the neighbors: they circulate oxygen, they don’t earn it."></p>
               </div>
             </div>
 
@@ -5705,7 +5705,7 @@
                     <div class="am-tile"><div class="v" id="amTJobs"></div><div class="l"><span class="am-sw am-sw--jobs"></span>jobs located in <span class="city-short">Boston</span></div></div>
                     <div class="am-tile"><div class="v" id="amTRes"></div><div class="l"><span class="am-sw am-sw--res"></span>jobs held by residents</div></div>
                     <div class="am-tile"><div class="v" id="amTNet"></div><div class="l" id="amTNetL">net inflow of workers, at least</div></div>
-                    <div class="am-tile"><div class="v" id="amTShare"></div><div class="l">the city&rsquo;s share of the metro&rsquo;s jobs in this sector, against 25% of all metro jobs</div></div>
+                    <div class="am-tile"><div class="v" id="amTShare"></div><div class="l">the city&rsquo;s share of the metro&rsquo;s jobs in this sector, against 30% of all metro jobs</div></div>
                   </div>
                   <div class="am-mini" id="amMini"></div>
                 </div>
@@ -5980,7 +5980,7 @@
             <h3>Your City’s Most Specialized Industries</h3>
           </div>
 
-          <p class="lede" data-rcaview="self">Of the tradable industries above, these are the ones <span class="city-short">Boston</span> does an unusual amount of. Each is measured against the global benchmark: a score of 1.0 means the industry takes up the same share of jobs here as it does worldwide. Anything higher means the city is more concentrated in it than the world is — and the further past 1.0, the more distinctive it is.</p>
+          <p class="lede" data-rcaview="self">Of the tradable industries above, these are the ones <span class="city-short">Boston</span> does an unusual amount of. Each is measured against the national benchmark: a score of 1.0 means the industry takes up the same share of jobs here as it does across the country. Anything higher means the city is more concentrated in it than the country is — and the further past 1.0, the more distinctive it is.</p>
           <p class="lede" data-rcaview="peers">The same measure, now set against four cities of similar size and economic make-up. The tick on each row is the average of those four — where <span class="city-short">Boston</span>’s mark runs past it, the city is more specialized in that industry than its peers; where it falls short, less. Hover any row to see the cities behind the average.</p>
           <p class="lede" data-rcaview="dist">The same measure, now read against <strong>every US metro at once</strong> — the teal dot is where the <span class="city-short">Boston</span> metro lands. Hover any mark for the city and figures behind it.</p>
 
@@ -5999,12 +5999,12 @@
               </svg>
             </button>
             <div class="collapsible-content">
-              <p>Take the share of your city’s jobs that sits in an industry, then divide it by the share of jobs that same industry holds worldwide. Economists call the result <strong>revealed comparative advantage</strong>, or RCA.</p>
-              <p>If an industry is 4% of jobs in your city and 1% of jobs globally, the score is 4.0 — four times more concentrated here than in the world at large. A score of 1.0 means exactly average, and below 1.0 means the industry is thinner here than it is elsewhere.</p>
+              <p>Take the share of your city’s jobs that sits in an industry, then divide it by the share of jobs that same industry holds nationally. Economists call the result <strong>revealed comparative advantage</strong>, or RCA.</p>
+              <p>If an industry is 4% of jobs in your city and 1% of jobs nationally, the score is 4.0 — four times more concentrated here than in the country at large. A score of 1.0 means exactly average, and below 1.0 means the industry is thinner here than it is elsewhere.</p>
               <p>A high score doesn’t automatically mean a big industry — it means a distinctive one. Employment is carried in the row tooltip, and in the dot form by the size of each dot.</p>
               <p data-rcaview="self">Switch to <strong>Compare with peers</strong> above to hold the same scores against four metros in a similar position.</p>
               <div data-rcaview="peers">
-                <p>In this view each peer is scored exactly the same way against the same global benchmark, and the tick on every row is the average of those four. Comparing against the world at large mostly tells you that <span class="city-short">Boston</span> is a large, wealthy city; comparing against metros in the same position tells you something you can act on.</p>
+                <p>In this view each peer is scored exactly the same way against the same national benchmark, and the tick on every row is the average of those four. Comparing against the country at large mostly tells you that <span class="city-short">Boston</span> is a large, wealthy city; comparing against metros in the same position tells you something you can act on.</p>
                 <p>Hover any of the four to see how it stacks up against <span class="city-short">Boston</span>:</p>
                 <div class="peer-city-list" id="peerCityList"></div>
                 <p>Hovering a row in the chart shows each city individually, so you can see whether the average reflects the whole group or is being pulled by one outlier.</p>
@@ -6044,11 +6044,11 @@
           </div>
 
           <div class="rca-wrap" data-rcaview="self">
-            <svg class="viz-big rca-chart" id="rcaChartSvg" width="880" height="488" viewBox="0 0 880 488" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Industries ranked by how concentrated they are in this city compared with the global benchmark"></svg>
+            <svg class="viz-big rca-chart" id="rcaChartSvg" width="880" height="488" viewBox="0 0 880 488" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Industries ranked by how concentrated they are in this city compared with the national benchmark"></svg>
             <div class="rca-tip" id="rcaTip" role="tooltip" hidden>
               <strong>RCA — revealed comparative advantage</strong>
-              <p>An industry’s share of jobs in this city, divided by that industry’s share of jobs worldwide.</p>
-              <p><strong>RCA = 1</strong> means the industry is exactly as concentrated here as it is globally. Above 1 means the city is more concentrated in it than the world is — the further right, the more distinctive.</p>
+              <p>An industry’s share of jobs in this city, divided by that industry’s share of jobs nationally.</p>
+              <p><strong>RCA = 1</strong> means the industry is exactly as concentrated here as it is nationally. Above 1 means the city is more concentrated in it than the country is — the further right, the more distinctive.</p>
             </div>
             <div class="rca-tip row-tip" id="rcaRowTip" role="tooltip" hidden></div>
           </div>
@@ -8129,10 +8129,10 @@
         qs: [
           { q: "Which sector’s metro jobs sit most disproportionately inside Boston proper?",
             opts: [["Manufacturing",0],["Financial Activities",1],["Natural Resources",0]],
-            fb: "Financial Activities — 38% of the metro’s finance jobs are inside the city, against 24% of the metro’s jobs overall." },
+            fb: "Financial Activities — 43% of the metro’s finance jobs are inside the city, against 30% of the metro’s jobs overall." },
           { q: "Roughly what share of all the metro’s jobs sit inside Boston proper?",
-            opts: [["About 24%",1],["About 54%",0],["About 85%",0]],
-            fb: "About 24% — roughly a quarter of the metro’s work happens inside the administrative boundary." },
+            opts: [["About 30%",1],["About 54%",0],["About 85%",0]],
+            fb: "About 30% — close to a third of the metro’s work happens inside the administrative boundary." },
           { q: "Boston is a net … of workers.",
             opts: [["importer — 206 jobs for every 100 its residents hold",1],["exporter — more residents leave than workers arrive",0],["neither — the flows balance",0]],
             fb: "A net importer: 687,736 jobs sit inside Boston against 334,026 held by its residents — 206 for every 100." }
