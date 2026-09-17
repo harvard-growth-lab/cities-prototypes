@@ -824,6 +824,16 @@
   .tool-body .ov-wrap:not(.ov2) .ov-left{
     flex:1 1 auto;min-width:0;width:auto;padding:0;
   }
+  /* The top bar centres its contents in the capped page grid, so past the
+     width where the cap bites (1440) its left edge moves inward while this
+     column stayed pinned at the frame pad: 70 against 40 at 1500, 170
+     against 40 at 1700 - two left edges on one page. The column takes the
+     same expression the bar uses, less the pad its blocks already carry;
+     the percentage is of the wrap, which is as wide as the bar. Below the
+     cap it resolves to nothing. */
+  .tool-body #ovWrap:not(.ov2) .ov-left{
+    padding-left:max(0px, calc((100% - var(--grid-max)) / 2 - var(--frame-pad)));
+  }
   /* the reading column hangs from a page-sized left margin (155px at 1440)
      and runs to a gutter short of the map; the gutter is the only air
      between the two, so text, chart and map read as one composition. On
