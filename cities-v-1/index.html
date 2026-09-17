@@ -774,7 +774,8 @@
      Economic Fundamentals in either layout, and Metro Industries with it. */
   .ct-step .lede,
   #page-overview .lede,
-  #page-overview-msa .lede{
+  #page-overview-msa .lede,
+  #page-overview-places .lede{
     font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
     font-size:var(--t-base);line-height:1.5;font-weight:400;letter-spacing:normal;
     color:#2c2823;
@@ -906,9 +907,23 @@
   .ov-wrap:not(.ov2) .ov-block > .page-head + *{margin-top:16px;}
   /* the metro page's own rules set the explainer and the table with ids,
      which outrank the step above — restated here at the same rank */
-  .ov-wrap:not(.ov2) #page-overview-msa .collapsible-info{margin:18px 0 0;}
+  .ov-wrap:not(.ov2) #page-overview-msa .collapsible-info{margin:28px 0 0;}
   .ov-wrap:not(.ov2) #page-overview-msa .ind-table{margin-top:28px;}
   .ov-wrap:not(.ov2) .ov-block .pg{padding-top:12px;}
+  /* ── the three beats, told apart ──
+     Each beat opened at a different height, because its content was centred
+     in a screen-tall block and the three run to different lengths: 118, 62
+     and 170 under their block tops, with nothing but uneven white between
+     them. They now all open the same way - a hairline across the column,
+     56 of air, the counter, the title - so a new beat reads as a new beat,
+     and its title lands at the same height as the last one did. */
+  @media (min-width:1200px){
+    #ovWrap:not(.ov2) .ov-block{justify-content:flex-start;padding:56px 0 72px;}
+  }
+  #ovWrap:not(.ov2) .ov-block + .ov-block{border-top:1px solid rgba(26,34,38,.22);}
+  /* one gap under every title: the metro page's own 10 set its paragraph
+     tighter than the other two */
+  #ovWrap:not(.ov2) .ov-block > .page-head + .lede{margin-top:16px;}
   /* a shade over a third to the map: 36% of the viewport, 518px at 1440 */
   /* the map takes a little more so the two sides are not shouting across a
      gap: at 36% the reading capped at its 760 measure and the slack all fell
@@ -2246,32 +2261,48 @@
      the bulb reads as a marginal mark for the whole block rather than an
      inline icon. Everything is the one ink at opacities: word and bulb 78,
      chevron 45, rules 22; no box, no bar, no second colour. */
+  #ovWrap:not(.ov2) .ov-block .collapsible-info,
   :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-info,
+  #ovWrap:not(.ov2) .ov-block .collapsible-info:hover,
   :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-info:hover,
+  #ovWrap:not(.ov2) .ov-block .collapsible-info:has(.collapsible-header.active),
   :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-info:has(.collapsible-header.active){
     align-self:stretch;width:100%;margin:28px 0 0;border:0;border-radius:0;background:none;box-shadow:none;
   }
+  #ovWrap:not(.ov2) .ov-block .collapsible-info.is-off,
   :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-info.is-off{margin:0;}
+  #ovWrap:not(.ov2) .ov-block .collapsible-header,
   :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-header{
     padding:12px 0;gap:9px;color:rgba(26,34,38,.78);font-weight:500;font-size:15px;line-height:20px;
     border:0;border-top:1px solid rgba(26,34,38,.22);border-bottom:1px solid rgba(26,34,38,.22);
   }
+  #ovWrap:not(.ov2) .ov-block .collapsible-header:hover,
   :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-header:hover{color:var(--ink);}
+  #ovWrap:not(.ov2) .ov-block .collapsible-header:hover .ci-title,
   :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-header:hover .ci-title{text-decoration:none;}
+  #ovWrap:not(.ov2) .ov-block .collapsible-header:focus-visible,
   :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-header:focus-visible{outline:2px solid var(--ink);outline-offset:4px;}
+  #ovWrap:not(.ov2) .ov-block .ci-title,
   :is(#page-export-basket, #page-admin-mix) .ct-step .ci-title{flex:1 1 auto;}
+  #ovWrap:not(.ov2) .ov-block .ci-mark,
   :is(#page-export-basket, #page-admin-mix) .ct-step .ci-mark{color:inherit;}
+  #ovWrap:not(.ov2) .ov-block .ci-mark svg,
   :is(#page-export-basket, #page-admin-mix) .ct-step .ci-mark svg{width:15px;height:15px;stroke-width:1.25;}
+  #ovWrap:not(.ov2) .ov-block .collapsible-icon,
   :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-icon{
     width:12px;height:12px;color:rgba(26,34,38,.45);stroke-width:1.25;transition:transform .16s ease-out,color .12s ease;
   }
+  #ovWrap:not(.ov2) .ov-block .collapsible-header:hover .collapsible-icon,
   :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-header:hover .collapsible-icon{color:rgba(26,34,38,.7);}
+  #ovWrap:not(.ov2) .ov-block .collapsible-content,
   :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-content{
     margin:0;padding:16px 0 0 24px;border:0;
   }
+  #ovWrap:not(.ov2) .ov-block .collapsible-content p,
   :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-content p{
     font-size:15px;line-height:22px;color:rgba(26,34,38,.78);margin:0 0 10px;
   }
+  #ovWrap:not(.ov2) .ov-block .collapsible-content p.ci-foot,
   :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-content p.ci-foot{
     font-size:13px;line-height:1.5;color:var(--ink-soft);margin:8px 0 0;
   }
@@ -2514,6 +2545,8 @@
   /* the rail's own typographic scale: quiet counter, tight title, the
      Viewing badge as the scale cue, then prose sized to the measure */
   .ct-eyebrow{font-size:var(--t-xs);font-weight:500;color:var(--ink-soft);margin-bottom:14px;}
+  /* the count is the part that says where the reader is, so it takes the ink */
+  .ct-eyebrow .ct-count{font-weight:600;color:var(--ink);}
   .ct-step h2,.ct-step h3{
     font-size:var(--t-h2);font-weight:700;line-height:1.16;letter-spacing:-.4px;
     color:var(--ink);margin:0 0 16px;
@@ -7716,7 +7749,10 @@
       if (!head || b.querySelector(":scope > .ct-eyebrow")) return;
       const c = document.createElement("span");
       c.className = "ct-eyebrow";
-      c.textContent = secName + (i + 1) + "/" + blocks.length;
+      c.textContent = secName;
+      const n = document.createElement("b"); n.className = "ct-count";
+      n.textContent = (i + 1) + "/" + blocks.length;
+      c.appendChild(n);
       b.insertBefore(c, head);
     });
   })();
@@ -8842,7 +8878,10 @@
       var st = document.createElement("div"); st.className = "ct-step";
       var sl = document.createElement("div"); sl.className = "ct-slot";
       var eye = document.createElement("span"); eye.className = "ct-eyebrow";
-      eye.textContent = secName + n + "/" + total;
+      eye.textContent = secName;
+      var cnt = document.createElement("b"); cnt.className = "ct-count";
+      cnt.textContent = n + "/" + total;
+      eye.appendChild(cnt);
       st.appendChild(eye);
       if (headMoved) headMoved.forEach(function(k){ st.appendChild(k); });
       kids.forEach(function(k){
