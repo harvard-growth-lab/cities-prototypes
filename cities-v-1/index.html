@@ -2238,59 +2238,46 @@
   .ov-wrap:not(.ov2) .collapsible-content p{font-size:var(--t-base);line-height:1.6;margin:0 0 12px;}
   .ct-step .collapsible-content p:last-child,
   .ov-wrap:not(.ov2) .collapsible-content p:last-child{margin-bottom:0;}
-  .ct-step .tradable-diagram{max-width:100%;margin:12px 0 2px;}
-  /* The two figure sections read the same: the explainer is a line of teal
-     text after the prose, and its answer opens behind a teal bar — no box,
-     no second rule, so the rule under the Viewing badge stays the only line
-     in the column */
+  /* The two figure sections read the same: the explainer is one line of
+     ink between two hairlines - a thin mark, the question, a small chevron
+     at the far end - and its answer opens below as plain text in the
+     column's own voice: no box, no bar, no second colour. */
   :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-info,
   :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-info:hover,
   :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-info:has(.collapsible-header.active){
-    margin:4px 0 0;border:0;border-radius:0;background:none;box-shadow:none;
+    margin:10px 0 0;border:0;border-radius:0;background:none;box-shadow:none;
   }
   :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-info.is-off{margin:0;}
-  :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-header{padding:6px 0;gap:8px;color:var(--teal);}
-  :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-header:hover .ci-title{text-decoration:underline;text-underline-offset:3px;}
-  :is(#page-export-basket, #page-admin-mix) .ct-step .ci-title{flex:0 1 auto;}
-  :is(#page-export-basket, #page-admin-mix) .ct-step .ci-mark svg{width:17px;height:17px;}
-  :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-icon{width:15px;height:15px;}
+  :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-header{
+    padding:9px 0;gap:9px;color:var(--ink);font-weight:500;font-size:calc(var(--t-base) - 1px);
+    border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  }
+  :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-header:hover .ci-title{text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--border-strong);}
+  :is(#page-export-basket, #page-admin-mix) .ct-step .ci-title{flex:1 1 auto;}
+  /* the bulb, drawn thin and small, in the muted ink */
+  :is(#page-export-basket, #page-admin-mix) .ct-step .ci-mark{color:var(--ink-soft);}
+  :is(#page-export-basket, #page-admin-mix) .ct-step .ci-mark svg{width:15px;height:15px;stroke-width:1.2;}
+  :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-icon{width:13px;height:13px;color:var(--ink-soft);stroke-width:1.6;}
   :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-content{
-    margin:10px 0 8px;padding:2px 0 2px 14px;border-left:2px solid var(--teal);
+    margin:0;padding:12px 0 6px;border:0;
   }
+  :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-content p{
+    font-size:calc(var(--t-base) - 1.5px);line-height:1.55;margin:0 0 10px;
+  }
+  :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-content p.ci-foot{
+    font-size:calc(var(--t-base) - 3px);color:var(--ink-soft);margin:8px 0 0;
+  }
+  /* the glossary of the three tiers: swatch, term, one line, on one grid */
+  .tier-gloss{margin:2px 0 0;display:flex;flex-direction:column;}
+  .tier-gloss > div{
+    display:grid;grid-template-columns:11px auto 1fr;gap:10px;align-items:baseline;
+    padding:7px 0;border-top:1px solid var(--border);font-size:calc(var(--t-base) - 2px);line-height:1.45;
+  }
+  .tier-gloss > div:first-child{border-top:0;padding-top:0;}
+  .tier-gloss i{width:11px;height:11px;border-radius:2px;display:inline-block;position:relative;top:1px;}
+  .tier-gloss dt{font-weight:600;color:var(--ink);white-space:nowrap;}
+  .tier-gloss dd{margin:0;color:var(--ink-soft);}
 
-  /* Explainer diagram: outside customers -> tradable industry -> income in */
-  .tradable-diagram{
-    display:block;width:100%;height:auto;max-width:600px;margin:16px 0 4px;
-  }
-  /* direct child only — a descendant selector also hits the icon rects */
-  .tradable-diagram .td-card > rect{
-    fill:#fff;stroke:var(--border);stroke-width:1.5;
-  }
-  .tradable-diagram .td-card--key > rect{
-    stroke:var(--teal);stroke-width:2;
-  }
-  .tradable-diagram .td-disc{fill:var(--teal-tint);}
-  .tradable-diagram .td-disc--key{fill:var(--teal);}
-  .tradable-diagram .td-ico{
-    fill:none;stroke:var(--teal);stroke-width:1.6;
-    stroke-linecap:round;stroke-linejoin:round;
-  }
-  .tradable-diagram .td-ico--key{stroke:#fff;}
-  .tradable-diagram .td-ico circle:last-child{fill:var(--teal);stroke:none;}
-  .tradable-diagram .td-title{
-    font-size:14px;font-weight:600;fill:var(--ink);text-anchor:middle;
-  }
-  .tradable-diagram .td-sub{
-    font-size:11.5px;font-weight:400;fill:var(--ink-soft);text-anchor:middle;
-  }
-  .tradable-diagram .td-flow{
-    stroke:var(--teal);stroke-width:2;stroke-linecap:round;
-  }
-  .tradable-diagram .td-strip{fill:var(--teal-tint);}
-  .tradable-diagram .td-strip-text{
-    font-size:13px;font-weight:600;fill:var(--teal);text-anchor:middle;
-  }
-  .tradable-diagram .td-sep{fill:var(--ink-soft);font-weight:400;}
 
   .collapsible-content p:last-child{
     margin-bottom:0;
@@ -5514,75 +5501,16 @@
               </svg>
             </button>
             <div class="collapsible-content">
-              <p>Every industry is placed in one of three tiers by how much of what it makes can be sold to
-                someone outside the metro: <strong>Traded</strong>, <strong>Partly traded</strong> or
-                <strong>Local</strong>. The tier follows from what the industry is &mdash; whether its output can
-                travel, whether the customer has to be standing there, and how tightly the industry clusters
-                nationally, since work that gathers in a few places is nearly always selling beyond them.</p>
-              <p>Traded industries sell most of what they make outside the metro, Local industries serve the
-                people already here, and Partly traded industries do some of both. The tiers are drawn across a
-                continuous measure, so industries sitting close to a line could fall the other way.</p>
-              <svg class="tradable-diagram" viewBox="0 0 600 258" role="img" aria-labelledby="tdTitle tdDesc">
-                <title id="tdTitle">How a tradable industry brings income into the city</title>
-                <desc id="tdDesc">Outside customers buy from the city's tradable industries; that income flows in and supports local jobs and businesses.</desc>
-                <defs>
-                  <marker id="tdArrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
-                    <path d="M0 0.5 L7 4 L0 7.5 Z" fill="var(--teal)"/>
-                  </marker>
-                </defs>
-
-                <!-- 1 · outside customers -->
-                <g class="td-card">
-                  <rect x="1" y="16" width="178" height="152" rx="12"/>
-                  <circle class="td-disc" cx="90" cy="58" r="21"/>
-                  <g class="td-ico" transform="translate(90 58)">
-                    <circle r="10.5"/>
-                    <path d="M-10.5 0h21"/>
-                    <path d="M0 -10.5c4.2 4 6.3 6.6 6.3 10.5S4.2 6.5 0 10.5C-4.2 6.5-6.3 3.9-6.3 0S-4.2-6.5 0-10.5Z"/>
-                  </g>
-                  <text class="td-title" x="90" y="110">Outside customers</text>
-                  <text class="td-sub" x="90" y="132">Buyers beyond</text>
-                  <text class="td-sub" x="90" y="148">the city</text>
-                </g>
-
-                <line class="td-flow" x1="184" y1="92" x2="204" y2="92" marker-end="url(#tdArrow)"/>
-
-                <!-- 2 · the tradable industry itself (emphasised) -->
-                <g class="td-card td-card--key">
-                  <rect x="211" y="16" width="178" height="152" rx="12"/>
-                  <circle class="td-disc td-disc--key" cx="300" cy="58" r="21"/>
-                  <g class="td-ico td-ico--key" transform="translate(300 58)">
-                    <path d="M-10 9V-3l6.5-3.8V-3l6.5-3.8V9Z"/>
-                    <path d="M3 9V-9h7v18"/>
-                  </g>
-                  <text class="td-title" x="300" y="110">Traded industries</text>
-                  <text class="td-sub" x="300" y="132">Manufacturing, software,</text>
-                  <text class="td-sub" x="300" y="148">tourism, consulting</text>
-                </g>
-
-                <line class="td-flow" x1="394" y1="92" x2="414" y2="92" marker-end="url(#tdArrow)"/>
-
-                <!-- 3 · income returning to the city -->
-                <g class="td-card">
-                  <rect x="421" y="16" width="178" height="152" rx="12"/>
-                  <circle class="td-disc" cx="510" cy="58" r="21"/>
-                  <g class="td-ico" transform="translate(510 58)">
-                    <rect x="-11" y="-7" width="22" height="14" rx="2.5"/>
-                    <circle r="3.6"/>
-                  </g>
-                  <text class="td-title" x="510" y="110">Income flows in</text>
-                  <text class="td-sub" x="510" y="132">Supports local jobs</text>
-                  <text class="td-sub" x="510" y="148">and businesses</text>
-                </g>
-
-                <!-- summary strip -->
-                <rect class="td-strip" x="1" y="196" width="598" height="46" rx="10"/>
-                <text class="td-strip-text" x="300" y="224">
-                  Sell outside the city
-                  <tspan class="td-sep">→</tspan> income flows in
-                  <tspan class="td-sep">→</tspan> the local economy grows
-                </text>
-              </svg>
+              <p>Each industry is placed in a tier by how much of what it makes can be sold to someone outside
+                the metro.</p>
+              <!-- the three terms the page speaks in, each defined in a line beside
+                   its colour, in the order the grounds take -->
+              <dl class="tier-gloss">
+                <div><i style="background:#255862"></i><dt>Traded</dt><dd>sells most of its output outside the metro, so its earnings are new income arriving here</dd></div>
+                <div><i style="background:#59838c"></i><dt>Partly traded</dt><dd>sells some outside and some to the people already here</dd></div>
+                <div><i style="background:#b9ccd0"></i><dt>Local</dt><dd>serves the people already here; the customer has to be standing there</dd></div>
+              </dl>
+              <p class="ci-foot">The tiers are cuts on a continuous measure, so an industry near a cut could fall the other way.</p>
             </div>
           </div>
 
