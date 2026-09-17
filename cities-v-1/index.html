@@ -914,13 +914,17 @@
      Each beat opened at a different height, because its content was centred
      in a screen-tall block and the three run to different lengths: 118, 62
      and 170 under their block tops, with nothing but uneven white between
-     them. They now all open the same way - a hairline across the column,
-     56 of air, the counter, the title - so a new beat reads as a new beat,
-     and its title lands at the same height as the last one did. */
+     them. They now all open the same way - 56 of air, the counter, the
+     title - so each title lands at the same height as the last one did.
+     And they are told apart the way the scrolly sections tell theirs, with
+     no rule between them: the beat the reader is on stands at full
+     strength and the others step back. The class arrives with the script
+     that tracks the beat, so without it nothing is dimmed. */
   @media (min-width:1200px){
     #ovWrap:not(.ov2) .ov-block{justify-content:flex-start;padding:56px 0 72px;}
   }
-  #ovWrap:not(.ov2) .ov-block + .ov-block{border-top:1px solid rgba(26,34,38,.22);}
+  #ovWrap.ov-beats:not(.ov2) .ov-block{opacity:.35;transition:opacity .25s ease;}
+  #ovWrap.ov-beats:not(.ov2) .ov-block.is-on{opacity:1;}
   /* one gap under every title: the metro page's own 10 set its paragraph
      tighter than the other two */
   #ovWrap:not(.ov2) .ov-block > .page-head + .lede{margin-top:16px;}
@@ -8260,7 +8264,23 @@
   commuteFlowMap("commuteExploreMap", { mode: "explore",
     focus: ["Cambridge","Quincy","Waltham","Framingham"] });
 
+  /* the beat the reader is on: the last block whose top has passed the
+     middle of the viewport, so a beat comes forward as its title reaches
+     mid-screen. It stands at full strength and the others step back, as the
+     scrolly sections' beats do. */
+  const ovBeatBlocks = [...document.querySelectorAll("#ovWrap .ov-left > section.ov-block")];
+  function ovBeat(){
+    if (window.ovScrollyOn || !ovBeatBlocks.length) return;
+    const wrap = document.getElementById("ovWrap");
+    if (!wrap || ovBeatBlocks[0].offsetParent === null) return;   /* not on screen yet */
+    const pr = pagesEl.getBoundingClientRect(), line = pr.top + pagesEl.clientHeight * 0.5;
+    let on = 0;
+    ovBeatBlocks.forEach((b, i) => { if (b.getBoundingClientRect().top <= line) on = i; });
+    ovBeatBlocks.forEach((b, i) => b.classList.toggle("is-on", i === on));
+    wrap.classList.add("ov-beats");
+  }
   function ovZoom(){
+    ovBeat();
     if(window.ovScrollyOn) return;       // the ov2 engine drives the map
     if(!ovWrap||!ovLeaflet) return;
     /* the first page is the admin's alone: its boundary and label, and no
