@@ -2691,14 +2691,16 @@
   }
   .mi-view #miNames .seg-btn:focus-visible,
   .mi-view #miRankOpt .seg-btn:focus-visible{outline:1px solid var(--teal);outline-offset:2px;}
-  /* opt-2 names the tier instead of printing the score: the word replaces
-     the number and the track under it, which was the number drawn */
+  /* opt-2, the shipped option, names the tier instead of printing the
+     score: the word replaces the number and the track under it, which was
+     the number drawn. The rows carry the mode, so the first ranking's
+     tracks stay whichever option is on. */
   /* one step quieter than the value and the name: at 600 in full ink the word
      was a third equally loud column and read as a second name */
   #miTreemapSvg .mi-trad.is-tier{font-size:12.5px;font-weight:500;fill:var(--ink-soft);font-variant-numeric:normal;}
-  #miFigure[data-rank="tier"] .mi-rows:not(.mi-bars) .mi-tradtrack,
-  #miFigure[data-rank="tier"] .mi-rows:not(.mi-bars) .mi-tradbar,
-  #miFigure[data-rank="tier"] .mi-rows:not(.mi-bars) .mi-tradtick{display:none;}
+  #miTreemapSvg .mi-rows.is-tier .mi-tradtrack,
+  #miTreemapSvg .mi-rows.is-tier .mi-tradbar,
+  #miTreemapSvg .mi-rows.is-tier .mi-tradtick{display:none;}
   /* the tradability column, built as the jobs column is */
   #miTreemapSvg .mi-trad{font-size:13px;font-weight:600;fill:var(--ink);font-variant-numeric:tabular-nums;}
   #miTreemapSvg .mi-tradtrack{fill:#e6eaec;}
@@ -5368,8 +5370,8 @@
                    the tier's name with the head opening the tier filter -->
               <span class="ctl-label mi-studylab">Tradability column</span>
               <div class="seg" id="miRankOpt" role="group" aria-label="How tradability is shown in the ranking">
-                <button type="button" class="seg-btn is-active" data-rank="score" aria-pressed="true">opt-1</button>
-                <button type="button" class="seg-btn" data-rank="tier" aria-pressed="false">opt-2</button>
+                <button type="button" class="seg-btn" data-rank="score" aria-pressed="false">opt-1</button>
+                <button type="button" class="seg-btn is-active" data-rank="tier" aria-pressed="true">opt-2</button>
               </div>
             </div>
             <div class="tradable-split-header" id="miSplitHead">

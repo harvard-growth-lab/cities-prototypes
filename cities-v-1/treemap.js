@@ -3275,39 +3275,51 @@
           peerAvg: pr.avg, peerValues: pr.values, ahead: shown(rca) >= shown(pr.avg) };
       });
     }
-    /* The ranking's second option: the tradability column names the tier
-       ("Traded", "Partly traded", "Local") instead of printing the score, and
-       its head opens the tier filter. All three tiers start checked, as they
-       do on the jobs order, so opt-2 opens on the metro's twelve most
-       specialised industries of any kind and the reader narrows from there.
-       opt-1 is untouched by this: it is still drawn over the two tradable
-       tiers alone. */
-    let rankMode = "score";
+    /* The ranking ships as its second option: the tradability column names
+       the tier ("Traded", "Partly traded", "Local") instead of printing the
+       score, and its head opens the tier filter. All three tiers start
+       checked, as they do on the jobs order, so the beat opens on the metro's
+       twelve most specialised industries of any kind and the reader narrows
+       from there. opt-1 keeps the earlier ranking: the score in the column,
+       drawn over the two tradable tiers alone. */
+    let rankMode = "tier";
+    fig.dataset.rank = rankMode;
     let tierOn6 = [true, true, true];
+    /* the industries the third beat ranks over: whatever the filter has
+       checked under opt-2, the two tradable tiers under opt-1 */
+    const rankPool = () => rankMode === "tier"
+      ? clusterRows.filter((_, k) => tierOn6[k]).flat()
+      : clusterRows[0].concat(clusterRows[1]);
     const TIER_NAMES = ["Traded", "Partly traded", "Local"];
     const tierLabel = d => TIER_NAMES[clusterOf(d)];
     /* A word is wider than a number, so the plot gives up room to the column
        while the words are showing - 54 units, not more. At 82 the value
        labels sat 70.8 from the words where opt-1's scores sit 44.6; the widest
        bar lands 0.0687 of the span short of the edge and the widest label
-       runs 37.8 past it, so 54 puts the gap at 44.7. */
-    const plotR = () => rankMode === "tier" ? PLOT_R - 54 : PLOT_R;
+       runs 37.8 past it, so 54 puts the gap at 44.7. Only the third beat's
+       ranking shows the words; the first ranking keeps its score and its
+       full plot whichever option is on. */
+    const plotR = tier => tier ? PLOT_R - 54 : PLOT_R;
+    const inTier = R => R === R2 && rankMode === "tier";
     let wireRowsRef = null, rebuildR2Ref = null;
     function ranking(rows, among){
       const base = among ? specializedAmong(rows) : specializedWithPeers(rows);
       const ranked = base.sort((a, b) => b.rca - a.rca).slice(0, MI_TOP_N);
+      /* only the ranking among the clusters - the third beat's - ever
+         shows the tier words */
+      const right = plotR(among && rankMode === "tier");
       return { ranked,
         rankIdx: new Map(ranked.map((d, i) => [d.name, i])),   /* by concentration: the badges' order */
         pos: new Map(ranked.map((d, i) => [d.name, i])),       /* the order on screen, which sorting changes */
         rankRow: new Map(ranked.map(d => [d.name, d])),
         xr: d3.scaleLinear()
           .domain([1, (d3.max(ranked, d => Math.max(d.rca, d.peerAvg)) || 2) * 1.06])
-          .range([ML + 12, plotR()]),
+          .range([ML + 12, right]),
         /* the gap against the peer average, symmetric so the average sits
            mid-chart: ahead to the right, behind to the left */
         xg: (function(){
           const g = Math.max(0.5, (d3.max(ranked, d => Math.abs(d.rca - d.peerAvg)) || 0.5) * 1.15);
-          return d3.scaleLinear().domain([-g, g]).range([ML + 12, plotR()]);
+          return d3.scaleLinear().domain([-g, g]).range([ML + 12, right]);
         })() };
     }
     const gapOf = d => d.rca - d.peerAvg;
@@ -3328,10 +3340,10 @@
       const order = R.ranked.slice().sort(SORTS[sortKey] || SORTS.rca);
       R.pos = new Map(order.map((d, i) => [d.name, i]));
     }
-    /* the ranking the third beat shows is over the two tradable clusters —
-       the most tradable and the ones that sell some of both — so its bars
-       rise only from cells that were in those two columns a beat before */
-    const R1 = ranking(industryData), R2 = ranking(clusterRows[0].concat(clusterRows[1]), true);
+    /* the ranking the third beat shows is over the clusters the filter has
+       checked - all three as shipped, so its bars rise from cells anywhere
+       on the map a beat before; under opt-1, the two tradable clusters */
+    const R1 = ranking(industryData), R2 = ranking(rankPool(), true);
     const ranked = R1.ranked, rankIdx = R1.rankIdx, rankRow = R1.rankRow, xr = R1.xr;
 
     /* every industry, with everything each state needs to place and paint it */
@@ -3618,7 +3630,7 @@
       AG.append("text").attr("class", "mi-colhead")
         .attr("x", MI_W - 6).attr("y", HEAD_Y).attr("text-anchor", "end").text("Jobs");
       tradHead(AG, R);
-      headRules(AG, ML + 12, plotR());
+      headRules(AG, ML + 12, plotR(inTier(R)), inTier(R));
     }
     /* the tradability column's head, its range on the same line, and the rules
        that make the three columns read as a table head */
@@ -3642,18 +3654,18 @@
         .attr("width", tw + 21).attr("height", 22).attr("rx", 3);
     }
     function tradHead(A, R){
-      if (R === R2 && rankMode === "tier"){ menuHead(A, TC_R, HEAD_Y, "is-rank"); return; }
+      if (inTier(R)){ menuHead(A, TC_R, HEAD_Y, "is-rank"); return; }
       A.append("text").attr("class", "mi-colhead")
         .attr("x", TC_R).attr("y", HEAD_Y).attr("text-anchor", "end").text("Tradability");
     }
-    function headRules(A, plotL, plotR){
+    function headRules(A, plotL, plotEnd, tier){
       const y = HEAD_RULE_Y;
       /* the tradability column is 56 wide under a score and 80 under a word,
          so its rule and the separator before it follow the mode; 712 clears
          the widest word by 4 and the head by 8, as the jobs rule clears its
          column, and the separator keeps its 14 ahead of the rule */
-      const tradL = rankMode === "tier" ? 712 : TC_R - TC_W - 8;
-      [[plotL, plotR], [tradL, TC_R], [JOBS_L, JOBS_R]].forEach(seg => {
+      const tradL = tier ? 712 : TC_R - TC_W - 8;
+      [[plotL, plotEnd], [tradL, TC_R], [JOBS_L, JOBS_R]].forEach(seg => {
         A.append("line").attr("class", "mi-headrule")
           .attr("x1", seg[0]).attr("x2", seg[1]).attr("y1", y).attr("y2", y);
       });
@@ -3663,6 +3675,10 @@
       });
     }
     function drawRanking(R, A, G){
+      const tierMode = inTier(R);
+      /* the rows carry the mode, so the score's track stands down under
+         the words without touching the first ranking's rows */
+      G.classed("is-tier", tierMode);
       A.selectAll("g.mi-tick").data(R.xr.ticks(5).filter(t => t >= 1)).join("g")
         .attr("class", "mi-tick")
         .call(g => g.append("line").attr("class", d => "mi-grid" + (d === 1 ? " is-base" : ""))
@@ -3678,7 +3694,7 @@
       A.append("text").attr("class", "mi-colhead")
         .attr("x", MI_W - 6).attr("y", HEAD_Y).attr("text-anchor", "end").text("Jobs");
       tradHead(A, R);
-      headRules(A, ML + 12, plotR());
+      headRules(A, ML + 12, plotR(tierMode), tierMode);
       /* the leading three by concentration, braced only while that is the order */
       const topN = Math.min(3, R.ranked.length);
       R.brace = A.append("g").attr("class", "mi-bracewrap");
@@ -3719,7 +3735,6 @@
          and a short track beneath it from 0 to 1, filled as far as the score
          reaches, with a tick at 0.5 where the most tradable cluster begins */
       const tw = d3.scaleLinear().domain([0, 1]).range([0, TC_W]);
-      const tierMode = R === R2 && rankMode === "tier";
       row.append("text").attr("class", "mi-trad" + (tierMode ? " is-tier" : ""))
         .attr("x", TC_R).attr("y", tierMode ? 4 : 1).attr("text-anchor", "end")
         .text(d => tierMode ? tierLabel(d) : tradabilityOf(d.name).toFixed(2));
@@ -3743,12 +3758,7 @@
        their place in it; and its three groups are cleared and drawn again,
        since the axis furniture is appended rather than joined. */
     function rebuildR2(animate){
-      /* opt-1 is the ranking as shipped, over the two tradable tiers; only
-         opt-2 ranks over whatever the filter has checked */
-      const pool = rankMode === "tier"
-        ? clusterRows.filter((_, k) => tierOn6[k]).flat()
-        : clusterRows[0].concat(clusterRows[1]);
-      Object.assign(R2, ranking(pool, true));
+      Object.assign(R2, ranking(rankPool(), true));
       cells.forEach(c => {
         c.rank2 = R2.rankIdx.has(c.name) ? R2.rankIdx.get(c.name) : -1;
         c.row2 = R2.rankRow.get(c.name) || null;
@@ -4087,9 +4097,9 @@
       closeMenuRef = closeMenu;
     }
 
-    /* the ranking's own study: score or tier word in the tradability column.
-       Going back to opt-1 also resets the filter, so opt-1 is always the
-       ranking as shipped. */
+    /* the ranking's own study: tier word (shipped) or score in the
+       tradability column. Going to opt-1 also resets the filter, so opt-1 is
+       always the ranking over the two tradable tiers alone. */
     const rankOptEl = document.getElementById(p + "RankOpt");
     if (rankOptEl) rankOptEl.addEventListener("click", ev => {
       const b = ev.target.closest(".seg-btn[data-rank]");
