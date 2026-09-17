@@ -4269,10 +4269,12 @@
             '<svg class="tdn-ring" width="' + SZ + '" height="' + SZ + '" viewBox="0 0 ' + SZ + ' ' + SZ +
               '" role="img" aria-label="Share of metro jobs in each tradability tier"></svg>' +
             '<div class="tdn-rows">' + bands.map(b =>
-              '<button type="button" class="tdn-row" data-tier="' + b.k + '">' +
+              '<button type="button" class="tdn-row" data-tier="' + b.k + '" aria-describedby="' + p + 'TierTip">' +
               '<i style="background:' + b.tone + '"></i><b>' + b.name + '</b>' +
               '<span class="tdn-pct">' + pct(clusterShare[b.k]) + '</span></button>').join("") + '</div>' +
-            '<div class="tdn-tip" role="status" hidden></div>';
+            /* the rows describe themselves by the card, so a reader who
+               cannot see it still gets the tier's largest industries */
+            '<div class="tdn-tip" id="' + p + 'TierTip" hidden></div>';
           const ring = d3.select(donutHost).select("svg.tdn-ring").append("g")
             .attr("transform", "translate(" + SZ / 2 + "," + SZ / 2 + ")");
           /* a thin ring, in the order the grounds take, with a hairline of
@@ -4283,10 +4285,10 @@
             .attr("class", "tdn-arc").attr("data-tier", d => d.data.k)
             .attr("d", arc).attr("fill", d => d.data.tone);
           const tipEl = donutHost.querySelector(".tdn-tip");
-          /* the pointer and the keyboard each hold their own tier, the
-             pointer's first; the card is rebuilt only when the shown tier
-             changes, so crossing a row's parts does not re-announce it */
-          let hoverK = null, focusK = null, shownK = null;
+          /* the pointer, the keyboard and a press each hold their own tier,
+             the pointer's first; the card is rebuilt only when the shown
+             tier changes, so crossing a row's parts does not rebuild it */
+          let hoverK = null, focusK = null, pinK = null, shownK = null;
           const hot = k => {
             if (k === shownK) return;
             shownK = k;
@@ -4303,18 +4305,26 @@
               '<p class="tdn-note">The three largest of the ' + n + ' industries in the tier</p>';
             tipEl.hidden = false;
           };
-          const apply = () => hot(hoverK != null ? hoverK : focusK);
+          const apply = () => hot(hoverK != null ? hoverK : focusK != null ? focusK : pinK);
+          const putAway = () => { hoverK = focusK = pinK = null; apply(); };
           const tierAt = ev => { const t = ev.target.closest && ev.target.closest("[data-tier]"); return t ? +t.getAttribute("data-tier") : null; };
           donutHost.addEventListener("mouseover", ev => { const k = tierAt(ev); if (k != null){ hoverK = k; apply(); } });
           donutHost.addEventListener("mouseleave", () => { hoverK = null; apply(); });
           donutHost.addEventListener("focusin", ev => { const k = tierAt(ev); if (k != null){ focusK = k; apply(); } });
           donutHost.addEventListener("focusout", ev => { if (!donutHost.contains(ev.relatedTarget)){ focusK = null; apply(); } });
-          /* a tap elsewhere puts a touch-opened card away, since touch sends
-             no mouseleave */
-          document.addEventListener("pointerdown", ev => {
-            if (hoverK != null && !donutHost.contains(ev.target)){ hoverK = null; apply(); }
+          /* a press on a row opens its card and holds it, and a second press
+             puts it away - the path a touch has, since touch sends no
+             mouseleave, and a keyboard's way to dismiss without leaving */
+          donutHost.addEventListener("click", ev => {
+            const k = tierAt(ev); if (k == null) return;
+            if (shownK === k) putAway(); else { pinK = k; apply(); }
           });
-          clearTierHot = () => { hoverK = focusK = null; apply(); };
+          /* a tap elsewhere, or Escape, puts the card away */
+          document.addEventListener("pointerdown", ev => {
+            if (shownK != null && !donutHost.contains(ev.target)) putAway();
+          });
+          document.addEventListener("keydown", ev => { if (ev.key === "Escape" && shownK != null) putAway(); });
+          clearTierHot = putAway;
         }
         /* the switch between the two: the share on the grounds and the key,
            or the name alone on the grounds and the donut */

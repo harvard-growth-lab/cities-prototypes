@@ -2812,10 +2812,13 @@
   .tier-donut .tdn-row b{font-weight:600;}
   /* the share reads with its name, not at the far edge of the column */
   .tier-donut .tdn-pct{font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink);}
+  /* the card takes the pointer, so moving onto it to read does not count
+     as leaving the donut; Escape, a second press on the row, or a tap
+     elsewhere puts it away */
   .tier-donut .tdn-tip{
     position:absolute;left:0;top:calc(100% + 8px);z-index:6;width:min(300px,100%);
     padding:12px 14px;background:#fff;border:1px solid var(--border-strong);border-radius:4px;
-    box-shadow:var(--shadow-md);pointer-events:none;
+    box-shadow:var(--shadow-md);
   }
   .tier-donut .tdn-tip[hidden]{display:none;}
   .tdn-tip .tdn-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;margin-bottom:8px;}
@@ -3840,6 +3843,10 @@
     .mi-figure svg .mi-share-pct{font-size:15px;}
     #miTreemapSvg .mi-jobs{font-size:16px;}
     #miTreemapSvg .mi-trad{font-size:16px;}
+    /* the grounds' heads step up with the labels they head */
+    #miTreemapSvg .mi-card-pct{font-size:20px;}
+    #miTreemapSvg .mi-card-lab{font-size:13.5px;}
+    #miFigure[data-tier="donut"] .mi-card-lab{font-size:17px;}
 
     #miTreemapSvg .mi-colsub{font-size:12.5px;}
     #amDotsSvg .ad-ringlab{font-size:15px;}
@@ -4036,6 +4043,9 @@
     .mi-figure svg .mi-share-pct{font-size:16px;}
     #miTreemapSvg .mi-jobs{font-size:19px;}
     #miTreemapSvg .mi-trad{font-size:19px;}
+    #miTreemapSvg .mi-card-pct{font-size:23px;}
+    #miTreemapSvg .mi-card-lab{font-size:15px;}
+    #miFigure[data-tier="donut"] .mi-card-lab{font-size:21px;}
 
     #miTreemapSvg .mi-colsub{font-size:13px;}
     #amDotsSvg .ad-ringlab{font-size:18px;}
