@@ -3420,7 +3420,7 @@
     /* behind every other layer: the three grounds and their headers */
     const gCards = svg.append("g").attr("class", "mi-cards").style("opacity", 0);
     {
-      const NAMES = ["Sells outside the metro", "Some of both", "Serves the metro"];
+      /* each ground is named by its tier, the same word the columns use */
       cardBox.forEach(c => {
         const g = gCards.append("g");
         g.append("rect").attr("class", "mi-card")
@@ -3429,7 +3429,7 @@
           .attr("x", c.x + CARD_PAD + 2).attr("y", 30)
           .text(Math.round(clusterShare[c.k] * 100) + "% of jobs");
         g.append("text").attr("class", "mi-card-lab")
-          .attr("x", c.x + CARD_PAD + 2).attr("y", 48).text(NAMES[c.k]);
+          .attr("x", c.x + CARD_PAD + 2).attr("y", 48).text(TIER_NAMES[c.k]);
       });
     }
     const gHi = svg.append("g").attr("class", "mi-hilite-layer");
@@ -4227,19 +4227,17 @@
           return (inTail.length >= 2 ? inTail : pick(clusterRows[k])).slice(0, 2).join(", ");
         };
         const bands = [
-          { k: 0, name: "Sells outside the metro", range: "0.5 to 1",    span: 1 - CL_HI,     tone: "#255862" },
-          { k: 1, name: "Some of both",            range: "0.35 to 0.5", span: CL_HI - CL_LO, tone: "#59838c" },
-          { k: 2, name: "Serves the metro",        range: "0 to 0.35",   span: CL_LO,         tone: "#b9ccd0" }
+          { k: 0, name: TIER_NAMES[0], tone: "#255862" },
+          { k: 1, name: TIER_NAMES[1], tone: "#59838c" },
+          { k: 2, name: TIER_NAMES[2], tone: "#b9ccd0" }
         ];
-        /* the ends and the banded track are gone: the figure's own header
-           already runs 1 to 0 across the top of the three columns, and the
-           columns are the bands. What is left is the part the chart cannot
-           say — what each band is called, the score it covers, and two of
-           the metro's own industries from inside it. */
+        /* the score is not shown anywhere any more, so the key says only
+           what the chart cannot: the three tiers by name, each with two of
+           the metro's own industries from inside it */
         scaleHost.innerHTML =
           '<span class="ts-rows">' + bands.map(b =>
             '<span class="ts-row"><i style="background:' + b.tone + '"></i><span>' +
-            '<span class="ts-name">' + b.name + '</span> <span class="ts-range">' + b.range + '</span>' +
+            '<span class="ts-name">' + b.name + '</span>' +
             '<span class="ts-eg">e.g. ' + examples(b.k) + '</span></span></span>').join("") + '</span>';
         scaleHost.hidden = false;
       }
@@ -4335,7 +4333,6 @@
       const rowOf = (k, v) => '<div class="tip-row"><span>' + k + '</span><span>' + v + '</span></div>';
       const cellOf = (k, v) => '<dt>' + k + '</dt><dd>' + v + '</dd>';
       const pct = v => v.toFixed(2) + "%";
-      const tradWord = t => t >= CL_HI ? "sells outside" : t >= CL_LO ? "some of both" : "serves the metro";
       /* the number the ranking is ordered by, given the size it is ordered by */
       const tipLead = r => '<div class="tip-lead"><b>' + r.rca.toFixed(1) +
         '\u00d7</b><span>more concentrated here than in<br>a typical US metro</span></div>';
@@ -4361,9 +4358,7 @@
           body = tipLead(rrow) +
             '<dl class="tip-grid">' +
             cellOf("Peer metros average", rrow.peerAvg.toFixed(1) + "\u00d7") +
-            (step === 6 ? cellOf("Tradability",
-                tradabilityOf(d.name).toFixed(2) +
-                ' <em>' + tradWord(tradabilityOf(d.name)) + '</em>') : "") +
+            (step === 6 ? cellOf("Tradability", tierLabel(d)) : "") +
             cellOf("Jobs here", Math.round(d.employ).toLocaleString()) +
             cellOf("Share of metro jobs", pct(rrow.localPct)) +
             '</dl>';
@@ -4372,16 +4367,10 @@
                  rowOf("Jobs", Math.round(d.employ).toLocaleString());
           if (step === 1 || step === 5 || ((step === 4 || step === 7) && colorBy === "complexity"))
             body += rowOf("Complexity (PCI)", pciNumOf(d.name).toFixed(2));
-          /* the split reads two ways, the clusters three — the card says
-             what the beat on screen is actually showing */
-          if (step === 2) body += rowOf("Tradability", tradabilityOf(d.name).toFixed(2)) +
-            rowOf("Reads as", tradabilityOf(d.name) >= 0.5 ? "sells outward" : "serves locally");
-          if (step === 4 || step === 7){
-            const t = tradabilityOf(d.name);
-            body += rowOf("Tradability", t.toFixed(2)) +
-              rowOf("Reads as", t >= CL_HI ? "sells outside the metro"
-                              : t >= CL_LO ? "some of both" : "serves the metro");
-          }
+          /* the tier, by the same name the columns and the key use; the
+             score itself is shown nowhere */
+          if (step === 2) body += rowOf("Tradability", tradabilityOf(d.name) >= 0.5 ? TIER_NAMES[0] : TIER_NAMES[2]);
+          if (step === 4 || step === 7) body += rowOf("Tradability", tierLabel(d));
         }
         const labRow = step === 6 ? d.row2 : d.row;
         const rank = (step === 6 && R2.rankIdx.has(d.name) && R2.rankIdx.get(d.name) < 3)

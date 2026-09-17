@@ -2709,8 +2709,6 @@
   #miTreemapSvg .mi-tradtrack{fill:#e6eaec;}
   #miTreemapSvg .mi-tradbar{fill:#7c848c;}
   #miTreemapSvg .mi-tradtick{stroke:#72767b;stroke-width:1;}
-  .spec-key .sk-tradnotch{position:relative;width:24px;height:4px;border-radius:2px;background:#8d949d;margin-bottom:5px;}
-  .spec-key .sk-tradnotch::after{content:"";position:absolute;left:11.5px;top:5px;width:1px;height:4px;background:#72767b;}
   #miTreemapSvg .mi-colsub{font-size:10.5px;fill:#8e9196;}
   /* the head reads as a table head: a rule under each column, with the
      breaks between the rules as the only separators. Dark enough to hold
@@ -2793,7 +2791,6 @@
   .tscale .ts-row{display:flex;gap:9px;align-items:flex-start;font-size:13px;line-height:1.4;color:var(--ink);}
   .tscale .ts-row > i{flex:none;width:11px;height:11px;border-radius:2px;margin-top:4px;}
   .tscale .ts-name{font-weight:600;}
-  .tscale .ts-range{color:var(--ink-soft);font-variant-numeric:tabular-nums;}
   .tscale .ts-eg{display:block;color:var(--ink-soft);font-size:12.5px;}
   /* the three-segment stat in the beat's text */
   .cl-stat{display:inline-flex;align-items:center;gap:12px;}
@@ -5438,7 +5435,6 @@
               <span class="sk-item"><i class="sk-ahead"></i>more concentrated here than in the peer metros</span>
               <span class="sk-item"><i class="sk-behind"></i>less than in the peer metros</span>
               <span class="sk-item"><i class="sk-base"></i>the peer average</span>
-              <span class="sk-item"><i class="sk-tradnotch"></i>tradability from 0 to 1, notch at 0.5</span>
             </p>
           </div>
         </div>
@@ -5450,11 +5446,11 @@
           </div>
           
           <div class="lede-stat-row">
-            <p class="lede">Most of the metro&rsquo;s work does not sell outward. Serving the people already here
-              &mdash; restaurants, schools, hospitals &mdash; is 31% of jobs, and another quarter does some of both.
-              Only 44% sells outside the metro, and that is the part bringing new income in.</p>
-            <!-- the score, drawn: 1 to 0 as the map reads, each band as wide as
-                 its stretch of the score, with the metro's own examples -->
+            <p class="lede">Most of the metro&rsquo;s work does not sell outward. Local work &mdash; restaurants,
+              schools, hospitals &mdash; is 31% of jobs, and another quarter is partly traded. Only 44% is traded,
+              and that is the part bringing new income in.</p>
+            <!-- the three tiers by name, each with two of the metro's own
+                 industries; the score itself is shown nowhere -->
             <div class="tscale" id="miTradScale" hidden></div>
           </div>
           <div class="collapsible-info">
@@ -5466,13 +5462,14 @@
               </svg>
             </button>
             <div class="collapsible-content">
-              <p>Every industry carries a <strong>tradability score from 0 to 1</strong>: how much of what it makes
-                can be sold to someone outside the metro. It follows from what the industry is &mdash; whether its
-                output can travel, whether the customer has to be standing there, and how tightly the industry
-                clusters nationally, since work that gathers in a few places is nearly always selling beyond them.</p>
-              <p>Anything scoring <strong>0.5 or above</strong> is counted here as selling outside the metro, and
-                anything <strong>below 0.35</strong> as serving it; the band between is some of both. Those are lines
-                drawn across a continuous measure, so industries sitting close to either could fall the other way.</p>
+              <p>Every industry is placed in one of three tiers by how much of what it makes can be sold to
+                someone outside the metro: <strong>Traded</strong>, <strong>Partly traded</strong> or
+                <strong>Local</strong>. The tier follows from what the industry is &mdash; whether its output can
+                travel, whether the customer has to be standing there, and how tightly the industry clusters
+                nationally, since work that gathers in a few places is nearly always selling beyond them.</p>
+              <p>Traded industries sell most of what they make outside the metro, Local industries serve the
+                people already here, and Partly traded industries do some of both. The tiers are drawn across a
+                continuous measure, so industries sitting close to a line could fall the other way.</p>
               <svg class="tradable-diagram" viewBox="0 0 600 258" role="img" aria-labelledby="tdTitle tdDesc">
                 <title id="tdTitle">How a tradable industry brings income into the city</title>
                 <desc id="tdDesc">Outside customers buy from the city's tradable industries; that income flows in and supports local jobs and businesses.</desc>
@@ -5506,7 +5503,7 @@
                     <path d="M-10 9V-3l6.5-3.8V-3l6.5-3.8V9Z"/>
                     <path d="M3 9V-9h7v18"/>
                   </g>
-                  <text class="td-title" x="300" y="110">More tradable industries</text>
+                  <text class="td-title" x="300" y="110">Traded industries</text>
                   <text class="td-sub" x="300" y="132">Manufacturing, software,</text>
                   <text class="td-sub" x="300" y="148">tourism, consulting</text>
                 </g>
