@@ -4249,7 +4249,9 @@
         const donutHost = document.getElementById(p + "TierDonut");
         const tierOptEl = document.getElementById(p + "TierOpt");
         if (donutHost){
-          const R = 56, RI = 37, SZ = R * 2 + 2;
+          /* a small ring: the list beside it carries the reading, so the ring
+             only has to show the three parts and their order */
+          const R = 34, RI = 23, SZ = R * 2 + 2;
           const jobsOf = n => Math.round(n).toLocaleString();
           const tierJobs = k => d3.sum(clusterRows[k], d => d.employ);
           const labelOf = d => (rcaSeed[d.name] || {}).short || shortOf(d.name);
