@@ -3109,8 +3109,16 @@
        with the treemap inset inside it. The header moves off the page and into
        the card, so a column and its label are one object rather than two that
        have to be kept in step across the HTML/SVG boundary. */
-    const CARD_PAD = 10, CARD_HEAD = 60;
-    const CARD_Y = CARD_HEAD, CARD_H = MI_H - CARD_HEAD - CARD_PAD;
+    /* One even frame round each ground's map. The map insets its cells 7
+       from its zone at the sides and bottom (3.5 for the root, 3.5 for the
+       sector block), so 9 of card padding puts the cells 16 from the sides
+       and the bottom; the head is 44, which sets the one-line title's cap 16
+       from the top (15px, baseline 27) and its baseline 20.5 above the strip
+       band, so the strip reads as its own row, while the two-line head still
+       fits (18px share at 25, name at 40). The title's left edge is the
+       cells' left edge. */
+    const CARD_PAD = 9, CARD_HEAD = 44, CARD_BOT = 9, CARD_TXT = CARD_PAD + 7;
+    const CARD_Y = CARD_HEAD, CARD_H = MI_H - CARD_HEAD - CARD_BOT;
     const cardBox = [];
     {
       let x0 = 0;
@@ -3426,10 +3434,10 @@
         g.append("rect").attr("class", "mi-card")
           .attr("x", c.x).attr("y", 0).attr("width", c.w).attr("height", MI_H).attr("rx", 8);
         g.append("text").attr("class", "mi-card-pct")
-          .attr("x", c.x + CARD_PAD + 2).attr("y", 30)
+          .attr("x", c.x + CARD_TXT).attr("y", 25)
           .text(Math.round(clusterShare[c.k] * 100) + "% of jobs");
         g.append("text").attr("class", "mi-card-lab")
-          .attr("x", c.x + CARD_PAD + 2).attr("y", 48).text(TIER_NAMES[c.k]);
+          .attr("x", c.x + CARD_TXT).attr("y", 40).text(TIER_NAMES[c.k]);
       });
     }
     const gHi = svg.append("g").attr("class", "mi-hilite-layer");
@@ -4248,6 +4256,7 @@
            the share on each ground, and the key of names and examples. */
         const donutHost = document.getElementById(p + "TierDonut");
         const tierOptEl = document.getElementById(p + "TierOpt");
+        let clearTierHot = () => {};
         if (donutHost){
           /* a small ring: the list beside it carries the reading, so the ring
              only has to show the three parts and their order */
@@ -4274,7 +4283,13 @@
             .attr("class", "tdn-arc").attr("data-tier", d => d.data.k)
             .attr("d", arc).attr("fill", d => d.data.tone);
           const tipEl = donutHost.querySelector(".tdn-tip");
+          /* the pointer and the keyboard each hold their own tier, the
+             pointer's first; the card is rebuilt only when the shown tier
+             changes, so crossing a row's parts does not re-announce it */
+          let hoverK = null, focusK = null, shownK = null;
           const hot = k => {
+            if (k === shownK) return;
+            shownK = k;
             donutHost.classList.toggle("is-hot", k != null);
             donutHost.querySelectorAll("[data-tier]").forEach(n =>
               n.classList.toggle("is-hot", k != null && +n.getAttribute("data-tier") === k));
@@ -4288,11 +4303,18 @@
               '<p class="tdn-note">The three largest of the ' + n + ' industries in the tier</p>';
             tipEl.hidden = false;
           };
+          const apply = () => hot(hoverK != null ? hoverK : focusK);
           const tierAt = ev => { const t = ev.target.closest && ev.target.closest("[data-tier]"); return t ? +t.getAttribute("data-tier") : null; };
-          donutHost.addEventListener("mouseover", ev => { const k = tierAt(ev); if (k != null) hot(k); });
-          donutHost.addEventListener("mouseleave", () => hot(null));
-          donutHost.addEventListener("focusin", ev => { const k = tierAt(ev); if (k != null) hot(k); });
-          donutHost.addEventListener("focusout", ev => { if (!donutHost.contains(ev.relatedTarget)) hot(null); });
+          donutHost.addEventListener("mouseover", ev => { const k = tierAt(ev); if (k != null){ hoverK = k; apply(); } });
+          donutHost.addEventListener("mouseleave", () => { hoverK = null; apply(); });
+          donutHost.addEventListener("focusin", ev => { const k = tierAt(ev); if (k != null){ focusK = k; apply(); } });
+          donutHost.addEventListener("focusout", ev => { if (!donutHost.contains(ev.relatedTarget)){ focusK = null; apply(); } });
+          /* a tap elsewhere puts a touch-opened card away, since touch sends
+             no mouseleave */
+          document.addEventListener("pointerdown", ev => {
+            if (hoverK != null && !donutHost.contains(ev.target)){ hoverK = null; apply(); }
+          });
+          clearTierHot = () => { hoverK = focusK = null; apply(); };
         }
         /* the switch between the two: the share on the grounds and the key,
            or the name alone on the grounds and the donut */
@@ -4301,8 +4323,9 @@
           fig.dataset.tier = donut ? "donut" : "cards";
           scaleHost.hidden = donut;
           if (donutHost) donutHost.hidden = !donut;
+          clearTierHot();
           /* the name alone sits where the share sat, as the ground's head */
-          gCards.selectAll(".mi-card-lab").attr("y", donut ? 34 : 48);
+          gCards.selectAll(".mi-card-lab").attr("y", donut ? 27 : 40);
           if (tierOptEl) tierOptEl.querySelectorAll(".seg-btn[data-tier]").forEach(x => {
             const on = x.dataset.tier === (donut ? "donut" : "cards");
             x.classList.toggle("is-active", on);
