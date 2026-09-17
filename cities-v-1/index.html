@@ -2240,12 +2240,12 @@
   .ov-wrap:not(.ov2) .collapsible-content p:last-child{margin-bottom:0;}
   /* The two figure sections read the same. The explainer has no edges of
      its own: it runs the lede's full measure, the bulb flush on the left
-     edge, the chevron flush on the right, and one hairline under it - the
-     only horizontal line in the column, edge to edge. The question hangs
-     24 after the bulb, and its answer takes the same 24, so the bulb reads
-     as a marginal mark for the whole block rather than an inline icon.
-     Everything is the one ink at opacities: word and bulb 78, chevron 45,
-     rule 12; no box, no bar, no second colour. */
+     edge, the chevron flush on the right, and a hairline above and below
+     it, both edge to edge, the only horizontal lines in the column. The
+     question hangs 24 after the bulb, and its answer takes the same 24, so
+     the bulb reads as a marginal mark for the whole block rather than an
+     inline icon. Everything is the one ink at opacities: word and bulb 78,
+     chevron 45, rules 22; no box, no bar, no second colour. */
   :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-info,
   :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-info:hover,
   :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-info:has(.collapsible-header.active){
@@ -2254,7 +2254,7 @@
   :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-info.is-off{margin:0;}
   :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-header{
     padding:12px 0;gap:9px;color:rgba(26,34,38,.78);font-weight:500;font-size:15px;line-height:20px;
-    border:0;border-bottom:1px solid rgba(26,34,38,.12);
+    border:0;border-top:1px solid rgba(26,34,38,.22);border-bottom:1px solid rgba(26,34,38,.22);
   }
   :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-header:hover{color:var(--ink);}
   :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-header:hover .ci-title{text-decoration:none;}
@@ -2279,7 +2279,7 @@
   .tier-gloss{margin:2px 0 0;display:flex;flex-direction:column;}
   .tier-gloss > div{
     display:grid;grid-template-columns:11px auto 1fr;gap:10px;align-items:baseline;
-    padding:7px 0;border-top:1px solid rgba(26,34,38,.08);font-size:15px;line-height:22px;
+    padding:7px 0;border-top:1px solid rgba(26,34,38,.12);font-size:15px;line-height:22px;
   }
   .tier-gloss > div:first-child{border-top:0;padding-top:0;}
   .tier-gloss i{width:11px;height:11px;border-radius:2px;display:inline-block;position:relative;top:1px;}
