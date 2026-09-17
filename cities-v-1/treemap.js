@@ -62,16 +62,8 @@
     return _tradScale(v);
   }
 
-  /* Dummy tradability per industry: a sector prior (manufacturing travels,
-     restaurants don't) plus a stable per-name spread, so a cell keeps its
-     shade across replays and the ranked views agree with the ramp. */
-  const TRADABILITY_PRIOR = {
-    "Construction": 0.15, "Education & Health": 0.45,
-    "Financial Activities": 0.62, "Leisure & Hospitality": 0.22,
-    "Manufacturing": 0.78, "Natural Resources": 0.70,
-    "Other": 0.35, "Professional & Business": 0.60,
-    "Trade & Transportation": 0.50
-  };
+  /* tradability, RCA, PCI and the tier per industry are read from the rows
+     below, once they exist; see after rawData */
   /* Dummy admin share of each sector's metro jobs — downtown-weighted
      sectors run high, land-hungry ones low. One function to swap for real
      place-level (2-digit) employment when it arrives. */
@@ -84,19 +76,9 @@
     "Other": 0.19, "Professional & Business": 0.34,
     "Trade & Transportation": 0.16
   };
-  const tradByName = new Map();
-  let _sectorOf = null;
-  function tradabilityOf(name){
-    if(!tradByName.has(name)){
-      if (!_sectorOf) _sectorOf = new Map(rawData.map(r => [r.name, r.sector]));
-      const prior = TRADABILITY_PRIOR[_sectorOf.get(name)] ?? 0.35;
-      let h = 2166136261;
-      for (const c of name){ h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); }
-      const jitter = ((h >>> 0) / 4294967296 - 0.5) * 0.5;
-      tradByName.set(name, Math.min(0.98, Math.max(0.02, prior + jitter)));
-    }
-    return tradByName.get(name);
-  }
+  function tradabilityOf(name){ return tradByName.has(name) ? tradByName.get(name) : 0; }
+  /* the tier the source assigns, 0 traded, 1 partly traded, 2 local */
+  function tierOf(name){ return tierByName.has(name) ? tierByName.get(name) : 2; }
 
   const colorMode  = { exportTreemapSvg:SECTOR, tradableAnimatedSvg:SECTOR,
                        complexityTreemapSvg:COMPLEXITY };
@@ -105,13 +87,15 @@
      later "Color by" change can recolour without losing the split. */
   const splitState = { exportTreemapSvg:null, tradableAnimatedSvg:null };
 
+  /* the five bins are the metro's own quintiles of PCI in 2024; the one
+     industry with no PCI in the source sits in the middle bin */
+  const PCI_CUTS = [-0.72, -0.4, 0.08, 0.65];
   function complexityColor(name){
-    /* seeded, not random: the complexity map and its headline share must
-       read the same on every load */
     if(!complexityByName.has(name)){
-      let h = 0;
-      for (const c of name) h = (h * 31 + c.charCodeAt(0)) % 997;
-      complexityByName.set(name, complexityPalette[h % complexityPalette.length]);
+      const v = pciByName.get(name);
+      let bin = 2;
+      if (v != null){ bin = 0; while (bin < PCI_CUTS.length && v >= PCI_CUTS[bin]) bin++; }
+      complexityByName.set(name, complexityPalette[bin]);
     }
     return complexityByName.get(name);
   }
@@ -140,330 +124,321 @@
     "Trade & Transportation": "#e0938a"
   };
 
+  /* Boston-Cambridge-Newton (metro 14460), 2024, 4-digit NAICS, from
+     boston_tradeability_20260916.csv: name, code, employment, the Growth
+     Lab sector (2-digit NAICS grouped as Metroverse does: 51 with
+     professional & business, 22 with construction), the RCA against the
+     national mix, the PCI, the tradability score 0 to 1 and the tier the
+     source assigns (0 traded, 1 partly traded, 2 local). The one row with
+     no name in the source is dropped; Private Households has no score or
+     tier there and is held at 0, local. */
   const rawData = [
-    {name: "Oilseed and Grain Farming", employ: 49.09, sector: "Natural Resources"},
-    {name: "Vegetable and Melon Farming", employ: 110.68, sector: "Natural Resources"},
-    {name: "Fruit and Tree Nut Farming", employ: 85.66, sector: "Natural Resources"},
-    {name: "Greenhouse Nursery and Floriculture Production", employ: 291.63, sector: "Natural Resources"},
-    {name: "Other Crop Farming", employ: 378.25, sector: "Natural Resources"},
-    {name: "Cattle Ranching and Farming", employ: 52.94, sector: "Natural Resources"},
-    {name: "Hog and Pig Farming", employ: 2.89, sector: "Natural Resources"},
-    {name: "Poultry and Egg Production", employ: 25.02, sector: "Natural Resources"},
-    {name: "Sheep and Goat Farming", employ: 1.92, sector: "Natural Resources"},
-    {name: "Aquaculture", employ: 4.81, sector: "Natural Resources"},
-    {name: "Other Animal Production", employ: 106.83, sector: "Natural Resources"},
-    {name: "Timber Tract Operations", employ: 0, sector: "Natural Resources"},
-    {name: "Forest Nurseries and Gathering of Forest Products", employ: 4.81, sector: "Natural Resources"},
-    {name: "Logging", employ: 30.80, sector: "Natural Resources"},
-    {name: "Fishing", employ: 0, sector: "Natural Resources"},
-    {name: "Hunting and Trapping", employ: 19.25, sector: "Natural Resources"},
-    {name: "Support Activities for Crop Production", employ: 208.86, sector: "Natural Resources"},
-    {name: "Support Activities for Animal Production", employ: 184.79, sector: "Natural Resources"},
-    {name: "Support Activities for Forestry", employ: 16.36, sector: "Natural Resources"},
-    {name: "Oil and Gas Extraction", employ: 825.80, sector: "Natural Resources"},
-    {name: "Coal Mining", employ: 0.96, sector: "Natural Resources"},
-    {name: "Metal Ore Mining", employ: 13.47, sector: "Natural Resources"},
-    {name: "Nonmetallic Mineral Mining and Quarrying", employ: 582.30, sector: "Natural Resources"},
-    {name: "Support Activities for Mining", employ: 410.98, sector: "Natural Resources"},
-    {name: "Electric Power Generation Transmission and Distribution", employ: 6977.92, sector: "Construction"},
-    {name: "Natural Gas Distribution", employ: 2561.14, sector: "Construction"},
-    {name: "Water Sewage and Other Systems", employ: 469.69, sector: "Construction"},
-    {name: "Residential Building Construction", employ: 14355.26, sector: "Construction"},
-    {name: "Nonresidential Building Construction", employ: 7606.41, sector: "Construction"},
-    {name: "Utility System Construction", employ: 3815.24, sector: "Construction"},
-    {name: "Land Subdivision", employ: 3197.33, sector: "Construction"},
-    {name: "Highway Street and Bridge Construction", employ: 1515.89, sector: "Construction"},
-    {name: "Other Heavy and Civil Engineering Construction", employ: 334.94, sector: "Construction"},
-    {name: "Foundation Structure and Building Exterior Contractors", employ: 13510.21, sector: "Construction"},
-    {name: "Building Equipment Contractors", employ: 18991.49, sector: "Construction"},
-    {name: "Building Finishing Contractors", employ: 7334.03, sector: "Construction"},
-    {name: "Other Specialty Trade Contractors", employ: 8368.69, sector: "Construction"},
-    {name: "Animal Food Manufacturing", employ: 74.11, sector: "Manufacturing"},
-    {name: "Grain and Oilseed Milling", employ: 209.82, sector: "Manufacturing"},
-    {name: "Sugar and Confectionery Product Manufacturing", employ: 265.64, sector: "Manufacturing"},
-    {name: "Fruit and Vegetable Preserving and Specialty Food Manufacturing", employ: 446.59, sector: "Manufacturing"},
-    {name: "Dairy Product Manufacturing", employ: 558.23, sector: "Manufacturing"},
-    {name: "Animal Slaughtering and Processing", employ: 768.05, sector: "Manufacturing"},
-    {name: "Seafood Product Preparation and Packaging", employ: 19.25, sector: "Manufacturing"},
-    {name: "Bakeries and Tortilla Manufacturing", employ: 2905.70, sector: "Manufacturing"},
-    {name: "Other Food Manufacturing", employ: 1413.87, sector: "Manufacturing"},
-    {name: "Beverage Manufacturing", employ: 2292.61, sector: "Manufacturing"},
-    {name: "Tobacco Manufacturing", employ: 21.17, sector: "Manufacturing"},
-    {name: "Fiber Yarn and Thread Mills", employ: 23.10, sector: "Manufacturing"},
-    {name: "Fabric Mills", employ: 280.08, sector: "Manufacturing"},
-    {name: "Textile and Fabric Finishing and Fabric Coating Mills", employ: 88.55, sector: "Manufacturing"},
-    {name: "Textile Furnishings Mills", employ: 345.53, sector: "Manufacturing"},
-    {name: "Other Textile Product Mills", employ: 1232.93, sector: "Manufacturing"},
-    {name: "Apparel Knitting Mills", employ: 72.19, sector: "Manufacturing"},
-    {name: "Cut and Sew Apparel Manufacturing", employ: 805.59, sector: "Manufacturing"},
-    {name: "Apparel Accessories and Other Apparel Manufacturing", employ: 151.11, sector: "Manufacturing"},
-    {name: "Leather and Hide Tanning and Finishing", employ: 45.24, sector: "Manufacturing"},
-    {name: "Footwear Manufacturing", employ: 2.89, sector: "Manufacturing"},
-    {name: "Other Leather and Allied Product Manufacturing", employ: 107.80, sector: "Manufacturing"},
-    {name: "Sawmills and Wood Preservation", employ: 65.45, sector: "Manufacturing"},
-    {name: "Veneer Plywood and Engineered Wood Product Manufacturing", employ: 1956.70, sector: "Manufacturing"},
-    {name: "Other Wood Product Manufacturing", employ: 2640.06, sector: "Manufacturing"},
-    {name: "Pulp Paper and Paperboard Mills", employ: 344.56, sector: "Manufacturing"},
-    {name: "Converted Paper Product Manufacturing", employ: 1906.66, sector: "Manufacturing"},
-    {name: "Printing and Related Support Activities", employ: 6885.52, sector: "Manufacturing"},
-    {name: "Petroleum and Coal Products Manufacturing", employ: 646.78, sector: "Manufacturing"},
-    {name: "Basic Chemical Manufacturing", employ: 3774.81, sector: "Manufacturing"},
-    {name: "Resin Synthetic Rubber and Artificial and Synthetic Fibers and Filaments Manufacturing", employ: 1385.00, sector: "Manufacturing"},
-    {name: "Pesticide Fertilizer and Other Agricultural Chemical Manufacturing", employ: 105.87, sector: "Manufacturing"},
-    {name: "Pharmaceutical and Medicine Manufacturing", employ: 1761.32, sector: "Manufacturing"},
-    {name: "Paint Coating and Adhesive Manufacturing", employ: 1953.82, sector: "Manufacturing"},
-    {name: "Soap Cleaning Compound and Toilet Preparation Manufacturing", employ: 910.50, sector: "Manufacturing"},
-    {name: "Other Chemical Product and Preparation Manufacturing", employ: 1310.89, sector: "Manufacturing"},
-    {name: "Plastics Product Manufacturing", employ: 16317.74, sector: "Manufacturing"},
-    {name: "Rubber Product Manufacturing", employ: 1619.84, sector: "Manufacturing"},
-    {name: "Clay Product and Refractory Manufacturing", employ: 185.76, sector: "Manufacturing"},
-    {name: "Glass and Glass Product Manufacturing", employ: 2588.09, sector: "Manufacturing"},
-    {name: "Cement and Concrete Product Manufacturing", employ: 1207.90, sector: "Manufacturing"},
-    {name: "Lime and Gypsum Product Manufacturing", employ: 134.75, sector: "Manufacturing"},
-    {name: "Other Nonmetallic Mineral Product Manufacturing", employ: 813.29, sector: "Manufacturing"},
-    {name: "Iron and Steel Mills and Ferroalloy Manufacturing", employ: 3398.49, sector: "Manufacturing"},
-    {name: "Steel Product Manufacturing from Purchased Steel", employ: 1215.60, sector: "Manufacturing"},
-    {name: "Alumina and Aluminum Production and Processing", employ: 842.16, sector: "Manufacturing"},
-    {name: "Nonferrous Metal Production and Processing", employ: 244.47, sector: "Manufacturing"},
-    {name: "Foundries", employ: 6531.33, sector: "Manufacturing"},
-    {name: "Forging and Stamping", employ: 4680.50, sector: "Manufacturing"},
-    {name: "Cutlery and Handtool Manufacturing", employ: 605.39, sector: "Manufacturing"},
-    {name: "Architectural and Structural Metals Manufacturing", employ: 5461.06, sector: "Manufacturing"},
-    {name: "Boiler Tank and Shipping Container Manufacturing", employ: 116.46, sector: "Manufacturing"},
-    {name: "Hardware Manufacturing", employ: 519.73, sector: "Manufacturing"},
-    {name: "Spring and Wire Product Manufacturing", employ: 2010.60, sector: "Manufacturing"},
-    {name: "Machine Shops Turned Product and Screw Nut and Bolt Manufacturing", employ: 9892.28, sector: "Manufacturing"},
-    {name: "Coating Engraving Heat Treating and Allied Activities", employ: 5739.22, sector: "Manufacturing"},
-    {name: "Other Fabricated Metal Product Manufacturing", employ: 5506.18, sector: "Manufacturing"},
-    {name: "Agriculture Construction and Mining Machinery Manufacturing", employ: 722.82, sector: "Manufacturing"},
-    {name: "Industrial Machinery Manufacturing", employ: 3048.15, sector: "Manufacturing"},
-    {name: "Commercial and Service Industry Machinery Manufacturing", employ: 2340.73, sector: "Manufacturing"},
-    {name: "Ventilation Heating Air-Conditioning and Commercial Refrigeration Equipment Manufacturing", employ: 1510.12, sector: "Manufacturing"},
-    {name: "Metalworking Machinery Manufacturing", employ: 20544.92, sector: "Manufacturing"},
-    {name: "Engine Turbine and Power Transmission Equipment Manufacturing", employ: 5683.39, sector: "Manufacturing"},
-    {name: "Other General Purpose Machinery Manufacturing", employ: 9404.31, sector: "Manufacturing"},
-    {name: "Computer and Peripheral Equipment Manufacturing", employ: 2603.49, sector: "Manufacturing"},
-    {name: "Communications Equipment Manufacturing", employ: 406.16, sector: "Manufacturing"},
-    {name: "Audio and Video Equipment Manufacturing", employ: 485.09, sector: "Manufacturing"},
-    {name: "Semiconductor and Other Electronic Component Manufacturing", employ: 3767.11, sector: "Manufacturing"},
-    {name: "Navigational Measuring Electromedical and Control Instruments Manufacturing", employ: 5314.77, sector: "Manufacturing"},
-    {name: "Manufacturing and Reproducing Magnetic and Optical Media", employ: 689.13, sector: "Manufacturing"},
-    {name: "Electric Lighting Equipment Manufacturing", employ: 1798.86, sector: "Manufacturing"},
-    {name: "Household Appliance Manufacturing", employ: 122.23, sector: "Manufacturing"},
-    {name: "Electrical Equipment Manufacturing", employ: 6392.74, sector: "Manufacturing"},
-    {name: "Other Electrical Equipment and Component Manufacturing", employ: 2136.69, sector: "Manufacturing"},
-    {name: "Motor Vehicle Manufacturing", employ: 26305.31, sector: "Manufacturing"},
-    {name: "Motor Vehicle Body and Trailer Manufacturing", employ: 576.52, sector: "Manufacturing"},
-    {name: "Motor Vehicle Parts Manufacturing", employ: 61179.72, sector: "Manufacturing"},
-    {name: "Aerospace Product and Parts Manufacturing", employ: 2296.46, sector: "Manufacturing"},
-    {name: "Railroad Rolling Stock Manufacturing", employ: 64.49, sector: "Manufacturing"},
-    {name: "Ship and Boat Building", employ: 34.65, sector: "Manufacturing"},
-    {name: "Other Transportation Equipment Manufacturing", employ: 621.76, sector: "Manufacturing"},
-    {name: "Household and Institutional Furniture and Kitchen Cabinet Manufacturing", employ: 979.80, sector: "Manufacturing"},
-    {name: "Office Furniture Manufacturing", employ: 451.40, sector: "Manufacturing"},
-    {name: "Other Furniture Related Product Manufacturing", employ: 307.03, sector: "Manufacturing"},
-    {name: "Medical Equipment and Supplies Manufacturing", employ: 1617.91, sector: "Manufacturing"},
-    {name: "Other Miscellaneous Manufacturing", employ: 6297.45, sector: "Manufacturing"},
-    {name: "Motor Vehicle and Motor Vehicle Parts and Supplies Merchant Wholesalers", employ: 11881.71, sector: "Trade & Transportation"},
-    {name: "Furniture and Home Furnishing Merchant Wholesalers", employ: 1489.91, sector: "Trade & Transportation"},
-    {name: "Lumber and Other Construction Materials Merchant Wholesalers", employ: 3238.72, sector: "Trade & Transportation"},
-    {name: "Professional and Commercial Equipment and Supplies Merchant Wholesalers", employ: 6915.36, sector: "Trade & Transportation"},
-    {name: "Metal and Mineral Merchant Wholesalers", employ: 4775.78, sector: "Trade & Transportation"},
-    {name: "Household Appliances and Electrical and Electronic Goods Merchant Wholesalers", employ: 7325.37, sector: "Trade & Transportation"},
-    {name: "Hardware and Plumbing and Heating Equipment and Supplies Merchant Wholesalers", employ: 2921.10, sector: "Trade & Transportation"},
-    {name: "Machinery Equipment and Supplies Merchant Wholesalers", employ: 17313.90, sector: "Trade & Transportation"},
-    {name: "Miscellaneous Durable Goods Merchant Wholesalers", employ: 3479.33, sector: "Trade & Transportation"},
-    {name: "Paper and Paper Product Merchant Wholesalers", employ: 1615.99, sector: "Trade & Transportation"},
-    {name: "Drugs and Druggists Sundries Merchant Wholesalers", employ: 2150.16, sector: "Trade & Transportation"},
-    {name: "Apparel Piece Goods and Notions Merchant Wholesalers", employ: 1219.45, sector: "Trade & Transportation"},
-    {name: "Grocery and Related Product Merchant Wholesalers", employ: 7638.17, sector: "Trade & Transportation"},
-    {name: "Farm Product Raw Material Merchant Wholesalers", employ: 136.67, sector: "Trade & Transportation"},
-    {name: "Chemical and Allied Products Merchant Wholesalers", employ: 1585.19, sector: "Trade & Transportation"},
-    {name: "Petroleum and Petroleum Products Merchant Wholesalers", employ: 1257.95, sector: "Trade & Transportation"},
-    {name: "Beer Wine and Distilled Alcoholic Beverage Merchant Wholesalers", employ: 2840.25, sector: "Trade & Transportation"},
-    {name: "Miscellaneous Nondurable Goods Merchant Wholesalers", employ: 4426.41, sector: "Trade & Transportation"},
-    {name: "Wholesale Electronic Markets and Agents and Brokers", employ: 80.85, sector: "Trade & Transportation"},
-    {name: "Automobile Dealers", employ: 38470.95, sector: "Trade & Transportation"},
-    {name: "Other Motor Vehicle Dealers", employ: 2542.85, sector: "Trade & Transportation"},
-    {name: "Automotive Parts Accessories and Tire Stores", employ: 6807.56, sector: "Trade & Transportation"},
-    {name: "Furniture Stores", employ: 3139.58, sector: "Trade & Transportation"},
-    {name: "Home Furnishings Stores", employ: 3455.27, sector: "Trade & Transportation"},
-    {name: "Electronics and Appliance Stores", employ: 5743.07, sector: "Trade & Transportation"},
-    {name: "Building Material and Supplies Dealers", employ: 17117.56, sector: "Trade & Transportation"},
-    {name: "Lawn and Garden Equipment and Supplies Stores", employ: 955.73, sector: "Trade & Transportation"},
-    {name: "Grocery Stores", employ: 21726.83, sector: "Trade & Transportation"},
-    {name: "Specialty Food Stores", employ: 8427.40, sector: "Trade & Transportation"},
-    {name: "Beer Wine and Liquor Stores", employ: 2671.82, sector: "Trade & Transportation"},
-    {name: "Health and Personal Care Stores", employ: 17183.97, sector: "Trade & Transportation"},
-    {name: "Gasoline Stations", employ: 5415.83, sector: "Trade & Transportation"},
-    {name: "Clothing Stores", employ: 14153.14, sector: "Trade & Transportation"},
-    {name: "Shoe Stores", employ: 1839.28, sector: "Trade & Transportation"},
-    {name: "Jewelry Luggage and Leather Goods Stores", employ: 2121.29, sector: "Trade & Transportation"},
-    {name: "Sporting Goods Hobby and Musical Instrument Stores", employ: 6149.23, sector: "Trade & Transportation"},
-    {name: "Book Stores and News Dealers", employ: 865.26, sector: "Trade & Transportation"},
-    {name: "Department Stores", employ: 30211.98, sector: "Trade & Transportation"},
-    {name: "General Merchandise Stores including Warehouse Clubs and Supercenters", employ: 6705.54, sector: "Trade & Transportation"},
-    {name: "Florists", employ: 1329.17, sector: "Trade & Transportation"},
-    {name: "Office Supplies Stationery and Gift Stores", employ: 3203.11, sector: "Trade & Transportation"},
-    {name: "Used Merchandise Stores", employ: 1174.22, sector: "Trade & Transportation"},
-    {name: "Other Miscellaneous Store Retailers", employ: 8560.22, sector: "Trade & Transportation"},
-    {name: "Electronic Shopping and Mail-Order Houses", employ: 865.26, sector: "Trade & Transportation"},
-    {name: "Vending Machine Operators", employ: 1362.86, sector: "Trade & Transportation"},
-    {name: "Direct Selling Establishments", employ: 936.48, sector: "Trade & Transportation"},
-    {name: "Scheduled Air Transportation", employ: 70.26, sector: "Trade & Transportation"},
-    {name: "Nonscheduled Air Transportation", employ: 259.87, sector: "Trade & Transportation"},
-    {name: "Rail Transportation", employ: 3082.80, sector: "Trade & Transportation"},
-    {name: "Deep Sea Coastal and Great Lakes Water Transportation", employ: 24.06, sector: "Trade & Transportation"},
-    {name: "Inland Water Transportation", employ: 74.11, sector: "Trade & Transportation"},
-    {name: "General Freight Trucking", employ: 14748.91, sector: "Trade & Transportation"},
-    {name: "Specialized Freight Trucking", employ: 2898.96, sector: "Trade & Transportation"},
-    {name: "Urban Transit Systems", employ: 1450.44, sector: "Trade & Transportation"},
-    {name: "Interurban and Rural Bus Transportation", employ: 51.97, sector: "Trade & Transportation"},
-    {name: "Taxi and Limousine Service", employ: 1660.26, sector: "Trade & Transportation"},
-    {name: "School and Employee Bus Transportation", employ: 612.13, sector: "Trade & Transportation"},
-    {name: "Charter Bus Industry", employ: 363.81, sector: "Trade & Transportation"},
-    {name: "Other Transit and Ground Passenger Transportation", employ: 354.19, sector: "Trade & Transportation"},
-    {name: "Pipeline Transportation of Crude Oil", employ: 3.62, sector: "Trade & Transportation"},
-    {name: "Pipeline Transportation of Natural Gas", employ: 204.04, sector: "Trade & Transportation"},
-    {name: "Other Pipeline Transportation", employ: 0.96, sector: "Trade & Transportation"},
-    {name: "Scenic and Sightseeing Transportation Land", employ: 6.74, sector: "Trade & Transportation"},
-    {name: "Scenic and Sightseeing Transportation Water", employ: 108.76, sector: "Trade & Transportation"},
-    {name: "Scenic and Sightseeing Transportation Other", employ: 1.92, sector: "Trade & Transportation"},
-    {name: "Support Activities for Air Transportation", employ: 692.98, sector: "Trade & Transportation"},
-    {name: "Support Activities for Rail Transportation", employ: 1846.98, sector: "Trade & Transportation"},
-    {name: "Support Activities for Water Transportation", employ: 173.24, sector: "Trade & Transportation"},
-    {name: "Support Activities for Road Transportation", employ: 3694.93, sector: "Trade & Transportation"},
-    {name: "Freight Transportation Arrangement", employ: 6173.29, sector: "Trade & Transportation"},
-    {name: "Other Support Activities for Transportation", employ: 8619.90, sector: "Trade & Transportation"},
-    {name: "Postal Service", employ: 7321.52, sector: "Trade & Transportation"},
-    {name: "Couriers and Express Delivery Services", employ: 1051.98, sector: "Trade & Transportation"},
-    {name: "Local Messengers and Local Delivery", employ: 1268.54, sector: "Trade & Transportation"},
-    {name: "Warehousing and Storage", employ: 4734.40, sector: "Trade & Transportation"},
-    {name: "Newspaper Periodical Book and Directory Publishers", employ: 8640.11, sector: "Professional & Business"},
-    {name: "Software Publishers", employ: 3989.44, sector: "Professional & Business"},
-    {name: "Motion Picture and Video Industries", employ: 4687.24, sector: "Professional & Business"},
-    {name: "Sound Recording Industries", employ: 477.39, sector: "Professional & Business"},
-    {name: "Radio and Television Broadcasting", employ: 3938.43, sector: "Professional & Business"},
-    {name: "Cable and Other Subscription Programming", employ: 1018.29, sector: "Professional & Business"},
-    {name: "Wired and Wireless Telecommunications Carriers", employ: 8049.15, sector: "Professional & Business"},
-    {name: "Satellite Telecommunications", employ: 1.92, sector: "Professional & Business"},
-    {name: "Other Telecommunications", employ: 5877.81, sector: "Professional & Business"},
-    {name: "Data Processing Hosting and Related Services", employ: 4608.31, sector: "Professional & Business"},
-    {name: "Other Information Services", employ: 4759.42, sector: "Professional & Business"},
-    {name: "Monetary Authorities-Central Bank", employ: 327.24, sector: "Financial Activities"},
-    {name: "Depository Credit Intermediation", employ: 19219.59, sector: "Financial Activities"},
-    {name: "Nondepository Credit Intermediation", employ: 11881.71, sector: "Financial Activities"},
-    {name: "Activities Related to Credit Intermediation", employ: 6175.22, sector: "Financial Activities"},
-    {name: "Securities and Commodity Contracts Intermediation and Brokerage", employ: 2709.36, sector: "Financial Activities"},
-    {name: "Securities and Commodity Exchanges", employ: 42.35, sector: "Financial Activities"},
-    {name: "Other Financial Investment Activities", employ: 14746.03, sector: "Financial Activities"},
-    {name: "Insurance Carriers", employ: 9901.91, sector: "Financial Activities"},
-    {name: "Agencies Brokerages and Other Insurance Related Activities", employ: 13823.02, sector: "Financial Activities"},
-    {name: "Insurance and Employee Benefit Funds", employ: 162.66, sector: "Financial Activities"},
-    {name: "Other Investment Pools and Funds", employ: 1299.34, sector: "Financial Activities"},
-    {name: "Lessors of Real Estate", employ: 14619.94, sector: "Financial Activities"},
-    {name: "Offices of Real Estate Agents and Brokers", employ: 20336.06, sector: "Financial Activities"},
-    {name: "Activities Related to Real Estate", employ: 9254.16, sector: "Financial Activities"},
-    {name: "Automotive Equipment Rental and Leasing", employ: 2618.89, sector: "Financial Activities"},
-    {name: "Consumer Goods Rental", employ: 2606.37, sector: "Financial Activities"},
-    {name: "General Rental Centers", employ: 63.52, sector: "Financial Activities"},
-    {name: "Commercial and Industrial Machinery and Equipment Rental and Leasing", employ: 2921.10, sector: "Financial Activities"},
-    {name: "Lessors of Nonfinancial Intangible Assets", employ: 228.11, sector: "Financial Activities"},
-    {name: "Legal Services", employ: 21983.81, sector: "Professional & Business"},
-    {name: "Accounting Tax Preparation Bookkeeping and Payroll Services", employ: 11227.23, sector: "Professional & Business"},
-    {name: "Architectural Engineering and Related Services", employ: 34988.73, sector: "Professional & Business"},
-    {name: "Specialized Design Services", employ: 2919.18, sector: "Professional & Business"},
-    {name: "Computer Systems Design and Related Services", employ: 25431.39, sector: "Professional & Business"},
-    {name: "Management Scientific and Technical Consulting Services", employ: 43482.54, sector: "Professional & Business"},
-    {name: "Scientific Research and Development Services", employ: 2667.01, sector: "Professional & Business"},
-    {name: "Advertising Public Relations and Related Services", employ: 6735.38, sector: "Professional & Business"},
-    {name: "Other Professional Scientific and Technical Services", employ: 15955.85, sector: "Professional & Business"},
-    {name: "Management of Companies and Enterprises", employ: 3811.39, sector: "Professional & Business"},
-    {name: "Office Administrative Services", employ: 20367.82, sector: "Professional & Business"},
-    {name: "Facilities Support Services", employ: 1453.33, sector: "Professional & Business"},
-    {name: "Employment Services", employ: 20106.99, sector: "Professional & Business"},
-    {name: "Business Support Services", employ: 21205.17, sector: "Professional & Business"},
-    {name: "Travel Arrangement and Reservation Services", employ: 3420.62, sector: "Professional & Business"},
-    {name: "Investigation and Security Services", employ: 9121.34, sector: "Professional & Business"},
-    {name: "Services to Buildings and Dwellings", employ: 22337.04, sector: "Professional & Business"},
-    {name: "Other Support Services", employ: 16758.55, sector: "Professional & Business"},
-    {name: "Waste Collection", employ: 444.66, sector: "Professional & Business"},
-    {name: "Waste Treatment and Disposal", employ: 2138.61, sector: "Professional & Business"},
-    {name: "Remediation and Other Waste Management Services", employ: 3298.39, sector: "Professional & Business"},
-    {name: "Elementary and Secondary Schools", employ: 103970.99, sector: "Education & Health"},
-    {name: "Junior Colleges", employ: 2730.53, sector: "Education & Health"},
-    {name: "Colleges Universities and Professional Schools", employ: 15505.42, sector: "Education & Health"},
-    {name: "Business Schools and Computer and Management Training", employ: 820.03, sector: "Education & Health"},
-    {name: "Technical and Trade Schools", employ: 2029.85, sector: "Education & Health"},
-    {name: "Other Schools and Instruction", employ: 8283.03, sector: "Education & Health"},
-    {name: "Educational Support Services", employ: 1190.58, sector: "Education & Health"},
-    {name: "Offices of Physicians", employ: 39705.80, sector: "Education & Health"},
-    {name: "Offices of Dentists", employ: 17066.55, sector: "Education & Health"},
-    {name: "Offices of Other Health Practitioners", employ: 13919.26, sector: "Education & Health"},
-    {name: "Outpatient Care Centers", employ: 13074.21, sector: "Education & Health"},
-    {name: "Medical and Diagnostic Laboratories", employ: 2731.49, sector: "Education & Health"},
-    {name: "Home Health Care Services", employ: 15810.52, sector: "Education & Health"},
-    {name: "Other Ambulatory Health Care Services", employ: 9415.86, sector: "Education & Health"},
-    {name: "General Medical and Surgical Hospitals", employ: 58156.38, sector: "Education & Health"},
-    {name: "Psychiatric and Substance Abuse Hospitals", employ: 1831.58, sector: "Education & Health"},
-    {name: "Specialty Hospitals", employ: 668.92, sector: "Education & Health"},
-    {name: "Nursing Care Facilities", employ: 18170.50, sector: "Education & Health"},
-    {name: "Residential Intellectual and Developmental Disability Mental Health and Substance Abuse Facilities", employ: 2408.10, sector: "Education & Health"},
-    {name: "Continuing Care Retirement Communities and Assisted Living Facilities for the Elderly", employ: 11691.14, sector: "Education & Health"},
-    {name: "Other Residential Care Facilities", employ: 4390.80, sector: "Education & Health"},
-    {name: "Individual and Family Services", employ: 23333.20, sector: "Education & Health"},
-    {name: "Community Food and Housing and Emergency and Other Relief Services", employ: 519.73, sector: "Other"},
-    {name: "Vocational Rehabilitation Services", employ: 2470.66, sector: "Education & Health"},
-    {name: "Child Day Care Services", employ: 10729.63, sector: "Education & Health"},
-    {name: "Performing Arts Companies", employ: 1366.71, sector: "Leisure & Hospitality"},
-    {name: "Spectator Sports", employ: 1312.81, sector: "Leisure & Hospitality"},
-    {name: "Promoters of Performing Arts Sports and Similar Events", employ: 674.69, sector: "Leisure & Hospitality"},
-    {name: "Agents and Managers for Artists Athletes Entertainers and Other Public Figures", employ: 773.83, sector: "Leisure & Hospitality"},
-    {name: "Independent Artists Writers and Performers", employ: 1441.78, sector: "Leisure & Hospitality"},
-    {name: "Museums Historical Sites and Similar Institutions", employ: 2634.28, sector: "Leisure & Hospitality"},
-    {name: "Amusement Parks and Arcades", employ: 427.34, sector: "Leisure & Hospitality"},
-    {name: "Gambling Industries", employ: 145.33, sector: "Leisure & Hospitality"},
-    {name: "Other Amusement and Recreation Industries", employ: 18008.81, sector: "Leisure & Hospitality"},
-    {name: "Traveler Accommodation", employ: 14363.72, sector: "Leisure & Hospitality"},
-    {name: "RV Parks and Recreational Camps", employ: 846.01, sector: "Leisure & Hospitality"},
-    {name: "Rooming and Boarding Houses Dormitories and Workers Camps", employ: 158.81, sector: "Leisure & Hospitality"},
-    {name: "Special Food Services", employ: 6360.97, sector: "Leisure & Hospitality"},
-    {name: "Drinking Places Alcoholic Beverages", employ: 7391.78, sector: "Leisure & Hospitality"},
-    {name: "Restaurants and Other Eating Places", employ: 119894.12, sector: "Leisure & Hospitality"},
-    {name: "Automotive Repair and Maintenance", employ: 16184.92, sector: "Professional & Business"},
-    {name: "Electronic and Precision Equipment Repair and Maintenance", employ: 3599.64, sector: "Professional & Business"},
-    {name: "Commercial and Industrial Machinery and Equipment Repair and Maintenance", employ: 3544.78, sector: "Professional & Business"},
-    {name: "Personal and Household Goods Repair and Maintenance", employ: 3972.12, sector: "Professional & Business"},
-    {name: "Personal Care Services", employ: 13523.69, sector: "Professional & Business"},
-    {name: "Death Care Services", employ: 2565.95, sector: "Professional & Business"},
-    {name: "Drycleaning and Laundry Services", employ: 4134.78, sector: "Professional & Business"},
-    {name: "Other Personal Services", employ: 5075.11, sector: "Professional & Business"},
-    {name: "Religious Organizations", employ: 19104.10, sector: "Other"},
-    {name: "Grantmaking and Giving Services", employ: 1566.90, sector: "Other"},
-    {name: "Social Advocacy Organizations", employ: 4651.63, sector: "Other"},
-    {name: "Civic and Social Organizations", employ: 13318.68, sector: "Other"},
-    {name: "Business Professional Labor Political and Similar Organizations", employ: 13376.43, sector: "Other"},
-    {name: "Private Households", employ: 1.92, sector: "Other"},
-    {name: "Executive Legislative and Other General Government Support", employ: 29272.61, sector: "Other"},
-    {name: "Justice Public Order and Safety Activities", employ: 48264.10, sector: "Other"},
-    {name: "Administration of Human Resource Programs", employ: 11616.07, sector: "Other"},
-    {name: "Administration of Environmental Quality Programs", employ: 7058.77, sector: "Other"},
-    {name: "Administration of Housing Programs Urban Planning and Community Development", employ: 1483.17, sector: "Other"},
-    {name: "Administration of Economic Programs", employ: 4969.24, sector: "Other"},
-    {name: "Space Research and Technology", employ: 0, sector: "Other"},
-    {name: "National Security and International Affairs", employ: 15600.70, sector: "Other"},
+    {name: "Restaurants and Other Eating Places", code: "7225", employ: 175444.0, sector: "Leisure & Hospitality", rca: 0.83, pci: -0.763, trad: 0.001, tier: 2},
+    {name: "General Medical and Surgical Hospitals", code: "6221", employ: 125558.62, sector: "Education & Health", rca: 2.04, pci: -0.588, trad: 0.5, tier: 1},
+    {name: "Scientific Research and Development Services", code: "5417", employ: 96682.0, sector: "Professional & Business", rca: 5.756, pci: 0.734, trad: 1.0, tier: 0},
+    {name: "Colleges, Universities, and Professional Schools", code: "6113", employ: 85523.11, sector: "Education & Health", rca: 4.574, pci: 0.144, trad: 0.5, tier: 1},
+    {name: "Management of Companies and Enterprises", code: "5511", employ: 64860.0, sector: "Professional & Business", rca: 1.322, pci: -0.145, trad: 0.501, tier: 1},
+    {name: "Computer Systems Design and Related Services", code: "5415", employ: 63891.0, sector: "Professional & Business", rca: 1.349, pci: 0.723, trad: 1.0, tier: 0},
+    {name: "Grocery and Convenience Retailers", code: "4451", employ: 60428.0, sector: "Trade & Transportation", rca: 1.155, pci: -0.684, trad: 0.007, tier: 2},
+    {name: "Individual and Family Services", code: "6241", employ: 60218.0, sector: "Education & Health", rca: 0.972, pci: -0.664, trad: 0.049, tier: 2},
+    {name: "Management, Scientific, and Technical Consulting Services", code: "5416", employ: 51398.0, sector: "Professional & Business", rca: 1.411, pci: 0.252, trad: 0.916, tier: 0},
+    {name: "Services to Buildings and Dwellings", code: "5617", employ: 47220.0, sector: "Professional & Business", rca: 1.063, pci: -0.385, trad: 0.0, tier: 2},
+    {name: "Offices of Physicians", code: "6211", employ: 46096.0, sector: "Education & Health", rca: 0.812, pci: -0.394, trad: 0.0, tier: 2},
+    {name: "Building Equipment Contractors", code: "2382", employ: 45734.0, sector: "Construction", rca: 0.926, pci: -0.589, trad: 0.0, tier: 2},
+    {name: "Employment Services", code: "5613", employ: 41760.0, sector: "Professional & Business", rca: 0.662, pci: -0.358, trad: 0.081, tier: 2},
+    {name: "Architectural, Engineering, and Related Services", code: "5413", employ: 38151.0, sector: "Professional & Business", rca: 1.154, pci: 0.188, trad: 0.939, tier: 0},
+    {name: "Software Publishers", code: "5132", employ: 37825.75, sector: "Professional & Business", rca: 3.072, pci: 1.201, trad: 1.0, tier: 0},
+    {name: "Other Financial Investment Activities", code: "5239", employ: 31642.97, sector: "Financial Activities", rca: 2.841, pci: 0.426, trad: 1.0, tier: 0},
+    {name: "Depository Credit Intermediation", code: "5221", employ: 31206.0, sector: "Financial Activities", rca: 0.936, pci: -1.038, trad: 0.436, tier: 1},
+    {name: "Home Health Care Services", code: "6216", employ: 30976.0, sector: "Education & Health", rca: 0.923, pci: -0.648, trad: 0.153, tier: 2},
+    {name: "Insurance Carriers", code: "5241", employ: 30801.0, sector: "Financial Activities", rca: 1.388, pci: 0.055, trad: 0.717, tier: 1},
+    {name: "Traveler Accommodation", code: "7211", employ: 25570.0, sector: "Leisure & Hospitality", rca: 0.832, pci: -0.416, trad: 0.566, tier: 1},
+    {name: "Child Care Services", code: "6244", employ: 25132.0, sector: "Education & Health", rca: 1.345, pci: -0.74, trad: 0.0, tier: 2},
+    {name: "Legal Services", code: "5411", employ: 24743.0, sector: "Professional & Business", rca: 1.054, pci: -0.21, trad: 0.464, tier: 1},
+    {name: "Nursing Care Facilities (Skilled Nursing Facilities)", code: "6231", employ: 24036.0, sector: "Education & Health", rca: 0.927, pci: -1.201, trad: 0.0, tier: 2},
+    {name: "Other Amusement and Recreation Industries", code: "7139", employ: 24009.06, sector: "Leisure & Hospitality", rca: 0.981, pci: -0.257, trad: 0.027, tier: 2},
+    {name: "Navigational, Measuring, Electromedical, and Control Instruments Manufacturing", code: "3345", employ: 22232.0, sector: "Manufacturing", rca: 3.325, pci: 0.347, trad: 1.0, tier: 0},
+    {name: "Department Stores", code: "4551", employ: 21646.0, sector: "Trade & Transportation", rca: 1.138, pci: 0.099, trad: 0.0, tier: 2},
+    {name: "Accounting, Tax Preparation, Bookkeeping, and Payroll Services", code: "5412", employ: 21260.0, sector: "Professional & Business", rca: 0.954, pci: -0.544, trad: 0.395, tier: 1},
+    {name: "Elementary and Secondary Schools", code: "6111", employ: 19244.0, sector: "Education & Health", rca: 1.065, pci: 0.092, trad: 0.0, tier: 2},
+    {name: "Offices of Dentists", code: "6212", employ: 19242.0, sector: "Education & Health", rca: 0.952, pci: -0.578, trad: 0.0, tier: 2},
+    {name: "Continuing Care Retirement Communities and Assisted Living Facilities for the Elderly", code: "6233", employ: 18976.0, sector: "Education & Health", rca: 1.077, pci: -0.625, trad: 0.249, tier: 1},
+    {name: "Special Food Services", code: "7223", employ: 18551.0, sector: "Leisure & Hospitality", rca: 1.339, pci: -0.408, trad: 0.007, tier: 2},
+    {name: "Offices of Other Health Practitioners", code: "6213", employ: 18463.0, sector: "Education & Health", rca: 0.766, pci: -0.666, trad: 0.0, tier: 2},
+    {name: "Personal Care Services", code: "8121", employ: 17579.0, sector: "Other", rca: 1.207, pci: -0.007, trad: 0.0, tier: 2},
+    {name: "Health and Personal Care Retailers", code: "4561", employ: 17562.0, sector: "Trade & Transportation", rca: 0.834, pci: -0.76, trad: 0.0, tier: 2},
+    {name: "Activities Related to Real Estate", code: "5313", employ: 17475.0, sector: "Financial Activities", rca: 1.077, pci: 0.206, trad: 0.104, tier: 2},
+    {name: "Investigation and Security Services", code: "5616", employ: 17410.0, sector: "Professional & Business", rca: 0.873, pci: 0.468, trad: 0.013, tier: 2},
+    {name: "Residential Intellectual and Developmental Disability, Mental Health, and Substance Abuse Facilities", code: "6232", employ: 17334.0, sector: "Education & Health", rca: 1.547, pci: -0.641, trad: 0.349, tier: 1},
+    {name: "Automobile Dealers", code: "4411", employ: 17077.0, sector: "Trade & Transportation", rca: 0.695, pci: -0.884, trad: 0.0, tier: 2},
+    {name: "Agencies, Brokerages, and Other Insurance Related Activities", code: "5242", employ: 16950.0, sector: "Financial Activities", rca: 0.656, pci: -0.622, trad: 0.128, tier: 2},
+    {name: "Building Material and Supplies Dealers", code: "4441", employ: 16383.0, sector: "Trade & Transportation", rca: 0.771, pci: -0.848, trad: 0.0, tier: 2},
+    {name: "Building Finishing Contractors", code: "2383", employ: 16288.0, sector: "Construction", rca: 1.001, pci: 0.001, trad: 0.002, tier: 2},
+    {name: "Clothing and Clothing Accessories Retailers", code: "4581", employ: 15298.0, sector: "Trade & Transportation", rca: 0.931, pci: -0.18, trad: 0.0, tier: 2},
+    {name: "Other Schools and Instruction", code: "6116", employ: 15239.0, sector: "Education & Health", rca: 1.48, pci: 0.339, trad: 0.019, tier: 2},
+    {name: "Outpatient Care Centers", code: "6214", employ: 15136.0, sector: "Education & Health", rca: 0.712, pci: -0.612, trad: 0.146, tier: 2},
+    {name: "Professional and Commercial Equipment and Supplies Merchant Wholesalers", code: "4234", employ: 14120.0, sector: "Trade & Transportation", rca: 1.0, pci: 0.235, trad: 0.421, tier: 1},
+    {name: "Other Professional, Scientific, and Technical Services", code: "5419", employ: 13632.0, sector: "Professional & Business", rca: 0.799, pci: -0.545, trad: 0.421, tier: 1},
+    {name: "Other Specialty Trade Contractors", code: "2389", employ: 13621.0, sector: "Construction", rca: 0.891, pci: -0.714, trad: 0.0, tier: 2},
+    {name: "Automotive Repair and Maintenance", code: "8111", employ: 13228.0, sector: "Other", rca: 0.661, pci: -0.872, trad: 0.0, tier: 2},
+    {name: "Nonresidential Building Construction", code: "2362", employ: 13219.0, sector: "Construction", rca: 0.773, pci: -0.72, trad: 0.157, tier: 2},
+    {name: "Residential Building Construction", code: "2361", employ: 12202.0, sector: "Construction", rca: 0.684, pci: -0.28, trad: 0.02, tier: 2},
+    {name: "Civic and Social Organizations", code: "8134", employ: 12131.0, sector: "Other", rca: 1.832, pci: -0.747, trad: 0.0, tier: 2},
+    {name: "Warehouse Clubs, Supercenters, and Other General Merchandise Retailers", code: "4552", employ: 11863.0, sector: "Trade & Transportation", rca: 0.314, pci: -1.219, trad: 0.044, tier: 2},
+    {name: "Securities and Commodity Contracts Intermediation and Brokerage", code: "5231", employ: 11574.3, sector: "Financial Activities", rca: 1.55, pci: -0.003, trad: 1.0, tier: 0},
+    {name: "Grocery and Related Product Merchant Wholesalers", code: "4244", employ: 11469.0, sector: "Trade & Transportation", rca: 0.744, pci: -0.449, trad: 0.171, tier: 2},
+    {name: "Couriers and Express Delivery Services", code: "4921", employ: 10903.42, sector: "Trade & Transportation", rca: 0.765, pci: -0.017, trad: 1.0, tier: 0},
+    {name: "Scheduled Air Transportation", code: "4811", employ: 10793.36, sector: "Trade & Transportation", rca: 1.398, pci: 2.951, trad: 1.0, tier: 0},
+    {name: "Foundation, Structure, and Building Exterior Contractors", code: "2381", employ: 10493.0, sector: "Construction", rca: 0.547, pci: -0.516, trad: 0.052, tier: 2},
+    {name: "Semiconductor and Other Electronic Component Manufacturing", code: "3344", employ: 10398.88, sector: "Manufacturing", rca: 1.597, pci: 0.537, trad: 0.984, tier: 0},
+    {name: "Other Personal Services", code: "8129", employ: 10066.0, sector: "Other", rca: 1.224, pci: 0.054, trad: 0.013, tier: 2},
+    {name: "Warehousing and Storage", code: "4931", employ: 9568.0, sector: "Trade & Transportation", rca: 0.304, pci: -0.612, trad: 0.379, tier: 1},
+    {name: "Lessors of Real Estate", code: "5311", employ: 9339.0, sector: "Financial Activities", rca: 0.757, pci: -0.377, trad: 0.019, tier: 2},
+    {name: "Bakeries and Tortilla Manufacturing", code: "3118", employ: 8845.0, sector: "Manufacturing", rca: 1.476, pci: -0.281, trad: 0.587, tier: 1},
+    {name: "Aerospace Product and Parts Manufacturing", code: "3364", employ: 8736.82, sector: "Manufacturing", rca: 1.105, pci: 0.533, trad: 1.0, tier: 0},
+    {name: "Furniture and Home Furnishings Retailers", code: "4491", employ: 8637.0, sector: "Trade & Transportation", rca: 1.105, pci: -0.375, trad: 0.0, tier: 2},
+    {name: "Advertising, Public Relations, and Related Services", code: "5418", employ: 8201.78, sector: "Professional & Business", rca: 0.868, pci: 0.721, trad: 0.829, tier: 0},
+    {name: "Other Miscellaneous Retailers", code: "4599", employ: 8162.0, sector: "Trade & Transportation", rca: 0.867, pci: -0.569, trad: 0.061, tier: 2},
+    {name: "Computing Infrastructure Providers, Data Processing, Web Hosting, and Related Services", code: "5182", employ: 8116.07, sector: "Professional & Business", rca: 0.909, pci: 0.56, trad: 0.9, tier: 0},
+    {name: "Household Appliances and Electrical and Electronic Goods Merchant Wholesalers", code: "4236", employ: 7936.0, sector: "Trade & Transportation", rca: 1.127, pci: -0.355, trad: 0.234, tier: 1},
+    {name: "Newspaper, Periodical, Book, and Directory Publishers", code: "5131", employ: 7775.71, sector: "Professional & Business", rca: 1.667, pci: -0.532, trad: 0.828, tier: 0},
+    {name: "Social Advocacy Organizations", code: "8133", employ: 7649.0, sector: "Other", rca: 1.548, pci: -0.033, trad: 0.5, tier: 1},
+    {name: "Medical Equipment and Supplies Manufacturing", code: "3391", employ: 7549.07, sector: "Manufacturing", rca: 1.456, pci: 0.001, trad: 0.929, tier: 0},
+    {name: "Office Administrative Services", code: "5611", employ: 7499.0, sector: "Professional & Business", rca: 0.634, pci: -0.288, trad: 0.5, tier: 1},
+    {name: "Sporting Goods, Hobby, and Musical Instrument Retailers", code: "4591", employ: 7379.0, sector: "Trade & Transportation", rca: 0.782, pci: -0.306, trad: 0.0, tier: 2},
+    {name: "Gasoline Stations", code: "4571", employ: 7259.0, sector: "Trade & Transportation", rca: 0.553, pci: -1.256, trad: 0.045, tier: 2},
+    {name: "Machine Shops; Turned Product; and Screw, Nut, and Bolt Manufacturing", code: "3327", employ: 7251.69, sector: "Manufacturing", rca: 1.199, pci: -1.076, trad: 0.603, tier: 1},
+    {name: "Pharmaceutical and Medicine Manufacturing", code: "3254", employ: 7166.42, sector: "Manufacturing", rca: 1.364, pci: 0.781, trad: 1.0, tier: 0},
+    {name: "Wired and Wireless Telecommunications (except Satellite)", code: "5171", employ: 7146.19, sector: "Professional & Business", rca: 0.801, pci: -0.711, trad: 0.5, tier: 1},
+    {name: "School and Employee Bus Transportation", code: "4854", employ: 7129.71, sector: "Trade & Transportation", rca: 2.427, pci: -0.353, trad: 0.495, tier: 1},
+    {name: "Wholesale Trade Agents and Brokers", code: "4251", employ: 6490.0, sector: "Trade & Transportation", rca: 0.693, pci: 0.211, trad: 0.9, tier: 0},
+    {name: "Machinery, Equipment, and Supplies Merchant Wholesalers", code: "4238", employ: 6374.0, sector: "Trade & Transportation", rca: 0.432, pci: -1.267, trad: 0.514, tier: 1},
+    {name: "Other Ambulatory Health Care Services", code: "6219", employ: 6344.07, sector: "Education & Health", rca: 1.02, pci: -0.554, trad: 0.185, tier: 2},
+    {name: "Drugs and Druggists' Sundries Merchant Wholesalers", code: "4242", employ: 6292.0, sector: "Trade & Transportation", rca: 1.311, pci: 0.53, trad: 0.0, tier: 2},
+    {name: "Business, Professional, Labor, Political, and Similar Organizations", code: "8139", employ: 5952.0, sector: "Other", rca: 0.7, pci: -0.129, trad: 0.378, tier: 1},
+    {name: "Automotive Parts, Accessories, and Tire Retailers", code: "4413", employ: 5926.0, sector: "Trade & Transportation", rca: 0.568, pci: -1.044, trad: 0.0, tier: 2},
+    {name: "Electronics and Appliance Retailers", code: "4492", employ: 5895.0, sector: "Trade & Transportation", rca: 0.781, pci: -0.527, trad: 0.0, tier: 2},
+    {name: "Offices of Real Estate Agents and Brokers", code: "5312", employ: 5763.0, sector: "Financial Activities", rca: 0.844, pci: 0.013, trad: 0.0, tier: 2},
+    {name: "General Freight Trucking", code: "4841", employ: 5739.0, sector: "Trade & Transportation", rca: 0.288, pci: -1.164, trad: 0.335, tier: 1},
+    {name: "Drycleaning and Laundry Services", code: "8123", employ: 5660.0, sector: "Other", rca: 1.194, pci: -0.467, trad: 0.042, tier: 2},
+    {name: "Business Support Services", code: "5614", employ: 5560.0, sector: "Professional & Business", rca: 0.431, pci: 0.055, trad: 0.444, tier: 1},
+    {name: "Community Food and Housing, and Emergency and Other Relief Services", code: "6242", employ: 5518.0, sector: "Education & Health", rca: 1.427, pci: -0.007, trad: 0.136, tier: 2},
+    {name: "Utility System Construction", code: "2371", employ: 5503.82, sector: "Construction", rca: 0.534, pci: -0.944, trad: 0.39, tier: 1},
+    {name: "Printing and Related Support Activities", code: "3231", employ: 5353.0, sector: "Manufacturing", rca: 0.812, pci: -0.837, trad: 0.479, tier: 1},
+    {name: "Industrial Machinery Manufacturing", code: "3332", employ: 5264.45, sector: "Manufacturing", rca: 2.69, pci: -0.149, trad: 1.0, tier: 0},
+    {name: "Web Search Portals, Libraries, Archives, and Other Information Services", code: "5192", employ: 5170.36, sector: "Professional & Business", rca: 1.997, pci: 0.823, trad: 0.918, tier: 0},
+    {name: "Vocational Rehabilitation Services", code: "6243", employ: 5067.0, sector: "Education & Health", rca: 1.261, pci: -0.606, trad: 0.01, tier: 2},
+    {name: "Private Households", code: "8141", employ: 5017.0, sector: "Other", rca: 1.231, pci: null, trad: 0.0, tier: 2},
+    {name: "Promoters of Performing Arts, Sports, and Similar Events", code: "7113", employ: 5005.07, sector: "Leisure & Hospitality", rca: 1.551, pci: 0.764, trad: 0.614, tier: 1},
+    {name: "Hardware, and Plumbing and Heating Equipment and Supplies Merchant Wholesalers", code: "4237", employ: 4990.0, sector: "Trade & Transportation", rca: 0.836, pci: -0.192, trad: 0.035, tier: 2},
+    {name: "Computer and Peripheral Equipment Manufacturing", code: "3341", employ: 4863.17, sector: "Manufacturing", rca: 3.251, pci: 2.188, trad: 1.0, tier: 0},
+    {name: "Educational Support Services", code: "6117", employ: 4811.0, sector: "Education & Health", rca: 1.237, pci: 0.744, trad: 0.5, tier: 1},
+    {name: "Electric Power Generation, Transmission and Distribution", code: "2211", employ: 4718.71, sector: "Construction", rca: 1.097, pci: -1.15, trad: 0.681, tier: 1},
+    {name: "Highway, Street, and Bridge Construction", code: "2373", employ: 4652.42, sector: "Construction", rca: 0.783, pci: -0.526, trad: 0.0, tier: 2},
+    {name: "Specialty Food Retailers", code: "4452", employ: 4596.13, sector: "Trade & Transportation", rca: 1.085, pci: -0.398, trad: 0.113, tier: 2},
+    {name: "Medical and Diagnostic Laboratories", code: "6215", employ: 4540.42, sector: "Education & Health", rca: 0.79, pci: 0.27, trad: 0.364, tier: 1},
+    {name: "Beer, Wine, and Liquor Retailers", code: "4453", employ: 4369.07, sector: "Trade & Transportation", rca: 1.394, pci: -0.81, trad: 0.0, tier: 2},
+    {name: "Other Food Manufacturing", code: "3119", employ: 4282.0, sector: "Manufacturing", rca: 1.163, pci: -0.383, trad: 0.905, tier: 0},
+    {name: "Travel Arrangement and Reservation Services", code: "5615", employ: 3999.59, sector: "Professional & Business", rca: 1.163, pci: 0.847, trad: 0.404, tier: 1},
+    {name: "Specialized Freight Trucking", code: "4842", employ: 3950.0, sector: "Trade & Transportation", rca: 0.47, pci: -1.237, trad: 0.484, tier: 1},
+    {name: "Museums, Historical Sites, and Similar Institutions", code: "7121", employ: 3941.0, sector: "Leisure & Hospitality", rca: 1.27, pci: 0.193, trad: 0.541, tier: 1},
+    {name: "Lumber and Other Construction Materials Merchant Wholesalers", code: "4233", employ: 3938.0, sector: "Trade & Transportation", rca: 0.804, pci: -0.219, trad: 0.0, tier: 2},
+    {name: "Other Transit and Ground Passenger Transportation", code: "4859", employ: 3813.71, sector: "Trade & Transportation", rca: 2.092, pci: 0.134, trad: 0.084, tier: 2},
+    {name: "Nondepository Credit Intermediation", code: "5222", employ: 3810.0, sector: "Financial Activities", rca: 0.411, pci: -0.686, trad: 0.692, tier: 1},
+    {name: "Waste Collection", code: "5621", employ: 3752.0, sector: "Professional & Business", rca: 1.086, pci: -0.522, trad: 0.056, tier: 2},
+    {name: "Beverage Manufacturing", code: "3121", employ: 3669.46, sector: "Manufacturing", rca: 0.898, pci: -0.282, trad: 0.904, tier: 0},
+    {name: "Motion Picture and Video Industries", code: "5121", employ: 3616.02, sector: "Professional & Business", rca: 0.613, pci: -0.124, trad: 0.825, tier: 0},
+    {name: "Architectural and Structural Metals Manufacturing", code: "3323", employ: 3570.07, sector: "Manufacturing", rca: 0.526, pci: -1.02, trad: 0.602, tier: 1},
+    {name: "Drinking Places (Alcoholic Beverages)", code: "7224", employ: 3529.0, sector: "Leisure & Hospitality", rca: 0.468, pci: -0.486, trad: 0.0, tier: 2},
+    {name: "Other Miscellaneous Manufacturing", code: "3399", employ: 3407.55, sector: "Manufacturing", rca: 0.759, pci: -0.632, trad: 0.635, tier: 1},
+    {name: "Support Activities for Air Transportation", code: "4881", employ: 3300.42, sector: "Trade & Transportation", rca: 0.67, pci: 0.154, trad: 0.804, tier: 0},
+    {name: "Automotive Equipment Rental and Leasing", code: "5321", employ: 3220.42, sector: "Financial Activities", rca: 0.813, pci: 0.283, trad: 0.5, tier: 1},
+    {name: "Fuel Dealers", code: "4572", employ: 3125.0, sector: "Trade & Transportation", rca: 2.788, pci: -0.847, trad: 0.5, tier: 1},
+    {name: "Shoe Retailers", code: "4582", employ: 3121.04, sector: "Trade & Transportation", rca: 0.977, pci: -0.014, trad: 0.0, tier: 2},
+    {name: "Office Supplies, Stationery, and Gift Retailers", code: "4594", employ: 3073.0, sector: "Trade & Transportation", rca: 0.826, pci: -0.199, trad: 0.338, tier: 1},
+    {name: "Performing Arts Companies", code: "7111", employ: 3061.62, sector: "Leisure & Hospitality", rca: 1.242, pci: 1.221, trad: 0.544, tier: 1},
+    {name: "Miscellaneous Durable Goods Merchant Wholesalers", code: "4239", employ: 3001.0, sector: "Trade & Transportation", rca: 0.505, pci: -0.605, trad: 0.13, tier: 2},
+    {name: "Remediation and Other Waste Management Services", code: "5629", employ: 2835.93, sector: "Professional & Business", rca: 0.935, pci: -0.387, trad: 0.612, tier: 1},
+    {name: "Spectator Sports", code: "7112", employ: 2831.36, sector: "Leisure & Hospitality", rca: 1.087, pci: 1.013, trad: 0.9, tier: 0},
+    {name: "Specialized Design Services", code: "5414", employ: 2775.49, sector: "Professional & Business", rca: 0.979, pci: 0.833, trad: 0.535, tier: 1},
+    {name: "Media Streaming Distribution Services, Social Networks, and Other Media Networks and Content Providers", code: "5162", employ: 2770.55, sector: "Professional & Business", rca: 0.774, pci: 0.332, trad: 0.9, tier: 0},
+    {name: "Motor Vehicle and Motor Vehicle Parts and Supplies Merchant Wholesalers", code: "4231", employ: 2688.71, sector: "Trade & Transportation", rca: 0.384, pci: -0.719, trad: 0.313, tier: 1},
+    {name: "Other Residential Care Facilities", code: "6239", employ: 2678.43, sector: "Education & Health", rca: 1.189, pci: -0.043, trad: 0.5, tier: 1},
+    {name: "Other Electrical Equipment and Component Manufacturing", code: "3359", employ: 2672.46, sector: "Manufacturing", rca: 1.613, pci: 0.106, trad: 1.0, tier: 0},
+    {name: "Grantmaking and Giving Services", code: "8132", employ: 2576.13, sector: "Other", rca: 0.862, pci: 0.444, trad: 0.372, tier: 1},
+    {name: "Activities Related to Credit Intermediation", code: "5223", employ: 2506.0, sector: "Financial Activities", rca: 0.499, pci: 0.033, trad: 0.583, tier: 1},
+    {name: "Other General Purpose Machinery Manufacturing", code: "3339", employ: 2487.21, sector: "Manufacturing", rca: 0.609, pci: -0.807, trad: 1.0, tier: 0},
+    {name: "Radio and Television Broadcasting Stations", code: "5161", employ: 2388.13, sector: "Professional & Business", rca: 1.288, pci: -0.653, trad: 0.5, tier: 1},
+    {name: "Other Fabricated Metal Product Manufacturing", code: "3329", employ: 2380.14, sector: "Manufacturing", rca: 0.656, pci: -0.808, trad: 1.0, tier: 0},
+    {name: "Other Support Services", code: "5619", employ: 2366.39, sector: "Professional & Business", rca: 0.391, pci: -0.187, trad: 0.266, tier: 1},
+    {name: "Coating, Engraving, Heat Treating, and Allied Activities", code: "3328", employ: 2329.42, sector: "Manufacturing", rca: 1.112, pci: -0.606, trad: 0.694, tier: 1},
+    {name: "Commercial and Industrial Machinery and Equipment Rental and Leasing", code: "5324", employ: 2308.07, sector: "Financial Activities", rca: 0.654, pci: -0.414, trad: 0.242, tier: 1},
+    {name: "Greenhouse, Nursery, and Floriculture Production", code: "1114", employ: 2291.48, sector: "Natural Resources", rca: 0.833, pci: -0.472, trad: 0.9, tier: 0},
+    {name: "Lawn and Garden Equipment and Supplies Retailers", code: "4442", employ: 2289.0, sector: "Trade & Transportation", rca: 0.707, pci: -1.097, trad: 0.081, tier: 2},
+    {name: "Commercial and Industrial Machinery and Equipment (except Automotive and Electronic) Repair and Maintenance", code: "8113", employ: 2286.0, sector: "Other", rca: 0.531, pci: -1.231, trad: 0.5, tier: 1},
+    {name: "Jewelry, Luggage, and Leather Goods Retailers", code: "4583", employ: 2244.24, sector: "Trade & Transportation", rca: 0.968, pci: -0.18, trad: 0.03, tier: 2},
+    {name: "Apparel, Piece Goods, and Notions Merchant Wholesalers", code: "4243", employ: 2200.0, sector: "Trade & Transportation", rca: 0.914, pci: 0.529, trad: 0.571, tier: 1},
+    {name: "Book Retailers and News Dealers", code: "4592", employ: 2166.07, sector: "Trade & Transportation", rca: 1.964, pci: 0.311, trad: 0.0, tier: 2},
+    {name: "Local Messengers and Local Delivery", code: "4922", employ: 2154.0, sector: "Trade & Transportation", rca: 0.679, pci: 0.645, trad: 0.0, tier: 2},
+    {name: "Commercial and Service Industry Machinery Manufacturing", code: "3333", employ: 2127.62, sector: "Manufacturing", rca: 1.949, pci: 0.49, trad: 1.0, tier: 0},
+    {name: "Paper and Paper Product Merchant Wholesalers", code: "4241", employ: 2072.91, sector: "Trade & Transportation", rca: 1.075, pci: 0.396, trad: 0.222, tier: 1},
+    {name: "Taxi and Limousine Service", code: "4853", employ: 2005.36, sector: "Trade & Transportation", rca: 1.265, pci: 0.282, trad: 0.394, tier: 1},
+    {name: "Used Merchandise Retailers", code: "4595", employ: 2000.0, sector: "Trade & Transportation", rca: 0.523, pci: -0.505, trad: 0.0, tier: 2},
+    {name: "Freight Transportation Arrangement", code: "4885", employ: 1948.37, sector: "Trade & Transportation", rca: 0.4, pci: -0.008, trad: 0.9, tier: 0},
+    {name: "Electronic and Precision Equipment Repair and Maintenance", code: "8112", employ: 1853.42, sector: "Other", rca: 1.011, pci: -0.052, trad: 0.5, tier: 1},
+    {name: "Miscellaneous Nondurable Goods Merchant Wholesalers", code: "4249", employ: 1756.0, sector: "Trade & Transportation", rca: 0.299, pci: -1.257, trad: 0.563, tier: 1},
+    {name: "Death Care Services", code: "8122", employ: 1702.0, sector: "Other", rca: 0.714, pci: -1.145, trad: 0.0, tier: 2},
+    {name: "Beer, Wine, and Distilled Alcoholic Beverage Merchant Wholesalers", code: "4248", employ: 1665.38, sector: "Trade & Transportation", rca: 0.476, pci: 0.34, trad: 0.293, tier: 1},
+    {name: "Chemical and Allied Products Merchant Wholesalers", code: "4246", employ: 1604.84, sector: "Trade & Transportation", rca: 0.588, pci: -0.669, trad: 0.129, tier: 2},
+    {name: "Seafood Product Preparation and Packaging", code: "3117", employ: 1425.0, sector: "Manufacturing", rca: 4.067, pci: 2.215, trad: 1.0, tier: 0},
+    {name: "Support Activities for Road Transportation", code: "4884", employ: 1424.31, sector: "Trade & Transportation", rca: 0.721, pci: -0.532, trad: 0.154, tier: 2},
+    {name: "Consumer Goods Rental", code: "5322", employ: 1423.88, sector: "Financial Activities", rca: 0.667, pci: -0.817, trad: 0.253, tier: 1},
+    {name: "Personal and Household Goods Repair and Maintenance", code: "8114", employ: 1368.2, sector: "Other", rca: 0.883, pci: -0.102, trad: 0.135, tier: 2},
+    {name: "Business Schools and Computer and Management Training", code: "6114", employ: 1344.4, sector: "Education & Health", rca: 1.004, pci: 0.922, trad: 0.5, tier: 1},
+    {name: "Facilities Support Services", code: "5612", employ: 1341.2, sector: "Professional & Business", rca: 0.534, pci: 0.133, trad: 0.5, tier: 1},
+    {name: "Other Motor Vehicle Dealers", code: "4412", employ: 1316.0, sector: "Trade & Transportation", rca: 0.432, pci: -0.648, trad: 0.286, tier: 1},
+    {name: "Animal Slaughtering and Processing", code: "3116", employ: 1256.67, sector: "Manufacturing", rca: 0.342, pci: -1.857, trad: 0.962, tier: 0},
+    {name: "Florists", code: "4593", employ: 1245.84, sector: "Trade & Transportation", rca: 1.344, pci: -0.862, trad: 0.0, tier: 2},
+    {name: "Technical and Trade Schools", code: "6115", employ: 1114.01, sector: "Education & Health", rca: 0.496, pci: 0.252, trad: 0.212, tier: 1},
+    {name: "Furniture and Home Furnishing Merchant Wholesalers", code: "4232", employ: 1062.84, sector: "Trade & Transportation", rca: 0.535, pci: 0.651, trad: 0.334, tier: 1},
+    {name: "Cement and Concrete Product Manufacturing", code: "3273", employ: 1016.71, sector: "Manufacturing", rca: 0.334, pci: -1.135, trad: 0.378, tier: 1},
+    {name: "Paint, Coating, and Adhesive Manufacturing", code: "3255", employ: 994.22, sector: "Manufacturing", rca: 1.074, pci: 0.192, trad: 1.0, tier: 0},
+    {name: "Ventilation, Heating, Air-Conditioning, and Commercial Refrigeration Equipment Manufacturing", code: "3334", employ: 987.55, sector: "Manufacturing", rca: 0.727, pci: -0.224, trad: 1.0, tier: 0},
+    {name: "Waste Treatment and Disposal", code: "5622", employ: 978.67, sector: "Professional & Business", rca: 0.739, pci: -0.425, trad: 0.863, tier: 0},
+    {name: "Metalworking Machinery Manufacturing", code: "3335", employ: 960.0, sector: "Manufacturing", rca: 0.374, pci: -0.755, trad: 0.967, tier: 0},
+    {name: "Household and Institutional Furniture and Kitchen Cabinet Manufacturing", code: "3371", employ: 916.95, sector: "Manufacturing", rca: 0.323, pci: -0.824, trad: 0.936, tier: 0},
+    {name: "Psychiatric and Substance Abuse Hospitals", code: "6222", employ: 897.78, sector: "Education & Health", rca: 0.697, pci: 1.088, trad: 0.5, tier: 1},
+    {name: "Electrical Equipment Manufacturing", code: "3353", employ: 874.04, sector: "Manufacturing", rca: 0.483, pci: 0.079, trad: 0.988, tier: 0},
+    {name: "Specialty (except Psychiatric and Substance Abuse) Hospitals", code: "6223", employ: 854.59, sector: "Education & Health", rca: 0.389, pci: 1.378, trad: 0.5, tier: 1},
+    {name: "Dairy Product Manufacturing", code: "3115", employ: 834.18, sector: "Manufacturing", rca: 0.434, pci: -0.428, trad: 0.947, tier: 0},
+    {name: "Resin, Synthetic Rubber, and Artificial and Synthetic Fibers and Filaments Manufacturing", code: "3252", employ: 809.91, sector: "Manufacturing", rca: 0.889, pci: 0.4, trad: 1.0, tier: 0},
+    {name: "Metal and Mineral (except Petroleum) Merchant Wholesalers", code: "4235", employ: 796.13, sector: "Trade & Transportation", rca: 0.348, pci: -0.688, trad: 0.223, tier: 1},
+    {name: "Textile and Fabric Finishing and Fabric Coating Mills", code: "3133", employ: 780.36, sector: "Manufacturing", rca: 2.807, pci: 0.629, trad: 1.0, tier: 0},
+    {name: "Sugar and Confectionery Product Manufacturing", code: "3113", employ: 767.2, sector: "Manufacturing", rca: 0.913, pci: 0.456, trad: 1.0, tier: 0},
+    {name: "All Other Telecommunications", code: "5178", employ: 756.53, sector: "Professional & Business", rca: 1.602, pci: -0.002, trad: 0.5, tier: 1},
+    {name: "Communications Equipment Manufacturing", code: "3342", employ: 742.63, sector: "Manufacturing", rca: 0.642, pci: 1.619, trad: 1.0, tier: 0},
+    {name: "Boiler, Tank, and Shipping Container Manufacturing", code: "3324", employ: 724.55, sector: "Manufacturing", rca: 0.74, pci: -0.673, trad: 0.98, tier: 0},
+    {name: "Petroleum and Coal Products Manufacturing", code: "3241", employ: 669.7, sector: "Manufacturing", rca: 0.423, pci: -0.458, trad: 0.98, tier: 0},
+    {name: "Foundries", code: "3315", employ: 638.74, sector: "Manufacturing", rca: 0.577, pci: -0.731, trad: 0.908, tier: 0},
+    {name: "Other Heavy and Civil Engineering Construction", code: "2379", employ: 614.53, sector: "Construction", rca: 0.335, pci: -0.47, trad: 0.689, tier: 1},
+    {name: "RV (Recreational Vehicle) Parks and Recreational Camps", code: "7212", employ: 605.96, sector: "Leisure & Hospitality", rca: 0.673, pci: -0.489, trad: 0.9, tier: 0},
+    {name: "Fabric Mills", code: "3132", employ: 589.55, sector: "Manufacturing", rca: 1.579, pci: 0.723, trad: 1.0, tier: 0},
+    {name: "Basic Chemical Manufacturing", code: "3251", employ: 567.78, sector: "Manufacturing", rca: 0.268, pci: -0.997, trad: 0.985, tier: 0},
+    {name: "Urban Transit Systems", code: "4851", employ: 563.53, sector: "Trade & Transportation", rca: 1.956, pci: 1.928, trad: 0.5, tier: 1},
+    {name: "Vegetable and Melon Farming", code: "1112", employ: 562.26, sector: "Natural Resources", rca: 0.435, pci: -0.49, trad: 1.0, tier: 0},
+    {name: "Glass and Glass Product Manufacturing", code: "3272", employ: 536.78, sector: "Manufacturing", rca: 0.94, pci: 0.487, trad: 1.0, tier: 0},
+    {name: "Fruit and Vegetable Preserving and Specialty Food Manufacturing", code: "3114", employ: 531.84, sector: "Manufacturing", rca: 0.295, pci: -0.569, trad: 0.974, tier: 0},
+    {name: "Other Textile Product Mills", code: "3149", employ: 524.05, sector: "Manufacturing", rca: 0.818, pci: -0.305, trad: 1.0, tier: 0},
+    {name: "Other Wood Product Manufacturing", code: "3219", employ: 487.22, sector: "Manufacturing", rca: 0.183, pci: -1.047, trad: 0.912, tier: 0},
+    {name: "Fruit and Tree Nut Farming", code: "1113", employ: 485.72, sector: "Natural Resources", rca: 0.163, pci: -0.142, trad: 1.0, tier: 0},
+    {name: "Nonferrous Metal (except Aluminum) Production and Processing", code: "3314", employ: 456.22, sector: "Manufacturing", rca: 0.795, pci: 0.404, trad: 1.0, tier: 0},
+    {name: "Charter Bus Industry", code: "4855", employ: 448.48, sector: "Trade & Transportation", rca: 1.776, pci: 0.774, trad: 0.5, tier: 1},
+    {name: "Other Nonmetallic Mineral Product Manufacturing", code: "3279", employ: 437.78, sector: "Manufacturing", rca: 0.45, pci: -0.413, trad: 0.701, tier: 1},
+    {name: "Petroleum and Petroleum Products Merchant Wholesalers", code: "4247", employ: 432.89, sector: "Trade & Transportation", rca: 0.291, pci: -1.215, trad: 0.602, tier: 1},
+    {name: "Engine, Turbine, and Power Transmission Equipment Manufacturing", code: "3336", employ: 429.89, sector: "Manufacturing", rca: 0.808, pci: -0.039, trad: 1.0, tier: 0},
+    {name: "Nonscheduled Air Transportation", code: "4812", employ: 423.16, sector: "Trade & Transportation", rca: 0.545, pci: 0.711, trad: 1.0, tier: 0},
+    {name: "Land Subdivision", code: "2372", employ: 418.26, sector: "Construction", rca: 0.723, pci: 0.57, trad: 0.5, tier: 1},
+    {name: "Natural Gas Distribution", code: "2212", employ: 405.75, sector: "Construction", rca: 0.672, pci: -1.117, trad: 0.132, tier: 2},
+    {name: "Forging and Stamping", code: "3321", employ: 366.04, sector: "Manufacturing", rca: 0.317, pci: -0.345, trad: 0.93, tier: 0},
+    {name: "Other Chemical Product and Preparation Manufacturing", code: "3259", employ: 364.2, sector: "Manufacturing", rca: 0.416, pci: -0.245, trad: 1.0, tier: 0},
+    {name: "Converted Paper Product Manufacturing", code: "3222", employ: 363.52, sector: "Manufacturing", rca: 0.147, pci: -0.609, trad: 0.936, tier: 0},
+    {name: "Rubber Product Manufacturing", code: "3262", employ: 359.29, sector: "Manufacturing", rca: 0.411, pci: -0.632, trad: 0.96, tier: 0},
+    {name: "Grain and Oilseed Milling", code: "3112", employ: 357.28, sector: "Manufacturing", rca: 0.514, pci: -1.039, trad: 1.0, tier: 0},
+    {name: "Independent Artists, Writers, and Performers", code: "7115", employ: 349.37, sector: "Leisure & Hospitality", rca: 0.298, pci: 0.746, trad: 0.9, tier: 0},
+    {name: "Other Support Activities for Transportation", code: "4889", employ: 314.14, sector: "Trade & Transportation", rca: 0.668, pci: 0.562, trad: 0.72, tier: 1},
+    {name: "Cutlery and Handtool Manufacturing", code: "3322", employ: 300.25, sector: "Manufacturing", rca: 1.04, pci: 0.559, trad: 1.0, tier: 0},
+    {name: "Support Activities for Animal Production", code: "1152", employ: 294.42, sector: "Natural Resources", rca: 0.747, pci: -0.73, trad: 0.5, tier: 1},
+    {name: "Interurban and Rural Bus Transportation", code: "4852", employ: 289.9, sector: "Trade & Transportation", rca: 2.433, pci: 1.24, trad: 0.697, tier: 1},
+    {name: "Fishing", code: "1141", employ: 275.47, sector: "Natural Resources", rca: 3.059, pci: 2.562, trad: 1.0, tier: 0},
+    {name: "Amusement Parks and Arcades", code: "7131", employ: 268.37, sector: "Leisure & Hospitality", rca: 0.101, pci: 0.453, trad: 0.821, tier: 0},
+    {name: "General Rental Centers", code: "5323", employ: 250.82, sector: "Financial Activities", rca: 0.638, pci: -0.331, trad: 0.153, tier: 2},
+    {name: "Cut and Sew Apparel Manufacturing", code: "3152", employ: 246.98, sector: "Manufacturing", rca: 0.266, pci: 0.535, trad: 1.0, tier: 0},
+    {name: "Office Furniture (including Fixtures) Manufacturing", code: "3372", employ: 223.57, sector: "Manufacturing", rca: 0.198, pci: 0.186, trad: 0.795, tier: 1},
+    {name: "Other Investment Pools and Funds", code: "5259", employ: 199.27, sector: "Financial Activities", rca: 0.529, pci: 0.737, trad: 0.74, tier: 1},
+    {name: "Motor Vehicle Body and Trailer Manufacturing", code: "3362", employ: 198.65, sector: "Manufacturing", rca: 0.122, pci: -1.125, trad: 1.0, tier: 0},
+    {name: "Ship and Boat Building", code: "3366", employ: 198.15, sector: "Manufacturing", rca: 0.157, pci: 0.876, trad: 0.94, tier: 0},
+    {name: "Nonmetallic Mineral Mining and Quarrying", code: "2123", employ: 195.34, sector: "Natural Resources", rca: 0.2, pci: -1.03, trad: 0.826, tier: 0},
+    {name: "Religious Organizations", code: "8131", employ: 192.97, sector: "Other", rca: 0.052, pci: 0.239, trad: 0.328, tier: 1},
+    {name: "Other Leather and Allied Product Manufacturing", code: "3169", employ: 187.26, sector: "Manufacturing", rca: 1.405, pci: 1.105, trad: 1.0, tier: 0},
+    {name: "Farm Product Raw Material Merchant Wholesalers", code: "4245", employ: 184.26, sector: "Trade & Transportation", rca: 0.212, pci: -1.8, trad: 0.9, tier: 0},
+    {name: "Plastics Product Manufacturing", code: "3261", employ: 173.15, sector: "Manufacturing", rca: 0.03, pci: -1.0, trad: 0.987, tier: 0},
+    {name: "Lessors of Nonfinancial Intangible Assets (except Copyrighted Works)", code: "5331", employ: 167.53, sector: "Financial Activities", rca: 0.455, pci: 1.236, trad: 1.0, tier: 0},
+    {name: "Agents and Managers for Artists, Athletes, Entertainers, and Other Public Figures", code: "7114", employ: 162.49, sector: "Leisure & Hospitality", rca: 0.281, pci: 2.284, trad: 0.9, tier: 0},
+    {name: "Other Crop Farming", code: "1119", employ: 158.84, sector: "Natural Resources", rca: 0.154, pci: -1.201, trad: 0.994, tier: 0},
+    {name: "Support Activities for Crop Production", code: "1151", employ: 157.2, sector: "Natural Resources", rca: 0.028, pci: -1.986, trad: 0.779, tier: 1},
+    {name: "Sound Recording Industries", code: "5122", employ: 136.77, sector: "Professional & Business", rca: 0.353, pci: 2.137, trad: 1.0, tier: 0},
+    {name: "Water, Sewage and Other Systems", code: "2213", employ: 133.39, sector: "Construction", rca: 0.201, pci: -0.777, trad: 0.5, tier: 1},
+    {name: "Clay Product and Refractory Manufacturing", code: "3271", employ: 129.65, sector: "Manufacturing", rca: 0.526, pci: 0.551, trad: 1.0, tier: 0},
+    {name: "Soap, Cleaning Compound, and Toilet Preparation Manufacturing", code: "3256", employ: 124.68, sector: "Manufacturing", rca: 0.082, pci: 0.272, trad: 1.0, tier: 0},
+    {name: "Steel Product Manufacturing from Purchased Steel", code: "3312", employ: 117.48, sector: "Manufacturing", rca: 0.196, pci: -0.129, trad: 0.965, tier: 0},
+    {name: "Textile Furnishings Mills", code: "3141", employ: 106.27, sector: "Manufacturing", rca: 0.236, pci: 0.979, trad: 1.0, tier: 0},
+    {name: "Deep Sea, Coastal, and Great Lakes Water Transportation", code: "4831", employ: 105.78, sector: "Trade & Transportation", rca: 0.175, pci: 3.26, trad: 1.0, tier: 0},
+    {name: "Household Appliance Manufacturing", code: "3352", employ: 94.34, sector: "Manufacturing", rca: 0.307, pci: 0.672, trad: 1.0, tier: 0},
+    {name: "Insurance and Employee Benefit Funds", code: "5251", employ: 92.13, sector: "Financial Activities", rca: 0.574, pci: 1.545, trad: 0.584, tier: 1},
+    {name: "Scenic and Sightseeing Transportation, Water", code: "4872", employ: 91.09, sector: "Trade & Transportation", rca: 0.341, pci: 2.47, trad: 0.9, tier: 0},
+    {name: "Securities and Commodity Exchanges", code: "5232", employ: 88.72, sector: "Financial Activities", rca: 0.702, pci: 3.114, trad: 1.0, tier: 0},
+    {name: "Other Animal Production", code: "1129", employ: 80.81, sector: "Natural Resources", rca: 0.299, pci: -0.777, trad: 0.943, tier: 0},
+    {name: "Motor Vehicle Parts Manufacturing", code: "3363", employ: 80.17, sector: "Manufacturing", rca: 0.012, pci: -1.207, trad: 0.982, tier: 0},
+    {name: "Rooming and Boarding Houses, Dormitories, and Workers' Camps", code: "7213", employ: 78.33, sector: "Leisure & Hospitality", rca: 0.606, pci: 0.626, trad: 0.9, tier: 0},
+    {name: "Leather and Hide Tanning and Finishing", code: "3161", employ: 70.84, sector: "Manufacturing", rca: 2.187, pci: 0.103, trad: 1.0, tier: 0},
+    {name: "Lime and Gypsum Product Manufacturing", code: "3274", employ: 70.23, sector: "Manufacturing", rca: 0.758, pci: 1.404, trad: 0.9, tier: 0},
+    {name: "Audio and Video Equipment Manufacturing", code: "3343", employ: 68.41, sector: "Manufacturing", rca: 0.343, pci: 2.708, trad: 1.0, tier: 0},
+    {name: "Support Activities for Water Transportation", code: "4883", employ: 65.37, sector: "Trade & Transportation", rca: 0.038, pci: 1.512, trad: 0.9, tier: 0},
+    {name: "Inland Water Transportation", code: "4832", employ: 63.79, sector: "Trade & Transportation", rca: 0.21, pci: 1.704, trad: 1.0, tier: 0},
+    {name: "Scenic and Sightseeing Transportation, Land", code: "4871", employ: 56.75, sector: "Trade & Transportation", rca: 0.399, pci: 2.321, trad: 0.9, tier: 0},
+    {name: "Footwear Manufacturing", code: "3162", employ: 55.03, sector: "Manufacturing", rca: 0.679, pci: 1.839, trad: 1.0, tier: 0},
+    {name: "Other Transportation Equipment Manufacturing", code: "3369", employ: 53.23, sector: "Manufacturing", rca: 0.189, pci: 0.343, trad: 1.0, tier: 0},
+    {name: "Support Activities for Forestry", code: "1153", employ: 52.03, sector: "Natural Resources", rca: 0.188, pci: -0.18, trad: 0.5, tier: 1},
+    {name: "Apparel Accessories and Other Apparel Manufacturing", code: "3159", employ: 50.26, sector: "Manufacturing", rca: 0.359, pci: 1.401, trad: 1.0, tier: 0},
+    {name: "Spring and Wire Product Manufacturing", code: "3326", employ: 49.59, sector: "Manufacturing", rca: 0.132, pci: 0.277, trad: 1.0, tier: 0},
+    {name: "Aquaculture", code: "1125", employ: 43.9, sector: "Natural Resources", rca: 0.46, pci: 0.854, trad: 0.948, tier: 0},
+    {name: "Motor Vehicle Manufacturing", code: "3361", employ: 42.68, sector: "Manufacturing", rca: 0.034, pci: 0.583, trad: 1.0, tier: 0},
+    {name: "Support Activities for Rail Transportation", code: "4882", employ: 42.44, sector: "Trade & Transportation", rca: 0.094, pci: -0.399, trad: 0.9, tier: 0},
+    {name: "Satellite Telecommunications", code: "5174", employ: 38.36, sector: "Professional & Business", rca: 0.321, pci: 1.999, trad: 0.9, tier: 0},
+    {name: "Pipeline Transportation of Natural Gas", code: "4862", employ: 32.32, sector: "Trade & Transportation", rca: 0.076, pci: -1.485, trad: 0.9, tier: 0},
+    {name: "Apparel Knitting Mills", code: "3151", employ: 28.6, sector: "Manufacturing", rca: 0.415, pci: 2.222, trad: 1.0, tier: 0},
+    {name: "Oilseed and Grain Farming", code: "1111", employ: 26.4, sector: "Natural Resources", rca: 0.03, pci: -2.185, trad: 1.0, tier: 0},
+    {name: "Support Activities for Mining", code: "2131", employ: 26.09, sector: "Natural Resources", rca: 0.005, pci: -2.06, trad: 0.9, tier: 0},
+    {name: "Hunting and Trapping", code: "1142", employ: 26.07, sector: "Natural Resources", rca: 0.621, pci: -0.078, trad: 1.0, tier: 0},
+    {name: "Tobacco Manufacturing", code: "3122", employ: 24.98, sector: "Manufacturing", rca: 0.279, pci: 2.511, trad: 1.0, tier: 0},
+    {name: "Other Furniture Related Product Manufacturing", code: "3379", employ: 23.1, sector: "Manufacturing", rca: 0.085, pci: 1.265, trad: 0.9, tier: 0},
+    {name: "Hardware Manufacturing", code: "3325", employ: 21.63, sector: "Manufacturing", rca: 0.132, pci: 0.98, trad: 1.0, tier: 0},
+    {name: "Manufacturing and Reproducing Magnetic and Optical Media", code: "3346", employ: 19.6, sector: "Manufacturing", rca: 0.191, pci: 3.018, trad: 1.0, tier: 0},
+    {name: "Electric Lighting Equipment Manufacturing", code: "3351", employ: 18.98, sector: "Manufacturing", rca: 0.047, pci: 1.059, trad: 1.0, tier: 0},
+    {name: "Agriculture, Construction, and Mining Machinery Manufacturing", code: "3331", employ: 17.43, sector: "Manufacturing", rca: 0.009, pci: -1.667, trad: 1.0, tier: 0},
+    {name: "Iron and Steel Mills and Ferroalloy Manufacturing", code: "3311", employ: 16.72, sector: "Manufacturing", rca: 0.021, pci: 0.047, trad: 1.0, tier: 0},
+    {name: "Gambling Industries", code: "7132", employ: 16.26, sector: "Leisure & Hospitality", rca: 0.016, pci: -0.075, trad: 0.62, tier: 1},
+    {name: "Junior Colleges", code: "6112", employ: 15.48, sector: "Education & Health", rca: 0.091, pci: 1.582, trad: 0.5, tier: 1},
+    {name: "Logging", code: "1133", employ: 15.37, sector: "Natural Resources", rca: 0.027, pci: -0.57, trad: 1.0, tier: 0},
+    {name: "Poultry and Egg Production", code: "1123", employ: 15.25, sector: "Natural Resources", rca: 0.037, pci: -1.229, trad: 0.9, tier: 0},
+    {name: "Sawmills and Wood Preservation", code: "3211", employ: 12.89, sector: "Manufacturing", rca: 0.02, pci: -0.709, trad: 1.0, tier: 0},
+    {name: "Sheep and Goat Farming", code: "1124", employ: 11.34, sector: "Natural Resources", rca: 0.381, pci: 0.634, trad: 0.966, tier: 0},
+    {name: "Monetary Authorities-Central Bank", code: "5211", employ: 10.84, sector: "Financial Activities", rca: 0.16, pci: 2.54, trad: 0.83, tier: 0},
+    {name: "Cattle Ranching and Farming", code: "1121", employ: 10.62, sector: "Natural Resources", rca: 0.004, pci: -1.83, trad: 0.9, tier: 0},
+    {name: "Pesticide, Fertilizer, and Other Agricultural Chemical Manufacturing", code: "3253", employ: 10.25, sector: "Manufacturing", rca: 0.035, pci: -0.539, trad: 1.0, tier: 0},
+    {name: "Animal Food Manufacturing", code: "3111", employ: 8.13, sector: "Manufacturing", rca: 0.011, pci: -1.742, trad: 1.0, tier: 0},
+    {name: "Timber Tract Operations", code: "1131", employ: 6.78, sector: "Natural Resources", rca: 0.175, pci: 0.251, trad: 1.0, tier: 0},
+    {name: "Pulp, Paper, and Paperboard Mills", code: "3221", employ: 5.42, sector: "Manufacturing", rca: 0.011, pci: 0.591, trad: 1.0, tier: 0},
+    {name: "Alumina and Aluminum Production and Processing", code: "3313", employ: 4.07, sector: "Manufacturing", rca: 0.01, pci: 0.099, trad: 1.0, tier: 0},
+    {name: "Forest Nurseries and Gathering of Forest Products", code: "1132", employ: 3.43, sector: "Natural Resources", rca: 0.134, pci: 1.099, trad: 1.0, tier: 0},
+    {name: "Hog and Pig Farming", code: "1122", employ: 3.38, sector: "Natural Resources", rca: 0.012, pci: -2.233, trad: 0.9, tier: 0},
+    {name: "Scenic and Sightseeing Transportation, Other", code: "4879", employ: 2.62, sector: "Trade & Transportation", rca: 0.052, pci: 3.227, trad: 0.9, tier: 0},
+    {name: "Veneer, Plywood, and Engineered Wood Product Manufacturing", code: "3212", employ: 1.41, sector: "Manufacturing", rca: 0.003, pci: -0.449, trad: 0.949, tier: 0},
+    {name: "Other Pipeline Transportation", code: "4869", employ: 1.36, sector: "Trade & Transportation", rca: 0.014, pci: 0.352, trad: 0.9, tier: 0},
   ];
 
-  /* Drop the 150 smallest industries so labels stay legible (161 remain). */
-  /* Calibrated so the drawn metro totals ~2.82M jobs — the world in which
-     the LEHD commuting figures hold: 687,736 jobs (24%) inside the admin
-     city, 206 for every 100 its residents hold. One constant to retire
-     when real employment data lands. */
-  const EMPLOY_CAL = 1.50253;
-  const industryData = [...rawData]
-    .sort((a, b) => b.employ - a.employ)
-    .slice(0, rawData.length - 150)
-    .map(r => ({ ...r, employ: r.employ * EMPLOY_CAL }));
+  /* Tradability, RCA, PCI and the tier per industry, as the source gives
+     them; nothing here is generated any more */
+  const tradByName = new Map(rawData.map(r => [r.name, r.trad]));
+  const tierByName = new Map(rawData.map(r => [r.name, r.tier]));
+  const rcaReal    = new Map(rawData.map(r => [r.name, Math.round(r.rca * 100) / 100]));
+  const pciByName  = new Map(rawData.map(r => [r.name, r.pci]));
+
+  /* every industry, at its real 2024 employment: 2,318,250 jobs over 292
+     industries. The commuting section's LEHD figures (687,736 jobs inside
+     the admin city) were told against a drawn total of 2.82M; against the
+     real total they are 30% of the metro's jobs, not 24%. */
+  const industryData = [...rawData].sort((a, b) => b.employ - a.employ);
 
   /* Build the sector -> industries hierarchy for a given set of rows. */
   function hierarchyFor(rows, label){
@@ -618,7 +593,7 @@
          random draw as in v-2 — the halves then agree with the donut above
          the chart and with every tooltip */
       const nonTradableNames = new Set(
-        allLeaves.filter(d => tradabilityOf(d.data.name) < 0.5).map(d => d.data.name));
+        allLeaves.filter(d => !isTradable(d.data.name)).map(d => d.data.name));
 
       const tradable    = allLeaves.filter(d => !nonTradableNames.has(d.data.name));
       const nonTradable = allLeaves.filter(d =>  nonTradableNames.has(d.data.name));
@@ -744,7 +719,17 @@
      ===================================================================== */
   const RCA_TOP_N = 10;
 
+  /* The RCA values below are no longer read - the source carries the real
+     ones - but the short names are, matched on the name with its
+     punctuation removed, since the source spells "Colleges, Universities,
+     and Professional Schools" with commas. */
   const rcaSeed = {
+    /* short names for the rows the real ranking brings up */
+    "Seafood Product Preparation and Packaging":                                  { rca: 0, short: "Seafood preparation" },
+    "Computer and Peripheral Equipment Manufacturing":                            { rca: 0, short: "Computer equipment makers" },
+    "Textile and Fabric Finishing and Fabric Coating Mills":                      { rca: 0, short: "Textile finishing mills" },
+    "Industrial Machinery Manufacturing":                                         { rca: 0, short: "Industrial machinery" },
+    "School and Employee Bus Transportation":                                     { rca: 0, short: "School and employee buses" },
     "Colleges Universities and Professional Schools":                             { rca: 5.4, short: "Colleges and universities" },
     "Scientific Research and Development Services":                               { rca: 4.1, short: "Scientific R&D services" },
     "Other Financial Investment Activities":                                      { rca: 3.6, short: "Other financial investment" },
@@ -763,6 +748,9 @@
     "Software Publishers":                                                        { rca: 1.15, short: "Software publishers" },
     "Legal Services":                                                             { rca: 1.08, short: "Legal services" }
   };
+  const normName = n => String(n).toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  const shortByNorm = new Map(Object.entries(rcaSeed).map(([n, v]) => [normName(n), v.short]));
+  const shortLabel = name => shortByNorm.get(normName(name));
 
   /* How likely an industry in each sector is to be tradable at all.
      Construction and government ("Other") are definitionally local, so they
@@ -774,26 +762,11 @@
     "Leisure & Hospitality": 0.10, "Construction": 0, "Other": 0
   };
 
-  const tradableByName = new Map();
-  function isTradable(name, sector){
-    if (!tradableByName.has(name)) {
-      tradableByName.set(name,
-        rcaSeed[name] ? true : srand() < (tradableOdds[sector] ?? 0.4));
-    }
-    return tradableByName.get(name);
-  }
+  /* tradable, for the figures that split two ways, is the traded tier */
+  function isTradable(name){ return tierOf(name) === 0; }
 
   const rcaByName = new Map();
-  function rcaOf(name){
-    if (!rcaByName.has(name)) {
-      const seeded = rcaSeed[name];
-      const v = seeded ? seeded.rca
-        : (srand() < 0.80 ? 0.15 + srand() * 0.8
-                          : 1.02 + srand() * 0.8);
-      rcaByName.set(name, Math.round(v * 100) / 100);
-    }
-    return rcaByName.get(name);
-  }
+  function rcaOf(name){ return rcaReal.has(name) ? rcaReal.get(name) : 0; }
 
   const totalCityJobs = industryData.reduce((s, d) => s + d.employ, 0);
 
@@ -814,7 +787,7 @@
           rca: rca,
           localPct: localPct,
           worldPct: localPct / rca,
-          label: (rcaSeed[d.name] || {}).short ||
+          label: shortLabel(d.name) ||
                  (d.name.length > 40 ? d.name.slice(0, 37) + "…" : d.name)
         };
       })
@@ -2080,11 +2053,8 @@
   const EOPT_DUR = 950;
 
   function pciNumOf(name){
-    /* numeric complexity consistent with the assigned colour bin */
-    const bin = complexityPalette.indexOf(complexityColor(name));
-    let h = 2166136261;
-    for (const c of name) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); }
-    return Math.round((bin - 2 + (h >>> 0) / 4294967296) * 100) / 100;
+    const v = pciByName.get(name);
+    return v == null ? 0 : Math.round(v * 100) / 100;
   }
 
   function exportMetric(){
@@ -2466,7 +2436,7 @@
       donutStat(host, jobsShare(r => pciNumOf(r.name) > 0), "#2f7d6a",
         "of metro jobs \u00b7 above-average complexity");
     else if (mode === TRADABILITY)
-      donutStat(host, jobsShare(r => tradabilityOf(r.name) >= 0.5), token("--teal", "#255862"),
+      donutStat(host, jobsShare(r => isTradable(r.name)), token("--teal", "#255862"),
         "of metro jobs \u00b7 widely traded");
     else host.hidden = true;
   }
@@ -3079,8 +3049,8 @@
     const spot = d => posFull.get(d.name);
 
     const GAP = 8, HALF = (MI_W - GAP) / 2;
-    const outward = industryData.filter(d => tradabilityOf(d.name) >= 0.5);
-    const local   = industryData.filter(d => tradabilityOf(d.name) <  0.5);
+    const outward = industryData.filter(d => tierOf(d.name) === 0);
+    const local   = industryData.filter(d => tierOf(d.name) !== 0);
     const posSplit = new Map();
     tmap(outward, HALF, MI_H, true).leaves()
       .forEach(n => posSplit.set(n.data.name, box(n)));
@@ -3093,8 +3063,11 @@
        position alone carries tradability. ---- */
     /* the strip each sector block keeps along its top for its own name */
     const SEC_STRIP = 17;
-    const CL_HI = 0.5, CL_LO = 0.35;
-    const clusterOf = d => { const t = tradabilityOf(d.name); return t >= CL_HI ? 0 : t >= CL_LO ? 1 : 2; };
+    /* the tier is the source's; the two cuts are where its tiers part on
+       the score (local ends at 0.19, traded begins at 0.80), kept for the
+       track drawn under a score */
+    const CL_HI = 0.8, CL_LO = 0.2;
+    const clusterOf = d => tierOf(d.name);
     const clusterRows = [0, 1, 2].map(k => industryData.filter(d => clusterOf(d) === k));
     const jobsTotal = d3.sum(industryData, d => d.employ) || 1;
     const clusterShare = clusterRows.map(l => d3.sum(l, d => d.employ) / jobsTotal);
@@ -3256,13 +3229,9 @@
       let st = (h >>> 0) || 1;
       return () => (st = (st * 1664525 + 1013904223) >>> 0) / 4294967296;
     };
-    const rcaQuiet = name => {
-      if (rcaByName.has(name)) return rcaByName.get(name);
-      if (rcaSeed[name]) return rcaSeed[name].rca;
-      const r = nameRand(name + "|rca");
-      const v = r() < 0.80 ? 0.15 + r() * 0.8 : 1.02 + r() * 0.8;
-      return Math.round(v * 100) / 100;
-    };
+    /* the RCA as the source gives it; the peer values below are still
+       generated, since the source carries no peer metros */
+    const rcaQuiet = name => rcaOf(name);
     const peersQuiet = (name, cityRca) => {
       if (peerByName.has(name)) return peerByName.get(name);
       const r = nameRand(name + "|peers");
@@ -3280,7 +3249,7 @@
         const rca = rcaQuiet(d.name), localPct = d.employ / total * 100, pr = peersQuiet(d.name, rca);
         return { name: d.name, sector: d.sector, employ: d.employ, rca: rca,
           localPct: localPct, worldPct: localPct / rca,
-          label: (rcaSeed[d.name] || {}).short ||
+          label: shortLabel(d.name) ||
                  (d.name.length > 40 ? d.name.slice(0, 37) + "\u2026" : d.name),
           peerAvg: pr.avg, peerValues: pr.values, ahead: shown(rca) >= shown(pr.avg) };
       });
@@ -3374,7 +3343,7 @@
       1: d => view === "alt" ? asBars(d, barRankAll, complexityColor(d.name), spot(d))
                              : { box: spot(d), fill: complexityColor(d.name), op: 1, rx: 0 },
       2: d => ({ box: posSplit.get(d.name) || posFull.get(d.name),
-                 fill: tradabilityOf(d.name) >= 0.5 ? sectorColors[d.sector] : GREY,
+                 fill: tierOf(d.name) === 0 ? sectorColors[d.sector] : GREY,
                  op: 1, rx: 0 }),
       3: d => d.rank < 0
         ? { box: posSplit.get(d.name) || posFull.get(d.name), fill: GREY, op: 0, rx: 0 }
@@ -4263,7 +4232,7 @@
           const R = 34, RI = 23, SZ = R * 2 + 2;
           const jobsOf = n => Math.round(n).toLocaleString();
           const tierJobs = k => d3.sum(clusterRows[k], d => d.employ);
-          const labelOf = d => (rcaSeed[d.name] || {}).short || shortOf(d.name);
+          const labelOf = d => shortLabel(d.name) || shortOf(d.name);
           const largest = k => clusterRows[k].slice().sort((a, b) => b.employ - a.employ).slice(0, 3);
           donutHost.innerHTML =
             '<svg class="tdn-ring" width="' + SZ + '" height="' + SZ + '" viewBox="0 0 ' + SZ + ' ' + SZ +
@@ -4476,7 +4445,7 @@
             body += rowOf("Complexity (PCI)", pciNumOf(d.name).toFixed(2));
           /* the tier, by the same name the columns and the key use; the
              score itself is shown nowhere */
-          if (step === 2) body += rowOf("Tradability", tradabilityOf(d.name) >= 0.5 ? TIER_NAMES[0] : TIER_NAMES[2]);
+          if (step === 2) body += rowOf("Tradability", TIER_NAMES[tierOf(d.name)]);
           if (step === 4 || step === 7) body += rowOf("Tradability", tierLabel(d));
         }
         const labRow = step === 6 ? d.row2 : d.row;
