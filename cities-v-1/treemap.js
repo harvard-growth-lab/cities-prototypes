@@ -3277,14 +3277,16 @@
     }
     /* The ranking ships as its second option: the tradability column names
        the tier ("Traded", "Partly traded", "Local") instead of printing the
-       score, and its head opens the tier filter. All three tiers start
-       checked, as they do on the jobs order, so the beat opens on the metro's
-       twelve most specialised industries of any kind and the reader narrows
-       from there. opt-1 keeps the earlier ranking: the score in the column,
-       drawn over the two tradable tiers alone. */
+       score, and its head opens the tier filter. The two tradable tiers
+       start checked and the local one does not, so the beat opens on the
+       most specialised tradable industries, as the question asks, and the
+       reader can let the local ones in from the head. opt-1 keeps the
+       earlier ranking: the score in the column, over the same two tiers,
+       with no filter. */
     let rankMode = "tier";
     fig.dataset.rank = rankMode;
-    let tierOn6 = [true, true, true];
+    const TIER_DEFAULT6 = () => [true, true, false];
+    let tierOn6 = TIER_DEFAULT6();
     /* the industries the third beat ranks over: whatever the filter has
        checked under opt-2, the two tradable tiers under opt-1 */
     const rankPool = () => rankMode === "tier"
@@ -3341,8 +3343,9 @@
       R.pos = new Map(order.map((d, i) => [d.name, i]));
     }
     /* the ranking the third beat shows is over the clusters the filter has
-       checked - all three as shipped, so its bars rise from cells anywhere
-       on the map a beat before; under opt-1, the two tradable clusters */
+       checked - the two tradable ones as shipped, so its bars rise only from
+       cells that were in those two columns a beat before, unless the reader
+       has let the local cluster in from the head */
     const R1 = ranking(industryData), R2 = ranking(rankPool(), true);
     const ranked = R1.ranked, rankIdx = R1.rankIdx, rankRow = R1.rankRow, xr = R1.xr;
 
@@ -3723,13 +3726,15 @@
         .attr("x1", d => R.xr(d.peerAvg)).attr("x2", d => R.xr(d.peerAvg))
         .attr("y1", -BAR_H / 2 - 4).attr("y2", BAR_H / 2 + 4);
       /* the jobs column: the count, and a short bar beneath it so size reads
-         as a second small chart in every order the rows can take */
+         as a second small chart in every order the rows can take. Beside the
+         tier word the count sits on the row's common baseline, as the word
+         and the value do, and the bar drops a step to stay clear of it */
       const jb = d3.scaleLinear().domain([0, d3.max(R.ranked, d => d.employ) || 1]).range([0, 58]);
       row.append("text").attr("class", "mi-jobs")
-        .attr("x", MI_W - 6).attr("y", 1).attr("text-anchor", "end")
+        .attr("x", MI_W - 6).attr("y", tierMode ? 4 : 1).attr("text-anchor", "end")
         .text(d => d.employ >= 1000 ? Math.round(d.employ / 1000) + "K" : Math.round(d.employ));
       row.append("rect").attr("class", "mi-jobsbar")
-        .attr("x", d => MI_W - 6 - Math.max(4, jb(d.employ))).attr("y", 5)
+        .attr("x", d => MI_W - 6 - Math.max(4, jb(d.employ))).attr("y", tierMode ? 7 : 5)
         .attr("width", d => Math.max(4, jb(d.employ))).attr("height", 4).attr("rx", 2);
       /* the tradability column, built the way the jobs column is: the score,
          and a short track beneath it from 0 to 1, filled as far as the score
@@ -3996,11 +4001,13 @@
       if (step === 7 || step === 4) paint(step, !reduced());
     });
 
-    /* The tradability tiers, as a filter on the jobs order. Ordered by jobs
-       answers "what is biggest"; unchecking a tier asks the narrower question
-       the beat is really about - what is the biggest work that sells outward.
-       All three start checked, and the last one cannot be unchecked, since an
-       empty chart answers nothing. */
+    /* The tradability tiers, as a filter on the jobs order and on the
+       ranking. Ordered by jobs answers "what is biggest"; unchecking a tier
+       asks the narrower question the beat is really about - what is the
+       biggest work that sells outward - so there all three start checked.
+       The ranking starts on the two tradable tiers, which is its question.
+       In either place the last one cannot be unchecked, since an empty chart
+       answers nothing. */
     const menuEl = document.getElementById(p + "TradMenu");
     if (menuEl){
       /* which head opened it: the jobs order and the ranking's opt-2 keep
@@ -4106,7 +4113,7 @@
       if (!b || b.dataset.rank === rankMode) return;
       rankMode = b.dataset.rank;
       fig.dataset.rank = rankMode;
-      if (rankMode === "score") tierOn6 = [true, true, true];
+      tierOn6 = TIER_DEFAULT6();                          /* opt-2 always reopens as shipped */
       rankOptEl.querySelectorAll(".seg-btn[data-rank]").forEach(x => {
         const on = x.dataset.rank === rankMode;
         x.classList.toggle("is-active", on);

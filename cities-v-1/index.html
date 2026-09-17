@@ -2698,6 +2698,9 @@
   /* one step quieter than the value and the name: at 600 in full ink the word
      was a third equally loud column and read as a second name */
   #miTreemapSvg .mi-trad.is-tier{font-size:12.5px;font-weight:500;fill:var(--ink-soft);font-variant-numeric:normal;}
+  /* beside the tier word the jobs count takes the word's size and colour, so
+     the row's two right columns read as one line of the same voice */
+  #miTreemapSvg .mi-rows.is-tier .mi-jobs{font-size:12.5px;font-weight:500;fill:var(--ink-soft);}
   #miTreemapSvg .mi-rows.is-tier .mi-tradtrack,
   #miTreemapSvg .mi-rows.is-tier .mi-tradbar,
   #miTreemapSvg .mi-rows.is-tier .mi-tradtick{display:none;}
@@ -2897,7 +2900,7 @@
   .tm-item{
     appearance:none;display:flex;align-items:center;gap:9px;width:100%;
     padding:7px 9px;border:0;border-radius:4px;background:none;
-    font:inherit;font-size:13px;font-weight:500;color:var(--ink-soft);
+    font:inherit;font-size:12.5px;font-weight:500;color:var(--ink-soft);
     text-align:left;cursor:pointer;white-space:nowrap;
     transition:background .12s ease,color .12s ease;
   }
