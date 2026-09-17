@@ -2734,42 +2734,24 @@
   #miFigure[data-step="4"] .mi-head > .mi-view,
   #miFigure[data-step="7"] .mi-head > .mi-view{top:0;bottom:auto;}
   /* the opening frame's header: on for the most tradable alone */
-  .mi-trad-head{display:flex;flex-direction:column;gap:8px;opacity:0;pointer-events:none;transition:opacity .35s ease;}
+  /* the two map headers share a box, so the titles sit at the same height
+     whether a line follows the title or not: the box is the opening frame's
+     natural height at the reference width, and both fill it from the top */
+  .mi-trad-head{display:flex;flex-direction:column;justify-content:flex-start;gap:8px;min-height:44px;opacity:0;pointer-events:none;transition:opacity .35s ease;}
   .mi-figure[data-step="7"] .mi-trad-head{opacity:1;}
   /* ── the three clusters (opt-3's opening beat) ──────────────────────── */
   /* the lead's two rows swap by the hidden attribute, which the rail's own
      display rule would otherwise override */
   .mi-default[hidden], .mi-alt[hidden],
   .mi-rail-default[hidden], .mi-rail-alt[hidden]{display:none !important;}
-  .mi-cluster-head{display:flex;flex-direction:column;gap:8px;opacity:0;pointer-events:none;transition:opacity .35s ease;}
+  .mi-cluster-head{display:flex;flex-direction:column;justify-content:flex-start;gap:8px;min-height:44px;opacity:0;pointer-events:none;transition:opacity .35s ease;}
   .mcl-axis{display:flex;align-items:center;gap:12px;}
-  .mcl-line{flex:1 1 auto;height:2px;border-radius:1px;background:var(--teal);opacity:.35;}
-  /* opt-1 drops the rule between the two directions: the words hold the two
-     ends of the chart on their own */
-  .mi-cluster-head .mcl-axis{justify-content:space-between;}
-  /* the scale as one line with a head at each end, since the point of this
-     beat is the direction the three bands run in */
-  .mcl-axis--arrow .mcl-line{
-    display:block;position:relative;flex:1 1 auto;height:1.5px;
-    background:var(--ink);opacity:1;border-radius:0;margin:0 16px;
-  }
-  .mcl-axis--arrow .mcl-line::before,
-  .mcl-axis--arrow .mcl-line::after{
-    content:"";position:absolute;top:50%;width:0;height:0;
-    border-top:5px solid transparent;border-bottom:5px solid transparent;
-    transform:translateY(-50%);
-  }
-  .mcl-axis--arrow .mcl-line::before{left:-1px;border-right:9px solid var(--ink);}
-  .mcl-axis--arrow .mcl-line::after{right:-1px;border-left:9px solid var(--ink);}
-  .mcl-axis--arrow .mcl-dir{font-size:13px;font-weight:700;color:var(--ink);}
-  /* the score's two ends, named at the ends of the direction words */
-  .mcl-end{color:var(--ink);}
   .mcl-cols{display:flex;gap:8px;}
   .mi-figure[data-step="4"] .mi-cluster-head{opacity:1;}
   /* bars have no columns: the clusters' header stands down while they are up */
   .mi-figure[data-step="4"][data-view="alt"] .mi-cluster-head{opacity:0;}
   .mcl-col{display:flex;flex-direction:column;min-width:0;flex:0 0 auto;}
-  /* the direction is the header's point; the cluster names are captions */
+  /* the title of the frame: the tier alone, or all three */
   .mcl-dir{font-size:16px;font-weight:700;color:var(--teal);letter-spacing:.01em;white-space:nowrap;}
   /* the cluster names sit right on top of the column they name, with no rule
      under them — the columns themselves are the division the reader sees */
@@ -5386,16 +5368,12 @@
                 <span class="split-rule"></span>
               </div>
             </div>
-            <!-- the clusters' header: most tradable on the left, the arrows
-                 pointing away from the middle, one column per cluster -->
+            <!-- the clusters' header: a title in the opening frame's style,
+                 so the two beats read as a pair - one tier alone, then all
+                 three. The grounds below name the tiers and give the shares,
+                 and their order says the direction. -->
             <div class="mi-cluster-head" id="miClusterHead">
-              <!-- the axis is the header's point: one line across the width,
-                   more tradable to the left, less to the right -->
-              <div class="mcl-axis mcl-axis--arrow">
-                <span class="mcl-dir">More tradable</span>
-                <span class="mcl-line"></span>
-                <span class="mcl-dir">Less tradable</span>
-              </div>
+              <div class="mcl-axis"><span class="mcl-dir">All industries, by tier</span></div>
             </div>
             <!-- the header of the opening frame: the traded tier alone, named
                  by its tier, in the same two rows as the clusters' header so
