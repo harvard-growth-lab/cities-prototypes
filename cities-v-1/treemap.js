@@ -4241,11 +4241,11 @@
             '<span class="ts-eg">e.g. ' + examples(b.k) + '</span></span></span>').join("") + '</span>';
         scaleHost.hidden = false;
 
-        /* The tier study's second option. The shares leave the grounds for a
-           donut beside the lede, so the chart carries the tier's name alone;
-           each tier, hovered or focused, names its three largest industries
-           with their jobs. opt-1 is the beat as shipped: the share on each
-           ground, and the key of names and examples. */
+        /* The tier study's second option, which ships. The shares leave the
+           grounds for a donut beside the lede, so the chart carries the
+           tier's name alone; each tier, hovered or focused, names its three
+           largest industries with their jobs. opt-1 keeps the earlier beat:
+           the share on each ground, and the key of names and examples. */
         const donutHost = document.getElementById(p + "TierDonut");
         const tierOptEl = document.getElementById(p + "TierOpt");
         if (donutHost){
@@ -4309,7 +4309,7 @@
             x.setAttribute("aria-pressed", String(on));
           });
         };
-        setTierOpt("cards");
+        setTierOpt("donut");
         if (tierOptEl) tierOptEl.addEventListener("click", ev => {
           const b = ev.target.closest(".seg-btn[data-tier]");
           if (b) setTierOpt(b.dataset.tier);
