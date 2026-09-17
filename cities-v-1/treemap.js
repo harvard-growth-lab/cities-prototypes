@@ -493,6 +493,85 @@
     return name.length > chars ? name.slice(0, chars - 3) + "…" : name;
   }
 
+  /* The cells of the industry figure are labelled as Metroverse labels its
+     composition map: the full name at the top left, wrapped by whole words
+     and set as large as the cell allows, and the industry's share of all
+     jobs centred along the bottom in larger, lighter numerals. A name is
+     never cut: if it cannot be set whole at the smallest size, the cell
+     carries no text at all, rather than a stub like "X...". Widths come
+     from a canvas, which measures the same whether or not the figure is on
+     screen - the cells are built while their page is still hidden. */
+  const _labCtx = (function(){
+    try { return document.createElement("canvas").getContext("2d"); } catch (e){ return null; }
+  })();
+  const LAB_STACK = "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+  /* measured at the size it will be set at, never scaled from another: the
+     system face tracks tighter as it grows, so 8px type runs wider than a
+     twelfth of the same words at 100px - which is how names came to overrun
+     the smallest cells */
+  const _textW = new Map();
+  function textW(str, f, weight){
+    const key = weight + "|" + f + "|" + str;
+    if (_textW.has(key)) return _textW.get(key);
+    let w;
+    if (_labCtx){ _labCtx.font = weight + " " + f + "px " + LAB_STACK; w = _labCtx.measureText(str).width * 1.03; }
+    else w = str.length * f * 0.58;
+    _textW.set(key, w);
+    return w;
+  }
+  function wrapWords(name, maxW, f){
+    const lines = [];
+    let line = "";
+    for (const w of name.split(/\s+/)){
+      if (textW(w, f, 400) > maxW) return null;        /* a word that will not fit: no cutting */
+      const next = line ? line + " " + w : w;
+      if (line && textW(next, f, 400) > maxW){ lines.push(line); line = w; }
+      else line = next;
+    }
+    if (line) lines.push(line);
+    return lines;
+  }
+  const _labSpec = new Map();
+  /* k is the unit scale the stylesheet asks for at this width (1 on desktop) */
+  function cellLabelSpec(name, w, h, k, pctText){
+    const key = name + "|" + Math.round(w) + "|" + Math.round(h) + "|" + k + "|" + pctText;
+    if (_labSpec.has(key)) return _labSpec.get(key);
+    let out = null;
+    if (w >= 26 * k && h >= 14 * k){
+      const pad = Math.max(3, Math.min(7, Math.min(w, h) * 0.05)) * Math.min(k, 1.4);
+      const minF = 8 * k, maxF = Math.max(minF, Math.min(18 * k, Math.min(w, h) * 0.16));
+      const availW = w - 2 * pad, LH = 1.14;
+      const sizes = [];
+      for (let f = Math.floor(maxF); f > minF; f -= 1) sizes.push(f);
+      sizes.push(minF);
+      const tryFit = withPct => {
+        for (const f of sizes){
+          const lines = wrapWords(name, availW, f);
+          if (!lines) continue;
+          let pf = 0, need = pad + lines.length * f * LH + pad;
+          if (withPct){
+            pf = Math.round(Math.min(26 * k, Math.max(9 * k, f * 1.5), h * 0.24));
+            while (pf > 9 * k && textW(pctText, pf, 300) > availW) pf -= 1;
+            if (textW(pctText, pf, 300) > availW) continue;
+            need += pf * 1.05 + pad * 0.5;
+          }
+          if (need <= h) return { f: f, lines: lines, pf: pf, pad: pad, lh: LH };
+        }
+        return null;
+      };
+      out = (h >= 30 * k && w >= 36 * k ? tryFit(true) : null) || tryFit(false);
+    }
+    _labSpec.set(key, out);
+    return out;
+  }
+  /* white on the deeper fills, ink on the light ones, by the perceived
+     lightness Metroverse's own maps turn on */
+  function cellInk(fill){
+    const c = d3.color(fill); if (!c) return "#fff";
+    const r = c.rgb();
+    return (0.299 * r.r + 0.587 * r.g + 0.114 * r.b) > 175 ? "#1a2226" : "#fff";
+  }
+
   /* Draw the sector-grouped map into an <svg>, returning its pieces. */
   function draw(svgEl){
     const svg = d3.select(svgEl);
@@ -3586,6 +3665,7 @@
       .join("g").attr("class", "mi-cell");
     cell.append("rect").attr("class", "mi-rect cell");
     cell.append("text").attr("class", "mi-lab");
+    cell.append("text").attr("class", "mi-pct");
 
     /* the ranking's own furniture, drawn once per ranking and revealed with
        its state: the axis and its name, the leading three braced, and each
@@ -3840,6 +3920,22 @@
     drawBars(byJobsAll, gBarsAll);
     drawBars(byJobsTrad, gBarsTrad);
 
+    /* the labels are fitted when a beat paints; when the window crosses one
+       of the widths that change the unit scale, the beat on screen is
+       painted again so its names are fitted to the new scale */
+    {
+      let lastUnit = null, timer = null;
+      window.addEventListener("resize", () => {
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+          const u = labUnit();
+          if (lastUnit !== null && u !== lastUnit && step >= 0) paint(step, false);
+          lastUnit = u;
+        }, 150);
+      });
+      lastUnit = labUnit();
+    }
+
     let step = -1, painted = -1, arriving = false;
     /* set once the tooltips are wired; the beat change calls it so a phrase
        left lit cannot dim the next beat */
@@ -3864,7 +3960,7 @@
 
       /* labels ride the cells while there is room for them, and stand down
          once the mix becomes a ranking that carries its own names */
-      const labs = cell.select(".mi-lab");
+      const labs = cell.select(".mi-lab"), pcts = cell.select(".mi-pct");
       const barsOn = view === "alt" && (i === 0 || i === 1 || i === 4 || i === 5 || i === 7);
       /* which cell labels stand down is decided by where the sector names
          land, so the names have to be placed before the labels are written */
@@ -3872,14 +3968,28 @@
       /* the names can only be measured once the figure is on screen */
       refitNames();
       if (i === 3 || i === 6 || barsOn){
-        (dur ? labs.transition().duration(dur / 3) : labs).style("opacity", 0);
+        [labs, pcts].forEach(t => (dur ? t.transition().duration(dur / 3) : t).style("opacity", 0));
       } else {
-        const lu = labUnit();
-        labs.attr("x", d => at(d).box.x + 4).attr("y", d => at(d).box.y + lu)
-          .text(d => hideLab.has(d.name)
-            ? "" : fitLabel(d.name, { width: at(d).box.w, height: at(d).box.h }, lu));
-        (dur ? labs.transition().delay(dur / 2).duration(dur / 2) : labs)
-          .style("opacity", d => at(d).op > 0 ? 1 : 0);
+        /* the name whole and as large as the cell allows, the share under
+           it; a cell that cannot hold the whole name carries nothing */
+        const k = labUnit() / LAB_BASE, pctFmt = d3.format(".2%");
+        cell.each(function(d){
+          const st = at(d), b = st.box, g = d3.select(this);
+          const nameT = g.select(".mi-lab"), pctT = g.select(".mi-pct");
+          nameT.text(null); pctT.text(null);
+          if (st.op <= 0 || hideLab.has(d.name)) return;
+          const spec = cellLabelSpec(d.name, b.w, b.h, k, pctFmt(d.employ / jobsTotal));
+          if (!spec) return;
+          const ink = cellInk(st.fill), x = b.x + spec.pad;
+          nameT.attr("x", x).attr("y", b.y + spec.pad + spec.f * 0.86)
+            .style("font-size", spec.f + "px").style("fill", ink);
+          spec.lines.forEach((ln, n) => nameT.append("tspan")
+            .attr("x", x).attr("dy", n ? spec.f * spec.lh : 0).text(ln));
+          if (spec.pf) pctT.attr("x", b.x + b.w / 2).attr("y", b.y + b.h - spec.pad - spec.pf * 0.12)
+            .style("font-size", spec.pf + "px").style("fill", ink).text(pctFmt(d.employ / jobsTotal));
+        });
+        [labs, pcts].forEach(t => (dur ? t.transition().delay(dur / 2).duration(dur / 2) : t)
+          .style("opacity", d => at(d).op > 0 ? 1 : 0));
       }
       const show = (g, on, delay) => {
         /* a faded group still sits over everything beneath it, so the pointer
@@ -4344,7 +4454,7 @@
       placeCoarse(false, false);
       coarseCell.style("opacity", 1);
       cell.select(".mi-rect").style("opacity", 0);
-      cell.select(".mi-lab").style("opacity", 0);
+      cell.select(".mi-lab").style("opacity", 0); cell.select(".mi-pct").style("opacity", 0);
     }
     if (opts.adminReveal){
       let played = false;

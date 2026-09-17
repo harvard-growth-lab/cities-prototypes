@@ -2981,6 +2981,13 @@
     font-size:11px;fill:#fff;pointer-events:none;
     paint-order:stroke;stroke:rgba(0,0,0,.2);stroke-width:1px;stroke-linejoin:round;
   }
+  /* the industry cells, labelled as Metroverse labels them: the name whole
+     at the top left, the share centred along the bottom in lighter, larger
+     numerals. Size and ink are set per cell, so no outline is needed. */
+  .mi-figure svg .mi-cell .mi-lab{stroke:none;font-weight:400;}
+  .mi-figure svg .mi-cell .mi-pct{
+    pointer-events:none;text-anchor:middle;font-weight:300;font-variant-numeric:tabular-nums;
+  }
   /* the gaps come from the layout, not from a stroke drawn over the fills */
   .mi-figure svg .mi-rect{stroke:none;}
   .mi-figure svg .mi-grid{stroke:#e9e9eb;stroke-width:1;}
