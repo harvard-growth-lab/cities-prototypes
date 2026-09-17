@@ -2918,7 +2918,6 @@
   .tm-item.is-on{color:var(--ink);font-weight:600;}
   .tm-item.is-on .tm-tick{background:var(--teal);border-color:var(--teal);}
   .tm-item.is-on .tm-tick svg{display:block;}
-  #miTreemapSvg .mi-tierrule{stroke:#9aa3a6;stroke-width:2;stroke-linecap:round;}
   /* the three grounds, and the header each one carries */
   #miTreemapSvg .mi-card{fill:#eff0f0;}
   #miTreemapSvg .mi-card-pct{font-size:18px;font-weight:700;fill:var(--ink);}
@@ -5414,9 +5413,9 @@
             <div class="rca-tip" id="miTip" role="tooltip" hidden></div>
             <!-- the tradability filter, opened from the column head it filters -->
             <div class="trad-menu" id="miTradMenu" role="group" aria-label="Which tradability tiers to show" hidden>
-              <button type="button" class="tm-item is-on" data-tier="0" aria-pressed="true" data-lab-bars="Sells outside the metro" data-lab-rank="Traded"><span class="tm-tick" aria-hidden="true"><svg viewBox="0 0 10 8" width="9" height="7"><path d="M1 4.2 3.7 6.8 9 1.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="tm-lab">Sells outside the metro</span></button>
-              <button type="button" class="tm-item is-on" data-tier="1" aria-pressed="true" data-lab-bars="Some of both" data-lab-rank="Partly traded"><span class="tm-tick" aria-hidden="true"><svg viewBox="0 0 10 8" width="9" height="7"><path d="M1 4.2 3.7 6.8 9 1.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="tm-lab">Some of both</span></button>
-              <button type="button" class="tm-item is-on" data-tier="2" aria-pressed="true" data-lab-bars="Serves the metro" data-lab-rank="Local"><span class="tm-tick" aria-hidden="true"><svg viewBox="0 0 10 8" width="9" height="7"><path d="M1 4.2 3.7 6.8 9 1.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="tm-lab">Serves the metro</span></button>
+              <button type="button" class="tm-item is-on" data-tier="0" aria-pressed="true"><span class="tm-tick" aria-hidden="true"><svg viewBox="0 0 10 8" width="9" height="7"><path d="M1 4.2 3.7 6.8 9 1.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="tm-lab">Traded</span></button>
+              <button type="button" class="tm-item is-on" data-tier="1" aria-pressed="true"><span class="tm-tick" aria-hidden="true"><svg viewBox="0 0 10 8" width="9" height="7"><path d="M1 4.2 3.7 6.8 9 1.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="tm-lab">Partly traded</span></button>
+              <button type="button" class="tm-item is-on" data-tier="2" aria-pressed="true"><span class="tm-tick" aria-hidden="true"><svg viewBox="0 0 10 8" width="9" height="7"><path d="M1 4.2 3.7 6.8 9 1.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="tm-lab">Local</span></button>
             </div>
           </div>
           <!-- one caption slot: each beat's key sits in the same place right

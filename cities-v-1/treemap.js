@@ -3819,10 +3819,13 @@
       G.append("text").attr("class", "mi-axname")
         .attr("x", BML + 12).attr("y", BMT - 36).text("Jobs in the metro");
       /* same line as the axis title, as on the ranking */
-      /* the same column the ranking carries, at this view's tighter row: the
-         track lies beside the score rather than under it, because 18 units of
-         row will not hold a line of type and a rule stacked */
-      if (G === gBarsAll){
+      /* The tradability column is the ranking's, feature for feature, on the
+         jobs order: the tier's name in the column and the head as the tier
+         filter. The first beat's tradable-only bars keep the score, with the
+         track beside it rather than under it, because 18 units of row will
+         not hold a line of type and a rule stacked. */
+      const tierBars = G === gBarsAll;
+      if (tierBars){
         /* the head is the filter's control: the chart names what can be
            narrowed, instead of a second control standing beside it */
         menuHead(G, TC_R, BMT - 36, "is-bars");
@@ -3845,9 +3848,10 @@
          give up 60 units of length to pay for the wider column. */
       const SCORE_SLOT = 48, BTW = 40, BTX = TC_R - SCORE_SLOT - BTW;
       const btw = d3.scaleLinear().domain([0, 1]).range([0, BTW]);
-      row.append("text").attr("class", "mi-trad")
+      row.append("text").attr("class", "mi-trad" + (tierBars ? " is-tier" : ""))
         .attr("x", TC_R).attr("y", (d, i) => barY(i) + 4).attr("text-anchor", "end")
-        .text(d => tradabilityOf(d.name).toFixed(2));
+        .text(d => tierBars ? tierLabel(d) : tradabilityOf(d.name).toFixed(2));
+      if (tierBars) return;
       row.append("rect").attr("class", "mi-tradtrack")
         .attr("x", BTX).attr("y", (d, i) => barY(i) - 2)
         .attr("width", BTW).attr("height", 4).attr("rx", 2);
@@ -3862,17 +3866,6 @@
           .attr("x1", BTX + btw(v)).attr("x2", BTX + btw(v))
           .attr("y1", (d, i) => barY(i) + 3).attr("y2", (d, i) => barY(i) + 6.5);
       });
-      /* the tier heads, once, so the two notches are named rather than guessed */
-      if (G === gBarsAll){
-        const seg = [[0, CL_LO], [CL_LO, CL_HI], [CL_HI, 1]];
-        seg.forEach((sg, k) => {
-          const x0 = BTX + btw(sg[0]), x1 = BTX + btw(sg[1]);
-          G.append("line").attr("class", "mi-tierrule")
-            .attr("x1", x0 + 0.5).attr("x2", x1 - 0.5)
-            .attr("y1", BMT - 13).attr("y2", BMT - 13)
-            .attr("stroke-opacity", tierOn[2 - k] ? 1 : 0.25);
-        });
-      }
     }
     drawBars(byJobsAll, gBarsAll);
     drawBars(byJobsTrad, gBarsTrad);
@@ -4009,8 +4002,8 @@
        answers nothing. */
     const menuEl = document.getElementById(p + "TradMenu");
     if (menuEl){
-      /* which head opened it: the jobs order and the ranking's opt-2 keep
-         separate tier sets and separate words for them */
+      /* which head opened it: the jobs order and the ranking keep separate
+         tier sets, under the same three words */
       let menuCtx = "bars";
       const ctxOf = g => g && g.classList.contains("is-rank") ? "rank" : "bars";
       const tiersOf = ctx => ctx === "rank" ? tierOn6 : tierOn;
@@ -4037,8 +4030,6 @@
           const k = +b.dataset.tier;
           b.classList.toggle("is-on", !!on[k]);
           b.setAttribute("aria-pressed", String(!!on[k]));
-          const lab = b.querySelector(".tm-lab");
-          if (lab) lab.textContent = menuCtx === "rank" ? b.dataset.labRank : b.dataset.labBars;
         });
       };
       const openMenu = () => {
