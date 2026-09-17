@@ -2673,24 +2673,40 @@
     margin-left:auto;margin-right:1px;align-self:center;
   }
   .mi-view #miNames,
-  .mi-view #miRankOpt{
+  .mi-view #miRankOpt,
+  .mi-view #miTierOpt{
     border:0;background:none;padding:0;height:auto;gap:7px;align-self:center;
   }
   .mi-view #miNames .seg-btn,
-  .mi-view #miRankOpt .seg-btn{
+  .mi-view #miRankOpt .seg-btn,
+  .mi-view #miTierOpt .seg-btn{
     height:auto;padding:0;border:0;background:none;border-radius:0;
     font-size:9.5px;font-weight:400;color:#a7aeb1;letter-spacing:normal;
     line-height:1.2;box-shadow:none;
   }
   .mi-view #miNames .seg-btn:hover,
-  .mi-view #miRankOpt .seg-btn:hover{color:var(--ink-soft);}
+  .mi-view #miRankOpt .seg-btn:hover,
+  .mi-view #miTierOpt .seg-btn:hover{color:var(--ink-soft);}
   .mi-view #miNames .seg-btn.is-active,
-  .mi-view #miRankOpt .seg-btn.is-active{
+  .mi-view #miRankOpt .seg-btn.is-active,
+  .mi-view #miTierOpt .seg-btn.is-active{
     background:none;color:var(--ink-soft);font-weight:600;
     text-decoration:underline;text-underline-offset:2px;
   }
   .mi-view #miNames .seg-btn:focus-visible,
-  .mi-view #miRankOpt .seg-btn:focus-visible{outline:1px solid var(--teal);outline-offset:2px;}
+  .mi-view #miRankOpt .seg-btn:focus-visible,
+  .mi-view #miTierOpt .seg-btn:focus-visible{outline:1px solid var(--teal);outline-offset:2px;}
+  /* the tier study belongs to the clusters' beat alone, and follows the
+     naming study at the end of the row - taking the push to the right
+     itself when the naming study has stood down */
+  #miFigure:not([data-step="4"]) #miTierOpt,
+  #miFigure:not([data-step="4"]) #miTierOptLab{display:none;}
+  .mi-view #miTierOptLab{margin-left:14px;}
+  #miFigure[data-color="complexity"] #miTierOptLab{margin-left:auto;}
+  /* opt-2 of the tier study: the ground carries its tier's name alone, set
+     as the head the share was; the shares are in the donut by the lede */
+  #miFigure[data-tier="donut"] .mi-card-pct{display:none;}
+  #miFigure[data-tier="donut"] .mi-card-lab{font-size:15px;font-weight:700;fill:var(--ink);}
   /* opt-2, the shipped option, names the tier instead of printing the
      score: the word replaces the number and the track under it, which was
      the number drawn. The rows carry the mode, so the first ranking's
@@ -2774,6 +2790,41 @@
   .tscale .ts-row > i{flex:none;width:11px;height:11px;border-radius:2px;margin-top:4px;}
   .tscale .ts-name{font-weight:600;}
   .tscale .ts-eg{display:block;color:var(--ink-soft);font-size:12.5px;}
+  /* the tier study's donut: a thin ring in the grounds' three tones, the
+     three tiers listed beside it with their shares, and a card under it for
+     the tier under the pointer. The other tiers step back while one is held. */
+  .tier-donut{position:relative;display:flex;align-items:center;gap:20px;margin-top:14px;max-width:360px;}
+  .tier-donut[hidden]{display:none;}
+  .tier-donut .tdn-ring{flex:none;display:block;}
+  .tier-donut .tdn-arc{transition:opacity .15s ease;}
+  .tier-donut.is-hot .tdn-arc:not(.is-hot){opacity:.3;}
+  .tier-donut .tdn-rows{display:flex;flex-direction:column;gap:5px;min-width:0;flex:1 1 auto;}
+  .tier-donut .tdn-row{
+    appearance:none;display:flex;align-items:center;gap:9px;width:100%;
+    padding:3px 4px;margin:0 -4px;border:0;border-radius:3px;background:none;
+    font:inherit;font-size:13px;line-height:1.3;color:var(--ink);text-align:left;cursor:default;
+    transition:opacity .15s ease,background .12s ease;
+  }
+  .tier-donut .tdn-row:hover,.tier-donut .tdn-row.is-hot{background:var(--teal-tint);}
+  .tier-donut .tdn-row:focus-visible{outline:2px solid var(--teal);outline-offset:-2px;}
+  .tier-donut.is-hot .tdn-row:not(.is-hot){opacity:.45;}
+  .tier-donut .tdn-row i{flex:none;width:11px;height:11px;border-radius:2px;}
+  .tier-donut .tdn-row b{font-weight:600;}
+  .tier-donut .tdn-pct{margin-left:auto;padding-left:12px;font-weight:600;font-variant-numeric:tabular-nums;}
+  .tier-donut .tdn-tip{
+    position:absolute;left:0;top:calc(100% + 8px);z-index:6;width:min(300px,100%);
+    padding:12px 14px;background:#fff;border:1px solid var(--border-strong);border-radius:4px;
+    box-shadow:var(--shadow-md);pointer-events:none;
+  }
+  .tier-donut .tdn-tip[hidden]{display:none;}
+  .tdn-tip .tdn-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;margin-bottom:8px;}
+  .tdn-tip .tdn-head b{font-size:14px;font-weight:700;color:var(--ink);}
+  .tdn-tip .tdn-head span{font-size:12.5px;color:var(--ink-soft);}
+  .tdn-tip .tdn-list{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px;}
+  .tdn-tip .tdn-list li{display:flex;justify-content:space-between;gap:12px;font-size:12.5px;color:var(--ink);}
+  .tdn-tip .tdn-list li span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .tdn-tip .tdn-list li span:last-child{flex:none;color:var(--ink-soft);font-variant-numeric:tabular-nums;}
+  .tdn-tip .tdn-note{margin:8px 0 0;font-size:11.5px;color:var(--ink-soft);}
   /* the three-segment stat in the beat's text */
   .cl-stat{display:inline-flex;align-items:center;gap:12px;}
   .cl-stat[hidden]{display:none;}
@@ -5339,6 +5390,14 @@
                 <button type="button" class="seg-btn" data-names="inside" aria-pressed="false">opt-2</button>
                 <button type="button" class="seg-btn" data-names="off" aria-pressed="false">opt-3</button>
               </div>
+              <!-- a study control: where the tiers' shares are told - on the
+                   grounds, or as a donut in the text with the grounds named
+                   alone -->
+              <span class="ctl-label mi-studylab" id="miTierOptLab">Tier shares</span>
+              <div class="seg" id="miTierOpt" role="group" aria-label="Where the tiers' shares are shown">
+                <button type="button" class="seg-btn is-active" data-tier="cards" aria-pressed="true">opt-1</button>
+                <button type="button" class="seg-btn" data-tier="donut" aria-pressed="false">opt-2</button>
+              </div>
             </div>
             <!-- the ranking's order: by concentration, by size, or by the gap
                  against the peers; the rows and their bars travel together -->
@@ -5430,6 +5489,10 @@
             <!-- the three tiers by name, each with two of the metro's own
                  industries; the score itself is shown nowhere -->
             <div class="tscale" id="miTradScale" hidden></div>
+            <!-- opt-2 of the tier study: the shares as a donut, with the
+                 chart carrying the tier names alone; hovering a tier names
+                 its largest industries and their jobs -->
+            <div class="tier-donut" id="miTierDonut" hidden></div>
           </div>
           <div class="collapsible-info">
             <button class="collapsible-header">

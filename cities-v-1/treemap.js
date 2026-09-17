@@ -4240,6 +4240,78 @@
             '<span class="ts-name">' + b.name + '</span>' +
             '<span class="ts-eg">e.g. ' + examples(b.k) + '</span></span></span>').join("") + '</span>';
         scaleHost.hidden = false;
+
+        /* The tier study's second option. The shares leave the grounds for a
+           donut beside the lede, so the chart carries the tier's name alone;
+           each tier, hovered or focused, names its three largest industries
+           with their jobs. opt-1 is the beat as shipped: the share on each
+           ground, and the key of names and examples. */
+        const donutHost = document.getElementById(p + "TierDonut");
+        const tierOptEl = document.getElementById(p + "TierOpt");
+        if (donutHost){
+          const R = 56, RI = 37, SZ = R * 2 + 2;
+          const jobsOf = n => Math.round(n).toLocaleString();
+          const tierJobs = k => d3.sum(clusterRows[k], d => d.employ);
+          const labelOf = d => (rcaSeed[d.name] || {}).short || shortOf(d.name);
+          const largest = k => clusterRows[k].slice().sort((a, b) => b.employ - a.employ).slice(0, 3);
+          donutHost.innerHTML =
+            '<svg class="tdn-ring" width="' + SZ + '" height="' + SZ + '" viewBox="0 0 ' + SZ + ' ' + SZ +
+              '" role="img" aria-label="Share of metro jobs in each tradability tier"></svg>' +
+            '<div class="tdn-rows">' + bands.map(b =>
+              '<button type="button" class="tdn-row" data-tier="' + b.k + '">' +
+              '<i style="background:' + b.tone + '"></i><b>' + b.name + '</b>' +
+              '<span class="tdn-pct">' + pct(clusterShare[b.k]) + '</span></button>').join("") + '</div>' +
+            '<div class="tdn-tip" role="status" hidden></div>';
+          const ring = d3.select(donutHost).select("svg.tdn-ring").append("g")
+            .attr("transform", "translate(" + SZ / 2 + "," + SZ / 2 + ")");
+          /* a thin ring, in the order the grounds take, with a hairline of
+             ground between the segments */
+          const arcs = d3.pie().sort(null).value(d => clusterShare[d.k]).padAngle(0.014)(bands);
+          const arc = d3.arc().innerRadius(RI).outerRadius(R);
+          ring.selectAll("path.tdn-arc").data(arcs).join("path")
+            .attr("class", "tdn-arc").attr("data-tier", d => d.data.k)
+            .attr("d", arc).attr("fill", d => d.data.tone);
+          const tipEl = donutHost.querySelector(".tdn-tip");
+          const hot = k => {
+            donutHost.classList.toggle("is-hot", k != null);
+            donutHost.querySelectorAll("[data-tier]").forEach(n =>
+              n.classList.toggle("is-hot", k != null && +n.getAttribute("data-tier") === k));
+            if (k == null){ tipEl.hidden = true; return; }
+            const b = bands[k], n = clusterRows[k].length;
+            tipEl.innerHTML =
+              '<div class="tdn-head"><b>' + b.name + '</b><span>' + pct(clusterShare[k]) +
+                ' of metro jobs \u00b7 ' + jobsOf(tierJobs(k)) + ' jobs</span></div>' +
+              '<ul class="tdn-list">' + largest(k).map(d =>
+                '<li><span>' + labelOf(d) + '</span><span>' + jobsOf(d.employ) + '</span></li>').join("") + '</ul>' +
+              '<p class="tdn-note">The three largest of the ' + n + ' industries in the tier</p>';
+            tipEl.hidden = false;
+          };
+          const tierAt = ev => { const t = ev.target.closest && ev.target.closest("[data-tier]"); return t ? +t.getAttribute("data-tier") : null; };
+          donutHost.addEventListener("mouseover", ev => { const k = tierAt(ev); if (k != null) hot(k); });
+          donutHost.addEventListener("mouseleave", () => hot(null));
+          donutHost.addEventListener("focusin", ev => { const k = tierAt(ev); if (k != null) hot(k); });
+          donutHost.addEventListener("focusout", ev => { if (!donutHost.contains(ev.relatedTarget)) hot(null); });
+        }
+        /* the switch between the two: the share on the grounds and the key,
+           or the name alone on the grounds and the donut */
+        const setTierOpt = mode => {
+          const donut = mode === "donut";
+          fig.dataset.tier = donut ? "donut" : "cards";
+          scaleHost.hidden = donut;
+          if (donutHost) donutHost.hidden = !donut;
+          /* the name alone sits where the share sat, as the ground's head */
+          gCards.selectAll(".mi-card-lab").attr("y", donut ? 34 : 48);
+          if (tierOptEl) tierOptEl.querySelectorAll(".seg-btn[data-tier]").forEach(x => {
+            const on = x.dataset.tier === (donut ? "donut" : "cards");
+            x.classList.toggle("is-active", on);
+            x.setAttribute("aria-pressed", String(on));
+          });
+        };
+        setTierOpt("cards");
+        if (tierOptEl) tierOptEl.addEventListener("click", ev => {
+          const b = ev.target.closest(".seg-btn[data-tier]");
+          if (b) setTierOpt(b.dataset.tier);
+        });
       }
     })();
 
