@@ -41,6 +41,17 @@ html[data-v3-instant] #landing{transition:none !important;}
 /* the tab names: the full one by default, the short one on phones */
 .secnav-short{display:none;}
 
+/* A section that has become a scrolly (Metro Industries, Admin Industry
+   Mix) opens with its stage and first caption where the constraints
+   walk's are. The page's 52px top pad and the emptied heading's margin
+   held them 58px lower at the opening scroll — the caption's centre at
+   61% of a 900px screen against the walk's 53%, the treemap's legend under
+   the fold — and inside a scrolly the heading rides in the first step, so
+   nothing sits in that pad. Every width: on a phone it is the 28px above
+   the pinned stage. */
+.tool-body .page:has(> .ct-scrolly){padding-top:0;}
+.tool-body .page:has(> .ct-scrolly) > .page-head{margin-bottom:0;}
+
 /* ---------- narrow: ≤ 920px ---------- */
 @media (max-width:920px){
   :root{--frame-pad:24px;}
@@ -106,6 +117,11 @@ html[data-v3-instant] #landing{transition:none !important;}
   .ct-stage .mi-figure{flex:0 0 auto;}
   .ct-steps{padding-top:16px;padding-bottom:30svh;}
   .ct-step{min-height:0;padding-block:14svh;justify-content:flex-start;}
+  /* the first caption opens right under the stage, as the walk's does
+     (figures.css, .nv-step): with 14svh above it too, the text began at
+     three quarters of a phone's height and the reader scrolled past a
+     blank band to reach it. The pad between later captions is unchanged. */
+  .ct-step:first-child{padding-top:0;}
   .ct-slot.is-on,.ov2-scrolly .ct-slot.is-on{min-height:0;padding-block:0;justify-content:flex-start;}
   .ov2-scrolly .ct-stagemap{flex:0 0 auto;min-height:0;max-height:none;height:min(30svh,240px);}
   .ov2-scrolly .ct-slot > *{max-width:none;}
