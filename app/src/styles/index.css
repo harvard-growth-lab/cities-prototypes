@@ -1,0 +1,241 @@
+@import 'tailwindcss';
+@import 'maplibre-gl/dist/maplibre-gl.css';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Design tokens, from cities-v-1 on main (Nil's prototype, option C).
+ * Three palettes, deliberately separate:
+ *   - UI chrome (teal/orange/ink/line): buttons, nav, text.
+ *   - The two geographies (geo-city / geo-metro): every place the admin city
+ *     or its metro is named — map, badges, chart rings — carries its hue.
+ *     Direction (rise/fall) is its own scale, kept clear of the brand reds.
+ *   - GL chart palette (gl-*): the Growth Lab design grammar. Categorical
+ *     encodings in figures draw from gl-*, never from the chrome colours.
+ * Exposed as Tailwind utilities: bg-teal, text-ink-soft, border-line,
+ * stroke-geo-metro, fill-gl-c1, text-rise, …
+ */
+@theme {
+  --font-sans: 'Source Sans 3', 'Source Sans Pro', ui-sans-serif, system-ui, sans-serif;
+
+  /* Breakpoints: 640 = phone (Tailwind's sm), 920 = narrow. Rules are
+     desktop-first (max-narrow:, max-sm:). Keep src/lib/use-media-query.ts in step. */
+  --breakpoint-narrow: 920px;
+
+  /* --- UI chrome --- */
+  --color-teal: #255862;
+  --color-teal-dark: #1c454d;
+  --color-teal-tint: #eef3f4;
+
+  --color-orange: #e76565;
+  --color-orange-dark: #cf4f2c;
+  --color-orange-tint: #fdf0ec;
+
+  --color-ink: #1a2226;
+  --color-ink-soft: #5b686d;
+
+  --color-line: #e2e7e8;
+  --color-line-strong: #c3ccce;
+
+  /* direction: a number that rose or fell */
+  --color-rise: #3d9a43;
+  --color-fall: #c0244a;
+
+  /* the two geographies */
+  --color-geo-city: #255862;
+  --color-geo-city-fill: #93a9ad;
+  --color-geo-metro: #4a6a72;
+  --color-geo-metro-fill: #dde7ea;
+
+  --shadow-sm: 0 1px 3px rgba(37, 88, 98, 0.1);
+  --shadow-md: 0 8px 28px rgba(37, 88, 98, 0.14);
+
+  /* --- type scale: one size per role, rem + vw clamps (never vw alone) --- */
+  --text-xs: clamp(0.75rem, 0.729rem + 0.093vw, 0.8125rem); /* 12 → 13 */
+  --text-xs--line-height: 1.4;
+  --text-sm: clamp(0.8125rem, 0.792rem + 0.093vw, 0.875rem); /* 13 → 14 */
+  --text-sm--line-height: 1.45;
+  --text-note: clamp(0.875rem, 0.854rem + 0.093vw, 0.9375rem); /* 14 → 15 */
+  --text-note--line-height: 1.5;
+  --text-base: clamp(1rem, 0.96rem + 0.11vw, 1.125rem); /* 16 → 17.5 */
+  --text-base--line-height: 1.6;
+  --text-title: clamp(1.125rem, 1.042rem + 0.37vw, 1.375rem); /* 18 → 22 */
+  --text-title--line-height: 1.3;
+  --text-h3: clamp(1.375rem, 1.25rem + 0.556vw, 1.75rem); /* 22 → 28 */
+  --text-h3--line-height: 1.2;
+  --text-h2: clamp(1.375rem, 1.208rem + 0.741vw, 1.875rem); /* 22 → 30 */
+  --text-h2--line-height: 1.15;
+  --text-q: clamp(1.375rem, 1.188rem + 0.833vw, 1.9375rem); /* 22 → 31 */
+  --text-q--line-height: 1.25;
+  --text-hero: clamp(1.8125rem, 0.958rem + 3.796vw, 4.375rem); /* 29 → 70 */
+  --text-hero--line-height: 1.08;
+
+  /* --- layout --- */
+  --spacing-chrome: 67px; /* the sticky section bar; sticky figures measure against it */
+  --spacing-frame: 40px; /* one horizontal frame for the whole tool */
+  --container-grid: 1360px; /* the measure the section bar and page grid share */
+
+  /* --- GL chart palette --- */
+  --color-gl-ink: #1a1714;
+  --color-gl-ink-2: #2c2823;
+  --color-gl-ink-3: #4f4a42;
+  --color-gl-ink-4: #9a9389;
+  --color-gl-accent: #1a5a8e;
+  --color-gl-rule: #dddddd;
+  --color-gl-gridline: #d8d4cc;
+  --color-gl-paper: #ffffff;
+  --color-gl-paper-warm: #f4f1ea;
+  --color-gl-c1: #2f87c8;
+  --color-gl-c1-dark: #1a5a8e;
+  --color-gl-c1-light: #b5d5ea;
+  --color-gl-c2: #cc4948;
+  --color-gl-c2-dark: #8a2c2b;
+  --color-gl-c2-light: #e89c9c;
+  --color-gl-c3: #2aa584;
+  --color-gl-c3-dark: #1a6b53;
+  --color-gl-c3-light: #92d6bf;
+  --color-gl-c4: #7554a3;
+  --color-gl-c4-dark: #4a3470;
+  --color-gl-c5: #ea822d;
+  --color-gl-c5-dark: #a8580f;
+  --color-gl-c6: #cdc86b;
+  --color-gl-c6-dark: #8a8638;
+  --color-gl-muted: #afb5be;
+  --color-gl-muted-dark: #5f6773;
+  --color-gl-muted-light: #cdd2d9;
+}
+
+/* shadcn/ui semantic tokens, pointed at the design tokens above. */
+@theme inline {
+  --font-heading: var(--font-sans);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --radius-sm: calc(var(--radius) * 0.75);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) * 1.5);
+  --radius-xl: calc(var(--radius) * 2);
+  --radius-2xl: calc(var(--radius) * 2.5);
+  --radius-3xl: calc(var(--radius) * 3.5);
+  --radius-4xl: calc(var(--radius) * 4.5);
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #1a2226;
+  --card: #ffffff;
+  --card-foreground: #1a2226;
+  --popover: #ffffff;
+  --popover-foreground: #1a2226;
+  --primary: #255862;
+  --primary-foreground: #ffffff;
+  --secondary: #eef3f4;
+  --secondary-foreground: #255862;
+  --muted: #f3f6f7;
+  --muted-foreground: #5b686d;
+  --accent: #eef3f4;
+  --accent-foreground: #1c454d;
+  --destructive: #c0244a;
+  --border: #e2e7e8;
+  --input: #c3ccce;
+  --ring: #255862;
+  --chart-1: #2f87c8;
+  --chart-2: #cc4948;
+  --chart-3: #2aa584;
+  --chart-4: #7554a3;
+  --chart-5: #ea822d;
+  --radius: 4px;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1a2226;
+  --sidebar-primary: #255862;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #eef3f4;
+  --sidebar-accent-foreground: #255862;
+  --sidebar-border: #e2e7e8;
+  --sidebar-ring: #255862;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  /* The chrome and the frame shrink with the viewport (design-spec §5). Set
+     on :root so every pt-chrome / top-chrome / px-frame utility follows. */
+  @media (width < 1200px) {
+    :root {
+      --spacing-chrome: 59px;
+      --spacing-frame: 24px;
+    }
+  }
+  @media (width < 920px) {
+    :root {
+      --spacing-chrome: 55px;
+      --spacing-frame: 20px;
+    }
+  }
+  @media (width < 640px) {
+    :root {
+      --spacing-chrome: 51px;
+      --spacing-frame: 14px;
+    }
+  }
+
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background font-sans text-base text-foreground antialiased;
+  }
+
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+
+  :focus-visible {
+    @apply rounded outline-2 outline-offset-2 outline-teal;
+  }
+}
+
+@utility eyebrow {
+  @apply text-xs font-bold tracking-[2.2px] text-teal uppercase;
+}
+
+/* tabular figures in stat rows and tables */
+@utility nums {
+  font-variant-numeric: tabular-nums;
+}
