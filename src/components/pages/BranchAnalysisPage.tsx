@@ -822,7 +822,7 @@ export function BranchAnalysisPage({
     >
       <div className="ba-headrow">
         <div className="page-head">
-          <span className="eyebrow">City Constraints</span>
+          <span className="eyebrow">Constraints Diagnosis</span>
           {/* the city type's mark leads its name, in the branch's hue — the
               same mark its head carries on the tree */}
           <h2>

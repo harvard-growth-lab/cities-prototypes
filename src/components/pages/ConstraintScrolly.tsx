@@ -2314,7 +2314,7 @@ export function ConstraintScrolly({
       <div className="jz-sticky" ref={stageRef}>
         <div className="jz-head">
           <div className="jz-titles">
-            <span className="eyebrow">City Constraints</span>
+            <span className="eyebrow">Constraints Diagnosis</span>
             <div className="jz-h2s">
               <h2 className={phase === "chart" ? "on" : ""}>
                 Where is your constraint?

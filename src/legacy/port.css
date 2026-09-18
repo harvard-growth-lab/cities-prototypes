@@ -1,4 +1,4 @@
-/* What the port needs on top of v-3's own stylesheet. */
+/* What the port needs on top of main's own stylesheet (cities-v-1). */
 
 /* no box of its own: #landing and #tool lay out as on main */
 .v3-shell{display:contents;}
@@ -7,203 +7,95 @@
 html[data-v3-instant] #landing{transition:none !important;}
 
 /* The constraints stage (src/styles/figures.css) used to sit under this
-   app's 72px toolbar; in v-3's frame the masthead scrolls away and only the
+   app's 72px toolbar; in main's frame the masthead scrolls away and only the
    section bar stays put, inside the scroller — so the stage sticks under
-   that bar, with the same 24px of air below as before. */
+   that bar, at the height main publishes as --chrome-h (67px on a desk,
+   smaller at each of main's breakpoints), with the same 24px of air below
+   as before. */
 .jz-sticky{
   top:var(--chrome-h);
   height:calc(100dvh - var(--chrome-h) - 24px);
 }
 
+/* Small screens: from 2026-09-15 to 09-17 this file also held every width
+   rule for the shell (two breakpoints, 920 and 640: the chrome, the tab
+   strip, the landing, the pager, the scrollies, the dialogs), because
+   main's stylesheet had none. Main's v-1 now carries its own — 1199 / 899 /
+   599, with --chrome-h restated at each — so the shell is main's at every
+   width, with the one exception below. The React section keeps its own two
+   breakpoints (920 / 640: src/styles/figures.css, walkFit.tsx). */
+
 /* ====================================================================
-   Small screens (Sept 2026). v-3's stylesheet has no width rules of its
-   own, so everything narrower than a laptop is decided here, on top of it.
-   Two breakpoints, shared with src/styles/figures.css and the React
-   section (walkFit.tsx, useMediaQuery):
-     920px  narrow — tablets, split screens: the scrollies stack (stage
-            pinned on top, captions under it), the chrome shrinks
-     640px  phone — one column everywhere, 16px gutters, short tab names
-   The scripts read the same lines (v3-page.js, marked [port]): the scrolly
-   spies, the landing's wheel/swipe entry and the tab strip.
+   The section menu on phones (2026-09-17; a candidate for main).
+
+   Main's bar keeps its tab strip at every width and lets it scroll as "the
+   backstop for a very narrow phone". On a 390px phone the strip is left
+   165px beside the location chip: the section you are on is the only tab
+   in view, the others are cut at both edges, and nothing says the strip
+   moves. So at main's mobile tier the strip stands down and the sections
+   collapse into one control in the family of the location chip beside
+   it: a button naming the section you are on, and a menu of the five —
+   a check behind you, the current one on the tint, numbers ahead — the
+   same state language as the tabs and the pager's stops. The script
+   builds and drives it (v3-page.js, marked [port]).
    ==================================================================== */
+.secmenu{display:none;}
 
-/* the section bar is 54px tall; every sticky offset read 57 */
-:root{--chrome-h:54px;}
-/* the shell is the VISIBLE viewport: on a phone the address bar comes and
-   goes, and 100vh does not follow it */
-#tool{height:100dvh;}
-/* nothing can drag the sticky section bar sideways: a stray wide element
-   is clipped rather than widening the scroller */
-.pages,.explainers-view{overflow-x:clip;}
-/* tooltips never run off a narrow screen */
-.rca-tip,.quad-tip,.row-tip,.peer-tip,.pc-tip{max-width:min(340px, calc(100vw - 24px));}
-.pg-why::after,.plc-why::after{max-width:calc(100vw - 32px);}
-/* the tab names: the full one by default, the short one on phones */
-.secnav-short{display:none;}
-
-/* A section that has become a scrolly (Metro Industries, Admin Industry
-   Mix) opens with its stage and first caption where the constraints
-   walk's are. The page's 52px top pad and the emptied heading's margin
-   held them 58px lower at the opening scroll — the caption's centre at
-   61% of a 900px screen against the walk's 53%, the treemap's legend under
-   the fold — and inside a scrolly the heading rides in the first step, so
-   nothing sits in that pad. Every width: on a phone it is the 28px above
-   the pinned stage. */
-.tool-body .page:has(> .ct-scrolly){padding-top:0;}
-.tool-body .page:has(> .ct-scrolly) > .page-head{margin-bottom:0;}
-
-/* ---------- narrow: ≤ 920px ---------- */
-@media (max-width:920px){
-  :root{--frame-pad:24px;}
-
-  /* masthead (the tool's and the landing's — and the explainers' copy,
-     which uses the same classes): the logo, Explainers and the journey
-     button; the link nav goes, the journey button keeps its icon */
-  .toolbar,.landing-header{gap:8px;}
-  .toolbar .logo-btn,.landing-header .logo-btn{width:132px;flex:0 0 132px;}
-  .toolbar .logo-btn img,.landing-header .logo-btn img{height:30px;}
-  .toolbar-links{display:none;}
-  .btn-journey{height:38px;padding:0 11px;gap:0;font-size:0;}
-  .btn-journey svg{width:20px;height:20px;}
-  .explainers-btn{padding:8px 9px;margin-right:0;}
-
-  /* the section bar: the picker shows the city alone, and the tabs become
-     a strip that scrolls sideways (the active one is centred by the
-     script). The study switch (opt-1 / opt-2) stops floating over the
-     tabs. */
-  .secbar{padding-inline:12px;}
-  .secbar .citypick--bar{min-width:0;}
-  .secbar .citypick--bar .citypick-btn{padding:0 24px 0 10px;}
-  .secbar .citypick--bar .citypick-txt{font-size:13px;}
-  .secnav{
-    margin-left:10px;padding-left:10px;flex:1 1 auto;
-    overflow-x:auto;overflow-y:hidden;scrollbar-width:none;
-    scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;
-  }
-  .secnav::-webkit-scrollbar{display:none;}
-  .secnav-btn{scroll-snap-align:center;padding:0 10px;font-size:13px;}
-  .secbar .ct-optwrap{position:static;transform:none;margin-left:6px;flex:none;}
-
-  /* the pager at the foot of a section: the line of stops on top, the
-     two section buttons under it */
-  .pager-row{flex-wrap:wrap;justify-content:space-between;gap:12px 14px;}
-  .pgr-line-wrap{order:-1;flex:1 0 100%;}
-
-  /* the landing scrolls, and its hero stacks: the copy, then the panel */
-  #landing{overflow:auto;-webkit-overflow-scrolling:touch;}
-  #landing .map-bg{position:fixed;}
-  .landing-hero{flex:none;justify-content:flex-start;padding:28px 20px 48px;}
-  .hero-grid{grid-template-columns:minmax(0,1fr);gap:28px;width:100%;}
-  .landing-hero h1{font-size:clamp(32px,7vw,44px);}
-  .landing-hero p.intro{font-size:16px;line-height:26px;}
-  .jump-quiet{margin-top:24px;}
-  .diagnose-panel{max-width:520px;}
-
-  /* ---- the scrollies (Metro Industries, Admin Industry Mix, Economic
-     Fundamentals' opt-2): one column, the stage pinned on top at half the
-     viewport, the captions scrolling under it. The reading line moves
-     with it (v3-page.js, the spies). A figure taller than the stage
-     scrolls inside it rather than spilling over the captions. ---- */
-  .ct-scrolly,.ct-scrolly.ov2-scrolly{
-    grid-template-columns:minmax(0,1fr);gap:0;width:auto;margin-inline:16px;
-  }
-  .ct-stage,.ct-stage:has(.mi-figure),.ov2-scrolly .ct-stage{
-    order:-1;position:sticky;top:var(--chrome-h);z-index:2;
-    height:48svh;min-height:0;max-height:none;
-    display:flex;flex-direction:column;justify-content:flex-start;
-    padding:8px 0;overflow:auto;background:#fff;
-    border-bottom:1px solid var(--border);
-  }
-  .ct-stage .mi-figure{flex:0 0 auto;}
-  .ct-steps{padding-top:16px;padding-bottom:30svh;}
-  .ct-step{min-height:0;padding-block:14svh;justify-content:flex-start;}
-  /* the first caption opens right under the stage, as the walk's does
-     (figures.css, .nv-step): with 14svh above it too, the text began at
-     three quarters of a phone's height and the reader scrolled past a
-     blank band to reach it. The pad between later captions is unchanged. */
-  .ct-step:first-child{padding-top:0;}
-  .ct-slot.is-on,.ov2-scrolly .ct-slot.is-on{min-height:0;padding-block:0;justify-content:flex-start;}
-  .ov2-scrolly .ct-stagemap{flex:0 0 auto;min-height:0;max-height:none;height:min(30svh,240px);}
-  .ov2-scrolly .ct-slot > *{max-width:none;}
-  .ov2-scrolly .pc-foot{flex-wrap:wrap;}
-  .ov2-scrolly .pc-foot .q-stats{flex:1 1 100%;}
-
-  /* Economic Fundamentals (opt-1): the map pins on top, the reading runs
-     under it */
-  .ov-wrap:not(.ov2){flex-direction:column;}
-  .ov-wrap:not(.ov2) .ov-map{flex:none;order:-1;position:sticky;top:var(--chrome-h);z-index:2;}
-  .ov-wrap:not(.ov2) .ov-map-inner{position:static;height:40svh;border-bottom:1px solid var(--border);}
-  .ov-wrap:not(.ov2) .ov-block{max-width:none;margin-inline:16px;min-height:0;padding:28px 0;}
-
-  /* two-column furniture folds to one */
-  .lede-row,.lede-stat-row,.xch-split,.am-ex,.am-ex-main,.dx-grid{grid-template-columns:minmax(0,1fr);}
-  .viz-layout{flex-direction:column;}
-  .narrative{width:auto;flex:none;}
-  .export-viz-row.with-list{flex-direction:column;}
-  .export-viz-row.with-list #exportTopList{flex:none;width:100%;}
-  .tradable-split-header{width:100%;}
-  .complexity-legend .cl-gradient,.change-legend .cl-gradient{width:auto;flex:1 1 120px;min-width:80px;}
-  .rca-dist-wrap iframe{height:min(765px, 70dvh);}
+/* Main's bug, fixed here because the menu cannot work over it: the chip's
+   button is 300px wide at every width (a desk rule), while its wrapper
+   narrows to 184px at 1199 and 158px at 599. The overhang lies under the
+   tabs — on main its chevron peeks out between the second and third tab
+   from 1199 down — and on a phone it sat under the section button and
+   took its taps. The button takes its wrapper's width. */
+@media (max-width:1199px){
+  .secbar .citypick--bar .citypick-btn{width:100%;}
 }
 
-/* ---------- phone: ≤ 640px ---------- */
-@media (max-width:640px){
-  :root{--frame-pad:16px;}
+@media (max-width:599px){
+  .secnav{display:none;}
+  /* the chip yields a little on a phone so the section's name can fit
+     beside it; the strip it held still for is gone at this width */
+  .secbar .citypick--bar{width:auto;flex:0 1 158px;min-width:110px;}
 
-  .secnav-name{display:none;}
-  .secnav-short{display:inline;}
-  .secnav-btn{padding:0 8px;gap:6px;}
-  .secbar .ct-optwrap{display:none;}
-  .secbar .citypick--bar .citypick-ctry{display:none;}
-
-  /* pages and their padding: 16px gutters, not 128px */
-  .page,.tool-body .page{padding:28px 16px 40px;}
-  .secpager{padding:20px 16px 28px;}
-  .secpager[data-sec="0"]{margin-inline:16px;}
-  .secpager--wide{max-width:none;}
-  .collapsible-content{padding:0 12px 14px 16px;}
-  .practice-card{padding:22px 16px;}
-  .quiz-stats{gap:20px;padding:16px;}
-  .ktest-opts,.ktest-ta{max-width:none;}
-
-  /* type */
-  .page-head h2{font-size:24px;}
-  .ct-step h2,.ct-step h3{font-size:22px;}
-  .export-subsection h3{font-size:22px;}
-  .lede{font-size:17px;line-height:27px;}
-
-  /* the dense 880-unit figures: at 0.4× their type is 5px, so they keep a
-     600px measure and scroll sideways inside the stage instead (a stopgap
-     until each has a narrow layout of its own) */
-  #exportTreemapSvg,.tradable-viz-wrapper,.rca-wrap,.rca-footnote{width:100%;}
-  .ct-stage .mi-figure svg.viz-big,.ct-stage .rca-wrap svg,.ct-stage #exportTreemapSvg{min-width:600px;}
-  .ct-stage .mi-figure,.ct-stage .rca-wrap,.ct-stage .export-viz-row{overflow-x:auto;}
-
-  /* the peer profile popovers: hidden-by-opacity cards still widen the
-     scroller, so on a phone they are gone until shown, and they open on a
-     tap (focus) as well as a hover */
-  .pg-card{display:none;left:auto;right:0;transform:none;max-width:calc(100vw - 32px);}
-  .pg-peer:hover .pg-card,.pg-peer:focus-within .pg-card{display:block;opacity:1;transform:none;}
-  /* the dashed-term tooltips likewise: 225px pseudo-elements parked off the
-     edge until hovered, and a tap (focus) opens them */
-  .pg-why::after,.plc-why::after{display:none;left:0;transform:none;}
-  .pg-why:hover::after,.pg-why:focus::after,.plc-why:hover::after,.plc-why:focus::after{display:block;opacity:1;}
-
-  /* dialogs are sheets */
-  .journey-overlay{padding:0;}
-  .journey-window,.geo-window,.chat-window{
-    width:100%;max-width:100%;height:100%;max-height:100%;border-radius:0;
+  /* static, not relative: the open list hangs from the BAR (sticky, so a
+     containing block), spanning its width — from a 150px button the list
+     ran past the phone's edge */
+  .secmenu{display:block;position:static;flex:1 1 150px;min-width:0;align-self:center;margin-left:8px;}
+  .secmenu-btn{
+    display:flex;align-items:center;gap:7px;width:100%;height:30px;min-width:0;
+    padding:0 24px 0 8px;border:1px solid var(--border-strong);border-radius:4px;
+    background:#fff;color:var(--ink);cursor:pointer;text-align:left;
+    font:inherit;font-size:12.5px;font-weight:700;line-height:1;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%23255862' stroke-width='1.5' stroke-linecap='round'/></svg>");
+    background-repeat:no-repeat;background-position:right 8px center;
   }
-  .journey-head{padding:16px 16px 14px;}
-  .journey-body{padding:16px;}
-  .geo-map-body{padding:6px 12px 16px;}
-  .jp-steps{padding-left:24px;}
-}
+  .secmenu-btn:hover,.secmenu-btn:focus-visible,.secmenu-btn[aria-expanded="true"]{
+    border-color:var(--teal);box-shadow:0 0 0 3px rgba(37,88,98,.10);outline:none;
+  }
+  .secmenu-btn .num,.secmenu-opt .num{
+    width:18px;height:18px;flex:0 0 18px;border-radius:50%;
+    border:1.5px solid currentColor;font-size:10px;font-weight:700;
+    display:inline-flex;align-items:center;justify-content:center;
+  }
+  .secmenu-btn .num{background:var(--teal);border-color:var(--teal);color:#fff;}
+  .secmenu-btn .num svg,.secmenu-opt .num svg{display:block;}
+  .secmenu-lbl{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 
-/* ---------- touch: what only hover revealed ---------- */
-@media (hover:none){
-  .pg-peer:focus-within .pg-card{opacity:1;transform:translateX(-50%) translateY(0);}
-  .pg-peer:focus-within .pg-btn{border-color:var(--teal);}
-  /* the tab strip's step ticks are hover-previewed on inactive tabs; on
-     touch there is no preview, so only the active tab's count */
+  .secmenu-list{
+    position:absolute;top:calc(100% + 6px);left:var(--frame-pad);right:var(--frame-pad);z-index:60;
+    background:#fff;border:1px solid var(--border-strong);border-radius:6px;
+    box-shadow:var(--shadow-md);padding:5px;
+  }
+  .secmenu-list[hidden]{display:none;}
+  .secmenu-opt{
+    display:flex;align-items:center;gap:10px;width:100%;
+    padding:10px 10px;border:0;border-radius:4px;background:none;cursor:pointer;
+    font:inherit;font-size:14px;font-weight:600;color:var(--ink-soft);text-align:left;
+  }
+  .secmenu-opt .num{width:22px;height:22px;flex-basis:22px;font-size:11px;}
+  .secmenu-opt:hover{background:var(--teal-tint);color:var(--ink);}
+  .secmenu-opt.is-done{color:var(--teal);}
+  .secmenu-opt.is-done .num{background:#e2ebec;border-color:transparent;}
+  .secmenu-opt.is-on{background:var(--teal-tint);color:var(--ink);font-weight:700;}
+  .secmenu-opt.is-on .num{background:var(--teal);border-color:var(--teal);color:#fff;}
 }
