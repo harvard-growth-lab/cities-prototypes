@@ -3776,9 +3776,9 @@
   /* the chip row becomes a scroller at every width — invisible until there
      is something to scroll, so the desktop grid above is untouched, but a
      row that spills by 20px now scrolls instead of printing over the
-     study switch. The reclaiming of the chip's reserved column happens at
-     1199 and below, where the row actually runs out of space: above it the
-     392px slot is what puts the chip over the text column. */
+     study switch. The chip's reserved column is given back below 1440, so
+     the section names get the room; at 1440 and up the 392px slot puts the
+     chip over the text column. */
   .secnav{
     overflow-x:auto;overflow-y:hidden;
     overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;
@@ -3809,21 +3809,35 @@
      longer fitted a 1440 laptop, which is the width this bar is for */
   .secnav{gap:9px;}
   .secnav-btn{padding:6px 9px;}
-  /* Measured: the five names, their marks, the seam and the connectors need
-     912px of row, which a 1440 viewport gives exactly and a 1366 does not.
-     Below that the chips collapse to marks and the active name - the pattern
-     the narrow bar already used - rather than letting the row scroll and cut
-     "Levers for Change" in half. */
+  /* Below 1440 the names are given the room rather than taken away: the
+     location slot stops reserving its 392 and hugs the 300 button, the gap
+     before the names narrows from 56 to 32, and the chips tighten a step.
+     All five names then fit from about 1210 up, where they used to vanish
+     at 1439 with half the bar empty. */
   @media (max-width:1439px){
-    .secnav{gap:4px;}
-    .secnav-btn{padding:6px 9px;}
-    .secnav-btn:not(.is-active) .secnav-lbl{display:none;}
-    .secnav-btn:not(.is-active){padding:6px;gap:0;}
-    .secnav-btn:nth-child(1)::after,
-    .secnav-btn:nth-child(2)::after,
-    .secnav-btn:nth-child(4)::after{display:none;}
+    .secbar .citypick--bar{width:auto;}
+    .secnav{margin-left:32px;gap:8px;}
+    .secnav-btn{padding:6px 8px;gap:7px;font-size:13px;}
+    .secnav-btn .num{width:20px;height:20px;flex:0 0 20px;font-size:10.5px;}
     .secnav-btn:nth-child(4){margin-left:18px;}
   }
+  /* the last 23px the names need at 1200: the location button gives up 24
+     (Boston and its country still read whole) and the gap before the
+     names another 8 */
+  @media (min-width:1200px) and (max-width:1279px){
+    .secbar .citypick--bar .citypick-btn{width:276px;}
+    .secnav{margin-left:24px;}
+  }
+  /* Only where the names truly do not fit - measured by the script that
+     builds the chips, since the fit depends on the zoom and the font as
+     much as the window - do the chips collapse to their marks and the
+     active name, rather than letting the row scroll and cut a name. */
+  .secnav.is-compact{gap:4px;justify-content:flex-start;}
+  .secnav.is-compact .secnav-btn:not(.is-active) .secnav-lbl{display:none;}
+  .secnav.is-compact .secnav-btn:not(.is-active){padding:6px;gap:0;}
+  .secnav.is-compact .secnav-btn:nth-child(1)::after,
+  .secnav.is-compact .secnav-btn:nth-child(2)::after,
+  .secnav.is-compact .secnav-btn:nth-child(4)::after{display:none;}
 
   /* the mark is 1079x230, so a 164px slot always clipped 5px of it */
   .logo-btn,.landing-header .logo-btn{width:auto;flex:0 0 auto;}
@@ -3843,6 +3857,9 @@
        one that holds the longest city with air around it, rather than
        shrink-wrapping to whichever word is showing */
     .secbar .citypick--bar{width:184px;min-width:0;}
+    /* the button kept its 300 inside the 184 slot and ran 92 under the
+       first section chip; it now fills its slot and no more */
+    .secbar .citypick--bar .citypick-btn{width:100%;}
     .secbar .citypick--bar .cp-rest{display:none;}
     .secbar .ct-optwrap{margin-left:10px;}
     /* Where the row runs out of width the section you are on keeps its
@@ -3853,14 +3870,8 @@
     .secnav{
       position:relative;margin-left:24px;justify-content:flex-start;
     }
-    .secnav-btn:not(.is-active) .secnav-lbl{display:none;}
-    .secnav-btn:not(.is-active){padding:6px;gap:0;}
-    .secnav{gap:4px;}
-    .secnav-btn:nth-child(1)::after,
-    .secnav-btn:nth-child(2)::after,
-    .secnav-btn:nth-child(4)::after{display:none;}
     .secnav-btn:nth-child(4){margin-left:20px;}
-    .secnav-btn{padding:6px 9px;font-size:13px;gap:6px;}
+    .secnav-btn{padding:6px 8px;font-size:13px;gap:6px;}
     .secnav-btn .num{width:20px;height:20px;flex:0 0 20px;font-size:10.5px;}
     .secbar .citypick--bar .citypick-btn{height:32px;font-size:13px;}
 
@@ -8437,6 +8448,7 @@
       if(k === i) b.setAttribute("aria-current", "page");
       else b.removeAttribute("aria-current");
     });
+    fitSecNav();
     /* below 1200 the chip row is a filmstrip: bring the section you are
        on to the middle of it, so the bar answers "where am I" without a
        swipe. .secnav is position:relative under that breakpoint, so
@@ -8497,6 +8509,26 @@
     b.addEventListener("click", () => showSection(i));
     secNavEl.appendChild(b);
   });
+  /* The names show whenever they fit. The row is measured with every name
+     out, and only if it runs past the bar does it collapse to the marks and
+     the active name. Run when the bar changes size, when the section
+     changes (the active name is bold, and the extras' tab can appear) and
+     once the web font has arrived. */
+  function fitSecNav(){
+    if (!secNavEl || !secNavEl.offsetParent) return;
+    secNavEl.classList.remove("is-compact");
+    const btns = [...secNavEl.children].filter(b => getComputedStyle(b).display !== "none");
+    let need = (parseFloat(getComputedStyle(secNavEl).columnGap) || 0) * Math.max(0, btns.length - 1);
+    btns.forEach(b => {
+      const cs = getComputedStyle(b);
+      need += b.getBoundingClientRect().width + (parseFloat(cs.marginLeft) || 0) + (parseFloat(cs.marginRight) || 0);
+    });
+    if (need > secNavEl.clientWidth + 0.5) secNavEl.classList.add("is-compact");
+  }
+  window.fitSecNav = fitSecNav;
+  if (window.ResizeObserver) new ResizeObserver(() => fitSecNav()).observe(secNavEl.parentNode || secNavEl);
+  else window.addEventListener("resize", fitSecNav);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitSecNav);
   secPager.className = "secpager";
   pagesEl.appendChild(secPager);
   secPager.addEventListener("click", e => {
