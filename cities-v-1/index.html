@@ -2618,7 +2618,7 @@
   }
   .ct-stage .mi-figure{width:100%;flex:0 0 auto;}
   /* ── the two figure sections on the redesign's frame ───────────────────
-     Metro Industries and Admin Industries are the same composition — a
+     Metro Industries and Worker Flows are the same composition — a
      reading column beside one figure a scroll drives — so they are dressed
      the same. The page area under the bar takes a faint tint, the text
      column sits on it bare, and the visualisation — the figure with its
@@ -3079,7 +3079,7 @@
     font-size:12px;font-weight:700;fill:#fff;pointer-events:none;
     paint-order:stroke;stroke:rgba(0,0,0,.28);stroke-width:2.2px;stroke-linejoin:round;
   }
-  /* ── Admin Industries, the dots ───────────────────────────────────── */
+  /* ── Worker Flows, the dots ───────────────────────────────────── */
   .am-fig{display:block;}
   #amDotsSvg .ad-ring{fill:none;stroke:var(--border-strong);stroke-width:1.2;}
   #amDotsSvg .ad-ring--metro{stroke-dasharray:4 4;}
@@ -3160,7 +3160,7 @@
   .am-key .ak-line--in{background:var(--geo-city);}
   .am-key .ak-line--out{background:var(--orange);}
 
-  /* ── Admin Industries, the exchange map ───────────────────────────── */
+  /* ── Worker Flows, the exchange map ───────────────────────────── */
   #amMapSvg .am-place{fill:#f1f3f4;stroke:#cfd5d8;stroke-width:.6;}
   #amMapSvg .am-place.is-partner{fill:#e2e8ea;}
   #amMapSvg .am-place.is-focus{fill:#d3e0e3;stroke:var(--geo-city);stroke-width:1.1;}
@@ -3188,7 +3188,7 @@
   #amMapSvg .am-pval .is-in{fill:var(--geo-city);font-weight:700;}
   #amMapSvg .am-pval .is-out{fill:var(--orange);font-weight:700;}
 
-  /* ── Admin Industries, the dial ───────────────────────────────────── */
+  /* ── Worker Flows, the dial ───────────────────────────────────── */
   .am-ex{display:grid;grid-template-columns:228px minmax(0,1fr);gap:22px;align-items:start;}
   .am-chips{display:flex;flex-direction:column;gap:3px;}
   .am-chips-lbl{font-size:11.5px;font-weight:700;letter-spacing:.02em;color:var(--ink-soft);margin-bottom:6px;}
@@ -3256,7 +3256,7 @@
   #amDotsSvg .ad-cap .is-out{fill:var(--orange);font-weight:700;}
   #amDotsSvg .ad-cap .is-soft{fill:var(--ink-soft);}
 
-  /* ── Admin Industries: one set of rows, three readings ────────────── */
+  /* ── Worker Flows: one set of rows, three readings ────────────── */
   #amBarsSvg .am-name{font-size:12.5px;fill:var(--ink);}
   #amBarsSvg .am-val{font-size:12px;font-weight:600;fill:var(--ink);font-variant-numeric:tabular-nums;}
   #amBarsSvg .am-val-res{font-weight:400;fill:var(--ink-soft);}
@@ -4849,7 +4849,7 @@
           <span class="jump-quiet-label">Jump to a section:</span>
           <button type="button" onclick="enterTool('page-overview')">Economic Fundamentals</button>
           <button type="button" onclick="enterTool('page-export-basket')">Metro Industries</button>
-          <button type="button" onclick="enterTool('page-admin-mix')">Admin Industries</button>
+          <button type="button" onclick="enterTool('page-admin-mix')">Worker Flows</button>
           <button type="button" onclick="enterTool('page-constraints')">Constraints Diagnosis</button>
           <button type="button" onclick="enterTool('page-levers')">Levers for Change</button>
         </div>
@@ -4944,7 +4944,7 @@
         </ul>
       </div>
       <div class="sec" data-sec="page-admin-mix">
-        <button class="sec-head" onclick="goTo('page-admin-mix')"><span class="num">3</span>Admin Industries</button>
+        <button class="sec-head" onclick="goTo('page-admin-mix')"><span class="num">3</span>Worker Flows</button>
         <ul class="steps">
           <li data-step="page-admin-mix"><span class="dot"></span><button onclick="goTo('page-admin-mix')">One city, two workforces</button></li>
           <li data-step="adminWhoFills" class="mi-rail-default"><span class="dot"></span><button onclick="goTo('adminWhoFills')">Who fills those jobs</button></li>
@@ -6400,7 +6400,7 @@
   const sectionDefs=[
     {name:"Economic Fundamentals", pages:["page-overview","page-overview-msa","page-overview-places","check-overview","apply-overview"], entry:"page-overview"},
     {name:"Metro Industries",    pages:["page-export-basket","leanSection","specializedSection","check-export","apply-export"], entry:"page-export-basket"},
-    {name:"Admin Industries", pages:["page-admin-mix","adminWhoFills","adminResidentsOut","adminBalance","adminJobsHere","adminResidents","adminSpecialized","adminExchange","adminGauge","am2Bars","am2Compare","check-adminmix","apply-adminmix"], entry:"page-admin-mix"},
+    {name:"Worker Flows", pages:["page-admin-mix","adminWhoFills","adminResidentsOut","adminBalance","adminJobsHere","adminResidents","adminSpecialized","adminExchange","adminGauge","am2Bars","am2Compare","check-adminmix","apply-adminmix"], entry:"page-admin-mix"},
     {name:"Constraints Diagnosis",pages:["page-constraints","page-city-in-metro","page-constraints-lorem","check-constraints","apply-constraints"],entry:"page-constraints"},
     {name:"Levers for Change",pages:["page-levers","check-levers","apply-levers"], entry:"page-levers"},
     /* Well-built pieces outside the storyline; the anchor id is listed so
@@ -8602,8 +8602,12 @@
     const want = "#" + SECTION_SLUGS[activeSec];
     if (location.hash !== want) history.replaceState(null, "", want);
   }
+  /* links written before a section was renamed still land on it, and the
+     address bar then shows its current name */
+  const SECTION_ALIASES = { "admin-industries": "worker-flows" };
   function sectionFromHash(){
-    const h = decodeURIComponent(location.hash.replace(/^#\/?/, "")).toLowerCase();
+    let h = decodeURIComponent(location.hash.replace(/^#\/?/, "")).toLowerCase();
+    if (SECTION_ALIASES[h]) h = SECTION_ALIASES[h];
     return h ? SECTION_SLUGS.indexOf(h) : -1;
   }
   function routeFromHash(instant){
@@ -9833,7 +9837,7 @@
   ];
 
 /* ---------------------------------------------------------------------
-   Admin Industries — one set of rows, three readings
+   Worker Flows — one set of rows, three readings
 
    The rows are ranked by jobs located in the city and never move again;
    only what is measured about them changes. Beat one is that count alone,
@@ -10121,7 +10125,7 @@
 })();
 
 /* ---------------------------------------------------------------------
-   Admin Industries, beats 1-4 — the two workforces as dots
+   Worker Flows, beats 1-4 — the two workforces as dots
 
    One dot is 2,000 jobs. Every dot is drawn once and only ever moves:
    the job dots start inside the city, the ones held by out-of-town
@@ -10292,7 +10296,7 @@
 
 
 /* ---------------------------------------------------------------------
-   Admin Industries, beat 8 — the exchange, on the real boundaries
+   Worker Flows, beat 8 — the exchange, on the real boundaries
 
    Built the way the sample builds it: a fixed window over the city and
    its neighbours, every place in the window drawn as context, the five
