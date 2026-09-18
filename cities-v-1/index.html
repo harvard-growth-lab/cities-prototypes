@@ -8435,6 +8435,7 @@
   function showSection(i, toTop){
     if(i < 0 || i >= SECTIONS.length || i === activeSec) return;
     activeSec = i;
+    syncSectionHash();
     SECTIONS.forEach((sec, k) =>
       sec.els.forEach(el => el.classList.toggle("sec-off", k !== i)));
     [...secNavEl.children].forEach((b, k) => {
@@ -8577,6 +8578,61 @@
   };
 
   showSection(0, false);
+
+  /* ---------- links to sections ----------
+     index.html#metro-industries opens the tool on that section, skipping
+     the landing. The slug is the section's name, lowercased and joined with
+     hyphens. While the reader moves between sections the address bar keeps
+     the current one - replaced, not pushed, so the back button is not
+     filled with every tab - and a link pasted into an open page, or the
+     back and forward buttons, route the same way. The landing has no
+     hash. */
+  const sectionSlug = name => name.toLowerCase().replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  /* var, not const: the first showSection above runs before this line,
+     and must find it merely unset rather than in its dead zone */
+  var SECTION_SLUGS = sectionDefs.map(sd => sectionSlug(sd.name));
+  window.sectionLinks = () => SECTION_SLUGS.map(sl => location.origin + location.pathname + "#" + sl);
+  function toolIsOpen(){
+    const t = document.getElementById("tool");
+    return !!t && t.classList.contains("active");
+  }
+  function syncSectionHash(){
+    if (!SECTION_SLUGS || !toolIsOpen() || activeSec < 0 || !SECTION_SLUGS[activeSec]) return;
+    const want = "#" + SECTION_SLUGS[activeSec];
+    if (location.hash !== want) history.replaceState(null, "", want);
+  }
+  function sectionFromHash(){
+    const h = decodeURIComponent(location.hash.replace(/^#\/?/, "")).toLowerCase();
+    return h ? SECTION_SLUGS.indexOf(h) : -1;
+  }
+  function routeFromHash(instant){
+    const i = sectionFromHash();
+    if (i < 0) return;
+    const landing = document.getElementById("landing");
+    /* the landing is up - on load, or after the logo took the reader back -
+       so the section is entered, not only switched behind it */
+    if (landing && !landing.classList.contains("hidden")){
+      /* a link opens straight onto its section: no slide from the landing */
+      if (instant) landing.style.transition = "none";
+      enterTool(sectionDefs[i].entry);
+      if (instant) requestAnimationFrame(() => requestAnimationFrame(() => { landing.style.transition = ""; }));
+    } else if (i !== activeSec){
+      showSection(i);
+    }
+  }
+  /* entering the tool writes the section it lands on; returning to the
+     landing clears it */
+  const enterToolRouted = enterTool;
+  enterTool = function(id){ enterToolRouted(id); syncSectionHash(); };
+  const backToLandingRouted = backToLanding;
+  backToLanding = function(){
+    backToLandingRouted();
+    if (location.hash) history.replaceState(null, "", location.pathname + location.search);
+  };
+  window.addEventListener("hashchange", () => routeFromHash(false));
+  if (document.readyState === "complete") routeFromHash(true);
+  else window.addEventListener("load", () => routeFromHash(true));
 
   /* ---------- city & time span sync ---------- */
   const cityL=document.getElementById("citySelect"),
