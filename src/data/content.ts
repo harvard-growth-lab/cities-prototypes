@@ -4,27 +4,26 @@
 
 import { TREE_SIDE_LABEL, type BranchSide } from "./figures";
 
-/** One sample city per leaf of the alt diagnostic tree, in leaf order:
- *  Memphis → demand / metro-wide, San Antonio → demand / place-specific,
- *  San Jose → supply / housing, Boston → supply / amenities. The branch
- *  each one lands on is DERIVED from its data (see diagnose() in
- *  figures.ts), not pinned here.
+/** The cities the prototype carries: BOSTON ONLY (Sept 2026, the user's
+ *  call). It is the one city with real data end to end — the walk's forks
+ *  (metrosData.ts), the Drivers charts (driverData.ts) and the Amenities
+ *  Module's indicators (amenityData.ts) — and v-3's own sections carry
+ *  Boston's figures whatever the picker says, as they do on main. The branch
+ *  it lands on is DERIVED from its data (diagnose() in figures.ts), not pinned
+ *  here: on the live tool's 2014 → 2024 window, Fortress › Amenities.
  *
- *  The same four are the options in v-3's two city pickers
- *  (scripts/v3/port.mjs writes them): v-3's sections carry Boston's figures
- *  whichever city is picked — as they do on main, where the picker only
- *  relabels them — so the list stays the tree's. */
-export const CITIES = [
-  "Memphis, United States of America",
-  "San Antonio, United States of America",
-  "San Jose, United States of America",
-  "Boston, United States of America",
-];
+ *  Until then there were four — Memphis (Leak › MSA-wide), San Antonio
+ *  (Sponge › Housing) and San Jose (Fortress › Housing) beside it — picked as
+ *  one city per ending, with schematic charts. The other endings are still
+ *  reachable from Boston: in the sandbox and on the analysis schematic.
+ *
+ *  The same list is the options in v-3's two city pickers
+ *  (scripts/v3/port.mjs writes them). Still a list, so a second city is one
+ *  more entry here, in the two data scripts, and in the port. */
+export const CITIES = ["Boston, United States of America"];
 
-/** Where the app opens — the picker's selected option. Kept separate from
- *  the array order, which is the tree's leaf order and is worth preserving
- *  as documentation of which sample covers which branch. */
-export const DEFAULT_CITY = CITIES[3]; // Boston — supply / amenities
+/** Where the app opens — the picker's selected option. */
+export const DEFAULT_CITY = CITIES[0]; // Boston — Fortress › Amenities
 
 export const cityShortName = (city: string) => city.split(",")[0];
 /** the country half of a picker entry — the forks compare a place to the

@@ -2,10 +2,10 @@
  *
  *  The other sections read a city off two dials — people and pay — and show
  *  each as a stat chip: a small mark for WHAT moved and a tinted ring with a
- *  trend arrow for WHICH WAY (v-3's `.q-si` chips; the marks are copied
- *  verbatim from its markup so the constraints section carries the same
- *  icons the reader learned upstream). A quadrant of the pizza chart is
- *  exactly two such dials, so its label and its tree head draw them. */
+ *  trend arrow for WHICH WAY (v-3's `.q-si` chips; the people mark is copied
+ *  verbatim from its markup so the constraints section carries the icon the
+ *  reader learned upstream). A quadrant of the pizza chart is exactly two
+ *  such dials, so its label and its tree head draw them. */
 
 import { QUAD_DIR, type QuadSide } from "../../data/figures";
 
@@ -15,14 +15,25 @@ const FALL = "#c0244a";
 const RISE_TINT = "rgba(61, 154, 67, 0.14)";
 const FALL_TINT = "rgba(192, 36, 74, 0.12)";
 
-/* v-3's marks, all in a 20×20 box: the stat chips' people mark and trend
-   arrows (stroked), and the landing's pay bars (filled) */
+/* the marks, all in a 20×20 box and all STROKED at one weight, so the pair
+   reads as a set: v-3's people mark, and a dollar sign for pay */
 const PEOPLE =
   '<circle cx="8" cy="7.5" r="2.6"/><path d="M3.4 15.4c.5-2.6 2.4-3.9 4.6-3.9s4.1 1.3 4.6 3.9"/><path d="M13.6 5.6a2.4 2.4 0 0 1 0 4.4"/><path d="M15 11.9c1.6.4 2.7 1.6 3 3.5"/>';
-/* the bars are paths, not rects: the tree's card rule paints every rect under
-   a card white, which would blank them out inside a head */
+/* pay is a DOLLAR SIGN (Sept 2026, the user's call). It was three rising
+   bars, which say "a chart" before they say "wages" — and next to a trend
+   arrow that already says which way, a second little chart said nothing the
+   arrow did not. The sign is drawn the way the people mark is — an open
+   stroke, round caps — rather than set as a glyph, so it takes the mark's
+   weight at any size and needs no font: the S as two half-turns joined by
+   straights (the form icon sets use, which stays open at 11px where a
+   calligraphic S closes up), and the bar run through it top to bottom.
+   Paths throughout, not <line> or <rect>: the tree's card rule paints every
+   rect under a card white. It sits 2 units right of the box's centre: a $ is
+   narrower than the people mark, and centred it stood further from its own
+   trend ring than the people mark does from its — the pair should read as
+   two dials, each mark with its arrow. */
 const PAY =
-  '<path d="M3 11h4v6H3zM8 7.5h4v9.5H8zM13 3.5h4v13.5h-4z" stroke="none"/>';
+  '<path d="M12 2v16"/><path d="M16.2 4.4h-6.1a2.8 2.8 0 0 0 0 5.6h3.8a2.8 2.8 0 0 1 0 5.6H7.4"/>';
 /* the trend arrows: v-3's stat chips draw a kinked trend line, which at a
    16px ring collapses into a squiggle, so here the same rise/fall reads as a
    plain diagonal arrow — the chip's colour and tint carry the meaning */
@@ -57,7 +68,6 @@ function Dial({
 }) {
   const m = MARK * k;
   const r = RING * k;
-  const pay = what === "pay";
   return (
     <g transform={`translate(${x},${y})`} className="nv-dial">
       <svg
@@ -66,13 +76,13 @@ function Dial({
         width={m}
         height={m}
         viewBox="0 0 20 20"
-        fill={pay ? "currentColor" : "none"}
-        stroke={pay ? "none" : "currentColor"}
+        fill="none"
+        stroke="currentColor"
         strokeWidth="1.8"
         strokeLinecap="round"
         strokeLinejoin="round"
         className="nv-dial-mark"
-        dangerouslySetInnerHTML={{ __html: pay ? PAY : PEOPLE }}
+        dangerouslySetInnerHTML={{ __html: what === "pay" ? PAY : PEOPLE }}
       />
       <circle
         cx={m + GAP * k + r}

@@ -322,23 +322,34 @@ export const QUADRANTS: QuadrantDef[] = QUADRANT_DEFS.map((q) => ({
 export const PLACE_QUAD: QuadrantDef = QUADRANTS.find((q) => q.id === "q4")!;
 
 /* ---------- the diagnosis: which leaf the data argues for ----------
- *  The researchers' forking logic, verbatim. Each fork is one comparison
+ *  The live tool's forking logic (cities-tool, src/lib/diagnosis.ts —
+ *  classifyPlace, readDemand, classifySupply; argued in
+ *  docs/diagnosis-logic.html), restated here. Each fork is one comparison
  *  against the median metro IN THE CITY'S OWN COUNTRY, and the suggested
- *  descent is DERIVED here rather than hardcoded per city, so swapping the
- *  sample cities (or the window behind the data) re-runs the diagnostic
- *  instead of going stale.
+ *  descent is DERIVED rather than hardcoded per city, so swapping the sample
+ *  cities (or the window behind the data) re-runs the diagnostic instead of
+ *  going stale.
  *
  *    fork 1   the PLACE's population growth and wage growth, each against
- *             the country's median metro. Both above, or both below →
- *             demand (people and pay moving together). One above and one
- *             below → supply (moving apart).
+ *             the country's median metro — the dashed lines the plane
+ *             draws. Both above, or both below → demand (people and pay
+ *             moving together). One above and one below → supply (moving
+ *             apart). The quadrant names the shock.
  *    fork 2   if demand: the METRO's population growth — and only that, not
- *             (demand)  the metro's pay. Below the median → metro-wide, the
- *             whole labor market isn't growing. At or above → place-specific.
+ *    (demand)  the metro's pay — against the median metro's. Below it →
+ *             metro-wide: a place is not only its own export base, and a
+ *             labor market that isn't growing can hold it back. At or
+ *             above → place-specific. The metro's OWN quadrant then says
+ *             why (see DemandRead).
  *    fork 2   if supply: cost-of-living growth — home values in the US,
- *    (supply)  rents in Mexico. Above the median → cost, people are being
- *              priced out. At or below → amenities, since the priced-out
- *              story doesn't hold and the fading pull is something else. */
+ *    (supply)  rents in Mexico — against the median. At or above → cost,
+ *              which is what being priced out looks like. Below →
+ *              amenities: "priced out" is hard to sustain, and the other
+ *              supply lever is the pull of the place itself. The plane's Y
+ *              axis moves to price growth for this read; its split lines
+ *              stay put, and the price axis is a TWO-way split, not four
+ *              quadrants ("supply shock" is a statement about population ×
+ *              pay and does not survive swapping the axis). */
 
 export interface ForkStep {
   /** which fork this is, for the rail's step list */
@@ -355,12 +366,11 @@ export interface Diagnosis {
   derived: boolean;
 }
 
-const pct = (v: number) => `${v >= 0 ? "+" : "−"}${Math.abs(v).toFixed(1)}%/yr`;
+const pct = (v: number) =>
+  `${Math.abs(v) < 0.05 ? "" : v >= 0 ? "+" : "−"}${Math.abs(v).toFixed(1)}%/yr`;
 
 export function diagnose(cityShort: string, country = USA): Diagnosis {
   const place = homePlace(cityShort);
-  const metro = homeMsa(cityShort);
-  const cost = placeCost(cityShort);
   if (!place)
     return {
       path: convertPath(PLACE_QUAD.path, "alt"),
@@ -385,48 +395,30 @@ export function diagnose(cityShort: string, country = USA): Diagnosis {
   ];
 
   if (together) {
-    /* fork 2, demand (revised Sept 2026): the MSA is read on the SAME pizza
-       plane the city was — both dials, not population alone. The question is
-       whether the shock reached past the city limits, and the answer is
-       whether the metro landed in the city's own quadrant: a metro sharing
-       it is the whole labor market moving, a metro anywhere else held up
-       while the admin city did not. */
-    const cityQuad = quadOf(place.pop, place.wage, med);
-    const msaQuad = metro ? quadOf(metro.pop, metro.wage, med) : null;
-    const metroWide = msaQuad === cityQuad;
+    const dr = demandRead(cityShort, country);
     steps.push({
       fork: "branch",
-      reason:
-        metro && msaQuad
-          ? metroWide
-            ? `The MSA reads ${pct(metro.pop)} people · ${pct(metro.wage)} pay — the same ${QUAD_NAME[cityQuad]} quadrant the city is in, so the whole labor market moved and the shock reached past the city limits.`
-            : `The MSA reads ${pct(metro.pop)} people · ${pct(metro.wage)} pay — ${QUAD_NAME[msaQuad]}, not the city's ${QUAD_NAME[cityQuad]}: the metro held up while the admin city slipped, so the problem is local to the city.`
-          : "[no metro data for this city — the sub-fork falls back to place-specific]",
+      reason: dr
+        ? `Metro population ${pct(dr.popCagr)} against the median metro's ${pct(dr.popMedian)}: ${dr.side === "metro" ? "below it, so MSA-wide" : "at or above it, so admin-specific"}.`
+        : "[no metro data for this city — the sub-fork falls back to admin-specific]",
     });
     return {
-      path: ["demand", metroWide ? "metrowide" : "placespec"],
+      path: ["demand", dr?.side === "metro" ? "metrowide" : "placespec"],
       steps,
       derived: true,
     };
   }
 
-  /* fork 2, supply (revised Sept 2026): a four-quadrant plane, not a single
-     threshold — the admin city's cost of living against the typical metro's
-     on one axis, its population against the typical metro's on the other.
-     Home values in the US, rents in Mexico. */
   const measure = costMeasure(country);
-  const hr = cost ? housingQuadOf(place.pop, cost.growth, med) : null;
+  const sr = supplyRead(cityShort, country);
   steps.push({
     fork: "branch",
-    reason: hr
-      ? `${measure.sentenceCase} are climbing ${pct(cost!.growth)} against the median metro's ${pct(med.cost)}, with population ${pct(place.pop)} against ${pct(med.pop)} — ${HOUSING_QUAD[hr.quad].label}: ${HOUSING_QUAD[hr.quad].read}. ` +
-        (hr.priceUp
-          ? "Cost of living is the story the numbers tell."
-          : "The priced-out story doesn't hold, so the fading pull is something else.")
+    reason: sr
+      ? `${measure.sentenceCase} ${pct(sr.costCagr)} against the median's ${pct(sr.costMedian)}: ${sr.side === "cost" ? "at or above it, so housing" : "below it, so amenities"}.`
       : `[no ${measure.lower} data for this city — the sub-fork falls back to cost]`,
   });
   return {
-    path: ["supply", hr?.leaf ?? "amen"],
+    path: ["supply", sr?.leaf ?? "amen"],
     steps,
     derived: true,
   };
@@ -460,99 +452,110 @@ export function quadSideOf(cityShort: string, country = USA): BranchSide {
   return quadOf(place.pop, place.wage, countryMedians(country));
 }
 
-/** where the MSA sits on the SAME pizza plane the admin city was read on.
- *  The demand fork asks whether the shock reached past the city limits, and
- *  the answer is whether the metro landed in the city's own quadrant. */
-export function msaQuadOf(
-  cityShort: string,
-  country = USA,
-): QuadSide | null {
-  const msa = homeMsa(cityShort);
-  return msa ? quadOf(msa.pop, msa.wage, countryMedians(country)) : null;
+/* ---------- the second forks' reads ----------
+ *  The live tool's two second-fork reads (cities-tool: readDemand and
+ *  classifySupply), one per family of shock. Both are read off the SAME
+ *  plane fork one used — that is the point of the instrument: the demand
+ *  fork looks at a different MARK on it (the metro instead of the place),
+ *  the supply fork at a different Y AXIS (price growth instead of pay). */
+
+export type DemandSide = "metro" | "place";
+
+export interface DemandRead {
+  side: DemandSide;
+  /** the metro's population growth, and the median metro's it is read
+   *  against — the two numbers the fork turned on */
+  popCagr: number;
+  popMedian: number;
+  /** the stronger, absolute statement, carried separately: a metro can lag
+   *  the field while still growing */
+  shrinking: boolean;
+  /** the metro's OWN quadrant, which says why it is growing or not — and so
+   *  which sentence follows the fork */
+  metroQuad: QuadSide;
+  /** the subtle path: a metro-wide shortfall whose metro is itself
+   *  SUPPLY-bound (pay running ahead of people — a wall rather than a
+   *  slump). Which kind of wall is then a question about the METRO, so it
+   *  is answered with the metro's own price growth, and the supply branch
+   *  is offered as a second exit. Null everywhere else. */
+  metroSupply: SupplyRead | null;
 }
 
-/* ---------- the supply branches' second plane: price × population ----------
- *  PROVISIONAL (Sept 2026). What is settled is the SHAPE: the supply forks
- *  read a four-quadrant home-price × population plane at the admin level,
- *  cut at the national medians, rather than the single price threshold this
- *  replaced. The routing below is the conservative reading of that plane —
- *  a city whose home values outrun the typical metro's is a housing story
- *  whichever way its population is moving, and one whose prices are in check
- *  is not. The population axis says WHICH housing story it is (squeezed by
- *  arrivals, or pricing its own residents out) and carries the copy, but
- *  does not flip the leaf. Refine here when the spec lands. */
-export type HousingQuad = "squeezed" | "pricedout" | "absorbing" | "slack";
+export function demandRead(
+  cityShort: string,
+  country = USA,
+): DemandRead | null {
+  const metro = homeMsa(cityShort);
+  if (!metro) return null;
+  const med = countryMedians(country);
+  const side: DemandSide = metro.pop < med.pop ? "metro" : "place";
+  const metroQuad = quadOf(metro.pop, metro.wage, med);
+  return {
+    side,
+    popCagr: metro.pop,
+    popMedian: med.pop,
+    shrinking: metro.pop < 0,
+    metroQuad,
+    metroSupply:
+      side === "metro" && metroQuad === "supplyneg" && metro.home != null
+        ? supplySplit(metro.home, med.cost, "metro")
+        : null,
+  };
+}
 
-export const HOUSING_QUAD: Record<
-  HousingQuad,
-  { label: string; read: string; leaf: "col" | "amen" }
-> = {
-  squeezed: {
-    label: "Squeezed",
-    read: "people arriving and prices chasing them",
-    leaf: "col",
-  },
-  pricedout: {
-    label: "Priced out",
-    read: "prices climbing even as people leave",
-    leaf: "col",
-  },
-  absorbing: {
-    label: "Absorbing",
-    read: "growing with prices in check",
-    leaf: "amen",
-  },
-  slack: {
-    label: "Slack",
-    read: "cheap, and still emptying out",
-    leaf: "amen",
-  },
-};
+export type SupplySide = "cost" | "amenity";
 
-export interface HousingRead {
-  quad: HousingQuad;
-  /** home-value growth above the typical metro's */
-  priceUp: boolean;
-  /** population growth at or above the typical metro's */
-  popUp: boolean;
-  /** the supply leaf this quadrant routes to */
+export interface SupplyRead {
+  side: SupplySide;
+  /** cost-of-living growth over the window, and the median it is read
+   *  against — the two numbers the fork turned on */
+  costCagr: number;
+  costMedian: number;
+  /** the grain the measure was read at: the place where the country
+   *  publishes one, else the metro */
+  grain: "place" | "metro";
+  /** the supply leaf this side routes to */
   leaf: "col" | "amen";
 }
 
-/** the quadrant of the price × population plane a pair falls in */
-export const housingQuadOf = (
-  pop: number,
-  price: number,
-  med: { pop: number; cost: number },
-): HousingRead => {
-  const priceUp = price > med.cost;
-  const popUp = pop >= med.pop;
-  const quad: HousingQuad = priceUp
-    ? popUp
-      ? "squeezed"
-      : "pricedout"
-    : popUp
-      ? "absorbing"
-      : "slack";
-  return { quad, priceUp, popUp, leaf: HOUSING_QUAD[quad].leaf };
+/** at or above the median → cost; below → amenity (the live tool's
+ *  `mine >= med ? 'cost' : 'amenity'`) */
+const supplySplit = (
+  growth: number,
+  median: number,
+  grain: "place" | "metro",
+): SupplyRead => {
+  const side: SupplySide = growth >= median ? "cost" : "amenity";
+  return {
+    side,
+    costCagr: growth,
+    costMedian: median,
+    grain,
+    leaf: side === "cost" ? "col" : "amen",
+  };
 };
 
-/** the admin city's read of that plane, or nothing where a series is missing */
-export function housingRead(
+/** the supply fork's read, at place grain where the series exists and
+ *  falling back to the metro's where it does not */
+export function supplyRead(
   cityShort: string,
   country = USA,
-): HousingRead | null {
-  const place = homePlace(cityShort);
+): SupplyRead | null {
+  const med = countryMedians(country);
   const cost = placeCost(cityShort);
-  if (!place || !cost) return null;
-  return housingQuadOf(place.pop, cost.growth, countryMedians(country));
+  if (cost) return supplySplit(cost.growth, med.cost, "place");
+  const metro = homeMsa(cityShort);
+  return metro?.home != null
+    ? supplySplit(metro.home, med.cost, "metro")
+    : null;
 }
 
-/** Which leaf of the forked quadrant tree a shock branch lands on, per the
- *  revision spec's instruments. The supply forks reuse the alt tree's own
- *  housing test; the negative-demand fork reads the MSA through the existing
- *  metro read. The positive demand shock has no second layer (team revision,
- *  Sept 2026): its head is the ending, so it answers null. */
+/** Which leaf of the forked quadrant tree a shock branch lands on. The
+ *  second fork belongs to the FAMILY of shock, as in the live tool: a demand
+ *  shock reads the metro (demandRead), a supply shock reads price growth
+ *  (supplyRead) — whatever the shock's sign. The positive demand shock has
+ *  no second layer (team revision, Sept 2026): its head is the ending, so it
+ *  answers null. */
 export function quadLeaf(
   side: BranchSide,
   cityShort: string,
@@ -887,75 +890,82 @@ export const TREE_NODES_QUAD: TreeNodeData[] = [
 ];
 
 /* ---------- the four-quadrant structure, FORKED ----------
- *  The team's revision spec (Sept 2026) for the quadrant tree: each shock
- *  keeps its own OVERARCHING QUESTION, and all but the positive demand shock
- *  fork once more with their own instrument (QUAD_BRANCH_SPEC below carries
- *  the questions; the modules shown at each ending are in LEAF_MODULES).
- *  The four shock nodes are reused verbatim; the six leaves are new, their ids
- *  prefixed by branch so the two housing/amenities pairs stay distinct
- *  nodes. The positive demand shock has no second layer — its head is the
- *  ending, and the analysis opens straight on its modules.
- *  Bracketed text marks what the spec left open — the exact reading of each
- *  instrument. */
+ *  Each shock keeps its own OVERARCHING QUESTION (the team's revision spec,
+ *  Sept 2026), and all but the positive demand shock fork once more. The
+ *  second forks are the LIVE TOOL'S (cities-tool, DiagnosisTree.tsx): they
+ *  belong to the family of shock, not its sign —
+ *
+ *    a demand shock   is the shortfall the metro's, or the place's own?
+ *                     Read off where the METRO sits against the field.
+ *    a supply shock   is the wall the cost of living, or is it amenities?
+ *                     Read off price growth against the field.
+ *
+ *  The four shock nodes are reused verbatim; the six leaves carry ids
+ *  prefixed by branch, so the two housing/amenities pairs stay distinct
+ *  nodes. The demand leaves are titled in this app's own geography words —
+ *  the MSA and the admin city, as the diagnostic-tree explainer has them —
+ *  for the live tool's "Metro-wide" and "Place-specific". The positive
+ *  demand shock has no second layer — its head is the ending, and the
+ *  analysis opens straight on its modules. */
 export const TREE_NODES_QUAD2: TreeNodeData[] = [
   ...TREE_NODES_QUAD,
   {
     id: "dn-regional",
     parent: "demandneg",
-    title: "Regional (MSA)",
+    title: "MSA-wide",
     detail:
-      "[the MSA pizza chart reads weak too — the demand shock reaches past the admin boundary, so the constraint is diagnosed at the metro level]",
-    tests:
-      "Read the MSA pizza chart: MSA population change against MSA wage change. [the MSA in the same weak quadrant → regional]",
+      "[placeholder: the metro is not growing either. the constraint sits at metro level]",
+    tests: "[metro population growth below the median metro's]",
   },
   {
     id: "dn-local",
     parent: "demandneg",
-    title: "Local (admin)",
+    title: "Admin-specific",
     detail:
-      "[the MSA pizza chart reads healthy — the demand loss is specific to the admin city, while the region around it does fine]",
-    tests:
-      "Read the MSA pizza chart: MSA population change against MSA wage change. [the MSA out of the weak quadrant → local]",
+      "[placeholder: the metro is growing. the constraint is specific to the admin city]",
+    tests: "[metro population growth at or above the median metro's]",
   },
   {
     id: "sp-col",
     parent: "supplypos",
     title: "Housing",
     detail:
-      "[people are arriving faster than pay rises AND admin housing prices are climbing above the median admin's — is the boom being taken back at the door?]",
-    tests: "Admin housing-price change above the median admin's.",
+      "[placeholder: home values rising faster than average. look at housing]",
+    tests: "[home-value growth at or above the median]",
   },
   {
     id: "sp-amen",
     parent: "supplypos",
     title: "Amenities",
     detail:
-      "[housing is not absorbing the boom — what is pulling people in, and will it hold?]",
-    tests: "Admin housing-price change at or below the median admin's.",
+      "[placeholder: home values rising slower than average. look at amenities]",
+    tests: "[home-value growth below the median]",
   },
   {
     id: "sn-col",
     parent: "supplyneg",
     title: "Housing",
     detail:
-      "[pay climbs while people leave, and admin housing prices are climbing above the median admin's — the wage gain is being taken back at the door]",
-    tests: "Admin housing-price change above the median admin's.",
+      "[placeholder: home values rising faster than average. people are priced out]",
+    tests: "[home-value growth at or above the median]",
   },
   {
     id: "sn-amen",
     parent: "supplyneg",
     title: "Amenities",
     detail:
-      "[the priced-out story doesn't hold — what living there is like, not what it costs, is pushing people out]",
-    tests: "Admin housing-price change at or below the median admin's.",
+      "[placeholder: home values rising slower than average. not priced out, so amenities]",
+    tests: "[home-value growth below the median]",
   },
 ];
 
-/** The spec's per-branch layer that is NOT another tree level: each shock's
- *  overarching question, and its fork stated with its instrument. Read by
- *  the analysis section, which leads with the question and names the fork
- *  the reader came down. (The modules shown at the end of a branch are a
- *  separate table — LEAF_MODULES — keyed by the ending, not the shock.) */
+/** The per-branch layer that is NOT another tree level: each shock's
+ *  overarching question (the team's spec), and its second fork stated with
+ *  its instrument — a placeholder naming the comparison, since the copy is
+ *  still to be written. Read by the analysis section, which leads with the
+ *  question and names the fork the reader came down. (The modules shown at
+ *  the end of a branch are a separate table — LEAF_MODULES — keyed by the
+ *  ending, not the shock.) */
 export interface QuadBranchSpec {
   /** the overarching question the branch's analysis opens on */
   question: string;
@@ -963,28 +973,17 @@ export interface QuadBranchSpec {
    *  shock with no second layer (the positive demand shock) */
   forkLine?: string;
 }
+const DEMAND_FORK =
+  "[placeholder: fork two. metro population growth vs the median metro]";
+const SUPPLY_FORK = "[placeholder: fork two. home-value growth vs the median]";
 export const QUAD_BRANCH_SPEC: Partial<Record<BranchSide, QuadBranchSpec>> = {
-  demandneg: {
-    question: "What is my demand constraint?",
-    forkLine:
-      "Is it local or regional (admin or MSA)? Read the MSA on the same pizza chart — in the city's own quadrant it is regional, anywhere else it is local.",
-  },
+  demandneg: { question: "What is my demand constraint?", forkLine: DEMAND_FORK },
   /* no second layer on the positive demand shock (team revision, Sept 2026):
      the quadrant is the diagnosis, and the analysis opens straight on the
      head's own modules */
-  demandpos: {
-    question: "What are threats to future growth?",
-  },
-  supplyneg: {
-    question: "What is my supply constraint?",
-    forkLine:
-      "Housing or amenities? Which quadrant of the housing-price × population plane the admin lands in, against the national medians.",
-  },
-  supplypos: {
-    question: "Is it sustainable?",
-    forkLine:
-      "Housing or amenities? Which quadrant of the housing-price × population plane the admin lands in, against the national medians.",
-  },
+  demandpos: { question: "What are threats to future growth?" },
+  supplyneg: { question: "What is my supply constraint?", forkLine: SUPPLY_FORK },
+  supplypos: { question: "Is it sustainable?", forkLine: SUPPLY_FORK },
 };
 
 export const treeNodes = (variant: TreeVariant): TreeNodeData[] =>
@@ -1074,7 +1073,29 @@ export function convertPath(path: string[], variant: TreeVariant): string[] {
  *  several endings, so they live in a flat registry keyed by id and are
  *  referenced from wherever they are reached. (Two module ids share a name
  *  with a tree node — inputs, demand — but they are separate namespaces;
- *  nothing keys across the two, and the shared glyph is deliberate.) */
+ *  nothing keys across the two, and the shared glyph is deliberate.)
+ *
+ *  WHAT IS ALREADY DRAWN. A data point that carries a `chart` is one the
+ *  Growth Lab's tools already have data for, and the analysis section draws
+ *  it. Two sources, and only where they answer a data point the TEAM'S SPEC
+ *  lists (Sept 2026, the user's call — the modules are the spec's, and a
+ *  tool's chart earns a place by being one of their data points, not by
+ *  existing):
+ *    - the live tool's Drivers section (cities-tool, src/components/story/
+ *      DriversSection.tsx) — the shift-share waterfall and the industry
+ *      effects for the spec's shift-share and market-share points, the
+ *      price map and the cost trend for its two housing-price points;
+ *    - the Amenities Module (cities.taimur.sh/tools/amenities-module.html)
+ *      — education, crime, job accessibility, air quality and urban
+ *      vitality, for five of the spec's six Amenities points.
+ *  Drivers' own AMENITY story — the amenity-residual map, the metro's
+ *  residual drift and the places net of their metro — was drawn here for a
+ *  while and is gone: the residual (home value not explained by pay) is a
+ *  measure the spec's Amenities module never asks for.
+ *  The COPY is never the tools': `read` is a one-line bracketed placeholder
+ *  naming what the step's copy will cover, nothing more. A data point
+ *  WITHOUT a `chart` is one the spec lists and neither source draws yet —
+ *  it stays a named "to come". */
 
 /** the level a module's data is read at — the MSA, the admin city, or both */
 export type DataLevel = "msa" | "admin" | "both";
@@ -1084,13 +1105,47 @@ export const DATA_LEVEL_LABEL: Record<DataLevel, string> = {
   both: "MSA + admin data",
 };
 
-/** one data point of a module — a chart, map or table to come */
+/** which chart a data point is — the live tool's Drivers charts
+ *  (driverCharts.tsx) and the Amenities Module's indicators
+ *  (amenityCharts.tsx) */
+export type ChartKind =
+  /** ShiftShareWaterfall: start → national → industry mix → local share →
+   *  new industries → end */
+  | "waterfall"
+  /** IndustryEffectViews: treemap / ranked bars / share paths, switchable */
+  | "effectViews"
+  /** NewIndustriesTreemap: what the metro built up from nothing */
+  | "newIndustries"
+  /** MsaPlacesChoropleth, filled by price growth */
+  | "priceMap"
+  /** MsaCostTrend: the metro, the median metro and the place, over time */
+  | "costTrend"
+  /* ---- the Amenities Module's indicators ---- */
+  /** school achievement against the national average, place and metro */
+  | "education"
+  /** the crime-cost index, % of the national figure, place and metro */
+  | "crime"
+  /** jobs reachable by car in 15 / 30 / 60 minutes, with the place's ranks */
+  | "jobAccess"
+  /** EPA's AQI by month, place and metro, against the health categories */
+  | "airQuality"
+  /** establishments per 1,000 residents against the national rate */
+  | "vitality";
+
+/** one data point of a module */
 export interface ModuleView {
   name: string;
+  /** what the data point's copy will cover — a bracketed one-line
+   *  placeholder, the main idea only */
+  read?: string;
+  /** the live tool's chart this is; absent on a data point still to come */
+  chart?: ChartKind;
   /** what to read off it — the spec's "signal", where it gave one */
   signal?: string;
   /** set where this view's data level differs from its module's */
   level?: DataLevel;
+  /** a condition on the step, in the live tool's own terms */
+  note?: string;
 }
 
 export interface ModuleDef {
@@ -1100,27 +1155,58 @@ export interface ModuleDef {
   /** the question the module helps answer, in the spec's own words — absent
    *  where the spec listed the data points but not the question */
   question?: string;
-  /** the data points, in the spec's order */
+  /** the data points: the live tool's steps first, in its order, then the
+   *  spec's remaining ones */
   views: ModuleView[];
 }
 
+/* the live tool's steps, written once — several modules reach the same one */
+const STEP_WATERFALL: ModuleView = {
+  name: "Shift-share waterfall",
+  read: "[placeholder: what grew the jobs. national, industry mix and local share effects]",
+  chart: "waterfall",
+  signal: "local share + or −",
+  level: "msa",
+};
+const STEP_EFFECTS: ModuleView = {
+  name: "Industry effects: ranked bars, share paths, treemap",
+  read: "[placeholder: which industries drove it. biggest movers, and each one's share of the national industry over time]",
+  chart: "effectViews",
+  signal: "market share high or low? any breaks in the series?",
+  level: "msa",
+};
+const STEP_NEW: ModuleView = {
+  name: "New industries treemap",
+  read: "[placeholder: industries new to the metro over the window]",
+  chart: "newIndustries",
+  note: "[shown only when material]",
+  level: "msa",
+};
+const STEP_PRICE_MAP: ModuleView = {
+  name: "Home-value growth map",
+  read: "[placeholder: where home values rose fastest within the metro, and where the city sits]",
+  chart: "priceMap",
+  signal: "up / down",
+  level: "both",
+};
+const STEP_COST_TREND: ModuleView = {
+  name: "Home values over time",
+  read: "[placeholder: home values over time. the city, its MSA and the median metro]",
+  chart: "costTrend",
+  signal: "up / down",
+  level: "both",
+};
+
 export const MODULES: Record<string, ModuleDef> = {
+  /* the live tool's INDUSTRY story — where both demand branches exit: the
+     sub-fork changes what the reader is told, not what they are shown */
   shocks: {
     id: "shocks",
     title: "Shocks",
     level: "msa",
     question:
       "Did you face an external shock, or is something wrong within your MSA? Which industries drove the shock?",
-    views: [
-      {
-        name: "Market share, nominal and marginal (4-digit tradables)",
-        signal: "high or low? any breaks in the series?",
-      },
-      {
-        name: "Shift-share analysis at the MSA (4-digit tradables)",
-        signal: "local share + or −",
-      },
-    ],
+    views: [STEP_WATERFALL, STEP_EFFECTS, STEP_NEW],
   },
   inputs: {
     id: "inputs",
@@ -1170,7 +1256,7 @@ export const MODULES: Record<string, ModuleDef> = {
     question: "Is my constraint related to dynamics between my admin and MSA?",
     views: [
       { name: "Admin vs MSA industry mix (2-digit)" },
-      { name: "Shift-share and industry growth (2-digit), MSA and admin" },
+      { name: "Shift-share and industry growth (2-digit), admin against MSA" },
       { name: "Commuters and out-commuters over time", level: "admin" },
     ],
   },
@@ -1182,12 +1268,16 @@ export const MODULES: Record<string, ModuleDef> = {
        question, so [confirm this is the question meant] */
     question: "Is my constraint related to housing supply?",
     views: [
-      { name: "Housing prices over time", signal: "up / down" },
+      STEP_COST_TREND,
+      STEP_PRICE_MAP,
       { name: "Real wages" },
       { name: "Housing supply elasticity" },
-      { name: "Housing price growth map", signal: "up / down" },
     ],
   },
+  /* the spec's six data points, by its names and in its order. Five are drawn
+     from the Amenities Module's indicators (amenityData.ts); the module
+     publishes no composite, so the overall score is still to come. The spec
+     gave these no "signal", so none is invented here. */
   amenities: {
     id: "amenities",
     title: "Amenities",
@@ -1195,41 +1285,71 @@ export const MODULES: Record<string, ModuleDef> = {
     question: "Is my constraint related to amenities?",
     views: [
       { name: "Overall amenities score" },
-      { name: "Education" },
-      { name: "Crime" },
-      { name: "Transportation" },
-      { name: "Air quality index" },
-      { name: "Quality of life (e.g. restaurants)" },
+      {
+        name: "Education",
+        read: "[placeholder: school achievement against the national average. the city and its MSA]",
+        chart: "education",
+        level: "both",
+      },
+      {
+        name: "Crime",
+        read: "[placeholder: crime against the national level. the city and its MSA]",
+        chart: "crime",
+        level: "both",
+      },
+      {
+        /* the module's transport measure is access to jobs by car */
+        name: "Transportation",
+        read: "[placeholder: jobs reachable by car in 15, 30 and 60 minutes, and the city's rank]",
+        chart: "jobAccess",
+      },
+      {
+        name: "Air quality index",
+        read: "[placeholder: air quality over time against the health categories. the city and its MSA]",
+        chart: "airQuality",
+        level: "both",
+      },
+      {
+        /* the module's "urban vitality": establishments per resident */
+        name: "Quality of life (e.g. restaurants)",
+        read: "[placeholder: restaurants, daily-needs shops and arts venues per resident, against the national rate]",
+        chart: "vitality",
+      },
     ],
   },
+  /* the live tool's HOUSING story */
   housingSupply: {
     id: "housingSupply",
     title: "Housing supply",
     level: "admin",
     views: [
-      { name: "Housing prices over time", signal: "up / down" },
+      STEP_PRICE_MAP,
+      STEP_COST_TREND,
       { name: "Housing supply elasticity" },
       {
         name: "Spatial dimensions of housing growth in your admin / housing construction map",
       },
-      { name: "Housing price growth map", signal: "up / down" },
     ],
   },
   demand: {
     id: "demand",
     title: "Demand",
-    level: "admin",
-    views: [
-      { name: "Shift-share and industry growth (2-digit), MSA and place" },
-    ],
+    level: "msa",
+    views: [STEP_WATERFALL, STEP_EFFECTS],
   },
 };
 
 /** which modules an ending shows, in reading order — keyed by the node a
  *  descent ends on: a leaf of the forked quadrant tree, or the positive
- *  demand head, whose branch stops there. Complexity closes every list. */
+ *  demand head, whose branch stops there. The module that carries the live
+ *  tool's story for the ending LEADS — the industry story on a demand
+ *  ending, housing on a cost ending, amenities on an amenities ending —
+ *  and complexity closes every list. */
 const DN_REGIONAL = ["shocks", "inputs", "innovation", "complexity"];
-const DN_LOCAL = ["mismatch", "complexity"];
+/* both demand branches exit to the same industry story in the live tool;
+   the admin-specific one then asks what the metro is adding that the place
+   is not holding, which is the mismatch module's question */
+const DN_LOCAL = ["shocks", "mismatch", "complexity"];
 const SN_HOUSING = ["housingSupply", "complexity"];
 const SN_AMENITIES = ["amenities", "complexity"];
 export const LEAF_MODULES: Record<string, string[]> = {
@@ -1238,14 +1358,15 @@ export const LEAF_MODULES: Record<string, string[]> = {
   demandpos: ["shocks", "housingDemand", "amenities", "complexity"],
   "sn-col": SN_HOUSING,
   "sn-amen": SN_AMENITIES,
-  /* the positive supply shock reads ACROSS the fork: its housing leaf looks
-     at amenities, its amenities leaf at housing supply — as specified;
-     [confirm the crossing is intended] */
-  "sp-col": ["amenities", "demand", "complexity"],
-  "sp-amen": ["housingSupply", "demand", "complexity"],
-  /* the alt tree (the initial draft's compact flow) carries no sign on its
-     shocks: its demand leaves read as the negative demand shock's, its
-     supply leaves as the negative supply shock's */
+  /* the positive supply shock leads with its own leaf's story, as the live
+     tool does, and then reads ACROSS the fork, as the team's spec has it —
+     "is it sustainable?" is asked of both sides: a housing leaf goes on to
+     amenities, an amenities leaf to housing supply */
+  "sp-col": ["housingSupply", "amenities", "demand", "complexity"],
+  "sp-amen": ["amenities", "housingSupply", "demand", "complexity"],
+  /* the alt tree carries no sign on its shocks: its demand leaves read as
+     the negative demand shock's, its supply leaves as the negative supply
+     shock's */
   metrowide: DN_REGIONAL,
   placespec: DN_LOCAL,
   col: SN_HOUSING,
@@ -1255,3 +1376,66 @@ export const LEAF_MODULES: Record<string, string[]> = {
 /** the modules for a picked descent — the node it ends on decides */
 export const pathModules = (path: string[]): ModuleDef[] =>
   (LEAF_MODULES[path[path.length - 1]] ?? []).map((id) => MODULES[id]);
+
+/** how many of a module's data points are already drawn */
+export const drawnCount = (m: ModuleDef): number =>
+  m.views.filter((v) => v.chart).length;
+
+/* ---------- how an ending reads, for one city ----------
+ *  The analysis section's opening lines. The COPY is still to be written,
+ *  so each line is a bracketed placeholder naming what it will cover —
+ *  which differs by the family of shock and by whether the ending on screen
+ *  is the one the city's data argues for:
+ *
+ *    read    the city's own read: its two dials, and the quadrant
+ *    landed  the second fork, and the comparison that decided it
+ *    leads   what the modules below go on to read
+ *
+ *  An ending the data does NOT argue for (a pick on the schematic, or in
+ *  the sandbox) gets the rule that would land a city there instead. */
+export interface EndingRead {
+  diagnosed: boolean;
+  read: string;
+  landed?: string;
+  leads?: string;
+  /** the subtle path's second exit: a metro-wide shortfall whose metro is
+   *  itself supply-bound, so the supply branch is worth walking too */
+  detour?: { label: string; path: string[] };
+}
+
+export function endingRead(
+  cityShort: string,
+  path: string[],
+  country = USA,
+): EndingRead {
+  const side = sideOfPath(path);
+  const own = suggestedPath(cityShort, "quad2");
+  const diagnosed = !!homePlace(cityShort) && own.join("/") === path.join("/");
+  const demandFamily = side === "demandneg" || side === "demandpos";
+  const landed = path.length > 1 ? QUAD_BRANCH_SPEC[side]?.forkLine : undefined;
+  const leads = "[placeholder: what the modules below read, and at which level]";
+
+  if (!diagnosed)
+    return {
+      diagnosed,
+      read: "[placeholder: the rule that lands a city on this ending. the city's own data points elsewhere]",
+      landed,
+      leads,
+    };
+
+  const ms = demandFamily ? demandRead(cityShort, country)?.metroSupply : null;
+  return {
+    diagnosed,
+    read: "[placeholder: the city's population and pay growth, and the quadrant they put it in]",
+    landed,
+    leads: ms
+      ? "[placeholder: the metro is itself supply-bound, so the supply branch is a second exit]"
+      : leads,
+    detour: ms
+      ? {
+          label: "[second exit: the metro's supply branch]",
+          path: ["supplyneg", ms.side === "amenity" ? "sn-amen" : "sn-col"],
+        }
+      : undefined,
+  };
+}

@@ -14,8 +14,8 @@ import { easeCubicInOut } from "d3-ease";
 import {
   convertPath,
   diagnose,
-  HOUSING_QUAD,
-  housingRead,
+  demandRead,
+  supplyRead,
   quadLeaf,
   quadName,
   quadShock,
@@ -77,6 +77,7 @@ import {
   sectorRim,
   shapeLeaves,
   type FitMode,
+  type PlaneSector,
   walkShape,
   wholeBox,
 } from "./walkShapes";
@@ -86,6 +87,7 @@ import {
   METROS,
   METRO_MEDIANS,
   METRO_SPAN,
+  PRICE_SPAN,
   countryMedians,
   homeMsa,
   homePlace,
@@ -130,6 +132,22 @@ const CQ = { cx: W / 2, cy: 316, r: 278 };
 const cxu = (v: number) => CQ.cx + v * CQ.r;
 const cyu = (v: number) => CQ.cy - v * CQ.r;
 
+/** where a plane region's label hangs: where its sector meets the edge,
+ *  which for a quadrant is its outer corner. Shared by the chart, which
+ *  draws the label there, and the hand-off, whose card grows out of it.
+ *  `y0` is the name's baseline — a quadrant reads as three lines (name,
+ *  dials, shock), so a bottom corner starts higher; a sector centred on the
+ *  x axis has no corner to sit in and straddles the axis at the edge. */
+const planeLabelAt = (sec: PlaneSector) => {
+  const [ax, ay] = sectorAnchor(sec);
+  const anchor: "start" | "middle" | "end" =
+    ax > 0 ? "end" : ax < 0 ? "start" : "middle";
+  const xa = cxu(ax) + (ax > 0 ? -14 : ax < 0 ? 14 : 0);
+  const ya = ay > 0 ? cyu(ay) + 26 : ay < 0 ? cyu(ay) - 36 : cyu(0) - 7;
+  const y0 = quadName(sec.side) ? (ay > 0 ? cyu(ay) + 24 : cyu(ay) - 60) : ya;
+  return { ax, ay, anchor, xa, ya, y0 };
+};
+
 /* ---------- the step schedule ----------
    The guided flows are all cut from the same eleven BEATS, and every gate in the
    render below is keyed on the beat rather than on the scroll stop. What a
@@ -171,10 +189,12 @@ const ROOT_BEAT = 7;
  *  on the whole tree with the dot at the root, and the pizza chart answers
  *  the root question here */
 const FORK1_BEAT = 8;
-/** fork two is asked: each head's stem reaches down to the bus, and the
- *  inset swaps instrument (the rail carries the question itself) */
+/** fork two is asked: each head's stem reaches down to the bus (the rail
+ *  carries the question itself). The fork stands alone here — its instrument
+ *  waits for the landing (see `carriesPanel`) */
 const FORK2_BEAT = 9;
-/** the leaves arrive and the traveller lands on the diagnosed one */
+/** the leaves arrive and the traveller lands on the diagnosed one, and fork
+ *  two's instrument arrives with it: the figure comes with its verdict */
 const LEAF_BEAT = 10;
 /** the four diagnoses — the only beat that hands the pick to the reader */
 const CHOICE_BEAT = 11;
@@ -238,6 +258,80 @@ const ZOOM_FRAME_W_PHONE = [560, 300, 240, 280];
 const ZOOM_BIAS_Y_PHONE = [-36, -10, 10, -30];
 const ZOOM_CAP = 3.4;
 const ZOOM_CAP_PHONE = 6;
+
+/* ---------- the hand-off's clock (the quadrant pour), in seconds ----------
+   Forward, the chart becomes the tree's first rank in two movements:
+     1. CONDENSE — every quadrant shrinks, in place and all at once, into a
+        card around its own corner label: four regions become four cards,
+        and the name the reader just read never leaves the screen;
+     2. DEAL — the cards fly to the head row in STRAIGHT lines, each `flight`
+        long, and each hands over to the head it landed on (`land`). What
+        keeps four straight flights off each other is WHEN they leave (see
+        `pourDealAt`), since the paths themselves cross.
+   The rewind is the same film backwards, shorter: the reader has seen it.
+   One table, because three clocks have to agree on it — the stylesheet's
+   keyframes (handed these as custom properties), the head cards' and the
+   edges' entrances, and the dot's own entrance in the ride loop. */
+const POUR = {
+  condense: 0.4,
+  /* the four cards stand at their corners for a moment before the first is
+     dealt — without it the condense ran straight into the deal and the
+     first card seemed to be snatched away */
+  beat: 0.1,
+  /* between the two cards of one column of the plane, and the extra wait
+     before the second column leaves — in FLIGHTS, not seconds: what keeps
+     the straight paths off each other is where one card has got to when the
+     next leaves, so the gaps have to scale with the flight (see pourDealAt) */
+  stagger: 0.12,
+  colGap: 0.21,
+  /* The flight has been 0.7s (keyed legs: "jarring"), 1.0s on smootherstep
+     (smooth, but it dwelt at both ends — a fifth of the flight to cover the
+     first 6%) and is now 0.8s on a curve that leaves promptly and lands
+     firmly (the user: "slightly faster and sharper"; the curve is the
+     stylesheet's — see "movement 2: the deal"). The longest flight peaks at
+     about 1200px/s: up from 880, still two thirds of the first cut's 1800. */
+  flight: 0.8,
+  land: 0.3,
+  backFlight: 0.6,
+  expand: 0.38,
+};
+/** when a card leaves its corner, in seconds from the first to leave: the
+ *  n-th dealt, from the `col`-th column of the plane to go.
+ *
+ *  The flights are straight (Sept 2026, the user's call — the first cuts
+ *  bent them into lanes to keep them apart, and the bends were what read as
+ *  fussy), and straight paths from a 2×2 to a 1×4 CROSS: the plane unrolls
+ *  clockwise into the row, so its upper pair swap sides on the way down and
+ *  its lower pair on the way up, and an upper card comes in so shallow that
+ *  it sweeps low over the slot NEXT to its own. So the order is the
+ *  geometry's, not the row's:
+ *    - the plane's RIGHT column goes first, then its left: that puts about
+ *      half a flight between the two cards of each swapping pair, and by then
+ *      the first is well below (or above) the second's path;
+ *    - within a column the UPPER card goes first: it has to be past its
+ *      neighbour's slot before the lower card lands in it.
+ *  Simulated over every frame, that leaves two bounding-box grazes of about
+ *  60px² — each at two ROUNDED corners, so the painted cards do not touch —
+ *  where row order (left to right, the city's own last) clipped a card by a
+ *  third of its height, and all four at once pile up whole. */
+const pourDealAt = (n: number, col: number) =>
+  (n * POUR.stagger + col * POUR.colGap) * POUR.flight;
+/** the same, on the hand-off's own clock: after the condense and its beat */
+const pourLaunch = (dealAt: number) => POUR.condense + POUR.beat + dealAt;
+/** when the tree may grow around the row — the root question, the edges and
+ *  the ranks below: as the LAST card is two thirds through its flight — clear
+ *  of the root's own spot, which an upper quadrant's path runs through — so
+ *  the edge to it draws down while it lands */
+const pourAfter = (lastDealAt: number) =>
+  pourLaunch(lastDealAt) + POUR.flight * 0.65;
+
+/* a side's hue let down into white — the dealt card's ground. Opaque on
+   purpose: a translucent tile would show the dissolving chart through it */
+const tintOf = (hex: string, a: number): string => {
+  const n = parseInt(hex.slice(1), 16);
+  const mix = (c: number) => Math.round(255 + (c - 255) * a);
+  return `rgb(${mix((n >> 16) & 255)}, ${mix((n >> 8) & 255)}, ${mix(n & 255)})`;
+};
 
 /* the scroll per stop, in vh: half again the compact flow's 40 for a plain
    walk (the text blocks need the room), and 1.7× it where the camera rides
@@ -362,7 +456,9 @@ const TREE_HOME_POSE = "translate(0px, 0px) scale(1)";
    full-stage chart coordinates, which must not be scaled. */
 
 const med = METRO_MEDIANS;
-const pc = (v: number) => `${v >= 0 ? "+" : "−"}${Math.abs(v).toFixed(1)}%/yr`;
+/* a value that rounds to zero carries no sign: "−0.0%" reads as a typo */
+const pc = (v: number) =>
+  `${Math.abs(v) < 0.05 ? "" : v >= 0 ? "+" : "−"}${Math.abs(v).toFixed(1)}%/yr`;
 
 /* the grey backdrop field, sized like the compact flow's metro field */
 const maxSize = Math.max(...METROS.map((m) => m.size));
@@ -757,7 +853,13 @@ export function ConstraintNarrative({
       }
       s = Math.min(beats.length - 1, s);
       setStepIdx(s);
-      if (r.top <= mid && r.bottom >= mid)
+      /* the line is the STAGE's, and the stage travels with the track — so
+         "the line is inside the track" holds wherever the track is, on screen
+         or not. While the walk was the whole page that made no difference; in
+         a layout that stacks the sections in one scroll (src/site/) it had
+         the walk claiming the page from three sections away. The line has to
+         be on screen as well. */
+      if (r.top <= mid && r.bottom >= mid && mid >= sTop && mid <= sTop + sH)
         onPhaseRef.current(
           s < diagStop ? "page-constraints" : "page-constraints-diagnose",
         );
@@ -847,26 +949,28 @@ export function ConstraintNarrative({
       return sideOfPath(suggAlt);
     return sideOfPath(convertPath(selectedPath, sh.variant));
   }, [selectedPath, sh, suggAlt, variant]);
-  /* which FAMILY of instrument the walked branch's second fork reads: the
-     demand shocks (whatever their sign) read the MSA pizza chart, the supply
-     shocks the price × population plane */
+  /* which FAMILY of instrument the walked branch's second fork reads — the
+     live tool's two second forks (cities-tool, DiagnosisSection.tsx). Both
+     are read off the SAME plane fork one used: a demand shock (whatever its
+     sign) looks at a different MARK on it — the metro, against the median
+     population line — and a supply shock at a different Y AXIS — price
+     growth in place of pay. */
   const demandFork =
     citySide === "demand" ||
     citySide === "demandpos" ||
     citySide === "demandneg";
-  /* the supply forks' second read, a quadrant now (Sept 2026): where the
-     admin city lands on the price × population plane */
-  const houseRead = useMemo(() => housingRead(cityShort), [cityShort]);
-  /* the fork-two legend, per branch — the alt tree's own wording where the
-     instrument is unchanged, bracketed placeholders where the spec's reading
-     is not settled yet */
-  const demandLegend: [string, string] =
-    citySide === "demandneg" || citySide === "demandpos"
-      ? [
-          `MSA in ${quadName(citySide)} too → Regional (MSA)`,
-          `MSA anywhere else → Local (admin)`,
-        ]
-      : ["← below · Metro-wide", "above · Place-specific →"];
+  /* the demand fork's read: the metro's population growth against the
+     median metro's, and the metro's own quadrant, which says why */
+  const metroRead = useMemo(
+    () => demandRead(cityShort, country),
+    [cityShort, country],
+  );
+  /* the supply fork's read: price growth against the median — a two-way
+     split of the re-axed plane, not four quadrants */
+  const priceRead = useMemo(
+    () => supplyRead(cityShort, country),
+    [cityShort, country],
+  );
   /* What the stage is looking at, beat by beat: the whole tree while it is
      being introduced, the root and its branches once fork one is answered,
      then just the branch the city took. Only "focus" mode acts on it; the
@@ -929,17 +1033,44 @@ export function ConstraintNarrative({
     [sh, focusInto],
   );
   const wholeFit = `translate(${wholePose[1].toFixed(1)}px, ${wholePose[2].toFixed(1)}px) scale(${wholePose[0].toFixed(3)})`;
-  /* ---------- the pour tiles (transition study) ----------
-     Start: each plane sector's bounding box on the full-stage chart. End:
-     the branch head card it becomes, run through the whole-tree pose the
-     treewrap is easing into — both in stage coordinates, so one CSS
-     transform flies a tile from its quadrant onto its card while the pose
-     settles underneath (any mid-flight drift has landed by arrival). */
+  /* ---------- the pour tiles (the chart → tree hand-off) ----------
+     One tile per plane region, and three boxes per tile, all in stage
+     coordinates so plain CSS transforms carry them while the whole-tree pose
+     settles underneath:
+       the QUADRANT — the sector's bounding box on the full-stage chart;
+       the CORNER CARD — a card the size its head will be, tucked into the
+         quadrant's outer corner, which is where the chart hangs the
+         quadrant's label. The quadrant condenses onto it, so the label the
+         reader was just reading stays put and becomes the card's title;
+       the SLOT — the branch head it becomes, run through the whole-tree pose.
+     (Sept 2026 revision. The tiles used to fly straight from quadrant to
+     slot as bare tinted rectangles: the name and the mark went out with the
+     chart and came back on the card, so for the length of the flight nothing
+     said which rectangle was which — two hues across four quadrants — and,
+     since the plane unrolls clockwise into the row, the top pair and the
+     bottom pair swap sides and piled up mid-stage.) */
   const pourTiles = useMemo(() => {
     if (!pourOn) return [];
     const [pk, ptx, pty] = wholePose;
     const headTop = headRowY(sh) - headRowH(sh) / 2;
-    const last = sh.plane.length - 1;
+    /* the card, in stage units */
+    const cw = pk * sh.headW;
+    const ch = pk * headRowH(sh);
+    const fs = sh.headSize ?? 17.5;
+    /* the deal's order is the geometry's (see pourDealAt): the plane's right
+       column first, then its left, and the upper card first in each. The
+       city's own quadrant is marked by its tint, not by its turn. */
+    const cols = [
+      ...new Set(sh.plane.map((sec) => Math.sign(sectorAnchor(sec)[0]))),
+    ].sort((a, b) => b - a);
+    const order = sh.plane
+      .map((sec, i) => {
+        const [ax, ay] = sectorAnchor(sec);
+        return { i, col: cols.indexOf(Math.sign(ax)), ay };
+      })
+      .sort((a, b) => a.col - b.col || b.ay - a.ay);
+    const dealAt = new Map(order.map((o, n) => [o.i, pourDealAt(n, o.col)]));
+    const lastDeal = Math.max(0, ...dealAt.values());
     return sh.plane.map((sec, i) => {
       const pts = sectorPoly(sec).map(
         ([px, py]) => [cxu(px), cyu(py)] as [number, number],
@@ -948,25 +1079,124 @@ export function ConstraintNarrative({
       const sy = Math.min(...pts.map((p) => p[1]));
       const sw = Math.max(...pts.map((p) => p[0])) - sx;
       const sHt = Math.max(...pts.map((p) => p[1])) - sy;
+      const lab = planeLabelAt(sec);
+      /* the outer corner, as a fraction of the box — the condense's still
+         point (y runs down on the stage, so an upper region anchors at 0) */
+      const ox = lab.ax > 0 ? 1 : lab.ax < 0 ? 0 : 0.5;
+      const oy = lab.ay > 0 ? 0 : lab.ay < 0 ? 1 : 0.5;
+      const cx0 = sx + (sw - cw) * ox;
+      const cy0 = sy + (sHt - ch) * oy;
       const ex = ptx + pk * (headX(sh, sec.side) - sh.headW / 2);
       const ey = pty + pk * headTop;
+      const dx = ex - cx0;
+      const dy = ey - cy0;
+      const deal = dealAt.get(i) ?? 0;
+      /* the label: the head card's own (mark, name, the two dials), drawn in
+         tree coordinates and carried by a pose of its own. At the corner it
+         wears the whole-tree pose less the flight still to come, so that once
+         dealt it lies exactly on the real card's label. It starts at the
+         chart label's size, on the chart label's own edge and baseline. */
+      const b = sh.branches.find((br) => br.id === sec.side);
+      const name = quadName(sec.side);
+      const s0 = 15 / fs;
+      let labFrom = "none";
+      if (b) {
+        const w = name ? fs * 1.3 + 6 + nameWidth(name, fs) : 0;
+        const edge =
+          lab.anchor === "end"
+            ? b.x + w / 2
+            : lab.anchor === "start"
+              ? b.x - w / 2
+              : b.x;
+        labFrom = `translate(${(lab.xa - s0 * edge).toFixed(1)}px, ${(lab.y0 - s0 * (headRowY(sh) - 5)).toFixed(1)}px) scale(${s0.toFixed(3)})`;
+      }
       return {
         key: `${sec.side}-${i}`,
         side: sec.side,
+        own: sec === placeSector,
+        branch: b,
         sx,
         sy,
         sw,
         sHt,
-        to: `translate(${(ex - sx).toFixed(1)}px, ${(ey - sy).toFixed(1)}px) scale(${((pk * sh.headW) / sw).toFixed(3)}, ${((pk * headRowH(sh)) / sHt).toFixed(3)})`,
-        delay: i * 0.09,
-        /* the rewind unwinds in the order it was laid down — the tile that
-           landed last is the first to fly home. Tighter than the pour's own
-           stagger: the chart is held back until the last tile is home, so
-           the spread is time the reader spends looking at an empty stage */
-        back: (last - i) * 0.06,
+        cx0,
+        cy0,
+        cw,
+        ch,
+        rx: 6 * pk,
+        origin: `${ox * 100}% ${oy * 100}%`,
+        shrink: `scale(${(cw / sw).toFixed(4)}, ${(ch / sHt).toFixed(4)})`,
+        grow: `scale(${(sw / cw).toFixed(4)}, ${(sHt / ch).toFixed(4)})`,
+        dx,
+        dy,
+        labFrom,
+        labTo: `translate(${(ptx - dx).toFixed(1)}px, ${(pty - dy).toFixed(1)}px) scale(${pk.toFixed(3)})`,
+        deal,
+        launch: pourLaunch(deal),
+        /* the rewind is the deal's film run backwards at its own speed — the
+           card that landed last is the first to lift, and the gaps that kept
+           the flights apart on the way out keep them apart on the way home —
+           and every quadrant opens out together once the last card is back
+           in its corner */
+        back: ((lastDeal - deal) * POUR.backFlight) / POUR.flight,
       };
     });
-  }, [pourOn, sh, wholePose]);
+  }, [pourOn, sh, wholePose, placeSector]);
+  /* a branch head's label, in tree coordinates. One drawing for the head card
+     and for the hand-off's tile that becomes it, so the card that is dealt
+     and the card it lands on cannot drift apart. A quadrant head leads with
+     the landing's mark and the city type, centred as one pair, and the two
+     dials that define it ride underneath as the sections' stat-chip icons
+     (the shock it is stays in the chart's corner and the rail's copy). */
+  const headLabel = (b: (typeof sh.branches)[number]) => {
+    const name = quadName(b.id);
+    const fs = sh.headSize ?? 17.5;
+    if (!name)
+      return (b.titleLines ?? [b.title]).map((line, li, all) => (
+        <text
+          key={li}
+          x={b.x}
+          y={HEAD_Y + 5 - (all.length - 1) * 9 + li * 18}
+          textAnchor="middle"
+          fontSize={fs}
+          fill={TREE_SIDE_COLOR[b.id]}
+        >
+          {line}
+        </text>
+      ));
+    const mark = fs * 1.3;
+    const gap = 6;
+    const x0 = b.x - (mark + gap + nameWidth(name, fs)) / 2;
+    return (
+      <>
+        <QuadMark
+          side={b.id}
+          x={x0}
+          y={HEAD_Y - 5 - mark * 0.78}
+          size={mark}
+          color={TREE_SIDE_COLOR[b.id]}
+        />
+        <text
+          x={x0 + mark + gap}
+          y={HEAD_Y - 5}
+          textAnchor="start"
+          fontSize={fs}
+          fill={TREE_SIDE_COLOR[b.id]}
+        >
+          {name}
+        </text>
+        <QuadMetrics side={b.id} x={b.x} y={HEAD_Y + 13} />
+      </>
+    );
+  };
+  /* when a head takes over from its tile: once it has landed, not before —
+     the flight's last stretch is a slow settle into the slot, so a head that
+     came up even a tenth of a second early stood a card's edge below its
+     tile. The tile starts to go at the same moment (nv-pour-land). */
+  const pourLandAt = (side: string): number | undefined => {
+    const t = pourTiles.find((p) => p.side === side);
+    return t ? t.launch + POUR.flight : undefined;
+  };
 
   /* ---------- which way the pour is flying ----------
      The hand-off is a CROSSING, not a stop: it plays forward as the walk
@@ -976,13 +1206,17 @@ export function ConstraintNarrative({
      replay a flight the reader has already watched, and scrolling off the
      top of the beat flies the heads back onto the chart instead of cutting
      them. */
-  const spread = Math.max(0, sh.plane.length - 1);
+  /* when the last card of the deal leaves, from the first */
+  const lastDeal = Math.max(0, ...pourTiles.map((t) => t.deal));
   /* how long the whole crossing owns the stage — the backstop that takes the
-     tiles off it. The rewind runs longer: it hands the chart back in two
-     movements rather than one, and the fade only starts once the last tile
-     is home (see `pourHome`) */
-  const pourMs = 1150 + spread * 90 + 80;
-  const backMs = 900 + spread * 60 + 550 + 100;
+     tiles off it: forward, the last card dealt has landed and handed over;
+     backward, the last card is home, every quadrant has opened out, and the
+     group has cross-faded into the chart (0.55s — that fade only starts once
+     the last tile is home, see `pourHome`) */
+  const pourMs = (pourLaunch(lastDeal) + POUR.flight + POUR.land) * 1000 + 80;
+  /* when the rewind's quadrants open out: the last card is back */
+  const expandAt = (lastDeal / POUR.flight + 1) * POUR.backFlight;
+  const backMs = (expandAt + POUR.expand + 0.55) * 1000 + 100;
   const [pourRun, setPourRun] = useState<{ dir: 1 | -1; id: number } | null>(
     null,
   );
@@ -1422,7 +1656,11 @@ export function ConstraintNarrative({
       const entering = stp === TREE_BEAT && sIdx === 1;
       const sinceEnter = (now - st.enterT) / 1000;
       const HOLD_S = 0.3; // the fade-out at the chart spot
-      const WAIT_S = 0.85; // the tiles' flight — the dot appears as they land
+      /* the hand-off — the dot appears at the root just after the root
+         question does, which is as the last card of the deal slots in (the
+         pour's own clock); with no pour there are only the heads' fades to
+         wait for */
+      const WAIT_S = pourOn ? pourAfter(lastDeal) + 0.2 : 0.85;
       const FADE_S = 0.35; // the fade-in at the root
       let entrance: "out" | "wait" | "in" | "walk" | null = null;
       if (entering && sinceEnter < HOLD_S) entrance = "out";
@@ -1545,11 +1783,20 @@ export function ConstraintNarrative({
         st.k * st.cy
       ).toFixed(2)}px) scale(${st.k.toFixed(4)})`;
       const fd = 1 - Math.exp(-dt * 11);
+      /* the dot's own scale, for the one phase that needs it (below) */
+      let dotK = 1;
       if (entrance === "out") {
-        /* fading out on the chart: hold the chart spot exactly, and seed
-           the smoother at the root so the fade-in starts THERE */
-        st.dx = st.fromX;
-        st.dy = st.fromY;
+        /* fading out on the chart: hold the chart spot exactly. The spot is
+           a STAGE position and the dot lives inside the group this frame has
+           just posed, so it is written through the pose's inverse, size and
+           all — written raw (as it was until Sept 2026) the pose carried it
+           off as it faded: Boston's dot slid out of Fortress and went out
+           over Magnet, on the one beat that is about which quadrant is
+           whose. The smoother is seeded at the root by the next phase, so
+           the fade-in starts THERE. */
+        dotK = 1 / st.k;
+        st.dx = (st.fromX - (st.fx - st.k * st.cx)) * dotK;
+        st.dy = (st.fromY - (st.fy - st.k * st.cy)) * dotK;
       } else if (entrance === "wait" || entrance === "in") {
         [st.dx, st.dy] = rests[0];
       } else {
@@ -1558,7 +1805,8 @@ export function ConstraintNarrative({
       }
       dotEl?.setAttribute(
         "transform",
-        `translate(${st.dx.toFixed(1)},${st.dy.toFixed(1)})`,
+        `translate(${st.dx.toFixed(1)},${st.dy.toFixed(1)})` +
+          (dotK !== 1 ? ` scale(${dotK.toFixed(4)})` : ""),
       );
       if (
         entrance === null &&
@@ -1606,6 +1854,8 @@ export function ConstraintNarrative({
     forks2,
     cityForks,
     stationFor,
+    pourOn,
+    lastDeal,
   ]);
 
   /* A scroll event wakes the loop, but the step it lands on is committed
@@ -1624,7 +1874,7 @@ export function ConstraintNarrative({
      glides out from under the reader's hand. */
 
   /* ---------- instrument scales (the city's fork-two chart) ---------- */
-  /* supply: home-value growth vs the typical metro */
+  /* supply: the same plane with home-value growth on the Y axis */
   /* the hero panel belonged to the shortened walk, which read its
      instruments off a full-height panel beside a tree eased aside; that
      telling came off with the user-flow switch (Sept 2026), so the walk
@@ -1652,19 +1902,32 @@ export function ConstraintNarrative({
         : { x: hzLeft, y: inset.y + 58, w: inset.x + inset.w - 36 - hzLeft, h: 230 };
   const hzTickX = hz.x - hzTickGap;
   const hzLabX = hzTickX - 48;
-  /* the supply plane is CENTRED ON ITS MEDIANS, so the two cuts cross in the
-     middle and the four quadrants get equal room — the old scale was built
-     for a single price threshold and put the population cut 80% of the way
-     across, squashing two of the four. The population span is wide enough
-     for the admin cities, which sit well below the metro median by
-     construction (Boston −0.8, San Jose −1.1 against a +0.5 median). */
-  const ZSPAN = { pop: 1.7, home: 6 };
+  /* the re-axed plane is CENTRED ON ITS MEDIANS, so the price cut — the
+     fork — sits mid-height and the two halves it splits get equal room, and
+     the population median stays where fork one drew it. Its reach is
+     measured off the data (metros.ts): wide enough for the metro field and
+     for the admin cities, which sit off the metro median by construction. */
+  const ZSPAN = PRICE_SPAN;
+  /* gridlines at whole percents inside the plane, about four of them */
+  const zTicks = (() => {
+    const lo = medCost - ZSPAN.home;
+    const hi = medCost + ZSPAN.home;
+    const step = ZSPAN.home > 5 ? 4 : ZSPAN.home > 2.5 ? 2 : 1;
+    const out: number[] = [];
+    for (
+      let t = Math.ceil((lo + step * 0.25) / step) * step;
+      t < hi - step * 0.25;
+      t += step
+    )
+      out.push(t);
+    return out;
+  })();
   const zy = (z: number) =>
     hz.y + hz.h - ((z - (medCost - ZSPAN.home)) / (2 * ZSPAN.home)) * hz.h;
   const zx = (p: number) =>
     hz.x + ((p - (med.pop - ZSPAN.pop)) / (2 * ZSPAN.pop)) * hz.w;
   /* the plane carries the whole metro field behind the city, the way the
-     pizza chart does — so the quadrant the city lands in is read against
+     pizza chart does — so the half the city lands in is read against
      something. Both series run past the frame's ends, so the cloud is
      clamped just inside the rim rather than drawn outside it. */
   const zclamp = (v: number, lo: number, hi: number) =>
@@ -1673,7 +1936,7 @@ export function ConstraintNarrative({
     zx(zclamp(p, med.pop - ZSPAN.pop * 0.97, med.pop + ZSPAN.pop * 0.97));
   const zyc = (z: number) =>
     zy(zclamp(z, medCost - ZSPAN.home * 0.97, medCost + ZSPAN.home * 0.97));
-  /* demand: the metro's population dial on the same pizza plane */
+  /* demand: the same pizza plane, with the metro promoted on it */
   const pz = sideInst
     ? { x: inset.x + 66, y: inset.y + 92, s: 220 }
     : heroInst
@@ -1757,7 +2020,7 @@ export function ConstraintNarrative({
     },
     {
       kicker: "Where we think you are",
-      body: "[placeholder: the landing, and why]",
+      body: "[placeholder: the landing, and where it leads]",
     },
     {
       kicker: `The ${numberWord(endings)} diagnoses`,
@@ -1768,16 +2031,17 @@ export function ConstraintNarrative({
   /* the tree-first tellings' fork-two stop names the instrument that swaps
      into the inset; what it says stays the same placeholder */
   const forkTwoInstrument = {
+    /* named for the instrument that swaps into the inset */
     kicker: !cityForks
       ? "No second fork on this branch"
-      : !demandFork
-        ? "Fork two: the housing plane"
-        : citySide === "demandneg"
-          ? "Fork two: the MSA pizza chart"
-          : "Fork two: the population dial",
+      : demandFork
+        ? "Fork two: the metro's read"
+        : "Fork two: the price axis",
     body: !cityForks
       ? "[placeholder: no second fork on this branch]"
-      : "[placeholder: fork two, answered by the inset]",
+      : demandFork
+        ? "[placeholder: fork two. metro population growth vs the median metro]"
+        : "[placeholder: fork two. home-value growth vs the median]",
   };
   /* the tree half's stops: the hand-off, fork one read off the quadrant,
      fork two on its own instrument, then back out to the endings */
@@ -1810,10 +2074,28 @@ export function ConstraintNarrative({
     if (beat === INTRO_BEAT || beat === BENCH_BEAT || beat >= CHOICE_BEAT)
       return null;
     if (beat === MSA_BEAT) return "metro";
-    if (beat === FORK2_BEAT) return demandFork ? "metro" : "city";
+    /* fork two is ASKED on its own stop and READ on the landing, where its
+       instrument now sits (`carriesPanel`) — so both name the geography that
+       instrument reads, or the landing's badge says "admin" over a panel
+       about the metro */
+    if (beat === FORK2_BEAT || beat === LEAF_BEAT)
+      return demandFork ? "metro" : "city";
     return "city";
   };
-  const insetShown = step >= insetAt;
+  /* which stops carry an instrument panel under their caption. Fork one is
+     read on the pizza chart, on its own stop. Fork two's instrument — the
+     same plane re-marked or re-axed — waits for the LANDING (Sept 2026, the
+     user's call): the stop that ASKS fork two shows the fork alone, and the
+     stop that answers it shows what it was read on, so the figure arrives
+     with the verdict it supports rather than a stop ahead of it. The
+     back-out carries none: it closes on the whole tree, and an instrument
+     for one fork under a stop about every ending was a leftover.
+     A property of the BEAT, never of the step in view — a block's room has
+     to be the same whether or not it is the one lit (see the panel's box,
+     below), so this may decide what a block reserves as well as what it
+     shows. */
+  const carriesPanel = (beat: number) =>
+    beat === insetAt || beat === LEAF_BEAT;
   const insetExtra = heroInst ? 28 : 24;
   const quadTone = (side: string): keyof typeof TREE_SIDE_COLOR => {
     if (side === "demandpos" || side === "demandneg") return "demand";
@@ -1901,7 +2183,7 @@ export function ConstraintNarrative({
                   scrolls like a page and the panel simply appears beneath
                   it; a block that needs more than one stop for it grows,
                   and the scroll→stop effect above reads the blocks. */}
-              {beat >= insetAt && (
+              {carriesPanel(beat) && (
                 <div
                   className="nv-step-inst"
                   aria-hidden="true"
@@ -1909,7 +2191,7 @@ export function ConstraintNarrative({
                     aspectRatio: `${inset.w} / ${inset.h + insetExtra}`,
                   }}
                 >
-                  {isOn && insetShown && (
+                  {isOn && (
                     <svg
                       viewBox={`${inset.x} ${inset.y} ${inset.w} ${inset.h + insetExtra}`}
                     >
@@ -2278,20 +2560,17 @@ export function ConstraintNarrative({
                     where its sector meets the edge, which for a quadrant is
                     the corner these labels have always used. */}
                 {sh.plane.map((sec, i) => {
-                  const [ax, ay] = sectorAnchor(sec);
-                  const anchor = ax > 0 ? "end" : ax < 0 ? "start" : "middle";
-                  const xa = cxu(ax) + (ax > 0 ? -14 : ax < 0 ? 14 : 0);
-                  /* a sector centred on the x axis has no corner to sit in —
-                     its pair of lines straddles the axis at the edge instead */
-                  const ya =
-                    ay > 0 ? cyu(ay) + 26 : ay < 0 ? cyu(ay) - 36 : cyu(0) - 7;
                   /* a quadrant reads as its city type: the name, the two
                      dials as the sections' stat-chip icons, and the shock as
-                     a caption — three lines, so a bottom corner starts higher */
+                     a caption (the geometry is planeLabelAt's — the hand-off
+                     grows its cards out of these same spots) */
+                  const { anchor, xa, ya, y0 } = planeLabelAt(sec);
                   const name = quadName(sec.side);
-                  const y0 = name ? (ay > 0 ? cyu(ay) + 24 : cyu(ay) - 60) : ya;
                   return (
-                    <g key={`lab-${i}`} className={on(step >= PLANE_BEAT)}>
+                    <g
+                      key={`lab-${i}`}
+                      className={on(step >= PLANE_BEAT) + " nv-qlab"}
+                    >
                       {name ? (
                         <>
                           {/* the landing's mark on the corner side of the
@@ -2360,17 +2639,27 @@ export function ConstraintNarrative({
                   outside — it is the thing being made room for. */}
               <g
                 className="nv-treewrap"
-                style={{
-                  /* focus mode frames the tree itself, on the inner group
+                style={
+                  {
+                    /* focus mode frames the tree itself, on the inner group
                      below — the two must not both pose it */
-                  transform:
-                    focusMode || sideLayout || rideOn
-                      ? "none"
-                      : step >= TREE_BEAT
-                        ? wholeFit
-                        : TREE_HOME_POSE,
-                  transition: "transform 0.9s cubic-bezier(0.4, 0, 0.2, 1)",
-                }}
+                    transform:
+                      focusMode || sideLayout || rideOn
+                        ? "none"
+                        : step >= TREE_BEAT
+                          ? wholeFit
+                          : TREE_HOME_POSE,
+                    transition: "transform 0.9s cubic-bezier(0.4, 0, 0.2, 1)",
+                    /* the hand-off's clock, for everything that waits on the
+                     deal (.nv-pour-wait) */
+                    ...(pourOn
+                      ? {
+                          "--pour-after": `${pourAfter(lastDeal)}s`,
+                          "--pour-land-d": `${POUR.land}s`,
+                        }
+                      : null),
+                  } as CSSProperties
+                }
               >
                 <g
                   className="nv-focus"
@@ -2577,8 +2866,17 @@ export function ConstraintNarrative({
                     </text>
                   </g>
 
-                  {/* the root question card */}
-                  <g className={on(step >= TREE_BEAT) + status("root").g}>
+                  {/* the root question card. On the hand-off it waits with the
+                      edges: it stands where the chart's top edge was, which is
+                      where the upper quadrants condense — and the question
+                      arriving over a row that is already dealt is the order
+                      the tree is read in (these four are what it chooses
+                      between) */}
+                  <g
+                    className={
+                      on(step >= TREE_BEAT) + status("root").g + pourWait
+                    }
+                  >
                     <text
                       className="nv-captitle"
                       x={sh.rootX}
@@ -2617,6 +2915,14 @@ export function ConstraintNarrative({
                         className={
                           on(gHeads) + st.g + (pourOn ? " nv-pour-head" : "")
                         }
+                        /* each head comes up under its own tile, as it lands */
+                        style={
+                          pourOn
+                            ? ({
+                                "--pour-land": `${pourLandAt(b.id) ?? 0}s`,
+                              } as CSSProperties)
+                            : undefined
+                        }
                       >
                         <g className={"nv-card" + (st.lit ? " lit" : "")}>
                           <rect
@@ -2628,58 +2934,7 @@ export function ConstraintNarrative({
                             stroke={TREE_SIDE_COLOR[b.id]}
                             strokeDasharray={sideDash(b.id)}
                           />
-                          {quadName(b.id) ? (
-                            /* a quadrant head: the landing's mark and the
-                               city type lead, and the two dials that define
-                               it ride underneath as the sections' stat-chip
-                               icons (the shock it is stays in the chart's
-                               corner and the rail's copy) */
-                            <>
-                              {/* the landing's mark and the name, centred as
-                                  one pair */}
-                              {(() => {
-                                const fs = sh.headSize ?? 17.5;
-                                const mark = fs * 1.3;
-                                const gap = 6;
-                                const w = mark + gap + nameWidth(quadName(b.id)!, fs);
-                                const x0 = b.x - w / 2;
-                                return (
-                                  <>
-                                    <QuadMark
-                                      side={b.id}
-                                      x={x0}
-                                      y={HEAD_Y - 5 - mark * 0.78}
-                                      size={mark}
-                                      color={TREE_SIDE_COLOR[b.id]}
-                                    />
-                                    <text
-                                      x={x0 + mark + gap}
-                                      y={HEAD_Y - 5}
-                                      textAnchor="start"
-                                      fontSize={fs}
-                                      fill={TREE_SIDE_COLOR[b.id]}
-                                    >
-                                      {quadName(b.id)}
-                                    </text>
-                                  </>
-                                );
-                              })()}
-                              <QuadMetrics side={b.id} x={b.x} y={HEAD_Y + 13} />
-                            </>
-                          ) : (
-                            (b.titleLines ?? [b.title]).map((line, li, all) => (
-                              <text
-                                key={li}
-                                x={b.x}
-                                y={HEAD_Y + 5 - (all.length - 1) * 9 + li * 18}
-                                textAnchor="middle"
-                                fontSize={sh.headSize ?? 17.5}
-                                fill={TREE_SIDE_COLOR[b.id]}
-                              >
-                                {line}
-                              </text>
-                            ))
-                          )}
+                          {headLabel(b)}
                         </g>
                       </g>
                     );
@@ -2801,33 +3056,83 @@ export function ConstraintNarrative({
                     (pourHome ? " home" : "")
                   }
                   onAnimationEnd={onTileHome}
+                  style={
+                    {
+                      "--pour-condense": `${POUR.condense}s`,
+                      "--pour-flight": `${pourRun.dir < 0 ? POUR.backFlight : POUR.flight}s`,
+                      "--pour-land-d": `${POUR.land}s`,
+                      "--pour-expand": `${POUR.expand}s`,
+                      "--pour-expand-at": `${expandAt}s`,
+                    } as CSSProperties
+                  }
                 >
-                  {pourTiles.map((t) => (
-                    <g
-                      key={t.key}
-                      className={
-                        "nv-pour-tile" + (pourRun.dir < 0 ? " back" : "")
-                      }
-                      style={
-                        {
-                          "--pour-to": t.to,
-                          animationDelay: `${pourRun.dir < 0 ? t.back : t.delay}s`,
-                        } as CSSProperties
-                      }
-                    >
-                      <rect
-                        x={t.sx}
-                        y={t.sy}
-                        width={t.sw}
-                        height={t.sHt}
-                        rx={10}
-                        fill={TREE_SIDE_COLOR[t.side]}
-                        stroke={TREE_SIDE_COLOR[t.side]}
-                        strokeDasharray={sideDash(t.side)}
-                        vectorEffect="non-scaling-stroke"
-                      />
-                    </g>
-                  ))}
+                  {/* drawn last-dealt first, so a card in flight passes IN
+                      FRONT of one still waiting in its corner: straight paths
+                      leave one brush between them — the first card's corner
+                      across the corner of the card waiting beside it, some
+                      10×7px for a frame or two — and a moving card sliced by
+                      a still one is the version of that the eye catches */}
+                  {[...pourTiles].sort((a, b) => b.deal - a.deal).map((t) => {
+                    const color = TREE_SIDE_COLOR[t.side];
+                    return (
+                      <g
+                        key={t.key}
+                        className={"nv-pour-tile" + (t.own ? " own" : "")}
+                        style={
+                          {
+                            "--pour-launch": `${pourRun.dir < 0 ? t.back : t.launch}s`,
+                            "--pour-dx": `${t.dx.toFixed(1)}px`,
+                            "--pour-dy": `${t.dy.toFixed(1)}px`,
+                            "--pour-origin": t.origin,
+                            "--pour-shrink": t.shrink,
+                            "--pour-grow": t.grow,
+                            "--pour-lab-from": t.labFrom,
+                            "--pour-lab-to": t.labTo,
+                          } as CSSProperties
+                        }
+                      >
+                        {/* the flight: one straight line from the corner to
+                            the slot (the condense happens inside it, before
+                            it leaves) */}
+                        <g className="nv-pour-fly">
+                          {/* two boxes that share every frame's outline —
+                                both hold the outer corner still and move their
+                                far edges in a straight line — and cross-fade:
+                                the quadrant as the chart drew it, and the card
+                                at its true size, so its corners and its dashes
+                                arrive unscaled */}
+                          <rect
+                            className="nv-pour-quad"
+                            x={t.sx}
+                            y={t.sy}
+                            width={t.sw}
+                            height={t.sHt}
+                            fill={color}
+                            stroke={color}
+                            strokeDasharray={sideDash(t.side)}
+                            vectorEffect="non-scaling-stroke"
+                          />
+                          <rect
+                            className="nv-pour-card"
+                            x={t.cx0}
+                            y={t.cy0}
+                            width={t.cw}
+                            height={t.ch}
+                            rx={t.rx}
+                            fill={tintOf(color, t.own ? 0.17 : 0.07)}
+                            stroke={color}
+                            strokeDasharray={sideDash(t.side)}
+                            vectorEffect="non-scaling-stroke"
+                          />
+                          {t.branch && (
+                            <g className="nv-pour-lab nv-card">
+                              {headLabel(t.branch)}
+                            </g>
+                          )}
+                        </g>
+                      </g>
+                    );
+                  })}
                 </g>
               )}
 
@@ -2860,13 +3165,15 @@ export function ConstraintNarrative({
               {/* ============ the instrument inset (top-right) ============
                   Steps 4–5 keep the PARKED PIZZA CHART here — the root fork
                   is read off it, so it stays in reach while the dot carries
-                  that reading down the first edge. Fork two then swaps in
-                  its own instrument. */}
+                  that reading down the first edge. Fork two's own instrument
+                  is drawn from its beat on, but is SHOWN only on the landing
+                  (the text column's `carriesPanel` decides which stops mount
+                  this panel at all). */}
               <defs>
                 <g
                   id="nv-inset-panel-def"
                   className={
-                    on(step >= insetAt) +
+                    on(carriesPanel(step)) +
                     (heroInst ? " nv-inset-hero" : "")
                   }
                 >
@@ -3027,74 +3334,76 @@ export function ConstraintNarrative({
                   </g>
                   <g className={on(step >= FORK2_BEAT)}>
                     {demandFork ? (
-                      /* the metro's dial, on the same pizza plane */
+                      /* THE SAME PLANE, A DIFFERENT MARK (the live tool's
+                         demand fork): the metro is promoted on the plane
+                         fork one was read off, and the only line that
+                         matters now is the median POPULATION line — the
+                         metro left of it is a labor market that is not
+                         growing, so the shortfall is metro-wide; at or right
+                         of it, the shortfall is the place's own. The metro's
+                         pay is not part of this fork, so the wage median
+                         stays drawn but recessive. */
                       <g>
                         <text
                           className="nv-captitle"
                           x={inset.x + 14}
                           y={inset.y + 22}
                         >
-                          THE MSA PIZZA CHART · THE DEMAND FORK
+                          THE SAME PLANE · THE METRO'S READ
                         </text>
-                        {/* the same four quadrants the city was read in, so
-                            the MSA's answer is read the same way fork one's
-                            was — the city's own quadrant tinted hardest,
-                            since landing in it is what makes this regional */}
-                        {(citySide === "demandneg" ||
-                          citySide === "demandpos") &&
-                          (
-                            [
-                              ["demandpos", 1, 1],
-                              ["supplyneg", -1, 1],
-                              ["demandneg", -1, -1],
-                              ["supplypos", 1, -1],
-                            ] as [BranchSide, number, number][]
-                          ).map(([qs, qx, qy]) => (
+                        {/* the two answers, as the two halves of the plane:
+                            the half the metro landed in tinted hardest */}
+                        {(
+                          [
+                            ["metro", pz.x, pzx(0) - pz.x],
+                            ["place", pzx(0), pz.x + pz.s - pzx(0)],
+                          ] as ["metro" | "place", number, number][]
+                        ).map(([half, hx, hw]) => {
+                          const here = metroRead?.side === half;
+                          return (
                             <rect
-                              key={`mq-${qs}`}
-                              x={qx > 0 ? pzx(0) : pz.x}
-                              y={qy > 0 ? pz.y : pzy(0)}
-                              width={pz.s / 2}
-                              height={pz.s / 2}
-                              fill={TREE_SIDE_COLOR[qs]}
-                              fillOpacity={qs === citySide ? 0.18 : 0.06}
-                              stroke={TREE_SIDE_COLOR[qs]}
-                              strokeOpacity={qs === citySide ? 0.9 : 0.35}
-                              strokeWidth={qs === citySide ? 2 : 1}
-                              strokeDasharray={sideDash(qs) ?? undefined}
+                              key={`dh-${half}`}
+                              x={hx}
+                              y={pz.y}
+                              width={hw}
+                              height={pz.s}
+                              fill={TREE_SIDE_COLOR.demand}
+                              fillOpacity={here ? 0.14 : 0.03}
+                              stroke={TREE_SIDE_COLOR.demand}
+                              strokeOpacity={here ? 0.85 : 0.2}
+                              strokeWidth={here ? 2 : 1}
                             />
-                          ))}
-                        {(citySide === "demandneg" ||
-                          citySide === "demandpos") &&
-                          (
+                          );
+                        })}
+                        {(
+                          [
+                            ["metro", "← MSA-wide", pz.x + 6, "start"],
                             [
-                              ["demandpos", 1, 1],
-                              ["supplyneg", -1, 1],
-                              ["demandneg", -1, -1],
-                              ["supplypos", 1, -1],
-                            ] as [BranchSide, number, number][]
-                          ).map(([qs, qx, qy]) => (
-                            <text
-                              key={`mqt-${qs}`}
-                              className="nv-elab"
-                              x={qx > 0 ? pz.x + pz.s - 6 : pz.x + 6}
-                              y={qy > 0 ? pz.y + 14 : pz.y + pz.s - 6}
-                              textAnchor={qx > 0 ? "end" : "start"}
-                              fill={TREE_SIDE_COLOR[qs]}
-                              opacity={qs === citySide ? 1 : 0.5}
-                              fontWeight={qs === citySide ? 700 : 600}
-                            >
-                              {quadName(qs)}
-                            </text>
-                          ))}
-                        <rect
-                          x={pz.x}
-                          y={pz.y}
-                          width={pz.s}
-                          height={pz.s}
-                          fill="none"
-                          stroke="var(--border)"
-                        />
+                              "place",
+                              "Admin-specific →",
+                              pz.x + pz.s - 6,
+                              "end",
+                            ],
+                          ] as [
+                            "metro" | "place",
+                            string,
+                            number,
+                            "start" | "end",
+                          ][]
+                        ).map(([half, label, lx, anchor]) => (
+                          <text
+                            key={`dht-${half}`}
+                            className="nv-elab"
+                            x={lx}
+                            y={pz.y + pz.s - 7}
+                            textAnchor={anchor}
+                            fill={TREE_SIDE_COLOR.demand}
+                            opacity={metroRead?.side === half ? 1 : 0.5}
+                            fontWeight={metroRead?.side === half ? 700 : 600}
+                          >
+                            {label}
+                          </text>
+                        ))}
                         {METROS.map((m, i) => {
                           const [ux, uy] = metroUnit(m);
                           return (
@@ -3108,45 +3417,72 @@ export function ConstraintNarrative({
                             />
                           );
                         })}
+                        {/* the wage median: still the plane's, not this
+                            fork's */}
+                        <line
+                          x1={pz.x}
+                          x2={pz.x + pz.s}
+                          y1={pzy(0)}
+                          y2={pzy(0)}
+                          stroke="var(--ink)"
+                          strokeWidth={1}
+                          strokeDasharray="3 4"
+                          opacity={0.3}
+                        />
+                        {/* the median population line IS the fork */}
                         <line
                           x1={pzx(0)}
                           x2={pzx(0)}
                           y1={pz.y - 4}
                           y2={pz.y + pz.s + 4}
                           stroke="var(--ink)"
-                          strokeWidth={1.6}
+                          strokeWidth={1.8}
                           strokeDasharray="6 4"
                         />
-                        {(citySide === "demandpos" ||
-                          citySide === "demandneg") && (
-                          /* the quadrant forks read the FULL MSA plane, so
-                             the wage median joins the population median */
-                          <line
-                            x1={pz.x - 4}
-                            x2={pz.x + pz.s + 4}
-                            y1={pzy(0)}
-                            y2={pzy(0)}
-                            stroke="var(--ink)"
-                            strokeWidth={1.6}
-                            strokeDasharray="6 4"
-                          />
-                        )}
-                        {citySide === "demandpos" && (
-                          /* the spec's diagonal: which side of it the MSA
-                             falls on decides the housing-risk fork */
-                          <line
-                            x1={pzx(-1)}
-                            y1={pzy(-1)}
-                            x2={pzx(1)}
-                            y2={pzy(1)}
-                            stroke={TREE_SIDE_COLOR.demand}
-                            strokeWidth={1.4}
-                            strokeDasharray="3 3"
-                            opacity={0.8}
-                          />
-                        )}
+                        <text className="nv-ph" x={pzx(0) + 5} y={pz.y + 12}>
+                          {`median ${pc(med.pop)}`}
+                        </text>
+                        {/* the place stays on the plane, receded: fork one
+                            was about it, this one is about its metro */}
+                        <circle
+                          cx={pzx(ux)}
+                          cy={pzy(uy)}
+                          r={heroInst ? 5 : 3.6}
+                          fill="#fff"
+                          stroke="var(--ink)"
+                          strokeWidth={1.4}
+                          opacity={0.75}
+                        />
+                        {/* its label sits ABOVE the dot: the metro's label
+                            runs to the right of a dot that is often its
+                            neighbour, and the y-axis label owns the left */}
+                        <text
+                          className="nv-lab"
+                          x={Math.max(
+                            pz.x + cityShort.length * 3.2 + 4,
+                            pzx(ux),
+                          )}
+                          y={pzy(uy) - 9}
+                          textAnchor="middle"
+                          fontSize={11.5}
+                          fontWeight={500}
+                          fill="var(--ink-soft)"
+                        >
+                          {cityShort}
+                        </text>
                         {msa ? (
                           <g>
+                            {/* the promoted mark: a ring under the dot, the
+                                way the live tool's spotlight grows it */}
+                            <circle
+                              cx={pzx(metroUnit(msa)[0])}
+                              cy={pzy(metroUnit(msa)[1])}
+                              r={heroInst ? 13 : 10}
+                              fill={TREE_SIDE_COLOR.demand}
+                              fillOpacity={0.12}
+                              stroke={TREE_SIDE_COLOR.demand}
+                              strokeOpacity={0.5}
+                            />
                             <circle
                               cx={pzx(metroUnit(msa)[0])}
                               cy={pzy(metroUnit(msa)[1])}
@@ -3155,17 +3491,16 @@ export function ConstraintNarrative({
                               stroke="#fff"
                               strokeWidth={1.5}
                             />
-                            {/* the fork reads BOTH dials, so the label
-                                carries both — stacked, the way the plane's
-                                own dot labels are, since one line of it is
-                                wider than the panel */}
-                            {[`${cityShort} MSA`, ...metroStatsRows(msa)].map(
+                            {/* only the population dial decides, so only it
+                                rides the label — beside the figure it is
+                                read against, as on the live tree's edge */}
+                            {[`${cityShort} MSA`, `pop ${pc(msa.pop)}`].map(
                               (line, li) => (
                                 <text
                                   key={`msal-${li}`}
                                   className="nv-lab"
-                                  x={pzx(metroUnit(msa)[0]) + 9}
-                                  y={pzy(metroUnit(msa)[1]) - 20 + li * 14}
+                                  x={pzx(metroUnit(msa)[0]) + 13}
+                                  y={pzy(metroUnit(msa)[1]) - 10 + li * 14}
                                   fontSize={li === 0 ? 13.5 : 12}
                                   fontWeight={li === 0 ? 700 : 500}
                                   fill="var(--ink)"
@@ -3202,104 +3537,74 @@ export function ConstraintNarrative({
                         >
                           wage growth →
                         </text>
-                        <text
-                          className="nv-elab"
-                          x={inset.x + 14}
-                          y={inset.y + 42}
-                          fill={TREE_SIDE_COLOR.demand}
-                        >
-                          {demandLegend[0]}
-                        </text>
-                        <text
-                          className="nv-elab"
-                          x={inset.x + 14}
-                          y={inset.y + 55}
-                          textAnchor="start"
-                          fill={TREE_SIDE_COLOR.demand}
-                        >
-                          {demandLegend[1]}
-                        </text>
+                        {/* the two numbers the fork turned on, and — once
+                            landed — the metro's own quadrant, which says
+                            why it is growing or not */}
+                        {metroRead && (
+                          <text className="nv-ph" x={pz.x} y={pz.y + pz.s + 34}>
+                            {`${pc(metroRead.popCagr)} vs ${pc(metroRead.popMedian)}` +
+                              (step >= LEAF_BEAT
+                                ? ` · the metro's own read: ${quadName(metroRead.metroQuad)}`
+                                : "")}
+                          </text>
+                        )}
                       </g>
                     ) : (
-                      /* the supply fork's own four-quadrant plane: home-value
-                         growth against the typical metro's, population growth
-                         against the typical metro's. Which quadrant the admin
-                         city lands in is the fork. */
+                      /* THE SAME PLANE, A DIFFERENT AXIS (the live tool's
+                         supply fork): population growth stays on x and the
+                         split lines stay put, but the Y axis moves from pay
+                         to price growth. "Supply shock" is a statement about
+                         population × pay and does not survive the swap, so
+                         the re-axed plane is a TWO-way split: at or above
+                         the median → Housing, below it → Amenities. */
                       <g>
                         <text
                           className="nv-captitle"
                           x={inset.x + 14}
                           y={inset.y + 22}
                         >
-                          THE HOUSING PLANE · THE SUPPLY FORK
+                          THE SAME PLANE · PRICE ON THE Y AXIS
                         </text>
-                        {(
-                          [
-                            ["squeezed", 1, 1],
-                            ["pricedout", -1, 1],
-                            ["slack", -1, -1],
-                            ["absorbing", 1, -1],
-                          ] as [keyof typeof HOUSING_QUAD, number, number][]
-                        ).map(([q, qx, qy]) => {
-                          const x0 = qx > 0 ? zx(med.pop) : hz.x;
-                          const y0 = qy > 0 ? hz.y : zy(medCost);
-                          const here = houseRead?.quad === q;
-                          /* the two housing quadrants share the supply hue,
-                             the two amenity ones the demand hue — the tint
-                             IS the answer, so the plane reads before the
-                             label does */
-                          const col =
-                            TREE_SIDE_COLOR[
-                              HOUSING_QUAD[q].leaf === "col"
-                                ? "supply"
-                                : "demand"
-                            ];
+                        {(["cost", "amenity"] as const).map((half) => {
+                          const top = half === "cost";
+                          const y0 = top ? hz.y : zy(medCost);
+                          const h = top
+                            ? zy(medCost) - hz.y
+                            : hz.y + hz.h - zy(medCost);
+                          const here = priceRead?.side === half;
+                          const col = TREE_SIDE_COLOR.supply;
                           return (
-                            <g key={`hq-${q}`}>
+                            <g key={`ps-${half}`}>
                               <rect
-                                x={x0}
+                                x={hz.x}
                                 y={y0}
-                                width={
-                                  qx > 0
-                                    ? hz.x + hz.w - zx(med.pop)
-                                    : zx(med.pop) - hz.x
-                                }
-                                height={
-                                  qy > 0
-                                    ? zy(medCost) - hz.y
-                                    : hz.y + hz.h - zy(medCost)
-                                }
+                                width={hz.w}
+                                height={h}
                                 fill={col}
-                                fillOpacity={here ? 0.16 : 0.05}
+                                fillOpacity={here ? 0.14 : 0.03}
                                 stroke={col}
-                                strokeOpacity={here ? 0.85 : 0.25}
+                                strokeOpacity={here ? 0.85 : 0.2}
                                 strokeWidth={here ? 2 : 1}
                               />
-                              <text
-                                className="nv-elab"
-                                x={qx > 0 ? hz.x + hz.w - 7 : hz.x + 7}
-                                y={qy > 0 ? hz.y + 15 : hz.y + hz.h - 7}
-                                textAnchor={qx > 0 ? "end" : "start"}
-                                fill={col}
-                                opacity={here ? 1 : 0.55}
-                                fontWeight={here ? 700 : 600}
-                              >
-                                {HOUSING_QUAD[q].label}
-                              </text>
                             </g>
                           );
                         })}
-                        {METROS.map((m, i) => (
-                          <circle
-                            key={`hzm-${i}`}
-                            cx={zxc(m.pop)}
-                            cy={zyc(m.home)}
-                            r={heroInst ? 2 : 1.4}
-                            fill="#c8cdd0"
-                            opacity={0.5}
-                          />
-                        ))}
-                        {[4, 8, 12].map((t) => (
+                        {METROS.map(
+                          (m, i) =>
+                            /* a metro Zillow has no series for is on the
+                               pay plane and not on this one */
+                            m.home != null && (
+                              <circle
+                                key={`hzm-${i}`}
+                                cx={zxc(m.pop)}
+                                cy={zyc(m.home)}
+                                r={heroInst ? 2 : 1.4}
+                                fill="#c8cdd0"
+                                opacity={0.5}
+                              />
+                            ),
+                        )}
+                        {zTicks.map((t) => (
                           <g key={`hzt-${t}`}>
                             <line
                               className="jz-ms-grid"
@@ -3328,32 +3633,35 @@ export function ConstraintNarrative({
                           strokeWidth={1.5}
                           strokeDasharray="6 4"
                         />
-                        {/* the second cut — the plane is a plane now */}
+                        {/* the population median stays where fork one drew it
+                            — the split lines stay put, only the Y axis
+                            moved — but it is not this fork's line */}
                         <line
                           x1={zx(med.pop)}
                           x2={zx(med.pop)}
                           y1={hz.y}
                           y2={hz.y + hz.h}
                           stroke="var(--ink)"
-                          strokeWidth={1.5}
-                          strokeDasharray="6 4"
+                          strokeWidth={1}
+                          strokeDasharray="3 4"
+                          opacity={0.3}
                         />
                         <text
                           className="nv-ph"
                           x={hz.x + 2}
                           y={zy(medCost) - 8}
                         >
-                          {`typical metro ${pc(medCost)}`}
+                          {`median ${pc(medCost)}`}
                         </text>
-                        {/* the cut IS the fork: above it either quadrant
-                            routes to Housing, below it either to Amenities */}
+                        {/* the price cut IS the fork: at or above it routes
+                            to Housing, below it to Amenities */}
                         <text
                           className="nv-elab"
                           x={hz.x + hz.w - 2}
                           y={zy(medCost) - 8}
                           textAnchor="end"
                           fill={TREE_SIDE_COLOR.supply}
-                          opacity={houseRead?.priceUp ? 1 : 0.6}
+                          opacity={priceRead?.side === "cost" ? 1 : 0.6}
                         >
                           above → Housing
                         </text>
@@ -3362,8 +3670,8 @@ export function ConstraintNarrative({
                           x={hz.x + hz.w - 2}
                           y={zy(medCost) + 17}
                           textAnchor="end"
-                          fill={TREE_SIDE_COLOR.demand}
-                          opacity={houseRead && !houseRead.priceUp ? 1 : 0.6}
+                          fill={TREE_SIDE_COLOR.supply}
+                          opacity={priceRead?.side === "amenity" ? 1 : 0.6}
                         >
                           below → Amenities
                         </text>
@@ -3377,19 +3685,45 @@ export function ConstraintNarrative({
                               stroke="#fff"
                               strokeWidth={1.5}
                             />
-                            <text
-                              className="nv-lab"
-                              /* always ABOVE the dot: below the price cut the
-                                 dot sits in the bottom row, where a label
-                                 under it lands on that quadrant's name */
-                              x={zx(place.pop) + 9}
-                              y={zy(cost.growth) - 9}
-                              fontSize={13.5}
-                              fontWeight={700}
-                              fill="var(--ink)"
-                            >
-                              {`${cityShort} ${pc(cost.growth)}`}
-                            </text>
+                            {(() => {
+                              /* always ABOVE the dot: below the price cut
+                                 the dot sits in the bottom row, where a label
+                                 under it would leave the plane. A dot close to
+                                 the cut lifts its label clear of the cut's own
+                                 labels, and one in the right of the plane
+                                 centres it, clamped inside the panel. */
+                              const dotX = zx(place.pop);
+                              const dotY = zy(cost.growth);
+                              const cutY = zy(medCost);
+                              const nearCut = Math.abs(dotY - cutY) < 26;
+                              const half = (cityShort.length + 9) * 3.9;
+                              const centred =
+                                nearCut || dotX > hz.x + hz.w * 0.5;
+                              return (
+                                <text
+                                  className="nv-lab"
+                                  x={
+                                    centred
+                                      ? Math.max(
+                                          hz.x + half,
+                                          Math.min(hz.x + hz.w - half, dotX),
+                                        )
+                                      : dotX + 9
+                                  }
+                                  y={
+                                    nearCut
+                                      ? Math.min(dotY, cutY) - 26
+                                      : dotY - 9
+                                  }
+                                  textAnchor={centred ? "middle" : "start"}
+                                  fontSize={13.5}
+                                  fontWeight={700}
+                                  fill="var(--ink)"
+                                >
+                                  {`${cityShort} ${pc(cost.growth)}`}
+                                </text>
+                              );
+                            })()}
                           </g>
                         ) : (
                           <text
@@ -3418,8 +3752,13 @@ export function ConstraintNarrative({
                         >
                           home-value growth →
                         </text>
+                        {/* the two numbers the fork turned on, as the live
+                            tree carries them on the fork's edge */}
                         <text className="nv-ph" x={hz.x} y={hz.y + hz.h + 34}>
-                          {`home values at the city level, ${DATA_WINDOW_LABEL}`}
+                          {(priceRead
+                            ? `${pc(priceRead.costCagr)} vs ${pc(priceRead.costMedian)} · `
+                            : "") +
+                            `${priceRead?.grain === "metro" ? "metro" : "city"} level, ${DATA_WINDOW_LABEL}`}
                         </text>
                       </g>
                     )}

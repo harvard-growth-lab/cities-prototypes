@@ -22,12 +22,13 @@ import {
   sideHollow,
   TREE_SIDE_LABEL,
   completeToLeaf,
+  endingRead,
   pathModules,
   sideOfPath,
   suggestedPath,
   treeNodes,
-  type BranchSide,
   type ModuleDef,
+  type ModuleView,
   type TreeNodeData,
   type TreeSide,
   type TreeVariant,
@@ -36,6 +37,7 @@ import { branchSectionName } from "../../data/content";
 import { NodeGlyph } from "./treeIcons";
 import { QuadGlyph } from "./quadIcons";
 import { VariantOptions } from "./ConstraintNarrative";
+import { DriverChart, chartSource } from "./driverCharts";
 
 /* ---------- how the section is laid out ----------
    The problem this picks between: an ending carries several modules, each
@@ -341,37 +343,108 @@ function DiagSchematic({
 
 /* ---------- the modules: the section's actual skeleton ----------
    Each module reached from the picked ending becomes a block: the question
-   it helps answer, the level its data is read at, and a frame per data
-   point naming the signal to read off it. Modules are an overview of where
-   to look, not a verdict — nothing here says a module IS the constraint. */
+   it helps answer, the level its data is read at, and its data points.
+   Modules are an overview of where to look, not a verdict — nothing here
+   says a module IS the constraint.
 
-/** the data points of one module — the same frames in every layout, only
- *  the box around them changes (a grid that wraps, or a strip that scrolls) */
-function ModuleViews({ def, strip }: { def: ModuleDef; strip?: boolean }) {
+   A data point comes in two weights (Sept 2026). One the Growth Lab's
+   tools already have data for — the live tool's Drivers charts, the
+   Amenities Module's indicators — is a STEP: its chart, its name, and a
+   one-line placeholder for the copy that will read it. One the team's spec
+   lists and neither draws yet stays a named line under them, so what is
+   still to come is legible without taking a frame each. */
+
+/** a drawn data point: its chart over the data point's name and a
+ *  placeholder for the copy that will read it */
+function StepCard({ view, cityShort }: { view: ModuleView; cityShort: string }) {
+  /* real data where it has been pulled for this city — the tag then names
+     the source and the span that chart covers — a drawing where it has not */
+  const live = chartSource(view.chart!, cityShort);
   return (
-    <div className={"ba-views" + (strip ? " strip" : "")}>
-      {def.views.map((v) => (
-        <div className="ba-view" key={v.name}>
-          <span className="ba-view-name">{v.name}</span>
-          <span className="ba-view-ph">[data view — to come]</span>
-          {(v.signal || v.level) && (
-            <span className="ba-view-meta">
-              {v.signal && (
-                <span className="ba-view-signal">
-                  <b>Signal</b>
-                  {v.signal}
-                </span>
-              )}
-              {v.level && (
-                <span className="ba-level small">
-                  {DATA_LEVEL_LABEL[v.level]}
-                </span>
-              )}
-            </span>
-          )}
+    <figure className="ba-step">
+      <div className="ba-step-well">
+        <DriverChart kind={view.chart!} city={cityShort} />
+        {!live && <span className="ba-step-tag">Schematic</span>}
+      </div>
+      <figcaption>
+        <span className="ba-step-ask">{view.name}</span>
+        {(view.level || live) && (
+          <span className="ba-step-name">
+            {view.level && (
+              <span className="ba-level small">{DATA_LEVEL_LABEL[view.level]}</span>
+            )}
+            {live && <span className="ba-level small live">{live}</span>}
+          </span>
+        )}
+        {view.read && (
+          <p className="ba-step-read">
+            <span className="ph">{view.read}</span>
+          </p>
+        )}
+        {(view.signal || view.note) && (
+          <span className="ba-view-meta">
+            {view.signal && (
+              <span className="ba-view-signal">
+                <b>Signal</b>
+                {view.signal}
+              </span>
+            )}
+            {view.note && <span className="ph">{view.note}</span>}
+          </span>
+        )}
+      </figcaption>
+    </figure>
+  );
+}
+
+/** the data points of one module — the same in every layout, only the box
+ *  around the steps changes (a grid that wraps, or a strip that scrolls) */
+function ModuleViews({
+  def,
+  strip,
+  cityShort,
+}: {
+  def: ModuleDef;
+  strip?: boolean;
+  cityShort: string;
+}) {
+  const steps = def.views.filter((v) => v.chart);
+  const coming = def.views.filter((v) => !v.chart);
+  return (
+    <>
+      {steps.length > 0 && (
+        <div className={"ba-views" + (strip ? " strip" : "")}>
+          {steps.map((v) => (
+            <StepCard key={v.name} view={v} cityShort={cityShort} />
+          ))}
         </div>
-      ))}
-    </div>
+      )}
+      {coming.length > 0 && (
+        <div className="ba-coming">
+          <span className="ba-coming-k">
+            {steps.length ? "Also in this module · to come" : "Data points · to come"}
+          </span>
+          <ul>
+            {coming.map((v) => (
+              <li key={v.name}>
+                <span className="ba-view-name">{v.name}</span>
+                {v.signal && (
+                  <span className="ba-view-signal">
+                    <b>Signal</b>
+                    {v.signal}
+                  </span>
+                )}
+                {v.level && (
+                  <span className="ba-level small">
+                    {DATA_LEVEL_LABEL[v.level]}
+                  </span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -402,12 +475,14 @@ function ModuleQuestion({ def }: { def: ModuleDef }) {
 function ModuleBlock({
   def,
   color,
+  cityShort,
   onSeen,
   strip,
   id,
 }: {
   def: ModuleDef;
   color: string;
+  cityShort: string;
   /** reports the block entering view, for the rail's module list — the
    *  sandbox's copy of an ending has no rail, and passes none */
   onSeen?: (id: string, on: boolean) => void;
@@ -436,7 +511,7 @@ function ModuleBlock({
     <section className="ba-module" id={id} ref={ref}>
       <ModuleHead def={def} color={color} />
       <ModuleQuestion def={def} />
-      <ModuleViews def={def} strip={strip} />
+      <ModuleViews def={def} strip={strip} cityShort={cityShort} />
     </section>
   );
 }
@@ -446,11 +521,13 @@ function ModuleBlock({
 function ModuleTabs({
   modules,
   color,
+  cityShort,
   openId,
   onOpen,
 }: {
   modules: ModuleDef[];
   color: string;
+  cityShort: string;
   openId: string | null;
   onOpen: (id: string) => void;
 }) {
@@ -487,7 +564,7 @@ function ModuleTabs({
       {open && (
         <section className="ba-module open" id={`module-${open.id}`}>
           <ModuleQuestion def={open} />
-          <ModuleViews def={open} />
+          <ModuleViews def={open} cityShort={cityShort} />
         </section>
       )}
     </div>
@@ -500,11 +577,13 @@ function ModuleTabs({
 function ModuleStack({
   modules,
   color,
+  cityShort,
   openIds,
   onToggle,
 }: {
   modules: ModuleDef[];
   color: string;
+  cityShort: string;
   openIds: ReadonlySet<string>;
   onToggle: (id: string) => void;
 }) {
@@ -554,7 +633,7 @@ function ModuleStack({
                 </svg>
               </span>
             </button>
-            {open && <ModuleViews def={m} />}
+            {open && <ModuleViews def={m} cityShort={cityShort} />}
           </section>
         );
       })}
@@ -575,55 +654,90 @@ const orderModules = (modules: ModuleDef[]) => [
   ...modules.filter((m) => m.id === "complexity"),
 ];
 
-/** the opening line: the revision spec's overarching question for the
- *  shock, and the city's own read of it (a placeholder for now) */
+/** the opening line: the overarching question for the shock, and a
+ *  placeholder for the city's own read of it */
 function AnalysisLede({
   cityShort,
-  side,
+  path,
 }: {
   cityShort: string;
-  side: BranchSide;
+  path: string[];
 }) {
+  const side = sideOfPath(path);
   const spec = QUAD_BRANCH_SPEC[side];
+  const er = useMemo(() => endingRead(cityShort, path), [cityShort, path]);
   return (
     <p className="lede">
       {spec ? (
         <>
-          {spec.question}{" "}
-          <span className="ph">
-            [the {TREE_SIDE_LABEL[side]} read of {cityShort} — copy to come]
-          </span>
+          {spec.question} <span className="ph">{er.read}</span>
         </>
       ) : (
         <span className="ph">
-          [lead question for the {TREE_SIDE_LABEL[side]} analysis of {cityShort}
-          ]
+          [lead question for the {TREE_SIDE_LABEL[side]} analysis of {cityShort}]
         </span>
       )}
     </p>
   );
 }
 
-/** the two lines before the first module: how you landed here (the spec's
- *  fork line — a shock with no second layer, the positive demand shock, has
- *  none), and what a module is: an overview of where to look, not a verdict
- *  on any of them */
-function AnalysisLead({ side, count }: { side: BranchSide; count: number }) {
-  const spec = QUAD_BRANCH_SPEC[side];
+/** the lines before the first module, as a short ledger: how you landed
+ *  here (the second fork — a shock with no second layer, the positive demand
+ *  shock, has none), where that leads, and what a module is. Each is a
+ *  placeholder naming what its copy will cover. */
+function AnalysisLead({
+  cityShort,
+  path,
+  count,
+  onDetour,
+}: {
+  cityShort: string;
+  path: string[];
+  count: number;
+  /** walk the subtle path's second exit — absent where the ending is only
+   *  being read (the sandbox), not navigated */
+  onDetour?: (path: string[]) => void;
+}) {
+  const er = useMemo(() => endingRead(cityShort, path), [cityShort, path]);
   return (
     <div className="ba-lead">
-      {spec?.forkLine && (
-        <p className="ba-forkline">
-          <span className="ph">[how you landed here: {spec.forkLine}]</span>
-        </p>
+      {er.landed && (
+        <div className="ba-lead-row">
+          <span className="ba-lead-k">
+            {er.diagnosed ? "How you landed here" : "The second fork"}
+          </span>
+          <p className="ba-forkline">
+            <span className="ph">{er.landed}</span>
+          </p>
+        </div>
       )}
-      <p className="ba-forkline">
-        <span className="ph">
-          {count
-            ? `[${countModules(count)} to look into on this branch — an overview of where to look, not a verdict: none of them says the module is definitively the problem]`
-            : "[no modules on this landing yet]"}
-        </span>
-      </p>
+      {er.leads && (
+        <div className="ba-lead-row">
+          <span className="ba-lead-k">Where that leads</span>
+          <p className="ba-forkline">
+            <span className="ph">{er.leads}</span>
+            {er.detour && onDetour && (
+              <button
+                type="button"
+                className="ba-detour"
+                onClick={() => onDetour(er.detour!.path)}
+              >
+                {er.detour.label} →
+              </button>
+            )}
+          </p>
+        </div>
+      )}
+      <div className="ba-lead-row">
+        <span className="ba-lead-k">Modules</span>
+        <p className="ba-forkline">
+          <span className="ph">
+            {count
+              ? `[placeholder: ${countModules(count)} on this branch. where to look, not a verdict]`
+              : "[no modules on this landing yet]"}
+          </span>
+        </p>
+      </div>
     </div>
   );
 }
@@ -646,11 +760,16 @@ export function EndingAnalysis({
   const ordered = useMemo(() => orderModules(pathModules(path)), [path]);
   return (
     <>
-      <AnalysisLede cityShort={cityShort} side={side} />
+      <AnalysisLede cityShort={cityShort} path={path} />
       <div className="ba-modules">
-        <AnalysisLead side={side} count={ordered.length} />
+        <AnalysisLead cityShort={cityShort} path={path} count={ordered.length} />
         {ordered.map((m) => (
-          <ModuleBlock key={m.id} def={m} color={TREE_SIDE_COLOR[side]} />
+          <ModuleBlock
+            key={m.id}
+            def={m}
+            color={TREE_SIDE_COLOR[side]}
+            cityShort={cityShort}
+          />
         ))}
       </div>
     </>
@@ -834,18 +953,24 @@ export function BranchAnalysisPage({
           </div>
         )}
       </div>
-      {/* the spec's overarching question leads the section; the city's own
-          read of it stays a placeholder */}
-      <AnalysisLede cityShort={cityShort} side={side} />
+      {/* the overarching question leads the section, then the city's own
+          read of it — the live tool's first diagnosis card */}
+      <AnalysisLede cityShort={cityShort} path={branchPath} />
 
       <div className="ba-body">
         {modulesOn ? (
           <div className="ba-modules">
-            <AnalysisLead side={side} count={modules.length} />
+            <AnalysisLead
+              cityShort={cityShort}
+              path={branchPath}
+              count={modules.length}
+              onDetour={onSelectBranch}
+            />
             {layout === "tabs" ? (
               <ModuleTabs
                 modules={ordered}
                 color={TREE_SIDE_COLOR[side]}
+                cityShort={cityShort}
                 openId={openTab}
                 onOpen={setOpenTab}
               />
@@ -853,6 +978,7 @@ export function BranchAnalysisPage({
               <ModuleStack
                 modules={ordered}
                 color={TREE_SIDE_COLOR[side]}
+                cityShort={cityShort}
                 openIds={openRows}
                 onToggle={toggleRow}
               />
@@ -862,6 +988,7 @@ export function BranchAnalysisPage({
                   key={m.id}
                   def={m}
                   color={TREE_SIDE_COLOR[side]}
+                  cityShort={cityShort}
                   onSeen={onSeen}
                   strip={layout === "strip"}
                   id={`module-${m.id}`}

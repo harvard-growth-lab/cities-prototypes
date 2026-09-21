@@ -298,7 +298,8 @@ const THREE: WalkShape = {
      less than its population did — is the third branch's.
      NB this is a READING of the plane, not a test the tree runs: diagnose()
      still forks two ways, so nothing can be diagnosed INTO the third wedge.
-     All four sample cities land in the sector their diagnosis argues for, so
+     The sample cities it was tuned on (four, until Sept 2026; Boston since)
+     all landed in the sector their diagnosis argues for, so
      the chart and the tree agree today; a city landing in the wedge would
      see it marked "yours" while the tree walked demand or supply. */
   planeCopy: {
@@ -512,21 +513,23 @@ const QUAD: WalkShape = {
   ],
 };
 
-/* The four-quadrant tree, FORKED — the revision spec drawn in full: the root
-   forks into the four shocks, and each shock forks once more with its own
-   instrument (QUAD_BRANCH_SPEC in figures.ts carries the overarching
-   questions; the analysis section carries the modules). The positive demand
-   shock has no second layer (team revision, Sept 2026) — its head is the
-   ending — so seven endings share the band the two-branch tree's four use,
-   and the cards run narrow — 12px leaf type, pairs 6px apart inside a
-   branch, ~8px between branches. Bracketed labels mark what the spec left
-   open: the exact reading of each remaining instrument. */
+/* The four-quadrant tree, FORKED: the root forks into the four shocks (the
+   team's revision spec, Sept 2026), and each shock forks once more the way
+   the live tool's tree does (cities-tool, DiagnosisTree.tsx) — by FAMILY: a
+   demand shock asks whether the shortfall is the metro's or the place's own,
+   read off the metro's population growth; a supply shock asks whether the
+   wall is price or appeal, read off home-value growth. QUAD_BRANCH_SPEC in
+   figures.ts carries the overarching questions; the analysis section
+   carries the modules. The positive demand shock has no second layer (team
+   revision, Sept 2026) — its head is the ending — so seven endings share
+   the band the two-branch tree's four use, and the cards run narrow — 12px
+   leaf type, pairs 6px apart inside a branch, ~8px between branches. */
 const QUAD2: WalkShape = {
   id: "quad2",
   label: "Four quadrants · forked",
   hint: "Three quadrants ask one more question — seven diagnoses",
   about:
-    "The revision spec in full: the root forks into the four quadrant shocks, and every shock but the positive demand one forks once more with its own instrument — seven endings",
+    "The root forks into the four quadrant shocks, and every shock but the positive demand one forks once more the way the live tool does — a demand shock on the metro's population growth, a supply shock on price growth — seven endings",
   variant: "quad2",
   rootQuestion: "population × wages — which quadrant?",
   rootX: 384,
@@ -560,8 +563,8 @@ const QUAD2: WalkShape = {
       edge: "people ↑ · pay ↓",
       x: 293,
       question: (n) => [
-        "housing prices above the",
-        `median admin (${n.medCost})?`,
+        "home values rising faster",
+        `than the median (${n.medCost})?`,
       ],
       leaves: [
         {
@@ -585,19 +588,22 @@ const QUAD2: WalkShape = {
       title: "Leak",
       edge: "people ↓ · pay ↓",
       x: 475,
-      question: () => ["local or regional?", "(MSA pop × wage chart)"],
+      question: (n) => [
+        "is the metro's population growth",
+        `below the median (${n.medPop})?`,
+      ],
       leaves: [
         {
           id: "dn-regional",
-          lines: ["Regional", "(MSA)"],
-          edge: "MSA weak too",
+          lines: ["MSA-wide"],
+          edge: "yes — the metro lags",
           x: 430,
           w: 84,
         },
         {
           id: "dn-local",
-          lines: ["Local", "(admin)"],
-          edge: "MSA healthy",
+          lines: ["Admin-", "specific"],
+          edge: "no — the metro grows",
           x: 520,
           w: 84,
         },
@@ -609,8 +615,8 @@ const QUAD2: WalkShape = {
       edge: "people ↓ · pay ↑",
       x: 657,
       question: (n) => [
-        "housing prices above the",
-        `median admin (${n.medCost})?`,
+        "home values rising faster",
+        `than the median (${n.medCost})?`,
       ],
       leaves: [
         {

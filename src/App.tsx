@@ -13,6 +13,14 @@ import { initLegacy } from "./legacy";
 import type { LegacyApi } from "./legacy/bridge";
 import { ConstraintsSection } from "./components/ConstraintsSection";
 import { ExplainersContent } from "./components/ExplainersContent";
+import { SiteLayer } from "./site/SiteLayer";
+import { beginSite, mountSite, siteHooks, spyPage, type SiteSlots } from "./site/runtime";
+import { readSiteVariant } from "./site/variants";
+
+/* the site-level layout variant under study (?site=, src/site/variants.ts):
+   read once, and told to the stylesheet before v-3's page boots */
+const SITE_VARIANT = readSiteVariant();
+beginSite(SITE_VARIANT);
 
 /* ---------- URL hash routing ----------
    v-3's page owns navigation (landing <-> tool, the section switch, the
@@ -85,6 +93,10 @@ export default function App() {
   const [currentPageId, setCurrentPageId] = useState<string | null>(null);
   /* the hash effects wait for v-3 to be booted */
   const [ready, setReady] = useState(false);
+  /* the section v-3's switch is on, and the elements the site-level layout
+     variants add to its markup (src/site/runtime.ts) */
+  const [section, setSection] = useState(0);
+  const [siteSlots, setSiteSlots] = useState<SiteSlots | null>(null);
 
   /* The scroll spy rewrites the hash on every section that drifts past, so
      the hash effect REPLACES by default — pushing there would bury the real
@@ -124,7 +136,12 @@ export default function App() {
     if (!slots) return;
     const api = initLegacy({
       onCity: setCity,
-      onPage: setCurrentPageId,
+      onPage: (id) => {
+        setCurrentPageId(id);
+        /* in a layout that keeps several sections in one scroll, the page
+           in view is also what moves the tabs */
+        spyPage(id);
+      },
       onExplainers: (open) => {
         pushNext();
         setExplainersOpen(open);
@@ -132,8 +149,10 @@ export default function App() {
            which otherwise stays mounted and reappears the next time */
         if (!open) setOpenExplainer(null);
       },
+      ...siteHooks(setSection),
     });
     legacy.current = api;
+    setSiteSlots(mountSite(api));
     /* the landing's state is a class v-3 toggles; watch it rather than ask */
     const landing = document.getElementById("landing");
     const watch = landing
@@ -246,6 +265,16 @@ export default function App() {
           />,
           slots.explainers,
         )}
+
+      {ready && siteSlots && legacy.current && (
+        <SiteLayer
+          api={legacy.current}
+          variant={SITE_VARIANT}
+          slots={siteSlots}
+          section={section}
+          inTool={landingHidden}
+        />
+      )}
     </>
   );
 }

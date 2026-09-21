@@ -27,9 +27,9 @@ changing lineage, and the names here were kept so nothing had to be rewired.
 
 | file | what | how it changed |
 | --- | --- | --- |
-| `html/body.html` | main's `<body>` | Constraints Diagnosis' markup replaced by the slot `#constraints-slot`; the (hidden) rail lists this branch's constraints steps; the explainers view emptied for React; the Explainers button restored to the masthead (main kept its styles and its toggle, but dropped the button); the two city pickers list this branch's four sample cities; asset and iframe paths under `legacy/` |
+| `html/body.html` | main's `<body>` | Constraints Diagnosis' markup replaced by the slot `#constraints-slot`; the (hidden) rail lists this branch's constraints steps; the explainers view emptied for React; the Explainers button restored to the masthead (main kept its styles and its toggle, but dropped the button); the two city pickers list this branch's cities (Boston only, since Sept 2026); asset and iframe paths under `legacy/` |
 | `v3.css` | main's `<style>` | verbatim, but the landing image comes through `--map-asset` (a bundled import) |
-| `v3-page.js` | the two inline scripts, in order, as one `initPage()` | every edit is a `PAGE_PATCHES` entry in the script and marked `[port]` in the output: the constraints ids in `pageIds` / `sectionDefs` / the section switch; three calls that tell React about the city, the page in view and the Explainers tab; verdicts for the new sample cities in the landing teaser; the rail highlight resolving scrolly steps; init that main ran on `load` / `DOMContentLoaded` running immediately; the exports at the end; and the **phone section menu** — a button naming the current section and a menu of the five, built beside the tab strip and rendered by `showSection` (Sept 17; the CSS is in `port.css`). (The other small-screen patches of Sept 15–16 are gone: main's page now does all of that itself.) |
+| `v3-page.js` | the two inline scripts, in order, as one `initPage()` | the module's preamble sets `window.d3 = d3` — main loads d3 as a `<script src>` global, and `initPlacesInMetro` is the one place in the file that reaches for it off `window`, so with it unset the places table in "Explore the admins in your metro", its picker and the metro's cells on the map all stay empty, silently and with no error (Leaflet's UMD build assigns `window.L` on import; d3's ESM build does not). Every other edit is a `PAGE_PATCHES` entry in the script and marked `[port]` in the output: the constraints ids in `pageIds` / `sectionDefs` / the section switch; three calls that tell React about the city, the page in view and the Explainers tab; the rail highlight resolving scrolly steps; init that main ran on `load` / `DOMContentLoaded` running immediately; the exports at the end; and the **phone section menu** — a button naming the current section and a menu of the five, built beside the tab strip and rendered by `showSection` (Sept 17; the CSS is in `port.css`). (The other small-screen patches of Sept 15–16 are gone: main's page now does all of that itself.) |
 | `treemap.js` | the Metro Industries / Extras charts | the IIFE returns its `init()` instead of running it on `DOMContentLoaded` |
 | `xch_geo.js` | the metro's boundaries | verbatim |
 | `assets/`, `public/legacy/` | the landing image, the logo, the framed all-metros page | verbatim |
@@ -50,14 +50,37 @@ React pieces into their slots, then runs `initLegacy()` once.
 - Hash routing (deep links, the Back button) is this branch's, layered over
   main's navigation; main's page itself has none.
 
+## The site-level layout variants
+
+`src/site/` studies how the tool's two halves are organised (`?site=`; the
+repo README has the table). It needs four things of main's section switch,
+each a `[port]` patch that **asks** `window.__cities` and falls back to
+main's behaviour when nothing answers — so the default page is main's:
+
+- `sectionHidden(k, i)` — which sections stay up with section `i` (one
+  scroll keeps the storyline up; the modes keep the profile up);
+- `sectionScroll(i)` — aim at a section's start instead of the page's top;
+- `closesInline` — the closes (quiz + insight) sit under their sections,
+  so the pager stops rendering and wiring "the" close, and `wireSecClose`
+  finds a close by the id it already carries (`check-<slug>`) rather than
+  by class, since there is more than one;
+- `onSection(i)` — the section the switch landed on.
+
+`initPage()` also returns `showSection`, `renderSecClose` and
+`wireSecClose` for them. Everything else the variants do is outside the
+generated files: a slot before `#constraints-slot`, the closes, two slots
+in `.secbar`, and `src/styles/site.css` keyed on `html[data-site]`.
+
 ## Not main's
 
 - The **Explainers** content and its masthead (`ExplainersContent.tsx`):
   main's masthead scrolls away inside the pages, so the explainers view
   carries its own copy. The gallery and the two explainers are this branch's.
-- The **city list** is this branch's four (the ones the diagnostic tree has
-  data for); main's sections carry Boston's figures whichever city is
-  picked, as they do on main.
+- The **city list** is this branch's: Boston only (since Sept 2026 — the one
+  city the diagnostic tree, the Drivers charts and the Amenities Module all
+  have real data for; there were four sample cities until then). Main's
+  sections carry Boston's figures whichever city is picked anyway, as they
+  do on main.
 - `port.css`: three shell rules — the wrapper has no box, a deep link enters
   without the landing's slide, and the constraints stage sticks under main's
   section bar at the height main publishes as `--chrome-h` — and the

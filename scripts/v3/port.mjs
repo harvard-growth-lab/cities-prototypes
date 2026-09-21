@@ -152,15 +152,14 @@ body = subOnce(body,
         '        <nav class="toolbar-links">'),
   "masthead: explainers button");
 
-/* the city list is this branch's: the four sample cities the diagnostic tree
-   has data for (Boston stays the opening one) */
+/* the city list is this branch's: the cities the diagnostic tree has data for
+   (src/data/content.ts) — Boston only since Sept 2026; there were four sample
+   cities until then. Main's own list (Boston and four more) names cities
+   nothing here can diagnose. */
 const CITY_OPTIONS = /( *)<option>Boston, United States of America<\/option>\n(?: *<option>[^<\n]*<\/option>\n){4}/g;
 const optionMatches = body.match(CITY_OPTIONS);
 if (!optionMatches || optionMatches.length !== 2) throw new Error(`city selects: expected 2 option lists, found ${optionMatches?.length ?? 0}`);
 body = body.replace(CITY_OPTIONS, (m, indent) => [
-  "Memphis, United States of America",
-  "San Antonio, United States of America",
-  "San Jose, United States of America",
   "Boston, United States of America",
 ].map((c) => `${indent}<option${c.startsWith("Boston") ? " selected" : ""}>${c}</option>`).join("\n") + "\n");
 
@@ -253,10 +252,11 @@ const PAGE_PATCHES = [
     "      const el=document.getElementById(li.dataset.step);\n      if(!el) return;\n      const r=el.getBoundingClientRect();\n      if(r.top<=mid && r.bottom>=mid && r.height<bestHeight){",
     "      const el=(window.ovStepFor && window.ovStepFor(li.dataset.step)) ||\n        (window.ctStepFor && window.ctStepFor(li.dataset.step)) || document.getElementById(li.dataset.step);   /* [port] */\n      if(!el) return;\n      const r=el.getBoundingClientRect();\n      if(r.top<=mid && r.bottom>=mid && r.height<bestHeight){"],
 
-  /* the sample journey state names a city the picker no longer offers */
+  /* the sample journey state names a city the picker no longer offers, and
+     with Boston the only city there is no second one to name */
   ["sub", "sample explored cities",
     '  exploredCities.add("Chicago, United States of America");',
-    '  exploredCities.add("Memphis, United States of America");   /* [port] */'],
+    '  /* [port] main seeds a second explored city here (Chicago); this branch carries Boston only */'],
 
   ["sub", "inview observer guard",
     "  pageIds.forEach(id=>observer.observe(document.getElementById(id)));",
@@ -289,16 +289,9 @@ const PAGE_PATCHES = [
           "  }",
           "  /* scrolling down on the landing flows into City Overview */")],
 
-  /* the landing teaser needs a verdict per city; the three new sample cities
-     take theirs from this branch's place data (src/data/metros.ts, the
-     2017–2022 window the tree reads) */
-  ["sub", "city hints for the sample cities",
-    '    "Boston, United States of America":  { dir:"up",   rate: 0.3, pay: 5.1, word:"growing slowly", head:"<strong>Boston is growing slowly</strong>" },',
-    lines('    "Boston, United States of America":  { dir:"up",   rate: 0.3, pay: 5.1, word:"growing slowly", head:"<strong>Boston is growing slowly</strong>" },',
-          '    /* [port] this branch\'s sample cities, from src/data/metros.ts (places, 2017–2022) */',
-          '    "Memphis, United States of America":     { dir:"down", rate:-1.0, pay: 4.3, word:"shrinking", head:"<strong>Memphis is shrinking</strong>" },',
-          '    "San Antonio, United States of America": { dir:"down", rate:-0.5, pay: 4.4, word:"shrinking", head:"<strong>San Antonio is shrinking</strong>" },',
-          '    "San Jose, United States of America":    { dir:"down", rate:-1.1, pay: 7.4, word:"shrinking", head:"<strong>San Jose is shrinking</strong>" },')],
+  /* (the landing teaser needs a verdict per city. Main's own table covers
+     Boston, the only city here since Sept 2026; the patch that added
+     Memphis, San Antonio and San Jose went with them.) */
 
   ["sub", "intro skip button init runs now",
     lines('  document.addEventListener("DOMContentLoaded", ()=>{',
@@ -393,6 +386,64 @@ const PAGE_PATCHES = [
           "    });",
           "    renderSecMenu(i);   /* [port] the phone's section menu, beside the tabs */",
           "    /* below 1200 the chip row is a filmstrip: bring the section you are")],
+
+  /* ---- site-level layout variants (2026-09-21; src/site/) ----
+     A study of how the tool's two halves — the three sections that describe
+     the city, and the two that diagnose it and act — are organised and how
+     the reader crosses from one to the other. Main's switch shows one
+     section at a time and scrolls to its top; the variants need it to be
+     able to keep several sections up at once (one scroll), to aim at a
+     section's start instead of the page's, to close each section in place
+     rather than in the one pager, and to say which section it is on. Each
+     of those is a question the switch asks of window.__cities, and every
+     one falls back to main's behaviour when nothing answers — so with no
+     variant chosen the page is main's, exactly. */
+  ["sub", "site variants: what the switch asks of React",
+    "  function showSection(i, toTop){",
+    lines("  /* [port] the site-level layout variants (src/site/): which sections stay up",
+          "     with section i, whether the closes sit in the page rather than the pager,",
+          "     and where a switch scrolls to. Unanswered, each is main's own behaviour. */",
+          "  const siteHook = name => window.__cities && window.__cities[name];",
+          "  const secHidden = (k, i) => siteHook(\"sectionHidden\") ? window.__cities.sectionHidden(k, i) : k !== i;",
+          "  function showSection(i, toTop){")],
+  ["sub", "site variants: which sections stay up",
+    "      sec.els.forEach(el => el.classList.toggle(\"sec-off\", k !== i)));",
+    "      sec.els.forEach(el => el.classList.toggle(\"sec-off\", secHidden(k, i))));   /* [port] */"],
+  ["sub", "site variants: the pager's close stands down when closes are inline",
+    "      renderSecClose(SECTIONS[i].name) +",
+    "      (siteHook(\"closesInline\") ? \"\" : renderSecClose(SECTIONS[i].name)) +   /* [port] */"],
+  ["sub", "site variants: the pager's close is not wired when closes are inline",
+    "    wireSecClose(SECTIONS[i].name);",
+    "    if(!siteHook(\"closesInline\")) wireSecClose(SECTIONS[i].name);   /* [port] */"],
+  ["sub", "site variants: where a switch scrolls to, and the section it landed on",
+    lines("    if(toTop !== false) pagesEl.scrollTo({top: 0, behavior: \"instant\"});",
+          "    // Leaflet measures a hidden container as 0x0; the existing resize handler",
+          "    // re-measures the map and re-runs the scroll zoom.",
+          "    window.dispatchEvent(new Event(\"resize\"));"),
+    lines("    /* [port] a variant that keeps several sections up aims at this one's start */",
+          "    if(toTop !== false && !(siteHook(\"sectionScroll\") && window.__cities.sectionScroll(i)))",
+          "      pagesEl.scrollTo({top: 0, behavior: \"instant\"});",
+          "    // Leaflet measures a hidden container as 0x0; the existing resize handler",
+          "    // re-measures the map and re-runs the scroll zoom.",
+          "    window.dispatchEvent(new Event(\"resize\"));",
+          "    if(siteHook(\"onSection\")) window.__cities.onSection(i);   /* [port] */")],
+  /* main finds "the" close with a class lookup, which holds while the pager
+     carries the only one; with a close under every section each is found
+     through the id it already carries (check-<slug>) */
+  ["sub", "site variants: a close is found by its own id",
+    "  function wireSecClose(name){",
+    lines("  /* [port] one close per section in the one-scroll layouts: found by the id it carries */",
+          "  function secCloseRoot(c){",
+          "    const t = c && document.getElementById(\"check-\" + c.slug);",
+          "    return t ? t.closest(\".sec-close\") : null;",
+          "  }",
+          "  function wireSecClose(name){")],
+  ["sub", "site variants: wiring reads that close",
+    "    const root = document.querySelector(\".sec-close\");",
+    "    const root = secCloseRoot(c);   /* [port] */"],
+  ["sub", "site variants: a re-render replaces that close",
+    "      const cur = document.querySelector(\".sec-close\");",
+    "      const cur = secCloseRoot(c);   /* [port] */"],
 ];
 
 /* the same, for the second inline script (the section scrollies); empty
@@ -420,6 +471,14 @@ const pageModule = lines(
   'import * as d3 from "d3";',
   'import * as L from "leaflet";',
   "",
+  "/* [port] main's page loads d3 and Leaflet as <script src> globals, so its own",
+  "   code is free to reach either off window — and in one place it does:",
+  "   initPlacesInMetro guards on `window.d3`, so with it unset the places table,",
+  "   its picker and the metro's cells on the map all stay empty, silently and with",
+  "   no error. Leaflet's UMD build assigns itself on import; d3's ESM build does",
+  "   not, so the port restores the global main's script runs against. */",
+  "window.d3 = d3;",
+  "",
   "/* [port] both inline scripts, in order, in one function scope: they shared the",
   "   page's global scope on main, and the second reads the first's declarations */",
   "export function initPage(){",
@@ -443,7 +502,9 @@ const pageModule = lines(
   "    lockSlider, lockDot, twPick, twBack, twReset, openGeoMap, closeGeoMap, closeJourney,",
   "    journeyGoTo, downloadInsights, sendChat, closeChat, downloadChatCsv,",
   "    submitPracticeOverview, submitPractice, shareViz });",
-  "  return { syncCity, goTo, enterTool, backToLanding, toggleExplainers, openJourney, markPage, sectionDefs };",
+  "  return { syncCity, goTo, enterTool, backToLanding, toggleExplainers, openJourney, markPage, sectionDefs,",
+  "    /* the site-level layout variants (src/site/) drive the switch and place the closes */",
+  "    showSection, renderSecClose, wireSecClose };",
   "}",
   "",
 );

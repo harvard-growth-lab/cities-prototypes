@@ -5,6 +5,14 @@
 import * as d3 from "d3";
 import * as L from "leaflet";
 
+/* [port] main's page loads d3 and Leaflet as <script src> globals, so its own
+   code is free to reach either off window — and in one place it does:
+   initPlacesInMetro guards on `window.d3`, so with it unset the places table,
+   its picker and the metro's cells on the map all stay empty, silently and with
+   no error. Leaflet's UMD build assigns itself on import; d3's ESM build does
+   not, so the port restores the global main's script runs against. */
+window.d3 = d3;
+
 /* [port] both inline scripts, in order, in one function scope: they shared the
    page's global scope on main, and the second reads the first's declarations */
 export function initPage(){
@@ -124,7 +132,7 @@ export function initPage(){
   /* ---- sample state for the prototype: Boston + Chicago explored,
          sections 1 & 2 completed, Metro Industries in progress ---- */
   exploredCities.add("Boston, United States of America");
-  exploredCities.add("Memphis, United States of America");   /* [port] */
+  /* [port] main seeds a second explored city here (Chicago); this branch carries Boston only */
   ["page-overview","page-overview-msa",
    "page-export-basket"].forEach(p=>visitedPages.add(p));
   savedInsights.push({
@@ -1935,14 +1943,19 @@ export function initPage(){
       "</div>";
   }
 
+  /* [port] one close per section in the one-scroll layouts: found by the id it carries */
+  function secCloseRoot(c){
+    const t = c && document.getElementById("check-" + c.slug);
+    return t ? t.closest(".sec-close") : null;
+  }
   function wireSecClose(name){
     if (!CHECK_READY) return;
     const c = sectionChecksData()[name];
-    const root = document.querySelector(".sec-close");
+    const root = secCloseRoot(c);   /* [port] */
     if (!c || !root) return;
     const st = checkStateFor(name);
     const rerender = () => {
-      const cur = document.querySelector(".sec-close");
+      const cur = secCloseRoot(c);   /* [port] */
       if (!cur) return;
       const holder = document.createElement("div");
       holder.innerHTML = renderSecClose(name);
@@ -2143,11 +2156,16 @@ export function initPage(){
 
   const sectionIndexOf = id => sectionDefs.findIndex(sd => sd.pages.includes(id));
 
+  /* [port] the site-level layout variants (src/site/): which sections stay up
+     with section i, whether the closes sit in the page rather than the pager,
+     and where a switch scrolls to. Unanswered, each is main's own behaviour. */
+  const siteHook = name => window.__cities && window.__cities[name];
+  const secHidden = (k, i) => siteHook("sectionHidden") ? window.__cities.sectionHidden(k, i) : k !== i;
   function showSection(i, toTop){
     if(i < 0 || i >= SECTIONS.length || i === activeSec) return;
     activeSec = i;
     SECTIONS.forEach((sec, k) =>
-      sec.els.forEach(el => el.classList.toggle("sec-off", k !== i)));
+      sec.els.forEach(el => el.classList.toggle("sec-off", secHidden(k, i))));   /* [port] */
     [...secNavEl.children].forEach((b, k) => {
       b.classList.toggle("is-active", k === i);
       /* the sections behind the reader wear a check in place of their number */
@@ -2187,7 +2205,7 @@ export function initPage(){
     ).join("");
     secPager.dataset.sec = i;
     secPager.innerHTML =
-      renderSecClose(SECTIONS[i].name) +
+      (siteHook("closesInline") ? "" : renderSecClose(SECTIONS[i].name)) +   /* [port] */
       '<div class="pager-row">' +
       '<span class="pgr-side">' +
       (prev ? '<button type="button" class="pager-btn" data-go="' + (i-1) +
@@ -2201,11 +2219,14 @@ export function initPage(){
       (next ? '<button type="button" class="pager-btn" data-go="' + (i+1) +
               '">' + next.name + " &rarr;</button>" : "") + '</span>' +
       '</div>';
-    wireSecClose(SECTIONS[i].name);
-    if(toTop !== false) pagesEl.scrollTo({top: 0, behavior: "instant"});
+    if(!siteHook("closesInline")) wireSecClose(SECTIONS[i].name);   /* [port] */
+    /* [port] a variant that keeps several sections up aims at this one's start */
+    if(toTop !== false && !(siteHook("sectionScroll") && window.__cities.sectionScroll(i)))
+      pagesEl.scrollTo({top: 0, behavior: "instant"});
     // Leaflet measures a hidden container as 0x0; the existing resize handler
     // re-measures the map and re-runs the scroll zoom.
     window.dispatchEvent(new Event("resize"));
+    if(siteHook("onSection")) window.__cities.onSection(i);   /* [port] */
   }
 
   sectionDefs.forEach((sd, i) => {
@@ -2321,10 +2342,6 @@ export function initPage(){
      the rest are illustrative like the rest of the prototype. */
   const CITY_HINTS = {
     "Boston, United States of America":  { dir:"up",   rate: 0.3, pay: 5.1, word:"growing slowly", head:"<strong>Boston is growing slowly</strong>" },
-    /* [port] this branch's sample cities, from src/data/metros.ts (places, 2017–2022) */
-    "Memphis, United States of America":     { dir:"down", rate:-1.0, pay: 4.3, word:"shrinking", head:"<strong>Memphis is shrinking</strong>" },
-    "San Antonio, United States of America": { dir:"down", rate:-0.5, pay: 4.4, word:"shrinking", head:"<strong>San Antonio is shrinking</strong>" },
-    "San Jose, United States of America":    { dir:"down", rate:-1.1, pay: 7.4, word:"shrinking", head:"<strong>San Jose is shrinking</strong>" },
     "Chicago, United States of America": { dir:"up",   rate: 0.6, pay: 5.1, word:"growing",     head:"<strong>Chicago is growing</strong>" },
     "Detroit, United States of America": { dir:"up",   rate: 0.9, pay: 4.4, word:"growing",     head:"<strong>Detroit is growing</strong>" },
     "Bogot\u00e1, Colombia":            { dir:"up",   rate: 1.2, pay: 2.9, word:"growing",     head:"<strong>Bogot\u00e1 is growing</strong>" },
@@ -4493,5 +4510,7 @@ export function initPage(){
     lockSlider, lockDot, twPick, twBack, twReset, openGeoMap, closeGeoMap, closeJourney,
     journeyGoTo, downloadInsights, sendChat, closeChat, downloadChatCsv,
     submitPracticeOverview, submitPractice, shareViz });
-  return { syncCity, goTo, enterTool, backToLanding, toggleExplainers, openJourney, markPage, sectionDefs };
+  return { syncCity, goTo, enterTool, backToLanding, toggleExplainers, openJourney, markPage, sectionDefs,
+    /* the site-level layout variants (src/site/) drive the switch and place the closes */
+    showSection, renderSecClose, wireSecClose };
 }

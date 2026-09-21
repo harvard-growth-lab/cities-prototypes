@@ -989,7 +989,11 @@ function ModuleRow({
           <ul className="ts-views">
             {def.views.map((v) => (
               <li key={v.name}>
-                <span className="ts-viewname">{v.name}</span>
+                <span className="ts-viewname">
+                  {v.name}
+                  {/* the live tool's Drivers section already draws the rest */}
+                  {!v.chart && <span className="ts-tocome">to come</span>}
+                </span>
                 {(v.signal || v.level) && (
                   <span className="ts-viewmeta">
                     {v.signal && (

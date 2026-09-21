@@ -8,6 +8,7 @@ import "./legacy/v3.css";
 import "./styles/figures.css";
 import "./styles/explainers.css";
 import "./legacy/port.css";
+import "./styles/site.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

@@ -2041,8 +2041,9 @@ html[data-jz-instant="1"] .nv-svg {
 .ba-row-chev.open {
   transform: rotate(180deg);
 }
-.ba-row .ba-views {
-  margin: 0 16px;
+.ba-row .ba-views,
+.ba-row .ba-coming {
+  margin: 0 16px 14px;
 }
 
 /* ----- sideways data points: a module stays about a screen tall ----- */
@@ -2053,8 +2054,8 @@ html[data-jz-instant="1"] .nv-svg {
   scroll-snap-type: x proximity;
   padding-bottom: 10px;
 }
-.ba-views.strip > .ba-view {
-  flex: 0 0 clamp(236px, 24vw, 320px);
+.ba-views.strip > .ba-step {
+  flex: 0 0 clamp(280px, 26vw, 340px);
   scroll-snap-align: start;
 }
 
@@ -2069,12 +2070,42 @@ html[data-jz-instant="1"] .nv-svg {
   flex-direction: column;
   gap: 30px;
 }
-/* the two lines before the first module — how you landed here, and what a
-   module is — sit close, and the flex gap spaces them from the blocks */
+/* the lines before the first module — how you landed here, where that
+   leads, and what a module is — read as a short ledger: a quiet label, then
+   the line. The flex gap spaces them from the blocks. */
 .ba-lead {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+  max-width: 920px;
+  padding: 14px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.ba-lead-row {
+  display: grid;
+  grid-template-columns: 156px minmax(0, 1fr);
+  gap: 16px;
+  align-items: baseline;
+}
+.ba-lead-k {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+/* the subtle path's second exit */
+.ba-detour {
+  margin-left: 8px;
+  font: inherit;
+  font-weight: 700;
+  color: var(--teal-dark, #1c454d);
+  background: none;
+  border: 0;
+  border-bottom: 1px solid currentColor;
+  padding: 0;
+  cursor: pointer;
 }
 .ba-module {
   scroll-margin-top: 20px;
@@ -2123,47 +2154,253 @@ html[data-jz-instant="1"] .nv-svg {
   font-size: 15px;
   line-height: 23px;
 }
-/* one frame per data point — two to a row beside the context card, so a
-   six-point module stays on one screen */
+/* ----- a module's data points -----
+   Two weights. A STEP is a data point the live tool already draws: a white
+   card, the chart's schematic in a well on top, its question and reading
+   under it — the same framed-figure grammar as the rest of the section. A
+   data point still TO COME is a named line in a dashed list under the
+   steps, so it is legible without taking a frame. */
 .ba-views {
   margin-top: 14px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(204px, 1fr));
-  gap: 12px;
+  /* auto-fill, not auto-fit: two steps keep a step's width rather than
+     stretching across the page */
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
 }
-.ba-view {
-  min-height: 132px;
-  border: 1px dashed var(--border-strong);
-  border-radius: 10px;
-  background: #fff;
+.ba-step {
+  margin: 0;
   display: flex;
   flex-direction: column;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+/* every well keeps the same strip above its chart — the tag on the right,
+   the industry views' switch on the left — so a row of steps lines up */
+.ba-step-well {
+  position: relative;
+  padding: 32px 12px 4px;
+  border-bottom: 1px solid var(--border);
+  background: #fcfdfd;
+}
+/* every well is marked as a drawing of the chart, not the chart */
+.ba-step-tag {
+  position: absolute;
+  top: 11px;
+  right: 12px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  opacity: 0.7;
+  pointer-events: none;
+}
+/* a step drawing the live tool's own numbers says so, and on which window */
+.ba-level.live {
+  color: var(--teal-dark, #1c454d);
+  border-color: var(--teal, #255862);
+  background: var(--teal-tint, #eef3f4);
+}
+.ba-step figcaption {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 14px 16px 16px;
+}
+.ba-step-ask {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 22px;
+  color: var(--ink);
+}
+.ba-step-name {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 14px 16px;
-  text-align: center;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+.ba-step-read {
+  margin: 4px 0 2px;
+  font-size: 13.5px;
+  line-height: 20px;
+  color: var(--ink);
+}
+.ba-step-note {
+  font-style: italic;
+  color: var(--ink-soft);
+}
+/* the schematics (driverCharts.tsx) */
+.dc-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.dc-lab {
+  font-family: inherit;
+  font-size: 9.5px;
+  font-weight: 600;
+  fill: var(--ink-soft);
+}
+.dc-lab.dc-quiet {
+  font-weight: 500;
+  font-style: italic;
+  opacity: 0.85;
+}
+.dc-lab.dc-name {
+  font-size: 10.5px;
+  font-weight: 700;
+  fill: var(--ink);
+}
+.dc-lab.dc-tick {
+  font-size: 8.5px;
+  font-weight: 500;
+}
+.dc-lab.dc-tile {
+  font-size: 7.5px;
+  font-weight: 600;
+  fill: var(--ink);
+  pointer-events: none;
+}
+/* a label that may sit over a line (a series' end on its benchmark): the
+   well's own ground as a halo, so the line passes behind the word */
+.dc-lab.dc-halo {
+  paint-order: stroke;
+  stroke: #fcfdfd;
+  stroke-width: 3px;
+  stroke-linejoin: round;
+}
+.dc-lab.dc-ph {
+  font-style: italic;
+  font-weight: 500;
+}
+.dc-big {
+  font-family: inherit;
+  font-size: 26px;
+  font-weight: 700;
+  fill: var(--ink);
+}
+.dc-grid {
+  stroke: var(--border);
+  stroke-width: 1;
+}
+.dc-axis {
+  stroke: var(--border-strong);
+  stroke-width: 1;
+}
+.dc-zero {
+  stroke: var(--ink);
+  stroke-width: 1.1;
+  stroke-dasharray: 5 4;
+  opacity: 0.55;
+}
+.dc-link {
+  stroke: var(--ink-soft);
+  stroke-width: 1;
+  stroke-dasharray: 2 2;
+  opacity: 0.6;
+}
+.dc-break {
+  fill: none;
+  stroke: #fcfdfd;
+  stroke-width: 3;
+}
+.dc-stub {
+  fill: var(--border-strong);
+  opacity: 0.7;
+}
+.dc-burst {
+  stroke: var(--border-strong);
+  stroke-width: 0.8;
+  opacity: 0.7;
+}
+.dc-window {
+  fill: var(--teal-tint, #eef3f4);
+}
+/* the industry views' switch — three ways to read one decomposition */
+.dc-tabs {
+  position: absolute;
+  top: 5px;
+  left: 10px;
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: #fff;
+}
+.dc-tab {
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  background: none;
+  border: 0;
+  border-radius: 5px;
+  padding: 3px 8px;
+  cursor: pointer;
+}
+.dc-tab:hover {
+  color: var(--ink);
+}
+.dc-tab.on {
+  background: var(--teal-tint, #eef3f4);
+  color: var(--teal-dark, #1c454d);
+}
+/* still to come: named, not framed */
+.ba-coming {
+  margin-top: 14px;
+}
+.ba-coming-k {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.ba-coming ul {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(228px, 1fr));
+  gap: 8px;
+}
+.ba-coming li {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  padding: 9px 12px;
+  border: 1px dashed var(--border-strong);
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 17px;
   color: var(--ink-soft);
 }
 .ba-view-name {
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--ink);
-  line-height: 19px;
+  line-height: 18px;
 }
-.ba-view-ph {
-  font-style: italic;
-}
-/* the signal to read off the view, and — where it differs from the
+/* the signal to read off a data point, and — where it differs from the
    module's — the level its data is read at */
 .ba-view-meta {
-  margin-top: 4px;
+  margin-top: 2px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 5px;
+  align-items: flex-start;
+  gap: 4px;
   font-size: 12px;
   line-height: 17px;
+  color: var(--ink-soft);
 }
 .ba-view-signal b {
   font-size: 10px;
@@ -2302,60 +2539,238 @@ html[data-jz-instant="1"] .nv-svg {
    is (an overview, not a verdict) */
 .ba-forkline {
   margin: 0;
-  font-size: 13px;
-  line-height: 1.5;
+  font-size: 14px;
+  line-height: 22px;
 }
 
-/* ----- transition studies: how the chart becomes the tree ----- */
-/* the quadrant pour: a tile per plane region, flying from its spot on the
-   dissolving chart onto the branch-head card it becomes */
+/* ----- the hand-off: how the chart becomes the tree -----
+   The quadrant pour (revised Sept 2026). It has one job — to say that the
+   chart's four quadrants ARE the tree's first rank — and it used to fumble
+   it: bare tinted rectangles flew from quadrant to head while the names went
+   out with the chart and came back on the cards, so for the length of the
+   flight nothing said which rectangle was which (two hues, four quadrants),
+   and the pairs that swap sides piled up mid-stage. Now it is two movements,
+   and the name is on screen for all of both:
+
+     1. CONDENSE — every quadrant shrinks, in place and all at once, into a
+        card around its own corner label. Four regions become four cards;
+        the label is the still point, and turns into the card's title.
+     2. DEAL — the cards fly straight to the head row, one after another
+        (the plane's right column, then its left), and each lands exactly on
+        the head it becomes and hands over to it. Only then do the root
+        question and the edges grow around the row.
+
+   The clock (durations, each card's launch) is ConstraintNarrative's POUR
+   table, handed down as custom properties; the geometry rides on each tile
+   the same way. */
 .nv-pour-tile {
-  transform-box: fill-box;
-  transform-origin: 0 0;
-  animation: nv-pour-fly 1.15s cubic-bezier(0.4, 0, 0.2, 1) both;
   pointer-events: none;
+  /* the hand-over: the tile goes as the head under it comes up */
+  animation: nv-pour-land var(--pour-land-d) ease-in-out both;
+  animation-delay: calc(var(--pour-launch) + var(--pour-flight));
+  --pour-fill0: 0.07;
+  --pour-stroke0: 0;
 }
-.nv-pour-tile rect {
-  fill-opacity: 0.2;
-  stroke-opacity: 0.9;
-  stroke-width: 2;
+/* the city's own quadrant starts as the chart marked it (.nv-quad.on.sel) */
+.nv-pour-tile.own {
+  --pour-fill0: 0.15;
+  --pour-stroke0: 0.45;
 }
-@keyframes nv-pour-fly {
-  0% {
-    transform: none;
-    opacity: 0.95;
+@keyframes nv-pour-land {
+  from {
+    opacity: 1;
   }
-  76% {
-    transform: var(--pour-to);
-    opacity: 0.9;
-  }
-  100% {
-    transform: var(--pour-to);
+  to {
     opacity: 0;
   }
 }
-/* scrolling back off the hand-off beat rewinds it: a tile lifts off the
-   head card it became and flies home to its quadrant. Not
-   `animation-direction: reverse` — that plays the pour's fade-out at the
-   wrong end, leaving the tile to wink out on arrival. The rewind lands and
-   HOLDS instead: the quadrants come home first and the rest of the chart is
-   rebuilt around them, which is the order the reader walked it in. */
-.nv-pour-tile.back {
-  animation-name: nv-pour-home;
-  animation-duration: 0.9s;
+
+/* --- movement 1: the condense --- */
+.nv-pour-quad,
+.nv-pour-card {
+  transform-box: fill-box;
+  /* the quadrant's OUTER corner — where its label hangs — holds still */
+  transform-origin: var(--pour-origin);
+  stroke-width: 1.6;
+}
+.nv-pour-tile.own .nv-pour-quad,
+.nv-pour-tile.own .nv-pour-card {
+  stroke-width: 2.2;
+}
+.nv-pour-quad {
+  animation: nv-pour-shrink var(--pour-condense) cubic-bezier(0.5, 0, 0.2, 1)
+    both;
+}
+.nv-pour-card {
+  animation: nv-pour-settle var(--pour-condense) cubic-bezier(0.5, 0, 0.2, 1)
+    both;
+}
+.nv-pour-lab {
+  animation: nv-pour-lab var(--pour-condense) cubic-bezier(0.5, 0, 0.2, 1) both;
+}
+@keyframes nv-pour-shrink {
+  0% {
+    transform: none;
+    opacity: 1;
+    fill-opacity: var(--pour-fill0);
+    stroke-opacity: var(--pour-stroke0);
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: var(--pour-shrink);
+    opacity: 0;
+    fill-opacity: 0.16;
+    stroke-opacity: 0.9;
+  }
+}
+@keyframes nv-pour-settle {
+  0% {
+    transform: var(--pour-grow);
+    opacity: 0;
+  }
+  40% {
+    opacity: 0;
+  }
+  100% {
+    transform: none;
+    opacity: 1;
+  }
+}
+/* the label comes up where the chart's own stood, at the chart's size, and
+   grows into the card's title as the box closes on it */
+@keyframes nv-pour-lab {
+  0% {
+    transform: var(--pour-lab-from);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    transform: var(--pour-lab-to);
+    opacity: 1;
+  }
+}
+/* and the chart's own copy of that label clears at once, so the two are
+   never read together (the rest of the chart keeps its slower fade — the
+   quadrants should be seen lifting out of a plane that is still there) */
+.nv-chart.off .nv-qlab.nv-fade {
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+/* --- movement 2: the deal ---
+   Each card flies to its slot in ONE STRAIGHT LINE (Sept 2026, the user's
+   call). Two earlier cuts bent the flights into lanes so that the pairs
+   which swap sides would miss each other — first as keyed legs (drop, hold,
+   drop: "jarring"), then as smooth S-bends — and the bends were the wrong
+   fix: a card that swerves asks to be watched, and the point of the beat is
+   where each card ENDS UP. A straight line says "this goes there" and
+   nothing else.
+
+   So nothing here keeps the cards apart — the ORDER does (the narrative's
+   pourDealAt: the plane's right column, then its left, upper card first,
+   with about half a flight between the two of a swapping pair).
+
+   The easing is cubic-bezier(0.4, 0, 0.4, 1): x and y ride the one curve,
+   which is what makes the path straight. It replaced smootherstep, which is
+   at rest in acceleration as well as velocity at both ends and so DWELLS
+   there — a fifth of the flight to cover the first 6% — and read as floaty
+   (the user: "slightly faster and sharper"). This one leaves promptly (10%
+   of the way in that same fifth), lands firmly (96% by four fifths), and
+   peaks at about twice its average speed, against 1.9x before and the 3.3x
+   of a full ease-out, which at this distance is back to a lurch. The order
+   above was re-simulated against it: same single brush, same size. */
+.nv-pour-fly {
+  animation: nv-pour-fly var(--pour-flight) cubic-bezier(0.4, 0, 0.4, 1) both;
+  animation-delay: var(--pour-launch);
+}
+@keyframes nv-pour-fly {
+  from {
+    transform: translate(0, 0);
+  }
+  to {
+    transform: translate(var(--pour-dx), var(--pour-dy));
+  }
+}
+
+/* --- the rewind: scrolling back off the hand-off beat ---
+   The same film backwards, quicker: the cards lift off the row, last dealt
+   first, and fly straight home (the flights simply run in reverse, launches
+   mirrored — so they stay clear of each other exactly as they did on the
+   way out); once the last is back in its corner every quadrant opens out
+   together. Not `animation-direction: reverse` for the
+   boxes and the label, though — that would play their fades at the wrong
+   end. The rewind lands and HOLDS instead: the quadrants come home first and
+   the rest of the chart is rebuilt around them, which is the order the
+   reader walked it in. */
+.nv-pour.back .nv-pour-tile {
+  animation: nv-pour-rise 0.2s ease both;
+}
+@keyframes nv-pour-rise {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.nv-pour.back .nv-pour-fly {
+  animation-direction: reverse;
+}
+.nv-pour.back .nv-pour-quad {
+  /* the name the narrative counts home by (onTileHome) */
+  animation: nv-pour-home var(--pour-expand) cubic-bezier(0.4, 0, 0.2, 1) both;
+  animation-delay: var(--pour-expand-at);
+}
+.nv-pour.back .nv-pour-card {
+  animation: nv-pour-unsettle var(--pour-expand) cubic-bezier(0.4, 0, 0.2, 1)
+    both;
+  animation-delay: var(--pour-expand-at);
+}
+.nv-pour.back .nv-pour-lab {
+  animation: nv-pour-lab-home var(--pour-expand) cubic-bezier(0.4, 0, 0.2, 1)
+    both;
+  animation-delay: var(--pour-expand-at);
 }
 @keyframes nv-pour-home {
   0% {
-    transform: var(--pour-to);
+    transform: var(--pour-shrink);
     opacity: 0;
+    fill-opacity: 0.16;
+    stroke-opacity: 0.9;
   }
-  26% {
-    transform: var(--pour-to);
-    opacity: 0.9;
+  50% {
+    opacity: 1;
   }
   100% {
     transform: none;
-    opacity: 0.95;
+    opacity: 1;
+    fill-opacity: var(--pour-fill0);
+    stroke-opacity: var(--pour-stroke0);
+  }
+}
+@keyframes nv-pour-unsettle {
+  0% {
+    transform: none;
+    opacity: 1;
+  }
+  60% {
+    opacity: 0;
+  }
+  100% {
+    transform: var(--pour-grow);
+    opacity: 0;
+  }
+}
+@keyframes nv-pour-lab-home {
+  from {
+    transform: var(--pour-lab-to);
+  }
+  to {
+    transform: var(--pour-lab-from);
   }
 }
 /* and once the last one is home the group cross-fades into the chart coming
@@ -2367,25 +2782,44 @@ html[data-jz-instant="1"] .nv-svg {
 .nv-pour.back.home {
   opacity: 0;
 }
-/* the pour hands the heads their entrance: the cards wait for their tiles,
-   then fade in exactly where the tiles land */
+/* the pour hands the heads their entrance: each card waits for its own tile
+   and comes up under it once it has landed (--pour-land, per head). The tile
+   rests exactly on its head, so the two can take their time changing over —
+   a quick swap read as a flash, since three of the four heads are muted */
 .nv-pour-head.nv-fade {
-  transition: opacity 0.5s ease 0.75s;
+  transition: opacity var(--pour-land-d, 0.3s) ease-in-out
+    var(--pour-land, 0.75s);
 }
 .nv-pour-head.nv-fade:not(.on) {
   transition-delay: 0s;
 }
-/* and everything below the root draws only once the tiles have landed: on
-   the hand-off beat the fork-one edges — and, where the tree arrives whole,
-   the stems and leaves under the heads — hold until the heads are in */
+/* and the tree grows AROUND the dealt row: on the hand-off beat the root
+   question, the fork-one edges and the stems and leaves under the heads all
+   hold until the last card is on its way in (--pour-after, on the treewrap) */
 .nv-pour-wait.nv-fade,
 .nv-pour-wait .nv-edge,
 .nv-edge.nv-pour-wait {
-  transition-delay: 0.85s;
+  transition-delay: var(--pour-after, 0.85s);
 }
 .nv-pour-wait.nv-fade:not(.on),
 .nv-edge.nv-pour-wait:not(.on) {
   transition-delay: 0s;
+}
+/* no flight for a reader who asked for none, nor for the screenshot harness
+   (which lands on final states): the tree simply arrives */
+html[data-jz-instant="1"] .nv-pour {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .nv-pour {
+    display: none;
+  }
+  .nv-pour-head.nv-fade,
+  .nv-pour-wait.nv-fade,
+  .nv-pour-wait .nv-edge,
+  .nv-edge.nv-pour-wait {
+    transition-delay: 0s;
+  }
 }
 
 /* ============ the tree sandbox ============
@@ -2916,6 +3350,16 @@ html[data-jz-instant="1"] .nv-svg {
   border-radius: 7px;
   font-size: 12.5px;
 }
+/* a data point the live tool does not draw yet */
+.ts-tocome {
+  margin-left: 7px;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  opacity: 0.75;
+}
 .ts-viewname {
   font-weight: 600;
 }
@@ -3383,11 +3827,15 @@ html[data-jz-instant="1"] .nv-svg {
   .ba-views {
     grid-template-columns: minmax(0, 1fr);
   }
-  .ba-views.strip > .ba-view {
-    flex: 0 0 78vw;
+  .ba-views.strip > .ba-step {
+    flex: 0 0 82vw;
   }
-  .ba-view {
-    min-height: 110px;
+  .ba-coming ul {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ba-lead-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
   }
   .ba-row-head {
     display: flex;
