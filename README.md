@@ -45,9 +45,9 @@ src/
     bridge.ts               the seam: what v-3 tells React, what React drives
   styles/figures.css        the constraints section; styles/explainers.css the gallery
   components/
-    ConstraintsSection.tsx  City Constraints: the walk (or the compact telling) + branch analysis
+    ConstraintsSection.tsx  City Constraints: the zoomed walk + branch analysis
     ExplainersContent.tsx   the Explainers view: v-3's masthead, the gallery, one explainer
-    pages/                  ConstraintNarrative, ConstraintScrolly, BranchAnalysisPage, the walk's layouts
+    pages/                  ConstraintNarrative, BranchAnalysisPage, the walk's layouts
   explainers/               the Visual Explainers (diagnostic tree, read a city)
 ```
 

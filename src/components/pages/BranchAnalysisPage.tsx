@@ -106,7 +106,7 @@ function DiagSchematic({
   variant,
   onPick,
   onPreview,
-  interactive,
+  interactive = true,
 }: {
   path: string[];
   /** the city's suggested descent — keeps its tinted marking */
@@ -119,7 +119,10 @@ function DiagSchematic({
   onPreview: (path: string[] | null) => void;
   /** false while the section withholds the choice — the schematic still draws
    *  the route, it just stops answering the pointer */
-  interactive: boolean;
+  /** a read-only schematic draws inert and ignores hover/picks. Nothing
+   *  holds the route any more (the shortened walk came off with the
+   *  user-flow switch, Sept 2026), so it defaults to a live one. */
+  interactive?: boolean;
 }) {
   const svgRef = useRef<SVGSVGElement>(null);
   const { nodes, delaunay } = useMemo(() => {
@@ -660,9 +663,6 @@ export function BranchAnalysisPage({
   onSelectBranch,
   variant,
   showThemes,
-  routeHeld = false,
-  onReachEnd,
-  treePickable = true,
   floatSuppressed = false,
 }: {
   cityShort: string;
@@ -674,16 +674,6 @@ export function BranchAnalysisPage({
   /** show the modules under the alt tree's leaves instead of the empty
    *  frame — the quadrant trees always carry theirs */
   showThemes: boolean;
-  /** the shortened walk withholds the choice of branch until this section has
-   *  been read to its end — chart, tree and analysis are one piece there */
-  routeHeld?: boolean;
-  /** fired when the end of the section comes into view, which is what
-   *  releases the hold */
-  onReachEnd?: () => void;
-  /** whether the tree up in City Constraints is a control too — it is in
-   *  every flow but the shortened walk, where this schematic is the only
-   *  place a branch can be chosen */
-  treePickable?: boolean;
   /** something else owns the viewport right now — the walk's tree is still
    *  on screen above, or the sandbox has come up from below — so the
    *  floating schematic stays down rather than landing on it */
@@ -737,31 +727,6 @@ export function BranchAnalysisPage({
   }, []);
   /* the topmost module in view reads as "where you are" */
   const activeModule = modules.find((m) => seenModules.has(m.id))?.id ?? null;
-
-  /* ---------- the end of the section ----------
-     A held route is released by READING to the end, not by scrolling past
-     the top: the sentinel sits after the last block, so it reports only once
-     the analysis itself has gone by. The observer exists only while the hold
-     does — which both retires it once the choice is given (the release is
-     latched a level up, so scrolling back never takes it away) and re-arms it
-     if a later flow switch puts the hold back on. A fresh observer reports
-     the current state on its first tick, so a reader already sitting at the
-     end is released at once rather than made to scroll away and back. */
-  const endRef = useRef<HTMLDivElement>(null);
-  const onReachRef = useRef(onReachEnd);
-  onReachRef.current = onReachEnd;
-  useEffect(() => {
-    const el = endRef.current;
-    if (!routeHeld || !el) return;
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((e) => e.isIntersecting)) onReachRef.current?.();
-      },
-      { root: el.closest(".pages"), threshold: 0 },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [routeHeld]);
 
   /* narrow screens fold the context card down to its trail; this opens it.
      Wide screens ignore it — the toggle is not even drawn there. */
@@ -960,7 +925,6 @@ export function BranchAnalysisPage({
             variant={variant}
             onPick={onSelectBranch}
             onPreview={setPreview}
-            interactive={!routeHeld}
           />
           <span className="ba-legend">
             <i style={{ background: TREE_SIDE_COLOR[suggSide] }} />
@@ -1042,32 +1006,12 @@ export function BranchAnalysisPage({
           )}
           <p className="ba-note">
             <span className="ph">
-              {routeHeld
-                ? "[the diagnosed route — read the analysis through and the schematic opens at the end]"
-                : treePickable
-                  ? "[hover the schematic to preview a path, click to make it yours]"
-                  : "[hover the schematic to preview a path, click to make it yours]"}
+              [hover the schematic to preview a path, click to make it yours]
             </span>
           </p>
         </aside>
       </div>
 
-      {/* the shortened walk's exit: the first place the route opens. A quiet
-          offer rather than a call to action — the diagnosed read is the main
-          road, and most readers should simply finish it. */}
-      {!treePickable && (
-        <p className="ba-endprompt">
-          <span className="ph">
-            [that's the {TREE_SIDE_LABEL[side]} read — the diagnosed path. if
-            you're curious how another branch tells it, the schematic in the
-            sidebar is open now: hover to preview, click to switch]
-          </span>
-        </p>
-      )}
-
-      {/* the end of the section — see the observer above. A hairline rather
-          than a zero-height node, which not every engine reports on. */}
-      <div ref={endRef} style={{ height: 1 }} aria-hidden="true" />
     </section>
   );
 }

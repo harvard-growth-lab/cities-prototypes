@@ -3,11 +3,9 @@ import { createPortal } from "react-dom";
 import { DEFAULT_CITY, cityShortName } from "./data/content";
 import {
   DEFAULT_TREE_MODE,
-  convertPath,
   modeThemes,
   modeVariant,
   suggestedPath,
-  type TreeMode,
 } from "./data/figures";
 import { explainerById } from "./explainers/registry";
 import { LegacyShell } from "./legacy/LegacyShell";
@@ -101,9 +99,11 @@ export default function App() {
 
   /* which structure the diagnostic tree proposes. One mode rather than two
      coupled flags: themes only exist under the alt leaves, so the pair could
-     never move freely anyway. Lives here because the branch-analysis section
+     never move freely anyway. No longer a choice (Sept 2026): the structure
+     switch came off with the section's variant controls, so the mode is fixed
+     at the default. It still lives here because the branch-analysis section
      has to follow the same shape. */
-  const [treeMode, setTreeMode] = useState<TreeMode>(DEFAULT_TREE_MODE);
+  const treeMode = DEFAULT_TREE_MODE;
   const treeVariant = modeVariant(treeMode);
   const showThemes = modeThemes(treeMode);
   /* the descent picked on the diagnostic tree (ids below the root); defaults
@@ -111,12 +111,6 @@ export default function App() {
   const [branchPath, setBranchPath] = useState<string[]>(() =>
     suggestedPath(cityShortName(DEFAULT_CITY), modeVariant(DEFAULT_TREE_MODE)),
   );
-  /* switching modes carries the pick across to the nearest route in the
-     target structure, so hover/selection state never dangles */
-  const changeTreeMode = useCallback((m: TreeMode) => {
-    setTreeMode(m);
-    setBranchPath((p) => convertPath(p, modeVariant(m)));
-  }, []);
   /* switching cities re-derives the suggested read — a pick made for one
      city shouldn't leak into another's diagnostic */
   const treeVariantRef = useRef(treeVariant);
@@ -225,8 +219,6 @@ export default function App() {
         createPortal(
           <ConstraintsSection
             city={city}
-            treeMode={treeMode}
-            onTreeModeChange={changeTreeMode}
             treeVariant={treeVariant}
             showThemes={showThemes}
             branchPath={branchPath}

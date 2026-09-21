@@ -100,64 +100,13 @@ export const modeThemes = (m: TreeMode): boolean => m === "themes";
  *  diagnostic, not as a variant of it. */
 export const DEFAULT_TREE_MODE: TreeMode = "themes";
 
-/** The section's USER-FLOW choice — a different axis from the tree structure
- *  above. Each flow is a different proposal for how the pizza-chart → tree
- *  sequence is TOLD: "compact" is the initial-draft five-step walk (your metro and
- *  place land on the chart, their quadrant picks the fork); "guided" borrows
- *  the cities-explainer prototype's narrative moves (dials, benchmark,
- *  together/apart, tree-as-questions, an instrument per fork) but keeps them
- *  concise by making the SELECTED CITY the one example that walks the tree —
- *  the reference toured the entire dataset; this page diagnoses one city.
- *  "short" retells it tree-first in three stops: the whole tree up front,
- *  then an instrument per fork moving the city's dot down it, with the route
- *  pinned to the diagnosis until the analysis section has been read.
- *  "zoom" — the section's default (Sept 2026) — keeps the guided walk's
- *  chart phase and changes how the tree opens: it arrives whole with no
- *  city on it, the city then enters at the root, and each scroll zooms the
- *  camera one station down its path before opening back out onto the lit
- *  route. */
-export type ConstraintFlow = "compact" | "guided" | "short" | "zoom";
-
-/** what the section opens on — also listed FIRST in CONSTRAINT_FLOWS, since
- *  the pill row renders in array order and the default leads it */
-export const DEFAULT_CONSTRAINT_FLOW: ConstraintFlow = "zoom";
-
-/* the default leads the row; the rest keep their original order */
-export const CONSTRAINT_FLOWS: {
-  id: ConstraintFlow;
-  label: string;
-  hint: string;
-  about: string;
-}[] = [
-  {
-    id: "zoom",
-    label: "Zoomed walk",
-    hint: "The chart, then the whole tree — your city enters and the camera walks its path",
-    about:
-      "The chart builds dial by dial and pours into the tree, which arrives whole with no city on it; your city then enters at the root, and each scroll zooms the camera one station along its route — its branch, the second fork, the landing — and back out onto the lit path",
-  },
-  {
-    id: "guided",
-    label: "Guided walk",
-    hint: "Two dials, three questions — your city walks the tree",
-    about:
-      "The explainer flow: the chart builds dial by dial and your city answers each fork with its own numbers, one instrument per question",
-  },
-  {
-    id: "short",
-    label: "Shortened guided walk",
-    hint: "The whole tree up front — two instruments walk it",
-    about:
-      "Tree-first: the full tree opens the walk, the pizza chart answers fork one, the housing chart fork two — and the other paths open only at the end of the analysis below",
-  },
-  {
-    id: "compact",
-    label: "Initial draft",
-    hint: "The pizza and tree in five quick steps",
-    about:
-      "The first-draft flow: your metro and place land on the chart, and their quadrant picks the tree fork",
-  },
-];
+/* The section's USER-FLOW choice is gone (Sept 2026): the zoomed walk is the
+   section, so there is nothing left to choose between. It kept the guided
+   walk's chart phase and changed how the tree opens — the tree arrives whole
+   with no city on it, and each scroll zooms the camera one station down the
+   city's path before opening back out onto the lit route. The other tellings
+   it was chosen over (the initial-draft five-step walk, the guided walk, the
+   tree-first shortened walk) came out with the switch; see git history. */
 
 export interface TreeNodeData {
   id: string;

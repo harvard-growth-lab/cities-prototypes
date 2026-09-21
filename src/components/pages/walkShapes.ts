@@ -154,7 +154,7 @@ export type WalkShape = WalkShapeDef & {
 /* The two-branch tree: the shipped walk, its numbers unchanged. Every card
    was placed by eye against the 1180×640 stage, so they are listed rather
    than solved for — the tree's extents (x 19–749) are what the stage poses
-   in TREE_OPENING_POSE and friends are tuned against. */
+   in ConstraintNarrative are tuned against. */
 const TWO: WalkShape = {
   id: "two",
   label: "Two branches",

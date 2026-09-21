@@ -444,10 +444,13 @@ export function TreeSandboxPage({
     <section className="page ts-page" id="page-tree-sandbox" ref={secRef}>
       <div className="ts-panel">
         <div className="ts-head">
-          <div className="ts-head-l">
-            <span className="ts-badge">Sandbox</span>
+          {/* the tool's own section head (v3's .page-head: the teal eyebrow
+              over the title), as the analysis section above wears it — the
+              eyebrow is what says this is not the flow */}
+          <div className="page-head ts-head-l">
+            <span className="eyebrow">Sandbox</span>
             <h2>Explore the rest of the tree</h2>
-            <p className="ts-sub">
+            <p className="lede ts-sub">
               <span className="ph">
                 [explore other branches of the growth diagnostic tree]
               </span>
@@ -484,6 +487,84 @@ export function TreeSandboxPage({
         </div>
 
         <div className="ts-body">
+          {/* what the picked card holds — the reason to click one at all.
+              Three depths: the tree's endings, a branch's endings, an
+              ending's modules (each of which opens to its data points).
+              It LEADS the body (Sept 2026): the section groups its reading
+              matter on the left and its figure on the right, the way the
+              walk above it does. Stacked on a narrow screen the tree goes
+              back on top — see .ts-stage's order in figures.css. */}
+          <aside className="ts-read" aria-live="polite">
+            <div className="ts-read-head">
+              <span className="ts-read-kicker" style={{ color }}>
+                <QuadGlyph side={pickSide} />
+                {quadName(pickSide) ?? pickSide}
+                {pick.length === 2 && (
+                  <>
+                    <span className="ts-sep">›</span>
+                    {endingLabel(sh, pick)}
+                  </>
+                )}
+              </span>
+              {wandered ? (
+                <button
+                  type="button"
+                  className="ts-back"
+                  onClick={() => setPick(suggPath)}
+                >
+                  Back to your read
+                </button>
+              ) : (
+                <span className="ts-yours" style={{ background: color }}>
+                  your data&rsquo;s read
+                </span>
+              )}
+            </div>
+
+            {/* what the ending holds: its modules, each opening to its data
+                points, under the question this branch of the tree asks */}
+            <p className="ts-shock">
+              {quadShock(pickSide)}
+              {spec ? ` — ${spec.question}` : ""}
+            </p>
+            <div className="ts-list">
+              <span className="ts-kicker">
+                {modules.length
+                  ? `${modules.length} module${modules.length === 1 ? "" : "s"} at this ending`
+                  : "no modules at this ending yet"}
+              </span>
+              {modules.map((m) => (
+                <ModuleRow
+                  key={m.id}
+                  def={m}
+                  color={color}
+                  open={openMod === m.id}
+                  onToggle={() => setOpenMod((v) => (v === m.id ? null : m.id))}
+                />
+              ))}
+            </div>
+
+            {/* opens the ending's full analysis under the tree — in the
+                sandbox, not the section above, so the read arrives where the
+                reader already is. A disclosure: it closes what it opened.
+                Once open, the block follows the pick on its own. */}
+            <button
+              type="button"
+              className={"ts-open" + (readOpen ? " open" : "")}
+              style={{ borderColor: color }}
+              aria-expanded={readOpen}
+              aria-controls={readOpen ? "ts-analysis" : undefined}
+              onClick={() => setReadOpen((v) => !v)}
+            >
+              {readOpen
+                ? "Close this ending's analysis"
+                : "Read this ending's analysis"}
+              <span className="ts-open-hint">
+                {readOpen ? "open below the tree" : "opens below the tree"}
+              </span>
+            </button>
+          </aside>
+
           <div className="ts-stage">
             <svg
               ref={svgRef}
@@ -782,80 +863,6 @@ export function TreeSandboxPage({
                 )}
             </div>
           </div>
-
-          {/* what the picked card holds — the reason to click one at all.
-              Three depths: the tree's endings, a branch's endings, an
-              ending's modules (each of which opens to its data points). */}
-          <aside className="ts-read" aria-live="polite">
-            <div className="ts-read-head">
-              <span className="ts-read-kicker" style={{ color }}>
-                <QuadGlyph side={pickSide} />
-                {quadName(pickSide) ?? pickSide}
-                {pick.length === 2 && (
-                  <>
-                    <span className="ts-sep">›</span>
-                    {endingLabel(sh, pick)}
-                  </>
-                )}
-              </span>
-              {wandered ? (
-                <button
-                  type="button"
-                  className="ts-back"
-                  onClick={() => setPick(suggPath)}
-                >
-                  Back to your read
-                </button>
-              ) : (
-                <span className="ts-yours" style={{ background: color }}>
-                  your data&rsquo;s read
-                </span>
-              )}
-            </div>
-
-            {/* what the ending holds: its modules, each opening to its data
-                points, under the question this branch of the tree asks */}
-            <p className="ts-shock">
-              {quadShock(pickSide)}
-              {spec ? ` — ${spec.question}` : ""}
-            </p>
-            <div className="ts-list">
-              <span className="ts-kicker">
-                {modules.length
-                  ? `${modules.length} module${modules.length === 1 ? "" : "s"} at this ending`
-                  : "no modules at this ending yet"}
-              </span>
-              {modules.map((m) => (
-                <ModuleRow
-                  key={m.id}
-                  def={m}
-                  color={color}
-                  open={openMod === m.id}
-                  onToggle={() => setOpenMod((v) => (v === m.id ? null : m.id))}
-                />
-              ))}
-            </div>
-
-            {/* opens the ending's full analysis under the tree — in the
-                sandbox, not the section above, so the read arrives where the
-                reader already is. A disclosure: it closes what it opened.
-                Once open, the block follows the pick on its own. */}
-            <button
-              type="button"
-              className={"ts-open" + (readOpen ? " open" : "")}
-              style={{ borderColor: color }}
-              aria-expanded={readOpen}
-              aria-controls={readOpen ? "ts-analysis" : undefined}
-              onClick={() => setReadOpen((v) => !v)}
-            >
-              {readOpen
-                ? "Close this ending's analysis"
-                : "Read this ending's analysis"}
-              <span className="ts-open-hint">
-                {readOpen ? "open below the tree" : "opens below the tree"}
-              </span>
-            </button>
-          </aside>
         </div>
 
         {/* an ending's full analysis — the same read the section above gives

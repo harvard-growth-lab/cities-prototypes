@@ -1589,8 +1589,15 @@ html[data-jz-instant="1"] .nv-svg {
    real. The wider frame is also what lets the schematic leave the column and
    float. Prose inside keeps its own measure (.lede is capped), so the
    departure costs the reading nothing. */
+/* the figure sections' measure, not the 976px reading page: v3's
+   `.ct-scrolly` on #page-export-basket / #page-admin-mix breaks out of
+   .page to the tool's grid-max inside its frame padding, and the modules
+   need that width the way a figure does */
 .tool-body .page.ba-page {
-  max-width: min(1440px, calc(100vw - 48px));
+  max-width: min(
+    var(--grid-max, 1360px),
+    calc(100vw - 2 * var(--frame-pad, 40px))
+  );
 }
 
 /* the section header carries its layout study in the corner, the way the
@@ -1613,7 +1620,7 @@ html[data-jz-instant="1"] .nv-svg {
   /* the modules get the whole page now that the schematic floats — wide
      enough for three or four data points across, capped where a line of
      body copy stops being readable */
-  max-width: 1420px;
+  max-width: none;
   margin-top: 14px;
 }
 .ba-body .placeholder-frame {
@@ -1630,7 +1637,7 @@ html[data-jz-instant="1"] .nv-svg {
   gap: 10px;
   background: #fff;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 10px;
   padding: 14px 16px 13px;
   box-shadow: var(--shadow-sm);
 }
@@ -2392,23 +2399,20 @@ html[data-jz-instant="1"] .nv-svg {
   padding-top: 8px;
   padding-bottom: 40px;
 }
+/* the same measure as the walk and the analysis above it (the figure
+   sections' grid-max inside the frame padding) */
 .tool-body .page.ts-page {
-  max-width: min(1440px, calc(100vw - 48px));
+  max-width: min(
+    var(--grid-max, 1360px),
+    calc(100vw - 2 * var(--frame-pad, 40px))
+  );
 }
+/* no board of its own any more (Sept 2026): the sandbox is dressed like the
+   figure sections — the page's faint tint, the text bare on it, one white
+   framed panel around the tree — rather than as a dotted beige field with
+   cards inside it. The "this is not the flow" cue is the eyebrow now. */
 .ts-panel {
   position: relative;
-  background:
-    radial-gradient(
-      circle at 1px 1px,
-      rgba(26, 34, 38, 0.09) 1px,
-      transparent 0
-    )
-    0 0 / 17px 17px,
-    #f6f4f0;
-  border: 1px solid var(--border-strong);
-  border-radius: 16px;
-  padding: 22px 24px 24px;
-  box-shadow: inset 0 1px 0 #fff;
 }
 .ts-head {
   display: flex;
@@ -2418,33 +2422,17 @@ html[data-jz-instant="1"] .nv-svg {
   flex-wrap: wrap;
   margin-bottom: 16px;
 }
-.ts-head h2 {
-  margin: 8px 0 0;
-  font-size: 25px;
-  font-weight: 700;
-  line-height: 1.2;
-}
+/* the head is the tool's own section head (v3's .page-head: the teal
+   eyebrow over the title, the title at --t-h3), as the analysis section
+   above wears it — its type and spacing come from v3, not from here */
 .ts-head-l {
   min-width: 0;
   flex: 1 1 420px;
 }
-/* the corner badge: the one label that says this is not the flow */
-.ts-badge {
-  display: inline-block;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1.6px;
-  text-transform: uppercase;
-  color: #fff;
-  background: var(--ink);
-  border-radius: 5px;
-  padding: 3px 8px;
-}
+/* the sub is a .lede too, so it reads at the tool's paragraph size */
 .ts-sub {
-  margin: 8px 0 0;
+  margin: 6px 0 0;
   max-width: 680px;
-  font-size: 14.5px;
-  line-height: 22px;
 }
 .ts-tools {
   flex: 0 0 auto;
@@ -2493,7 +2481,8 @@ html[data-jz-instant="1"] .nv-svg {
 
 .ts-body {
   display: flex;
-  gap: 20px;
+  /* the figure sections' gap between reading column and figure */
+  gap: 56px;
   align-items: stretch;
 }
 /* the stage: white, so the tree sits on the same ground it does everywhere
@@ -2505,7 +2494,8 @@ html[data-jz-instant="1"] .nv-svg {
   flex-direction: column;
   background: #fff;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  /* .ct-panel's radius, shared by every framed figure in the section */
+  border-radius: 10px;
   overflow: hidden;
 }
 .ts-svg {
@@ -2647,14 +2637,20 @@ html[data-jz-instant="1"] .nv-svg {
 
 /* ----- what the picked ending holds ----- */
 .ts-read {
-  flex: 0 0 316px;
+  /* the reading column: the figure sections' own measure (392px — v3's
+     `.ct-scrolly` on #page-export-basket / #page-admin-mix, which the
+     walk's captions also use), and bare on the tinted page the way their
+     text columns are; only the figure beside it gets a card */
+  flex: 0 0 392px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 15px 16px 16px;
+}
+/* the read's head is closed by a rule before its prose — a step's Viewing
+   badge is closed the same way in the walk and in the figure sections */
+.ts-read > .ts-read-head + * {
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
 }
 .ts-read-head {
   display: flex;
@@ -2770,9 +2766,10 @@ html[data-jz-instant="1"] .nv-svg {
   text-transform: uppercase;
   margin-bottom: 2px;
 }
+/* no rule of its own: the read carries ONE hairline, under its head (the
+   way a step's Viewing badge is closed in the walk and the figure
+   sections) — a second one here, a line of prose later, read as clutter */
 .ts-list {
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -2982,7 +2979,7 @@ html[data-jz-instant="1"] .nv-svg {
   margin-top: 20px;
   background: #fff;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 10px;
   padding: 16px 24px 22px;
   scroll-margin-top: 12px;
 }
@@ -3026,6 +3023,12 @@ html[data-jz-instant="1"] .nv-svg {
   .ts-body {
     flex-direction: column;
   }
+  /* stacked, the TREE goes back on top and the read runs under it — the same
+     move the walk makes with its stage (.nv-grid .jz-sticky), so the figure
+     leads on a narrow screen even though the text leads on a wide one */
+  .ts-stage {
+    order: -1;
+  }
   .ts-read {
     flex: 0 0 auto;
   }
@@ -3042,6 +3045,15 @@ html[data-jz-instant="1"] .nv-svg {
    past it when its content needs to, and the scroll→stop effect reads the
    blocks), padded so the section opens on its first caption centred on
    screen. */
+/* The page under the bar takes the faint tint the two figure sections wear
+   (v3.css: `.pages:has(#page-export-basket:not(.sec-off))`, #f9fafb) for
+   as long as City Constraints is the section on screen. The slot is the
+   section's .sec-root, so it carries the same .sec-off the legacy pages
+   do. On it the text sits bare and the figures sit in white framed panels
+   — the walk's stage card, the analysis's schematic, the sandbox's tree. */
+.pages:has(#constraints-slot:not(.sec-off)) {
+  background: #f9fafb;
+}
 .nv-scrolly.nv-grid {
   /* the stage's room is the scroller below the tool's tab bar — the same
      band the legacy sections pin their stages to (top at --chrome-h, down
@@ -3065,10 +3077,17 @@ html[data-jz-instant="1"] .nv-svg {
   --nv-step-pad: 48px;
   height: auto;
   display: grid;
-  grid-template-columns: 330px minmax(0, 1fr);
-  gap: 44px;
+  /* the figure sections' own measure (v3's `.ct-scrolly` on
+     #page-export-basket / #page-admin-mix): a 392px reading column, 56px
+     to the figure, on the tool's grid-max inside its frame padding — so
+     the walk's captions start on the same line Metro Industries' do */
+  grid-template-columns: 392px minmax(0, 1fr);
+  gap: 56px;
   align-items: start;
-  width: min(1280px, calc(100vw - 48px));
+  width: min(
+    var(--grid-max, 1360px),
+    calc(100vw - 2 * var(--frame-pad, 40px))
+  );
   margin-inline: auto;
 }
 .nv-grid .nv-steps {
@@ -3098,8 +3117,16 @@ html[data-jz-instant="1"] .nv-svg {
   opacity: calc(0.35 + 0.65 * var(--nv-lit, 0));
   transition: none;
 }
-.nv-grid .nv-step .ct-eyebrow {
-  margin-bottom: 10px;
+/* the eyebrow, title, Viewing badge and lede keep v3's own rail scale and
+   spacing (.ct-eyebrow 14 under, h2 16, badge 18, lede 14) — nothing here
+   re-sizes them. What the section adds is the figure sections' one extra
+   move: each step's Viewing badge is closed by a rule before the prose
+   (v3.css scopes that rule to their two page ids, so it never reached
+   this section on its own). */
+.nv-grid .nv-step > .geo-badge + *:not([hidden]) {
+  align-self: stretch;
+  border-top: 1px solid var(--border);
+  padding-top: 18px;
 }
 .nv-grid .nv-step .geo-badge {
   cursor: default;
@@ -3148,25 +3175,27 @@ html[data-jz-instant="1"] .nv-svg {
   padding: 0 0 8px;
   display: flex;
   flex-direction: column;
-  background: #fff;
+  /* no ground of its own: the page's tint shows round the framed card
+     below, the way it does round .ct-panel. (The narrow band under 920
+     puts the white back — the steps scroll under it there.) */
+  background: transparent;
 }
-.nv-stagebar {
-  flex: 0 0 auto;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  min-height: 44px;
-  padding: 10px 0 0;
-  /* the chart-phase zoom is a transform on the stage svg, whose box then
-     reaches up under this row — the disclosure must stay on top of it */
-  position: relative;
-  z-index: 3;
-}
+/* the visualisation sits in its own framed panel, the way Metro Industries
+   and Admin Industries frame theirs (`.ct-panel` in src/legacy/v3.css, built
+   so "a frame can go around the visualisation and nothing else"): a white
+   card with a hairline border around the figure, with the text column
+   outside it on the page. The inset is smaller than .ct-panel's 28/32 —
+   the walk's tree is fitted to this box and its camera framing is tuned to
+   the room, so the frame takes as little of it as it can while still
+   keeping the drawing off the border. */
 .nv-grid .jz-body {
   flex: 1;
   min-height: 0;
   display: flex;
-  padding-bottom: 2px;
+  padding: 12px 14px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
 }
 /* the intro storyboard: three dashed placeholders and a glyph each */
 .nv-intro-k {
@@ -3220,6 +3249,17 @@ html[data-jz-instant="1"] .nv-svg {
     /* the chart-phase zoom is a transform on the stage svg: on a narrow
        stage it reaches past the edges, and must not widen the scroller */
     overflow-x: clip;
+    /* the steps scroll UNDER the pinned band here, so it needs its ground
+       back — a transparent band would show the captions through the tree */
+    background: #fff;
+  }
+  /* stacked, the stage is a full-bleed band across the top — a frame there
+     would box in an already tight tree and fight the edge-to-edge band, so
+     it comes off, the same move .ct-panel makes on a narrow screen */
+  .nv-grid .jz-body {
+    padding: 0 0 2px;
+    border: 0;
+    border-radius: 0;
   }
   .nv-grid .nv-steps {
     padding-top: 0;
@@ -3280,10 +3320,6 @@ html[data-jz-instant="1"] .nv-svg {
   }
   .nv-grid .jz-sticky {
     border-bottom: 1px solid var(--border);
-  }
-  .nv-stagebar {
-    min-height: 36px;
-    padding-top: 6px;
   }
   .nv-grid .nv-steps {
     padding-bottom: 30svh;
@@ -3387,10 +3423,6 @@ html[data-jz-instant="1"] .nv-svg {
   }
 
   /* ---- the sandbox ---- */
-  .ts-panel {
-    padding: 16px 12px 18px;
-    border-radius: 12px;
-  }
   .ts-head {
     gap: 12px;
     margin-bottom: 12px;
@@ -3400,10 +3432,6 @@ html[data-jz-instant="1"] .nv-svg {
   }
   .ts-head-l {
     flex: 1 1 200px;
-  }
-  .ts-sub {
-    font-size: 14px;
-    line-height: 21px;
   }
   /* the frame follows the drawing's own proportions instead of a fixed
      band, so the whole tree fills the width; the reader pinches in from
@@ -3417,7 +3445,6 @@ html[data-jz-instant="1"] .nv-svg {
   }
   .ts-read {
     flex: none;
-    padding: 12px 12px 14px;
   }
   .ts-row,
   .ts-modhead {

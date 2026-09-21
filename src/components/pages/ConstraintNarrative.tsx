@@ -12,9 +12,7 @@ import {
 } from "react";
 import { easeCubicInOut } from "d3-ease";
 import {
-  CONSTRAINT_FLOWS,
   convertPath,
-  DEFAULT_CONSTRAINT_FLOW,
   diagnose,
   HOUSING_QUAD,
   housingRead,
@@ -26,7 +24,6 @@ import {
   TREE_SIDE_COLOR,
   treeNodes,
   type BranchSide,
-  type ConstraintFlow,
   type TreeVariant,
 } from "../../data/figures";
 import {
@@ -182,8 +179,8 @@ const LEAF_BEAT = 10;
 /** the four diagnoses — the only beat that hands the pick to the reader */
 const CHOICE_BEAT = 11;
 
-/* the guided walk: four chart beats, then the tree with fork one answered,
-   fork two, the landing, the choice — FORK1_BEAT is not a stop here */
+/* the chart half's stops: the intro, the two dials, the metro, the
+   benchmark, the plane's reading */
 const CHART_BEATS = [
   INTRO_BEAT,
   DIAL1_BEAT,
@@ -192,26 +189,6 @@ const CHART_BEATS = [
   BENCH_BEAT,
   PLANE_BEAT,
 ];
-const FULL_BEATS = [
-  ...CHART_BEATS,
-  TREE_BEAT,
-  FORK2_BEAT,
-  LEAF_BEAT,
-  CHOICE_BEAT,
-];
-/* "short" is a different telling, not just fewer stops: the chart never runs
-   full-stage. Three stops, all of them tree beats — the whole tree up front
-   with the city's dot at the root, the pizza chart arriving beside it to
-   answer fork one, the second instrument swapping in to answer fork two and
-   land the dot. The reveals that pace the guided walk's tree are simply
-   forced on from the first stop, and the choice beat never comes: in this
-   telling the route opens at the END of the analysis section, not on the
-   tree. */
-const SHORT_BEATS = [TREE_BEAT, FORK1_BEAT, LEAF_BEAT];
-/* a camera ride steps the tree station by station, so the shortened flow's
-   ride un-folds fork two into its own stop — four gestures: the root, fork
-   one, fork two, the landing (a one-fork tree keeps the three) */
-const RIDE_SHORT_BEATS = [TREE_BEAT, FORK1_BEAT, FORK2_BEAT, LEAF_BEAT];
 /* the zoomed walk (the section's default, Sept 2026): the guided walk's
    four chart stops — the quadrants are still walked through — and then a
    different opening for the tree: it arrives WHOLE, the chart pours into its
@@ -261,8 +238,6 @@ const ZOOM_FRAME_W_PHONE = [560, 300, 240, 280];
 const ZOOM_BIAS_Y_PHONE = [-36, -10, 10, -30];
 const ZOOM_CAP = 3.4;
 const ZOOM_CAP_PHONE = 6;
-const beatsFor = (flow: ConstraintFlow) =>
-  flow === "short" ? SHORT_BEATS : flow === "zoom" ? ZOOM_BEATS : FULL_BEATS;
 
 /* the scroll per stop, in vh: half again the compact flow's 40 for a plain
    walk (the text blocks need the room), and 1.7× it where the camera rides
@@ -378,24 +353,13 @@ function GeoBadge({
   );
 }
 
-/* the shortened walk's opening pose: the whole tree slightly enlarged and
-   centred on the stage; the next stop eases it back home to the left,
-   making room for the instrument inset. Derived from the tree's extents
-   (x 19–749, y 56–509) against the 1180×640 stage — 1.3 is the largest
-   scale that keeps the badge row on it. */
-const TREE_OPENING_POSE = "translate(91px, -47px) scale(1.3)";
 const TREE_HOME_POSE = "translate(0px, 0px) scale(1)";
-/* the full walk's tree phase is not a fixed pose: the whole tree is FITTED
+/* the tree phase is not a fixed pose: the whole tree is FITTED
    to the room the stage gives it (see `wholeFit` below), so it fills a
    narrow stage's width and sits centred on a wide one instead of leaving
    the stage's right quarter empty. It only applies from TREE_BEAT: during
    the chart beats the traveller dot inside this wrap is positioned in
    full-stage chart coordinates, which must not be scaled. */
-/* the shortened walk's instrument stops give the INSTRUMENT the stage: the
-   tree eases down toward context size on the left while the hero panel
-   takes the right. 0.94 is the largest scale that keeps the badge row clear
-   of the (narrowed) hero panel's left edge. */
-const TREE_ASIDE_POSE = "translate(0px, -8px) scale(1.16)";
 
 const med = METRO_MEDIANS;
 const pc = (v: number) => `${v >= 0 ? "+" : "−"}${Math.abs(v).toFixed(1)}%/yr`;
@@ -472,47 +436,15 @@ function Body({ text }: { text: string }) {
   );
 }
 
-/* ---------- the flow switch (also mounted by the compact flow) ---------- */
-
-export function FlowSwitch({
-  flow,
-  onFlowChange,
-}: {
-  flow: ConstraintFlow;
-  onFlowChange: (f: ConstraintFlow) => void;
-}) {
-  return (
-    <div className="jz-modes show">
-      <span className="jz-modes-k">User flow</span>
-      <div className="jz-seg" role="group" aria-label="Section user flow">
-        {CONSTRAINT_FLOWS.map((f) => (
-          <button
-            key={f.id}
-            className={"jz-segbtn" + (flow === f.id ? " on" : "")}
-            aria-pressed={flow === f.id}
-            title={f.about}
-            onClick={() => onFlowChange(f.id)}
-          >
-            {f.label}
-          </button>
-        ))}
-      </div>
-      <span className="jz-modes-hint">
-        {CONSTRAINT_FLOWS.find((f) => f.id === flow)?.hint}
-      </span>
-    </div>
-  );
-}
-
 /* ---------- the variants disclosure ----------
    The team's revision (Sept 2026) settled the section on one telling: the
-   guided walk over the four-quadrant forked tree, whose quadrants pour into
-   its branches. The tree-shape and chart→tree switches are gone with that
-   decision; what is left here picks a DIFFERENT telling — which user flow,
-   and on the compact flow which structure — so each header folds those away
-   behind this one control and only the responsiveness switch keeps the
-   header row. The button face carries the current setting so the state is
-   legible without opening it, and marks itself when it is off the default. */
+   zoomed walk over the four-quadrant forked tree, whose quadrants pour into
+   its branches. The tree-shape, chart→tree and user-flow switches are all
+   gone with that decision, so the walk's own header carries no control any
+   more; what still uses this disclosure is the branch-analysis section
+   below, whose four layouts remain a study. The button face carries the
+   current setting so the state is legible without opening it, and marks
+   itself when it is off the default. */
 
 export function VariantOptions({
   face,
@@ -618,9 +550,6 @@ export function ConstraintNarrative({
   onPhaseInView,
   onStageInView,
   variant,
-  flow,
-  onFlowChange,
-  routePinned,
 }: {
   cityShort: string;
   country: string;
@@ -633,11 +562,6 @@ export function ConstraintNarrative({
   onStageInView?: (inView: boolean) => void;
   /** the app-wide tree structure — leaf picks convert into it */
   variant: TreeVariant;
-  flow: ConstraintFlow;
-  onFlowChange: (f: ConstraintFlow) => void;
-  /** hold the app's pick on the diagnosed route (the shortened walk, until
-   *  the analysis section below has been read to its end) */
-  routePinned: boolean;
 }) {
   const trackRef = useRef<HTMLDivElement>(null);
   /* the text column: its blocks are lit from the scroll position directly
@@ -669,40 +593,25 @@ export function ConstraintNarrative({
   const phone = useMediaQuery(PHONE_QUERY);
   const phoneRef = useRef(phone);
   phoneRef.current = phone;
-  const short = flow === "short";
-  const zoom = flow === "zoom";
-  /* the tree-first telling — the shortened walk: the tree opens the walk,
-     and the chart never runs full-stage. (The zoomed walk is not tree-first:
-     it keeps the guided walk's chart phase and changes only how the tree
-     opens.) */
-  const treeFirst = short;
-  /* the tellings that park the city at the ROOT before fork one — only the
-     shortened walk, which has no chart phase to answer fork one for it. The
-     zoomed walk arrives from the chart with the quadrant already read, so
-     its city lands straight on the branch. */
-  const rootStop = short;
-  /* the beat fork one is answered on: the guided walk folds it into the tree
-     beat, the root-stop walks give it a stop of its own */
-  const fork1At = rootStop ? FORK1_BEAT : TREE_BEAT;
-  /* the beat the instrument inset arrives on: with fork one — except in the
-     zoomed walk, whose fork-one stop comes AFTER the tree stop that already
-     answered it, so the chart returns there as the evidence for a branch the
-     city is standing on rather than as a question */
-  const insetAt = zoom ? FORK1_BEAT : fork1At;
+  /* the beat fork one is answered on: the walk folds it into the tree beat,
+     where the chart's quadrants pour onto the branch heads */
+  const fork1At = TREE_BEAT;
+  /* the beat the instrument inset arrives on: the fork-one stop, which comes
+     AFTER the tree stop that already answered it, so the chart returns there
+     as the evidence for a branch the city is standing on rather than as a
+     question */
+  const insetAt = FORK1_BEAT;
   /* the beat the route starts lighting: with fork one's answer, which is
      what there is to light */
   const litFrom = fork1At;
-  /* which tree station a beat parks the traveller at — root, below the
-     head, the second fork, the leaf. The guided and zoomed walks have no
-     root stop: fork one is answered by the quadrant on the tree beat, so the
-     dot goes straight to its branch head; the shortened walk starts at the
-     root and walks to the head on its fork-one stop. */
+  /* which tree station a beat parks the traveller at — below the head, the
+     second fork, the leaf. There is no root stop: fork one is answered by
+     the quadrant on the tree beat, so the dot goes straight to its branch
+     head. */
   const stationFor = useCallback(
     (stp: number) =>
-      stp < TREE_BEAT
-        ? 0
-        : Math.min(Math.max(stp - ROOT_BEAT, rootStop ? 0 : 1), 3),
-    [rootStop],
+      stp < TREE_BEAT ? 0 : Math.min(Math.max(stp - ROOT_BEAT, 1), 3),
+    [],
   );
   /* the tree this walk tells: its branches, its cards and where they sit.
      Everything below reads the tree from here rather than from constants, so
@@ -733,9 +642,9 @@ export function ConstraintNarrative({
   const fit = "fit" as FitMode;
   const focusMode = fit === "focus";
   const sideMode = fit === "side";
-  /* the zoomed walk IS a camera ride, on any stage: only the sideways ride
+  /* the walk IS a camera ride, on any stage: only the sideways ride
      (a small-stage answer) may take the camera off the authored tree */
-  const rideMode = fit === "ride" || (zoom && fit !== "sideride");
+  const rideMode = fit !== "sideride";
   const sideRideMode = fit === "sideride";
   /* the two axes the last two modes combine: which tree is drawn, and
      whether the camera rides it */
@@ -744,37 +653,27 @@ export function ConstraintNarrative({
   /* THE hand-off (team revision, Sept 2026): as the chart dissolves, each
      tinted region flies onto the branch head it becomes, and the city's dot
      rides down with it onto the branch its own quadrant became. It needs the
-     open stage, so the tellings that
-     do not have one — the tree-first short walk, the small-stage fits, which
-     redraw the tree their own way — keep the plain fade instead. A phone
-     stage is not open either: at a quarter scale the tiles fly across
-     300px onto 37px cards, motion without meaning. */
-  const pourOn = !treeFirst && fit === "fit" && !phone;
-  /* the stops this telling gets — a ride on the shortened flow adds the
-     fork-two stop the flow otherwise folds into the landing */
-  const beats = useMemo(
-    () => (short && rideOn && forks2 ? RIDE_SHORT_BEATS : beatsFor(flow)),
-    [short, rideOn, forks2, flow],
-  );
+     open stage, so the small-stage fits — which redraw the tree their own
+     way — keep the plain fade instead. A phone stage is not open either: at
+     a quarter scale the tiles fly across 300px onto 37px cards, motion
+     without meaning. */
+  const pourOn = fit === "fit" && !phone;
+  /* the stops the walk gets */
+  const beats = ZOOM_BEATS;
   const stopVh = stopVhFor(rideOn);
   const step = beats[Math.min(stepIdx, beats.length - 1)];
-  /* the tellings that draw the tree WHOLE the moment it appears. The zoomed
-     walk keeps it whole under its camera from the tree beat on — there the
-     ride is how the reader is guided, not how the tree is revealed (and
-     before that beat its chart phase must find no tree on the stage). The
-     shortened flow opens on the whole tree but gives way to a small-stage
-     ride, which REVEALS the tree as it travels: a ride's gates pace by the
-     beat in every flow, and a stop that lands on a later beat still brings
-     the skipped ranks in with it */
-  const treeUpFront = (zoom && step >= TREE_BEAT) || (short && !rideOn);
+  /* the tree is drawn WHOLE the moment it appears: the walk keeps it whole
+     under its camera from the tree beat on — there the ride is how the
+     reader is guided, not how the tree is revealed (and before that beat the
+     chart phase must find no tree on the stage) */
+  const treeUpFront = step >= TREE_BEAT;
   const HEAD_Y = headRowY(sh);
   const HEAD_H = headRowH(sh);
   const HEAD_TOP = HEAD_Y - HEAD_H / 2;
   const HEAD_BOT = HEAD_Y + HEAD_H / 2;
   /* the stop where the rail's second step ("How we diagnose") takes over:
-     the guided walk flips when its four chart stops end; the tree-first
-     walks open on the whole tree, so everything past that pose is diagnosis */
-  const diagStop = treeFirst ? 1 : Math.max(0, beats.indexOf(TREE_BEAT));
+     the walk flips when its chart stops end */
+  const diagStop = Math.max(0, beats.indexOf(TREE_BEAT));
 
   /* ---------- scroll → step ----------
      The blocks ARE the stops (Sept 2026): the committed stop is the block
@@ -1123,10 +1022,6 @@ export function ConstraintNarrative({
   }, [pourRun, pourMs, backMs]);
   /* the chart holds off while its quadrants are still in the air */
   const pourHold = !!pourRun && pourRun.dir < 0 && !pourHome;
-  /* the static poses centre the tree in the authored 640; in the opened
-     viewBox "centred" puts its foot over the instrument's corner, so they
-     are lifted by dy, back to the top of the stage */
-  const lift = dy ? `translate(0px, ${-dy.toFixed(1)}px) ` : "";
   /* the chart-phase zoom is a transform on the whole svg, so it can only
      spend the stage's own vertical headroom — past that it overlaps the head
      and the rail (the narrow layouts are height-bound, with none) */
@@ -1162,15 +1057,6 @@ export function ConstraintNarrative({
 
   const onSelectRef = useRef(onSelectPath);
   onSelectRef.current = onSelectPath;
-  useEffect(() => {
-    if (!routePinned) return;
-    /* compared on the APP's structure, not on the alt reading of it: the
-       write lands in that space, so this settles after one pass whatever
-       the cross-structure conversion does to a path */
-    const target = convertPath(suggAlt, variant);
-    if (selectedPath.join("/") !== target.join("/"))
-      onSelectRef.current(target);
-  }, [routePinned, selectedPath, suggAlt, variant]);
 
   /* ---------- per-element emphasis ----------
      steps 5–7: the walk — the city's route full, everything else muted;
@@ -1414,7 +1300,7 @@ export function ConstraintNarrative({
   /* a change of WORLD — mode, tree, city — is the one time it may cut */
   useEffect(() => {
     camRef.current.init = false;
-  }, [rideOn, sideRideMode, zoom, sh, cityShort]);
+  }, [rideOn, sideRideMode, sh, cityShort]);
   useEffect(() => {
     if (!rideOn) return;
     const g = sideRideMode ? sideFocusRef.current : focusRef.current;
@@ -1474,27 +1360,24 @@ export function ConstraintNarrative({
         return;
       }
       const sIdx = stationFor(stp);
-      /* the stops that frame the whole tree: the choice — and the zoomed
-         walk's opening stop, the hand-off, which the next gesture zooms in
-         from */
-      const wholeStop =
-        (stp >= CHOICE_BEAT && forks2) || (zoom && stp <= TREE_BEAT);
+      /* the stops that frame the whole tree: the choice — and the walk's
+         opening stop, the hand-off, which the next gesture zooms in from */
+      const wholeStop = (stp >= CHOICE_BEAT && forks2) || stp <= TREE_BEAT;
       const arcT = stationArcs[sIdx];
       const [ix0, iy0, ix1, iy1] = focusIntoRef.current;
       const fcxT = (ix0 + ix1) / 2;
       const fcyT = (iy0 + iy1) / 2;
-      /* the zoomed walk's whole-tree stops share the guided walk's cap, so
-         the pour's tiles — computed against that pose — land on the heads */
-      const kFit = fitScale(wb, focusIntoRef.current, zoom ? 1.5 : 2.4);
-      /* the zoomed walk's reading zoom comes from how much tree each stop
-         should show (ZOOM_FRAME_W), so it is a real step in from the
-         whole-tree fit on any stage; the small-stage rides keep their
-         per-station table */
+      /* the whole-tree stops are capped at 1.5, so the pour's tiles —
+         computed against that pose — land on the heads */
+      const kFit = fitScale(wb, focusIntoRef.current, 1.5);
+      /* the reading zoom comes from how much tree each stop should show
+         (ZOOM_FRAME_W), so it is a real step in from the whole-tree fit on
+         any stage; the small-stage rides keep their per-station table */
       const onPhone = phoneRef.current;
       const frameW = onPhone ? ZOOM_FRAME_W_PHONE : ZOOM_FRAME_W;
       const biasY = onPhone ? ZOOM_BIAS_Y_PHONE : ZOOM_BIAS_Y;
       const stopK = (i: number) =>
-        zoom && !sideRideMode
+        !sideRideMode
           ? Math.min(
               onPhone ? ZOOM_CAP_PHONE : ZOOM_CAP,
               Math.max(kFit * 1.3, (ix1 - ix0) / frameW[i]),
@@ -1510,11 +1393,11 @@ export function ConstraintNarrative({
       const fresh = !st.init;
       if (fresh) {
         st.init = true;
-        /* the zoomed walk enters the tree ON the hand-off beat, with its
-           branch already chosen — so it does not pop onto that branch, it
-           walks in from the root while the pour carries its quadrant to the
-           same head. Every other ride opens parked at its station. */
-        st.a = zoom && stp === TREE_BEAT ? 0 : arcT;
+        /* the walk enters the tree ON the hand-off beat, with its branch
+           already chosen — so it does not pop onto that branch, it walks in
+           from the root while the pour carries its quadrant to the same
+           head. Every other stop opens parked at its station. */
+        st.a = stp === TREE_BEAT ? 0 : arcT;
         st.enterT = now;
         [st.fromX, st.fromY] = posRef.current ?? rests[0];
         st.k = wholeStop ? kFit : stopK(sIdx);
@@ -1523,7 +1406,7 @@ export function ConstraintNarrative({
         st.fy = fcyT;
         st.va = st.vcx = st.vcy = st.vk = 0;
       }
-      /* ---------- the entrance (zoomed walk, hand-off beat) ----------
+      /* ---------- the entrance (the hand-off beat) ----------
          The dot used to be handed from the chart to the tree in one frame:
          the ride took it over at the root while it was still sitting on the
          pizza chart, so it was seen leaping from its quadrant to the root
@@ -1536,7 +1419,7 @@ export function ConstraintNarrative({
          The chart's own dot is gone by then, so nothing is seen twice, and
          the walk begins only once there is a tree to walk. Elsewhere in the
          ride the spring runs as before. */
-      const entering = zoom && stp === TREE_BEAT && sIdx === 1;
+      const entering = stp === TREE_BEAT && sIdx === 1;
       const sinceEnter = (now - st.enterT) / 1000;
       const HOLD_S = 0.3; // the fade-out at the chart spot
       const WAIT_S = 0.85; // the tiles' flight — the dot appears as they land
@@ -1577,16 +1460,16 @@ export function ConstraintNarrative({
          reveal fires, so its cards finish fading in as the dot arrives.
          Scrolling back drops the mark with the stop, so a re-approach
          reveals on arrival again. The report is a state change — a full
-         re-render of the stage, one long frame — so the zoomed walk, whose
-         tree is already whole and reads only the LANDING's arrival (the
-         badge), reports that one alone, and only once the dot has all but
-         stopped, so the frame it costs never lands mid-flight. */
-      const near = zoom ? 20 : 130;
+         re-render of the stage, one long frame — so the walk, whose tree is
+         already whole and reads only the LANDING's arrival (the badge),
+         reports that one alone, and only once the dot has all but stopped,
+         so the frame it costs never lands mid-flight. */
+      const near = 20;
       const reached =
         Math.abs(arcT - st.a) < near
           ? sIdx
           : Math.min(arrivedRef.current, sIdx);
-      bumpArrived(zoom && reached < 3 ? 0 : reached);
+      bumpArrived(reached < 3 ? 0 : reached);
       const [px, py] = route.at(st.a);
       /* The dot. The sideways rests live BELOW the cards, off the route
          that runs along the card centreline, so the sideways dot does not
@@ -1622,34 +1505,26 @@ export function ConstraintNarrative({
          centreline and back down on every leg — a visible lurch on the
          first fork, whose leg runs a whole row's height — so sideways it
          tracks the dot's own straight run instead, biased a little toward
-         the cards above. The zoomed walk aims at the STATION and pans
+         the cards above. The walk aims at the STATION and pans
          straight to it while the dot walks the elbows: the camera has no
          corners to turn, and the dot, on the same spring, stays inside the
          frame for the whole leg. */
       const k = wholeStop ? kFit : stopK(sIdx);
-      /* the zoomed walk keeps its frame inside the tree's box, as a map
-         viewer would: an outer branch sits off-centre in the frame rather
-         than dragging half a frame of empty stage in beside it */
+      /* the walk keeps its frame inside the tree's box, as a map viewer
+         would: an outer branch sits off-centre in the frame rather than
+         dragging half a frame of empty stage in beside it */
       const zoomCx = (x: number) => {
         const hw = (ix1 - ix0) / (2 * k);
         return wb[2] - wb[0] <= 2 * hw
           ? wcx
           : Math.max(wb[0] + hw, Math.min(wb[2] - hw, x));
       };
-      const cx = wholeStop
-        ? wcx
-        : sideRideMode
-          ? (dxT + px) / 2
-          : zoom
-            ? zoomCx(rxS)
-            : px;
+      const cx = wholeStop ? wcx : sideRideMode ? (dxT + px) / 2 : zoomCx(rxS);
       const cy = wholeStop
         ? wcy
         : sideRideMode
           ? dyT - 24
-          : zoom
-            ? ryS + biasY[sIdx]
-            : py;
+          : ryS + biasY[sIdx];
       if (fresh) {
         st.cx = cx;
         st.cy = cy;
@@ -1724,7 +1599,6 @@ export function ConstraintNarrative({
   }, [
     rideOn,
     sideRideMode,
-    zoom,
     walk,
     sideArc,
     beats,
@@ -1751,11 +1625,12 @@ export function ConstraintNarrative({
 
   /* ---------- instrument scales (the city's fork-two chart) ---------- */
   /* supply: home-value growth vs the typical metro */
-  /* the shortened walk reads its instruments off the hero panel. The
-     sideways tree's leaf column lives where the hero panel would sit, so
-     those modes drop the instrument back to the standard inset. */
+  /* the hero panel belonged to the shortened walk, which read its
+     instruments off a full-height panel beside a tree eased aside; that
+     telling came off with the user-flow switch (Sept 2026), so the walk
+     always uses the standard inset. The geometry stays below as a study. */
   const sideInst = sideLayout;
-  const heroInst = short && !sideLayout;
+  const heroInst = false;
   const compactRailInset = !sideInst && !heroInst && stageScale < 0.86;
   const inset = sideInst ? INSET_SIDE : heroInst ? INSET_HERO : INSET;
   const compactRailSquare = Math.min(inset.w - 84, inset.h - 138);
@@ -1904,60 +1779,21 @@ export function ConstraintNarrative({
       ? "[placeholder: no second fork on this branch]"
       : "[placeholder: fork two, answered by the inset]",
   };
-  if (zoom) {
-    stepCopy[TREE_BEAT] = {
-      kicker: "How we diagnose the constraint",
-      body: "[placeholder: the chart becomes the tree. its four quadrants are the four branches.]",
-    };
-    stepCopy[FORK1_BEAT] = {
-      kicker: "Fork one: the quadrant",
-      body: "[placeholder: fork one, answered by the quadrant]",
-    };
-    stepCopy[FORK2_BEAT] = forkTwoInstrument;
-    stepCopy[CHOICE_BEAT] = {
-      kicker: `Back out: the ${numberWord(endings)} diagnoses`,
-      body: "[placeholder: the endings, and the one the data argues for]",
-    };
-  }
-  if (short) {
-    stepCopy[TREE_BEAT] = rideOn
-      ? {
-          /* a ride doesn't open on the whole tree — it reveals the forks
-             as the camera reaches them */
-          kicker: "The walk begins at the root",
-          body: "[placeholder: the walk starts at the root]",
-        }
-      : {
-          kicker: "The whole tree, up front",
-          body: "[placeholder: the whole tree, up front]",
-        };
-    stepCopy[FORK1_BEAT] = {
-      kicker: "Fork one: the pizza chart",
-      body: "[placeholder: fork one, answered by the pizza chart]",
-    };
-    /* fork two and the landing share a stop here, unless the ride un-folds
-       fork two into its own stop and the landing keeps the arrival */
-    const forkTwoSwap = {
-      kicker: forkTwoInstrument.kicker,
-      body: cityForks
-        ? "[placeholder: fork two, answered by the inset, and the landing]"
-        : "[placeholder: no second fork on this branch, and the landing]",
-    };
-    if (rideOn && forks2) {
-      stepCopy[FORK2_BEAT] = forkTwoSwap;
-      stepCopy[LEAF_BEAT] = {
-        kicker: "Where we think you are",
-        body: "[placeholder: the landing, and why]",
-      };
-    } else {
-      stepCopy[LEAF_BEAT] = !forks2
-        ? {
-            kicker: "One fork, and the tree is walked",
-            body: "[placeholder: one fork, and the landing]",
-          }
-        : forkTwoSwap;
-    }
-  }
+  /* the tree half's stops: the hand-off, fork one read off the quadrant,
+     fork two on its own instrument, then back out to the endings */
+  stepCopy[TREE_BEAT] = {
+    kicker: "How we diagnose the constraint",
+    body: "[placeholder: the chart becomes the tree. its four quadrants are the four branches.]",
+  };
+  stepCopy[FORK1_BEAT] = {
+    kicker: "Fork one: the quadrant",
+    body: "[placeholder: fork one, answered by the quadrant]",
+  };
+  stepCopy[FORK2_BEAT] = forkTwoInstrument;
+  stepCopy[CHOICE_BEAT] = {
+    kicker: `Back out: the ${numberWord(endings)} diagnoses`,
+    body: "[placeholder: the endings, and the one the data argues for]",
+  };
 
   /* ---------- the text column ----------
      One block per stop, in the tool's own scrolly grammar (v3's .ct-step):
@@ -2014,8 +1850,14 @@ export function ConstraintNarrative({
               className={"ct-step nv-step" + (isOn ? " is-on" : "")}
               aria-current={isOn ? "step" : undefined}
             >
+              {/* the counter names the section it counts, the way the
+                  tool's rails do ("Metro Industries 1/3"): the name quiet,
+                  the count in ink (v3's .ct-count) */}
               <div className="ct-eyebrow">
-                {i + 1} / {beats.length}
+                Constraints Diagnosis{" "}
+                <b className="ct-count">
+                  {i + 1}/{beats.length}
+                </b>
               </div>
               <h2>{copy.kicker}</h2>
               {geo && <GeoBadge geo={geo} cityShort={cityShort} />}
@@ -2042,11 +1884,6 @@ export function ConstraintNarrative({
               {copy.body && (
                 <p className="lede">
                   <Body text={copy.body} />
-                </p>
-              )}
-              {last && flow === "short" && (
-                <p className="lede">
-                  <Body text="[placeholder: the route opens at the end of the analysis]" />
                 </p>
               )}
               {/* the instrument a fork is read on, under the caption that
@@ -2098,20 +1935,9 @@ export function ConstraintNarrative({
       </div>
 
       <div className="jz-sticky nv-stage" ref={stageRef}>
-        {/* the stage's own control row, the way the treemap keeps its
-            "View" switch above the figure: the user-flow study, folded
-            behind the variants disclosure */}
-        <div className="nv-stagebar">
-          <div className="jz-switches">
-            <VariantOptions
-              face={CONSTRAINT_FLOWS.find((f) => f.id === flow)?.label ?? ""}
-              changed={flow !== DEFAULT_CONSTRAINT_FLOW}
-            >
-              <FlowSwitch flow={flow} onFlowChange={onFlowChange} />
-            </VariantOptions>
-          </div>
-        </div>
-
+        {/* no control row (Sept 2026): the stage's only switch was the
+            user-flow study, and the zoomed walk is the section now — so the
+            stage keeps the full height the bar used to take. */}
         <div className="jz-body">
           <div className="jz-stagewrap">
             <svg
@@ -2121,9 +1947,7 @@ export function ConstraintNarrative({
                 /* sideways draws its own tree, so the authored one (and, at
                    tree beats, its traveller) leaves the stage */
                 (sideLayout ? " nv-hidetree" : "") +
-                (sideLayout && (treeFirst || step >= TREE_BEAT)
-                  ? " nv-hidedot"
-                  : "")
+                (sideLayout && step >= TREE_BEAT ? " nv-hidedot" : "")
               }
               viewBox={`${-sx} ${-dy} ${W + 2 * sx} ${H + 2 * dy}`}
               role="img"
@@ -2206,8 +2030,7 @@ export function ConstraintNarrative({
               {/* ============ scene A: the chart, built dial by dial ============ */}
               <g
                 className={
-                  "nv-chart" +
-                  (treeFirst || step >= TREE_BEAT || pourHold ? " off" : "")
+                  "nv-chart" + (step >= TREE_BEAT || pourHold ? " off" : "")
                 }
               >
                 {/* the plane's tints — it reads at once; yours marked. Drawn
@@ -2543,13 +2366,9 @@ export function ConstraintNarrative({
                   transform:
                     focusMode || sideLayout || rideOn
                       ? "none"
-                      : short
-                        ? stepIdx === 0
-                          ? TREE_OPENING_POSE
-                          : lift + TREE_ASIDE_POSE
-                        : step >= TREE_BEAT
-                          ? wholeFit
-                          : TREE_HOME_POSE,
+                      : step >= TREE_BEAT
+                        ? wholeFit
+                        : TREE_HOME_POSE,
                   transition: "transform 0.9s cubic-bezier(0.4, 0, 0.2, 1)",
                 }}
               >
@@ -3021,7 +2840,7 @@ export function ConstraintNarrative({
                   className="nv-focus"
                   style={{
                     transform:
-                      sideMode && (treeFirst || step >= TREE_BEAT)
+                      sideMode && step >= TREE_BEAT
                         ? fitTransform(
                             sideBox(sh, forks2),
                             intoFor(sideBox(sh, forks2)),
@@ -3032,7 +2851,7 @@ export function ConstraintNarrative({
                 >
                   <SidewaysTree
                     {...vp}
-                    ridden={sideRideMode && (treeFirst || step >= TREE_BEAT)}
+                    ridden={sideRideMode && step >= TREE_BEAT}
                     dotRef={sideDotRef}
                   />
                 </g>
