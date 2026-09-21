@@ -3193,9 +3193,11 @@
     /* all three clusters wear one colouring: the columns already carry the
        tradability, so colour is free to say sector, or complexity */
     const clusterFill = fillBy;
-    /* the tradable cluster alone, filling the width: the tradability-first
-       narrative's second beat colours it by complexity */
-    const tradRows = clusterRows[0];
+    /* the two tiers that sell outward at all - traded and partly traded -
+       as one map filling the width, sectors grouped and no tier grounds:
+       the beat between the three tiers and the ranking, which is drawn over
+       the same set */
+    const tradRows = clusterRows[0].concat(clusterRows[1]);
     /* two geometries for the same mix: one that reserves a strip along the
        top of each sector block for its name (opt-1), one that does not
        (opt-2 writes on the block, opt-3 does not write at all) */
@@ -3226,7 +3228,7 @@
     let closeMenuRef = null;
     const tierList = () => byJobsAll.filter(d => tierOn[clusterOf(d)]);
     let barRankAll = new Map(byJobsAll.slice(0, NB).map((d, i) => [d.name, i]));
-    const byJobsTrad = clusterRows[0].slice().sort((a, b) => b.employ - a.employ);
+    const byJobsTrad = tradRows.slice().sort((a, b) => b.employ - a.employ);
     const barRankTrad = new Map(byJobsTrad.slice(0, NB).map((d, i) => [d.name, i]));
     const barY = i => BMT + i * BRH + BRH / 2;
     const asBars = (d, rankMap, fill, fallback) => {
@@ -3428,17 +3430,18 @@
       4: d => view === "alt"
         ? asBars(d, barRankAll, clusterFill(d), clusterSpot(d))
         : { box: clusterSpot(d), fill: clusterFill(d), op: 1, rx: 0 },
-      /* the tradable cluster on its own, the full width, read by complexity;
-         everything else stays where the clusters left it and fades */
-      5: d => clusterOf(d) === 0
+      /* the two outward-selling tiers on their own, the full width, read by
+         complexity; the local tier stays where the clusters left it and fades */
+      5: d => clusterOf(d) <= 1
         ? (view === "alt"
             ? asBars(d, barRankTrad, complexityColor(d.name), tradSpot(d) || posFull.get(d.name))
             : { box: tradSpot(d) || posFull.get(d.name), fill: complexityColor(d.name), op: 1, rx: 0 })
         : { box: clusterSpot(d), fill: GREY, op: 0, rx: 0 },
-      /* the most tradable cluster alone, the full width: the first beat. The
-         rest wait unseen where the clusters will put them, already in the
-         colour they will wear, so the second beat fades them in in place */
-      7: d => clusterOf(d) === 0
+      /* traded and partly traded together, the full width, with no tier
+         grounds: the beat after the three tiers. The local tier waits unseen
+         where the tiers put it, already in the colour it wears there, so
+         travelling back fades it in in place */
+      7: d => clusterOf(d) <= 1
         ? (view === "alt"
             ? asBars(d, barRankTrad, fillBy(d), tradSpot(d) || posFull.get(d.name))
             : { box: tradSpot(d) || posFull.get(d.name), fill: fillBy(d), op: 1, rx: 0 })
@@ -3869,13 +3872,12 @@
       G.append("text").attr("class", "mi-axname")
         .attr("x", BML + 12).attr("y", BMT - 36).text("Jobs in the metro");
       /* same line as the axis title, as on the ranking */
-      /* The tradability column is the ranking's, feature for feature, on the
-         jobs order: the tier's name in the column and the head as the tier
-         filter. The first beat's tradable-only bars keep the score, with the
-         track beside it rather than under it, because 18 units of row will
-         not hold a line of type and a rule stacked. */
-      const tierBars = G === gBarsAll;
-      if (tierBars){
+      /* The tradability column is the ranking's, feature for feature: the
+         tier's name in the column, and on the order over every industry the
+         head is the tier filter too. The outward-selling beat's bars carry
+         the same words under a plain head, since they now cover two tiers. */
+      const tierBars = true;
+      if (G === gBarsAll){
         /* the head is the filter's control: the chart names what can be
            narrowed, instead of a second control standing beside it */
         menuHead(G, TC_R, BMT - 36, "is-bars");
@@ -4259,7 +4261,7 @@
       /* the header of the opening frame, which shows the most tradable alone */
       const tradHead = document.getElementById(p + "TradHead");
       if (tradHead){ const pc = tradHead.querySelector(".pct");
-        if (pc) pc.textContent = "(" + pct(clusterShare[0]) + " of metro jobs)"; }
+        if (pc) pc.textContent = "(" + pct(clusterShare[0] + clusterShare[1]) + " of metro jobs)"; }
       /* each name sits over its own column, so the header is measured from
          the chart rather than from the slot that holds it — the slot runs a
          little wider, and a share of that width would drift the names right */
@@ -4479,12 +4481,12 @@
     if (key){
       const jobs = {}, trad = {};
       industryData.forEach(d => { jobs[d.sector] = (jobs[d.sector] || 0) + d.employ; });
-      (clusterRows[0] || []).forEach(d => { trad[d.sector] = (trad[d.sector] || 0) + d.employ; });
+      tradRows.forEach(d => { trad[d.sector] = (trad[d.sector] || 0) + d.employ; });
       const tot = Object.values(jobs).reduce((a, b) => a + b, 0) || 1;
       const totTrad = Object.values(trad).reduce((a, b) => a + b, 0) || 1;
-      /* two shares per sector: of every metro job, and of the jobs in the most
-         tradable industries alone, for the first beat, whose map shows only
-         those; a sector with none of them leaves that beat's key */
+      /* two shares per sector: of every metro job, and of the jobs that sell
+         outward at all, for the beat whose map shows only those; a sector
+         with none of them leaves that beat's key */
       key.innerHTML = Object.keys(jobs)
         .sort((a, b) => jobs[b] - jobs[a])
         .map(sec =>
