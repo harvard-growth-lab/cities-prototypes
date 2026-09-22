@@ -2822,6 +2822,8 @@
   #miFigure[data-color="complexity"] #miTierPair{margin-left:auto;}
   /* opt-2 of the tier study: the ground carries its tier's name alone, set
      as the head the share was; the shares are in the donut by the lede */
+  /* a ground with nothing left in it says so where its cells would be */
+  #miTreemapSvg .mi-card-none{font-size:12.5px;fill:var(--ink-soft);}
   #miFigure[data-tier="donut"] .mi-card-pct{display:none;}
   #miFigure[data-tier="donut"] .mi-card-lab{font-size:15px;font-weight:700;fill:var(--ink);}
   /* opt-2, the shipped option, names the tier instead of printing the
@@ -2900,10 +2902,12 @@
   .mcl-lab .pct{font-weight:400;}
   /* the sector legend keeps the bottom on the clusters' beat, as on the first */
   .mi-figure[data-step="4"] .sector-key,
-  .mi-figure[data-step="0"] .sector-key{opacity:1;}
+  .mi-figure[data-step="0"] .sector-key{opacity:1;visibility:visible;pointer-events:auto;}
   /* coloured by complexity, the map beats swap the sector key for the ramp */
   .mi-figure[data-color="complexity"][data-step="4"] .sector-key,
-  .mi-figure[data-color="complexity"][data-step="0"] .sector-key{opacity:0;}
+  .mi-figure[data-color="complexity"][data-step="0"] .sector-key{
+    opacity:0;visibility:hidden;pointer-events:none;
+  }
   .mi-figure[data-color="complexity"][data-step="4"] .complexity-legend,
   .mi-figure[data-color="complexity"][data-step="0"] .complexity-legend{opacity:1;}
   /* the second beat's scale: 1 to 0, three bands, the metro's own examples */
@@ -2968,9 +2972,15 @@
     transition:opacity .7s ease, transform .7s ease;}
   .mi-figure[data-step="2"] .tradable-split-header{opacity:1;transform:none;}
   .mi-figure .complexity-legend,
-  .mi-figure .sector-key,
   .mi-figure .spec-key{opacity:0;transition:opacity .5s ease;}
-  .mi-figure[data-step="0"] .sector-key{opacity:1;}
+  /* the key carries controls, so where it is not drawn it must also be out
+     of reach: a transparent key still took the click, showed its card and
+     held a tab stop over the beat beneath it */
+  .mi-figure .sector-key{
+    opacity:0;visibility:hidden;pointer-events:none;
+    transition:opacity .5s ease, visibility .5s ease;
+  }
+  .mi-figure[data-step="0"] .sector-key{opacity:1;visibility:visible;pointer-events:auto;}
   .mi-figure[data-step="1"] .complexity-legend,
   .mi-figure[data-step="5"] .complexity-legend{opacity:1;}
   .mi-figure[data-step="3"] .spec-key:not(.spec-key--gap),
@@ -3010,7 +3020,6 @@
 
   /* the sector key: one row of swatches under the map, wrapping as needed */
   .sector-key{
-    position:relative;
     display:flex;flex-wrap:wrap;gap:7px 20px;
     font-size:12.5px;color:var(--ink);
   }

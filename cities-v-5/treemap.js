@@ -3209,6 +3209,7 @@
     let secGeo = null;
     const secShown = d => !secOn || secOn.has(d.sector);
     const secFiltered = () => !!secOn;
+    let resetSec = null;              /* the key fills this in: applySec(null) */
     function rebuildSecGeo(){
       if (!secOn){ secGeo = null; return; }
       const rows = industryData.filter(secShown);
@@ -3330,7 +3331,11 @@
     /* which tradability tiers the bar view is showing; all three to begin with */
     let tierOn = [true, true, true];
     let closeMenuRef = null;
-    const tierList = () => byJobsAll.filter(d => tierOn[clusterOf(d)] && secShown(d));
+    /* the bars answer to both filters, so either one has to ask what the
+       other leaves before it takes anything away */
+    const tierListWith = (tOn, sOn) =>
+      byJobsAll.filter(d => tOn[clusterOf(d)] && (!sOn || sOn.has(d.sector)));
+    const tierList = () => tierListWith(tierOn, secOn);
     let barRankAll = null;                 /* set once barOrder exists */
     const byJobsTrad = tradRows.slice().sort((a, b) => b.employ - a.employ);
     const barRankTrad = new Map(byJobsTrad.slice(0, NB).map((d, i) => [d.name, i]));
@@ -3543,7 +3548,10 @@
           : { box: clusterSpot(d), fill: clusterFill(d), op: 1, rx: 0 },
       /* the two outward-selling tiers on their own, the full width, read by
          complexity; the local tier stays where the clusters left it and fades */
-      5: d => clusterOf(d) <= 1
+      5: d => !secShown(d)
+        ? { box: clusterOf(d) <= 1 ? (tradSpot(d) || posFull.get(d.name)) : clusterSpot(d),
+            fill: complexityColor(d.name), op: 0, rx: 0 }
+        : clusterOf(d) <= 1
         ? (view === "alt"
             ? asBars(d, barRankTrad, complexityColor(d.name), tradSpot(d) || posFull.get(d.name))
             : { box: tradSpot(d) || posFull.get(d.name), fill: complexityColor(d.name), op: 1, rx: 0 })
@@ -3552,7 +3560,10 @@
          grounds: the beat after the three tiers. The local tier waits unseen
          where the tiers put it, already in the colour it wears there, so
          travelling back fades it in in place */
-      7: d => clusterOf(d) <= 1
+      7: d => !secShown(d)
+        ? { box: clusterOf(d) <= 1 ? (tradSpot(d) || posFull.get(d.name)) : clusterSpot(d),
+            fill: fillBy(d), op: 0, rx: 0 }
+        : clusterOf(d) <= 1
         ? (view === "alt"
             ? asBars(d, barRankTrad, fillBy(d), tradSpot(d) || posFull.get(d.name))
             : { box: tradSpot(d) || posFull.get(d.name), fill: fillBy(d), op: 1, rx: 0 })
@@ -3593,6 +3604,9 @@
           .text(Math.round(clusterShare[c.k] * 100) + "% of jobs");
         g.append("text").attr("class", "mi-card-lab")
           .attr("x", c.x + CARD_TXT).attr("y", 40).text(TIER_NAMES[c.k]);
+        /* filled in only when the filter leaves this ground with nothing */
+        g.append("text").attr("class", "mi-card-none")
+          .attr("x", c.x + CARD_TXT).attr("y", CARD_HEAD + 26).text("");
       });
     }
     const gHi = svg.append("g").attr("class", "mi-hilite-layer");
@@ -3733,8 +3747,15 @@
         if (need(d) > d.b.w) return;
         const x0 = d.b.x, y0 = d.b.y;
         const x1 = x0 + tabW(d), y1 = y0 + TH;
+        /* the tabs are drawn from the layout on screen, so the cells they
+           cover have to be looked for in that same layout: against the
+           unfiltered maps a tab covers cells that have moved away, and
+           misses the ones that moved under it */
+        const pos = secGeo
+          ? (which === 4 ? secGeo.clB : which === 0 ? secGeo.full : secGeo.tradB)
+          : (which === 4 ? posClusterB : which === 0 ? posFull : posTradB);
         (which === 4 ? clusterRows.flat() : which === 0 ? industryData : tradRows).forEach(r => {
-          const b = (which === 4 ? posClusterB : which === 0 ? posFull : posTradB).get(r.name);
+          const b = pos.get(r.name);
           if (b && b.x < x1 && b.y < y1 &&
               b.x + b.w > x0 && b.y + b.h > y0) hideLab.add(r.name);
         });
@@ -4147,6 +4168,15 @@
          arrival rather than once */
       if (closeMenuRef && !(((i === 4 || i === 0) && view === "alt") || i === 6)) closeMenuRef();
       show(gCards, i === 4 && view === "map");
+      /* a ground the filter empties keeps its width - the tiers' shares are
+         the metro's, not the filter's - and says why it is bare */
+      gCards.selectAll("g").each(function(_, ix){
+        const g = d3.select(this), k = cardBox[ix] ? cardBox[ix].k : ix;
+        const bare = secFiltered() && !clusterRows[k].some(secShown);
+        g.select(".mi-card-none").text(bare ? "None of the sectors shown" : "");
+        g.select(".mi-card-pct").style("opacity", bare ? 0.4 : 1);
+        g.select(".mi-card-lab").style("opacity", bare ? 0.4 : 1);
+      });
       show(gSecLab, (i === 7 || i === 4 || i === 0) && view === "map" &&
         colorBy === "sector" && nameMode !== "off");
       /* on the reveal section the opening beat rests on the admin bands: the
@@ -4279,8 +4309,15 @@
         const b = ev.target.closest(".tm-item[data-tier]");
         if (!b) return;
         const k = +b.dataset.tier, on = tiersOf(menuCtx);
-        /* an empty chart answers nothing, so the last one stays on */
-        if (on[k] && on.filter(Boolean).length === 1) return;
+        /* an empty chart answers nothing, so the last one stays on. Over the
+           bars that is not the last tier but the last tier the sectors on
+           screen still have anything in */
+        if (menuCtx === "rank"){
+          if (on[k] && on.filter(Boolean).length === 1) return;
+        } else {
+          const probe = on.slice(); probe[k] = !probe[k];
+          if (!tierListWith(probe, secOn).length) return;
+        }
         on[k] = !on[k];
         b.classList.toggle("is-on", on[k]);
         b.setAttribute("aria-pressed", String(on[k]));
@@ -4331,6 +4368,11 @@
     function setColorBy(c){
       colorBy = c === "complexity" ? "complexity" : "sector";
       fig.dataset.color = colorBy;
+      /* the complexity ramp takes the key's slot under the chart, and the key
+         is the only way back from a sector filter: rather than strand the
+         reader with a filtered map and nothing to undo it, the sectors come
+         back as the key leaves */
+      if (colorBy === "complexity" && secFiltered() && resetSec) resetSec();
       /* those show only while the first beat is coloured by complexity. They
          are only touched on that beat: showing or hiding them in a beat above
          the reader would shift the page under them. They open and close in
@@ -4639,6 +4681,8 @@
       const items = [].slice.call(key.querySelectorAll(".sk-sec"));
       /* the key says which sectors are in play, and the reset appears only
          when there is something to go back from */
+      const allHeadTitle = document.querySelector("#" + p + "AllHead .mcl-dir");
+      const headDefault = allHeadTitle ? allHeadTitle.textContent : "";
       function syncKey(){
         items.forEach((b, i) => {
           const on = !secOn || secOn.has(order[i]);
@@ -4646,6 +4690,11 @@
           b.setAttribute("aria-pressed", String(on));
         });
         if (resetBtn) resetBtn.hidden = !secFiltered();
+        /* the chart's own title must not still say every industry while the
+           map is showing some of them */
+        if (allHeadTitle) allHeadTitle.textContent = !secOn ? headDefault
+          : secOn.size === 1 ? [...secOn][0]
+          : secOn.size + " of " + order.length + " sectors";
       }
       /* the filter moves the map, the names on it and the bars beside it */
       function applySec(next){
@@ -4658,31 +4707,43 @@
         syncKey();
         if (step >= 0) paint(step, !reduced());
       }
+      resetSec = () => applySec(null);
       const allSet = () => new Set(order);
       /* a double-click arrives as click, click, dblclick, so the single
          click waits to see whether a second one is coming: without the
          wait, asking for one sector alone first takes it out and puts it
          back, and the map is laid out three times on the way */
-      let clickWait = null;
+      let clickWait = null, pending = null;
+      const runPending = () => {
+        const job = pending;
+        pending = null; clearTimeout(clickWait);
+        if (job) job.run();
+      };
+      const dropPending = () => { pending = null; clearTimeout(clickWait); };
       key.addEventListener("click", ev => {
         if (ev.target.closest(".sk-reset")){
-          clearTimeout(clickWait); applySec(null); hideTip(); return;
+          dropPending(); applySec(null); hideTip(); return;
         }
         const b = ev.target.closest(".sk-sec");
         if (!b) return;
+        /* a click on another entry settles the one still waiting rather than
+           throwing it away */
+        if (pending && pending.btn !== b) runPending();
         const sec = order[+b.dataset.si];
         clearTimeout(clickWait);
-        clickWait = setTimeout(() => {
+        pending = { btn: b, run: () => {
           const next = secOn ? new Set(secOn) : allSet();
           if (next.has(sec)) next.delete(sec); else next.add(sec);
           applySec(next);
-          showTip(b, lastMove);                         /* the card follows the change */
-        }, 230);
+          /* the card comes back only if the pointer is still on the entry */
+          if (hoverBtn === b) showTip(b, lastMove); else hideTip();
+        } };
+        clickWait = setTimeout(runPending, 230);
       });
       key.addEventListener("dblclick", ev => {
         const b = ev.target.closest(".sk-sec");
         if (!b) return;
-        clearTimeout(clickWait);
+        dropPending();
         const sec = order[+b.dataset.si];
         const solo = secOn && secOn.size === 1 && secOn.has(sec);
         applySec(solo ? null : new Set([sec]));
@@ -4696,14 +4757,16 @@
         if (!tipEl) return;
         const i = +b.dataset.si, sec = order[i];
         const on = !secOn || secOn.has(sec);
-        const solo = secOn && secOn.size === 1 && secOn.has(sec);
+        const solo = !!(secOn && secOn.size === 1 && secOn.has(sec));
         tipEl.innerHTML =
           '<b>' + sec + '</b>' +
           '<span class="skt-row"><span>Jobs</span><span>' + Math.round(jobs[sec]).toLocaleString() + '</span></span>' +
           '<span class="skt-row"><span>Share of metro jobs</span><span>' +
             (jobs[sec] / tot * 100).toFixed(1) + '%</span></span>' +
           '<span class="skt-row"><span>Industries</span><span>' + inds[sec] + '</span></span>' +
-          '<span class="skt-hint">' + (on ? "Click to take it out of the map" : "Click to bring it back") +
+          '<span class="skt-hint">' +
+          (solo ? "The only sector on the map"
+                : on ? "Click to take it out of the map" : "Click to bring it back") +
           '<br>' + (solo ? "Double-click for every sector again" : "Double-click to keep only this one") + '</span>';
         tipEl.hidden = false;
         const move = ev && ev.clientX != null ? ev : lastMove;
@@ -4716,14 +4779,15 @@
         tipEl.style.top = (bb.top - fb.top - tipEl.offsetHeight - 10) + "px";
       }
       function hideTip(){ if (tipEl) tipEl.hidden = true; }
+      let hoverBtn = null;
       items.forEach(b => {
-        b.addEventListener("mouseenter", ev => { lastMove = ev; showTip(b, ev); });
+        b.addEventListener("mouseenter", ev => { hoverBtn = b; lastMove = ev; showTip(b, ev); });
         b.addEventListener("mousemove", ev => {
           lastMove = ev;
           if (!tipEl.hidden) cursorTipPos(ev, fig, tipEl);
         });
         b.addEventListener("focus", () => { lastMove = null; showTip(b); });
-        b.addEventListener("mouseleave", hideTip);
+        b.addEventListener("mouseleave", () => { if (hoverBtn === b) hoverBtn = null; hideTip(); });
         b.addEventListener("blur", hideTip);
       });
       key.addEventListener("mouseleave", () => { lastMove = null; hideTip(); });
@@ -4839,12 +4903,18 @@
         if (view !== "map") return [];
         const above = nameMode === "above";
         if (step === 0){
-          const src = above ? secFullA : secFullB;
+          const src = secGeo ? (above ? secGeo.secA : secGeo.secB)
+                             : (above ? secFullA : secFullB);
           return want.map(n => src.get(n)).filter(Boolean);
         }
         if (step === 4 || step === 7){
-          const src = step === 4 ? (above ? secClusterA : secClusterB) : null;
-          if (!src) return want.map(n => (above ? secTradA : secTradB).get(n)).filter(Boolean);
+          const src = step === 4
+            ? (secGeo ? (above ? secGeo.clSecA : secGeo.clSecB)
+                      : (above ? secClusterA : secClusterB))
+            : null;
+          if (!src) return want.map(n =>
+            (secGeo ? (above ? secGeo.tradSecA : secGeo.tradSecB)
+                    : (above ? secTradA : secTradB)).get(n)).filter(Boolean);
           const out = [];
           src.forEach((v, k) => { if (want.indexOf(v.name) >= 0) out.push(v.b); });
           return out;
@@ -4876,7 +4946,10 @@
       const litHl = span => {
         const ds = span.dataset;
         if (ds.sector){
-          const want = ds.sector.split("|");
+          const want = ds.sector.split("|").filter(n => !secOn || secOn.has(n));
+          /* the sector the phrase names is off the map: there is nothing to
+             point at, and dimming or greying every cell would say there is */
+          if (!want.length){ span.classList.add("is-lit"); return; }
           if (hlMode === "dim"){
             cell.classed("is-dim", d => want.indexOf(d.sector) < 0);
           } else if (hlMode === "mute"){
