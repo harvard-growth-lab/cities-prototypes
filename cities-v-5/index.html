@@ -2585,58 +2585,44 @@
      The reading is stated once in a tinted callout, then the three numbers
      it rests on sit in a card below it — icon, label, value on one line. */
   .q-stats{margin:18px 0 4px;}
-  /* ── Who are you?: the four measures, one calm block ──
-     No tiles, no borders: a header line with the peer switch, a 2x2 grid
-     of cells that read as typeset text with one small drawn element each,
-     the rank strip. The level is the number; magnitude against the
-     national and peer averages is carried in words, so a 33x gap and a 4%
-     gap take the same one line; the strip says only where the place sits
-     among the ranked set, rank 1 at its left end. The peer line's height
-     is reserved from the start, so the switch fades text in and nothing
-     moves. */
+  /* ── Who are you?: the four measures, one line each ──
+     One row per measure. On the left the level in large type and, under
+     it, the rank among US places or metros. On the right one line, with
+     the place as a filled disc and its comparators placed on the same
+     scale: the metro as a ring, the peer average as a small grey disc,
+     the national average as a grey tick, each labelled with its value
+     under the line (or over it, where two would collide). One legend at
+     the top names the marks; no axis, no grid, no table. */
   .wy-block{max-width:752px;}
-  .wy-head{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:20px;margin-bottom:16px;}
-  .wy-ctx{font-size:13px;line-height:20px;color:var(--ink-soft);}
-  .wy-toggle{display:inline-flex;align-items:center;gap:8px;background:none;border:0;padding:0;cursor:pointer;font:inherit;font-size:12px;line-height:16px;color:var(--ink-soft);}
-  .wy-toggle .wy-sw{position:relative;width:28px;height:16px;border-radius:8px;background:rgba(26,34,38,.22);transition:background .16s ease;flex:none;}
-  .wy-toggle .wy-sw::after{content:"";position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:#fff;transition:transform .16s ease;}
-  .wy-toggle[aria-checked="true"] .wy-sw{background:var(--teal);}
-  .wy-toggle[aria-checked="true"] .wy-sw::after{transform:translateX(12px);}
-  .wy-toggle:focus-visible{outline:2px solid var(--teal);outline-offset:3px;border-radius:2px;}
-  .wy-grid{display:grid;grid-template-columns:1fr 1fr;column-gap:32px;row-gap:28px;position:relative;}
-  /* one hairline across the grid, centred in the row gap */
-  .wy-grid::before{content:"";position:absolute;left:0;right:0;top:calc(50% - .5px);height:1px;background:rgba(26,34,38,.22);}
-  .wy-cell{display:flex;flex-direction:column;min-height:132px;}
-  .wy-lab{font-size:13px;line-height:16px;color:var(--ink-soft);}
-  .wy-lvl{font-size:34px;line-height:40px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;margin-top:4px;}
-  .wy-rankline{display:flex;align-items:center;gap:10px;height:16px;margin-top:6px;}
-  .wy-strip{position:relative;width:160px;height:16px;flex:none;}
-  .wy-strip::before{content:"";position:absolute;left:0;right:0;top:7px;height:2px;background:rgba(26,34,38,.22);}
-  .wy-strip i{position:absolute;background:rgba(26,34,38,.22);}
-  .wy-strip .wy-cap{top:5px;width:1px;height:6px;}
-  .wy-strip .wy-mid{top:6px;left:80px;width:1px;height:4px;}
-  .wy-strip .wy-dot{top:4px;width:8px;height:8px;border-radius:50%;background:var(--teal);}
-  .wy-rank{font-size:13px;line-height:16px;color:var(--ink-soft);font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .wy-legend{display:flex;flex-wrap:wrap;gap:6px 22px;align-items:center;font-size:12.5px;line-height:16px;color:var(--ink-soft);padding-bottom:12px;border-bottom:1px solid rgba(26,34,38,.22);}
+  .wy-legend span{display:inline-flex;align-items:center;gap:7px;}
+  .wy-legend .wy-lg-here{color:var(--ink);font-weight:600;}
+  .wy-mk{display:inline-block;flex:none;}
+  .wy-mk.here{width:10px;height:10px;border-radius:50%;background:var(--teal);}
+  .wy-mk.metro{width:10px;height:10px;border-radius:50%;border:2px solid var(--teal);background:#fff;box-sizing:border-box;}
+  .wy-mk.peer{width:8px;height:8px;border-radius:50%;background:#8a9296;}
+  .wy-mk.nat{width:2px;height:14px;background:#8a9296;}
+  .wy-row{display:grid;grid-template-columns:196px minmax(0,1fr);column-gap:24px;align-items:center;padding:18px 0 16px;border-bottom:1px solid rgba(26,34,38,.1);}
+  .wy-row:last-child{border-bottom:0;}
+  .wy-lab{display:block;font-size:13px;line-height:16px;color:var(--ink-soft);}
+  .wy-lvl{display:block;font-size:30px;line-height:36px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;margin-top:2px;}
+  .wy-rank{display:block;font-size:12.5px;line-height:16px;color:var(--ink-soft);font-variant-numeric:tabular-nums;margin-top:2px;white-space:nowrap;}
   .wy-rank b{font-weight:600;color:var(--ink);}
-  .wy-cmp{display:flex;align-items:center;gap:0;font-size:14px;line-height:20px;color:var(--ink-soft);margin-top:8px;}
-  .wy-cmp + .wy-cmp{margin-top:2px;}
-  .wy-cmp b{font-weight:500;color:var(--ink);font-variant-numeric:tabular-nums;}
-  /* the direction mark: a small teal triangle up or down, a dash for "about";
-     direction only, never good or bad */
-  .wy-dir{display:inline-block;width:12px;flex:none;position:relative;height:20px;}
-  .wy-dir::before{content:"";position:absolute;left:0;top:7px;width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;}
-  .wy-dir.up::before{border-bottom:6px solid var(--teal);}
-  .wy-dir.down::before{border-top:6px solid var(--teal);}
-  .wy-dir.flat::before{top:9px;width:8px;height:1.5px;border:0;background:var(--teal);}
-  .wy-peer{opacity:0;transition:opacity .16s ease;}
-  .wy-block.is-peers .wy-peer{opacity:1;}
-  .wy-foot{font-size:12px;line-height:18px;color:var(--ink-soft);margin:12px 0 0;min-height:18px;opacity:0;transition:opacity .16s ease;}
-  .wy-block.is-peers .wy-foot{opacity:1;}
-  .wy-src{font-size:12px;line-height:18px;color:var(--ink-soft);margin:4px 0 0;}
-  @media (max-width:599px){
-    .wy-grid{grid-template-columns:1fr;row-gap:24px;}
-    .wy-grid::before{display:none;}
-    .wy-lvl{font-size:30px;line-height:36px;}
+  .wy-plot{position:relative;height:64px;}
+  .wy-plot .wy-line{position:absolute;left:0;right:0;top:31px;height:2px;background:rgba(26,34,38,.16);}
+  .wy-plot .wy-mark{position:absolute;top:32px;transform:translate(-50%,-50%);}
+  .wy-plot .wy-mark.here{width:12px;height:12px;border-radius:50%;background:var(--teal);z-index:2;}
+  .wy-plot .wy-mark.metro{width:12px;height:12px;border-radius:50%;border:2px solid var(--teal);background:#fff;box-sizing:border-box;z-index:1;}
+  .wy-plot .wy-mark.peer{width:9px;height:9px;border-radius:50%;background:#8a9296;}
+  .wy-plot .wy-mark.nat{width:2px;height:16px;background:#8a9296;}
+  .wy-plot .wy-val{position:absolute;font-size:12px;line-height:14px;color:var(--ink-soft);font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .wy-plot .wy-val.below{top:44px;}
+  .wy-plot .wy-val.above{top:8px;}
+  .wy-plot .wy-val.here{color:var(--ink);font-weight:600;}
+  .wy-src{font-size:12px;line-height:18px;color:var(--ink-soft);margin:14px 0 0;}
+  @media (max-width:899px){
+    .wy-row{grid-template-columns:1fr;row-gap:6px;}
+    .wy-lvl{font-size:26px;line-height:32px;}
   }
   .q-stat{
     display:flex;align-items:center;gap:12px;padding:11px 0;
@@ -4989,8 +4975,8 @@
       <div class="sec" data-sec="page-overview page-overview-msa page-overview-places page-overview-practice">
         <button class="sec-head" onclick="goTo('page-overview')"><span class="num">1</span>Who are you?</button>
         <ul class="steps">
-          <li data-step="page-overview"><span class="dot"></span><button onclick="goTo('page-overview')">How well is your city doing</button></li>
-          <li data-step="page-overview-msa"><span class="dot"></span><button onclick="goTo('page-overview-msa')">Your city is not an island</button></li>
+          <li data-step="page-overview"><span class="dot"></span><button onclick="goTo('page-overview')">Your Admin</button></li>
+          <li data-step="page-overview-msa"><span class="dot"></span><button onclick="goTo('page-overview-msa')">Your Metro</button></li>
           <li data-step="page-overview-places"><span class="dot"></span><button onclick="goTo('page-overview-places')">Admins in your Metro</button></li>
           <li data-step="check-overview"><span class="dot"></span><button onclick="goTo('check-overview')">Test your knowledge</button></li>
           <li data-step="apply-overview"><span class="dot"></span><button onclick="goTo('apply-overview')">Put your insights</button></li>
@@ -5254,26 +5240,23 @@
 
           <section class="ov-block" id="page-overview">
             <div class="page-head">
-              <h2>Where does your city stand?</h2>
+              <h2>Your Admin</h2>
             </div>
-            <p class="lede">This is <span class="city-short">Boston</span>, a city in Massachusetts. Here is
-              where it stands today: each measure&rsquo;s level, its rank among the places of its own metro,
-              and how it compares with the national average &mdash; and, if you like, with the places most
-              like it.</p>
-            <!-- the four measures at their level, each ranked among the metro's
-                 places and read against the national average; the peers join
-                 on the switch. Built by wyBuild from the WY data below. -->
+            <!-- nothing on this side but the four measures: each at its level,
+                 ranked among US places, and placed on one line against the
+                 peer average, the metro and the national average. Built by
+                 wyBuild from the WY data below. -->
             <div class="wy-block" data-wy="admin"></div>
 
           </section>
 
           <section class="ov-block" id="page-overview-msa">
             <div class="page-head">
-              <h2>Your city is not an island</h2>
+              <h2>Your Metro</h2>
             </div>
             
-            <p class="lede">The administrative city is one piece of a larger machine: people commute, firms hire, and housing supply responds across a region far wider than the city line — the <strong>labor market</strong>. We approximate it with the metropolitan statistical area. <span class="city-short">Boston</span> sits inside its metro area, and most of what follows is read at that scale.</p>
-            <!-- the same four measures for the metro, ranked among US metros -->
+            <!-- the same four measures for the metro: ranked among US metros,
+                 placed against the peer metros and the national average -->
             <div class="wy-block" data-wy="metro"></div>
             <div class="collapsible-info">
               <button class="collapsible-header">
@@ -5292,23 +5275,6 @@
               <div class="collapsible-content">
                 <p>A <strong>metropolitan statistical area</strong> is how the US Census draws the functional city: a dense core plus every surrounding county tied to it by commuting. It is the closest official shape to the real labor market — the area within which people can change jobs or homes without changing lives.</p>
                 <p><span class="city-short">Boston</span>’s metro spans 197 cities and towns and about 4.9M people; the administrative city is one of them, home to roughly 13% of the metro’s residents. That is why most of what follows is read at the metro scale.</p>
-              </div>
-            </div>
-            <!-- the beat's takeaway: is the admin the metro's anchor? Its share
-                 of the metro's people as a ring, the verdict beside it, and the
-                 two numbers the verdict rests on. The ring fills on arrival. -->
-            <div class="anchor-card" style="--share:24.8;--rest:75.2">
-              <svg class="ac-ring" viewBox="0 0 84 84" aria-hidden="true">
-                <circle class="ac-track" cx="42" cy="42" r="34"/>
-                <circle class="ac-share" cx="42" cy="42" r="34" pathLength="100"/>
-                <text class="ac-pct" x="42" y="47" text-anchor="middle">24.8%</text>
-              </svg>
-              <div class="ac-body">
-                <p class="ac-head"><span class="ac-anchor" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="5" r="2.4"/><path d="M12 7.4V21"/><path d="M7.5 10.5h9"/><path d="M4.8 14.6a7.2 7.2 0 0 0 14.4 0"/></svg></span><span><span class="city-short">Boston</span> is the anchor of its metro</span></p>
-                <dl class="ac-rows">
-                  <div class="ac-row"><dt>Share of metro population</dt><dd>24.8%</dd></div>
-                  <div class="ac-row"><dt>Rank among the metro&rsquo;s 38 places</dt><dd>1st of 38</dd></div>
-                </dl>
               </div>
             </div>
           </section>
@@ -8582,84 +8548,92 @@
 
   /* ---------- Who are you?: the four measures ----------
      Levels, ranks and averages read from the reference site's own data
-     files (cities.taimur.sh/data, 2024): the admin ranked among the
-     places of its metro that carry each measure, the metro among US
-     metros; the national average is the mean across that ranked set, the
-     peer average the mean of the site's closest peers. Unemployment is
-     ranked lowest first, as the site ranks it. */
+     files (cities.taimur.sh/data, 2024). The admin is ranked among the US
+     places that carry each measure, the metro among US metros, both as
+     the site ranks them (unemployment lowest first). The national average
+     is the mean across that ranked set; the peer average the mean of the
+     site's closest peers; "metro" is the admin's own metro at its level. */
   const WY = {
     admin: {
-      ctx: '<span class="city-short">Boston</span>, ranked among the places of its metro',
+      noun: "US places",
+      refs: [["metro", "<span><span class=\"city-short\">Boston</span> metro</span>"], ["peer", "Peer average"], ["nat", "National average"]],
       peers: "Washington DC, Oakland CA, Long Beach CA, Cambridge MA",
       rows: [
-        { label: "Population",        fmt: "count", level: 673458, rank: 1,  n: 38,  nat: 20203,  peer: 429473 },
-        { label: "Average salary",    fmt: "usd",   level: 106267, rank: 61, n: 123, nat: 81669,  peer: 109919 },
-        { label: "Home value",        fmt: "usd",   level: 972529, rank: 23, n: 127, nat: 411273, peer: 888089 },
-        { label: "Unemployment rate", fmt: "pct",   level: 3.8,    rank: 22, n: 38,  nat: 4.17,   peer: 4.68, lowest: true }
+        { label: "Population",     fmt: "count", level: 673458, rank: 25,   n: 9593,  metro: 5025517, peer: 429473, nat: 20203 },
+        { label: "Average salary", fmt: "usd",   level: 106267, rank: 2009, n: 13847, metro: 114779,  peer: 109919, nat: 81669 },
+        { label: "Home value",     fmt: "usd",   level: 972529, rank: 765,  n: 15998, metro: 717120,  peer: 888089, nat: 411273 },
+        { label: "Unemployment",   fmt: "pct",   level: 3.8,    rank: 691,  n: 1606,  metro: 3.7,     peer: 4.68,   nat: 4.17, lowest: true }
       ]
     },
     metro: {
-      ctx: '<span class="city-short">Boston</span> metro, ranked among US metros',
+      noun: "US metros",
+      refs: [["peer", "Peer average"], ["nat", "National average"]],
       peers: "Washington, Seattle, San Diego, Denver",
       rows: [
-        { label: "Population",        fmt: "count", level: 5025517, rank: 11,  n: 387, nat: 759392, peer: 4233320 },
-        { label: "Average salary",    fmt: "usd",   level: 114779,  rank: 5,   n: 382, nat: 70060,  peer: 106531 },
-        { label: "Home value",        fmt: "usd",   level: 717120,  rank: 17,  n: 380, nat: 342210, peer: 720943 },
-        { label: "Unemployment rate", fmt: "pct",   level: 3.7,     rank: 163, n: 387, nat: 4.03,   peer: 3.95, lowest: true }
+        { label: "Population",     fmt: "count", level: 5025517, rank: 11,  n: 387, peer: 4233320, nat: 759392 },
+        { label: "Average salary", fmt: "usd",   level: 114779,  rank: 5,   n: 382, peer: 106531,  nat: 70060 },
+        { label: "Home value",     fmt: "usd",   level: 717120,  rank: 17,  n: 380, peer: 720943,  nat: 342210 },
+        { label: "Unemployment",   fmt: "pct",   level: 3.7,     rank: 163, n: 387, peer: 3.95,    nat: 4.03, lowest: true }
       ]
     }
   };
-  const WY_SOURCE = "2024 levels. Census PEP, IRS SOI (salary, carried 2023\u201325), BLS LAUS, Zillow ZHVI.";
-  (function wyBuild(){
+  const WY_SOURCE = "2024 levels from the Growth Lab's cities data: Census PEP, IRS SOI (salary, carried 2023\u201325), Zillow ZHVI, BLS LAUS.";
+  function wyBuild(){
     const fmt = (v, kind) => {
       if (kind === "pct") return v.toFixed(1) + "%";
       const k = v >= 1e6 ? (v / 1e6).toFixed(1) + "M" : Math.round(v / 1000) + "K";
       return kind === "usd" ? "$" + k : k;
     };
-    const ordinal = n => { const r = n % 100; const sfx = (r >= 11 && r <= 13) ? "th" : ({ 1: "st", 2: "nd", 3: "rd" })[n % 10] || "th"; return n + sfx; };
-    /* magnitude in words: a ratio of two or more as "times", otherwise a
-       percentage, and a rate as points; within two percent, "about" */
-    const words = (row, ref, who) => {
-      const at = "the " + who + " average of <b>" + fmt(ref, row.fmt) + "</b>";
-      if (row.fmt === "pct"){
-        const d = row.level - ref, a = Math.abs(d);
-        if (a < 0.05) return { dir: "flat", text: "about " + at };
-        return { dir: d > 0 ? "up" : "down", text: a.toFixed(1) + " points " + (d > 0 ? "above " : "below ") + at };
-      }
-      const r = row.level / ref;
-      if (r >= 2) return { dir: "up", text: (r < 10 ? r.toFixed(1) : Math.round(r)) + " times " + at };
-      if (r > 1.02) return { dir: "up", text: Math.round((r - 1) * 100) + "% above " + at };
-      if (r >= 0.98) return { dir: "flat", text: "about " + at };
-      return { dir: "down", text: Math.round((1 - r) * 100) + "% below " + at };
-    };
-    const line = (w, cls) => '<span class="wy-cmp ' + cls + '"><i class="wy-dir ' + w.dir + '" aria-hidden="true"></i><span>' + w.text + '</span></span>';
+    const thousands = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    const ordinal = n => { const r = n % 100; return thousands(n) + ((r >= 11 && r <= 13) ? "th" : ({ 1: "st", 2: "nd", 3: "rd" })[n % 10] || "th"); };
     document.querySelectorAll(".wy-block[data-wy]").forEach(host => {
       const d = WY[host.dataset.wy]; if (!d) return;
-      const cells = d.rows.map(row => {
-        const x = 4 + (row.rank - 1) / Math.max(1, row.n - 1) * 152;     /* rank 1 at the left end */
-        const nat = words(row, row.nat, "national"), peer = words(row, row.peer, "peer");
-        return '<div class="wy-cell">' +
-          '<span class="wy-lab">' + row.label + '</span>' +
-          '<span class="wy-lvl">' + fmt(row.level, row.fmt) + '</span>' +
-          '<span class="wy-rankline"><span class="wy-strip" aria-hidden="true"><i class="wy-cap" style="left:4px"></i><i class="wy-cap" style="left:156px"></i><i class="wy-mid"></i><i class="wy-dot" style="left:' + (x - 4).toFixed(1) + 'px"></i></span>' +
-          '<span class="wy-rank"><b>' + ordinal(row.rank) + '</b>' + (row.lowest ? " lowest" : "") + ' of ' + row.n + '</span></span>' +
-          line(nat, "wy-nat") + line(peer, "wy-peer") +
-          '</div>';
-      }).join("");
-      host.innerHTML =
-        '<div class="wy-head"><span class="wy-ctx">' + d.ctx + '</span>' +
-        '<button type="button" class="wy-toggle" role="switch" aria-checked="false"><span>Compare with peers</span><span class="wy-sw" aria-hidden="true"></span></button></div>' +
-        '<div class="wy-grid">' + cells + '</div>' +
-        '<p class="wy-foot">Peers: ' + d.peers + '</p>' +
-        '<p class="wy-src">' + WY_SOURCE + '</p>';
-      const sw = host.querySelector(".wy-toggle");
-      sw.addEventListener("click", () => {
-        const on = sw.getAttribute("aria-checked") !== "true";
-        sw.setAttribute("aria-checked", String(on));
-        host.classList.toggle("is-peers", on);
+      const legend = '<div class="wy-legend"><span class="wy-lg-here"><i class="wy-mk here"></i><span><span class="city-short">Boston</span>' +
+        (host.dataset.wy === "metro" ? " metro" : "") + '</span></span>' +
+        d.refs.map(r => '<span><i class="wy-mk ' + r[0] + '"></i>' + r[1] + '</span>').join("") + '</div>';
+      /* the rows first, each with its line empty; the marks are placed once
+         the line has a width to be placed on */
+      host.innerHTML = legend + d.rows.map((row, i) =>
+        '<div class="wy-row"><div class="wy-left"><span class="wy-lab">' + row.label + '</span>' +
+        '<span class="wy-lvl">' + fmt(row.level, row.fmt) + '</span>' +
+        '<span class="wy-rank"><b>' + ordinal(row.rank) + '</b>' + (row.lowest ? " lowest" : "") + ' of ' + thousands(row.n) + ' ' + d.noun + '</span></div>' +
+        '<div class="wy-plot" data-row="' + i + '"><i class="wy-line"></i></div></div>').join("") +
+        '<p class="wy-src">Peers: ' + d.peers + '.<br>' + WY_SOURCE + '</p>';
+      host.querySelectorAll(".wy-plot").forEach(plot => {
+        const row = d.rows[+plot.dataset.row];
+        const W = plot.clientWidth || 532;
+        const marks = [{ k: "here", v: row.level }].concat(d.refs.map(r => ({ k: r[0], v: row[r[0]] })));
+        const max = Math.max.apply(null, marks.map(m => m.v)) * 1.08;
+        const placed = marks.map(m => ({ k: m.k, x: Math.max(6, Math.min(W - 6, m.v / max * W)), t: fmt(m.v, row.fmt) }))
+          .sort((a, b) => a.x - b.x);
+        placed.forEach(p => {
+          const mk = document.createElement("i"); mk.className = "wy-mark " + p.k; mk.style.left = p.x.toFixed(1) + "px"; plot.appendChild(mk);
+          const lb = document.createElement("span"); lb.className = "wy-val " + p.k; lb.textContent = p.t; plot.appendChild(lb);
+          p.el = lb; p.w = lb.getBoundingClientRect().width || p.t.length * 6.4;
+        });
+        /* each value label centres under its mark, kept inside the line; one
+           that would run into the label before it on that side goes over the
+           line; one that fits on neither side stays below, moved right just
+           clear of its neighbour */
+        let endBelow = -1e9, endAbove = -1e9;
+        placed.forEach(p => {
+          const want = Math.max(0, Math.min(W - p.w, p.x - p.w / 2));
+          let side = "below", left = want;
+          if (want < endBelow + 4){
+            if (want >= endAbove + 4) side = "above";
+            else left = Math.min(W - p.w, endBelow + 4);
+          }
+          p.el.classList.add(side);
+          p.el.style.left = left.toFixed(1) + "px";
+          if (side === "below") endBelow = left + p.w; else endAbove = left + p.w;
+        });
       });
     });
-  })();
+  }
+  wyBuild();
+  /* the marks are placed in pixels for the width the block has, so a
+     block built while its page was hidden, or resized since, is built again */
+  { let wyT = null; window.addEventListener("resize", () => { clearTimeout(wyT); wyT = setTimeout(wyBuild, 120); }); }
 
   /* ---------- links to sections ----------
      index.html#metro-industries opens the tool on that section, skipping
