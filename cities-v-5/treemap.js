@@ -4273,10 +4273,6 @@
       const tradHead = document.getElementById(p + "TradHead");
       if (tradHead){ const pc = tradHead.querySelector(".pct");
         if (pc) pc.textContent = "(" + pct(clusterShare[0] + clusterShare[1]) + " of metro jobs)"; }
-      /* the header of the opening beat, which shows every industry */
-      const allHead = document.getElementById(p + "AllHead");
-      if (allHead){ const pc = allHead.querySelector(".pct");
-        if (pc) pc.textContent = "(" + (jobsTotal / 1e6).toFixed(1) + "M jobs)"; }
       /* each name sits over its own column, so the header is measured from
          the chart rather than from the slot that holds it — the slot runs a
          little wider, and a share of that width would drift the names right */
