@@ -2911,7 +2911,7 @@
         svg.selectAll(".spec-cell-lab").remove();
         bars.select(".spec-rect")
           .attr("x", geom.x).attr("y", geom.y).attr("width", geom.w)
-          .attr("height", BAR_H).attr("rx", 3).attr("fill", geom.fill);
+          .attr("height", BAR_H).attr("rx", 0).attr("fill", geom.fill);
         axisG.style("opacity", 1);
         decorate(bars, idx, false);
         return;
@@ -2927,7 +2927,7 @@
       bars.select(".spec-rect").transition().delay(320).duration(1150)
         .ease(d3.easeCubicInOut)
         .attr("x", geom.x).attr("y", geom.y).attr("width", geom.w)
-        .attr("height", BAR_H).attr("rx", 3).attr("fill", geom.fill)
+        .attr("height", BAR_H).attr("rx", 0).attr("fill", geom.fill)
         .on("end", function(){
           if (ended) return;          // once for the group, not once per bar
           ended = true;
@@ -3271,7 +3271,7 @@
       return r == null
         ? { box: fallback, fill, op: 0, rx: 0 }
         : { box: { x: barScale(0), y: barY(r) - BBAR / 2,
-                   w: Math.max(2, barScale(d.employ) - barScale(0)), h: BBAR }, fill, op: 1, rx: 3 };
+                   w: Math.max(2, barScale(d.employ) - barScale(0)), h: BBAR }, fill, op: 1, rx: 0 };
     };
     window[ctlName + "_CLUSTERS"] = { share: clusterShare, gap: CGAP, width: MI_W };
 
@@ -3834,9 +3834,9 @@
         .attr("x", TC_R).attr("y", tierMode ? 4 : 1).attr("text-anchor", "end")
         .text(d => tierMode ? tierLabel(d) : tradabilityOf(d.name).toFixed(2));
       row.append("rect").attr("class", "mi-tradtrack")
-        .attr("x", TC_R - TC_W).attr("y", 5).attr("width", TC_W).attr("height", 4).attr("rx", 2);
+        .attr("x", TC_R - TC_W).attr("y", 5).attr("width", TC_W).attr("height", 4).attr("rx", 0);
       row.append("rect").attr("class", "mi-tradbar")
-        .attr("x", TC_R - TC_W).attr("y", 5).attr("height", 4).attr("rx", 2)
+        .attr("x", TC_R - TC_W).attr("y", 5).attr("height", 4).attr("rx", 0)
         .attr("width", d => Math.max(1, tw(tradabilityOf(d.name))));
       row.append("line").attr("class", "mi-tradtick")
         .attr("x1", TC_R - TC_W + tw(CL_HI)).attr("x2", TC_R - TC_W + tw(CL_HI))
