@@ -2426,16 +2426,26 @@
   let tradableClearHover = null;   /* same, for the split animation */
 
   /* Cursor tooltips prefer the top-right corner of the cursor; when the
-     cursor is too close to the frame's top the tip flips BELOW it — never
-     pinned to an edge while the cursor keeps moving. */
+     cursor is too close to the frame's top the tip flips BELOW it, and when
+     it is too close to the right edge it flips to the left of the cursor —
+     never pinned to an edge while the cursor keeps moving.
+     Where the frame is too narrow to hold the card beside the cursor at all
+     (a card is 330 wide and a stage can be narrower than twice that), the
+     card centres ON the cursor rather than parking against the left edge,
+     which is what made it look stuck while the pointer moved. */
   function cursorTipPos(ev, wrap, tip){
     const w = wrap.getBoundingClientRect();
-    let left = ev.clientX - w.left + 10;
-    if (left + tip.offsetWidth > w.width) left = ev.clientX - w.left - tip.offsetWidth - 10;
-    let top = ev.clientY - w.top - tip.offsetHeight - 10;
-    if (top < 0) top = ev.clientY - w.top + 14;
-    tip.style.left = Math.max(0, left) + "px";
-    tip.style.top  = Math.max(0, Math.min(top, w.height - tip.offsetHeight)) + "px";
+    const tw = tip.offsetWidth, th = tip.offsetHeight;
+    const x = ev.clientX - w.left, y = ev.clientY - w.top;
+    let left = x + 10;
+    if (left + tw > w.width){
+      left = x - tw - 10;
+      if (left < 0) left = x - tw / 2;
+    }
+    let top = y - th - 10;
+    if (top < 0) top = y + 14;
+    tip.style.left = Math.max(0, Math.min(left, Math.max(0, w.width - tw))) + "px";
+    tip.style.top  = Math.max(0, Math.min(top, Math.max(0, w.height - th))) + "px";
   }
 
   function attachCellTip(svgEl, wrap, tip){
@@ -2469,6 +2479,7 @@
           '<div class="tip-row"><span>Jobs</span><span>' +
             Math.round(d.value).toLocaleString() + '</span></div>' + extra;
         tip.hidden = false;
+        cursorTipPos(ev, wrap, tip);
         /* the mark answers the cursor: ink outline, brought to the front
            because swarm dots overlap (inline style so it beats the CSS) */
         this.parentNode.appendChild(this);
@@ -2801,6 +2812,7 @@
           '<div class="tip-row"><span>' + L.allLbl + '</span><span>' +
             Math.round(cur.overall * 100) + "%</span></div>";
         tip.hidden = false;
+        cursorTipPos(ev, wrap, tip);
       })
       .on("mousemove", function(ev){
         cursorTipPos(ev, wrap, tip);
@@ -4781,6 +4793,7 @@
           d.sector + '</span></div>';
         tip.innerHTML = head + body;
         tip.hidden = false;
+        cursorTipPos(ev, wrap, tip);
         this.parentNode.appendChild(this);          // hovered mark to the front
         d3.select(r).style("stroke", "#1a2226").style("stroke-width", 2.5);
         /* coming in off the bar rather than the band, light the band anyway */
