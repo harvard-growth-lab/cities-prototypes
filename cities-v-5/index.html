@@ -840,7 +840,7 @@
      very wide screens the measure caps and the gutter takes the rest. */
   /* the counter sits above the title, as it does in the scrolly sections,
      and owns the space beneath it */
-  .ov-wrap:not(.ov2) .ov-block > .ct-eyebrow{margin-bottom:14px;}
+  .ov-wrap:not(.ov2) .ov-block > .ct-eyebrow{margin-bottom:14px;font-size:max(12.5px, var(--t-xs));}
   .ov-wrap:not(.ov2) .ov-block > .ct-eyebrow + .page-head{margin-top:0;}
   /* one left edge for the whole tool: the frame, which is where the
      location control starts and where every other section's content
@@ -1815,7 +1815,7 @@
   .plc-wrap .is-home-col .plc-val{color:var(--geo-city);}
   /* nothing in the table below 12.5px */
   .plc-wrap .plc-rank{font-size:12.5px;margin-top:3px;font-variant-numeric:tabular-nums;}
-  .plc-wrap .plc-chg{font-size:12px;font-weight:500;margin-left:6px;}
+  .plc-wrap .plc-chg{font-size:12.5px;font-weight:500;margin-left:6px;}
   .plc-wrap .plc-remove{margin-left:3px;font-size:13px;vertical-align:baseline;}
   /* ---- City / metro silhouettes ----
      These two sections keep swapping which geography a dot stands for, so the
@@ -2600,6 +2600,8 @@
      and valued. No axis and no legend: every bar carries its own name. */
   .wy-block{max-width:752px;}
   .wy-ctl{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:0 0 18px;}
+  /* nothing in this section reads under 12.5px, the control included */
+  .wy-ctl .seg-btn{font-size:12.5px;}
   .wy-tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 32px;}
   .wy-tile{padding-top:14px;border-top:1px solid rgba(26,34,38,.22);min-width:0;}
   .wy-head{display:flex;align-items:baseline;justify-content:space-between;gap:4px 12px;flex-wrap:wrap;}
@@ -2608,7 +2610,7 @@
   .wy-rank{font-size:12.5px;line-height:16px;color:var(--ink-soft);font-variant-numeric:tabular-nums;white-space:nowrap;}
   .wy-rank b{font-weight:600;color:var(--ink);}
   /* the bars wait for the comparison view */
-  .wy-bars{display:none;margin-top:12px;grid-template-columns:max-content minmax(0,1fr) max-content;column-gap:10px;row-gap:6px;align-items:center;font-size:12px;line-height:14px;color:var(--ink-soft);}
+  .wy-bars{display:none;margin-top:12px;grid-template-columns:max-content minmax(0,1fr) max-content;column-gap:10px;row-gap:6px;align-items:center;font-size:12.5px;line-height:15px;color:var(--ink-soft);}
   .wy-block.is-cmp .wy-bars{display:grid;animation:wyIn .25s ease;}
   @keyframes wyIn{from{opacity:0}to{opacity:1}}
   .wy-bars .wy-n{white-space:nowrap;}
@@ -2618,7 +2620,7 @@
   .wy-bars .wy-b.peer{background:#8a9296;}
   .wy-bars .wy-v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;}
   .wy-bars .wy-n.here,.wy-bars .wy-v.here{color:var(--ink);font-weight:600;}
-  .wy-src{font-size:12px;line-height:18px;color:var(--ink-soft);margin:18px 0 0;}
+  .wy-src{font-size:12.5px;line-height:18px;color:var(--ink-soft);margin:18px 0 0;}
   @media (max-width:899px){
     .wy-tiles{grid-template-columns:1fr;gap:18px;}
   }
