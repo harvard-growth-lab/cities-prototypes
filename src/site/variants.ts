@@ -34,13 +34,13 @@ export const SITE_VARIANTS: { id: SiteVariant; label: string; note: string }[] =
 export const PARTS = [
   {
     n: 1,
-    name: "City profile",
+    name: "City Profile",
     kind: "read",
     sections: ["Economic Fundamentals", "Metro Industries", "Admin Industries"],
   },
   {
     n: 2,
-    name: "Diagnose & act",
+    name: "Diagnose & Act",
     kind: "do",
     sections: ["Constraints Diagnosis", "Levers for Change"],
   },

@@ -81,7 +81,7 @@ import {
   walkShape,
   wholeBox,
 } from "./walkShapes";
-import { QuadMark, QuadMetrics, nameWidth } from "./quadIcons";
+import { MetricMark, QuadMark, QuadMetrics, nameWidth } from "./quadIcons";
 import {
   DATA_WINDOW_LABEL,
   METROS,
@@ -128,9 +128,27 @@ const H = 640;
 
 /* the chart square, centred on the stage (same geometry as the compact flow,
    so swapping flows keeps the chart where the eye left it) */
-const CQ = { cx: W / 2, cy: 316, r: 278 };
+/* (r 278 → 268 and cy 316 → 312, Sept 2026: the x-axis title moved down
+   from its ticks, and on a stage no taller than the viewBox — a phone on
+   its side, the stacked layouts — the authored 640 is all the height there
+   is, so the square gave up the room rather than the title clipping; the
+   nameplate above the square keeps its 26.) */
+const CQ = { cx: W / 2, cy: 312, r: 268 };
 const cxu = (v: number) => CQ.cx + v * CQ.r;
 const cyu = (v: number) => CQ.cy - v * CQ.r;
+/* the axis titles' furniture: the dial's mark before each title (the
+   people and pay glyphs of the quadrant labels and tree heads), and the
+   x title's seat under its axis — its ticks sit at +22, and at +54 the
+   title's cap line clears them by ~16 where +44 left ~6 */
+const AX_MARK = 22;
+const AX_GAP = 7;
+const AX_TITLE_DY = 54;
+/** a .jz-ms-title's width, near enough to centre a mark + title pair on
+ *  the axis: 17px Source Sans 3 runs 0.44em a glyph on these titles
+ *  (measured 329 for the wage title's 44 glyphs, 310 for population's 42) */
+const axTitleW = (s: string) => s.length * 0.44 * 17;
+const POP_AXIS = `Population growth (annual rate, ${DATA_WINDOW_LABEL})`;
+const WAGE_AXIS = `Average wage growth (annual rate, ${DATA_WINDOW_LABEL})`;
 
 /** where a plane region's label hangs: where its sector meets the edge,
  *  which for a quadrant is its outer corner. Shared by the chart, which
@@ -2202,7 +2220,7 @@ export function ConstraintNarrative({
               )}
               {last && (
                 <div className="jz-next show nv-next">
-                  <span className="jz-next-k">Up next</span>
+                  <span className="jz-next-k">Up Next</span>
                   <span
                     className="jz-next-name"
                     style={{ color: TREE_SIDE_COLOR[nextSide] }}
@@ -2272,7 +2290,7 @@ export function ConstraintNarrative({
                   y={168}
                   textAnchor="middle"
                 >
-                  how this section works
+                  How This Section Works
                 </text>
                 {INTRO_PARTS.map((part, i) => (
                   <g key={part.id} transform={`translate(${W / 2 + (i - 1) * 330} 330)`}>
@@ -2408,15 +2426,28 @@ export function ConstraintNarrative({
                       the axis, ~39 wide at 15px) by the same ~8 the x-axis
                       title keeps below its ticks; at 50 the rotated title
                       ran through the "+5.6%" and "+3.4%" labels */}
-                  <text
-                    className="jz-ms-title"
-                    transform="rotate(-90)"
-                    x={-CQ.cy}
-                    y={cxu(-1) - 64}
-                    textAnchor="middle"
-                  >
-                    {`Average wage growth (annual rate, ${DATA_WINDOW_LABEL})`}
-                  </text>
+                  {/* the mark turns with the title (Sept 2026, the user's
+                      call — upright beside vertical text read as a stray
+                      glyph), so the pair sits in ONE rotated frame and takes
+                      the x axis's spacing: mark, gap, title, centred together
+                      on the axis, the mark's box on the title's cap line */}
+                  <g transform="rotate(-90)">
+                    <MetricMark
+                      what="pay"
+                      className="jz-ms-axmark"
+                      x={-CQ.cy - (AX_MARK + AX_GAP + axTitleW(WAGE_AXIS)) / 2}
+                      y={cxu(-1) - 64 - 6 - AX_MARK / 2}
+                      size={AX_MARK}
+                    />
+                    <text
+                      className="jz-ms-title"
+                      x={-CQ.cy + (AX_MARK + AX_GAP) / 2}
+                      y={cxu(-1) - 64}
+                      textAnchor="middle"
+                    >
+                      {WAGE_AXIS}
+                    </text>
+                  </g>
                 </g>
                 <g className={on(step >= DIAL1_BEAT)}>
                   {[-1, -0.5, 0.5, 1].map((t) => (
@@ -2437,13 +2468,20 @@ export function ConstraintNarrative({
                     y1={cyu(-1)}
                     y2={cyu(-1)}
                   />
+                  <MetricMark
+                    what="people"
+                    className="jz-ms-axmark"
+                    x={cxu(0) - (AX_MARK + AX_GAP + axTitleW(POP_AXIS)) / 2}
+                    y={cyu(-1) + AX_TITLE_DY - 6 - AX_MARK / 2}
+                    size={AX_MARK}
+                  />
                   <text
                     className="jz-ms-title"
-                    x={cxu(0)}
-                    y={cyu(-1) + 44}
-                    textAnchor="middle"
+                    x={cxu(0) - (AX_MARK + AX_GAP + axTitleW(POP_AXIS)) / 2 + AX_MARK + AX_GAP}
+                    y={cyu(-1) + AX_TITLE_DY}
+                    textAnchor="start"
                   >
-                    {`Population growth (annual rate, ${DATA_WINDOW_LABEL})`}
+                    {POP_AXIS}
                   </text>
                 </g>
                 {/* the backdrop field + nameplate, from the benchmark on */}
@@ -2589,7 +2627,7 @@ export function ConstraintNarrative({
                             textAnchor={anchor}
                             fill={TREE_SIDE_COLOR[sec.side]}
                           >
-                            {name.toUpperCase()}
+                            {name}
                           </text>
                           <QuadMetrics
                             side={sec.side}

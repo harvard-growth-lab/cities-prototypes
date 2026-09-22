@@ -512,11 +512,11 @@ export function TreeSandboxPage({
                   className="ts-back"
                   onClick={() => setPick(suggPath)}
                 >
-                  Back to your read
+                  Back to Your Read
                 </button>
               ) : (
                 <span className="ts-yours" style={{ background: color }}>
-                  your data&rsquo;s read
+                  Your Data&rsquo;s Read
                 </span>
               )}
             </div>
@@ -530,8 +530,8 @@ export function TreeSandboxPage({
             <div className="ts-list">
               <span className="ts-kicker">
                 {modules.length
-                  ? `${modules.length} module${modules.length === 1 ? "" : "s"} at this ending`
-                  : "no modules at this ending yet"}
+                  ? `${modules.length} Module${modules.length === 1 ? "" : "s"} at This Ending`
+                  : "No Modules at This Ending Yet"}
               </span>
               {modules.map((m) => (
                 <ModuleRow
@@ -899,7 +899,7 @@ export function TreeSandboxPage({
                     className="ts-yours"
                     style={{ background: TREE_SIDE_COLOR[readSide] }}
                   >
-                    your data&rsquo;s read
+                    Your Data&rsquo;s Read
                   </span>
                 )}
               </div>
@@ -920,7 +920,7 @@ export function TreeSandboxPage({
             />
             <div className="ts-an-foot">
               <button type="button" className="ts-back" onClick={backToTree}>
-                Back to the tree
+                Back to the Tree
               </button>
               <button
                 type="button"
@@ -992,13 +992,13 @@ function ModuleRow({
                 <span className="ts-viewname">
                   {v.name}
                   {/* the live tool's Drivers section already draws the rest */}
-                  {!v.chart && <span className="ts-tocome">to come</span>}
+                  {!v.chart && <span className="ts-tocome">To Come</span>}
                 </span>
                 {(v.signal || v.level) && (
                   <span className="ts-viewmeta">
                     {v.signal && (
                       <Fragment>
-                        <b>signal</b> {v.signal}
+                        <b>Signal</b> {v.signal}
                       </Fragment>
                     )}
                     {v.level && (
@@ -1026,7 +1026,7 @@ function PickMark({ x, y, color }: { x: number; y: number; color: string }) {
     <g className="ts-pick" transform={`translate(${x} ${y})`}>
       <rect x={-w / 2} y={-8} width={w} height={16} rx={8} fill={color} />
       <text x={0} y={2.5} textAnchor="middle" fill="#fff">
-        ↑ you selected this path
+        ↑ You Selected This Path
       </text>
     </g>
   );
@@ -1038,7 +1038,7 @@ function ChipMark({ x, y, color }: { x: number; y: number; color: string }) {
     <g className="ts-chip" transform={`translate(${x} ${y})`}>
       <rect x={-62} y={-9} width={62} height={15} rx={7.5} fill={color} />
       <text x={-31} y={2} textAnchor="middle" fill="#fff">
-        your data
+        Your Data
       </text>
     </g>
   );

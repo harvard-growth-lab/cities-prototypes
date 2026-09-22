@@ -139,6 +139,43 @@ body = subOnce(body,
         '          <li data-step="page-branch-analysis"><span class="dot"></span><button onclick="goTo(\'page-branch-analysis\')">Branch analysis</button></li>'),
   "rail: constraints steps");
 
+/* the closes are gone from the last two sections (Sept 2026, the user's
+   call: "remove test your knowledge and put your insights section at the
+   end of constraints section and levers for change section") — so their
+   rail steps go too, which is also what the journey window lists. The
+   first three sections keep theirs. */
+body = subOnce(body,
+  lines('          <li data-step="check-constraints"><span class="dot"></span><button onclick="goTo(\'check-constraints\')">Test your knowledge</button></li>',
+        '          <li data-step="apply-constraints"><span class="dot"></span><button onclick="goTo(\'apply-constraints\')">Put your insights</button></li>',
+        "        </ul>"),
+  "        </ul>",
+  "rail: no close on constraints");
+body = subOnce(body,
+  lines('          <li data-step="check-levers"><span class="dot"></span><button onclick="goTo(\'check-levers\')">Test your knowledge</button></li>',
+        '          <li data-step="apply-levers"><span class="dot"></span><button onclick="goTo(\'apply-levers\')">Put your insights</button></li>',
+        "        </ul>"),
+  "        </ul>",
+  "rail: no close on levers");
+
+/* Levers for Change carries no copy yet (Sept 2026, the user's call:
+   "remove text in levers for change section") — main's line described a
+   chapter still being drafted and pointed at the closing checks, which are
+   no longer under it either */
+body = subOnce(body,
+  lines("          <h2>Levers for Change</h2>",
+        "        </div>",
+        '        <p class="lede">What could loosen the constraint the diagnosis points to. This chapter&rsquo;s content is still being drafted &mdash; its closing checks below already work.</p>'),
+  lines("          <h2>Levers for Change</h2>",
+        "        </div>",
+        /* …and a placeholder block in its place, in main's own dashed-frame
+           idiom (.placeholder-frame, which its stylesheet still carries).
+           No .ph-title: main sets that in caps, and nothing authored here
+           is set in caps. */
+        '        <div class="placeholder-frame">',
+        '          <span class="ph-sub">[placeholder: the levers for the constraint the diagnosis lands on, and what each one asks for]</span>',
+        "        </div>"),
+  "levers: a placeholder block");
+
 /* the Explainers button comes back to the masthead (main keeps its styles and
    toggleExplainers() looks for #explainersBtn, but dropped it from the markup);
    the book is the one the explainers page header draws */
@@ -233,9 +270,15 @@ const PAGE_PATCHES = [
   ["sub", "pageIds: constraints pages (and Extras, which main left out of its spy)",
     '"page-constraints","page-city-in-metro","page-constraints-lorem","page-levers"];',
     '"page-constraints","page-constraints-diagnose","page-branch-analysis","page-levers","page-extras"];   /* [port] */'],
-  ["sub", "sectionDefs: constraints pages",
+  ["sub", "sectionDefs: constraints pages, no close",
     '{name:"Constraints Diagnosis",pages:["page-constraints","page-city-in-metro","page-constraints-lorem","check-constraints","apply-constraints"],entry:"page-constraints"},',
-    '{name:"Constraints Diagnosis",pages:["page-constraints","page-constraints-diagnose","page-branch-analysis","check-constraints","apply-constraints"],entry:"page-constraints"},   /* [port] */'],
+    '{name:"Constraints Diagnosis",pages:["page-constraints","page-constraints-diagnose","page-branch-analysis"],entry:"page-constraints"},   /* [port] */'],
+
+  /* …and so does Levers for Change: neither section closes on a quiz any
+     more (Sept 2026, the user's call) */
+  ["sub", "sectionDefs: levers pages, no close",
+    '{name:"Levers for Change",pages:["page-levers","check-levers","apply-levers"], entry:"page-levers"},',
+    '{name:"Levers for Change",pages:["page-levers"], entry:"page-levers"},   /* [port] */'],
 
   /* the section switch hides a section by its top-level element; the React
      section's anchors live inside one slot, which is that element */
@@ -251,6 +294,59 @@ const PAGE_PATCHES = [
   ["sub", "rail highlight resolves scrolly steps",
     "      const el=document.getElementById(li.dataset.step);\n      if(!el) return;\n      const r=el.getBoundingClientRect();\n      if(r.top<=mid && r.bottom>=mid && r.height<bestHeight){",
     "      const el=(window.ovStepFor && window.ovStepFor(li.dataset.step)) ||\n        (window.ctStepFor && window.ctStepFor(li.dataset.step)) || document.getElementById(li.dataset.step);   /* [port] */\n      if(!el) return;\n      const r=el.getBoundingClientRect();\n      if(r.top<=mid && r.bottom>=mid && r.height<bestHeight){"],
+
+  /* the pager's line and count are the STORYLINE's five sections. Main
+     already keeps Extras out of the tab strip ("the extras sit outside the
+     storyline") but left it in the pager, which then read "4 of 6" and
+     offered a sixth stop. Prev / Next are untouched, so the pager is still
+     the way in and out of Extras. */
+  ["sub", "pager: five stops, not six",
+    lines("    const stops = SECTIONS.map((sec, k) =>",
+          '      (k ? \'<i class="pgr-seg\' + (k <= i ? " is-past" : "") + \'"></i>\' : "") +',
+          '      \'<button type="button" class="pgr-stop\' +',
+          '      (k < i ? " is-past" : k === i ? " is-cur" : "") +',
+          '      \'" data-go="\' + k + \'" title="\' + sec.name + \'">\' +',
+          "      (k < i",
+          '        ? \'<svg viewBox="0 0 10 8" width="9" height="7" aria-hidden="true"><path d="M1 4.2 3.7 6.8 9 1.2" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>\'',
+          "        : '<span>' + (k + 1) + '</span>') +",
+          "      '</button>'",
+          '    ).join("");'),
+    lines("    /* [port] the storyline is the five; Extras is not a stop on it */",
+          '    const STORY = SECTIONS.filter(sec => sec.name !== "Extras");   /* [port] */',
+          "    const iCur = STORY.indexOf(SECTIONS[i]);   /* [port] -1 on Extras */",
+          "    const stops = STORY.map((sec, k) =>",
+          '      (k ? \'<i class="pgr-seg\' + (iCur >= 0 && k <= iCur ? " is-past" : "") + \'"></i>\' : "") +',
+          '      \'<button type="button" class="pgr-stop\' +',
+          '      (iCur >= 0 && k < iCur ? " is-past" : k === iCur ? " is-cur" : "") +',
+          '      \'" data-go="\' + SECTIONS.indexOf(sec) + \'" title="\' + sec.name + \'">\' +',
+          "      (iCur >= 0 && k < iCur",
+          '        ? \'<svg viewBox="0 0 10 8" width="9" height="7" aria-hidden="true"><path d="M1 4.2 3.7 6.8 9 1.2" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>\'',
+          "        : '<span>' + (k + 1) + '</span>') +",
+          "      '</button>'",
+          '    ).join("");')],
+  ["sub", "pager: the count is the storyline's",
+    lines("      (i + 1) + ' of ' + SECTIONS.length +",
+          "      (next ? ' &middot; next: ' + next.name : ' &middot; the end of the line') +"),
+    lines("      (iCur >= 0 ? (iCur + 1) + ' of ' + STORY.length : 'outside the storyline') +   /* [port] */",
+          "      (iCur >= 0",
+          "        ? (next ? ' &middot; next: ' + next.name : ' &middot; the end of the line')",
+          '        : "") +')],
+
+  /* the last two sections no longer close on a quiz + insight (Sept 2026,
+     the user's call). Upstream's data is left whole — a re-sync still picks
+     up its wording — and the two are dropped on the way out, so both
+     renderSecClose and wireSecClose find nothing and draw nothing. */
+  ["sub", "no close on the last two sections",
+    "  function sectionChecksData(){\n    return {",
+    lines('  /* [port] Constraints Diagnosis and Levers for Change carry no close */',
+          '  var NO_CLOSE = ["Constraints Diagnosis", "Levers for Change"];',
+          "  function sectionChecksData(){",
+          "    var all = sectionChecksDataUpstream();",
+          "    NO_CLOSE.forEach(function(n){ delete all[n]; });",
+          "    return all;",
+          "  }",
+          "  function sectionChecksDataUpstream(){",
+          "    return {")],
 
   /* the sample journey state names a city the picker no longer offers, and
      with Boston the only city there is no second one to name */

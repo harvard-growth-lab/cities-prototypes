@@ -17,6 +17,13 @@ html[data-v3-instant] #landing{transition:none !important;}
   height:calc(100dvh - var(--chrome-h) - 24px);
 }
 
+/* Levers for Change is a placeholder chapter: main's dashed frame under its
+   heading (the markup is a port swap). The frame is flex:1 inside a .page,
+   which is the whole screen on main but nothing at all in the one-scroll
+   layouts, where a section is only as tall as it is — so it carries its own
+   floor either way. */
+#page-levers .placeholder-frame{min-height:300px;}
+
 /* Small screens: from 2026-09-15 to 09-17 this file also held every width
    rule for the shell (two breakpoints, 920 and 640: the chrome, the tab
    strip, the landing, the pager, the scrollies, the dialogs), because

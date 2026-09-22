@@ -24,7 +24,7 @@
   transition:background .15s ease;
 }
 .sv-btn:hover,.sv-btn.open{background:#000;}
-.sv-k{font-size:9.5px;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;opacity:.62;}
+.sv-k{font-size:9.5px;font-weight:700;letter-spacing: 0.2px;text-transform: none;opacity:.62;}
 .sv-now{font-weight:700;}
 .sv-btn svg{opacity:.7;transition:transform .2s ease;}
 .sv-btn.open svg{transform:rotate(180deg);}
@@ -76,7 +76,7 @@ html:is([data-site="scroll"],[data-site="chapters"]) .secnav-btn:nth-child(4)::b
   content:var(--site-part-1);
   position:absolute;left:9px;top:auto;bottom:calc(100% + 2px);transform:none;
   width:auto;height:auto;background:none;white-space:nowrap;pointer-events:none;
-  font-size:9.5px;line-height:1;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;
+  font-size:9.5px;line-height:1;font-weight:700;letter-spacing: 0.2px;text-transform: none;
   color:var(--ink-soft);opacity:.8;transition:color .15s ease,opacity .15s ease;
 }
 html:is([data-site="scroll"],[data-site="chapters"]) .secnav-btn:nth-child(4)::before{content:var(--site-part-2);}
@@ -106,7 +106,7 @@ html:is([data-site="scroll"],[data-site="chapters"]) .secnav-btn:nth-child(3)::a
   html:is([data-site="scroll"],[data-site="chapters"]) .secmenu-opt{flex-wrap:wrap;}
   html:is([data-site="scroll"],[data-site="chapters"]) .secmenu-opt:is(:nth-child(1),:nth-child(4))::before{
     content:var(--site-part-1);flex:0 0 100%;margin:2px 0 4px;
-    font-size:10px;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;color:var(--ink-soft);
+    font-size:10px;font-weight:700;letter-spacing: 0.2px;text-transform: none;color:var(--ink-soft);
   }
   html:is([data-site="scroll"],[data-site="chapters"]) .secmenu-opt:nth-child(4)::before{content:var(--site-part-2);}
   html:is([data-site="scroll"],[data-site="chapters"]) .secmenu-opt:nth-child(4){
@@ -133,7 +133,7 @@ html:is([data-site="scroll"],[data-site="chapters"]) .secnav-btn:nth-child(3)::a
 }
 .seam-head{display:flex;flex-direction:column;gap:10px;max-width:640px;}
 .seam-eyebrow{
-  margin:0;font-size:12px;font-weight:700;letter-spacing:2.2px;text-transform:uppercase;
+  margin:0;font-size:12px;font-weight:700;letter-spacing: 0.2px;text-transform: none;
   color:rgba(255,255,255,.6);
 }
 .seam-head h2{margin:0;font-size:clamp(2rem, 1.4rem + 2.4vw, 3.25rem);line-height:1.05;font-weight:700;color:#fff;}
@@ -146,7 +146,7 @@ html:is([data-site="scroll"],[data-site="chapters"]) .secnav-btn:nth-child(3)::a
 }
 .seam-group{display:flex;flex-direction:column;gap:12px;min-width:0;}
 .seam-tag{margin:0;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
-.seam-tag b{font-size:11px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:#fff;}
+.seam-tag b{font-size:11px;font-weight:700;letter-spacing: 0.2px;text-transform: none;color:#fff;}
 .seam-tag span{font-size:13px;font-style:italic;color:rgba(255,255,255,.6);}
 .seam-group--done .seam-tag b{color:rgba(255,255,255,.72);}
 .seam-group :is(ul,ol){
@@ -182,7 +182,7 @@ html:is([data-site="scroll"],[data-site="chapters"]) .secnav-btn:nth-child(3)::a
 .seam-join{
   align-self:center;display:flex;flex-direction:column;align-items:center;gap:7px;
   margin-top:26px;color:rgba(255,255,255,.6);
-  font-size:10px;font-weight:700;letter-spacing:1.3px;text-transform:uppercase;white-space:nowrap;
+  font-size:10px;font-weight:700;letter-spacing: 0.2px;text-transform: none;white-space:nowrap;
 }
 .seam-join .site-arrow{width:34px;height:auto;}
 .site-arrow{flex:none;}
@@ -190,7 +190,7 @@ html:is([data-site="scroll"],[data-site="chapters"]) .secnav-btn:nth-child(3)::a
 .seam-foot{margin-top:4px;}
 .seam-cue{
   margin:0;display:flex;flex-direction:column;align-items:center;gap:10px;
-  font-size:11px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:rgba(255,255,255,.55);
+  font-size:11px;font-weight:700;letter-spacing: 0.2px;text-transform: none;color:rgba(255,255,255,.55);
 }
 .seam-cue .site-arrow{animation:seam-bob 1.8s ease-in-out infinite;}
 @keyframes seam-bob{0%,100%{translate:0 0;}50%{translate:0 5px;}}
@@ -259,7 +259,7 @@ html[data-site="chapters"] .secpager[data-sec="3"] .pgr-side:not(.pgr-side--r){a
 html[data-site="chapters"] .secpager[data-sec="2"] .pgr-side--r::before,
 html[data-site="chapters"] .secpager[data-sec="3"] .pgr-side:not(.pgr-side--r)::before{
   content:var(--site-part-2);
-  font-size:9.5px;line-height:1;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;color:var(--teal);
+  font-size:9.5px;line-height:1;font-weight:700;letter-spacing: 0.2px;text-transform: none;color:var(--teal);
 }
 html[data-site="chapters"] .secpager[data-sec="3"] .pgr-side:not(.pgr-side--r)::before{content:var(--site-part-1);color:var(--ink-soft);}
 
@@ -285,8 +285,12 @@ html[data-site="modes"][data-site-part="1"] .pages > section.page{min-height:0;}
 /* outside the storyline (Extras) the page is that section alone */
 html[data-site="scroll"][data-site-part="0"] #site-seam-slot{display:none;}
 /* the pager's Prev / Next are what the scroll replaces. What stays is the
-   one door out of the storyline (Extras), and the way back in from there. */
+   one door out of the storyline (Extras), and the way back in from there —
+   so the pager shows at the foot of the LAST storyline section and nowhere
+   else: every other Next named a section already on the page (Sept 2026,
+   the user's call about the Next to Levers for Change). */
 html[data-site="scroll"]:not([data-site-part="0"]) .secpager :is(.pgr-line-wrap, .pgr-side:not(.pgr-side--r) .pager-btn){display:none;}
+html[data-site="scroll"]:not([data-site-part="0"]):not([data-site-exit="1"]) .secpager{display:none;}
 html[data-site="scroll"]:not([data-site-part="0"]) .secpager{
   border-top:0;padding-top:0;background:none;
   max-width:min(var(--grid-max), calc(100% - 2 * var(--frame-pad)));padding-inline:0;
@@ -310,7 +314,7 @@ html[data-site="scroll"]:not([data-site-part="0"]) .secpager{
   font:inherit;font-size:13.5px;line-height:1;font-weight:700;color:var(--ink-soft);white-space:nowrap;
   transition:background .15s ease,color .15s ease;
 }
-.modes-btn small{font-size:9px;font-weight:700;letter-spacing:1.1px;text-transform:uppercase;opacity:.7;}
+.modes-btn small{font-size:9px;font-weight:700;letter-spacing: 0.2px;text-transform: none;opacity:.7;}
 .modes-btn:hover{color:var(--ink);}
 .modes-btn.is-on{background:#fff;color:var(--ink);box-shadow:var(--shadow-sm);cursor:default;}
 .modes-btn.is-on small{color:var(--teal);opacity:1;}
@@ -381,7 +385,7 @@ html[data-site="modes"][data-site-part="2"] .secnav-btn:nth-child(4)::after{back
   background:#fff;color:var(--ink);border:1px solid var(--border-strong);border-radius:10px;box-shadow:var(--shadow-md);
 }
 .recall-head{margin:0 2px 12px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
-.recall-head b{font-size:11px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--teal);}
+.recall-head b{font-size:11px;font-weight:700;letter-spacing: 0.2px;text-transform: none;color:var(--teal);}
 .recall-head span{font-size:13px;font-style:italic;color:var(--ink-soft);}
 .recall-panel ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;}
 .recall-card{
@@ -433,4 +437,43 @@ html[data-site="modes"][data-site-part="2"] .pgr-line-wrap{visibility:hidden;}
   /* main's phone tier: the section menu stands in for the tabs and lists
      all five, so the switch stands down with them */
   #site-mode-slot,#site-recall-slot{display:none;}
+}
+
+/* ====================================================================
+   The crossing, since Sept 2026: visuals instead of placeholder copy — the
+   a data-drawn mark on each of part one's cards, and the diagnostic tree —
+   small, the route through it lit — on the Constraints Diagnosis card.
+   Nothing here is copy to be written. (Until Sept 2026 the tree was also
+   drawn large beside the header; the card carries it alone now.)
+   ==================================================================== */
+.seam-top{display:block;}
+.seam-diag{margin:6px 0 0;font-size:16px;line-height:1.5;color:rgba(255,255,255,.82);}
+.seam-diag b{color:#fff;white-space:nowrap;}
+.seam-diag .qmark{width:1.05em;height:1.05em;vertical-align:-0.15em;margin-right:.2em;}
+.seam-tree{
+  background:#fff;color:var(--ink);border-radius:14px;padding:16px 18px 14px;
+  box-shadow:0 12px 34px rgba(0,0,0,.22);
+}
+.seam-tree svg{display:block;width:100%;height:auto;}
+.seam-tree-k{margin:0 0 4px;font-size:12.5px;font-weight:600;color:var(--ink-soft);}
+.seam-tree-t{font-size:11.5px;font-weight:700;}
+.seam-tree-t.root{font-weight:600;fill:var(--ink-soft);}
+.seam-tree-t.faint{opacity:.55;}
+.seam-tree-chip{font-size:10.5px;font-weight:700;fill:#fff;}
+.seam-legend{display:flex;flex-wrap:wrap;gap:6px 18px;margin:10px 0 0;padding:0;list-style:none;font-size:12.5px;color:var(--ink-soft);}
+.seam-legend li{display:inline-flex;align-items:center;gap:6px;}
+.seam-legend li.is-on{color:var(--ink);font-weight:700;}
+.seam-legend .qmark{width:16px;height:16px;}
+.seam-viz{display:block;width:100%;max-width:230px;height:auto;margin-top:4px;}
+/* the card's tree gets the card's width — it is a shape, not a diagram */
+.seam-viz--tree{max-width:100%;margin-top:8px;}
+.seam-viz-t{font-size:10px;font-weight:600;}
+.seam-group--done .seam-viz-t{fill:rgba(255,255,255,.75);}
+.seam-group--next .seam-viz-t{fill:var(--ink-soft);}
+.handoff-tree{flex:0 0 min(420px, 44%);}
+.handoff-tree .seam-tree{padding:12px 14px 10px;}
+.recall-card .seam-viz{max-width:100%;}
+.recall-card .seam-viz-t{fill:var(--ink-soft);}
+@media (max-width:920px){
+  .handoff-tree{flex-basis:100%;}
 }

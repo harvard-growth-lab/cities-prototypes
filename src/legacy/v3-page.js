@@ -117,8 +117,8 @@ export function initPage(){
     {name:"Economic Fundamentals", pages:["page-overview","page-overview-msa","page-overview-places","check-overview","apply-overview"], entry:"page-overview"},
     {name:"Metro Industries",    pages:["page-export-basket","leanSection","specializedSection","check-export","apply-export"], entry:"page-export-basket"},
     {name:"Admin Industries", pages:["page-admin-mix","adminWhoFills","adminResidentsOut","adminBalance","adminJobsHere","adminResidents","adminSpecialized","adminExchange","adminGauge","am2Bars","am2Compare","check-adminmix","apply-adminmix"], entry:"page-admin-mix"},
-    {name:"Constraints Diagnosis",pages:["page-constraints","page-constraints-diagnose","page-branch-analysis","check-constraints","apply-constraints"],entry:"page-constraints"},   /* [port] */
-    {name:"Levers for Change",pages:["page-levers","check-levers","apply-levers"], entry:"page-levers"},
+    {name:"Constraints Diagnosis",pages:["page-constraints","page-constraints-diagnose","page-branch-analysis"],entry:"page-constraints"},   /* [port] */
+    {name:"Levers for Change",pages:["page-levers"], entry:"page-levers"},   /* [port] */
     /* Well-built pieces outside the storyline; the anchor id is listed so
        goTo() from anywhere routes to this section before scrolling. */
     {name:"Extras",          pages:["page-extras","specializationSection"], entry:"page-extras"}
@@ -1829,7 +1829,14 @@ export function initPage(){
      then move on. State survives re-renders and feeds the journey index. */
   var CHECK_READY, CHECK_DONE, APPLY_DONE, CHECK_STATE;
 
+  /* [port] Constraints Diagnosis and Levers for Change carry no close */
+  var NO_CLOSE = ["Constraints Diagnosis", "Levers for Change"];
   function sectionChecksData(){
+    var all = sectionChecksDataUpstream();
+    NO_CLOSE.forEach(function(n){ delete all[n]; });
+    return all;
+  }
+  function sectionChecksDataUpstream(){
     return {
       "Economic Fundamentals": {
         slug: "overview",
@@ -2193,12 +2200,15 @@ export function initPage(){
     /* the mini line between the pager buttons — one state language only:
        a teal check is behind you, the enlarged ring is where you stand,
        gray numbers wait ahead */
-    const stops = SECTIONS.map((sec, k) =>
-      (k ? '<i class="pgr-seg' + (k <= i ? " is-past" : "") + '"></i>' : "") +
+    /* [port] the storyline is the five; Extras is not a stop on it */
+    const STORY = SECTIONS.filter(sec => sec.name !== "Extras");   /* [port] */
+    const iCur = STORY.indexOf(SECTIONS[i]);   /* [port] -1 on Extras */
+    const stops = STORY.map((sec, k) =>
+      (k ? '<i class="pgr-seg' + (iCur >= 0 && k <= iCur ? " is-past" : "") + '"></i>' : "") +
       '<button type="button" class="pgr-stop' +
-      (k < i ? " is-past" : k === i ? " is-cur" : "") +
-      '" data-go="' + k + '" title="' + sec.name + '">' +
-      (k < i
+      (iCur >= 0 && k < iCur ? " is-past" : k === iCur ? " is-cur" : "") +
+      '" data-go="' + SECTIONS.indexOf(sec) + '" title="' + sec.name + '">' +
+      (iCur >= 0 && k < iCur
         ? '<svg viewBox="0 0 10 8" width="9" height="7" aria-hidden="true"><path d="M1 4.2 3.7 6.8 9 1.2" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>'
         : '<span>' + (k + 1) + '</span>') +
       '</button>'
@@ -2212,8 +2222,10 @@ export function initPage(){
               '">&larr; ' + prev.name + "</button>" : "") + '</span>' +
       '<div class="pgr-line-wrap"><div class="pgr-line">' + stops + '</div>' +
       '<span class="pgr-cap"><b>' + SECTIONS[i].name + '</b> &middot; ' +
-      (i + 1) + ' of ' + SECTIONS.length +
-      (next ? ' &middot; next: ' + next.name : ' &middot; the end of the line') +
+      (iCur >= 0 ? (iCur + 1) + ' of ' + STORY.length : 'outside the storyline') +   /* [port] */
+      (iCur >= 0
+        ? (next ? ' &middot; next: ' + next.name : ' &middot; the end of the line')
+        : "") +
       '</span></div>' +
       '<span class="pgr-side pgr-side--r">' +
       (next ? '<button type="button" class="pager-btn" data-go="' + (i+1) +

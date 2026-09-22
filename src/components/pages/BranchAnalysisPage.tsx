@@ -32,12 +32,13 @@ import {
   type TreeNodeData,
   type TreeSide,
   type TreeVariant,
+  type DataLevel,
 } from "../../data/figures";
 import { branchSectionName } from "../../data/content";
 import { NodeGlyph } from "./treeIcons";
 import { QuadGlyph } from "./quadIcons";
 import { VariantOptions } from "./ConstraintNarrative";
-import { DriverChart, chartSource } from "./driverCharts";
+import { DriverChart, chartSource, chartVerdict } from "./driverCharts";
 
 /* ---------- how the section is laid out ----------
    The problem this picks between: an ending carries several modules, each
@@ -51,29 +52,22 @@ import { DriverChart, chartSource } from "./driverCharts";
    complexity is the hand-off to what comes next, so every layout puts it
    last (the tab strip alone also marks the gap before it). */
 export type BaLayout = "float" | "tabs" | "stack" | "strip";
-export const BA_LAYOUTS: { id: BaLayout; label: string; hint: string }[] = [
-  {
-    id: "float",
-    label: "Floating rail",
-    hint: "One long read, full width. The schematic leaves the column and floats over it, so the modules get the whole page and data points sit three or four across.",
-  },
-  {
-    id: "tabs",
-    label: "One module at a time",
-    hint: "The modules become a tab strip; the open one gets the whole stage. Nothing scrolls past a screen, and the reader chooses the order — which is honest, since the modules carry none.",
-  },
-  {
-    id: "stack",
-    label: "Collapsed stack",
-    hint: "Every module is one row — its question and how many data points it holds — and opens in place. The reader sets the depth, and the whole ending is legible before any of it is read.",
-  },
-  {
-    id: "strip",
-    label: "Sideways data points",
-    hint: "Modules stack down the page, but each one's data points run sideways in a strip. A module stays about a screen tall whether it holds two data points or eight.",
-  },
+/* (the pills used to explain themselves in the menu — a sentence each on
+   what bounds the scroll — until Sept 2026: the names carry it.)
+   float  one long read; the schematic floats over the page in a rail
+   tabs   a tab strip; the open module gets the whole stage
+   stack  every module one row, opening in place
+   strip  modules stack, each one's data points run sideways */
+export const BA_LAYOUTS: { id: BaLayout; label: string }[] = [
+  { id: "float", label: "Blocks" },
+  { id: "tabs", label: "Tabs" },
+  { id: "stack", label: "Collapsed" },
+  { id: "strip", label: "Sideways scroll" },
 ];
 export const DEFAULT_BA_LAYOUT: BaLayout = "float";
+/** full width is the section as it is meant to be read (Sept 2026); the
+ *  check turns it OFF, back to two cards a row */
+export const DEFAULT_BA_FULL = true;
 
 /* The third City Constraints step: the MODULES to look into at the end of
    the branch picked on the diagnostic tree in the previous step — each a
@@ -101,7 +95,7 @@ function sideOf(n: MiniNode): TreeSide {
 /** the whole tree in miniature: dots + elbows, the selected descent lit.
  *  Hovering (or clicking) anywhere near a node re-picks that path — always
  *  completed down to a leaf, so the pick is a full navigable route. */
-function DiagSchematic({
+export function DiagSchematic({
   path,
   suggPath,
   preview,
@@ -347,51 +341,70 @@ function DiagSchematic({
    Modules are an overview of where to look, not a verdict — nothing here
    says a module IS the constraint.
 
-   A data point comes in two weights (Sept 2026). One the Growth Lab's
+   Every data point is a STEP (Sept 2026): its name, its chart, and one
+   plain line of copy saying what it shows. One the Growth Lab's
    tools already have data for — the live tool's Drivers charts, the
-   Amenities Module's indicators — is a STEP: its chart, its name, and a
-   one-line placeholder for the copy that will read it. One the team's spec
-   lists and neither draws yet stays a named line under them, so what is
-   still to come is legible without taking a frame each. */
+   Amenities and Innovation Modules' indicators — draws that data and says
+   where it came from; one no source draws yet draws the FORM its data type
+   and signal call for, from a seed, and its well is tagged "Placeholder".
+   (A data point with no chart at all would still fall to the named list
+   under the steps; none does now.) */
 
-/** a drawn data point: its chart over the data point's name and a
- *  placeholder for the copy that will read it */
-function StepCard({ view, cityShort }: { view: ModuleView; cityShort: string }) {
+/** a data point's card: its name on top (with the window its data covers),
+ *  its chart, then one coloured line saying how it reads for the city (the
+ *  VERDICT — the spec's signal, answered from the chart's own numbers; a
+ *  placeholder's is the rubric, still to come) and the card's one line of
+ *  copy, plain. The data level is shown only where it differs from the
+ *  module's, which the module's head already states. */
+function StepCard({
+  view,
+  cityShort,
+  moduleLevel,
+}: {
+  view: ModuleView;
+  cityShort: string;
+  moduleLevel: DataLevel;
+}) {
   /* real data where it has been pulled for this city — the tag then names
-     the source and the span that chart covers — a drawing where it has not */
+     the window that chart covers */
   const live = chartSource(view.chart!, cityShort);
+  const ph = view.chart === "placeholder";
+  const verdict = chartVerdict(view.chart!, cityShort, view);
+  const level = view.level && view.level !== moduleLevel ? view.level : null;
   return (
-    <figure className="ba-step">
-      <div className="ba-step-well">
-        <DriverChart kind={view.chart!} city={cityShort} />
-        {!live && <span className="ba-step-tag">Schematic</span>}
-      </div>
-      <figcaption>
+    <figure className={"ba-step" + (ph ? " ba-step--ph" : "")}>
+      {/* the title leads the card (Sept 2026), the source beside it */}
+      <div className="ba-step-head">
         <span className="ba-step-ask">{view.name}</span>
-        {(view.level || live) && (
+        {(level || live) && (
           <span className="ba-step-name">
-            {view.level && (
-              <span className="ba-level small">{DATA_LEVEL_LABEL[view.level]}</span>
-            )}
+            {level && <span className="ba-level small">{DATA_LEVEL_LABEL[level]}</span>}
             {live && <span className="ba-level small live">{live}</span>}
           </span>
         )}
-        {view.read && (
-          <p className="ba-step-read">
-            <span className="ph">{view.read}</span>
+      </div>
+      <div className="ba-step-well">
+        <DriverChart kind={view.chart!} city={cityShort} placeholder={view.placeholder} />
+        {ph && <span className="ba-step-tag">Placeholder</span>}
+      </div>
+      <figcaption>
+        {verdict && (
+          <p className={"ba-step-verdict " + (verdict.tone === "ph" ? "rubric" : verdict.tone)}>
+            <span className="ba-verdict-dot" aria-hidden="true" />
+            <span>
+              <b>{verdict.head}</b>
+              {verdict.body && <span className="ba-verdict-why"> · {verdict.body}</span>}
+            </span>
           </p>
         )}
-        {(view.signal || view.note) && (
-          <span className="ba-view-meta">
-            {view.signal && (
-              <span className="ba-view-signal">
-                <b>Signal</b>
-                {view.signal}
-              </span>
-            )}
-            {view.note && <span className="ph">{view.note}</span>}
-          </span>
+        {view.read && (
+          <p className="ba-step-read">
+            {view.read}
+            {/* the second sentence shows at full width only (.ba-full) */}
+            {view.more && <span className="ba-step-more"> {view.more}</span>}
+          </p>
         )}
+        {view.note && <span className="ba-step-note">{view.note}</span>}
       </figcaption>
     </figure>
   );
@@ -415,14 +428,14 @@ function ModuleViews({
       {steps.length > 0 && (
         <div className={"ba-views" + (strip ? " strip" : "")}>
           {steps.map((v) => (
-            <StepCard key={v.name} view={v} cityShort={cityShort} />
+            <StepCard key={v.name} view={v} cityShort={cityShort} moduleLevel={def.level} />
           ))}
         </div>
       )}
       {coming.length > 0 && (
         <div className="ba-coming">
           <span className="ba-coming-k">
-            {steps.length ? "Also in this module · to come" : "Data points · to come"}
+            {steps.length ? "Also in This Module · To Come" : "Data Points · To Come"}
           </span>
           <ul>
             {coming.map((v) => (
@@ -704,7 +717,7 @@ function AnalysisLead({
       {er.landed && (
         <div className="ba-lead-row">
           <span className="ba-lead-k">
-            {er.diagnosed ? "How you landed here" : "The second fork"}
+            {er.diagnosed ? "How You Landed Here" : "The Second Fork"}
           </span>
           <p className="ba-forkline">
             <span className="ph">{er.landed}</span>
@@ -713,7 +726,7 @@ function AnalysisLead({
       )}
       {er.leads && (
         <div className="ba-lead-row">
-          <span className="ba-lead-k">Where that leads</span>
+          <span className="ba-lead-k">Where That Leads</span>
           <p className="ba-forkline">
             <span className="ph">{er.leads}</span>
             {er.detour && onDetour && (
@@ -856,6 +869,11 @@ export function BranchAnalysisPage({
      (an ending's honest length), parked behind one small disclosure so the
      team can read the same content four ways. */
   const [layout, setLayout] = useState<BaLayout>(DEFAULT_BA_LAYOUT);
+  /* full width (Sept 2026): every card takes its own row, its chart and
+     type a step larger, and its copy carries a second, plain sentence —
+     a check that crosses the four layouts rather than a fifth of them. On
+     by default, so the check reads as turning it off. */
+  const [full, setFull] = useState(DEFAULT_BA_FULL);
   /* the tab layout's open module, and the stack's open set. Both reset when
      the pick changes the modules under them. */
   const [openTab, setOpenTab] = useState<string | null>(null);
@@ -900,7 +918,7 @@ export function BranchAnalysisPage({
 
   return (
     <section
-      className={"page ba-page ba-lay-" + layout}
+      className={"page ba-page ba-lay-" + layout + (full ? " ba-full" : "")}
       id="page-branch-analysis"
       ref={sectionRef}
     >
@@ -917,8 +935,11 @@ export function BranchAnalysisPage({
         {modulesOn && (
           <div className="jz-switches ba-switches">
             <VariantOptions
-              face={BA_LAYOUTS.find((l) => l.id === layout)?.label ?? ""}
-              changed={layout !== DEFAULT_BA_LAYOUT}
+              face={
+                (BA_LAYOUTS.find((l) => l.id === layout)?.label ?? "") +
+                (full ? " · Full width" : "")
+              }
+              changed={layout !== DEFAULT_BA_LAYOUT || full !== DEFAULT_BA_FULL}
             >
               {/* `show` is not decoration: .jz-modes is opacity 0 and
                   pointer-events NONE until it carries it (the walk's header
@@ -938,16 +959,20 @@ export function BranchAnalysisPage({
                       type="button"
                       className={"jz-segbtn" + (l.id === layout ? " on" : "")}
                       aria-pressed={l.id === layout}
-                      title={l.hint}
                       onClick={() => setLayout(l.id)}
                     >
                       {l.label}
                     </button>
                   ))}
                 </div>
-                <span className="jz-modes-hint">
-                  {BA_LAYOUTS.find((l) => l.id === layout)?.hint}
-                </span>
+                <label className="jz-modes-check">
+                  <input
+                    type="checkbox"
+                    checked={full}
+                    onChange={(e) => setFull(e.target.checked)}
+                  />
+                  Full width
+                </label>
               </div>
             </VariantOptions>
           </div>
@@ -1022,8 +1047,8 @@ export function BranchAnalysisPage({
           <div className="ba-ctx-head">
             <span className="ba-kicker">
               {previewing
-                ? "Previewing another path"
-                : "Where you are in the diagnostic"}
+                ? "Previewing Another Path"
+                : "Where You Are in the Diagnostic"}
             </span>
             <button
               type="button"
@@ -1085,7 +1110,7 @@ export function BranchAnalysisPage({
                 className="ba-here-chip"
                 style={{ background: TREE_SIDE_COLOR[shownSide] }}
               >
-                you are here
+                You Are Here
               </span>
             )}
           </div>

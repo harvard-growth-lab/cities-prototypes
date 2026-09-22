@@ -51,6 +51,41 @@ const BETWEEN = 10;
 /** the width of the pair, for anyone laying a card around it */
 export const metricsWidth = (k = 1): number => (DIAL_W * 2 + BETWEEN) * k;
 
+/** one metric's mark on its own — the people or pay glyph the dials
+ *  wear — for anywhere else that names the metric: the plane's axis titles
+ *  carry it (Sept 2026), so the two axes read as the two dials before the
+ *  reader meets them as dials. `x`, `y` are the mark's top-left. */
+export function MetricMark({
+  what,
+  x,
+  y,
+  size,
+  className,
+}: {
+  what: "people" | "pay";
+  x: number;
+  y: number;
+  size: number;
+  className?: string;
+}) {
+  return (
+    <svg
+      x={x}
+      y={y}
+      width={size}
+      height={size}
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      dangerouslySetInnerHTML={{ __html: what === "pay" ? PAY : PEOPLE }}
+    />
+  );
+}
+
 /** one dial: what moved, and a trend chip for which way. `x` is the dial's
  *  left edge, `y` its centreline. */
 function Dial({
@@ -70,20 +105,7 @@ function Dial({
   const r = RING * k;
   return (
     <g transform={`translate(${x},${y})`} className="nv-dial">
-      <svg
-        x={0}
-        y={-m / 2}
-        width={m}
-        height={m}
-        viewBox="0 0 20 20"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="nv-dial-mark"
-        dangerouslySetInnerHTML={{ __html: what === "pay" ? PAY : PEOPLE }}
-      />
+      <MetricMark what={what} x={0} y={-m / 2} size={m} className="nv-dial-mark" />
       <circle
         cx={m + GAP * k + r}
         cy={0}

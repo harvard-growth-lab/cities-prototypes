@@ -1087,27 +1087,35 @@ export function convertPath(path: string[], variant: TreeVariant): string[] {
  *      price map and the cost trend for its two housing-price points;
  *    - the Amenities Module (cities.taimur.sh/tools/amenities-module.html)
  *      — education, crime, job accessibility, air quality and urban
- *      vitality, for five of the spec's six Amenities points.
+ *      vitality, for five of the spec's six Amenities points;
+ *    - the Innovation Module (cities.taimur.sh/tools/innovation-module.html)
+ *      — firm entry and exit, patents and publications per resident with
+ *      their RCAs, for the spec's three Innovation points (its annual
+ *      lines and output-against-population fits answer none, and stay
+ *      on the page).
  *  Drivers' own AMENITY story — the amenity-residual map, the metro's
  *  residual drift and the places net of their metro — was drawn here for a
  *  while and is gone: the residual (home value not explained by pay) is a
  *  measure the spec's Amenities module never asks for.
  *  The COPY is never the tools': `read` is a one-line bracketed placeholder
- *  naming what the step's copy will cover, nothing more. A data point
- *  WITHOUT a `chart` is one the spec lists and neither source draws yet —
- *  it stays a named "to come". */
+ *  naming what the step's copy will cover, nothing more. A data point the
+ *  spec lists and no source draws yet carries `chart: "placeholder"` and a
+ *  `placeholder` spec — the chart FORM its data type and signal call for,
+ *  drawn from a seed with no axis carrying a value (placeholderCharts.tsx)
+ *  and tagged as such in its well — so every data point is a card, and the
+ *  shape of what is still to come is legible. */
 
 /** the level a module's data is read at — the MSA, the admin city, or both */
 export type DataLevel = "msa" | "admin" | "both";
 export const DATA_LEVEL_LABEL: Record<DataLevel, string> = {
-  msa: "MSA-level data",
-  admin: "Admin-level data",
-  both: "MSA + admin data",
+  msa: "MSA-Level Data",
+  admin: "Admin-Level Data",
+  both: "MSA + Admin Data",
 };
 
 /** which chart a data point is — the live tool's Drivers charts
- *  (driverCharts.tsx) and the Amenities Module's indicators
- *  (amenityCharts.tsx) */
+ *  (driverCharts.tsx), the Amenities Module's indicators
+ *  (amenityCharts.tsx) and the Innovation Module's (innovationCharts.tsx) */
 export type ChartKind =
   /** ShiftShareWaterfall: start → national → industry mix → local share →
    *  new industries → end */
@@ -1130,21 +1138,77 @@ export type ChartKind =
   /** EPA's AQI by month, place and metro, against the health categories */
   | "airQuality"
   /** establishments per 1,000 residents against the national rate */
-  | "vitality";
+  | "vitality"
+  /* ---- the Innovation Module's indicators ---- */
+  /** firm entry against exit, every metro, the all-metro cross and the
+   *  four quadrants */
+  | "firmCreation"
+  /** patent families per resident among all metros, and RCA by IPC
+   *  section / subclass */
+  | "patents"
+  /** publications per resident among all metros, and RCA by field /
+   *  concept */
+  | "publications"
+  /** no source yet: the form in the view's `placeholder` spec, seeded */
+  | "placeholder";
+
+/** the chart forms a placeholder can take (placeholderCharts.tsx) — each
+ *  the form a data type and signal call for */
+export type PlaceholderForm =
+  /** one value among all metros or places, read high / low */
+  | "histogram"
+  /** a rank over time, read up / down — 1 at the top */
+  | "rankLine"
+  /** two measures across every metro, with the fit */
+  | "scatter"
+  /** one measure per 2-digit sector, the city against its MSA */
+  | "sectorScatter"
+  /** one share per 2-digit sector, city and MSA side by side */
+  | "dumbbell"
+  /** two series over time */
+  | "lines"
+  /** tradable industries × inputs, an earlier and the latest window */
+  | "heatmap"
+  /** one scalar per metro, ranked, the MSA lit */
+  | "rankColumns"
+  /** a measure across the city's tracts */
+  | "map";
+
+export interface PlaceholderSpec {
+  form: PlaceholderForm;
+  /** the measure on the x axis (or the one measure), in the data point's
+   *  own terms */
+  x?: string;
+  /** the measure on the y axis */
+  y?: string;
+  /** the two series' names — "{city}" stands for the city the section is
+   *  about */
+  series?: [string, string];
+  /** what the histogram counts: "metros" (default) or "places" */
+  among?: string;
+  /** which way a scatter's fit runs: 1 rising, -1 falling */
+  slope?: 1 | -1;
+}
 
 /** one data point of a module */
 export interface ModuleView {
   name: string;
-  /** what the data point's copy will cover — a bracketed one-line
-   *  placeholder, the main idea only */
+  /** the card's one line of copy: what the data point shows, the main
+   *  idea only (plain text since Sept 2026 — no brackets, no prefix) */
   read?: string;
-  /** the live tool's chart this is; absent on a data point still to come */
+  /** one more plain sentence, shown only at the section's full width */
+  more?: string;
+  /** the chart this is — a source's, or "placeholder" for a data point no
+   *  source draws yet */
   chart?: ChartKind;
+  /** the placeholder's form and labels, where `chart` is "placeholder" */
+  placeholder?: PlaceholderSpec;
   /** what to read off it — the spec's "signal", where it gave one */
   signal?: string;
   /** set where this view's data level differs from its module's */
   level?: DataLevel;
-  /** a condition on the step, in the live tool's own terms */
+  /** a condition on the step, in the live tool's own terms — one plain
+   *  line under the copy */
   note?: string;
 }
 
@@ -1163,38 +1227,51 @@ export interface ModuleDef {
 /* the live tool's steps, written once — several modules reach the same one */
 const STEP_WATERFALL: ModuleView = {
   name: "Shift-share waterfall",
-  read: "[placeholder: what grew the jobs. national, industry mix and local share effects]",
+  read: "What grew the jobs: the national trend, the industry mix and local performance.",
+  more: "The local share is what the metro did on its own, once the national trend and its mix of industries are taken out.",
   chart: "waterfall",
   signal: "local share + or −",
   level: "msa",
 };
 const STEP_EFFECTS: ModuleView = {
   name: "Industry effects: ranked bars, share paths, treemap",
-  read: "[placeholder: which industries drove it. biggest movers, and each one's share of the national industry over time]",
+  read: "Which industries drove it, and each one's share of the national industry over time.",
+  more: "A sector that grows slower here than it does nationally is losing market share, even if its job count is up.",
   chart: "effectViews",
   signal: "market share high or low? any breaks in the series?",
   level: "msa",
 };
 const STEP_NEW: ModuleView = {
   name: "New industries treemap",
-  read: "[placeholder: industries new to the metro over the window]",
+  read: "Industries new to the metro over the window.",
+  more: "Industries with no jobs in the metro at the start of the window and some at the end.",
   chart: "newIndustries",
-  note: "[shown only when material]",
+  note: "Shown only when material.",
   level: "msa",
 };
 const STEP_PRICE_MAP: ModuleView = {
   name: "Home-value growth map",
-  read: "[placeholder: where home values rose fastest within the metro, and where the city sits]",
+  read: "Where home values rose fastest within the metro, and where the city sits.",
+  more: "Each place is shaded by how fast its home values grew over the window.",
   chart: "priceMap",
   signal: "up / down",
   level: "both",
 };
 const STEP_COST_TREND: ModuleView = {
   name: "Home values over time",
-  read: "[placeholder: home values over time. the city, its MSA and the median metro]",
+  read: "Home values over time for the city, its MSA and the median metro.",
+  more: "A city rising faster than the median metro is getting expensive faster than most.",
   chart: "costTrend",
   signal: "up / down",
   level: "both",
+};
+/* no source yet: a placeholder, in both housing modules */
+const STEP_ELASTICITY: ModuleView = {
+  name: "Housing supply elasticity",
+  read: "How much housing supply responds to prices, against all metros.",
+  more: "A low number means building does not keep up when prices rise.",
+  chart: "placeholder",
+  placeholder: { form: "rankColumns", y: "supply elasticity" },
 };
 
 export const MODULES: Record<string, ModuleDef> = {
@@ -1217,20 +1294,44 @@ export const MODULES: Record<string, ModuleDef> = {
     views: [
       {
         name: "Rajan-Zingales (inputs)",
+        read: "Which inputs the tradable industries lean on, and how that has changed.",
+        more: "Industries that depend heavily on one input are the ones a shortage of it would hold back.",
+        chart: "placeholder",
+        placeholder: { form: "heatmap" },
         signal:
           "highlight where your tradable industries are intense in certain inputs over time",
       },
     ],
   },
+  /* the spec's three data points (revised Sept 2026), by its names and in
+     its order, each drawn from the Innovation Module (innovationData.ts) */
   innovation: {
     id: "innovation",
     title: "Innovation",
     level: "msa",
-    question:
-      "Is my constraint related to a lack of innovation and firm creation?",
+    question: "Is my constraint related to lack of innovation & firm creation?",
     views: [
-      { name: "Firm creation", signal: "high or low" },
-      { name: "MSA in patent space", signal: "specialization in the tech class" },
+      {
+        name: "Firm creation",
+        read: "Firm entry and exit rates against all metros.",
+        more: "More firms opening than closing is a sign of a healthy business climate.",
+        chart: "firmCreation",
+        signal: "high or low",
+      },
+      {
+        name: "Patents per capita and specialization (RCA)",
+        read: "Patents per resident against all metros, and the technologies the MSA specializes in.",
+        more: "The RCA shows which technology classes the MSA patents in more than the country does.",
+        chart: "patents",
+        signal: "specialization in the tech class",
+      },
+      {
+        name: "Publications per capita and specialization (RCA)",
+        read: "Publications per resident against all metros, and the fields the MSA specializes in.",
+        more: "The RCA shows which research fields the MSA publishes in more than the country does.",
+        chart: "publications",
+        signal: "specialization in the tech class",
+      },
     ],
   },
   complexity: {
@@ -1239,14 +1340,45 @@ export const MODULES: Record<string, ModuleDef> = {
     level: "msa",
     question: "Is my constraint related to my complexity?",
     views: [
-      { name: "Complexity of the MSA", signal: "high / low" },
-      { name: "Complexity rank over time", signal: "up / down" },
+      {
+        name: "Complexity of the MSA",
+        read: "The MSA's economic complexity against all metros.",
+        more: "A more complex economy makes a wider range of products that few other places can.",
+        chart: "placeholder",
+        placeholder: { form: "histogram", x: "economic complexity (ECI)" },
+        signal: "high / low",
+      },
+      {
+        name: "Complexity rank over time",
+        read: "The MSA's complexity rank, year by year.",
+        more: "A falling rank means other metros are becoming complex faster.",
+        chart: "placeholder",
+        placeholder: { form: "rankLine", y: "complexity rank" },
+        signal: "up / down",
+      },
       {
         name: "Remoteness (market access)",
+        read: "Remoteness against complexity, for every metro.",
+        more: "Metros far from large markets tend to be less complex, so distance can explain part of a low score.",
+        chart: "placeholder",
+        placeholder: { form: "scatter", x: "remoteness index", y: "ECI", slope: -1 },
         signal: "remoteness index vs ECI scatter",
       },
-      { name: "ECI vs population" },
-      { name: "COI", signal: "high / low" },
+      {
+        name: "ECI vs population",
+        read: "Complexity against population, for every metro.",
+        more: "Larger metros tend to be more complex, so size can explain part of the score too.",
+        chart: "placeholder",
+        placeholder: { form: "scatter", x: "population (log)", y: "ECI", slope: 1 },
+      },
+      {
+        name: "COI",
+        read: "The MSA's complexity outlook against all metros.",
+        more: "The outlook says how close the MSA is to products it does not make yet.",
+        chart: "placeholder",
+        placeholder: { form: "histogram", x: "complexity outlook (COI)" },
+        signal: "high / low",
+      },
     ],
   },
   mismatch: {
@@ -1255,9 +1387,28 @@ export const MODULES: Record<string, ModuleDef> = {
     level: "both",
     question: "Is my constraint related to dynamics between my admin and MSA?",
     views: [
-      { name: "Admin vs MSA industry mix (2-digit)" },
-      { name: "Shift-share and industry growth (2-digit), admin against MSA" },
-      { name: "Commuters and out-commuters over time", level: "admin" },
+      {
+        name: "Admin vs MSA industry mix (2-digit)",
+        read: "Each sector's share of jobs in the city and in its MSA.",
+        more: "A big gap in one sector means the city and its metro lean on different work.",
+        chart: "placeholder",
+        placeholder: { form: "dumbbell", x: "share of jobs", series: ["{city}", "its MSA"] },
+      },
+      {
+        name: "Shift-share and industry growth (2-digit), admin against MSA",
+        read: "Each sector's growth in the city against its MSA.",
+        more: "A sector below the line grows more slowly in the city than in the rest of its metro.",
+        chart: "placeholder",
+        placeholder: { form: "sectorScatter", x: "growth in the MSA", y: "growth in the city" },
+      },
+      {
+        name: "Commuters and out-commuters over time",
+        read: "Workers commuting in and out of the city, over time.",
+        more: "More people commuting in than out means the city holds jobs its residents do not fill.",
+        chart: "placeholder",
+        placeholder: { form: "lines", y: "workers", series: ["in-commuters", "out-commuters"] },
+        level: "admin",
+      },
     ],
   },
   housingDemand: {
@@ -1270,13 +1421,19 @@ export const MODULES: Record<string, ModuleDef> = {
     views: [
       STEP_COST_TREND,
       STEP_PRICE_MAP,
-      { name: "Real wages" },
-      { name: "Housing supply elasticity" },
+      {
+        name: "Real wages",
+        read: "Real wages over time for the city and its MSA.",
+        more: "Wages after inflation: a flat line means pay is not keeping up with prices.",
+        chart: "placeholder",
+        placeholder: { form: "lines", y: "real wages", series: ["{city}", "its MSA"] },
+      },
+      STEP_ELASTICITY,
     ],
   },
   /* the spec's six data points, by its names and in its order. Five are drawn
      from the Amenities Module's indicators (amenityData.ts); the module
-     publishes no composite, so the overall score is still to come. The spec
+     publishes no composite, so the overall score is a placeholder. The spec
      gave these no "signal", so none is invented here. */
   amenities: {
     id: "amenities",
@@ -1284,35 +1441,46 @@ export const MODULES: Record<string, ModuleDef> = {
     level: "admin",
     question: "Is my constraint related to amenities?",
     views: [
-      { name: "Overall amenities score" },
+      {
+        name: "Overall amenities score",
+        read: "The composite amenities score against all places.",
+        more: "One number for how good a place is to live in, beyond jobs and pay.",
+        chart: "placeholder",
+        placeholder: { form: "histogram", x: "amenities score", among: "places" },
+      },
       {
         name: "Education",
-        read: "[placeholder: school achievement against the national average. the city and its MSA]",
+        read: "School achievement against the national average, for the city and its MSA.",
+        more: "Measured in standard deviations, where about 0.3 is one grade level.",
         chart: "education",
         level: "both",
       },
       {
         name: "Crime",
-        read: "[placeholder: crime against the national level. the city and its MSA]",
+        read: "Crime against the national level, for the city and its MSA.",
+        more: "An index of the cost of crime, with 100 as the national level.",
         chart: "crime",
         level: "both",
       },
       {
         /* the module's transport measure is access to jobs by car */
         name: "Transportation",
-        read: "[placeholder: jobs reachable by car in 15, 30 and 60 minutes, and the city's rank]",
+        read: "Jobs reachable by car in 15, 30 and 60 minutes, and the city's rank.",
+        more: "More jobs within a short drive means more of the region's work is within reach.",
         chart: "jobAccess",
       },
       {
         name: "Air quality index",
-        read: "[placeholder: air quality over time against the health categories. the city and its MSA]",
+        read: "Air quality over time against the health categories, for the city and its MSA.",
+        more: "The EPA's index, where the bands mark when the air is unhealthy for some or all groups.",
         chart: "airQuality",
         level: "both",
       },
       {
         /* the module's "urban vitality": establishments per resident */
         name: "Quality of life (e.g. restaurants)",
-        read: "[placeholder: restaurants, daily-needs shops and arts venues per resident, against the national rate]",
+        read: "Restaurants, daily-needs shops and arts venues per resident, against the national rate.",
+        more: "Places with more restaurants, shops and venues per resident tend to draw and keep people.",
         chart: "vitality",
       },
     ],
@@ -1325,9 +1493,13 @@ export const MODULES: Record<string, ModuleDef> = {
     views: [
       STEP_PRICE_MAP,
       STEP_COST_TREND,
-      { name: "Housing supply elasticity" },
+      STEP_ELASTICITY,
       {
         name: "Spatial dimensions of housing growth in your admin / housing construction map",
+        read: "Where housing grew within the city.",
+        more: "Each neighbourhood is shaded by how much new housing was built there.",
+        chart: "placeholder",
+        placeholder: { form: "map" },
       },
     ],
   },
@@ -1377,9 +1549,10 @@ export const LEAF_MODULES: Record<string, string[]> = {
 export const pathModules = (path: string[]): ModuleDef[] =>
   (LEAF_MODULES[path[path.length - 1]] ?? []).map((id) => MODULES[id]);
 
-/** how many of a module's data points are already drawn */
+/** how many of a module's data points are drawn from a source — a
+ *  placeholder is a card, not a drawn data point */
 export const drawnCount = (m: ModuleDef): number =>
-  m.views.filter((v) => v.chart).length;
+  m.views.filter((v) => v.chart && v.chart !== "placeholder").length;
 
 /* ---------- how an ending reads, for one city ----------
  *  The analysis section's opening lines. The COPY is still to be written,

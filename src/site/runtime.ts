@@ -81,6 +81,10 @@ function paint(i: number) {
   const h = document.documentElement;
   h.dataset.siteSec = String(i);
   h.dataset.sitePart = String(partOf(i) + 1); // "1" | "2", "0" outside the storyline
+  /* the last section of the storyline: its Next is the one door OUT (to
+     Extras). The one scroll keeps that Next and drops the others, which
+     point at sections already on the page. */
+  h.dataset.siteExit = partOf(i) >= 0 && partOf(i + 1) < 0 ? "1" : "0";
   closes.forEach((el, k) => {
     el.hidden = !together(k, i);
   });

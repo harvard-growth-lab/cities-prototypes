@@ -6,9 +6,10 @@ import { TREE_SIDE_LABEL, type BranchSide } from "./figures";
 
 /** The cities the prototype carries: BOSTON ONLY (Sept 2026, the user's
  *  call). It is the one city with real data end to end — the walk's forks
- *  (metrosData.ts), the Drivers charts (driverData.ts) and the Amenities
- *  Module's indicators (amenityData.ts) — and v-3's own sections carry
- *  Boston's figures whatever the picker says, as they do on main. The branch
+ *  (metrosData.ts), the Drivers charts (driverData.ts), the Amenities and
+ *  Innovation Modules' indicators (amenityData.ts, innovationData.ts) — and
+ *  v-3's own sections carry Boston's figures whatever the picker says, as
+ *  they do on main. The branch
  *  it lands on is DERIVED from its data (diagnose() in figures.ts), not pinned
  *  here: on the live tool's 2014 → 2024 window, Fortress › Amenities.
  *
@@ -19,7 +20,7 @@ import { TREE_SIDE_LABEL, type BranchSide } from "./figures";
  *
  *  The same list is the options in v-3's two city pickers
  *  (scripts/v3/port.mjs writes them). Still a list, so a second city is one
- *  more entry here, in the two data scripts, and in the port. */
+ *  more entry here, in the three data scripts, and in the port. */
 export const CITIES = ["Boston, United States of America"];
 
 /** Where the app opens — the picker's selected option. */
