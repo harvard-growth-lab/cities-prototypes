@@ -2765,11 +2765,13 @@
     margin-left:auto;margin-right:1px;align-self:center;
   }
   .mi-view #miNames,
+  .mi-view #miHlOpt,
   .mi-view #miRankOpt,
   .mi-view #miTierOpt{
     border:0;background:none;padding:0;height:auto;gap:7px;align-self:center;
   }
   .mi-view #miNames .seg-btn,
+  .mi-view #miHlOpt .seg-btn,
   .mi-view #miRankOpt .seg-btn,
   .mi-view #miTierOpt .seg-btn{
     height:auto;padding:0;border:0;background:none;border-radius:0;
@@ -2777,15 +2779,18 @@
     line-height:1.2;box-shadow:none;
   }
   .mi-view #miNames .seg-btn:hover,
+  .mi-view #miHlOpt .seg-btn:hover,
   .mi-view #miRankOpt .seg-btn:hover,
   .mi-view #miTierOpt .seg-btn:hover{color:var(--ink-soft);}
   .mi-view #miNames .seg-btn.is-active,
+  .mi-view #miHlOpt .seg-btn.is-active,
   .mi-view #miRankOpt .seg-btn.is-active,
   .mi-view #miTierOpt .seg-btn.is-active{
     background:none;color:var(--ink-soft);font-weight:600;
     text-decoration:underline;text-underline-offset:2px;
   }
   .mi-view #miNames .seg-btn:focus-visible,
+  .mi-view #miHlOpt .seg-btn:focus-visible,
   .mi-view #miRankOpt .seg-btn:focus-visible,
   .mi-view #miTierOpt .seg-btn:focus-visible{outline:1px solid var(--teal);outline-offset:2px;}
   /* the tier study belongs to the clusters' beat alone, and follows the
@@ -3075,6 +3080,15 @@
   .mi-hl:focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:2px;}
   #miTreemapSvg .mi-cell{transition:opacity .18s ease;}
   #miTreemapSvg .mi-cell.is-dim{opacity:.13;}
+  /* opt-2 of the phrase highlight: the rest of the mix keeps its place and
+     its size and gives up only its colour, so the map is never a ghost */
+  #miTreemapSvg .mi-cell.is-mute .mi-rect{fill:#e3e8e9;}
+  /* opt-3: nothing changes but a line round the block being named */
+  #miTreemapSvg .mi-hlframe{
+    fill:none;stroke:#1a2226;stroke-width:2.5;pointer-events:none;
+  }
+  /* the study's own control belongs to the beats whose text names sectors */
+  #miFigure:not([data-step="0"]):not([data-step="4"]) #miHlOptPair{display:none;}
   /* The ranking follows the redesign's method rather than the map's: instead of
      standing every other row down, the named row is lit. A soft band behind it,
      its name at full strength, its figure in teal - additive, so nothing the
@@ -5469,6 +5483,16 @@
                 <div class="seg" id="miBarSort" role="group" aria-label="Order of the bars">
                   <button type="button" class="seg-btn is-active" data-barsort="jobs" aria-pressed="true">Jobs</button>
                   <button type="button" class="seg-btn" data-barsort="cx" aria-pressed="false">Complexity</button>
+                </div>
+              </span>
+              <!-- a study control: three ways for a phrase in the text to
+                   point at its sector on the map -->
+              <span class="mi-ctlpair" id="miHlOptPair">
+                <span class="ctl-label mi-studylab">Phrase highlight</span>
+                <div class="seg" id="miHlOpt" role="group" aria-label="How a phrase points at its sector">
+                  <button type="button" class="seg-btn" data-hl="dim" aria-pressed="false">opt-1</button>
+                  <button type="button" class="seg-btn" data-hl="mute" aria-pressed="false">opt-2</button>
+                  <button type="button" class="seg-btn is-active" data-hl="frame" aria-pressed="true">opt-3</button>
                 </div>
               </span>
               <!-- a study control: three ways of naming the sectors on the

@@ -3391,7 +3391,10 @@
        full plot whichever option is on. */
     const plotR = tier => tier ? PLOT_R - 54 : PLOT_R;
     const inTier = R => R === R2 && rankMode === "tier";
-    let wireRowsRef = null, rebuildR2Ref = null;
+    let wireRowsRef = null, rebuildR2Ref = null, hlSpansRef = null;
+    /* how a phrase in the text points at its sector: "frame" draws a line
+       round the block, "mute" turns the rest grey, "dim" fades it */
+    let hlMode = "frame";
     function ranking(rows, among){
       const base = among ? specializedAmong(rows) : specializedWithPeers(rows);
       const ranked = base.sort((a, b) => b.rca - a.rca).slice(0, MI_TOP_N);
@@ -3533,6 +3536,9 @@
     const gBarsTrad = svg.append("g").attr("class", "mi-rows mi-bars").style("opacity", 0);
     /* the sector names, written on the blocks they belong to */
     const gSecLab = svg.append("g").attr("class", "mi-seclab").style("opacity", 0);
+    /* the phrase highlight's frame sits above everything: it draws no fill,
+       so the blocks and their names read straight through it */
+    const gHlFrame = svg.append("g").attr("class", "mi-hlframe-layer");
     /* The reference writes its names ON the coloured block and switches
        between white and near-black to suit it. Ours sit in a strip above
        the block, where the ground is the panel's white — so the choice is
@@ -4027,11 +4033,12 @@
           if (!spec) return;
           const ink = cellInk(st.fill), x = b.x + spec.pad;
           nameT.attr("x", x).attr("y", b.y + spec.pad + spec.f * 0.86)
-            .style("font-size", spec.f + "px").style("fill", ink);
+            .style("font-size", spec.f + "px").style("fill", ink).attr("data-ink", ink);
           spec.lines.forEach((ln, n) => nameT.append("tspan")
             .attr("x", x).attr("dy", n ? spec.f * spec.lh : 0).text(ln));
           if (spec.pf) pctT.attr("x", b.x + b.w / 2).attr("y", b.y + b.h - spec.pad - spec.pf * 0.12)
-            .style("font-size", spec.pf + "px").style("fill", ink).text(pctFmt(d.employ / jobsTotal));
+            .style("font-size", spec.pf + "px").style("fill", ink).attr("data-ink", ink)
+            .text(pctFmt(d.employ / jobsTotal));
         });
         [labs, pcts].forEach(t => (dur ? t.transition().delay(dur / 2).duration(dur / 2) : t)
           .style("opacity", d => at(d).op > 0 ? 1 : 0));
@@ -4626,15 +4633,49 @@
          Hover and focus for pointer and keyboard; click as well, because a
          phone has no hover and the reference this follows forgets that. */
       const hlSpans = [].slice.call(document.querySelectorAll(".mi-hl"));
+      hlSpansRef = hlSpans;
       /* each beat points at what it is about: the mix beat names sectors, the
          tradability beat names one of the three clusters, and the ranking
          names industries outright */
       const hlRows = () => [R1, R2].filter(R => R && R.row);
       const clearHl = () => {
-        cell.classed("is-dim", false);
+        cell.classed("is-dim", false).classed("is-mute", false);
+        /* a muted label was repainted, so it is put back in the ink the cell
+           wrote it in rather than guessed at */
+        cell.selectAll(".mi-lab,.mi-pct")
+          .style("fill", function(){ return this.getAttribute("data-ink"); });
+        gHlFrame.selectAll("rect").remove();
         hlRows().forEach(R => R.row.classed("is-lit", false));
         gLit.selectAll("rect").remove();
         hlSpans.forEach(x => x.classList.remove("is-lit"));
+      };
+      /* where a sector's own block is on the beat showing: one block on the
+         whole mix, one per tier on the clusters. Nothing outside the maps -
+         under the bars a sector is scattered down the rows, and a frame
+         round scattered rows is not a frame */
+      const hlSectorBoxes = want => {
+        if (view !== "map") return [];
+        const above = nameMode === "above";
+        if (step === 0){
+          const src = above ? secFullA : secFullB;
+          return want.map(n => src.get(n)).filter(Boolean);
+        }
+        if (step === 4 || step === 7){
+          const src = step === 4 ? (above ? secClusterA : secClusterB) : null;
+          if (!src) return want.map(n => (above ? secTradA : secTradB).get(n)).filter(Boolean);
+          const out = [];
+          src.forEach((v, k) => { if (want.indexOf(v.name) >= 0) out.push(v.b); });
+          return out;
+        }
+        return [];
+      };
+      /* the rest of the mix turns to one grey rather than fading away: every
+         block keeps its place and its size, and colour alone says which is
+         the one being named */
+      const muteOthers = want => {
+        const off = d => want.indexOf(d.sector) < 0;
+        cell.classed("is-mute", off);
+        cell.filter(off).selectAll(".mi-lab,.mi-pct").style("fill", "#9aa3a6");
       };
       const hlStep = span => span.dataset.on || "0";
       /* the band behind a lit row has to be drawn under the cells, since the
@@ -4653,10 +4694,22 @@
       const litHl = span => {
         const ds = span.dataset;
         if (ds.sector){
-          /* the map stands the rest of the mix down: there are no rows to light
-             and a treemap has no other way to point */
           const want = ds.sector.split("|");
-          cell.classed("is-dim", d => want.indexOf(d.sector) < 0);
+          if (hlMode === "dim"){
+            cell.classed("is-dim", d => want.indexOf(d.sector) < 0);
+          } else if (hlMode === "mute"){
+            muteOthers(want);
+          } else {
+            /* the frame leaves the mix exactly as it was and draws a line
+               round the block being named; where there is no block to draw
+               round, the rest turns grey instead */
+            const boxes = hlSectorBoxes(want);
+            if (boxes.length) gHlFrame.selectAll("rect").data(boxes).join("rect")
+              .attr("class", "mi-hlframe")
+              .attr("x", b => b.x).attr("y", b => b.y)
+              .attr("width", b => b.w).attr("height", b => b.h);
+            else muteOthers(want);
+          }
         } else if (ds.ind){
           /* the ranking lights what is named instead, and leaves the rest alone */
           const keep = new Set(ds.ind.split("|"));
@@ -4701,6 +4754,26 @@
       wireRows(R1); wireRows(R2);
       wireRowsRef = wireRows;
     }
+
+    /* a study control: three ways for a phrase in the text to point at a
+       sector on the map - stand the rest down, turn the rest grey, or draw a
+       line round the block being named */
+    const hlOptEl = document.getElementById(p + "HlOpt");
+    if (hlOptEl) hlOptEl.addEventListener("click", ev => {
+      const b = ev.target.closest(".seg-btn[data-hl]");
+      if (!b || b.dataset.hl === hlMode) return;
+      const lit = hlSpansRef && hlSpansRef.find(x => x.classList.contains("is-lit"));
+      if (clearHighlight) clearHighlight();
+      hlMode = b.dataset.hl;
+      fig.dataset.hl = hlMode;
+      hlOptEl.querySelectorAll(".seg-btn[data-hl]").forEach(x => {
+        const on = x.dataset.hl === hlMode;
+        x.classList.toggle("is-active", on);
+        x.setAttribute("aria-pressed", String(on));
+      });
+      /* a phrase left lit shows the new treatment at once */
+      if (lit) lit.dispatchEvent(new MouseEvent("mouseenter"));
+    });
 
     /* the bars' order: the same bars, re-sorted. The set does not change,
        so the reader keeps the metro's biggest industries in view either way */
