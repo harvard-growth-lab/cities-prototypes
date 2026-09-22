@@ -3227,7 +3227,7 @@
        place to stand: ordered by jobs answers "what is biggest", and the
        column beside it answers "and does it sell outward", which is the
        question this beat is actually asking */
-    const NB = 25, BML = 292, BMT = 62, BRH = 17.2, BBAR = 12, BPR = 690;
+    const NB = 25, BML = 292, BMT = 62, BRH = 17.2, BBAR = 12, BPR = 740;
     /* the bars' head is the ranking's head, line for line: the column names
        on one baseline, a rule under each column, the tick row below that */
     const BHEAD_Y = BMT - 46, BRULE_Y = BMT - 36, BTICK_Y = BMT - 14, BGRID_TOP = BMT - 8;
@@ -3242,6 +3242,19 @@
       return b;
     };
     const CX_WORDS = ["lowest", "low", "middle", "high", "highest"];
+    /* what orders the bars: their own length, or the complexity beside them.
+       Either way the bar is the jobs, as the ranking's bar stays the
+       concentration whichever order its rows take */
+    let barSort = "jobs";
+    const cxVal = name => { const v = pciByName.get(name); return v == null ? -99 : v; };
+    /* the set is the metro's biggest industries either way; the order is
+       what the control changes */
+    const barOrder = list => {
+      const rows = list.slice(0, NB);
+      return barSort === "cx" && barMode !== "tier"
+        ? rows.slice().sort((a, b) => cxVal(b.name) - cxVal(a.name) || b.employ - a.employ)
+        : rows;
+    };
     const byJobsAll = industryData.slice().sort((a, b) => b.employ - a.employ);
     const barScale = d3.scaleLinear()
       .domain([0, (byJobsAll[0] ? byJobsAll[0].employ : 1) * 1.04]).range([BML + 12, BPR]);
@@ -3249,7 +3262,7 @@
     let tierOn = [true, true, true];
     let closeMenuRef = null;
     const tierList = () => byJobsAll.filter(d => tierOn[clusterOf(d)]);
-    let barRankAll = new Map(byJobsAll.slice(0, NB).map((d, i) => [d.name, i]));
+    let barRankAll = null;                 /* set once barOrder exists */
     const byJobsTrad = tradRows.slice().sort((a, b) => b.employ - a.employ);
     const barRankTrad = new Map(byJobsTrad.slice(0, NB).map((d, i) => [d.name, i]));
     const barY = i => BMT + i * BRH + BRH / 2;
@@ -3883,11 +3896,11 @@
     const fmtJobs = v => v >= 1000 ? Math.round(v / 1000) + "K" : String(Math.round(v));
     const shortName = n => charFit(n);
     function drawBars(list, G){
-      /* built fresh each time: the tier filter re-ranks the whole view, and
-         the beats ask for different columns, so there is nothing here worth
-         updating in place */
+      /* built fresh each time: the tier filter re-ranks the whole view, the
+         order can change under the reader, and the beats ask for different
+         columns, so there is nothing here worth updating in place */
       G.selectAll("*").remove();
-      const rows = list.slice(0, NB);
+      const rows = barOrder(list);
       const tierMode = barMode === "tier";
       G.selectAll("g.mi-tick").data(barScale.ticks(4)).join("g").attr("class", "mi-tick")
         .call(g => g.append("line").attr("class", d => "mi-grid" + (d === 0 ? " is-base" : ""))
@@ -3898,27 +3911,26 @@
           .text(d => fmtJobs(d)));
       G.append("text").attr("class", "mi-axname")
         .attr("x", BML + 12).attr("y", BHEAD_Y).text("Jobs in the metro");
-      /* the column beside the plot. On the tiers' beat it is the ranking's
-         tradability column, feature for feature, and its head is the filter;
-         on the opening beat it is complexity, as five steps rather than a
-         score, since the beat never puts a number on complexity */
-      const CX_R = TC_R, CX_D = 3.5, CX_GAP = 12, CX_L = CX_R - 4 * CX_GAP - 2 * CX_D;
+      /* one column beside the plot, at the edge the ranking keeps its last
+         column on. The tiers beat carries tradability, and its head is the
+         filter; the opening beat carries complexity, as five steps rather
+         than a score, since the beat puts no number on complexity */
+      const COL_R = MI_W - 6, CX_D = 3.5, CX_GAP = 12, CX_L = COL_R - 4 * CX_GAP - 2 * CX_D;
       if (tierMode){
-        if (G === gBarsAll) menuHead(G, TC_R, BHEAD_Y, "is-bars");
+        if (G === gBarsAll) menuHead(G, COL_R, BHEAD_Y, "is-bars");
         else G.append("text").attr("class", "mi-colhead")
-          .attr("x", TC_R).attr("y", BHEAD_Y).attr("text-anchor", "end").text("Tradability");
+          .attr("x", COL_R).attr("y", BHEAD_Y).attr("text-anchor", "end").text("Tradability");
       } else {
         G.append("text").attr("class", "mi-colhead")
-          .attr("x", CX_R).attr("y", BHEAD_Y).attr("text-anchor", "end").text("Complexity");
+          .attr("x", COL_R).attr("y", BHEAD_Y).attr("text-anchor", "end").text("Complexity");
       }
-      /* the jobs column, where the ranking keeps it: the count at the right
-         edge, in the same figures. The plot beside it is already the bar the
-         ranking draws under its own count, so the count stands alone here */
-      G.append("text").attr("class", "mi-colhead")
-        .attr("x", MI_W - 6).attr("y", BHEAD_Y).attr("text-anchor", "end").text("Jobs");
-      /* one rule under each column, and the breaks between them are the
-         only separators - the ranking's head, at the bars' own height */
-      [[BML + 12, BPR], [tierMode ? 712 : CX_L - 4, CX_R], [JOBS_L, JOBS_R]].forEach(seg => {
+      /* both columns are 84 wide, which clears the longest of the words that
+         head them; measuring the word instead would read 0, since the figure
+         is drawn before the page that holds it is laid out */
+      const colL = COL_R - 84;
+      /* a rule under each column, and the break between them is the only
+         separator - the ranking's head, at the bars' own height */
+      [[BML + 12, BPR], [colL, COL_R]].forEach(seg => {
         G.append("line").attr("class", "mi-headrule")
           .attr("x1", seg[0]).attr("x2", seg[1]).attr("y1", BRULE_Y).attr("y2", BRULE_Y);
       });
@@ -3926,14 +3938,14 @@
       row.append("text").attr("class", "mi-name")
         .attr("x", BML - 10).attr("y", (d, i) => barY(i) + 4).attr("text-anchor", "end")
         .attr("data-full", d => d.label || d.name).text(d => charFit(d.label || d.name));
-      /* the count at the bar's end is gone: the jobs column carries it now,
-         where the reader can compare the figures down a single edge */
-      row.append("text").attr("class", "mi-jobs")
-        .attr("x", MI_W - 6).attr("y", (d, i) => barY(i) + 4).attr("text-anchor", "end")
+      /* the reading sits at the end of the bar it belongs to, as the
+         ranking's does */
+      row.append("text").attr("class", "mi-val")
+        .attr("x", d => barScale(d.employ) + 8).attr("y", (d, i) => barY(i) + 4)
         .text(d => fmtJobs(d.employ));
       if (tierMode){
         row.append("text").attr("class", "mi-trad is-tier")
-          .attr("x", TC_R).attr("y", (d, i) => barY(i) + 4).attr("text-anchor", "end")
+          .attr("x", COL_R).attr("y", (d, i) => barY(i) + 4).attr("text-anchor", "end")
           .text(d => tierLabel(d));
         return;
       }
@@ -3948,6 +3960,8 @@
       });
     }
     let barListAll = byJobsAll;
+    const reBarRank = () => { barRankAll = new Map(barOrder(barListAll).map((d, i) => [d.name, i])); };
+    reBarRank();
     drawBars(byJobsAll, gBarsAll);
     { const keep = barMode; barMode = "tier"; drawBars(byJobsTrad, gBarsTrad); barMode = keep; }
 
@@ -4041,7 +4055,7 @@
       show(gRows2, i === 6, late);
       if (barsOn && i !== 5 && i !== 7){
         const wantBar = i === 4 ? "tier" : "cx";
-        if (barMode !== wantBar){ barMode = wantBar; drawBars(barListAll, gBarsAll); }
+        if (barMode !== wantBar){ barMode = wantBar; reBarRank(); drawBars(barListAll, gBarsAll); }
       }
       show(gBarsAll, barsOn && i !== 5 && i !== 7);
       show(gBarsTrad, barsOn && (i === 5 || i === 7));
@@ -4193,8 +4207,8 @@
           if (rebuildR2Ref) rebuildR2Ref(!reduced());
         } else {
           const list = tierList();
-          barRankAll = new Map(list.slice(0, NB).map((d, i) => [d.name, i]));
           barListAll = list;
+          reBarRank();
           drawBars(list, gBarsAll);
           paint(step, !reduced());
         }
@@ -4687,6 +4701,23 @@
       wireRows(R1); wireRows(R2);
       wireRowsRef = wireRows;
     }
+
+    /* the bars' order: the same bars, re-sorted. The set does not change,
+       so the reader keeps the metro's biggest industries in view either way */
+    const barSortEl = document.getElementById(p + "BarSort");
+    if (barSortEl) barSortEl.addEventListener("click", ev => {
+      const b = ev.target.closest(".seg-btn[data-barsort]");
+      if (!b || b.dataset.barsort === barSort) return;
+      barSort = b.dataset.barsort;
+      barSortEl.querySelectorAll(".seg-btn[data-barsort]").forEach(x => {
+        const on = x.dataset.barsort === barSort;
+        x.classList.toggle("is-active", on);
+        x.setAttribute("aria-pressed", String(on));
+      });
+      reBarRank();
+      drawBars(barListAll, gBarsAll);
+      paint(step, !reduced());
+    });
 
     /* the arrangement control belongs to the two beats that show the whole
        mix; switching it repaints the beat in place */

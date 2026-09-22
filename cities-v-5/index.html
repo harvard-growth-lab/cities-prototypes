@@ -2794,6 +2794,10 @@
   /* the label and its switch are one item, so a narrow row wraps them
      together rather than leaving the label at the end of the line above */
   .mi-ctlpair{display:inline-flex;align-items:center;gap:10px;flex:none;}
+  /* the bars' order belongs to the beat that shows the bars, and only while
+     they are showing */
+  #miFigure:not([data-step="0"]) #miBarSortPair,
+  #miFigure:not([data-view="alt"]) #miBarSortPair{display:none;}
   #miFigure:not([data-step="4"]) #miTierPair{display:none;}
   .mi-view #miTierPair{margin-left:14px;}
   #miFigure[data-color="complexity"] #miTierPair{margin-left:auto;}
@@ -5458,6 +5462,15 @@
                 <button type="button" class="seg-btn is-active" data-color="sector" aria-pressed="true">Sector</button>
                 <button type="button" class="seg-btn" data-color="complexity" aria-pressed="false">Complexity</button>
               </div>
+              <!-- the bars' own order, offered only while the bars are up:
+                   the length of the bar, or the complexity beside it -->
+              <span class="mi-ctlpair" id="miBarSortPair">
+                <span class="ctl-label">Sort by</span>
+                <div class="seg" id="miBarSort" role="group" aria-label="Order of the bars">
+                  <button type="button" class="seg-btn is-active" data-barsort="jobs" aria-pressed="true">Jobs</button>
+                  <button type="button" class="seg-btn" data-barsort="cx" aria-pressed="false">Complexity</button>
+                </div>
+              </span>
               <!-- a study control: three ways of naming the sectors on the
                    map, to be compared and then settled -->
               <span class="ctl-label mi-colorlab mi-studylab">Sector names</span>
