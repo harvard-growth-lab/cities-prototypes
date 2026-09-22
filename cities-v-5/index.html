@@ -3010,12 +3010,45 @@
 
   /* the sector key: one row of swatches under the map, wrapping as needed */
   .sector-key{
+    position:relative;
     display:flex;flex-wrap:wrap;gap:7px 20px;
     font-size:12.5px;color:var(--ink);
   }
-  .sector-key .sk-sec{display:inline-flex;align-items:center;gap:7px;}
+  /* every entry is a control: it names a colour, and it takes its sector out
+     of the map or leaves only it. It is set as plain text all the same - a
+     row of buttons under a chart would read as a toolbar, not as a key. */
+  .sector-key .sk-sec{
+    display:inline-flex;align-items:center;gap:7px;
+    appearance:none;background:none;border:0;padding:0;margin:0;
+    font:inherit;color:inherit;cursor:pointer;
+  }
+  .sector-key .sk-sec:hover .sk-name{color:var(--teal);}
+  .sector-key .sk-sec:focus-visible{outline:2px solid var(--teal);outline-offset:3px;border-radius:2px;}
   .sector-key .sk-sw{
-    flex:none;width:13px;height:13px;display:inline-block;
+    flex:none;width:13px;height:13px;display:inline-block;background:var(--sw,#ccc);
+  }
+  /* a sector out of the map keeps its place in the key, hollow, so the
+     reader can see at a glance what is waiting to come back */
+  .sector-key .sk-sec.is-off .sk-sw{background:transparent;box-shadow:inset 0 0 0 1.5px var(--sw,#ccc);}
+  .sector-key .sk-sec.is-off .sk-name{color:var(--ink-soft);opacity:.55;}
+  .sector-key .sk-reset{
+    appearance:none;background:none;border:0;padding:0;font:inherit;font-size:12.5px;
+    color:var(--teal);text-decoration:underline;text-underline-offset:2px;cursor:pointer;
+  }
+  .sector-key .sk-reset[hidden]{display:none;}
+  /* the key's own card, over the entry it belongs to */
+  .sector-key .sk-tip{
+    position:absolute;z-index:6;width:236px;display:flex;flex-direction:column;gap:3px;
+    padding:11px 13px;background:#fff;border:1px solid var(--border-strong);
+    box-shadow:var(--shadow-md);pointer-events:none;text-align:left;
+  }
+  .sector-key .sk-tip[hidden]{display:none;}
+  .sector-key .sk-tip b{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:3px;}
+  .sector-key .skt-row{display:flex;justify-content:space-between;gap:14px;font-size:12.5px;color:var(--ink-soft);}
+  .sector-key .skt-row span:last-child{font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;}
+  .sector-key .skt-hint{
+    margin-top:7px;padding-top:7px;border-top:1px solid var(--border);
+    font-size:12.5px;line-height:1.45;color:var(--ink-soft);
   }
   .sector-key .sk-share{color:var(--ink-soft);font-variant-numeric:tabular-nums;}
   /* Neither map beat keys a share any more: the blocks carry the proportion

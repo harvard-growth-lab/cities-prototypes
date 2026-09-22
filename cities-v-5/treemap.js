@@ -3188,7 +3188,60 @@
         x0 += w + CGAP;
       });
     }
+    /* ---- the sector filter, driven from the key under the map ----
+       A hidden sector does not leave a hole: the map is laid out again over
+       the sectors still showing, in the same frames, so the reader always
+       reads a whole rectangle. Null means every sector, which is the state
+       the figure opens in and the one the key's reset returns to. */
+    let secOn = null;
+    let secGeo = null;
+    const secShown = d => !secOn || secOn.has(d.sector);
+    const secFiltered = () => !!secOn;
+    function rebuildSecGeo(){
+      if (!secOn){ secGeo = null; return; }
+      const rows = industryData.filter(secShown);
+      const g = { full: new Map(), fullA: new Map(), secA: new Map(), secB: new Map(),
+                  clA: new Map(), clB: new Map(), clSecA: new Map(), clSecB: new Map(),
+                  tradA: new Map(), tradB: new Map(), tradSecA: new Map(), tradSecB: new Map() };
+      if (rows.length){
+        const tA = tmap(rows, MI_W, MI_H, true, SEC_STRIP), tB = tmap(rows, MI_W, MI_H, true);
+        tA.leaves().forEach(n => g.fullA.set(n.data.name, box(n)));
+        tB.leaves().forEach(n => g.full.set(n.data.name, box(n)));
+        tA.children.forEach(c => g.secA.set(c.data.name, box(c)));
+        tB.children.forEach(c => g.secB.set(c.data.name, box(c)));
+        /* the two tiers that sell outward, over the same filter */
+        const tr = rows.filter(d => clusterOf(d) <= 1);
+        if (tr.length){
+          const uA = tmap(tr, MI_W, MI_H, true, SEC_STRIP), uB = tmap(tr, MI_W, MI_H, true);
+          uA.leaves().forEach(n => g.tradA.set(n.data.name, box(n)));
+          uB.leaves().forEach(n => g.tradB.set(n.data.name, box(n)));
+          uA.children.forEach(c => g.tradSecA.set(c.data.name, box(c)));
+          uB.children.forEach(c => g.tradSecB.set(c.data.name, box(c)));
+        }
+      }
+      /* the three grounds keep the widths the metro's own tiers give them -
+         the tiers are a fact about the metro, not about the filter - and the
+         sectors still showing are laid out again inside each one */
+      let x0 = 0;
+      clusterRows.forEach((l0, k) => {
+        const w = Math.max(36, CW * clusterShare[k]);
+        const iw = Math.max(20, w - CARD_PAD * 2), ix = x0 + CARD_PAD;
+        const l = l0.filter(secShown);
+        if (l.length){
+          const tA = tmap(l, iw, CARD_H, true, SEC_STRIP), tB = tmap(l, iw, CARD_H, true);
+          tA.leaves().forEach(n => g.clA.set(n.data.name, box(n, ix, CARD_Y)));
+          tB.leaves().forEach(n => g.clB.set(n.data.name, box(n, ix, CARD_Y)));
+          tA.children.forEach(c =>
+            g.clSecA.set(k + "|" + c.data.name, { name: c.data.name, b: box(c, ix, CARD_Y) }));
+          tB.children.forEach(c =>
+            g.clSecB.set(k + "|" + c.data.name, { name: c.data.name, b: box(c, ix, CARD_Y) }));
+        }
+        x0 += w + CGAP;
+      });
+      secGeo = g;
+    }
     const clusterSpot = d =>
+      (secGeo ? (nameMode === "above" ? secGeo.clA : secGeo.clB).get(d.name) : null) ||
       (nameMode === "above" ? posClusterA : posClusterB).get(d.name) || posFull.get(d.name);
     /* all three clusters wear one colouring: the columns already carry the
        tradability, so colour is free to say sector, or complexity */
@@ -3208,7 +3261,9 @@
     const secTradA = new Map(tradTreeA ? tradTreeA.children.map(c => [c.data.name, box(c)]) : []);
     const secTradB = new Map(tradTreeB ? tradTreeB.children.map(c => [c.data.name, box(c)]) : []);
     const posTradFlat = tradRows.length ? stripLayout(tradRows, MI_W, MI_H) : new Map();
-    const tradSpot = d => (nameMode === "above" ? posTradA : posTradB).get(d.name);
+    const tradSpot = d =>
+      (secGeo ? (nameMode === "above" ? secGeo.tradA : secGeo.tradB).get(d.name) : null) ||
+      (nameMode === "above" ? posTradA : posTradB).get(d.name);
     /* the whole mix in the same two geometries, for the opening beat that
        shows every industry: the sector blocks named on a strip (opt-1) or
        on the block itself (opt-2, opt-3) */
@@ -3216,7 +3271,9 @@
     const posFullA = new Map(fullTreeA.leaves().map(n => [n.data.name, box(n)]));
     const secFullA = new Map(fullTreeA.children.map(c => [c.data.name, box(c)]));
     const secFullB = new Map(full.children.map(c => [c.data.name, box(c)]));
-    const allSpot = d => (nameMode === "above" ? posFullA : posFull).get(d.name);
+    const allSpot = d =>
+      (secGeo ? (nameMode === "above" ? secGeo.fullA : secGeo.full).get(d.name) : null) ||
+      (nameMode === "above" ? posFullA : posFull).get(d.name);
 
     /* ---- Ordered by jobs: the same cells as a ranked bar chart. The top
        rows by jobs become bars, named on the left and valued at the end;
@@ -3261,7 +3318,7 @@
     /* which tradability tiers the bar view is showing; all three to begin with */
     let tierOn = [true, true, true];
     let closeMenuRef = null;
-    const tierList = () => byJobsAll.filter(d => tierOn[clusterOf(d)]);
+    const tierList = () => byJobsAll.filter(d => tierOn[clusterOf(d)] && secShown(d));
     let barRankAll = null;                 /* set once barOrder exists */
     const byJobsTrad = tradRows.slice().sort((a, b) => b.employ - a.employ);
     const barRankTrad = new Map(byJobsTrad.slice(0, NB).map((d, i) => [d.name, i]));
@@ -3452,8 +3509,9 @@
     const STATE = {
       /* every industry, sized by jobs and grouped into sectors: the opening
          beat, coloured by sector or by complexity as the reader asks */
-      0: d => view === "alt" ? asBars(d, barRankAll, fillBy(d), allSpot(d))
-                             : { box: allSpot(d), fill: fillBy(d), op: 1, rx: 0 },
+      0: d => !secShown(d) ? { box: allSpot(d), fill: fillBy(d), op: 0, rx: 0 }
+        : view === "alt" ? asBars(d, barRankAll, fillBy(d), allSpot(d))
+                         : { box: allSpot(d), fill: fillBy(d), op: 1, rx: 0 },
       1: d => view === "alt" ? asBars(d, barRankAll, complexityColor(d.name), spot(d))
                              : { box: spot(d), fill: complexityColor(d.name), op: 1, rx: 0 },
       2: d => ({ box: posSplit.get(d.name) || posFull.get(d.name),
@@ -3467,9 +3525,10 @@
                      w: Math.max(2, xr(d.row.rca) - xr(1)), h: BAR_H },
               fill: d.rank < 3 ? TEAL : MUTED, op: 1, rx: 0 },
       /* the three clusters by tradability, the most tradable on the left */
-      4: d => view === "alt"
-        ? asBars(d, barRankAll, clusterFill(d), clusterSpot(d))
-        : { box: clusterSpot(d), fill: clusterFill(d), op: 1, rx: 0 },
+      4: d => !secShown(d) ? { box: clusterSpot(d), fill: clusterFill(d), op: 0, rx: 0 }
+        : view === "alt"
+          ? asBars(d, barRankAll, clusterFill(d), clusterSpot(d))
+          : { box: clusterSpot(d), fill: clusterFill(d), op: 1, rx: 0 },
       /* the two outward-selling tiers on their own, the full width, read by
          complexity; the local tier stays where the clusters left it and fades */
       5: d => clusterOf(d) <= 1
@@ -3604,12 +3663,15 @@
       const TH = Math.round(u * 1.36);
       const dy = TH - Math.round(u * 0.41);
       const secs = which === 4
-        ? (above ? secClusterA : secClusterB)
+        ? (secGeo ? (above ? secGeo.clSecA : secGeo.clSecB)
+                  : (above ? secClusterA : secClusterB))
         : null;
+      const flat = which === 0
+        ? (secGeo ? (above ? secGeo.secA : secGeo.secB) : (above ? secFullA : secFullB))
+        : (secGeo ? (above ? secGeo.tradSecA : secGeo.tradSecB) : (above ? secTradA : secTradB));
       const src = secs
         ? [...secs].map(([k, v]) => ({ key: k, name: v.name, b: v.b }))
-        : [...(which === 0 ? (above ? secFullA : secFullB) : (above ? secTradA : secTradB))]
-            .map(([name, b]) => ({ key: name, name: name, b: b }));
+        : [...flat].map(([name, b]) => ({ key: name, name: name, b: b }));
       /* a generous first pass only - the real gate is the measured width
          below, so this must not throw away a name the block could hold */
       const items = src.filter(d =>
@@ -4530,26 +4592,117 @@
       }
     }
 
-    /* the sector key, in the order the map itself is biggest-first, with
-       each sector's share of metro jobs beside its name */
+    /* ---- the sector key, which is also the map's filter ----
+       In the order the map is biggest-first. Each entry is a button: it
+       says what its colour means, tells the sector's figures on hover, and
+       takes its sector out of the map or leaves only it. */
     const key = document.getElementById(p + "SectorKey");
     if (key){
-      const jobs = {}, trad = {};
-      industryData.forEach(d => { jobs[d.sector] = (jobs[d.sector] || 0) + d.employ; });
+      const jobs = {}, trad = {}, inds = {};
+      industryData.forEach(d => {
+        jobs[d.sector] = (jobs[d.sector] || 0) + d.employ;
+        inds[d.sector] = (inds[d.sector] || 0) + 1;
+      });
       tradRows.forEach(d => { trad[d.sector] = (trad[d.sector] || 0) + d.employ; });
-      const tot = Object.values(jobs).reduce((a, b) => a + b, 0) || 1;
-      const totTrad = Object.values(trad).reduce((a, b) => a + b, 0) || 1;
+      const tot = Object.values(jobs).reduce((x, y) => x + y, 0) || 1;
+      const totTrad = Object.values(trad).reduce((x, y) => x + y, 0) || 1;
+      const order = Object.keys(jobs).sort((x, y) => jobs[y] - jobs[x]);
       /* two shares per sector: of every metro job, and of the jobs that sell
-         outward at all, for the beat whose map shows only those; a sector
-         with none of them leaves that beat's key */
-      key.innerHTML = Object.keys(jobs)
-        .sort((a, b) => jobs[b] - jobs[a])
-        .map(sec =>
-          '<span class="sk-sec' + (trad[sec] ? '' : ' sk-no-trad') + '"><i class="sk-sw" style="background:' +
-          (sectorColors[sec] || "#ccc") + '"></i>' + sec +
-          ' <span class="sk-share sk-all">' + Math.round(jobs[sec] / tot * 100) + '%</span>' +
-          '<span class="sk-share sk-trad">' + Math.round((trad[sec] || 0) / totTrad * 100) + '%</span></span>')
-        .join("");
+         outward at all, for the beat whose map shows only those */
+      key.innerHTML = order.map((sec, i) =>
+        '<button type="button" class="sk-sec' + (trad[sec] ? '' : ' sk-no-trad') +
+        '" data-si="' + i + '" aria-pressed="true" style="--sw:' + (sectorColors[sec] || "#ccc") + '">' +
+        '<i class="sk-sw"></i><span class="sk-name">' + sec + '</span>' +
+        ' <span class="sk-share sk-all">' + Math.round(jobs[sec] / tot * 100) + '%</span>' +
+        '<span class="sk-share sk-trad">' + Math.round((trad[sec] || 0) / totTrad * 100) + '%</span></button>').join("") +
+        '<button type="button" class="sk-reset" hidden>Show all sectors</button>' +
+        '<span class="sk-tip" role="tooltip" hidden></span>';
+      const resetBtn = key.querySelector(".sk-reset");
+      const tipEl = key.querySelector(".sk-tip");
+      const items = [].slice.call(key.querySelectorAll(".sk-sec"));
+      /* the key says which sectors are in play, and the reset appears only
+         when there is something to go back from */
+      function syncKey(){
+        items.forEach((b, i) => {
+          const on = !secOn || secOn.has(order[i]);
+          b.classList.toggle("is-off", !on);
+          b.setAttribute("aria-pressed", String(on));
+        });
+        if (resetBtn) resetBtn.hidden = !secFiltered();
+      }
+      /* the filter moves the map, the names on it and the bars beside it */
+      function applySec(next){
+        if (next && !next.size) return;                 /* an empty map answers nothing */
+        secOn = (next && next.size === order.length) ? null : next;
+        rebuildSecGeo();
+        barListAll = tierList();
+        reBarRank();
+        drawBars(barListAll, gBarsAll);
+        syncKey();
+        if (step >= 0) paint(step, !reduced());
+      }
+      const allSet = () => new Set(order);
+      /* a double-click arrives as click, click, dblclick, so the single
+         click waits to see whether a second one is coming: without the
+         wait, asking for one sector alone first takes it out and puts it
+         back, and the map is laid out three times on the way */
+      let clickWait = null;
+      key.addEventListener("click", ev => {
+        if (ev.target.closest(".sk-reset")){
+          clearTimeout(clickWait); applySec(null); hideTip(); return;
+        }
+        const b = ev.target.closest(".sk-sec");
+        if (!b) return;
+        const sec = order[+b.dataset.si];
+        clearTimeout(clickWait);
+        clickWait = setTimeout(() => {
+          const next = secOn ? new Set(secOn) : allSet();
+          if (next.has(sec)) next.delete(sec); else next.add(sec);
+          applySec(next);
+          showTip(b);                                   /* the card follows the change */
+        }, 230);
+      });
+      key.addEventListener("dblclick", ev => {
+        const b = ev.target.closest(".sk-sec");
+        if (!b) return;
+        clearTimeout(clickWait);
+        const sec = order[+b.dataset.si];
+        const solo = secOn && secOn.size === 1 && secOn.has(sec);
+        applySec(solo ? null : new Set([sec]));
+        showTip(b);
+      });
+      /* the card: what the sector is, and what a click will do with it */
+      function showTip(b){
+        if (!tipEl) return;
+        const i = +b.dataset.si, sec = order[i];
+        const on = !secOn || secOn.has(sec);
+        const solo = secOn && secOn.size === 1 && secOn.has(sec);
+        tipEl.innerHTML =
+          '<b>' + sec + '</b>' +
+          '<span class="skt-row"><span>Jobs</span><span>' + Math.round(jobs[sec]).toLocaleString() + '</span></span>' +
+          '<span class="skt-row"><span>Share of metro jobs</span><span>' +
+            (jobs[sec] / tot * 100).toFixed(1) + '%</span></span>' +
+          '<span class="skt-row"><span>Industries</span><span>' + inds[sec] + '</span></span>' +
+          '<span class="skt-hint">' + (on ? "Click to take it out of the map" : "Click to bring it back") +
+          '<br>' + (solo ? "Double-click for every sector again" : "Double-click to keep only this one") + '</span>';
+        tipEl.hidden = false;
+        /* over the entry it belongs to, and never past either edge of the key */
+        const kb = key.getBoundingClientRect(), bb = b.getBoundingClientRect();
+        const w = tipEl.offsetWidth;
+        let left = bb.left - kb.left + bb.width / 2 - w / 2;
+        left = Math.max(0, Math.min(left, kb.width - w));
+        tipEl.style.left = left + "px";
+        tipEl.style.bottom = (kb.bottom - bb.top + 8) + "px";
+      }
+      function hideTip(){ if (tipEl) tipEl.hidden = true; }
+      items.forEach(b => {
+        b.addEventListener("mouseenter", () => showTip(b));
+        b.addEventListener("focus", () => showTip(b));
+        b.addEventListener("mouseleave", hideTip);
+        b.addEventListener("blur", hideTip);
+      });
+      key.addEventListener("mouseleave", hideTip);
+      syncKey();
     }
 
     /* ---- the tooltip, reading whatever the figure is currently showing ----
