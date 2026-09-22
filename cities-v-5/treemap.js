@@ -4671,18 +4671,20 @@
         '<span class="sk-share sk-trad">' + Math.round((trad[sec] || 0) / totTrad * 100) + '%</span></button>').join("") +
         '<button type="button" class="sk-reset" hidden>Show all sectors</button>';
       const resetBtn = key.querySelector(".sk-reset");
-      /* the card rides over the whole figure, so it can follow the cursor up
-         into the chart rather than being penned into the key's own line */
-      const tipEl = document.createElement("span");
+      /* the card rides over the whole figure, so it can stand clear of the
+         key's own line. It carries the sector's figures and, under them,
+         what can be done with it: a card that follows the cursor cannot
+         hold a button the reader is meant to reach, so this one anchors to
+         the entry it belongs to while the cell cards keep following. */
+      const tipEl = document.createElement("div");
       tipEl.className = "sk-tip";
-      tipEl.setAttribute("role", "tooltip");
       tipEl.hidden = true;
       fig.appendChild(tipEl);
       const items = [].slice.call(key.querySelectorAll(".sk-sec"));
-      /* the key says which sectors are in play, and the reset appears only
-         when there is something to go back from */
       const allHeadTitle = document.querySelector("#" + p + "AllHead .mcl-dir");
       const headDefault = allHeadTitle ? allHeadTitle.textContent : "";
+      /* the key says which sectors are in play, and the reset appears only
+         when there is something to go back from */
       function syncKey(){
         items.forEach((b, i) => {
           const on = !secOn || secOn.has(order[i]);
@@ -4709,88 +4711,96 @@
       }
       resetSec = () => applySec(null);
       const allSet = () => new Set(order);
-      /* a double-click arrives as click, click, dblclick, so the single
-         click waits to see whether a second one is coming: without the
-         wait, asking for one sector alone first takes it out and puts it
-         back, and the map is laid out three times on the way */
-      let clickWait = null, pending = null;
-      const runPending = () => {
-        const job = pending;
-        pending = null; clearTimeout(clickWait);
-        if (job) job.run();
-      };
-      const dropPending = () => { pending = null; clearTimeout(clickWait); };
-      key.addEventListener("click", ev => {
-        if (ev.target.closest(".sk-reset")){
-          dropPending(); applySec(null); hideTip(); return;
-        }
-        const b = ev.target.closest(".sk-sec");
-        if (!b) return;
-        /* a click on another entry settles the one still waiting rather than
-           throwing it away */
-        if (pending && pending.btn !== b) runPending();
-        const sec = order[+b.dataset.si];
-        clearTimeout(clickWait);
-        pending = { btn: b, run: () => {
-          const next = secOn ? new Set(secOn) : allSet();
-          if (next.has(sec)) next.delete(sec); else next.add(sec);
-          applySec(next);
-          /* the card comes back only if the pointer is still on the entry */
-          if (hoverBtn === b) showTip(b, lastMove); else hideTip();
-        } };
-        clickWait = setTimeout(runPending, 230);
-      });
-      key.addEventListener("dblclick", ev => {
-        const b = ev.target.closest(".sk-sec");
-        if (!b) return;
-        dropPending();
-        const sec = order[+b.dataset.si];
-        const solo = secOn && secOn.size === 1 && secOn.has(sec);
-        applySec(solo ? null : new Set([sec]));
-        showTip(b, ev);
-      });
-      /* the card: what the sector is, and what a click will do with it.
-         It follows the cursor, as the cell card does; arriving by keyboard,
-         where there is no cursor, it stands over the entry itself */
-      let lastMove = null;
-      function showTip(b, ev){
-        if (!tipEl) return;
+
+      /* ---- the card, which is also this entry's menu ---- */
+      let openFor = null, closeT = null;
+      const holdOpen = () => clearTimeout(closeT);
+      /* the pointer has to be able to travel from the entry to the card, so
+         leaving either one only arms the close */
+      const armClose = () => { clearTimeout(closeT); closeT = setTimeout(hideTip, 180); };
+      function hideTip(){ clearTimeout(closeT); openFor = null; tipEl.hidden = true; }
+      function showTip(b){
         const i = +b.dataset.si, sec = order[i];
-        const on = !secOn || secOn.has(sec);
+        const shown = !secOn || secOn.has(sec);
         const solo = !!(secOn && secOn.size === 1 && secOn.has(sec));
+        openFor = b;
+        /* what can be done with this sector, in the state it is in: the only
+           sector on the map cannot be hidden, so it is offered the way back
+           instead of a click that would be refused */
+        const acts = solo
+          ? [["all", "Show all sectors"]]
+          : shown
+            ? [["hide", "Hide"], ["only", "Keep only"]]
+            : [["show", "Bring back"], ["only", "Keep only"]];
         tipEl.innerHTML =
           '<b>' + sec + '</b>' +
           '<span class="skt-row"><span>Jobs</span><span>' + Math.round(jobs[sec]).toLocaleString() + '</span></span>' +
           '<span class="skt-row"><span>Share of metro jobs</span><span>' +
             (jobs[sec] / tot * 100).toFixed(1) + '%</span></span>' +
           '<span class="skt-row"><span>Industries</span><span>' + inds[sec] + '</span></span>' +
-          '<span class="skt-hint">' +
-          (solo ? "The only sector on the map"
-                : on ? "Click to take it out of the map" : "Click to bring it back") +
-          '<br>' + (solo ? "Double-click for every sector again" : "Double-click to keep only this one") + '</span>';
+          '<span class="skt-acts">' + acts.map(a =>
+            '<button type="button" class="skt-btn" data-act="' + a[0] + '">' + a[1] + '</button>').join("") +
+          '</span>';
         tipEl.hidden = false;
-        const move = ev && ev.clientX != null ? ev : lastMove;
-        if (move){ cursorTipPos(move, fig, tipEl); return; }
-        /* no cursor to follow: over the entry, inside the figure */
+        /* over the entry it belongs to, inside the figure, and below it if
+           there is somehow no room above */
         const fb = fig.getBoundingClientRect(), bb = b.getBoundingClientRect();
-        const w = tipEl.offsetWidth;
+        const w = tipEl.offsetWidth, h = tipEl.offsetHeight;
         let left = bb.left - fb.left + bb.width / 2 - w / 2;
-        tipEl.style.left = Math.max(0, Math.min(left, fb.width - w)) + "px";
-        tipEl.style.top = (bb.top - fb.top - tipEl.offsetHeight - 10) + "px";
+        tipEl.style.left = Math.max(0, Math.min(left, Math.max(0, fb.width - w))) + "px";
+        let top = bb.top - fb.top - h - 8;
+        if (top < 0) top = bb.bottom - fb.top + 8;
+        tipEl.style.top = top + "px";
       }
-      function hideTip(){ if (tipEl) tipEl.hidden = true; }
-      let hoverBtn = null;
-      items.forEach(b => {
-        b.addEventListener("mouseenter", ev => { hoverBtn = b; lastMove = ev; showTip(b, ev); });
-        b.addEventListener("mousemove", ev => {
-          lastMove = ev;
-          if (!tipEl.hidden) cursorTipPos(ev, fig, tipEl);
-        });
-        b.addEventListener("focus", () => { lastMove = null; showTip(b); });
-        b.addEventListener("mouseleave", () => { if (hoverBtn === b) hoverBtn = null; hideTip(); });
-        b.addEventListener("blur", hideTip);
+      /* the actions live in the card, so there is one place they are done
+         from and the keyboard can reach every one of them */
+      tipEl.addEventListener("click", ev => {
+        const a = ev.target.closest(".skt-btn");
+        if (!a || !openFor) return;
+        const b = openFor, sec = order[+b.dataset.si];
+        if (a.dataset.act === "all") applySec(null);
+        else if (a.dataset.act === "only") applySec(new Set([sec]));
+        else {
+          const next = secOn ? new Set(secOn) : allSet();
+          if (a.dataset.act === "hide") next.delete(sec); else next.add(sec);
+          applySec(next);
+        }
+        showTip(b);                                     /* the card follows the change */
+        b.focus();
       });
-      key.addEventListener("mouseleave", () => { lastMove = null; hideTip(); });
+      tipEl.addEventListener("mouseenter", holdOpen);
+      tipEl.addEventListener("mouseleave", armClose);
+      key.addEventListener("click", ev => {
+        if (ev.target.closest(".sk-reset")){ applySec(null); hideTip(); return; }
+        /* a click opens the card too, which is how a touch reaches it */
+        const b = ev.target.closest(".sk-sec");
+        if (b){ holdOpen(); showTip(b); }
+      });
+      items.forEach(b => {
+        b.addEventListener("mouseenter", () => { holdOpen(); showTip(b); });
+        b.addEventListener("focus", () => { holdOpen(); showTip(b); });
+        b.addEventListener("mouseleave", armClose);
+        /* the card sits elsewhere in the page's order, so the keyboard is
+           given a way in: enter, space or down opens it and steps inside */
+        b.addEventListener("keydown", ev => {
+          if (ev.key !== "Enter" && ev.key !== " " && ev.key !== "ArrowDown") return;
+          ev.preventDefault();
+          holdOpen(); showTip(b);
+          const first = tipEl.querySelector(".skt-btn");
+          if (first) first.focus();
+        });
+      });
+      /* and a way back out to the entry it belongs to */
+      tipEl.addEventListener("keydown", ev => {
+        if (ev.key !== "Escape") return;
+        const b = openFor;
+        hideTip();
+        if (b) b.focus();
+      });
+      key.addEventListener("focusout", ev => {
+        if (!ev.relatedTarget || (!key.contains(ev.relatedTarget) && !tipEl.contains(ev.relatedTarget))) armClose();
+      });
+      document.addEventListener("keydown", ev => { if (ev.key === "Escape") hideTip(); });
       syncKey();
     }
 
