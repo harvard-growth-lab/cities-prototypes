@@ -4977,7 +4977,7 @@
         <ul class="steps">
           <li data-step="page-overview"><span class="dot"></span><button onclick="goTo('page-overview')">Your Admin</button></li>
           <li data-step="page-overview-msa"><span class="dot"></span><button onclick="goTo('page-overview-msa')">Your Metro</button></li>
-          <li data-step="page-overview-places"><span class="dot"></span><button onclick="goTo('page-overview-places')">Admins in your Metro</button></li>
+          <li data-step="page-overview-places"><span class="dot"></span><button onclick="goTo('page-overview-places')">Admins in your metro</button></li>
           <li data-step="check-overview"><span class="dot"></span><button onclick="goTo('check-overview')">Test your knowledge</button></li>
           <li data-step="apply-overview"><span class="dot"></span><button onclick="goTo('apply-overview')">Put your insights</button></li>
           <li data-step="page-overview-practice"><span class="dot"></span><button onclick="goTo('page-overview-practice')">Put in Practice</button></li>
@@ -5242,6 +5242,9 @@
             <div class="page-head">
               <h2>Your Admin</h2>
             </div>
+            <p class="lede">This is <span class="city-short">Boston</span> &mdash; a city in Massachusetts. Here is
+              where it stands today: each measure&rsquo;s level, its rank among US places, and the places most
+              like it.</p>
             <!-- nothing on this side but the four measures: each at its level,
                  ranked among US places, and placed on one line against the
                  peer average, the metro and the national average. Built by
@@ -5254,6 +5257,11 @@
             <div class="page-head">
               <h2>Your Metro</h2>
             </div>
+            <p class="lede">The administrative city is one piece of a larger machine. People commute, firms hire,
+              and housing supply responds across a region far wider than the city line &mdash; the labor market.
+              We approximate it with the Metropolitan Statistical Area. <span class="city-short">Boston</span> sits
+              inside the <span class="city-short">Boston</span> MSA, and most of what follows is read at that
+              scale.</p>
             
             <!-- the same four measures for the metro: ranked among US metros,
                  placed against the peer metros and the national average -->
@@ -5287,9 +5295,13 @@
             <div class="page-head page-head--geo">
               <!-- no geography badge here: the beat is about every place in
                    the metro rather than about one of them -->
-              <h2>Explore the admins in your metro</h2>
+              <h2>Admins in your metro</h2>
             </div>
-            <p class="lede"><span class="city-short">Boston</span> is one of many places inside its metro &mdash; the map shows the largest of them. The table sets the admin beside the metro as a whole and beside its peers; <strong>add any place from the menu, or click it on the map</strong>, and every figure carries its rank among the metro&rsquo;s places.</p>
+            <p class="lede"><span class="city-short">Boston</span> is one of many places inside the
+              <span class="city-short">Boston</span> MSA. How much of the metro is it &mdash; its share of the
+              region&rsquo;s people and its wage bill &mdash; and how does it rank against the metro&rsquo;s other
+              places? <strong>Add any place from the menu, or click it on the map</strong>, and every figure carries
+              its rank among the metro&rsquo;s places.</p>
 
             <div class="ctl plc-ctl">
               <span class="ctl-label">Add a place</span>
