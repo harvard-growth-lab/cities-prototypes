@@ -1202,7 +1202,8 @@
   }
   .viz-controls .ctl{display:flex;align-items:center;gap:9px;}
   .viz-controls .ctl-label,
-  .mi-view .ctl-label{
+  .mi-view .ctl-label,
+  .wy-ctl .ctl-label{
     font-size:13px;font-weight:600;letter-spacing:normal;color:#2c2823;
   }
   .viz-controls select{
@@ -1215,23 +1216,28 @@
   .viz-controls select:hover{border-color:var(--teal);}
   /* Visible "Color by" options — a segmented control instead of a dropdown */
   .viz-controls .seg,
-  .mi-view .seg{
+  .mi-view .seg,
+  .wy-ctl .seg{
     display:inline-flex;align-items:stretch;background:#fff;
     border:1px solid var(--border-strong);border-radius:4px;overflow:hidden;
   }
   .viz-controls .seg-btn,
-  .mi-view .seg-btn{
+  .mi-view .seg-btn,
+  .wy-ctl .seg-btn{
     appearance:none;background:none;border:0;border-left:1px solid var(--border-strong);
     height:30px;padding:0 12px;font:inherit;font-size:12px;font-weight:600;
     color:var(--teal);cursor:pointer;white-space:nowrap;
     transition:background .15s ease,color .15s ease;
   }
   .viz-controls .seg-btn:first-child,
-  .mi-view .seg-btn:first-child{border-left:0;}
+  .mi-view .seg-btn:first-child,
+  .wy-ctl .seg-btn:first-child{border-left:0;}
   .viz-controls .seg-btn:hover:not(.is-active),
-  .mi-view .seg-btn:hover:not(.is-active){background:var(--teal-tint);}
+  .mi-view .seg-btn:hover:not(.is-active),
+  .wy-ctl .seg-btn:hover:not(.is-active){background:var(--teal-tint);}
   .viz-controls .seg-btn.is-active,
-  .mi-view .seg-btn.is-active{background:var(--teal);color:#fff;}
+  .mi-view .seg-btn.is-active,
+  .wy-ctl .seg-btn.is-active{background:var(--teal);color:#fff;}
 
   /* ---- Colour-by legends (complexity ramp + change ramp) ----
      Shared layout so both read identically: centred under the chart, wide
@@ -2585,44 +2591,36 @@
      The reading is stated once in a tinted callout, then the three numbers
      it rests on sit in a card below it — icon, label, value on one line. */
   .q-stats{margin:18px 0 4px;}
-  /* ── Who are you?: the four measures, one line each ──
-     One row per measure. On the left the level in large type and, under
-     it, the rank among US places or metros. On the right one line, with
-     the place as a filled disc and its comparators placed on the same
-     scale: the metro as a ring, the peer average as a small grey disc,
-     the national average as a grey tick, each labelled with its value
-     under the line (or over it, where two would collide). One legend at
-     the top names the marks; no axis, no grid, no table. */
+  /* ── Who are you?: the four measures as tiles ──
+     A tile per measure: the level in large type, the rank among US
+     places or metros beside it. The tiles open on the levels alone; the
+     view control above them adds, inside each tile, the same measure
+     for the place's comparators as short bars on one scale — the place,
+     its metro, the peer average and the national average, each named
+     and valued. No axis and no legend: every bar carries its own name. */
   .wy-block{max-width:752px;}
-  .wy-legend{display:flex;flex-wrap:wrap;gap:6px 22px;align-items:center;font-size:12.5px;line-height:16px;color:var(--ink-soft);padding-bottom:12px;border-bottom:1px solid rgba(26,34,38,.22);}
-  .wy-legend span{display:inline-flex;align-items:center;gap:7px;}
-  .wy-legend .wy-lg-here{color:var(--ink);font-weight:600;}
-  .wy-mk{display:inline-block;flex:none;}
-  .wy-mk.here{width:10px;height:10px;border-radius:50%;background:var(--teal);}
-  .wy-mk.metro{width:10px;height:10px;border-radius:50%;border:2px solid var(--teal);background:#fff;box-sizing:border-box;}
-  .wy-mk.peer{width:8px;height:8px;border-radius:50%;background:#8a9296;}
-  .wy-mk.nat{width:2px;height:14px;background:#8a9296;}
-  .wy-row{display:grid;grid-template-columns:196px minmax(0,1fr);column-gap:24px;align-items:center;padding:18px 0 16px;border-bottom:1px solid rgba(26,34,38,.1);}
-  .wy-row:last-child{border-bottom:0;}
+  .wy-ctl{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:0 0 18px;}
+  .wy-tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 32px;}
+  .wy-tile{padding-top:14px;border-top:1px solid rgba(26,34,38,.22);min-width:0;}
+  .wy-head{display:flex;align-items:baseline;justify-content:space-between;gap:4px 12px;flex-wrap:wrap;}
   .wy-lab{display:block;font-size:13px;line-height:16px;color:var(--ink-soft);}
-  .wy-lvl{display:block;font-size:30px;line-height:36px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;margin-top:2px;}
-  .wy-rank{display:block;font-size:12.5px;line-height:16px;color:var(--ink-soft);font-variant-numeric:tabular-nums;margin-top:2px;white-space:nowrap;}
+  .wy-lvl{display:block;font-size:26px;line-height:30px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;margin-top:2px;}
+  .wy-rank{font-size:12.5px;line-height:16px;color:var(--ink-soft);font-variant-numeric:tabular-nums;white-space:nowrap;}
   .wy-rank b{font-weight:600;color:var(--ink);}
-  .wy-plot{position:relative;height:64px;}
-  .wy-plot .wy-line{position:absolute;left:0;right:0;top:31px;height:2px;background:rgba(26,34,38,.16);}
-  .wy-plot .wy-mark{position:absolute;top:32px;transform:translate(-50%,-50%);}
-  .wy-plot .wy-mark.here{width:12px;height:12px;border-radius:50%;background:var(--teal);z-index:2;}
-  .wy-plot .wy-mark.metro{width:12px;height:12px;border-radius:50%;border:2px solid var(--teal);background:#fff;box-sizing:border-box;z-index:1;}
-  .wy-plot .wy-mark.peer{width:9px;height:9px;border-radius:50%;background:#8a9296;}
-  .wy-plot .wy-mark.nat{width:2px;height:16px;background:#8a9296;}
-  .wy-plot .wy-val{position:absolute;font-size:12px;line-height:14px;color:var(--ink-soft);font-variant-numeric:tabular-nums;white-space:nowrap;}
-  .wy-plot .wy-val.below{top:44px;}
-  .wy-plot .wy-val.above{top:8px;}
-  .wy-plot .wy-val.here{color:var(--ink);font-weight:600;}
-  .wy-src{font-size:12px;line-height:18px;color:var(--ink-soft);margin:14px 0 0;}
+  /* the bars wait for the comparison view */
+  .wy-bars{display:none;margin-top:12px;grid-template-columns:max-content minmax(0,1fr) max-content;column-gap:10px;row-gap:6px;align-items:center;font-size:12px;line-height:14px;color:var(--ink-soft);}
+  .wy-block.is-cmp .wy-bars{display:grid;animation:wyIn .25s ease;}
+  @keyframes wyIn{from{opacity:0}to{opacity:1}}
+  .wy-bars .wy-n{white-space:nowrap;}
+  .wy-bars .wy-b{display:block;height:8px;background:#c9d0d2;}
+  .wy-bars .wy-b.here{background:var(--geo-city);}
+  .wy-bars .wy-b.metro{background:var(--geo-metro);}
+  .wy-bars .wy-b.peer{background:#8a9296;}
+  .wy-bars .wy-v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .wy-bars .wy-n.here,.wy-bars .wy-v.here{color:var(--ink);font-weight:600;}
+  .wy-src{font-size:12px;line-height:18px;color:var(--ink-soft);margin:18px 0 0;}
   @media (max-width:899px){
-    .wy-row{grid-template-columns:1fr;row-gap:6px;}
-    .wy-lvl{font-size:26px;line-height:32px;}
+    .wy-tiles{grid-template-columns:1fr;gap:18px;}
   }
   .q-stat{
     display:flex;align-items:center;gap:12px;padding:11px 0;
@@ -5245,10 +5243,17 @@
             <p class="lede">This is <span class="city-short">Boston</span> &mdash; a city in Massachusetts. Here is
               where it stands today: each measure&rsquo;s level, its rank among US places, and the places most
               like it.</p>
-            <!-- nothing on this side but the four measures: each at its level,
-                 ranked among US places, and placed on one line against the
-                 peer average, the metro and the national average. Built by
-                 wyBuild from the WY data below. -->
+            <p class="lede"><span class="city-short">Boston</span> is home to <strong>673,458</strong> people, the
+              25th largest of 9,593 US places, and its residents earn an average salary of
+              <strong>$106,267</strong>. The typical home is worth <strong>$972,529</strong>, and
+              <strong>3.8%</strong> of its labor force is out of work. The places most like it &mdash; the closest
+              on population, density, wage, home value and share of metro &mdash; are Washington DC, Oakland,
+              Long Beach and Cambridge. <strong>Switch the view to comparison</strong> to set each figure beside
+              the metro&rsquo;s, the peers&rsquo; and the national average.</p>
+            <!-- nothing on this side but the four measures, a tile each: the
+                 level and the rank among US places, and on request the same
+                 measure for the metro, the peer average and the national
+                 average as bars. Built by wyBuild from the WY data below. -->
             <div class="wy-block" data-wy="admin"></div>
 
           </section>
@@ -5262,9 +5267,15 @@
               We approximate it with the Metropolitan Statistical Area. <span class="city-short">Boston</span> sits
               inside the <span class="city-short">Boston</span> MSA, and most of what follows is read at that
               scale.</p>
-            
+            <p class="lede">The <span class="city-short">Boston</span> MSA holds <strong>5,025,517</strong> people,
+              the 11th largest of 387 US metros, and pays an average salary of <strong>$114,779</strong>, the 5th
+              highest. The typical home is worth <strong>$717,120</strong>, and <strong>3.7%</strong> of its labor
+              force is out of work. Its closest peer metros, by population, density, wage and home value, are
+              Washington, Seattle, San Diego and Denver; the comparison view sets each figure beside theirs and
+              beside the national average.</p>
             <!-- the same four measures for the metro: ranked among US metros,
-                 placed against the peer metros and the national average -->
+                 and on request set against the peer metros and the national
+                 average -->
             <div class="wy-block" data-wy="metro"></div>
             <div class="collapsible-info">
               <button class="collapsible-header">
@@ -5300,8 +5311,12 @@
             <p class="lede"><span class="city-short">Boston</span> is one of many places inside the
               <span class="city-short">Boston</span> MSA. How much of the metro is it &mdash; its share of the
               region&rsquo;s people and its wage bill &mdash; and how does it rank against the metro&rsquo;s other
-              places? <strong>Add any place from the menu, or click it on the map</strong>, and every figure carries
-              its rank among the metro&rsquo;s places.</p>
+              places? It holds <strong>24.8%</strong> of the metro&rsquo;s people and <strong>19.9%</strong> of its
+              wage bill, the largest shares of any place in the region, on an average salary a little under the
+              metro&rsquo;s own.</p>
+            <p class="lede">The table sets the admin beside the metro as a whole and beside its peers, each figure
+              with its rank among the metro&rsquo;s places. <strong>Add any place from the menu, or click it on the
+              map</strong>, and it joins them.</p>
 
             <div class="ctl plc-ctl">
               <span class="ctl-label">Add a place</span>
@@ -7176,7 +7191,7 @@
 
     // [name, lat, lng, pop(K), wealth 0..1]
     const P = [
-      ["Boston",      42.335,-71.07, 660, null],
+      ["Boston",      42.335,-71.07, 673, null],
       ["Somerville",  42.39,-71.10,  81, .74],
       ["Cambridge",   42.376,-71.118,118, .92],
       ["Brookline",   42.332,-71.121, 63, .95],
@@ -7223,7 +7238,7 @@
     const places = P.map(([name, lat, lng, pop, w]) => {
       const j = jit(name);
       const d = w === null
-        ? { salary: 100, home: 971, unemp: 3.5, div: 0.64 }   // Boston: the page's own figures
+        ? { salary: 106, home: 973, unemp: 3.8, div: 0.64 }   // Boston: the figures the beats above state
         : { salary: Math.round(58 + w * 58 + j * 6),
             home:   Math.round(360 + w * 760 + j * 60),
             unemp:  Math.round((5.6 - w * 2.6 + j * 0.4) * 10) / 10,
@@ -7258,11 +7273,11 @@
        rates of change, are authored like the rest of the places' figures. */
     const AGG = [
       { name: "Metro average", agg: true,
-        pop: 5073, salary: 108, homeVal: 648, unemp: 3.3, div: 0.71,
+        pop: 5026, salary: 115, homeVal: 717, unemp: 3.7, div: 0.71,
         chg: { pop: "+0.4%/yr", salary: "+5.3%/yr", homeVal: "+7.1%/yr", unemp: "\u22120.1 pp", div: "+0.02" } },
       { name: "Peer average", agg: true,
         tip: "The peers: Washington, DC \u00b7 Oakland, CA \u00b7 Cambridge, MA \u00b7 Long Beach, CA",
-        pop: 429, salary: 98, homeVal: 823, unemp: 4.1, div: 0.68,
+        pop: 429, salary: 110, homeVal: 888, unemp: 4.7, div: 0.68,
         chg: { pop: "+0.4%/yr", salary: "+4.6%/yr", homeVal: "+5.9%/yr", unemp: "\u22120.2 pp", div: "+0.03" } }
     ];
     /* both averages start in the table; either can be taken out with its
@@ -8568,7 +8583,7 @@
   const WY = {
     admin: {
       noun: "US places",
-      refs: [["metro", "<span><span class=\"city-short\">Boston</span> metro</span>"], ["peer", "Peer average"], ["nat", "National average"]],
+      refs: ["metro", "peer", "nat"],
       peers: "Washington DC, Oakland CA, Long Beach CA, Cambridge MA",
       rows: [
         { label: "Population",     fmt: "count", level: 673458, rank: 25,   n: 9593,  metro: 5025517, peer: 429473, nat: 20203 },
@@ -8579,7 +8594,7 @@
     },
     metro: {
       noun: "US metros",
-      refs: [["peer", "Peer average"], ["nat", "National average"]],
+      refs: ["peer", "nat"],
       peers: "Washington, Seattle, San Diego, Denver",
       rows: [
         { label: "Population",     fmt: "count", level: 5025517, rank: 11,  n: 387, peer: 4233320, nat: 759392 },
@@ -8590,6 +8605,9 @@
     }
   };
   const WY_SOURCE = "2024 levels from the Growth Lab's cities data: Census PEP, IRS SOI (salary, carried 2023\u201325), Zillow ZHVI, BLS LAUS.";
+  /* the view is one for both blocks: a reader who asks for the comparison
+     at the admin finds it waiting at the metro */
+  let wyView = "levels";
   function wyBuild(){
     const fmt = (v, kind) => {
       if (kind === "pct") return v.toFixed(1) + "%";
@@ -8598,54 +8616,53 @@
     };
     const thousands = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     const ordinal = n => { const r = n % 100; return thousands(n) + ((r >= 11 && r <= 13) ? "th" : ({ 1: "st", 2: "nd", 3: "rd" })[n % 10] || "th"); };
+    const NAMES = { metro: '<span class="city-short">Boston</span> metro', peer: "Peer average", nat: "National average" };
     document.querySelectorAll(".wy-block[data-wy]").forEach(host => {
       const d = WY[host.dataset.wy]; if (!d) return;
-      const legend = '<div class="wy-legend"><span class="wy-lg-here"><i class="wy-mk here"></i><span><span class="city-short">Boston</span>' +
-        (host.dataset.wy === "metro" ? " metro" : "") + '</span></span>' +
-        d.refs.map(r => '<span><i class="wy-mk ' + r[0] + '"></i>' + r[1] + '</span>').join("") + '</div>';
-      /* the rows first, each with its line empty; the marks are placed once
-         the line has a width to be placed on */
-      host.innerHTML = legend + d.rows.map((row, i) =>
-        '<div class="wy-row"><div class="wy-left"><span class="wy-lab">' + row.label + '</span>' +
-        '<span class="wy-lvl">' + fmt(row.level, row.fmt) + '</span>' +
-        '<span class="wy-rank"><b>' + ordinal(row.rank) + '</b>' + (row.lowest ? " lowest" : "") + ' of ' + thousands(row.n) + ' ' + d.noun + '</span></div>' +
-        '<div class="wy-plot" data-row="' + i + '"><i class="wy-line"></i></div></div>').join("") +
+      const hereName = host.dataset.wy === "metro" ? NAMES.metro : '<span class="city-short">Boston</span>';
+      /* the control, in the house's segmented form: the levels alone, or
+         the levels with their comparators */
+      const ctl = '<div class="wy-ctl"><span class="ctl-label">View</span>' +
+        '<div class="seg" role="group" aria-label="What the tiles show">' +
+        '<button type="button" class="seg-btn" data-wyview="levels" aria-pressed="false">Levels</button>' +
+        '<button type="button" class="seg-btn" data-wyview="compare" aria-pressed="false">Comparison</button>' +
+        '</div></div>';
+      const tiles = d.rows.map(row => {
+        const marks = [{ k: "here", name: hereName, v: row.level }]
+          .concat(d.refs.map(k => ({ k: k, name: NAMES[k], v: row[k] })));
+        const max = Math.max.apply(null, marks.map(m => m.v));
+        return '<div class="wy-tile"><div class="wy-head"><div><span class="wy-lab">' + row.label + '</span>' +
+          '<span class="wy-lvl">' + fmt(row.level, row.fmt) + '</span></div>' +
+          '<span class="wy-rank"><b>' + ordinal(row.rank) + '</b>' + (row.lowest ? " lowest" : "") +
+          ' of ' + thousands(row.n) + ' ' + d.noun + '</span></div>' +
+          /* the bars: one scale per tile, the longest bar the tile's width */
+          '<div class="wy-bars">' + marks.map(m =>
+            '<span class="wy-n ' + m.k + '">' + m.name + '</span>' +
+            '<span><i class="wy-b ' + m.k + '" style="width:' + Math.max(0.5, m.v / max * 100).toFixed(1) + '%"></i></span>' +
+            '<span class="wy-v ' + m.k + '">' + fmt(m.v, row.fmt) + '</span>').join("") +
+          '</div></div>';
+      }).join("");
+      host.innerHTML = ctl + '<div class="wy-tiles">' + tiles + '</div>' +
         '<p class="wy-src">Peers: ' + d.peers + '.<br>' + WY_SOURCE + '</p>';
-      host.querySelectorAll(".wy-plot").forEach(plot => {
-        const row = d.rows[+plot.dataset.row];
-        const W = plot.clientWidth || 532;
-        const marks = [{ k: "here", v: row.level }].concat(d.refs.map(r => ({ k: r[0], v: row[r[0]] })));
-        const max = Math.max.apply(null, marks.map(m => m.v)) * 1.08;
-        const placed = marks.map(m => ({ k: m.k, x: Math.max(6, Math.min(W - 6, m.v / max * W)), t: fmt(m.v, row.fmt) }))
-          .sort((a, b) => a.x - b.x);
-        placed.forEach(p => {
-          const mk = document.createElement("i"); mk.className = "wy-mark " + p.k; mk.style.left = p.x.toFixed(1) + "px"; plot.appendChild(mk);
-          const lb = document.createElement("span"); lb.className = "wy-val " + p.k; lb.textContent = p.t; plot.appendChild(lb);
-          p.el = lb; p.w = lb.getBoundingClientRect().width || p.t.length * 6.4;
-        });
-        /* each value label centres under its mark, kept inside the line; one
-           that would run into the label before it on that side goes over the
-           line; one that fits on neither side stays below, moved right just
-           clear of its neighbour */
-        let endBelow = -1e9, endAbove = -1e9;
-        placed.forEach(p => {
-          const want = Math.max(0, Math.min(W - p.w, p.x - p.w / 2));
-          let side = "below", left = want;
-          if (want < endBelow + 4){
-            if (want >= endAbove + 4) side = "above";
-            else left = Math.min(W - p.w, endBelow + 4);
-          }
-          p.el.classList.add(side);
-          p.el.style.left = left.toFixed(1) + "px";
-          if (side === "below") endBelow = left + p.w; else endAbove = left + p.w;
-        });
+      host.querySelector(".wy-ctl").addEventListener("click", ev => {
+        const b = ev.target.closest(".seg-btn"); if (!b) return;
+        wySetView(b.dataset.wyview);
+      });
+    });
+    wySetView(wyView);
+  }
+  function wySetView(v){
+    wyView = v === "compare" ? "compare" : "levels";
+    document.querySelectorAll(".wy-block[data-wy]").forEach(host => {
+      host.classList.toggle("is-cmp", wyView === "compare");
+      host.querySelectorAll(".seg-btn").forEach(b => {
+        const on = b.dataset.wyview === wyView;
+        b.classList.toggle("is-active", on);
+        b.setAttribute("aria-pressed", String(on));
       });
     });
   }
   wyBuild();
-  /* the marks are placed in pixels for the width the block has, so a
-     block built while its page was hidden, or resized since, is built again */
-  { let wyT = null; window.addEventListener("resize", () => { clearTimeout(wyT); wyT = setTimeout(wyBuild, 120); }); }
 
   /* ---------- links to sections ----------
      index.html#metro-industries opens the tool on that section, skipping
