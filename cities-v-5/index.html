@@ -2748,10 +2748,10 @@
   }
   .mi-view .mi-colorlab{margin-left:14px;}
   /* the naming study belongs to the two beats that draw blocks */
-  #miFigure:not([data-step="7"]):not([data-step="4"]) #miNames,
-  #miFigure:not([data-step="7"]):not([data-step="4"]) #miNames + .ctl-label,
+  #miFigure:not([data-step="0"]):not([data-step="4"]) #miNames,
+  #miFigure:not([data-step="0"]):not([data-step="4"]) #miNames + .ctl-label,
   #miFigure[data-color="complexity"] #miNames{display:none;}
-  #miFigure:not([data-step="7"]):not([data-step="4"]) .mi-colorlab + .seg + .mi-colorlab,
+  #miFigure:not([data-step="0"]):not([data-step="4"]) .mi-colorlab + .seg + .mi-colorlab,
   #miFigure[data-color="complexity"] .mi-colorlab + .seg + .mi-colorlab{display:none;}
   /* This one is not a control the reader is meant to use - it is a switch for
      deciding which naming ships. So it is set as small plain text rather than
@@ -2791,10 +2791,12 @@
   /* the tier study belongs to the clusters' beat alone, and follows the
      naming study at the end of the row - taking the push to the right
      itself when the naming study has stood down */
-  #miFigure:not([data-step="4"]) #miTierOpt,
-  #miFigure:not([data-step="4"]) #miTierOptLab{display:none;}
-  .mi-view #miTierOptLab{margin-left:14px;}
-  #miFigure[data-color="complexity"] #miTierOptLab{margin-left:auto;}
+  /* the label and its switch are one item, so a narrow row wraps them
+     together rather than leaving the label at the end of the line above */
+  .mi-ctlpair{display:inline-flex;align-items:center;gap:10px;flex:none;}
+  #miFigure:not([data-step="4"]) #miTierPair{display:none;}
+  .mi-view #miTierPair{margin-left:14px;}
+  #miFigure[data-color="complexity"] #miTierPair{margin-left:auto;}
   /* opt-2 of the tier study: the ground carries its tier's name alone, set
      as the head the share was; the shares are in the donut by the lede */
   #miFigure[data-tier="donut"] .mi-card-pct{display:none;}
@@ -2827,26 +2829,28 @@
   /* the names close onto the chart: the slot takes over the chart's own top
      margin rather than pushing it down, so the figure itself does not move */
   #miFigure[data-step="4"] .mi-head,
-  #miFigure[data-step="7"] .mi-head{min-height:107px;margin-bottom:3px;}
+  #miFigure[data-step="0"] .mi-head{min-height:107px;margin-bottom:3px;}
   /* where the row wraps (a stage under about 490px wide for View and Color
      by, under about 400px for Sort by) the slot grows to hold both lines */
   @media (max-width: 920px){
     #miFigure[data-step="4"] .mi-head,
-    #miFigure[data-step="7"] .mi-head{min-height:146px;}
+    #miFigure[data-step="0"] .mi-head{min-height:146px;}
   }
   @media (max-width: 830px){
     #miFigure[data-step="6"] .mi-head{min-height:80px;}
   }
   #miFigure[data-step="4"] .tradable-viz-wrapper .viz-big,
-  #miFigure[data-step="7"] .tradable-viz-wrapper .viz-big{margin-top:0;}
+  #miFigure[data-step="0"] .tradable-viz-wrapper .viz-big{margin-top:0;}
   #miFigure[data-step="4"] .mi-head > .mi-view,
-  #miFigure[data-step="7"] .mi-head > .mi-view{top:0;bottom:auto;}
+  #miFigure[data-step="0"] .mi-head > .mi-view{top:0;bottom:auto;}
   /* the opening frame's header: on for the most tradable alone */
   /* the two map headers share a box, so the titles sit at the same height
      whether a line follows the title or not: the box is the opening frame's
      natural height at the reference width, and both fill it from the top */
   .mi-trad-head{display:flex;flex-direction:column;justify-content:flex-start;gap:8px;min-height:44px;opacity:0;pointer-events:none;transition:opacity .35s ease;}
-  .mi-figure[data-step="7"] .mi-trad-head{opacity:1;}
+  .mi-figure[data-step="0"] .mi-trad-head{opacity:1;}
+  /* bars have no sectors: the opening header stands down while they are up */
+  .mi-figure[data-step="0"][data-view="alt"] .mi-trad-head{opacity:0;}
   /* ── the three clusters (opt-3's opening beat) ──────────────────────── */
   /* the lead's two rows swap by the hidden attribute, which the rail's own
      display rule would otherwise override */
@@ -2860,7 +2864,7 @@
   .mi-figure[data-step="4"][data-view="alt"] .mi-cluster-head{opacity:0;}
   .mcl-col{display:flex;flex-direction:column;min-width:0;flex:0 0 auto;}
   /* the title of the frame: the tier alone, or all three */
-  .mcl-dir{font-size:16px;font-weight:700;color:var(--teal);letter-spacing:.01em;white-space:nowrap;}
+  .mcl-dir{font-size:16px;font-weight:700;color:var(--teal);white-space:nowrap;}
   /* the cluster names sit right on top of the column they name, with no rule
      under them — the columns themselves are the division the reader sees */
   .mcl-lab{font-size:13px;font-weight:500;color:var(--ink);line-height:1.15;
@@ -2868,12 +2872,12 @@
   .mcl-lab .pct{font-weight:400;}
   /* the sector legend keeps the bottom on the clusters' beat, as on the first */
   .mi-figure[data-step="4"] .sector-key,
-  .mi-figure[data-step="7"] .sector-key{opacity:1;}
+  .mi-figure[data-step="0"] .sector-key{opacity:1;}
   /* coloured by complexity, the map beats swap the sector key for the ramp */
   .mi-figure[data-color="complexity"][data-step="4"] .sector-key,
-  .mi-figure[data-color="complexity"][data-step="7"] .sector-key{opacity:0;}
+  .mi-figure[data-color="complexity"][data-step="0"] .sector-key{opacity:0;}
   .mi-figure[data-color="complexity"][data-step="4"] .complexity-legend,
-  .mi-figure[data-color="complexity"][data-step="7"] .complexity-legend{opacity:1;}
+  .mi-figure[data-color="complexity"][data-step="0"] .complexity-legend{opacity:1;}
   /* the second beat's scale: 1 to 0, three bands, the metro's own examples */
   .tscale{display:flex;flex-direction:column;gap:7px;margin-top:14px;max-width:360px;}
   .tscale[hidden]{display:none;}
@@ -4047,7 +4051,7 @@
     #miFigure[data-step="3"] .mi-head,
     #miFigure[data-step="6"] .mi-head{min-height:34px;}
     #miFigure[data-step="4"] .mi-head,
-    #miFigure[data-step="7"] .mi-head{min-height:104px;}
+    #miFigure[data-step="0"] .mi-head{min-height:104px;}
     #amFigure .mi-head{min-height:56px;margin-bottom:8px;}
     #amFigure[data-step="9"] .mi-head,
     #amFigure[data-step="10"] .mi-head{min-height:92px;}
@@ -4172,7 +4176,7 @@
     #miFigure[data-step="3"] .mi-head,
     #miFigure[data-step="6"] .mi-head{min-height:36px;}
     #miFigure[data-step="4"] .mi-head,
-    #miFigure[data-step="7"] .mi-head{min-height:118px;}
+    #miFigure[data-step="0"] .mi-head{min-height:118px;}
     #amFigure .mi-head{min-height:64px;margin-bottom:6px;}
     #amFigure[data-step="9"] .mi-head,
     #amFigure[data-step="10"] .mi-head{min-height:104px;}
@@ -4986,8 +4990,8 @@
       <div class="sec" data-sec="page-export-basket">
         <button class="sec-head" onclick="goTo('page-export-basket')"><span class="num">2</span>Metro Industries</button>
         <ul class="steps">
-          <li data-step="page-export-basket"><span class="dot"></span><button onclick="goTo('page-export-basket')">How tradable is the metro&rsquo;s work?</button></li>
-          <li data-step="leanSection"><span class="dot"></span><button onclick="goTo('leanSection')">Which of that work sells outward?</button></li>
+          <li data-step="page-export-basket"><span class="dot"></span><button onclick="goTo('page-export-basket')">What does the metro do for a living?</button></li>
+          <li data-step="tierSection"><span class="dot"></span><button onclick="goTo('tierSection')">How tradable is the metro&rsquo;s work?</button></li>
           <li data-step="specializedSection"><span class="dot"></span><button onclick="goTo('specializedSection')">Which tradable industries is the metro most specialized in?</button></li>
           <li data-step="check-export"><span class="dot"></span><button onclick="goTo('check-export')">Test your knowledge</button></li>
           <li data-step="apply-export"><span class="dot"></span><button onclick="goTo('apply-export')">Put your insights</button></li>
@@ -5380,45 +5384,60 @@
       <!-- 2 Metro Industries · What the metro does for a living -->
       <section class="page" id="page-export-basket">
         <div class="page-head page-head--geo">
-          <h2>How tradable is the metro&rsquo;s work?</h2>
+          <h2>What does the metro do for a living?</h2>
           <button type="button" class="geo-badge geo-badge--metro" onclick="openGeoMap('metro')" title="See this geography on the map"><svg viewBox="0 0 30 22" width="25" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="15" cy="11" rx="13" ry="8.6" stroke-dasharray="2.6 3"/><path d="M10.5 15.5h9"/><path d="M12.2 15.5V10h3v5.5"/><path d="M16.6 15.5V7h3v8.5"/></svg><span class="gb-view">Viewing:</span><span class="gb-name"><span class="city-short">Boston</span> Metro</span></button>
         </div>
-        <!-- beat 1: the metro's work in its three tiers, the shares in the
-             donut beside this text -->
+        <!-- beat 1: every industry, sized by its jobs and grouped into
+             sectors; the complexity pieces sit here, since this is the beat
+             whose map the reader colours -->
         <div class="lede-stat-row">
-          <p class="lede">Most of the metro&rsquo;s work does not sell outward. Local work &mdash; restaurants,
-            grocers, family services &mdash; is 48% of jobs, and another 29% is partly traded. Only 22% is
-            traded, and that is the part bringing new income in.</p>
-          <!-- the three tiers by name, each with two of the metro's own
-               industries; the score itself is shown nowhere -->
-          <div class="tscale" id="miTradScale" hidden></div>
-          <!-- opt-2 of the tier study: the shares as a donut, with the
-               chart carrying the tier names alone; hovering a tier names
-               its largest industries and their jobs -->
-          <div class="tier-donut" id="miTierDonut" hidden></div>
+          <p class="lede">What a place produces shapes much of what follows for it. Some metros grew up around a
+            single industry and still rest on it; others carry a wide range, and with it a workforce holding many
+            different specialized skills. Here is the <span class="city-short">Boston</span> MSA&rsquo;s mix
+            &mdash; every industry sized by employment, grouped into sectors.</p>
+          <p class="lede"><strong>2.3 million</strong> jobs across 292 industries. <span class="mi-hl"
+            data-sector="Professional &amp; Business" tabindex="0">Professional &amp; business services</span> and
+            <span class="mi-hl" data-sector="Education &amp; Health" tabindex="0">education &amp; health</span> are
+            the two largest sectors, each about a quarter of the jobs, and <span class="mi-hl"
+            data-sector="Trade &amp; Transportation" tabindex="0">trade &amp; transportation</span> holds another
+            sixth. The single largest industry is restaurants, at <strong>7.6%</strong> of all jobs, then general
+            hospitals at 5.4% and scientific R&amp;D at 4.2%. Color the map by complexity to see how much know-how
+            each industry takes.</p>
         </div>
-        <div class="collapsible-info">
-          <button class="collapsible-header">
-            <span class="ci-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.75a6.25 6.25 0 0 0-3.75 11.25c.53.4.87 1 .96 1.66l.09.59h5.4l.09-.59c.09-.66.43-1.26.96-1.66A6.25 6.25 0 0 0 12 2.75Z"/><path d="M9.6 18.6h4.8"/><path d="M10.5 21h3"/></svg></span>
-            <span class="ci-title">How do we measure tradability?</span>
-            <svg class="collapsible-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M6 9l6 6 6-6"/>
-            </svg>
-          </button>
-          <div class="collapsible-content">
-            <p>Each industry is placed in a tier by how much of what it makes can be sold to someone outside
-              the metro.</p>
-            <!-- the three terms the page speaks in, each defined in a line beside
-                 its colour, in the order the grounds take -->
-            <dl class="tier-gloss">
-              <div><i style="background:#255862"></i><dt>Traded</dt><dd>sells most of its output outside the metro, so its earnings are new income arriving here</dd></div>
-              <div><i style="background:#59838c"></i><dt>Partly traded</dt><dd>sells some outside and some to the people already here</dd></div>
-              <div><i style="background:#b9ccd0"></i><dt>Local</dt><dd>serves the people already here; the customer has to be standing there</dd></div>
-            </dl>
-            <p class="ci-foot">The tiers are cuts on a continuous measure, so an industry near a cut could fall the other way.</p>
+        <!-- the complexity rank is the complexity colouring's takeaway: it comes
+             forward when the reader colours the map by complexity -->
+        <div class="rank-strip anchor-card rank-card is-off" id="miRankCard" aria-hidden="true" inert>
+            <div class="rc-fig" aria-hidden="true">
+              <span class="rs-num">9<span class="rs-ord">th</span></span>
+              <span class="rc-of">of 384</span>
+            </div>
+            <div class="ac-body">
+              <p class="ac-head"><span class="ac-anchor" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18"/><path d="M8.5 20v-8h7v8"/><path d="M3 20v-4.5h5.5"/><path d="M15.5 14H21v6"/><path d="m12 3.2 1.1 2.2 2.4.4-1.7 1.7.4 2.4L12 8.8l-2.2 1.1.4-2.4-1.7-1.7 2.4-.4z"/></svg></span><span>of 384 US metros</span></p>
+              <p class="rc-sub">Complexity rank, 2024</p>
+            </div>
           </div>
-        </div>
-        <!-- One figure serves all four beats. The engine lifts it into the
+        <!-- the complexity explainer, like the rank above it, comes forward only
+             when the reader colours the map by complexity -->
+        <div class="collapsible-info is-off" id="miComplexityInfo" aria-hidden="true" inert>
+            <button class="collapsible-header">
+              <span class="ci-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.75a6.25 6.25 0 0 0-3.75 11.25c.53.4.87 1 .96 1.66l.09.59h5.4l.09-.59c.09-.66.43-1.26.96-1.66A6.25 6.25 0 0 0 12 2.75Z"/><path d="M9.6 18.6h4.8"/><path d="M10.5 21h3"/></svg></span>
+              <span class="ci-title">What is economic complexity?</span>
+              <svg class="collapsible-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M6 9l6 6 6-6"/>
+              </svg>
+            </button>
+            <div class="collapsible-content">
+              <p><strong>Complexity</strong> measures the knowledge an industry takes to run. Work that needs many people
+                holding many different specialized skills &mdash; medical devices, financial engineering, research
+                instruments &mdash; is complex. Work that almost anywhere can do &mdash; food service, retail, basic
+                construction &mdash; is not.</p>
+              <p>It matters because complex work is hard to copy. Places that hold it tend to pay more, to weather
+                downturns better, and to find it easier to move into the next complex thing, because the know-how
+                is already in the room. A metro&rsquo;s complexity is the mix of its industries weighted by how much
+                of each it does.</p>
+            </div>
+          </div>
+        <!-- One figure serves all three beats. The engine lifts it into the
              scrolly's stage, where it stays put while the text scrolls past
              and each beat drives it to its own state. -->
         <div class="mi-figure" id="miFigure" data-step="0">
@@ -5449,11 +5468,13 @@
               <!-- a study control: where the tiers' shares are told - on the
                    grounds, or as a donut in the text with the grounds named
                    alone -->
-              <span class="ctl-label mi-studylab" id="miTierOptLab">Tier shares</span>
-              <div class="seg" id="miTierOpt" role="group" aria-label="Where the tiers' shares are shown">
-                <button type="button" class="seg-btn" data-tier="cards" aria-pressed="false">opt-1</button>
-                <button type="button" class="seg-btn is-active" data-tier="donut" aria-pressed="true">opt-2</button>
-              </div>
+              <span class="mi-ctlpair" id="miTierPair">
+                <span class="ctl-label mi-studylab" id="miTierOptLab">Tier shares</span>
+                <div class="seg" id="miTierOpt" role="group" aria-label="Where the tiers' shares are shown">
+                  <button type="button" class="seg-btn" data-tier="cards" aria-pressed="false">opt-1</button>
+                  <button type="button" class="seg-btn is-active" data-tier="donut" aria-pressed="true">opt-2</button>
+                </div>
+              </span>
             </div>
             <!-- the ranking's order: by concentration, by size, or by the gap
                  against the peers; the rows and their bars travel together -->
@@ -5490,12 +5511,12 @@
             <div class="mi-cluster-head" id="miClusterHead">
               <div class="mcl-axis"><span class="mcl-dir">All industries, by tier</span></div>
             </div>
-            <!-- the header of the outward-selling beat: the two tiers as one
-                 set, in the same two rows as the tiers' header so the chart
-                 does not move between the beats -->
-            <div class="mi-trad-head" id="miTradHead">
-              <div class="mcl-axis"><span class="mcl-dir">Traded and partly traded industries</span></div>
-              <div class="mcl-cols"><div class="mcl-col" style="flex-basis:100%"><span class="mcl-lab">Sell at least some of what they make outside the metro <span class="pct"></span></span></div></div>
+            <!-- the header of the opening beat: every industry, in the same two
+                 rows as the tiers' header so the chart does not move between
+                 the beats -->
+            <div class="mi-trad-head" id="miAllHead">
+              <div class="mcl-axis"><span class="mcl-dir">All industries</span></div>
+              <div class="mcl-cols"><div class="mcl-col" style="flex-basis:100%"><span class="mcl-lab">Every industry sized by its jobs, grouped into sectors <span class="pct"></span></span></div></div>
             </div>
           </div>
           <div class="tradable-viz-wrapper">
@@ -5532,55 +5553,44 @@
           </div>
         </div>
 
-        <!-- beat 2: traded and partly traded as one map, sectors grouped and
-             the tiers' grounds gone. The complexity pieces sit here, since
-             this is the beat whose map the reader colours -->
-        <div class="export-subsection" id="leanSection">
+        <!-- beat 2: the same industries travel into their three tiers by
+             tradability, the shares in the donut beside this text -->
+        <div class="export-subsection" id="tierSection">
           <div class="subsection-header">
-            <h3>Which of that work sells outward?</h3>
+            <h3>How tradable is the metro&rsquo;s work?</h3>
           </div>
           <div class="lede-stat-row">
-            <p class="lede">Take the two tiers that sell beyond the metro and the local work falls away, leaving
-              <strong>52% of the metro&rsquo;s jobs</strong> across 220 industries. <span class="mi-hl"
-              data-sector="Professional &amp; Business" tabindex="0">Professional &amp; business services</span> and
-              <span class="mi-hl" data-sector="Education &amp; Health" tabindex="0">education &amp; health</span> hold
-              close to two thirds of it, with <span class="mi-hl" data-sector="Manufacturing"
-              tabindex="0">manufacturing</span>, <span class="mi-hl" data-sector="Financial Activities"
-              tabindex="0">financial activities</span> and <span class="mi-hl" data-sector="Trade &amp; Transportation"
-              tabindex="0">trade &amp; transportation</span> holding most of the rest.</p>
+            <p class="lede">The same blocks, now sorted into three tiers by how much of what they make can be sold
+              outside the metro. Most of the metro&rsquo;s work does not sell outward. Local work &mdash; restaurants,
+              grocers, family services &mdash; is 48% of jobs, and another 29% is partly traded. Only 22% is
+              traded, and that is the part bringing new income in.</p>
+            <!-- the three tiers by name, each with two of the metro's own
+                 industries; the score itself is shown nowhere -->
+            <div class="tscale" id="miTradScale" hidden></div>
+            <!-- opt-2 of the tier study: the shares as a donut, with the
+                 chart carrying the tier names alone; hovering a tier names
+                 its largest industries and their jobs -->
+            <div class="tier-donut" id="miTierDonut" hidden></div>
           </div>
-
-        <!-- the complexity rank is the complexity colouring's takeaway: it comes
-             forward when the reader colours the map by complexity -->
-        <div class="rank-strip anchor-card rank-card is-off" id="miRankCard" aria-hidden="true" inert>
-            <div class="rc-fig" aria-hidden="true">
-              <span class="rs-num">9<span class="rs-ord">th</span></span>
-              <span class="rc-of">of 384</span>
-            </div>
-            <div class="ac-body">
-              <p class="ac-head"><span class="ac-anchor" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18"/><path d="M8.5 20v-8h7v8"/><path d="M3 20v-4.5h5.5"/><path d="M15.5 14H21v6"/><path d="m12 3.2 1.1 2.2 2.4.4-1.7 1.7.4 2.4L12 8.8l-2.2 1.1.4-2.4-1.7-1.7 2.4-.4z"/></svg></span><span>of 384 US metros</span></p>
-              <p class="rc-sub">Complexity rank, 2024</p>
-            </div>
-          </div>
-        <!-- the complexity explainer, like the rank above it, comes forward only
-             when the reader colours the map by complexity -->
-        <div class="collapsible-info is-off" id="miComplexityInfo" aria-hidden="true" inert>
+          <div class="collapsible-info">
             <button class="collapsible-header">
               <span class="ci-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.75a6.25 6.25 0 0 0-3.75 11.25c.53.4.87 1 .96 1.66l.09.59h5.4l.09-.59c.09-.66.43-1.26.96-1.66A6.25 6.25 0 0 0 12 2.75Z"/><path d="M9.6 18.6h4.8"/><path d="M10.5 21h3"/></svg></span>
-              <span class="ci-title">What is economic complexity?</span>
+              <span class="ci-title">How do we measure tradability?</span>
               <svg class="collapsible-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M6 9l6 6 6-6"/>
               </svg>
             </button>
             <div class="collapsible-content">
-              <p><strong>Complexity</strong> measures the knowledge an industry takes to run. Work that needs many people
-                holding many different specialised skills &mdash; medical devices, financial engineering, research
-                instruments &mdash; is complex. Work that almost anywhere can do &mdash; food service, retail, basic
-                construction &mdash; is not.</p>
-              <p>It matters because complex work is hard to copy. Places that hold it tend to pay more, to weather
-                downturns better, and to find it easier to move into the next complex thing, because the know-how
-                is already in the room. A metro&rsquo;s complexity is the mix of its industries weighted by how much
-                of each it does.</p>
+              <p>Each industry is placed in a tier by how much of what it makes can be sold to someone outside
+                the metro.</p>
+              <!-- the three terms the page speaks in, each defined in a line beside
+                   its colour, in the order the grounds take -->
+              <dl class="tier-gloss">
+                <div><i style="background:#255862"></i><dt>Traded</dt><dd>sells most of its output outside the metro, so its earnings are new income arriving here</dd></div>
+                <div><i style="background:#59838c"></i><dt>Partly traded</dt><dd>sells some outside and some to the people already here</dd></div>
+                <div><i style="background:#b9ccd0"></i><dt>Local</dt><dd>serves the people already here; the customer has to be standing there</dd></div>
+              </dl>
+              <p class="ci-foot">The tiers are cuts on a continuous measure, so an industry near a cut could fall the other way.</p>
             </div>
           </div>
         </div>
@@ -6395,7 +6405,7 @@
   /* ---------- journey state ---------- */
   const sectionDefs=[
     {name:"Who are you?", pages:["page-overview","page-overview-msa","page-overview-places","check-overview","apply-overview"], entry:"page-overview"},
-    {name:"Metro Industries",    pages:["page-export-basket","leanSection","specializedSection","check-export","apply-export"], entry:"page-export-basket"},
+    {name:"Metro Industries",    pages:["page-export-basket","tierSection","specializedSection","check-export","apply-export"], entry:"page-export-basket"},
     {name:"Worker Flows", pages:["page-admin-mix","adminWhoFills","adminResidentsOut","adminBalance","adminJobsHere","adminResidents","adminSpecialized","adminExchange","adminGauge","am2Bars","am2Compare","check-adminmix","apply-adminmix"], entry:"page-admin-mix"},
     {name:"Constraints Diagnosis",pages:["page-constraints","page-city-in-metro","page-constraints-lorem","check-constraints","apply-constraints"],entry:"page-constraints"},
     {name:"Levers for Change",pages:["page-levers","check-levers","apply-levers"], entry:"page-levers"},
@@ -9274,10 +9284,11 @@
   setLayout(cfg.defaultLayout || "2");
   }
 
-  /* Metro Industries reads one way: the three tiers, then the two that sell
-     outward as one map, then the ranking drawn over that same set */
+  /* Metro Industries reads one way: every industry, then the same blocks
+     sorted into their three tiers, then the ranking drawn over the two
+     tiers that sell outward */
   mount({ pageId: "page-export-basket", ctl: "MI", seg: "ctLayoutSeg", noClassic: true, noToggle: true,
-          states: { "2": [4, 7, 6] } });
+          states: { "2": [0, 4, 6] } });
   /* this section reads the administrative city, so its beats wear the
      city's mark, not the metro's */
   /* opt-2 of the admin section: the map, the bars one count at a time,

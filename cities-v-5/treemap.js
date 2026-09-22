@@ -3209,6 +3209,14 @@
     const secTradB = new Map(tradTreeB ? tradTreeB.children.map(c => [c.data.name, box(c)]) : []);
     const posTradFlat = tradRows.length ? stripLayout(tradRows, MI_W, MI_H) : new Map();
     const tradSpot = d => (nameMode === "above" ? posTradA : posTradB).get(d.name);
+    /* the whole mix in the same two geometries, for the opening beat that
+       shows every industry: the sector blocks named on a strip (opt-1) or
+       on the block itself (opt-2, opt-3) */
+    const fullTreeA = tmap(industryData, MI_W, MI_H, true, SEC_STRIP);
+    const posFullA = new Map(fullTreeA.leaves().map(n => [n.data.name, box(n)]));
+    const secFullA = new Map(fullTreeA.children.map(c => [c.data.name, box(c)]));
+    const secFullB = new Map(full.children.map(c => [c.data.name, box(c)]));
+    const allSpot = d => (nameMode === "above" ? posFullA : posFull).get(d.name);
 
     /* ---- Ordered by jobs: the same cells as a ranked bar chart. The top
        rows by jobs become bars, named on the left and valued at the end;
@@ -3412,8 +3420,10 @@
     }));
 
     const STATE = {
-      0: d => view === "alt" ? asBars(d, barRankAll, sectorColors[d.sector], spot(d))
-                             : { box: spot(d), fill: sectorColors[d.sector], op: 1, rx: 0 },
+      /* every industry, sized by jobs and grouped into sectors: the opening
+         beat, coloured by sector or by complexity as the reader asks */
+      0: d => view === "alt" ? asBars(d, barRankAll, fillBy(d), allSpot(d))
+                             : { box: allSpot(d), fill: fillBy(d), op: 1, rx: 0 },
       1: d => view === "alt" ? asBars(d, barRankAll, complexityColor(d.name), spot(d))
                              : { box: spot(d), fill: complexityColor(d.name), op: 1, rx: 0 },
       2: d => ({ box: posSplit.get(d.name) || posFull.get(d.name),
@@ -3565,7 +3575,8 @@
         : null;
       const src = secs
         ? [...secs].map(([k, v]) => ({ key: k, name: v.name, b: v.b }))
-        : [...(above ? secTradA : secTradB)].map(([name, b]) => ({ key: name, name: name, b: b }));
+        : [...(which === 0 ? (above ? secFullA : secFullB) : (above ? secTradA : secTradB))]
+            .map(([name, b]) => ({ key: name, name: name, b: b }));
       /* a generous first pass only - the real gate is the measured width
          below, so this must not throw away a name the block could hold */
       const items = src.filter(d =>
@@ -3615,8 +3626,8 @@
         if (need(d) > d.b.w) return;
         const x0 = d.b.x, y0 = d.b.y;
         const x1 = x0 + tabW(d), y1 = y0 + TH;
-        (which === 4 ? clusterRows.flat() : tradRows).forEach(r => {
-          const b = (which === 4 ? posClusterB : posTradB).get(r.name);
+        (which === 4 ? clusterRows.flat() : which === 0 ? industryData : tradRows).forEach(r => {
+          const b = (which === 4 ? posClusterB : which === 0 ? posFull : posTradB).get(r.name);
           if (b && b.x < x1 && b.y < y1 &&
               b.x + b.w > x0 && b.y + b.h > y0) hideLab.add(r.name);
         });
@@ -3966,7 +3977,7 @@
       const barsOn = view === "alt" && (i === 0 || i === 1 || i === 4 || i === 5 || i === 7);
       /* which cell labels stand down is decided by where the sector names
          land, so the names have to be placed before the labels are written */
-      if (i === 7 || i === 4) drawSectorLabels(i); else hideLab = new Set();
+      if (i === 7 || i === 4 || i === 0) drawSectorLabels(i); else hideLab = new Set();
       /* the names can only be measured once the figure is on screen */
       refitNames();
       if (i === 3 || i === 6 || barsOn){
@@ -4017,9 +4028,9 @@
          sector's any more, so the labels would be naming the wrong thing */
       /* both map beats name their blocks; the sets differ, so redraw on
          arrival rather than once */
-      if (closeMenuRef && !((i === 4 && view === "alt") || i === 6)) closeMenuRef();
+      if (closeMenuRef && !(((i === 4 || i === 0) && view === "alt") || i === 6)) closeMenuRef();
       show(gCards, i === 4 && view === "map");
-      show(gSecLab, (i === 7 || i === 4) && view === "map" &&
+      show(gSecLab, (i === 7 || i === 4 || i === 0) && view === "map" &&
         colorBy === "sector" && nameMode !== "off");
       /* on the reveal section the opening beat rests on the admin bands: the
          cells fade first, the blocks behind them come forward, and the veil
@@ -4072,7 +4083,7 @@
         x.classList.toggle("is-active", on);
         x.setAttribute("aria-pressed", String(on));
       });
-      if (step === 7 || step === 4) paint(step, !reduced());
+      if (step === 7 || step === 4 || step === 0) paint(step, !reduced());
     });
 
     /* The tradability tiers, as a filter on the jobs order and on the
@@ -4207,7 +4218,7 @@
          the reader would shift the page under them. They open and close in
          place, so the centred text re-settles smoothly rather than jumping,
          and while closed they leave the tab order and the reading order */
-      if (step === 7 || step < 0) complexityBits.forEach(el => {
+      if (step === 0 || step < 0) complexityBits.forEach(el => {
         const off = colorBy !== "complexity";
         el.classList.toggle("is-off", off);
         el.setAttribute("aria-hidden", String(off));
@@ -4224,7 +4235,7 @@
       const b = ev.target.closest(".seg-btn[data-color]");
       if (!b || b.dataset.color === colorBy) return;
       setColorBy(b.dataset.color);
-      if (step === 7 || step === 4) paint(step, !reduced());
+      if (step === 7 || step === 4 || step === 0) paint(step, !reduced());
     });
 
     window[ctlName] = { setStep: function(i){
@@ -4236,7 +4247,7 @@
       step = i;
       fig.dataset.step = String(i);
       /* each map beat opens coloured by sector, as its text describes */
-      if (i === 7 || i === 4) setColorBy("sector");
+      if (i === 7 || i === 4 || i === 0) setColorBy("sector");
       /* the clusters are a movement between columns, and the ranked bars
          have none: the beat opens as the map however the last one was left */
       if (i === 4) setView("map");
@@ -4262,6 +4273,10 @@
       const tradHead = document.getElementById(p + "TradHead");
       if (tradHead){ const pc = tradHead.querySelector(".pct");
         if (pc) pc.textContent = "(" + pct(clusterShare[0] + clusterShare[1]) + " of metro jobs)"; }
+      /* the header of the opening beat, which shows every industry */
+      const allHead = document.getElementById(p + "AllHead");
+      if (allHead){ const pc = allHead.querySelector(".pct");
+        if (pc) pc.textContent = "(" + (jobsTotal / 1e6).toFixed(1) + "M jobs)"; }
       /* each name sits over its own column, so the header is measured from
          the chart rather than from the slot that holds it — the slot runs a
          little wider, and a share of that width would drift the names right */
@@ -4538,7 +4553,7 @@
         } else {
           body = rowOf("Sector", d.sector) +
                  rowOf("Jobs", Math.round(d.employ).toLocaleString());
-          if (step === 1 || step === 5 || ((step === 4 || step === 7) && colorBy === "complexity"))
+          if (step === 1 || step === 5 || ((step === 4 || step === 7 || step === 0) && colorBy === "complexity"))
             body += rowOf("Complexity (PCI)", pciByName.get(d.name) == null ? "n/a" : pciNumOf(d.name).toFixed(2));
           /* the tier, by the same name the columns and the key use; the
              score itself is shown nowhere */
@@ -4586,7 +4601,7 @@
         gLit.selectAll("rect").remove();
         hlSpans.forEach(x => x.classList.remove("is-lit"));
       };
-      const hlStep = span => span.dataset.on || "7";
+      const hlStep = span => span.dataset.on || "0";
       /* the band behind a lit row has to be drawn under the cells, since the
          ranking's rows paint over them - the same reason the hover band lives
          in this layer */
