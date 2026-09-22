@@ -4615,10 +4615,15 @@
         '<i class="sk-sw"></i><span class="sk-name">' + sec + '</span>' +
         ' <span class="sk-share sk-all">' + Math.round(jobs[sec] / tot * 100) + '%</span>' +
         '<span class="sk-share sk-trad">' + Math.round((trad[sec] || 0) / totTrad * 100) + '%</span></button>').join("") +
-        '<button type="button" class="sk-reset" hidden>Show all sectors</button>' +
-        '<span class="sk-tip" role="tooltip" hidden></span>';
+        '<button type="button" class="sk-reset" hidden>Show all sectors</button>';
       const resetBtn = key.querySelector(".sk-reset");
-      const tipEl = key.querySelector(".sk-tip");
+      /* the card rides over the whole figure, so it can follow the cursor up
+         into the chart rather than being penned into the key's own line */
+      const tipEl = document.createElement("span");
+      tipEl.className = "sk-tip";
+      tipEl.setAttribute("role", "tooltip");
+      tipEl.hidden = true;
+      fig.appendChild(tipEl);
       const items = [].slice.call(key.querySelectorAll(".sk-sec"));
       /* the key says which sectors are in play, and the reset appears only
          when there is something to go back from */
@@ -4659,7 +4664,7 @@
           const next = secOn ? new Set(secOn) : allSet();
           if (next.has(sec)) next.delete(sec); else next.add(sec);
           applySec(next);
-          showTip(b);                                   /* the card follows the change */
+          showTip(b, lastMove);                         /* the card follows the change */
         }, 230);
       });
       key.addEventListener("dblclick", ev => {
@@ -4669,10 +4674,13 @@
         const sec = order[+b.dataset.si];
         const solo = secOn && secOn.size === 1 && secOn.has(sec);
         applySec(solo ? null : new Set([sec]));
-        showTip(b);
+        showTip(b, ev);
       });
-      /* the card: what the sector is, and what a click will do with it */
-      function showTip(b){
+      /* the card: what the sector is, and what a click will do with it.
+         It follows the cursor, as the cell card does; arriving by keyboard,
+         where there is no cursor, it stands over the entry itself */
+      let lastMove = null;
+      function showTip(b, ev){
         if (!tipEl) return;
         const i = +b.dataset.si, sec = order[i];
         const on = !secOn || secOn.has(sec);
@@ -4686,22 +4694,27 @@
           '<span class="skt-hint">' + (on ? "Click to take it out of the map" : "Click to bring it back") +
           '<br>' + (solo ? "Double-click for every sector again" : "Double-click to keep only this one") + '</span>';
         tipEl.hidden = false;
-        /* over the entry it belongs to, and never past either edge of the key */
-        const kb = key.getBoundingClientRect(), bb = b.getBoundingClientRect();
+        const move = ev && ev.clientX != null ? ev : lastMove;
+        if (move){ cursorTipPos(move, fig, tipEl); return; }
+        /* no cursor to follow: over the entry, inside the figure */
+        const fb = fig.getBoundingClientRect(), bb = b.getBoundingClientRect();
         const w = tipEl.offsetWidth;
-        let left = bb.left - kb.left + bb.width / 2 - w / 2;
-        left = Math.max(0, Math.min(left, kb.width - w));
-        tipEl.style.left = left + "px";
-        tipEl.style.bottom = (kb.bottom - bb.top + 8) + "px";
+        let left = bb.left - fb.left + bb.width / 2 - w / 2;
+        tipEl.style.left = Math.max(0, Math.min(left, fb.width - w)) + "px";
+        tipEl.style.top = (bb.top - fb.top - tipEl.offsetHeight - 10) + "px";
       }
       function hideTip(){ if (tipEl) tipEl.hidden = true; }
       items.forEach(b => {
-        b.addEventListener("mouseenter", () => showTip(b));
-        b.addEventListener("focus", () => showTip(b));
+        b.addEventListener("mouseenter", ev => { lastMove = ev; showTip(b, ev); });
+        b.addEventListener("mousemove", ev => {
+          lastMove = ev;
+          if (!tipEl.hidden) cursorTipPos(ev, fig, tipEl);
+        });
+        b.addEventListener("focus", () => { lastMove = null; showTip(b); });
         b.addEventListener("mouseleave", hideTip);
         b.addEventListener("blur", hideTip);
       });
-      key.addEventListener("mouseleave", hideTip);
+      key.addEventListener("mouseleave", () => { lastMove = null; hideTip(); });
       syncKey();
     }
 

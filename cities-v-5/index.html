@@ -3036,17 +3036,17 @@
     color:var(--teal);text-decoration:underline;text-underline-offset:2px;cursor:pointer;
   }
   .sector-key .sk-reset[hidden]{display:none;}
-  /* the key's own card, over the entry it belongs to */
-  .sector-key .sk-tip{
+  /* the key's own card, travelling with the cursor over the figure */
+  .mi-figure .sk-tip{
     position:absolute;z-index:6;width:236px;display:flex;flex-direction:column;gap:3px;
     padding:11px 13px;background:#fff;border:1px solid var(--border-strong);
     box-shadow:var(--shadow-md);pointer-events:none;text-align:left;
   }
-  .sector-key .sk-tip[hidden]{display:none;}
-  .sector-key .sk-tip b{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:3px;}
-  .sector-key .skt-row{display:flex;justify-content:space-between;gap:14px;font-size:12.5px;color:var(--ink-soft);}
-  .sector-key .skt-row span:last-child{font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;}
-  .sector-key .skt-hint{
+  .mi-figure .sk-tip[hidden]{display:none;}
+  .mi-figure .sk-tip b{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:3px;}
+  .mi-figure .skt-row{display:flex;justify-content:space-between;gap:14px;font-size:12.5px;color:var(--ink-soft);}
+  .mi-figure .skt-row span:last-child{font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;}
+  .mi-figure .skt-hint{
     margin-top:7px;padding-top:7px;border-top:1px solid var(--border);
     font-size:12.5px;line-height:1.45;color:var(--ink-soft);
   }
@@ -3147,7 +3147,7 @@
   #miTreemapSvg .mi-row.is-lit .mi-val{fill:var(--teal);}
   @media (prefers-reduced-motion: reduce){ #miTreemapSvg .mi-cell{transition:none;} }
   .mi-figure .complexity-legend{display:flex;margin:0;}
-  .mi-figure{--mi-lab:11px;}
+  .mi-figure{--mi-lab:11px;position:relative;}
   .mi-figure svg .mi-lab{
     font-size:11px;fill:#fff;pointer-events:none;
     paint-order:stroke;stroke:rgba(0,0,0,.2);stroke-width:1px;stroke-linejoin:round;
