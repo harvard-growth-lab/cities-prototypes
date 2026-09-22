@@ -2050,6 +2050,20 @@
     text-align:right;font-variant-numeric:tabular-nums;
   }
   .rca-tip .tip-grid dd em{font-style:normal;font-weight:400;color:var(--ink-soft);}
+  /* complexity in the card: the same five steps the chart's own column
+     draws, with the score the column has no room to carry beside them */
+  .rca-tip .tip-grid dd.tip-cx-cell{
+    display:flex;align-items:center;justify-content:flex-end;gap:9px;
+  }
+  .rca-tip .tip-cx{display:inline-flex;align-items:center;gap:3px;}
+  .rca-tip .tip-cx i{width:6px;height:6px;border-radius:50%;background:#dfe4e6;}
+  .rca-tip .tip-cx i.is-on{background:var(--teal);}
+  .rca-tip .tip-cx-val{font-variant-numeric:tabular-nums;}
+  /* the dots are drawn for the eye; this is what a screen reader reads */
+  .rca-tip .tip-sr{
+    position:absolute;width:1px;height:1px;overflow:hidden;
+    clip:rect(0 0 0 0);white-space:nowrap;
+  }
   .rca-tip strong{font-size:14px;font-weight:600;color:#000;}
   .rca-tip p{font-size:14px;line-height:21px;color:#000;margin:7px 0 0;}
 

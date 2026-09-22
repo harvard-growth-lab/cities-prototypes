@@ -4558,12 +4558,24 @@
     const wrap = el.closest(".tradable-viz-wrapper");
     const tip = document.getElementById(p + "Tip");
     if (wrap && tip){
-      const rowOf = (k, v) => '<div class="tip-row"><span>' + k + '</span><span>' + v + '</span></div>';
       const cellOf = (k, v) => '<dt>' + k + '</dt><dd>' + v + '</dd>';
       const pct = v => v.toFixed(2) + "%";
       /* the number the ranking is ordered by, given the size it is ordered by */
       const tipLead = r => '<div class="tip-lead"><b>' + r.rca.toFixed(1) +
         '\u00d7</b><span>more concentrated here than in<br>a typical US metro</span></div>';
+      /* complexity reads the same here as it does in the chart's own column -
+         the five steps - with the score beside them, since a card has room
+         for the number the column has no space to carry */
+      const cxCell = name => {
+        if (pciByName.get(name) == null)
+          return '<dd class="tip-cx-cell"><em>not measured</em></dd>';
+        const on = cxBin(name);
+        let dots = '<span class="tip-cx" aria-hidden="true">';
+        for (let k = 0; k < 5; k++) dots += '<i' + (k <= on ? ' class="is-on"' : '') + '></i>';
+        return '<dd class="tip-cx-cell">' + dots + '</span>' +
+          '<span class="tip-cx-val">' + pciNumOf(name).toFixed(2) + '</span>' +
+          '<span class="tip-sr">step ' + (on + 1) + ' of 5, ' + CX_WORDS[on] + '</span></dd>';
+      };
       let hot = null, hotRow = null;
       const cool = () => {
         tip.hidden = true;
@@ -4577,39 +4589,30 @@
         cool();
         const r = this.querySelector(".mi-rect");
         hot = r;
-        let body = "";
+        /* one card, whatever the figure is showing: the industry says the
+           same things about itself on every beat, and a reader who learned
+           where to look on one beat finds it in the same place on the next.
+           The beat only adds - the ranking puts its own reading on top. */
         const rrow = step === 6 ? d.row2 : d.row;
-        if ((step === 3 || step === 6) && rrow){
-          /* the card carries what the row itself shows, in the order the eye
-             meets it: the headline concentration, then the peer line it is
-             measured against, then the two columns on the right */
-          body = tipLead(rrow) +
-            '<dl class="tip-grid">' +
-            cellOf("Peer metros average", rrow.peerAvg.toFixed(1) + "\u00d7") +
-            (step === 6 ? cellOf("Tradability", tierLabel(d)) : "") +
-            cellOf("Jobs here", Math.round(d.employ).toLocaleString()) +
-            cellOf("Share of metro jobs", pct(rrow.localPct)) +
-            '</dl>';
-        } else {
-          body = rowOf("Sector", d.sector) +
-                 rowOf("Jobs", Math.round(d.employ).toLocaleString());
-          if (step === 0 && view === "alt")
-            body += rowOf("Complexity", CX_WORDS[cxBin(d.name)]);
-          else if (step === 1 || step === 5 || ((step === 4 || step === 7 || step === 0) && colorBy === "complexity"))
-            body += rowOf("Complexity (PCI)", pciByName.get(d.name) == null ? "n/a" : pciNumOf(d.name).toFixed(2));
-          /* the tier, by the same name the columns and the key use; the
-             score itself is shown nowhere */
-          if (step === 2) body += rowOf("Tradability", TIER_NAMES[tierOf(d.name)]);
-          if (step === 4 || step === 7) body += rowOf("Tradability", tierLabel(d));
-        }
-        const labRow = step === 6 ? d.row2 : d.row;
+        const onRank = (step === 3 || step === 6) && !!rrow;
+        const body = (onRank ? tipLead(rrow) : "") +
+          '<dl class="tip-grid">' +
+          cellOf("Jobs", Math.round(d.employ).toLocaleString()) +
+          cellOf("Share of metro jobs", pct(d.employ / jobsTotal * 100)) +
+          '<dt>Complexity</dt>' + cxCell(d.name) +
+          cellOf("Tradability", tierLabel(d)) +
+          (onRank ? cellOf("Peer metros average", rrow.peerAvg.toFixed(1) + "\u00d7") : "") +
+          '</dl>';
+        const labRow = rrow;
         const rank = (step === 6 && R2.rankIdx.has(d.name) && R2.rankIdx.get(d.name) < 3)
           ? '<span class="tip-rank">' + (R2.rankIdx.get(d.name) + 1) + '</span>' : '';
+        /* the sector belongs on every card: it is what the colour under the
+           cursor means, and on the ranking it is the one thing the row does
+           not already say */
         const head = '<div class="tip-head"><strong>' + rank +
           (labRow ? labRow.label : d.name) + '</strong>' +
-          ((step === 3 || step === 6)
-            ? '<span class="tip-sector"><i style="background:' + sectorColors[d.sector] + '"></i>' +
-              d.sector + '</span>' : '') + '</div>';
+          '<span class="tip-sector"><i style="background:' + sectorColors[d.sector] + '"></i>' +
+          d.sector + '</span></div>';
         tip.innerHTML = head + body;
         tip.hidden = false;
         this.parentNode.appendChild(this);          // hovered mark to the front
