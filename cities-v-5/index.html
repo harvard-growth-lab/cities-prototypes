@@ -2824,6 +2824,11 @@
      breaks between the rules as the only separators. Dark enough to hold
      the head together at a hairline, lighter than the tick labels. */
   #miTreemapSvg .mi-headrule{stroke:#b3bcbf;stroke-width:1;}
+  /* the bars' complexity column: five steps, the filled ones the reading.
+     One ink for every filled step - the ramp's own middle is too pale to
+     count at this size - and a quiet track for the rest. */
+  #miTreemapSvg .mi-cxdot{fill:#dfe4e6;}
+  #miTreemapSvg .mi-cxdot.is-on{fill:var(--teal);}
   /* on that beat the head holds two rows: the controls above, the clusters'
      header below */
   /* the names close onto the chart: the slot takes over the chart's own top

@@ -3227,7 +3227,21 @@
        place to stand: ordered by jobs answers "what is biggest", and the
        column beside it answers "and does it sell outward", which is the
        question this beat is actually asking */
-    const NB = 25, BML = 292, BMT = 48, BRH = 18.0, BBAR = 12, BPR = 640;
+    const NB = 25, BML = 292, BMT = 62, BRH = 17.2, BBAR = 12, BPR = 690;
+    /* the bars' head is the ranking's head, line for line: the column names
+       on one baseline, a rule under each column, the tick row below that */
+    const BHEAD_Y = BMT - 46, BRULE_Y = BMT - 36, BTICK_Y = BMT - 14, BGRID_TOP = BMT - 8;
+    /* which column the bars carry beside the jobs: the opening beat asks how
+       much know-how the work takes, the tiers beat how much of it sells out */
+    let barMode = "cx";
+    /* the five complexity steps, the same cuts the map's ramp is built on */
+    const cxBin = name => {
+      const v = pciByName.get(name);
+      if (v == null) return 2;
+      let b = 0; while (b < PCI_CUTS.length && v >= PCI_CUTS[b]) b++;
+      return b;
+    };
+    const CX_WORDS = ["lowest", "low", "middle", "high", "highest"];
     const byJobsAll = industryData.slice().sort((a, b) => b.employ - a.employ);
     const barScale = d3.scaleLinear()
       .domain([0, (byJobsAll[0] ? byJobsAll[0].employ : 1) * 1.04]).range([BML + 12, BPR]);
@@ -3869,69 +3883,73 @@
     const fmtJobs = v => v >= 1000 ? Math.round(v / 1000) + "K" : String(Math.round(v));
     const shortName = n => charFit(n);
     function drawBars(list, G){
-      /* built fresh each time: the tier filter re-ranks the whole view, so
-         there is nothing here worth updating in place */
+      /* built fresh each time: the tier filter re-ranks the whole view, and
+         the beats ask for different columns, so there is nothing here worth
+         updating in place */
       G.selectAll("*").remove();
       const rows = list.slice(0, NB);
+      const tierMode = barMode === "tier";
       G.selectAll("g.mi-tick").data(barScale.ticks(4)).join("g").attr("class", "mi-tick")
         .call(g => g.append("line").attr("class", d => "mi-grid" + (d === 0 ? " is-base" : ""))
           .attr("x1", d => barScale(d)).attr("x2", d => barScale(d))
-          .attr("y1", BMT - 14).attr("y2", BMT + rows.length * BRH))
+          .attr("y1", BGRID_TOP).attr("y2", BMT + rows.length * BRH))
         .call(g => g.append("text").attr("class", "mi-ticklab")
-          .attr("x", d => barScale(d)).attr("y", BMT - 20).attr("text-anchor", "middle")
+          .attr("x", d => barScale(d)).attr("y", BTICK_Y).attr("text-anchor", "middle")
           .text(d => fmtJobs(d)));
       G.append("text").attr("class", "mi-axname")
-        .attr("x", BML + 12).attr("y", BMT - 36).text("Jobs in the metro");
-      /* same line as the axis title, as on the ranking */
-      /* The tradability column is the ranking's, feature for feature: the
-         tier's name in the column, and on the order over every industry the
-         head is the tier filter too. The outward-selling beat's bars carry
-         the same words under a plain head, since they now cover two tiers. */
-      const tierBars = true;
-      if (G === gBarsAll){
-        /* the head is the filter's control: the chart names what can be
-           narrowed, instead of a second control standing beside it */
-        menuHead(G, TC_R, BMT - 36, "is-bars");
+        .attr("x", BML + 12).attr("y", BHEAD_Y).text("Jobs in the metro");
+      /* the column beside the plot. On the tiers' beat it is the ranking's
+         tradability column, feature for feature, and its head is the filter;
+         on the opening beat it is complexity, as five steps rather than a
+         score, since the beat never puts a number on complexity */
+      const CX_R = TC_R, CX_D = 3.5, CX_GAP = 12, CX_L = CX_R - 4 * CX_GAP - 2 * CX_D;
+      if (tierMode){
+        if (G === gBarsAll) menuHead(G, TC_R, BHEAD_Y, "is-bars");
+        else G.append("text").attr("class", "mi-colhead")
+          .attr("x", TC_R).attr("y", BHEAD_Y).attr("text-anchor", "end").text("Tradability");
       } else {
         G.append("text").attr("class", "mi-colhead")
-          .attr("x", TC_R).attr("y", BMT - 36).attr("text-anchor", "end").text("Tradability");
+          .attr("x", CX_R).attr("y", BHEAD_Y).attr("text-anchor", "end").text("Complexity");
       }
+      /* the jobs column, where the ranking keeps it: the count at the right
+         edge, in the same figures. The plot beside it is already the bar the
+         ranking draws under its own count, so the count stands alone here */
+      G.append("text").attr("class", "mi-colhead")
+        .attr("x", MI_W - 6).attr("y", BHEAD_Y).attr("text-anchor", "end").text("Jobs");
+      /* one rule under each column, and the breaks between them are the
+         only separators - the ranking's head, at the bars' own height */
+      [[BML + 12, BPR], [tierMode ? 712 : CX_L - 4, CX_R], [JOBS_L, JOBS_R]].forEach(seg => {
+        G.append("line").attr("class", "mi-headrule")
+          .attr("x1", seg[0]).attr("x2", seg[1]).attr("y1", BRULE_Y).attr("y2", BRULE_Y);
+      });
       const row = G.selectAll("g.mi-row").data(rows, d => d.name).join("g").attr("class", "mi-row");
       row.append("text").attr("class", "mi-name")
         .attr("x", BML - 10).attr("y", (d, i) => barY(i) + 4).attr("text-anchor", "end")
         .attr("data-full", d => d.label || d.name).text(d => charFit(d.label || d.name));
-      row.append("text").attr("class", "mi-val")
-        .attr("x", d => barScale(d.employ) + 8).attr("y", (d, i) => barY(i) + 4)
+      /* the count at the bar's end is gone: the jobs column carries it now,
+         where the reader can compare the figures down a single edge */
+      row.append("text").attr("class", "mi-jobs")
+        .attr("x", MI_W - 6).attr("y", (d, i) => barY(i) + 4).attr("text-anchor", "end")
         .text(d => fmtJobs(d.employ));
-      /* The score is right-aligned at TC_R and the track sits to its left, so
-         the gap between them is whatever the number does not use. At 24 units
-         reserved it did not fit: "0.16" is about 30 units at 13 and 37 at 19,
-         so the number ran back over the track on all 25 rows at every width.
-         48 units holds it at the largest step with room to spare, and the bars
-         give up 60 units of length to pay for the wider column. */
-      const SCORE_SLOT = 48, BTW = 40, BTX = TC_R - SCORE_SLOT - BTW;
-      const btw = d3.scaleLinear().domain([0, 1]).range([0, BTW]);
-      row.append("text").attr("class", "mi-trad" + (tierBars ? " is-tier" : ""))
-        .attr("x", TC_R).attr("y", (d, i) => barY(i) + 4).attr("text-anchor", "end")
-        .text(d => tierBars ? tierLabel(d) : tradabilityOf(d.name).toFixed(2));
-      if (tierBars) return;
-      row.append("rect").attr("class", "mi-tradtrack")
-        .attr("x", BTX).attr("y", (d, i) => barY(i) - 2)
-        .attr("width", BTW).attr("height", 4).attr("rx", 2);
-      row.append("rect").attr("class", "mi-tradbar")
-        .attr("x", BTX).attr("y", (d, i) => barY(i) - 2)
-        .attr("width", d => Math.max(1, btw(tradabilityOf(d.name)))).attr("height", 4).attr("rx", 2);
-      /* both tier lines, not just one: with a notch at 0.35 and at 0.5 the
-         column says which of the three tiers a row is in, which is what the
-         filter beside it is selecting on */
-      [CL_LO, CL_HI].forEach(v => {
-        row.append("line").attr("class", "mi-tradtick")
-          .attr("x1", BTX + btw(v)).attr("x2", BTX + btw(v))
-          .attr("y1", (d, i) => barY(i) + 3).attr("y2", (d, i) => barY(i) + 6.5);
+      if (tierMode){
+        row.append("text").attr("class", "mi-trad is-tier")
+          .attr("x", TC_R).attr("y", (d, i) => barY(i) + 4).attr("text-anchor", "end")
+          .text(d => tierLabel(d));
+        return;
+      }
+      /* five steps, filled as far as the industry reaches. The count is the
+         reading, so every step is the same ink rather than the ramp's own
+         colour, whose middle is too pale to count at this size */
+      row.each(function(d, i){
+        const g = d3.select(this), on = cxBin(d.name), y = barY(i);
+        for (let k = 0; k < 5; k++)
+          g.append("circle").attr("class", "mi-cxdot" + (k <= on ? " is-on" : ""))
+            .attr("cx", CX_L + CX_D + k * CX_GAP).attr("cy", y).attr("r", CX_D);
       });
     }
+    let barListAll = byJobsAll;
     drawBars(byJobsAll, gBarsAll);
-    drawBars(byJobsTrad, gBarsTrad);
+    { const keep = barMode; barMode = "tier"; drawBars(byJobsTrad, gBarsTrad); barMode = keep; }
 
     /* the labels are fitted when a beat paints; when the window crosses one
        of the widths that change the unit scale, the beat on screen is
@@ -4021,6 +4039,10 @@
       show(gAxis2, i === 6 && !gapMode, late);
       show(gAxisGap2, i === 6 && gapMode, late);
       show(gRows2, i === 6, late);
+      if (barsOn && i !== 5 && i !== 7){
+        const wantBar = i === 4 ? "tier" : "cx";
+        if (barMode !== wantBar){ barMode = wantBar; drawBars(barListAll, gBarsAll); }
+      }
       show(gBarsAll, barsOn && i !== 5 && i !== 7);
       show(gBarsTrad, barsOn && (i === 5 || i === 7));
       /* the names belong to the sector-coloured map: under Ordered by jobs
@@ -4172,6 +4194,7 @@
         } else {
           const list = tierList();
           barRankAll = new Map(list.slice(0, NB).map((d, i) => [d.name, i]));
+          barListAll = list;
           drawBars(list, gBarsAll);
           paint(step, !reduced());
         }
@@ -4549,7 +4572,9 @@
         } else {
           body = rowOf("Sector", d.sector) +
                  rowOf("Jobs", Math.round(d.employ).toLocaleString());
-          if (step === 1 || step === 5 || ((step === 4 || step === 7 || step === 0) && colorBy === "complexity"))
+          if (step === 0 && view === "alt")
+            body += rowOf("Complexity", CX_WORDS[cxBin(d.name)]);
+          else if (step === 1 || step === 5 || ((step === 4 || step === 7 || step === 0) && colorBy === "complexity"))
             body += rowOf("Complexity (PCI)", pciByName.get(d.name) == null ? "n/a" : pciNumOf(d.name).toFixed(2));
           /* the tier, by the same name the columns and the key use; the
              score itself is shown nowhere */
