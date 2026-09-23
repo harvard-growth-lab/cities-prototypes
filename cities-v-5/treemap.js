@@ -1152,12 +1152,27 @@
     _labSpec.set(key, out);
     return out;
   }
-  /* white on the deeper fills, ink on the light ones, by the perceived
-     lightness Metroverse's own maps turn on */
+  /* White on the deeper fills, ink on the light ones - chosen on the
+     contrast each one actually has with the fill, not on a brightness
+     score. The perceived-lightness test this used to run put white on four
+     of the nine sector fills that read far better in ink: the two largest
+     blocks on the map, education & health and trade & transportation, were
+     carrying their names at 2.7:1 and 2.4:1 where ink gives 6.1 and 6.7.
+     Three fills - #4f8fa3, #8b7ba8 and the ramp's #029287 - clear 4.5:1
+     with neither ink, and take the better of the two until their own
+     colour changes. */
+  const CELL_INK = "#1a2226";
+  const relLum = c => {
+    const f = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+    return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b);
+  };
+  const LUM_INK = relLum({ r: 26, g: 34, b: 38 });
   function cellInk(fill){
     const c = d3.color(fill); if (!c) return "#fff";
-    const r = c.rgb();
-    return (0.299 * r.r + 0.587 * r.g + 0.114 * r.b) > 175 ? "#1a2226" : "#fff";
+    const L = relLum(c.rgb());
+    const onWhite = 1.05 / (L + 0.05);
+    const onInk = (L + 0.05) / (LUM_INK + 0.05);
+    return onInk >= onWhite ? CELL_INK : "#fff";
   }
 
   /* Draw the sector-grouped map into an <svg>, returning its pieces. */
