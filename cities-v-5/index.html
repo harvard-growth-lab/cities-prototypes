@@ -2825,7 +2825,7 @@
   /* a ground with nothing left in it says so where its cells would be */
   #miTreemapSvg .mi-card-none{font-size:12.5px;fill:var(--ink-soft);}
   #miFigure[data-tier="donut"] .mi-card-pct{display:none;}
-  #miFigure[data-tier="donut"] .mi-card-lab{font-size:15px;font-weight:700;fill:var(--ink);}
+  #miFigure[data-tier="donut"] .mi-card-lab{font-size:13px;font-weight:600;fill:var(--ink);}
   /* opt-2, the shipped option, names the tier instead of printing the
      score: the word replaces the number and the track under it, which was
      the number drawn. The rows carry the mode, so the first ranking's
@@ -2887,6 +2887,9 @@
   .mi-default[hidden], .mi-alt[hidden],
   .mi-rail-default[hidden], .mi-rail-alt[hidden]{display:none !important;}
   .mi-cluster-head{display:flex;flex-direction:column;justify-content:flex-start;gap:8px;min-height:44px;opacity:0;pointer-events:none;transition:opacity .35s ease;}
+  /* the head is a slot that must not take the pointer, but the chips in it
+     are controls, so they take it back */
+  .mi-figure[data-step="4"] .mi-cluster-head .mcl-chip{pointer-events:auto;}
   .mcl-axis{display:flex;align-items:center;gap:12px;}
   .mcl-cols{display:flex;gap:8px;}
   .mi-figure[data-step="4"] .mi-cluster-head{opacity:1;}
@@ -3138,10 +3141,30 @@
   .tm-item.is-on .tm-tick{background:var(--teal);border-color:var(--teal);}
   .tm-item.is-on .tm-tick svg{display:block;}
   /* the three grounds, and the header each one carries */
-  #miTreemapSvg .mi-card{fill:#eff0f0;}
-  #miTreemapSvg .mi-card-pct{font-size:18px;font-weight:700;fill:var(--ink);}
-  #miTreemapSvg .mi-card-lab{font-size:12px;font-weight:500;fill:var(--ink-soft);}
+  /* each tier is a framed ground: an outline rather than a grey field, with
+     a band across its top carrying the tier's name, its share and the cross
+     that takes it off the map. Square, so it reads with the cells inside it. */
+  #miTreemapSvg .mi-card{fill:none;stroke:#c3ccce;stroke-width:1;}
+  #miTreemapSvg .mi-card-band{fill:#eff2f2;}
+  #miTreemapSvg .mi-card-lab{font-size:13px;font-weight:600;fill:var(--ink);}
+  #miTreemapSvg .mi-card-pct{font-size:12.5px;font-weight:500;fill:var(--ink-soft);font-variant-numeric:tabular-nums;}
   #miTreemapSvg .mi-cards{pointer-events:none;}
+  /* the cross answers the pointer only while the grounds are the beat showing */
+  #miTreemapSvg .mi-card-x-mark{stroke:#7c858a;stroke-width:1.6;stroke-linecap:round;fill:none;}
+  #miTreemapSvg .mi-card-x-hit{fill:transparent;cursor:pointer;pointer-events:none;}
+  #miTreemapSvg .mi-cards.is-on .mi-card-x-hit{pointer-events:auto;}
+  #miTreemapSvg .mi-card-x:hover .mi-card-x-mark{stroke:var(--ink);}
+  /* a tier the reader cancelled, offered back beside the chart's title */
+  .mcl-back{display:inline-flex;align-items:center;gap:8px;margin-left:auto;}
+  .mcl-chip{
+    appearance:none;display:inline-flex;align-items:center;gap:6px;
+    padding:3px 9px;font:inherit;font-size:12.5px;font-weight:600;color:var(--teal);
+    background:#fff;border:1px solid var(--border-strong);border-radius:3px;cursor:pointer;
+    transition:background .15s ease,color .15s ease,border-color .15s ease;
+  }
+  .mcl-chip i{font-style:normal;font-weight:700;}
+  .mcl-chip:hover{background:var(--teal);border-color:var(--teal);color:#fff;}
+  .mcl-chip:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
   #miFigure[data-step="7"] #miSectorKey .sk-no-trad{display:none;}
   /* the prose points at the chart: a phrase naming a sector stands the rest
      of the mix down, so the sentence and the picture say the same thing at
@@ -4056,9 +4079,9 @@
     #miTreemapSvg .mi-jobs{font-size:16px;}
     #miTreemapSvg .mi-trad{font-size:16px;}
     /* the grounds' heads step up with the labels they head */
-    #miTreemapSvg .mi-card-pct{font-size:20px;}
+    #miTreemapSvg .mi-card-pct{font-size:13px;}
     #miTreemapSvg .mi-card-lab{font-size:13.5px;}
-    #miFigure[data-tier="donut"] .mi-card-lab{font-size:17px;}
+    #miFigure[data-tier="donut"] .mi-card-lab{font-size:13.5px;}
 
     #miTreemapSvg .mi-colsub{font-size:12.5px;}
     #amDotsSvg .ad-ringlab{font-size:15px;}
@@ -4255,9 +4278,9 @@
     .mi-figure svg .mi-share-pct{font-size:16px;}
     #miTreemapSvg .mi-jobs{font-size:19px;}
     #miTreemapSvg .mi-trad{font-size:19px;}
-    #miTreemapSvg .mi-card-pct{font-size:23px;}
-    #miTreemapSvg .mi-card-lab{font-size:15px;}
-    #miFigure[data-tier="donut"] .mi-card-lab{font-size:21px;}
+    #miTreemapSvg .mi-card-pct{font-size:14px;}
+    #miTreemapSvg .mi-card-lab{font-size:14.5px;}
+    #miFigure[data-tier="donut"] .mi-card-lab{font-size:14.5px;}
 
     #miTreemapSvg .mi-colsub{font-size:13px;}
     #amDotsSvg .ad-ringlab{font-size:18px;}
@@ -5622,7 +5645,9 @@
                  three. The grounds below name the tiers and give the shares,
                  and their order says the direction. -->
             <div class="mi-cluster-head" id="miClusterHead">
-              <div class="mcl-axis"><span class="mcl-dir">All industries, by tier</span></div>
+              <div class="mcl-axis"><span class="mcl-dir">All industries, by tier</span>
+                <span class="mcl-back" id="miTierBack"></span>
+              </div>
             </div>
             <!-- the header of the opening beat: the title alone, in the same
                  slot as the tiers' header so the chart does not move between

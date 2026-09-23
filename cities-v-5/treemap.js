@@ -3174,15 +3174,30 @@
        band, so the strip reads as its own row, while the two-line head still
        fits (18px share at 25, name at 40). The title's left edge is the
        cells' left edge. */
+    /* which tradability tiers are in play. One state for the whole beat: the
+       grounds the reader cancels on the map are the tiers the bars drop. */
+    let tierOn = [true, true, true];
+    const tierShown = d => tierOn[clusterOf(d)];
     const CARD_PAD = 9, CARD_HEAD = 44, CARD_BOT = 9, CARD_TXT = CARD_PAD + 7;
+    const BAND_H = 30;
     const CARD_Y = CARD_HEAD, CARD_H = MI_H - CARD_HEAD - CARD_BOT;
-    const cardBox = [];
-    {
+    /* Which grounds are standing. A ground the reader cancels takes its
+       width with it and the rest spread into it, so what is left is always
+       a full frame rather than a gap where a tier used to be. */
+    let cardBox = [];
+    function layoutClusters(){
+      [posClusterA, posClusterB, secClusterA, secClusterB, posCluster, posClusterFlat]
+        .forEach(m => m.clear());
+      cardBox = [];
+      const live = [0, 1, 2].filter(k => tierOn[k]);
+      const shareSum = live.reduce((a, k) => a + clusterShare[k], 0) || 1;
+      const room = MI_W - CGAP * Math.max(0, live.length - 1);
       let x0 = 0;
-      clusterRows.forEach((l, k) => {
-        const w = Math.max(36, CW * clusterShare[k]);
+      live.forEach(k => {
+        const w = Math.max(36, room * clusterShare[k] / shareSum);
         cardBox.push({ x: x0, w: w, k: k });
         const iw = Math.max(20, w - CARD_PAD * 2), ix = x0 + CARD_PAD;
+        const l = clusterRows[k].filter(secShown);
         if (l.length){
           const tA = tmap(l, iw, CARD_H, true, SEC_STRIP), tB = tmap(l, iw, CARD_H, true);
           tA.leaves().forEach(n => posClusterA.set(n.data.name, box(n, ix, CARD_Y)));
@@ -3209,12 +3224,14 @@
     let secGeo = null;
     const secShown = d => !secOn || secOn.has(d.sector);
     const secFiltered = () => !!secOn;
+    /* the grounds are laid out once the filters they read exist, and again
+       whenever either of them moves */
+    layoutClusters();
     let resetSec = null;              /* the key fills this in: applySec(null) */
     function rebuildSecGeo(){
-      if (!secOn){ secGeo = null; return; }
+      if (!secOn){ secGeo = null; layoutClusters(); return; }
       const rows = industryData.filter(secShown);
       const g = { full: new Map(), fullA: new Map(), secA: new Map(), secB: new Map(),
-                  clA: new Map(), clB: new Map(), clSecA: new Map(), clSecB: new Map(),
                   tradA: new Map(), tradB: new Map(), tradSecA: new Map(), tradSecB: new Map() };
       if (rows.length){
         const tA = tmap(rows, MI_W, MI_H, true, SEC_STRIP), tB = tmap(rows, MI_W, MI_H, true);
@@ -3232,29 +3249,12 @@
           uB.children.forEach(c => g.tradSecB.set(c.data.name, box(c)));
         }
       }
-      /* the three grounds keep the widths the metro's own tiers give them -
-         the tiers are a fact about the metro, not about the filter - and the
-         sectors still showing are laid out again inside each one */
-      let x0 = 0;
-      clusterRows.forEach((l0, k) => {
-        const w = Math.max(36, CW * clusterShare[k]);
-        const iw = Math.max(20, w - CARD_PAD * 2), ix = x0 + CARD_PAD;
-        const l = l0.filter(secShown);
-        if (l.length){
-          const tA = tmap(l, iw, CARD_H, true, SEC_STRIP), tB = tmap(l, iw, CARD_H, true);
-          tA.leaves().forEach(n => g.clA.set(n.data.name, box(n, ix, CARD_Y)));
-          tB.leaves().forEach(n => g.clB.set(n.data.name, box(n, ix, CARD_Y)));
-          tA.children.forEach(c =>
-            g.clSecA.set(k + "|" + c.data.name, { name: c.data.name, b: box(c, ix, CARD_Y) }));
-          tB.children.forEach(c =>
-            g.clSecB.set(k + "|" + c.data.name, { name: c.data.name, b: box(c, ix, CARD_Y) }));
-        }
-        x0 += w + CGAP;
-      });
       secGeo = g;
+      /* the grounds answer to both filters, and they are laid out in one
+         place rather than kept as a baseline and an overlay */
+      layoutClusters();
     }
     const clusterSpot = d =>
-      (secGeo ? (nameMode === "above" ? secGeo.clA : secGeo.clB).get(d.name) : null) ||
       (nameMode === "above" ? posClusterA : posClusterB).get(d.name) || posFull.get(d.name);
     /* all three clusters wear one colouring: the columns already carry the
        tradability, so colour is free to say sector, or complexity */
@@ -3328,8 +3328,6 @@
     const byJobsAll = industryData.slice().sort((a, b) => b.employ - a.employ);
     const barScale = d3.scaleLinear()
       .domain([0, (byJobsAll[0] ? byJobsAll[0].employ : 1) * 1.04]).range([BML + 12, BPR]);
-    /* which tradability tiers the bar view is showing; all three to begin with */
-    let tierOn = [true, true, true];
     let closeMenuRef = null;
     /* the bars answer to both filters, so either one has to ask what the
        other leaves before it takes anything away */
@@ -3542,7 +3540,7 @@
                      w: Math.max(2, xr(d.row.rca) - xr(1)), h: BAR_H },
               fill: d.rank < 3 ? TEAL : MUTED, op: 1, rx: 0 },
       /* the three clusters by tradability, the most tradable on the left */
-      4: d => !secShown(d) ? { box: clusterSpot(d), fill: clusterFill(d), op: 0, rx: 0 }
+      4: d => !secShown(d) || !tierShown(d) ? { box: clusterSpot(d), fill: clusterFill(d), op: 0, rx: 0 }
         : view === "alt"
           ? asBars(d, barRankAll, clusterFill(d), clusterSpot(d))
           : { box: clusterSpot(d), fill: clusterFill(d), op: 1, rx: 0 },
@@ -3593,22 +3591,82 @@
        bar is encoding */
     /* behind every other layer: the three grounds and their headers */
     const gCards = svg.append("g").attr("class", "mi-cards").style("opacity", 0);
-    {
-      /* each ground is named by its tier, the same word the columns use */
-      cardBox.forEach(c => {
-        const g = gCards.append("g");
-        g.append("rect").attr("class", "mi-card")
-          .attr("x", c.x).attr("y", 0).attr("width", c.w).attr("height", MI_H).attr("rx", 8);
-        g.append("text").attr("class", "mi-card-pct")
-          .attr("x", c.x + CARD_TXT).attr("y", 25)
-          .text(Math.round(clusterShare[c.k] * 100) + "% of jobs");
-        g.append("text").attr("class", "mi-card-lab")
-          .attr("x", c.x + CARD_TXT).attr("y", 40).text(TIER_NAMES[c.k]);
-        /* filled in only when the filter leaves this ground with nothing */
-        g.append("text").attr("class", "mi-card-none")
-          .attr("x", c.x + CARD_TXT).attr("y", CARD_HEAD + 26).text("");
+    /* Each ground is a frame with a band across its top: the tier's name at
+       the left of the band, its share beside it, and a cross at the right
+       that takes the ground away. The frame is square, drawn as an outline
+       rather than a grey field, so the cells inside it carry all the colour. */
+    function drawCards(animate){
+      const dur = animate ? 950 : 0;
+      const sel = gCards.selectAll("g.mi-card-g").data(cardBox, c => c.k)
+        .join(enter => {
+          const g = enter.append("g").attr("class", "mi-card-g");
+          g.append("rect").attr("class", "mi-card").attr("y", 0).attr("height", MI_H).attr("rx", 0);
+          g.append("rect").attr("class", "mi-card-band").attr("y", 0).attr("height", BAND_H);
+          g.append("text").attr("class", "mi-card-lab");
+          g.append("text").attr("class", "mi-card-pct");
+          g.append("text").attr("class", "mi-card-none");
+          const x = g.append("g").attr("class", "mi-card-x");
+          x.append("rect").attr("class", "mi-card-x-hit").attr("y", 5).attr("width", 20).attr("height", 20);
+          x.append("path").attr("class", "mi-card-x-mark");
+          x.append("title");
+          return g;
+        });
+      const go = q => dur ? q.transition().duration(dur).ease(d3.easeCubicInOut) : q;
+      /* the words are set at once and only the geometry travels: text put on
+         a transition arrives with it, and a ground coming back would carry a
+         blank band the whole way */
+      sel.select("text.mi-card-lab").attr("y", 20).text(c => TIER_NAMES[c.k]);
+      sel.select("text.mi-card-pct").attr("y", 20).attr("text-anchor", "end")
+        .text(c => Math.round(clusterShare[c.k] * 100) + "%");
+      sel.select("text.mi-card-none").attr("y", CARD_HEAD + 26);
+      go(sel.select("rect.mi-card")).attr("x", c => c.x).attr("width", c => c.w);
+      go(sel.select("rect.mi-card-band")).attr("x", c => c.x).attr("width", c => c.w);
+      go(sel.select("text.mi-card-lab")).attr("x", c => c.x + CARD_TXT);
+      go(sel.select("text.mi-card-pct")).attr("x", c => c.x + c.w - CARD_TXT - 22);
+      go(sel.select("text.mi-card-none")).attr("x", c => c.x + CARD_TXT);
+      /* the cross only where there is another ground to fall back on */
+      sel.select("g.mi-card-x").style("display", cardBox.length > 1 ? null : "none");
+      go(sel.select("rect.mi-card-x-hit")).attr("x", c => c.x + c.w - CARD_TXT - 16);
+      go(sel.select("path.mi-card-x-mark")).attr("d", c => {
+        const x = c.x + c.w - CARD_TXT - 10, y = 15, r = 4;
+        return "M" + (x - r) + "," + (y - r) + "L" + (x + r) + "," + (y + r) +
+               "M" + (x + r) + "," + (y - r) + "L" + (x - r) + "," + (y + r);
       });
+      sel.select("title").text(c => "Take " + TIER_NAMES[c.k].toLowerCase() + " off the map");
+      sel.select("rect.mi-card-x-hit").on("click", (ev, c) => { ev.stopPropagation(); setTier(c.k, false); });
     }
+    drawCards(false);
+    /* the grounds a reader has cancelled, offered back above the chart */
+    const tierBack = document.getElementById(p + "TierBack");
+    function syncTierBack(){
+      if (!tierBack) return;
+      const off = [0, 1, 2].filter(k => !tierOn[k]);
+      tierBack.innerHTML = off.map(k =>
+        '<button type="button" class="mcl-chip" data-tier="' + k + '">' +
+        '<i aria-hidden="true">+</i>' + TIER_NAMES[k] + '</button>').join("");
+    }
+    /* one state for the beat: the map's grounds and the bars' filter are the
+       same three tiers, so cancelling a ground drops it from both */
+    function setTier(k, on){
+      if (tierOn[k] === on) return;
+      const probe = tierOn.slice(); probe[k] = on;
+      if (!probe.some(Boolean) || !tierListWith(probe, secOn).length) return;
+      tierOn[k] = on;
+      layoutClusters();
+      barListAll = tierList();
+      reBarRank();
+      drawBars(barListAll, gBarsAll);
+      drawCards(!reduced());
+      syncTierBack();
+      if (syncTierMenu) syncTierMenu();
+      if (step >= 0) paint(step, !reduced());
+    }
+    let syncTierMenu = null;
+    if (tierBack) tierBack.addEventListener("click", ev => {
+      const b = ev.target.closest(".mcl-chip[data-tier]");
+      if (b) setTier(+b.dataset.tier, true);
+    });
+    syncTierBack();
     const gHi = svg.append("g").attr("class", "mi-hilite-layer");
     const hiRect = gHi.append("rect").attr("class", "mi-hilite")
       .attr("x", 0).attr("width", MI_W).attr("height", RH).style("opacity", 0);
@@ -3688,10 +3746,7 @@
       /* the tab's own geometry, in the same user units as the blocks */
       const TH = Math.round(u * 1.36);
       const dy = TH - Math.round(u * 0.41);
-      const secs = which === 4
-        ? (secGeo ? (above ? secGeo.clSecA : secGeo.clSecB)
-                  : (above ? secClusterA : secClusterB))
-        : null;
+      const secs = which === 4 ? (above ? secClusterA : secClusterB) : null;
       const flat = which === 0
         ? (secGeo ? (above ? secGeo.secA : secGeo.secB) : (above ? secFullA : secFullB))
         : (secGeo ? (above ? secGeo.tradSecA : secGeo.tradSecB) : (above ? secTradA : secTradB));
@@ -4167,11 +4222,13 @@
       /* both map beats name their blocks; the sets differ, so redraw on
          arrival rather than once */
       if (closeMenuRef && !(((i === 4 || i === 0) && view === "alt") || i === 6)) closeMenuRef();
-      show(gCards, i === 4 && view === "map");
+      const cardsOn = i === 4 && view === "map";
+      gCards.classed("is-on", cardsOn);
+      show(gCards, cardsOn);
       /* a ground the filter empties keeps its width - the tiers' shares are
          the metro's, not the filter's - and says why it is bare */
-      gCards.selectAll("g").each(function(_, ix){
-        const g = d3.select(this), k = cardBox[ix] ? cardBox[ix].k : ix;
+      gCards.selectAll("g.mi-card-g").each(function(c){
+        const g = d3.select(this), k = c.k;
         const bare = secFiltered() && !clusterRows[k].some(secShown);
         g.select(".mi-card-none").text(bare ? "None of the sectors shown" : "");
         g.select(".mi-card-pct").style("opacity", bare ? 0.4 : 1);
@@ -4264,6 +4321,7 @@
           g.classList.remove("is-open"); g.setAttribute("aria-expanded", "false");
         });
       };
+      syncTierMenu = () => { if (!menuEl.hidden && menuCtx === "bars") syncItems(); };
       const syncItems = () => {
         const on = tiersOf(menuCtx);
         menuEl.querySelectorAll(".tm-item[data-tier]").forEach(b => {
@@ -4324,10 +4382,14 @@
         if (menuCtx === "rank"){
           if (rebuildR2Ref) rebuildR2Ref(!reduced());
         } else {
+          /* the map's grounds are these same tiers, so they move together */
+          layoutClusters();
           const list = tierList();
           barListAll = list;
           reBarRank();
           drawBars(list, gBarsAll);
+          drawCards(!reduced());
+          syncTierBack();
           paint(step, !reduced());
         }
         openMenu();                                        /* re-anchor */
@@ -4571,8 +4633,8 @@
           scaleHost.hidden = donut;
           if (donutHost) donutHost.hidden = !donut;
           clearTierHot();
-          /* the name alone sits where the share sat, as the ground's head */
-          gCards.selectAll(".mi-card-lab").attr("y", donut ? 27 : 40);
+          /* the name keeps its place on the band either way now; only the
+             share stands down when the donut carries the shares */
           if (tierOptEl) tierOptEl.querySelectorAll(".seg-btn[data-tier]").forEach(x => {
             const on = x.dataset.tier === (donut ? "donut" : "cards");
             x.classList.toggle("is-active", on);
@@ -4924,10 +4986,7 @@
           return want.map(n => src.get(n)).filter(Boolean);
         }
         if (step === 4 || step === 7){
-          const src = step === 4
-            ? (secGeo ? (above ? secGeo.clSecA : secGeo.clSecB)
-                      : (above ? secClusterA : secClusterB))
-            : null;
+          const src = step === 4 ? (above ? secClusterA : secClusterB) : null;
           if (!src) return want.map(n =>
             (secGeo ? (above ? secGeo.tradSecA : secGeo.tradSecB)
                     : (above ? secTradA : secTradB)).get(n)).filter(Boolean);
