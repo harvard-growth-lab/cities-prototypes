@@ -5592,7 +5592,9 @@
       const muteOthers = want => {
         const off = d => want.indexOf(d.sector) < 0;
         cell.classed("is-mute", off);
-        cell.filter(off).selectAll(".mi-lab,.mi-pct").style("fill", "#9aa3a6");
+        /* still grey, still plainly not the sector being named, but dark
+           enough on that grey to be read: at #9aa3a6 it was 2.1 to 1 */
+        cell.filter(off).selectAll(".mi-lab,.mi-pct").style("fill", "#60686b");
       };
       const hlStep = span => span.dataset.on || "0";
       /* the band behind a lit row has to be drawn under the cells, since the

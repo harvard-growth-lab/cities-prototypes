@@ -2057,8 +2057,11 @@
   }
   /* the same diamonds the chart's own column draws */
   .rca-tip .tip-cx{display:inline-flex;align-items:center;gap:5px;}
-  .rca-tip .tip-cx i{width:6px;height:6px;transform:rotate(45deg);background:#dfe4e6;}
-  .rca-tip .tip-cx i.is-on{background:var(--teal);}
+  .rca-tip .tip-cx i{
+    width:6px;height:6px;transform:rotate(45deg);
+    background:none;box-shadow:inset 0 0 0 1px #8e9395;
+  }
+  .rca-tip .tip-cx i.is-on{background:var(--teal);box-shadow:none;}
   .rca-tip .tip-cx-val{font-variant-numeric:tabular-nums;}
   /* the dots are drawn for the eye; this is what a screen reader reads */
   .rca-tip .tip-sr{
@@ -2843,7 +2846,6 @@
   #miTreemapSvg .mi-tradtrack{fill:#e6eaec;}
   #miTreemapSvg .mi-tradbar{fill:#7c848c;}
   #miTreemapSvg .mi-tradtick{stroke:#72767b;stroke-width:1;}
-  #miTreemapSvg .mi-colsub{font-size:10.5px;fill:#8e9196;}
   /* the head reads as a table head: a rule under each column, with the
      breaks between the rules as the only separators. Dark enough to hold
      the head together at a hairline, lighter than the tick labels. */
@@ -2851,8 +2853,8 @@
   /* the bars' complexity column: five steps, the filled ones the reading.
      One ink for every filled step - the ramp's own middle is too pale to
      count at this size - and a quiet track for the rest. */
-  #miTreemapSvg .mi-cxdot{fill:#dfe4e6;}
-  #miTreemapSvg .mi-cxdot.is-on{fill:var(--teal);}
+  #miTreemapSvg .mi-cxdot{fill:none;stroke:#8e9395;stroke-width:1;}
+  #miTreemapSvg .mi-cxdot.is-on{fill:var(--teal);stroke:none;}
   /* on that beat the head holds two rows: the controls above, the clusters'
      header below */
   /* the names close onto the chart: the slot takes over the chart's own top
@@ -3190,10 +3192,12 @@
   #miFigure:not([data-step="0"]):not([data-step="4"]) #miHlOptPair{display:none;}
   /* the word alone in the head, and the studies as plain dropdowns behind it */
   .mi-head > .mi-studies{left:auto;right:0;width:auto;z-index:4;}
+  /* the quietest thing in the head, but still a control and still words:
+     #9aa3a6 read at 2.6 to 1, which is under the floor for either */
   .mi-studies-btn{
     appearance:none;background:none;border:0;padding:2px 4px;font:inherit;font-size:12.5px;
-    color:#9aa3a6;cursor:pointer;text-decoration:underline;text-underline-offset:3px;
-    text-decoration-color:rgba(26,34,38,.2);
+    color:#6e7679;cursor:pointer;text-decoration:underline;text-underline-offset:3px;
+    text-decoration-color:rgba(26,34,38,.28);
   }
   .mi-studies-btn:hover{color:var(--ink-soft);}
   .mi-studies-btn:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
@@ -3242,7 +3246,7 @@
   .mi-figure svg .mi-rect{stroke:none;}
   .mi-figure svg .mi-grid{stroke:#e9e9eb;stroke-width:1;}
   .mi-figure svg .mi-grid.is-base{stroke:#8e9196;stroke-dasharray:3 3;}
-  .mi-figure svg .mi-ticklab{font-size:11px;font-weight:500;fill:#9aa3a6;}
+  .mi-figure svg .mi-ticklab{font-size:11px;font-weight:500;fill:#6e7679;}
 
   .mi-figure svg .mi-name{font-size:13px;fill:var(--ink);}
   .mi-figure svg .mi-name.is-top{font-weight:700;}
@@ -4111,7 +4115,6 @@
     #miTreemapSvg .mi-card-lab{font-size:13.5px;}
     #miFigure[data-tier="donut"] .mi-card-lab{font-size:13.5px;}
 
-    #miTreemapSvg .mi-colsub{font-size:12.5px;}
     #amDotsSvg .ad-ringlab{font-size:15px;}
     #amDotsSvg .ad-rownum{font-size:17.5px;}
     #amDotsSvg .ad-rowsub{font-size:14.5px;}
@@ -4310,7 +4313,6 @@
     #miTreemapSvg .mi-card-lab{font-size:14.5px;}
     #miFigure[data-tier="donut"] .mi-card-lab{font-size:14.5px;}
 
-    #miTreemapSvg .mi-colsub{font-size:13px;}
     #amDotsSvg .ad-ringlab{font-size:18px;}
     #amDotsSvg .ad-rownum{font-size:19px;}
     #amDotsSvg .ad-rowsub{font-size:16px;}
