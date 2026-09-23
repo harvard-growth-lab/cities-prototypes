@@ -33,7 +33,7 @@
   /* sampled from the reference build's complexity scale (cities.taimur.sh),
      which runs a diverging orange -> pale -> teal from least to most complex.
      The legend's gradient under the figure uses the same five stops. */
-  const complexityPalette = ["#e4a368","#efc9a5","#f8e7d7","#89ccc7","#029287"];
+  const complexityPalette = ["#e4a368","#efc9a5","#f8e7d7","#89ccc7","#008379"];
   const complexityByName = new Map();
 
   /* Tradability 0 -> 1: how much of an industry's output is sold outside
@@ -118,9 +118,9 @@
     "Education & Health": "#e8836e",
     "Financial Activities": "#f4c542",
     "Leisure & Hospitality": "#8fd0d8",
-    "Manufacturing": "#4f8fa3",
+    "Manufacturing": "#3c7d91",
     "Natural Resources": "#7cb342",
-    "Other": "#8b7ba8",
+    "Other": "#7d6d9a",
     "Professional & Business": "#b94a44",
     "Trade & Transportation": "#e0938a"
   };
@@ -1158,9 +1158,10 @@
      of the nine sector fills that read far better in ink: the two largest
      blocks on the map, education & health and trade & transportation, were
      carrying their names at 2.7:1 and 2.4:1 where ink gives 6.1 and 6.7.
-     Three fills - #4f8fa3, #8b7ba8 and the ramp's #029287 - clear 4.5:1
-     with neither ink, and take the better of the two until their own
-     colour changes. */
+     Three fills used to clear 4.5:1 with neither ink - manufacturing,
+     other, and the ramp's darkest green. Each has since been taken down
+     about five points of L*, the smallest move that carries white text at
+     4.6:1, so every fill in the figure now reads. */
   const CELL_INK = "#1a2226";
   const relLum = c => {
     const f = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
@@ -4297,9 +4298,9 @@
     };
     const onWhite = c => 1.05 / (lum(c) + 0.05);
     /* Why the name needs a ground at all: written straight onto the fill it
-       cannot be read. Two of the nine (#4f8fa3 and #8b7ba8) fail 4.5:1
-       against white AND against near-black, so no choice-of-two ink rule can
-       work on this palette. */
+       cannot be read: even now that manufacturing and other have been taken
+       down to carry white at 4.6:1, a name written on the fill would be
+       fighting the cells' own labels for the same surface. */
     /* The near-black chip was legible and wrong: it floated two units inside
        the block, leaving a rim of fill showing all round it, and a shape that
        floats reads as something laid on top of the picture. Nine of them over
