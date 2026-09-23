@@ -4343,6 +4343,10 @@
        & Business among them, because the blocks are fixed in user units
        while the type is not. Same size, dark ground, white ink. */
     const TAB_PADL = 3, TAB_PADR = 5, TAB_AIR = 4, TAB_R = 3;
+    /* the sector node's own box carries the treemap's outer padding, so its
+       corner sits in the gutter rather than on the cells. The chip is laid
+       against the cells instead, which is the edge the reader sees. */
+    const SEC_OUT = 3.5;
     /* The tab was white, and white is the one value none of the nine fills
        use, so nine white notches read as holes punched in the map - and on
        the two pale fills it disappeared altogether, so the treatment was not
@@ -4366,7 +4370,7 @@
       /* the chip option and the sectors-only option are drawn the same way,
          but with the industries unnamed the sector's own name is the only
          word on the block, so it is set larger */
-      const u = above ? LAB_BASE : secUnit() * (nameMode === "secOnly" ? 1.3 : 1);
+      const u = above ? LAB_BASE : secUnit() * (nameMode === "secOnly" ? 1.15 : 1);
       /* the tab's own geometry, in the same user units as the blocks */
       const TH = Math.round(u * 1.36);
       const dy = TH - Math.round(u * 0.41);
@@ -4416,8 +4420,8 @@
         });
       const txt = gsel.select("text")
         .attr("class", "mi-seclab-t" + (above ? "" : " is-inside"))
-        .attr("x", d => d.b.x + (above ? 5 : TAB_PADL))
-        .attr("y", d => d.b.y + (above ? 12 : dy))
+        .attr("x", d => d.b.x + (above ? 5 : SEC_OUT + TAB_PADL))
+        .attr("y", d => d.b.y + (above ? 12 : SEC_OUT + dy))
         .attr("fill", d => above ? labelInk(sectorColors[d.name]) : "#1a2226")
         .text(d => d.name);
       /* name_w is only a cheap pre-filter; what the block has to hold is the
@@ -4433,14 +4437,14 @@
       const tabW = d => (realW.get(d.key) || 0) + TAB_PADL + TAB_PADR;
       const need = d => above
         ? (realW.get(d.key) || 0) + 12
-        : tabW(d) + TAB_AIR;
+        : tabW(d) + TAB_AIR + 2 * SEC_OUT;
       /* sharp where the tab meets the block's own top and left edges, rounded
          only on the one corner that is free of them */
       gsel.select("path.mi-seclab-tab")
         .attr("display", above ? "none" : null)
         .attr("fill", d => tabGround(sectorColors[d.name]))
         .attr("d", d => {
-          const x0 = d.b.x, y0 = d.b.y, w = tabW(d);
+          const x0 = d.b.x + SEC_OUT, y0 = d.b.y + SEC_OUT, w = tabW(d);
           return `M${x0},${y0} H${x0 + w} V${y0 + TH - TAB_R}` +
                  ` a${TAB_R},${TAB_R} 0 0 1 ${-TAB_R},${TAB_R} H${x0} Z`;
         });
@@ -4450,7 +4454,7 @@
          words, since the tab is what the reader cannot see through */
       if (!above) items.forEach(d => {
         if (need(d) > d.b.w) return;
-        const x0 = d.b.x, y0 = d.b.y;
+        const x0 = d.b.x + SEC_OUT, y0 = d.b.y + SEC_OUT;
         const x1 = x0 + tabW(d), y1 = y0 + TH;
         /* the tabs are drawn from the layout on screen, so the cells they
            cover have to be looked for in that same layout: against the
@@ -5741,6 +5745,13 @@
       /* a phrase left lit shows the new treatment at once */
       if (lit) lit.dispatchEvent(new MouseEvent("mouseenter"));
     });
+
+    /* a study control: the tiers' grounds as a line round each one, or as a
+       light grey field under it */
+    const groundEl = document.getElementById(p + "Ground");
+    const setGround = v => { fig.dataset.ground = v === "grey" ? "grey" : "frame"; };
+    setGround("frame");
+    if (groundEl) groundEl.addEventListener("change", () => setGround(groundEl.value));
 
     /* one word in the head carries every study: it opens a panel of plain
        dropdowns rather than lining four sets of buttons along the row */
