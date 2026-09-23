@@ -3730,10 +3730,21 @@
     /* how the sectors are named on the map: a strip above each block, the
        name written on the block, or not at all */
     let nameMode = "above";
+    /* opt-1 and opt-4 both keep a strip along the top of each sector block,
+       so they read the same geometry; opt-4 paints the block behind it */
+    const stripMode = () => nameMode === "above" || nameMode === "frame";
+    /* opt-4, after the World Bank's regional maps: the sector is a framed
+       ground in its own colour with its name on the band across the top,
+       and its industries sit inside it in a lighter wash of that colour, so
+       the group reads as the container and the cells as what is in it */
+    const SEC_WASH = 0.42;
+    const sectorWash = sec => d3.interpolateRgb(sectorColors[sec] || "#ccc", "#ffffff")(SEC_WASH);
     /* in opt-2 the name sits over the block's first cell, so that cell's own
        label stands down rather than printing under it */
     let hideLab = new Set();
-    const fillBy = d => colorBy === "complexity" ? complexityColor(d.name) : sectorColors[d.sector];
+    const fillBy = d => colorBy === "complexity" ? complexityColor(d.name)
+      : nameMode === "frame" ? sectorWash(d.sector)
+      : sectorColors[d.sector];
     const spot = d => posFull.get(d.name);
 
     const GAP = 8, HALF = (MI_W - GAP) / 2;
@@ -3859,7 +3870,7 @@
       layoutClusters();
     }
     const clusterSpot = d =>
-      (nameMode === "above" ? posClusterA : posClusterB).get(d.name) || posFull.get(d.name);
+      (stripMode() ? posClusterA : posClusterB).get(d.name) || posFull.get(d.name);
     /* all three clusters wear one colouring: the columns already carry the
        tradability, so colour is free to say sector, or complexity */
     const clusterFill = fillBy;
@@ -3879,8 +3890,8 @@
     const secTradB = new Map(tradTreeB ? tradTreeB.children.map(c => [c.data.name, box(c)]) : []);
     const posTradFlat = tradRows.length ? stripLayout(tradRows, MI_W, MI_H) : new Map();
     const tradSpot = d =>
-      (secGeo ? (nameMode === "above" ? secGeo.tradA : secGeo.tradB).get(d.name) : null) ||
-      (nameMode === "above" ? posTradA : posTradB).get(d.name);
+      (secGeo ? (stripMode() ? secGeo.tradA : secGeo.tradB).get(d.name) : null) ||
+      (stripMode() ? posTradA : posTradB).get(d.name);
     /* the whole mix in the same two geometries, for the opening beat that
        shows every industry: the sector blocks named on a strip (opt-1) or
        on the block itself (opt-2, opt-3) */
@@ -3889,8 +3900,8 @@
     const secFullA = new Map(fullTreeA.children.map(c => [c.data.name, box(c)]));
     const secFullB = new Map(full.children.map(c => [c.data.name, box(c)]));
     const allSpot = d =>
-      (secGeo ? (nameMode === "above" ? secGeo.fullA : secGeo.full).get(d.name) : null) ||
-      (nameMode === "above" ? posFullA : posFull).get(d.name);
+      (secGeo ? (stripMode() ? secGeo.fullA : secGeo.full).get(d.name) : null) ||
+      (stripMode() ? posFullA : posFull).get(d.name);
 
     /* ---- Ordered by jobs: the same cells as a ranked bar chart. The top
        rows by jobs become bars, named on the left and valued at the end;
@@ -4271,6 +4282,8 @@
       if (b) setTier(+b.dataset.tier, true);
     });
     syncTierBack();
+    /* the sector grounds of opt-4 sit under the cells, as their ground */
+    const gSecFrame = svg.append("g").attr("class", "mi-secframe").style("opacity", 0);
     const gHi = svg.append("g").attr("class", "mi-hilite-layer");
     const hiRect = gHi.append("rect").attr("class", "mi-hilite")
       .attr("x", 0).attr("width", MI_W).attr("height", RH).style("opacity", 0);
@@ -4344,8 +4357,12 @@
       /* only where the block can hold the words: a clipped sector name is
          worse than none, since the reader cannot tell which it was */
       hideLab = new Set();
-      if (nameMode === "off"){ gSecLab.selectAll("g.mi-seclab-g").remove(); return; }
-      const above = nameMode === "above";
+      if (nameMode === "off"){
+        gSecLab.selectAll("g.mi-seclab-g").remove();
+        gSecFrame.selectAll("g.mi-secframe-g").remove();
+        return;
+      }
+      const above = stripMode();
       const u = above ? LAB_BASE : secUnit();
       /* the tab's own geometry, in the same user units as the blocks */
       const TH = Math.round(u * 1.36);
@@ -4361,6 +4378,32 @@
          below, so this must not throw away a name the block could hold */
       const items = src.filter(d =>
         d.b.h >= Math.max(46, TH + 11) && d.b.w >= name_w(d.name, u));
+      /* opt-4: the block itself is drawn first, in the sector's own colour,
+         with the name written on the band the strip leaves at its top. The
+         cells then sit inside it in their wash, so the frame is what shows
+         at the edges and along the band */
+      if (nameMode === "frame"){
+        const fr = gSecFrame.selectAll("g.mi-secframe-g").data(src, d => d.key)
+          .join(enter => {
+            const g = enter.append("g").attr("class", "mi-secframe-g");
+            g.append("rect").attr("class", "mi-secframe-r");
+            g.append("text").attr("class", "mi-secframe-t");
+            return g;
+          });
+        fr.select("rect.mi-secframe-r")
+          .attr("x", d => d.b.x).attr("y", d => d.b.y)
+          .attr("width", d => d.b.w).attr("height", d => d.b.h)
+          .attr("fill", d => sectorColors[d.name] || "#ccc");
+        /* the name only where the band can hold it; the ground stays either
+           way, since a block with no room for its name is still its group */
+        fr.select("text.mi-secframe-t")
+          .attr("x", d => d.b.x + 5).attr("y", d => d.b.y + 12)
+          .attr("fill", d => cellInk(sectorColors[d.name] || "#ccc"))
+          .text(d => d.b.w >= name_w(d.name, LAB_BASE) && d.b.h >= 46 ? d.name : "");
+        gSecLab.selectAll("g.mi-seclab-g").remove();
+        return;
+      }
+      gSecFrame.selectAll("g.mi-secframe-g").remove();
       const gsel = gSecLab.selectAll("g.mi-seclab-g").data(items, d => d.key)
         .join(enter => {
           const g = enter.append("g").attr("class", "mi-seclab-g");
@@ -4844,7 +4887,9 @@
         g.select(".mi-card-lab").style("opacity", bare ? 0.4 : 1);
       });
       show(gSecLab, (i === 7 || i === 4 || i === 0) && view === "map" &&
-        colorBy === "sector" && nameMode !== "off");
+        colorBy === "sector" && nameMode !== "off" && nameMode !== "frame");
+      show(gSecFrame, (i === 7 || i === 4 || i === 0) && view === "map" &&
+        nameMode === "frame");
       /* on the reveal section the opening beat rests on the admin bands: the
          cells fade first, the blocks behind them come forward, and the veil
          drops last. Leaving the beat runs the same three in reverse. */

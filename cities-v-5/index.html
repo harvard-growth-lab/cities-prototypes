@@ -3104,6 +3104,14 @@
   }
   /* the ground is set per block, from that block's own colour */
   #miTreemapSvg .mi-seclab-tab{pointer-events:none;}
+  /* opt-4: the sector is a framed ground in its own colour, its name on the
+     band the strip leaves along the top, and its industries inside it in a
+     wash of that colour - the arrangement the World Bank's regional maps
+     use. The ground takes no pointer: the cells on it answer the cursor. */
+  #miTreemapSvg .mi-secframe{pointer-events:none;}
+  #miTreemapSvg .mi-secframe-t{
+    font-size:11px;font-weight:700;letter-spacing:0;
+  }
   /* The filter lives on the column head it filters, so the chart says what can
      be narrowed rather than a control beside it. The head is the button; the
      menu opens under it. */
@@ -5637,6 +5645,7 @@
                     <option value="above" selected>opt-1</option>
                     <option value="inside">opt-2</option>
                     <option value="off">opt-3</option>
+                    <option value="frame">opt-4</option>
                   </select>
                 </label>
                 <label class="mi-study" id="miTierPair">
