@@ -4363,7 +4363,10 @@
         return;
       }
       const above = stripMode();
-      const u = above ? LAB_BASE : secUnit();
+      /* the chip option and the sectors-only option are drawn the same way,
+         but with the industries unnamed the sector's own name is the only
+         word on the block, so it is set larger */
+      const u = above ? LAB_BASE : secUnit() * (nameMode === "secOnly" ? 1.3 : 1);
       /* the tab's own geometry, in the same user units as the blocks */
       const TH = Math.round(u * 1.36);
       const dy = TH - Math.round(u * 0.41);
@@ -4820,7 +4823,10 @@
       if (i === 7 || i === 4 || i === 0) drawSectorLabels(i); else hideLab = new Set();
       /* the names can only be measured once the figure is on screen */
       refitNames();
-      if (i === 3 || i === 6 || barsOn){
+      /* opt-5 names the sectors and stops: the map is read as a dozen
+         groups rather than as nine hundred industries, and the card under
+         the cursor is what names one */
+      if (i === 3 || i === 6 || barsOn || (nameMode === "secOnly" && view === "map")){
         [labs, pcts].forEach(t => (dur ? t.transition().duration(dur / 3) : t).style("opacity", 0));
       } else {
         /* the name whole and as large as the cell allows, the share under
