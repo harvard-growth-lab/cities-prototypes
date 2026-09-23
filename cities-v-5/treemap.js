@@ -4659,7 +4659,7 @@
          column on. The tiers beat carries tradability, and its head is the
          filter; the opening beat carries complexity, as five steps rather
          than a score, since the beat puts no number on complexity */
-      const COL_R = MI_W - 6, CX_D = 3.5, CX_GAP = 12, CX_L = COL_R - 4 * CX_GAP - 2 * CX_D;
+      const COL_R = MI_W - 6, CX_D = 4.2, CX_GAP = 12, CX_L = COL_R - 4 * CX_GAP - 2 * CX_D;
       if (tierMode){
         if (G === gBarsAll) menuHead(G, COL_R, BHEAD_Y, "is-bars");
         else G.append("text").attr("class", "mi-colhead")
@@ -4695,12 +4695,17 @@
       }
       /* five steps, filled as far as the industry reaches. The count is the
          reading, so every step is the same ink rather than the ramp's own
-         colour, whose middle is too pale to count at this size */
+         colour, whose middle is too pale to count at this size. Diamonds:
+         a row of them counts at a glance, and they are the one mark in the
+         figure that is neither a square cell nor a round dot. */
       row.each(function(d, i){
         const g = d3.select(this), on = cxBin(d.name), y = barY(i);
-        for (let k = 0; k < 5; k++)
-          g.append("circle").attr("class", "mi-cxdot" + (k <= on ? " is-on" : ""))
-            .attr("cx", CX_L + CX_D + k * CX_GAP).attr("cy", y).attr("r", CX_D);
+        for (let k = 0; k < 5; k++){
+          const x = CX_L + CX_D + k * CX_GAP;
+          g.append("path").attr("class", "mi-cxdot" + (k <= on ? " is-on" : ""))
+            .attr("d", "M" + x + "," + (y - CX_D) + "L" + (x + CX_D) + "," + y +
+                       "L" + x + "," + (y + CX_D) + "L" + (x - CX_D) + "," + y + "Z");
+        }
       });
     }
     let barListAll = byJobsAll;
