@@ -415,7 +415,7 @@ export function SidewaysTree(p: WalkViewProps) {
           y={S_CY - S_ROOT.h / 2 - 16}
           textAnchor="middle"
         >
-          {`ASKED OF ${p.cityShort.toUpperCase()}`}
+          {`Asked of ${p.cityShort}`}
         </text>
         <g className="nv-card nv-q">
           <rect

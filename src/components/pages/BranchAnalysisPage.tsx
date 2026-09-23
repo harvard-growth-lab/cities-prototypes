@@ -15,15 +15,15 @@ import {
 } from "d3-hierarchy";
 import {
   DATA_LEVEL_LABEL,
+  MODULES,
   PLACEHOLDER_BRANCHES,
-  QUAD_BRANCH_SPEC,
   TREE_SIDE_COLOR,
   sideDash,
   sideHollow,
   TREE_SIDE_LABEL,
   completeToLeaf,
-  endingRead,
   pathModules,
+  quadName,
   sideOfPath,
   suggestedPath,
   treeNodes,
@@ -656,10 +656,19 @@ function ModuleStack({
 
 /* the intro line counts its modules in words — no ending shows more than a
    handful */
-const COUNT_WORD = ["no", "one", "two", "three", "four", "five", "six"];
-const countModules = (n: number) =>
-  n === 1 ? "one module" : `${COUNT_WORD[n] ?? n} modules`;
-
+const COUNT_WORD = [
+  "no",
+  "one",
+  "two",
+  "three",
+  "four",
+  "five",
+  "six",
+  "seven",
+  "eight",
+  "nine",
+  "ten",
+];
 /* complexity is the transition to what comes next, so it goes last however
    the spec happened to order the rest */
 const orderModules = (modules: ModuleDef[]) => [
@@ -667,8 +676,16 @@ const orderModules = (modules: ModuleDef[]) => [
   ...modules.filter((m) => m.id === "complexity"),
 ];
 
-/** the opening line: the overarching question for the shock, and a
- *  placeholder for the city's own read of it */
+/** "A", "A and B", "A, B and C" */
+const listOf = (xs: string[]) =>
+  xs.length < 2
+    ? (xs[0] ?? "")
+    : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`;
+
+/** the opening paragraph (Sept 2026, the user's own copy): what this half of
+ *  the tool is for, and which modules the ending the city landed on sends
+ *  the reader to. The city, its city type and the module names are the real
+ *  ones — the sentence is the template, they are its data. */
 function AnalysisLede({
   cityShort,
   path,
@@ -677,80 +694,82 @@ function AnalysisLede({
   path: string[];
 }) {
   const side = sideOfPath(path);
-  const spec = QUAD_BRANCH_SPEC[side];
-  const er = useMemo(() => endingRead(cityShort, path), [cityShort, path]);
+  const quad = quadName(side) ?? TREE_SIDE_LABEL[side];
+  const modules = useMemo(() => orderModules(pathModules(path)), [path]);
   return (
     <p className="lede">
-      {spec ? (
+      After determining {cityShort}&rsquo;s recent economic trajectory, the next
+      step is to take a look at relevant data that can provide more insight into
+      what is likely to be the constraints to further growth here.
+      {modules.length > 0 && (
         <>
-          {spec.question} <span className="ph">{er.read}</span>
+          {" "}
+          For {quad}, this means looking at{" "}
+          {listOf(modules.map((m) => m.title))}.
         </>
-      ) : (
-        <span className="ph">
-          [lead question for the {TREE_SIDE_LABEL[side]} analysis of {cityShort}]
-        </span>
       )}
     </p>
   );
 }
 
-/** the lines before the first module, as a short ledger: how you landed
- *  here (the second fork — a shock with no second layer, the positive demand
- *  shock, has none), where that leads, and what a module is. Each is a
- *  placeholder naming what its copy will cover. */
-function AnalysisLead({
-  cityShort,
-  path,
-  count,
-  onDetour,
-}: {
-  cityShort: string;
-  path: string[];
-  count: number;
-  /** walk the subtle path's second exit — absent where the ending is only
-   *  being read (the sandbox), not navigated */
-  onDetour?: (path: string[]) => void;
-}) {
-  const er = useMemo(() => endingRead(cityShort, path), [cityShort, path]);
+/** every data module the diagnosis can draw on — this ending's first, in
+ *  the order the page shows them, then the rest — with the ones this ending
+ *  calls for lit in its branch's colour: a small map before the modules
+ *  themselves (Sept 2026, the user's call; it replaced the bracketed ledger
+ *  of how-you-landed-here lines). Icon and name only — the level pill came
+ *  off, the module head below carries it. Display only: the rail's module
+ *  list is the one that links. */
+function ModuleMap({ path }: { path: string[] }) {
+  const side = sideOfPath(path);
+  /* the ending's own modules lead, in the order the page reads them below
+     (complexity last), then the rest in the spec's order — so the lit run
+     of chips is the page's own sequence */
+  const ordered = useMemo(() => orderModules(pathModules(path)), [path]);
+  const shown = useMemo(() => new Set(ordered.map((m) => m.id)), [ordered]);
+  const all = useMemo(
+    () => [...ordered, ...Object.values(MODULES).filter((m) => !shown.has(m.id))],
+    [ordered, shown],
+  );
+  const quad = quadName(side) ?? TREE_SIDE_LABEL[side];
+  const color = TREE_SIDE_COLOR[side];
+  const word = (n: number) => COUNT_WORD[n] ?? String(n);
+  const cap = (w: string) => w[0].toUpperCase() + w.slice(1);
   return (
-    <div className="ba-lead">
-      {er.landed && (
-        <div className="ba-lead-row">
-          <span className="ba-lead-k">
-            {er.diagnosed ? "How You Landed Here" : "The Second Fork"}
-          </span>
-          <p className="ba-forkline">
-            <span className="ph">{er.landed}</span>
-          </p>
-        </div>
-      )}
-      {er.leads && (
-        <div className="ba-lead-row">
-          <span className="ba-lead-k">Where That Leads</span>
-          <p className="ba-forkline">
-            <span className="ph">{er.leads}</span>
-            {er.detour && onDetour && (
-              <button
-                type="button"
-                className="ba-detour"
-                onClick={() => onDetour(er.detour!.path)}
-              >
-                {er.detour.label} →
-              </button>
-            )}
-          </p>
-        </div>
-      )}
-      <div className="ba-lead-row">
-        <span className="ba-lead-k">Modules</span>
-        <p className="ba-forkline">
-          <span className="ph">
-            {count
-              ? `[placeholder: ${countModules(count)} on this branch. where to look, not a verdict]`
-              : "[no modules on this landing yet]"}
-          </span>
-        </p>
-      </div>
+    <div className="ba-modmap">
+      <p className="ba-modmap-k">
+        <b>Data Modules</b>
+        <span>
+          {cap(word(all.length))} in all. The {word(shown.size)} most relevant
+          to a {quad} trajectory are highlighted and shown in-depth below. To
+          explore the other modules, use the sandbox at the end of this section
+          to explore alternative paths.
+        </span>
+      </p>
+      <ul>
+        {all.map((m) => {
+          const on = shown.has(m.id);
+          return (
+            <li
+              key={m.id}
+              className={"ba-modchip" + (on ? " on" : "")}
+              style={
+                on
+                  ? {
+                      borderColor: color,
+                      color,
+                      background: `color-mix(in srgb, ${color} 9%, #fff)`,
+                    }
+                  : undefined
+              }
+            >
+              <span className="ba-modchip-ico" aria-hidden="true">
+                <NodeGlyph id={m.id} />
+              </span>
+              <b>{m.title}</b>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }
@@ -775,7 +794,7 @@ export function EndingAnalysis({
     <>
       <AnalysisLede cityShort={cityShort} path={path} />
       <div className="ba-modules">
-        <AnalysisLead cityShort={cityShort} path={path} count={ordered.length} />
+        <ModuleMap path={path} />
         {ordered.map((m) => (
           <ModuleBlock
             key={m.id}
@@ -923,13 +942,19 @@ export function BranchAnalysisPage({
       ref={sectionRef}
     >
       <div className="ba-headrow">
+        {/* the title (Sept 2026, the user's calls): the city type's mark and
+            name lead the section's own name — "Fortress Constraints
+            Diagnosis" — with no eyebrow (the old one said what the title
+            says). Set heavier than the walk's step headings and the module
+            heads under it (.ba-page .page-head h2), so it reads as a new
+            section and not one more step. */}
         <div className="page-head">
-          <span className="eyebrow">Constraints Diagnosis</span>
-          {/* the city type's mark leads its name, in the branch's hue — the
-              same mark its head carries on the tree */}
           <h2>
             <QuadGlyph side={side} color={TREE_SIDE_COLOR[side]} />
-            {branchSectionName(side)}
+            <span className="nv-part-n">Part 3:</span>
+            {quadName(side)
+              ? `${quadName(side)} Constraints Diagnosis`
+              : "Constraints Diagnosis"}
           </h2>
         </div>
         {modulesOn && (
@@ -985,12 +1010,7 @@ export function BranchAnalysisPage({
       <div className="ba-body">
         {modulesOn ? (
           <div className="ba-modules">
-            <AnalysisLead
-              cityShort={cityShort}
-              path={branchPath}
-              count={modules.length}
-              onDetour={onSelectBranch}
-            />
+            <ModuleMap path={branchPath} />
             {layout === "tabs" ? (
               <ModuleTabs
                 modules={ordered}

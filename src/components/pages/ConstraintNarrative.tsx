@@ -87,6 +87,7 @@ import {
   METROS,
   METRO_MEDIANS,
   METRO_SPAN,
+  type MetroDatum,
   PRICE_SPAN,
   countryMedians,
   homeMsa,
@@ -214,6 +215,18 @@ const FORK2_BEAT = 9;
 /** the leaves arrive and the traveller lands on the diagnosed one, and fork
  *  two's instrument arrives with it: the figure comes with its verdict */
 const LEAF_BEAT = 10;
+
+/* the supply fork's INSTRUMENT (Sept 2026, the user's call — a variant on
+   step 9): the live tool's two-way split of the re-axed plane at the median,
+   or the same plane cut at the NATIONAL AVERAGE on both axes into four
+   quadrants, the admin's own quadrant read — its upper pair (price growth
+   above the average) routing to Housing, the lower pair to Amenities */
+type SupplyInst = "median" | "quadrants";
+const SUPPLY_INSTS: { id: SupplyInst; label: string }[] = [
+  { id: "median", label: "Median comparison" },
+  { id: "quadrants", label: "Four quadrants" },
+];
+const DEFAULT_SUPPLY_INST: SupplyInst = "median";
 /** the four diagnoses — the only beat that hands the pick to the reader */
 const CHOICE_BEAT = 11;
 
@@ -366,12 +379,15 @@ const LIT_PLATEAU = 0.15;
 const LIT_REST = 0.85;
 
 /* the intro's three placeholders — the chart, the tree, the analysis — each
-   with a line glyph, drawn on the stage before anything real does */
+   with a line glyph, drawn on the stage before anything real does. Each
+   glyph's `box` is its own viewBox, so the part headers in the text column
+   can wear the same mark at heading size (Sept 2026, the user's call). */
 const INTRO_PARTS = [
   {
     id: "chart",
-    title: "the pizza chart",
-    ph: "[two readings place the city]",
+    title: "The Pizza Chart",
+    ph: "[Two Readings Place the City]",
+    box: "-26 -26 52 52",
     icon: (
       <g fill="none" stroke="currentColor" strokeWidth={2}>
         <circle r={24} />
@@ -382,22 +398,30 @@ const INTRO_PARTS = [
   },
   {
     id: "tree",
-    title: "the diagnostic tree",
-    ph: "[its quadrant picks a branch]",
+    title: "The Diagnostic Tree",
+    ph: "[Its Quadrant Picks a Branch]",
+    box: "-47 -31 94 60",
+    /* the second fork ends in its two leaves (Sept 2026: its legs used to
+       trail off, which read as the drawing cut short at the bottom); the
+       whole is lifted 3 so it centres in the card like the other two */
     icon: (
-      <g fill="none" stroke="currentColor" strokeWidth={2} strokeLinejoin="round">
+      <g fill="none" stroke="currentColor" strokeWidth={2} strokeLinejoin="round" transform="translate(0 -3)">
         <path d="M0,-26 v10 M-36,-16 h72 M-36,-16 v10 M-12,-16 v10 M12,-16 v10 M36,-16 v10" />
         {[-36, -12, 12, 36].map((x) => (
           <rect key={x} x={x - 9} y={-6} width={18} height={12} rx={3} />
         ))}
         <path d="M12,6 v8 M2,14 h20 M2,14 v6 M22,14 v6" />
+        {[2, 22].map((x) => (
+          <rect key={"leaf" + x} x={x - 6} y={20} width={12} height={9} rx={2} />
+        ))}
       </g>
     ),
   },
   {
     id: "analysis",
-    title: "the analysis",
-    ph: "[the ending's modules]",
+    title: "Constraints Diagnosis",
+    ph: "[The Ending's Modules]",
+    box: "-44 -22 88 44",
     icon: (
       <g fill="none" stroke="currentColor" strokeWidth={2} strokeDasharray="4 3">
         {[-42, -13, 16].map((x) => (
@@ -988,6 +1012,39 @@ export function ConstraintNarrative({
   const priceRead = useMemo(
     () => supplyRead(cityShort, country),
     [cityShort, country],
+  );
+  /* the supply instrument's variant (see SUPPLY_INSTS). The LANDING still
+     follows the median rule (suggestedPath → supplyRead); the quadrant cut
+     is a study of the same fork against the national average, and for
+     Boston the two agree. */
+  const [supplyInst, setSupplyInst] = useState<SupplyInst>(DEFAULT_SUPPLY_INST);
+  /* the national average of each dial: every metro's rate, weighted by its
+     population, so the country's big metros count as the people in them */
+  const natAvg = useMemo(() => {
+    const wmean = (pick: (m: MetroDatum) => number | null) => {
+      let num = 0;
+      let den = 0;
+      for (const m of METROS) {
+        const v = pick(m);
+        if (v == null) continue;
+        num += v * m.size;
+        den += m.size;
+      }
+      return den ? num / den : 0;
+    };
+    return { pop: wmean((m) => m.pop), home: wmean((m) => m.home) };
+  }, []);
+  /* the quadrant the admin sits in against that average: the price half
+     decides the fork, the population half says which of its two quadrants */
+  const quadRead = useMemo(
+    () =>
+      cost && place
+        ? {
+            side: (cost.growth >= natAvg.home ? "cost" : "amenity") as "cost" | "amenity",
+            popAbove: place.pop >= natAvg.pop,
+          }
+        : null,
+    [cost, place, natAvg],
   );
   /* What the stage is looking at, beat by beat: the whole tree while it is
      being introduced, the root and its branches once fork one is answered,
@@ -1976,7 +2033,12 @@ export function ConstraintNarrative({
      the stage, not to the caption. Every body is bracketed, which Body
      renders as a placeholder; the kickers stay, since they are the steps'
      labels rather than their prose. */
-  const stepCopy: { kicker: string; body: string }[] = [
+  /* the walk's PARTS (Sept 2026, the user's call): the pizza chart, the
+     diagnostic tree, and the analysis below as Part 3. A step that opens a
+     part carries its header — the heavy heading — and its own title steps
+     down under it; the tree's opening step has no title but the part's. */
+  type Part = { n: number; name: string };
+  const stepCopy: { kicker: string; body: string; part?: Part }[] = [
     {
       /* the intro (Sept 2026): what the section does, before anything
          draws — the one caption that says a little more, since it is the
@@ -1985,6 +2047,7 @@ export function ConstraintNarrative({
       body: "[placeholder: how this section works. two readings place your city on the pizza chart. the quadrant it lands in picks a branch of the diagnostic tree. the walk follows your city down the tree to one ending, and the analysis below reads that ending.]",
     },
     {
+      part: { n: 1, name: "The Pizza Chart" },
       kicker: "Dial one: people",
       body: "[placeholder: population change, against the median metro]",
     },
@@ -2009,7 +2072,8 @@ export function ConstraintNarrative({
     {
       /* the tree beat answers fork one too (the guided walk's only telling
          of it) */
-      kicker: "How we diagnose the constraint",
+      part: { n: 2, name: "The Diagnostic Tree" },
+      kicker: "",
       body: "[placeholder: the chart becomes the tree. the root question is answered by the quadrant.]",
     },
     {
@@ -2059,12 +2123,15 @@ export function ConstraintNarrative({
       ? "[placeholder: no second fork on this branch]"
       : demandFork
         ? "[placeholder: fork two. metro population growth vs the median metro]"
-        : "[placeholder: fork two. home-value growth vs the median]",
+        : supplyInst === "quadrants"
+          ? "[placeholder: fork two. home-value growth vs population growth, the admin's quadrant against the national average]"
+          : "[placeholder: fork two. home-value growth vs the median]",
   };
   /* the tree half's stops: the hand-off, fork one read off the quadrant,
      fork two on its own instrument, then back out to the endings */
   stepCopy[TREE_BEAT] = {
-    kicker: "How we diagnose the constraint",
+    part: { n: 2, name: "The Diagnostic Tree" },
+    kicker: "",
     body: "[placeholder: the chart becomes the tree. its four quadrants are the four branches.]",
   };
   stepCopy[FORK1_BEAT] = {
@@ -2104,16 +2171,20 @@ export function ConstraintNarrative({
      read on the pizza chart, on its own stop. Fork two's instrument — the
      same plane re-marked or re-axed — waits for the LANDING (Sept 2026, the
      user's call): the stop that ASKS fork two shows the fork alone, and the
-     stop that answers it shows what it was read on, so the figure arrives
-     with the verdict it supports rather than a stop ahead of it. The
-     back-out carries none: it closes on the whole tree, and an instrument
+     stop that answers it shows what it was read on; since Sept 2026 the
+     fork's own stop draws the instrument as well, so the reader sees the
+     plane before the verdict lands on it. The back-out carries none: it closes on the whole tree, and an instrument
      for one fork under a stop about every ending was a leftover.
      A property of the BEAT, never of the step in view — a block's room has
      to be the same whether or not it is the one lit (see the panel's box,
      below), so this may decide what a block reserves as well as what it
      shows. */
   const carriesPanel = (beat: number) =>
-    beat === insetAt || beat === LEAF_BEAT;
+    beat === insetAt || beat === FORK2_BEAT || beat === LEAF_BEAT;
+  /* the instrument is DRAWN on the fork's own stop (Sept 2026, the user's
+     call) — the plane, its field, its cuts — and the city's dot and the
+     region it lands in light on the landing */
+  const landed = step >= LEAF_BEAT;
   const insetExtra = heroInst ? 28 : 24;
   const quadTone = (side: string): keyof typeof TREE_SIDE_COLOR => {
     if (side === "demandpos" || side === "demandneg") return "demand";
@@ -2159,7 +2230,20 @@ export function ConstraintNarrative({
                   {i + 1}/{beats.length}
                 </b>
               </div>
-              <h2>{copy.kicker}</h2>
+              {copy.part && (
+                <h2 className="nv-part">
+                  {/* the part's mark: the intro diagram's own glyph for it */}
+                  <svg
+                    className="nv-part-ico"
+                    viewBox={INTRO_PARTS[copy.part.n - 1].box}
+                    aria-hidden="true"
+                  >
+                    {INTRO_PARTS[copy.part.n - 1].icon}
+                  </svg>
+                  <span className="nv-part-n">Part {copy.part.n}:</span> {copy.part.name}
+                </h2>
+              )}
+              {copy.kicker && <h2>{copy.kicker}</h2>}
               {geo && <GeoBadge geo={geo} cityShort={cityShort} />}
               {/* the closing block names the diagnosed route */}
               {last && beat >= LEAF_BEAT && (
@@ -2235,9 +2319,32 @@ export function ConstraintNarrative({
       </div>
 
       <div className="jz-sticky nv-stage" ref={stageRef}>
-        {/* no control row (Sept 2026): the stage's only switch was the
-            user-flow study, and the zoomed walk is the section now — so the
-            stage keeps the full height the bar used to take. */}
+        {/* no control row (Sept 2026): the stage keeps the full height the
+            old bar used to take; its one switch — the supply fork's
+            instrument — folds behind a disclosure in the corner */}
+        <div className="nv-stage-vars jz-switches">
+          <VariantOptions
+            face={SUPPLY_INSTS.find((o) => o.id === supplyInst)?.label ?? ""}
+            changed={supplyInst !== DEFAULT_SUPPLY_INST}
+          >
+            <div className="jz-modes show" role="group" aria-label="Fork two chart">
+              <span className="jz-modes-k">Fork Two Chart</span>
+              <div className="jz-seg">
+                {SUPPLY_INSTS.map((o) => (
+                  <button
+                    key={o.id}
+                    type="button"
+                    className={"jz-segbtn" + (o.id === supplyInst ? " on" : "")}
+                    aria-pressed={o.id === supplyInst}
+                    onClick={() => setSupplyInst(o.id)}
+                  >
+                    {o.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </VariantOptions>
+        </div>
         <div className="jz-body">
           <div className="jz-stagewrap">
             <svg
@@ -2383,7 +2490,7 @@ export function ConstraintNarrative({
                     />
                   ))}
                 {/* gridlines + ticks: x from step 0, y joins at step 1 */}
-                <g className={on(step >= DIAL2_BEAT)}>
+                <g className={on(step >= DIAL2_BEAT) + " nv-axfurn"}>
                   {[-1, -0.5, 0.5, 1].map((t) => (
                     <line
                       key={`gx${t}`}
@@ -2415,13 +2522,6 @@ export function ConstraintNarrative({
                       {`${med.wage + t * METRO_SPAN.wage > 0 ? "+" : ""}${(med.wage + t * METRO_SPAN.wage).toFixed(1)}%`}
                     </text>
                   ))}
-                  <line
-                    className="jz-ms-axisline"
-                    x1={cxu(-1)}
-                    x2={cxu(-1)}
-                    y1={cyu(1)}
-                    y2={cyu(-1)}
-                  />
                   {/* 64 clears the tick labels (right-aligned 12 in from
                       the axis, ~39 wide at 15px) by the same ~8 the x-axis
                       title keeps below its ticks; at 50 the rotated title
@@ -2449,7 +2549,29 @@ export function ConstraintNarrative({
                     </text>
                   </g>
                 </g>
-                <g className={on(step >= DIAL1_BEAT)}>
+                {/* the axes themselves (Sept 2026): each line starts AT the
+                    origin so its dash grows away from the corner, and sits
+                    outside the fading groups so the opacity ramp never dims
+                    the drawing — the ticks and titles fade in behind it */}
+                <g className="nv-axes">
+                  <line
+                    className={"jz-ms-axisline nv-axdraw" + (step >= DIAL1_BEAT ? " on" : "")}
+                    pathLength={1}
+                    x1={cxu(-1)}
+                    y1={cyu(-1)}
+                    x2={cxu(1)}
+                    y2={cyu(-1)}
+                  />
+                  <line
+                    className={"jz-ms-axisline nv-axdraw" + (step >= DIAL2_BEAT ? " on" : "")}
+                    pathLength={1}
+                    x1={cxu(-1)}
+                    y1={cyu(-1)}
+                    x2={cxu(-1)}
+                    y2={cyu(1)}
+                  />
+                </g>
+                <g className={on(step >= DIAL1_BEAT) + " nv-axfurn"}>
                   {[-1, -0.5, 0.5, 1].map((t) => (
                     <text
                       key={`tx${t}`}
@@ -2461,13 +2583,6 @@ export function ConstraintNarrative({
                       {`${med.pop + t * METRO_SPAN.pop > 0 ? "+" : ""}${(med.pop + t * METRO_SPAN.pop).toFixed(1)}%`}
                     </text>
                   ))}
-                  <line
-                    className="jz-ms-axisline"
-                    x1={cxu(-1)}
-                    x2={cxu(1)}
-                    y1={cyu(-1)}
-                    y2={cyu(-1)}
-                  />
                   <MetricMark
                     what="people"
                     className="jz-ms-axmark"
@@ -2504,7 +2619,7 @@ export function ConstraintNarrative({
                   x={cxu(-1)}
                   y={cyu(1) - 26}
                 >
-                  {`${cityShort.toUpperCase()} AGAINST ${METROS.length} US METROS · ${DATA_WINDOW_LABEL}`}
+                  {`${cityShort} Against ${METROS.length} US Metros · ${DATA_WINDOW_LABEL}`}
                 </text>
                 {/* the wider metro: the city's MSA joins the plane — hollow,
                     so the city's own dot (the traveller) stays the
@@ -2921,7 +3036,7 @@ export function ConstraintNarrative({
                       y={ROOT_ROW.y - 28}
                       textAnchor="middle"
                     >
-                      {`THE GROWTH QUESTION, ASKED OF ${cityShort.toUpperCase()}`}
+                      {`The Growth Question, Asked of ${cityShort}`}
                     </text>
                     <g className="nv-card nv-q">
                       <rect
@@ -3229,7 +3344,7 @@ export function ConstraintNarrative({
                       x={inset.x + 14}
                       y={inset.y + 22}
                     >
-                      THE PIZZA CHART · THE ROOT FORK
+                      Population vs Wages Chart
                     </text>
                     {sh.plane.map((sec, i) => (
                       <polygon
@@ -3387,7 +3502,7 @@ export function ConstraintNarrative({
                           x={inset.x + 14}
                           y={inset.y + 22}
                         >
-                          THE SAME PLANE · THE METRO'S READ
+                          The Same Plane · The Metro's Read
                         </text>
                         {/* the two answers, as the two halves of the plane:
                             the half the metro landed in tinted hardest */}
@@ -3397,7 +3512,7 @@ export function ConstraintNarrative({
                             ["place", pzx(0), pz.x + pz.s - pzx(0)],
                           ] as ["metro" | "place", number, number][]
                         ).map(([half, hx, hw]) => {
-                          const here = metroRead?.side === half;
+                          const here = landed && metroRead?.side === half;
                           return (
                             <rect
                               key={`dh-${half}`}
@@ -3436,8 +3551,8 @@ export function ConstraintNarrative({
                             y={pz.y + pz.s - 7}
                             textAnchor={anchor}
                             fill={TREE_SIDE_COLOR.demand}
-                            opacity={metroRead?.side === half ? 1 : 0.5}
-                            fontWeight={metroRead?.side === half ? 700 : 600}
+                            opacity={!landed ? 0.8 : metroRead?.side === half ? 1 : 0.5}
+                            fontWeight={landed && metroRead?.side === half ? 700 : 600}
                           >
                             {label}
                           </text>
@@ -3509,7 +3624,7 @@ export function ConstraintNarrative({
                           {cityShort}
                         </text>
                         {msa ? (
-                          <g>
+                          <g className={on(landed)}>
                             {/* the promoted mark: a ring under the dot, the
                                 way the live tool's spotlight grows it */}
                             <circle
@@ -3590,214 +3705,254 @@ export function ConstraintNarrative({
                     ) : (
                       /* THE SAME PLANE, A DIFFERENT AXIS (the live tool's
                          supply fork): population growth stays on x and the
-                         split lines stay put, but the Y axis moves from pay
-                         to price growth. "Supply shock" is a statement about
-                         population × pay and does not survive the swap, so
-                         the re-axed plane is a TWO-way split: at or above
-                         the median → Housing, below it → Amenities. */
+                         Y axis moves from pay to price growth. Two ways to
+                         cut it (the walk's variant, Sept 2026): the MEDIAN —
+                         a two-way split, at or above it → Housing, below →
+                         Amenities; or the NATIONAL AVERAGE on both axes —
+                         four quadrants, the admin's own read, the upper pair
+                         (price growth above the average) to Housing, the
+                         lower pair to Amenities. Either way the plane draws
+                         on the fork's own stop, and the city's dot and its
+                         region light on the landing. */
                       <g>
-                        <text
-                          className="nv-captitle"
-                          x={inset.x + 14}
-                          y={inset.y + 22}
-                        >
-                          THE SAME PLANE · PRICE ON THE Y AXIS
-                        </text>
-                        {(["cost", "amenity"] as const).map((half) => {
-                          const top = half === "cost";
-                          const y0 = top ? hz.y : zy(medCost);
-                          const h = top
-                            ? zy(medCost) - hz.y
-                            : hz.y + hz.h - zy(medCost);
-                          const here = priceRead?.side === half;
+                        {(() => {
+                          const quad = supplyInst === "quadrants";
+                          const cutY = quad ? natAvg.home : medCost;
+                          const cutX = quad ? natAvg.pop : med.pop;
+                          const read = quad ? quadRead : priceRead;
                           const col = TREE_SIDE_COLOR.supply;
+                          const grain = priceRead?.grain === "metro" ? "metro" : "city";
+                          type Sx = "left" | "right" | null;
+                          const regions: { half: "cost" | "amenity"; sx: Sx }[] = quad
+                            ? (["cost", "amenity"] as const).flatMap((half) =>
+                                (["left", "right"] as const).map((sx) => ({ half, sx: sx as Sx })),
+                              )
+                            : (["cost", "amenity"] as const).map((half) => ({ half, sx: null }));
                           return (
-                            <g key={`ps-${half}`}>
-                              <rect
-                                x={hz.x}
-                                y={y0}
-                                width={hz.w}
-                                height={h}
-                                fill={col}
-                                fillOpacity={here ? 0.14 : 0.03}
-                                stroke={col}
-                                strokeOpacity={here ? 0.85 : 0.2}
-                                strokeWidth={here ? 2 : 1}
+                            <>
+                              <text
+                                className="nv-captitle"
+                                x={inset.x + 14}
+                                y={inset.y + 22}
+                              >
+                                {quad ? "Home Value vs Population Growth" : "Comparing Home Value Growth"}
+                              </text>
+                              {regions.map(({ half, sx }) => {
+                                const top = half === "cost";
+                                const y0 = top ? hz.y : zy(cutY);
+                                const h = top ? zy(cutY) - hz.y : hz.y + hz.h - zy(cutY);
+                                const x0 = sx === "right" ? zx(cutX) : hz.x;
+                                const w =
+                                  sx == null
+                                    ? hz.w
+                                    : sx === "left"
+                                      ? zx(cutX) - hz.x
+                                      : hz.x + hz.w - zx(cutX);
+                                const here =
+                                  landed &&
+                                  read?.side === half &&
+                                  (sx == null || (quadRead?.popAbove ? sx === "right" : sx === "left"));
+                                return (
+                                  <rect
+                                    key={`ps-${half}-${sx ?? "all"}`}
+                                    x={x0}
+                                    y={y0}
+                                    width={w}
+                                    height={h}
+                                    fill={col}
+                                    fillOpacity={here ? 0.14 : 0.03}
+                                    stroke={col}
+                                    strokeOpacity={here ? 0.85 : 0.2}
+                                    strokeWidth={here ? 2 : 1}
+                                  />
+                                );
+                              })}
+                              {METROS.map(
+                                (m, i) =>
+                                  /* a metro Zillow has no series for is on the
+                                     pay plane and not on this one */
+                                  m.home != null && (
+                                    <circle
+                                      key={`hzm-${i}`}
+                                      cx={zxc(m.pop)}
+                                      cy={zyc(m.home)}
+                                      r={heroInst ? 2 : 1.4}
+                                      fill="#c8cdd0"
+                                      opacity={0.5}
+                                    />
+                                  ),
+                              )}
+                              {zTicks.map((t) => (
+                                <g key={`hzt-${t}`}>
+                                  <line
+                                    className="jz-ms-grid"
+                                    x1={hz.x}
+                                    x2={hz.x + hz.w}
+                                    y1={zy(t)}
+                                    y2={zy(t)}
+                                  />
+                                  <text
+                                    className="jz-ms-tick"
+                                    x={hzTickX}
+                                    y={zy(t) + 4}
+                                    textAnchor="end"
+                                    fontSize={11}
+                                  >
+                                    {`+${t}%`}
+                                  </text>
+                                </g>
+                              ))}
+                              {/* the price cut IS the fork */}
+                              <line
+                                x1={hz.x}
+                                x2={hz.x + hz.w}
+                                y1={zy(cutY)}
+                                y2={zy(cutY)}
+                                stroke="var(--ink)"
+                                strokeWidth={1.5}
+                                strokeDasharray="6 4"
                               />
-                            </g>
-                          );
-                        })}
-                        {METROS.map(
-                          (m, i) =>
-                            /* a metro Zillow has no series for is on the
-                               pay plane and not on this one */
-                            m.home != null && (
-                              <circle
-                                key={`hzm-${i}`}
-                                cx={zxc(m.pop)}
-                                cy={zyc(m.home)}
-                                r={heroInst ? 2 : 1.4}
-                                fill="#c8cdd0"
-                                opacity={0.5}
+                              {/* the population cut: in the median cut it is
+                                  the plane's own median, kept from fork one
+                                  but not this fork's line; in the quadrant
+                                  cut it is the national average, and a cut
+                                  of its own */}
+                              <line
+                                x1={zx(cutX)}
+                                x2={zx(cutX)}
+                                y1={hz.y}
+                                y2={hz.y + hz.h}
+                                stroke="var(--ink)"
+                                strokeWidth={quad ? 1.5 : 1}
+                                strokeDasharray={quad ? "6 4" : "3 4"}
+                                opacity={quad ? 1 : 0.3}
                               />
-                            ),
-                        )}
-                        {zTicks.map((t) => (
-                          <g key={`hzt-${t}`}>
-                            <line
-                              className="jz-ms-grid"
-                              x1={hz.x}
-                              x2={hz.x + hz.w}
-                              y1={zy(t)}
-                              y2={zy(t)}
-                            />
-                            <text
-                              className="jz-ms-tick"
-                              x={hzTickX}
-                              y={zy(t) + 4}
-                              textAnchor="end"
-                              fontSize={11}
-                            >
-                              {`+${t}%`}
-                            </text>
-                          </g>
-                        ))}
-                        <line
-                          x1={hz.x}
-                          x2={hz.x + hz.w}
-                          y1={zy(medCost)}
-                          y2={zy(medCost)}
-                          stroke="var(--ink)"
-                          strokeWidth={1.5}
-                          strokeDasharray="6 4"
-                        />
-                        {/* the population median stays where fork one drew it
-                            — the split lines stay put, only the Y axis
-                            moved — but it is not this fork's line */}
-                        <line
-                          x1={zx(med.pop)}
-                          x2={zx(med.pop)}
-                          y1={hz.y}
-                          y2={hz.y + hz.h}
-                          stroke="var(--ink)"
-                          strokeWidth={1}
-                          strokeDasharray="3 4"
-                          opacity={0.3}
-                        />
-                        <text
-                          className="nv-ph"
-                          x={hz.x + 2}
-                          y={zy(medCost) - 8}
-                        >
-                          {`median ${pc(medCost)}`}
-                        </text>
-                        {/* the price cut IS the fork: at or above it routes
-                            to Housing, below it to Amenities */}
-                        <text
-                          className="nv-elab"
-                          x={hz.x + hz.w - 2}
-                          y={zy(medCost) - 8}
-                          textAnchor="end"
-                          fill={TREE_SIDE_COLOR.supply}
-                          opacity={priceRead?.side === "cost" ? 1 : 0.6}
-                        >
-                          above → Housing
-                        </text>
-                        <text
-                          className="nv-elab"
-                          x={hz.x + hz.w - 2}
-                          y={zy(medCost) + 17}
-                          textAnchor="end"
-                          fill={TREE_SIDE_COLOR.supply}
-                          opacity={priceRead?.side === "amenity" ? 1 : 0.6}
-                        >
-                          below → Amenities
-                        </text>
-                        {cost && place ? (
-                          <g>
-                            <circle
-                              cx={zx(place.pop)}
-                              cy={zy(cost.growth)}
-                              r={heroInst ? 7 : 5}
-                              fill="var(--ink)"
-                              stroke="#fff"
-                              strokeWidth={1.5}
-                            />
-                            {(() => {
-                              /* always ABOVE the dot: below the price cut
-                                 the dot sits in the bottom row, where a label
-                                 under it would leave the plane. A dot close to
-                                 the cut lifts its label clear of the cut's own
-                                 labels, and one in the right of the plane
-                                 centres it, clamped inside the panel. */
-                              const dotX = zx(place.pop);
-                              const dotY = zy(cost.growth);
-                              const cutY = zy(medCost);
-                              const nearCut = Math.abs(dotY - cutY) < 26;
-                              const half = (cityShort.length + 9) * 3.9;
-                              const centred =
-                                nearCut || dotX > hz.x + hz.w * 0.5;
-                              return (
+                              <text
+                                className="nv-ph"
+                                x={hz.x + 2}
+                                y={zy(cutY) - 8}
+                              >
+                                {`${quad ? "national average" : "median"} ${pc(cutY)}`}
+                              </text>
+                              {quad && (
                                 <text
-                                  className="nv-lab"
-                                  x={
-                                    centred
-                                      ? Math.max(
-                                          hz.x + half,
-                                          Math.min(hz.x + hz.w - half, dotX),
-                                        )
-                                      : dotX + 9
-                                  }
-                                  y={
-                                    nearCut
-                                      ? Math.min(dotY, cutY) - 26
-                                      : dotY - 9
-                                  }
-                                  textAnchor={centred ? "middle" : "start"}
-                                  fontSize={13.5}
-                                  fontWeight={700}
-                                  fill="var(--ink)"
+                                  className="nv-ph"
+                                  x={zx(cutX) + 5}
+                                  y={hz.y + 12}
                                 >
-                                  {`${cityShort} ${pc(cost.growth)}`}
+                                  {`national average ${pc(cutX)}`}
                                 </text>
-                              );
-                            })()}
-                          </g>
-                        ) : (
-                          <text
-                            className="nv-ph"
-                            x={inset.x + inset.w / 2}
-                            y={zy(medCost) + 44}
-                            textAnchor="middle"
-                          >
-                            {`[no ${cityShort} home-value series yet]`}
-                          </text>
-                        )}
-                        <text
-                          className="nv-axlab"
-                          x={hz.x + hz.w / 2}
-                          y={hz.y + hz.h + 17}
-                          textAnchor="middle"
-                        >
-                          population growth →
-                        </text>
-                        <text
-                          className="nv-axlab"
-                          x={hzLabX}
-                          y={hz.y + hz.h / 2}
-                          textAnchor="middle"
-                          transform={`rotate(-90 ${hzLabX} ${hz.y + hz.h / 2})`}
-                        >
-                          home-value growth →
-                        </text>
-                        {/* the two numbers the fork turned on, as the live
-                            tree carries them on the fork's edge */}
-                        <text className="nv-ph" x={hz.x} y={hz.y + hz.h + 34}>
-                          {(priceRead
-                            ? `${pc(priceRead.costCagr)} vs ${pc(priceRead.costMedian)} · `
-                            : "") +
-                            `${priceRead?.grain === "metro" ? "metro" : "city"} level, ${DATA_WINDOW_LABEL}`}
-                        </text>
+                              )}
+                              {/* the price cut routes: at or above it to
+                                  Housing, below it to Amenities */}
+                              <text
+                                className="nv-elab"
+                                x={hz.x + hz.w - 2}
+                                y={zy(cutY) - 8}
+                                textAnchor="end"
+                                fill={TREE_SIDE_COLOR.supply}
+                                opacity={!landed ? 0.8 : read?.side === "cost" ? 1 : 0.6}
+                              >
+                                above → Housing
+                              </text>
+                              <text
+                                className="nv-elab"
+                                x={hz.x + hz.w - 2}
+                                y={zy(cutY) + 17}
+                                textAnchor="end"
+                                fill={TREE_SIDE_COLOR.supply}
+                                opacity={!landed ? 0.8 : read?.side === "amenity" ? 1 : 0.6}
+                              >
+                                below → Amenities
+                              </text>
+                              {cost && place ? (
+                                <g className={on(landed)}>
+                                  <circle
+                                    cx={zx(place.pop)}
+                                    cy={zy(cost.growth)}
+                                    r={heroInst ? 7 : 5}
+                                    fill="var(--ink)"
+                                    stroke="#fff"
+                                    strokeWidth={1.5}
+                                  />
+                                  {(() => {
+                                    /* always ABOVE the dot: below the price cut
+                                       the dot sits in the bottom row, where a
+                                       label under it would leave the plane. A
+                                       dot close to the cut lifts its label clear
+                                       of the cut's own labels, and one in the
+                                       right of the plane centres it, clamped
+                                       inside the panel. */
+                                    const dotX = zx(place.pop);
+                                    const dotY = zy(cost.growth);
+                                    const cY = zy(cutY);
+                                    const nearCut = Math.abs(dotY - cY) < 26;
+                                    const half = (cityShort.length + 9) * 3.9;
+                                    const centred =
+                                      nearCut || dotX > hz.x + hz.w * 0.5;
+                                    return (
+                                      <text
+                                        className="nv-lab"
+                                        x={
+                                          centred
+                                            ? Math.max(
+                                                hz.x + half,
+                                                Math.min(hz.x + hz.w - half, dotX),
+                                              )
+                                            : dotX + 9
+                                        }
+                                        y={
+                                          nearCut
+                                            ? Math.min(dotY, cY) - 26
+                                            : dotY - 9
+                                        }
+                                        textAnchor={centred ? "middle" : "start"}
+                                        fontSize={13.5}
+                                        fontWeight={700}
+                                        fill="var(--ink)"
+                                      >
+                                        {`${cityShort} ${pc(cost.growth)}`}
+                                      </text>
+                                    );
+                                  })()}
+                                </g>
+                              ) : (
+                                <text
+                                  className="nv-ph"
+                                  x={inset.x + inset.w / 2}
+                                  y={zy(cutY) + 44}
+                                  textAnchor="middle"
+                                >
+                                  {`[no ${cityShort} home-value series yet]`}
+                                </text>
+                              )}
+                              <text
+                                className="nv-axlab"
+                                x={hz.x + hz.w / 2}
+                                y={hz.y + hz.h + 17}
+                                textAnchor="middle"
+                              >
+                                population growth →
+                              </text>
+                              <text
+                                className="nv-axlab"
+                                x={hzLabX}
+                                y={hz.y + hz.h / 2}
+                                textAnchor="middle"
+                                transform={`rotate(-90 ${hzLabX} ${hz.y + hz.h / 2})`}
+                              >
+                                home-value growth →
+                              </text>
+                              {/* the two numbers the fork turned on — once it
+                                  has turned */}
+                              <text className="nv-ph" x={hz.x} y={hz.y + hz.h + 34}>
+                                {(landed && cost
+                                  ? `${pc(cost.growth)} vs ${pc(cutY)} ${quad ? "US average" : "median"} · `
+                                  : "") + `${grain} level, ${DATA_WINDOW_LABEL}`}
+                              </text>
+                            </>
+                          );
+                        })()}
                       </g>
                     )}
                   </g>

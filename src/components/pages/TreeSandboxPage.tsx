@@ -811,11 +811,11 @@ export function TreeSandboxPage({
                   className="ts-leg-halo"
                   style={{ background: TREE_SIDE_COLOR[suggSide] }}
                 />
-                what your data argues for
+                path suggested by the data
               </span>
               <span className="ts-leg-item">
                 <i className="ts-leg-dot" style={{ background: color }} />
-                what you are looking at
+                the path you're exploring
               </span>
               <span className="ts-leg-hint ts-leg-hint-mouse">
                 scroll to zoom · drag to pan · click any ending

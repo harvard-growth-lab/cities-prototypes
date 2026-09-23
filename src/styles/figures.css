@@ -1139,6 +1139,14 @@
   font-size: 12.5px;
 }
 
+/* main's .eyebrow is caps with wide tracking; the React section writes its
+   eyebrows in Title Case (the sandbox's "Sandbox"), so inside the slot the
+   caps and the tracking come off */
+#constraints-slot .eyebrow {
+  text-transform: none;
+  letter-spacing: 0.2px;
+}
+
 /* bracketed prototype placeholder text */
 .ph {
   font-style: italic;
@@ -1153,6 +1161,24 @@
    group whose transform eases between stations. */
 .nv-svg {
   overflow: hidden;
+}
+/* the plane's two axes DRAW out from the origin as their dial's beat
+   arrives (Sept 2026, the user's call) — a dash the length of the line,
+   its offset run to zero — instead of fading in with the ticks around them.
+   pathLength=1 on each line, so the dash is 1 whatever the axis measures.
+   Quick, eased to leave the corner fast and settle at the far end; the
+   furniture (ticks, title, mark) fades in a beat behind the stroke, so the
+   drawing is seen, and fades out with no delay on the way back. */
+.nv-axdraw {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 0.55s cubic-bezier(0.25, 0.7, 0.2, 1);
+}
+.nv-axdraw.on {
+  stroke-dashoffset: 0;
+}
+.nv-fade.on.nv-axfurn {
+  transition-delay: 0.22s;
 }
 .nv-fade {
   opacity: 0;
@@ -1238,6 +1264,16 @@
 }
 .nv-cut.on {
   opacity: 1;
+}
+
+/* the walk's own disclosure (Sept 2026): the supply fork's instrument,
+   over the stage's top-right corner; the stage is sticky, so it is the
+   containing block */
+.nv-stage-vars {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  z-index: 6;
 }
 
 /* ----- the tree options disclosure -----
@@ -1450,11 +1486,13 @@
   stroke: #fff;
   stroke-width: 4px;
 }
-/* small-caps nameplates (chart + inset instruments + the root eyebrow) */
+/* the nameplates (chart + inset instruments + the root eyebrow): Title
+   Case since Sept 2026 (the user's call — no caps in the React layer), so
+   the tracking that suited caps came down with them */
 .nv-captitle {
   font-size: 12.5px;
   font-weight: 700;
-  letter-spacing: 1px;
+  letter-spacing: 0.2px;
   fill: #8a867e;
 }
 /* tree edges draw themselves via a normalized dash (pathLength=1) */
@@ -1612,6 +1650,11 @@ html[data-jz-instant="1"] .nv-svg {
     var(--grid-max, 1360px),
     calc(100vw - 2 * var(--frame-pad, 40px))
   );
+  /* a rule across the top (Sept 2026, the user's call): the section is
+     Part 3 of the walk above, and the line says where the tree's page
+     ends and this one begins */
+  border-top: 1px solid var(--border-strong);
+  margin-top: 28px;
 }
 
 /* the section header carries its layout study in the corner, the way the
@@ -1626,6 +1669,24 @@ html[data-jz-instant="1"] .nv-svg {
 .ba-switches {
   flex: 0 0 auto;
   padding-top: 2px;
+}
+/* the section's title: a step up from the walk's step headings (v-1's
+   --t-h2, 700) and this section's own module heads (24 / 700), which main's
+   .page-head h2 (--t-h3, 600) sat UNDER — so the analysis opened lighter
+   than the steps before it. The city type's mark takes the title's em. */
+.ba-page .page-head h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.3em;
+  font-size: clamp(28px, 1.45rem + 1vw, 36px);
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+.ba-page .page-head h2 .qmark {
+  width: 1em;
+  height: 1em;
+  margin-right: 0;
 }
 .ba-body {
   flex: 1;
@@ -2087,40 +2148,7 @@ html[data-jz-instant="1"] .nv-svg {
 /* the lines before the first module — how you landed here, where that
    leads, and what a module is — read as a short ledger: a quiet label, then
    the line. The flex gap spaces them from the blocks. */
-.ba-lead {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  max-width: 920px;
-  padding: 14px 0;
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-}
-.ba-lead-row {
-  display: grid;
-  grid-template-columns: 156px minmax(0, 1fr);
-  gap: 16px;
-  align-items: baseline;
-}
-.ba-lead-k {
-  font-size: 11.5px;
-  font-weight: 700;
-  letter-spacing: 0.2px;
-  text-transform: none;
-  color: var(--ink-soft);
-}
 /* the subtle path's second exit */
-.ba-detour {
-  margin-left: 8px;
-  font: inherit;
-  font-weight: 700;
-  color: var(--teal-dark, #1c454d);
-  background: none;
-  border: 0;
-  border-bottom: 1px solid currentColor;
-  padding: 0;
-  cursor: pointer;
-}
 .ba-module {
   scroll-margin-top: 20px;
 }
@@ -2180,6 +2208,70 @@ html[data-jz-instant="1"] .nv-svg {
    under it — the same framed-figure grammar as the rest of the section. A
    data point still TO COME is a named line in a dashed list under the
    steps, so it is legible without taking a frame. */
+/* ----- the module map (Sept 2026): every data module the diagnosis can
+   draw on as a chip — icon, name, level — with the ones this ending calls
+   for lit in the branch's colour, in place of the bracketed ledger that
+   used to sit between the lede and the first module ----- */
+.ba-modmap {
+  margin: 18px 0 8px;
+  padding: 16px 0 18px;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.ba-modmap-k {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  font-size: 14.5px;
+  line-height: 22px;
+  color: var(--ink-soft);
+}
+.ba-modmap-k b {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  color: var(--ink);
+}
+.ba-modmap ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.ba-modchip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 11px 6px 9px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: #fff;
+  color: var(--ink-soft);
+  font-size: 13.5px;
+  line-height: 18px;
+}
+.ba-modchip:not(.on) {
+  opacity: 0.72;
+}
+.ba-modchip b {
+  font-weight: 600;
+}
+.ba-modchip.on b {
+  font-weight: 700;
+}
+.ba-modchip-ico svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+  overflow: visible;
+}
 .ba-views {
   margin-top: 18px;
   display: grid;
@@ -2573,13 +2665,6 @@ html[data-jz-instant="1"] .nv-svg {
   opacity: 0.25;
 }
 
-/* the lines that lead the modules: how you landed here, and what a module
-   is (an overview, not a verdict) */
-.ba-forkline {
-  margin: 0;
-  font-size: 15px;
-  line-height: 23px;
-}
 
 /* ----- the hand-off: how the chart becomes the tree -----
    The quadrant pour (revised Sept 2026). It has one job — to say that the
@@ -3620,6 +3705,44 @@ html[data-jz-instant="1"] .nv-pour {
    size (its aspect ratio is set inline from the inset's frame) whether the
    panel is mounted or not, so mounting it never moves the caption above;
    the svg fills the box rather than sizing it. */
+/* ----- the walk's parts (Sept 2026): a part header is the heavy heading —
+   the same cut as the analysis section's title, which is Part 3 — and the
+   step titles under it step down from v-1's --t-h2 / 700 to 24 / 600, so a
+   new part reads as one and a step reads as a step. ----- */
+.nv-step h2.nv-part {
+  font-size: clamp(28px, 1.45rem + 1vw, 36px);
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin: 0 0 14px;
+}
+/* the "Part n:" is set exactly as the name (Sept 2026, the user's call —
+   first the colour, then the weight): the class only marks it */
+.nv-part-n {
+  font-weight: inherit;
+}
+/* the part's mark, before the "Part n:": the intro diagram's glyph for that
+   part, in the diagram's teal, at the heading's height (the analysis title,
+   Part 3, wears its city type's mark the same way) */
+.nv-part-ico {
+  display: inline-block;
+  height: 0.95em;
+  width: auto;
+  vertical-align: -0.14em;
+  margin-right: 0.3em;
+  color: var(--teal, #255862);
+  overflow: visible;
+}
+.ct-step.nv-step h2:not(.nv-part) {
+  font-size: 24px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  margin: 0 0 12px;
+}
+.nv-step h2.nv-part + h2 {
+  margin-top: -2px;
+}
 .nv-step-inst {
   position: relative;
   width: 100%;
@@ -3775,8 +3898,11 @@ html[data-jz-instant="1"] .nv-pour {
     max-height: calc(var(--nv-band) - 36px);
     min-height: 0;
   }
-  .nv-grid .nv-step h2 {
+  .nv-grid .nv-step h2:not(.nv-part) {
     font-size: 22px;
+  }
+  .nv-grid .nv-step h2.nv-part {
+    font-size: 27px;
   }
   /* the stage is stacked over the steps, so the tab's jump lands on the
      track's top, not on a line computed for the side-by-side layout */
@@ -3830,8 +3956,12 @@ html[data-jz-instant="1"] .nv-pour {
     font-size: 11px;
     margin-bottom: 6px;
   }
-  .nv-grid .nv-step h2 {
+  .nv-grid .nv-step h2:not(.nv-part) {
     font-size: 20px;
+    margin-bottom: 8px;
+  }
+  .nv-grid .nv-step h2.nv-part {
+    font-size: 25px;
     margin-bottom: 8px;
   }
   .nv-grid .nv-step .geo-badge {
@@ -3870,10 +4000,6 @@ html[data-jz-instant="1"] .nv-pour {
   }
   .ba-coming ul {
     grid-template-columns: minmax(0, 1fr);
-  }
-  .ba-lead-row {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 2px;
   }
   .ba-row-head {
     display: flex;
