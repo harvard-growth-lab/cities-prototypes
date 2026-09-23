@@ -3999,7 +3999,10 @@
     }
 
     /* the tradability column, between the bars and the jobs column */
-    const TC_R = 796, TC_W = 56;
+    /* the two columns beside the plot, jobs first and tradability at the
+       edge: the ranking is read left to right as size then role, and the
+       bars' own head reads the same way */
+    const TC_R = MI_W - 6, TC_W = 56;
     const rowY = i => MT + i * RH + RH / 2;
     /* A ranking over a set of industries: the top twelve by concentration,
        with the scale they need. Two are kept. One is over the whole mix, for
@@ -4076,7 +4079,9 @@
        runs 37.8 past it, so 54 puts the gap at 44.7. Only the third beat's
        ranking shows the words; the first ranking keeps its score and its
        full plot whichever option is on. */
-    const plotR = tier => tier ? PLOT_R - 54 : PLOT_R;
+    /* both orders now give the same room back, since the jobs column sits
+       where the tier words used to and the value labels clear the same edge */
+    const plotR = () => PLOT_R - 54;
     const inTier = R => R === R2 && rankMode === "tier";
     let wireRowsRef = null, rebuildR2Ref = null, hlSpansRef = null;
     /* how a phrase in the text points at its sector: "frame" draws a line
@@ -4534,13 +4539,13 @@
         .attr("x", ML + 12).attr("y", HEAD_Y)
         .text("Against the peer average");
       AG.append("text").attr("class", "mi-colhead")
-        .attr("x", MI_W - 6).attr("y", HEAD_Y).attr("text-anchor", "end").text("Jobs");
+        .attr("x", JOBS_R).attr("y", HEAD_Y).attr("text-anchor", "end").text("Jobs");
       tradHead(AG, R);
       headRules(AG, ML + 12, plotR(inTier(R)), inTier(R));
     }
     /* the tradability column's head, its range on the same line, and the rules
        that make the three columns read as a table head */
-    const JOBS_L = 812, JOBS_R = MI_W - 6;
+    const JOBS_L = 716, JOBS_R = 774;
     /* the head as a button: the word, a caret, and a hit area round both. ctx
        says which filter it opens, since the jobs order and the ranking keep
        their own tier sets. */
@@ -4571,8 +4576,8 @@
          a score and 80 under a word, so its rule follows the mode; 712 clears
          the widest word by 4 and the head by 8, as the jobs rule clears its
          column */
-      const tradL = tier ? 712 : TC_R - TC_W - 8;
-      [[plotL, plotEnd], [tradL, TC_R], [JOBS_L, JOBS_R]].forEach(seg => {
+      const tradL = tier ? 790 : TC_R - TC_W - 8;
+      [[plotL, plotEnd], [JOBS_L, JOBS_R], [tradL, TC_R]].forEach(seg => {
         A.append("line").attr("class", "mi-headrule")
           .attr("x1", seg[0]).attr("x2", seg[1]).attr("y1", y).attr("y2", y);
       });
@@ -4595,7 +4600,7 @@
         .text("Times more concentrated");
       /* the jobs column: its head, and each row's count at the right edge */
       A.append("text").attr("class", "mi-colhead")
-        .attr("x", MI_W - 6).attr("y", HEAD_Y).attr("text-anchor", "end").text("Jobs");
+        .attr("x", JOBS_R).attr("y", HEAD_Y).attr("text-anchor", "end").text("Jobs");
       tradHead(A, R);
       headRules(A, ML + 12, plotR(tierMode), tierMode);
       /* the leading three by concentration, braced only while that is the order */
@@ -4631,10 +4636,10 @@
          and the value do, and the bar drops a step to stay clear of it */
       const jb = d3.scaleLinear().domain([0, d3.max(R.ranked, d => d.employ) || 1]).range([0, 58]);
       row.append("text").attr("class", "mi-jobs")
-        .attr("x", MI_W - 6).attr("y", tierMode ? 4 : 1).attr("text-anchor", "end")
+        .attr("x", JOBS_R).attr("y", tierMode ? 4 : 1).attr("text-anchor", "end")
         .text(d => d.employ >= 1000 ? Math.round(d.employ / 1000) + "K" : Math.round(d.employ));
       row.append("rect").attr("class", "mi-jobsbar")
-        .attr("x", d => MI_W - 6 - Math.max(4, jb(d.employ))).attr("y", tierMode ? 7 : 5)
+        .attr("x", d => JOBS_R - Math.max(4, jb(d.employ))).attr("y", tierMode ? 7 : 5)
         .attr("width", d => Math.max(4, jb(d.employ))).attr("height", 4).attr("rx", 0);
       /* the tradability column, built the way the jobs column is: the score,
          and a short track beneath it from 0 to 1, filled as far as the score

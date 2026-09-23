@@ -3165,8 +3165,11 @@
   #miTreemapSvg .mi-card-band{fill:#eff2f2;}
   /* opt-2 of the grounds: a light grey field under each tier rather than a
      line round it, which is how the beat read before the frames */
-  #miFigure[data-ground="grey"] #miTreemapSvg .mi-card{fill:#f1f3f3;stroke:none;}
-  #miFigure[data-ground="grey"] #miTreemapSvg .mi-card-band{fill:#e6eaea;}
+  #miFigure[data-ground="grey"] #miTreemapSvg .mi-card{fill:#e6eaea;stroke:none;}
+  #miFigure[data-ground="grey"] #miTreemapSvg .mi-card-band{fill:#d5dbdb;}
+  /* the share sits on that darker band, so it takes a darker soft ink to
+     stay at 4.6 to 1 on it */
+  #miFigure[data-ground="grey"] #miTreemapSvg .mi-card-pct{fill:#546065;}
   #miTreemapSvg .mi-card-lab{font-size:13px;font-weight:600;fill:var(--ink);}
   #miTreemapSvg .mi-card-pct{font-size:12.5px;font-weight:500;fill:var(--ink-soft);font-variant-numeric:tabular-nums;}
   #miTreemapSvg .mi-cards{pointer-events:none;}
@@ -5638,7 +5641,6 @@
               <div class="seg" role="group" aria-label="Order of the ranking">
                 <button type="button" class="seg-btn is-active" data-sort="rca" aria-pressed="true">Concentration</button>
                 <button type="button" class="seg-btn" data-sort="jobs" aria-pressed="false">Jobs</button>
-                <button type="button" class="seg-btn" data-sort="trad" aria-pressed="false">Tradability</button>
                 <button type="button" class="seg-btn" data-sort="gap" aria-pressed="false">Against peers</button>
               </div>
             </div>
