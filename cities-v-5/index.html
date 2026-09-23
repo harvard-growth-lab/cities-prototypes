@@ -2971,8 +2971,13 @@
   .mi-figure .tradable-split-header{opacity:0;transform:translateY(8px);
     transition:opacity .7s ease, transform .7s ease;}
   .mi-figure[data-step="2"] .tradable-split-header{opacity:1;transform:none;}
+  /* the captions share one slot, stacked on each other, so a faded one still
+     lies over whatever is beneath it. The key beneath them carries controls,
+     and these two carry none, so they never take the pointer - without this
+     the key's first row sat under three invisible captions and no hover of
+     it ever reached the key. */
   .mi-figure .complexity-legend,
-  .mi-figure .spec-key{opacity:0;transition:opacity .5s ease;}
+  .mi-figure .spec-key{opacity:0;pointer-events:none;transition:opacity .5s ease;}
   /* the key carries controls, so where it is not drawn it must also be out
      of reach: a transparent key still took the click, showed its card and
      held a tab stop over the beat beneath it */
@@ -3028,11 +3033,16 @@
      row of buttons under a chart would read as a toolbar, not as a key. */
   .sector-key .sk-sec{
     display:inline-flex;align-items:center;gap:7px;
-    appearance:none;background:none;border:0;padding:0;margin:0;
-    font:inherit;color:inherit;cursor:pointer;
+    appearance:none;background:none;border:0;font:inherit;color:inherit;cursor:pointer;
+    /* the padding grows the target and the tint that marks it; the negative
+       margin gives the width back, so the row's own spacing does not move */
+    padding:3px 6px;margin:-3px -6px;
+    transition:background .12s ease;
   }
-  .sector-key .sk-sec:hover .sk-name{color:var(--teal);}
-  .sector-key .sk-sec:focus-visible{outline:2px solid var(--teal);outline-offset:3px;border-radius:2px;}
+  .sector-key .sk-sec:hover,
+  .sector-key .sk-sec.is-open{background:var(--teal-tint);}
+  .sector-key .sk-sec.is-open .sk-name{color:var(--teal-dark);font-weight:600;}
+  .sector-key .sk-sec:focus-visible{outline:2px solid var(--teal);outline-offset:1px;}
   .sector-key .sk-sw{
     flex:none;width:13px;height:13px;display:inline-block;background:var(--sw,#ccc);
   }

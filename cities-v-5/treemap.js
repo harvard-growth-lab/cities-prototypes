@@ -4718,7 +4718,10 @@
       /* the pointer has to be able to travel from the entry to the card, so
          leaving either one only arms the close */
       const armClose = () => { clearTimeout(closeT); closeT = setTimeout(hideTip, 180); };
-      function hideTip(){ clearTimeout(closeT); openFor = null; tipEl.hidden = true; }
+      function hideTip(){
+        clearTimeout(closeT); openFor = null; tipEl.hidden = true;
+        items.forEach(x => x.classList.remove("is-open"));
+      }
       function showTip(b){
         const i = +b.dataset.si, sec = order[i];
         const shown = !secOn || secOn.has(sec);
@@ -4742,15 +4745,18 @@
             '<button type="button" class="skt-btn" data-act="' + a[0] + '">' + a[1] + '</button>').join("") +
           '</span>';
         tipEl.hidden = false;
-        /* over the entry it belongs to, inside the figure, and below it if
-           there is somehow no room above */
+        items.forEach(x => x.classList.toggle("is-open", x === b));
+        /* clear of the WHOLE key, not just of the entry it belongs to: the
+           key wraps, and a card that cleared only its own entry sat over the
+           row above and took every hover meant for it. Centred on the entry
+           so it still says which one it belongs to, and the entry is lit
+           while it is open. */
         const fb = fig.getBoundingClientRect(), bb = b.getBoundingClientRect();
+        const kb = key.getBoundingClientRect();
         const w = tipEl.offsetWidth, h = tipEl.offsetHeight;
         let left = bb.left - fb.left + bb.width / 2 - w / 2;
         tipEl.style.left = Math.max(0, Math.min(left, Math.max(0, fb.width - w))) + "px";
-        let top = bb.top - fb.top - h - 8;
-        if (top < 0) top = bb.bottom - fb.top + 8;
-        tipEl.style.top = top + "px";
+        tipEl.style.top = Math.max(0, kb.top - fb.top - h - 8) + "px";
       }
       /* the actions live in the card, so there is one place they are done
          from and the keyboard can reach every one of them */
