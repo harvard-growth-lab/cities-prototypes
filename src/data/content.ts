@@ -32,7 +32,7 @@ export const cityShortName = (city: string) => city.split(",")[0];
 export const cityCountryName = (city: string) =>
   city.split(",").slice(1).join(",").trim();
 
-/** The branch picked on the diagnostic tree names its analysis section. Built
+/** The branch picked on the diagnostic pathway names its analysis section. Built
  *  from the side's own label (figures.ts) rather than listed per branch, so a
  *  structure that adds branches needs no edit here — the third branch keeps
  *  its brackets because its LABEL is bracketed, which is the point. */

@@ -6,7 +6,7 @@
  *   METRO_DOTS   every US MSA (n = 379) — the BENCHMARK layer. The people/pay
  *                medians every fork reads against ("typical MSA") come from
  *                here, matching the live tool, whose places read "against
- *                …the medians across US metros"; the MSA pizza-chart
+ *                …the medians across US metros"; the MSA population vs wages chart
  *                instrument plots this field.
  *   FIELD_DOTS   every US city ≥ 100k population (admin places, n = 330) —
  *                the FIELD the pages sort down the tree. Each row carries

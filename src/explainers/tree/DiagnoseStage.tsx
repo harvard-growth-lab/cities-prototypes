@@ -32,7 +32,7 @@ import {
  * 'leaf'), so the demand cohort can already sit in its leaf piles while
  * the supply cohort still waits under Supply. Two phases:
  *
- *   'wage'    the full-bleed pizza chart, assembled one element per beat
+ *   'wage'    the full-bleed population vs wages chart, assembled one element per beat
  *             (x axis + label → y axis → the field of cities lands → the
  *             median crosshair → quadrant pairs → all four lit).
  *   'tree'    the chart PARKS as a small card in the top-left corner — the
@@ -245,7 +245,7 @@ const IN = {
 /** the wage instrument re-titles as it changes grain, so the header narrates
     the very thing that is happening to the dots. TITLES are the canonical
     short chart names (user-set, consistent everywhere a chart is named:
-    city pizza chart · MSA pizza chart · city housing scatter — the tree's
+    city population vs wages chart · MSA population vs wages chart · city housing scatter — the tree's
     "read: …" pointers use the same names); the sub line carries the
     narration. */
 const INST_HEAD: Record<
@@ -253,11 +253,11 @@ const INST_HEAD: Record<
   { title: string; sub: string }
 > = {
   city: {
-    title: "the city pizza chart",
+    title: "the city population vs wages chart",
     sub: "for the Demand fork · the same plane you just read, up close",
   },
   msa: {
-    title: "the MSA pizza chart",
+    title: "the MSA population vs wages chart",
     sub: "for the Demand fork · one dot per MSA, not per city",
   },
   home: {
@@ -354,7 +354,10 @@ const NODES = {
   },
 } as const;
 type NodeId = keyof typeof NODES;
-const ROOT_SUB = "people × pay · read: the city pizza chart ↖";
+/* the chart's name says which dials it plots, so the sub no longer
+   spells "people × pay" before it — at 9px the longer line ran past the
+   root node's own width */
+const ROOT_SUB = "read: the city population vs wages chart ↖";
 
 /* Each side row stacks: the node → the cities that answered it → the NEXT
    question → the branches. Putting the pile above the question means the
@@ -372,7 +375,7 @@ const ANNEX: Record<SideKey, { w: number; q: string; read: string }> = {
   demand: {
     w: 184,
     q: "MSA pop growth below the median?",
-    read: "read: the MSA pizza chart ↗",
+    read: "read: the MSA population vs wages chart ↗",
   },
   supply: {
     w: 184,
@@ -586,7 +589,7 @@ const LBL_W = {
   instHome: 101,
 } as const;
 
-/** The MSA pizza chart's dots: REAL METROS (METRO_DOTS — the layer a
+/** The MSA population vs wages chart's dots: REAL METROS (METRO_DOTS — the layer a
     demand-side city looks its own MSA up in), a plain field until the lens
     splits the halves violet/blue. */
 function instMsaDot(
@@ -770,7 +773,7 @@ export function DiagnoseStage({
       <svg
         viewBox={`0 ${crop} ${W} ${H - crop}`}
         role="img"
-        aria-label="The diagnostic tree, assembled from the data"
+        aria-label="The diagnostic pathway, assembled from the data"
       >
         {/* ————— quadrant-pair tints (wage phase) —————
             color SLIDES in, not fades (user-set): each tint sweeps out of
@@ -877,7 +880,7 @@ export function DiagnoseStage({
             animate={{ opacity: xAxisOn ? 1 : 0 }}
             transition={{ duration: 0.4, delay: xAxisOn ? 0.35 : 0 }}
           >
-            THE CITY PIZZA CHART · {N_CITIES} CITIES
+            THE CITY POPULATION VS WAGES CHART · {N_CITIES} CITIES
           </motion.text>
           <motion.line
             x1={M.l}
@@ -1039,7 +1042,7 @@ export function DiagnoseStage({
             letterSpacing={0.3}
             fill="#8a867e"
           >
-            THE CITY PIZZA CHART · {N_CITIES} CITIES
+            POPULATION VS WAGES · {N_CITIES} CITIES
           </text>
           <motion.line
             x1={PK.l}

@@ -3,7 +3,12 @@ import { cityCountryName, cityShortName } from "../data/content";
 import { convertPath, suggestedPath, type TreeVariant } from "../data/figures";
 import { DEFAULT_WALK_SHAPE, walkShape } from "./pages/walkShapes";
 import { ConstraintNarrative } from "./pages/ConstraintNarrative";
-import { BranchAnalysisPage } from "./pages/BranchAnalysisPage";
+import {
+  BranchAnalysisPage,
+  DEFAULT_BA_FULL,
+  DEFAULT_BA_LAYOUT,
+  type BaLayout,
+} from "./pages/BranchAnalysisPage";
 import { TreeSandboxPage } from "./pages/TreeSandboxPage";
 
 interface ConstraintsSectionProps {
@@ -11,7 +16,7 @@ interface ConstraintsSectionProps {
   /** derived from the app-wide mode, for the sections that only need the shape */
   treeVariant: TreeVariant;
   showThemes: boolean;
-  /** the descent picked on the diagnostic tree (ids below the root) */
+  /** the descent picked on the diagnostic pathway (ids below the root) */
   branchPath: string[];
   onSelectBranch: (path: string[]) => void;
   /** the scrolly reports its own page from its sticky track */
@@ -19,7 +24,7 @@ interface ConstraintsSectionProps {
 }
 
 /** City Constraints — this branch's section: the chart, the guided walk
- *  down the diagnostic tree, and the branch analysis that follows. It is
+ *  down the diagnostic pathway, and the branch analysis that follows. It is
  *  drawn into v-3's page (src/legacy) where its placeholder section was.
  *
  *  The section tells ONE walk (Sept 2026): the zoomed walk over the
@@ -63,6 +68,13 @@ export function ConstraintsSection({
      The stage starts as "up": the walk reports its true state on mount. */
   const [sandboxUp, setSandboxUp] = useState(false);
   const [stageUp, setStageUp] = useState(true);
+  /* the analysis section's layout study — which of its four layouts, and
+     whether full width — is held here rather than in the section (Sept
+     2026, the user's call) because the sandbox reads it too: an ending's
+     analysis opened under the sandbox's tree is laid out the way the
+     section above was set, so the two never read differently */
+  const [layout, setLayout] = useState<BaLayout>(DEFAULT_BA_LAYOUT);
+  const [full, setFull] = useState(DEFAULT_BA_FULL);
 
   return (
     <>
@@ -87,6 +99,10 @@ export function ConstraintsSection({
         variant={walkVariant}
         showThemes={showThemes}
         floatSuppressed={stageUp || sandboxUp}
+        layout={layout}
+        full={full}
+        onLayout={setLayout}
+        onFull={setFull}
       />
 
       {/* the room off the flow: the whole tree again, live, after the guided
@@ -97,7 +113,12 @@ export function ConstraintsSection({
           reaches the section above: an ending's analysis opens inside the
           sandbox, under its tree, so the page never sends the reader back
           up. */}
-      <TreeSandboxPage cityShort={cityShort} onInView={setSandboxUp} />
+      <TreeSandboxPage
+        cityShort={cityShort}
+        onInView={setSandboxUp}
+        layout={layout}
+        full={full}
+      />
     </>
   );
 }

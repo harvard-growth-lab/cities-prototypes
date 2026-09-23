@@ -189,7 +189,7 @@ body = subOnce(body,
         '        <nav class="toolbar-links">'),
   "masthead: explainers button");
 
-/* the city list is this branch's: the cities the diagnostic tree has data for
+/* the city list is this branch's: the cities the diagnostic pathway has data for
    (src/data/content.ts) — Boston only since Sept 2026; there were four sample
    cities until then. Main's own list (Boston and four more) names cities
    nothing here can diagnose. */

@@ -15,13 +15,13 @@ import {
 } from "d3-hierarchy";
 import {
   DATA_LEVEL_LABEL,
-  MODULES,
   PLACEHOLDER_BRANCHES,
   TREE_SIDE_COLOR,
   sideDash,
   sideHollow,
   TREE_SIDE_LABEL,
   completeToLeaf,
+  orderModules,
   pathModules,
   quadName,
   sideOfPath,
@@ -36,6 +36,8 @@ import {
 } from "../../data/figures";
 import { branchSectionName } from "../../data/content";
 import { NodeGlyph } from "./treeIcons";
+import { ModuleChips } from "./moduleChips";
+import { titleCase } from "./titleCase";
 import { QuadGlyph } from "./quadIcons";
 import { VariantOptions } from "./ConstraintNarrative";
 import { DriverChart, chartSource, chartVerdict } from "./driverCharts";
@@ -70,7 +72,7 @@ export const DEFAULT_BA_LAYOUT: BaLayout = "float";
 export const DEFAULT_BA_FULL = true;
 
 /* The third City Constraints step: the MODULES to look into at the end of
-   the branch picked on the diagnostic tree in the previous step — each a
+   the branch picked on the diagnostic pathway in the previous step — each a
    theme grouping the data points worth reading there — beside the "where
    you are" schematic that follows the pick. The schematic previews paths on
    hover and commits one on click (area-linked, like the big tree). */
@@ -197,7 +199,7 @@ export function DiagSchematic({
   /* the hovered path previews at its own emphasis, without committing */
   const prev = new Set((preview ?? []).filter((id) => !on.has(id)));
   /* the data-driven suggestion keeps a middle emphasis (tinted, not grey)
-     while the pick is elsewhere — "where we think you are" stays readable */
+     while the pick is elsewhere — "path suggested by the data" stays readable */
   const sugg = new Set(suggPath.filter((id) => !on.has(id) && !prev.has(id)));
   const root = nodes[0];
   const here = nodes.find((n) => n.data.id === path[path.length - 1]);
@@ -220,8 +222,8 @@ export function DiagSchematic({
       role="img"
       aria-label={
         interactive
-          ? "Schematic of the diagnostic tree with your selected branch highlighted; hover to preview, click to pick a different path"
-          : "Schematic of the diagnostic tree with the diagnosed branch highlighted"
+          ? "Schematic of the diagnostic pathway with your selected branch highlighted; hover to preview, click to pick a different path"
+          : "Schematic of the diagnostic pathway with the diagnosed branch highlighted"
       }
       onPointerDown={(e) => {
         lastPointer.current = e.pointerType;
@@ -298,38 +300,10 @@ export function DiagSchematic({
         >
           The growth question
         </text>
-        {/* the two-branch trees label both heads beside their dots; the
-            quadrant trees have four heads too close for that, so only the
-            branches on the lit route name themselves, centred above their
-            dots and clamped to the map — colour and the trail below carry
-            the rest */}
-        {(() => {
-          const heads = nodes.filter((n) => n.depth === 1);
-          const crowded = heads.length > 2;
-          const innerW = MV.w - MV.pad.left - MV.pad.right;
-          return heads
-            .filter((n) => !crowded || on.has(n.data.id))
-            .map((n) => {
-              const hw = n.data.title.length * 3.2;
-              const lx = crowded
-                ? Math.max(hw, Math.min(innerW - hw, n.x))
-                : n.x + (n.x < root.x ? -11 : 11);
-              return (
-                <text
-                  key={n.data.id}
-                  className={"ba-lab" + (on.has(n.data.id) ? "" : " faint")}
-                  x={lx}
-                  y={crowded ? n.y - 11 : n.y + 3.5}
-                  textAnchor={
-                    crowded ? "middle" : n.x < root.x ? "end" : "start"
-                  }
-                  fill={TREE_SIDE_COLOR[sideOf(n)]}
-                >
-                  {n.data.title}
-                </text>
-              );
-            });
-        })()}
+        {/* no head labels (Sept 2026, the user's call): the lit branch used
+            to name itself above its dot, and on the quadrant tree the word
+            sat over the edges around it. The colour and the trail under the
+            map carry the name. */}
       </g>
     </svg>
   );
@@ -375,7 +349,7 @@ function StepCard({
     <figure className={"ba-step" + (ph ? " ba-step--ph" : "")}>
       {/* the title leads the card (Sept 2026), the source beside it */}
       <div className="ba-step-head">
-        <span className="ba-step-ask">{view.name}</span>
+        <span className="ba-step-ask">{titleCase(view.name)}</span>
         {(level || live) && (
           <span className="ba-step-name">
             {level && <span className="ba-level small">{DATA_LEVEL_LABEL[level]}</span>}
@@ -392,7 +366,7 @@ function StepCard({
           <p className={"ba-step-verdict " + (verdict.tone === "ph" ? "rubric" : verdict.tone)}>
             <span className="ba-verdict-dot" aria-hidden="true" />
             <span>
-              <b>{verdict.head}</b>
+              <b>{titleCase(verdict.head)}</b>
               {verdict.body && <span className="ba-verdict-why"> · {verdict.body}</span>}
             </span>
           </p>
@@ -440,7 +414,7 @@ function ModuleViews({
           <ul>
             {coming.map((v) => (
               <li key={v.name}>
-                <span className="ba-view-name">{v.name}</span>
+                <span className="ba-view-name">{titleCase(v.name)}</span>
                 {v.signal && (
                   <span className="ba-view-signal">
                     <b>Signal</b>
@@ -654,28 +628,6 @@ function ModuleStack({
   );
 }
 
-/* the intro line counts its modules in words — no ending shows more than a
-   handful */
-const COUNT_WORD = [
-  "no",
-  "one",
-  "two",
-  "three",
-  "four",
-  "five",
-  "six",
-  "seven",
-  "eight",
-  "nine",
-  "ten",
-];
-/* complexity is the transition to what comes next, so it goes last however
-   the spec happened to order the rest */
-const orderModules = (modules: ModuleDef[]) => [
-  ...modules.filter((m) => m.id !== "complexity"),
-  ...modules.filter((m) => m.id === "complexity"),
-];
-
 /** "A", "A and B", "A, B and C" */
 const listOf = (xs: string[]) =>
   xs.length < 2
@@ -712,68 +664,6 @@ function AnalysisLede({
   );
 }
 
-/** every data module the diagnosis can draw on — this ending's first, in
- *  the order the page shows them, then the rest — with the ones this ending
- *  calls for lit in its branch's colour: a small map before the modules
- *  themselves (Sept 2026, the user's call; it replaced the bracketed ledger
- *  of how-you-landed-here lines). Icon and name only — the level pill came
- *  off, the module head below carries it. Display only: the rail's module
- *  list is the one that links. */
-function ModuleMap({ path }: { path: string[] }) {
-  const side = sideOfPath(path);
-  /* the ending's own modules lead, in the order the page reads them below
-     (complexity last), then the rest in the spec's order — so the lit run
-     of chips is the page's own sequence */
-  const ordered = useMemo(() => orderModules(pathModules(path)), [path]);
-  const shown = useMemo(() => new Set(ordered.map((m) => m.id)), [ordered]);
-  const all = useMemo(
-    () => [...ordered, ...Object.values(MODULES).filter((m) => !shown.has(m.id))],
-    [ordered, shown],
-  );
-  const quad = quadName(side) ?? TREE_SIDE_LABEL[side];
-  const color = TREE_SIDE_COLOR[side];
-  const word = (n: number) => COUNT_WORD[n] ?? String(n);
-  const cap = (w: string) => w[0].toUpperCase() + w.slice(1);
-  return (
-    <div className="ba-modmap">
-      <p className="ba-modmap-k">
-        <b>Data Modules</b>
-        <span>
-          {cap(word(all.length))} in all. The {word(shown.size)} most relevant
-          to a {quad} trajectory are highlighted and shown in-depth below. To
-          explore the other modules, use the sandbox at the end of this section
-          to explore alternative paths.
-        </span>
-      </p>
-      <ul>
-        {all.map((m) => {
-          const on = shown.has(m.id);
-          return (
-            <li
-              key={m.id}
-              className={"ba-modchip" + (on ? " on" : "")}
-              style={
-                on
-                  ? {
-                      borderColor: color,
-                      color,
-                      background: `color-mix(in srgb, ${color} 9%, #fff)`,
-                    }
-                  : undefined
-              }
-            >
-              <span className="ba-modchip-ico" aria-hidden="true">
-                <NodeGlyph id={m.id} />
-              </span>
-              <b>{m.title}</b>
-            </li>
-          );
-        })}
-      </ul>
-    </div>
-  );
-}
-
 /** one ending's analysis as this section reads it — the lede, how you
  *  landed here, and every module with its data points — without the
  *  section's chrome (its heading, its layout switch, the floating
@@ -783,28 +673,68 @@ function ModuleMap({ path }: { path: string[] }) {
 export function EndingAnalysis({
   cityShort,
   path,
+  layout = DEFAULT_BA_LAYOUT,
+  full = DEFAULT_BA_FULL,
 }: {
   cityShort: string;
   /** the descent below the root — a full ending, on the quadrant tree */
   path: string[];
+  /** the section's layout study, as set on the section above (Sept 2026,
+   *  the user's call): the read here is laid out the same way */
+  layout?: BaLayout;
+  full?: boolean;
 }) {
   const side = sideOfPath(path);
   const ordered = useMemo(() => orderModules(pathModules(path)), [path]);
+  /* the folded layouts' own open state — the caller remounts this on a
+     new ending, so nothing here has to reset */
+  const [openTab, setOpenTab] = useState<string | null>(null);
+  const [openRows, setOpenRows] = useState<ReadonlySet<string>>(
+    () => new Set(),
+  );
+  const toggleRow = useCallback(
+    (id: string) =>
+      setOpenRows((prev) => {
+        const next = new Set(prev);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        return next;
+      }),
+    [],
+  );
   return (
-    <>
+    <div className={"ba-ending ba-lay-" + layout + (full ? " ba-full" : "")}>
       <AnalysisLede cityShort={cityShort} path={path} />
       <div className="ba-modules">
-        <ModuleMap path={path} />
-        {ordered.map((m) => (
-          <ModuleBlock
-            key={m.id}
-            def={m}
+        {layout === "tabs" ? (
+          <ModuleTabs
+            modules={ordered}
             color={TREE_SIDE_COLOR[side]}
             cityShort={cityShort}
+            openId={openTab}
+            onOpen={setOpenTab}
           />
-        ))}
+        ) : layout === "stack" ? (
+          <ModuleStack
+            modules={ordered}
+            color={TREE_SIDE_COLOR[side]}
+            cityShort={cityShort}
+            openIds={openRows}
+            onToggle={toggleRow}
+          />
+        ) : (
+          ordered.map((m) => (
+            <ModuleBlock
+              key={m.id}
+              def={m}
+              color={TREE_SIDE_COLOR[side]}
+              cityShort={cityShort}
+              strip={layout === "strip"}
+            />
+          ))
+        )}
       </div>
-    </>
+    </div>
   );
 }
 
@@ -815,9 +745,10 @@ export function BranchAnalysisPage({
   variant,
   showThemes,
   floatSuppressed = false,
+  ...layoutProps
 }: {
   cityShort: string;
-  /** the descent picked on the diagnostic tree (ids below the root) */
+  /** the descent picked on the diagnostic pathway (ids below the root) */
   branchPath: string[];
   onSelectBranch: (path: string[]) => void;
   /** which tree structure the schematic mirrors (the stage's toggle) */
@@ -829,6 +760,11 @@ export function BranchAnalysisPage({
    *  on screen above, or the sandbox has come up from below — so the
    *  floating schematic stays down rather than landing on it */
   floatSuppressed?: boolean;
+  /** the layout study, held a level up so the sandbox reads it too */
+  layout: BaLayout;
+  full: boolean;
+  onLayout: (l: BaLayout) => void;
+  onFull: (f: boolean) => void;
 }) {
   const side = sideOfPath(branchPath);
   const titleOf = useMemo(
@@ -887,12 +823,11 @@ export function BranchAnalysisPage({
      A study, not a setting: the four are four answers to the same problem
      (an ending's honest length), parked behind one small disclosure so the
      team can read the same content four ways. */
-  const [layout, setLayout] = useState<BaLayout>(DEFAULT_BA_LAYOUT);
+  const { layout, full, onLayout: setLayout, onFull: setFull } = layoutProps;
   /* full width (Sept 2026): every card takes its own row, its chart and
      type a step larger, and its copy carries a second, plain sentence —
      a check that crosses the four layouts rather than a fifth of them. On
      by default, so the check reads as turning it off. */
-  const [full, setFull] = useState(DEFAULT_BA_FULL);
   /* the tab layout's open module, and the stack's open set. Both reset when
      the pick changes the modules under them. */
   const [openTab, setOpenTab] = useState<string | null>(null);
@@ -951,7 +886,7 @@ export function BranchAnalysisPage({
         <div className="page-head">
           <h2>
             <QuadGlyph side={side} color={TREE_SIDE_COLOR[side]} />
-            <span className="nv-part-n">Part 3:</span>
+            <span className="nv-part-n">Part 3:</span>{" "}
             {quadName(side)
               ? `${quadName(side)} Constraints Diagnosis`
               : "Constraints Diagnosis"}
@@ -1010,7 +945,6 @@ export function BranchAnalysisPage({
       <div className="ba-body">
         {modulesOn ? (
           <div className="ba-modules">
-            <ModuleMap path={branchPath} />
             {layout === "tabs" ? (
               <ModuleTabs
                 modules={ordered}
@@ -1100,7 +1034,7 @@ export function BranchAnalysisPage({
           />
           <span className="ba-legend">
             <i style={{ background: TREE_SIDE_COLOR[suggSide] }} />
-            tinted = where we think you are
+            tinted = path suggested by the data
           </span>
           <div className="fig-trail ba-trail">
             {shown.map((id, i) => (
@@ -1140,40 +1074,22 @@ export function BranchAnalysisPage({
           {modulesOn && modules.length > 0 && (
             <div className="ba-modlist">
               <span className="ba-kicker">Modules</span>
-              <ul>
-                {ordered.map((m) => (
-                  <li
-                    key={m.id}
-                    className={
-                      (
-                        layout === "tabs"
-                          ? m.id === (openTab ?? ordered[0]?.id)
-                          : m.id === activeModule
-                      )
-                        ? "active"
-                        : ""
-                    }
-                  >
-                    <span
-                      className="ba-moddot"
-                      style={{ background: TREE_SIDE_COLOR[side] }}
-                    />
-                    {/* in the folded layouts the link has to OPEN the
-                        module, not just scroll to a row that is shut */}
-                    <a
-                      href={`#module-${m.id}`}
-                      onClick={() => {
-                        if (layout === "tabs") setOpenTab(m.id);
-                        if (layout === "stack" && !openRows.has(m.id))
-                          toggleRow(m.id);
-                      }}
-                    >
-                      {m.title}
-                    </a>
-                    <span className="ba-modcount">{m.views.length}</span>
-                  </li>
-                ))}
-              </ul>
+              {/* chips (Sept 2026, the user's call — no counts): the one in
+                  view lit, the rest back; in the folded layouts a chip has
+                  to OPEN the module, not just scroll to a row that is shut */}
+              <ModuleChips
+                modules={ordered}
+                color={TREE_SIDE_COLOR[side]}
+                activeId={
+                  layout === "tabs" ? (openTab ?? ordered[0]?.id) : activeModule
+                }
+                hrefFor={(m) => `#module-${m.id}`}
+                onPick={(m) => {
+                  if (layout === "tabs") setOpenTab(m.id);
+                  if (layout === "stack" && !openRows.has(m.id))
+                    toggleRow(m.id);
+                }}
+              />
             </div>
           )}
           <p className="ba-note">

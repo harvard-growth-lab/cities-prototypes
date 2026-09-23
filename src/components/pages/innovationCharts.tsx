@@ -42,6 +42,7 @@ import {
   type SpecializationData,
 } from "../../data/innovationData";
 import type { Verdict } from "./driverCharts";
+import { titleCase } from "./titleCase";
 
 const W = 560;
 const H = 320;
@@ -142,7 +143,7 @@ function FirmCreation({ d }: { d: InnovationData }) {
         <g key={t}>
           <line className="dc-grid" x1={x(t)} x2={x(t)} y1={SC.t} y2={SC.b} />
           <text className="dc-lab dc-tick" x={x(t)} y={SC.b + 14} textAnchor="middle">
-            {`${t}%`}
+            {titleCase(`${t}%`)}
           </text>
         </g>
       ))}
@@ -150,7 +151,7 @@ function FirmCreation({ d }: { d: InnovationData }) {
         <g key={t}>
           <line className="dc-grid" x1={SC.l} x2={SC.r} y1={y(t)} y2={y(t)} />
           <text className="dc-lab dc-tick" x={SC.l - 6} y={y(t) + 3.5} textAnchor="end">
-            {`${t}%`}
+            {titleCase(`${t}%`)}
           </text>
         </g>
       ))}
@@ -160,7 +161,7 @@ function FirmCreation({ d }: { d: InnovationData }) {
         <>
           <line className="dc-link" x1={x(da)} y1={y(da)} x2={x(db)} y2={y(db)} />
           <text className="dc-lab dc-quiet dc-halo" x={x(db) + 5} y={y(db) + 11}>
-            entry = exit
+            Entry = Exit
           </text>
         </>
       )}
@@ -168,32 +169,32 @@ function FirmCreation({ d }: { d: InnovationData }) {
       <line className="dc-zero" x1={bx} x2={bx} y1={SC.t} y2={SC.b} />
       <line className="dc-zero" x1={SC.l} x2={SC.r} y1={by} y2={by} />
       <text className="dc-lab dc-quiet dc-halo" x={SC.l + 4} y={by - 5}>
-        {`all metros · exit ${pct(F.benchExit)}`}
+        {titleCase(`all metros · exit ${pct(F.benchExit)}`)}
       </text>
       <text className="dc-lab dc-quiet dc-halo" x={bx + 5} y={SC.b - 6}>
-        {`all metros · entry ${pct(F.benchEntry)}`}
+        {titleCase(`all metros · entry ${pct(F.benchEntry)}`)}
       </text>
       <text className="dc-lab dc-quiet" x={SC.r - 5} y={SC.t + 12} textAnchor="end">
-        {QUAD_NAME.churn}
+        {titleCase(QUAD_NAME.churn)}
       </text>
       <text className="dc-lab dc-quiet" x={SC.l + 5} y={SC.t + 12}>
-        {QUAD_NAME.decline}
+        {titleCase(QUAD_NAME.decline)}
       </text>
       <text className="dc-lab dc-quiet" x={SC.l + 5} y={by + 14}>
-        {QUAD_NAME.stasis}
+        {titleCase(QUAD_NAME.stasis)}
       </text>
       <text className="dc-lab dc-quiet" x={SC.r - 5} y={by + 14} textAnchor="end">
-        {QUAD_NAME.growth}
+        {titleCase(QUAD_NAME.growth)}
       </text>
       {F.field.map((p, i) => (
         <circle key={i} cx={x(p[0])} cy={y(p[1])} r={2.8} fill={FIELD} opacity={0.5} />
       ))}
       <circle cx={cx} cy={cy} r={5.5} fill={CITY} stroke="#fff" strokeWidth={1.8} />
       <text className="dc-lab dc-name dc-halo" x={lx} y={cy - 4} textAnchor={anchor}>
-        {d.city}
+        {titleCase(d.city)}
       </text>
       <text className="dc-lab dc-tick dc-halo" x={lx} y={cy + 9} textAnchor={anchor}>
-        {`entry ${pct(F.entry)} · exit ${pct(F.exit)} · net ${signed(F.net, 1)} pts`}
+        {titleCase(`entry ${pct(F.entry)} · exit ${pct(F.exit)} · net ${signed(F.net, 1)} pts`)}
       </text>
       <circle cx={cx} cy={cy} r={14} fill="transparent">
         <title>
@@ -201,7 +202,7 @@ function FirmCreation({ d }: { d: InnovationData }) {
         </title>
       </circle>
       <text className="dc-lab dc-quiet" x={(SC.l + SC.r) / 2} y={SC.b + 30} textAnchor="middle">
-        firm entry rate, % of firms a year
+        Firm Entry Rate, % of Firms a Year
       </text>
       <text
         className="dc-lab dc-quiet"
@@ -210,10 +211,10 @@ function FirmCreation({ d }: { d: InnovationData }) {
         textAnchor="middle"
         transform={`rotate(-90 14 ${(SC.t + SC.b) / 2})`}
       >
-        exit rate, % of firms
+        Exit Rate, % of Firms
       </text>
       <text className="dc-lab dc-quiet" x={20} y={H - 8}>
-        {`industry-mix adjusted, pooled ${from}–${to} · ${d.nMetro} metros · quadrants: Churn (both high), Decline, Stasis (both low), Growth`}
+        {titleCase(`industry-mix adjusted, pooled ${from}–${to} · ${d.nMetro} metros · quadrants: Churn (both high), Decline, Stasis (both low), Growth`)}
       </text>
     </Frame>
   );
@@ -274,16 +275,16 @@ function RateStrip({ d, s }: { d: InnovationData; s: SpecializationData }) {
         </title>
       </circle>
       <text className="dc-lab dc-tick" x={20} y={Y + 21}>
-        {compact(Math.min(...s.field))}
+        {titleCase(compact(Math.min(...s.field)))}
       </text>
       <text className="dc-lab dc-tick" x={x(s.median)} y={Y + 21} textAnchor="middle">
-        {`median ${compact(s.median)}`}
+        {titleCase(`median ${compact(s.median)}`)}
       </text>
       <text className="dc-lab dc-name" x={x(s.rate)} y={Y + 21} textAnchor="middle">
-        {d.city}
+        {titleCase(d.city)}
       </text>
       <text className="dc-lab dc-tick" x={540} y={Y + 21} textAnchor="end">
-        {compact(Math.max(...s.field))}
+        {titleCase(compact(Math.max(...s.field)))}
       </text>
     </g>
   );
@@ -305,7 +306,7 @@ function RcaBars({ d, s, level }: { d: InnovationData; s: SpecializationData; le
         <g key={t}>
           {t !== 1 && <line className="dc-grid" x1={x(t)} x2={x(t)} y1={y0 - 6} y2={yEnd} />}
           <text className="dc-lab dc-tick" x={x(t)} y={yEnd + 14} textAnchor="middle">
-            {t}
+            {titleCase(t)}
           </text>
         </g>
       ))}
@@ -313,7 +314,7 @@ function RcaBars({ d, s, level }: { d: InnovationData; s: SpecializationData; le
           with the metro's, which sits near it whenever the rate is high */}
       <line className="dc-zero" x1={x(1)} x2={x(1)} y1={y0 - 8} y2={yEnd + 2} />
       <text className="dc-lab dc-quiet dc-halo" x={x(1) + 5} y={y0 - 10}>
-        RCA = 1, the all-metro share
+        RCA = 1, the All-Metro Share
       </text>
       {rows.map((r, i) => {
         const yy = y0 + i * pitch;
@@ -322,7 +323,7 @@ function RcaBars({ d, s, level }: { d: InnovationData; s: SpecializationData; le
         return (
           <g key={`${r.code ?? ""}${r.name}`}>
             <text className="dc-lab" x={238} y={mid} textAnchor="end">
-              {rowLabel(r)}
+              {titleCase(rowLabel(r))}
             </text>
             <rect x={x(0)} y={yy} width={Math.max(2, x(r.rca) - x(0))} height={bh} rx={2.5} fill={CITY}>
               <title>
@@ -330,13 +331,13 @@ function RcaBars({ d, s, level }: { d: InnovationData; s: SpecializationData; le
               </title>
             </rect>
             <text className="dc-lab dc-name dc-halo" x={x(r.rca) + 6} y={mid}>
-              {r.rca.toFixed(2)}
+              {titleCase(r.rca.toFixed(2))}
             </text>
           </g>
         );
       })}
       <text className="dc-lab dc-quiet" x={(x(0) + x(top)) / 2} y={yEnd + 28} textAnchor="middle">
-        revealed comparative advantage
+        Revealed Comparative Advantage
       </text>
     </g>
   );
@@ -361,7 +362,7 @@ function Specialization({ d, kind }: { d: InnovationData; kind: SpecKind }) {
             aria-pressed={l.id === level}
             onClick={() => setLevel(l.id)}
           >
-            {l.label}
+            {titleCase(l.label)}
           </button>
         ))}
       </div>
@@ -369,15 +370,15 @@ function Specialization({ d, kind }: { d: InnovationData; kind: SpecKind }) {
         label={`${d.city}'s MSA: ${s.unit} per resident among all metros, and its specialization by ${LEVELS[kind][level === "broad" ? 0 : 1].label.toLowerCase()} (RCA), ${from}–${to}`}
       >
         <text className="dc-lab dc-name" x={20} y={20}>
-          {`${compact(s.rate)} ${s.unit} per ${s.per / 1000}k residents, ${from}–${to}`}
+          {titleCase(`${compact(s.rate)} ${s.unit} per ${s.per / 1000}k residents, ${from}–${to}`)}
         </text>
         <text className="dc-lab dc-tick" x={W - 20} y={20} textAnchor="end">
-          {`${ordinal(s.rank)} of ${s.n} metros · every metro a tick, log scale`}
+          {titleCase(`${ordinal(s.rank)} of ${s.n} metros · every metro a tick, log scale`)}
         </text>
         <RateStrip d={d} s={s} />
         <RcaBars d={d} s={s} level={level} />
         <text className="dc-lab dc-quiet" x={20} y={H - 6}>
-          {note}
+          {titleCase(note)}
         </text>
       </Frame>
     </>

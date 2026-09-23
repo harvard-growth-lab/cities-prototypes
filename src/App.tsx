@@ -42,7 +42,7 @@ const pageForSlug = (slug: string, ids: ReadonlySet<string>) => {
   return ids.has(slug) ? slug : null;
 };
 
-/** "explainers" → the gallery; "explainers/diagnostic-tree" → that
+/** "explainers" → the gallery; "explainers/diagnostic-pathway" → that
  *  explainer. An unknown id falls back to the gallery (and the hash effect
  *  then rewrites the bad slug away). */
 const parseExplainers = (slug: string): { open: boolean; id: string | null } => {
@@ -109,7 +109,7 @@ export default function App() {
     historyMode.current = "push";
   };
 
-  /* which structure the diagnostic tree proposes. One mode rather than two
+  /* which structure the diagnostic pathway proposes. One mode rather than two
      coupled flags: themes only exist under the alt leaves, so the pair could
      never move freely anyway. No longer a choice (Sept 2026): the structure
      switch came off with the section's variant controls, so the mode is fixed
@@ -118,7 +118,7 @@ export default function App() {
   const treeMode = DEFAULT_TREE_MODE;
   const treeVariant = modeVariant(treeMode);
   const showThemes = modeThemes(treeMode);
-  /* the descent picked on the diagnostic tree (ids below the root); defaults
+  /* the descent picked on the diagnostic pathway (ids below the root); defaults
      to the data-driven read and names/feeds the branch-analysis section */
   const [branchPath, setBranchPath] = useState<string[]>(() =>
     suggestedPath(cityShortName(DEFAULT_CITY), modeVariant(DEFAULT_TREE_MODE)),

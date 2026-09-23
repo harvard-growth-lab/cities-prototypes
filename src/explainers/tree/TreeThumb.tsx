@@ -1,10 +1,10 @@
-/** Gallery-card art for the diagnostic-tree explainer: the page's own hero
+/** Gallery-card art for the diagnostic-pathway explainer: the page's own hero
  *  glyph (root → two sides → four leaves, in its branch colors), scaled up
- *  on GL paper over a faint pizza-chart crosshair — the two instruments the
+ *  on GL paper over a faint population vs wages chart crosshair — the two instruments the
  *  explainer actually reads. */
 export function TreeThumb() {
   return (
-    <svg viewBox="0 0 400 320" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Abstract diagnostic tree">
+    <svg viewBox="0 0 400 320" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Abstract diagnostic pathway">
       <rect width="400" height="320" fill="#f7f5f0" />
       <g stroke="#e3ded4" strokeWidth="1.5" strokeDasharray="4 5">
         <path d="M 200 24 V 296" />

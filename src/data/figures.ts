@@ -135,7 +135,7 @@ export const TREE_SIDE_COLOR: Record<TreeSide, string> = {
      and the SIGN moves off the colour channel: negative shocks draw broken
      (dashed strokes, hollow dots — see TREE_SIDE_DASH below), positive ones
      solid. Hue answers "which side of the economy", stroke answers "which
-     way it moved". A side effect worth keeping: the quad pizza chart's
+     way it moved". A side effect worth keeping: the quad population vs wages chart's
      colouring becomes identical to the two-branch chart's, and because the
      quadrants alternate demand/supply around the ring, no two adjacent
      regions share a hue even with only two in play. (The four-hue set this
@@ -174,7 +174,7 @@ export const TREE_SIDE_LABEL: Record<TreeSide, string> = {
 };
 
 /* ---------- the landing's four city types ----------
- *  One per quadrant of the population × wage plane. The pizza chart and the
+ *  One per quadrant of the population × wage plane. The population vs wages chart and the
  *  tree lead with these; the shock each one IS rides underneath as a
  *  caption, and the running copy names both where it helps. [Mapped by
  *  meaning, since the landing names the four without their dials: a magnet
@@ -783,7 +783,7 @@ export const TREE_NODES_ALT: TreeNodeData[] = [
      cost alone — home values in the US, rents in Mexico — with no
      transportation branch under it, and Housing is what the fork's own
      question ("home values climbing faster than the typical metro?"), its
-     evidence chip and the diagnostic-tree explainer all call that answer.
+     evidence chip and the diagnostic-pathway explainer all call that answer.
      Only the full tree, where Cost of Living really does fork into Housing
      and Transportation, still carries the broader name. */
   {
@@ -903,7 +903,7 @@ export const TREE_NODES_QUAD: TreeNodeData[] = [
  *  The four shock nodes are reused verbatim; the six leaves carry ids
  *  prefixed by branch, so the two housing/amenities pairs stay distinct
  *  nodes. The demand leaves are titled in this app's own geography words —
- *  the MSA and the admin city, as the diagnostic-tree explainer has them —
+ *  the MSA and the admin city, as the diagnostic-pathway explainer has them —
  *  for the live tool's "Metro-wide" and "Place-specific". The positive
  *  demand shock has no second layer — its head is the ending, and the
  *  analysis opens straight on its modules. */
@@ -1548,6 +1548,14 @@ export const LEAF_MODULES: Record<string, string[]> = {
 /** the modules for a picked descent — the node it ends on decides */
 export const pathModules = (path: string[]): ModuleDef[] =>
   (LEAF_MODULES[path[path.length - 1]] ?? []).map((id) => MODULES[id]);
+/** the order the analysis reads an ending's modules in: complexity is the
+ *  transition to what comes next, so it goes last however the spec
+ *  happened to order the rest (the walk's closing stop and the analysis
+ *  section both read this order) */
+export const orderModules = (modules: ModuleDef[]): ModuleDef[] => [
+  ...modules.filter((m) => m.id !== "complexity"),
+  ...modules.filter((m) => m.id === "complexity"),
+];
 
 /** how many of a module's data points are drawn from a source — a
  *  placeholder is a card, not a drawn data point */

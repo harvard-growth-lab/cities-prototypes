@@ -27,7 +27,7 @@ import { QuadGlyph, QuadMark } from "../components/pages/quadIcons";
    that moves between the variants.
 
    THE CROSSING CARRIES NO PLACEHOLDER COPY (Sept 2026, the user's call):
-   it is visuals from the tool's own data — the whole diagnostic tree drawn
+   it is visuals from the tool's own data — the whole diagnostic pathway drawn
    large with the city's route lit, one data-drawn mark on each of part
    one's cards (the fundamentals against the median metro, the metro's
    sectors, the city inside its metro), the four city types on the
@@ -182,7 +182,7 @@ const sectionsOf = (api: LegacyApi, part: 0 | 1) =>
 
 /* ---------- the visuals the crossing is made of ---------- */
 
-/** the diagnostic tree with the city's own route lit in its branch's colour
+/** the diagnostic pathway with the city's own route lit in its branch's colour
  *  and the rest of it faint. Large: every node named, a quadrant mark on
  *  each head, the city chipped on the ending it lands on. MINI (Sept 2026,
  *  the user's call): the same shape at card size and nothing else — no
@@ -227,7 +227,7 @@ export function SeamTree({
       className={mini ? "seam-viz seam-viz--tree" : undefined}
       viewBox={`0 0 ${TV.w} ${TV.h}`}
       role="img"
-      aria-label={`The diagnostic tree, with ${city}'s route lit`}
+      aria-label={`The diagnostic pathway, with ${city}'s route lit`}
     >
       {linked.map((n) => (
         <path

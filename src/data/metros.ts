@@ -24,7 +24,7 @@
  *  extraction on raw IRS pay; moving to the live tool's window moved San
  *  Antonio from Leak › Admin-specific to Sponge › Housing — its population
  *  growth clears the ten-year median where it fell short of the five-year
- *  one. The diagnostic-tree EXPLAINER under src/explainers keeps its own
+ *  one. The diagnostic-pathway EXPLAINER under src/explainers keeps its own
  *  data and its own window.) */
 
 import {
@@ -176,7 +176,7 @@ export const METRO_MEDIANS = {
   wage: median(METROS.map((m) => m.wage)),
 };
 
-/* unit-square mapping for the pizza chart: the median crosshair is the
+/* unit-square mapping for the population vs wages chart: the median crosshair is the
    centre, spans measured off the data so ~96% of metros fall inside; the
    tail is clamped just inside the rim */
 export const METRO_SPAN = PLANE_SPAN;

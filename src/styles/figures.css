@@ -1,6 +1,6 @@
 /* The City Constraints scroll sequence: one sticky stage, five scroll-triggered
    phases (chart intro → MSA dot → place dot → tree draws itself in → default
-   path). Layout: the narrative captions and an always-expanded pizza minimap
+   path). Layout: the narrative captions and an always-expanded chart minimap
    live in a right rail; the stage keeps the rest. */
 
 /* ============ scrolly scaffold ============ */
@@ -88,7 +88,7 @@
   overflow: hidden;
 }
 
-/* ============ scene A: the pizza chart ============ */
+/* ============ scene A: the population vs wages chart ============ */
 .jz-quad rect {
   fill-opacity: 0.06;
   stroke-opacity: 0;
@@ -218,6 +218,38 @@
 .jz-ms-dot {
   fill: #c8cdd0;
   opacity: 0.55;
+}
+/* the field's hover (Sept 2026): the square is one capture surface that
+   maps the pointer to the nearest metro; the card it raises takes no
+   pointer of its own, so it never sits between the pointer and the dots */
+.nv-mhit {
+  fill: transparent;
+  pointer-events: all;
+}
+.nv-mtip {
+  pointer-events: none;
+}
+.nv-mtip-ring {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.5;
+  opacity: 0.7;
+}
+.nv-mtip-box {
+  fill: #fff;
+  stroke: var(--border-strong);
+  stroke-width: 1;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.1));
+}
+.nv-mtip-name {
+  font-size: 13px;
+  font-weight: 700;
+  fill: var(--ink);
+}
+.nv-mtip-row {
+  font-size: 11.5px;
+  fill: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
 }
 /* the labeled sample peers (v1 peer treatment): above the field, neutral */
 .jz-peerdot circle {
@@ -628,7 +660,7 @@
 /* ============ the rail minimap (always expanded) ============ */
 .jz-mini {
   /* narrower than the rail: the rail's height is a fixed budget (sticky
-     stage), and every px of pizza height comes out of the caption below */
+     stage), and every px of chart height comes out of the caption below */
   width: min(100%, 260px);
   background: rgba(255, 255, 255, 0.95);
   border: 1px solid var(--border);
@@ -889,7 +921,7 @@
      so the svg runs taller than the box by that much (--inset-slack) and
      the slack hangs below, empty — the panel's bottom is then the box's,
      flush with the caption beside it. Before the inset is on the box is
-     gone altogether — that is the chart phase, where the pizza wants every
+     gone altogether — that is the chart phase, where the chart wants every
      pixel of stage. */
   .jz-railchart {
     position: absolute;
@@ -930,7 +962,7 @@
   }
 }
 
-/* short laptops: shrink the pizza further before the caption has to scroll */
+/* short laptops: shrink the chart further before the caption has to scroll */
 @media (max-height: 760px) {
   .jz-mini {
     width: min(100%, 216px);
@@ -1195,6 +1227,125 @@
 .nv-chart.off {
   opacity: 0;
 }
+/* the closing stop (Sept 2026, the user's call): the drawing — the whole
+   tree with its lit route — gives the stage to the data modules, laid out
+   over it as cards. The svg's own inline transition names opacity too. */
+.nv-svg.nv-off {
+  opacity: 0;
+  pointer-events: none;
+}
+/* the module cards: every data module the diagnosis can draw on, three to
+   a row, the ones the diagnosed ending calls for lit in the branch's
+   colour and numbered in the order the next section reads them; the rest
+   quiet. In place of the chip map that used to open the analysis. */
+.nv-modcards {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 28px;
+}
+.nv-modcards ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  max-width: 880px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.nv-modcard {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 78px;
+  padding: 14px 16px 14px 14px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink-soft);
+  opacity: 0.62;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.nv-modcard.on {
+  opacity: 1;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+.nv-modcard-ico {
+  flex: none;
+  display: block;
+  width: 26px;
+  height: 26px;
+}
+.nv-modcard-ico svg {
+  display: block;
+  width: 26px;
+  height: 26px;
+  overflow: visible;
+}
+.nv-modcard-txt {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.nv-modcard b {
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 600;
+  color: var(--ink);
+}
+.nv-modcard.on b {
+  font-weight: 700;
+  color: inherit;
+}
+.nv-modcard-lvl {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ink-soft);
+}
+@media (max-width: 920px) {
+  .nv-modcards {
+    padding: 12px 14px;
+  }
+  .nv-modcards ul {
+    gap: 10px;
+  }
+  .nv-modcard {
+    min-height: 60px;
+    padding: 10px 12px 10px 10px;
+    gap: 9px;
+  }
+  .nv-modcard b {
+    font-size: 14px;
+    line-height: 18px;
+  }
+}
+@media (max-width: 640px) {
+  .nv-modcards ul {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+  }
+  .nv-modcard {
+    min-height: 0;
+    padding: 8px 10px 8px 8px;
+  }
+  .nv-modcard b {
+    font-size: 12.5px;
+    line-height: 16px;
+  }
+  .nv-modcard-lvl {
+    display: none;
+  }
+  .nv-modcard-ico,
+  .nv-modcard-ico svg {
+    width: 18px;
+    height: 18px;
+  }
+}
 /* the city's dot, walking from the chart down the tree. Its transform is
    driven imperatively (an arc-length tween along the tree's elbows) — no
    CSS transition here, or every rAF set would ease against the last one */
@@ -1266,15 +1417,6 @@
   opacity: 1;
 }
 
-/* the walk's own disclosure (Sept 2026): the supply fork's instrument,
-   over the stage's top-right corner; the stage is sticky, so it is the
-   containing block */
-.nv-stage-vars {
-  position: absolute;
-  top: 12px;
-  right: 14px;
-  z-index: 6;
-}
 
 /* ----- the tree options disclosure -----
    Two switches folded behind one control, so the header row carries a single
@@ -1675,18 +1817,32 @@ html[data-jz-instant="1"] .nv-svg {
    .page-head h2 (--t-h3, 600) sat UNDER — so the analysis opened lighter
    than the steps before it. The city type's mark takes the title's em. */
 .ba-page .page-head h2 {
-  display: flex;
-  align-items: center;
-  gap: 0.3em;
+  /* one run of text, not a flex row (Sept 2026): as flex items the
+     "Part 3:" and the name wrapped inside their own columns on a phone
+     ("Part" over "3:" beside a two-line name). Set like the walk's part
+     headers — the mark inline, the words flowing */
+  display: block;
   font-size: clamp(28px, 1.45rem + 1vw, 36px);
   line-height: 1.1;
   font-weight: 700;
   letter-spacing: -0.5px;
 }
 .ba-page .page-head h2 .qmark {
-  width: 1em;
-  height: 1em;
-  margin-right: 0;
+  width: 0.95em;
+  height: 0.95em;
+  vertical-align: -0.1em;
+  margin-right: 0.3em;
+}
+/* the same steps down the walk's part headers take at its breakpoints */
+@media (max-width: 920px) {
+  .ba-page .page-head h2 {
+    font-size: 27px;
+  }
+}
+@media (max-width: 640px) {
+  .ba-page .page-head h2 {
+    font-size: 25px;
+  }
 }
 .ba-body {
   flex: 1;
@@ -1825,9 +1981,6 @@ html[data-jz-instant="1"] .nv-svg {
 }
 .ba-dot.faint {
   opacity: 0.2;
-}
-.ba-lab.faint {
-  opacity: 0.5;
 }
 .ba-legend {
   display: flex;
@@ -2208,70 +2361,6 @@ html[data-jz-instant="1"] .nv-svg {
    under it — the same framed-figure grammar as the rest of the section. A
    data point still TO COME is a named line in a dashed list under the
    steps, so it is legible without taking a frame. */
-/* ----- the module map (Sept 2026): every data module the diagnosis can
-   draw on as a chip — icon, name, level — with the ones this ending calls
-   for lit in the branch's colour, in place of the bracketed ledger that
-   used to sit between the lede and the first module ----- */
-.ba-modmap {
-  margin: 18px 0 8px;
-  padding: 16px 0 18px;
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.ba-modmap-k {
-  margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px 12px;
-  font-size: 14.5px;
-  line-height: 22px;
-  color: var(--ink-soft);
-}
-.ba-modmap-k b {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.2px;
-  color: var(--ink);
-}
-.ba-modmap ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.ba-modchip {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 11px 6px 9px;
-  border: 1px solid var(--border);
-  border-radius: 9px;
-  background: #fff;
-  color: var(--ink-soft);
-  font-size: 13.5px;
-  line-height: 18px;
-}
-.ba-modchip:not(.on) {
-  opacity: 0.72;
-}
-.ba-modchip b {
-  font-weight: 600;
-}
-.ba-modchip.on b {
-  font-weight: 700;
-}
-.ba-modchip-ico svg {
-  display: block;
-  width: 16px;
-  height: 16px;
-  overflow: visible;
-}
 .ba-views {
   margin-top: 18px;
   display: grid;
@@ -2548,51 +2637,47 @@ html[data-jz-instant="1"] .nv-svg {
   flex-direction: column;
   gap: 8px;
 }
-.ba-modlist ul {
+/* ----- module chips (Sept 2026, the user's call): one look for a list of
+   modules — the schematic's rail (linked, scroll-spied) and the sandbox's
+   read panel (named only). Glyph + name in the branch's colour on a faint
+   tint; no level, no count. ----- */
+.mod-chips {
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  flex-wrap: wrap;
+  gap: 7px;
 }
-.ba-modlist li {
-  display: flex;
+.mod-chip > a,
+.mod-chip > span {
+  display: inline-flex;
   align-items: center;
-  gap: 9px;
-  padding: 4px 0;
-  opacity: 0.55;
+  gap: 7px;
+  padding: 5px 10px 5px 8px;
+  border: 1px solid;
+  border-radius: 9px;
+  font-size: 13px;
+  line-height: 18px;
+  text-decoration: none;
   transition: opacity 0.2s ease;
 }
-.ba-modlist li.active {
-  opacity: 1;
-}
-.ba-moddot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  flex: 0 0 auto;
-  opacity: 0.45;
-}
-.ba-modlist li.active .ba-moddot {
-  opacity: 1;
-}
-.ba-modlist a {
-  font-size: 14px;
-  color: var(--ink);
-  text-decoration: none;
-}
-.ba-modlist li.active a {
+.mod-chip b {
   font-weight: 700;
 }
-.ba-modlist a:hover {
-  text-decoration: underline;
+.mod-chip-ico svg {
+  display: block;
+  width: 15px;
+  height: 15px;
+  overflow: visible;
 }
-.ba-modcount {
-  margin-left: auto;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--ink-soft);
+/* the rail's scroll-spy: the module in view holds, the rest fall back */
+.mod-chip:not(.on) > a,
+.mod-chip:not(.on) > span {
+  opacity: 0.55;
+}
+.mod-chip > a:hover {
+  opacity: 1;
 }
 /* the compact flow's caption: the signal after each data point */
 .jz-cap-signal {
@@ -3255,58 +3340,11 @@ html[data-jz-instant="1"] .nv-pour {
   line-height: 20px;
   color: var(--ink-soft);
 }
-.ts-modlist {
-  padding-top: 12px;
-  border-top: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
 .ts-kicker {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.2px;
   text-transform: none;
-  color: var(--ink-soft);
-}
-.ts-modlist ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-.ts-modlist li {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto auto;
-  align-items: center;
-  gap: 9px;
-  font-size: 13.5px;
-}
-.ts-modico svg {
-  display: block;
-  width: 16px;
-  height: 16px;
-  overflow: visible;
-}
-.ts-modname {
-  font-weight: 600;
-}
-.ts-modlevel {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.2px;
-  text-transform: none;
-  color: var(--ink-soft);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 1px 5px;
-  white-space: nowrap;
-}
-.ts-modcount {
-  font-size: 10.5px;
-  font-weight: 700;
   color: var(--ink-soft);
 }
 .ts-fork {
@@ -3404,105 +3442,6 @@ html[data-jz-instant="1"] .nv-pour {
   font-size: 11px;
   color: var(--ink-soft);
   white-space: nowrap;
-}
-/* one module: a row that opens to its data points */
-.ts-mod {
-  border: 1px solid var(--border);
-  border-radius: 9px;
-  background: #fff;
-}
-.ts-mod.open {
-  border-color: var(--border-strong);
-}
-.ts-modhead {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto auto auto;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  font: inherit;
-  font-size: 13.5px;
-  text-align: left;
-  color: var(--ink);
-  background: none;
-  border: 0;
-  padding: 8px 10px;
-  cursor: pointer;
-}
-.ts-modhead:hover {
-  background: rgba(26, 34, 38, 0.03);
-}
-.ts-chev {
-  color: var(--ink-soft);
-  transition: transform 0.2s ease;
-}
-.ts-chev svg {
-  display: block;
-  width: 10px;
-  height: 6px;
-}
-.ts-chev.open {
-  transform: rotate(180deg);
-}
-.ts-modbody {
-  padding: 2px 12px 10px 34px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.ts-modq {
-  margin: 0;
-  font-size: 14px;
-  line-height: 20px;
-  color: var(--ink);
-}
-.ts-views {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-.ts-views li {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 6px 9px;
-  border: 1px dashed var(--border-strong);
-  border-radius: 7px;
-  font-size: 12.5px;
-}
-/* a data point the live tool does not draw yet */
-.ts-tocome {
-  margin-left: 7px;
-  font-size: 9.5px;
-  font-weight: 700;
-  letter-spacing: 0.2px;
-  text-transform: none;
-  color: var(--ink-soft);
-  opacity: 0.75;
-}
-.ts-viewname {
-  font-weight: 600;
-}
-.ts-viewmeta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  font-size: 11.5px;
-  color: var(--ink-soft);
-}
-.ts-viewmeta b {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.2px;
-  text-transform: none;
-}
-.ts-modlevel.small {
-  font-size: 8.5px;
-  padding: 0 4px;
 }
 .ts-open {
   margin-top: auto;
@@ -3720,6 +3659,8 @@ html[data-jz-instant="1"] .nv-pour {
    first the colour, then the weight): the class only marks it */
 .nv-part-n {
   font-weight: inherit;
+  /* "Part n:" is one word */
+  white-space: nowrap;
 }
 /* the part's mark, before the "Part n:": the intro diagram's glyph for that
    part, in the diagram's teal, at the heading's height (the analysis title,
@@ -4014,8 +3955,7 @@ html[data-jz-instant="1"] .nv-pour {
     flex: 1 0 100%;
     white-space: normal;
   }
-  .ba-level,
-  .ts-modlevel {
+  .ba-level {
     white-space: normal;
   }
   .ba-float {
@@ -4058,8 +3998,7 @@ html[data-jz-instant="1"] .nv-pour {
   .ts-read {
     flex: none;
   }
-  .ts-row,
-  .ts-modhead {
+  .ts-row {
     display: flex;
     flex-wrap: wrap;
     gap: 4px 8px;

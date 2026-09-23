@@ -25,6 +25,7 @@
 
 import { useMemo } from "react";
 import type { PlaceholderSpec } from "../../data/figures";
+import { titleCase } from "./titleCase";
 
 const W = 560;
 const H = 320;
@@ -91,16 +92,16 @@ function Axes({
       {xEnds && (
         <>
           <text className="dc-lab dc-tick" x={l} y={b + 12}>
-            {xEnds[0]}
+            {titleCase(xEnds[0])}
           </text>
           <text className="dc-lab dc-tick" x={r} y={b + 12} textAnchor="end">
-            {xEnds[1]}
+            {titleCase(xEnds[1])}
           </text>
         </>
       )}
       {xTitle && (
         <text className="dc-lab dc-quiet" x={(l + r) / 2} y={b + (xEnds ? 30 : 18)} textAnchor="middle">
-          {xTitle}
+          {titleCase(xTitle)}
         </text>
       )}
       {yTitle && (
@@ -111,7 +112,7 @@ function Axes({
           textAnchor="middle"
           transform={`rotate(-90 14 ${(t + b) / 2})`}
         >
-          {yTitle}
+          {titleCase(yTitle)}
         </text>
       )}
     </g>
@@ -138,7 +139,7 @@ function Histogram({ spec, city }: { spec: PlaceholderSpec; city: string }) {
   return (
     <Frame label={`${spec.x} of every ${among.replace(/s$/, "")}, as a histogram, with ${city} marked`}>
       <text className="dc-lab dc-name" x={20} y={20}>
-        {`${spec.x}, every ${among.replace(/s$/, "")}`}
+        {titleCase(`${spec.x}, every ${among.replace(/s$/, "")}`)}
       </text>
       {counts.map((c, i) => (
         <rect
@@ -153,10 +154,10 @@ function Histogram({ spec, city }: { spec: PlaceholderSpec; city: string }) {
       ))}
       <line className="dc-zero" x1={medianX} x2={medianX} y1={PL.t - 6} y2={PL.b} />
       <text className="dc-lab dc-quiet dc-halo" x={medianX + 4} y={PL.t - 9}>
-        median
+        Median
       </text>
       <text className="dc-lab dc-name dc-halo" x={PL.l + (cityBin + 0.5) * step} y={y(counts[cityBin]) - 8} textAnchor="middle">
-        {city}
+        {titleCase(city)}
       </text>
       <Axes {...PL} xTitle={spec.x} yTitle={among} xEnds={["lower", "higher"]} />
     </Frame>
@@ -193,7 +194,7 @@ function RankLine({ spec, city }: { spec: PlaceholderSpec; city: string }) {
       ))}
       <circle cx={x(n - 1)} cy={y(vs[n - 1])} r={5} fill={CITY} stroke="#fff" strokeWidth={1.8} />
       <text className="dc-lab dc-name dc-halo" x={x(n - 1) + 10} y={y(vs[n - 1]) + 4}>
-        {city}
+        {titleCase(city)}
       </text>
       <Axes {...PL} xTitle="years" yTitle={`${spec.y}, 1 at the top`} xEnds={["earlier", "latest"]} />
     </Frame>
@@ -225,11 +226,11 @@ function Scatter({ spec, city }: { spec: PlaceholderSpec; city: string }) {
       ))}
       <line x1={x(0)} y1={y(fit(0))} x2={x(1)} y2={y(fit(1))} stroke={INK_LINE} strokeWidth={1.2} opacity={0.7} />
       <text className="dc-lab dc-quiet dc-halo" x={x(1) - 3} y={y(fit(1)) + (slope > 0 ? -6 : 13)} textAnchor="end">
-        fit across all metros
+        Fit Across All Metros
       </text>
       <circle cx={x(cu)} cy={y(cv)} r={5.5} fill={CITY} stroke="#fff" strokeWidth={1.8} />
       <text className="dc-lab dc-name dc-halo" x={x(cu) + 10} y={y(cv) + 4}>
-        {city}
+        {titleCase(city)}
       </text>
       <Axes {...PL} xTitle={spec.x} yTitle={spec.y} />
     </Frame>
@@ -268,22 +269,22 @@ function SectorScatter({ spec, city }: { spec: PlaceholderSpec; city: string }) 
     <Frame label={`${spec.y} against ${spec.x}, one dot per 2-digit sector, the diagonal where the two are equal`}>
       <circle cx={PL.l + 5} cy={13} r={4.5} fill={RISE} />
       <text className="dc-lab dc-tick" x={PL.l + 14} y={16.5}>
-        {`grows faster in ${city} than in its MSA`}
+        {titleCase(`grows faster in ${city} than in its MSA`)}
       </text>
       <circle cx={PL.l + 230} cy={13} r={4.5} fill={FALL} />
       <text className="dc-lab dc-tick" x={PL.l + 239} y={16.5}>
-        slower
+        Slower
       </text>
       <line className="dc-link" x1={x(0)} y1={y(0)} x2={x(1)} y2={y(1)} />
       <text className="dc-lab dc-quiet dc-halo" x={x(1) - 3} y={y(1) + 13} textAnchor="end">
-        same growth in both
+        Same Growth in Both
       </text>
       {pts.map((p) => (
         <g key={p.code}>
           <circle cx={x(p.u)} cy={y(p.v)} r={5.5} fill={p.v >= p.u ? RISE : FALL} stroke="#fff" strokeWidth={1.5} />
           {Math.abs(p.v - p.u) > 0.12 && (
             <text className="dc-lab dc-tick dc-halo" x={x(p.u) + 8} y={y(p.v) + 3.5}>
-              {`${p.code} ${p.name}`}
+              {titleCase(`${p.code} ${p.name}`)}
             </text>
           )}
         </g>
@@ -325,18 +326,18 @@ function Dumbbell({ spec, city }: { spec: PlaceholderSpec; city: string }) {
     <Frame label={`${spec.x} by 2-digit sector: ${a} against ${b}`}>
       <circle cx={220} cy={18} r={4.5} fill={CITY} />
       <text className="dc-lab dc-tick" x={229} y={21.5}>
-        {a}
+        {titleCase(a)}
       </text>
       <circle cx={229 + a.length * 5.8 + 16} cy={18} r={4.5} fill={FIELD} />
       <text className="dc-lab dc-tick" x={229 + a.length * 5.8 + 25} y={21.5}>
-        {b}
+        {titleCase(b)}
       </text>
       {rows.map((row, i) => {
         const cy = y0 + i * pitch + 6;
         return (
           <g key={row.code}>
             <text className="dc-lab" x={204} y={cy + 4} textAnchor="end">
-              {`${row.code} · ${row.name}`}
+              {titleCase(`${row.code} · ${row.name}`)}
             </text>
             <line x1={x(row.m)} x2={x(row.c)} y1={cy} y2={cy} stroke={FIELD_SOFT} strokeWidth={2.5} />
             <circle cx={x(row.m)} cy={cy} r={4.5} fill={FIELD} stroke="#fff" strokeWidth={1.4} />
@@ -390,7 +391,7 @@ function Lines({ spec, city }: { spec: PlaceholderSpec; city: string }) {
         <g key={e.name}>
           <circle cx={x(n - 1)} cy={y(e.v)} r={4.5} fill={e.color} stroke="#fff" strokeWidth={1.6} />
           <text className="dc-lab dc-name dc-halo" x={x(n - 1) + 10} y={e.ly + 4}>
-            {e.name}
+            {titleCase(e.name)}
           </text>
         </g>
       ))}
@@ -425,19 +426,19 @@ function Heatmap({ city }: { city: string }) {
     <Frame label={`Input intensity of ${city}'s tradable industries, by input, in an earlier and the latest window`}>
       {RZ_ROWS.map((name, i) => (
         <text key={name} className="dc-lab" x={188} y={y0 + i * ch + ch / 2 + 4} textAnchor="end">
-          {name}
+          {titleCase(name)}
         </text>
       ))}
       {panels.map((p) => (
         <g key={p.k}>
           <text className="dc-lab dc-name" x={p.x + (cw * RZ_COLS.length) / 2} y={20} textAnchor="middle">
-            {p.title}
+            {titleCase(p.title)}
           </text>
           {RZ_COLS.map((c, j) => {
             const cx = p.x + j * cw + cw / 2 + 3;
             return (
               <text key={c} className="dc-lab dc-tick" x={cx} y={62} transform={`rotate(-40 ${cx} 62)`}>
-                {c}
+                {titleCase(c)}
               </text>
             );
           })}
@@ -466,10 +467,10 @@ function Heatmap({ city }: { city: string }) {
         <rect key={c} x={196 + i * 18} y={H - 40} width={17} height={11} rx={2} fill={c} />
       ))}
       <text className="dc-lab dc-quiet" x={292} y={H - 31}>
-        intensity, low to high · outlined: the industry leans on that input
+        Intensity, Low to High · Outlined: The Industry Leans on That Input
       </text>
       <text className="dc-lab dc-quiet" x={20} y={H - 8}>
-        tradable industries down the side, inputs across · two windows, so a shift reads as a shift
+        Tradable Industries Down the Side, Inputs Across · Two Windows, So a Shift Reads as a Shift
       </text>
     </Frame>
   );
@@ -504,10 +505,10 @@ function RankColumns({ spec, city }: { spec: PlaceholderSpec; city: string }) {
       ))}
       <line className="dc-zero" x1={medianX} x2={medianX} y1={PL.t - 6} y2={PL.b} />
       <text className="dc-lab dc-quiet dc-halo" x={medianX + 4} y={PL.t - 9}>
-        median metro
+        Median Metro
       </text>
       <text className="dc-lab dc-name dc-halo" x={PL.l + (cityIdx + 0.5) * step} y={y(vals[cityIdx]) - 8} textAnchor="middle">
-        {city}
+        {titleCase(city)}
       </text>
       <Axes {...PL} xTitle="every metro, ranked" yTitle={spec.y} />
     </Frame>
@@ -542,22 +543,22 @@ function HexMap({ city }: { city: string }) {
   return (
     <Frame label={`Map of ${city}'s tracts, filled by housing growth`}>
       <text className="dc-lab dc-name" x={20} y={20}>
-        {`housing growth within ${city}, by tract`}
+        {titleCase(`housing growth within ${city}, by tract`)}
       </text>
       {hexes.map((h, i) => (
         <polygon key={i} points={hex(h.x, h.y)} fill={SEQ_RUST[Math.floor(h.t * SEQ_RUST.length)]} stroke="#fff" strokeWidth={1.2} />
       ))}
       <text className="dc-lab dc-quiet" x={20} y={H - 8}>
-        one cell per tract · new homes over the window, as a share of the stock
+        One Cell per Tract · New Homes Over the Window, as a Share of the Stock
       </text>
       <text className="dc-lab dc-tick" x={426} y={H - 8} textAnchor="end">
-        less
+        Less
       </text>
       {SEQ_RUST.map((c, i) => (
         <rect key={c} x={432 + i * 18} y={H - 18} width={17} height={11} rx={2} fill={c} />
       ))}
       <text className="dc-lab dc-tick" x={526} y={H - 8}>
-        more
+        More
       </text>
     </Frame>
   );

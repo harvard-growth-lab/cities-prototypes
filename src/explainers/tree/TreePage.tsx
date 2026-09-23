@@ -6,11 +6,11 @@ import { POP_MED, HOME_GATE, PLACE_HOME_N, N_CITIES, DEMAND_N, SUPPLY_N, METRO_D
 import "./tree.css";
 
 /**
- * How to Read the Diagnostic Tree — the GENERAL explainer of the tree's
+ * How to Read the Diagnostic Pathway — the GENERAL explainer of the tree's
  * forking logic (no particular city), ported from the cities-explainer
  * prototype (its "#/tree" route, sort-at-the-end version) to live under
  * the Explainers tab. One continuous scrolly at r2d3 granularity — the
- * pizza chart assembles one element per beat (x axis → y axis → the
+ * population vs wages chart assembles one element per beat (x axis → y axis → the
  * cities land → the medians → one quadrant pair → the other → all four
  * lit), then the chart PARKS as a corner card and the tree draws fork by
  * fork, smaller and abstracted: root question → the two answers →
@@ -59,7 +59,7 @@ const STEPS: ActStep<DiagScene>[] = [
   /* 3 · the cities land */
   {
     scene: { layout: "wage", color: "plain" },
-    title: "Land the field on the city pizza chart",
+    title: "Land the field on the city population vs wages chart",
     body: ["Every US city over 100k, placed by its own decade of people and pay"],
   },
 
@@ -122,7 +122,7 @@ const STEPS: ActStep<DiagScene>[] = [
     },
     branch: "demand",
     title: "Pose Demand's sub-question: the city, or its region?",
-    body: ["Reopen the city pizza chart up close — the same two dials, about to be asked of somewhere bigger"],
+    body: ["Reopen the city population vs wages chart up close — the same two dials, about to be asked of somewhere bigger"],
   },
 
   /* 11 · the give-way: each city slides onto its own MSA */
@@ -135,7 +135,7 @@ const STEPS: ActStep<DiagScene>[] = [
       flow: { demand: "side", supply: "side" },
     },
     branch: "demand",
-    title: "Step up a level: the MSA pizza chart",
+    title: "Step up a level: the MSA population vs wages chart",
     body: ["Each city gives way to its own metro — same plane, one dot per MSA"],
   },
 
@@ -254,7 +254,7 @@ export function TreePage() {
             <circle cx={144} cy={106} r={5.5} fill="#8a5a00" fillOpacity={0.8} />
             <circle cx={216} cy={106} r={5.5} fill="#199e70" fillOpacity={0.8} />
           </svg>
-          <h1>How to Read the Diagnostic Tree</h1>
+          <h1>How to Read the Diagnostic Pathway</h1>
           <p className="tree-sub">What is your city's constraint likely to be?</p>
           <div className="tree-cue">Scroll ↓</div>
         </header>

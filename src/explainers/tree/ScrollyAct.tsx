@@ -2,7 +2,7 @@ import { useRef, type ReactNode } from "react";
 import { useScrollyStep } from "./hooks";
 
 /**
- * The diagnostic-tree page's scrolly grammar, in the r2d3 layout: prose
+ * The diagnostic-pathway page's scrolly grammar, in the r2d3 layout: prose
  * cards in a narrow left column, one sticky SVG stage filling the right,
  * the active card driving the stage's scene. Light GL paper, no canvas —
  * the stages are framer-motion SVGs that tween between scene states.

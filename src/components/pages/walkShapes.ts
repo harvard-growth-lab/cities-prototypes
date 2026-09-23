@@ -89,7 +89,7 @@ export interface WalkBranchDef {
   leaves: WalkLeafDef[];
 }
 
-/* ---------- the plane: how the pizza chart is divided ----------
+/* ---------- the plane: how the population vs wages chart is divided ----------
  *  The chart is the population × wage plane — x is population growth against
  *  the median metro, y is wage growth — drawn as a square from −1 to 1 in
  *  both. A shape divides it into SECTORS, each named by the two rays that
@@ -421,7 +421,7 @@ const QUAD: WalkShape = {
   label: "Four quadrants · flat",
   hint: "One fork on the tree — each shock's second question is asked in the analysis",
   about:
-    "The root forks four ways, straight into the quadrants of the pizza chart, and stops there: the revision spec's second fork and its modules are asked in the analysis section below",
+    "The root forks four ways, straight into the quadrants of the population vs wages chart, and stops there: the revision spec's second fork and its modules are asked in the analysis section below",
   variant: "quad",
   rootQuestion: "population × wages — which quadrant?",
   rootX: 384,
@@ -850,9 +850,9 @@ export const shapeExtent = (s: WalkShape): [number, number] => [
   landingY(s) + 56, // the badge row under the landing
 ];
 
-/** the "where we think you are" pill is wider than anything it points at, so
- *  a frame that only covered the cards would crop it */
-const BADGE_W = ("where we think you are".length + 2) * 7.8 + 30;
+/** the "path suggested by the data" pill is wider than anything it points
+ *  at, so a frame that only covered the cards would crop it */
+const BADGE_W = ("path suggested by the data".length + 2) * 7.8 + 30;
 
 /** The band a badge may occupy without clipping — the STAGE's, not the
  *  tree's. A badge centred on an outer leaf overhangs the leaf row, and the
@@ -956,6 +956,7 @@ export const fitTransform = (
 
 /** the count the rail copy names ("two questions, six diagnoses") */
 const NUMBER_WORD: Record<number, string> = {
+  1: "one",
   2: "two",
   3: "three",
   4: "four",
@@ -963,5 +964,7 @@ const NUMBER_WORD: Record<number, string> = {
   6: "six",
   7: "seven",
   8: "eight",
+  9: "nine",
+  10: "ten",
 };
 export const numberWord = (n: number) => NUMBER_WORD[n] ?? String(n);

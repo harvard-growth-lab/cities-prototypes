@@ -1,5 +1,4 @@
 import {
-  Fragment,
   useCallback,
   useEffect,
   useMemo,
@@ -7,10 +6,10 @@ import {
   useState,
 } from "react";
 import {
-  DATA_LEVEL_LABEL,
   PLACEHOLDER_BRANCHES,
   QUAD_BRANCH_SPEC,
   TREE_SIDE_COLOR,
+  orderModules,
   pathModules,
   quadName,
   quadShock,
@@ -18,7 +17,6 @@ import {
   sideOfPath,
   suggestedPath,
   type BranchSide,
-  type ModuleDef,
 } from "../../data/figures";
 import {
   DEFAULT_WALK_SHAPE,
@@ -32,9 +30,14 @@ import {
   walkShape,
   type WalkShape,
 } from "./walkShapes";
-import { NodeGlyph } from "./treeIcons";
 import { QuadGlyph, QuadMetrics } from "./quadIcons";
-import { EndingAnalysis } from "./BranchAnalysisPage";
+import {
+  DEFAULT_BA_FULL,
+  DEFAULT_BA_LAYOUT,
+  EndingAnalysis,
+  type BaLayout,
+} from "./BranchAnalysisPage";
+import { ModuleChips } from "./moduleChips";
 
 /* ---------- the sandbox ----------
    The walk above tells ONE route and the analysis under it reads ONE ending.
@@ -121,12 +124,18 @@ const endingLabel = (sh: WalkShape, path: string[]): string => {
 export function TreeSandboxPage({
   cityShort,
   onInView,
+  layout = DEFAULT_BA_LAYOUT,
+  full = DEFAULT_BA_FULL,
 }: {
   cityShort: string;
   /** the analysis section's schematic floats over the viewport, and this
    *  panel is what it would land on — so the sandbox says when it is up and
    *  the float gets out of the way */
   onInView?: (v: boolean) => void;
+  /** the analysis section's layout study, as set above (Sept 2026, the
+   *  user's call): an ending read here is laid out the same way */
+  layout?: BaLayout;
+  full?: boolean;
 }) {
   const secRef = useRef<HTMLElement>(null);
   const inViewRef = useRef(onInView);
@@ -186,11 +195,10 @@ export function TreeSandboxPage({
   const wandered = pickKey !== suggKey;
   const color = TREE_SIDE_COLOR[pickSide];
 
-  /* the module the reader has opened to its data points — one at a time,
-     and a new pick closes it */
-  const [openMod, setOpenMod] = useState<string | null>(null);
-  useEffect(() => setOpenMod(null), [pickKey]);
-  const modules = useMemo(() => pathModules(pick), [pick]);
+  /* the ending's modules, named as chips in the order the analysis reads
+     them (Sept 2026, the user's call — they used to open to their data
+     points here; "Read this ending's analysis" is the way in now) */
+  const modules = useMemo(() => orderModules(pathModules(pick)), [pick]);
   const spec = QUAD_BRANCH_SPEC[pickSide];
 
   /* whether the ending's full analysis is open under the tree. The block is
@@ -449,10 +457,10 @@ export function TreeSandboxPage({
               eyebrow is what says this is not the flow */}
           <div className="page-head ts-head-l">
             <span className="eyebrow">Sandbox</span>
-            <h2>Explore the rest of the tree</h2>
+            <h2>Explore other analyses</h2>
             <p className="lede ts-sub">
               <span className="ph">
-                [explore other branches of the growth diagnostic tree]
+                [explore other branches of the growth diagnostic pathway]
               </span>
             </p>
           </div>
@@ -521,8 +529,8 @@ export function TreeSandboxPage({
               )}
             </div>
 
-            {/* what the ending holds: its modules, each opening to its data
-                points, under the question this branch of the tree asks */}
+            {/* what the ending holds: its modules, under the question this
+                branch of the tree asks */}
             <p className="ts-shock">
               {quadShock(pickSide)}
               {spec ? ` — ${spec.question}` : ""}
@@ -533,15 +541,7 @@ export function TreeSandboxPage({
                   ? `${modules.length} Module${modules.length === 1 ? "" : "s"} at This Ending`
                   : "No Modules at This Ending Yet"}
               </span>
-              {modules.map((m) => (
-                <ModuleRow
-                  key={m.id}
-                  def={m}
-                  color={color}
-                  open={openMod === m.id}
-                  onToggle={() => setOpenMod((v) => (v === m.id ? null : m.id))}
-                />
-              ))}
+              <ModuleChips modules={modules} color={color} />
             </div>
 
             {/* opens the ending's full analysis under the tree — in the
@@ -571,7 +571,7 @@ export function TreeSandboxPage({
               className="ts-svg"
               viewBox={`${bx0} ${by0} ${W} ${H}`}
               role="group"
-              aria-label={`The whole diagnostic tree. ${quadName(suggSide) ?? suggSide} is the branch your data argues for; every ending is a button.`}
+              aria-label={`The whole diagnostic pathway. ${quadName(suggSide) ?? suggSide} is the branch your data argues for; every ending is a button.`}
               onPointerDown={onDown}
               onPointerMove={onMove}
               onPointerUp={onUp}
@@ -917,6 +917,8 @@ export function TreeSandboxPage({
               key={pickKey}
               cityShort={cityShort}
               path={readPath}
+              layout={layout}
+              full={full}
             />
             <div className="ts-an-foot">
               <button type="button" className="ts-back" onClick={backToTree}>
@@ -937,83 +939,6 @@ export function TreeSandboxPage({
         )}
       </div>
     </section>
-  );
-}
-
-/** one module at an ending: closed, its name and level and how many data
- *  points; open, the data points themselves — what is there to look at */
-function ModuleRow({
-  def,
-  color,
-  open,
-  onToggle,
-}: {
-  def: ModuleDef;
-  color: string;
-  open: boolean;
-  onToggle: () => void;
-}) {
-  return (
-    <div className={"ts-mod" + (open ? " open" : "")}>
-      <button
-        type="button"
-        className="ts-modhead"
-        aria-expanded={open}
-        onClick={onToggle}
-      >
-        <span className="ts-modico" style={{ color }} aria-hidden="true">
-          <NodeGlyph id={def.id} />
-        </span>
-        <span className="ts-modname">{def.title}</span>
-        <span className="ts-modlevel">{DATA_LEVEL_LABEL[def.level]}</span>
-        <span className="ts-modcount">{def.views.length}</span>
-        <span className={"ts-chev" + (open ? " open" : "")} aria-hidden="true">
-          <svg viewBox="0 0 10 6">
-            <path
-              d="M1 1.5 5 4.8 9 1.5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-            />
-          </svg>
-        </span>
-      </button>
-      {open && (
-        <div className="ts-modbody">
-          <p className="ts-modq">
-            {def.question ?? (
-              <span className="ph">[the question this module answers]</span>
-            )}
-          </p>
-          <ul className="ts-views">
-            {def.views.map((v) => (
-              <li key={v.name}>
-                <span className="ts-viewname">
-                  {v.name}
-                  {/* the live tool's Drivers section already draws the rest */}
-                  {!v.chart && <span className="ts-tocome">To Come</span>}
-                </span>
-                {(v.signal || v.level) && (
-                  <span className="ts-viewmeta">
-                    {v.signal && (
-                      <Fragment>
-                        <b>Signal</b> {v.signal}
-                      </Fragment>
-                    )}
-                    {v.level && (
-                      <span className="ts-modlevel small">
-                        {DATA_LEVEL_LABEL[v.level]}
-                      </span>
-                    )}
-                  </span>
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </div>
   );
 }
 

@@ -37,6 +37,7 @@
 import type { ChartKind } from "../../data/figures";
 import { amenityData, type AmenityData } from "../../data/amenityData";
 import type { Verdict } from "./driverCharts";
+import { titleCase } from "./titleCase";
 
 const W = 560;
 const H = 320;
@@ -202,13 +203,13 @@ function LinePair({
     <Frame label={label}>
       <rect className="dc-window" x={x(w0)} y={PLOT.t - 6} width={x(w1) - x(w0)} height={PLOT.b - PLOT.t + 6} />
       <text className="dc-lab dc-quiet" x={(x(w0) + x(w1)) / 2} y={PLOT.t - 10} textAnchor="middle">
-        {`${WINDOW[0]}–${WINDOW[1]}`}
+        {titleCase(`${WINDOW[0]}–${WINDOW[1]}`)}
       </text>
       {ticks.map((t) => (
         <g key={t}>
           {t !== refAt && <line className="dc-grid" x1={PLOT.l} x2={PLOT.r} y1={y(t)} y2={y(t)} />}
           <text className="dc-lab dc-tick" x={PLOT.l - 6} y={y(t) + 3.5} textAnchor="end">
-            {tickFmt(t)}
+            {titleCase(tickFmt(t))}
           </text>
         </g>
       ))}
@@ -216,7 +217,7 @@ function LinePair({
         <g key={text}>
           <line className="dc-grid" x1={x(at)} x2={x(at)} y1={PLOT.t} y2={PLOT.b} />
           <text className="dc-lab dc-tick" x={x(at)} y={PLOT.b + 14} textAnchor="middle">
-            {text}
+            {titleCase(text)}
           </text>
         </g>
       ))}
@@ -225,11 +226,11 @@ function LinePair({
       {/* the benchmark: the one line everything else is read against */}
       <line className="dc-zero" x1={PLOT.l} x2={PLOT.r} y1={y(refAt)} y2={y(refAt)} />
       <text className="dc-lab dc-quiet dc-halo" x={refX} y={y(refAt) - 5} textAnchor={refAnchor}>
-        {refLabel}
+        {titleCase(refLabel)}
       </text>
       {refBelow && (
         <text className="dc-lab dc-quiet dc-halo" x={refX} y={y(refAt) + 13} textAnchor={refAnchor}>
-          {refBelow}
+          {titleCase(refBelow)}
         </text>
       )}
       {series.map((s) => (
@@ -247,10 +248,10 @@ function LinePair({
         <g key={e.s.name}>
           <circle cx={e.x} cy={e.y} r={4} fill={e.s.color} stroke="#fff" strokeWidth={1.5} />
           <text className="dc-lab dc-name dc-halo" x={e.x + 9} y={e.ly + 1}>
-            {e.s.name}
+            {titleCase(e.s.name)}
           </text>
           <text className="dc-lab dc-tick dc-halo" x={e.x + 9} y={e.ly + 13}>
-            {valueFmt(e.v)}
+            {titleCase(valueFmt(e.v))}
           </text>
         </g>
       ))}
@@ -261,7 +262,7 @@ function LinePair({
         </rect>
       ))}
       <text className="dc-lab dc-quiet" x={20} y={H - 8}>
-        {note}
+        {titleCase(note)}
       </text>
     </Frame>
   );
@@ -402,20 +403,20 @@ function JobAccess({ d }: { d: AmenityData }) {
   return (
     <Frame label={`Jobs reachable by car from ${d.city} within 15, 30 and 60 minutes, against the median place in its MSA and nationally`}>
       <text className="dc-lab dc-quiet" x={20} y={22}>
-        {`jobs within a drive, leaving 08:00 on a weekday · ${J.dataYear} jobs`}
+        {titleCase(`jobs within a drive, leaving 08:00 on a weekday · ${J.dataYear} jobs`)}
       </text>
       {ticks.map((t) => (
         <g key={t}>
           <line className="dc-grid" x1={x(t)} x2={x(t)} y1={44} y2={244} />
           <text className="dc-lab dc-tick" x={x(t)} y={256} textAnchor="middle">
-            {`${t / 1e6}M jobs`}
+            {titleCase(`${t / 1e6}M jobs`)}
           </text>
         </g>
       ))}
       {J.minutes.map((m, i) => (
         <g key={m}>
           <text className="dc-lab dc-name" x={20} y={row(i) + 14}>
-            {`${m} min`}
+            {titleCase(`${m} min`)}
           </text>
           <rect x={118} y={row(i)} width={Math.max(2, x(J.reach[i]) - 118)} height={20} rx={3} fill={CITY}>
             <title>{`${J.reach[i].toLocaleString()} jobs within ${m} minutes of ${d.city}`}</title>
@@ -430,21 +431,21 @@ function JobAccess({ d }: { d: AmenityData }) {
             <title>{`median place in the MSA: ${J.medianMetro[i].toLocaleString()} jobs within ${m} minutes`}</title>
           </line>
           <text className="dc-lab dc-name dc-halo" x={Math.max(x(J.reach[i]), x(J.medianMetro[i]), x(J.medianNation[i])) + 8} y={row(i) + 14}>
-            {big(J.reach[i])}
+            {titleCase(big(J.reach[i]))}
           </text>
           <text className="dc-lab dc-tick" x={118} y={row(i) + 40}>
-            {`${ordinal(J.rankMetro[i])} of ${J.nMetro[i]} places in its MSA · ${ordinal(J.rankNation[i])} of ${J.nNation[i].toLocaleString()} nationally · medians ${big(J.medianMetro[i])} and ${big(J.medianNation[i])}`}
+            {titleCase(`${ordinal(J.rankMetro[i])} of ${J.nMetro[i]} places in its MSA · ${ordinal(J.rankNation[i])} of ${J.nNation[i].toLocaleString()} nationally · medians ${big(J.medianMetro[i])} and ${big(J.medianNation[i])}`)}
           </text>
         </g>
       ))}
       {/* the two ticks, named */}
       <line x1={22} x2={22} y1={H - 22} y2={H - 6} stroke={METRO} strokeWidth={2.4} />
       <text className="dc-lab dc-quiet" x={29} y={H - 9}>
-        median place in its MSA
+        Median Place in Its MSA
       </text>
       <line x1={190} x2={190} y1={H - 24} y2={H - 4} stroke="var(--ink)" strokeWidth={1.6} strokeDasharray="3 2" />
       <text className="dc-lab dc-quiet" x={197} y={H - 9}>
-        median place nationally
+        Median Place Nationally
       </text>
     </Frame>
   );
@@ -461,14 +462,14 @@ function Vitality({ d }: { d: AmenityData }) {
   return (
     <Frame label={`Establishments per 1,000 residents in ${d.city}, as a multiple of the national rate`}>
       <text className="dc-lab dc-quiet" x={20} y={22}>
-        {`operating establishments per resident, as a multiple of the national rate · ${V.asOf}`}
+        {titleCase(`operating establishments per resident, as a multiple of the national rate · ${V.asOf}`)}
       </text>
       {ticks.map((t) => (
         <g key={t}>
           {t !== 1 && t % 1 === 0 && <line className="dc-grid" x1={x(t)} x2={x(t)} y1={44} y2={248} />}
           {t % 1 === 0 && (
             <text className="dc-lab dc-tick" x={x(t)} y={260} textAnchor="middle">
-              {t === 0 ? "0" : `${t}×`}
+              {titleCase(t === 0 ? "0" : `${t}×`)}
             </text>
           )}
         </g>
@@ -476,16 +477,16 @@ function Vitality({ d }: { d: AmenityData }) {
       {V.types.map((t, i) => (
         <g key={t.key}>
           <text className="dc-lab dc-name" x={20} y={row(i) + 14}>
-            {t.label}
+            {titleCase(t.label)}
           </text>
           <rect x={x(0)} y={row(i)} width={Math.max(2, x(t.ratio) - x(0))} height={20} rx={3} fill={CITY}>
             <title>{`${t.full}: ${t.count.toLocaleString()} in ${d.city} = ${t.rate} per 1,000 residents · national rate ${t.national}`}</title>
           </rect>
           <text className="dc-lab dc-name dc-halo" x={x(t.ratio) + 8} y={row(i) + 14}>
-            {`${t.ratio.toFixed(2)}×`}
+            {titleCase(`${t.ratio.toFixed(2)}×`)}
           </text>
           <text className="dc-lab dc-tick" x={x(0)} y={row(i) + 38}>
-            {`${t.count.toLocaleString()} establishments · ${t.rate} per 1,000 residents · national ${t.national}`}
+            {titleCase(`${t.count.toLocaleString()} establishments · ${t.rate} per 1,000 residents · national ${t.national}`)}
           </text>
           {/* the benchmark, as a stroke across each bar's band — one line down the
               whole plot ran through the figures written under the bars */}
@@ -493,10 +494,10 @@ function Vitality({ d }: { d: AmenityData }) {
         </g>
       ))}
       <text className="dc-lab dc-quiet dc-halo" x={x(1) + 4} y={50}>
-        national rate
+        National Rate
       </text>
       <text className="dc-lab dc-quiet" x={20} y={H - 8}>
-        {`the national rate pools all ${V.counted.toLocaleString()} counted places · Google Places counts inside the city boundary`}
+        {titleCase(`the national rate pools all ${V.counted.toLocaleString()} counted places · Google Places counts inside the city boundary`)}
       </text>
     </Frame>
   );

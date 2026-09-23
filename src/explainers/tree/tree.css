@@ -1,5 +1,5 @@
 /* ————————————————————————————————————————————————————————————————
-   The Diagnostic Tree — r2d3-style scroll explainer. Light GL paper.
+   The Diagnostic Pathway — r2d3-style scroll explainer. Light GL paper.
    Ported from the cities-explainer prototype; every selector is scoped
    under .tree-page, and the source project's theme tokens are declared
    here on the scope root (this app's own :root palette is different).

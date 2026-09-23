@@ -4,7 +4,7 @@
  *  each as a stat chip: a small mark for WHAT moved and a tinted ring with a
  *  trend arrow for WHICH WAY (v-3's `.q-si` chips; the people mark is copied
  *  verbatim from its markup so the constraints section carries the icon the
- *  reader learned upstream). A quadrant of the pizza chart is exactly two
+ *  reader learned upstream). A quadrant of the population vs wages chart is exactly two
  *  such dials, so its label and its tree head draw them. */
 
 import { QUAD_DIR, type QuadSide } from "../../data/figures";

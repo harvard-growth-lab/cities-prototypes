@@ -196,8 +196,8 @@ export const sideBox = (
     : HH / 2;
   /* the landing's badge is centred under its leaf and wider than the leaf
      card — the box reaches past the column to keep it in the frame (half of
-     the "where we think you are" pill, sized as badge() sizes it) */
-  const badgeHalf = (("where we think you are".length + 2) * 7.8 + 30) / 2;
+     the "path suggested by the data" pill, sized as badge() sizes it) */
+  const badgeHalf = (("path suggested by the data".length + 2) * 7.8 + 30) / 2;
   return [
     S_ROOT.x - S_ROOT.w / 2 - 14,
     S_CY - half - spread - 28,
@@ -549,7 +549,7 @@ export function SidewaysTree(p: WalkViewProps) {
       <g className={on(p.landed)}>
         {badge(
           landAt(p.suggLeaf),
-          "where we think you are",
+          "path suggested by the data",
           TREE_SIDE_COLOR[p.citySide],
           0,
           atHead(p.suggLeaf),

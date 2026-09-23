@@ -19,8 +19,8 @@ export interface Explainer {
 
 export const EXPLAINERS: Explainer[] = [
   {
-    id: "diagnostic-tree",
-    title: "How to Read the Diagnostic Tree",
+    id: "diagnostic-pathway",
+    title: "How to Read the Diagnostic Pathway",
     read: "4min read",
     desc: "Two dials — people and pay — two questions, and four diagnoses. How every US city over 100k sorts down the tree, one fork at a time.",
     Thumb: TreeThumb,

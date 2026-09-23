@@ -36,6 +36,7 @@ import { driverData, type DriverData } from "../../data/driverData";
 import { AmenityChart, amenitySource, amenityVerdict, isAmenityKind } from "./amenityCharts";
 import { InnovationChart, innovationSource, innovationVerdict, isInnovationKind } from "./innovationCharts";
 import { PlaceholderChart } from "./placeholderCharts";
+import { titleCase } from "./titleCase";
 
 const W = 560;
 const H = 320;
@@ -155,12 +156,12 @@ function RealWaterfall({ data }: { data: DriverData }) {
               />
             )}
             <text className="dc-lab dc-name" x={x(i) + bw / 2} y={top - 6} textAnchor="middle">
-              {anchor ? jobs(b.to) : jobs(b.delta!, true)}
+              {titleCase(anchor ? jobs(b.to) : jobs(b.delta!, true))}
             </text>
             <text className="dc-lab" x={x(i) + bw / 2} y={base + 17} textAnchor="middle">
               {b.k.map((line, li) => (
-                <tspan key={line} x={x(i) + bw / 2} dy={li ? 13 : 0}>
-                  {line}
+                <tspan key={titleCase(line)} x={x(i) + bw / 2} dy={li ? 13 : 0}>
+                  {titleCase(line)}
                 </tspan>
               ))}
             </text>
@@ -168,7 +169,7 @@ function RealWaterfall({ data }: { data: DriverData }) {
         );
       })}
       <text className="dc-lab dc-quiet" x={20} y={H - 8}>
-        {`jobs in the ${data.city} MSA, ${ss.t0} → ${ss.t1} · levels grey · gained teal, lost rust · axis broken below the levels`}
+        {titleCase(`jobs in the ${data.city} MSA, ${ss.t0} → ${ss.t1} · levels grey · gained teal, lost rust · axis broken below the levels`)}
       </text>
     </Frame>
   );
@@ -196,7 +197,7 @@ function EffectViews({ data }: { data: DriverData }) {
             aria-pressed={v.id === view}
             onClick={() => setView(v.id)}
           >
-            {v.label}
+            {titleCase(v.label)}
           </button>
         ))}
       </div>
@@ -235,7 +236,7 @@ function RealRankedBars({ data }: { data: DriverData }) {
         <g key={t}>
           <line className={t === 0 ? "dc-axis" : "dc-grid"} x1={x(t)} x2={x(t)} y1={y0 - 4} y2={yEnd + 2} />
           <text className="dc-lab dc-tick" x={x(t)} y={yEnd + 14} textAnchor="middle">
-            {t === 0 ? "0" : jobs(t, true)}
+            {titleCase(t === 0 ? "0" : jobs(t, true))}
           </text>
         </g>
       ))}
@@ -245,19 +246,19 @@ function RealRankedBars({ data }: { data: DriverData }) {
         return (
           <g key={r.code}>
             <text className="dc-lab" x={216} y={y0 + i * rowH + 9.5} textAnchor="end">
-              {`${r.code} · ${r.name}`}
+              {titleCase(`${r.code} · ${r.name}`)}
             </text>
             <rect x={x0} y={y0 + i * rowH} width={w} height={11.5} rx={2.5} fill={r.ls >= 0 ? GAIN : LOSS}>
               <title>{`${r.name}: local share ${jobs(r.ls, true)} jobs (${Math.round(r.e0).toLocaleString()} → ${Math.round(r.e1).toLocaleString()})`}</title>
             </rect>
             <text className="dc-lab dc-name" x={W - 10} y={y0 + i * rowH + 9.5} textAnchor="end">
-              {jobs(r.ls, true)}
+              {titleCase(jobs(r.ls, true))}
             </text>
           </g>
         );
       })}
       <text className="dc-lab dc-quiet" x={20} y={H - 8}>
-        {`local-share effect, jobs, ${data.shiftShare.t0}–${data.shiftShare.t1} · the fifteen sectors with the largest effect`}
+        {titleCase(`local-share effect, jobs, ${data.shiftShare.t0}–${data.shiftShare.t1} · the fifteen sectors with the largest effect`)}
       </text>
     </Frame>
   );
@@ -301,7 +302,7 @@ function RealSharePaths({ data }: { data: DriverData }) {
         <g key={t}>
           <line className="dc-grid" x1={PL.l} x2={PL.r} y1={y(t)} y2={y(t)} />
           <text className="dc-lab dc-tick" x={PL.l - 6} y={y(t) + 3.5} textAnchor="end">
-            {`${(t * 100).toFixed(1)}%`}
+            {titleCase(`${(t * 100).toFixed(1)}%`)}
           </text>
         </g>
       ))}
@@ -309,7 +310,7 @@ function RealSharePaths({ data }: { data: DriverData }) {
         <g key={v}>
           <line className="dc-grid" x1={x(v)} x2={x(v)} y1={PL.t} y2={PL.b} />
           <text className="dc-lab dc-tick" x={x(v)} y={PL.b + 14} textAnchor="middle">
-            {jobs(v)}
+            {titleCase(jobs(v))}
           </text>
         </g>
       ))}
@@ -319,7 +320,7 @@ function RealSharePaths({ data }: { data: DriverData }) {
           metro holds more of than its size implies */}
       <line className="dc-zero" x1={PL.l} x2={PL.r} y1={y(overall)} y2={y(overall)} />
       <text className="dc-lab dc-quiet dc-halo" x={PL.r - 2} y={y(overall) + 12} textAnchor="end">
-        {allLabel}
+        {titleCase(allLabel)}
       </text>
       {series.map((s) => {
         const first = s.pts[0];
@@ -348,20 +349,20 @@ function RealSharePaths({ data }: { data: DriverData }) {
             />
             {named.has(s.code) && (
               <text className="dc-lab dc-name dc-halo" x={x(last.emp) + 8} y={y(last.share) + 3.5}>
-                {named.get(s.code)}
+                {titleCase(named.get(s.code))}
               </text>
             )}
           </g>
         );
       })}
       <text className="dc-lab dc-quiet" x={(PL.l + PL.r) / 2} y={PL.b + 30} textAnchor="middle">
-        jobs in the metro (log scale)
+        Jobs in the Metro (Log Scale)
       </text>
       <text className="dc-lab dc-quiet" x={14} y={(PL.t + PL.b) / 2} textAnchor="middle" transform={`rotate(-90 14 ${(PL.t + PL.b) / 2})`}>
-        share of national jobs
+        Share of National Jobs
       </text>
       <text className="dc-lab dc-quiet" x={20} y={H - 8}>
-        {`${series[0].pts[0].year} (ring) → ${series[0].pts[series[0].pts.length - 1].year} (arrow) · share rose teal, fell rust`}
+        {titleCase(`${series[0].pts[0].year} (ring) → ${series[0].pts[series[0].pts.length - 1].year} (arrow) · share rose teal, fell rust`)}
       </text>
     </Frame>
   );
@@ -399,7 +400,7 @@ function RealEffectTreemap({ data }: { data: DriverData }) {
               </rect>
               {w > 52 && h > 17 && (
                 <text className="dc-lab dc-tile" x={n.x0 + 4} y={n.y0 + 12}>
-                  {n.data.name.length > room ? n.data.name.slice(0, room - 1) + "…" : n.data.name}
+                  {titleCase(n.data.name.length > room ? n.data.name.slice(0, room - 1) + "…" : n.data.name)}
                 </text>
               )}
             </g>
@@ -407,16 +408,16 @@ function RealEffectTreemap({ data }: { data: DriverData }) {
         })}
       </g>
       <text className="dc-lab dc-quiet" x={12} y={H - 8}>
-        {`area = jobs in ${ss.t0} · colour = local-share effect`}
+        {titleCase(`area = jobs in ${ss.t0} · colour = local-share effect`)}
       </text>
       {[LOSS, MID, GAIN].map((c, i) => (
         <rect key={c} x={W - 132 + i * 20} y={H - 18} width={18} height={11} rx={2} fill={c} />
       ))}
       <text className="dc-lab dc-tick" x={W - 136} y={H - 9} textAnchor="end">
-        lost
+        Lost
       </text>
       <text className="dc-lab dc-tick" x={W - 70} y={H - 9}>
-        gained
+        Gained
       </text>
     </Frame>
   );
@@ -433,29 +434,29 @@ function RealNewIndustries({ data }: { data: DriverData }) {
   return (
     <Frame label={`Industries new to the ${data.city} MSA, ${ss.t0} to ${ss.t1}`}>
       <text className="dc-lab dc-name" x={20} y={26}>
-        {`${ss.fresh.toLocaleString()} jobs in ${ss.newIndustries.length} industries new to the metro, ${ss.t0}–${ss.t1}`}
+        {titleCase(`${ss.fresh.toLocaleString()} jobs in ${ss.newIndustries.length} industries new to the metro, ${ss.t0}–${ss.t1}`)}
       </text>
       {list.map((n, i) => {
         const yy = 56 + i * pitch;
         return (
           <g key={n.naics}>
             <text className="dc-lab" x={298} y={yy + 10} textAnchor="end">
-              {n.name.length > 44 ? n.name.slice(0, 43).trimEnd() + "…" : n.name}
+              {titleCase(n.name.length > 44 ? n.name.slice(0, 43).trimEnd() + "…" : n.name)}
             </text>
             <rect x={x(0)} y={yy} width={Math.max(2, x(n.jobs) - x(0))} height={13} rx={2.5} fill={GAIN}>
               <title>{`${n.name} (${n.naics}, ${n.sector}): ${n.jobs.toLocaleString()} jobs by ${ss.t1}`}</title>
             </rect>
             <text className="dc-lab dc-name" x={x(n.jobs) + 6} y={yy + 10}>
-              {n.jobs.toLocaleString()}
+              {titleCase(n.jobs.toLocaleString())}
             </text>
           </g>
         );
       })}
       <line className="dc-axis" x1={x(0)} x2={x(0)} y1={50} y2={56 + list.length * pitch - 4} />
       <text className="dc-lab dc-quiet" x={20} y={H - 8}>
-        {ss.freshMaterial
+        {titleCase(ss.freshMaterial
           ? `jobs in ${ss.t1} in industries the metro had none of in ${ss.t0}`
-          : `jobs in ${ss.t1} in industries the metro had none of in ${ss.t0} · below the live tool's materiality floor, so it skips this step`}
+          : `jobs in ${ss.t1} in industries the metro had none of in ${ss.t0} · below the live tool's materiality floor, so it skips this step`)}
       </text>
     </Frame>
   );
@@ -498,18 +499,18 @@ function RealPlacesMap({ data }: { data: DriverData }) {
         <rect key={c} x={496} y={64 + (ramp.length - 1 - i) * 24} width={16} height={22} rx={2} fill={c} />
       ))}
       <text className="dc-lab dc-tick" x={504} y={54} textAnchor="middle">
-        {fmt(Math.max(...vals)).replace("/yr", "")}
+        {titleCase(fmt(Math.max(...vals)).replace("/yr", ""))}
       </text>
       <text className="dc-lab dc-tick" x={504} y={64 + ramp.length * 24 + 14} textAnchor="middle">
-        {fmt(Math.min(...vals)).replace("/yr", "")}
+        {titleCase(fmt(Math.min(...vals)).replace("/yr", ""))}
       </text>
       <text className="dc-lab dc-quiet" x={504} y={210} textAnchor="middle">
-        quintiles
+        Quintiles
       </text>
       <text className="dc-lab dc-quiet" x={20} y={H - 8}>
-        {home && home[key] != null
+        {titleCase(home && home[key] != null
           ? `${data.city} outlined: ${fmt(home[key]!)} · median place ${fmt(data.medians.placeHome)} · ${data.places.length} places, ${data.window.from}–${data.window.to}`
-          : `${data.city} outlined · ${data.places.length} places`}
+          : `${data.city} outlined · ${data.places.length} places`)}
       </text>
     </Frame>
   );
@@ -549,20 +550,20 @@ function RealCostTrend({ data }: { data: DriverData }) {
         height={PL.b - PL.t + 6}
       />
       <text className="dc-lab dc-quiet" x={(x(data.window.from) + x(Math.min(data.window.to, xd[1]))) / 2} y={PL.t - 10} textAnchor="middle">
-        {`${data.window.from}–${data.window.to}`}
+        {titleCase(`${data.window.from}–${data.window.to}`)}
       </text>
       {ticks.map((t) => (
         <g key={t}>
           <line className="dc-grid" x1={PL.l} x2={PL.r} y1={y(t)} y2={y(t)} />
           <text className="dc-lab dc-tick" x={PL.l - 6} y={y(t) + 3.5} textAnchor="end">
-            {t >= 1e6 ? `$${(t / 1e6).toFixed(2).replace(/\.?0+$/, "")}M` : `$${t / 1000}k`}
+            {titleCase(t >= 1e6 ? `$${(t / 1e6).toFixed(2).replace(/\.?0+$/, "")}M` : `$${t / 1000}k`)}
           </text>
         </g>
       ))}
       <line className="dc-axis" x1={PL.l} x2={PL.r} y1={PL.b} y2={PL.b} />
       {years.map((yr) => (
         <text key={yr} className="dc-lab dc-tick" x={x(yr)} y={PL.b + 14} textAnchor="middle">
-          {yr}
+          {titleCase(yr)}
         </text>
       ))}
       <polyline points={line("median")} fill="none" stroke={FIELD} strokeWidth={2} strokeDasharray="6 5" />
@@ -574,10 +575,10 @@ function RealCostTrend({ data }: { data: DriverData }) {
             <title>{`${NAME[e.k]}, ${last.year}: $${Math.round(last[e.k]!).toLocaleString()}`}</title>
           </circle>
           <text className="dc-lab dc-name dc-halo" x={x(last.year) + 9} y={e.ly + 1}>
-            {NAME[e.k]}
+            {titleCase(NAME[e.k])}
           </text>
           <text className="dc-lab dc-tick dc-halo" x={x(last.year) + 9} y={e.ly + 13}>
-            {`$${Math.round(last[e.k]! / 1000)}k`}
+            {titleCase(`$${Math.round(last[e.k]! / 1000)}k`)}
           </text>
         </g>
       ))}
@@ -589,7 +590,7 @@ function RealCostTrend({ data }: { data: DriverData }) {
         </rect>
       ))}
       <text className="dc-lab dc-quiet" x={20} y={H - 8}>
-        typical home value by year (Zillow) · the median metro dashed
+        Typical Home Value by Year (Zillow) · the Median Metro Dashed
       </text>
     </Frame>
   );
