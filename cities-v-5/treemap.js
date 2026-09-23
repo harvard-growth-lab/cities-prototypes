@@ -3616,7 +3616,7 @@
      largest industries and rolls the rest into a single block. Areas are
      preserved, so the coarse map covers exactly the same ground as the fine
      one — only the level of detail changes. */
-  /* "Ordered by jobs" has to be readable as an order, and no treemap tiling
+  /* the ranked view has to be readable as an order, and no treemap tiling
      gives that: squarify chases square cells and throws the sequence away,
      binary keeps it only loosely, and slice or dice would put 292 industries
      in slivers under a pixel. This is a strip layout — the classic answer.
@@ -3903,7 +3903,7 @@
       (secGeo ? (stripMode() ? secGeo.fullA : secGeo.full).get(d.name) : null) ||
       (stripMode() ? posFullA : posFull).get(d.name);
 
-    /* ---- Ordered by jobs: the same cells as a ranked bar chart. The top
+    /* ---- Ranked: the same cells as a ranked bar chart. The top
        rows by jobs become bars, named on the left and valued at the end;
        every other cell keeps its place in the map and fades, so it can come
        back when the map does. One ranking is over the whole mix, one over
@@ -4883,7 +4883,7 @@
       }
       show(gBarsAll, barsOn && i !== 5 && i !== 7);
       show(gBarsTrad, barsOn && (i === 5 || i === 7));
-      /* the names belong to the sector-coloured map: under Ordered by jobs
+      /* the names belong to the sector-coloured map: under the ranked view
          the blocks are gone, and under Complexity the colour is not the
          sector's any more, so the labels would be naming the wrong thing */
       /* both map beats name their blocks; the sets differ, so redraw on
@@ -4954,7 +4954,7 @@
     });
 
     /* The tradability tiers, as a filter on the jobs order and on the
-       ranking. Ordered by jobs answers "what is biggest"; unchecking a tier
+       ranking. The ranked view answers "what is biggest"; unchecking a tier
        asks the narrower question the beat is really about - what is the
        biggest work that sells outward - so there all three start checked.
        The ranking starts on the two tradable tiers, which is its question.
