@@ -4277,16 +4277,10 @@
        strip on or off moves the cells, so the beat repaints rather than
        just redrawing the labels. */
     const namesEl = document.getElementById(p + "Names");
-    if (namesEl) namesEl.addEventListener("click", ev => {
-      const b = ev.target.closest(".seg-btn[data-names]");
-      if (!b || b.dataset.names === nameMode) return;
-      nameMode = b.dataset.names;
+    if (namesEl) namesEl.addEventListener("change", () => {
+      if (namesEl.value === nameMode) return;
+      nameMode = namesEl.value;
       fig.dataset.names = nameMode;
-      namesEl.querySelectorAll(".seg-btn[data-names]").forEach(x => {
-        const on = x.dataset.names === nameMode;
-        x.classList.toggle("is-active", on);
-        x.setAttribute("aria-pressed", String(on));
-      });
       if (step === 7 || step === 4 || step === 0) paint(step, !reduced());
     });
 
@@ -4408,17 +4402,11 @@
        tradability column. Going to opt-1 also resets the filter, so opt-1 is
        always the ranking over the two tradable tiers alone. */
     const rankOptEl = document.getElementById(p + "RankOpt");
-    if (rankOptEl) rankOptEl.addEventListener("click", ev => {
-      const b = ev.target.closest(".seg-btn[data-rank]");
-      if (!b || b.dataset.rank === rankMode) return;
-      rankMode = b.dataset.rank;
+    if (rankOptEl) rankOptEl.addEventListener("change", () => {
+      if (rankOptEl.value === rankMode) return;
+      rankMode = rankOptEl.value;
       fig.dataset.rank = rankMode;
       tierOn6 = TIER_DEFAULT6();                          /* opt-2 always reopens as shipped */
-      rankOptEl.querySelectorAll(".seg-btn[data-rank]").forEach(x => {
-        const on = x.dataset.rank === rankMode;
-        x.classList.toggle("is-active", on);
-        x.setAttribute("aria-pressed", String(on));
-      });
       if (closeMenuRef) closeMenuRef();
       if (rebuildR2Ref) rebuildR2Ref(!reduced());
     });
@@ -4635,17 +4623,10 @@
           clearTierHot();
           /* the name keeps its place on the band either way now; only the
              share stands down when the donut carries the shares */
-          if (tierOptEl) tierOptEl.querySelectorAll(".seg-btn[data-tier]").forEach(x => {
-            const on = x.dataset.tier === (donut ? "donut" : "cards");
-            x.classList.toggle("is-active", on);
-            x.setAttribute("aria-pressed", String(on));
-          });
+          if (tierOptEl) tierOptEl.value = donut ? "donut" : "cards";
         };
         setTierOpt("donut");
-        if (tierOptEl) tierOptEl.addEventListener("click", ev => {
-          const b = ev.target.closest(".seg-btn[data-tier]");
-          if (b) setTierOpt(b.dataset.tier);
-        });
+        if (tierOptEl) tierOptEl.addEventListener("change", () => setTierOpt(tierOptEl.value));
       }
     })();
 
@@ -5089,21 +5070,32 @@
        sector on the map - stand the rest down, turn the rest grey, or draw a
        line round the block being named */
     const hlOptEl = document.getElementById(p + "HlOpt");
-    if (hlOptEl) hlOptEl.addEventListener("click", ev => {
-      const b = ev.target.closest(".seg-btn[data-hl]");
-      if (!b || b.dataset.hl === hlMode) return;
+    if (hlOptEl) hlOptEl.addEventListener("change", () => {
+      if (hlOptEl.value === hlMode) return;
       const lit = hlSpansRef && hlSpansRef.find(x => x.classList.contains("is-lit"));
       if (clearHighlight) clearHighlight();
-      hlMode = b.dataset.hl;
+      hlMode = hlOptEl.value;
       fig.dataset.hl = hlMode;
-      hlOptEl.querySelectorAll(".seg-btn[data-hl]").forEach(x => {
-        const on = x.dataset.hl === hlMode;
-        x.classList.toggle("is-active", on);
-        x.setAttribute("aria-pressed", String(on));
-      });
       /* a phrase left lit shows the new treatment at once */
       if (lit) lit.dispatchEvent(new MouseEvent("mouseenter"));
     });
+
+    /* one word in the head carries every study: it opens a panel of plain
+       dropdowns rather than lining four sets of buttons along the row */
+    const studies = document.getElementById(p + "Studies");
+    if (studies){
+      const sBtn = studies.querySelector(".mi-studies-btn");
+      const sPanel = studies.querySelector(".mi-studies-panel");
+      const setOpen = on => {
+        sPanel.hidden = !on;
+        sBtn.setAttribute("aria-expanded", String(on));
+      };
+      sBtn.addEventListener("click", () => setOpen(sPanel.hidden));
+      document.addEventListener("click", ev => {
+        if (!sPanel.hidden && !studies.contains(ev.target)) setOpen(false);
+      });
+      document.addEventListener("keydown", ev => { if (ev.key === "Escape") setOpen(false); });
+    }
 
     /* the bars' order: the same bars, re-sorted. The set does not change,
        so the reader keeps the metro's biggest industries in view either way */

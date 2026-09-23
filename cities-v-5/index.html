@@ -2762,9 +2762,8 @@
   }
   .mi-view .mi-colorlab{margin-left:14px;}
   /* the naming study belongs to the two beats that draw blocks */
-  #miFigure:not([data-step="0"]):not([data-step="4"]) #miNames,
-  #miFigure:not([data-step="0"]):not([data-step="4"]) #miNames + .ctl-label,
-  #miFigure[data-color="complexity"] #miNames{display:none;}
+  #miFigure:not([data-step="0"]):not([data-step="4"]) #miNamesPair,
+  #miFigure[data-color="complexity"] #miNamesPair{display:none;}
   #miFigure:not([data-step="0"]):not([data-step="4"]) .mi-colorlab + .seg + .mi-colorlab,
   #miFigure[data-color="complexity"] .mi-colorlab + .seg + .mi-colorlab{display:none;}
   /* This one is not a control the reader is meant to use - it is a switch for
@@ -2818,8 +2817,7 @@
   #miFigure:not([data-step="0"]) #miBarSortPair,
   #miFigure:not([data-view="alt"]) #miBarSortPair{display:none;}
   #miFigure:not([data-step="4"]) #miTierPair{display:none;}
-  .mi-view #miTierPair{margin-left:14px;}
-  #miFigure[data-color="complexity"] #miTierPair{margin-left:auto;}
+  #miFigure:not([data-step="3"]):not([data-step="6"]) #miRankOptPair{display:none;}
   /* opt-2 of the tier study: the ground carries its tier's name alone, set
      as the head the share was; the shares are in the donut by the lede */
   /* a ground with nothing left in it says so where its cells would be */
@@ -2872,7 +2870,9 @@
   #miFigure[data-step="4"] .tradable-viz-wrapper .viz-big,
   #miFigure[data-step="0"] .tradable-viz-wrapper .viz-big{margin-top:0;}
   #miFigure[data-step="4"] .mi-head > .mi-view,
-  #miFigure[data-step="0"] .mi-head > .mi-view{top:0;bottom:auto;}
+  #miFigure[data-step="0"] .mi-head > .mi-view,
+  #miFigure[data-step="4"] .mi-head > .mi-studies,
+  #miFigure[data-step="0"] .mi-head > .mi-studies{top:0;bottom:auto;}
   /* the opening frame's header: on for the most tradable alone */
   /* the two map headers share a box, so the titles sit at the same height
      whether a line follows the title or not: the box is the opening frame's
@@ -3187,6 +3187,33 @@
   }
   /* the study's own control belongs to the beats whose text names sectors */
   #miFigure:not([data-step="0"]):not([data-step="4"]) #miHlOptPair{display:none;}
+  /* the word alone in the head, and the studies as plain dropdowns behind it */
+  .mi-head > .mi-studies{left:auto;right:0;width:auto;z-index:4;}
+  .mi-studies-btn{
+    appearance:none;background:none;border:0;padding:2px 4px;font:inherit;font-size:12.5px;
+    color:#9aa3a6;cursor:pointer;text-decoration:underline;text-underline-offset:3px;
+    text-decoration-color:rgba(26,34,38,.2);
+  }
+  .mi-studies-btn:hover{color:var(--ink-soft);}
+  .mi-studies-btn:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+  .mi-studies-panel{
+    position:absolute;right:0;top:100%;margin-top:6px;z-index:6;min-width:210px;
+    display:flex;flex-direction:column;gap:8px;padding:11px 13px;
+    background:#fff;border:1px solid var(--border-strong);box-shadow:var(--shadow-md);
+  }
+  .mi-studies-panel[hidden]{display:none;}
+  .mi-study{
+    display:flex;align-items:center;justify-content:space-between;gap:16px;
+    font-size:12.5px;color:var(--ink-soft);white-space:nowrap;
+  }
+  .mi-study select{
+    height:26px;border:1px solid var(--border-strong);background:#fff;
+    font:inherit;font-size:12.5px;color:var(--ink);padding:0 22px 0 8px;cursor:pointer;
+    appearance:none;-webkit-appearance:none;border-radius:0;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' fill='none' stroke='%23255862' stroke-width='1.3' stroke-linecap='round'/></svg>");
+    background-repeat:no-repeat;background-position:right 7px center;
+  }
+  .mi-study select:hover,.mi-study select:focus{border-color:var(--teal);outline:none;}
   /* The ranking follows the redesign's method rather than the map's: instead of
      standing every other row down, the named row is lit. A soft band behind it,
      its name at full strength, its figure in teal - additive, so nothing the
@@ -5583,34 +5610,6 @@
                   <button type="button" class="seg-btn" data-barsort="cx" aria-pressed="false">Complexity</button>
                 </div>
               </span>
-              <!-- a study control: three ways for a phrase in the text to
-                   point at its sector on the map -->
-              <span class="mi-ctlpair" id="miHlOptPair">
-                <span class="ctl-label mi-studylab">Phrase highlight</span>
-                <div class="seg" id="miHlOpt" role="group" aria-label="How a phrase points at its sector">
-                  <button type="button" class="seg-btn" data-hl="dim" aria-pressed="false">opt-1</button>
-                  <button type="button" class="seg-btn" data-hl="mute" aria-pressed="false">opt-2</button>
-                  <button type="button" class="seg-btn is-active" data-hl="frame" aria-pressed="true">opt-3</button>
-                </div>
-              </span>
-              <!-- a study control: three ways of naming the sectors on the
-                   map, to be compared and then settled -->
-              <span class="ctl-label mi-colorlab mi-studylab">Sector names</span>
-              <div class="seg" id="miNames" role="group" aria-label="How the sectors are named">
-                <button type="button" class="seg-btn is-active" data-names="above" aria-pressed="true">opt-1</button>
-                <button type="button" class="seg-btn" data-names="inside" aria-pressed="false">opt-2</button>
-                <button type="button" class="seg-btn" data-names="off" aria-pressed="false">opt-3</button>
-              </div>
-              <!-- a study control: where the tiers' shares are told - on the
-                   grounds, or as a donut in the text with the grounds named
-                   alone -->
-              <span class="mi-ctlpair" id="miTierPair">
-                <span class="ctl-label mi-studylab" id="miTierOptLab">Tier shares</span>
-                <div class="seg" id="miTierOpt" role="group" aria-label="Where the tiers' shares are shown">
-                  <button type="button" class="seg-btn" data-tier="cards" aria-pressed="false">opt-1</button>
-                  <button type="button" class="seg-btn is-active" data-tier="donut" aria-pressed="true">opt-2</button>
-                </div>
-              </span>
             </div>
             <!-- the ranking's order: by concentration, by size, or by the gap
                  against the peers; the rows and their bars travel together -->
@@ -5622,12 +5621,44 @@
                 <button type="button" class="seg-btn" data-sort="trad" aria-pressed="false">Tradability</button>
                 <button type="button" class="seg-btn" data-sort="gap" aria-pressed="false">Against peers</button>
               </div>
-              <!-- a study control: the tradability column as a score, or as
-                   the tier's name with the head opening the tier filter -->
-              <span class="ctl-label mi-studylab">Tradability column</span>
-              <div class="seg" id="miRankOpt" role="group" aria-label="How tradability is shown in the ranking">
-                <button type="button" class="seg-btn" data-rank="score" aria-pressed="false">opt-1</button>
-                <button type="button" class="seg-btn is-active" data-rank="tier" aria-pressed="true">opt-2</button>
+            </div>
+            <!-- The studies are not controls the reader is meant to use: they
+                 are the questions still to be settled. One word carries them
+                 all, and each is a plain dropdown behind it, so the head
+                 reads as the chart's own controls and nothing else. -->
+            <div class="mi-studies" id="miStudies">
+              <button type="button" class="mi-studies-btn" aria-expanded="false" aria-haspopup="true">opt</button>
+              <div class="mi-studies-panel" hidden>
+                <label class="mi-study" id="miNamesPair">
+                  <span>Sector names</span>
+                  <select id="miNames" aria-label="How the sectors are named">
+                    <option value="above" selected>opt-1</option>
+                    <option value="inside">opt-2</option>
+                    <option value="off">opt-3</option>
+                  </select>
+                </label>
+                <label class="mi-study" id="miTierPair">
+                  <span>Tier shares</span>
+                  <select id="miTierOpt" aria-label="Where the tiers' shares are shown">
+                    <option value="cards">opt-1</option>
+                    <option value="donut" selected>opt-2</option>
+                  </select>
+                </label>
+                <label class="mi-study" id="miHlOptPair">
+                  <span>Phrase highlight</span>
+                  <select id="miHlOpt" aria-label="How a phrase points at its sector">
+                    <option value="dim">opt-1</option>
+                    <option value="mute">opt-2</option>
+                    <option value="frame" selected>opt-3</option>
+                  </select>
+                </label>
+                <label class="mi-study" id="miRankOptPair">
+                  <span>Tradability column</span>
+                  <select id="miRankOpt" aria-label="How tradability is shown in the ranking">
+                    <option value="score">opt-1</option>
+                    <option value="tier" selected>opt-2</option>
+                  </select>
+                </label>
               </div>
             </div>
             <div class="tradable-split-header" id="miSplitHead">
