@@ -190,14 +190,20 @@ body = subOnce(body,
   "masthead: explainers button");
 
 /* the city list is this branch's: the cities the diagnostic pathway has data for
-   (src/data/content.ts) — Boston only since Sept 2026; there were four sample
-   cities until then. Main's own list (Boston and four more) names cities
-   nothing here can diagnose. */
+   (src/data/content.ts) — Boston, the one real city, and since 2026-09-24
+   three PLACEHOLDER cities with made-up dials, one per ending Boston does
+   not take (src/data/placeholderCities.ts; their landing verdicts are the
+   "city hints" patch below). Main's own list (Boston and four more) names
+   cities nothing here can diagnose. Keep this list in step with CITIES in
+   content.ts. */
 const CITY_OPTIONS = /( *)<option>Boston, United States of America<\/option>\n(?: *<option>[^<\n]*<\/option>\n){4}/g;
 const optionMatches = body.match(CITY_OPTIONS);
 if (!optionMatches || optionMatches.length !== 2) throw new Error(`city selects: expected 2 option lists, found ${optionMatches?.length ?? 0}`);
 body = body.replace(CITY_OPTIONS, (m, indent) => [
   "Boston, United States of America",
+  "City A, United States of America",
+  "City B, United States of America",
+  "City C, United States of America",
 ].map((c) => `${indent}<option${c.startsWith("Boston") ? " selected" : ""}>${c}</option>`).join("\n") + "\n");
 
 /* assets and the framed page moved under public/legacy */
@@ -349,10 +355,10 @@ const PAGE_PATCHES = [
           "    return {")],
 
   /* the sample journey state names a city the picker no longer offers, and
-     with Boston the only city there is no second one to name */
+     the picker's other cities are placeholders, so no second one is seeded */
   ["sub", "sample explored cities",
     '  exploredCities.add("Chicago, United States of America");',
-    '  /* [port] main seeds a second explored city here (Chicago); this branch carries Boston only */'],
+    '  /* [port] main seeds a second explored city here (Chicago); this branch has Boston and three placeholder cities */'],
 
   ["sub", "inview observer guard",
     "  pageIds.forEach(id=>observer.observe(document.getElementById(id)));",
@@ -385,9 +391,20 @@ const PAGE_PATCHES = [
           "  }",
           "  /* scrolling down on the landing flows into City Overview */")],
 
-  /* (the landing teaser needs a verdict per city. Main's own table covers
-     Boston, the only city here since Sept 2026; the patch that added
-     Memphis, San Antonio and San Jose went with them.) */
+  /* the landing teaser needs a verdict per city — the picker's menu reads
+     CITY_HINTS[city].dir for every option, so a city without one throws.
+     Main's own table covers Boston; the three placeholder cities take theirs
+     from src/data/placeholderCities.ts — the same made-up place dials the
+     walk reads, so the landing's city type and the walk's diagnosis agree
+     (City A a Magnet, City B a Sponge, City C a Leak). Change the two
+     together. */
+  ["sub", "city hints for the placeholder cities",
+    '    "Boston, United States of America":  { dir:"up",   rate: 0.3, pay: 5.1, word:"growing slowly", head:"<strong>Boston is growing slowly</strong>" },',
+    lines('    "Boston, United States of America":  { dir:"up",   rate: 0.3, pay: 5.1, word:"growing slowly", head:"<strong>Boston is growing slowly</strong>" },',
+          '    /* [port] this branch\'s placeholder cities, from src/data/placeholderCities.ts: made-up dials, one ending each */',
+          '    "City A, United States of America":  { dir:"up",   rate: 1.6, pay: 4.8, word:"growing fast",   head:"<strong>City A is growing fast</strong>" },',
+          '    "City B, United States of America":  { dir:"up",   rate: 1.8, pay: 2.4, word:"growing fast",   head:"<strong>City B is growing fast</strong>" },',
+          '    "City C, United States of America":  { dir:"down", rate:-0.5, pay: 2.5, word:"shrinking",      head:"<strong>City C is shrinking</strong>" },')],
 
   ["sub", "intro skip button init runs now",
     lines('  document.addEventListener("DOMContentLoaded", ()=>{',

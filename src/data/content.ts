@@ -3,25 +3,30 @@
  *  (src/legacy), so they no longer live here. */
 
 import { TREE_SIDE_LABEL, type BranchSide } from "./figures";
+import { PLACEHOLDER_CITY_NAMES } from "./placeholderCities";
 
-/** The cities the prototype carries: BOSTON ONLY (Sept 2026, the user's
- *  call). It is the one city with real data end to end — the walk's forks
- *  (metrosData.ts), the Drivers charts (driverData.ts), the Amenities and
- *  Innovation Modules' indicators (amenityData.ts, innovationData.ts) — and
+/** The cities the prototype carries: BOSTON, the one city with real data
+ *  end to end — the walk's forks (metrosData.ts), the Drivers charts
+ *  (driverData.ts), the Amenities and Innovation Modules' indicators
+ *  (amenityData.ts, innovationData.ts) — and, since 2026-09-24, three
+ *  PLACEHOLDER cities beside it: City A, City B and City C, one for each
+ *  ending Boston does not take, with made-up dials and no module data
+ *  (placeholderCities.ts), so each user flow can be walked from the picker.
  *  v-3's own sections carry Boston's figures whatever the picker says, as
- *  they do on main. The branch
- *  it lands on is DERIVED from its data (diagnose() in figures.ts), not pinned
- *  here: on the live tool's 2014 → 2024 window, Fortress › Amenities.
+ *  they do on main. The branch a city lands on is DERIVED from its data
+ *  (diagnose() in figures.ts), not pinned here: Boston, on the live tool's
+ *  2014 → 2024 window, is Fortress › Amenities.
  *
- *  Until then there were four — Memphis (Leak › MSA-wide), San Antonio
- *  (Sponge › Housing) and San Jose (Fortress › Housing) beside it — picked as
- *  one city per ending, with schematic charts. The other endings are still
- *  reachable from Boston: in the sandbox and on the analysis schematic.
+ *  Before Sept 2026 there were four real-ish cities — Memphis (Leak ›
+ *  MSA-wide), San Antonio (Sponge › Housing) and San Jose (Fortress ›
+ *  Housing) beside Boston — picked as one city per ending, with schematic
+ *  charts; the prototype was then Boston only for a while.
  *
  *  The same list is the options in v-3's two city pickers
- *  (scripts/v3/port.mjs writes them). Still a list, so a second city is one
- *  more entry here, in the three data scripts, and in the port. */
-export const CITIES = ["Boston, United States of America"];
+ *  (scripts/v3/port.mjs writes them, and the landing's verdict per city).
+ *  Still a list, so a second REAL city is one more entry here, in the three
+ *  data scripts, and in the port. */
+export const CITIES = ["Boston, United States of America", ...PLACEHOLDER_CITY_NAMES];
 
 /** Where the app opens — the picker's selected option. */
 export const DEFAULT_CITY = CITIES[0]; // Boston — Fortress › Amenities

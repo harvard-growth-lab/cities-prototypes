@@ -36,6 +36,7 @@ import { driverData, type DriverData } from "../../data/driverData";
 import { AmenityChart, amenitySource, amenityVerdict, isAmenityKind } from "./amenityCharts";
 import { InnovationChart, innovationSource, innovationVerdict, isInnovationKind } from "./innovationCharts";
 import { PlaceholderChart } from "./placeholderCharts";
+import { missingDataLabel } from "../../data/placeholderCities";
 import { titleCase } from "./titleCase";
 
 const W = 560;
@@ -702,9 +703,9 @@ export function DriverChart({
   const data = driverData(city);
   if (!data)
     return (
-      <Frame label={`No live tool data has been pulled for ${city}`}>
+      <Frame label={missingDataLabel("live tool", city)}>
         <text className="dc-lab dc-ph" x={W / 2} y={H / 2} textAnchor="middle">
-          {`[no live tool data pulled for ${city}]`}
+          {`[${missingDataLabel("live tool", city)}]`}
         </text>
       </Frame>
     );

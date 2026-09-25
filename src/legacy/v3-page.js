@@ -132,7 +132,7 @@ export function initPage(){
   /* ---- sample state for the prototype: Boston + Chicago explored,
          sections 1 & 2 completed, Metro Industries in progress ---- */
   exploredCities.add("Boston, United States of America");
-  /* [port] main seeds a second explored city here (Chicago); this branch carries Boston only */
+  /* [port] main seeds a second explored city here (Chicago); this branch has Boston and three placeholder cities */
   ["page-overview","page-overview-msa",
    "page-export-basket"].forEach(p=>visitedPages.add(p));
   savedInsights.push({
@@ -2354,6 +2354,10 @@ export function initPage(){
      the rest are illustrative like the rest of the prototype. */
   const CITY_HINTS = {
     "Boston, United States of America":  { dir:"up",   rate: 0.3, pay: 5.1, word:"growing slowly", head:"<strong>Boston is growing slowly</strong>" },
+    /* [port] this branch's placeholder cities, from src/data/placeholderCities.ts: made-up dials, one ending each */
+    "City A, United States of America":  { dir:"up",   rate: 1.6, pay: 4.8, word:"growing fast",   head:"<strong>City A is growing fast</strong>" },
+    "City B, United States of America":  { dir:"up",   rate: 1.8, pay: 2.4, word:"growing fast",   head:"<strong>City B is growing fast</strong>" },
+    "City C, United States of America":  { dir:"down", rate:-0.5, pay: 2.5, word:"shrinking",      head:"<strong>City C is shrinking</strong>" },
     "Chicago, United States of America": { dir:"up",   rate: 0.6, pay: 5.1, word:"growing",     head:"<strong>Chicago is growing</strong>" },
     "Detroit, United States of America": { dir:"up",   rate: 0.9, pay: 4.4, word:"growing",     head:"<strong>Detroit is growing</strong>" },
     "Bogot\u00e1, Colombia":            { dir:"up",   rate: 1.2, pay: 2.9, word:"growing",     head:"<strong>Bogot\u00e1 is growing</strong>" },

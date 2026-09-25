@@ -39,6 +39,12 @@ import {
   SAMPLE_PLACES,
   type MetroRow,
 } from "./metrosData";
+import {
+  PLACEHOLDER_METROS,
+  PLACEHOLDER_METRO_HOUSING,
+  PLACEHOLDER_PLACES,
+  PLACEHOLDER_PLACE_HOUSING,
+} from "./placeholderCities";
 
 /** The one window every series and threshold in the section is measured on —
  *  set by the extraction script, never here. */
@@ -53,10 +59,21 @@ export type MetroDatum = MetroRow;
  *  universe every median is taken across */
 export const METROS: MetroDatum[] = METRO_ROWS;
 
-/** The cities from the city picker (Boston only, since Sept 2026 — see
- *  content.ts), at both geographies. The branch
- *  each one lands on is DERIVED from these numbers (diagnose() in figures.ts). */
-export const US_SAMPLE_CITIES: readonly string[] = Object.keys(SAMPLE_PLACES);
+/** The cities from the city picker, at both geographies: Boston, the one
+ *  real one (metrosData.ts), and the three PLACEHOLDER cities beside it —
+ *  City A, City B, City C, one per ending Boston does not take, with made-up
+ *  dials (placeholderCities.ts). Merged here so nothing downstream tells
+ *  them apart: the branch each one lands on is DERIVED from these numbers
+ *  (diagnose() in figures.ts), placeholder or not. */
+const SAMPLE_PLACES_ALL: Record<string, MetroRow> = {
+  ...SAMPLE_PLACES,
+  ...PLACEHOLDER_PLACES,
+};
+const SAMPLE_METROS_ALL: Record<string, MetroRow> = {
+  ...SAMPLE_METROS,
+  ...PLACEHOLDER_METROS,
+};
+export const US_SAMPLE_CITIES: readonly string[] = Object.keys(SAMPLE_PLACES_ALL);
 
 /* ---------- home values (Zillow ZHVI), for the supply sub-fork ----------
  *  The place figure is what the Housing-vs-Amenities fork tests; the metro
@@ -79,11 +96,15 @@ const housing = (
         : [],
     ),
   );
-export const PLACE_HOUSING: Record<string, HousingDatum> =
-  housing(PLACE_HOUSING_ROWS);
+export const PLACE_HOUSING: Record<string, HousingDatum> = housing({
+  ...PLACE_HOUSING_ROWS,
+  ...PLACEHOLDER_PLACE_HOUSING,
+});
 /** the same measure at metro level, for the walk's metros */
-export const METRO_HOUSING: Record<string, HousingDatum> =
-  housing(METRO_HOUSING_ROWS);
+export const METRO_HOUSING: Record<string, HousingDatum> = housing({
+  ...METRO_HOUSING_ROWS,
+  ...PLACEHOLDER_METRO_HOUSING,
+});
 
 /** The typical metro's home-value growth — the median across every US metro
  *  with a Zillow series, on the window above. It is both the dashed line the
@@ -155,14 +176,15 @@ export const placeCost = (city: string): { growth: number } | null => {
  *  metro is resolved by id at extraction time, not by matching names — four
  *  US metros are called Springfield */
 export const homeMsa = (city: string): MetroDatum | null =>
-  SAMPLE_METROS[city] ?? null;
+  SAMPLE_METROS_ALL[city] ?? null;
 export const homePlace = (city: string): MetroDatum | null =>
-  SAMPLE_PLACES[city] ?? null;
+  SAMPLE_PLACES_ALL[city] ?? null;
 
-/** the walk's other US cities, as labeled peer dots — none, now that Boston
- *  is the only one (kept: it is how a second city would show up) */
+/** the walk's other US cities, as labeled peer dots — unused since Boston
+ *  became the only real city (kept: it is how a second real city would show
+ *  up). NB it would list the placeholder cities too, whose dots are made up. */
 export const peerMetros = (city: string): MetroDatum[] =>
-  US_SAMPLE_CITIES.filter((n) => n !== city).map((n) => SAMPLE_METROS[n]);
+  US_SAMPLE_CITIES.filter((n) => n !== city).map((n) => SAMPLE_METROS_ALL[n]);
 
 const median = (vs: number[]) => {
   const s = [...vs].sort((a, b) => a - b);

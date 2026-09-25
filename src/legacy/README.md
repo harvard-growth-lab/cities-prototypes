@@ -27,7 +27,7 @@ changing lineage, and the names here were kept so nothing had to be rewired.
 
 | file | what | how it changed |
 | --- | --- | --- |
-| `html/body.html` | main's `<body>` | Constraints Diagnosis' markup replaced by the slot `#constraints-slot`; the (hidden) rail lists this branch's constraints steps; the explainers view emptied for React; the Explainers button restored to the masthead (main kept its styles and its toggle, but dropped the button); the two city pickers list this branch's cities (Boston only, since Sept 2026); asset and iframe paths under `legacy/` |
+| `html/body.html` | main's `<body>` | Constraints Diagnosis' markup replaced by the slot `#constraints-slot`; the (hidden) rail lists this branch's constraints steps; the explainers view emptied for React; the Explainers button restored to the masthead (main kept its styles and its toggle, but dropped the button); the two city pickers list this branch's cities (Boston and, since 2026-09-24, the three placeholder cities); asset and iframe paths under `legacy/` |
 | `v3.css` | main's `<style>` | verbatim, but the landing image comes through `--map-asset` (a bundled import) |
 | `v3-page.js` | the two inline scripts, in order, as one `initPage()` | the module's preamble sets `window.d3 = d3` — main loads d3 as a `<script src>` global, and `initPlacesInMetro` is the one place in the file that reaches for it off `window`, so with it unset the places table in "Explore the admins in your metro", its picker and the metro's cells on the map all stay empty, silently and with no error (Leaflet's UMD build assigns `window.L` on import; d3's ESM build does not). Every other edit is a `PAGE_PATCHES` entry in the script and marked `[port]` in the output: the constraints ids in `pageIds` / `sectionDefs` / the section switch; three calls that tell React about the city, the page in view and the Explainers tab; the rail highlight resolving scrolly steps; init that main ran on `load` / `DOMContentLoaded` running immediately; the exports at the end; and the **phone section menu** — a button naming the current section and a menu of the five, built beside the tab strip and rendered by `showSection` (Sept 17; the CSS is in `port.css`). (The other small-screen patches of Sept 15–16 are gone: main's page now does all of that itself.) |
 | `treemap.js` | the Metro Industries / Extras charts | the IIFE returns its `init()` instead of running it on `DOMContentLoaded` |
@@ -76,11 +76,14 @@ in `.secbar`, and `src/styles/site.css` keyed on `html[data-site]`.
 - The **Explainers** content and its masthead (`ExplainersContent.tsx`):
   main's masthead scrolls away inside the pages, so the explainers view
   carries its own copy. The gallery and the two explainers are this branch's.
-- The **city list** is this branch's: Boston only (since Sept 2026 — the one
-  city the diagnostic tree, the Drivers charts and the Amenities Module all
-  have real data for; there were four sample cities until then). Main's
-  sections carry Boston's figures whichever city is picked anyway, as they
-  do on main.
+- The **city list** is this branch's: Boston — the one city the diagnostic
+  tree, the Drivers charts and the Amenities and Innovation Modules all have
+  real data for — and, since 2026-09-24, three **placeholder** cities, City
+  A, City B and City C, one per ending Boston does not take, with made-up
+  dials and no module data (`src/data/placeholderCities.ts`; the landing's
+  verdict for each is the "city hints" patch in the port script). There were
+  four sample cities before Sept 2026, then Boston alone. Main's sections
+  carry Boston's figures whichever city is picked anyway, as they do on main.
 - `port.css`: three shell rules — the wrapper has no box, a deep link enters
   without the landing's slide, and the constraints stage sticks under main's
   section bar at the height main publishes as `--chrome-h` — and the

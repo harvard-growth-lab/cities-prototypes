@@ -41,6 +41,7 @@ import {
   type RcaRow,
   type SpecializationData,
 } from "../../data/innovationData";
+import { missingDataLabel } from "../../data/placeholderCities";
 import type { Verdict } from "./driverCharts";
 import { titleCase } from "./titleCase";
 
@@ -426,9 +427,9 @@ export function InnovationChart({ kind, city }: { kind: InnovationKind; city: st
   const d = innovationData(city);
   if (!d)
     return (
-      <Frame label={`No Innovation Module data has been pulled for ${city}`}>
+      <Frame label={missingDataLabel("Innovation Module", city)}>
         <text className="dc-lab dc-ph" x={W / 2} y={H / 2} textAnchor="middle">
-          {`[no Innovation Module data pulled for ${city}]`}
+          {`[${missingDataLabel("Innovation Module", city)}]`}
         </text>
       </Frame>
     );

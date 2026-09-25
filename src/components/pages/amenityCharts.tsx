@@ -36,6 +36,7 @@
 
 import type { ChartKind } from "../../data/figures";
 import { amenityData, type AmenityData } from "../../data/amenityData";
+import { missingDataLabel } from "../../data/placeholderCities";
 import type { Verdict } from "./driverCharts";
 import { titleCase } from "./titleCase";
 
@@ -596,9 +597,9 @@ export function AmenityChart({ kind, city }: { kind: AmenityKind; city: string }
   const d = amenityData(city);
   if (!d)
     return (
-      <Frame label={`No Amenities Module data has been pulled for ${city}`}>
+      <Frame label={missingDataLabel("Amenities Module", city)}>
         <text className="dc-lab dc-ph" x={W / 2} y={H / 2} textAnchor="middle">
-          {`[no Amenities Module data pulled for ${city}]`}
+          {`[${missingDataLabel("Amenities Module", city)}]`}
         </text>
       </Frame>
     );

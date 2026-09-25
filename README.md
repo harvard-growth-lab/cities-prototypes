@@ -60,7 +60,7 @@ src/
   main.tsx                  entry point; v-3's stylesheet first, then this branch's
   App.tsx                   mounts v-3's body, portals the two React pieces in, boots v-3;
                             hash routing (deep links, Back) layered over v-3's navigation
-  data/content.ts           the city the prototype carries (Boston); data/figures.ts, data/metros.ts the tree and its data
+  data/content.ts           the cities the prototype carries (Boston, plus three placeholder cities in data/placeholderCities.ts); data/figures.ts, data/metros.ts the tree and its data
   legacy/                   main's page — generated files + the bridge to the React pieces
     README.md               what is generated, what the bridge does, what is not v-3's
     LegacyShell.tsx         mounts v-3's body; index.ts boots its scripts once
