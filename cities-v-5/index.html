@@ -2971,8 +2971,11 @@
   .cl-rows{display:flex;flex-direction:column;gap:3px;font-size:12.5px;color:var(--ink);}
   .cl-row i{display:inline-block;width:11px;height:11px;margin-right:6px;vertical-align:-1px;}
   .cl-row b{font-weight:600;color:var(--ink-soft);}
+  /* the key is the slot's own height, since it wraps to three rows at
+     the figure's width; the other captions lie over it in the same slot */
   .mi-caption{position:relative;min-height:34px;margin-top:10px;}
   .mi-caption > *{position:absolute;left:0;top:0;right:0;margin:0;}
+  .mi-caption > .sector-key{position:relative;}
   .ct-stage:has(.mi-figure) .ct-slot.is-on{min-height:0;padding-block:0;}
   /* each beat reveals only its own furniture */
   .mi-figure .tradable-split-header{opacity:0;transform:translateY(8px);
@@ -3031,93 +3034,112 @@
   .rs-of{font-size:14px;line-height:1.35;color:var(--teal);font-weight:600;}
 
   /* the sector key: one row of swatches under the map, wrapping as needed */
+  /* the key, after the reference: every sector in its fixed order, each an
+     entry that hides its sector on a click and, on hover, offers to show
+     only it; the swatch hollows and the name strikes through when hidden */
   .sector-key{
-    display:flex;flex-wrap:wrap;gap:7px 20px;
+    display:flex;flex-wrap:wrap;gap:2px 4px;margin:0;padding:0;list-style:none;
     font-size:12.5px;color:var(--ink);
   }
-  /* every entry is a control: it names a colour, and it takes its sector out
-     of the map or leaves only it. It is set as plain text all the same - a
-     row of buttons under a chart would read as a toolbar, not as a key. */
+  .sector-key .sk-item{display:inline-flex;align-items:center;border-radius:6px;transition:background .12s ease;}
+  .sector-key .sk-item:hover,.sector-key .sk-item:has(:focus-visible){background:var(--teal-tint);}
   .sector-key .sk-sec{
     display:inline-flex;align-items:center;gap:7px;
-    appearance:none;background:none;border:0;font:inherit;color:inherit;cursor:pointer;
-    /* the padding grows the target and the tint that marks it; the negative
-       margin gives the width back, so the row's own spacing does not move */
-    padding:3px 6px;margin:-3px -6px;
-    transition:background .12s ease;
+    appearance:none;background:none;border:0;border-radius:6px;padding:3px 3px 3px 7px;margin:0;
+    font:inherit;color:inherit;cursor:pointer;white-space:nowrap;
   }
-  .sector-key .sk-sec:hover,
-  .sector-key .sk-sec.is-open{background:var(--teal-tint);}
-  .sector-key .sk-sec.is-open .sk-name{color:var(--teal-dark);font-weight:600;}
-  .sector-key .sk-sec:focus-visible{outline:2px solid var(--teal);outline-offset:1px;}
+  .sector-key .sk-sec:focus-visible{outline:2px solid var(--teal);outline-offset:-1px;}
   .sector-key .sk-sw{
-    flex:none;width:13px;height:13px;display:inline-block;background:var(--sw,#ccc);
+    flex:none;width:13px;height:13px;border-radius:3px;box-sizing:border-box;
+    border:2px solid var(--sw,#ccc);background:var(--sw,#ccc);
   }
-  /* a sector out of the map keeps its place in the key, hollow, so the
-     reader can see at a glance what is waiting to come back */
-  .sector-key .sk-sec.is-off .sk-sw{background:transparent;box-shadow:inset 0 0 0 1.5px var(--sw,#ccc);}
-  .sector-key .sk-sec.is-off .sk-name{color:var(--ink-soft);opacity:.55;}
+  .sector-key .sk-sec.is-off .sk-sw{background:transparent;}
+  .sector-key .sk-sec.is-off .sk-name{color:var(--ink-soft);text-decoration:line-through;text-decoration-thickness:1px;}
+  .sector-key .sk-only{
+    appearance:none;background:none;border:0;margin:0 3px 0 0;padding:2px 4px;border-radius:4px;
+    font:inherit;font-size:12.5px;color:var(--ink-soft);cursor:pointer;opacity:0;text-underline-offset:2px;
+  }
+  .sector-key .sk-item:hover .sk-only,.sector-key .sk-only:focus-visible{opacity:1;}
+  .sector-key .sk-only:hover,.sector-key .sk-only:focus-visible{color:var(--ink);text-decoration:underline;outline:none;}
+  @media (pointer: coarse){ .sector-key .sk-only{opacity:1;} }
   .sector-key .sk-reset{
-    appearance:none;background:none;border:0;padding:0;font:inherit;font-size:12.5px;
-    color:var(--teal);text-decoration:underline;text-underline-offset:2px;cursor:pointer;
+    appearance:none;background:none;border:0;padding:3px 7px;font:inherit;font-size:12.5px;font-weight:600;
+    color:var(--teal);cursor:pointer;text-underline-offset:2px;
   }
+  .sector-key .sk-reset:hover{text-decoration:underline;}
   .sector-key .sk-reset[hidden]{display:none;}
-  /* the key's own card, standing over the entry it belongs to. It carries
-     buttons, so unlike the cell card it does not travel with the cursor -
-     nothing the reader has to reach can be moving while they reach it. */
-  .mi-figure .sk-tip{
-    position:absolute;z-index:6;width:236px;display:flex;flex-direction:column;gap:3px;
-    padding:11px 13px;background:#fff;border:1px solid var(--border-strong);
-    box-shadow:var(--shadow-md);text-align:left;
+  /* the line over the map: where the reader has zoomed to, while they are */
+  .mi-note{display:flex;align-items:center;gap:16px;margin:0;font-size:12.5px;color:var(--ink-soft);}
+  .mi-note .mi-note-txt{min-width:0;flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  /* the heads take no pointer, but the crumbs in them are controls */
+  .mi-figure[data-step="0"] #miAllHead .mi-note,
+  .mi-figure[data-step="4"] #miClusterHead .mi-note{pointer-events:auto;}
+  .mi-crumbs{display:inline-flex;align-items:center;gap:6px;}
+  .mi-crumb{
+    appearance:none;background:#fff;border:1px solid var(--border-strong);border-radius:3px;padding:2px 7px;
+    font:inherit;font-size:12.5px;font-weight:600;color:var(--teal);cursor:pointer;
   }
-  .mi-figure .sk-tip[hidden]{display:none;}
-  .mi-figure .sk-tip b{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:3px;}
-  .mi-figure .skt-row{display:flex;justify-content:space-between;gap:14px;font-size:12.5px;color:var(--ink-soft);}
-  .mi-figure .skt-row span:last-child{font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;}
-  /* what can be done with this sector, in the house's own button */
-  .mi-figure .skt-acts{
-    display:flex;gap:8px;margin-top:9px;padding-top:9px;border-top:1px solid var(--border);
+  .mi-crumb:hover{background:var(--teal);border-color:var(--teal);color:#fff;}
+  .mi-crumb:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+  .mi-crumb-sep{color:var(--ink-soft);}
+  .mi-crumb-here{font-weight:600;color:var(--ink);}
+  .mi-crumb-x{
+    appearance:none;background:none;border:0;padding:0 5px;font:inherit;font-size:16px;line-height:1;
+    color:var(--ink-soft);cursor:pointer;border-radius:3px;
   }
-  .mi-figure .skt-btn{
-    appearance:none;flex:1 1 auto;padding:5px 10px;font:inherit;font-size:12.5px;font-weight:600;
-    color:var(--teal);background:#fff;border:1px solid var(--border-strong);border-radius:3px;
-    cursor:pointer;white-space:nowrap;transition:background .15s ease,color .15s ease,border-color .15s ease;
+  .mi-crumb-x:hover{color:var(--ink);background:var(--teal-tint);}
+  /* the same industries as a table: a toggle under the key, and the rows
+     in a scrolling frame with the head held at the top */
+  .mi-table{margin-top:8px;}
+  .mi-table-btn{
+    appearance:none;display:inline-flex;align-items:center;gap:5px;background:none;border:0;padding:3px 0;
+    font:inherit;font-size:12.5px;font-weight:500;color:var(--ink-soft);cursor:pointer;border-radius:3px;
   }
-  .mi-figure .skt-btn:hover{background:var(--teal);border-color:var(--teal);color:#fff;}
-  .mi-figure .skt-btn:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
-  .sector-key .sk-share{color:var(--ink-soft);font-variant-numeric:tabular-nums;}
-  /* Neither map beat keys a share any more: the blocks carry the proportion
-     by the area they take, and a column of percentages beside the colours
-     was answering a question the picture had already answered. The key
-     names the colours and stops. The opening beat still drops the sectors
-     with no tradable work, which is about which colours appear, not about
-     how much of the mix each one is. */
-  #miSectorKey .sk-share{display:none;}
-  #miTreemapSvg .mi-seclab-t{
-    font-size:11px;font-weight:600;pointer-events:none;
-  }
-  /* opt-2 shares the block with the cell labels, so the name cannot wear the
-     same dress as they do. It gets a dark chip and sits two units above them
-     in size - the halo goes with the chip, since a 2.5px stroke on text this
-     small closes the counters of e, a and o, and a chip makes it redundant. */
-  #miTreemapSvg .mi-seclab-t.is-inside{
-    font-size:var(--mi-lab);stroke:none;
-  }
-  /* opt-5 names the sectors and nothing else, so the name has the block to
-     itself and is set to match */
-  #miFigure[data-names="secOnly"] .mi-seclab-t.is-inside{
-    font-size:calc(var(--mi-lab) * 1.15);
-  }
-  /* the ground is set per block, from that block's own colour */
-  #miTreemapSvg .mi-seclab-tab{pointer-events:none;}
-  /* opt-4: the sector is a framed ground in its own colour, its name on the
-     band the strip leaves along the top, and its industries inside it in a
-     wash of that colour - the arrangement the World Bank's regional maps
-     use. The ground takes no pointer: the cells on it answer the cursor. */
-  #miTreemapSvg .mi-secframe{pointer-events:none;}
-  #miTreemapSvg .mi-secframe-t{
-    font-size:11px;font-weight:700;letter-spacing:0;
-  }
+  .mi-table-btn:hover{color:var(--ink);}
+  .mi-table-btn:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+  .mi-table-btn svg{width:12px;height:12px;transition:transform .15s ease;}
+  .mi-table-btn[aria-expanded="true"] svg{transform:rotate(180deg);}
+  .mi-table-wrap{margin-top:4px;max-height:240px;overflow:auto;border:1px solid var(--border);border-radius:3px;}
+  .mi-table-wrap[hidden]{display:none;}
+  .mi-tbl{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums;color:var(--ink);}
+  .mi-tbl thead{position:sticky;top:0;background:#fff;z-index:1;}
+  .mi-tbl th,.mi-tbl td{padding:4px 8px;text-align:left;vertical-align:top;}
+  .mi-tbl thead th{padding:6px 8px;font-weight:500;color:var(--ink-soft);}
+  /* the table takes its room from the map, as the reference's does: the
+     map gives up height while the table is open and takes it back after */
+  #miFigure.has-table .tradable-viz-wrapper .viz-big{max-height:max(180px, calc(100vh - 650px));}
+  .mi-tbl tbody tr{border-top:1px solid var(--border);}
+  .mi-tbl tbody th{font-weight:500;}
+  .mi-tbl .num{text-align:right;}
+  .mi-tbl td.num{white-space:nowrap;}
+  /* room for the two-word heads to break once, not four times */
+  .mi-tbl thead th.num{min-width:72px;}
+  .mi-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
+  #miFigure:not([data-step="0"]):not([data-step="4"]) .mi-table,
+  #miFigure[data-view="alt"] .mi-table{display:none;}
+  /* the industry map's cells: no stroke, the gaps come from the tiling;
+     an outline under the pointer, a ring under keyboard focus */
+  #miTreemapSvg .mi-mcell{cursor:pointer;transition:opacity .18s ease;}
+  #miTreemapSvg .mi-mrect{stroke:none;}
+  #miTreemapSvg .mi-mhit{cursor:pointer;outline:none;}
+  #miTreemapSvg .mi-moutline{fill:none;stroke:var(--ink);}
+  #miTreemapSvg .mi-mring{fill:none;stroke:var(--teal);}
+  #miTreemapSvg .mi-mlab{pointer-events:none;}
+  #miTreemapSvg .mi-mcell.is-dim{opacity:.13;}
+  #miTreemapSvg .mi-mcell.is-mute .mi-mrect{fill:#e3e8e9;}
+  @media (prefers-reduced-motion: reduce){ #miTreemapSvg .mi-mcell{transition:none;} }
+  /* the map's card, after the reference: the industry's short name, its
+     full name, where it sits, and its three readings */
+  .rca-tip.is-map{width:288px;padding:10px 12px;border-radius:8px;}
+  .rca-tip.is-map p{margin:0;font-size:12.5px;line-height:1.35;color:var(--ink-soft);}
+  .rca-tip.is-map .tip-name{font-size:14px;font-weight:600;color:var(--ink);line-height:1.3;}
+  .rca-tip.is-map .tip-members{margin-top:4px;}
+  .rca-tip.is-map .tip-dl{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;margin:8px 0 0;font-size:12.5px;}
+  .rca-tip.is-map .tip-dl dt{color:var(--ink-soft);}
+  .rca-tip.is-map .tip-dl dd{margin:0;color:var(--ink);font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:6px;}
+  .rca-tip.is-map .tip-dl dd.is-strong{font-weight:600;}
+  .rca-tip.is-map .tip-sw{width:10px;height:10px;border-radius:2px;flex:none;}
+  .rca-tip.is-map .tip-hint{margin-top:8px;}
   /* The filter lives on the column head it filters, so the chart says what can
      be narrowed rather than a control beside it. The head is the button; the
      menu opens under it. */
@@ -5563,7 +5585,7 @@
              sectors; the complexity pieces sit here, since this is the beat
              whose map the reader colours -->
         <div class="lede-stat-row">
-          <p class="lede"><strong>2.3 million</strong> jobs across 880 industries. <span class="mi-hl"
+          <p class="lede"><strong>2.3 million</strong> jobs across 877 industries. <span class="mi-hl"
             data-sector="Professional &amp; Business" tabindex="0">Professional &amp; business services</span> and
             <span class="mi-hl" data-sector="Education &amp; Health" tabindex="0">education &amp; health</span> are
             the two largest sectors, each about a quarter of the jobs, and <span class="mi-hl"
@@ -5575,11 +5597,11 @@
              forward when the reader colours the map by complexity -->
         <div class="rank-strip anchor-card rank-card is-off" id="miRankCard" aria-hidden="true" inert>
             <div class="rc-fig" aria-hidden="true">
-              <span class="rs-num">9<span class="rs-ord">th</span></span>
-              <span class="rc-of">of 384</span>
+              <span class="rs-num">8<span class="rs-ord">th</span></span>
+              <span class="rc-of">of 382</span>
             </div>
             <div class="ac-body">
-              <p class="ac-head"><span class="ac-anchor" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18"/><path d="M8.5 20v-8h7v8"/><path d="M3 20v-4.5h5.5"/><path d="M15.5 14H21v6"/><path d="m12 3.2 1.1 2.2 2.4.4-1.7 1.7.4 2.4L12 8.8l-2.2 1.1.4-2.4-1.7-1.7 2.4-.4z"/></svg></span><span>of 384 US metros</span></p>
+              <p class="ac-head"><span class="ac-anchor" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18"/><path d="M8.5 20v-8h7v8"/><path d="M3 20v-4.5h5.5"/><path d="M15.5 14H21v6"/><path d="m12 3.2 1.1 2.2 2.4.4-1.7 1.7.4 2.4L12 8.8l-2.2 1.1.4-2.4-1.7-1.7 2.4-.4z"/></svg></span><span>of 382 US metros</span></p>
               <p class="rc-sub">Complexity rank, 2024</p>
             </div>
           </div>
@@ -5651,16 +5673,6 @@
             <div class="mi-studies" id="miStudies">
               <button type="button" class="mi-studies-btn" aria-expanded="false" aria-haspopup="true">opt</button>
               <div class="mi-studies-panel" hidden>
-                <label class="mi-study" id="miNamesPair">
-                  <span>Sector names</span>
-                  <select id="miNames" aria-label="How the sectors are named">
-                    <option value="above" selected>opt-1</option>
-                    <option value="inside">opt-2</option>
-                    <option value="off">opt-3</option>
-                    <option value="frame">opt-4</option>
-                    <option value="secOnly">opt-5</option>
-                  </select>
-                </label>
                 <label class="mi-study" id="miGroundPair">
                   <span>Tier grounds</span>
                   <select id="miGround" aria-label="How the tiers' grounds are drawn">
@@ -5710,12 +5722,16 @@
               <div class="mcl-axis"><span class="mcl-dir">All industries, by tier</span>
                 <span class="mcl-back" id="miTierBack"></span>
               </div>
+              <!-- where the reader has zoomed to, while zoomed in -->
+              <p class="mi-note" id="miNote4"><span class="mi-note-txt"></span></p>
             </div>
             <!-- the header of the opening beat: the title alone, in the same
                  slot as the tiers' header so the chart does not move between
                  the beats -->
             <div class="mi-trad-head" id="miAllHead">
               <div class="mcl-axis"><span class="mcl-dir">All industries</span></div>
+              <!-- where the reader has zoomed to, while zoomed in -->
+              <p class="mi-note" id="miNote"><span class="mi-note-txt"></span></p>
             </div>
           </div>
           <div class="tradable-viz-wrapper">
@@ -5732,7 +5748,7 @@
                under the chart, so a hidden one cannot push the visible one
                away from the figure it belongs to -->
           <div class="mi-caption">
-            <p class="sector-key" id="miSectorKey"></p>
+            <ul class="sector-key" id="miSectorKey" aria-label="Sectors"></ul>
             <div class="complexity-legend" id="miComplexityLegend">
               <div class="lg-ramp">
                 <span class="cl-label">Less complex</span>
@@ -5749,6 +5765,12 @@
               <span class="sk-item"><i class="sk-behind"></i>less than in the peer metros</span>
               <span class="sk-item"><i class="sk-base"></i>the peer average</span>
             </p>
+          </div>
+          <!-- the same industries as a table: whatever the map is showing,
+               largest first, with the readings the card carries -->
+          <div class="mi-table" id="miTable">
+            <button type="button" class="mi-table-btn" aria-expanded="false" aria-controls="miTableWrap"><span class="mi-table-btn-txt">Show as table</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+            <div class="mi-table-wrap" id="miTableWrap" hidden></div>
           </div>
         </div>
 
@@ -6503,6 +6525,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://d3js.org/d3.v7.min.js"></script>
 <script src="data/geo/xch_geo.js"></script>
+<script src="industries-2024.js"></script>
 <script src="treemap.js?v=handoff"></script>
 <script>
   /* ---------- treemaps: color by ----------

@@ -118,905 +118,32 @@
     "Education & Health": "#e8836e",
     "Financial Activities": "#f4c542",
     "Leisure & Hospitality": "#8fd0d8",
-    "Manufacturing": "#3c7d91",
+    "Manufacturing": "#4f8fa3",
     "Natural Resources": "#7cb342",
-    "Other": "#7d6d9a",
+    "Other": "#8b7ba8",
     "Professional & Business": "#b94a44",
     "Trade & Transportation": "#e0938a"
   };
 
-  /* Boston-Cambridge-Newton (metro 14460), 2024, 6-digit NAICS, from
-     boston_6d_pci_rca_tradability_2024.csv: name, code, employment, the
-     Growth Lab sector (2-digit NAICS grouped as Metroverse does: 51 with
-     professional & business, 22 with construction), the RCA against the
-     national mix, the PCI, the tradability score 0 to 1 and the tier the
-     source assigns (0 traded, 1 partly traded, 2 local), and the source's
-     own tradable flag. The seven rows with no name in the source are
-     dropped, which is 735 jobs; Private Households has no score, tier or
-     flag there and is held at 0, local, not tradable. 880 industries,
-     2,317,838 jobs. */
-  const rawData = [
-    {name: "Oilseed (except Soybean) Farming", code: "111120", employ: 26.4, sector: "Natural Resources", rca: 5.886, pci: 1.117, trad: 1.0, tier: 0, tradable: true},
-    {name: "Other Vegetable (except Potato) and Melon Farming", code: "111219", employ: 562.26, sector: "Natural Resources", rca: 0.588, pci: -0.682, trad: 1.0, tier: 0, tradable: true},
-    {name: "Apple Orchards", code: "111331", employ: 197.08, sector: "Natural Resources", rca: 0.384, pci: -0.023, trad: 1.0, tier: 0, tradable: true},
-    {name: "Grape Vineyards", code: "111332", employ: 45.18, sector: "Natural Resources", rca: 0.098, pci: -0.172, trad: 1.0, tier: 0, tradable: true},
-    {name: "Berry (except Strawberry) Farming", code: "111334", employ: 216.32, sector: "Natural Resources", rca: 0.598, pci: -0.148, trad: 1.0, tier: 0, tradable: true},
-    {name: "Fruit and Tree Nut Combination Farming", code: "111336", employ: 27.14, sector: "Natural Resources", rca: 0.329, pci: 0.419, trad: 1.0, tier: 0, tradable: true},
-    {name: "Mushroom Production", code: "111411", employ: 2.41, sector: "Natural Resources", rca: 0.021, pci: 1.524, trad: 0.9, tier: 0, tradable: true},
-    {name: "Other Food Crops Grown Under Cover", code: "111419", employ: 2027.1, sector: "Natural Resources", rca: 4.142, pci: -0.325, trad: 0.9, tier: 0, tradable: true},
-    {name: "Nursery and Tree Production", code: "111421", employ: 163.57, sector: "Natural Resources", rca: 0.118, pci: -0.636, trad: 0.9, tier: 0, tradable: true},
-    {name: "Floriculture Production", code: "111422", employ: 98.4, sector: "Natural Resources", rca: 0.13, pci: -0.164, trad: 0.9, tier: 0, tradable: true},
-    {name: "Hay Farming", code: "111940", employ: 1.36, sector: "Natural Resources", rca: 0.013, pci: -1.334, trad: 1.0, tier: 0, tradable: true},
-    {name: "All Other Miscellaneous Crop Farming", code: "111998", employ: 157.48, sector: "Natural Resources", rca: 0.305, pci: -1.339, trad: 1.0, tier: 0, tradable: true},
-    {name: "Dairy Cattle and Milk Production", code: "112120", employ: 10.62, sector: "Natural Resources", rca: 0.011, pci: -1.473, trad: 0.9, tier: 0, tradable: true},
-    {name: "Hog and Pig Farming", code: "112210", employ: 3.38, sector: "Natural Resources", rca: 0.046, pci: -1.967, trad: 0.9, tier: 0, tradable: true},
-    {name: "Broilers and Other Meat Type Chicken Production", code: "112320", employ: 9.3, sector: "Natural Resources", rca: 0.241, pci: -0.878, trad: 0.9, tier: 0, tradable: true},
-    {name: "Turkey Production", code: "112330", employ: 5.95, sector: "Natural Resources", rca: 0.275, pci: -0.906, trad: 0.9, tier: 0, tradable: true},
-    {name: "Sheep Farming", code: "112410", employ: 11.34, sector: "Natural Resources", rca: 0.941, pci: 0.113, trad: 1.0, tier: 0, tradable: true},
-    {name: "Finfish Farming and Fish Hatcheries", code: "112511", employ: 25.34, sector: "Natural Resources", rca: 0.987, pci: -0.107, trad: 1.0, tier: 0, tradable: true},
-    {name: "Shellfish Farming", code: "112512", employ: 18.55, sector: "Natural Resources", rca: 1.072, pci: 1.318, trad: 0.9, tier: 0, tradable: true},
-    {name: "Apiculture", code: "112910", employ: 16.45, sector: "Natural Resources", rca: 0.364, pci: -0.299, trad: 0.9, tier: 0, tradable: true},
-    {name: "Horses and Other Equine Production", code: "112920", employ: 50.23, sector: "Natural Resources", rca: 0.451, pci: 0.202, trad: 1.0, tier: 0, tradable: true},
-    {name: "All Other Animal Production", code: "112990", employ: 14.13, sector: "Natural Resources", rca: 0.213, pci: -0.889, trad: 0.9, tier: 0, tradable: true},
-    {name: "Timber Tract Operations", code: "113110", employ: 6.78, sector: "Natural Resources", rca: 0.333, pci: -0.569, trad: 1.0, tier: 0, tradable: true},
-    {name: "Forest Nurseries and Gathering of Forest Products", code: "113210", employ: 3.43, sector: "Natural Resources", rca: 0.197, pci: 0.256, trad: 1.0, tier: 0, tradable: true},
-    {name: "Logging", code: "113310", employ: 15.37, sector: "Natural Resources", rca: 0.072, pci: -1.176, trad: 1.0, tier: 0, tradable: true},
-    {name: "Finfish Fishing", code: "114111", employ: 128.65, sector: "Natural Resources", rca: 3.457, pci: 1.059, trad: 1.0, tier: 0, tradable: true},
-    {name: "Shellfish Fishing", code: "114112", employ: 72.93, sector: "Natural Resources", rca: 3.653, pci: 1.497, trad: 1.0, tier: 0, tradable: true},
-    {name: "Other Marine Fishing", code: "114119", employ: 73.89, sector: "Natural Resources", rca: 8.53, pci: 2.834, trad: 1.0, tier: 0, tradable: true},
-    {name: "Hunting and Trapping", code: "114210", employ: 26.07, sector: "Natural Resources", rca: 1.053, pci: -0.656, trad: 1.0, tier: 0, tradable: true},
-    {name: "Soil Preparation, Planting, and Cultivating", code: "115112", employ: 111.43, sector: "Natural Resources", rca: 0.359, pci: -2.118, trad: 0.861, tier: 0, tradable: true},
-    {name: "Postharvest Crop Activities (except Cotton Ginning)", code: "115114", employ: 8.75, sector: "Natural Resources", rca: 0.007, pci: -1.741, trad: 0.5, tier: 1, tradable: true},
-    {name: "Farm Labor Contractors and Crew Leaders", code: "115115", employ: 12.79, sector: "Natural Resources", rca: 0.003, pci: -2.118, trad: 0.861, tier: 0, tradable: true},
-    {name: "Farm Management Services", code: "115116", employ: 24.22, sector: "Natural Resources", rca: 0.068, pci: -2.118, trad: 0.861, tier: 0, tradable: true},
-    {name: "Support Activities for Animal Production", code: "115210", employ: 294.42, sector: "Natural Resources", rca: 0.838, pci: -0.995, trad: 0.5, tier: 1, tradable: true},
-    {name: "Support Activities for Forestry", code: "115310", employ: 52.03, sector: "Natural Resources", rca: 0.248, pci: -0.844, trad: 0.5, tier: 1, tradable: true},
-    {name: "Dimension Stone Mining and Quarrying", code: "212311", employ: 31.18, sector: "Natural Resources", rca: 0.397, pci: -0.221, trad: 1.0, tier: 0, tradable: true},
-    {name: "Crushed and Broken Granite Mining and Quarrying", code: "212313", employ: 7.08, sector: "Natural Resources", rca: 0.295, pci: -0.7, trad: 0.59, tier: 1, tradable: true},
-    {name: "Other Crushed and Broken Stone Mining and Quarrying", code: "212319", employ: 6.89, sector: "Natural Resources", rca: 0.122, pci: -0.045, trad: 0.5, tier: 1, tradable: true},
-    {name: "Construction Sand and Gravel Mining", code: "212321", employ: 150.2, sector: "Natural Resources", rca: 0.597, pci: -1.109, trad: 0.9, tier: 0, tradable: true},
-    {name: "Drilling Oil and Gas Wells", code: "213111", employ: 2.31, sector: "Natural Resources", rca: 0.006, pci: -1.842, trad: 0.9, tier: 0, tradable: true},
-    {name: "Support Activities for Oil and Gas Operations", code: "213112", employ: 4.04, sector: "Natural Resources", rca: 0.001, pci: -2.422, trad: 0.9, tier: 0, tradable: true},
-    {name: "Support Activities for Metal Mining", code: "213114", employ: 3.13, sector: "Natural Resources", rca: 0.099, pci: -1.842, trad: 0.9, tier: 0, tradable: true},
-    {name: "Support Activities for Nonmetallic Minerals (except Fuels) Mining", code: "213115", employ: 16.61, sector: "Natural Resources", rca: 0.886, pci: -1.842, trad: 0.9, tier: 0, tradable: true},
-    {name: "Hydroelectric Power Generation", code: "221111", employ: 185.19, sector: "Construction", rca: 1.829, pci: -0.223, trad: 0.9, tier: 0, tradable: true},
-    {name: "Fossil Fuel Electric Power Generation", code: "221112", employ: 2760.88, sector: "Construction", rca: 3.368, pci: -0.902, trad: 0.894, tier: 0, tradable: true},
-    {name: "Nuclear Electric Power Generation", code: "221113", employ: 124.98, sector: "Construction", rca: 0.815, pci: -0.902, trad: 0.894, tier: 0, tradable: true},
-    {name: "Solar Electric Power Generation", code: "221114", employ: 395.26, sector: "Construction", rca: 0.41, pci: 0.858, trad: 0.871, tier: 0, tradable: true},
-    {name: "Wind Electric Power Generation", code: "221115", employ: 210.29, sector: "Construction", rca: 0.79, pci: -1.051, trad: 0.9, tier: 0, tradable: true},
-    {name: "Biomass Electric Power Generation", code: "221117", employ: 15.89, sector: "Construction", rca: 0.246, pci: -0.902, trad: 0.894, tier: 0, tradable: true},
-    {name: "Other Electric Power Generation", code: "221118", employ: 96.08, sector: "Construction", rca: 0.491, pci: 1.758, trad: 0.9, tier: 0, tradable: true},
-    {name: "Electric Bulk Power Transmission and Control", code: "221121", employ: 47.8, sector: "Construction", rca: 0.146, pci: -0.971, trad: 0.9, tier: 0, tradable: true},
-    {name: "Electric Power Distribution", code: "221122", employ: 882.34, sector: "Construction", rca: 0.736, pci: -1.477, trad: 0.225, tier: 1, tradable: false},
-    {name: "Natural Gas Distribution", code: "221210", employ: 405.75, sector: "Construction", rca: 0.711, pci: -1.457, trad: 0.132, tier: 2, tradable: false},
-    {name: "Water Supply and Irrigation Systems", code: "221310", employ: 38.48, sector: "Construction", rca: 0.083, pci: -1.255, trad: 0.5, tier: 1, tradable: true},
-    {name: "Sewage Treatment Facilities", code: "221320", employ: 55.97, sector: "Construction", rca: 0.716, pci: 0.296, trad: 0.5, tier: 1, tradable: true},
-    {name: "Steam and Air-Conditioning Supply", code: "221330", employ: 38.94, sector: "Construction", rca: 1.541, pci: 2.374, trad: 0.5, tier: 1, tradable: true},
-    {name: "New Single-Family Housing Construction (except For-Sale Builders)", code: "236115", employ: 3120.08, sector: "Construction", rca: 0.453, pci: -0.778, trad: 0.02, tier: 2, tradable: false},
-    {name: "New Multifamily Housing Construction (except For-Sale Builders)", code: "236116", employ: 678.74, sector: "Construction", rca: 0.867, pci: 0.432, trad: 0.256, tier: 1, tradable: false},
-    {name: "New Housing For-Sale Builders", code: "236117", employ: 321.46, sector: "Construction", rca: 0.333, pci: -0.778, trad: 0.02, tier: 2, tradable: false},
-    {name: "Residential Remodelers", code: "236118", employ: 8081.72, sector: "Construction", rca: 0.881, pci: -0.697, trad: 0.0, tier: 2, tradable: false},
-    {name: "Industrial Building Construction", code: "236210", employ: 1476.91, sector: "Construction", rca: 0.501, pci: -1.028, trad: 0.9, tier: 0, tradable: true},
-    {name: "Commercial and Institutional Building Construction", code: "236220", employ: 11742.09, sector: "Construction", rca: 0.818, pci: -1.011, trad: 0.0, tier: 2, tradable: false},
-    {name: "Water and Sewer Line and Related Structures Construction", code: "237110", employ: 2789.3, sector: "Construction", rca: 0.694, pci: -1.12, trad: 0.0, tier: 2, tradable: false},
-    {name: "Oil and Gas Pipeline and Related Structures Construction", code: "237120", employ: 124.33, sector: "Construction", rca: 0.062, pci: -1.264, trad: 0.9, tier: 0, tradable: true},
-    {name: "Power and Communication Line and Related Structures Construction", code: "237130", employ: 2590.2, sector: "Construction", rca: 0.696, pci: -1.122, trad: 0.5, tier: 1, tradable: true},
-    {name: "Land Subdivision", code: "237210", employ: 418.26, sector: "Construction", rca: 0.691, pci: -0.053, trad: 0.5, tier: 1, tradable: true},
-    {name: "Highway, Street, and Bridge Construction", code: "237310", employ: 4652.42, sector: "Construction", rca: 0.758, pci: -0.918, trad: 0.0, tier: 2, tradable: false},
-    {name: "Other Heavy and Civil Engineering Construction", code: "237990", employ: 614.53, sector: "Construction", rca: 0.348, pci: -0.928, trad: 0.689, tier: 1, tradable: true},
-    {name: "Poured Concrete Foundation and Structure Contractors", code: "238110", employ: 2029.47, sector: "Construction", rca: 0.404, pci: -0.915, trad: 0.0, tier: 2, tradable: false},
-    {name: "Structural Steel and Precast Concrete Contractors", code: "238120", employ: 425.94, sector: "Construction", rca: 0.464, pci: -0.366, trad: 0.0, tier: 2, tradable: false},
-    {name: "Framing Contractors", code: "238130", employ: 361.53, sector: "Construction", rca: 0.306, pci: -0.543, trad: 0.188, tier: 2, tradable: false},
-    {name: "Masonry Contractors", code: "238140", employ: 2471.66, sector: "Construction", rca: 0.859, pci: -0.543, trad: 0.188, tier: 2, tradable: false},
-    {name: "Glass and Glazing Contractors", code: "238150", employ: 1742.53, sector: "Construction", rca: 1.253, pci: -0.796, trad: 0.022, tier: 2, tradable: false},
-    {name: "Roofing Contractors", code: "238160", employ: 2286.99, sector: "Construction", rca: 0.419, pci: -0.796, trad: 0.022, tier: 2, tradable: false},
-    {name: "Siding Contractors", code: "238170", employ: 276.95, sector: "Construction", rca: 0.893, pci: -0.796, trad: 0.022, tier: 2, tradable: false},
-    {name: "Other Foundation, Structure, and Building Exterior Contractors", code: "238190", employ: 815.26, sector: "Construction", rca: 1.099, pci: -0.796, trad: 0.022, tier: 2, tradable: false},
-    {name: "Electrical Contractors and Other Wiring Installation Contractors", code: "238210", employ: 19917.05, sector: "Construction", rca: 0.923, pci: -0.919, trad: 0.0, tier: 2, tradable: false},
-    {name: "Plumbing, Heating, and Air-Conditioning Contractors", code: "238220", employ: 23870.65, sector: "Construction", rca: 0.916, pci: -0.9, trad: 0.0, tier: 2, tradable: false},
-    {name: "Other Building Equipment Contractors", code: "238290", employ: 1818.35, sector: "Construction", rca: 0.95, pci: -0.785, trad: 0.0, tier: 2, tradable: false},
-    {name: "Drywall and Insulation Contractors", code: "238310", employ: 5237.41, sector: "Construction", rca: 1.019, pci: -0.185, trad: 0.0, tier: 2, tradable: false},
-    {name: "Painting and Wall Covering Contractors", code: "238320", employ: 3328.24, sector: "Construction", rca: 0.783, pci: -0.399, trad: 0.0, tier: 2, tradable: false},
-    {name: "Flooring Contractors", code: "238330", employ: 1926.91, sector: "Construction", rca: 1.193, pci: -0.174, trad: 0.0, tier: 2, tradable: false},
-    {name: "Tile and Terrazzo Contractors", code: "238340", employ: 253.96, sector: "Construction", rca: 0.324, pci: 0.265, trad: 0.037, tier: 2, tradable: false},
-    {name: "Finish Carpentry Contractors", code: "238350", employ: 3290.53, sector: "Construction", rca: 1.14, pci: -0.435, trad: 0.0, tier: 2, tradable: false},
-    {name: "Other Building Finishing Contractors", code: "238390", employ: 2049.76, sector: "Construction", rca: 1.311, pci: 0.279, trad: 0.0, tier: 2, tradable: false},
-    {name: "Site Preparation Contractors", code: "238910", employ: 6943.7, sector: "Construction", rca: 1.005, pci: -1.163, trad: 0.0, tier: 2, tradable: false},
-    {name: "All Other Specialty Trade Contractors", code: "238990", employ: 6677.3, sector: "Construction", rca: 0.881, pci: -0.874, trad: 0.0, tier: 2, tradable: false},
-    {name: "Dog and Cat Food Manufacturing", code: "311111", employ: 8.13, sector: "Manufacturing", rca: 0.041, pci: -1.666, trad: 1.0, tier: 0, tradable: true},
-    {name: "Flour Milling", code: "311211", employ: 240.42, sector: "Manufacturing", rca: 2.679, pci: -0.172, trad: 1.0, tier: 0, tradable: true},
-    {name: "Malt Manufacturing", code: "311213", employ: 15.19, sector: "Manufacturing", rca: 1.169, pci: 1.447, trad: 1.0, tier: 0, tradable: true},
-    {name: "Soybean and Other Oilseed Processing", code: "311224", employ: 24.42, sector: "Manufacturing", rca: 0.225, pci: -0.943, trad: 1.0, tier: 0, tradable: true},
-    {name: "Fats and Oils Refining and Blending", code: "311225", employ: 77.24, sector: "Manufacturing", rca: 1.319, pci: -0.153, trad: 1.0, tier: 0, tradable: true},
-    {name: "Nonchocolate Confectionery Manufacturing", code: "311340", employ: 145.36, sector: "Manufacturing", rca: 0.481, pci: 0.615, trad: 1.0, tier: 0, tradable: true},
-    {name: "Chocolate and Confectionery Manufacturing from Cacao Beans", code: "311351", employ: 88.13, sector: "Manufacturing", rca: 0.71, pci: 0.524, trad: 1.0, tier: 0, tradable: true},
-    {name: "Confectionery Manufacturing from Purchased Chocolate", code: "311352", employ: 533.71, sector: "Manufacturing", rca: 1.47, pci: 0.524, trad: 1.0, tier: 0, tradable: true},
-    {name: "Frozen Fruit, Juice, and Vegetable Manufacturing", code: "311411", employ: 192.0, sector: "Manufacturing", rca: 0.526, pci: 0.142, trad: 1.0, tier: 0, tradable: true},
-    {name: "Frozen Specialty Food Manufacturing", code: "311412", employ: 263.4, sector: "Manufacturing", rca: 0.598, pci: 0.25, trad: 0.9, tier: 0, tradable: true},
-    {name: "Fruit and Vegetable Canning", code: "311421", employ: 6.67, sector: "Manufacturing", rca: 0.011, pci: -0.092, trad: 1.0, tier: 0, tradable: true},
-    {name: "Specialty Canning", code: "311422", employ: 3.79, sector: "Manufacturing", rca: 0.039, pci: 1.539, trad: 1.0, tier: 0, tradable: true},
-    {name: "Dried and Dehydrated Food Manufacturing", code: "311423", employ: 65.99, sector: "Manufacturing", rca: 0.325, pci: -0.196, trad: 1.0, tier: 0, tradable: true},
-    {name: "Fluid Milk Manufacturing", code: "311511", employ: 568.29, sector: "Manufacturing", rca: 1.049, pci: 0.35, trad: 0.905, tier: 0, tradable: true},
-    {name: "Cheese Manufacturing", code: "311513", employ: 9.82, sector: "Manufacturing", rca: 0.02, pci: -0.623, trad: 1.0, tier: 0, tradable: true},
-    {name: "Dry, Condensed, and Evaporated Dairy Product Manufacturing", code: "311514", employ: 80.19, sector: "Manufacturing", rca: 0.395, pci: 0.09, trad: 1.0, tier: 0, tradable: true},
-    {name: "Ice Cream and Frozen Dessert Manufacturing", code: "311520", employ: 175.88, sector: "Manufacturing", rca: 0.468, pci: 0.958, trad: 0.9, tier: 0, tradable: true},
-    {name: "Animal (except Poultry) Slaughtering", code: "311611", employ: 7.2, sector: "Manufacturing", rca: 0.013, pci: -1.882, trad: 1.0, tier: 0, tradable: true},
-    {name: "Meat Processed from Carcasses", code: "311612", employ: 1243.63, sector: "Manufacturing", rca: 0.854, pci: -1.178, trad: 0.9, tier: 0, tradable: true},
-    {name: "Rendering and Meat Byproduct Processing", code: "311613", employ: 5.84, sector: "Manufacturing", rca: 0.045, pci: -0.306, trad: 1.0, tier: 0, tradable: true},
-    {name: "Seafood Product Preparation and Packaging", code: "311710", employ: 1425.0, sector: "Manufacturing", rca: 5.473, pci: 0.895, trad: 1.0, tier: 0, tradable: true},
-    {name: "Retail Bakeries", code: "311811", employ: 5321.56, sector: "Manufacturing", rca: 2.295, pci: -0.566, trad: 0.5, tier: 1, tradable: true},
-    {name: "Commercial Bakeries", code: "311812", employ: 3186.12, sector: "Manufacturing", rca: 1.103, pci: 0.238, trad: 0.534, tier: 1, tradable: true},
-    {name: "Frozen Cakes, Pies, and Other Pastries Manufacturing", code: "311813", employ: 98.99, sector: "Manufacturing", rca: 0.538, pci: 0.238, trad: 0.534, tier: 1, tradable: true},
-    {name: "Cookie and Cracker Manufacturing", code: "311821", employ: 81.29, sector: "Manufacturing", rca: 0.222, pci: 1.039, trad: 0.937, tier: 0, tradable: true},
-    {name: "Dry Pasta, Dough, and Flour Mixes Manufacturing from Purchased Flour", code: "311824", employ: 105.41, sector: "Manufacturing", rca: 0.345, pci: 1.039, trad: 0.937, tier: 0, tradable: true},
-    {name: "Tortilla Manufacturing", code: "311830", employ: 51.63, sector: "Manufacturing", rca: 0.122, pci: 0.369, trad: 0.9, tier: 0, tradable: true},
-    {name: "Roasted Nuts and Peanut Butter Manufacturing", code: "311911", employ: 8.92, sector: "Manufacturing", rca: 0.059, pci: 0.476, trad: 0.926, tier: 0, tradable: true},
-    {name: "Other Snack Food Manufacturing", code: "311919", employ: 381.36, sector: "Manufacturing", rca: 0.63, pci: 0.476, trad: 0.926, tier: 0, tradable: true},
-    {name: "Coffee and Tea Manufacturing", code: "311920", employ: 1192.38, sector: "Manufacturing", rca: 2.006, pci: 0.573, trad: 1.0, tier: 0, tradable: true},
-    {name: "Flavoring Syrup and Concentrate Manufacturing", code: "311930", employ: 30.0, sector: "Manufacturing", rca: 0.148, pci: 2.715, trad: 0.9, tier: 0, tradable: true},
-    {name: "Mayonnaise, Dressing, and Other Prepared Sauce Manufacturing", code: "311941", employ: 1262.46, sector: "Manufacturing", rca: 4.152, pci: 0.362, trad: 1.0, tier: 0, tradable: true},
-    {name: "Spice and Extract Manufacturing", code: "311942", employ: 350.92, sector: "Manufacturing", rca: 1.008, pci: 0.362, trad: 1.0, tier: 0, tradable: true},
-    {name: "Perishable Prepared Food Manufacturing", code: "311991", employ: 840.37, sector: "Manufacturing", rca: 0.815, pci: 0.61, trad: 0.706, tier: 1, tradable: true},
-    {name: "All Other Miscellaneous Food Manufacturing", code: "311999", employ: 215.59, sector: "Manufacturing", rca: 0.317, pci: -0.026, trad: 1.0, tier: 0, tradable: true},
-    {name: "Soft Drink Manufacturing", code: "312111", employ: 236.06, sector: "Manufacturing", rca: 0.357, pci: 0.61, trad: 0.5, tier: 1, tradable: true},
-    {name: "Bottled Water Manufacturing", code: "312112", employ: 500.93, sector: "Manufacturing", rca: 3.285, pci: 0.271, trad: 0.9, tier: 0, tradable: true},
-    {name: "Ice Manufacturing", code: "312113", employ: 12.82, sector: "Manufacturing", rca: 0.153, pci: -0.172, trad: 0.5, tier: 1, tradable: true},
-    {name: "Breweries", code: "312120", employ: 2724.63, sector: "Manufacturing", rca: 1.641, pci: -0.283, trad: 1.0, tier: 0, tradable: true},
-    {name: "Wineries", code: "312130", employ: 115.91, sector: "Manufacturing", rca: 0.099, pci: -0.604, trad: 1.0, tier: 0, tradable: true},
-    {name: "Distilleries", code: "312140", employ: 79.12, sector: "Manufacturing", rca: 0.354, pci: 0.5, trad: 1.0, tier: 0, tradable: true},
-    {name: "Tobacco Manufacturing", code: "312230", employ: 24.98, sector: "Manufacturing", rca: 0.329, pci: 1.632, trad: 1.0, tier: 0, tradable: true},
-    {name: "Broadwoven Fabric Mills", code: "313210", employ: 315.2, sector: "Manufacturing", rca: 2.045, pci: 0.819, trad: 1.0, tier: 0, tradable: true},
-    {name: "Narrow Fabric Mills and Schiffli Machine Embroidery", code: "313220", employ: 14.17, sector: "Manufacturing", rca: 0.254, pci: 1.251, trad: 1.0, tier: 0, tradable: true},
-    {name: "Nonwoven Fabric Mills", code: "313230", employ: 256.71, sector: "Manufacturing", rca: 2.273, pci: 1.53, trad: 1.0, tier: 0, tradable: true},
-    {name: "Knit Fabric Mills", code: "313240", employ: 3.47, sector: "Manufacturing", rca: 0.083, pci: 1.504, trad: 1.0, tier: 0, tradable: true},
-    {name: "Textile and Fabric Finishing Mills", code: "313310", employ: 181.49, sector: "Manufacturing", rca: 0.841, pci: 0.274, trad: 1.0, tier: 0, tradable: true},
-    {name: "Fabric Coating Mills", code: "313320", employ: 598.87, sector: "Manufacturing", rca: 12.005, pci: 1.934, trad: 1.0, tier: 0, tradable: true},
-    {name: "Curtain and Linen Mills", code: "314120", employ: 106.27, sector: "Manufacturing", rca: 0.437, pci: 1.001, trad: 1.0, tier: 0, tradable: true},
-    {name: "Textile Bag and Canvas Mills", code: "314910", employ: 391.08, sector: "Manufacturing", rca: 1.333, pci: 0.212, trad: 1.0, tier: 0, tradable: true},
-    {name: "Rope, Cordage, Twine, Tire Cord, and Tire Fabric Mills", code: "314994", employ: 4.23, sector: "Manufacturing", rca: 0.123, pci: 1.302, trad: 1.0, tier: 0, tradable: true},
-    {name: "All Other Miscellaneous Textile Product Mills", code: "314999", employ: 128.74, sector: "Manufacturing", rca: 0.435, pci: -0.537, trad: 1.0, tier: 0, tradable: true},
-    {name: "Apparel Knitting Mills", code: "315120", employ: 28.6, sector: "Manufacturing", rca: 0.583, pci: 1.66, trad: 1.0, tier: 0, tradable: true},
-    {name: "Cut and Sew Apparel Contractors", code: "315210", employ: 143.47, sector: "Manufacturing", rca: 0.407, pci: 0.381, trad: 1.0, tier: 0, tradable: true},
-    {name: "Cut and Sew Apparel Manufacturing (except Contractors)", code: "315250", employ: 103.51, sector: "Manufacturing", rca: 0.16, pci: 0.518, trad: 1.0, tier: 0, tradable: true},
-    {name: "Apparel Accessories and Other Apparel Manufacturing", code: "315990", employ: 50.26, sector: "Manufacturing", rca: 0.384, pci: 0.859, trad: 1.0, tier: 0, tradable: true},
-    {name: "Leather and Hide Tanning and Finishing", code: "316110", employ: 70.84, sector: "Manufacturing", rca: 2.887, pci: -0.273, trad: 1.0, tier: 0, tradable: true},
-    {name: "Footwear Manufacturing", code: "316210", employ: 55.03, sector: "Manufacturing", rca: 0.7, pci: 1.121, trad: 1.0, tier: 0, tradable: true},
-    {name: "Other Leather and Allied Product Manufacturing", code: "316990", employ: 187.26, sector: "Manufacturing", rca: 1.482, pci: 0.63, trad: 1.0, tier: 0, tradable: true},
-    {name: "Sawmills", code: "321113", employ: 12.89, sector: "Manufacturing", rca: 0.06, pci: -1.206, trad: 1.0, tier: 0, tradable: true},
-    {name: "Softwood Veneer and Plywood Manufacturing", code: "321212", employ: 1.41, sector: "Manufacturing", rca: 0.022, pci: -0.769, trad: 0.949, tier: 0, tradable: true},
-    {name: "Wood Window and Door Manufacturing", code: "321911", employ: 78.28, sector: "Manufacturing", rca: 0.254, pci: -0.734, trad: 0.9, tier: 0, tradable: true},
-    {name: "Cut Stock, Resawing Lumber, and Planing", code: "321912", employ: 0.37, sector: "Manufacturing", rca: 0.003, pci: -0.734, trad: 0.9, tier: 0, tradable: true},
-    {name: "Other Millwork (including Flooring)", code: "321918", employ: 70.1, sector: "Manufacturing", rca: 0.247, pci: -0.734, trad: 0.9, tier: 0, tradable: true},
-    {name: "Wood Container and Pallet Manufacturing", code: "321920", employ: 230.99, sector: "Manufacturing", rca: 0.273, pci: -1.025, trad: 0.9, tier: 0, tradable: true},
-    {name: "Manufactured Home (Mobile Home) Manufacturing", code: "321991", employ: 0.37, sector: "Manufacturing", rca: 0.002, pci: -1.036, trad: 0.938, tier: 0, tradable: true},
-    {name: "Prefabricated Wood Building Manufacturing", code: "321992", employ: 27.3, sector: "Manufacturing", rca: 0.181, pci: -1.036, trad: 0.938, tier: 0, tradable: true},
-    {name: "All Other Miscellaneous Wood Product Manufacturing", code: "321999", employ: 79.8, sector: "Manufacturing", rca: 0.263, pci: -1.036, trad: 0.938, tier: 0, tradable: true},
-    {name: "Paper Mills", code: "322120", employ: 5.42, sector: "Manufacturing", rca: 0.02, pci: 0.402, trad: 1.0, tier: 0, tradable: true},
-    {name: "Corrugated and Solid Fiber Box Manufacturing", code: "322211", employ: 42.54, sector: "Manufacturing", rca: 0.044, pci: -0.482, trad: 0.9, tier: 0, tradable: true},
-    {name: "Folding Paperboard Box Manufacturing", code: "322212", employ: 42.56, sector: "Manufacturing", rca: 0.175, pci: -0.482, trad: 0.9, tier: 0, tradable: true},
-    {name: "Other Paperboard Container Manufacturing", code: "322219", employ: 208.27, sector: "Manufacturing", rca: 1.04, pci: -0.482, trad: 0.9, tier: 0, tradable: true},
-    {name: "Paper Bag and Coated and Treated Paper Manufacturing", code: "322220", employ: 36.0, sector: "Manufacturing", rca: 0.067, pci: 0.717, trad: 1.0, tier: 0, tradable: true},
-    {name: "Stationery Product Manufacturing", code: "322230", employ: 10.05, sector: "Manufacturing", rca: 0.064, pci: 1.504, trad: 0.9, tier: 0, tradable: true},
-    {name: "All Other Converted Paper Product Manufacturing", code: "322299", employ: 24.1, sector: "Manufacturing", rca: 0.155, pci: 0.805, trad: 1.0, tier: 0, tradable: true},
-    {name: "Commercial Printing (except Screen and Books)", code: "323111", employ: 3731.92, sector: "Manufacturing", rca: 0.702, pci: -0.914, trad: 0.5, tier: 1, tradable: true},
-    {name: "Commercial Screen Printing", code: "323113", employ: 1528.56, sector: "Manufacturing", rca: 1.388, pci: -0.85, trad: 0.388, tier: 1, tradable: false},
-    {name: "Books Printing", code: "323117", employ: 19.16, sector: "Manufacturing", rca: 0.224, pci: -0.85, trad: 0.388, tier: 1, tradable: false},
-    {name: "Support Activities for Printing", code: "323120", employ: 73.36, sector: "Manufacturing", rca: 0.251, pci: 1.166, trad: 0.5, tier: 1, tradable: true},
-    {name: "Asphalt Paving Mixture and Block Manufacturing", code: "324121", employ: 206.33, sector: "Manufacturing", rca: 0.69, pci: -0.371, trad: 0.941, tier: 0, tradable: true},
-    {name: "Asphalt Shingle and Coating Materials Manufacturing", code: "324122", employ: 430.14, sector: "Manufacturing", rca: 1.994, pci: -0.371, trad: 0.941, tier: 0, tradable: true},
-    {name: "Petroleum Lubricating Oil and Grease Manufacturing", code: "324191", employ: 33.23, sector: "Manufacturing", rca: 0.182, pci: 0.968, trad: 1.0, tier: 0, tradable: true},
-    {name: "Industrial Gas Manufacturing", code: "325120", employ: 72.62, sector: "Manufacturing", rca: 0.218, pci: 0.497, trad: 0.9, tier: 0, tradable: true},
-    {name: "Synthetic Dye and Pigment Manufacturing", code: "325130", employ: 214.29, sector: "Manufacturing", rca: 1.744, pci: 1.921, trad: 1.0, tier: 0, tradable: true},
-    {name: "Other Basic Inorganic Chemical Manufacturing", code: "325180", employ: 223.6, sector: "Manufacturing", rca: 0.369, pci: -0.19, trad: 1.0, tier: 0, tradable: true},
-    {name: "All Other Basic Organic Chemical Manufacturing", code: "325199", employ: 57.27, sector: "Manufacturing", rca: 0.127, pci: 0.207, trad: 1.0, tier: 0, tradable: true},
-    {name: "Plastics Material and Resin Manufacturing", code: "325211", employ: 578.65, sector: "Manufacturing", rca: 0.881, pci: 0.307, trad: 1.0, tier: 0, tradable: true},
-    {name: "Synthetic Rubber Manufacturing", code: "325212", employ: 61.59, sector: "Manufacturing", rca: 0.395, pci: 1.557, trad: 1.0, tier: 0, tradable: true},
-    {name: "Artificial and Synthetic Fibers and Filaments Manufacturing", code: "325220", employ: 169.66, sector: "Manufacturing", rca: 1.434, pci: 1.279, trad: 1.0, tier: 0, tradable: true},
-    {name: "Nitrogenous Fertilizer Manufacturing", code: "325311", employ: 1.36, sector: "Manufacturing", rca: 0.04, pci: -0.744, trad: 1.0, tier: 0, tradable: true},
-    {name: "Compost Manufacturing", code: "325315", employ: 7.54, sector: "Manufacturing", rca: 0.348, pci: -0.744, trad: 1.0, tier: 0, tradable: true},
-    {name: "Pesticide and Other Agricultural Chemical Manufacturing", code: "325320", employ: 1.36, sector: "Manufacturing", rca: 0.018, pci: 0.349, trad: 1.0, tier: 0, tradable: true},
-    {name: "Medicinal and Botanical Manufacturing", code: "325411", employ: 723.67, sector: "Manufacturing", rca: 1.322, pci: 0.562, trad: 1.0, tier: 0, tradable: true},
-    {name: "Pharmaceutical Preparation Manufacturing", code: "325412", employ: 3755.54, sector: "Manufacturing", rca: 1.006, pci: 0.887, trad: 1.0, tier: 0, tradable: true},
-    {name: "In-Vitro Diagnostic Substance Manufacturing", code: "325413", employ: 1368.24, sector: "Manufacturing", rca: 1.759, pci: 0.562, trad: 1.0, tier: 0, tradable: true},
-    {name: "Biological Product (except Diagnostic) Manufacturing", code: "325414", employ: 1318.97, sector: "Manufacturing", rca: 2.233, pci: 0.562, trad: 1.0, tier: 0, tradable: true},
-    {name: "Paint and Coating Manufacturing", code: "325510", employ: 212.69, sector: "Manufacturing", rca: 0.35, pci: 0.154, trad: 1.0, tier: 0, tradable: true},
-    {name: "Adhesive Manufacturing", code: "325520", employ: 781.54, sector: "Manufacturing", rca: 2.067, pci: 1.436, trad: 1.0, tier: 0, tradable: true},
-    {name: "Soap and Other Detergent Manufacturing", code: "325611", employ: 68.23, sector: "Manufacturing", rca: 0.152, pci: 0.026, trad: 1.0, tier: 0, tradable: true},
-    {name: "Polish and Other Sanitation Good Manufacturing", code: "325612", employ: 26.92, sector: "Manufacturing", rca: 0.086, pci: 0.026, trad: 1.0, tier: 0, tradable: true},
-    {name: "Surface Active Agent Manufacturing", code: "325613", employ: 13.46, sector: "Manufacturing", rca: 0.161, pci: 0.026, trad: 1.0, tier: 0, tradable: true},
-    {name: "Toilet Preparation Manufacturing", code: "325620", employ: 16.08, sector: "Manufacturing", rca: 0.02, pci: 1.003, trad: 1.0, tier: 0, tradable: true},
-    {name: "Printing Ink Manufacturing", code: "325910", employ: 140.75, sector: "Manufacturing", rca: 1.234, pci: 2.154, trad: 1.0, tier: 0, tradable: true},
-    {name: "Custom Compounding of Purchased Resins", code: "325991", employ: 5.48, sector: "Manufacturing", rca: 0.035, pci: 0.511, trad: 1.0, tier: 0, tradable: true},
-    {name: "Photographic Film, Paper, Plate, Chemical, and Copy Toner Manufacturing", code: "325992", employ: 158.47, sector: "Manufacturing", rca: 2.13, pci: 1.635, trad: 1.0, tier: 0, tradable: true},
-    {name: "All Other Miscellaneous Chemical Product and Preparation Manufacturing", code: "325998", employ: 59.49, sector: "Manufacturing", rca: 0.115, pci: -0.129, trad: 1.0, tier: 0, tradable: true},
-    {name: "Plastics Bag and Pouch Manufacturing", code: "326111", employ: 1.08, sector: "Manufacturing", rca: 0.003, pci: -0.182, trad: 1.0, tier: 0, tradable: true},
-    {name: "Plastics Packaging Film and Sheet (including Laminated) Manufacturing", code: "326112", employ: 5.03, sector: "Manufacturing", rca: 0.022, pci: -0.182, trad: 1.0, tier: 0, tradable: true},
-    {name: "Unlaminated Plastics Film and Sheet (except Packaging) Manufacturing", code: "326113", employ: 8.21, sector: "Manufacturing", rca: 0.025, pci: -0.182, trad: 1.0, tier: 0, tradable: true},
-    {name: "Unlaminated Plastics Profile Shape Manufacturing", code: "326121", employ: 8.55, sector: "Manufacturing", rca: 0.034, pci: -0.392, trad: 1.0, tier: 0, tradable: true},
-    {name: "Plastics Pipe and Pipe Fitting Manufacturing", code: "326122", employ: 2.47, sector: "Manufacturing", rca: 0.008, pci: -0.392, trad: 1.0, tier: 0, tradable: true},
-    {name: "Laminated Plastics Plate, Sheet (except Packaging), and Shape Manufacturing", code: "326130", employ: 15.14, sector: "Manufacturing", rca: 0.064, pci: 0.946, trad: 0.9, tier: 0, tradable: true},
-    {name: "Polystyrene Foam Product Manufacturing", code: "326140", employ: 25.66, sector: "Manufacturing", rca: 0.059, pci: 0.915, trad: 0.9, tier: 0, tradable: true},
-    {name: "Urethane and Other Foam Product (except Polystyrene) Manufacturing", code: "326150", employ: 9.64, sector: "Manufacturing", rca: 0.014, pci: 0.413, trad: 1.0, tier: 0, tradable: true},
-    {name: "Plastics Bottle Manufacturing", code: "326160", employ: 15.91, sector: "Manufacturing", rca: 0.034, pci: 0.674, trad: 1.0, tier: 0, tradable: true},
-    {name: "All Other Plastics Product Manufacturing", code: "326199", employ: 81.46, sector: "Manufacturing", rca: 0.038, pci: -0.807, trad: 0.995, tier: 0, tradable: true},
-    {name: "Rubber and Plastics Hoses and Belting Manufacturing", code: "326220", employ: 104.15, sector: "Manufacturing", rca: 0.476, pci: 0.43, trad: 1.0, tier: 0, tradable: true},
-    {name: "Rubber Product Manufacturing for Mechanical Use", code: "326291", employ: 148.95, sector: "Manufacturing", rca: 0.624, pci: -0.082, trad: 0.948, tier: 0, tradable: true},
-    {name: "All Other Rubber Product Manufacturing", code: "326299", employ: 106.2, sector: "Manufacturing", rca: 0.425, pci: -0.082, trad: 0.948, tier: 0, tradable: true},
-    {name: "Pottery, Ceramics, and Plumbing Fixture Manufacturing", code: "327110", employ: 84.96, sector: "Manufacturing", rca: 0.862, pci: 0.826, trad: 1.0, tier: 0, tradable: true},
-    {name: "Clay Building Material and Refractories Manufacturing", code: "327120", employ: 44.69, sector: "Manufacturing", rca: 0.325, pci: 0.492, trad: 1.0, tier: 0, tradable: true},
-    {name: "Flat Glass Manufacturing", code: "327211", employ: 1.42, sector: "Manufacturing", rca: 0.019, pci: 1.592, trad: 1.0, tier: 0, tradable: true},
-    {name: "Other Pressed and Blown Glass and Glassware Manufacturing", code: "327212", employ: 391.82, sector: "Manufacturing", rca: 5.213, pci: 1.111, trad: 1.0, tier: 0, tradable: true},
-    {name: "Glass Product Manufacturing Made of Purchased Glass", code: "327215", employ: 143.54, sector: "Manufacturing", rca: 0.363, pci: 0.615, trad: 1.0, tier: 0, tradable: true},
-    {name: "Cement Manufacturing", code: "327310", employ: 213.13, sector: "Manufacturing", rca: 1.222, pci: 0.842, trad: 0.9, tier: 0, tradable: true},
-    {name: "Ready-Mix Concrete Manufacturing", code: "327320", employ: 197.58, sector: "Manufacturing", rca: 0.105, pci: -1.531, trad: 0.125, tier: 2, tradable: false},
-    {name: "Concrete Block and Brick Manufacturing", code: "327331", employ: 51.92, sector: "Manufacturing", rca: 0.259, pci: 0.195, trad: 0.9, tier: 0, tradable: true},
-    {name: "Other Concrete Product Manufacturing", code: "327390", employ: 554.09, sector: "Manufacturing", rca: 0.782, pci: -0.311, trad: 0.669, tier: 1, tradable: true},
-    {name: "Lime Manufacturing", code: "327410", employ: 6.33, sector: "Manufacturing", rca: 0.34, pci: 0.825, trad: 0.9, tier: 0, tradable: true},
-    {name: "Gypsum Product Manufacturing", code: "327420", employ: 63.9, sector: "Manufacturing", rca: 0.945, pci: 1.583, trad: 0.9, tier: 0, tradable: true},
-    {name: "Abrasive Product Manufacturing", code: "327910", employ: 58.61, sector: "Manufacturing", rca: 0.566, pci: 1.227, trad: 1.0, tier: 0, tradable: true},
-    {name: "Cut Stone and Stone Product Manufacturing", code: "327991", employ: 291.19, sector: "Manufacturing", rca: 0.509, pci: -0.4, trad: 0.5, tier: 1, tradable: true},
-    {name: "Ground or Treated Mineral and Earth Manufacturing", code: "327992", employ: 43.36, sector: "Manufacturing", rca: 1.032, pci: 0.167, trad: 1.0, tier: 0, tradable: true},
-    {name: "Mineral Wool Manufacturing", code: "327993", employ: 4.91, sector: "Manufacturing", rca: 0.035, pci: 0.167, trad: 1.0, tier: 0, tradable: true},
-    {name: "All Other Miscellaneous Nonmetallic Mineral Product Manufacturing", code: "327999", employ: 39.7, sector: "Manufacturing", rca: 0.349, pci: 0.909, trad: 1.0, tier: 0, tradable: true},
-    {name: "Iron and Steel Mills and Ferroalloy Manufacturing", code: "331110", employ: 16.72, sector: "Manufacturing", rca: 0.023, pci: -0.126, trad: 1.0, tier: 0, tradable: true},
-    {name: "Iron and Steel Pipe and Tube Manufacturing from Purchased Steel", code: "331210", employ: 31.78, sector: "Manufacturing", rca: 0.123, pci: 0.216, trad: 1.0, tier: 0, tradable: true},
-    {name: "Rolled Steel Shape Manufacturing", code: "331221", employ: 85.7, sector: "Manufacturing", rca: 0.429, pci: 0.233, trad: 0.932, tier: 0, tradable: true},
-    {name: "Other Aluminum Rolling, Drawing, and Extruding", code: "331318", employ: 4.07, sector: "Manufacturing", rca: 0.021, pci: 0.06, trad: 1.0, tier: 0, tradable: true},
-    {name: "Nonferrous Metal (except Aluminum) Smelting and Refining", code: "331410", employ: 213.96, sector: "Manufacturing", rca: 4.119, pci: 1.481, trad: 1.0, tier: 0, tradable: true},
-    {name: "Copper Rolling, Drawing, Extruding, and Alloying", code: "331420", employ: 82.5, sector: "Manufacturing", rca: 0.316, pci: 0.958, trad: 1.0, tier: 0, tradable: true},
-    {name: "Secondary Smelting, Refining, and Alloying of Nonferrous Metal (except Copper and Aluminum)", code: "331492", employ: 159.76, sector: "Manufacturing", rca: 1.279, pci: 0.625, trad: 1.0, tier: 0, tradable: true},
-    {name: "Iron Foundries", code: "331511", employ: 12.83, sector: "Manufacturing", rca: 0.062, pci: -0.301, trad: 0.92, tier: 0, tradable: true},
-    {name: "Steel Investment Foundries", code: "331512", employ: 1.82, sector: "Manufacturing", rca: 0.018, pci: -0.301, trad: 0.92, tier: 0, tradable: true},
-    {name: "Steel Foundries (except Investment)", code: "331513", employ: 36.2, sector: "Manufacturing", rca: 0.283, pci: -0.301, trad: 0.92, tier: 0, tradable: true},
-    {name: "Nonferrous Metal Die-Casting Foundries", code: "331523", employ: 184.65, sector: "Manufacturing", rca: 0.76, pci: -0.182, trad: 0.9, tier: 0, tradable: true},
-    {name: "Aluminum Foundries (except Die-Casting)", code: "331524", employ: 310.77, sector: "Manufacturing", rca: 1.225, pci: -0.182, trad: 0.9, tier: 0, tradable: true},
-    {name: "Other Nonferrous Metal Foundries (except Die-Casting)", code: "331529", employ: 92.48, sector: "Manufacturing", rca: 0.776, pci: -0.182, trad: 0.9, tier: 0, tradable: true},
-    {name: "Iron and Steel Forging", code: "332111", employ: 4.85, sector: "Manufacturing", rca: 0.017, pci: -0.281, trad: 0.93, tier: 0, tradable: true},
-    {name: "Custom Roll Forming", code: "332114", employ: 28.02, sector: "Manufacturing", rca: 0.59, pci: -0.281, trad: 0.93, tier: 0, tradable: true},
-    {name: "Powder Metallurgy Part Manufacturing", code: "332117", employ: 41.52, sector: "Manufacturing", rca: 0.732, pci: -0.281, trad: 0.93, tier: 0, tradable: true},
-    {name: "Metal Crown, Closure, and Other Metal Stamping (except Automotive)", code: "332119", employ: 291.64, sector: "Manufacturing", rca: 0.434, pci: -0.281, trad: 0.93, tier: 0, tradable: true},
-    {name: "Metal Kitchen Cookware, Utensil, Cutlery, and Flatware (except Precious) Manufacturing", code: "332215", employ: 10.66, sector: "Manufacturing", rca: 0.135, pci: 1.418, trad: 1.0, tier: 0, tradable: true},
-    {name: "Saw Blade and Handtool Manufacturing", code: "332216", employ: 289.59, sector: "Manufacturing", rca: 1.496, pci: 0.471, trad: 1.0, tier: 0, tradable: true},
-    {name: "Prefabricated Metal Building and Component Manufacturing", code: "332311", employ: 3.82, sector: "Manufacturing", rca: 0.009, pci: -1.181, trad: 0.827, tier: 0, tradable: true},
-    {name: "Fabricated Structural Metal Manufacturing", code: "332312", employ: 626.41, sector: "Manufacturing", rca: 0.411, pci: -1.181, trad: 0.827, tier: 0, tradable: true},
-    {name: "Plate Work Manufacturing", code: "332313", employ: 67.89, sector: "Manufacturing", rca: 0.11, pci: -1.181, trad: 0.827, tier: 0, tradable: true},
-    {name: "Metal Window and Door Manufacturing", code: "332321", employ: 127.78, sector: "Manufacturing", rca: 0.164, pci: -0.768, trad: 0.452, tier: 1, tradable: false},
-    {name: "Sheet Metal Work Manufacturing", code: "332322", employ: 2259.38, sector: "Manufacturing", rca: 0.899, pci: -0.768, trad: 0.452, tier: 1, tradable: false},
-    {name: "Ornamental and Architectural Metal Work Manufacturing", code: "332323", employ: 484.8, sector: "Manufacturing", rca: 0.519, pci: -0.768, trad: 0.452, tier: 1, tradable: false},
-    {name: "Power Boiler and Heat Exchanger Manufacturing", code: "332410", employ: 127.71, sector: "Manufacturing", rca: 0.463, pci: 0.444, trad: 1.0, tier: 0, tradable: true},
-    {name: "Metal Tank (Heavy Gauge) Manufacturing", code: "332420", employ: 407.07, sector: "Manufacturing", rca: 1.043, pci: -0.577, trad: 1.0, tier: 0, tradable: true},
-    {name: "Other Metal Container Manufacturing", code: "332439", employ: 189.78, sector: "Manufacturing", rca: 0.968, pci: 0.283, trad: 0.944, tier: 0, tradable: true},
-    {name: "Hardware Manufacturing", code: "332510", employ: 21.63, sector: "Manufacturing", rca: 0.14, pci: 0.782, trad: 1.0, tier: 0, tradable: true},
-    {name: "Spring Manufacturing", code: "332613", employ: 2.71, sector: "Manufacturing", rca: 0.018, pci: 0.094, trad: 1.0, tier: 0, tradable: true},
-    {name: "Other Fabricated Wire Product Manufacturing", code: "332618", employ: 46.88, sector: "Manufacturing", rca: 0.207, pci: 0.094, trad: 1.0, tier: 0, tradable: true},
-    {name: "Machine Shops", code: "332710", employ: 7038.71, sector: "Manufacturing", rca: 1.5, pci: -1.182, trad: 0.5, tier: 1, tradable: true},
-    {name: "Precision Turned Product Manufacturing", code: "332721", employ: 184.97, sector: "Manufacturing", rca: 0.289, pci: -0.146, trad: 1.0, tier: 0, tradable: true},
-    {name: "Bolt, Nut, Screw, Rivet, and Washer Manufacturing", code: "332722", employ: 28.0, sector: "Manufacturing", rca: 0.046, pci: -0.146, trad: 1.0, tier: 0, tradable: true},
-    {name: "Metal Heat Treating", code: "332811", employ: 91.16, sector: "Manufacturing", rca: 0.299, pci: -0.617, trad: 0.694, tier: 1, tradable: true},
-    {name: "Metal Coating, Engraving (except Jewelry and Silverware), and Allied Services to Manufacturers", code: "332812", employ: 1088.0, sector: "Manufacturing", rca: 1.138, pci: -0.617, trad: 0.694, tier: 1, tradable: true},
-    {name: "Electroplating, Plating, Polishing, Anodizing, and Coloring", code: "332813", employ: 1150.26, sector: "Manufacturing", rca: 1.216, pci: -0.617, trad: 0.694, tier: 1, tradable: true},
-    {name: "Industrial Valve Manufacturing", code: "332911", employ: 220.42, sector: "Manufacturing", rca: 0.618, pci: 0.089, trad: 1.0, tier: 0, tradable: true},
-    {name: "Fluid Power Valve and Hose Fitting Manufacturing", code: "332912", employ: 263.8, sector: "Manufacturing", rca: 0.545, pci: 0.089, trad: 1.0, tier: 0, tradable: true},
-    {name: "Plumbing Fixture Fitting and Trim Manufacturing", code: "332913", employ: 740.11, sector: "Manufacturing", rca: 5.478, pci: 0.089, trad: 1.0, tier: 0, tradable: true},
-    {name: "Other Metal Valve and Pipe Fitting Manufacturing", code: "332919", employ: 723.89, sector: "Manufacturing", rca: 4.299, pci: 0.089, trad: 1.0, tier: 0, tradable: true},
-    {name: "Ammunition (except Small Arms) Manufacturing", code: "332993", employ: 2.99, sector: "Manufacturing", rca: 0.06, pci: -0.381, trad: 1.0, tier: 0, tradable: true},
-    {name: "Small Arms, Ordnance, and Ordnance Accessories Manufacturing", code: "332994", employ: 33.28, sector: "Manufacturing", rca: 0.126, pci: -0.381, trad: 1.0, tier: 0, tradable: true},
-    {name: "Fabricated Pipe and Pipe Fitting Manufacturing", code: "332996", employ: 98.44, sector: "Manufacturing", rca: 0.227, pci: -0.381, trad: 1.0, tier: 0, tradable: true},
-    {name: "All Other Miscellaneous Fabricated Metal Product Manufacturing", code: "332999", employ: 297.21, sector: "Manufacturing", rca: 0.191, pci: -0.729, trad: 1.0, tier: 0, tradable: true},
-    {name: "Lawn and Garden Tractor and Home Lawn and Garden Equipment Manufacturing", code: "333112", employ: 8.58, sector: "Manufacturing", rca: 0.108, pci: -1.627, trad: 1.0, tier: 0, tradable: true},
-    {name: "Construction Machinery Manufacturing", code: "333120", employ: 8.85, sector: "Manufacturing", rca: 0.018, pci: -0.51, trad: 1.0, tier: 0, tradable: true},
-    {name: "Food Product Machinery Manufacturing", code: "333241", employ: 87.09, sector: "Manufacturing", rca: 0.374, pci: 0.486, trad: 1.0, tier: 0, tradable: true},
-    {name: "Semiconductor Machinery Manufacturing", code: "333242", employ: 2503.49, sector: "Manufacturing", rca: 4.022, pci: 0.421, trad: 1.0, tier: 0, tradable: true},
-    {name: "Sawmill, Woodworking, and Paper Machinery Manufacturing", code: "333243", employ: 31.66, sector: "Manufacturing", rca: 0.185, pci: 0.421, trad: 1.0, tier: 0, tradable: true},
-    {name: "All Other Industrial Machinery Manufacturing", code: "333248", employ: 2642.2, sector: "Manufacturing", rca: 2.679, pci: -0.038, trad: 1.0, tier: 0, tradable: true},
-    {name: "Commercial and Service Industry Machinery Manufacturing", code: "333310", employ: 2127.62, sector: "Manufacturing", rca: 1.875, pci: 0.234, trad: 1.0, tier: 0, tradable: true},
-    {name: "Industrial and Commercial Fan and Blower and Air Purification Equipment Manufacturing", code: "333413", employ: 135.0, sector: "Manufacturing", rca: 0.347, pci: -0.384, trad: 1.0, tier: 0, tradable: true},
-    {name: "Heating Equipment (except Warm Air Furnaces) Manufacturing", code: "333414", employ: 628.67, sector: "Manufacturing", rca: 3.959, pci: -0.384, trad: 1.0, tier: 0, tradable: true},
-    {name: "Air-Conditioning and Warm Air Heating Equipment and Commercial and Industrial Refrigeration Equipment Manufacturing", code: "333415", employ: 223.89, sector: "Manufacturing", rca: 0.261, pci: -0.384, trad: 1.0, tier: 0, tradable: true},
-    {name: "Industrial Mold Manufacturing", code: "333511", employ: 34.19, sector: "Manufacturing", rca: 0.062, pci: -0.729, trad: 0.967, tier: 0, tradable: true},
-    {name: "Special Die and Tool, Die Set, Jig, and Fixture Manufacturing", code: "333514", employ: 328.31, sector: "Manufacturing", rca: 0.353, pci: -0.729, trad: 0.967, tier: 0, tradable: true},
-    {name: "Cutting Tool and Machine Tool Accessory Manufacturing", code: "333515", employ: 86.81, sector: "Manufacturing", rca: 0.266, pci: -0.729, trad: 0.967, tier: 0, tradable: true},
-    {name: "Machine Tool Manufacturing", code: "333517", employ: 467.48, sector: "Manufacturing", rca: 0.782, pci: -0.729, trad: 0.967, tier: 0, tradable: true},
-    {name: "Rolling Mill and Other Metalworking Machinery Manufacturing", code: "333519", employ: 43.21, sector: "Manufacturing", rca: 0.317, pci: -0.729, trad: 0.967, tier: 0, tradable: true},
-    {name: "Turbine and Turbine Generator Set Units Manufacturing", code: "333611", employ: 17.3, sector: "Manufacturing", rca: 0.22, pci: -0.167, trad: 1.0, tier: 0, tradable: true},
-    {name: "Speed Changer, Industrial High-Speed Drive, and Gear Manufacturing", code: "333612", employ: 47.9, sector: "Manufacturing", rca: 0.239, pci: -0.167, trad: 1.0, tier: 0, tradable: true},
-    {name: "Mechanical Power Transmission Equipment Manufacturing", code: "333613", employ: 358.81, sector: "Manufacturing", rca: 2.888, pci: -0.167, trad: 1.0, tier: 0, tradable: true},
-    {name: "Other Engine Equipment Manufacturing", code: "333618", employ: 5.88, sector: "Manufacturing", rca: 0.05, pci: -0.167, trad: 1.0, tier: 0, tradable: true},
-    {name: "Air and Gas Compressor Manufacturing", code: "333912", employ: 5.34, sector: "Manufacturing", rca: 0.027, pci: -0.537, trad: 1.0, tier: 0, tradable: true},
-    {name: "Measuring, Dispensing, and Other Pumping Equipment Manufacturing", code: "333914", employ: 303.57, sector: "Manufacturing", rca: 0.837, pci: -0.537, trad: 1.0, tier: 0, tradable: true},
-    {name: "Elevator and Moving Stairway Manufacturing", code: "333921", employ: 113.13, sector: "Manufacturing", rca: 0.644, pci: -0.382, trad: 1.0, tier: 0, tradable: true},
-    {name: "Conveyor and Conveying Equipment Manufacturing", code: "333922", employ: 44.43, sector: "Manufacturing", rca: 0.093, pci: -0.382, trad: 1.0, tier: 0, tradable: true},
-    {name: "Overhead Traveling Crane, Hoist, and Monorail System Manufacturing", code: "333923", employ: 22.79, sector: "Manufacturing", rca: 0.087, pci: -0.382, trad: 1.0, tier: 0, tradable: true},
-    {name: "Industrial Truck, Tractor, Trailer, and Stacker Machinery Manufacturing", code: "333924", employ: 170.24, sector: "Manufacturing", rca: 0.911, pci: -0.382, trad: 1.0, tier: 0, tradable: true},
-    {name: "Power-Driven Handtool Manufacturing", code: "333991", employ: 259.83, sector: "Manufacturing", rca: 1.766, pci: -0.537, trad: 1.0, tier: 0, tradable: true},
-    {name: "Welding and Soldering Equipment Manufacturing", code: "333992", employ: 14.56, sector: "Manufacturing", rca: 0.06, pci: 0.1, trad: 1.0, tier: 0, tradable: true},
-    {name: "Packaging Machinery Manufacturing", code: "333993", employ: 156.59, sector: "Manufacturing", rca: 0.357, pci: 1.105, trad: 1.0, tier: 0, tradable: true},
-    {name: "Industrial Process Furnace and Oven Manufacturing", code: "333994", employ: 78.86, sector: "Manufacturing", rca: 0.372, pci: -0.537, trad: 1.0, tier: 0, tradable: true},
-    {name: "Fluid Power Cylinder and Actuator Manufacturing", code: "333995", employ: 41.14, sector: "Manufacturing", rca: 0.189, pci: -0.537, trad: 1.0, tier: 0, tradable: true},
-    {name: "Fluid Power Pump and Motor Manufacturing", code: "333996", employ: 120.92, sector: "Manufacturing", rca: 0.496, pci: -0.537, trad: 1.0, tier: 0, tradable: true},
-    {name: "All Other Miscellaneous General Purpose Machinery Manufacturing", code: "333998", employ: 1155.8, sector: "Manufacturing", rca: 1.263, pci: 0.294, trad: 1.0, tier: 0, tradable: true},
-    {name: "Electronic Computer Manufacturing", code: "334111", employ: 408.7, sector: "Manufacturing", rca: 0.562, pci: 1.505, trad: 1.0, tier: 0, tradable: true},
-    {name: "Computer Storage Device Manufacturing", code: "334112", employ: 862.47, sector: "Manufacturing", rca: 4.631, pci: 1.505, trad: 1.0, tier: 0, tradable: true},
-    {name: "Computer Terminal and Other Computer Peripheral Equipment Manufacturing", code: "334118", employ: 3592.0, sector: "Manufacturing", rca: 6.023, pci: 1.505, trad: 1.0, tier: 0, tradable: true},
-    {name: "Telephone Apparatus Manufacturing", code: "334210", employ: 303.05, sector: "Manufacturing", rca: 1.023, pci: 2.85, trad: 1.0, tier: 0, tradable: true},
-    {name: "Radio and Television Broadcasting and Wireless Communications Equipment Manufacturing", code: "334220", employ: 120.08, sector: "Manufacturing", rca: 0.163, pci: 1.463, trad: 1.0, tier: 0, tradable: true},
-    {name: "Other Communications Equipment Manufacturing", code: "334290", employ: 319.5, sector: "Manufacturing", rca: 1.504, pci: 1.394, trad: 1.0, tier: 0, tradable: true},
-    {name: "Audio and Video Equipment Manufacturing", code: "334310", employ: 68.41, sector: "Manufacturing", rca: 0.328, pci: 1.933, trad: 1.0, tier: 0, tradable: true},
-    {name: "Bare Printed Circuit Board Manufacturing", code: "334412", employ: 472.23, sector: "Manufacturing", rca: 1.136, pci: 0.384, trad: 1.0, tier: 0, tradable: true},
-    {name: "Semiconductor and Related Device Manufacturing", code: "334413", employ: 5324.02, sector: "Manufacturing", rca: 1.429, pci: 0.384, trad: 1.0, tier: 0, tradable: true},
-    {name: "Capacitor, Resistor, Coil, Transformer, and Other Inductor Manufacturing", code: "334416", employ: 705.1, sector: "Manufacturing", rca: 2.989, pci: 0.384, trad: 1.0, tier: 0, tradable: true},
-    {name: "Electronic Connector Manufacturing", code: "334417", employ: 577.22, sector: "Manufacturing", rca: 1.62, pci: 0.384, trad: 1.0, tier: 0, tradable: true},
-    {name: "Printed Circuit Assembly (Electronic Assembly) Manufacturing", code: "334418", employ: 1014.53, sector: "Manufacturing", rca: 0.923, pci: 1.145, trad: 0.9, tier: 0, tradable: true},
-    {name: "Other Electronic Component Manufacturing", code: "334419", employ: 2305.78, sector: "Manufacturing", rca: 1.824, pci: 0.384, trad: 1.0, tier: 0, tradable: true},
-    {name: "Electromedical and Electrotherapeutic Apparatus Manufacturing", code: "334510", employ: 4478.4, sector: "Manufacturing", rca: 2.883, pci: -0.088, trad: 1.0, tier: 0, tradable: true},
-    {name: "Search, Detection, Navigation, Guidance, Aeronautical, and Nautical System and Instrument Manufacturing", code: "334511", employ: 3354.98, sector: "Manufacturing", rca: 2.369, pci: -0.088, trad: 1.0, tier: 0, tradable: true},
-    {name: "Automatic Environmental Control Manufacturing for Residential, Commercial, and Appliance Use", code: "334512", employ: 277.78, sector: "Manufacturing", rca: 1.648, pci: -0.088, trad: 1.0, tier: 0, tradable: true},
-    {name: "Instruments and Related Products Manufacturing for Measuring, Displaying, and Controlling Industrial Process Variables", code: "334513", employ: 3119.21, sector: "Manufacturing", rca: 2.351, pci: -0.088, trad: 1.0, tier: 0, tradable: true},
-    {name: "Totalizing Fluid Meter and Counting Device Manufacturing", code: "334514", employ: 24.04, sector: "Manufacturing", rca: 0.296, pci: -0.088, trad: 1.0, tier: 0, tradable: true},
-    {name: "Instrument Manufacturing for Measuring and Testing Electricity and Electrical Signals", code: "334515", employ: 1753.7, sector: "Manufacturing", rca: 2.109, pci: -0.088, trad: 1.0, tier: 0, tradable: true},
-    {name: "Analytical Laboratory Instrument Manufacturing", code: "334516", employ: 7095.82, sector: "Manufacturing", rca: 9.045, pci: -0.088, trad: 1.0, tier: 0, tradable: true},
-    {name: "Irradiation Apparatus Manufacturing", code: "334517", employ: 575.58, sector: "Manufacturing", rca: 2.743, pci: -0.088, trad: 1.0, tier: 0, tradable: true},
-    {name: "Other Measuring and Controlling Device Manufacturing", code: "334519", employ: 1552.5, sector: "Manufacturing", rca: 1.875, pci: -0.088, trad: 1.0, tier: 0, tradable: true},
-    {name: "Manufacturing and Reproducing Magnetic and Optical Media", code: "334610", employ: 19.6, sector: "Manufacturing", rca: 0.194, pci: 2.204, trad: 1.0, tier: 0, tradable: true},
-    {name: "Residential Electric Lighting Fixture Manufacturing", code: "335131", employ: 5.1, sector: "Manufacturing", rca: 0.053, pci: 1.03, trad: 1.0, tier: 0, tradable: true},
-    {name: "Commercial, Industrial, and Institutional Electric Lighting Fixture Manufacturing", code: "335132", employ: 5.5, sector: "Manufacturing", rca: 0.028, pci: 1.03, trad: 1.0, tier: 0, tradable: true},
-    {name: "Electric Lamp Bulb and Other Lighting Equipment Manufacturing", code: "335139", employ: 8.37, sector: "Manufacturing", rca: 0.081, pci: 1.441, trad: 1.0, tier: 0, tradable: true},
-    {name: "Small Electrical Appliance Manufacturing", code: "335210", employ: 53.65, sector: "Manufacturing", rca: 0.417, pci: 0.705, trad: 1.0, tier: 0, tradable: true},
-    {name: "Major Household Appliance Manufacturing", code: "335220", employ: 40.69, sector: "Manufacturing", rca: 0.256, pci: 0.938, trad: 1.0, tier: 0, tradable: true},
-    {name: "Power, Distribution, and Specialty Transformer Manufacturing", code: "335311", employ: 25.41, sector: "Manufacturing", rca: 0.114, pci: 1.172, trad: 0.9, tier: 0, tradable: true},
-    {name: "Motor and Generator Manufacturing", code: "335312", employ: 47.17, sector: "Manufacturing", rca: 0.115, pci: -0.066, trad: 1.0, tier: 0, tradable: true},
-    {name: "Switchgear and Switchboard Apparatus Manufacturing", code: "335313", employ: 615.55, sector: "Manufacturing", rca: 1.184, pci: -0.066, trad: 1.0, tier: 0, tradable: true},
-    {name: "Relay and Industrial Control Manufacturing", code: "335314", employ: 185.91, sector: "Manufacturing", rca: 0.263, pci: -0.066, trad: 1.0, tier: 0, tradable: true},
-    {name: "Battery Manufacturing", code: "335910", employ: 690.15, sector: "Manufacturing", rca: 1.895, pci: 1.245, trad: 1.0, tier: 0, tradable: true},
-    {name: "Fiber Optic Cable Manufacturing", code: "335921", employ: 1192.22, sector: "Manufacturing", rca: 7.311, pci: 1.47, trad: 1.0, tier: 0, tradable: true},
-    {name: "Other Communication and Energy Wire Manufacturing", code: "335929", employ: 17.25, sector: "Manufacturing", rca: 0.098, pci: 1.47, trad: 1.0, tier: 0, tradable: true},
-    {name: "Current-Carrying Wiring Device Manufacturing", code: "335931", employ: 378.78, sector: "Manufacturing", rca: 1.432, pci: 0.637, trad: 1.0, tier: 0, tradable: true},
-    {name: "Noncurrent-Carrying Wiring Device Manufacturing", code: "335932", employ: 10.03, sector: "Manufacturing", rca: 0.073, pci: 0.637, trad: 1.0, tier: 0, tradable: true},
-    {name: "Carbon and Graphite Product Manufacturing", code: "335991", employ: 12.67, sector: "Manufacturing", rca: 0.116, pci: 1.416, trad: 1.0, tier: 0, tradable: true},
-    {name: "All Other Miscellaneous Electrical Equipment and Component Manufacturing", code: "335999", employ: 371.35, sector: "Manufacturing", rca: 0.787, pci: 0.667, trad: 1.0, tier: 0, tradable: true},
-    {name: "Automobile and Light Duty Motor Vehicle Manufacturing", code: "336110", employ: 42.68, sector: "Manufacturing", rca: 0.075, pci: 0.854, trad: 1.0, tier: 0, tradable: true},
-    {name: "Motor Vehicle Body Manufacturing", code: "336211", employ: 168.93, sector: "Manufacturing", rca: 0.362, pci: -1.134, trad: 1.0, tier: 0, tradable: true},
-    {name: "Truck Trailer Manufacturing", code: "336212", employ: 9.38, sector: "Manufacturing", rca: 0.047, pci: -1.134, trad: 1.0, tier: 0, tradable: true},
-    {name: "Travel Trailer and Camper Manufacturing", code: "336214", employ: 20.33, sector: "Manufacturing", rca: 0.041, pci: -1.134, trad: 1.0, tier: 0, tradable: true},
-    {name: "Motor Vehicle Gasoline Engine and Engine Parts Manufacturing", code: "336310", employ: 53.92, sector: "Manufacturing", rca: 0.109, pci: -0.27, trad: 1.0, tier: 0, tradable: true},
-    {name: "Motor Vehicle Electrical and Electronic Equipment Manufacturing", code: "336320", employ: 2.69, sector: "Manufacturing", rca: 0.004, pci: -0.061, trad: 1.0, tier: 0, tradable: true},
-    {name: "Motor Vehicle Brake System Manufacturing", code: "336340", employ: 3.31, sector: "Manufacturing", rca: 0.014, pci: 0.916, trad: 1.0, tier: 0, tradable: true},
-    {name: "Motor Vehicle Transmission and Power Train Parts Manufacturing", code: "336350", employ: 13.38, sector: "Manufacturing", rca: 0.018, pci: 0.24, trad: 1.0, tier: 0, tradable: true},
-    {name: "Motor Vehicle Seating and Interior Trim Manufacturing", code: "336360", employ: 0.13, sector: "Manufacturing", rca: 0.0, pci: 0.05, trad: 1.0, tier: 0, tradable: true},
-    {name: "Motor Vehicle Metal Stamping", code: "336370", employ: 3.13, sector: "Manufacturing", rca: 0.003, pci: -0.196, trad: 0.9, tier: 0, tradable: true},
-    {name: "Other Motor Vehicle Parts Manufacturing", code: "336390", employ: 3.6, sector: "Manufacturing", rca: 0.002, pci: -0.74, trad: 1.0, tier: 0, tradable: true},
-    {name: "Aircraft Engine and Engine Parts Manufacturing", code: "336412", employ: 765.05, sector: "Manufacturing", rca: 0.479, pci: 0.427, trad: 1.0, tier: 0, tradable: true},
-    {name: "Other Aircraft Parts and Auxiliary Equipment Manufacturing", code: "336413", employ: 2347.55, sector: "Manufacturing", rca: 0.672, pci: 0.406, trad: 1.0, tier: 0, tradable: true},
-    {name: "Guided Missile and Space Vehicle Manufacturing", code: "336414", employ: 3327.11, sector: "Manufacturing", rca: 4.102, pci: 0.427, trad: 1.0, tier: 0, tradable: true},
-    {name: "Other Guided Missile and Space Vehicle Parts and Auxiliary Equipment Manufacturing", code: "336419", employ: 2297.11, sector: "Manufacturing", rca: 10.327, pci: 0.427, trad: 1.0, tier: 0, tradable: true},
-    {name: "Ship Building and Repairing", code: "336611", employ: 97.62, sector: "Manufacturing", rca: 0.134, pci: 0.109, trad: 0.94, tier: 0, tradable: true},
-    {name: "Boat Building", code: "336612", employ: 100.54, sector: "Manufacturing", rca: 0.234, pci: 0.109, trad: 0.94, tier: 0, tradable: true},
-    {name: "Motorcycle, Bicycle, and Parts Manufacturing", code: "336991", employ: 49.32, sector: "Manufacturing", rca: 0.31, pci: 0.911, trad: 1.0, tier: 0, tradable: true},
-    {name: "All Other Transportation Equipment Manufacturing", code: "336999", employ: 3.91, sector: "Manufacturing", rca: 0.051, pci: 0.321, trad: 1.0, tier: 0, tradable: true},
-    {name: "Wood Kitchen Cabinet and Countertop Manufacturing", code: "337110", employ: 718.01, sector: "Manufacturing", rca: 0.483, pci: -0.975, trad: 0.9, tier: 0, tradable: true},
-    {name: "Upholstered Household Furniture Manufacturing", code: "337121", employ: 24.68, sector: "Manufacturing", rca: 0.05, pci: -0.583, trad: 0.976, tier: 0, tradable: true},
-    {name: "Nonupholstered Wood Household Furniture Manufacturing", code: "337122", employ: 123.11, sector: "Manufacturing", rca: 0.418, pci: -0.583, trad: 0.976, tier: 0, tradable: true},
-    {name: "Household Furniture (except Wood and Upholstered) Manufacturing", code: "337126", employ: 7.08, sector: "Manufacturing", rca: 0.088, pci: -0.583, trad: 0.976, tier: 0, tradable: true},
-    {name: "Institutional Furniture Manufacturing", code: "337127", employ: 44.07, sector: "Manufacturing", rca: 0.266, pci: -0.583, trad: 0.976, tier: 0, tradable: true},
-    {name: "Wood Office Furniture Manufacturing", code: "337211", employ: 10.98, sector: "Manufacturing", rca: 0.094, pci: -0.04, trad: 0.795, tier: 1, tradable: true},
-    {name: "Custom Architectural Woodwork and Millwork Manufacturing", code: "337212", employ: 113.62, sector: "Manufacturing", rca: 0.288, pci: -0.04, trad: 0.795, tier: 1, tradable: true},
-    {name: "Office Furniture (except Wood) Manufacturing", code: "337214", employ: 18.6, sector: "Manufacturing", rca: 0.08, pci: -0.04, trad: 0.795, tier: 1, tradable: true},
-    {name: "Showcase, Partition, Shelving, and Locker Manufacturing", code: "337215", employ: 80.37, sector: "Manufacturing", rca: 0.205, pci: -0.04, trad: 0.795, tier: 1, tradable: true},
-    {name: "Mattress Manufacturing", code: "337910", employ: 9.1, sector: "Manufacturing", rca: 0.053, pci: 1.16, trad: 0.9, tier: 0, tradable: true},
-    {name: "Blind and Shade Manufacturing", code: "337920", employ: 14.0, sector: "Manufacturing", rca: 0.13, pci: 1.873, trad: 0.9, tier: 0, tradable: true},
-    {name: "Surgical and Medical Instrument Manufacturing", code: "339112", employ: 3764.37, sector: "Manufacturing", rca: 1.575, pci: -0.097, trad: 0.892, tier: 0, tradable: true},
-    {name: "Surgical Appliance and Supplies Manufacturing", code: "339113", employ: 2635.94, sector: "Manufacturing", rca: 1.686, pci: 0.371, trad: 1.0, tier: 0, tradable: true},
-    {name: "Dental Equipment and Supplies Manufacturing", code: "339114", employ: 292.92, sector: "Manufacturing", rca: 1.529, pci: -0.097, trad: 0.892, tier: 0, tradable: true},
-    {name: "Ophthalmic Goods Manufacturing", code: "339115", employ: 98.08, sector: "Manufacturing", rca: 0.286, pci: 1.175, trad: 1.0, tier: 0, tradable: true},
-    {name: "Dental Laboratories", code: "339116", employ: 757.76, sector: "Manufacturing", rca: 0.712, pci: -0.097, trad: 0.892, tier: 0, tradable: true},
-    {name: "Jewelry and Silverware Manufacturing", code: "339910", employ: 135.24, sector: "Manufacturing", rca: 0.355, pci: 0.846, trad: 1.0, tier: 0, tradable: true},
-    {name: "Sporting and Athletic Goods Manufacturing", code: "339920", employ: 42.89, sector: "Manufacturing", rca: 0.082, pci: -0.198, trad: 1.0, tier: 0, tradable: true},
-    {name: "Doll, Toy, and Game Manufacturing", code: "339930", employ: 80.74, sector: "Manufacturing", rca: 0.556, pci: 1.539, trad: 1.0, tier: 0, tradable: true},
-    {name: "Office Supplies (except Paper) Manufacturing", code: "339940", employ: 36.61, sector: "Manufacturing", rca: 0.375, pci: 1.448, trad: 1.0, tier: 0, tradable: true},
-    {name: "Sign Manufacturing", code: "339950", employ: 1583.45, sector: "Manufacturing", rca: 0.904, pci: -0.702, trad: 0.0, tier: 2, tradable: false},
-    {name: "Gasket, Packing, and Sealing Device Manufacturing", code: "339991", employ: 1117.32, sector: "Manufacturing", rca: 3.264, pci: -0.516, trad: 1.0, tier: 0, tradable: true},
-    {name: "Musical Instrument Manufacturing", code: "339992", employ: 187.5, sector: "Manufacturing", rca: 1.188, pci: 1.197, trad: 1.0, tier: 0, tradable: true},
-    {name: "Fastener, Button, Needle, and Pin Manufacturing", code: "339993", employ: 35.17, sector: "Manufacturing", rca: 1.139, pci: 2.276, trad: 1.0, tier: 0, tradable: true},
-    {name: "Broom, Brush, and Mop Manufacturing", code: "339994", employ: 89.12, sector: "Manufacturing", rca: 1.147, pci: 1.311, trad: 1.0, tier: 0, tradable: true},
-    {name: "All Other Miscellaneous Manufacturing", code: "339999", employ: 99.52, sector: "Manufacturing", rca: 0.085, pci: -0.516, trad: 1.0, tier: 0, tradable: true},
-    {name: "Automobile and Other Motor Vehicle Merchant Wholesalers", code: "423110", employ: 1051.14, sector: "Trade & Transportation", rca: 0.391, pci: -0.578, trad: 0.0, tier: 2, tradable: false},
-    {name: "Motor Vehicle Supplies and New Parts Merchant Wholesalers", code: "423120", employ: 1330.55, sector: "Trade & Transportation", rca: 0.372, pci: -0.721, trad: 0.5, tier: 1, tradable: true},
-    {name: "Tire and Tube Merchant Wholesalers", code: "423130", employ: 166.12, sector: "Trade & Transportation", rca: 0.31, pci: 0.099, trad: 0.536, tier: 1, tradable: true},
-    {name: "Motor Vehicle Parts (Used) Merchant Wholesalers", code: "423140", employ: 140.9, sector: "Trade & Transportation", rca: 0.476, pci: -0.507, trad: 0.5, tier: 1, tradable: true},
-    {name: "Furniture Merchant Wholesalers", code: "423210", employ: 585.85, sector: "Trade & Transportation", rca: 0.639, pci: 0.623, trad: 0.123, tier: 2, tradable: false},
-    {name: "Home Furnishing Merchant Wholesalers", code: "423220", employ: 476.99, sector: "Trade & Transportation", rca: 0.417, pci: 0.45, trad: 0.5, tier: 1, tradable: true},
-    {name: "Lumber, Plywood, Millwork, and Wood Panel Merchant Wholesalers", code: "423310", employ: 1448.97, sector: "Trade & Transportation", rca: 0.684, pci: -0.223, trad: 0.0, tier: 2, tradable: false},
-    {name: "Brick, Stone, and Related Construction Material Merchant Wholesalers", code: "423320", employ: 983.21, sector: "Trade & Transportation", rca: 0.746, pci: -0.106, trad: 0.0, tier: 2, tradable: false},
-    {name: "Roofing, Siding, and Insulation Material Merchant Wholesalers", code: "423330", employ: 877.49, sector: "Trade & Transportation", rca: 0.948, pci: 0.346, trad: 0.0, tier: 2, tradable: false},
-    {name: "Other Construction Material Merchant Wholesalers", code: "423390", employ: 628.33, sector: "Trade & Transportation", rca: 0.973, pci: -0.06, trad: 0.0, tier: 2, tradable: false},
-    {name: "Photographic Equipment and Supplies Merchant Wholesalers", code: "423410", employ: 94.02, sector: "Trade & Transportation", rca: 0.669, pci: 2.07, trad: 0.9, tier: 0, tradable: true},
-    {name: "Office Equipment Merchant Wholesalers", code: "423420", employ: 1253.46, sector: "Trade & Transportation", rca: 0.969, pci: 0.245, trad: 0.0, tier: 2, tradable: false},
-    {name: "Computer and Computer Peripheral Equipment and Software Merchant Wholesalers", code: "423430", employ: 3874.41, sector: "Trade & Transportation", rca: 0.999, pci: 0.622, trad: 0.5, tier: 1, tradable: true},
-    {name: "Other Commercial Equipment Merchant Wholesalers", code: "423440", employ: 769.54, sector: "Trade & Transportation", rca: 0.691, pci: 0.451, trad: 0.007, tier: 2, tradable: false},
-    {name: "Medical, Dental, and Hospital Equipment and Supplies Merchant Wholesalers", code: "423450", employ: 6687.65, sector: "Trade & Transportation", rca: 1.27, pci: -0.017, trad: 0.5, tier: 1, tradable: true},
-    {name: "Ophthalmic Goods Merchant Wholesalers", code: "423460", employ: 123.48, sector: "Trade & Transportation", rca: 0.402, pci: 1.216, trad: 0.587, tier: 1, tradable: true},
-    {name: "Other Professional Equipment and Supplies Merchant Wholesalers", code: "423490", employ: 1317.44, sector: "Trade & Transportation", rca: 2.148, pci: 0.8, trad: 0.5, tier: 1, tradable: true},
-    {name: "Metal Service Centers and Other Metal Merchant Wholesalers", code: "423510", employ: 791.4, sector: "Trade & Transportation", rca: 0.347, pci: -0.807, trad: 0.195, tier: 2, tradable: false},
-    {name: "Coal and Other Mineral and Ore Merchant Wholesalers", code: "423520", employ: 4.74, sector: "Trade & Transportation", rca: 0.051, pci: 0.923, trad: 0.9, tier: 0, tradable: true},
-    {name: "Electrical Apparatus and Equipment, Wiring Supplies, and Related Equipment Merchant Wholesalers", code: "423610", employ: 3220.99, sector: "Trade & Transportation", rca: 0.854, pci: -0.823, trad: 0.0, tier: 2, tradable: false},
-    {name: "Household Appliances, Electric Housewares, and Consumer Electronics Merchant Wholesalers", code: "423620", employ: 1974.89, sector: "Trade & Transportation", rca: 2.961, pci: 0.575, trad: 0.5, tier: 1, tradable: true},
-    {name: "Other Electronic Parts and Equipment Merchant Wholesalers", code: "423690", employ: 2740.13, sector: "Trade & Transportation", rca: 1.063, pci: 0.143, trad: 0.5, tier: 1, tradable: true},
-    {name: "Hardware Merchant Wholesalers", code: "423710", employ: 931.22, sector: "Trade & Transportation", rca: 0.561, pci: -0.21, trad: 0.046, tier: 2, tradable: false},
-    {name: "Plumbing and Heating Equipment and Supplies (Hydronics) Merchant Wholesalers", code: "423720", employ: 3125.59, sector: "Trade & Transportation", rca: 1.258, pci: -0.485, trad: 0.0, tier: 2, tradable: false},
-    {name: "Warm Air Heating and Air-Conditioning Equipment and Supplies Merchant Wholesalers", code: "423730", employ: 868.62, sector: "Trade & Transportation", rca: 0.534, pci: 0.231, trad: 0.0, tier: 2, tradable: false},
-    {name: "Refrigeration Equipment and Supplies Merchant Wholesalers", code: "423740", employ: 64.58, sector: "Trade & Transportation", rca: 0.251, pci: 0.778, trad: 0.5, tier: 1, tradable: true},
-    {name: "Construction and Mining (except Oil Well) Machinery and Equipment Merchant Wholesalers", code: "423810", employ: 549.31, sector: "Trade & Transportation", rca: 0.298, pci: -0.666, trad: 0.5, tier: 1, tradable: true},
-    {name: "Farm and Garden Machinery and Equipment Merchant Wholesalers", code: "423820", employ: 244.32, sector: "Trade & Transportation", rca: 0.191, pci: -1.815, trad: 0.9, tier: 0, tradable: true},
-    {name: "Industrial Machinery and Equipment Merchant Wholesalers", code: "423830", employ: 3963.7, sector: "Trade & Transportation", rca: 0.567, pci: -0.989, trad: 0.5, tier: 1, tradable: true},
-    {name: "Industrial Supplies Merchant Wholesalers", code: "423840", employ: 722.39, sector: "Trade & Transportation", rca: 0.347, pci: -0.844, trad: 0.5, tier: 1, tradable: true},
-    {name: "Service Establishment Equipment and Supplies Merchant Wholesalers", code: "423850", employ: 812.18, sector: "Trade & Transportation", rca: 0.794, pci: -0.477, trad: 0.0, tier: 2, tradable: false},
-    {name: "Transportation Equipment and Supplies (except Motor Vehicle) Merchant Wholesalers", code: "423860", employ: 82.1, sector: "Trade & Transportation", rca: 0.115, pci: 0.06, trad: 0.43, tier: 1, tradable: false},
-    {name: "Sporting and Recreational Goods and Supplies Merchant Wholesalers", code: "423910", employ: 896.6, sector: "Trade & Transportation", rca: 0.74, pci: -0.072, trad: 0.04, tier: 2, tradable: false},
-    {name: "Toy and Hobby Goods and Supplies Merchant Wholesalers", code: "423920", employ: 82.25, sector: "Trade & Transportation", rca: 0.182, pci: 0.721, trad: 0.555, tier: 1, tradable: true},
-    {name: "Recyclable Material Merchant Wholesalers", code: "423930", employ: 752.13, sector: "Trade & Transportation", rca: 0.42, pci: -1.113, trad: 0.0, tier: 2, tradable: false},
-    {name: "Jewelry, Watch, Precious Stone, and Precious Metal Merchant Wholesalers", code: "423940", employ: 240.52, sector: "Trade & Transportation", rca: 0.33, pci: 0.786, trad: 0.693, tier: 1, tradable: true},
-    {name: "Other Miscellaneous Durable Goods Merchant Wholesalers", code: "423990", employ: 1029.5, sector: "Trade & Transportation", rca: 0.574, pci: -0.465, trad: 0.0, tier: 2, tradable: false},
-    {name: "Printing and Writing Paper Merchant Wholesalers", code: "424110", employ: 83.59, sector: "Trade & Transportation", rca: 0.439, pci: 1.631, trad: 0.5, tier: 1, tradable: true},
-    {name: "Stationery and Office Supplies Merchant Wholesalers", code: "424120", employ: 718.98, sector: "Trade & Transportation", rca: 1.341, pci: 0.338, trad: 0.5, tier: 1, tradable: true},
-    {name: "Industrial and Personal Service Paper Merchant Wholesalers", code: "424130", employ: 1270.34, sector: "Trade & Transportation", rca: 1.186, pci: 0.476, trad: 0.0, tier: 2, tradable: false},
-    {name: "Drugs and Druggists' Sundries Merchant Wholesalers", code: "424210", employ: 6292.0, sector: "Trade & Transportation", rca: 1.646, pci: 0.138, trad: 0.0, tier: 2, tradable: false},
-    {name: "Piece Goods, Notions, and Other Dry Goods Merchant Wholesalers", code: "424310", employ: 322.67, sector: "Trade & Transportation", rca: 0.808, pci: 0.585, trad: 0.625, tier: 1, tradable: true},
-    {name: "Footwear Merchant Wholesalers", code: "424340", employ: 886.45, sector: "Trade & Transportation", rca: 2.806, pci: 1.386, trad: 0.5, tier: 1, tradable: true},
-    {name: "Clothing and Clothing Accessories Merchant Wholesalers", code: "424350", employ: 990.89, sector: "Trade & Transportation", rca: 0.545, pci: 0.352, trad: 0.572, tier: 1, tradable: true},
-    {name: "General Line Grocery Merchant Wholesalers", code: "424410", employ: 2174.31, sector: "Trade & Transportation", rca: 0.466, pci: -0.086, trad: 0.004, tier: 2, tradable: false},
-    {name: "Packaged Frozen Food Merchant Wholesalers", code: "424420", employ: 704.1, sector: "Trade & Transportation", rca: 1.247, pci: 0.573, trad: 0.5, tier: 1, tradable: true},
-    {name: "Dairy Product (except Dried or Canned) Merchant Wholesalers", code: "424430", employ: 469.11, sector: "Trade & Transportation", rca: 0.818, pci: -0.232, trad: 0.182, tier: 2, tradable: false},
-    {name: "Poultry and Poultry Product Merchant Wholesalers", code: "424440", employ: 32.31, sector: "Trade & Transportation", rca: 0.208, pci: 0.532, trad: 0.5, tier: 1, tradable: true},
-    {name: "Confectionery Merchant Wholesalers", code: "424450", employ: 628.66, sector: "Trade & Transportation", rca: 0.676, pci: -1.101, trad: 0.0, tier: 2, tradable: false},
-    {name: "Fish and Seafood Merchant Wholesalers", code: "424460", employ: 1900.73, sector: "Trade & Transportation", rca: 3.557, pci: 1.345, trad: 0.606, tier: 1, tradable: true},
-    {name: "Meat and Meat Product Merchant Wholesalers", code: "424470", employ: 444.62, sector: "Trade & Transportation", rca: 0.484, pci: 0.078, trad: 0.151, tier: 2, tradable: false},
-    {name: "Fresh Fruit and Vegetable Merchant Wholesalers", code: "424480", employ: 2200.19, sector: "Trade & Transportation", rca: 1.115, pci: 0.419, trad: 0.9, tier: 0, tradable: true},
-    {name: "Other Grocery and Related Products Merchant Wholesalers", code: "424490", employ: 2914.95, sector: "Trade & Transportation", rca: 0.551, pci: -0.688, trad: 0.0, tier: 2, tradable: false},
-    {name: "Grain and Field Bean Merchant Wholesalers", code: "424510", employ: 24.59, sector: "Trade & Transportation", rca: 0.124, pci: -2.238, trad: 0.9, tier: 0, tradable: true},
-    {name: "Other Farm Product Raw Material Merchant Wholesalers", code: "424590", employ: 159.66, sector: "Trade & Transportation", rca: 0.732, pci: -0.169, trad: 0.9, tier: 0, tradable: true},
-    {name: "Plastics Materials and Basic Forms and Shapes Merchant Wholesalers", code: "424610", employ: 359.76, sector: "Trade & Transportation", rca: 0.648, pci: 0.412, trad: 0.5, tier: 1, tradable: true},
-    {name: "Other Chemical and Allied Products Merchant Wholesalers", code: "424690", employ: 1245.08, sector: "Trade & Transportation", rca: 0.629, pci: -0.923, trad: 0.026, tier: 2, tradable: false},
-    {name: "Petroleum Bulk Stations and Terminals", code: "424710", employ: 188.11, sector: "Trade & Transportation", rca: 0.41, pci: -1.342, trad: 0.808, tier: 0, tradable: true},
-    {name: "Petroleum and Petroleum Products Merchant Wholesalers (except Bulk Stations and Terminals)", code: "424720", employ: 244.77, sector: "Trade & Transportation", rca: 0.256, pci: -1.281, trad: 0.5, tier: 1, tradable: true},
-    {name: "Beer and Ale Merchant Wholesalers", code: "424810", employ: 772.49, sector: "Trade & Transportation", rca: 0.507, pci: -0.274, trad: 0.0, tier: 2, tradable: false},
-    {name: "Wine and Distilled Alcoholic Beverage Merchant Wholesalers", code: "424820", employ: 892.89, sector: "Trade & Transportation", rca: 0.409, pci: 1.095, trad: 0.5, tier: 1, tradable: true},
-    {name: "Farm Supplies Merchant Wholesalers", code: "424910", employ: 330.85, sector: "Trade & Transportation", rca: 0.225, pci: -1.768, trad: 0.9, tier: 0, tradable: true},
-    {name: "Book, Periodical, and Newspaper Merchant Wholesalers", code: "424920", employ: 232.09, sector: "Trade & Transportation", rca: 0.853, pci: 0.68, trad: 0.827, tier: 0, tradable: true},
-    {name: "Flower, Nursery Stock, and Florists' Supplies Merchant Wholesalers", code: "424930", employ: 547.71, sector: "Trade & Transportation", rca: 0.593, pci: 0.087, trad: 0.85, tier: 0, tradable: true},
-    {name: "Tobacco Product and Electronic Cigarette Merchant Wholesalers", code: "424940", employ: 88.41, sector: "Trade & Transportation", rca: 0.322, pci: 0.492, trad: 0.5, tier: 1, tradable: true},
-    {name: "Paint, Varnish, and Supplies Merchant Wholesalers", code: "424950", employ: 36.15, sector: "Trade & Transportation", rca: 0.088, pci: 0.095, trad: 0.342, tier: 1, tradable: false},
-    {name: "Other Miscellaneous Nondurable Goods Merchant Wholesalers", code: "424990", employ: 520.8, sector: "Trade & Transportation", rca: 0.305, pci: -0.216, trad: 0.0, tier: 2, tradable: false},
-    {name: "Wholesale Trade Agents and Brokers", code: "425120", employ: 6490.0, sector: "Trade & Transportation", rca: 0.96, pci: -0.156, trad: 0.9, tier: 0, tradable: true},
-    {name: "New Car Dealers", code: "441110", employ: 15558.11, sector: "Trade & Transportation", rca: 0.722, pci: -1.189, trad: 0.0, tier: 2, tradable: false},
-    {name: "Used Car Dealers", code: "441120", employ: 1518.89, sector: "Trade & Transportation", rca: 0.45, pci: -1.222, trad: 0.0, tier: 2, tradable: false},
-    {name: "Recreational Vehicle Dealers", code: "441210", employ: 174.34, sector: "Trade & Transportation", rca: 0.187, pci: -0.706, trad: 0.5, tier: 1, tradable: true},
-    {name: "Boat Dealers", code: "441222", employ: 543.31, sector: "Trade & Transportation", rca: 0.848, pci: -0.959, trad: 0.193, tier: 2, tradable: false},
-    {name: "Motorcycle, ATV, and All Other Motor Vehicle Dealers", code: "441227", employ: 598.35, sector: "Trade & Transportation", rca: 0.439, pci: -0.959, trad: 0.193, tier: 2, tradable: false},
-    {name: "Automotive Parts and Accessories Retailers", code: "441330", employ: 4263.56, sector: "Trade & Transportation", rca: 0.623, pci: -1.399, trad: 0.0, tier: 2, tradable: false},
-    {name: "Tire Dealers", code: "441340", employ: 1662.44, sector: "Trade & Transportation", rca: 0.495, pci: -1.332, trad: 0.0, tier: 2, tradable: false},
-    {name: "Home Centers", code: "444110", employ: 8534.4, sector: "Trade & Transportation", rca: 0.951, pci: -1.12, trad: 0.0, tier: 2, tradable: false},
-    {name: "Paint and Wallpaper Retailers", code: "444120", employ: 465.21, sector: "Trade & Transportation", rca: 0.557, pci: -0.871, trad: 0.0, tier: 2, tradable: false},
-    {name: "Hardware Retailers", code: "444140", employ: 2747.49, sector: "Trade & Transportation", rca: 0.702, pci: -1.385, trad: 0.0, tier: 2, tradable: false},
-    {name: "Other Building Material Dealers", code: "444180", employ: 4635.9, sector: "Trade & Transportation", rca: 0.627, pci: -0.931, trad: 0.0, tier: 2, tradable: false},
-    {name: "Outdoor Power Equipment Retailers", code: "444230", employ: 486.62, sector: "Trade & Transportation", rca: 0.825, pci: -1.005, trad: 0.378, tier: 1, tradable: false},
-    {name: "Nursery, Garden Center, and Farm Supply Retailers", code: "444240", employ: 1802.38, sector: "Trade & Transportation", rca: 0.788, pci: -1.443, trad: 0.0, tier: 2, tradable: false},
-    {name: "Supermarkets and Other Grocery Retailers (except Convenience Retailers)", code: "445110", employ: 56666.06, sector: "Trade & Transportation", rca: 1.148, pci: -1.109, trad: 0.0, tier: 2, tradable: false},
-    {name: "Convenience Retailers", code: "445131", employ: 3452.94, sector: "Trade & Transportation", rca: 1.052, pci: -0.92, trad: 0.0, tier: 2, tradable: false},
-    {name: "Vending Machine Operators", code: "445132", employ: 309.0, sector: "Trade & Transportation", rca: 0.424, pci: -0.438, trad: 0.497, tier: 1, tradable: false},
-    {name: "Fruit and Vegetable Retailers", code: "445230", employ: 1017.4, sector: "Trade & Transportation", rca: 1.649, pci: 0.019, trad: 0.334, tier: 1, tradable: false},
-    {name: "Meat Retailers", code: "445240", employ: 697.29, sector: "Trade & Transportation", rca: 0.629, pci: -1.071, trad: 0.0, tier: 2, tradable: false},
-    {name: "Fish and Seafood Retailers", code: "445250", employ: 591.97, sector: "Trade & Transportation", rca: 1.96, pci: 0.999, trad: 0.5, tier: 1, tradable: true},
-    {name: "Baked Goods Retailers", code: "445291", employ: 534.46, sector: "Trade & Transportation", rca: 1.434, pci: -0.493, trad: 0.039, tier: 2, tradable: false},
-    {name: "Confectionery and Nut Retailers", code: "445292", employ: 482.4, sector: "Trade & Transportation", rca: 1.348, pci: 0.379, trad: 0.184, tier: 2, tradable: false},
-    {name: "All Other Specialty Food Retailers", code: "445298", employ: 1272.61, sector: "Trade & Transportation", rca: 0.784, pci: -0.493, trad: 0.039, tier: 2, tradable: false},
-    {name: "Beer, Wine, and Liquor Retailers", code: "445320", employ: 4369.07, sector: "Trade & Transportation", rca: 1.365, pci: -1.206, trad: 0.0, tier: 2, tradable: false},
-    {name: "Furniture Retailers", code: "449110", employ: 4384.98, sector: "Trade & Transportation", rca: 1.065, pci: -1.132, trad: 0.0, tier: 2, tradable: false},
-    {name: "Floor Covering Retailers", code: "449121", employ: 848.38, sector: "Trade & Transportation", rca: 0.697, pci: -0.82, trad: 0.0, tier: 2, tradable: false},
-    {name: "Window Treatment Retailers", code: "449122", employ: 207.07, sector: "Trade & Transportation", rca: 0.825, pci: 0.184, trad: 0.0, tier: 2, tradable: false},
-    {name: "All Other Home Furnishings Retailers", code: "449129", employ: 3196.57, sector: "Trade & Transportation", rca: 1.293, pci: 0.184, trad: 0.0, tier: 2, tradable: false},
-    {name: "Electronics and Appliance Retailers", code: "449210", employ: 5895.0, sector: "Trade & Transportation", rca: 0.766, pci: -0.918, trad: 0.0, tier: 2, tradable: false},
-    {name: "Department Stores", code: "455110", employ: 21646.0, sector: "Trade & Transportation", rca: 1.051, pci: -0.381, trad: 0.0, tier: 2, tradable: false},
-    {name: "Warehouse Clubs and Supercenters", code: "455211", employ: 4506.47, sector: "Trade & Transportation", rca: 0.223, pci: -1.449, trad: 0.0, tier: 2, tradable: false},
-    {name: "All Other General Merchandise Retailers", code: "455219", employ: 7356.53, sector: "Trade & Transportation", rca: 0.432, pci: -1.611, trad: 0.087, tier: 2, tradable: false},
-    {name: "Pharmacies and Drug Retailers", code: "456110", employ: 13224.2, sector: "Trade & Transportation", rca: 0.985, pci: -1.265, trad: 0.0, tier: 2, tradable: false},
-    {name: "Cosmetics, Beauty Supplies, and Perfume Retailers", code: "456120", employ: 2496.6, sector: "Trade & Transportation", rca: 0.68, pci: -0.413, trad: 0.0, tier: 2, tradable: false},
-    {name: "Optical Goods Retailers", code: "456130", employ: 968.42, sector: "Trade & Transportation", rca: 0.684, pci: 0.152, trad: 0.0, tier: 2, tradable: false},
-    {name: "Food (Health) Supplement Retailers", code: "456191", employ: 306.33, sector: "Trade & Transportation", rca: 0.356, pci: -0.734, trad: 0.0, tier: 2, tradable: false},
-    {name: "All Other Health and Personal Care Retailers", code: "456199", employ: 566.45, sector: "Trade & Transportation", rca: 0.439, pci: -0.64, trad: 0.005, tier: 2, tradable: false},
-    {name: "Gasoline Stations with Convenience Stores", code: "457110", employ: 5179.43, sector: "Trade & Transportation", rca: 0.486, pci: -1.576, trad: 0.0, tier: 2, tradable: false},
-    {name: "Other Gasoline Stations", code: "457120", employ: 2079.57, sector: "Trade & Transportation", rca: 1.81, pci: -1.396, trad: 0.465, tier: 1, tradable: false},
-    {name: "Fuel Dealers", code: "457210", employ: 3125.0, sector: "Trade & Transportation", rca: 3.328, pci: -1.266, trad: 0.5, tier: 1, tradable: true},
-    {name: "Clothing and Clothing Accessories Retailers", code: "458110", employ: 15298.0, sector: "Trade & Transportation", rca: 0.891, pci: -0.658, trad: 0.0, tier: 2, tradable: false},
-    {name: "Shoe Retailers", code: "458210", employ: 3121.04, sector: "Trade & Transportation", rca: 0.908, pci: -0.404, trad: 0.0, tier: 2, tradable: false},
-    {name: "Jewelry Retailers", code: "458310", employ: 1875.57, sector: "Trade & Transportation", rca: 0.853, pci: -0.68, trad: 0.0, tier: 2, tradable: false},
-    {name: "Luggage and Leather Goods Retailers", code: "458320", employ: 368.67, sector: "Trade & Transportation", rca: 1.341, pci: 1.587, trad: 0.275, tier: 1, tradable: false},
-    {name: "Sporting Goods Retailers", code: "459110", employ: 4954.9, sector: "Trade & Transportation", rca: 0.817, pci: -0.791, trad: 0.0, tier: 2, tradable: false},
-    {name: "Hobby, Toy, and Game Retailers", code: "459120", employ: 1537.86, sector: "Trade & Transportation", rca: 0.594, pci: -0.369, trad: 0.0, tier: 2, tradable: false},
-    {name: "Sewing, Needlework, and Piece Goods Retailers", code: "459130", employ: 433.13, sector: "Trade & Transportation", rca: 0.961, pci: -0.388, trad: 0.0, tier: 2, tradable: false},
-    {name: "Musical Instrument and Supplies Retailers", code: "459140", employ: 453.12, sector: "Trade & Transportation", rca: 0.839, pci: 0.091, trad: 0.0, tier: 2, tradable: false},
-    {name: "Book Retailers and News Dealers", code: "459210", employ: 2166.07, sector: "Trade & Transportation", rca: 1.855, pci: -0.179, trad: 0.0, tier: 2, tradable: false},
-    {name: "Florists", code: "459310", employ: 1245.84, sector: "Trade & Transportation", rca: 1.333, pci: -1.218, trad: 0.0, tier: 2, tradable: false},
-    {name: "Office Supplies and Stationery Retailers", code: "459410", employ: 1153.23, sector: "Trade & Transportation", rca: 0.919, pci: -0.57, trad: 0.0, tier: 2, tradable: false},
-    {name: "Gift, Novelty, and Souvenir Retailers", code: "459420", employ: 1919.77, sector: "Trade & Transportation", rca: 0.772, pci: -0.618, trad: 0.5, tier: 1, tradable: true},
-    {name: "Used Merchandise Retailers", code: "459510", employ: 2000.0, sector: "Trade & Transportation", rca: 0.5, pci: -0.836, trad: 0.0, tier: 2, tradable: false},
-    {name: "Pet and Pet Supplies Retailers", code: "459910", employ: 1756.82, sector: "Trade & Transportation", rca: 0.704, pci: -0.339, trad: 0.0, tier: 2, tradable: false},
-    {name: "Art Dealers", code: "459920", employ: 205.52, sector: "Trade & Transportation", rca: 0.667, pci: 0.581, trad: 0.802, tier: 0, tradable: true},
-    {name: "Manufactured (Mobile) Home Dealers", code: "459930", employ: 31.19, sector: "Trade & Transportation", rca: 0.223, pci: -0.944, trad: 0.5, tier: 1, tradable: true},
-    {name: "Tobacco, Electronic Cigarette, and Other Smoking Supplies Retailers", code: "459991", employ: 2575.31, sector: "Trade & Transportation", rca: 0.93, pci: -1.202, trad: 0.074, tier: 2, tradable: false},
-    {name: "All Other Miscellaneous Retailers", code: "459999", employ: 3593.15, sector: "Trade & Transportation", rca: 0.982, pci: -0.761, trad: 0.0, tier: 2, tradable: false},
-    {name: "Scheduled Passenger Air Transportation", code: "481111", employ: 9993.01, sector: "Trade & Transportation", rca: 1.275, pci: 1.962, trad: 1.0, tier: 0, tradable: true},
-    {name: "Scheduled Freight Air Transportation", code: "481112", employ: 800.35, sector: "Trade & Transportation", rca: 1.214, pci: 1.962, trad: 1.0, tier: 0, tradable: true},
-    {name: "Nonscheduled Chartered Passenger Air Transportation", code: "481211", employ: 209.51, sector: "Trade & Transportation", rca: 0.398, pci: 0.109, trad: 1.0, tier: 0, tradable: true},
-    {name: "Nonscheduled Chartered Freight Air Transportation", code: "481212", employ: 181.25, sector: "Trade & Transportation", rca: 1.376, pci: 0.109, trad: 1.0, tier: 0, tradable: true},
-    {name: "Other Nonscheduled Air Transportation", code: "481219", employ: 32.4, sector: "Trade & Transportation", rca: 0.345, pci: 0.109, trad: 1.0, tier: 0, tradable: true},
-    {name: "Deep Sea Freight Transportation", code: "483111", employ: 9.44, sector: "Trade & Transportation", rca: 0.052, pci: 2.243, trad: 1.0, tier: 0, tradable: true},
-    {name: "Deep Sea Passenger Transportation", code: "483112", employ: 24.58, sector: "Trade & Transportation", rca: 0.08, pci: 2.243, trad: 1.0, tier: 0, tradable: true},
-    {name: "Coastal and Great Lakes Freight Transportation", code: "483113", employ: 41.04, sector: "Trade & Transportation", rca: 0.308, pci: 2.072, trad: 1.0, tier: 0, tradable: true},
-    {name: "Coastal and Great Lakes Passenger Transportation", code: "483114", employ: 30.72, sector: "Trade & Transportation", rca: 1.545, pci: 2.243, trad: 1.0, tier: 0, tradable: true},
-    {name: "Inland Water Freight Transportation", code: "483211", employ: 1.36, sector: "Trade & Transportation", rca: 0.006, pci: 0.702, trad: 1.0, tier: 0, tradable: true},
-    {name: "Inland Water Passenger Transportation", code: "483212", employ: 62.43, sector: "Trade & Transportation", rca: 0.971, pci: 0.702, trad: 1.0, tier: 0, tradable: true},
-    {name: "General Freight Trucking, Local", code: "484110", employ: 4156.18, sector: "Trade & Transportation", rca: 0.671, pci: -1.2, trad: 0.0, tier: 2, tradable: false},
-    {name: "General Freight Trucking, Long-Distance, Truckload", code: "484121", employ: 532.15, sector: "Trade & Transportation", rca: 0.065, pci: -1.363, trad: 0.5, tier: 1, tradable: true},
-    {name: "General Freight Trucking, Long-Distance, Less Than Truckload", code: "484122", employ: 1050.67, sector: "Trade & Transportation", rca: 0.221, pci: -1.363, trad: 0.5, tier: 1, tradable: true},
-    {name: "Used Household and Office Goods Moving", code: "484210", employ: 2280.82, sector: "Trade & Transportation", rca: 1.178, pci: 0.106, trad: 0.5, tier: 1, tradable: true},
-    {name: "Specialized Freight (except Used Goods) Trucking, Local", code: "484220", employ: 1293.34, sector: "Trade & Transportation", rca: 0.357, pci: -1.603, trad: 0.423, tier: 1, tradable: false},
-    {name: "Specialized Freight (except Used Goods) Trucking, Long-Distance", code: "484230", employ: 375.84, sector: "Trade & Transportation", rca: 0.184, pci: -1.603, trad: 0.594, tier: 1, tradable: true},
-    {name: "Mixed Mode Transit Systems", code: "485111", employ: 90.83, sector: "Trade & Transportation", rca: 2.929, pci: 1.285, trad: 0.5, tier: 1, tradable: true},
-    {name: "Bus and Other Motor Vehicle Transit Systems", code: "485113", employ: 472.7, sector: "Trade & Transportation", rca: 1.876, pci: 1.285, trad: 0.5, tier: 1, tradable: true},
-    {name: "Interurban and Rural Bus Transportation", code: "485210", employ: 289.9, sector: "Trade & Transportation", rca: 2.453, pci: 0.671, trad: 0.697, tier: 1, tradable: true},
-    {name: "Taxi and Ridesharing Services", code: "485310", employ: 664.03, sector: "Trade & Transportation", rca: 0.75, pci: -0.266, trad: 0.5, tier: 1, tradable: true},
-    {name: "Limousine Service", code: "485320", employ: 1341.33, sector: "Trade & Transportation", rca: 1.571, pci: 0.867, trad: 0.283, tier: 1, tradable: false},
-    {name: "School and Employee Bus Transportation", code: "485410", employ: 7129.71, sector: "Trade & Transportation", rca: 2.29, pci: -0.664, trad: 0.495, tier: 1, tradable: false},
-    {name: "Charter Bus Industry", code: "485510", employ: 448.48, sector: "Trade & Transportation", rca: 1.693, pci: 0.322, trad: 0.5, tier: 1, tradable: true},
-    {name: "Special Needs Transportation", code: "485991", employ: 2442.15, sector: "Trade & Transportation", rca: 2.012, pci: -0.352, trad: 0.084, tier: 2, tradable: false},
-    {name: "All Other Transit and Ground Passenger Transportation", code: "485999", employ: 1371.56, sector: "Trade & Transportation", rca: 1.935, pci: -0.352, trad: 0.084, tier: 2, tradable: false},
-    {name: "Pipeline Transportation of Natural Gas", code: "486210", employ: 32.32, sector: "Trade & Transportation", rca: 0.096, pci: -1.755, trad: 0.9, tier: 0, tradable: true},
-    {name: "Pipeline Transportation of Refined Petroleum Products", code: "486910", employ: 1.36, sector: "Trade & Transportation", rca: 0.017, pci: 0.29, trad: 0.9, tier: 0, tradable: true},
-    {name: "Scenic and Sightseeing Transportation, Land", code: "487110", employ: 56.75, sector: "Trade & Transportation", rca: 0.437, pci: 1.25, trad: 0.9, tier: 0, tradable: true},
-    {name: "Scenic and Sightseeing Transportation, Water", code: "487210", employ: 91.09, sector: "Trade & Transportation", rca: 0.387, pci: 1.26, trad: 0.9, tier: 0, tradable: true},
-    {name: "Scenic and Sightseeing Transportation, Other", code: "487990", employ: 2.62, sector: "Trade & Transportation", rca: 0.061, pci: 1.97, trad: 0.9, tier: 0, tradable: true},
-    {name: "Air Traffic Control", code: "488111", employ: 12.08, sector: "Trade & Transportation", rca: 0.118, pci: 1.246, trad: 0.9, tier: 0, tradable: true},
-    {name: "Other Airport Operations", code: "488119", employ: 2693.03, sector: "Trade & Transportation", rca: 2.108, pci: 0.897, trad: 0.5, tier: 1, tradable: true},
-    {name: "Other Support Activities for Air Transportation", code: "488190", employ: 595.31, sector: "Trade & Transportation", rca: 0.156, pci: -0.591, trad: 0.9, tier: 0, tradable: true},
-    {name: "Support Activities for Rail Transportation", code: "488210", employ: 42.44, sector: "Trade & Transportation", rca: 0.098, pci: -0.663, trad: 0.9, tier: 0, tradable: true},
-    {name: "Port and Harbor Operations", code: "488310", employ: 3.52, sector: "Trade & Transportation", rca: 0.039, pci: 1.315, trad: 0.9, tier: 0, tradable: true},
-    {name: "Marine Cargo Handling", code: "488320", employ: 5.02, sector: "Trade & Transportation", rca: 0.004, pci: 0.89, trad: 0.9, tier: 0, tradable: true},
-    {name: "Navigational Services to Shipping", code: "488330", employ: 30.73, sector: "Trade & Transportation", rca: 0.091, pci: 0.981, trad: 0.9, tier: 0, tradable: true},
-    {name: "Other Support Activities for Water Transportation", code: "488390", employ: 26.1, sector: "Trade & Transportation", rca: 0.142, pci: 1.412, trad: 0.9, tier: 0, tradable: true},
-    {name: "Motor Vehicle Towing", code: "488410", employ: 1264.19, sector: "Trade & Transportation", rca: 0.899, pci: -0.945, trad: 0.0, tier: 2, tradable: false},
-    {name: "Other Support Activities for Road Transportation", code: "488490", employ: 160.11, sector: "Trade & Transportation", rca: 0.252, pci: -0.166, trad: 0.5, tier: 1, tradable: true},
-    {name: "Freight Transportation Arrangement", code: "488510", employ: 1948.37, sector: "Trade & Transportation", rca: 0.379, pci: -0.344, trad: 0.9, tier: 0, tradable: true},
-    {name: "Packing and Crating", code: "488991", employ: 190.19, sector: "Trade & Transportation", rca: 0.773, pci: 0.082, trad: 0.72, tier: 1, tradable: true},
-    {name: "All Other Support Activities for Transportation", code: "488999", employ: 123.95, sector: "Trade & Transportation", rca: 0.518, pci: 0.082, trad: 0.72, tier: 1, tradable: true},
-    {name: "Couriers and Express Delivery Services", code: "492110", employ: 10903.42, sector: "Trade & Transportation", rca: 0.699, pci: -0.429, trad: 1.0, tier: 0, tradable: true},
-    {name: "Local Messengers and Local Delivery", code: "492210", employ: 2154.0, sector: "Trade & Transportation", rca: 0.631, pci: 0.234, trad: 0.0, tier: 2, tradable: false},
-    {name: "General Warehousing and Storage", code: "493110", employ: 7320.41, sector: "Trade & Transportation", rca: 0.233, pci: -0.546, trad: 0.367, tier: 1, tradable: false},
-    {name: "Refrigerated Warehousing and Storage", code: "493120", employ: 2083.5, sector: "Trade & Transportation", rca: 1.574, pci: -0.157, trad: 0.5, tier: 1, tradable: true},
-    {name: "Farm Product Warehousing and Storage", code: "493130", employ: 1.38, sector: "Trade & Transportation", rca: 0.007, pci: -2.127, trad: 0.5, tier: 1, tradable: true},
-    {name: "Other Warehousing and Storage", code: "493190", employ: 162.72, sector: "Trade & Transportation", rca: 0.142, pci: -0.104, trad: 0.5, tier: 1, tradable: true},
-    {name: "Motion Picture and Video Production", code: "512110", employ: 2191.77, sector: "Professional & Business", rca: 0.49, pci: 0.783, trad: 1.0, tier: 0, tradable: true},
-    {name: "Motion Picture and Video Distribution", code: "512120", employ: 35.13, sector: "Professional & Business", rca: 0.285, pci: 2.419, trad: 1.0, tier: 0, tradable: true},
-    {name: "Motion Picture Theaters (except Drive-Ins)", code: "512131", employ: 1217.61, sector: "Professional & Business", rca: 1.135, pci: -0.847, trad: 0.007, tier: 2, tradable: false},
-    {name: "Drive-In Motion Picture Theaters", code: "512132", employ: 7.06, sector: "Professional & Business", rca: 0.17, pci: -0.847, trad: 0.007, tier: 2, tradable: false},
-    {name: "Teleproduction and Other Postproduction Services", code: "512191", employ: 124.17, sector: "Professional & Business", rca: 0.359, pci: 1.476, trad: 1.0, tier: 0, tradable: true},
-    {name: "Other Motion Picture and Video Industries", code: "512199", employ: 40.28, sector: "Professional & Business", rca: 0.627, pci: 1.476, trad: 1.0, tier: 0, tradable: true},
-    {name: "Music Publishers", code: "512230", employ: 10.62, sector: "Professional & Business", rca: 0.084, pci: 2.047, trad: 1.0, tier: 0, tradable: true},
-    {name: "Sound Recording Studios", code: "512240", employ: 81.87, sector: "Professional & Business", rca: 0.787, pci: 1.962, trad: 1.0, tier: 0, tradable: true},
-    {name: "Record Production and Distribution", code: "512250", employ: 21.48, sector: "Professional & Business", rca: 0.159, pci: 2.401, trad: 1.0, tier: 0, tradable: true},
-    {name: "Other Sound Recording Industries", code: "512290", employ: 22.81, sector: "Professional & Business", rca: 0.521, pci: 2.221, trad: 1.0, tier: 0, tradable: true},
-    {name: "Newspaper Publishers", code: "513110", employ: 1855.94, sector: "Professional & Business", rca: 1.246, pci: -1.277, trad: 0.5, tier: 1, tradable: true},
-    {name: "Periodical Publishers", code: "513120", employ: 2193.08, sector: "Professional & Business", rca: 1.496, pci: 0.405, trad: 1.0, tier: 0, tradable: true},
-    {name: "Book Publishers", code: "513130", employ: 2457.19, sector: "Professional & Business", rca: 2.435, pci: 0.528, trad: 1.0, tier: 0, tradable: true},
-    {name: "Directory and Mailing List Publishers", code: "513140", employ: 912.39, sector: "Professional & Business", rca: 4.299, pci: 1.087, trad: 0.9, tier: 0, tradable: true},
-    {name: "Greeting Card Publishers", code: "513191", employ: 42.37, sector: "Professional & Business", rca: 2.773, pci: 0.852, trad: 0.9, tier: 0, tradable: true},
-    {name: "All Other Publishers", code: "513199", employ: 314.73, sector: "Professional & Business", rca: 0.69, pci: 0.852, trad: 0.9, tier: 0, tradable: true},
-    {name: "Software Publishers", code: "513210", employ: 37825.75, sector: "Professional & Business", rca: 3.269, pci: 0.622, trad: 1.0, tier: 0, tradable: true},
-    {name: "Radio Broadcasting Stations", code: "516110", employ: 638.27, sector: "Professional & Business", rca: 0.871, pci: -1.272, trad: 0.5, tier: 1, tradable: true},
-    {name: "Television Broadcasting Stations", code: "516120", employ: 1749.87, sector: "Professional & Business", rca: 1.424, pci: 0.83, trad: 0.5, tier: 1, tradable: true},
-    {name: "Media Streaming Distribution Services, Social Networks, and Other Media Networks and Content Providers", code: "516210", employ: 2770.55, sector: "Professional & Business", rca: 0.752, pci: -0.156, trad: 0.9, tier: 0, tradable: true},
-    {name: "Wired Telecommunications Carriers", code: "517111", employ: 5535.88, sector: "Professional & Business", rca: 0.877, pci: -1.101, trad: 0.5, tier: 1, tradable: true},
-    {name: "Wireless Telecommunications Carriers (except Satellite)", code: "517112", employ: 1151.43, sector: "Professional & Business", rca: 1.0, pci: -0.979, trad: 0.5, tier: 1, tradable: true},
-    {name: "Telecommunications Resellers", code: "517121", employ: 458.88, sector: "Professional & Business", rca: 0.531, pci: -0.475, trad: 0.5, tier: 1, tradable: true},
-    {name: "Satellite Telecommunications", code: "517410", employ: 38.36, sector: "Professional & Business", rca: 0.327, pci: 1.133, trad: 0.9, tier: 0, tradable: true},
-    {name: "All Other Telecommunications", code: "517810", employ: 756.53, sector: "Professional & Business", rca: 2.34, pci: -0.475, trad: 0.5, tier: 1, tradable: true},
-    {name: "Computing Infrastructure Providers, Data Processing, Web Hosting, and Related Services", code: "518210", employ: 8116.07, sector: "Professional & Business", rca: 1.012, pci: 0.08, trad: 0.9, tier: 0, tradable: true},
-    {name: "Libraries and Archives", code: "519210", employ: 330.96, sector: "Professional & Business", rca: 0.802, pci: 0.184, trad: 0.5, tier: 1, tradable: true},
-    {name: "Web Search Portals and All Other Information Services", code: "519290", employ: 4839.39, sector: "Professional & Business", rca: 2.351, pci: 0.722, trad: 1.0, tier: 0, tradable: true},
-    {name: "Monetary Authorities-Central Bank", code: "521110", employ: 10.84, sector: "Financial Activities", rca: 0.229, pci: 1.851, trad: 0.83, tier: 0, tradable: true},
-    {name: "Commercial Banking", code: "522110", employ: 20466.41, sector: "Financial Activities", rca: 0.795, pci: -1.472, trad: 0.5, tier: 1, tradable: true},
-    {name: "Credit Unions", code: "522130", employ: 4119.68, sector: "Financial Activities", rca: 0.939, pci: -1.089, trad: 0.016, tier: 2, tradable: false},
-    {name: "Savings Institutions and Other Depository Credit Intermediation", code: "522180", employ: 6619.91, sector: "Financial Activities", rca: 4.966, pci: -0.874, trad: 0.5, tier: 1, tradable: true},
-    {name: "Credit Card Issuing", code: "522210", employ: 16.74, sector: "Financial Activities", rca: 0.026, pci: 1.374, trad: 1.0, tier: 0, tradable: true},
-    {name: "Sales Financing", code: "522220", employ: 377.24, sector: "Financial Activities", rca: 0.305, pci: -0.64, trad: 1.0, tier: 0, tradable: true},
-    {name: "Consumer Lending", code: "522291", employ: 762.68, sector: "Financial Activities", rca: 0.392, pci: -1.379, trad: 0.5, tier: 1, tradable: true},
-    {name: "Real Estate Credit", code: "522292", employ: 2295.42, sector: "Financial Activities", rca: 0.607, pci: -0.85, trad: 0.657, tier: 1, tradable: true},
-    {name: "International, Secondary Market, and All Other Nondepository Credit Intermediation", code: "522299", employ: 357.92, sector: "Financial Activities", rca: 0.226, pci: -0.85, trad: 0.657, tier: 1, tradable: true},
-    {name: "Mortgage and Nonmortgage Loan Brokers", code: "522310", employ: 989.84, sector: "Financial Activities", rca: 0.649, pci: 0.162, trad: 0.0, tier: 2, tradable: false},
-    {name: "Financial Transactions Processing, Reserve, and Clearinghouse Activities", code: "522320", employ: 1081.28, sector: "Financial Activities", rca: 0.472, pci: 0.351, trad: 1.0, tier: 0, tradable: true},
-    {name: "Other Activities Related to Credit Intermediation", code: "522390", employ: 434.89, sector: "Financial Activities", rca: 0.369, pci: -0.708, trad: 0.525, tier: 1, tradable: true},
-    {name: "Investment Banking and Securities Intermediation", code: "523150", employ: 11203.73, sector: "Financial Activities", rca: 1.561, pci: -0.384, trad: 1.0, tier: 0, tradable: true},
-    {name: "Commodity Contracts Intermediation", code: "523160", employ: 370.57, sector: "Financial Activities", rca: 0.747, pci: -0.306, trad: 1.0, tier: 0, tradable: true},
-    {name: "Securities and Commodity Exchanges", code: "523210", employ: 88.72, sector: "Financial Activities", rca: 0.702, pci: 2.268, trad: 1.0, tier: 0, tradable: true},
-    {name: "Miscellaneous Intermediation", code: "523910", employ: 1093.22, sector: "Financial Activities", rca: 1.777, pci: 0.118, trad: 1.0, tier: 0, tradable: true},
-    {name: "Portfolio Management and Investment Advice", code: "523940", employ: 27406.0, sector: "Financial Activities", rca: 2.704, pci: 0.036, trad: 1.0, tier: 0, tradable: true},
-    {name: "Trust, Fiduciary, and Custody Activities", code: "523991", employ: 712.47, sector: "Financial Activities", rca: 2.309, pci: 0.434, trad: 1.0, tier: 0, tradable: true},
-    {name: "Miscellaneous Financial Investment Activities", code: "523999", employ: 2431.28, sector: "Financial Activities", rca: 4.104, pci: 0.434, trad: 1.0, tier: 0, tradable: true},
-    {name: "Direct Life Insurance Carriers", code: "524113", employ: 7422.38, sector: "Financial Activities", rca: 2.679, pci: -0.255, trad: 0.717, tier: 1, tradable: true},
-    {name: "Direct Health and Medical Insurance Carriers", code: "524114", employ: 9815.34, sector: "Financial Activities", rca: 1.68, pci: -0.255, trad: 0.717, tier: 1, tradable: true},
-    {name: "Direct Property and Casualty Insurance Carriers", code: "524126", employ: 13026.27, sector: "Financial Activities", rca: 1.528, pci: -0.255, trad: 0.717, tier: 1, tradable: true},
-    {name: "Direct Title Insurance Carriers", code: "524127", employ: 81.26, sector: "Financial Activities", rca: 0.064, pci: -0.255, trad: 0.717, tier: 1, tradable: true},
-    {name: "Other Direct Insurance (except Life, Health, and Medical) Carriers", code: "524128", employ: 163.82, sector: "Financial Activities", rca: 0.432, pci: -0.255, trad: 0.717, tier: 1, tradable: true},
-    {name: "Reinsurance Carriers", code: "524130", employ: 291.94, sector: "Financial Activities", rca: 0.624, pci: -0.255, trad: 0.717, tier: 1, tradable: true},
-    {name: "Insurance Agencies and Brokerages", code: "524210", employ: 11915.94, sector: "Financial Activities", rca: 0.665, pci: -1.078, trad: 0.0, tier: 2, tradable: false},
-    {name: "Claims Adjusting", code: "524291", employ: 973.96, sector: "Financial Activities", rca: 1.043, pci: -0.045, trad: 0.482, tier: 1, tradable: false},
-    {name: "Pharmacy Benefit Management and Other Third Party Administration of Insurance and Pension Funds", code: "524292", employ: 1934.77, sector: "Financial Activities", rca: 0.599, pci: -0.045, trad: 0.482, tier: 1, tradable: false},
-    {name: "All Other Insurance Related Activities", code: "524298", employ: 2125.33, sector: "Financial Activities", rca: 1.468, pci: -0.045, trad: 0.482, tier: 1, tradable: false},
-    {name: "Pension Funds", code: "525110", employ: 77.85, sector: "Financial Activities", rca: 1.542, pci: 1.635, trad: 0.5, tier: 1, tradable: true},
-    {name: "Health and Welfare Funds", code: "525120", employ: 7.83, sector: "Financial Activities", rca: 0.112, pci: 1.724, trad: 0.555, tier: 1, tradable: true},
-    {name: "Other Insurance Funds", code: "525190", employ: 6.45, sector: "Financial Activities", rca: 0.362, pci: 1.298, trad: 0.9, tier: 0, tradable: true},
-    {name: "Open-End Investment Funds", code: "525910", employ: 48.14, sector: "Financial Activities", rca: 0.672, pci: 1.92, trad: 0.726, tier: 1, tradable: true},
-    {name: "Trusts, Estates, and Agency Accounts", code: "525920", employ: 17.04, sector: "Financial Activities", rca: 0.259, pci: 0.31, trad: 0.615, tier: 1, tradable: true},
-    {name: "Other Financial Vehicles", code: "525990", employ: 134.09, sector: "Financial Activities", rca: 0.619, pci: 0.985, trad: 0.792, tier: 1, tradable: true},
-    {name: "Lessors of Residential Buildings and Dwellings", code: "531110", employ: 5530.0, sector: "Financial Activities", rca: 0.724, pci: -0.841, trad: 0.0, tier: 2, tradable: false},
-    {name: "Lessors of Nonresidential Buildings (except Miniwarehouses)", code: "531120", employ: 2934.14, sector: "Financial Activities", rca: 0.91, pci: -0.515, trad: 0.0, tier: 2, tradable: false},
-    {name: "Lessors of Miniwarehouses and Self-Storage Units", code: "531130", employ: 642.87, sector: "Financial Activities", rca: 0.558, pci: -0.688, trad: 0.0, tier: 2, tradable: false},
-    {name: "Lessors of Other Real Estate Property", code: "531190", employ: 231.99, sector: "Financial Activities", rca: 0.293, pci: -0.878, trad: 0.287, tier: 1, tradable: false},
-    {name: "Offices of Real Estate Agents and Brokers", code: "531210", employ: 5763.0, sector: "Financial Activities", rca: 0.825, pci: -0.515, trad: 0.0, tier: 2, tradable: false},
-    {name: "Residential Property Managers", code: "531311", employ: 9725.9, sector: "Financial Activities", rca: 0.897, pci: -0.311, trad: 0.122, tier: 2, tradable: false},
-    {name: "Nonresidential Property Managers", code: "531312", employ: 5200.27, sector: "Financial Activities", rca: 1.47, pci: -0.311, trad: 0.122, tier: 2, tradable: false},
-    {name: "Offices of Real Estate Appraisers", code: "531320", employ: 390.57, sector: "Financial Activities", rca: 0.687, pci: -0.576, trad: 0.0, tier: 2, tradable: false},
-    {name: "Other Activities Related to Real Estate", code: "531390", employ: 2158.27, sector: "Financial Activities", rca: 1.175, pci: 0.088, trad: 0.0, tier: 2, tradable: false},
-    {name: "Passenger Car Rental", code: "532111", employ: 1908.85, sector: "Financial Activities", rca: 1.284, pci: -0.009, trad: 0.5, tier: 1, tradable: true},
-    {name: "Passenger Car Leasing", code: "532112", employ: 20.17, sector: "Financial Activities", rca: 0.116, pci: -0.009, trad: 0.5, tier: 1, tradable: true},
-    {name: "Truck, Utility Trailer, and RV (Recreational Vehicle) Rental and Leasing", code: "532120", employ: 1291.4, sector: "Financial Activities", rca: 0.493, pci: -0.069, trad: 0.5, tier: 1, tradable: true},
-    {name: "Consumer Electronics and Appliances Rental", code: "532210", employ: 152.58, sector: "Financial Activities", rca: 1.461, pci: -0.864, trad: 0.5, tier: 1, tradable: true},
-    {name: "Formal Wear and Costume Rental", code: "532281", employ: 27.79, sector: "Financial Activities", rca: 0.41, pci: -0.771, trad: 0.548, tier: 1, tradable: true},
-    {name: "Video Tape and Disc Rental", code: "532282", employ: 10.26, sector: "Financial Activities", rca: 0.244, pci: -0.771, trad: 0.548, tier: 1, tradable: true},
-    {name: "Home Health Equipment Rental", code: "532283", employ: 134.65, sector: "Financial Activities", rca: 0.319, pci: -0.771, trad: 0.548, tier: 1, tradable: true},
-    {name: "Recreational Goods Rental", code: "532284", employ: 60.15, sector: "Financial Activities", rca: 0.224, pci: -0.771, trad: 0.548, tier: 1, tradable: true},
-    {name: "All Other Consumer Goods Rental", code: "532289", employ: 1038.45, sector: "Financial Activities", rca: 0.911, pci: -1.226, trad: 0.0, tier: 2, tradable: false},
-    {name: "General Rental Centers", code: "532310", employ: 250.82, sector: "Financial Activities", rca: 0.616, pci: -0.69, trad: 0.153, tier: 2, tradable: false},
-    {name: "Commercial Air, Rail, and Water Transportation Equipment Rental and Leasing", code: "532411", employ: 125.32, sector: "Financial Activities", rca: 1.14, pci: 0.796, trad: 0.9, tier: 0, tradable: true},
-    {name: "Construction, Mining, and Forestry Machinery and Equipment Rental and Leasing", code: "532412", employ: 811.53, sector: "Financial Activities", rca: 0.585, pci: -0.84, trad: 0.5, tier: 1, tradable: true},
-    {name: "Office Machinery and Equipment Rental and Leasing", code: "532420", employ: 362.96, sector: "Financial Activities", rca: 1.484, pci: 1.062, trad: 0.225, tier: 1, tradable: false},
-    {name: "Other Commercial and Industrial Machinery and Equipment Rental and Leasing", code: "532490", employ: 1008.26, sector: "Financial Activities", rca: 0.546, pci: -0.356, trad: 0.0, tier: 2, tradable: false},
-    {name: "Lessors of Nonfinancial Intangible Assets (except Copyrighted Works)", code: "533110", employ: 167.53, sector: "Financial Activities", rca: 0.478, pci: 0.712, trad: 1.0, tier: 0, tradable: true},
-    {name: "Offices of Lawyers", code: "541110", employ: 24266.89, sector: "Professional & Business", rca: 1.052, pci: -0.608, trad: 0.5, tier: 1, tradable: true},
-    {name: "Title Abstract and Settlement Offices", code: "541191", employ: 235.88, sector: "Professional & Business", rca: 0.261, pci: -0.966, trad: 0.0, tier: 2, tradable: false},
-    {name: "All Other Legal Services", code: "541199", employ: 240.23, sector: "Professional & Business", rca: 0.32, pci: -0.966, trad: 0.0, tier: 2, tradable: false},
-    {name: "Offices of Certified Public Accountants", code: "541211", employ: 12789.45, sector: "Professional & Business", rca: 1.129, pci: -0.922, trad: 0.531, tier: 1, tradable: true},
-    {name: "Tax Preparation Services", code: "541213", employ: 2191.23, sector: "Professional & Business", rca: 1.184, pci: -0.922, trad: 0.531, tier: 1, tradable: true},
-    {name: "Payroll Services", code: "541214", employ: 1765.91, sector: "Professional & Business", rca: 0.525, pci: -0.922, trad: 0.531, tier: 1, tradable: true},
-    {name: "Other Accounting Services", code: "541219", employ: 4513.42, sector: "Professional & Business", rca: 0.831, pci: -0.888, trad: 0.0, tier: 2, tradable: false},
-    {name: "Architectural Services", code: "541310", employ: 6969.66, sector: "Professional & Business", rca: 1.619, pci: 0.636, trad: 1.0, tier: 0, tradable: true},
-    {name: "Landscape Architectural Services", code: "541320", employ: 765.58, sector: "Professional & Business", rca: 1.091, pci: 0.871, trad: 0.5, tier: 1, tradable: true},
-    {name: "Engineering Services", code: "541330", employ: 26122.89, sector: "Professional & Business", rca: 1.098, pci: -0.179, trad: 1.0, tier: 0, tradable: true},
-    {name: "Drafting Services", code: "541340", employ: 44.06, sector: "Professional & Business", rca: 0.274, pci: 0.278, trad: 0.5, tier: 1, tradable: true},
-    {name: "Building Inspection Services", code: "541350", employ: 371.62, sector: "Professional & Business", rca: 0.721, pci: 0.128, trad: 0.0, tier: 2, tradable: false},
-    {name: "Geophysical Surveying and Mapping Services", code: "541360", employ: 47.27, sector: "Professional & Business", rca: 0.226, pci: -0.198, trad: 1.0, tier: 0, tradable: true},
-    {name: "Surveying and Mapping (except Geophysical) Services", code: "541370", employ: 689.05, sector: "Professional & Business", rca: 0.693, pci: -0.796, trad: 0.0, tier: 2, tradable: false},
-    {name: "Testing Laboratories and Services", code: "541380", employ: 3140.86, sector: "Professional & Business", rca: 0.908, pci: -0.395, trad: 1.0, tier: 0, tradable: true},
-    {name: "Interior Design Services", code: "541410", employ: 1040.53, sector: "Professional & Business", rca: 0.889, pci: 0.921, trad: 0.5, tier: 1, tradable: true},
-    {name: "Industrial Design Services", code: "541420", employ: 365.38, sector: "Professional & Business", rca: 1.281, pci: 0.909, trad: 0.862, tier: 0, tradable: true},
-    {name: "Graphic Design Services", code: "541430", employ: 884.44, sector: "Professional & Business", rca: 0.782, pci: 0.264, trad: 0.5, tier: 1, tradable: true},
-    {name: "Other Specialized Design Services", code: "541490", employ: 485.14, sector: "Professional & Business", rca: 1.355, pci: 1.007, trad: 0.5, tier: 1, tradable: true},
-    {name: "Custom Computer Programming Services", code: "541511", employ: 31979.87, sector: "Professional & Business", rca: 1.626, pci: 0.196, trad: 1.0, tier: 0, tradable: true},
-    {name: "Computer Systems Design Services", code: "541512", employ: 28225.23, sector: "Professional & Business", rca: 1.367, pci: 0.196, trad: 1.0, tier: 0, tradable: true},
-    {name: "Computer Facilities Management Services", code: "541513", employ: 865.63, sector: "Professional & Business", rca: 0.75, pci: 0.196, trad: 1.0, tier: 0, tradable: true},
-    {name: "Other Computer Related Services", code: "541519", employ: 2820.28, sector: "Professional & Business", rca: 1.421, pci: 0.196, trad: 1.0, tier: 0, tradable: true},
-    {name: "Administrative Management and General Management Consulting Services", code: "541611", employ: 29002.61, sector: "Professional & Business", rca: 1.792, pci: -0.088, trad: 1.0, tier: 0, tradable: true},
-    {name: "Human Resources Consulting Services", code: "541612", employ: 2637.79, sector: "Professional & Business", rca: 1.727, pci: -0.088, trad: 1.0, tier: 0, tradable: true},
-    {name: "Marketing Consulting Services", code: "541613", employ: 5808.27, sector: "Professional & Business", rca: 1.031, pci: -0.088, trad: 1.0, tier: 0, tradable: true},
-    {name: "Process, Physical Distribution, and Logistics Consulting Services", code: "541614", employ: 2202.28, sector: "Professional & Business", rca: 0.762, pci: -0.088, trad: 1.0, tier: 0, tradable: true},
-    {name: "Other Management Consulting Services", code: "541618", employ: 2075.19, sector: "Professional & Business", rca: 0.896, pci: -0.088, trad: 1.0, tier: 0, tradable: true},
-    {name: "Environmental Consulting Services", code: "541620", employ: 2618.23, sector: "Professional & Business", rca: 1.36, pci: -0.053, trad: 0.5, tier: 1, tradable: true},
-    {name: "Other Scientific and Technical Consulting Services", code: "541690", employ: 7053.64, sector: "Professional & Business", rca: 1.868, pci: -0.808, trad: 0.5, tier: 1, tradable: true},
-    {name: "Research and Development in Nanotechnology", code: "541713", employ: 994.26, sector: "Professional & Business", rca: 3.071, pci: 0.274, trad: 1.0, tier: 0, tradable: true},
-    {name: "Research and Development in Biotechnology (except Nanobiotechnology)", code: "541714", employ: 61686.97, sector: "Professional & Business", rca: 10.854, pci: 0.274, trad: 1.0, tier: 0, tradable: true},
-    {name: "Research and Development in the Physical, Engineering, and Life Sciences (except Nanotechnology and Biotechnology)", code: "541715", employ: 31458.7, sector: "Professional & Business", rca: 3.195, pci: 0.274, trad: 1.0, tier: 0, tradable: true},
-    {name: "Research and Development in the Social Sciences and Humanities", code: "541720", employ: 2542.08, sector: "Professional & Business", rca: 1.769, pci: 0.331, trad: 1.0, tier: 0, tradable: true},
-    {name: "Advertising Agencies", code: "541810", employ: 3912.33, sector: "Professional & Business", rca: 0.893, pci: 0.62, trad: 1.0, tier: 0, tradable: true},
-    {name: "Public Relations Agencies", code: "541820", employ: 1459.14, sector: "Professional & Business", rca: 1.06, pci: 1.126, trad: 1.0, tier: 0, tradable: true},
-    {name: "Media Buying Agencies", code: "541830", employ: 170.51, sector: "Professional & Business", rca: 0.498, pci: 1.888, trad: 1.0, tier: 0, tradable: true},
-    {name: "Media Representatives", code: "541840", employ: 111.78, sector: "Professional & Business", rca: 0.342, pci: 1.108, trad: 1.0, tier: 0, tradable: true},
-    {name: "Indoor and Outdoor Display Advertising", code: "541850", employ: 179.2, sector: "Professional & Business", rca: 0.425, pci: 0.406, trad: 0.003, tier: 2, tradable: false},
-    {name: "Direct Mail Advertising", code: "541860", employ: 505.83, sector: "Professional & Business", rca: 0.861, pci: 1.653, trad: 1.0, tier: 0, tradable: true},
-    {name: "Advertising Material Distribution Services", code: "541870", employ: 73.05, sector: "Professional & Business", rca: 0.279, pci: 0.754, trad: 0.191, tier: 2, tradable: false},
-    {name: "Other Services Related to Advertising", code: "541890", employ: 1789.94, sector: "Professional & Business", rca: 1.243, pci: 0.309, trad: 0.5, tier: 1, tradable: true},
-    {name: "Marketing Research and Public Opinion Polling", code: "541910", employ: 1331.15, sector: "Professional & Business", rca: 1.126, pci: 1.11, trad: 1.0, tier: 0, tradable: true},
-    {name: "Photography Studios, Portrait", code: "541921", employ: 322.49, sector: "Professional & Business", rca: 0.56, pci: -0.322, trad: 0.227, tier: 1, tradable: false},
-    {name: "Commercial Photography", code: "541922", employ: 154.48, sector: "Professional & Business", rca: 0.678, pci: -0.322, trad: 0.227, tier: 1, tradable: false},
-    {name: "Translation and Interpretation Services", code: "541930", employ: 529.54, sector: "Professional & Business", rca: 0.854, pci: 1.06, trad: 1.0, tier: 0, tradable: true},
-    {name: "Veterinary Services", code: "541940", employ: 7678.0, sector: "Professional & Business", rca: 0.842, pci: -1.08, trad: 0.0, tier: 2, tradable: false},
-    {name: "All Other Professional, Scientific, and Technical Services", code: "541990", employ: 3616.33, sector: "Professional & Business", rca: 0.86, pci: -0.537, trad: 1.0, tier: 0, tradable: true},
-    {name: "Offices of Bank Holding Companies", code: "551111", employ: 23.53, sector: "Professional & Business", rca: 0.249, pci: -0.41, trad: 0.501, tier: 1, tradable: true},
-    {name: "Offices of Other Holding Companies", code: "551112", employ: 1132.03, sector: "Professional & Business", rca: 0.757, pci: -0.272, trad: 0.5, tier: 1, tradable: true},
-    {name: "Corporate, Subsidiary, and Regional Managing Offices", code: "551114", employ: 63704.44, sector: "Professional & Business", rca: 1.303, pci: -0.41, trad: 0.501, tier: 1, tradable: true},
-    {name: "Office Administrative Services", code: "561110", employ: 7499.0, sector: "Professional & Business", rca: 0.677, pci: -0.737, trad: 0.5, tier: 1, tradable: true},
-    {name: "Facilities Support Services", code: "561210", employ: 1341.2, sector: "Professional & Business", rca: 0.536, pci: -0.457, trad: 0.5, tier: 1, tradable: true},
-    {name: "Employment Placement Agencies", code: "561311", employ: 4503.85, sector: "Professional & Business", rca: 1.115, pci: -0.244, trad: 0.071, tier: 2, tradable: false},
-    {name: "Executive Search Services", code: "561312", employ: 1543.36, sector: "Professional & Business", rca: 2.049, pci: -0.244, trad: 0.071, tier: 2, tradable: false},
-    {name: "Temporary Help Services", code: "561320", employ: 35283.95, sector: "Professional & Business", rca: 0.735, pci: -0.649, trad: 0.0, tier: 2, tradable: false},
-    {name: "Professional Employer Organizations", code: "561330", employ: 428.84, sector: "Professional & Business", rca: 0.083, pci: -0.271, trad: 0.634, tier: 1, tradable: true},
-    {name: "Document Preparation Services", code: "561410", employ: 452.5, sector: "Professional & Business", rca: 0.556, pci: -0.005, trad: 0.5, tier: 1, tradable: true},
-    {name: "Telephone Answering Services", code: "561421", employ: 445.2, sector: "Professional & Business", rca: 0.762, pci: 0.06, trad: 0.601, tier: 1, tradable: true},
-    {name: "Telemarketing Bureaus and Other Contact Centers", code: "561422", employ: 963.3, sector: "Professional & Business", rca: 0.25, pci: -0.053, trad: 0.544, tier: 1, tradable: true},
-    {name: "Private Mail Centers", code: "561431", employ: 544.43, sector: "Professional & Business", rca: 0.489, pci: -0.042, trad: 0.0, tier: 2, tradable: false},
-    {name: "Other Business Service Centers (including Copy Shops)", code: "561439", employ: 490.07, sector: "Professional & Business", rca: 0.436, pci: -0.042, trad: 0.0, tier: 2, tradable: false},
-    {name: "Collection Agencies", code: "561440", employ: 1280.2, sector: "Professional & Business", rca: 0.666, pci: -0.214, trad: 0.5, tier: 1, tradable: true},
-    {name: "Credit Bureaus", code: "561450", employ: 39.17, sector: "Professional & Business", rca: 0.099, pci: 1.723, trad: 0.85, tier: 0, tradable: true},
-    {name: "Repossession Services", code: "561491", employ: 38.83, sector: "Professional & Business", rca: 0.249, pci: 0.054, trad: 0.464, tier: 1, tradable: false},
-    {name: "Court Reporting and Stenotype Services", code: "561492", employ: 51.4, sector: "Professional & Business", rca: 0.178, pci: 0.054, trad: 0.464, tier: 1, tradable: false},
-    {name: "All Other Business Support Services", code: "561499", employ: 1254.91, sector: "Professional & Business", rca: 0.656, pci: 0.054, trad: 0.464, tier: 1, tradable: false},
-    {name: "Travel Agencies", code: "561510", employ: 1715.48, sector: "Professional & Business", rca: 0.926, pci: 0.273, trad: 0.16, tier: 2, tradable: false},
-    {name: "Tour Operators", code: "561520", employ: 1996.44, sector: "Professional & Business", rca: 3.646, pci: 1.265, trad: 0.9, tier: 0, tradable: true},
-    {name: "Convention and Visitors Bureaus", code: "561591", employ: 17.37, sector: "Professional & Business", rca: 0.187, pci: 0.363, trad: 0.624, tier: 1, tradable: true},
-    {name: "All Other Travel Arrangement and Reservation Services", code: "561599", employ: 270.3, sector: "Professional & Business", rca: 0.336, pci: 0.363, trad: 0.624, tier: 1, tradable: true},
-    {name: "Investigation and Personal Background Check Services", code: "561611", employ: 113.47, sector: "Professional & Business", rca: 0.212, pci: 0.435, trad: 0.289, tier: 1, tradable: false},
-    {name: "Security Guards and Patrol Services", code: "561612", employ: 14742.76, sector: "Professional & Business", rca: 0.874, pci: 0.199, trad: 0.0, tier: 2, tradable: false},
-    {name: "Armored Car Services", code: "561613", employ: 39.53, sector: "Professional & Business", rca: 0.109, pci: 0.435, trad: 0.289, tier: 1, tradable: false},
-    {name: "Security Systems Services (except Locksmiths)", code: "561621", employ: 2188.24, sector: "Professional & Business", rca: 0.724, pci: 0.096, trad: 0.0, tier: 2, tradable: false},
-    {name: "Locksmiths", code: "561622", employ: 326.0, sector: "Professional & Business", rca: 0.677, pci: 0.043, trad: 0.0, tier: 2, tradable: false},
-    {name: "Exterminating and Pest Control Services", code: "561710", employ: 1701.02, sector: "Professional & Business", rca: 0.601, pci: -0.854, trad: 0.0, tier: 2, tradable: false},
-    {name: "Janitorial Services", code: "561720", employ: 27225.12, sector: "Professional & Business", rca: 1.292, pci: -0.777, trad: 0.0, tier: 2, tradable: false},
-    {name: "Landscaping Services", code: "561730", employ: 16271.69, sector: "Professional & Business", rca: 0.913, pci: -0.632, trad: 0.0, tier: 2, tradable: false},
-    {name: "Carpet and Upholstery Cleaning Services", code: "561740", employ: 456.36, sector: "Professional & Business", rca: 0.682, pci: -0.511, trad: 0.0, tier: 2, tradable: false},
-    {name: "Other Services to Buildings and Dwellings", code: "561790", employ: 1565.81, sector: "Professional & Business", rca: 0.699, pci: -0.288, trad: 0.0, tier: 2, tradable: false},
-    {name: "Packaging and Labeling Services", code: "561910", employ: 281.26, sector: "Professional & Business", rca: 0.3, pci: 0.187, trad: 0.757, tier: 1, tradable: true},
-    {name: "Convention and Trade Show Organizers", code: "561920", employ: 1086.75, sector: "Professional & Business", rca: 1.006, pci: 0.899, trad: 0.9, tier: 0, tradable: true},
-    {name: "All Other Support Services", code: "561990", employ: 998.38, sector: "Professional & Business", rca: 0.262, pci: -0.623, trad: 0.0, tier: 2, tradable: false},
-    {name: "Solid Waste Collection", code: "562111", employ: 3562.38, sector: "Professional & Business", rca: 1.16, pci: -0.929, trad: 0.0, tier: 2, tradable: false},
-    {name: "Hazardous Waste Collection", code: "562112", employ: 40.84, sector: "Professional & Business", rca: 0.214, pci: 0.076, trad: 0.424, tier: 1, tradable: false},
-    {name: "Other Waste Collection", code: "562119", employ: 148.78, sector: "Professional & Business", rca: 0.542, pci: 0.076, trad: 0.424, tier: 1, tradable: false},
-    {name: "Hazardous Waste Treatment and Disposal", code: "562211", employ: 603.42, sector: "Professional & Business", rca: 1.233, pci: -0.718, trad: 0.876, tier: 0, tradable: true},
-    {name: "Solid Waste Landfill", code: "562212", employ: 8.41, sector: "Professional & Business", rca: 0.015, pci: -0.718, trad: 0.876, tier: 0, tradable: true},
-    {name: "Solid Waste Combustors and Incinerators", code: "562213", employ: 222.18, sector: "Professional & Business", rca: 3.691, pci: -0.718, trad: 0.876, tier: 0, tradable: true},
-    {name: "Other Nonhazardous Waste Treatment and Disposal", code: "562219", employ: 144.66, sector: "Professional & Business", rca: 0.512, pci: 0.079, trad: 0.813, tier: 0, tradable: true},
-    {name: "Remediation Services", code: "562910", employ: 1837.69, sector: "Professional & Business", rca: 0.973, pci: -0.152, trad: 0.768, tier: 1, tradable: true},
-    {name: "Materials Recovery Facilities", code: "562920", employ: 166.02, sector: "Professional & Business", rca: 0.457, pci: 0.168, trad: 0.5, tier: 1, tradable: true},
-    {name: "Septic Tank and Related Services", code: "562991", employ: 440.86, sector: "Professional & Business", rca: 0.868, pci: -0.899, trad: 0.337, tier: 1, tradable: false},
-    {name: "All Other Miscellaneous Waste Management Services", code: "562998", employ: 391.35, sector: "Professional & Business", rca: 1.096, pci: -0.899, trad: 0.337, tier: 1, tradable: false},
-    {name: "Elementary and Secondary Schools", code: "611110", employ: 19244.0, sector: "Education & Health", rca: 0.994, pci: -0.361, trad: 0.0, tier: 2, tradable: false},
-    {name: "Junior Colleges", code: "611210", employ: 15.48, sector: "Education & Health", rca: 0.095, pci: 1.08, trad: 0.5, tier: 1, tradable: true},
-    {name: "Colleges, Universities, and Professional Schools", code: "611310", employ: 85523.11, sector: "Education & Health", rca: 4.314, pci: -0.184, trad: 0.5, tier: 1, tradable: true},
-    {name: "Business and Secretarial Schools", code: "611410", employ: 65.64, sector: "Education & Health", rca: 1.998, pci: 2.259, trad: 0.5, tier: 1, tradable: true},
-    {name: "Computer Training", code: "611420", employ: 652.08, sector: "Education & Health", rca: 2.863, pci: 1.058, trad: 0.5, tier: 1, tradable: true},
-    {name: "Professional and Management Development Training", code: "611430", employ: 626.68, sector: "Education & Health", rca: 0.668, pci: 0.355, trad: 0.5, tier: 1, tradable: true},
-    {name: "Cosmetology and Barber Schools", code: "611511", employ: 59.8, sector: "Education & Health", rca: 0.185, pci: -0.239, trad: 0.212, tier: 1, tradable: false},
-    {name: "Flight Training", code: "611512", employ: 89.42, sector: "Education & Health", rca: 0.21, pci: -0.239, trad: 0.212, tier: 1, tradable: false},
-    {name: "Apprenticeship Training", code: "611513", employ: 317.43, sector: "Education & Health", rca: 1.023, pci: -0.239, trad: 0.212, tier: 1, tradable: false},
-    {name: "Other Technical and Trade Schools", code: "611519", employ: 647.36, sector: "Education & Health", rca: 0.506, pci: -0.239, trad: 0.212, tier: 1, tradable: false},
-    {name: "Fine Arts Schools", code: "611610", employ: 2963.92, sector: "Education & Health", rca: 1.279, pci: -0.087, trad: 0.0, tier: 2, tradable: false},
-    {name: "Sports and Recreation Instruction", code: "611620", employ: 5524.83, sector: "Education & Health", rca: 1.342, pci: 0.097, trad: 0.0, tier: 2, tradable: false},
-    {name: "Language Schools", code: "611630", employ: 1126.1, sector: "Education & Health", rca: 3.108, pci: 2.09, trad: 0.5, tier: 1, tradable: true},
-    {name: "Exam Preparation and Tutoring", code: "611691", employ: 2279.83, sector: "Education & Health", rca: 1.07, pci: 0.113, trad: 0.01, tier: 2, tradable: false},
-    {name: "Automobile Driving Schools", code: "611692", employ: 650.07, sector: "Education & Health", rca: 2.098, pci: 0.113, trad: 0.01, tier: 2, tradable: false},
-    {name: "All Other Miscellaneous Schools and Instruction", code: "611699", employ: 2694.24, sector: "Education & Health", rca: 1.647, pci: 0.43, trad: 0.0, tier: 2, tradable: false},
-    {name: "Educational Support Services", code: "611710", employ: 4811.0, sector: "Education & Health", rca: 1.311, pci: 0.193, trad: 0.5, tier: 1, tradable: true},
-    {name: "Offices of Physicians (except Mental Health Specialists)", code: "621111", employ: 44735.91, sector: "Education & Health", rca: 0.796, pci: -0.814, trad: 0.0, tier: 2, tradable: false},
-    {name: "Offices of Physicians, Mental Health Specialists", code: "621112", employ: 1360.09, sector: "Education & Health", rca: 0.631, pci: -0.814, trad: 0.0, tier: 2, tradable: false},
-    {name: "Offices of Dentists", code: "621210", employ: 19242.0, sector: "Education & Health", rca: 0.928, pci: -0.981, trad: 0.0, tier: 2, tradable: false},
-    {name: "Offices of Chiropractors", code: "621310", employ: 1449.87, sector: "Education & Health", rca: 0.492, pci: -1.087, trad: 0.0, tier: 2, tradable: false},
-    {name: "Offices of Optometrists", code: "621320", employ: 1490.81, sector: "Education & Health", rca: 0.514, pci: -1.34, trad: 0.0, tier: 2, tradable: false},
-    {name: "Offices of Mental Health Practitioners (except Physicians)", code: "621330", employ: 4813.45, sector: "Education & Health", rca: 0.958, pci: -0.443, trad: 0.0, tier: 2, tradable: false},
-    {name: "Offices of Physical, Occupational and Speech Therapists, and Audiologists", code: "621340", employ: 8108.16, sector: "Education & Health", rca: 0.843, pci: -0.95, trad: 0.0, tier: 2, tradable: false},
-    {name: "Offices of Podiatrists", code: "621391", employ: 467.98, sector: "Education & Health", rca: 0.735, pci: -0.7, trad: 0.0, tier: 2, tradable: false},
-    {name: "Offices of All Other Miscellaneous Health Practitioners", code: "621399", employ: 2132.73, sector: "Education & Health", rca: 0.77, pci: -0.7, trad: 0.0, tier: 2, tradable: false},
-    {name: "Family Planning Centers", code: "621410", employ: 56.89, sector: "Education & Health", rca: 0.077, pci: -0.04, trad: 0.102, tier: 2, tradable: false},
-    {name: "Outpatient Mental Health and Substance Abuse Centers", code: "621420", employ: 781.2, sector: "Education & Health", rca: 0.146, pci: -0.943, trad: 0.0, tier: 2, tradable: false},
-    {name: "HMO Medical Centers", code: "621491", employ: 230.83, sector: "Education & Health", rca: 0.072, pci: -0.991, trad: 0.208, tier: 1, tradable: false},
-    {name: "Kidney Dialysis Centers", code: "621492", employ: 2917.08, sector: "Education & Health", rca: 1.076, pci: -0.991, trad: 0.208, tier: 1, tradable: false},
-    {name: "Freestanding Ambulatory Surgical and Emergency Centers", code: "621493", employ: 1328.13, sector: "Education & Health", rca: 0.31, pci: -0.991, trad: 0.208, tier: 1, tradable: false},
-    {name: "All Other Outpatient Care Centers", code: "621498", employ: 9821.87, sector: "Education & Health", rca: 1.799, pci: -0.646, trad: 0.191, tier: 2, tradable: false},
-    {name: "Medical Laboratories", code: "621511", employ: 3278.08, sector: "Education & Health", rca: 0.752, pci: -0.27, trad: 0.364, tier: 1, tradable: false},
-    {name: "Diagnostic Imaging Centers", code: "621512", employ: 1262.35, sector: "Education & Health", rca: 0.736, pci: -0.27, trad: 0.364, tier: 1, tradable: false},
-    {name: "Home Health Care Services", code: "621610", employ: 30976.0, sector: "Education & Health", rca: 0.888, pci: -1.076, trad: 0.153, tier: 2, tradable: false},
-    {name: "Ambulance Services", code: "621910", employ: 3902.3, sector: "Education & Health", rca: 1.461, pci: -1.126, trad: 0.0, tier: 2, tradable: false},
-    {name: "Blood and Organ Banks", code: "621991", employ: 46.79, sector: "Education & Health", rca: 0.026, pci: -0.193, trad: 0.319, tier: 1, tradable: false},
-    {name: "All Other Miscellaneous Ambulatory Health Care Services", code: "621999", employ: 2394.98, sector: "Education & Health", rca: 1.38, pci: -0.193, trad: 0.319, tier: 1, tradable: false},
-    {name: "General Medical and Surgical Hospitals", code: "622110", employ: 125558.62, sector: "Education & Health", rca: 1.849, pci: -0.939, trad: 0.5, tier: 1, tradable: true},
-    {name: "Psychiatric and Substance Abuse Hospitals", code: "622210", employ: 897.78, sector: "Education & Health", rca: 0.653, pci: 0.596, trad: 0.5, tier: 1, tradable: true},
-    {name: "Specialty (except Psychiatric and Substance Abuse) Hospitals", code: "622310", employ: 854.59, sector: "Education & Health", rca: 0.357, pci: 0.896, trad: 0.5, tier: 1, tradable: true},
-    {name: "Nursing Care Facilities (Skilled Nursing Facilities)", code: "623110", employ: 24036.0, sector: "Education & Health", rca: 0.941, pci: -1.487, trad: 0.0, tier: 2, tradable: false},
-    {name: "Residential Intellectual and Developmental Disability Facilities", code: "623210", employ: 8148.78, sector: "Education & Health", rca: 1.205, pci: -0.982, trad: 0.247, tier: 1, tradable: false},
-    {name: "Residential Mental Health and Substance Abuse Facilities", code: "623220", employ: 9185.22, sector: "Education & Health", rca: 1.973, pci: -0.45, trad: 0.5, tier: 1, tradable: true},
-    {name: "Continuing Care Retirement Communities", code: "623311", employ: 8073.13, sector: "Education & Health", rca: 0.876, pci: -0.956, trad: 0.249, tier: 1, tradable: false},
-    {name: "Assisted Living Facilities for the Elderly", code: "623312", employ: 10902.87, sector: "Education & Health", rca: 1.187, pci: -0.956, trad: 0.249, tier: 1, tradable: false},
-    {name: "Other Residential Care Facilities", code: "623990", employ: 2678.43, sector: "Education & Health", rca: 1.119, pci: -0.448, trad: 0.5, tier: 1, tradable: true},
-    {name: "Child and Youth Services", code: "624110", employ: 5322.11, sector: "Education & Health", rca: 1.197, pci: -0.792, trad: 0.0, tier: 2, tradable: false},
-    {name: "Services for the Elderly and Persons with Disabilities", code: "624120", employ: 41820.44, sector: "Education & Health", rca: 0.849, pci: -1.067, trad: 0.063, tier: 2, tradable: false},
-    {name: "Other Individual and Family Services", code: "624190", employ: 13075.45, sector: "Education & Health", rca: 1.345, pci: -0.886, trad: 0.0, tier: 2, tradable: false},
-    {name: "Community Food Services", code: "624210", employ: 992.96, sector: "Education & Health", rca: 1.127, pci: -0.303, trad: 0.122, tier: 2, tradable: false},
-    {name: "Temporary Shelters", code: "624221", employ: 2250.39, sector: "Education & Health", rca: 1.418, pci: -0.426, trad: 0.0, tier: 2, tradable: false},
-    {name: "Other Community Housing Services", code: "624229", employ: 1532.43, sector: "Education & Health", rca: 1.605, pci: -0.426, trad: 0.0, tier: 2, tradable: false},
-    {name: "Emergency and Other Relief Services", code: "624230", employ: 742.22, sector: "Education & Health", rca: 1.209, pci: 0.338, trad: 0.657, tier: 1, tradable: true},
-    {name: "Vocational Rehabilitation Services", code: "624310", employ: 5067.0, sector: "Education & Health", rca: 1.199, pci: -0.985, trad: 0.01, tier: 2, tradable: false},
-    {name: "Child Care Services", code: "624410", employ: 25132.0, sector: "Education & Health", rca: 1.304, pci: -1.147, trad: 0.0, tier: 2, tradable: false},
-    {name: "Theater Companies and Dinner Theaters", code: "711110", employ: 1663.36, sector: "Leisure & Hospitality", rca: 1.169, pci: 0.945, trad: 0.53, tier: 1, tradable: true},
-    {name: "Dance Companies", code: "711120", employ: 143.35, sector: "Leisure & Hospitality", rca: 0.552, pci: 1.4, trad: 0.5, tier: 1, tradable: true},
-    {name: "Musical Groups and Artists", code: "711130", employ: 978.64, sector: "Leisure & Hospitality", rca: 1.337, pci: 0.864, trad: 0.5, tier: 1, tradable: true},
-    {name: "Other Performing Arts Companies", code: "711190", employ: 276.26, sector: "Leisure & Hospitality", rca: 1.673, pci: 1.486, trad: 0.9, tier: 0, tradable: true},
-    {name: "Sports Teams and Clubs", code: "711211", employ: 2053.85, sector: "Leisure & Hospitality", rca: 1.02, pci: 1.47, trad: 0.9, tier: 0, tradable: true},
-    {name: "Racetracks", code: "711212", employ: 655.86, sector: "Leisure & Hospitality", rca: 2.829, pci: -0.001, trad: 0.9, tier: 0, tradable: true},
-    {name: "Other Spectator Sports", code: "711219", employ: 121.65, sector: "Leisure & Hospitality", rca: 0.211, pci: -0.001, trad: 0.9, tier: 0, tradable: true},
-    {name: "Promoters of Performing Arts, Sports, and Similar Events with Facilities", code: "711310", employ: 4458.25, sector: "Leisure & Hospitality", rca: 1.783, pci: 0.466, trad: 0.5, tier: 1, tradable: true},
-    {name: "Promoters of Performing Arts, Sports, and Similar Events without Facilities", code: "711320", employ: 546.82, sector: "Leisure & Hospitality", rca: 0.582, pci: 0.405, trad: 0.9, tier: 0, tradable: true},
-    {name: "Agents and Managers for Artists, Athletes, Entertainers, and Other Public Figures", code: "711410", employ: 162.49, sector: "Leisure & Hospitality", rca: 0.274, pci: 1.528, trad: 0.9, tier: 0, tradable: true},
-    {name: "Independent Artists, Writers, and Performers", code: "711510", employ: 349.37, sector: "Leisure & Hospitality", rca: 0.295, pci: 0.087, trad: 0.9, tier: 0, tradable: true},
-    {name: "Museums", code: "712110", employ: 3594.99, sector: "Leisure & Hospitality", rca: 1.486, pci: -0.465, trad: 0.5, tier: 1, tradable: true},
-    {name: "Historical Sites", code: "712120", employ: 295.5, sector: "Leisure & Hospitality", rca: 2.031, pci: 0.882, trad: 0.9, tier: 0, tradable: true},
-    {name: "Zoos and Botanical Gardens", code: "712130", employ: 28.82, sector: "Leisure & Hospitality", rca: 0.053, pci: 1.311, trad: 0.5, tier: 1, tradable: true},
-    {name: "Nature Parks and Other Similar Institutions", code: "712190", employ: 21.69, sector: "Leisure & Hospitality", rca: 0.144, pci: 0.68, trad: 0.9, tier: 0, tradable: true},
-    {name: "Amusement and Theme Parks", code: "713110", employ: 45.48, sector: "Leisure & Hospitality", rca: 0.02, pci: 0.926, trad: 0.9, tier: 0, tradable: true},
-    {name: "Amusement Arcades", code: "713120", employ: 222.89, sector: "Leisure & Hospitality", rca: 0.401, pci: -0.245, trad: 0.5, tier: 1, tradable: true},
-    {name: "Casinos (except Casino Hotels)", code: "713210", employ: 6.6, sector: "Leisure & Hospitality", rca: 0.021, pci: 0.627, trad: 0.9, tier: 0, tradable: true},
-    {name: "Other Gambling Industries", code: "713290", employ: 9.66, sector: "Leisure & Hospitality", rca: 0.014, pci: -0.547, trad: 0.5, tier: 1, tradable: true},
-    {name: "Golf Courses and Country Clubs", code: "713910", employ: 6228.56, sector: "Leisure & Hospitality", rca: 0.88, pci: -0.783, trad: 0.0, tier: 2, tradable: false},
-    {name: "Skiing Facilities", code: "713920", employ: 144.37, sector: "Leisure & Hospitality", rca: 1.414, pci: 0.614, trad: 0.9, tier: 0, tradable: true},
-    {name: "Marinas", code: "713930", employ: 641.8, sector: "Leisure & Hospitality", rca: 1.352, pci: 0.289, trad: 0.9, tier: 0, tradable: true},
-    {name: "Fitness and Recreational Sports Centers", code: "713940", employ: 12522.44, sector: "Leisure & Hospitality", rca: 0.996, pci: -0.489, trad: 0.0, tier: 2, tradable: false},
-    {name: "Bowling Centers", code: "713950", employ: 396.76, sector: "Leisure & Hospitality", rca: 0.558, pci: -0.97, trad: 0.0, tier: 2, tradable: false},
-    {name: "All Other Amusement and Recreation Industries", code: "713990", employ: 4075.13, sector: "Leisure & Hospitality", rca: 0.94, pci: -0.34, trad: 0.0, tier: 2, tradable: false},
-    {name: "Hotels (except Casino Hotels) and Motels", code: "721110", employ: 25381.85, sector: "Leisure & Hospitality", rca: 1.0, pci: -1.002, trad: 0.5, tier: 1, tradable: true},
-    {name: "Casino Hotels", code: "721120", employ: 2.33, sector: "Leisure & Hospitality", rca: 0.001, pci: 0.171, trad: 0.9, tier: 0, tradable: true},
-    {name: "Bed-and-Breakfast Inns", code: "721191", employ: 88.71, sector: "Leisure & Hospitality", rca: 0.304, pci: -0.413, trad: 0.9, tier: 0, tradable: true},
-    {name: "All Other Traveler Accommodation", code: "721199", employ: 97.11, sector: "Leisure & Hospitality", rca: 0.229, pci: -0.413, trad: 0.9, tier: 0, tradable: true},
-    {name: "RV (Recreational Vehicle) Parks and Campgrounds", code: "721211", employ: 190.13, sector: "Leisure & Hospitality", rca: 0.545, pci: -0.976, trad: 0.9, tier: 0, tradable: true},
-    {name: "Recreational and Vacation Camps (except Campgrounds)", code: "721214", employ: 415.83, sector: "Leisure & Hospitality", rca: 1.94, pci: -0.976, trad: 0.9, tier: 0, tradable: true},
-    {name: "Rooming and Boarding Houses, Dormitories, and Workers' Camps", code: "721310", employ: 78.33, sector: "Leisure & Hospitality", rca: 0.66, pci: 0.089, trad: 0.9, tier: 0, tradable: true},
-    {name: "Food Service Contractors", code: "722310", employ: 12823.48, sector: "Leisure & Hospitality", rca: 1.223, pci: -0.942, trad: 0.0, tier: 2, tradable: false},
-    {name: "Caterers", code: "722320", employ: 5059.57, sector: "Leisure & Hospitality", rca: 1.483, pci: 0.125, trad: 0.0, tier: 2, tradable: false},
-    {name: "Mobile Food Services", code: "722330", employ: 667.95, sector: "Leisure & Hospitality", rca: 0.785, pci: -0.647, trad: 0.111, tier: 2, tradable: false},
-    {name: "Drinking Places (Alcoholic Beverages)", code: "722410", employ: 3529.0, sector: "Leisure & Hospitality", rca: 0.454, pci: -0.897, trad: 0.0, tier: 2, tradable: false},
-    {name: "Full-Service Restaurants", code: "722511", employ: 107342.88, sector: "Leisure & Hospitality", rca: 1.002, pci: -0.983, trad: 0.0, tier: 2, tradable: false},
-    {name: "Limited-Service Restaurants", code: "722513", employ: 48732.96, sector: "Leisure & Hospitality", rca: 0.538, pci: -1.348, trad: 0.0, tier: 2, tradable: false},
-    {name: "Cafeterias, Grill Buffets, and Buffets", code: "722514", employ: 518.91, sector: "Leisure & Hospitality", rca: 0.419, pci: -1.045, trad: 0.162, tier: 2, tradable: false},
-    {name: "Snack and Nonalcoholic Beverage Bars", code: "722515", employ: 18849.25, sector: "Leisure & Hospitality", rca: 1.251, pci: -0.923, trad: 0.0, tier: 2, tradable: false},
-    {name: "General Automotive Repair", code: "811111", employ: 5503.51, sector: "Other", rca: 0.71, pci: -1.195, trad: 0.0, tier: 2, tradable: false},
-    {name: "Specialized Automotive Repair", code: "811114", employ: 491.56, sector: "Other", rca: 0.516, pci: -0.898, trad: 0.0, tier: 2, tradable: false},
-    {name: "Automotive Body, Paint, and Interior Repair and Maintenance", code: "811121", employ: 4305.53, sector: "Other", rca: 0.905, pci: -1.189, trad: 0.0, tier: 2, tradable: false},
-    {name: "Automotive Glass Replacement Shops", code: "811122", employ: 532.01, sector: "Other", rca: 0.706, pci: -0.786, trad: 0.0, tier: 2, tradable: false},
-    {name: "Automotive Oil Change and Lubrication Shops", code: "811191", employ: 619.16, sector: "Other", rca: 0.522, pci: -1.144, trad: 0.0, tier: 2, tradable: false},
-    {name: "Car Washes", code: "811192", employ: 1532.44, sector: "Other", rca: 0.396, pci: -0.991, trad: 0.0, tier: 2, tradable: false},
-    {name: "All Other Automotive Repair and Maintenance", code: "811198", employ: 243.79, sector: "Other", rca: 0.446, pci: -1.144, trad: 0.0, tier: 2, tradable: false},
-    {name: "Electronic and Precision Equipment Repair and Maintenance", code: "811210", employ: 1853.42, sector: "Other", rca: 1.054, pci: -0.437, trad: 0.5, tier: 1, tradable: true},
-    {name: "Commercial and Industrial Machinery and Equipment (except Automotive and Electronic) Repair and Maintenance", code: "811310", employ: 2286.0, sector: "Other", rca: 0.575, pci: -1.489, trad: 0.5, tier: 1, tradable: true},
-    {name: "Home and Garden Equipment Repair and Maintenance", code: "811411", employ: 37.24, sector: "Other", rca: 0.381, pci: -0.542, trad: 0.096, tier: 2, tradable: false},
-    {name: "Appliance Repair and Maintenance", code: "811412", employ: 419.1, sector: "Other", rca: 1.105, pci: -0.542, trad: 0.096, tier: 2, tradable: false},
-    {name: "Reupholstery and Furniture Repair", code: "811420", employ: 250.39, sector: "Other", rca: 1.058, pci: 0.526, trad: 0.0, tier: 2, tradable: false},
-    {name: "Footwear and Leather Goods Repair", code: "811430", employ: 19.33, sector: "Other", rca: 0.462, pci: 1.864, trad: 0.197, tier: 2, tradable: false},
-    {name: "Other Personal and Household Goods Repair and Maintenance", code: "811490", employ: 642.14, sector: "Other", rca: 0.773, pci: -0.244, trad: 0.192, tier: 2, tradable: false},
-    {name: "Barber Shops", code: "812111", employ: 375.16, sector: "Other", rca: 0.52, pci: -0.424, trad: 0.0, tier: 2, tradable: false},
-    {name: "Beauty Salons", code: "812112", employ: 10812.36, sector: "Other", rca: 1.283, pci: -0.424, trad: 0.0, tier: 2, tradable: false},
-    {name: "Nail Salons", code: "812113", employ: 4462.03, sector: "Other", rca: 1.343, pci: -0.424, trad: 0.0, tier: 2, tradable: false},
-    {name: "Diet and Weight Reducing Centers", code: "812191", employ: 146.21, sector: "Other", rca: 0.792, pci: -0.215, trad: 0.0, tier: 2, tradable: false},
-    {name: "Other Personal Care Services", code: "812199", employ: 1783.24, sector: "Other", rca: 0.622, pci: -0.215, trad: 0.0, tier: 2, tradable: false},
-    {name: "Funeral Homes and Funeral Services", code: "812210", employ: 1143.39, sector: "Other", rca: 0.69, pci: -1.501, trad: 0.0, tier: 2, tradable: false},
-    {name: "Cemeteries and Crematories", code: "812220", employ: 558.61, sector: "Other", rca: 0.868, pci: -0.874, trad: 0.0, tier: 2, tradable: false},
-    {name: "Coin-Operated Laundries and Drycleaners", code: "812310", employ: 1883.58, sector: "Other", rca: 1.665, pci: -0.937, trad: 0.0, tier: 2, tradable: false},
-    {name: "Drycleaning and Laundry Services (except Coin-Operated)", code: "812320", employ: 3268.53, sector: "Other", rca: 1.225, pci: -0.953, trad: 0.0, tier: 2, tradable: false},
-    {name: "Linen Supply", code: "812331", employ: 329.45, sector: "Other", rca: 0.532, pci: 0.513, trad: 0.292, tier: 1, tradable: false},
-    {name: "Industrial Launderers", code: "812332", employ: 178.45, sector: "Other", rca: 0.263, pci: 0.244, trad: 0.046, tier: 2, tradable: false},
-    {name: "Pet Care (except Veterinary) Services", code: "812910", employ: 3982.33, sector: "Other", rca: 0.978, pci: -0.616, trad: 0.0, tier: 2, tradable: false},
-    {name: "Photofinishing Laboratories (except One-Hour)", code: "812921", employ: 15.79, sector: "Other", rca: 0.242, pci: 1.651, trad: 0.866, tier: 0, tradable: true},
-    {name: "One-Hour Photofinishing", code: "812922", employ: 1.38, sector: "Other", rca: 0.114, pci: 1.651, trad: 0.866, tier: 0, tradable: true},
-    {name: "Parking Lots and Garages", code: "812930", employ: 4155.92, sector: "Other", rca: 1.529, pci: 2.22, trad: 0.018, tier: 2, tradable: false},
-    {name: "All Other Personal Services", code: "812990", employ: 1910.58, sector: "Other", rca: 1.08, pci: -0.22, trad: 0.0, tier: 2, tradable: false},
-    {name: "Religious Organizations", code: "813110", employ: 192.97, sector: "Other", rca: 0.05, pci: -0.246, trad: 0.328, tier: 1, tradable: false},
-    {name: "Grantmaking Foundations", code: "813211", employ: 1283.14, sector: "Other", rca: 0.848, pci: 0.011, trad: 0.5, tier: 1, tradable: true},
-    {name: "Voluntary Health Organizations", code: "813212", employ: 583.75, sector: "Other", rca: 0.822, pci: 1.061, trad: 0.5, tier: 1, tradable: true},
-    {name: "Other Grantmaking and Giving Services", code: "813219", employ: 709.24, sector: "Other", rca: 0.87, pci: 0.075, trad: 0.018, tier: 2, tradable: false},
-    {name: "Human Rights Organizations", code: "813311", employ: 888.04, sector: "Other", rca: 0.847, pci: 0.081, trad: 0.5, tier: 1, tradable: true},
-    {name: "Environment, Conservation and Wildlife Organizations", code: "813312", employ: 2898.46, sector: "Other", rca: 2.049, pci: -0.176, trad: 0.5, tier: 1, tradable: true},
-    {name: "Other Social Advocacy Organizations", code: "813319", employ: 3862.51, sector: "Other", rca: 1.602, pci: -0.515, trad: 0.5, tier: 1, tradable: true},
-    {name: "Civic and Social Organizations", code: "813410", employ: 12131.0, sector: "Other", rca: 1.855, pci: -1.038, trad: 0.0, tier: 2, tradable: false},
-    {name: "Business Associations", code: "813910", employ: 1704.04, sector: "Other", rca: 0.72, pci: -1.05, trad: 0.5, tier: 1, tradable: true},
-    {name: "Professional Organizations", code: "813920", employ: 1399.8, sector: "Other", rca: 0.777, pci: 0.58, trad: 0.5, tier: 1, tradable: true},
-    {name: "Labor Unions and Similar Labor Organizations", code: "813930", employ: 2365.05, sector: "Other", rca: 1.085, pci: -0.435, trad: 0.0, tier: 2, tradable: false},
-    {name: "Political Organizations", code: "813940", employ: 141.39, sector: "Other", rca: 0.553, pci: 0.895, trad: 0.5, tier: 1, tradable: true},
-    {name: "Other Similar Organizations (except Business, Professional, Labor, and Political Organizations)", code: "813990", employ: 341.73, sector: "Other", rca: 0.169, pci: 0.223, trad: 0.5, tier: 1, tradable: true},
-    {name: "Private Households", code: "814110", employ: 5017.0, sector: "Other", rca: 1.226, pci: null, trad: 0.0, tier: 2, tradable: false}
-  ];
+  /* Boston-Cambridge-Newton (metro 14460), 2024, 6-digit NAICS, as the
+     reference build's "What We Produce" page carries it, from
+     industries-2024.js: name, short name, code, jobs, the group and
+     subsector it belongs to, the Growth Lab sector, the RCA against the
+     national mix and the peer metros', the PCI, the tradability score 0 to
+     1 and the tier the source assigns (0 traded, 1 partly traded, 2 local).
+     877 industries, 2,318,249 jobs. "Tradable at all" is the traded tier. */
+  const SRC = window.BOSTON_INDUSTRIES_2024 || { fields: [], rows: [], sectors: [], total: 0 };
+  const SECTOR_KEYS = SRC.sectors || [];
+  const sectorLabelOf = Object.fromEntries(SECTOR_KEYS.map(s => [s.key, s.label]));
+  const rawData = SRC.rows.map(a => {
+    const o = {};
+    SRC.fields.forEach((f, i) => { o[f] = a[i]; });
+    o.sector = sectorLabelOf[o.sectorKey] || o.sectorKey;
+    o.tradable = o.tier === 0;
+    return o;
+  });
+  const rowByName = new Map(rawData.map(r => [r.name, r]));
+  const peerRcaByName = new Map(rawData.filter(r => r.peerRca != null).map(r => [r.name, r.peerRca]));
 
   /* Tradability, RCA, PCI and the tier per industry, as the source gives
      them; nothing here is generated any more */
@@ -1444,7 +571,12 @@
   };
   const normName = n => String(n).toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
   const shortByNorm = new Map(Object.entries(rcaSeed).map(([n, v]) => [normName(n), v.short]));
-  const shortLabel = name => shortByNorm.get(normName(name));
+  /* the source's own short name where the row carries one, the older
+     hand-written one otherwise */
+  const shortLabel = name => {
+    const r = rowByName.get(name);
+    return (r && r.short) || shortByNorm.get(normName(name));
+  };
 
   /* tradable at all, for the figures that split two ways and for the
      specialisation list, is the source's own flag: the traded tier and the
@@ -3681,6 +2813,270 @@
   /* The same figure serves any section built on this grammar; `p` is the id
      prefix its markup uses and `rows` the industry set it reads, so the metro
      and the administrative city each get their own instance. */
+  /* =========================================================================
+     The industry map, after the reference build's "What We Produce" page.
+     Every industry is a cell; the cells sit inside their industry groups
+     and the groups inside their sectors, with a one-pixel gap at each level,
+     so the nesting is read from the gaps alone and nothing is named on the
+     map but the cells. A cell too small to see is folded into its
+     neighbours: first whole groups into "Other ..." cells of their
+     subsector or sector, then, inside each group, the small industries
+     into an "Other ..." cell of the group - or, where the group is one big
+     industry and a few tiny ones, into a single cell that carries the
+     group's own name. The map is tiled in screen pixels so the gaps are a
+     pixel and the type is 12px at any width, and read back into the
+     figure's units to be drawn.
+     ========================================================================= */
+  const MAP = { padding: 1, minSide: 4, inset: 3, first: 1.1, step: 0.9, shareGap: 0.3,
+                descent: 0.25, size: 12, min: 10, weight: 500, shareWeight: 400 };
+  const MAP_FONT = '"Source Sans 3", "Source Sans Pro", sans-serif';
+  const SECTOR_RANK = new Map(SECTOR_KEYS.map((s, i) => [s.label, i]));
+  /* the reference writes white on every sector but the two pale ones */
+  const DARK_INK_SECTORS = new Set(["Leisure & Hospitality", "Financial Activities"]);
+  const sectorInk = sec => DARK_INK_SECTORS.has(sec) ? CELL_INK : "#fff";
+  const TIER_WORDS = ["Traded", "Partly traded", "Local"];
+  const CX_NAMES = ["Lowest", "Low", "Middle", "High", "Highest"];
+  const cxBinOf = pci => {
+    if (pci == null) return null;
+    let b = 0; while (b < PCI_CUTS.length && pci >= PCI_CUTS[b]) b++;
+    return b;
+  };
+  const cxText = pci => { const b = cxBinOf(pci); return b == null ? "Not rated" : CX_NAMES[b] + " (PCI " + pci.toFixed(2) + ")"; };
+  const cxFillOf = pci => { const b = cxBinOf(pci); return b == null ? "#c3ccce" : complexityPalette[b]; };
+  const rcaText = v => v == null ? null : v.toFixed(v < 10 ? 2 : 1) + "×";
+  /* shares as the reference prints them: 26%, 5.4%, 0.55% */
+  const fmtShare = v => { const t = v * 100; return t.toFixed(t >= 10 ? 0 : t >= 1 ? 1 : 2) + "%"; };
+  const fmtJobsFull = v => Math.round(v).toLocaleString("en-US");
+  const escHtml = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  /* a cell for one industry: named by its short name, with the full NAICS
+     name kept for the card */
+  function cellOfRow(r, total){
+    const name = r.short || r.name;
+    return { id: r.code, name: name, title: r.name !== name ? r.name : undefined,
+      group: r.group, groupName: r.groupShort || r.groupName, groupTitle: r.groupName,
+      subsector: r.sub, subsectorName: r.subShort || r.sub, subsectorTitle: undefined,
+      sector: r.sector, tier: r.tier, pci: r.pci, rca: r.rca, jobs: r.employ,
+      share: r.employ / total, nationalShare: r.nationalShare, members: null, rows: [r] };
+  }
+  /* a cell standing for several: jobs and shares summed, the PCI the
+     jobs-weighted mean, the RCA the share-weighted one, the tier only if
+     they all share it, and the members kept, largest first */
+  function aggCell(id, name, cells, meta, title){
+    const sum = f => cells.reduce((a, c) => a + f(c), 0);
+    const withPci = cells.filter(c => c.pci != null && c.jobs > 0);
+    const pciJobs = withPci.reduce((a, c) => a + c.jobs, 0);
+    const withRca = cells.filter(c => c.rca != null && c.rca > 0);
+    const denom = withRca.reduce((a, c) => a + c.share / c.rca, 0);
+    const tiers = new Set(cells.map(c => c.tier));
+    const d = cells[0] || {};
+    const groupTitle = meta.groupName === undefined ? d.groupTitle : meta.groupTitle;
+    const subTitle = meta.subsectorName === undefined ? d.subsectorTitle : meta.subsectorTitle;
+    return { id: id, name: name, title: title,
+      group: meta.group ?? d.group ?? id, groupName: meta.groupName ?? d.groupName ?? name, groupTitle: groupTitle,
+      subsector: meta.subsector ?? d.subsector ?? id, subsectorName: meta.subsectorName ?? d.subsectorName ?? name,
+      subsectorTitle: subTitle, sector: d.sector || "Other",
+      tier: tiers.size === 1 ? (d.tier ?? null) : null,
+      pci: pciJobs > 0 ? withPci.reduce((a, c) => a + (c.pci || 0) * c.jobs, 0) / pciJobs : null,
+      rca: denom > 0 ? withRca.reduce((a, c) => a + c.share, 0) / denom : null,
+      jobs: sum(c => c.jobs), share: sum(c => c.share), nationalShare: sum(c => c.nationalShare || 0),
+      members: cells.slice().sort((a, b) => b.jobs - a.jobs),
+      rows: cells.flatMap(c => c.rows) };
+  }
+  /* "Other legal services", "All other technical services": the group's
+     name in lower case, its initialisms kept */
+  function otherName(name){
+    const t = name.split(" ").map(w => /^[^a-z]*[A-Z][^a-z]*[A-Z][^a-z]*$/.test(w) ? w : w.toLowerCase()).join(" ");
+    return (/^other\b/.test(t) ? "All " : "Other ") + t;
+  }
+  /* the three levels a small cell can be folded up into */
+  const LEVELS = {
+    group:     { id: "group",     key: c => c.group,     name: c => c.groupName,     title: c => c.groupTitle },
+    subsector: { id: "subsector", key: c => c.subsector, name: c => c.subsectorName, title: c => c.subsectorTitle },
+    sector:    { id: "sector",    key: c => c.sector,    name: c => c.sector,        title: () => undefined }
+  };
+  /* what a folded cell is grouped under, so it tiles as its own group */
+  function levelMeta(level, key, name, title){
+    if (level.id === "group") return { group: key, groupName: name, groupTitle: title };
+    if (level.id === "subsector") return { group: "subsector:" + key, groupName: name, groupTitle: title,
+                                           subsector: key, subsectorName: name, subsectorTitle: title };
+    return { group: "sector:" + key, groupName: name, subsector: "sector:" + key, subsectorName: name };
+  }
+  /* the items of a band rolled up one level: one item per group, carrying
+     its industries as members; a group of one stays as it is */
+  function groupUp(bandKey, items){
+    const buckets = new Map();
+    items.forEach(it => { if (!buckets.has(it.group)) buckets.set(it.group, []); buckets.get(it.group).push(it); });
+    return [...buckets].flatMap(([k, list]) => {
+      if (list.length === 1) return list;
+      const first = list[0];
+      const c = aggCell("group:" + bandKey + ":" + k, first.cell.groupName, list.map(e => e.cell), {}, first.cell.groupTitle);
+      return [{ id: c.id, sector: c.sector, group: c.group, value: list.reduce((a, e) => a + e.value, 0), cell: c }];
+    });
+  }
+  /* one band tiled: sector, group, industry, each level padded by a pixel
+     and rounded to whole pixels; the sectors in the reference's fixed
+     order, the rest by size with the folded "Other" cells last */
+  function tileBand(items, box, bandKey){
+    const out = { blocks: [], groups: [], cells: [] };
+    if (!items.length || box.w <= 0 || box.h <= 0) return out;
+    const bySector = new Map();
+    items.forEach(it => { if (!bySector.has(it.sector)) bySector.set(it.sector, []); bySector.get(it.sector).push(it); });
+    const tree = { kind: "root", children: [...bySector].map(([sector, list]) => {
+      const byGroup = new Map();
+      list.forEach(it => { const g = it.group ?? it.id; if (!byGroup.has(g)) byGroup.set(g, []); byGroup.get(g).push(it); });
+      return { kind: "sector", sector: sector, children: [...byGroup].map(([group, l]) =>
+        ({ kind: "group", group: group, children: l.map(it => ({ kind: "item", item: it })) })) };
+    }) };
+    const isRest = n => n.data.kind === "item" ? n.data.item.rest === true
+      : n.data.kind === "group" && (n.children || []).every(isRest);
+    const root = d3.hierarchy(tree, d => d.kind === "item" ? undefined : d.children)
+      .sum(d => d.kind === "item" ? Math.max(0, d.item.value) : 0)
+      .sort((a, b) => {
+        if (a.data.kind === "sector" && b.data.kind === "sector")
+          return (SECTOR_RANK.get(a.data.sector) ?? 0) - (SECTOR_RANK.get(b.data.sector) ?? 0);
+        const ra = isRest(a), rb = isRest(b);
+        return ra === rb ? (b.value || 0) - (a.value || 0) : ra ? 1 : -1;
+      });
+    d3.treemap().size([box.w, box.h]).paddingInner(MAP.padding).paddingOuter(MAP.padding).round(true)(root);
+    root.descendants().forEach(n => {
+      const r = { x: box.x + n.x0, y: box.y + n.y0, w: Math.max(0, n.x1 - n.x0), h: Math.max(0, n.y1 - n.y0) };
+      if (n.data.kind === "sector") out.blocks.push({ ...r, key: bandKey + ":" + n.data.sector, sector: n.data.sector, value: n.value || 0 });
+      else if (n.data.kind === "group") out.groups.push({ ...r, key: bandKey + ":" + n.data.group, group: n.data.group,
+        items: n.leaves().map(l => l.data.item) });
+      else if (n.data.kind === "item") out.cells.push({ ...r, item: n.data.item });
+    });
+    return out;
+  }
+  /* the small cells of a band folded up at one level: in every bucket of
+     that level, the tiny items and the bucket's existing "Other" cell (or,
+     at the last level with one tiny item, its smallest neighbour) become
+     one cell. When that takes the whole bucket, the cell carries the
+     bucket's own name and is not "Other" at all. Null if nothing changed. */
+  function mergeBucket(bandKey, items, tiny, level, last){
+    const buckets = new Map();
+    items.forEach(it => {
+      const k = it.sector + "|" + level.key(it.cell);
+      if (!buckets.has(k)) buckets.set(k, []); buckets.get(k).push(it);
+    });
+    let changed = false;
+    const out = [...buckets.values()].flatMap(t => {
+      const a = t[0]; if (!a) return [];
+      const s = level.key(a.cell), restId = "other:" + bandKey + ":" + level.id + ":" + s;
+      const l = t.filter(e => tiny.has(e.id)), u = t.filter(e => !tiny.has(e.id));
+      const d = u.find(e => e.id === restId) ??
+        (last && l.length === 1 ? (u.find(e => e.rest) ?? u.reduce((m, e) => !m || e.value < m.value ? e : m, undefined)) : undefined);
+      const f = d ? l.concat([d]) : l;
+      if (l.length === 0 || f.length < 2 || (level.id === "sector" && d && d.id !== restId && f.length === t.length)) return t;
+      changed = true;
+      const whole = f.length === t.length, name = level.name(a.cell), title = level.title(a.cell);
+      const c = aggCell(whole ? level.id + ":" + bandKey + ":" + s : restId, whole ? name : otherName(name),
+        f.flatMap(e => e.cell.members ?? [e.cell]), levelMeta(level, s, name, title), whole ? title : undefined);
+      return t.filter(e => !f.includes(e)).concat([{ id: c.id, sector: c.sector, group: c.group, rest: !whole,
+        value: f.reduce((x, e) => x + e.value, 0), cell: c }]);
+    });
+    return changed ? out : null;
+  }
+  /* one round of folding across the bands, at the first level that has
+     anything to fold; null when no level does */
+  function mergeOnce(levels, bands, tiny){
+    for (let li = 0; li < levels.length; li++){
+      const level = levels[li], last = li === levels.length - 1;
+      let changed = false;
+      const out = bands.map(b => {
+        const items = mergeBucket(b.key, b.items, tiny, level, last);
+        if (items){ changed = true; return { ...b, items: items }; }
+        return b;
+      });
+      if (changed) return out;
+    }
+    return null;
+  }
+  /* tile, fold whatever came out under four pixels a side, tile again,
+     until every cell can be seen or nothing more will fold */
+  function mergeLoop(levels, bands){
+    let cur = bands;
+    for (let guard = 0; guard < 60; guard++){
+      const layouts = cur.map(b => tileBand(b.items, b.box, b.key));
+      const tiny = new Set(layouts.flatMap(L => L.cells.filter(c => Math.min(c.w, c.h) < MAP.minSide).map(c => c.item.id)));
+      if (!tiny.size) return { bands: cur, layouts: layouts };
+      const next = mergeOnce(levels, cur, tiny);
+      if (!next) return { bands: cur, layouts: layouts };
+      cur = next;
+    }
+    return { bands: cur, layouts: cur.map(b => tileBand(b.items, b.box, b.key)) };
+  }
+  /* the bands laid out at the industry grain: first the groups are folded
+     as wholes into their subsectors and sectors, then, each group opened
+     back up, its own small industries are folded inside it */
+  function layoutBands(bands){
+    const members = new Map();
+    const grouped = bands.map(b => {
+      const items = groupUp(b.key, b.items);
+      items.forEach(it => { if (it.cell.members) members.set(it.id, b.items.filter(e => e.group === it.group)); });
+      return { ...b, items: items };
+    });
+    const pass1 = mergeLoop([LEVELS.subsector, LEVELS.sector], grouped).bands
+      .map(b => ({ ...b, items: b.items.flatMap(it => members.get(it.id) || [it]) }));
+    return mergeLoop([LEVELS.group], pass1);
+  }
+
+  /* ---- the cell labels: the name whole, wrapped by words, at 12px down to
+     10, and the share under it where that still fits; a name that cannot
+     be set whole leaves the cell bare ---- */
+  const _mapCtx = (function(){ try { return document.createElement("canvas").getContext("2d"); } catch (e){ return null; } })();
+  const _mapW = new Map();
+  function mapTextW(str, size, weight){
+    const key = weight + "|" + size + "|" + str;
+    if (_mapW.has(key)) return _mapW.get(key);
+    let w = str.length * size * 0.5;
+    if (_mapCtx){ _mapCtx.font = weight + " " + size + "px " + MAP_FONT; w = _mapCtx.measureText(str).width; }
+    _mapW.set(key, w);
+    return w;
+  }
+  const lineY = (y, size, n, share) => y + size * (MAP.first + MAP.step * n + (share ? MAP.shareGap : 0));
+  const blockH = (lines, size, share) => lineY(0, size, share ? lines : lines - 1, share) + size * MAP.descent;
+  function wrapFit(words, size, weight, maxW){
+    const out = []; let cur = "";
+    for (const w of words){
+      if (mapTextW(w, size, weight) > maxW) return null;
+      const next = cur ? cur + " " + w : w;
+      if (mapTextW(next, size, weight) <= maxW) cur = next; else { out.push(cur); cur = w; }
+    }
+    if (cur) out.push(cur);
+    return out;
+  }
+  function fitLines(name, shareText, box){
+    const words = name.split(/\s+/);
+    for (let size = MAP.size; size >= MAP.min; size--){
+      const lines = wrapFit(words, size, MAP.weight, box.w);
+      if (!lines || blockH(lines.length, size, false) > box.h) continue;
+      const share = mapTextW(shareText, size, MAP.shareWeight) <= box.w && blockH(lines.length, size, true) <= box.h;
+      return { x: box.x, y: box.y, lines: lines, size: size, share: share };
+    }
+    return null;
+  }
+  /* the fit depends only on the words and the cell's size, so it is cached
+     on those; the cell's own corner is added on the way out */
+  const _mapLab = new Map();
+  function fitCellLabel(name, shareText, cell){
+    const key = name + "|" + shareText + "|" + Math.round(cell.w) + "|" + Math.round(cell.h);
+    let fit = _mapLab.get(key);
+    if (fit === undefined){
+      fit = null;
+      const box = { x: 0, y: 0, w: cell.w - 2 * MAP.inset, h: cell.h };
+      if (box.w > 0 && box.h > 0){
+        const bare = name.replace(/\s*\([^)]*\)/g, "").trim();
+        for (const n of (bare && bare !== name ? [name, bare] : [name])){
+          fit = fitLines(n, shareText, box);
+          if (fit) break;
+        }
+      }
+      _mapLab.set(key, fit);
+    }
+    return fit ? { x: cell.x + MAP.inset, y: cell.y, lines: fit.lines, size: fit.size, share: fit.share } : null;
+  }
+  const clearMapMeasure = () => { _mapW.clear(); _mapLab.clear(); };
   function initIndustryFigure(p, rows, ctlName, opts){
     opts = opts || {};
     const el = document.getElementById(p + "TreemapSvg");
@@ -3695,57 +3091,104 @@
 
     const box = (n, dx, dy) => ({ x: n.x0 + (dx || 0), y: n.y0 + (dy || 0),
                                   w: Math.max(0, n.x1 - n.x0), h: Math.max(0, n.y1 - n.y0) });
-    /* the reference build separates sectors by 8px and cells by 1, with no
-       stroke on the cells — so the clustering reads as grouping rather than
-       as a grid. paddingOuter is half the sector gutter, since two
-       neighbouring sectors each contribute their own. */
-    /* padTop reserves a strip along the top of each sector block for its
-       name, so the label has somewhere to sit that is not on top of the
-       first industry's own label */
-    function tmap(rows, w, h, grouped, padTop){
+    /* the older sector-grouped tiling, kept only for the two-way split of
+       the legacy beats; every map beat is laid out by the industry map */
+    function tmap(rows, w, h, grouped){
       const node = grouped
         ? d3.hierarchy(hierarchyFor(rows, "MI")).sum(d => d.value)
         : d3.hierarchy({ name: "MI", children: rows.map(r => ({ name: r.name, value: r.employ })) })
             .sum(d => d.value);
       const t = d3.treemap().size([w, h]).paddingInner(1);
-      /* 3.5 either side plus the 1 of paddingInner is the reference's 8 */
       if (grouped) t.paddingOuter(3.5);
-      if (grouped && padTop) t.paddingTop(d =>
-        d.depth === 1 && (d.y1 - d.y0) >= 46 && (d.x1 - d.x0) >= 60 ? padTop : 3.5);
       t(node);
       return node;
     }
-
-    /* ---- the three geometries, worked out once ---- */
-    const full = tmap(industryData, MI_W, MI_H, true);
-    const posFull = new Map(full.leaves().map(n => [n.data.name, box(n)]));
-    /* the same industries with the sector walls taken down, so the biggest
-       run from the top-left corner in plain order of size */
     let view = "map";
     fig.dataset.view = view;
-    fig.dataset.names = "above";
     /* what the map beats colour their cells by: the sector, or how much
        know-how each industry takes */
     let colorBy = "sector";
-    /* how the sectors are named on the map: a strip above each block, the
-       name written on the block, or not at all */
-    let nameMode = "above";
-    /* opt-1 and opt-4 both keep a strip along the top of each sector block,
-       so they read the same geometry; opt-4 paints the block behind it */
-    const stripMode = () => nameMode === "above" || nameMode === "frame";
-    /* opt-4, after the World Bank's regional maps: the sector is a framed
-       ground in its own colour with its name on the band across the top,
-       and its industries sit inside it in a lighter wash of that colour, so
-       the group reads as the container and the cells as what is in it */
-    const SEC_WASH = 0.42;
-    const sectorWash = sec => d3.interpolateRgb(sectorColors[sec] || "#ccc", "#ffffff")(SEC_WASH);
-    /* in opt-2 the name sits over the block's first cell, so that cell's own
-       label stands down rather than printing under it */
-    let hideLab = new Set();
-    const fillBy = d => colorBy === "complexity" ? complexityColor(d.name)
-      : nameMode === "frame" ? sectorWash(d.sector)
-      : sectorColors[d.sector];
-    const spot = d => posFull.get(d.name);
+    const jobsTotal = d3.sum(industryData, d => d.employ) || 1;
+    const fillBy = d => colorBy === "complexity" ? complexityColor(d.name) : sectorColors[d.sector];
+    const TIER_NAMES = ["Traded", "Partly traded", "Local"];
+
+    /* ---- the industry map, in screen pixels ----
+       S is the scale from the figure's 880 units to the pixels it is drawn
+       at. The map is tiled in pixels, so its gaps are a pixel and its type
+       12px on any screen, and read back into units to be drawn. It is
+       measured once the figure is on screen and laid out again whenever
+       the width changes; until then it is tiled at the width the reference
+       column gives it. */
+    let S = 0;
+    const DEFAULT_S = 686 / MI_W;
+    /* the drawing keeps its proportions inside the element, so when the
+       element is held shorter than that the drawing is narrower than it */
+    const measureS = () => {
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.height > 0 ? Math.min(r.width / MI_W, r.height / MI_H) : 0;
+    };
+    const scaleNow = () => S || DEFAULT_S;
+    const cellOf = new Map();                       /* row name -> its cell */
+    industryData.forEach(r => cellOf.set(r.name, cellOfRow(r, jobsTotal)));
+    const itemOf = r => { const c = cellOf.get(r.name); return { id: c.id, sector: c.sector, group: c.group, value: r.employ, cell: c }; };
+
+    /* ---- which industries are in play ----
+       The key under the map hides sectors; a hidden sector leaves no hole,
+       the map is tiled again over the rest. Null means every sector. The
+       tiers' grounds can be cancelled the same way. And the reader can zoom
+       into one sector, then into one of its groups, which tiles that alone
+       over the whole map. */
+    let secOn = null;
+    const secShown = d => !secOn || secOn.has(d.sector);
+    const secFiltered = () => !!secOn;
+    let tierOn = [true, true, true];
+    const clusterOf = d => tierOf(d.name);
+    const tierShown = d => tierOn[clusterOf(d)];
+    let focus = null, focusGroup = null;
+    const inFocus = d => !focus || (d.sector === focus && (!focusGroup || d.group === focusGroup));
+    const clusterRows = [0, 1, 2].map(k => industryData.filter(d => clusterOf(d) === k));
+    const clusterShare = clusterRows.map(l => d3.sum(l, d => d.employ) / jobsTotal);
+    const tradRows = clusterRows[0].concat(clusterRows[1]);
+
+    /* one tiling of one or more bands, cached by what went into it: its
+       cells, sector blocks and groups in units, the rows it shows, and
+       where each industry sits - its own cell, or the one it was folded
+       into, which is where it travels from when the map becomes bars */
+    const laid = new Map();
+    function bandsLayout(key, bands){
+      const s = scaleNow();
+      const k = key + "|" + s.toFixed(4);
+      if (laid.has(k)) return laid.get(k);
+      const px = b => ({ x: b.x * s, y: b.y * s, w: b.w * s, h: b.h * s });
+      const un = b => ({ x: b.x / s, y: b.y / s, w: b.w / s, h: b.h / s });
+      const live = bands.filter(b => b.rows.length);
+      const res = layoutBands(live.map(b => ({ key: b.key, items: b.rows.map(itemOf), box: px(b.box) })));
+      const out = { cells: [], blocks: [], groups: [], spot: new Map(), rows: [], byId: new Map(), s: s };
+      res.layouts.forEach((L, i) => {
+        const band = live[i].key;
+        L.cells.forEach(c => {
+          const b = un(c);
+          const cell = { id: c.item.id, band: band, box: b, px: c, cell: c.item.cell, rest: c.item.rest === true };
+          out.cells.push(cell); out.byId.set(cell.id, cell);
+          c.item.cell.rows.forEach(r => { out.spot.set(r.name, b); out.rows.push(r); });
+        });
+        L.blocks.forEach(bl => out.blocks.push({ key: band + ":" + bl.sector, band: band, sector: bl.sector, box: un(bl), value: bl.value }));
+        L.groups.forEach(g => out.groups.push({ key: band + ":" + g.group, band: band, group: g.group, box: un(g), items: g.items }));
+      });
+      laid.set(k, out);
+      return out;
+    }
+    const invalidateMaps = () => laid.clear();
+    const FULL_BOX = { x: 0, y: 0, w: MI_W, h: MI_H };
+    const secKey = () => secOn ? [...secOn].sort().join(",") : "*";
+    const rowsAll = () => industryData.filter(d => secShown(d) && inFocus(d));
+    const mapFull = () => bandsLayout("full|" + secKey() + "|" + (focus || "") + "|" + (focusGroup || ""),
+      [{ key: "all", rows: rowsAll(), box: FULL_BOX }]);
+    const mapTrad = () => bandsLayout("trad|" + secKey(),
+      [{ key: "trad", rows: tradRows.filter(secShown), box: FULL_BOX }]);
+    const allSpot = d => mapFull().spot.get(d.name) || FULL_BOX;
+    const tradSpot = d => mapTrad().spot.get(d.name) || allSpot(d);
+    const spot = allSpot;
 
     const GAP = 8, HALF = (MI_W - GAP) / 2;
     const outward = industryData.filter(d => isTradable(d.name));
@@ -3756,53 +3199,19 @@
     tmap(local, HALF, MI_H, false).leaves()
       .forEach(n => posSplit.set(n.data.name, box(n, HALF + GAP)));
 
-    /* ---- three clusters by tradability, the most tradable on the left.
-       Column width is the cluster's share of jobs; inside each column the
-       industries keep their sector walls, so colour stays the sector's and
-       position alone carries tradability. ---- */
-    /* the strip each sector block keeps along its top for its own name */
-    const SEC_STRIP = 17;
-    /* the tier is the source's; the two cuts are where its tiers part on
-       the score (local ends at 0.19, traded begins at 0.80), kept for the
-       track drawn under a score */
+    /* ---- three tiers by tradability, the most tradable on the left.
+       Each is a card: a ground of its own carrying the name and the share,
+       with its industries tiled inside it as the whole map is tiled, so a
+       sector keeps its colour and position alone carries tradability. A
+       card the reader cancels takes its width with it and the rest spread
+       into the room. ---- */
     const CL_HI = 0.8, CL_LO = 0.2;
-    const clusterOf = d => tierOf(d.name);
-    const clusterRows = [0, 1, 2].map(k => industryData.filter(d => clusterOf(d) === k));
-    const jobsTotal = d3.sum(industryData, d => d.employ) || 1;
-    const clusterShare = clusterRows.map(l => d3.sum(l, d => d.employ) / jobsTotal);
     const CGAP = 8, CW = MI_W - 2 * CGAP;
-    const posCluster = new Map(), posClusterFlat = new Map();
-    /* the sector blocks inside each cluster column, keyed by column and
-       sector — a sector can appear in all three, and where it does, saying
-       so is part of the beat's point */
-    const secClusterA = new Map(), secClusterB = new Map();
-    const posClusterA = new Map(), posClusterB = new Map();
-    /* Each band is a card: a ground of its own carrying the share and the name,
-       with the treemap inset inside it. The header moves off the page and into
-       the card, so a column and its label are one object rather than two that
-       have to be kept in step across the HTML/SVG boundary. */
-    /* One even frame round each ground's map. The map insets its cells 7
-       from its zone at the sides and bottom (3.5 for the root, 3.5 for the
-       sector block), so 9 of card padding puts the cells 16 from the sides
-       and the bottom; the head is 44, which sets the one-line title's cap 16
-       from the top (15px, baseline 27) and its baseline 20.5 above the strip
-       band, so the strip reads as its own row, while the two-line head still
-       fits (18px share at 25, name at 40). The title's left edge is the
-       cells' left edge. */
-    /* which tradability tiers are in play. One state for the whole beat: the
-       grounds the reader cancels on the map are the tiers the bars drop. */
-    let tierOn = [true, true, true];
-    const tierShown = d => tierOn[clusterOf(d)];
     const CARD_PAD = 9, CARD_HEAD = 44, CARD_BOT = 9, CARD_TXT = CARD_PAD + 7;
     const BAND_H = 30;
     const CARD_Y = CARD_HEAD, CARD_H = MI_H - CARD_HEAD - CARD_BOT;
-    /* Which grounds are standing. A ground the reader cancels takes its
-       width with it and the rest spread into it, so what is left is always
-       a full frame rather than a gap where a tier used to be. */
     let cardBox = [];
     function layoutClusters(){
-      [posClusterA, posClusterB, secClusterA, secClusterB, posCluster, posClusterFlat]
-        .forEach(m => m.clear());
       cardBox = [];
       const live = [0, 1, 2].filter(k => tierOn[k]);
       const shareSum = live.reduce((a, k) => a + clusterShare[k], 0) || 1;
@@ -3811,97 +3220,18 @@
       live.forEach(k => {
         const w = Math.max(36, room * clusterShare[k] / shareSum);
         cardBox.push({ x: x0, w: w, k: k });
-        const iw = Math.max(20, w - CARD_PAD * 2), ix = x0 + CARD_PAD;
-        const l = clusterRows[k].filter(secShown);
-        if (l.length){
-          const tA = tmap(l, iw, CARD_H, true, SEC_STRIP), tB = tmap(l, iw, CARD_H, true);
-          tA.leaves().forEach(n => posClusterA.set(n.data.name, box(n, ix, CARD_Y)));
-          tB.leaves().forEach(n => posClusterB.set(n.data.name, box(n, ix, CARD_Y)));
-          tA.children.forEach(c =>
-            secClusterA.set(k + "|" + c.data.name, { name: c.data.name, b: box(c, ix, CARD_Y) }));
-          tB.children.forEach(c =>
-            secClusterB.set(k + "|" + c.data.name, { name: c.data.name, b: box(c, ix, CARD_Y) }));
-          tB.leaves().forEach(n => posCluster.set(n.data.name, box(n, ix, CARD_Y)));
-          /* the same column in plain size order, for the Ordered view */
-          const off = x0;
-          stripLayout(l, w, MI_H).forEach((b, name) =>
-            posClusterFlat.set(name, { x: b.x + off, y: b.y, w: b.w, h: b.h }));
-        }
         x0 += w + CGAP;
       });
     }
-    /* ---- the sector filter, driven from the key under the map ----
-       A hidden sector does not leave a hole: the map is laid out again over
-       the sectors still showing, in the same frames, so the reader always
-       reads a whole rectangle. Null means every sector, which is the state
-       the figure opens in and the one the key's reset returns to. */
-    let secOn = null;
-    let secGeo = null;
-    const secShown = d => !secOn || secOn.has(d.sector);
-    const secFiltered = () => !!secOn;
-    /* the grounds are laid out once the filters they read exist, and again
-       whenever either of them moves */
     layoutClusters();
-    let resetSec = null;              /* the key fills this in: applySec(null) */
-    function rebuildSecGeo(){
-      if (!secOn){ secGeo = null; layoutClusters(); return; }
-      const rows = industryData.filter(secShown);
-      const g = { full: new Map(), fullA: new Map(), secA: new Map(), secB: new Map(),
-                  tradA: new Map(), tradB: new Map(), tradSecA: new Map(), tradSecB: new Map() };
-      if (rows.length){
-        const tA = tmap(rows, MI_W, MI_H, true, SEC_STRIP), tB = tmap(rows, MI_W, MI_H, true);
-        tA.leaves().forEach(n => g.fullA.set(n.data.name, box(n)));
-        tB.leaves().forEach(n => g.full.set(n.data.name, box(n)));
-        tA.children.forEach(c => g.secA.set(c.data.name, box(c)));
-        tB.children.forEach(c => g.secB.set(c.data.name, box(c)));
-        /* the two tiers that sell outward, over the same filter */
-        const tr = rows.filter(d => clusterOf(d) <= 1);
-        if (tr.length){
-          const uA = tmap(tr, MI_W, MI_H, true, SEC_STRIP), uB = tmap(tr, MI_W, MI_H, true);
-          uA.leaves().forEach(n => g.tradA.set(n.data.name, box(n)));
-          uB.leaves().forEach(n => g.tradB.set(n.data.name, box(n)));
-          uA.children.forEach(c => g.tradSecA.set(c.data.name, box(c)));
-          uB.children.forEach(c => g.tradSecB.set(c.data.name, box(c)));
-        }
-      }
-      secGeo = g;
-      /* the grounds answer to both filters, and they are laid out in one
-         place rather than kept as a baseline and an overlay */
-      layoutClusters();
-    }
-    const clusterSpot = d =>
-      (stripMode() ? posClusterA : posClusterB).get(d.name) || posFull.get(d.name);
-    /* all three clusters wear one colouring: the columns already carry the
-       tradability, so colour is free to say sector, or complexity */
+    const mapTiers = () => bandsLayout("tiers|" + tierOn.map(Number).join("") + "|" + secKey(),
+      cardBox.map(c => ({ key: TIER_NAMES[c.k], rows: clusterRows[c.k].filter(secShown),
+        box: { x: c.x + CARD_PAD, y: CARD_Y, w: Math.max(20, c.w - CARD_PAD * 2), h: CARD_H } })));
+    const clusterSpot = d => mapTiers().spot.get(d.name) || allSpot(d);
     const clusterFill = fillBy;
-    /* the two tiers that sell outward at all - traded and partly traded -
-       as one map filling the width, sectors grouped and no tier grounds:
-       the beat between the three tiers and the ranking, which is drawn over
-       the same set */
-    const tradRows = clusterRows[0].concat(clusterRows[1]);
-    /* two geometries for the same mix: one that reserves a strip along the
-       top of each sector block for its name (opt-1), one that does not
-       (opt-2 writes on the block, opt-3 does not write at all) */
-    const tradTreeA = tradRows.length ? tmap(tradRows, MI_W, MI_H, true, SEC_STRIP) : null;
-    const tradTreeB = tradRows.length ? tmap(tradRows, MI_W, MI_H, true) : null;
-    const posTradA = new Map(tradTreeA ? tradTreeA.leaves().map(n => [n.data.name, box(n)]) : []);
-    const posTradB = new Map(tradTreeB ? tradTreeB.leaves().map(n => [n.data.name, box(n)]) : []);
-    const secTradA = new Map(tradTreeA ? tradTreeA.children.map(c => [c.data.name, box(c)]) : []);
-    const secTradB = new Map(tradTreeB ? tradTreeB.children.map(c => [c.data.name, box(c)]) : []);
-    const posTradFlat = tradRows.length ? stripLayout(tradRows, MI_W, MI_H) : new Map();
-    const tradSpot = d =>
-      (secGeo ? (stripMode() ? secGeo.tradA : secGeo.tradB).get(d.name) : null) ||
-      (stripMode() ? posTradA : posTradB).get(d.name);
-    /* the whole mix in the same two geometries, for the opening beat that
-       shows every industry: the sector blocks named on a strip (opt-1) or
-       on the block itself (opt-2, opt-3) */
-    const fullTreeA = tmap(industryData, MI_W, MI_H, true, SEC_STRIP);
-    const posFullA = new Map(fullTreeA.leaves().map(n => [n.data.name, box(n)]));
-    const secFullA = new Map(fullTreeA.children.map(c => [c.data.name, box(c)]));
-    const secFullB = new Map(full.children.map(c => [c.data.name, box(c)]));
-    const allSpot = d =>
-      (secGeo ? (stripMode() ? secGeo.fullA : secGeo.full).get(d.name) : null) ||
-      (stripMode() ? posFullA : posFull).get(d.name);
+    let resetSec = null;              /* the key fills this in: applySec(null) */
+    /* the filters moved: every tiling is stale, and the grounds are laid out again */
+    function rebuildSecGeo(){ invalidateMaps(); layoutClusters(); }
 
     /* ---- Ranked: the same cells as a ranked bar chart. The top
        rows by jobs become bars, named on the left and valued at the end;
@@ -4033,12 +3363,16 @@
     const rcaQuiet = name => rcaOf(name);
     const peersQuiet = (name, cityRca) => {
       if (peerByName.has(name)) return peerByName.get(name);
+      /* the peers' average is the source's own where it carries one; the
+         values around it are still drawn, since the source has no per-peer figure */
+      const real = peerRcaByName.get(name);
       const r = nameRand(name + "|peers");
-      const target = Math.max(1.15, cityRca * (0.4 + r() * 0.85));
+      const target = real != null ? real : Math.max(1.15, cityRca * (0.4 + r() * 0.85));
       const jitter = PEERS.map(() => 0.62 + r() * 0.76);
       const mean = jitter.reduce((a, j) => a + j, 0) / jitter.length;
       const values = jitter.map(j => Math.round(target * (j / mean) * 10) / 10);
-      const avg = Math.round((values.reduce((a, v) => a + v, 0) / values.length) * 10) / 10;
+      const avg = real != null ? Math.round(real * 10) / 10
+        : Math.round((values.reduce((a, v) => a + v, 0) / values.length) * 10) / 10;
       return { values: values, avg: avg };
     };
     function specializedAmong(rows){
@@ -4070,7 +3404,6 @@
     const rankPool = () => rankMode === "tier"
       ? clusterRows.filter((_, k) => tierOn6[k]).flat()
       : clusterRows[0].concat(clusterRows[1]);
-    const TIER_NAMES = ["Traded", "Partly traded", "Local"];
     const tierLabel = d => TIER_NAMES[clusterOf(d)];
     /* A word is wider than a number, so the plot gives up room to the column
        while the words are showing - 54 units, not more. At 82 the value
@@ -4149,11 +3482,11 @@
                          : { box: allSpot(d), fill: fillBy(d), op: 1, rx: 0 },
       1: d => view === "alt" ? asBars(d, barRankAll, complexityColor(d.name), spot(d))
                              : { box: spot(d), fill: complexityColor(d.name), op: 1, rx: 0 },
-      2: d => ({ box: posSplit.get(d.name) || posFull.get(d.name),
+      2: d => ({ box: posSplit.get(d.name) || allSpot(d),
                  fill: isTradable(d.name) ? sectorColors[d.sector] : GREY,
                  op: 1, rx: 0 }),
       3: d => d.rank < 0
-        ? { box: posSplit.get(d.name) || posFull.get(d.name), fill: GREY, op: 0, rx: 0 }
+        ? { box: posSplit.get(d.name) || allSpot(d), fill: GREY, op: 0, rx: 0 }
         : sortKey === "gap"
           ? { box: gapBox(R1, d.row, R1.pos.get(d.name)), fill: gapOf(d.row) >= 0 ? TEAL : ORANGE, op: 1, rx: 0 }
           : { box: { x: xr(1), y: rowY(R1.pos.get(d.name)) - BAR_H / 2,
@@ -4167,24 +3500,24 @@
       /* the two outward-selling tiers on their own, the full width, read by
          complexity; the local tier stays where the clusters left it and fades */
       5: d => !secShown(d)
-        ? { box: clusterOf(d) <= 1 ? (tradSpot(d) || posFull.get(d.name)) : clusterSpot(d),
+        ? { box: clusterOf(d) <= 1 ? (tradSpot(d)) : clusterSpot(d),
             fill: complexityColor(d.name), op: 0, rx: 0 }
         : clusterOf(d) <= 1
         ? (view === "alt"
-            ? asBars(d, barRankTrad, complexityColor(d.name), tradSpot(d) || posFull.get(d.name))
-            : { box: tradSpot(d) || posFull.get(d.name), fill: complexityColor(d.name), op: 1, rx: 0 })
+            ? asBars(d, barRankTrad, complexityColor(d.name), tradSpot(d))
+            : { box: tradSpot(d), fill: complexityColor(d.name), op: 1, rx: 0 })
         : { box: clusterSpot(d), fill: GREY, op: 0, rx: 0 },
       /* traded and partly traded together, the full width, with no tier
          grounds: the beat after the three tiers. The local tier waits unseen
          where the tiers put it, already in the colour it wears there, so
          travelling back fades it in in place */
       7: d => !secShown(d)
-        ? { box: clusterOf(d) <= 1 ? (tradSpot(d) || posFull.get(d.name)) : clusterSpot(d),
+        ? { box: clusterOf(d) <= 1 ? (tradSpot(d)) : clusterSpot(d),
             fill: fillBy(d), op: 0, rx: 0 }
         : clusterOf(d) <= 1
         ? (view === "alt"
-            ? asBars(d, barRankTrad, fillBy(d), tradSpot(d) || posFull.get(d.name))
-            : { box: tradSpot(d) || posFull.get(d.name), fill: fillBy(d), op: 1, rx: 0 })
+            ? asBars(d, barRankTrad, fillBy(d), tradSpot(d))
+            : { box: tradSpot(d), fill: fillBy(d), op: 1, rx: 0 })
         : { box: clusterSpot(d), fill: fillBy(d), op: 0, rx: 0 },
       /* the ranking the two tradable clusters turn into. Arriving, it runs in
          two movements: everything that will not be a bar fades where it
@@ -4287,8 +3620,6 @@
       if (b) setTier(+b.dataset.tier, true);
     });
     syncTierBack();
-    /* the sector grounds of opt-4 sit under the cells, as their ground */
-    const gSecFrame = svg.append("g").attr("class", "mi-secframe").style("opacity", 0);
     const gHi = svg.append("g").attr("class", "mi-hilite-layer");
     const hiRect = gHi.append("rect").attr("class", "mi-hilite")
       .attr("x", 0).attr("width", MI_W).attr("height", RH).style("opacity", 0);
@@ -4299,186 +3630,18 @@
     const gRows2 = svg.append("g").attr("class", "mi-rows").style("opacity", 0);
     const gBarsAll  = svg.append("g").attr("class", "mi-rows mi-bars").style("opacity", 0);
     const gBarsTrad = svg.append("g").attr("class", "mi-rows mi-bars").style("opacity", 0);
-    /* the sector names, written on the blocks they belong to */
-    const gSecLab = svg.append("g").attr("class", "mi-seclab").style("opacity", 0);
+    /* ---- the map layer: the industry map's own cells, above the bars and
+       the per-industry cells, which stand down while it is showing. It is
+       drawn per tiling and joined by cell id, so a cell that survives from
+       one tiling to the next travels, and one that does not fades. The
+       zoom's targets sit under the cells, for the keyboard. ---- */
+    const gMap = svg.append("g").attr("class", "mi-map").style("font-family", MAP_FONT);
+    const gMapHit = gMap.append("g").attr("class", "mi-map-hit");
+    const gMapCells = gMap.append("g").attr("class", "mi-map-cells");
+    const gMapOutline = gMap.append("g").attr("class", "mi-map-outline").style("pointer-events", "none");
     /* the phrase highlight's frame sits above everything: it draws no fill,
        so the blocks and their names read straight through it */
     const gHlFrame = svg.append("g").attr("class", "mi-hlframe-layer");
-    /* The reference writes its names ON the coloured block and switches
-       between white and near-black to suit it. Ours sit in a strip above
-       the block, where the ground is the panel's white — so the choice is
-       not white-or-black but how dark the sector's own colour has to be
-       to carry on white. Darkening the hue rather than going to ink makes
-       the name itself the key: the words are the colour they name. */
-    const lum = c => {
-      const f = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
-      return 0.2126 * f(c.r) + 0.7152 * f(c.g) + 0.0722 * f(c.b);
-    };
-    const onWhite = c => 1.05 / (lum(c) + 0.05);
-    /* Why the name needs a ground at all: written straight onto the fill it
-       cannot be read: even now that manufacturing and other have been taken
-       down to carry white at 4.6:1, a name written on the fill would be
-       fighting the cells' own labels for the same surface. */
-    /* The near-black chip was legible and wrong: it floated two units inside
-       the block, leaving a rim of fill showing all round it, and a shape that
-       floats reads as something laid on top of the picture. Nine of them over
-       three tradability columns looked like hardware bolted to the map.
-       The name now sits in a tab flush with the block's own top-left corner,
-       so two of its four sides are the block's edges and it reads as part of
-       the block's construction. The ground is the white the gutters already
-       are, and the ink is the sector's own hue - the same ink opt-1 sets on
-       its strip, so the name is its sector's colour whichever option is on. */
-    /* 4.6 rather than 4.5: at 4.5 two of the nine cleared the bar by 0.03,
-       which is a rounding accident rather than a margin */
-    const labelInk = hex => {
-      const base = d3.color(hex); if (!base) return "#1a2226";
-      for (let k = 0; k <= 3.2; k += 0.1){
-        const c = d3.color(base.darker(k).formatHex());
-        if (onWhite(c) >= 4.6) return c.formatHex();
-      }
-      return "#1a2226";
-    };
-    /* opt-1 writes on a strip of its own above the block, so it stays at the
-       11 units the strip was cut for. opt-2 shares the surface with the cell
-       labels, so it has to sit above them in size as well as in weight -
-       anything smaller reads as one more industry name. */
-    /* the chip is what separates the two registers, so the words themselves
-       can stay the size of the cell labels. Setting them larger cost names:
-       at 1100 a 15-unit name lost four of beat 2's nine blocks, Professional
-       & Business among them, because the blocks are fixed in user units
-       while the type is not. Same size, dark ground, white ink. */
-    const TAB_PADL = 3, TAB_PADR = 5, TAB_AIR = 4, TAB_R = 3;
-    /* the sector node's own box carries the treemap's outer padding, so its
-       corner sits in the gutter rather than on the cells. The chip is laid
-       against the cells instead, which is the edge the reader sees. */
-    const SEC_OUT = 3.5;
-    /* The tab was white, and white is the one value none of the nine fills
-       use, so nine white notches read as holes punched in the map - and on
-       the two pale fills it disappeared altogether, so the treatment was not
-       even consistent. The ground is now the block's own colour taken most of
-       the way to white: the tab is made of the block, never white, and never
-       the brightest thing on the picture. Near-black on it runs 12.5:1 to
-       14.8:1, where the white tab's sector-hued ink only reached 4.62. */
-    const TAB_TINT = 0.82;
-    const tabGround = hex => d3.interpolateRgb(hex, "#ffffff")(TAB_TINT);
-    const secUnit = () => labUnit();
-    function drawSectorLabels(which){
-      /* only where the block can hold the words: a clipped sector name is
-         worse than none, since the reader cannot tell which it was */
-      hideLab = new Set();
-      if (nameMode === "off"){
-        gSecLab.selectAll("g.mi-seclab-g").remove();
-        gSecFrame.selectAll("g.mi-secframe-g").remove();
-        return;
-      }
-      const above = stripMode();
-      /* the chip option and the sectors-only option are drawn the same way,
-         but with the industries unnamed the sector's own name is the only
-         word on the block, so it is set larger */
-      const u = above ? LAB_BASE : secUnit() * (nameMode === "secOnly" ? 1.15 : 1);
-      /* the tab's own geometry, in the same user units as the blocks */
-      const TH = Math.round(u * 1.36);
-      const dy = TH - Math.round(u * 0.41);
-      const secs = which === 4 ? (above ? secClusterA : secClusterB) : null;
-      const flat = which === 0
-        ? (secGeo ? (above ? secGeo.secA : secGeo.secB) : (above ? secFullA : secFullB))
-        : (secGeo ? (above ? secGeo.tradSecA : secGeo.tradSecB) : (above ? secTradA : secTradB));
-      const src = secs
-        ? [...secs].map(([k, v]) => ({ key: k, name: v.name, b: v.b }))
-        : [...flat].map(([name, b]) => ({ key: name, name: name, b: b }));
-      /* a generous first pass only - the real gate is the measured width
-         below, so this must not throw away a name the block could hold */
-      const items = src.filter(d =>
-        d.b.h >= Math.max(46, TH + 11) && d.b.w >= name_w(d.name, u));
-      /* opt-4: the block itself is drawn first, in the sector's own colour,
-         with the name written on the band the strip leaves at its top. The
-         cells then sit inside it in their wash, so the frame is what shows
-         at the edges and along the band */
-      if (nameMode === "frame"){
-        const fr = gSecFrame.selectAll("g.mi-secframe-g").data(src, d => d.key)
-          .join(enter => {
-            const g = enter.append("g").attr("class", "mi-secframe-g");
-            g.append("rect").attr("class", "mi-secframe-r");
-            g.append("text").attr("class", "mi-secframe-t");
-            return g;
-          });
-        fr.select("rect.mi-secframe-r")
-          .attr("x", d => d.b.x).attr("y", d => d.b.y)
-          .attr("width", d => d.b.w).attr("height", d => d.b.h)
-          .attr("fill", d => sectorColors[d.name] || "#ccc");
-        /* the name only where the band can hold it; the ground stays either
-           way, since a block with no room for its name is still its group */
-        fr.select("text.mi-secframe-t")
-          .attr("x", d => d.b.x + 5).attr("y", d => d.b.y + 12)
-          .attr("fill", d => cellInk(sectorColors[d.name] || "#ccc"))
-          .text(d => d.b.w >= name_w(d.name, LAB_BASE) && d.b.h >= 46 ? d.name : "");
-        gSecLab.selectAll("g.mi-seclab-g").remove();
-        return;
-      }
-      gSecFrame.selectAll("g.mi-secframe-g").remove();
-      const gsel = gSecLab.selectAll("g.mi-seclab-g").data(items, d => d.key)
-        .join(enter => {
-          const g = enter.append("g").attr("class", "mi-seclab-g");
-          g.append("path").attr("class", "mi-seclab-tab");
-          g.append("text");
-          return g;
-        });
-      const txt = gsel.select("text")
-        .attr("class", "mi-seclab-t" + (above ? "" : " is-inside"))
-        .attr("x", d => d.b.x + (above ? 5 : SEC_OUT + TAB_PADL))
-        .attr("y", d => d.b.y + (above ? 12 : SEC_OUT + dy))
-        .attr("fill", d => above ? labelInk(sectorColors[d.name]) : "#1a2226")
-        .text(d => d.name);
-      /* name_w is only a cheap pre-filter; what the block has to hold is the
-         width the browser actually sets, so measure it and drop the ones that
-         would run past their own block into the sector beside them */
-      const realW = new Map();
-      txt.each(function(d){
-        const w = this.getComputedTextLength ? this.getComputedTextLength() : name_w(d.name, u);
-        realW.set(d.key, w);
-      });
-      /* what the block has to clear: opt-1 needs the words plus a little air,
-         opt-2 needs the whole chip and its insets */
-      const tabW = d => (realW.get(d.key) || 0) + TAB_PADL + TAB_PADR;
-      const need = d => above
-        ? (realW.get(d.key) || 0) + 12
-        : tabW(d) + TAB_AIR + 2 * SEC_OUT;
-      /* sharp where the tab meets the block's own top and left edges, rounded
-         only on the one corner that is free of them */
-      gsel.select("path.mi-seclab-tab")
-        .attr("display", above ? "none" : null)
-        .attr("fill", d => tabGround(sectorColors[d.name]))
-        .attr("d", d => {
-          const x0 = d.b.x + SEC_OUT, y0 = d.b.y + SEC_OUT, w = tabW(d);
-          return `M${x0},${y0} H${x0 + w} V${y0 + TH - TAB_R}` +
-                 ` a${TAB_R},${TAB_R} 0 0 1 ${-TAB_R},${TAB_R} H${x0} Z`;
-        });
-      /* a tab with no word on it names nothing, so the two leave together */
-      gsel.filter(d => need(d) > d.b.w).remove();
-      /* opt-2 covers whatever cell lies under the tab - the tab, not the
-         words, since the tab is what the reader cannot see through */
-      if (!above) items.forEach(d => {
-        if (need(d) > d.b.w) return;
-        const x0 = d.b.x + SEC_OUT, y0 = d.b.y + SEC_OUT;
-        const x1 = x0 + tabW(d), y1 = y0 + TH;
-        /* the tabs are drawn from the layout on screen, so the cells they
-           cover have to be looked for in that same layout: against the
-           unfiltered maps a tab covers cells that have moved away, and
-           misses the ones that moved under it */
-        const pos = secGeo
-          ? (which === 4 ? secGeo.clB : which === 0 ? secGeo.full : secGeo.tradB)
-          : (which === 4 ? posClusterB : which === 0 ? posFull : posTradB);
-        (which === 4 ? clusterRows.flat() : which === 0 ? industryData : tradRows).forEach(r => {
-          const b = pos.get(r.name);
-          if (b && b.x < x1 && b.y < y1 &&
-              b.x + b.w > x0 && b.y + b.h > y0) hideLab.add(r.name);
-        });
-      });
-    }
-    /* semibold runs about 0.55em a character, plus the inset and a little air
-       at the end; the estimate has to follow the size the name is set at, or
-       it throws away names the block could hold */
-    const name_w = (s, u) => s.length * 6.1 * ((u || LAB_BASE) / LAB_BASE) + 14;
     let coarseCell = null, posCoarse = null, posCoarseFlat = null, coarseShare = null;
     if (opts.adminReveal){
       /* This beat asks how much of the METRO's work happens in the city, so
@@ -4750,9 +3913,11 @@
           .attr("x1", seg[0]).attr("x2", seg[1]).attr("y1", BRULE_Y).attr("y2", BRULE_Y);
       });
       const row = G.selectAll("g.mi-row").data(rows, d => d.name).join("g").attr("class", "mi-row");
+      /* the bars name their industries as the map does, by the short name */
+      const barName = d => d.label || shortLabel(d.name) || d.name;
       row.append("text").attr("class", "mi-name")
         .attr("x", BML - 10).attr("y", (d, i) => barY(i) + 4).attr("text-anchor", "end")
-        .attr("data-full", d => d.label || d.name).text(d => charFit(d.label || d.name));
+        .attr("data-full", barName).text(d => charFit(barName(d)));
       /* the reading sits at the end of the bar it belongs to, as the
          ranking's does */
       row.append("text").attr("class", "mi-val")
@@ -4813,29 +3978,32 @@
       arriving = !!animate && i === 6 && painted !== 6;
       const at = STATE[i];
       const dur = animate ? 950 : 0;
+      /* the map beats are drawn by the map layer. The per-industry cells
+         under it stand down, but still travel to where the map puts their
+         industry, so a beat that turns the map into bars starts each bar
+         from the cell it comes from, and one that turns bars back into the
+         map sends each bar home before the map comes in over it. */
+      const mapOn = view === "map" && (i === 0 || i === 4 || i === 5 || i === 7);
+      const opOf = d => mapOn ? 0 : at(d).op;
       const rects = cell.select(".mi-rect");
       const sel = dur ? rects.transition().delay(d => at(d).delay || 0)
         .duration(dur).ease(d3.easeCubicInOut) : rects;
       sel.attr("x", d => at(d).box.x).attr("y", d => at(d).box.y)
          .attr("width", d => at(d).box.w).attr("height", d => at(d).box.h)
          .attr("fill", d => at(d).fill).attr("rx", d => at(d).rx)
-         .style("opacity", d => at(d).op);
+         .style("opacity", opOf);
       /* a cell faded out of the ranking must not answer the cursor */
-      rects.style("pointer-events", d => at(d).op > 0 ? null : "none");
+      rects.style("pointer-events", d => opOf(d) > 0 ? null : "none");
 
       /* labels ride the cells while there is room for them, and stand down
          once the mix becomes a ranking that carries its own names */
       const labs = cell.select(".mi-lab"), pcts = cell.select(".mi-pct");
       const barsOn = view === "alt" && (i === 0 || i === 1 || i === 4 || i === 5 || i === 7);
-      /* which cell labels stand down is decided by where the sector names
-         land, so the names have to be placed before the labels are written */
-      if (i === 7 || i === 4 || i === 0) drawSectorLabels(i); else hideLab = new Set();
       /* the names can only be measured once the figure is on screen */
       refitNames();
-      /* opt-5 names the sectors and stops: the map is read as a dozen
-         groups rather than as nine hundred industries, and the card under
-         the cursor is what names one */
-      if (i === 3 || i === 6 || barsOn || (nameMode === "secOnly" && view === "map")){
+      /* under the map layer, the bars and the rankings the cells carry no
+         words of their own */
+      if (i === 3 || i === 6 || barsOn || mapOn){
         [labs, pcts].forEach(t => (dur ? t.transition().duration(dur / 3) : t).style("opacity", 0));
       } else {
         /* the name whole and as large as the cell allows, the share under
@@ -4845,7 +4013,7 @@
           const st = at(d), b = st.box, g = d3.select(this);
           const nameT = g.select(".mi-lab"), pctT = g.select(".mi-pct");
           nameT.text(null); pctT.text(null);
-          if (st.op <= 0 || hideLab.has(d.name)) return;
+          if (st.op <= 0) return;
           const spec = cellLabelSpec(d.name, b.w, b.h, k, pctFmt(d.employ / jobsTotal));
           if (!spec) return;
           const ink = cellInk(st.fill), x = b.x + spec.pad;
@@ -4858,7 +4026,7 @@
             .text(pctFmt(d.employ / jobsTotal));
         });
         [labs, pcts].forEach(t => (dur ? t.transition().delay(dur / 2).duration(dur / 2) : t)
-          .style("opacity", d => at(d).op > 0 ? 1 : 0));
+          .style("opacity", d => opOf(d) > 0 ? 1 : 0));
       }
       const show = (g, on, delay) => {
         /* a faded group still sits over everything beneath it, so the pointer
@@ -4901,10 +4069,21 @@
         g.select(".mi-card-pct").style("opacity", bare ? 0.4 : 1);
         g.select(".mi-card-lab").style("opacity", bare ? 0.4 : 1);
       });
-      show(gSecLab, (i === 7 || i === 4 || i === 0) && view === "map" &&
-        colorBy === "sector" && nameMode !== "off" && nameMode !== "frame");
-      show(gSecFrame, (i === 7 || i === 4 || i === 0) && view === "map" &&
-        nameMode === "frame");
+      /* the map itself: tiled for the beat over whatever the filters and
+         the zoom leave, and faded out under the bars and the rankings. It
+         comes in once the bars have had time to travel home. */
+      if (mapOn){
+        gMap.style("pointer-events", null);
+        const wasOff = +gMap.style("opacity") === 0;
+        paintMap(layoutFor(i), animate && !wasOff);
+        (dur && wasOff ? gMap.transition().delay(dur / 3).duration(dur / 2) : gMap.interrupt()).style("opacity", 1);
+      } else {
+        gMap.style("pointer-events", "none");
+        (dur ? gMap.transition().duration(dur / 2) : gMap.interrupt()).style("opacity", 0);
+        hideMapTip(true);
+        mapLayout = null;
+        syncNote(); syncTable();
+      }
       /* on the reveal section the opening beat rests on the admin bands: the
          cells fade first, the blocks behind them come forward, and the veil
          drops last. Leaving the beat runs the same three in reverse. */
@@ -4942,17 +4121,6 @@
     /* colour by: sector or complexity, on the two map beats. Each beat
        opens on sector, which is what its text describes; the reader changes
        it once there */
-    /* the naming study: three options on the same two beats. Switching the
-       strip on or off moves the cells, so the beat repaints rather than
-       just redrawing the labels. */
-    const namesEl = document.getElementById(p + "Names");
-    if (namesEl) namesEl.addEventListener("change", () => {
-      if (namesEl.value === nameMode) return;
-      nameMode = namesEl.value;
-      fig.dataset.names = nameMode;
-      if (step === 7 || step === 4 || step === 0) paint(step, !reduced());
-    });
-
     /* The tradability tiers, as a filter on the jobs order and on the
        ranking. The ranked view answers "what is biggest"; unchecking a tier
        asks the narrower question the beat is really about - what is the
@@ -5127,6 +4295,8 @@
       fig.dataset.step = String(i);
       /* each map beat opens coloured by sector, as its text describes */
       if (i === 7 || i === 4 || i === 0) setColorBy("sector");
+      /* the zoom belongs to the whole-map beats: the tiers show every sector */
+      if (i !== 0 && i !== 7 && focus){ focus = null; focusGroup = null; fig.dataset.focus = ""; syncKey(); }
       /* the clusters are a movement between columns, and the ranked bars
          have none: the beat opens as the map however the last one was left */
       if (i === 4) setView("map");
@@ -5358,167 +4528,342 @@
       }
     }
 
-    /* ---- the sector key, which is also the map's filter ----
-       In the order the map is biggest-first. Each entry is a button: it
-       says what its colour means, tells the sector's figures on hover, and
-       takes its sector out of the map or leaves only it. */
-    const key = document.getElementById(p + "SectorKey");
-    if (key){
-      const jobs = {}, trad = {}, inds = {};
-      industryData.forEach(d => {
-        jobs[d.sector] = (jobs[d.sector] || 0) + d.employ;
-        inds[d.sector] = (inds[d.sector] || 0) + 1;
+    /* ---- the map layer's own workings: the tiling for the beat, the cells
+       drawn from it, the zoom, the outline under the pointer, the card, the
+       line over the map and the table under it ---- */
+    let mapLayout = null;                 /* the tiling on screen */
+    const mapTip = document.getElementById(p + "Tip");
+    const mapWrap = el.closest(".tradable-viz-wrapper");
+    let pinned = null, syncKeyRef = null;
+    const mapFillOf = c => colorBy === "complexity" ? cxFillOf(c.cell.pci) : sectorColors[c.cell.sector];
+    const mapInkOf = c => colorBy === "complexity" ? cellInk(cxFillOf(c.cell.pci)) : sectorInk(c.cell.sector);
+    function layoutFor(i){ return i === 4 ? mapTiers() : (i === 5 || i === 7) ? mapTrad() : mapFull(); }
+    /* what a click on a cell does: at the top of the map it zooms into the
+       cell's sector, inside a sector into the cell's group, and inside a
+       group there is nowhere further to go, so it pins the card */
+    const zoomTarget = c => {
+      if ((step !== 0 && step !== 7) || view !== "map") return null;
+      if (!focus) return { sector: c.cell.sector, group: null, label: c.cell.sector };
+      if (!focusGroup && /^\d{4}$/.test(c.cell.group)) return { sector: focus, group: c.cell.group, label: c.cell.groupName };
+      return null;
+    };
+    function paintMap(L, animate){
+      mapLayout = L;
+      const s = L.s, dur = animate ? 950 : 0;
+      const sel = gMapCells.selectAll("g.mi-mcell").data(L.cells, c => c.id);
+      const enter = sel.enter().append("g").attr("class", "mi-mcell");
+      enter.append("rect").attr("class", "mi-mrect")
+        .attr("x", c => c.box.x).attr("y", c => c.box.y).attr("width", c => c.box.w).attr("height", c => c.box.h)
+        .attr("fill", c => mapFillOf(c)).style("opacity", 0);
+      enter.append("text").attr("class", "mi-mlab");
+      const exit = sel.exit().style("pointer-events", "none");
+      (dur ? exit.transition().duration(dur / 2) : exit).style("opacity", 0).remove();
+      const all = enter.merge(sel).classed("is-rest", c => c.rest)
+        .style("pointer-events", null).style("opacity", null);
+      const rect = all.select("rect.mi-mrect");
+      (dur ? rect.transition().duration(dur).ease(d3.easeCubicInOut) : rect.interrupt())
+        .attr("x", c => c.box.x).attr("y", c => c.box.y).attr("width", c => c.box.w).attr("height", c => c.box.h)
+        .attr("fill", c => mapFillOf(c)).style("opacity", 1);
+      /* the labels are written for the new tiling at once and come in once
+         the cells have nearly settled; a folded "Other" cell carries none */
+      all.each(function(c){
+        const t = d3.select(this).select("text.mi-mlab");
+        t.selectAll("tspan").remove();
+        if (c.rest) return;
+        const share = fmtShare(c.cell.share);
+        const spec = fitCellLabel(c.cell.name, share, c.px);
+        if (!spec) return;
+        const ink = mapInkOf(c);
+        t.attr("font-size", spec.size / s).attr("fill", ink).attr("data-ink", ink).attr("font-weight", MAP.weight);
+        spec.lines.forEach((ln, n) => t.append("tspan")
+          .attr("x", spec.x / s).attr("y", lineY(spec.y, spec.size, n) / s).text(ln));
+        if (spec.share) t.append("tspan").attr("class", "mi-mshare")
+          .attr("x", spec.x / s).attr("y", lineY(spec.y, spec.size, spec.lines.length, true) / s)
+          .attr("font-weight", MAP.shareWeight).attr("fill-opacity", 0.7).text(share);
       });
-      tradRows.forEach(d => { trad[d.sector] = (trad[d.sector] || 0) + d.employ; });
-      const tot = Object.values(jobs).reduce((x, y) => x + y, 0) || 1;
-      const totTrad = Object.values(trad).reduce((x, y) => x + y, 0) || 1;
-      const order = Object.keys(jobs).sort((x, y) => jobs[y] - jobs[x]);
-      /* two shares per sector: of every metro job, and of the jobs that sell
-         outward at all, for the beat whose map shows only those */
+      const lab = all.select("text.mi-mlab");
+      if (dur) lab.style("opacity", 0).transition().delay(dur * 0.55).duration(dur * 0.45).style("opacity", 1);
+      else lab.interrupt().style("opacity", 1);
+      all.on("mouseenter", (ev, c) => { if (!pinned) showMapTip(c, ev); })
+         .on("mousemove", ev => { if (!pinned && mapTip && !mapTip.hidden) cursorTipPos(ev, mapWrap, mapTip); })
+         .on("mouseleave", () => { if (!pinned) hideMapTip(false); })
+         .on("click", (ev, c) => {
+           ev.stopPropagation();
+           const t = zoomTarget(c);
+           if (t){ setFocus(t.sector, t.group); return; }
+           if (pinned === c.id){ hideMapTip(true); return; }
+           pinned = c.id; showMapTip(c, ev);
+         });
+      drawHits(L);
+      clearOutline();
+      syncNote(); syncTable();
+    }
+    /* the zoom's targets, under the cells for the keyboard: the sector
+       blocks at the top of the map, the groups inside a sector */
+    function drawHits(L){
+      let targets = [];
+      if ((step === 0 || step === 7) && view === "map"){
+        if (!focus) targets = L.blocks.map(b => ({ key: b.key, box: b.box, sector: b.sector, group: null, label: "Zoom into " + b.sector }));
+        else if (!focusGroup) targets = L.groups.filter(g => /^\d{4}$/.test(g.group))
+          .map(g => ({ key: g.key, box: g.box, sector: focus, group: g.group,
+                       label: "Zoom into " + ((g.items[0] && g.items[0].cell.groupName) || g.group) }));
+      }
+      const h = gMapHit.selectAll("rect.mi-mhit").data(targets, t => t.key);
+      h.exit().remove();
+      h.enter().append("rect").attr("class", "mi-mhit").attr("fill", "transparent")
+        .attr("role", "button").attr("tabindex", 0)
+        .merge(h)
+        .attr("x", t => t.box.x).attr("y", t => t.box.y).attr("width", t => t.box.w).attr("height", t => t.box.h)
+        .attr("aria-label", t => t.label)
+        .on("click", (ev, t) => { ev.stopPropagation(); setFocus(t.sector, t.group); })
+        .on("keydown", (ev, t) => { if (ev.key === "Enter" || ev.key === " "){ ev.preventDefault(); setFocus(t.sector, t.group); } })
+        .on("focus", (ev, t) => { if (ev.target.matches(":focus-visible")) showRing(t.box); })
+        .on("blur", () => showRing(null));
+    }
+    /* what the pointer's outline goes round: the cell's sector block at the
+       top of the map (in its own tier on the tiers beat), its group inside
+       a sector, the cell itself inside a group */
+    const outlineBoxes = c => {
+      const L = mapLayout; if (!L) return [c.box];
+      if (step === 4) return L.blocks.filter(b => b.band === c.band && b.sector === c.cell.sector).map(b => b.box);
+      if (!focus) return L.blocks.filter(b => b.sector === c.cell.sector).map(b => b.box);
+      if (!focusGroup){ const g = L.groups.find(g => g.items.some(it => it.id === c.id)); return [g ? g.box : c.box]; }
+      return [c.box];
+    };
+    function showOutline(boxes, width){
+      const s = scaleNow(), w = (width || 1.5) / s, o = w / 2;
+      gMapOutline.selectAll("rect.mi-moutline").data(boxes).join("rect").attr("class", "mi-moutline")
+        .attr("x", b => b.x - o).attr("y", b => b.y - o).attr("width", b => b.w + w).attr("height", b => b.h + w)
+        .attr("stroke-width", w);
+    }
+    const clearOutline = () => gMapOutline.selectAll("rect.mi-moutline").remove();
+    function showRing(b){
+      const s = scaleNow();
+      gMapOutline.selectAll("rect.mi-mring").data(b ? [b] : []).join("rect").attr("class", "mi-mring")
+        .attr("x", d => d.x - 2 / s).attr("y", d => d.y - 2 / s).attr("width", d => d.w + 4 / s).attr("height", d => d.h + 4 / s)
+        .attr("rx", 3 / s).attr("stroke-width", 2.5 / s);
+    }
+    /* the blocks of the sectors a phrase or the key names, on the tiling showing */
+    const sectorBlocks = want => !mapLayout ? [] : mapLayout.blocks.filter(b => want.indexOf(b.sector) >= 0).map(b => b.box);
+
+    /* ---- the zoom: one sector over the whole map, then one of its groups ---- */
+    function setFocus(sec, grp){
+      grp = grp || null;
+      if (sec === focus && grp === focusGroup) return;
+      focus = sec || null; focusGroup = focus ? grp : null;
+      fig.dataset.focus = focus ? (focusGroup ? "group" : "sector") : "";
+      hideMapTip(true);
+      if (syncKeyRef) syncKeyRef();
+      if (step >= 0) paint(step, !reduced());
+    }
+    const zoomOut = () => { if (focusGroup) setFocus(focus, null); else if (focus) setFocus(null, null); };
+    document.addEventListener("keydown", ev => {
+      if (ev.key !== "Escape" || ev.defaultPrevented) return;
+      if (pinned){ hideMapTip(true); return; }
+      if ((step === 0 || step === 7) && view === "map" && focus) zoomOut();
+    });
+
+    /* ---- the card, after the reference: the industry's short name, its
+       full name, where it sits, what it stands for if it is several, and
+       its three readings; a last line says what a click does ---- */
+    function mapTipHtml(c, hint){
+      const cell = c.cell;
+      const path = [cell.groupName !== cell.name ? cell.groupName : null, cell.sector,
+                    cell.tier != null ? TIER_WORDS[cell.tier] : null].filter(Boolean).join(" · ");
+      const members = cell.members ? '<p class="tip-members">' + cell.members.length + (c.rest ? " smaller" : "") +
+        " industries, among them " + cell.members.slice(0, 2).map(m => escHtml(m.name)).join(" and ") + ".</p>" : "";
+      const cx = colorBy === "complexity";
+      const sw = cx ? '<i class="tip-sw" style="background:' + cxFillOf(cell.pci) + '"></i>' : "";
+      return '<p class="tip-name">' + escHtml(cell.name) + '</p>' +
+        (cell.title ? '<p class="tip-title">' + escHtml(cell.title) + '</p>' : '') +
+        '<p class="tip-path">' + escHtml(path) + '</p>' + members +
+        '<dl class="tip-dl">' +
+        '<dt>Jobs</dt><dd class="is-strong">' + fmtJobsFull(cell.jobs) + ' · ' + fmtShare(cell.share) + " of the metro's</dd>" +
+        '<dt>Complexity</dt><dd' + (cx ? ' class="is-strong"' : '') + '>' + sw + cxText(cell.pci) + '</dd>' +
+        '<dt>Specialization</dt><dd>' + (cell.rca == null ? "No value" : rcaText(cell.rca) + " the national share") + '</dd>' +
+        '</dl>' + (hint ? '<p class="tip-hint">' + escHtml(hint) + '</p>' : '');
+    }
+    const hintFor = c => {
+      const t = zoomTarget(c);
+      if (t) return "Click to zoom into " + t.label;
+      return pinned === c.id ? "Click again or press Esc to unpin" : "Click to pin";
+    };
+    function showMapTip(c, ev){
+      if (!mapTip || !mapWrap) return;
+      mapTip.className = "rca-tip is-map";
+      mapTip.innerHTML = mapTipHtml(c, hintFor(c));
+      mapTip.hidden = false;
+      if (ev) cursorTipPos(ev, mapWrap, mapTip);
+      showOutline(outlineBoxes(c), pinned === c.id ? 2.5 : 1.5);
+    }
+    function hideMapTip(force){
+      if (pinned && !force) return;
+      pinned = null;
+      if (mapTip && mapTip.classList.contains("is-map")){ mapTip.hidden = true; mapTip.classList.remove("is-map"); }
+      clearOutline();
+    }
+
+    /* ---- the line over the map: where the reader has zoomed to, while
+       they are zoomed in, and nothing otherwise ---- */
+    const notes = [p + "Note", p + "Note4"].map(id => document.getElementById(id)).filter(Boolean);
+    function syncNote(){
+      let txt;
+      if (focus && step !== 4){
+        const gRow = focusGroup ? industryData.find(d => d.group === focusGroup) : null;
+        const gName = gRow ? (gRow.groupShort || gRow.groupName) : focusGroup;
+        txt = '<span class="mi-crumbs"><button type="button" class="mi-crumb" data-zoom="all">All sectors</button>' +
+          '<span class="mi-crumb-sep" aria-hidden="true">›</span>' +
+          (focusGroup
+            ? '<button type="button" class="mi-crumb" data-zoom="sector">' + escHtml(focus) + '</button>' +
+              '<span class="mi-crumb-sep" aria-hidden="true">›</span><span class="mi-crumb-here">' + escHtml(gName) + '</span>'
+            : '<span class="mi-crumb-here">' + escHtml(focus) + '</span>') +
+          '<button type="button" class="mi-crumb-x" aria-label="Zoom out">×</button></span>';
+      } else txt = "";
+      notes.forEach(n => { n.querySelector(".mi-note-txt").innerHTML = txt; });
+    }
+    notes.forEach(n => n.addEventListener("click", ev => {
+      const b = ev.target.closest("[data-zoom], .mi-crumb-x"); if (!b) return;
+      if (b.classList.contains("mi-crumb-x")) zoomOut();
+      else if (b.dataset.zoom === "all") setFocus(null, null);
+      else setFocus(focus, null);
+    }));
+
+    /* ---- the same industries as a table, under the key: whatever the map
+       is showing, largest first, with the readings the card carries ---- */
+    const tableHost = document.getElementById(p + "Table");
+    let tableOpen = false;
+    function syncTable(){
+      if (!tableHost) return;
+      const btn = tableHost.querySelector(".mi-table-btn"), wrapT = tableHost.querySelector(".mi-table-wrap");
+      const on = tableOpen && !!mapLayout;
+      wrapT.hidden = !on;
+      btn.setAttribute("aria-expanded", String(on));
+      btn.querySelector(".mi-table-btn-txt").textContent = on ? "Hide table" : "Show as table";
+      fig.classList.toggle("has-table", on);
+      if (!on){ wrapT.innerHTML = ""; return; }
+      const rows = mapLayout.rows.slice().sort((a, b) => b.employ - a.employ);
+      const td = (v, cls) => '<td' + (cls ? ' class="' + cls + '"' : '') + '>' + v + '</td>';
+      wrapT.innerHTML = '<table class="mi-tbl"><caption class="mi-sr">' + rows.length +
+        ' industries shown in the map, largest first</caption>' +
+        '<thead><tr><th scope="col">Industry</th><th scope="col">Industry group</th><th scope="col">Sector</th>' +
+        '<th scope="col">Tier</th><th scope="col" class="num">Jobs</th><th scope="col" class="num">Share of metro jobs</th>' +
+        '<th scope="col">Complexity</th><th scope="col" class="num">Location quotient</th></tr></thead><tbody>' +
+        rows.map(r => '<tr><th scope="row">' + escHtml(r.short || r.name) + '</th>' +
+          td(escHtml(r.groupShort || r.groupName)) + td(escHtml(r.sector)) + td(TIER_WORDS[r.tier]) +
+          td(fmtJobsFull(r.employ), "num") + td(fmtShare(r.employ / jobsTotal), "num") +
+          td(cxText(r.pci)) + td(rcaText(r.rca) || "No value", "num") + '</tr>').join("") +
+        '</tbody></table>';
+    }
+    if (tableHost) tableHost.querySelector(".mi-table-btn").addEventListener("click", () => {
+      tableOpen = !tableOpen; syncTable();
+    });
+
+    /* the map is tiled at the width it is drawn at: measured when the
+       figure comes on screen and again whenever that width changes, and
+       its labels fitted again once the page's face has loaded */
+    const remeasure = () => {
+      const s2 = measureS();
+      if (!s2 || Math.abs(s2 - S) < 1e-4) return;
+      S = s2; invalidateMaps();
+      if (step >= 0 && view === "map") paint(step, false);
+    };
+    if (window.ResizeObserver) new ResizeObserver(remeasure).observe(el);
+    window.addEventListener("resize", remeasure);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => {
+      clearMapMeasure();
+      if (step >= 0 && view === "map") paint(step, false);
+    });
+
+    /* ---- the sector key, which is also the map's filter and its zoom ----
+       Every sector, in the reference's fixed order. A click on a name takes
+       its sector out of the map, and the map is tiled again over the rest;
+       a click on the last one showing brings them all back. "only", which
+       appears on hover, zooms into that sector, and over the sector zoomed
+       into it reads "all" and zooms back out. Pointing at an entry outlines
+       the sector's block on the map. */
+    const key = document.getElementById(p + "SectorKey");
+    let syncKey = () => {};
+    if (key){
+      const order = SECTOR_KEYS.map(s => s.label).filter(l => industryData.some(d => d.sector === l));
       key.innerHTML = order.map((sec, i) =>
-        '<button type="button" class="sk-sec' + (trad[sec] ? '' : ' sk-no-trad') +
-        '" data-si="' + i + '" aria-pressed="true" style="--sw:' + (sectorColors[sec] || "#ccc") + '">' +
-        '<i class="sk-sw"></i><span class="sk-name">' + sec + '</span>' +
-        ' <span class="sk-share sk-all">' + Math.round(jobs[sec] / tot * 100) + '%</span>' +
-        '<span class="sk-share sk-trad">' + Math.round((trad[sec] || 0) / totTrad * 100) + '%</span></button>').join("") +
-        '<button type="button" class="sk-reset" hidden>Show all sectors</button>';
+        '<li class="sk-item"><button type="button" class="sk-sec" data-si="' + i + '" aria-pressed="true" style="--sw:' +
+        (sectorColors[sec] || "#ccc") + '"><i class="sk-sw"></i><span class="sk-name">' + escHtml(sec) + '</span></button>' +
+        '<button type="button" class="sk-only" data-si="' + i + '" aria-label="Show only ' + escHtml(sec) + '">only</button></li>').join("") +
+        '<li class="sk-item sk-item--reset"><button type="button" class="sk-reset" hidden>Show all</button></li>';
       const resetBtn = key.querySelector(".sk-reset");
-      /* the card rides over the whole figure, so it can stand clear of the
-         key's own line. It carries the sector's figures and, under them,
-         what can be done with it: a card that follows the cursor cannot
-         hold a button the reader is meant to reach, so this one anchors to
-         the entry it belongs to while the cell cards keep following. */
-      const tipEl = document.createElement("div");
-      tipEl.className = "sk-tip";
-      tipEl.hidden = true;
-      fig.appendChild(tipEl);
       const items = [].slice.call(key.querySelectorAll(".sk-sec"));
+      const onlys = [].slice.call(key.querySelectorAll(".sk-only"));
       const allHeadTitle = document.querySelector("#" + p + "AllHead .mcl-dir");
       const headDefault = allHeadTitle ? allHeadTitle.textContent : "";
-      /* the key says which sectors are in play, and the reset appears only
-         when there is something to go back from */
-      function syncKey(){
+      /* zoomed into a sector, that sector alone is showing */
+      const shownSec = sec => focus ? sec === focus : (!secOn || secOn.has(sec));
+      const soloSec = sec => order.every(o => o === sec || !shownSec(o));
+      syncKey = function(){
         items.forEach((b, i) => {
-          const on = !secOn || secOn.has(order[i]);
+          const on = shownSec(order[i]);
           b.classList.toggle("is-off", !on);
           b.setAttribute("aria-pressed", String(on));
         });
-        if (resetBtn) resetBtn.hidden = !secFiltered();
+        onlys.forEach((b, i) => {
+          const sec = order[i], solo = shownSec(sec) && soloSec(sec);
+          b.textContent = solo ? "all" : "only";
+          b.setAttribute("aria-label", solo ? "Show all sectors" : "Show only " + sec);
+        });
+        if (resetBtn) resetBtn.hidden = !(secFiltered() || focus);
         /* the chart's own title must not still say every industry while the
            map is showing some of them */
-        if (allHeadTitle) allHeadTitle.textContent = !secOn ? headDefault
+        if (allHeadTitle) allHeadTitle.textContent = !secOn || focus ? headDefault
           : secOn.size === 1 ? [...secOn][0]
           : secOn.size + " of " + order.length + " sectors";
-      }
-      /* the filter moves the map, the names on it and the bars beside it */
+      };
+      syncKeyRef = syncKey;
+      const dropFocus = () => { focus = null; focusGroup = null; fig.dataset.focus = ""; };
+      /* the filter moves the map and the bars beside it */
       function applySec(next){
         if (next && !next.size) return;                 /* an empty map answers nothing */
         secOn = (next && next.size === order.length) ? null : next;
+        if (focus && !secShown({ sector: focus })) dropFocus();
         rebuildSecGeo();
         barListAll = tierList();
         reBarRank();
         drawBars(barListAll, gBarsAll);
+        hideMapTip(true);
         syncKey();
         if (step >= 0) paint(step, !reduced());
       }
-      resetSec = () => applySec(null);
+      resetSec = () => { dropFocus(); applySec(null); };
       const allSet = () => new Set(order);
-
-      /* ---- the card, which is also this entry's menu ---- */
-      let openFor = null, closeT = null;
-      const holdOpen = () => clearTimeout(closeT);
-      /* the pointer has to be able to travel from the entry to the card, so
-         leaving either one only arms the close */
-      const armClose = () => { clearTimeout(closeT); closeT = setTimeout(hideTip, 180); };
-      function hideTip(){
-        clearTimeout(closeT); openFor = null; tipEl.hidden = true;
-        items.forEach(x => x.classList.remove("is-open"));
-      }
-      function showTip(b){
-        const i = +b.dataset.si, sec = order[i];
-        const shown = !secOn || secOn.has(sec);
-        const solo = !!(secOn && secOn.size === 1 && secOn.has(sec));
-        openFor = b;
-        /* what can be done with this sector, in the state it is in: the only
-           sector on the map cannot be hidden, so it is offered the way back
-           instead of a click that would be refused */
-        const acts = solo
-          ? [["all", "Show all sectors"]]
-          : shown
-            ? [["hide", "Hide"], ["only", "Keep only"]]
-            : [["show", "Bring back"], ["only", "Keep only"]];
-        tipEl.innerHTML =
-          '<b>' + sec + '</b>' +
-          '<span class="skt-row"><span>Jobs</span><span>' + Math.round(jobs[sec]).toLocaleString() + '</span></span>' +
-          '<span class="skt-row"><span>Share of metro jobs</span><span>' +
-            (jobs[sec] / tot * 100).toFixed(1) + '%</span></span>' +
-          '<span class="skt-row"><span>Industries</span><span>' + inds[sec] + '</span></span>' +
-          '<span class="skt-acts">' + acts.map(a =>
-            '<button type="button" class="skt-btn" data-act="' + a[0] + '">' + a[1] + '</button>').join("") +
-          '</span>';
-        tipEl.hidden = false;
-        items.forEach(x => x.classList.toggle("is-open", x === b));
-        /* clear of the WHOLE key, not just of the entry it belongs to: the
-           key wraps, and a card that cleared only its own entry sat over the
-           row above and took every hover meant for it. Centred on the entry
-           so it still says which one it belongs to, and the entry is lit
-           while it is open. */
-        const fb = fig.getBoundingClientRect(), bb = b.getBoundingClientRect();
-        const kb = key.getBoundingClientRect();
-        const w = tipEl.offsetWidth, h = tipEl.offsetHeight;
-        let left = bb.left - fb.left + bb.width / 2 - w / 2;
-        tipEl.style.left = Math.max(0, Math.min(left, Math.max(0, fb.width - w))) + "px";
-        tipEl.style.top = Math.max(0, kb.top - fb.top - h - 8) + "px";
-      }
-      /* the actions live in the card, so there is one place they are done
-         from and the keyboard can reach every one of them */
-      tipEl.addEventListener("click", ev => {
-        const a = ev.target.closest(".skt-btn");
-        if (!a || !openFor) return;
-        const b = openFor, sec = order[+b.dataset.si];
-        if (a.dataset.act === "all") applySec(null);
-        else if (a.dataset.act === "only") applySec(new Set([sec]));
-        else {
+      key.addEventListener("click", ev => {
+        if (ev.target.closest(".sk-reset")){ resetSec(); return; }
+        const only = ev.target.closest(".sk-only");
+        if (only){
+          const sec = order[+only.dataset.si];
+          if (shownSec(sec) && soloSec(sec)) resetSec(); else setFocus(sec, null);
+          return;
+        }
+        const b = ev.target.closest(".sk-sec");
+        if (!b) return;
+        const sec = order[+b.dataset.si];
+        if (shownSec(sec) && soloSec(sec)) resetSec();
+        else if (focus){
+          /* zoomed into one sector, a click on another shows the two together */
+          const next = new Set([focus, sec]);
+          dropFocus();
+          applySec(next);
+        } else {
           const next = secOn ? new Set(secOn) : allSet();
-          if (a.dataset.act === "hide") next.delete(sec); else next.add(sec);
+          if (next.has(sec)) next.delete(sec); else next.add(sec);
           applySec(next);
         }
-        showTip(b);                                     /* the card follows the change */
-        b.focus();
       });
-      tipEl.addEventListener("mouseenter", holdOpen);
-      tipEl.addEventListener("mouseleave", armClose);
-      key.addEventListener("click", ev => {
-        if (ev.target.closest(".sk-reset")){ applySec(null); hideTip(); return; }
-        /* a click opens the card too, which is how a touch reaches it */
-        const b = ev.target.closest(".sk-sec");
-        if (b){ holdOpen(); showTip(b); }
+      /* pointing at an entry outlines its block on the map */
+      [].slice.call(key.querySelectorAll(".sk-item:not(.sk-item--reset)")).forEach((li, i) => {
+        const sec = order[i];
+        const on = () => { if (shownSec(sec) && view === "map" && mapLayout && !pinned) showOutline(sectorBlocks([sec]), 1.5); };
+        const off = () => { if (!pinned) clearOutline(); };
+        li.addEventListener("mouseenter", on); li.addEventListener("mouseleave", off);
+        li.addEventListener("focusin", on); li.addEventListener("focusout", off);
       });
-      items.forEach(b => {
-        b.addEventListener("mouseenter", () => { holdOpen(); showTip(b); });
-        b.addEventListener("focus", () => { holdOpen(); showTip(b); });
-        b.addEventListener("mouseleave", armClose);
-        /* the card sits elsewhere in the page's order, so the keyboard is
-           given a way in: enter, space or down opens it and steps inside */
-        b.addEventListener("keydown", ev => {
-          if (ev.key !== "Enter" && ev.key !== " " && ev.key !== "ArrowDown") return;
-          ev.preventDefault();
-          holdOpen(); showTip(b);
-          const first = tipEl.querySelector(".skt-btn");
-          if (first) first.focus();
-        });
-      });
-      /* and a way back out to the entry it belongs to */
-      tipEl.addEventListener("keydown", ev => {
-        if (ev.key !== "Escape") return;
-        const b = openFor;
-        hideTip();
-        if (b) b.focus();
-      });
-      key.addEventListener("focusout", ev => {
-        if (!ev.relatedTarget || (!key.contains(ev.relatedTarget) && !tipEl.contains(ev.relatedTarget))) armClose();
-      });
-      document.addEventListener("keydown", ev => { if (ev.key === "Escape") hideTip(); });
       syncKey();
     }
 
@@ -5548,6 +4893,7 @@
       };
       let hot = null, hotRow = null;
       const cool = () => {
+        if (pinned) return;                   /* the map's pinned card stays */
         tip.hidden = true;
         hiRect.style("opacity", 0);
         if (hotRow){ hotRow.classList.remove("is-hot"); hotRow = null; }
@@ -5583,6 +4929,7 @@
           (labRow ? labRow.label : d.name) + '</strong>' +
           '<span class="tip-sector"><i style="background:' + sectorColors[d.sector] + '"></i>' +
           d.sector + '</span></div>';
+        tip.className = "rca-tip";
         tip.innerHTML = head + body;
         tip.hidden = false;
         cursorTipPos(ev, wrap, tip);
@@ -5614,10 +4961,13 @@
       const hlRows = () => [R1, R2].filter(R => R && R.row);
       const clearHl = () => {
         cell.classed("is-dim", false).classed("is-mute", false);
+        gMapCells.selectAll("g.mi-mcell").classed("is-dim", false).classed("is-mute", false);
         /* a muted label was repainted, so it is put back in the ink the cell
            wrote it in rather than guessed at */
         cell.selectAll(".mi-lab,.mi-pct")
           .style("fill", function(){ return this.getAttribute("data-ink"); });
+        gMapCells.selectAll("text.mi-mlab")
+          .attr("fill", function(){ return this.getAttribute("data-ink"); });
         gHlFrame.selectAll("rect").remove();
         hlRows().forEach(R => R.row.classed("is-lit", false));
         gLit.selectAll("rect").remove();
@@ -5627,25 +4977,7 @@
          whole mix, one per tier on the clusters. Nothing outside the maps -
          under the bars a sector is scattered down the rows, and a frame
          round scattered rows is not a frame */
-      const hlSectorBoxes = want => {
-        if (view !== "map") return [];
-        const above = nameMode === "above";
-        if (step === 0){
-          const src = secGeo ? (above ? secGeo.secA : secGeo.secB)
-                             : (above ? secFullA : secFullB);
-          return want.map(n => src.get(n)).filter(Boolean);
-        }
-        if (step === 4 || step === 7){
-          const src = step === 4 ? (above ? secClusterA : secClusterB) : null;
-          if (!src) return want.map(n =>
-            (secGeo ? (above ? secGeo.tradSecA : secGeo.tradSecB)
-                    : (above ? secTradA : secTradB)).get(n)).filter(Boolean);
-          const out = [];
-          src.forEach((v, k) => { if (want.indexOf(v.name) >= 0) out.push(v.b); });
-          return out;
-        }
-        return [];
-      };
+      const hlSectorBoxes = want => view !== "map" ? [] : sectorBlocks(want);
       /* the rest of the mix turns to one grey rather than fading away: every
          block keeps its place and its size, and colour alone says which is
          the one being named */
@@ -5655,6 +4987,9 @@
         /* still grey, still plainly not the sector being named, but dark
            enough on that grey to be read: at #9aa3a6 it was 2.1 to 1 */
         cell.filter(off).selectAll(".mi-lab,.mi-pct").style("fill", "#60686b");
+        const offM = c => want.indexOf(c.cell.sector) < 0;
+        gMapCells.selectAll("g.mi-mcell").classed("is-mute", offM)
+          .filter(offM).select("text.mi-mlab").attr("fill", "#60686b");
       };
       const hlStep = span => span.dataset.on || "0";
       /* the band behind a lit row has to be drawn under the cells, since the
@@ -5679,6 +5014,7 @@
           if (!want.length){ span.classList.add("is-lit"); return; }
           if (hlMode === "dim"){
             cell.classed("is-dim", d => want.indexOf(d.sector) < 0);
+            gMapCells.selectAll("g.mi-mcell").classed("is-dim", c => want.indexOf(c.cell.sector) < 0);
           } else if (hlMode === "mute"){
             muteOthers(want);
           } else {
