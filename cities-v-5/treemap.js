@@ -4793,7 +4793,7 @@
       const resetBtn = key.querySelector(".sk-reset");
       const items = [].slice.call(key.querySelectorAll(".sk-sec"));
       const onlys = [].slice.call(key.querySelectorAll(".sk-only"));
-      const allHeadTitle = document.querySelector("#" + p + "AllHead .mcl-dir");
+      const allHeadTitle = document.querySelector("#" + p + "View .mi-title-all .mcl-dir");
       const headDefault = allHeadTitle ? allHeadTitle.textContent : "";
       /* zoomed into a sector, that sector alone is showing */
       const shownSec = sec => focus ? sec === focus : (!secOn || secOn.has(sec));

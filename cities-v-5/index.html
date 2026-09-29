@@ -2860,14 +2860,19 @@
      header below */
   /* the names close onto the chart: the slot takes over the chart's own top
      margin rather than pushing it down, so the figure itself does not move */
+  /* on the map beats the control row, with the title leading it, sits in
+     the flow so it may wrap, and the line over the map (the crumbs, when
+     zoomed) has its own room reserved under it */
   #miFigure[data-step="4"] .mi-head,
-  #miFigure[data-step="0"] .mi-head{min-height:107px;margin-bottom:3px;}
-  /* where the row wraps (a stage under about 490px wide for View and Color
-     by, under about 400px for Sort by) the slot grows to hold both lines */
-  @media (max-width: 920px){
-    #miFigure[data-step="4"] .mi-head,
-    #miFigure[data-step="0"] .mi-head{min-height:146px;}
+  #miFigure[data-step="0"] .mi-head{min-height:0;padding-bottom:30px;margin-bottom:3px;}
+  #miFigure[data-step="4"] .mi-head > .mi-view:not(.mi-sort),
+  #miFigure[data-step="0"] .mi-head > .mi-view:not(.mi-sort){
+    position:relative;left:auto;right:auto;bottom:auto;padding-right:44px;
   }
+  .mi-view .mi-titles{display:inline-grid;align-items:center;margin-right:6px;}
+  .mi-view .mi-titles > .mcl-axis{grid-area:1/1;opacity:0;transition:opacity .35s ease;pointer-events:none;}
+  #miFigure[data-step="0"] .mi-titles > .mi-title-all,
+  #miFigure[data-step="4"] .mi-titles > .mi-title-tier{opacity:1;pointer-events:auto;}
   @media (max-width: 830px){
     #miFigure[data-step="6"] .mi-head{min-height:80px;}
   }
@@ -2881,7 +2886,7 @@
   /* the two map headers share a box, so the titles sit at the same height
      whether a line follows the title or not: the box is the opening frame's
      natural height at the reference width, and both fill it from the top */
-  .mi-trad-head{display:flex;flex-direction:column;justify-content:flex-start;gap:8px;min-height:44px;opacity:0;pointer-events:none;transition:opacity .35s ease;}
+  .mi-trad-head{display:flex;flex-direction:column;justify-content:flex-start;gap:8px;min-height:0;opacity:0;pointer-events:none;transition:opacity .35s ease;}
   .mi-figure[data-step="0"] .mi-trad-head{opacity:1;}
   /* bars have no sectors: the opening header stands down while they are up */
   .mi-figure[data-step="0"][data-view="alt"] .mi-trad-head{opacity:0;}
@@ -2890,7 +2895,7 @@
      display rule would otherwise override */
   .mi-default[hidden], .mi-alt[hidden],
   .mi-rail-default[hidden], .mi-rail-alt[hidden]{display:none !important;}
-  .mi-cluster-head{display:flex;flex-direction:column;justify-content:flex-start;gap:8px;min-height:44px;opacity:0;pointer-events:none;transition:opacity .35s ease;}
+  .mi-cluster-head{display:flex;flex-direction:column;justify-content:flex-start;gap:8px;min-height:0;opacity:0;pointer-events:none;transition:opacity .35s ease;}
   /* the head is a slot that must not take the pointer, but the chips in it
      are controls, so they take it back */
   .mi-figure[data-step="4"] .mi-cluster-head .mcl-chip{pointer-events:auto;}
@@ -5636,6 +5641,13 @@
                arrange themselves. -->
           <div class="mi-head">
             <div class="mi-view" id="miView">
+              <!-- the chart's title leads the row: the two map beats' titles
+                   share one slot and cross-fade, so the controls never move -->
+              <span class="mi-titles">
+                <span class="mcl-axis mi-title-all"><span class="mcl-dir">All industries</span></span>
+                <span class="mcl-axis mi-title-tier"><span class="mcl-dir">All industries, by tier</span>
+                  <span class="mcl-back" id="miTierBack"></span></span>
+              </span>
               <span class="ctl-label">View</span>
               <div class="seg" role="group" aria-label="The mix as a treemap or as a ranking">
                 <button type="button" class="seg-btn is-active" data-view="map" aria-pressed="true">Treemap</button>
@@ -5719,9 +5731,6 @@
                  three. The grounds below name the tiers and give the shares,
                  and their order says the direction. -->
             <div class="mi-cluster-head" id="miClusterHead">
-              <div class="mcl-axis"><span class="mcl-dir">All industries, by tier</span>
-                <span class="mcl-back" id="miTierBack"></span>
-              </div>
               <!-- where the reader has zoomed to, while zoomed in -->
               <p class="mi-note" id="miNote4"><span class="mi-note-txt"></span></p>
             </div>
@@ -5729,7 +5738,6 @@
                  slot as the tiers' header so the chart does not move between
                  the beats -->
             <div class="mi-trad-head" id="miAllHead">
-              <div class="mcl-axis"><span class="mcl-dir">All industries</span></div>
               <!-- where the reader has zoomed to, while zoomed in -->
               <p class="mi-note" id="miNote"><span class="mi-note-txt"></span></p>
             </div>
