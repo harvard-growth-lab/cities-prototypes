@@ -2833,9 +2833,9 @@
      they are showing */
   #miFigure:not([data-step="0"]) #miBarSortPair,
   #miFigure:not([data-view="alt"]) #miBarSortPair{display:none;}
-  #miFigure:not([data-step="4"]) #miTierPair{display:none;}
-  #miFigure:not([data-step="4"]) #miGroundPair{display:none;}
-  #miFigure:not([data-step="3"]):not([data-step="6"]) #miRankOptPair{display:none;}
+  #page-export-basket:has(#miFigure:not([data-step="4"])) #miTierPair{display:none;}
+  #page-export-basket:has(#miFigure:not([data-step="4"])) #miGroundPair{display:none;}
+  #page-export-basket:has(#miFigure:not([data-step="3"]):not([data-step="6"])) #miRankOptPair{display:none;}
   /* opt-2 of the tier study: the ground carries its tier's name alone, set
      as the head the share was; the shares are in the donut by the lede */
   /* a ground with nothing left in it says so where its cells would be */
@@ -3339,15 +3339,21 @@
     fill:none;stroke:#1a2226;stroke-width:2.5;pointer-events:none;
   }
   /* the study's own control belongs to the beats whose text names sectors */
-  #miFigure:not([data-step="0"]):not([data-step="4"]) #miHlOptPair{display:none;}
+  #page-export-basket:has(#miFigure:not([data-step="0"]):not([data-step="4"])) #miHlOptPair{display:none;}
   /* and the palette's to the beats that colour by sector */
-  #miFigure:not([data-step="0"]):not([data-step="4"]) #miPalPair{display:none;}
+  #page-export-basket:has(#miFigure:not([data-step="0"]):not([data-step="4"])) #miPalPair{display:none;}
   /* the row study's, to the beats that show the row */
-  #miFigure:not([data-step="0"]):not([data-step="1"]):not([data-step="3"]):not([data-step="4"]):not([data-step="5"]):not([data-step="6"]):not([data-step="7"]) #miRowPair{display:none;}
+  #page-export-basket:has(#miFigure:not([data-step="0"]):not([data-step="1"]):not([data-step="3"]):not([data-step="4"]):not([data-step="5"]):not([data-step="6"]):not([data-step="7"])) #miRowPair{display:none;}
   /* and the key's, to the beats that show the key */
-  #miFigure:not([data-step="0"]):not([data-step="4"]):not([data-step="7"]) #miKeyPair{display:none;}
+  #page-export-basket:has(#miFigure:not([data-step="0"]):not([data-step="4"]):not([data-step="7"])) #miKeyPair{display:none;}
   /* the word alone in the head, and the studies as plain dropdowns behind it */
-  .mi-head > .mi-studies{position:absolute;top:-34px;right:0;width:auto;z-index:4;}
+  .mi-head > .mi-studies{left:auto;right:0;width:auto;z-index:4;}
+  /* in the scrolly the word rides the beat's counter - "Metro Industries
+     1/3  opt" - so it has no line of its own and never stands over the
+     chart; the panel drops from the word, over the text beneath it */
+  .ct-eyebrow .mi-studies{position:relative;display:inline-block;margin-left:12px;vertical-align:baseline;}
+  .ct-eyebrow .mi-studies-btn{font-size:inherit;padding:0 2px;}
+  .ct-eyebrow .mi-studies-panel{left:0;right:auto;}
   /* the quietest thing in the head, but still a control and still words:
      #9aa3a6 read at 2.6 to 1, which is under the floor for either */
   .mi-studies-btn{
@@ -9530,6 +9536,9 @@
         sh.el.style.display = "";
       }
     });
+    /* the study word goes home to the figure's head with the rest */
+    var studies = page.querySelector(".mi-studies"), mhead = page.querySelector(".mi-figure .mi-head");
+    if (studies && mhead && !mhead.contains(studies)) mhead.appendChild(studies);
     built.wrap.remove();
     built = null;
   }
@@ -9539,6 +9548,16 @@
     cur = i;
     built.slots.forEach(function(sl, j){ sl.classList.toggle("is-on", j === i); });
     built.steps.forEach(function(st, j){ st.classList.toggle("is-on", j === i); });
+    /* the figure's study word rides the beat's counter: it moves to the
+       eyebrow of the step the reader is on, and closes as it goes */
+    var studies = page.querySelector(".mi-studies");
+    var eye = built.steps[i] && built.steps[i].querySelector(":scope > .ct-eyebrow");
+    if (studies && eye && !eye.contains(studies)){
+      var sp = studies.querySelector(".mi-studies-panel"), sb = studies.querySelector(".mi-studies-btn");
+      if (sp) sp.hidden = true;
+      if (sb) sb.setAttribute("aria-expanded", "false");
+      eye.appendChild(studies);
+    }
     /* the shared figure follows the step, in whichever direction the reader
        is travelling — the state machine tweens from wherever it stands */
     var ctl = window[cfg.ctl];
