@@ -3293,8 +3293,8 @@
       });
     }
     layoutClusters();
-    const mapTiers = () => bandsLayout("tiers|" + tierOn.map(Number).join("") + "|" + secKey(),
-      cardBox.map(c => ({ key: TIER_NAMES[c.k], rows: clusterRows[c.k].filter(secShown),
+    const mapTiers = () => bandsLayout("tiers|" + tierOn.map(Number).join("") + "|" + secKey() + "|" + (focus || "") + "|" + (focusGroup || ""),
+      cardBox.map(c => ({ key: TIER_NAMES[c.k], rows: clusterRows[c.k].filter(d => secShown(d) && inFocus(d)),
         box: { x: c.x + CARD_PAD, y: CARD_Y, w: Math.max(20, c.w - CARD_PAD * 2), h: CARD_H } })));
     const clusterSpot = d => mapTiers().spot.get(d.name) || allSpot(d);
     const clusterFill = fillBy;
@@ -3565,7 +3565,7 @@
                      w: Math.max(2, xr(d.row.rca) - xr(1)), h: BAR_H },
               fill: d.rank < 3 ? TEAL : MUTED, op: 1, rx: 0 },
       /* the three clusters by tradability, the most tradable on the left */
-      4: d => !secShown(d) || !tierShown(d) ? { box: clusterSpot(d), fill: clusterFill(d), op: 0, rx: 0 }
+      4: d => !secShown(d) || !inFocus(d) || !tierShown(d) ? { box: clusterSpot(d), fill: clusterFill(d), op: 0, rx: 0 }
         : view === "alt"
           ? asBars(d, barRankAll, clusterFill(d), clusterSpot(d))
           : { box: clusterSpot(d), fill: clusterFill(d), op: 1, rx: 0 },
@@ -4137,8 +4137,11 @@
          the metro's, not the filter's - and says why it is bare */
       gCards.selectAll("g.mi-card-g").each(function(c){
         const g = d3.select(this), k = c.k;
-        const bare = secFiltered() && !clusterRows[k].some(secShown);
-        g.select(".mi-card-none").text(bare ? "None of the sectors shown" : "");
+        const bare = (secFiltered() || focus) && !clusterRows[k].some(d => secShown(d) && inFocus(d));
+        /* named for what the reader zoomed into, the group if they went that far */
+        const gRow = focusGroup ? industryData.find(d => d.group === focusGroup) : null;
+        const zoomed = gRow ? (gRow.groupShort || gRow.groupName) : focus;
+        g.select(".mi-card-none").text(!bare ? "" : zoomed ? "Nothing here from " + zoomed : "None of the sectors shown");
         g.select(".mi-card-pct").style("opacity", bare ? 0.4 : 1);
         g.select(".mi-card-lab").style("opacity", bare ? 0.4 : 1);
       });
@@ -4373,8 +4376,10 @@
       fitPicks(fig);
       /* each map beat opens coloured by sector, as its text describes */
       if (i === 7 || i === 4 || i === 0) setColorBy("sector");
-      /* the zoom belongs to the whole-map beats: the tiers show every sector */
-      if (i !== 0 && i !== 7 && focus){ focus = null; focusGroup = null; fig.dataset.focus = ""; syncKey(); }
+      /* the zoom belongs to the map beats and travels between them: what
+         the reader zoomed into on the whole map is what the tiers show, and
+         back again. It is let go on the beats that have no map. */
+      if (i !== 0 && i !== 4 && i !== 7 && focus){ focus = null; focusGroup = null; fig.dataset.focus = ""; syncKey(); }
       /* the clusters are a movement between columns, and the ranked bars
          have none: the beat opens as the map however the last one was left */
       if (i === 4) setView("map");
@@ -4621,7 +4626,7 @@
        cell's sector, inside a sector into the cell's group, and inside a
        group there is nowhere further to go, so it pins the card */
     const zoomTarget = c => {
-      if ((step !== 0 && step !== 7) || view !== "map") return null;
+      if ((step !== 0 && step !== 4 && step !== 7) || view !== "map") return null;
       if (!focus) return { sector: c.cell.sector, group: null, label: c.cell.sector };
       if (!focusGroup && /^\d{4}$/.test(c.cell.group)) return { sector: focus, group: c.cell.group, label: c.cell.groupName };
       return null;
@@ -4739,7 +4744,7 @@
     on(document, "keydown", ev => {
       if (ev.key !== "Escape" || ev.defaultPrevented) return;
       if (pinned){ hideMapTip(true); return; }
-      if ((step === 0 || step === 7) && view === "map" && focus) zoomOut();
+      if ((step === 0 || step === 4 || step === 7) && view === "map" && focus) zoomOut();
     });
 
     /* ---- the card, after the reference: the industry's short name, its
@@ -4787,7 +4792,7 @@
     const notes = [p + "Note", p + "Note4"].map(id => document.getElementById(id)).filter(Boolean);
     function syncNote(){
       let txt;
-      if (focus && step !== 4){
+      if (focus){
         const gRow = focusGroup ? industryData.find(d => d.group === focusGroup) : null;
         const gName = gRow ? (gRow.groupShort || gRow.groupName) : focusGroup;
         txt = '<span class="mi-crumbs"><button type="button" class="mi-crumb" data-zoom="all">All sectors</button>' +
@@ -4939,15 +4944,11 @@
           applySec(next);
         }
       };
-      /* "only" means what the beat can do. The flat map zooms into the
-         sector - only steps 0 and 7 honour a zoom, and a step change drops
-         it. The tiers cannot zoom without losing what the beat is about, so
-         there the sector is left alone in each of them through the filter,
-         the way hiding already works. */
-      const canZoom = () => step === 0 || step === 7;
+      /* "only" is the zoom, on both map beats: the whole map re-tiles over
+         the sector, the tiers keep their grounds and show the sector's work
+         in each, and the zoom travels between the two */
       const onlySec = sec => {
         if (shownSec(sec) && soloSec(sec)){ resetSec(); return; }
-        if (!canZoom()){ dropFocus(); applySec(new Set([sec])); return; }
         /* zooming into a sector that is off the map: it comes back into the
            filter first, or there would be nothing to zoom to */
         if (!secShown({ sector: sec })){
