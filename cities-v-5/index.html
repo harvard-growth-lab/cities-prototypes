@@ -3147,34 +3147,35 @@
   .sector-key .sk-reset:hover{text-decoration:underline;}
   .sector-key .sk-reset[hidden]{display:none;}
   /* ---- opt-2 of the key study ("Key actions" under opt): the entry's
-     card. "only" comes off the row - the card carries it - and the entry
-     whose card is open stays lit, which is what says the card is its. The
-     card carries buttons, so unlike the cell card it does not travel with
-     the cursor: nothing the reader has to reach can be moving while they
-     reach it. */
-  #miFigure[data-key="card"] .sector-key .sk-only{display:none;}
+     card. A small card over the entry - the sector's colour and its name,
+     and what a click will do with it, beside a hand that taps. It carries
+     no control, so the entry stays the switch. "only" comes off the row
+     for the eye but keeps its place for the keyboard, appearing when it is
+     reached. The entry whose card is open stays lit, which is what says
+     the card is its. */
+  .sector-key .sk-item{position:relative;}
+  #miFigure[data-key="card"] .sector-key .sk-only:not(:focus-visible){
+    position:absolute;width:1px;height:1px;margin:0;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;
+  }
   .sector-key .sk-item.is-open{background:var(--teal-tint);}
   .sector-key .sk-item.is-open .sk-name{color:var(--teal-dark);font-weight:600;}
   .mi-figure .sk-tip{
-    position:absolute;z-index:6;width:236px;display:flex;flex-direction:column;gap:3px;
-    padding:11px 13px;background:#fff;border:1px solid var(--border-strong);
-    box-shadow:var(--shadow-md);text-align:left;
+    position:absolute;z-index:6;display:flex;flex-direction:column;gap:6px;
+    padding:9px 12px 10px;background:#fff;border:1px solid var(--border-strong);
+    box-shadow:var(--shadow-md);text-align:left;white-space:nowrap;pointer-events:none;
   }
   .mi-figure .sk-tip[hidden]{display:none;}
-  .mi-figure .sk-tip b{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:3px;}
-  .mi-figure .skt-row{display:flex;justify-content:space-between;gap:14px;font-size:12.5px;color:var(--ink-soft);}
-  .mi-figure .skt-row span:last-child{font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;}
-  /* what can be done with this sector, in the house's own button */
-  .mi-figure .skt-acts{
-    display:flex;gap:8px;margin-top:9px;padding-top:9px;border-top:1px solid var(--border);
+  .mi-figure .skt-name{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--ink);}
+  .mi-figure .skt-sw{flex:none;width:12px;height:12px;border-radius:3px;background:var(--sw,#ccc);}
+  .mi-figure .skt-hint{display:flex;align-items:center;gap:8px;font-size:12px;line-height:1.45;color:var(--ink-soft);}
+  /* the hand taps, gently; it holds still for a reader who asked for less motion */
+  .mi-figure .skt-hand{flex:none;color:var(--teal);animation:skt-tap 1.1s ease-in-out infinite;}
+  .mi-figure .skt-hand-marks{animation:skt-marks 1.1s ease-in-out infinite;}
+  @keyframes skt-tap{0%,100%{transform:translateY(0);}50%{transform:translateY(2px);}}
+  @keyframes skt-marks{0%,100%{opacity:.25;}50%{opacity:1;}}
+  @media (prefers-reduced-motion: reduce){
+    .mi-figure .skt-hand,.mi-figure .skt-hand-marks{animation:none;}
   }
-  .mi-figure .skt-btn{
-    appearance:none;flex:1 1 auto;padding:5px 10px;font:inherit;font-size:12.5px;font-weight:600;
-    color:var(--teal);background:#fff;border:1px solid var(--border-strong);border-radius:3px;
-    cursor:pointer;white-space:nowrap;transition:background .15s ease,color .15s ease,border-color .15s ease;
-  }
-  .mi-figure .skt-btn:hover{background:var(--teal-tint);border-color:var(--teal);}
-  .mi-figure .skt-btn:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
   /* the line over the map: where the reader has zoomed to, while they are */
   .mi-note{display:flex;align-items:center;gap:16px;margin:0;font-size:12.5px;color:var(--ink-soft);}
   .mi-note .mi-note-txt{min-width:0;flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
@@ -3351,9 +3352,14 @@
   /* in the scrolly the word rides the beat's counter - "Metro Industries
      1/3  opt" - so it has no line of its own and never stands over the
      chart; the panel drops from the word, over the text beneath it */
-  .ct-eyebrow .mi-studies{position:relative;display:inline-block;margin-left:12px;vertical-align:baseline;}
+  .ct-eyebrow:has(.mi-studies){position:relative;}
+  .ct-eyebrow .mi-studies{position:static;display:inline-block;margin-left:12px;vertical-align:baseline;}
   .ct-eyebrow .mi-studies-btn{font-size:inherit;padding:0 2px;}
-  .ct-eyebrow .mi-studies-panel{left:0;right:auto;}
+  /* the panel hangs from the counter's left edge, so it stays in the text
+     column at every width rather than crossing into the stage; and it
+     stands above the stage, which on a phone is a sticky band the panel's
+     lower rows were disappearing under */
+  .ct-eyebrow .mi-studies-panel{left:0;right:auto;z-index:13;}
   /* the quietest thing in the head, but still a control and still words:
      #9aa3a6 read at 2.6 to 1, which is under the floor for either */
   .mi-studies-btn{
@@ -3371,7 +3377,7 @@
   .mi-studies-panel[hidden]{display:none;}
   .mi-study{
     display:flex;align-items:center;justify-content:space-between;gap:16px;
-    font-size:12.5px;color:var(--ink-soft);white-space:nowrap;
+    font-size:12.5px;font-weight:400;color:var(--ink-soft);white-space:nowrap;
   }
   .mi-study select{
     height:26px;border:none;background:none;
@@ -9554,9 +9560,13 @@
     var eye = built.steps[i] && built.steps[i].querySelector(":scope > .ct-eyebrow");
     if (studies && eye && !eye.contains(studies)){
       var sp = studies.querySelector(".mi-studies-panel"), sb = studies.querySelector(".mi-studies-btn");
+      /* focus travels with the word: closing and moving the node would
+         otherwise drop it to the body */
+      var had = studies.contains(document.activeElement);
       if (sp) sp.hidden = true;
       if (sb) sb.setAttribute("aria-expanded", "false");
       eye.appendChild(studies);
+      if (had && sb) sb.focus({ preventScroll: true });
     }
     /* the shared figure follows the step, in whichever direction the reader
        is travelling — the state machine tweens from wherever it stands */
