@@ -3347,7 +3347,7 @@
   /* and the key's, to the beats that show the key */
   #miFigure:not([data-step="0"]):not([data-step="4"]):not([data-step="7"]) #miKeyPair{display:none;}
   /* the word alone in the head, and the studies as plain dropdowns behind it */
-  /* mi-studies moved to page-head; this rule is no longer needed */
+  .mi-head > .mi-studies{position:absolute;top:0;right:0;width:auto;z-index:4;}
   /* the quietest thing in the head, but still a control and still words:
      #9aa3a6 read at 2.6 to 1, which is under the floor for either */
   .mi-studies-btn{
@@ -5691,68 +5691,7 @@
       <!-- 2 Metro Industries · What the metro does for a living -->
       <section class="page" id="page-export-basket">
         <div class="page-head page-head--geo">
-          <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
-            <div>
-              <h2>What does the metro do for a living?</h2>
-            </div>
-            <!-- The studies are not controls the reader is meant to use: they
-                 are the questions still to be settled. One word carries them
-                 all, and each is a plain dropdown beside the title. -->
-            <div style="flex:0 0 auto;position:relative;">
-              <button type="button" class="mi-studies-btn" aria-expanded="false" aria-haspopup="true" onclick="const p=document.getElementById('miStudiesPanel');p.hidden=!p.hidden">opt</button>
-              <div class="mi-studies-panel" id="miStudiesPanel" hidden style="position:absolute;right:0;top:100%;margin-top:6px;z-index:6;min-width:210px;display:flex;flex-direction:column;gap:8px;padding:11px 13px;background:#fff;border:1px solid var(--border-strong);box-shadow:var(--shadow-md);">
-                <label class="mi-study" id="miRowPair">
-                  <span>Control row</span>
-                  <select id="miRowOpt" aria-label="How the head's controls are set">
-                    <option value="tray" selected>opt-1</option>
-                    <option value="sentence">opt-2</option>
-                  </select>
-                </label>
-                <label class="mi-study" id="miKeyPair">
-                  <span>Key actions</span>
-                  <select id="miKeyOpt" aria-label="What the key's entries do">
-                    <option value="inline" selected>opt-1</option>
-                    <option value="card">opt-2</option>
-                  </select>
-                </label>
-                <label class="mi-study" id="miPalPair">
-                  <span>Sector colours</span>
-                  <select id="miPal" aria-label="Which of the two house palettes the sectors wear">
-                    <option value="mint" selected>opt-1</option>
-                    <option value="periwinkle">opt-2</option>
-                  </select>
-                </label>
-                <label class="mi-study" id="miGroundPair">
-                  <span>Tier grounds</span>
-                  <select id="miGround" aria-label="How the tiers' grounds are drawn">
-                    <option value="frame" selected>opt-1</option>
-                    <option value="grey">opt-2</option>
-                  </select>
-                </label>
-                <label class="mi-study" id="miTierPair">
-                  <span>Tier shares</span>
-                  <select id="miTierOpt" aria-label="Where the tiers' shares are shown">
-                    <option value="cards">opt-1</option>
-                    <option value="donut" selected>opt-2</option>
-                  </select>
-                </label>
-                <label class="mi-study" id="miHlOptPair">
-                  <span>Phrase highlight</span>
-                  <select id="miHlOpt" aria-label="How a phrase points at its sector">
-                    <option value="dim">opt-1</option>
-                    <option value="mute">opt-2</option>
-                    <option value="frame" selected>opt-3</option>
-                  </select>
-                </label>
-                <label class="mi-study" id="miRankOptPair">
-                  <span>Tradability column</span>
-                  <select id="miRankOpt" aria-label="How tradability is shown in the ranking">
-                    <option value="score">opt-1</option>
-                    <option value="tier" selected>opt-2</option>
-                  </select>
-                </label>
-              </div>
-          </div>
+          <h2>What does the metro do for a living?</h2>
           <button type="button" class="geo-badge geo-badge--metro" onclick="openGeoMap('metro')" title="See this geography on the map"><svg viewBox="0 0 30 22" width="25" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="15" cy="11" rx="13" ry="8.6" stroke-dasharray="2.6 3"/><path d="M10.5 15.5h9"/><path d="M12.2 15.5V10h3v5.5"/><path d="M16.6 15.5V7h3v8.5"/></svg><span class="gb-view">Viewing:</span><span class="gb-name"><span class="city-short">Boston</span> Metro</span></button>
         </div>
         <!-- beat 1: every industry, sized by its jobs and grouped into
@@ -5873,6 +5812,65 @@
                 <button type="button" class="seg-btn is-active" data-sort="rca" aria-pressed="true">Concentration</button>
                 <button type="button" class="seg-btn" data-sort="jobs" aria-pressed="false">Jobs</button>
                 <button type="button" class="seg-btn" data-sort="gap" aria-pressed="false">Against peers</button>
+              </div>
+            </div>
+            <!-- The studies are not controls the reader is meant to use: they
+                 are the questions still to be settled. One word carries them
+                 all, and each is a plain dropdown behind it, so the head
+                 reads as the chart's own controls and nothing else. -->
+            <div class="mi-studies" id="miStudies">
+              <button type="button" class="mi-studies-btn" aria-expanded="false" aria-haspopup="true">opt</button>
+              <div class="mi-studies-panel" hidden>
+                <label class="mi-study" id="miRowPair">
+                  <span>Control row</span>
+                  <select id="miRowOpt" aria-label="How the head's controls are set">
+                    <option value="tray" selected>opt-1</option>
+                    <option value="sentence">opt-2</option>
+                  </select>
+                </label>
+                <label class="mi-study" id="miKeyPair">
+                  <span>Key actions</span>
+                  <select id="miKeyOpt" aria-label="What the key's entries do">
+                    <option value="inline" selected>opt-1</option>
+                    <option value="card">opt-2</option>
+                  </select>
+                </label>
+                <label class="mi-study" id="miPalPair">
+                  <span>Sector colours</span>
+                  <select id="miPal" aria-label="Which of the two house palettes the sectors wear">
+                    <option value="mint" selected>opt-1</option>
+                    <option value="periwinkle">opt-2</option>
+                  </select>
+                </label>
+                <label class="mi-study" id="miGroundPair">
+                  <span>Tier grounds</span>
+                  <select id="miGround" aria-label="How the tiers' grounds are drawn">
+                    <option value="frame" selected>opt-1</option>
+                    <option value="grey">opt-2</option>
+                  </select>
+                </label>
+                <label class="mi-study" id="miTierPair">
+                  <span>Tier shares</span>
+                  <select id="miTierOpt" aria-label="Where the tiers' shares are shown">
+                    <option value="cards">opt-1</option>
+                    <option value="donut" selected>opt-2</option>
+                  </select>
+                </label>
+                <label class="mi-study" id="miHlOptPair">
+                  <span>Phrase highlight</span>
+                  <select id="miHlOpt" aria-label="How a phrase points at its sector">
+                    <option value="dim">opt-1</option>
+                    <option value="mute">opt-2</option>
+                    <option value="frame" selected>opt-3</option>
+                  </select>
+                </label>
+                <label class="mi-study" id="miRankOptPair">
+                  <span>Tradability column</span>
+                  <select id="miRankOpt" aria-label="How tradability is shown in the ranking">
+                    <option value="score">opt-1</option>
+                    <option value="tier" selected>opt-2</option>
+                  </select>
+                </label>
               </div>
             </div>
             <div class="tradable-split-header" id="miSplitHead">
