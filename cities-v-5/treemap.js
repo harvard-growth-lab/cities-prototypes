@@ -4875,11 +4875,14 @@
       const resetBtn = key.querySelector(".sk-reset");
       const items = [].slice.call(key.querySelectorAll(".sk-sec"));
       const onlys = [].slice.call(key.querySelectorAll(".sk-only"));
-      const allHeadTitle = document.querySelector("#" + p + "View .mi-title-all .mcl-dir");
-      /* the title as authored, kept on the element: a rebuild must not take
-         a filter's title left by the last build for the default */
-      const headDefault = allHeadTitle
-        ? (allHeadTitle.dataset.title || (allHeadTitle.dataset.title = allHeadTitle.textContent)) : "";
+      /* the chart's titles must not still say every industry while the map
+         is showing some of them: the two map beats' titles in the row, and
+         the sentence's leads for the same beats. Each keeps the title as
+         authored on the element, since a rebuild must not take a filter's
+         title left by the last build for the default. */
+      const titleEls = [".mi-title-all .mcl-dir", ".mi-title-tier .mcl-dir", ".mi-s-all", ".mi-s-tier"]
+        .map(sel => document.querySelector("#" + p + "View " + sel)).filter(Boolean);
+      titleEls.forEach(el => { if (!el.dataset.title) el.dataset.title = el.textContent; });
       /* zoomed into a sector, that sector alone is showing */
       const shownSec = sec => focus ? sec === focus : (!secOn || secOn.has(sec));
       const soloSec = sec => order.every(o => o === sec || !shownSec(o));
@@ -4895,11 +4898,14 @@
           b.setAttribute("aria-label", solo ? "Show all sectors" : "Show only " + sec);
         });
         if (resetBtn) resetBtn.hidden = !(secFiltered() || focus);
-        /* the chart's own title must not still say every industry while the
-           map is showing some of them */
-        if (allHeadTitle) allHeadTitle.textContent = !secOn || focus ? headDefault
+        /* "All industries" becomes the sector, or "8 of 9 sectors"; a zoom
+           leaves the title alone, since the crumbs say where the reader is */
+        const subject = !secOn || focus ? null
           : secOn.size === 1 ? [...secOn][0]
           : secOn.size + " of " + order.length + " sectors";
+        titleEls.forEach(el => {
+          el.textContent = subject ? el.dataset.title.replace(/^All industries/, subject) : el.dataset.title;
+        });
       };
       syncKeyRef = syncKey;
       const dropFocus = () => { focus = null; focusGroup = null; fig.dataset.focus = ""; };
@@ -4933,8 +4939,15 @@
           applySec(next);
         }
       };
+      /* "only" means what the beat can do. The flat map zooms into the
+         sector - only steps 0 and 7 honour a zoom, and a step change drops
+         it. The tiers cannot zoom without losing what the beat is about, so
+         there the sector is left alone in each of them through the filter,
+         the way hiding already works. */
+      const canZoom = () => step === 0 || step === 7;
       const onlySec = sec => {
         if (shownSec(sec) && soloSec(sec)){ resetSec(); return; }
+        if (!canZoom()){ dropFocus(); applySec(new Set([sec])); return; }
         /* zooming into a sector that is off the map: it comes back into the
            filter first, or there would be nothing to zoom to */
         if (!secShown({ sector: sec })){
