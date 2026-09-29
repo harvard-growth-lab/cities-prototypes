@@ -113,16 +113,31 @@
     return sectorColors[d.parent.data.name];
   }
 
+  /* The nine sector colours, made for this page (sector-palette-sketches.html
+     has the working). The reference's set put three warm reds on the three
+     biggest blocks, and for a red-green colour-blind reader manufacturing,
+     construction and other were one colour. Here the three big blocks are
+     three families - navy, coral, mint - and the rest step down a lightness
+     ladder (OKLab L .86 to .40) so that without red-green vision, where
+     only lightness and blue-yellow survive, every pair still clears an
+     OKLab distance of 8, bar professional/other for a protanope at 7.7.
+     Chroma stays where the page's own colours sit, and teal, which already
+     means the brand, the traded tier and the complex end of the ramp, is
+     left alone. Natural resources is the one compromise: the ladder's free
+     rung was a forest green too dark for a key, so it takes a grass green
+     that reads plainly in normal vision (distance 17) and, having no area on
+     the map, is only ever met in the key and the table, where its name
+     carries it. */
   const sectorColors = {
-    "Construction": "#c084a2",
-    "Education & Health": "#e8836e",
-    "Financial Activities": "#f4c542",
-    "Leisure & Hospitality": "#8fd0d8",
-    "Manufacturing": "#4f8fa3",
-    "Natural Resources": "#7cb342",
-    "Other": "#8b7ba8",
-    "Professional & Business": "#b94a44",
-    "Trade & Transportation": "#e0938a"
+    "Construction": "#a25d37",
+    "Education & Health": "#dc8271",
+    "Financial Activities": "#e5c95e",
+    "Leisure & Hospitality": "#9adfe7",
+    "Manufacturing": "#7f3c6b",
+    "Natural Resources": "#5d9850",
+    "Other": "#896885",
+    "Professional & Business": "#485fa2",
+    "Trade & Transportation": "#86c8ab"
   };
 
   /* Boston-Cambridge-Newton (metro 14460), 2024, 6-digit NAICS, as the
@@ -2831,9 +2846,8 @@
                 descent: 0.25, size: 12, min: 10, weight: 500, shareWeight: 400 };
   const MAP_FONT = '"Source Sans 3", "Source Sans Pro", sans-serif';
   const SECTOR_RANK = new Map(SECTOR_KEYS.map((s, i) => [s.label, i]));
-  /* the reference writes white on every sector but the two pale ones */
-  const DARK_INK_SECTORS = new Set(["Leisure & Hospitality", "Financial Activities"]);
-  const sectorInk = sec => DARK_INK_SECTORS.has(sec) ? CELL_INK : "#fff";
+  /* white or ink on a sector's fill, whichever reads better on it */
+  const sectorInk = sec => cellInk(sectorColors[sec] || "#ccc");
   const TIER_WORDS = ["Traded", "Partly traded", "Local"];
   const CX_NAMES = ["Lowest", "Low", "Middle", "High", "Highest"];
   const cxBinOf = pci => {
