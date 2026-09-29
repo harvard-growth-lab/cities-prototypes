@@ -12,6 +12,8 @@
     --teal:#255862;
     --teal-dark:#1c454d;
     --teal-tint:#eef3f4;
+    /* the paper tray the head's controls sit in: a grey just off the page */
+    --paper:#f4f5f2;
     --orange:#e76565;
     --orange-dark:#cf4f2c;
     --orange-tint:#fdf0ec;
@@ -2734,6 +2736,17 @@
     display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;
     opacity:0;pointer-events:none;transition:opacity .35s ease;
   }
+  /* faded, the row is also out of the tab order: it takes no pointer, so
+     it should take no focus either, and the blanks and buttons in it must
+     not be reachable while nothing can be seen of them */
+  #miFigure .mi-view{visibility:hidden;transition:opacity .35s ease,visibility 0s linear .35s;}
+  #miFigure[data-step="0"] .mi-view:not(.mi-sort),
+  #miFigure[data-step="1"] .mi-view:not(.mi-sort),
+  #miFigure[data-step="4"] .mi-view:not(.mi-sort),
+  #miFigure[data-step="5"] .mi-view:not(.mi-sort),
+  #miFigure[data-step="7"] .mi-view:not(.mi-sort),
+  #miFigure[data-step="3"] .mi-sort,
+  #miFigure[data-step="6"] .mi-sort{visibility:visible;transition:opacity .35s ease,visibility 0s;}
   /* a control group keeps its width: a narrow row wraps to a second line
      instead of shrinking a group until its own buttons are cut off */
   .mi-view .seg{flex:none;}
@@ -2881,6 +2894,54 @@
   }
   .mi-view .mi-year select:hover,.mi-view .mi-year select:focus{border-color:var(--teal);outline:none;}
   .mi-view .mi-year select:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+  /* ---- The head's row, two ways (a study, "Control row" under opt).
+     opt-1 keeps the labelled pairs but sets them in a paper tray: no border,
+     a soft grey field, and the chosen one a white tile. A dark tile in each
+     pair was three blocks of teal above nine colours; the tray weighs
+     nothing. The year gets its label, so the three pairs are set alike. */
+  #miFigure .mi-view .ctl-label{font-size:12.5px;color:var(--ink-soft);}
+  #miFigure .mi-view .seg{border:0;background:var(--paper);border-radius:6px;padding:2px;gap:2px;overflow:visible;}
+  #miFigure .mi-view .seg-btn{border-left:0;height:24px;padding:0 10px;border-radius:4px;color:var(--ink-soft);}
+  #miFigure .mi-view .seg-btn:hover:not(.is-active){background:none;color:var(--ink);}
+  #miFigure .mi-view .seg-btn.is-active{background:#fff;color:var(--teal);box-shadow:0 1px 2px rgba(26,34,38,.12);}
+  #miFigure .mi-view .mi-year{gap:10px;}
+  #miFigure .mi-view .mi-year select{border:0;border-radius:6px;background-color:var(--paper);height:28px;font-size:12px;padding:0 24px 0 10px;}
+  #miFigure .mi-view .mi-year select:hover,#miFigure .mi-view .mi-year select:focus{background-color:#eceeea;}
+  /* opt-2 folds the row into the title: one sentence, with the choices as
+     blanks in it. Nothing in the head is a box then. The sentence is set as
+     plain running text - ink, regular, its subject no heavier than the rest -
+     and the blanks alone are teal: a tinted word with a chevron. */
+  #miFigure .mi-sentence{display:none;}
+  #miFigure[data-row="sentence"] .mi-sentence{
+    display:block;flex:1 1 auto;min-width:0;margin:0;
+    font-size:16px;line-height:1.6;font-weight:400;color:var(--ink);
+  }
+  #miFigure[data-row="sentence"] #miView > .mi-year,
+  #miFigure[data-row="sentence"] #miView > .mi-ctlpair,
+  #miFigure[data-row="sentence"] #miView .mi-titles .mcl-dir{display:none;}
+  /* the sentence's subject is the beat's title: the whole mix, or the mix
+     by tier; on the beats whose head is drawn elsewhere it stands down and
+     the sentence opens on its verb */
+  .mi-sentence .mi-s-lead{display:none;white-space:nowrap;}
+  #miFigure[data-step="0"] .mi-s-all,
+  #miFigure[data-step="4"] .mi-s-tier{display:inline;}
+  #miFigure:not([data-step="0"]):not([data-step="4"]) .mi-s-first{text-transform:capitalize;}
+  /* the bars' order is a blank only while the bars are up */
+  #miFigure:not([data-step="0"]) .mi-s-sort,
+  #miFigure:not([data-view="alt"]) .mi-s-sort{display:none;}
+  .mi-pick{position:relative;display:inline-block;vertical-align:baseline;}
+  /* a hidden twin of the chosen word, measured to cut the select to its
+     width: left alone, a select stands at the width of its longest option */
+  .mi-pick .mi-measure{position:absolute;visibility:hidden;white-space:nowrap;font-weight:700;top:0;left:0;pointer-events:none;}
+  .mi-pick select{
+    appearance:none;-webkit-appearance:none;font:inherit;font-size:16px;font-weight:700;color:var(--teal);line-height:1.25;
+    border:0;border-radius:4px;background-color:var(--teal-tint);margin:0;padding:1px 16px 1px 7px;cursor:pointer;height:auto;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' fill='none' stroke='%23255862' stroke-width='1.4' stroke-linecap='round'/></svg>");
+    background-repeat:no-repeat;background-position:right 4px center;
+  }
+  .mi-pick select:hover{background-color:#e2ebed;}
+  .mi-pick select:focus{outline:none;}
+  .mi-pick select:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
   .mi-view .mi-titles > .mcl-axis{grid-area:1/1;opacity:0;transition:opacity .35s ease;pointer-events:none;}
   #miFigure[data-step="0"] .mi-titles > .mi-title-all,
   #miFigure[data-step="4"] .mi-titles > .mi-title-tier{opacity:1;pointer-events:auto;}
@@ -3084,6 +3145,35 @@
   }
   .sector-key .sk-reset:hover{text-decoration:underline;}
   .sector-key .sk-reset[hidden]{display:none;}
+  /* ---- opt-2 of the key study ("Key actions" under opt): the entry's
+     card. "only" comes off the row - the card carries it - and the entry
+     whose card is open stays lit, which is what says the card is its. The
+     card carries buttons, so unlike the cell card it does not travel with
+     the cursor: nothing the reader has to reach can be moving while they
+     reach it. */
+  #miFigure[data-key="card"] .sector-key .sk-only{display:none;}
+  .sector-key .sk-item.is-open{background:var(--teal-tint);}
+  .sector-key .sk-item.is-open .sk-name{color:var(--teal-dark);font-weight:600;}
+  .mi-figure .sk-tip{
+    position:absolute;z-index:6;width:236px;display:flex;flex-direction:column;gap:3px;
+    padding:11px 13px;background:#fff;border:1px solid var(--border-strong);
+    box-shadow:var(--shadow-md);text-align:left;
+  }
+  .mi-figure .sk-tip[hidden]{display:none;}
+  .mi-figure .sk-tip b{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:3px;}
+  .mi-figure .skt-row{display:flex;justify-content:space-between;gap:14px;font-size:12.5px;color:var(--ink-soft);}
+  .mi-figure .skt-row span:last-child{font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;}
+  /* what can be done with this sector, in the house's own button */
+  .mi-figure .skt-acts{
+    display:flex;gap:8px;margin-top:9px;padding-top:9px;border-top:1px solid var(--border);
+  }
+  .mi-figure .skt-btn{
+    appearance:none;flex:1 1 auto;padding:5px 10px;font:inherit;font-size:12.5px;font-weight:600;
+    color:var(--teal);background:#fff;border:1px solid var(--border-strong);border-radius:3px;
+    cursor:pointer;white-space:nowrap;transition:background .15s ease,color .15s ease,border-color .15s ease;
+  }
+  .mi-figure .skt-btn:hover{background:var(--teal-tint);border-color:var(--teal);}
+  .mi-figure .skt-btn:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
   /* the line over the map: where the reader has zoomed to, while they are */
   .mi-note{display:flex;align-items:center;gap:16px;margin:0;font-size:12.5px;color:var(--ink-soft);}
   .mi-note .mi-note-txt{min-width:0;flex:1 1 auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
@@ -3251,6 +3341,10 @@
   #miFigure:not([data-step="0"]):not([data-step="4"]) #miHlOptPair{display:none;}
   /* and the palette's to the beats that colour by sector */
   #miFigure:not([data-step="0"]):not([data-step="4"]) #miPalPair{display:none;}
+  /* the row study's, to the beats that show the row */
+  #miFigure:not([data-step="0"]):not([data-step="1"]):not([data-step="4"]):not([data-step="5"]):not([data-step="7"]) #miRowPair{display:none;}
+  /* and the key's, to the beats that show the key */
+  #miFigure:not([data-step="0"]):not([data-step="4"]):not([data-step="7"]) #miKeyPair{display:none;}
   /* the word alone in the head, and the studies as plain dropdowns behind it */
   .mi-head > .mi-studies{left:auto;right:0;width:auto;z-index:4;}
   /* the quietest thing in the head, but still a control and still words:
@@ -5654,6 +5748,19 @@
                arrange themselves. -->
           <div class="mi-head">
             <div class="mi-view" id="miView">
+              <!-- opt-2 of the row study: the title is a sentence about what
+                   the map shows, and the words that could be otherwise are
+                   its controls. The same four choices as the buttons above,
+                   each a native select cut to the width of its word. -->
+              <p class="mi-sentence" id="miSentence">
+                <span class="mi-s-lead mi-s-all">All industries,</span>
+                <span class="mi-s-lead mi-s-tier">All industries, by tier,</span>
+                <span class="mi-s-first">shown</span> as a
+                <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="miSView" aria-label="The mix as a treemap or as a ranking"><option value="map">treemap</option><option value="alt">ranking</option></select></span><span class="mi-s-sort"> sorted by
+                <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="miSSort" aria-label="Order of the bars"><option value="jobs">jobs</option><option value="cx">complexity</option></select></span></span>, coloured by
+                <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="miSColor" aria-label="What the cells are coloured by"><option value="sector">sector</option><option value="complexity">complexity</option></select></span>, in
+                <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="miSYear" aria-label="Year"><option value="2024" selected>2024</option><option value="2014">2014</option></select></span>
+              </p>
               <!-- the chart's title leads the row: the two map beats' titles
                    share one slot and cross-fade, so the controls never move -->
               <span class="mi-titles">
@@ -5663,7 +5770,7 @@
               </span>
               <!-- the year the map shows, the latest first; another year is
                    another build of the figure over that year's rows -->
-              <label class="mi-year"><span class="mi-sr">Year</span>
+              <label class="mi-year"><span class="ctl-label">Year</span>
                 <select id="miYear" aria-label="Year">
                   <option value="2024" selected>2024</option>
                   <option value="2014">2014</option>
@@ -5712,6 +5819,20 @@
             <div class="mi-studies" id="miStudies">
               <button type="button" class="mi-studies-btn" aria-expanded="false" aria-haspopup="true">opt</button>
               <div class="mi-studies-panel" hidden>
+                <label class="mi-study" id="miRowPair">
+                  <span>Control row</span>
+                  <select id="miRowOpt" aria-label="How the head's controls are set">
+                    <option value="tray" selected>opt-1</option>
+                    <option value="sentence">opt-2</option>
+                  </select>
+                </label>
+                <label class="mi-study" id="miKeyPair">
+                  <span>Key actions</span>
+                  <select id="miKeyOpt" aria-label="What the key's entries do">
+                    <option value="inline" selected>opt-1</option>
+                    <option value="card">opt-2</option>
+                  </select>
+                </label>
                 <label class="mi-study" id="miPalPair">
                   <span>Sector colours</span>
                   <select id="miPal" aria-label="Which of the two house palettes the sectors wear">

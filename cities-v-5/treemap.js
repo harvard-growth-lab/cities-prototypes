@@ -3099,6 +3099,19 @@
     return fit ? { x: cell.x + MAP.inset, y: cell.y, lines: fit.lines, size: fit.size, share: fit.share } : null;
   }
   const clearMapMeasure = () => { _mapW.clear(); _mapLab.clear(); };
+  /* The sentence's blanks are native selects, each cut to the width of the
+     word it shows: left alone, a select stands at the width of its longest
+     option. A hidden twin of the word is measured for it. Nothing is set
+     while the blank is out of the flow - its twin measures nought then. */
+  function fitPick(sel){
+    const m = sel.parentNode && sel.parentNode.querySelector(".mi-measure");
+    const o = sel.options[sel.selectedIndex];
+    if (!m || !o) return;
+    m.textContent = o.text;
+    if (m.offsetWidth) sel.style.width = (m.offsetWidth + 24) + "px";
+  }
+  function fitPicks(root){ (root || document).querySelectorAll(".mi-pick select").forEach(fitPick); }
+
   function initIndustryFigure(p, rows, ctlName, opts){
     opts = opts || {};
     const el = document.getElementById(p + "TreemapSvg");
@@ -3145,6 +3158,22 @@
     }
     let view = "map";
     fig.dataset.view = view;
+    /* the arrangement has two controls - the buttons, and the sentence's
+       blank - and both show the one state */
+    const syncViewCtl = () => {
+      const ve = document.getElementById(p + "View");
+      if (ve) ve.querySelectorAll(".seg-btn[data-view]").forEach(x => {
+        const on = x.dataset.view === view;
+        x.classList.toggle("is-active", on);
+        x.setAttribute("aria-pressed", String(on));
+      });
+      const sv = document.getElementById(p + "SView");
+      if (sv && sv.value !== view){ sv.value = view; fitPick(sv); }
+      /* the bars' order is a blank only while the bars are up, and a blank
+         out of the flow cannot be measured: it is cut to size on arriving */
+      fitPicks(fig);
+    };
+    syncViewCtl();
     /* what the map beats colour their cells by: the sector, or how much
        know-how each industry takes */
     let colorBy = "sector";
@@ -3270,6 +3299,7 @@
     const clusterSpot = d => mapTiers().spot.get(d.name) || allSpot(d);
     const clusterFill = fillBy;
     let resetSec = null;              /* the key fills this in: applySec(null) */
+    let hideKeyTip = null;            /* and this: close the key's card, if one is open */
     /* the filters moved: every tiling is stale, and the grounds are laid out again */
     function rebuildSecGeo(){ invalidateMaps(); layoutClusters(); }
 
@@ -4153,12 +4183,7 @@
       if (v === view) return;
       view = v;
       fig.dataset.view = view;
-      const ve = document.getElementById(p + "View");
-      if (ve) ve.querySelectorAll(".seg-btn[data-view]").forEach(x => {
-        const on = x.dataset.view === view;
-        x.classList.toggle("is-active", on);
-        x.setAttribute("aria-pressed", String(on));
-      });
+      syncViewCtl();
     }
 
     /* colour by: sector or complexity, on the two map beats. Each beat
@@ -4319,14 +4344,21 @@
         x.classList.toggle("is-active", on);
         x.setAttribute("aria-pressed", String(on));
       });
+      const sc = document.getElementById(p + "SColor");
+      if (sc && sc.value !== colorBy){ sc.value = colorBy; fitPick(sc); }
     }
     setColorBy(colorBy);
+    const applyColor = c => {
+      if (c === colorBy) return;
+      setColorBy(c);
+      if (step === 7 || step === 4 || step === 0) paint(step, !reduced());
+    };
     if (colorEl) on(colorEl, "click", ev => {
       const b = ev.target.closest(".seg-btn[data-color]");
-      if (!b || b.dataset.color === colorBy) return;
-      setColorBy(b.dataset.color);
-      if (step === 7 || step === 4 || step === 0) paint(step, !reduced());
+      if (b) applyColor(b.dataset.color);
     });
+    const sColorEl = document.getElementById(p + "SColor");
+    if (sColorEl) on(sColorEl, "change", () => { fitPick(sColorEl); applyColor(sColorEl.value); });
 
     window[ctlName] = { destroy: function(){ disposers.forEach(f => f()); disposers.length = 0; }, setStep: function(i){
       i = Math.max(0, Math.min(7, i | 0));
@@ -4336,6 +4368,9 @@
       const first = step < 0;
       step = i;
       fig.dataset.step = String(i);
+      /* a blank the beat has just brought into the flow - the bars' order
+         on the first beat - could not be measured while it was out of it */
+      fitPicks(fig);
       /* each map beat opens coloured by sector, as its text describes */
       if (i === 7 || i === 4 || i === 0) setColorBy("sector");
       /* the zoom belongs to the whole-map beats: the tiers show every sector */
@@ -4809,6 +4844,7 @@
       const s2 = measureS();
       if (!s2 || Math.abs(s2 - S) < 1e-4) return;
       S = s2; invalidateMaps();
+      fitPicks(fig);                                    /* the blanks, once the figure has a width to measure in */
       if (step >= 0 && view === "map") paint(step, false);
     };
     if (window.ResizeObserver){ const ro = new ResizeObserver(remeasure); ro.observe(el); disposers.push(() => ro.disconnect()); }
@@ -4881,17 +4917,9 @@
       }
       resetSec = () => { dropFocus(); applySec(null); };
       const allSet = () => new Set(order);
-      on(key, "click", ev => {
-        if (ev.target.closest(".sk-reset")){ resetSec(); return; }
-        const only = ev.target.closest(".sk-only");
-        if (only){
-          const sec = order[+only.dataset.si];
-          if (shownSec(sec) && soloSec(sec)) resetSec(); else setFocus(sec, null);
-          return;
-        }
-        const b = ev.target.closest(".sk-sec");
-        if (!b) return;
-        const sec = order[+b.dataset.si];
+      /* the two things that can be done with a sector, whichever control
+         asks: take it out of the map or bring it back, and keep only it */
+      const toggleSec = sec => {
         if (shownSec(sec) && soloSec(sec)) resetSec();
         else if (focus){
           /* zoomed into one sector, a click on another shows the two together */
@@ -4903,14 +4931,131 @@
           if (next.has(sec)) next.delete(sec); else next.add(sec);
           applySec(next);
         }
+      };
+      const onlySec = sec => {
+        if (shownSec(sec) && soloSec(sec)){ resetSec(); return; }
+        /* zooming into a sector that is off the map: it comes back into the
+           filter first, or there would be nothing to zoom to */
+        if (!secShown({ sector: sec })){
+          const next = new Set(secOn); next.add(sec);
+          applySec(next);
+        }
+        setFocus(sec, null);
+      };
+
+      /* ---- opt-2 of the key study: the entry's card ----
+         Hovering an entry opens a card over it with the sector's figures
+         and, under them, what can be done with it as buttons. The card
+         carries buttons, so unlike the cell card it does not travel with
+         the cursor - nothing the reader has to reach can be moving while
+         they reach it - and it stands clear of the whole key, centred on
+         its entry, which is lit while it is open. A click opens it too,
+         which is how a touch reaches it; enter, space or down steps inside
+         and escape steps back out. Under opt-1 none of this runs: the entry
+         is the switch and "only" sits beside it. */
+      const cardMode = () => fig.dataset.key === "card";
+      const secJobs = {}, secInds = {};
+      industryData.forEach(d => {
+        secJobs[d.sector] = (secJobs[d.sector] || 0) + d.employ;
+        secInds[d.sector] = (secInds[d.sector] || 0) + 1;
       });
-      /* pointing at an entry outlines its block on the map */
-      [].slice.call(key.querySelectorAll(".sk-item:not(.sk-item--reset)")).forEach((li, i) => {
-        const sec = order[i];
-        const on = () => { if (shownSec(sec) && view === "map" && mapLayout && !pinned) showOutline(sectorBlocks([sec]), 1.5); };
-        const off = () => { if (!pinned) clearOutline(); };
-        on(li, "mouseenter", on); on(li, "mouseleave", off);
-        on(li, "focusin", on); on(li, "focusout", off);
+      const lis = [].slice.call(key.querySelectorAll(".sk-item:not(.sk-item--reset)"));
+      let tipEl = fig.querySelector(":scope > .sk-tip");
+      if (!tipEl){ tipEl = document.createElement("div"); tipEl.className = "sk-tip"; fig.appendChild(tipEl); }
+      tipEl.hidden = true;
+      let openFor = null, closeT = null;
+      const holdOpen = () => clearTimeout(closeT);
+      /* the pointer has to be able to travel from the entry to the card, so
+         leaving either one only arms the close */
+      const armClose = () => { clearTimeout(closeT); closeT = setTimeout(hideTip, 180); };
+      function hideTip(){
+        clearTimeout(closeT); openFor = null; tipEl.hidden = true;
+        lis.forEach(li => li.classList.remove("is-open"));
+      }
+      hideKeyTip = hideTip;
+      function showTip(b){
+        if (!cardMode()) return;
+        const i = +b.dataset.si, sec = order[i];
+        const shown = shownSec(sec), solo = shown && soloSec(sec);
+        openFor = b;
+        /* what can be done with this sector, in the state it is in: the only
+           sector on the map cannot be hidden, so it is offered the way back
+           instead of a click that would be refused */
+        const acts = solo
+          ? [["all", "Show all sectors"]]
+          : shown
+            ? [["hide", "Hide"], ["only", "Keep only"]]
+            : [["show", "Bring back"], ["only", "Keep only"]];
+        tipEl.innerHTML =
+          '<b>' + escHtml(sec) + '</b>' +
+          '<span class="skt-row"><span>Jobs</span><span>' + Math.round(secJobs[sec] || 0).toLocaleString() + '</span></span>' +
+          '<span class="skt-row"><span>Share of metro jobs</span><span>' +
+            ((secJobs[sec] || 0) / jobsTotal * 100).toFixed(1) + '%</span></span>' +
+          '<span class="skt-row"><span>Industries</span><span>' + (secInds[sec] || 0) + '</span></span>' +
+          '<span class="skt-acts">' + acts.map(a =>
+            '<button type="button" class="skt-btn" data-act="' + a[0] + '">' + a[1] + '</button>').join("") +
+          '</span>';
+        tipEl.hidden = false;
+        lis.forEach((li, k) => li.classList.toggle("is-open", k === i));
+        const fb = fig.getBoundingClientRect(), bb = b.getBoundingClientRect(), kb = key.getBoundingClientRect();
+        const w = tipEl.offsetWidth, h = tipEl.offsetHeight;
+        const left = bb.left - fb.left + bb.width / 2 - w / 2;
+        tipEl.style.left = Math.max(0, Math.min(left, Math.max(0, fb.width - w))) + "px";
+        tipEl.style.top = Math.max(0, kb.top - fb.top - h - 8) + "px";
+      }
+      on(tipEl, "click", ev => {
+        const a = ev.target.closest(".skt-btn");
+        if (!a || !openFor) return;
+        const b = openFor, sec = order[+b.dataset.si];
+        if (a.dataset.act === "all") resetSec();
+        else if (a.dataset.act === "only") onlySec(sec);
+        else toggleSec(sec);
+        showTip(b);                                     /* the card follows the change */
+        /* back to the entry, without the page moving under the reader: a
+           scroll here would carry the beats' scroller to the next beat */
+        b.focus({ preventScroll: true });
+      });
+      on(tipEl, "mouseenter", holdOpen);
+      on(tipEl, "mouseleave", armClose);
+      on(tipEl, "keydown", ev => {
+        if (ev.key !== "Escape") return;
+        ev.stopPropagation();
+        const b = openFor; hideTip(); if (b) b.focus();
+      });
+      on(document, "keydown", ev => { if (ev.key === "Escape") hideTip(); });
+      on(key, "focusout", ev => {
+        if (!ev.relatedTarget || (!key.contains(ev.relatedTarget) && !tipEl.contains(ev.relatedTarget))) armClose();
+      });
+
+      on(key, "click", ev => {
+        if (ev.target.closest(".sk-reset")){ resetSec(); hideTip(); return; }
+        const only = ev.target.closest(".sk-only");
+        if (only){ onlySec(order[+only.dataset.si]); return; }
+        const b = ev.target.closest(".sk-sec");
+        if (!b) return;
+        if (cardMode()){ holdOpen(); showTip(b); return; }
+        toggleSec(order[+b.dataset.si]);
+      });
+      /* pointing at an entry outlines its block on the map - and, under
+         opt-2, opens its card */
+      lis.forEach((li, i) => {
+        const sec = order[i], b = li.querySelector(".sk-sec");
+        const lit = () => { if (shownSec(sec) && view === "map" && mapLayout && !pinned) showOutline(sectorBlocks([sec]), 1.5); };
+        const unlit = () => { if (!pinned) clearOutline(); };
+        on(li, "mouseenter", () => { lit(); if (cardMode()){ holdOpen(); showTip(b); } });
+        on(li, "mouseleave", () => { unlit(); if (cardMode()) armClose(); });
+        on(li, "focusin", () => { lit(); if (cardMode() && document.activeElement === b){ holdOpen(); showTip(b); } });
+        on(li, "focusout", unlit);
+        /* the card sits elsewhere in the page's order, so the keyboard is
+           given a way in: enter, space or down opens it and steps inside */
+        on(b, "keydown", ev => {
+          if (!cardMode()) return;
+          if (ev.key !== "Enter" && ev.key !== " " && ev.key !== "ArrowDown") return;
+          ev.preventDefault();
+          holdOpen(); showTip(b);
+          const first = tipEl.querySelector(".skt-btn");
+          if (first) first.focus();
+        });
       });
       syncKey();
     }
@@ -5161,6 +5306,22 @@
     setGround(groundEl ? groundEl.value : "frame");
     if (groundEl) on(groundEl, "change", () => setGround(groundEl.value));
 
+    /* a study control: the head's row as labelled pairs in a paper tray, or
+       as the title's own sentence with the choices as blanks in it. The
+       blanks are measured once they are in the flow. */
+    const rowEl = document.getElementById(p + "RowOpt");
+    const setRow = v => { fig.dataset.row = v === "sentence" ? "sentence" : "tray"; fitPicks(fig); };
+    setRow(rowEl ? rowEl.value : "tray");
+    if (rowEl) on(rowEl, "change", () => setRow(rowEl.value));
+
+    /* a study control: what the key's entries do - the entry is the switch
+       and "only" sits beside it, or a card opens over the entry with the
+       sector's figures and the two actions as buttons */
+    const keyOptEl = document.getElementById(p + "KeyOpt");
+    const setKeyMode = v => { fig.dataset.key = v === "card" ? "card" : "inline"; if (hideKeyTip) hideKeyTip(); };
+    setKeyMode(keyOptEl ? keyOptEl.value : "inline");
+    if (keyOptEl) on(keyOptEl, "change", () => setKeyMode(keyOptEl.value));
+
     /* one word in the head carries every study: it opens a panel of plain
        dropdowns rather than lining four sets of buttons along the row */
     const studies = document.getElementById(p + "Studies");
@@ -5181,36 +5342,48 @@
     /* the bars' order: the same bars, re-sorted. The set does not change,
        so the reader keeps the metro's biggest industries in view either way */
     const barSortEl = document.getElementById(p + "BarSort");
-    if (barSortEl) on(barSortEl, "click", ev => {
-      const b = ev.target.closest(".seg-btn[data-barsort]");
-      if (!b || b.dataset.barsort === barSort) return;
-      barSort = b.dataset.barsort;
-      barSortEl.querySelectorAll(".seg-btn[data-barsort]").forEach(x => {
+    const sSortEl = document.getElementById(p + "SSort");
+    const syncBarSort = () => {
+      if (barSortEl) barSortEl.querySelectorAll(".seg-btn[data-barsort]").forEach(x => {
         const on = x.dataset.barsort === barSort;
         x.classList.toggle("is-active", on);
         x.setAttribute("aria-pressed", String(on));
       });
+      if (sSortEl && sSortEl.value !== barSort){ sSortEl.value = barSort; fitPick(sSortEl); }
+    };
+    syncBarSort();
+    const applyBarSort = v => {
+      if (v === barSort) return;
+      barSort = v;
+      syncBarSort();
       reBarRank();
       drawBars(barListAll, gBarsAll);
       paint(step, !reduced());
+    };
+    if (sSortEl) on(sSortEl, "change", () => { fitPick(sSortEl); applyBarSort(sSortEl.value); });
+    if (barSortEl) on(barSortEl, "click", ev => {
+      const b = ev.target.closest(".seg-btn[data-barsort]");
+      if (!b) return;
+      applyBarSort(b.dataset.barsort);
     });
 
     /* the arrangement control belongs to the two beats that show the whole
        mix; switching it repaints the beat in place */
     const viewEl = document.getElementById(p + "View");
-    if (viewEl) on(viewEl, "click", ev => {
-      const b = ev.target.closest(".seg-btn[data-view]");
-      if (!b || b.dataset.view === view) return;
-      view = b.dataset.view;
+    const applyView = v => {
+      if (v === view) return;
+      view = v;
       fig.dataset.view = view;
-      viewEl.querySelectorAll(".seg-btn[data-view]").forEach(x => {
-        const on = x.dataset.view === view;
-        x.classList.toggle("is-active", on);
-        x.setAttribute("aria-pressed", String(on));
-      });
+      syncViewCtl();
       if (opts.adminReveal && step === 0){ placeCoarse(!reduced(), true); return; }
       if (step === 0 || step === 1 || step === 4 || step === 5 || step === 7) paint(step, !reduced());
+    };
+    if (viewEl) on(viewEl, "click", ev => {
+      const b = ev.target.closest(".seg-btn[data-view]");
+      if (b) applyView(b.dataset.view);
     });
+    const sViewEl = document.getElementById(p + "SView");
+    if (sViewEl) on(sViewEl, "change", () => { fitPick(sViewEl); applyView(sViewEl.value); });
 
     /* sort: the same rows in another order, bars and names travelling together */
     const sortEl = document.getElementById(p + "Sort");
@@ -5333,6 +5506,23 @@
       figY.dataset.year = yearEl.value;
       initIndustryFigure("mi", rowsFrom(srcY).sort((a, b) => b.employ - a.employ), "MI");
     });
+    /* the sentence's year is the same choice: it sets the dropdown, which
+       does the work, and follows it */
+    const sYearEl = document.getElementById("miSYear");
+    if (yearEl && sYearEl){
+      sYearEl.addEventListener("change", () => {
+        fitPick(sYearEl);
+        if (yearEl.value === sYearEl.value) return;
+        yearEl.value = sYearEl.value;
+        yearEl.dispatchEvent(new Event("change"));
+      });
+      yearEl.addEventListener("change", () => {
+        if (sYearEl.value === yearEl.value) return;
+        sYearEl.value = yearEl.value;
+        fitPick(sYearEl);
+      });
+    }
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => fitPicks());
     /* Worker Flows now runs its own figure — one set of sector rows
        read three ways — which lives with the section's markup rather than
        here; nothing to build in this file. */
