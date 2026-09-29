@@ -2924,7 +2924,8 @@
      the sentence opens on its verb */
   .mi-sentence .mi-s-lead{display:none;white-space:nowrap;}
   #miFigure[data-step="0"] .mi-s-all,
-  #miFigure[data-step="4"] .mi-s-tier{display:inline;}
+  #miFigure[data-step="4"] .mi-s-tier,
+  #miFigure[data-step="6"] .mi-s-spec{display:inline;}
   #miFigure:not([data-step="0"]):not([data-step="4"]) .mi-s-first{text-transform:capitalize;}
   /* the bars' order is a blank only while the bars are up */
   #miFigure:not([data-step="0"]) .mi-s-sort,
@@ -5755,6 +5756,7 @@
               <p class="mi-sentence" id="miSentence">
                 <span class="mi-s-lead mi-s-all">All industries,</span>
                 <span class="mi-s-lead mi-s-tier">All industries, by tier,</span>
+                <span class="mi-s-lead mi-s-spec">The most specialized industries,</span>
                 <span class="mi-s-first">shown</span> as a
                 <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="miSView" aria-label="The mix as a treemap or as a ranking"><option value="map">treemap</option><option value="alt">ranking</option></select></span><span class="mi-s-sort"> sorted by
                 <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="miSSort" aria-label="Order of the bars"><option value="jobs">jobs</option><option value="cx">complexity</option></select></span></span>, coloured by
