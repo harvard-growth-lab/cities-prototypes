@@ -4855,6 +4855,20 @@
       if (step >= 0 && view === "map") paint(step, false);
     });
 
+
+    /* ---- the opt studies button: toggle the dropdown panel ----
+       The opt feature sits above the figure as an eyebrow-like element */
+    const optBtn = document.querySelector('.mi-studies-btn');
+    const optPanel = document.getElementById('miStudiesPanel');
+    if (optBtn && optPanel) {
+      optBtn.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        optPanel.hidden = !optPanel.hidden;
+        optBtn.setAttribute('aria-expanded', String(!optPanel.hidden));
+      });
+      document.addEventListener('click', () => { optPanel.hidden = true; });
+    }
+
     /* ---- the sector key, which is also the map's filter and its zoom ----
        Every sector, in the reference's fixed order. A click on a name takes
        its sector out of the map, and the map is tiled again over the rest;
