@@ -150,13 +150,21 @@
   const SRC = window.BOSTON_INDUSTRIES_2024 || { fields: [], rows: [], sectors: [], total: 0 };
   const SECTOR_KEYS = SRC.sectors || [];
   const sectorLabelOf = Object.fromEntries(SECTOR_KEYS.map(s => [s.key, s.label]));
-  const rawData = SRC.rows.map(a => {
-    const o = {};
-    SRC.fields.forEach((f, i) => { o[f] = a[i]; });
-    o.sector = sectorLabelOf[o.sectorKey] || o.sectorKey;
-    o.tradable = o.tier === 0;
-    return o;
-  });
+  /* the rows of one year's file, as objects */
+  function rowsFrom(src){
+    if (!src) return [];
+    return src.rows.map(a => {
+      const o = {};
+      src.fields.forEach((f, i) => { o[f] = a[i]; });
+      o.sector = sectorLabelOf[o.sectorKey] || o.sectorKey;
+      o.tradable = o.tier === 0;
+      return o;
+    });
+  }
+  /* the years the industry figure can show, the latest first; 2014 is the
+     source's group totals split at 2024's grain (see industries-2014.js) */
+  const YEARS = { 2024: window.BOSTON_INDUSTRIES_2024, 2014: window.BOSTON_INDUSTRIES_2014 };
+  const rawData = rowsFrom(SRC);
   const rowByName = new Map(rawData.map(r => [r.name, r]));
   const peerRcaByName = new Map(rawData.filter(r => r.peerRca != null).map(r => [r.name, r.peerRca]));
 
@@ -3097,6 +3105,24 @@
     const fig = document.getElementById(p + "Figure");
     if (!el || !fig || typeof d3 === "undefined") return;
     const industryData = rows;
+    /* everything this build hangs on the page is recorded here, so a later
+       build of the same figure - another year - can take it down first */
+    const disposers = [];
+    let dead = false;
+    disposers.push(() => { dead = true; });
+    const on = (t, ev, fn, o) => { t.addEventListener(ev, fn, o); disposers.push(() => t.removeEventListener(ev, fn, o)); };
+    /* the per-industry readings this build works from are the rows it was
+       given, not the page's 2024 tables, so another year's figure reads its
+       own tiers, scores and shares */
+    const tierByName = new Map(rows.map(r => [r.name, r.tier]));
+    const tradByName = new Map(rows.map(r => [r.name, r.trad]));
+    const rcaReal = new Map(rows.map(r => [r.name, Math.round((r.rca || 0) * 100) / 100]));
+    const pciByName = new Map(rows.map(r => [r.name, r.pci]));
+    const tradableByName = new Map(rows.map(r => [r.name, r.tradable]));
+    const tierOf = name => tierByName.has(name) ? tierByName.get(name) : 2;
+    const tradabilityOf = name => tradByName.has(name) ? tradByName.get(name) : 0;
+    const rcaOf = name => rcaReal.has(name) ? rcaReal.get(name) : 0;
+    const isTradable = name => tradableByName.get(name) === true;
 
     const svg = d3.select(el);
     const TEAL = token("--teal", "#255862");
@@ -3409,7 +3435,8 @@
        reader can let the local ones in from the head. opt-1 keeps the
        earlier ranking: the score in the column, over the same two tiers,
        with no filter. */
-    let rankMode = "tier";
+    const rankOptEl0 = document.getElementById(p + "RankOpt");
+    let rankMode = rankOptEl0 && rankOptEl0.value === "score" ? "score" : "tier";
     fig.dataset.rank = rankMode;
     const TIER_DEFAULT6 = () => [true, true, false];
     let tierOn6 = TIER_DEFAULT6();
@@ -3433,7 +3460,8 @@
     let wireRowsRef = null, rebuildR2Ref = null, hlSpansRef = null;
     /* how a phrase in the text points at its sector: "frame" draws a line
        round the block, "mute" turns the rest grey, "dim" fades it */
-    let hlMode = "frame";
+    const hlOptEl0 = document.getElementById(p + "HlOpt");
+    let hlMode = hlOptEl0 && /^(dim|mute|frame)$/.test(hlOptEl0.value) ? hlOptEl0.value : "frame";
     function ranking(rows, among){
       const base = among ? specializedAmong(rows) : specializedWithPeers(rows);
       const ranked = base.sort((a, b) => b.rca - a.rca).slice(0, MI_TOP_N);
@@ -3629,7 +3657,7 @@
       if (step >= 0) paint(step, !reduced());
     }
     let syncTierMenu = null;
-    if (tierBack) tierBack.addEventListener("click", ev => {
+    if (tierBack) on(tierBack, "click", ev => {
       const b = ev.target.closest(".mcl-chip[data-tier]");
       if (b) setTier(+b.dataset.tier, true);
     });
@@ -3969,9 +3997,10 @@
        painted again so its names are fitted to the new scale */
     {
       let lastUnit = null, timer = null;
-      window.addEventListener("resize", () => {
+      on(window, "resize", () => {
         clearTimeout(timer);
         timer = setTimeout(() => {
+          if (dead) return;
           const u = labUnit();
           if (lastUnit !== null && u !== lastUnit && step >= 0) paint(step, false);
           lastUnit = u;
@@ -4197,18 +4226,18 @@
         if (isOpen() && ctx === menuCtx){ closeMenu(); return; }
         closeMenu(); menuCtx = ctx; openMenu();
       };
-      el.addEventListener("click", ev => {
+      on(el, "click", ev => {
         const g = ev.target.closest && ev.target.closest("g.mi-tradmenu");
         if (g) toggleFrom(g);
       });
-      el.addEventListener("keydown", ev => {
+      on(el, "keydown", ev => {
         if (ev.key !== "Enter" && ev.key !== " ") return;
         const g = ev.target.closest && ev.target.closest("g.mi-tradmenu");
         if (!g) return;
         ev.preventDefault();
         toggleFrom(g);
       });
-      menuEl.addEventListener("click", ev => {
+      on(menuEl, "click", ev => {
         const b = ev.target.closest(".tm-item[data-tier]");
         if (!b) return;
         const k = +b.dataset.tier, on = tiersOf(menuCtx);
@@ -4239,13 +4268,13 @@
         }
         openMenu();                                        /* re-anchor */
       });
-      document.addEventListener("click", ev => {
+      on(document, "click", ev => {
         if (!isOpen()) return;
         if (menuEl.contains(ev.target)) return;
         if (ev.target.closest && ev.target.closest("g.mi-tradmenu")) return;
         closeMenu();
       });
-      document.addEventListener("keydown", ev => { if (ev.key === "Escape") closeMenu(); });
+      on(document, "keydown", ev => { if (ev.key === "Escape") closeMenu(); });
       closeMenuRef = closeMenu;
     }
 
@@ -4253,7 +4282,7 @@
        tradability column. Going to opt-1 also resets the filter, so opt-1 is
        always the ranking over the two tradable tiers alone. */
     const rankOptEl = document.getElementById(p + "RankOpt");
-    if (rankOptEl) rankOptEl.addEventListener("change", () => {
+    if (rankOptEl) on(rankOptEl, "change", () => {
       if (rankOptEl.value === rankMode) return;
       rankMode = rankOptEl.value;
       fig.dataset.rank = rankMode;
@@ -4292,14 +4321,14 @@
       });
     }
     setColorBy(colorBy);
-    if (colorEl) colorEl.addEventListener("click", ev => {
+    if (colorEl) on(colorEl, "click", ev => {
       const b = ev.target.closest(".seg-btn[data-color]");
       if (!b || b.dataset.color === colorBy) return;
       setColorBy(b.dataset.color);
       if (step === 7 || step === 4 || step === 0) paint(step, !reduced());
     });
 
-    window[ctlName] = { setStep: function(i){
+    window[ctlName] = { destroy: function(){ disposers.forEach(f => f()); disposers.length = 0; }, setStep: function(i){
       i = Math.max(0, Math.min(7, i | 0));
       if (i === step) return;
       /* a phrase left lit must not dim the beat that follows it */
@@ -4353,7 +4382,7 @@
         });
       }
       sizeClusterHead();
-      window.addEventListener("resize", sizeClusterHead);
+      on(window, "resize", sizeClusterHead);
       /* the second beat's scale: the score runs from 1 on the left to 0 on
          the right, as the map does, each band drawn as wide as its stretch of
          the score, and each named with two of the metro's largest industries
@@ -4448,22 +4477,22 @@
           const apply = () => hot(hoverK != null ? hoverK : focusK != null ? focusK : pinK);
           const putAway = () => { hoverK = focusK = pinK = null; apply(); };
           const tierAt = ev => { const t = ev.target.closest && ev.target.closest("[data-tier]"); return t ? +t.getAttribute("data-tier") : null; };
-          donutHost.addEventListener("mouseover", ev => { const k = tierAt(ev); if (k != null){ hoverK = k; apply(); } });
-          donutHost.addEventListener("mouseleave", () => { hoverK = null; apply(); });
-          donutHost.addEventListener("focusin", ev => { const k = tierAt(ev); if (k != null){ focusK = k; apply(); } });
-          donutHost.addEventListener("focusout", ev => { if (!donutHost.contains(ev.relatedTarget)){ focusK = null; apply(); } });
+          on(donutHost, "mouseover", ev => { const k = tierAt(ev); if (k != null){ hoverK = k; apply(); } });
+          on(donutHost, "mouseleave", () => { hoverK = null; apply(); });
+          on(donutHost, "focusin", ev => { const k = tierAt(ev); if (k != null){ focusK = k; apply(); } });
+          on(donutHost, "focusout", ev => { if (!donutHost.contains(ev.relatedTarget)){ focusK = null; apply(); } });
           /* a press on a row opens its card and holds it, and a second press
              puts it away - the path a touch has, since touch sends no
              mouseleave, and a keyboard's way to dismiss without leaving */
-          donutHost.addEventListener("click", ev => {
+          on(donutHost, "click", ev => {
             const k = tierAt(ev); if (k == null) return;
             if (shownK === k) putAway(); else { pinK = k; apply(); }
           });
           /* a tap elsewhere, or Escape, puts the card away */
-          document.addEventListener("pointerdown", ev => {
+          on(document, "pointerdown", ev => {
             if (shownK != null && !donutHost.contains(ev.target)) putAway();
           });
-          document.addEventListener("keydown", ev => { if (ev.key === "Escape" && shownK != null) putAway(); });
+          on(document, "keydown", ev => { if (ev.key === "Escape" && shownK != null) putAway(); });
           clearTierHot = putAway;
         }
         /* the switch between the two: the share on the grounds and the key,
@@ -4478,8 +4507,8 @@
              share stands down when the donut carries the shares */
           if (tierOptEl) tierOptEl.value = donut ? "donut" : "cards";
         };
-        setTierOpt("donut");
-        if (tierOptEl) tierOptEl.addEventListener("change", () => setTierOpt(tierOptEl.value));
+        setTierOpt(tierOptEl && tierOptEl.value === "cards" ? "cards" : "donut");
+        if (tierOptEl) on(tierOptEl, "change", () => setTierOpt(tierOptEl.value));
       }
     })();
 
@@ -4533,10 +4562,11 @@
         paint(0, !reduced());
       };
       if (window.IntersectionObserver){
-        new IntersectionObserver(es => es.forEach(e => {
+        const io = new IntersectionObserver(es => es.forEach(e => {
           if (e.isIntersecting) setTimeout(play, 420);
           else played = false;            // leaving arms it to play again
-        }), { threshold: 0.35 }).observe(el);
+        }), { threshold: 0.35 });
+        io.observe(el); disposers.push(() => io.disconnect());
       } else {
         setTimeout(play, 600);
       }
@@ -4671,7 +4701,7 @@
       if (step >= 0) paint(step, !reduced());
     }
     const zoomOut = () => { if (focusGroup) setFocus(focus, null); else if (focus) setFocus(null, null); };
-    document.addEventListener("keydown", ev => {
+    on(document, "keydown", ev => {
       if (ev.key !== "Escape" || ev.defaultPrevented) return;
       if (pinned){ hideMapTip(true); return; }
       if ((step === 0 || step === 7) && view === "map" && focus) zoomOut();
@@ -4735,7 +4765,7 @@
       } else txt = "";
       notes.forEach(n => { n.querySelector(".mi-note-txt").innerHTML = txt; });
     }
-    notes.forEach(n => n.addEventListener("click", ev => {
+    notes.forEach(n => on(n, "click", ev => {
       const b = ev.target.closest("[data-zoom], .mi-crumb-x"); if (!b) return;
       if (b.classList.contains("mi-crumb-x")) zoomOut();
       else if (b.dataset.zoom === "all") setFocus(null, null);
@@ -4768,7 +4798,7 @@
           td(cxText(r.pci)) + td(rcaText(r.rca) || "No value", "num") + '</tr>').join("") +
         '</tbody></table>';
     }
-    if (tableHost) tableHost.querySelector(".mi-table-btn").addEventListener("click", () => {
+    if (tableHost) on(tableHost.querySelector(".mi-table-btn"), "click", () => {
       tableOpen = !tableOpen; syncTable();
     });
 
@@ -4781,9 +4811,10 @@
       S = s2; invalidateMaps();
       if (step >= 0 && view === "map") paint(step, false);
     };
-    if (window.ResizeObserver) new ResizeObserver(remeasure).observe(el);
-    window.addEventListener("resize", remeasure);
+    if (window.ResizeObserver){ const ro = new ResizeObserver(remeasure); ro.observe(el); disposers.push(() => ro.disconnect()); }
+    on(window, "resize", remeasure);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => {
+      if (dead) return;
       clearMapMeasure();
       if (step >= 0 && view === "map") paint(step, false);
     });
@@ -4808,7 +4839,10 @@
       const items = [].slice.call(key.querySelectorAll(".sk-sec"));
       const onlys = [].slice.call(key.querySelectorAll(".sk-only"));
       const allHeadTitle = document.querySelector("#" + p + "View .mi-title-all .mcl-dir");
-      const headDefault = allHeadTitle ? allHeadTitle.textContent : "";
+      /* the title as authored, kept on the element: a rebuild must not take
+         a filter's title left by the last build for the default */
+      const headDefault = allHeadTitle
+        ? (allHeadTitle.dataset.title || (allHeadTitle.dataset.title = allHeadTitle.textContent)) : "";
       /* zoomed into a sector, that sector alone is showing */
       const shownSec = sec => focus ? sec === focus : (!secOn || secOn.has(sec));
       const soloSec = sec => order.every(o => o === sec || !shownSec(o));
@@ -4847,7 +4881,7 @@
       }
       resetSec = () => { dropFocus(); applySec(null); };
       const allSet = () => new Set(order);
-      key.addEventListener("click", ev => {
+      on(key, "click", ev => {
         if (ev.target.closest(".sk-reset")){ resetSec(); return; }
         const only = ev.target.closest(".sk-only");
         if (only){
@@ -4875,8 +4909,8 @@
         const sec = order[i];
         const on = () => { if (shownSec(sec) && view === "map" && mapLayout && !pinned) showOutline(sectorBlocks([sec]), 1.5); };
         const off = () => { if (!pinned) clearOutline(); };
-        li.addEventListener("mouseenter", on); li.addEventListener("mouseleave", off);
-        li.addEventListener("focusin", on); li.addEventListener("focusout", off);
+        on(li, "mouseenter", on); on(li, "mouseleave", off);
+        on(li, "focusin", on); on(li, "focusout", off);
       });
       syncKey();
     }
@@ -5052,11 +5086,11 @@
       };
       hlSpans.forEach(span => {
         const on = () => { if (fig.dataset.step !== hlStep(span)) return; clearHl(); litHl(span); };
-        span.addEventListener("mouseenter", on);
-        span.addEventListener("focus", on);
-        span.addEventListener("mouseleave", clearHl);
-        span.addEventListener("blur", clearHl);
-        span.addEventListener("click", () => {
+        on(span, "mouseenter", on);
+        on(span, "focus", on);
+        on(span, "mouseleave", clearHl);
+        on(span, "blur", clearHl);
+        on(span, "click", () => {
           if (span.classList.contains("is-lit")) clearHl(); else on();
         });
       });
@@ -5091,7 +5125,7 @@
        sector on the map - stand the rest down, turn the rest grey, or draw a
        line round the block being named */
     const hlOptEl = document.getElementById(p + "HlOpt");
-    if (hlOptEl) hlOptEl.addEventListener("change", () => {
+    if (hlOptEl) on(hlOptEl, "change", () => {
       if (hlOptEl.value === hlMode) return;
       const lit = hlSpansRef && hlSpansRef.find(x => x.classList.contains("is-lit"));
       if (clearHighlight) clearHighlight();
@@ -5108,7 +5142,7 @@
        the key's swatch is set once, so it is set again here. */
     const PAL_TRADE = { mint: "#86c8ab", periwinkle: "#92b2eb" };
     const palEl = document.getElementById(p + "Pal");
-    if (palEl) palEl.addEventListener("change", () => {
+    if (palEl) on(palEl, "change", () => {
       const v = PAL_TRADE[palEl.value] ? palEl.value : "mint";
       if (sectorColors["Trade & Transportation"] === PAL_TRADE[v]) return;
       sectorColors["Trade & Transportation"] = PAL_TRADE[v];
@@ -5124,8 +5158,8 @@
        light grey field under it */
     const groundEl = document.getElementById(p + "Ground");
     const setGround = v => { fig.dataset.ground = v === "grey" ? "grey" : "frame"; };
-    setGround("frame");
-    if (groundEl) groundEl.addEventListener("change", () => setGround(groundEl.value));
+    setGround(groundEl ? groundEl.value : "frame");
+    if (groundEl) on(groundEl, "change", () => setGround(groundEl.value));
 
     /* one word in the head carries every study: it opens a panel of plain
        dropdowns rather than lining four sets of buttons along the row */
@@ -5137,17 +5171,17 @@
         sPanel.hidden = !on;
         sBtn.setAttribute("aria-expanded", String(on));
       };
-      sBtn.addEventListener("click", () => setOpen(sPanel.hidden));
-      document.addEventListener("click", ev => {
+      on(sBtn, "click", () => setOpen(sPanel.hidden));
+      on(document, "click", ev => {
         if (!sPanel.hidden && !studies.contains(ev.target)) setOpen(false);
       });
-      document.addEventListener("keydown", ev => { if (ev.key === "Escape") setOpen(false); });
+      on(document, "keydown", ev => { if (ev.key === "Escape") setOpen(false); });
     }
 
     /* the bars' order: the same bars, re-sorted. The set does not change,
        so the reader keeps the metro's biggest industries in view either way */
     const barSortEl = document.getElementById(p + "BarSort");
-    if (barSortEl) barSortEl.addEventListener("click", ev => {
+    if (barSortEl) on(barSortEl, "click", ev => {
       const b = ev.target.closest(".seg-btn[data-barsort]");
       if (!b || b.dataset.barsort === barSort) return;
       barSort = b.dataset.barsort;
@@ -5164,7 +5198,7 @@
     /* the arrangement control belongs to the two beats that show the whole
        mix; switching it repaints the beat in place */
     const viewEl = document.getElementById(p + "View");
-    if (viewEl) viewEl.addEventListener("click", ev => {
+    if (viewEl) on(viewEl, "click", ev => {
       const b = ev.target.closest(".seg-btn[data-view]");
       if (!b || b.dataset.view === view) return;
       view = b.dataset.view;
@@ -5180,7 +5214,7 @@
 
     /* sort: the same rows in another order, bars and names travelling together */
     const sortEl = document.getElementById(p + "Sort");
-    if (sortEl) sortEl.addEventListener("click", ev => {
+    if (sortEl) on(sortEl, "click", ev => {
       /* the opt-1/opt-2 study shares this row and this button class: a click
          on it must not read as a sort with no key, which cleared every sort
          button's selected state and hid the brace */
@@ -5202,6 +5236,16 @@
     /* the section may have mounted before this figure existed, in which
        case the beat it settled on is waiting on the figure: open there, not
        on state 0, or the first beat shows a state its controls do not drive */
+    /* a rebuild starts from the engine's own state, so the segmented
+       controls are set to it rather than left as the last build left them */
+    [[p + "View", "view", view], [p + "BarSort", "barsort", barSort], [p + "Sort", "sort", sortKey]].forEach(([id, attr, val]) => {
+      const host = document.getElementById(id);
+      if (host) host.querySelectorAll(".seg-btn[data-" + attr + "]").forEach(x => {
+        const onIt = x.dataset[attr] === val;
+        x.classList.toggle("is-active", onIt);
+        x.setAttribute("aria-pressed", String(onIt));
+      });
+    });
     window[ctlName].setStep(fig.dataset.wantStep != null ? +fig.dataset.wantStep : 0);
   }
 
@@ -5276,6 +5320,19 @@
     initCommuteStats();
     updateExportHeadStat();
     initIndustryFigure("mi", industryData, "MI");
+    /* the year the industry figure shows: another year is another build
+       of the same figure over that year's rows, opened on the beat the
+       reader is on; the studies' dropdowns and the palette carry over */
+    const yearEl = document.getElementById("miYear");
+    if (yearEl) yearEl.addEventListener("change", () => {
+      const srcY = YEARS[yearEl.value];
+      const figY = document.getElementById("miFigure");
+      if (!srcY || !figY) return;
+      if (window.MI && window.MI.destroy) window.MI.destroy();
+      figY.dataset.wantStep = figY.dataset.step || "0";
+      figY.dataset.year = yearEl.value;
+      initIndustryFigure("mi", rowsFrom(srcY).sort((a, b) => b.employ - a.employ), "MI");
+    });
     /* Worker Flows now runs its own figure — one set of sector rows
        read three ways — which lives with the section's markup rather than
        here; nothing to build in this file. */
