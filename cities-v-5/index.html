@@ -3238,6 +3238,8 @@
   }
   /* the study's own control belongs to the beats whose text names sectors */
   #miFigure:not([data-step="0"]):not([data-step="4"]) #miHlOptPair{display:none;}
+  /* and the palette's to the beats that colour by sector */
+  #miFigure:not([data-step="0"]):not([data-step="4"]) #miPalPair{display:none;}
   /* the word alone in the head, and the studies as plain dropdowns behind it */
   .mi-head > .mi-studies{left:auto;right:0;width:auto;z-index:4;}
   /* the quietest thing in the head, but still a control and still words:
@@ -5685,6 +5687,13 @@
             <div class="mi-studies" id="miStudies">
               <button type="button" class="mi-studies-btn" aria-expanded="false" aria-haspopup="true">opt</button>
               <div class="mi-studies-panel" hidden>
+                <label class="mi-study" id="miPalPair">
+                  <span>Sector colours</span>
+                  <select id="miPal" aria-label="Which of the two house palettes the sectors wear">
+                    <option value="mint" selected>opt-1</option>
+                    <option value="periwinkle">opt-2</option>
+                  </select>
+                </label>
                 <label class="mi-study" id="miGroundPair">
                   <span>Tier grounds</span>
                   <select id="miGround" aria-label="How the tiers' grounds are drawn">

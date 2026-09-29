@@ -5101,6 +5101,25 @@
       if (lit) lit.dispatchEvent(new MouseEvent("mouseenter"));
     });
 
+    /* a study control: the sector palette with trade & transportation in
+       mint (opt-1, as shipped) or in periwinkle (opt-2), the two house sets
+       sector-palette-sketches.html compares. The colour is read at paint by
+       the map, the cells under it and the bars, so a repaint carries it;
+       the key's swatch is set once, so it is set again here. */
+    const PAL_TRADE = { mint: "#86c8ab", periwinkle: "#92b2eb" };
+    const palEl = document.getElementById(p + "Pal");
+    if (palEl) palEl.addEventListener("change", () => {
+      const v = PAL_TRADE[palEl.value] ? palEl.value : "mint";
+      if (sectorColors["Trade & Transportation"] === PAL_TRADE[v]) return;
+      sectorColors["Trade & Transportation"] = PAL_TRADE[v];
+      fig.dataset.pal = v;
+      if (key) key.querySelectorAll(".sk-sec").forEach(b => {
+        const nm = b.querySelector(".sk-name"); if (!nm) return;
+        b.style.setProperty("--sw", sectorColors[nm.textContent] || "#ccc");
+      });
+      if (step >= 0) paint(step, !reduced());
+    });
+
     /* a study control: the tiers' grounds as a line round each one, or as a
        light grey field under it */
     const groundEl = document.getElementById(p + "Ground");
