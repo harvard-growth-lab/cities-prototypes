@@ -1358,6 +1358,8 @@
   const METRO_Y_MED = 4.0;    // avg-salary CAGR, %/yr
 
   const HOME = { name: "Boston", pop: 0.4, pay: 5.3, size: 4.9 };
+  /* the section bar's opening of part two draws these two rows: one source */
+  window.BOSTON_GROWTH = { pop: HOME.pop, pay: HOME.pay, popMed: METRO_X_MED, payMed: METRO_Y_MED };
   const PEER_POINTS = [
     { name: "Washington",  pop: 0.35, pay: 4.9, size: 6.4 },
     { name: "Seattle",     pop: 1.15, pay: 5.4, size: 4.0 },

@@ -561,12 +561,47 @@
      quiz. The pager cards stand down except at the extras, which stay
      aside. The switch is the small "layout" word in the toolbar, and
      ?layout=scroll in the address. */
-  .site-study{display:inline-flex;align-items:center;gap:8px;margin-left:22px;font-size:9.5px;letter-spacing:.02em;color:var(--ink-soft);}
-  .site-study [role="group"]{display:inline-flex;gap:7px;}
-  .site-study-btn{appearance:none;border:0;background:none;padding:0;margin:0;font:inherit;color:var(--ink-soft);cursor:pointer;}
-  .site-study-btn:hover{color:var(--ink);}
-  .site-study-btn.is-active{color:var(--teal);font-weight:700;}
-  .site-study-btn:focus-visible{outline:2px solid var(--teal);outline-offset:3px;border-radius:2px;}
+  /* the floating switch, from the reference build: a dark pill at the
+     bottom left reading "Site Layout" and the layout in force, which opens
+     the choices upward. It shows once the tool is open. */
+  .sv{display:none;position:fixed;left:16px;bottom:16px;z-index:500;font-family:inherit;}
+  body:has(#tool.active) .sv{display:block;}
+  .sv-btn{
+    display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px 0 13px;
+    appearance:none;border:0;border-radius:16px;background:var(--ink);color:#fff;cursor:pointer;
+    font:inherit;font-size:12.5px;line-height:1;box-shadow:0 6px 20px rgba(26,34,38,.28);
+  }
+  .sv-btn:hover,.sv-btn.open{background:#000;}
+  .sv-btn:focus-visible{outline:2px solid #fff;outline-offset:-4px;box-shadow:0 0 0 2px var(--ink),0 6px 20px rgba(26,34,38,.28);}
+  .sv-k{font-size:9.5px;font-weight:700;letter-spacing:.2px;opacity:.78;}
+  .sv-now{font-weight:700;}
+  .sv-btn svg{opacity:.8;transition:transform .2s;}
+  .sv-btn.open svg{transform:rotate(180deg);}
+  .sv-panel{
+    position:absolute;left:0;bottom:calc(100% + 8px);width:286px;display:flex;flex-direction:column;gap:1px;padding:5px;
+    background:#fff;border:1px solid var(--border-strong);border-radius:10px;box-shadow:var(--shadow-md);
+  }
+  .sv-panel[hidden]{display:none;}
+  .sv-opt{
+    appearance:none;border:0;background:none;margin:0;width:100%;text-align:left;cursor:pointer;font:inherit;color:var(--ink);
+    display:grid;grid-template-columns:14px minmax(0,1fr);gap:1px 8px;padding:9px 10px 10px;border-radius:7px;
+  }
+  .sv-opt::before{
+    content:"";grid-row:1 / span 2;width:12px;height:12px;margin-top:3px;box-sizing:border-box;
+    border:1.5px solid var(--control-edge);border-radius:50%;background:#fff;
+  }
+  .sv-opt b{font-size:13.5px;font-weight:700;line-height:1.25;}
+  .sv-opt span{grid-column:2;font-size:12px;line-height:1.3;color:var(--ink-soft);}
+  .sv-opt:hover{background:#f4f6f5;}
+  .sv-opt.is-on{background:var(--teal-tint);}
+  .sv-opt.is-on::before{border:4px solid var(--teal);}
+  .sv-opt:focus-visible{outline:2px solid var(--teal);outline-offset:-2px;}
+  @media (max-width:640px){
+    .sv{left:10px;bottom:10px;}
+    .sv-k{display:none;}
+    .sv-panel{width:min(286px,calc(100vw - 20px));}
+    .pages > .secpager{padding-bottom:64px;}
+  }
   html[data-layout="scroll"] .secpager:not([data-sec="5"]){display:none;}
   html[data-layout="scroll"] .pages:has(#page-export-basket){background:#fff;}
   /* the two grey-ground sections keep their ground under the white pages,
@@ -612,6 +647,83 @@
   @media (prefers-reduced-motion: reduce){ .seal-cue svg{animation:none;} }
   @media (max-width:1199px){
     .seal-in{padding:52px var(--frame-pad) 48px;min-height:400px;}
+  }
+  /* the opening of part two, taken from the reference build's "seam": a
+     full-height band of the house's dark teal that says where the reader
+     stands - part one behind them, part two ahead - and what each part
+     holds, before the diagnosis begins. It follows the last section of
+     part one and its close, divided from it by a hairline. */
+  .seam{display:none;}
+  html[data-layout="scroll"] .seam{
+    display:flex;align-items:center;min-height:calc(100dvh - var(--chrome-h) - 64px);
+    background:var(--teal-dark);color:#fff;border-top:1px solid rgba(255,255,255,.16);
+  }
+  .seam-in{
+    width:min(var(--grid-max),calc(100% - 2 * var(--frame-pad)));margin-inline:auto;padding:64px 0 40px;
+    display:flex;flex-direction:column;gap:44px;
+  }
+  .seam-head{display:flex;flex-direction:column;gap:10px;max-width:640px;}
+  .seam-eyebrow{margin:0;font-size:12px;font-weight:700;letter-spacing:.2px;color:rgba(255,255,255,.78);}
+  .seam-head h2{margin:0;font-size:clamp(2rem,1.4rem + 2.4vw,3.25rem);font-weight:700;line-height:1.05;color:#fff;}
+  .seam-diag{margin:6px 0 0;font-size:16px;line-height:1.5;color:rgba(255,255,255,.86);}
+  .seam-diag b{color:#fff;white-space:nowrap;}
+  .seam-diag .qmark{width:1.05em;height:1.05em;margin-right:.2em;vertical-align:-.15em;}
+  .seam-board{display:grid;grid-template-columns:minmax(0,3fr) auto minmax(0,2.3fr);align-items:stretch;gap:22px;}
+  .seam-group{display:flex;flex-direction:column;gap:12px;min-width:0;}
+  .seam-tag{margin:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;}
+  .seam-tag b{font-size:11px;font-weight:700;letter-spacing:.2px;color:#fff;}
+  .seam-tag span{font-size:13px;font-style:italic;color:rgba(255,255,255,.78);}
+  .seam-group--done .seam-tag b{color:rgba(255,255,255,.86);}
+  .seam-group :is(ul,ol){
+    flex:1 1 0;margin:0;padding:0;list-style:none;
+    display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:12px;
+  }
+  .seam-card{display:flex;flex-direction:column;align-items:flex-start;gap:9px;min-height:164px;padding:16px 16px 14px;border-radius:10px;}
+  .seam-card b{font-size:16px;font-weight:700;line-height:1.22;}
+  .seam-num{
+    flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
+    border-radius:50%;font-size:11px;font-weight:700;line-height:1;
+  }
+  .seam-group--done .seam-card{color:rgba(255,255,255,.92);background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.2);}
+  .seam-group--done .seam-num{color:#fff;background:rgba(255,255,255,.18);}
+  .seam-group--next .seam-card{color:var(--ink);background:#fff;border:1px solid #fff;box-shadow:0 14px 34px rgba(0,0,0,.22);}
+  .seam-group--next .seam-num{background:var(--teal);color:#fff;}
+  .seam-viz{display:block;width:100%;max-width:230px;height:auto;margin-top:4px;}
+  .seam-viz--wide{max-width:100%;margin-top:8px;}
+  .seam-viz-t{font-size:10px;font-weight:600;}
+  .seam-group--done .seam-viz-t{fill:rgba(255,255,255,.86);}
+  .seam-group--next .seam-viz-t{fill:var(--ink-soft);}
+  .seam-link{
+    appearance:none;border:0;background:none;padding:0;margin:auto 0 0;cursor:pointer;font:inherit;font-size:13px;
+    color:rgba(255,255,255,.9);text-decoration:underline;text-decoration-color:rgba(255,255,255,.4);text-underline-offset:3px;
+  }
+  .seam-link:hover{color:#fff;text-decoration-color:#fff;}
+  .seam-link:focus-visible{outline:2px solid #fff;outline-offset:3px;border-radius:2px;}
+  .seam-join{
+    align-self:center;margin-top:26px;display:flex;flex-direction:column;align-items:center;gap:7px;
+    font-size:10px;font-weight:700;letter-spacing:.2px;white-space:nowrap;color:rgba(255,255,255,.78);
+  }
+  .seam-join svg{width:34px;height:auto;}
+  .seam-foot{margin-top:4px;}
+  .seam-cue{margin:0;display:flex;flex-direction:column;align-items:center;gap:10px;font-size:11px;font-weight:700;letter-spacing:.2px;color:rgba(255,255,255,.78);}
+  .seam-cue svg{animation:seal-bob 1.8s ease-in-out infinite;}
+  @media (prefers-reduced-motion: reduce){ .seam-cue svg{animation:none;} }
+  @media (max-width:1099px){
+    .seam-board{grid-template-columns:minmax(0,1fr);gap:18px;}
+    .seam-join{flex-direction:row;margin-top:0;}
+    .seam-join svg{width:22px;rotate:90deg;}
+    .seam-card{min-height:136px;}
+  }
+  @media (max-width:640px){
+    .seam-in{gap:30px;padding:44px 0 32px;}
+    .seam-group :is(ul,ol){grid-auto-flow:row;}
+    /* number, name and "Revisit" on one line, the chart under them at the
+       card's full width (its own width cap would let it squeeze in beside
+       the name and run over it) */
+    .seam-card{flex-flow:row wrap;align-items:center;column-gap:10px;row-gap:6px;min-height:0;padding:13px 14px;}
+    .seam-card b{flex:1 1 0;min-width:0;}
+    .seam-card .seam-link{order:2;margin:0;}
+    .seam-card .seam-viz{order:3;flex:0 0 100%;width:100%;max-width:none;margin-top:4px;}
   }
   @media (max-width:640px){
     .seal-in{padding:44px var(--frame-pad) 40px;min-height:0;gap:14px;}
@@ -5564,11 +5676,6 @@
           <a href="#" class="current-page" onclick="toggleExplainers(false);return false;">City Diagnosis</a>
           <a href="#">About</a>
           <a href="#">Glossary</a>
-          <span class="site-study" id="siteLayoutStudy"><span class="site-study-word">layout</span>
-            <span role="group" aria-label="Site layout">
-              <button type="button" class="site-study-btn is-active" data-layout="pages" aria-pressed="true">opt-1</button>
-              <button type="button" class="site-study-btn" data-layout="scroll" aria-pressed="false">opt-2</button>
-            </span></span>
         </nav>
         <button class="btn-journey">
           <svg width="19" height="19" viewBox="0 0 83 83.01" fill="currentColor" aria-hidden="true"><path d="M82.92,7.06s-.01-.05-.02-.07c-.05-.13-.12-.26-.2-.37-.02-.02-.03-.04-.05-.06-.09-.11-.2-.21-.32-.3-.01,0-.01-.01-.02-.01-.12-.08-.26-.14-.41-.18-.01,0-.02-.01-.04-.02L57.86.04c-.24-.06-.49-.06-.73,0l-24,6c-.67.17-1.14.77-1.14,1.46s.47,1.29,1.14,1.46l9.86,2.47v14.07c0,.22.14.42.36.48l14,4s.09.02.14.02.09-.01.14-.02l14-4c.21-.06.36-.26.36-.48v-14.08l8-2v10.08c0,.83.67,1.5,1.5,1.5s1.5-.67,1.5-1.5V7.5c.01-.16-.02-.31-.07-.45h0ZM57.5,11.95l-17.82-4.45,17.82-4.45,17.82,4.45-17.82,4.45ZM68.5,42.01h-35.71c-.66-2.3-2.77-4-5.29-4s-4.63,1.7-5.29,4h-7.71c-6.34,0-11.5-5.16-11.5-11.5s5.16-11.5,11.5-11.5h21c.83,0,1.5-.67,1.5-1.5s-.67-1.5-1.5-1.5H14.5C6.5,16.01,0,22.51,0,30.51s6.5,14.5,14.5,14.5h7.71c.66,2.3,2.77,4,5.29,4s4.63-1.7,5.29-4h35.71c6.34,0,11.5,5.16,11.5,11.5s-5.16,11.5-11.5,11.5h-7.71c-.66-2.3-2.77-4-5.29-4s-4.63,1.7-5.29,4H18l-15.6-11.7c-.46-.34-1.06-.4-1.57-.14-.51.25-.83.77-.83,1.34v24c0,.57.32,1.09.83,1.34.21.11.44.16.67.16.32,0,.64-.1.9-.3l15.6-11.7h32.21c.66,2.3,2.77,4,5.29,4s4.63-1.7,5.29-4h7.71c8,0,14.5-6.5,14.5-14.5s-6.5-14.5-14.5-14.5h0ZM27.5,46.01c-1.38,0-2.5-1.12-2.5-2.5s1.12-2.5,2.5-2.5,2.5,1.12,2.5,2.5-1.12,2.5-2.5,2.5ZM55.5,72.01c-1.38,0-2.5-1.12-2.5-2.5s1.12-2.5,2.5-2.5,2.5,1.12,2.5,2.5-1.12,2.5-2.5,2.5Z"/></svg>
@@ -6890,6 +6997,16 @@
   </div>
 </div>
 
+<div class="sv" id="siteLayoutSwitch">
+  <button type="button" class="sv-btn" id="svBtn" aria-expanded="false" aria-haspopup="menu" aria-controls="svPanel">
+    <span class="sv-k">Site Layout</span><span class="sv-now" id="svNow">Current</span>
+    <svg viewBox="0 0 10 6" width="10" height="6" aria-hidden="true"><path d="M1 5l4-4 4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+  <div class="sv-panel" id="svPanel" role="menu" aria-label="Site layout variants" hidden>
+    <button type="button" role="menuitemradio" aria-checked="true" class="sv-opt is-on" data-layout="pages"><b>Current</b><span>five sections, one linear flow</span></button>
+    <button type="button" role="menuitemradio" aria-checked="false" class="sv-opt" data-layout="scroll"><b>One scroll</b><span>a summary closes each section, a band opens part two</span></button>
+  </div>
+</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://d3js.org/d3.v7.min.js"></script>
 <script src="data/geo/xch_geo.js"></script>
@@ -9313,14 +9430,35 @@
      says what to take from it and opens its quiz. The choice rides the
      address as ?layout=scroll, so a link can carry it. */
   function siteLayout(){ return document.documentElement.dataset.layout === "scroll" ? "scroll" : "pages"; }
+  const svEl = document.getElementById("siteLayoutSwitch"), svBtn = document.getElementById("svBtn"),
+        svPanel = document.getElementById("svPanel"), svNow = document.getElementById("svNow");
+  const svOpts = [...svPanel.querySelectorAll(".sv-opt")];
+  function svOpen(open, refocus){
+    svPanel.hidden = !open;
+    svBtn.setAttribute("aria-expanded", String(open)); svBtn.classList.toggle("open", open);
+    if (open) (svPanel.querySelector('[aria-checked="true"]') || svOpts[0]).focus({ preventScroll: true });
+    else if (refocus) svBtn.focus({ preventScroll: true });
+  }
+  svBtn.addEventListener("click", () => svOpen(svPanel.hidden));
+  svOpts.forEach(o => o.addEventListener("click", () => { setSiteLayout(o.dataset.layout); svOpen(false, true); }));
+  /* Escape answers here first, and stops there: the figure's layers must
+     not also take a press meant for this menu */
+  svEl.addEventListener("keydown", ev => {
+    if (ev.key === "Escape" && !svPanel.hidden){ ev.preventDefault(); ev.stopPropagation(); svOpen(false, true); return; }
+    if ((ev.key === "ArrowDown" || ev.key === "ArrowUp") && !svPanel.hidden){
+      ev.preventDefault();
+      const at = svOpts.indexOf(document.activeElement), step = ev.key === "ArrowDown" ? 1 : -1;
+      svOpts[(at + step + svOpts.length) % svOpts.length].focus({ preventScroll: true });
+    }
+  });
+  svEl.addEventListener("focusout", ev => { if (!svPanel.hidden && !svEl.contains(ev.relatedTarget)) svOpen(false); });
+  document.addEventListener("pointerdown", ev => { if (!svPanel.hidden && !svEl.contains(ev.target)) svOpen(false); });
   function setSiteLayout(v, fromUrl){
     v = v === "scroll" ? "scroll" : "pages";
     const was = siteLayout();
     document.documentElement.dataset.layout = v;
-    document.querySelectorAll(".site-study-btn").forEach(b => {
-      const on = b.dataset.layout === v;
-      b.classList.toggle("is-active", on); b.setAttribute("aria-pressed", String(on));
-    });
+    svOpts.forEach(o => { const on = o.dataset.layout === v; o.classList.toggle("is-on", on); o.setAttribute("aria-checked", String(on)); });
+    svNow.textContent = v === "scroll" ? "One scroll" : "Current";
     if (!fromUrl){
       const u = new URL(location.href);
       if (v === "scroll") u.searchParams.set("layout", "scroll"); else u.searchParams.delete("layout");
@@ -9334,7 +9472,6 @@
     }
   }
   window.setSiteLayout = setSiteLayout;
-  document.querySelectorAll(".site-study-btn").forEach(b => b.addEventListener("click", () => setSiteLayout(b.dataset.layout)));
 
   /* the chips follow the scroll: the section whose top has passed the
      upper part of the viewport is the one the reader is in, and a
@@ -9349,6 +9486,13 @@
       if (el && el.getBoundingClientRect().top <= line) on = k;
     }
     if (on !== activeSec) showSection(on, false);
+    /* the band that opens part two belongs to part two, though the chip
+       still names the section above it until the diagnosis begins */
+    const seam = document.getElementById("seam");
+    if (seam && on <= 2){
+      const crossed = seam.getBoundingClientRect().top <= line;
+      document.documentElement.dataset.part = crossed ? "2" : "1";
+    }
   }
   pagesEl.addEventListener("scroll", () => {
     if (trackT) return;
@@ -9415,6 +9559,90 @@
       const g = e.target.closest("[data-go]"); if (g) showSection(+g.dataset.go);
     });
   });
+  /* ---- the opening of part two, from the reference build ----
+     A band of the house's teal between part one's last close and the
+     diagnosis: where the reader stands, what part one gave them, what
+     part two holds. Its small charts are drawn from this page's own
+     figures - the growth scatter's numbers, the sectors' jobs, the two
+     workforces - not the reference's. */
+  (function buildSeam(){
+    const anchor = document.getElementById("seal-2"), w = SECTIONS[2];
+    if (!anchor || !w) return;
+    const CHECK = '<svg viewBox="0 0 10 8" width="9" height="7" aria-hidden="true"><path d="M1 4.2 3.7 6.8 9 1.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+    const ARROW = r => '<svg viewBox="0 0 16 10" width="16" height="10" aria-hidden="true" style="transform:rotate(' + r + 'deg)"><path d="M1 5h13M10 1l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    const svg = (vb, label, inner, cls) => '<svg class="seam-viz' + (cls ? " " + cls : "") + '" viewBox="' + vb + '" role="img" aria-label="' + label + '">' + inner + '</svg>';
+    const W = "rgba(255,255,255,";
+    /* who are you: the metro's growth against the median metro, as the growth chart has it */
+    const G = window.BOSTON_GROWTH || { pop: 0.4, pay: 5.3, popMed: 0.7, payMed: 4.0 };
+    const growthRow = (label, y, v, med, k) => {
+      const x = Math.min(80, v * k), m = Math.min(80, med * k);
+      return '<g><text class="seam-viz-t" x="0" y="' + (y + 4) + '">' + label + '</text>' +
+        '<line x1="104" x2="104" y1="' + (y - 8) + '" y2="' + (y + 8) + '" stroke="' + W + '.35)"/>' +
+        '<line x1="' + (104 + m) + '" x2="' + (104 + m) + '" y1="' + (y - 7) + '" y2="' + (y + 7) + '" stroke="' + W + '.5)" stroke-width="2.5"/>' +
+        '<line x1="104" x2="' + (104 + x) + '" y1="' + y + '" y2="' + y + '" stroke="' + W + '.85)" stroke-width="3" stroke-linecap="round"/>' +
+        '<circle cx="' + (104 + x) + '" cy="' + y + '" r="4.5" fill="' + W + '.85)"/>' +
+        '<text class="seam-viz-t" x="' + (112 + x) + '" y="' + (y + 4) + '">+' + v.toFixed(1) + '%/yr</text></g>';
+    };
+    const vizProfile = svg("0 0 250 62", "Boston’s metro population and pay growth against the median metro",
+      growthRow("population", 14, G.pop, G.popMed, 24) + growthRow("pay", 40, G.pay, G.payMed, 15) +
+      '<text class="seam-viz-t" x="104" y="60" text-anchor="middle">tick: the median metro</text>');
+    /* metro industries: the four biggest sectors' share of the metro's jobs */
+    const D = window.BOSTON_INDUSTRIES_2024;
+    let vizSectors = "";
+    if (D){
+      const iK = D.fields.indexOf("sectorKey"), iJ = D.fields.indexOf("employ"), tot = {};
+      D.rows.forEach(r => { tot[r[iK]] = (tot[r[iK]] || 0) + r[iJ]; });
+      const SHORT = { professional: "Professional", "education-health": "Education & Health", "trade-transport": "Trade & Transport", leisure: "Leisure", financial: "Financial", manufacturing: "Manufacturing", construction: "Construction", other: "Other", "natural-resources": "Natural resources" };
+      const top = Object.entries(tot).sort((a, b) => b[1] - a[1]).slice(0, 4), max = top[0][1];
+      vizSectors = svg("0 0 230 92", "The metro’s jobs by sector: the four largest",
+        top.map(([k, v], i) => { const y = 12 + i * 22, bw = Math.max(6, v / max * 96);
+          return '<text class="seam-viz-t" x="0" y="' + (y + 3.5) + '">' + SHORT[k] + '</text>' +
+            '<rect x="100" y="' + (y - 4.5) + '" width="' + bw.toFixed(1) + '" height="9" rx="2" fill="' + W + '.85)"/>' +
+            '<text class="seam-viz-t" x="' + (106 + bw).toFixed(1) + '" y="' + (y + 3.5) + '">' + Math.round(v / D.total * 100) + '%</text>'; }).join(""));
+    }
+    /* worker flows: the two counts behind the city, jobs here and jobs its residents hold */
+    const HERE = 687736, HELD = 334026;
+    const vizFlows = svg("0 0 230 72", "Jobs located in Boston, and jobs its residents hold",
+      '<text class="seam-viz-t" x="0" y="18">jobs here</text><rect x="100" y="9" width="96" height="9" rx="2" fill="' + W + '.85)"/><text class="seam-viz-t" x="202" y="17.5">688K</text>' +
+      '<text class="seam-viz-t" x="0" y="42">held by residents</text><rect x="100" y="33" width="' + (HELD / HERE * 96).toFixed(1) + '" height="9" rx="2" fill="' + W + '.85)"/><text class="seam-viz-t" x="' + (106 + HELD / HERE * 96).toFixed(1) + '" y="41.5">334K</text>' +
+      '<text class="seam-viz-t" x="100" y="64" text-anchor="middle">206 jobs here per 100 its residents hold</text>');
+    /* constraints: the growth scatter's four quadrants, the city in the constrained-supply one */
+    let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    let dots = "";
+    for (let i = 0; i < 34; i++){
+      const x = 125 + (rnd() + rnd() + rnd() - 1.5) * 86, y = 46 + (rnd() + rnd() + rnd() - 1.5) * 52;
+      if (x < 112 && y < 30) continue;   /* the corner the city and its name hold */
+      dots += '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="2.4" fill="#c8cdd0"/>';
+    }
+    const vizQuad = svg("0 0 250 104", "The growth chart: Boston sits where pay rises and population barely does",
+      '<rect x="8" y="6" width="234" height="80" fill="none" stroke="#c8cdd0"/>' +
+      '<line x1="125" x2="125" y1="6" y2="86" stroke="#c8cdd0" stroke-dasharray="3 3"/><line x1="8" x2="242" y1="46" y2="46" stroke="#c8cdd0" stroke-dasharray="3 3"/>' +
+      dots + '<circle cx="82" cy="30" r="5.5" fill="var(--orange-dark)"/><text class="seam-viz-t" x="92" y="33" style="font-weight:700;fill:var(--orange-text)">Boston</text>' +
+      '<text class="seam-viz-t" x="14" y="17">Negative supply shock</text>' +
+      '<text class="seam-viz-t" x="125" y="100" text-anchor="middle">population growth →</text>', "seam-viz--wide");
+    const vizLevers = svg("0 0 230 62", "Levers",
+      [[12, 77.2], [32, 157], [52, 115]].map(([y, x]) => '<g><line x1="10" x2="220" y1="' + y + '" y2="' + y + '" stroke="#c8cdd0" stroke-width="3" stroke-linecap="round"/><line x1="10" x2="' + x + '" y1="' + y + '" y2="' + y + '" stroke="#255862" stroke-width="3" stroke-linecap="round"/><circle cx="' + x + '" cy="' + y + '" r="6" fill="#255862"/></g>').join(""));
+    const done = [[0, "Who are you?", vizProfile], [1, "Metro Industries", vizSectors], [2, "Worker Flows", vizFlows]];
+    const wall = '<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="qmark" aria-hidden="true"><path d="M6 10h28v24H6z"/><path d="M6 18h28M6 26h28M16 10v8M26 10v8M11 18v8M21 18v8M31 18v8M16 26v8M26 26v8"/></svg>';
+    const seam = document.createElement("section");
+    seam.className = "seam"; seam.id = "seam"; seam.setAttribute("aria-labelledby", "seam-title");
+    seam.innerHTML = '<div class="seam-in">' +
+      '<header class="seam-head"><p class="seam-eyebrow">Part 2 of 2</p><h2 id="seam-title">Diagnose &amp; Act</h2>' +
+        '<p class="seam-diag">Boston’s data lands on <b>' + wall + 'Negative supply shock</b>. Part 2 reads what sits behind it, and what to do about it.</p></header>' +
+      '<div class="seam-board">' +
+        '<div class="seam-group seam-group--done"><p class="seam-tag"><b>Part 1 City Profile</b><span>what you bring</span></p><ul>' +
+          done.map(([k, name, viz]) => '<li class="seam-card"><span class="seam-num">' + CHECK + '</span><b>' + name + '</b>' + viz +
+            '<button type="button" class="seam-link" data-go="' + k + '">Revisit</button></li>').join("") + '</ul></div>' +
+        '<div class="seam-join" aria-hidden="true"><span>builds on</span>' + ARROW(0) + '</div>' +
+        '<div class="seam-group seam-group--next"><p class="seam-tag"><b>Part 2 Diagnose &amp; Act</b><span>what you do with it</span></p><ol>' +
+          '<li class="seam-card"><span class="seam-num">4</span><b>Constraints Diagnosis</b>' + vizQuad + '</li>' +
+          '<li class="seam-card"><span class="seam-num">5</span><b>Levers for Change</b>' + vizLevers + '</li></ol></div>' +
+      '</div>' +
+      '<footer class="seam-foot"><p class="seam-cue">keep scrolling to begin' + ARROW(90) + '</p></footer></div>';
+    anchor.after(seam);
+    w.els.push(seam);   /* it hides and shows with its section, as the closes do */
+    seam.addEventListener("click", e => { const g = e.target.closest("[data-go]"); if (g) showSection(+g.dataset.go); });
+  })();
   setSiteLayout(new URLSearchParams(location.search).get("layout") === "scroll" ? "scroll" : "pages", true);
 
   showSection(0, false);

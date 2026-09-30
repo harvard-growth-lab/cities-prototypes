@@ -364,12 +364,18 @@ moved to chip 5's `::before` — the row takes 12px of head-room, and under
 1200px the names shorten to "Part 1" / "Part 2".
 
 **The site's layout study** (2026-09-30, at Nil's request, after the
-reference build's `?site=scroll` variant): a small "layout opt-1 · opt-2"
-word in the tool's toolbar (`.site-study`, `setSiteLayout(v)`,
-`html[data-layout]`, carried in the address as `?layout=scroll`).
-- **opt-1, pages** — as before: one section at a time, the pager's three
+reference build's `?site=scroll` variant). It is switched from the same
+control the reference has: a dark pill fixed at the **bottom left**,
+"Site Layout · Current", that opens its choices upward (`#siteLayoutSwitch`,
+`.sv*`; a menu of `menuitemradio` buttons; Escape, arrows and an outside
+click close/move; it shows only once the tool is open; on a phone it drops
+the small "Site Layout" word). The reference offers four layouts (Current,
+One scroll, Chapters, Two modes); v-5 offers the first two. The choice is
+`html[data-layout]` (`setSiteLayout(v)`) and rides the address as
+`?layout=scroll`.
+- **Current (pages)** — as before: one section at a time, the pager's three
   cards at its foot.
-- **opt-2, scroll** — the storyline's five sections stand together in the
+- **One scroll** — the storyline's five sections stand together in the
   `.pages` scroll (`showSection` leaves them all on; the Extras alone still
   take the page for themselves), the pager is hidden except at the Extras,
   the chips follow the scroll (`trackSection`, throttled on the scroller's
@@ -385,10 +391,24 @@ word in the tool's toolbar (`.site-study`, `setSiteLayout(v)`,
   a "Keep scrolling · <next>" cue with a bobbing arrow (the last says "Back
   to the start"). The two grey-ground sections bleed their ground edge to
   edge under the white pages (`clip-path:inset(0 -100vmax)` + a 100vmax
-  box-shadow, the reference's trick). Not built: the reference's big teal
-  Part 2 introduction ("seam") — the part names in the bar do that work
-  for now. Worker Flows has no quiz data (`sectionChecksData` lacks it), so
-  its close carries no quiz button.
+  box-shadow, the reference's trick).
+- **The opening of part two** (`section#seam`, built by `buildSeam()`,
+  after Worker Flows' close): the reference's teal threshold band. "Part 2
+  of 2", "Diagnose & Act", a line saying where Boston's data lands
+  ("Negative supply shock" — the growth chart's quadrant, worded from
+  `QUADS` in treemap.js), then a board: Part 1's three sections as checked
+  cards with a mini-chart and a "Revisit" link (`data-go`), "builds on" and
+  an arrow, Part 2's two sections as white cards (Constraints Diagnosis
+  with the growth chart's quadrants, Levers for Change with three
+  sliders), and "keep scrolling to begin". The mini-charts are drawn from
+  **this page's own numbers**, not the reference's: growth from
+  `window.BOSTON_GROWTH` (exported by treemap.js from `HOME` and the
+  medians), the four largest sectors from `BOSTON_INDUSTRIES_2024`, the two
+  workforces (687,736 jobs here, 334,026 held by residents) as on Worker
+  Flows. The tracker sets `data-part` to 2 once the band is reached. On a
+  phone each card is name and "Revisit" on one line with its chart below.
+  Worker Flows has no quiz (`sectionChecksData` lacks it), so its close
+  has no quiz button.
 
 Quiz content and state: `sectionChecksData()` (questions per section),
 `CHECK_STATE`, `CHECK_DONE`, `APPLY_DONE`. For the keyboard (`a297747`): the
@@ -550,11 +570,13 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
    left as is: the key, the crumbs and the live region say what is showing.
 6. **Arrow-key roving** between a segmented control's buttons is not
    implemented (not required by WCAG; every button is a tab stop).
-7. **The scroll layout's closes** carry summary points drafted by Claude
-   from each section's text (`SEAL_POINTS` in index.html) — Nil has not
-   edited them yet; Worker Flows has no quiz to link; the reference's big
-   Part 2 introduction is not reproduced; and under opt-2 every figure is
-   built at once, which is fine for a prototype but is the cost to watch.
+7. **The scroll layout** — its closes carry summary points drafted by
+   Claude from each section's text (`SEAL_POINTS` in index.html), which Nil
+   has not edited yet; Worker Flows has no quiz to link; the band's
+   Constraints and Levers cards are schematic (a quadrant sketch, three
+   sliders), not live charts; the reference's other two layouts (Chapters,
+   Two modes) are not built; and under One scroll every figure is built at
+   once, fine for a prototype but the cost to watch.
 
 ## 9. Where things are
 
