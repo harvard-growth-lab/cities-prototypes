@@ -2392,6 +2392,10 @@
   :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-header:hover .ci-title{text-decoration:none;}
   #ovWrap:not(.ov2) .ov-block .collapsible-header:focus-visible,
   :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-header:focus-visible{outline:2px solid var(--ink);outline-offset:4px;}
+  /* the ring sits 4px outside the header, and the panel clips its overflow
+     for the closed state: while the header holds keyboard focus the panel
+     lets the ring out (the closed body is display:none, so nothing leaks) */
+  #page-export-basket .ct-step .collapsible-info:has(.collapsible-header:focus-visible){overflow:visible;}
   #ovWrap:not(.ov2) .ov-block .ci-title,
   :is(#page-export-basket, #page-admin-mix) .ct-step .ci-title{flex:1 1 auto;}
   #ovWrap:not(.ov2) .ov-block .ci-mark,
@@ -2657,6 +2661,9 @@
      eases down instead */
   .ct-step:not(.is-on){--ink:#5a656a;--ink-soft:#5a656a;}
   .ct-step:not(.is-on) svg:not(:has(text)){opacity:.55;}
+  /* the explainer's chevron is a control, not a picture: eased to .55 it
+     fell to 2.1 to 1, so in this section it keeps its own 4.5 */
+  #page-export-basket .ct-step:not(.is-on) svg.collapsible-icon{opacity:1;}
   /* the rail's own typographic scale: quiet counter, tight title, the
      Viewing badge as the scale cue, then prose sized to the measure */
   .ct-eyebrow{font-size:var(--t-xs);font-weight:500;color:var(--ink-soft);margin-bottom:14px;}
@@ -2967,7 +2974,9 @@
   #miFigure .mi-view .seg{border:0;background:var(--paper);border-radius:6px;padding:2px;gap:2px;overflow:visible;}
   #miFigure .mi-view .seg-btn{border-left:0;height:24px;padding:0 10px;border-radius:4px;color:var(--ink-soft);}
   #miFigure .mi-view .seg-btn:hover:not(.is-active){background:none;color:var(--ink);}
-  #miFigure .mi-view .seg-btn.is-active{background:#fff;color:var(--teal);box-shadow:0 1px 2px rgba(26,34,38,.12);}
+  /* the white tile alone was 1.1 to 1 against the tray: a 1.5px teal edge
+     (7.9 to 1) says which option is on, without the tile going dark */
+  #miFigure .mi-view .seg-btn.is-active{background:#fff;color:var(--teal);box-shadow:inset 0 0 0 1.5px var(--teal),0 1px 2px rgba(26,34,38,.12);}
   #miFigure .mi-view .mi-year{gap:10px;}
   #miFigure .mi-view .mi-year select{border:0;border-radius:6px;background-color:var(--paper);height:28px;font-size:12px;padding:0 24px 0 10px;}
   #miFigure .mi-view .mi-year select:hover,#miFigure .mi-view .mi-year select:focus{background-color:#eceeea;}
