@@ -685,7 +685,15 @@
   }
   .sec-close .ktest--apply{border-top:1px solid var(--border);border-radius:0;}
   .kc-count{margin-left:auto;font-size:12px;color:var(--ink-soft);font-weight:600;}
-  .kc-view{overflow:hidden;}
+  .kc-view{overflow:clip;}
+  /* a link past the beat's text to the figure it drives: out of sight until
+     a keyboard lands on it */
+  .skip-chart{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
+  .skip-chart:focus{
+    position:static;width:auto;height:auto;clip:auto;overflow:visible;margin:0 0 10px;padding:4px 9px;
+    border-radius:4px;background:var(--teal-tint);color:var(--teal);font-size:12.5px;font-weight:600;
+    text-decoration:underline;text-underline-offset:2px;
+  }
   .kc-track{display:flex;transition:transform .3s ease;}
   @media (prefers-reduced-motion: reduce){ .kc-track{transition:none;} }
   .kc-slide{flex:0 0 100%;min-width:0;padding-right:4px;}
@@ -1499,10 +1507,11 @@
     border:1px solid var(--border-strong);border-radius:6px;background:#fff;
     cursor:pointer;transition:border-color .15s ease,background .15s ease;
   }
-  .ktest-opts button:hover:not(:disabled){border-color:var(--teal);}
+  .ktest-opts button:hover:not(:disabled):not([aria-disabled="true"]){border-color:var(--teal);}
   .ktest-opts button.is-right{border-color:var(--rise);box-shadow:inset 0 0 0 1px var(--rise);}
   .ktest-opts button.is-picked:not(.is-right){border-color:var(--fall);box-shadow:inset 0 0 0 1px var(--fall);background:#fdf3f5;}
-  .ktest-opts button:disabled{cursor:default;}
+  .ktest-opts button:disabled,.ktest-opts button[aria-disabled="true"]{cursor:default;}
+  .ktest-q:focus{outline:none;}
   .ktest-fb{font-size:13.5px;color:var(--ink);margin-top:12px;max-width:72ch;}
   .ktest-ta{
     width:100%;max-width:640px;font:inherit;font-size:14px;padding:10px 12px;
@@ -3191,15 +3200,23 @@
   /* the entry's two verbs unfold inside it on hover, quiet words after the
      name: "Hide · Only", "Bring back · Only", or "Show all" alone for the
      last sector showing. Where there is no hover they are always out. */
-  .sector-key .sk-verbs{display:none;align-items:center;gap:1px;margin:0 4px 0 2px;}
-  .sector-key .sk-item:hover .sk-verbs,.sector-key .sk-item:focus-within .sk-verbs{display:inline-flex;}
-  @media (pointer: coarse){ .sector-key .sk-verbs{display:inline-flex;} }
+  .sector-key .sk-verbs{
+    display:inline-flex;align-items:center;gap:1px;margin:0;max-width:0;overflow:hidden;opacity:0;
+  }
+  /* out of sight until wanted, but never out of the tab order: Shift+Tab
+     from the next entry must land on them, and a focused verb opens them */
+  .sector-key .sk-item:hover .sk-verbs,.sector-key .sk-item:focus-within .sk-verbs{
+    max-width:220px;opacity:1;margin:0 4px 0 2px;overflow:visible;
+  }
+  @media (pointer: coarse){ .sector-key .sk-verbs{max-width:220px;opacity:1;margin:0 4px 0 2px;overflow:visible;} }
   .sector-key .sk-hide,.sector-key .sk-only{
     appearance:none;background:none;border:0;margin:0;padding:2px 4px;border-radius:4px;
     font:inherit;font-size:12.5px;color:var(--ink-soft);cursor:pointer;text-underline-offset:2px;white-space:nowrap;
   }
   .sector-key .sk-hide:hover,.sector-key .sk-only:hover,
-  .sector-key .sk-hide:focus-visible,.sector-key .sk-only:focus-visible{color:var(--ink);text-decoration:underline;outline:none;}
+  .sector-key .sk-hide:focus-visible,.sector-key .sk-only:focus-visible{
+    color:var(--ink);text-decoration:underline;outline:2px solid var(--teal);outline-offset:1px;
+  }
   .sector-key .sk-dot{color:var(--ink-soft);font-size:11px;padding:0 1px;}
   .sector-key .sk-item.is-solo .sk-dot,.sector-key .sk-item.is-solo .sk-only{display:none;}
   /* the way back for the whole key, dressed to be found */
@@ -3219,7 +3236,7 @@
      reached. The entry whose card is open stays lit, which is what says
      the card is its. */
   .sector-key .sk-item{position:relative;}
-  #miFigure[data-key="card"] .sector-key .sk-verbs{display:inline-flex;margin:0;}
+  #miFigure[data-key="card"] .sector-key .sk-verbs{display:inline-flex;margin:0;max-width:none;opacity:1;overflow:visible;}
   #miFigure[data-key="card"] .sector-key .sk-hide,
   #miFigure[data-key="card"] .sector-key .sk-dot{display:none;}
   #miFigure[data-key="card"] .sector-key .sk-only:not(:focus-visible){
@@ -3466,6 +3483,7 @@
     background-repeat:no-repeat;background-position:right 4px center;
   }
   .mi-study select:hover,.mi-study select:focus{outline:none;}
+  .mi-study select:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
   /* The ranking follows the redesign's method rather than the map's: instead of
      standing every other row down, the named row is lit. A soft band behind it,
      its name at full strength, its figure in teal - additive, so nothing the
@@ -5356,7 +5374,7 @@
 
   <div class="tool-body">
     <!-- left rail -->
-    <nav class="rail">
+    <nav class="rail" aria-label="Contents">
       <div class="sec" data-sec="page-intro-q1 page-intro-q2 page-intro-q3 page-intro-q4 page-intro-q5 page-intro-q6 page-intro-q7">
         <button class="sec-head" onclick="goTo('page-intro-q1')"><span class="num"><svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13" aria-hidden="true"><path d="M12 2l2.9 6.2 6.6.8-4.9 4.6 1.3 6.5L12 16.9 6.1 20l1.3-6.5L2.5 9l6.6-.8L12 2z"/></svg></span>Explore Your Assumption</button>
       </div>
@@ -5896,8 +5914,8 @@
                  all, and each is a plain dropdown behind it, so the head
                  reads as the chart's own controls and nothing else. -->
             <div class="mi-studies" id="miStudies">
-              <button type="button" class="mi-studies-btn" aria-expanded="false" aria-haspopup="true">opt</button>
-              <div class="mi-studies-panel" hidden>
+              <button type="button" class="mi-studies-btn" aria-expanded="false" aria-controls="miStudiesPanel">opt</button>
+              <div class="mi-studies-panel" id="miStudiesPanel" role="group" aria-label="Design studies" hidden>
                 <label class="mi-study" id="miRowPair">
                   <span>Control row</span>
                   <select id="miRowOpt" aria-label="How the head's controls are set">
@@ -6783,9 +6801,16 @@
   // Initialize collapsible
   function initCollapsible(){
     const headers = document.querySelectorAll(".collapsible-header");
-    headers.forEach(header => {
+    headers.forEach((header, n) => {
+      /* a disclosure says whether it is open, and what it opens */
+      const lr = header.closest(".lede-row");
+      const own = header.nextElementSibling && header.nextElementSibling.classList.contains("collapsible-content")
+        ? header.nextElementSibling : (lr || header.parentElement).querySelector(".collapsible-content");
+      header.setAttribute("aria-expanded", String(header.classList.contains("active")));
+      if (own){ if (!own.id) own.id = "cc-" + n; header.setAttribute("aria-controls", own.id); }
       header.addEventListener("click", () => {
         header.classList.toggle("active");
+        header.setAttribute("aria-expanded", String(header.classList.contains("active")));
         const content = header.nextElementSibling;
         if(content) content.classList.toggle("show");
       });
@@ -7226,8 +7251,12 @@
     visitedPages.add(bestId);
     document.querySelectorAll(".rail .sec").forEach(s=>
       s.classList.toggle("active", s.dataset.sec.split(" ").includes(bestId)));
-    document.querySelectorAll(".rail .steps li").forEach(li=>
-      li.classList.toggle("active", li.dataset.step===stepId));
+    document.querySelectorAll(".rail .steps li").forEach(li=>{
+      const on = li.dataset.step===stepId;
+      li.classList.toggle("active", on);
+      const b = li.querySelector("button");
+      if(b){ if(on) b.setAttribute("aria-current","true"); else b.removeAttribute("aria-current"); }
+    });
   }
 
   let spyTick=false;
@@ -8664,7 +8693,7 @@
       const answered = picked !== undefined;
       const opts = qq.opts.map(([t, ok], oi) =>
         '<button type="button" data-q="' + qi + '" data-o="' + oi + '"' +
-        (answered ? " disabled" : "") +
+        (answered ? ' aria-disabled="true"' : "") +
         ' class="' + (answered && ok ? "is-right " : "") +
         (answered && oi === picked && !ok ? "is-picked " : "") + '">' + t +
         (answered && ok ? '<span class="mi-sr"> (correct answer)</span>' : "") +
@@ -8672,7 +8701,10 @@
       const fb = answered
         ? '<p class="ktest-fb">' + (qq.opts[picked][1] ? "Right. " : "Not quite. ") + qq.fb + "</p>"
         : "";
-      return '<div class="kc-slide"><p class="ktest-q"><span class="mi-sr">Question ' + (qi + 1) + ' of ' + c.qs.length + ': </span>' + qq.q + '</p>' +
+      /* only the question the reader is on is in the tab order and the
+         reading order: the others wait off to the side, inert, so Tab can
+         neither reach them nor scroll the carousel out of step with its dots */
+      return '<div class="kc-slide"' + (qi === st.qIdx ? "" : " inert") + '><p class="ktest-q" tabindex="-1"><span class="mi-sr">Question ' + (qi + 1) + ' of ' + c.qs.length + ': </span>' + qq.q + '</p>' +
         '<div class="ktest-opts">' + opts + "</div>" + fb + "</div>";
     }).join("");
     const dots = c.qs.map((_, qi) =>
@@ -8713,21 +8745,45 @@
     const rerender = () => {
       const cur = document.querySelector(".sec-close");
       if (!cur) return;
+      /* the quiz is drawn again on every move; focus is put back on the
+         control it was on, or a keyboard would be dropped to the page */
+      const a = document.activeElement;
+      let again = null;
+      if (a && cur.contains(a)){
+        if (a.dataset.dq) again = '.kc-arrow[data-dq="' + a.dataset.dq + '"]';
+        else if (a.dataset.goq) again = '.kc-dot[data-goq="' + a.dataset.goq + '"]';
+        else if (a.dataset.q !== undefined) again = '.ktest-opts button[data-q="' + a.dataset.q + '"][data-o="' + a.dataset.o + '"]';
+      }
       const holder = document.createElement("div");
-      holder.innerHTML = renderSecClose(name);
+      /* the modal shows the quiz alone, and must keep doing so after an answer */
+      holder.innerHTML = renderSecClose(name, !!cur.closest("dialog"));
       cur.replaceWith(holder.firstChild);
       wireSecClose(name);
       if (window.syncCheckCard) window.syncCheckCard();
+      if (again){
+        /* an arrow that has just run out of road is disabled: the dot for the question the reader is on takes focus instead */
+        let n = document.querySelector(".sec-close " + again);
+        if (!n || n.disabled) n = document.querySelector(".sec-close .kc-dot.on");
+        if (n) n.focus({ preventScroll: true });
+      }
     };
     root.querySelectorAll(".ktest-opts button").forEach(b => {
       b.addEventListener("click", () => {
+        /* an answered question stays reachable (aria-disabled, not disabled)
+           so its "(correct answer)" can be read, and ignores a second answer */
+        if (st.answers[+b.dataset.q] !== undefined) return;
         st.answers[+b.dataset.q] = +b.dataset.o;
         const said = document.querySelector(".kq-status"), qq = c.qs[+b.dataset.q];
         if (said && qq) said.textContent = (qq.opts[+b.dataset.o][1] ? "Right. " : "Not quite. ") + qq.fb;
         if (Object.keys(st.answers).length === c.qs.length) CHECK_DONE.add(name);
         const next = c.qs.findIndex((qq, qi) => st.answers[qi] === undefined);
         if (next >= 0) setTimeout(() => {
-          if (st.answers[next] === undefined){ st.qIdx = next; rerender(); }
+          if (st.answers[next] === undefined){
+            /* on to the next question: focus follows only if it was in the quiz */
+            const cur = document.querySelector(".sec-close"), wasIn = !!(cur && cur.contains(document.activeElement));
+            st.qIdx = next; rerender();
+            if (wasIn){ const qEl = document.querySelector(".sec-close .kc-slide:not([inert]) .ktest-q"); if (qEl) qEl.focus({ preventScroll: true }); }
+          }
         }, 1600);
         rerender();
       });
@@ -8953,7 +9009,8 @@
     const stops = SECTIONS.map((sec, k) =>
       (k ? '<i class="pgr-seg' + (k <= i ? " is-past" : "") + '"></i>' : "") +
       '<button type="button" class="pgr-stop' + (k < i ? " is-past" : k === i ? " is-cur" : "") +
-      '" data-go="' + k + '" title="' + sec.name + '" aria-label="' + sec.name + '">' +
+      '" data-go="' + k + '" title="' + sec.name + '" aria-label="' + sec.name + '"' +
+      (k === i ? ' aria-current="step"' : '') + '>' +
       (k < i ? CHECK : '<span>' + (k + 1) + '</span>') + '</button>').join("");
     const badge = k => '<i class="pgc-stop' + (k < i ? " is-past" : "") + '" aria-hidden="true">' + (k < i ? CHECK : (k + 1)) + '</i>';
     /* the section's end is three ways on, each a card: back; the check,
@@ -9637,8 +9694,22 @@
       eye.textContent = secName;
       var cnt = document.createElement("b"); cnt.className = "ct-count";
       cnt.textContent = n + "/" + total;
+      /* "1/3" is read literally; a screen reader is told the step instead */
+      cnt.setAttribute("aria-hidden", "true");
       eye.appendChild(cnt);
+      var srn = document.createElement("span"); srn.className = "mi-sr";
+      srn.textContent = " step " + n + " of " + total;
+      eye.appendChild(srn);
       st.appendChild(eye);
+      /* the text comes before the chart in the reading order; a keyboard can
+         pass it and go to the figure the beats drive */
+      if (fig && fig.id){
+        if (!fig.hasAttribute("tabindex")) fig.setAttribute("tabindex", "-1");
+        var skip = document.createElement("a"); skip.className = "skip-chart"; skip.href = "#" + fig.id;
+        skip.textContent = "Skip to the chart";
+        skip.addEventListener("click", function(e){ e.preventDefault(); fig.focus({ preventScroll: false }); });
+        st.appendChild(skip);
+      }
       if (headMoved) headMoved.forEach(function(k){ st.appendChild(k); });
       kids.forEach(function(k){
         if (k.matches && k.matches(TEXT_SEL)){

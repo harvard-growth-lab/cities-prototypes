@@ -3300,6 +3300,7 @@
     const clusterFill = fillBy;
     let resetSec = null;              /* the key fills this in: applySec(null) */
     let hideKeyTip = null;            /* and this: close the key's card, if one is open */
+    let keyTipIsOpen = () => false;   /* and whether one is */
     /* the filters moved: every tiling is stale, and the grounds are laid out again */
     function rebuildSecGeo(){ invalidateMaps(); layoutClusters(); }
 
@@ -3662,8 +3663,9 @@
       });
       sel.select("title").text(c => "Take " + TIER_NAMES[c.k].toLowerCase() + " off the map");
       sel.select("rect.mi-card-x-hit").attr("aria-label", c => "Take " + TIER_NAMES[c.k].toLowerCase() + " off the map")
-        .on("click", (ev, c) => { ev.stopPropagation(); setTier(c.k, false); })
-        .on("keydown", (ev, c) => { if (ev.key === "Enter" || ev.key === " "){ ev.preventDefault(); ev.stopPropagation(); setTier(c.k, false); } });
+        .attr("data-close", c => c.k)
+        .on("click", (ev, c) => { ev.stopPropagation(); setTier(c.k, false, ev.detail === 0); })
+        .on("keydown", (ev, c) => { if (ev.key === "Enter" || ev.key === " "){ ev.preventDefault(); ev.stopPropagation(); setTier(c.k, false, true); } });
     }
     drawCards(false);
     /* the grounds a reader has cancelled, offered back above the chart */
@@ -3677,7 +3679,7 @@
     }
     /* one state for the beat: the map's grounds and the bars' filter are the
        same three tiers, so cancelling a ground drops it from both */
-    function setTier(k, on){
+    function setTier(k, on, byKey){
       if (tierOn[k] === on) return;
       const probe = tierOn.slice(); probe[k] = on;
       if (!probe.some(Boolean) || !tierListWith(probe, secOn).length) return;
@@ -3690,11 +3692,12 @@
       syncTierBack();
       if (syncTierMenu) syncTierMenu();
       if (step >= 0) paint(step, !reduced());
+      if (byKey){ refocus = on ? { kind: "close", k: k } : { kind: "chip", k: k }; applyRefocus(); }
     }
     let syncTierMenu = null;
     if (tierBack) on(tierBack, "click", ev => {
       const b = ev.target.closest(".mcl-chip[data-tier]");
-      if (b) setTier(+b.dataset.tier, true);
+      if (b) setTier(+b.dataset.tier, true, ev.detail === 0);
     });
     syncTierBack();
     const gHi = svg.append("g").attr("class", "mi-hilite-layer");
@@ -4051,7 +4054,48 @@
     const reduced = () => window.matchMedia &&
       matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+    /* Escape does one thing per press, from the top of what is open down:
+       the studies panel, the tradability menu, a donut card, the key's
+       card, a pinned cell card, the zoom. Each layer says whether it is
+       open and how to close it; the quiz dialog has its own, and a press
+       inside it is left to it. The pinned card and the zoom answer only
+       when the figure is where the reader is. */
+    const escLayers = [];
+    on(document, "keydown", ev => {
+      if (ev.key !== "Escape" || ev.defaultPrevented) return;
+      const t = (ev.target === document || ev.target === document.documentElement) ? document.body : ev.target;
+      if (t && t.closest && t.closest("dialog")) return;
+      /* the figure and the text beside it that drives it (the study word
+         rides that text's counter), or the page with the pointer over the
+         figure */
+      const studyEl = document.getElementById(p + "Studies");
+      const scope = fig.closest(".ct-scrolly") || fig;
+      const inFig = scope.contains(t) || !!(studyEl && studyEl.contains(t)) || (t === document.body && fig.matches(":hover"));
+      const layer = escLayers.filter(l => l.open() && (!l.scoped || inFig)).sort((a, b) => a.p - b.p)[0];
+      if (layer){ layer.close(); ev.preventDefault(); }
+    });
+    /* where a keyboard's focus goes when its action takes away the control it
+       was on (see applyRefocus) */
+    let refocus = null;
+    /* the trad menu's heads are drawn in every beat's axis group and faded
+       with it; a faded head must not be a stop for the keyboard */
+    let menuHeadT = null;
+    function syncMenuHeads(){
+      el.querySelectorAll("g.mi-tradmenu").forEach(g => {
+        let vis = true;
+        for (let n = g; n && n !== el; n = n.parentNode){
+          if (n.nodeType === 1 && +getComputedStyle(n).opacity < 0.05){ vis = false; break; }
+        }
+        g.setAttribute("tabindex", vis ? 0 : -1);
+        if (vis) g.removeAttribute("aria-hidden"); else g.setAttribute("aria-hidden", "true");
+      });
+    }
+
     function paint(i, animate){
+      /* the zoom targets belong to the map beats and the map view: anywhere
+         else they are drawn away, or a keyboard would still find them */
+      if (!((i === 0 || i === 4 || i === 7) && view === "map")) drawHits({ blocks: [], groups: [] });
+      clearTimeout(menuHeadT); menuHeadT = setTimeout(syncMenuHeads, animate ? 1000 : 80);
       /* only a first arrival at the ranking is staged; re-sorting it is not */
       arriving = !!animate && i === 6 && painted !== 6;
       const at = STATE[i];
@@ -4236,11 +4280,14 @@
         return shown[0] || all[0] || null;
       };
       const isOpen = () => !menuEl.hidden;
-      const closeMenu = () => {
+      const closeMenu = toHead => {
+        const was = !menuEl.hidden;
         menuEl.hidden = true;
         el.querySelectorAll("g.mi-tradmenu").forEach(g => {
           g.classList.remove("is-open"); g.setAttribute("aria-expanded", "false");
         });
+        /* focus goes back to the head that opened it, not to the body */
+        if (toHead === true && was){ const g = headG(); if (g && g.focus) g.focus({ preventScroll: true }); }
       };
       syncTierMenu = () => { if (!menuEl.hidden && menuCtx === "bars") syncItems(); };
       const syncItems = () => {
@@ -4251,7 +4298,7 @@
           b.setAttribute("aria-pressed", String(!!on[k]));
         });
       };
-      const openMenu = () => {
+      const openMenu = byKey => {
         const g = headG(); if (!g) return;
         syncItems();
         const host = el.parentNode;                       /* the viz wrapper */
@@ -4265,24 +4312,26 @@
         menuEl.style.top = (hb.bottom - pb.top + 6) + "px";
         g.classList.add("is-open");
         g.setAttribute("aria-expanded", "true");
+        /* opened from the keyboard, the menu's own items are where it goes next */
+        if (byKey){ const first = menuEl.querySelector(".tm-item"); if (first) first.focus({ preventScroll: true }); }
       };
       /* the head is redrawn whenever the filter moves, so the click is caught
          on the figure rather than bound to a node that will not survive */
-      const toggleFrom = g => {
+      const toggleFrom = (g, byKey) => {
         const ctx = ctxOf(g);
-        if (isOpen() && ctx === menuCtx){ closeMenu(); return; }
-        closeMenu(); menuCtx = ctx; openMenu();
+        if (isOpen() && ctx === menuCtx){ closeMenu(byKey); return; }
+        closeMenu(); menuCtx = ctx; openMenu(byKey);
       };
       on(el, "click", ev => {
         const g = ev.target.closest && ev.target.closest("g.mi-tradmenu");
-        if (g) toggleFrom(g);
+        if (g) toggleFrom(g, ev.detail === 0);
       });
       on(el, "keydown", ev => {
         if (ev.key !== "Enter" && ev.key !== " ") return;
         const g = ev.target.closest && ev.target.closest("g.mi-tradmenu");
         if (!g) return;
         ev.preventDefault();
-        toggleFrom(g);
+        toggleFrom(g, true);
       });
       on(menuEl, "click", ev => {
         const b = ev.target.closest(".tm-item[data-tier]");
@@ -4321,7 +4370,7 @@
         if (ev.target.closest && ev.target.closest("g.mi-tradmenu")) return;
         closeMenu();
       });
-      on(document, "keydown", ev => { if (ev.key === "Escape") closeMenu(); });
+      escLayers.push({ p: 2, open: isOpen, close: () => closeMenu(true) });
       closeMenuRef = closeMenu;
     }
 
@@ -4391,9 +4440,13 @@
       step = i;
       fig.dataset.step = String(i);
       seatTableBtn(i);
-      /* a head that is only faded still held its buttons for the keyboard */
+      /* a head that is only faded still held its buttons for the keyboard -
+         and so did the title slots, whose chips bring a tier back */
       [[p + "AllHead", i === 0], [p + "ClusterHead", i === 4], [p + "Sort", i === 3 || i === 6]].forEach(([id, on]) => {
         const h = document.getElementById(id); if (h) h.inert = !on;
+      });
+      [[".mi-title-all", i === 0], [".mi-title-tier", i === 4]].forEach(([sel, on]) => {
+        const h = document.querySelector("#" + p + "View " + sel); if (h) h.inert = !on;
       });
       /* a blank the beat has just brought into the flow - the bars' order
          on the first beat - could not be measured while it was out of it */
@@ -4556,7 +4609,7 @@
           on(document, "pointerdown", ev => {
             if (shownK != null && !donutHost.contains(ev.target)) putAway();
           });
-          on(document, "keydown", ev => { if (ev.key === "Escape" && shownK != null) putAway(); });
+          escLayers.push({ p: 3, open: () => shownK != null, close: putAway });
           clearTierHot = putAway;
         }
         /* the switch between the two: the share on the grounds and the key,
@@ -4709,6 +4762,7 @@
     }
     /* the zoom's targets, under the cells for the keyboard: the sector
        blocks at the top of the map, the groups inside a sector */
+    function hitsLive(){ return (step === 0 || step === 4 || step === 7) && view === "map"; }
     function drawHits(L){
       let targets = [];
       /* on the tiers a sector or a group is a block in each ground, so each
@@ -4727,8 +4781,8 @@
         .merge(h)
         .attr("x", t => t.box.x).attr("y", t => t.box.y).attr("width", t => t.box.w).attr("height", t => t.box.h)
         .attr("aria-label", t => t.label)
-        .on("click", (ev, t) => { ev.stopPropagation(); setFocus(t.sector, t.group); })
-        .on("keydown", (ev, t) => { if (ev.key === "Enter" || ev.key === " "){ ev.preventDefault(); setFocus(t.sector, t.group); } })
+        .on("click", (ev, t) => { ev.stopPropagation(); if (hitsLive()) setFocus(t.sector, t.group, ev.detail === 0); })
+        .on("keydown", (ev, t) => { if (ev.key === "Enter" || ev.key === " "){ ev.preventDefault(); if (hitsLive()) setFocus(t.sector, t.group, true); } })
         .on("focus", (ev, t) => { if (ev.target.matches(":focus-visible")) showRing(t.box); })
         .on("blur", () => showRing(null));
     }
@@ -4758,23 +4812,50 @@
     const sectorBlocks = want => !mapLayout ? [] : mapLayout.blocks.filter(b => want.indexOf(b.sector) >= 0).map(b => b.box);
 
     /* ---- the zoom: one sector over the whole map, then one of its groups ---- */
-    function setFocus(sec, grp){
+    /* After a keyboard action removes the control focus was on, focus goes
+       where the reader will want it: into the trail after zooming in, back
+       to the block just left after zooming out, onto the chip after a tier
+       is taken off the map and onto that ground's cross after it is put
+       back. A pointer's action never moves focus. */
+    function applyRefocus(){
+      const r = refocus; refocus = null; if (!r) return;
+      const a = document.activeElement;
+      if (a && a !== document.body && !fig.contains(a)) return;
+      let node = null;
+      if (r.kind === "crumb"){
+        const note = document.getElementById(p + (step === 4 ? "Note4" : "Note"));
+        node = note && note.querySelector('.mi-crumb[data-zoom="all"]');
+      } else if (r.kind === "hit"){
+        const hits = [].slice.call(el.querySelectorAll("rect.mi-mhit"));
+        node = hits.find(h => { const t = d3.select(h).datum(); return r.group ? t.group === r.group : (t.sector === r.sector && !t.group); }) || hits[0];
+      } else if (r.kind === "chip"){
+        node = tierBack && tierBack.querySelector('.mcl-chip[data-tier="' + r.k + '"]');
+      } else if (r.kind === "close"){
+        node = el.querySelector('rect.mi-card-x-hit[data-close="' + r.k + '"]');
+      }
+      if (!node) node = svgEl;
+      if (node && node.focus) node.focus({ preventScroll: true });
+      if (r.kind === "hit" && node && node.matches && node.matches("rect.mi-mhit")) showRing(d3.select(node).datum().box);
+    }
+    function setFocus(sec, grp, byKey){
       grp = grp || null;
       if (sec === focus && grp === focusGroup) return;
+      if (byKey){
+        const od = focusGroup ? 2 : focus ? 1 : 0, nd = sec ? (grp ? 2 : 1) : 0;
+        refocus = nd > od ? { kind: "crumb" } : od === 2 ? { kind: "hit", group: focusGroup } : { kind: "hit", sector: focus };
+      }
       focus = sec || null; focusGroup = focus ? grp : null;
       fig.dataset.focus = focus ? (focusGroup ? "group" : "sector") : "";
       hideMapTip(true);
       reBars();
       if (syncKeyRef) syncKeyRef();
       if (step >= 0) paint(step, !reduced());
+      applyRefocus();
     }
-    const zoomOut = () => { if (focusGroup) setFocus(focus, null); else if (focus) setFocus(null, null); };
-    on(document, "keydown", ev => {
-      if (ev.key !== "Escape" || ev.defaultPrevented) return;
-      if (hideKeyTip && hideKeyTip()) return;
-      if (pinned){ hideMapTip(true); return; }
-      if ((step === 0 || step === 4 || step === 7) && view === "map" && focus) zoomOut();
-    });
+    const zoomOut = byKey => { if (focusGroup) setFocus(focus, null, byKey); else if (focus) setFocus(null, null, byKey); };
+    escLayers.push({ p: 4, open: () => keyTipIsOpen(), close: () => { if (hideKeyTip) hideKeyTip(); } });
+    escLayers.push({ p: 5, scoped: true, open: () => !!pinned, close: () => hideMapTip(true) });
+    escLayers.push({ p: 6, scoped: true, open: () => (step === 0 || step === 4 || step === 7) && view === "map" && !!focus, close: () => zoomOut(true) });
 
     /* the hand that taps, for either card's last line */
     const HAND = '<svg class="skt-hand" viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' +
@@ -4845,7 +4926,8 @@
             ? '<button type="button" class="mi-crumb" data-zoom="sector">' + escHtml(focus) + '</button>' +
               '<span class="mi-crumb-sep" aria-hidden="true">›</span><span class="mi-crumb-here" aria-current="location">' + escHtml(gName) + '</span>'
             : '<span class="mi-crumb-here" aria-current="location">' + escHtml(focus) + '</span>') +
-          '<button type="button" class="mi-crumb-x" aria-label="Zoom out">×</button></span>';
+          '<button type="button" class="mi-crumb-x" aria-keyshortcuts="Escape" aria-label="Zoom out to ' +
+          (focusGroup ? escHtml(focus) : "all sectors") + ' (Esc)">×</button></span>';
       } else txt = "";
       /* only the head that is showing carries them: the other head is only
          faded, and buttons in it would still be stops for the keyboard */
@@ -4876,12 +4958,14 @@
       if (colorBy === "complexity") said += ", coloured by complexity";
       if (liveEl.textContent !== said) liveEl.textContent = said;
       if (svgEl) svgEl.setAttribute("aria-label", mapTitleOf());
+      fig.setAttribute("aria-label", mapTitleOf());
     }
     notes.forEach(n => on(n, "click", ev => {
       const b = ev.target.closest("[data-zoom], .mi-crumb-x"); if (!b) return;
-      if (b.classList.contains("mi-crumb-x")) zoomOut();
-      else if (b.dataset.zoom === "all") setFocus(null, null);
-      else setFocus(focus, null);
+      const byKey = ev.detail === 0;
+      if (b.classList.contains("mi-crumb-x")) zoomOut(byKey);
+      else if (b.dataset.zoom === "all") setFocus(null, null, byKey);
+      else setFocus(focus, null, byKey);
     }));
 
     /* ---- the same industries as a table, under the key: whatever the map
@@ -5070,6 +5154,7 @@
         return was;
       }
       hideKeyTip = hideTip;
+      keyTipIsOpen = () => !tipEl.hidden;
       function showTip(b, viaKey){
         if (!cardMode()) return;
         const i = +b.dataset.si, sec = order[i];
@@ -5324,6 +5409,11 @@
       };
       hlSpans.forEach(span => {
         const light = () => { if (fig.dataset.step !== hlStep(span)) return; clearHl(); litHl(span); };
+        /* a phrase that points at the chart is a control: a screen reader
+           says so, and Enter or Space does what a click does, without
+           Space scrolling the page */
+        span.setAttribute("role", "button");
+        on(span, "keydown", ev => { if (ev.key === "Enter" || ev.key === " "){ ev.preventDefault(); span.click(); } });
         on(span, "mouseenter", light);
         on(span, "focus", light);
         on(span, "mouseleave", clearHl);
@@ -5432,15 +5522,18 @@
     if (studies){
       const sBtn = studies.querySelector(".mi-studies-btn");
       const sPanel = studies.querySelector(".mi-studies-panel");
-      const setOpen = on => {
+      const setOpen = (on, toBtn) => {
+        const was = !sPanel.hidden;
         sPanel.hidden = !on;
         sBtn.setAttribute("aria-expanded", String(on));
+        /* closing it from inside, the word it opened from is where focus goes */
+        if (!on && was && toBtn) sBtn.focus({ preventScroll: true });
       };
       on(sBtn, "click", () => setOpen(sPanel.hidden));
       on(document, "click", ev => {
         if (!sPanel.hidden && !studies.contains(ev.target)) setOpen(false);
       });
-      on(document, "keydown", ev => { if (ev.key === "Escape") setOpen(false); });
+      escLayers.push({ p: 1, open: () => !sPanel.hidden, close: () => setOpen(false, true) });
     }
 
     /* the bars' order: the same bars, re-sorted. The set does not change,
