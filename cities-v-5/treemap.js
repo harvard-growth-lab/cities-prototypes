@@ -4383,6 +4383,7 @@
       const first = step < 0;
       step = i;
       fig.dataset.step = String(i);
+      seatTableBtn(i);
       /* a blank the beat has just brought into the flow - the bars' order
          on the first beat - could not be measured while it was out of it */
       fitPicks(fig);
@@ -4848,10 +4849,19 @@
     /* ---- the same industries as a table, under the key: whatever the map
        is showing, largest first, with the readings the card carries ---- */
     const tableHost = document.getElementById(p + "Table");
+    /* the word that opens the table stands at the map's top right corner, on
+       the line the crumbs take when the reader has zoomed - the note of the
+       beat showing - and travels between the two map beats' notes. The
+       table itself opens where it did, under the key. */
+    const tableBtn = document.getElementById(p + "TableBtn") || (tableHost && tableHost.querySelector(".mi-table-btn"));
+    const seatTableBtn = i => {
+      const note = document.getElementById(p + (i === 4 ? "Note4" : "Note"));
+      if (tableBtn && note && (i === 0 || i === 4) && tableBtn.parentNode !== note) note.appendChild(tableBtn);
+    };
     let tableOpen = false;
     function syncTable(){
       if (!tableHost) return;
-      const btn = tableHost.querySelector(".mi-table-btn"), wrapT = tableHost.querySelector(".mi-table-wrap");
+      const btn = tableBtn, wrapT = tableHost.querySelector(".mi-table-wrap");
       const on = tableOpen && !!mapLayout;
       wrapT.hidden = !on;
       btn.setAttribute("aria-expanded", String(on));
@@ -4871,9 +4881,10 @@
           td(cxText(r.pci)) + td(rcaText(r.rca) || "No value", "num") + '</tr>').join("") +
         '</tbody></table>';
     }
-    if (tableHost) on(tableHost.querySelector(".mi-table-btn"), "click", () => {
+    if (tableHost && tableBtn) on(tableBtn, "click", () => {
       tableOpen = !tableOpen; syncTable();
     });
+    seatTableBtn(step);
 
     /* the map is tiled at the width it is drawn at: measured when the
        figure comes on screen and again whenever that width changes, and

@@ -3198,7 +3198,13 @@
   .mi-crumb-x:hover{color:var(--ink);background:var(--teal-tint);}
   /* the same industries as a table: a toggle under the key, and the rows
      in a scrolling frame with the head held at the top */
-  .mi-table{margin-top:8px;}
+  .mi-table{margin-top:0;}
+  /* the word sits at the right end of the note's line, at the map's top
+     right corner; on the beats that have no map, and under the bars, it
+     is out of the way altogether rather than faded with its head */
+  .mi-note .mi-table-btn{margin-left:auto;flex:none;}
+  #miFigure:not([data-step="0"]):not([data-step="4"]) .mi-table-btn,
+  #miFigure[data-view="alt"] .mi-table-btn{display:none;}
   .mi-table-btn{
     appearance:none;display:inline-flex;align-items:center;gap:5px;background:none;border:0;padding:3px 0;
     font:inherit;font-size:12.5px;font-weight:500;color:var(--ink-soft);cursor:pointer;border-radius:3px;
@@ -3207,7 +3213,7 @@
   .mi-table-btn:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
   .mi-table-btn svg{width:12px;height:12px;transition:transform .15s ease;}
   .mi-table-btn[aria-expanded="true"] svg{transform:rotate(180deg);}
-  .mi-table-wrap{margin-top:4px;max-height:240px;overflow:auto;border:1px solid var(--border);border-radius:3px;}
+  .mi-table-wrap{margin-top:8px;max-height:240px;overflow:auto;border:1px solid var(--border);border-radius:3px;}
   .mi-table-wrap[hidden]{display:none;}
   .mi-tbl{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums;color:var(--ink);}
   .mi-tbl thead{position:sticky;top:0;background:#fff;z-index:1;}
@@ -5950,7 +5956,7 @@
           <!-- the same industries as a table: whatever the map is showing,
                largest first, with the readings the card carries -->
           <div class="mi-table" id="miTable">
-            <button type="button" class="mi-table-btn" aria-expanded="false" aria-controls="miTableWrap"><span class="mi-table-btn-txt">Show as table</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+            <button type="button" class="mi-table-btn" id="miTableBtn" aria-expanded="false" aria-controls="miTableWrap"><span class="mi-table-btn-txt">Show as table</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
             <div class="mi-table-wrap" id="miTableWrap" hidden></div>
           </div>
         </div>
