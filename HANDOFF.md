@@ -401,8 +401,8 @@ row), `--rise #2d7d32` / `--fall #c0244a` (direction), `--control-edge
 #7f8f95` (the edge of every field and select, 3 to 1 on white), `--border
 #e2e7e8`, `--border-strong #c3ccce`, `--paper #f4f5f2`. `--ink` and
 `--ink-soft` are `@property`-registered colours so a beat can ease between
-its active and faded ink. Type is Source Sans 3; the key is 12.5 px; small
-buttons 12 px/600. Every word on the page read 4.5 to 1 or better at
+its active and faded ink. Type is Source Sans 3; the key is 13 px (its verbs
+and "Show all" too); small buttons 12 px/600. Every word on the page read 4.5 to 1 or better at
 hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
 
 ## 7. How Nil likes to work — read this twice
