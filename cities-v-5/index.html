@@ -3325,6 +3325,14 @@
     transition:background-color .15s ease,border-color .15s ease;
   }
   .mi-hl:hover,.mi-hl.is-lit{background:var(--teal-tint);border-bottom-color:var(--teal);}
+  /* a phrase naming a sector carries the sector's colour block, as the key
+     does; the phrase stays on one line, so the block cannot be left behind
+     at a line's end while its words go on to the next */
+  .mi-hl.mi-hl-sec{white-space:nowrap;}
+  .mi-hl.mi-hl-sec::before{
+    content:"";display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--sw,#ccc);
+    margin-right:5px;vertical-align:-1px;
+  }
   .mi-hl:focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:2px;}
   #miTreemapSvg .mi-cell{transition:opacity .18s ease;}
   #miTreemapSvg .mi-cell.is-dim{opacity:.13;}

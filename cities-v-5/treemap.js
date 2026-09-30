@@ -4630,7 +4630,7 @@
     let mapLayout = null;                 /* the tiling on screen */
     const mapTip = document.getElementById(p + "Tip");
     const mapWrap = el.closest(".tradable-viz-wrapper");
-    let pinned = null, syncKeyRef = null;
+    let pinned = null, syncKeyRef = null, hlSwatchRef = null;
     const mapFillOf = c => colorBy === "complexity" ? cxFillOf(c.cell.pci) : sectorColors[c.cell.sector];
     const mapInkOf = c => colorBy === "complexity" ? cellInk(cxFillOf(c.cell.pci)) : sectorInk(c.cell.sector);
     function layoutFor(i){ return i === 4 ? mapTiers() : (i === 5 || i === 7) ? mapTrad() : mapFull(); }
@@ -5258,21 +5258,34 @@
         } else if (ds.ind){
           /* the ranking lights what is named instead, and leaves the rest alone */
           const keep = new Set(ds.ind.split("|"));
+          const named = d => keep.has(d.name) || keep.has(d.title) || keep.has(d.full) || keep.has(d.short);
           const R = hlStep(span) === "3" ? R1 : R2;
-          if (R && R.row){ litBands(R, keep); R.row.classed("is-lit", d => keep.has(d.name)); }
+          if (R && R.row){
+            const keepNames = new Set(); R.row.each(d => { if (named(d)) keepNames.add(d.name); });
+            litBands(R, keepNames); R.row.classed("is-lit", d => keepNames.has(d.name));
+          }
         }
         span.classList.add("is-lit");
       };
       hlSpans.forEach(span => {
-        const on = () => { if (fig.dataset.step !== hlStep(span)) return; clearHl(); litHl(span); };
-        on(span, "mouseenter", on);
-        on(span, "focus", on);
+        const light = () => { if (fig.dataset.step !== hlStep(span)) return; clearHl(); litHl(span); };
+        on(span, "mouseenter", light);
+        on(span, "focus", light);
         on(span, "mouseleave", clearHl);
         on(span, "blur", clearHl);
         on(span, "click", () => {
-          if (span.classList.contains("is-lit")) clearHl(); else on();
+          if (span.classList.contains("is-lit")) clearHl(); else light();
         });
       });
+      /* a phrase naming a sector wears the sector's colour block, as the key
+         does, so the words and the map share one mark */
+      const hlSwatch = () => hlSpans.forEach(span => {
+        if (!span.dataset.sector) return;
+        span.classList.add("mi-hl-sec");
+        span.style.setProperty("--sw", sectorColors[span.dataset.sector.split("|")[0]] || "#ccc");
+      });
+      hlSwatch();
+      hlSwatchRef = hlSwatch;
       /* leaving the beat must not leave the mix half dimmed */
       clearHighlight = clearHl;
 
@@ -5331,6 +5344,7 @@
         b.style.setProperty("--sw", sectorColors[nm.textContent] || "#ccc");
       });
       hideMapTip(true);
+      if (hlSwatchRef) hlSwatchRef();
       if (step >= 0) paint(step, !reduced());
     });
 
