@@ -3552,6 +3552,14 @@
   #miTreemapSvg .mi-mlab{pointer-events:none;}
   #miTreemapSvg .mi-mcell.is-dim{opacity:.13;}
   #miTreemapSvg .mi-mcell.is-mute .mi-mrect{fill:#e3e8e9;}
+  /* the sectors' frames and names (the sector-names study): they dim and
+     grey with the cells they frame */
+  #miTreemapSvg .mi-secname{pointer-events:none;}
+  #miTreemapSvg .mi-secg.is-zoomable .mi-sechead{cursor:pointer;}
+  #miTreemapSvg .mi-secg.is-dim{opacity:.13;}
+  #miTreemapSvg .mi-secg.is-mute .mi-sechead{fill:#cfd6d8;}
+  #miTreemapSvg .mi-secg.is-mute .mi-secframe{stroke:#cfd6d8;}
+  #miTreemapSvg .mi-secg.is-mute .mi-secname{fill:#60686b;}
   @media (prefers-reduced-motion: reduce){ #miTreemapSvg .mi-mcell{transition:none;} }
   /* the map's card, after the reference: the industry's short name, its
      full name, where it sits, and its three readings */
@@ -3663,6 +3671,7 @@
   /* the study's own control belongs to the beats whose text names sectors */
   /* and the palette's to the beats that colour by sector */
   #page-export-basket:has(#miFigure:not([data-step="0"]):not([data-step="4"])) #miPalPair{display:none;}
+  #page-export-basket:has(#miFigure:not([data-step="0"]):not([data-step="4"])) #miSecNamesPair{display:none;}
   /* the row study's, to the beats that show the row */
   #page-export-basket:has(#miFigure:not([data-step="0"]):not([data-step="1"]):not([data-step="3"]):not([data-step="4"]):not([data-step="5"]):not([data-step="6"]):not([data-step="7"])) #miRowPair{display:none;}
   /* and the key's, to the beats that show the key */
@@ -6191,6 +6200,14 @@
                   <select id="miPal" aria-label="Which palette the sectors wear">
                     <option value="house" selected>opt-1</option>
                     <option value="tol">opt-2</option>
+                  </select>
+                </label>
+                <label class="mi-study" id="miSecNamesPair">
+                  <span>Sector names</span>
+                  <select id="miSecNames" aria-label="Whether the sectors are named on the map">
+                    <option value="off" selected>opt-1</option>
+                    <option value="band">opt-2</option>
+                    <option value="gutter">opt-3</option>
                   </select>
                 </label>
                 <label class="mi-study" id="miGroundPair">

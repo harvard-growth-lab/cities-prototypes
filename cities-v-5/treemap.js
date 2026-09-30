@@ -2879,6 +2879,36 @@
   const MAP = { padding: 1, minSide: 4, inset: 3, first: 1.1, step: 0.9, shareGap: 0.3,
                 descent: 0.25, size: 12, min: 10, weight: 500, shareWeight: 400 };
   const MAP_FONT = '"Source Sans 3", "Source Sans Pro", sans-serif';
+  /* the sector-names study: "off", or the sectors named on the map -
+     "band", a 16px strip in a deeper shade of the sector's colour with a
+     hairline round its block, or "gutter", the name in ink on the page's
+     white above the block, the block's cells inset from it. The strip is
+     screen pixels, like the labels, and the tiling makes the room for it. */
+  let SEC_NAMES = "off";
+  const SEC_STRIP = 16, SEC_INSET = 3, SEC_NAME_SIZE = 11;
+  const SECTOR_SHORT = { "Professional & Business": "Professional", "Education & Health": "Edu & Health",
+    "Trade & Transportation": "Trade & Transport", "Leisure & Hospitality": "Leisure", "Financial Activities": "Financial",
+    "Manufacturing": "Manufacturing", "Construction": "Construction", "Other": "Other", "Natural Resources": "Natural" };
+  /* the band's shade: the sector's colour taken down a little, and further
+     where a little leaves neither white nor ink reading 4.5 to 1 on it */
+  const secDeeper = sec => {
+    const c = d3.color(sectorColors[sec] || "#ccc"); if (!c) return "#888";
+    for (let k = 0.55; k <= 1.6; k += 0.15){
+      const d = c.darker(k), L = relLum(d.rgb());
+      if (Math.max(1.05 / (L + 0.05), (L + 0.05) / (LUM_INK + 0.05)) >= 4.5) return d.formatHex();
+    }
+    return c.darker(1.6).formatHex();
+  };
+  /* the name on white: the sector's colour taken down until it reads 4.5 to
+     1, and ink where no shade of it does */
+  const gutterInk = sec => {
+    const c = d3.color(sectorColors[sec] || "#888"); if (!c) return CELL_INK;
+    for (let k = 0.9; k <= 2.6; k += 0.25){
+      const d = c.darker(k), r = 1.05 / (relLum(d.rgb()) + 0.05);
+      if (r >= 4.5) return d.formatHex();
+    }
+    return CELL_INK;
+  };
   const SECTOR_RANK = new Map(SECTOR_KEYS.map((s, i) => [s.label, i]));
   /* white or ink on a sector's fill, whichever reads better on it */
   const sectorInk = sec => cellInk(sectorColors[sec] || "#ccc");
@@ -2986,7 +3016,11 @@
         const ra = isRest(a), rb = isRest(b);
         return ra === rb ? (b.value || 0) - (a.value || 0) : ra ? 1 : -1;
       });
-    d3.treemap().size([box.w, box.h]).paddingInner(MAP.padding).paddingOuter(MAP.padding).round(true)(root);
+    const named = SEC_NAMES !== "off", gutter = SEC_NAMES === "gutter";
+    d3.treemap().size([box.w, box.h]).paddingInner(MAP.padding)
+      .paddingOuter(n => n.depth === 1 && gutter ? SEC_INSET : MAP.padding)
+      .paddingTop(n => n.depth === 1 ? (named ? SEC_STRIP + (gutter ? 1 : 0) : MAP.padding) : MAP.padding)
+      .round(true)(root);
     root.descendants().forEach(n => {
       const r = { x: box.x + n.x0, y: box.y + n.y0, w: Math.max(0, n.x1 - n.x0), h: Math.max(0, n.y1 - n.y0) };
       if (n.data.kind === "sector") out.blocks.push({ ...r, key: bandKey + ":" + n.data.sector, sector: n.data.sector, value: n.value || 0 });
@@ -3252,7 +3286,7 @@
     const laid = new Map();
     function bandsLayout(key, bands){
       const s = scaleNow();
-      const k = key + "|" + s.toFixed(4);
+      const k = key + "|" + s.toFixed(4) + "|" + SEC_NAMES;
       if (laid.has(k)) return laid.get(k);
       const px = b => ({ x: b.x * s, y: b.y * s, w: b.w * s, h: b.h * s });
       const un = b => ({ x: b.x / s, y: b.y / s, w: b.w / s, h: b.h / s });
@@ -3743,6 +3777,7 @@
        zoom's targets sit under the cells, for the keyboard. ---- */
     const gMap = svg.append("g").attr("class", "mi-map").style("font-family", MAP_FONT);
     const gMapHit = gMap.append("g").attr("class", "mi-map-hit");
+    const gMapFrames = gMap.append("g").attr("class", "mi-map-frames");
     const gMapCells = gMap.append("g").attr("class", "mi-map-cells");
     const gMapOutline = gMap.append("g").attr("class", "mi-map-outline").style("pointer-events", "none");
     /* the phrase highlight's frame sits above everything: it draws no fill,
@@ -4782,9 +4817,54 @@
            if (pinned === c.id){ hideMapTip(true); return; }
            pinned = c.id; showMapTip(c, ev);
          });
+      paintFrames(L, dur);
       drawHits(L);
       clearOutline();
       syncNote(); syncTable();
+    }
+    /* the sectors' frames and names, one per block the tiling made, drawn
+       under the cells in the room the tiling left above them. A name that
+       will not fit its block at 11px tries its short form, then stands
+       down and leaves the frame alone. The strip answers the pointer as
+       the key's entry does - it outlines the block, and a click zooms in. */
+    function paintFrames(L, dur){
+      const s = L.s, mode = SEC_NAMES;
+      const data = mode === "off" ? [] : L.blocks.filter(b => b.box.w > 0 && b.box.h > 0);
+      const sel = gMapFrames.selectAll("g.mi-secg").data(data, b => b.key);
+      const enter = sel.enter().append("g").attr("class", "mi-secg").style("opacity", 0);
+      enter.append("rect").attr("class", "mi-secframe").attr("fill", "none");
+      enter.append("rect").attr("class", "mi-sechead");
+      enter.append("text").attr("class", "mi-secname");
+      const exit = sel.exit().style("pointer-events", "none");
+      (dur ? exit.transition().duration(dur / 2) : exit).style("opacity", 0).remove();
+      const all = enter.merge(sel).attr("data-sector", b => b.sector)
+        .classed("is-band", mode === "band").classed("is-gutter", mode === "gutter")
+        .classed("is-zoomable", !focus && hitsLive()).style("pointer-events", null);
+      const strip = SEC_STRIP / s, lw = 1 / s;
+      const go = g => dur ? g.transition().duration(dur).ease(d3.easeCubicInOut) : g.interrupt();
+      go(all.select("rect.mi-secframe"))
+        .attr("x", b => b.box.x + lw / 2).attr("y", b => b.box.y + lw / 2)
+        .attr("width", b => Math.max(0, b.box.w - lw)).attr("height", b => Math.max(0, b.box.h - lw))
+        .attr("stroke", b => mode === "band" ? secDeeper(b.sector) : "none").attr("stroke-width", lw);
+      go(all.select("rect.mi-sechead"))
+        .attr("x", b => b.box.x).attr("y", b => b.box.y).attr("width", b => b.box.w)
+        .attr("height", b => Math.min(strip, b.box.h))
+        .attr("fill", b => mode === "band" ? secDeeper(b.sector) : "#fff")
+        .attr("fill-opacity", mode === "band" ? 1 : 0.001);
+      all.each(function(b){
+        const t = d3.select(this).select("text.mi-secname");
+        const room = b.box.w * s - 10;
+        let name = "";
+        if (b.box.h * s >= SEC_STRIP + 4)
+          for (const n of [b.sector, SECTOR_SHORT[b.sector] || b.sector]) if (mapTextW(n, SEC_NAME_SIZE, 700) <= room){ name = n; break; }
+        const ink = mode === "band" ? cellInk(secDeeper(b.sector)) : gutterInk(b.sector);
+        t.text(name).attr("font-size", SEC_NAME_SIZE / s).attr("font-weight", 700).attr("fill", ink).attr("data-ink", ink);
+        go(t).attr("x", b.box.x + 5 / s).attr("y", b.box.y + 11.5 / s);
+      });
+      (dur ? all.transition().delay(dur * 0.4).duration(dur * 0.6) : all.interrupt()).style("opacity", 1);
+      all.on("mouseenter", (ev, b) => { if (!pinned) showOutline([b.box], 1.5); })
+         .on("mouseleave", () => { if (!pinned) clearOutline(); })
+         .on("click", (ev, b) => { ev.stopPropagation(); if (!focus && hitsLive()) setFocus(b.sector, null); });
     }
     /* the zoom's targets, under the cells for the keyboard: the sector
        blocks at the top of the map, the groups inside a sector */
@@ -5409,6 +5489,7 @@
       const clearHl = () => {
         cell.classed("is-dim", false).classed("is-mute", false);
         gMapCells.selectAll("g.mi-mcell").classed("is-dim", false).classed("is-mute", false);
+        gMapFrames.selectAll("g.mi-secg").classed("is-dim", false).classed("is-mute", false);
         /* a muted label was repainted, so it is put back in the ink the cell
            wrote it in rather than guessed at */
         cell.selectAll(".mi-lab,.mi-pct")
@@ -5437,6 +5518,7 @@
         const offM = c => want.indexOf(c.cell.sector) < 0;
         gMapCells.selectAll("g.mi-mcell").classed("is-mute", offM)
           .filter(offM).select("text.mi-mlab").attr("fill", "#60686b");
+        gMapFrames.selectAll("g.mi-secg").classed("is-mute", b => want.indexOf(b.sector) < 0);
       };
       const hlStep = span => span.dataset.on || "0";
       /* the band behind a lit row has to be drawn under the cells, since the
@@ -5462,6 +5544,7 @@
           if (hlMode === "dim"){
             cell.classed("is-dim", d => want.indexOf(d.sector) < 0);
             gMapCells.selectAll("g.mi-mcell").classed("is-dim", c => want.indexOf(c.cell.sector) < 0);
+            gMapFrames.selectAll("g.mi-secg").classed("is-dim", b => want.indexOf(b.sector) < 0);
           } else if (hlMode === "mute"){
             muteOthers(want);
           } else {
@@ -5575,6 +5658,21 @@
 
     /* a study control: the tiers' grounds as a line round each one, or as a
        light grey field under it */
+    /* a study control: the sectors named on the map - opt-2 a band in a
+       deeper shade of their colour with a hairline round the block, opt-3
+       the name in ink on the white above the block. The tiling makes the
+       room, so every tiling is stale when it changes. */
+    const secNamesEl = document.getElementById(p + "SecNames");
+    const setSecNames = (v, first) => {
+      const mode = v === "band" || v === "gutter" ? v : "off";
+      if (!first && mode === SEC_NAMES) return;
+      SEC_NAMES = mode; fig.dataset.secnames = mode;
+      if (first) return;
+      invalidateMaps(); hideMapTip(true);
+      if (step >= 0) paint(step, !reduced());
+    };
+    setSecNames(secNamesEl ? secNamesEl.value : SEC_NAMES, true);
+    if (secNamesEl) on(secNamesEl, "change", () => setSecNames(secNamesEl.value));
     const groundEl = document.getElementById(p + "Ground");
     const setGround = v => { fig.dataset.ground = v === "grey" ? "grey" : "frame"; };
     setGround(groundEl ? groundEl.value : "frame");

@@ -324,6 +324,34 @@ reference build's own page). Keep every one of these when touching the figure:
 - Not done, by decision: arrow-key roving between the buttons of a
   segmented control (WCAG does not ask for it).
 
+**The sectors named on the map** (the "Sector names" study, 2026-09-30, at
+Nil's ask "the sector names should be displayed as well … build another
+frame around it"). Both options share one mechanism: the tiling
+(`tileBand`, module-level) gives every sector node 16 screen pixels of
+`paddingTop` (`SEC_STRIP`; module-level `SEC_NAMES` is the mode and is in
+`bandsLayout`'s cache key), and `paintFrames(L, dur)` — called from
+`paintMap`, drawing into `gMapFrames`, a layer between the hits and the
+cells — draws one `g.mi-secg` per block of `L.blocks`: `rect.mi-secframe`
+(a hairline round the block), `rect.mi-sechead` (the strip) and
+`text.mi-secname` (11px/700; the full name if it fits the block's width
+less 10px, else `SECTOR_SHORT`, else nothing; nothing under 20px of
+height). opt-2 **band**: strip and hairline in `secDeeper(sector)`, the
+sector's colour taken down until white or ink reads 4.5 to 1 on it, the
+name in `cellInk` of that. opt-3 **gutter**: the strip is white (the page's
+ground), the name in `gutterInk(sector)` — the colour darkened until it
+reads 4.5 on white, else ink — and the block's cells inset 3px
+(`SEC_INSET`) so the sector reads as a labelled island. The strip outlines
+its block on hover and zooms into the sector on click (when the zoom is
+allowed); the frames dim and grey with the cells (`is-dim` / `is-mute`
+mirrored at the three spots), leave with the map layer in the ranked view,
+and follow the sector palette and the complexity colouring (the strips
+keep the sector's colour under complexity, which then carries the sector
+identity the cells no longer do). On the tiers each ground frames its own
+sectors, so most names there fall to the short form or stand down.
+`sector-frame-sketches.html` (untracked) shows four framings on the real
+tiling: band, gutter, chip (a label over the cells, no room taken) and rule
+(a strip in the block's own colour); the last two were not built.
+
 **Study switches ("opt")** — the panel behind the word. Each is a design
 question still open; both options must keep working:
 
@@ -332,6 +360,7 @@ question still open; both options must keep working:
 | Control row | `miRowOpt` | tray · sentence | 0 1 3 4 5 6 7 |
 | Key actions | `miKeyOpt` | inline · card | 0 4 7 |
 | Sector colours | `miPal` | house · tol (Paul Tol's muted set, grey Other; `SECTOR_PALETTES`) | 0 4 |
+| Sector names | `miSecNames` | off · band · gutter (the sectors named on the map, see below) | 0 4 |
 | Tier grounds | `miGround` | frame · grey | 4 |
 | Tier shares | `miTierOpt` | cards · **donut** | 4 |
 | Tradability column | `miRankOpt` | score · **tier** | 3 6 |

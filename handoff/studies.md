@@ -11,6 +11,7 @@ verify a change under each option.
 | Control row | `miRowOpt` | `data-row` = tray / sentence | opt-1 tray · opt-2 sentence | 0 1 3 4 5 6 7 |
 | Key actions | `miKeyOpt` | `data-key` = inline / card | opt-1 inline · opt-2 card | 0 4 7 |
 | Sector colours | `miPal` | `data-pal` = house / tol | opt-1 house · opt-2 Paul Tol muted | 0 4 |
+| Sector names | `miSecNames` | `data-secnames` = off / band / gutter | opt-1 off · opt-2 band · opt-3 gutter | 0 4 |
 | Tier grounds | `miGround` | — | opt-1 frame · opt-2 grey | 4 |
 | Tier shares | `miTierOpt` | — | opt-1 cards · **opt-2 donut** (default) | 4 |
 | Tradability column | `miRankOpt` | — | opt-1 score · **opt-2 tier** (default) | 3 6 |
@@ -53,6 +54,13 @@ What each option is:
   phrases and the cards follow. Earlier opt-2s (periwinkle, lavender trade)
   and every other candidate with its score are on
   `sector-palette-sketches.html`.
+- **Sector names** (2026-09-30) — the sectors named on the map itself. The
+  tiling gives each sector block 16px at its top; opt-2 fills it as a band
+  in a deeper shade of the sector's colour with a hairline round the block,
+  opt-3 leaves it white and sets the name in the sector's darkened colour,
+  the block's cells inset 3px. Names that do not fit fall to a short form
+  (`SECTOR_SHORT`), then stand down. Four framings on
+  `sector-frame-sketches.html`.
 - **Tier grounds** — each tier's ground as a framed line, or a light grey field.
 - **Tier shares** — the tiers' shares as cards, or as the donut beside the text.
 - **Tradability column** — the ranking's last column as the score, or the tier word.
