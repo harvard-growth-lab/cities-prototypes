@@ -391,23 +391,43 @@ the small "Site Layout" word). The reference offers four layouts (Current,
 One scroll, Chapters, Two modes); v-5 offers the first two. The choice is
 `html[data-layout]` (`setSiteLayout(v)`) and rides the address as
 `?layout=scroll`.
-- **Navigation bar: Light / Teal** — a second group in the same menu
-  ("Navigation bar", `html[data-nav="teal"]`, `setSiteNav(v)`, `?nav=teal`;
+- **Navigation bar: Light / Dark teal / Tint** — a second group in the same
+  menu ("Navigation bar", `html[data-nav]`, `setSiteNav(v)`, `?nav=…`;
   independent of the layout, and the pill then reads e.g. "One scroll ·
-  teal bar"). Teal gives both bars — the toolbar and the section bar — the
-  house's dark teal (`--teal-dark`) with the **white logo**
-  (`assets/gl_logo_white.png`, supplied by Nil, same 1079×230 as the dark
-  one; the toolbar holds both `<img>`s and CSS shows one; the landing
-  header keeps the dark logo) and inverts every control on them: the
-  journey button white with teal text, the location a white-lined field with
-  white icons, the section names white on a lifted tint (active: a white
-  number disc), the hairlines and connectors white at 36 %, the part names
-  and the Worker Flows opt labels white, and focus rings white
-  (`html[data-nav="teal"] :is(.toolbar,.secbar) :focus-visible`). Every text
-  on both bars reads 4.5 to 1 or better in all five sections and at desktop,
-  1100 and phone widths. Not covered by the teal: the landing header, the
-  city menu's white panel, the "Site Layout" pill itself (dark, as on the
-  reference).
+  tint bar"). The bars are the toolbar (logo, links, "My Learning Journey")
+  and the section bar under it, and there are two families of grounds:
+  - **Dark family** (`teal`, `mid`): white logo (`assets/gl_logo_white.png`,
+    supplied by Nil, same 1079×230 as the dark one; the toolbar holds both
+    `<img>`s and CSS shows one; the landing header keeps the dark logo) and
+    every control inverted — journey button white with teal text, the
+    location a white-lined field with white icons, chips white on a lifted
+    tint (active: white number disc), hairlines/connectors white at 36 %,
+    part names and Worker Flows opt labels white, focus rings white. The
+    ground and the dimmest tones are variables (`--nb`, `--n-link`,
+    `--n-dim`, `--n-label`, `--n-act`, `--n-fline`): `teal` = `--teal-dark`
+    #1c454d, which Nil found **way too dark**; `mid` = #33707d, the lightest
+    teal that holds white text (5.6 to 1), reachable by `?nav=mid` only.
+  - **Pale family** (`tint`, `wash`, `paper`; added 2026-09-30 in answer to
+    "too dark, not white"): the dark logo stays, the ground is `--teal-tint`
+    #eef3f4 (**Tint, in the menu**), a deeper #e1ebed (`?nav=wash`) or the
+    tray's `--paper` #f4f5f2 (`?nav=paper`), with a hairline in the ground's
+    own family. Controls keep the control row's language: the location a
+    white field with a darker #6f8087 edge (3.4 to 1 or better on each
+    ground — `--control-edge` would be 2.8 on the wash), the section chosen
+    a white lifted tile (`inset 0 0 0 1px #c2d4d7` + soft shadow, as the row's
+    chosen button), sections behind a check in a white disc, and the teal
+    journey button as the bar's one accent.
+  `nav-tone-sketches.html` (untracked, repo root) shows all six grounds
+  live in iframes with their measured contrast; Nil has not yet said which
+  of tint / wash / paper / mid to keep in the menu. Every text on every
+  ground reads 4.5 to 1 or better, **including the "Part 1 / Part 2" names,
+  which are `::before`/`::after` content the text audit cannot see** — they
+  are checked by computed colour in the test, and were 4.07 to 1 on the
+  light bar until they lost their 80 % opacity. Not covered by any tone: the
+  landing header, the city menu's white panel, the "Site Layout" pill
+  (dark, as on the reference). While Worker Flows is the section the study's
+  "opt-1 opt-2" word takes the bar's right end, so the chips stop short of
+  the journey button there.
 - **Current (pages)** — as before: one section at a time, the pager's three
   cards at its foot.
 - **One scroll** — the storyline's five sections stand together in the
