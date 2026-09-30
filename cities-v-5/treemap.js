@@ -139,6 +139,17 @@
     "Professional & Business": "#485fa2",
     "Trade & Transportation": "#86c8ab"
   };
+  /* the sets the sector-colour study offers: the house set as shipped, and
+     the same with trade & transportation in lavender, so the three big
+     blocks are navy, coral and lavender - three families still, and the
+     blues stay two. Every pair keeps the mint set's colour-blind floors
+     (the scoring is on sector-palette-sketches.html). sectorColors is
+     written over in place, since the map, the cells, the bars and the
+     cards all read it at paint. */
+  const SECTOR_PALETTES = {
+    house: Object.assign({}, sectorColors),
+    lavender: Object.assign({}, sectorColors, { "Trade & Transportation": "#b8a9dc" })
+  };
 
   /* Boston-Cambridge-Newton (metro 14460), 2024, 6-digit NAICS, as the
      reference build's "What We Produce" page carries it, from
@@ -5129,66 +5140,99 @@
       };
 
       /* ---- opt-2 of the key study: the entry's card ----
-         Hovering an entry opens a small card over it: the sector's colour
-         and its name, and what a click will do with it, beside a hand that
-         taps. The card carries no control, so the entry stays the switch -
-         a click takes the sector out of the map or brings it back, a
-         double-click keeps only it - and the card only says so. It stands
-         clear of the whole key, centred on its entry, which is lit while it
-         is open. "only" comes off the row for the eye but keeps its place
-         for the keyboard, appearing when reached. Under opt-1 none of this
-         runs: "only" sits beside the entry. */
+         Hovering or focusing an entry opens a small card over it: the
+         sector's colour and name, what it is in the metro - its share of
+         the jobs, the jobs, how many industries - and its verbs as
+         buttons: "Hide" (or "Bring back"; "Show all" alone for the last
+         one showing, since it cannot be hidden) and "Keep only". The card
+         stays while the pointer or the focus is in it; Tab from the entry
+         goes into the card, and out of it to whatever follows the entry.
+         The entry's own click still switches the sector. The inline verbs
+         of opt-1 stand down here, the card's buttons taking their place.
+         Under opt-1 none of this runs. */
       const cardMode = () => fig.dataset.key === "card";
       const lis = [].slice.call(key.querySelectorAll(".sk-item:not(.sk-item--reset)"));
       let tipEl = fig.querySelector(":scope > .sk-tip");
       if (!tipEl){
-        tipEl = document.createElement("div"); tipEl.className = "sk-tip";
-        tipEl.setAttribute("role", "tooltip"); fig.appendChild(tipEl);
+        tipEl = document.createElement("div"); tipEl.className = "sk-tip"; fig.appendChild(tipEl);
       }
       tipEl.id = p + "KeyTip";
+      tipEl.setAttribute("role", "group");
       tipEl.hidden = true;
-      function hideTip(){
-        const was = !tipEl.hidden;
+      /* what each sector is in the metro, for the card's facts line: the
+         whole year's rows, whatever the map is showing */
+      const totalJobs = industryData.reduce((a, d) => a + (d.employ || 0), 0);
+      const secFacts = new Map(order.map(sec => {
+        const rows = industryData.filter(d => d.sector === sec);
+        const jobs = rows.reduce((a, d) => a + (d.employ || 0), 0);
+        return [sec, { jobs, n: rows.length, share: totalJobs ? jobs / totalJobs : 0 }];
+      }));
+      let hideT = null, quiet = false;
+      disposers.push(() => clearTimeout(hideT));
+      /* silent: the caller is placing focus itself, so the card must not */
+      function hideTip(silent){
+        clearTimeout(hideT);
+        if (tipEl.hidden) return false;
+        const i = +tipEl.dataset.si;
+        const inCard = tipEl.contains(document.activeElement);
         tipEl.hidden = true;
         lis.forEach(li => { li.classList.remove("is-open"); li.querySelector(".sk-sec").removeAttribute("aria-describedby"); });
-        return was;
+        /* focus in the card when it closes goes back to its entry, not to
+           the page - quietly, or the entry's focus would open the card again */
+        if (inCard && !silent && items[i]){ quiet = true; items[i].focus({ preventScroll: true }); quiet = false; }
+        return true;
       }
+      /* the pointer or the focus leaving an entry: the card waits a moment,
+         long enough for either to arrive in the card itself. Focus a
+         keyboard put in the card holds it; focus a click left there does not. */
+      const heldByKey = () => tipEl.contains(document.activeElement) && document.activeElement.matches(":focus-visible");
+      const laterHide = () => {
+        clearTimeout(hideT);
+        hideT = setTimeout(() => { if (!tipEl.matches(":hover") && !heldByKey()) hideTip(); }, 160);
+      };
       hideKeyTip = hideTip;
       keyTipIsOpen = () => !tipEl.hidden;
-      function showTip(b, viaKey){
+      /* keepFocus: the card is being redrawn under a reader who is in it,
+         so the button they used, or its successor, takes the focus back */
+      function showTip(b, keepFocus){
         if (!cardMode()) return;
+        clearTimeout(hideT);
         const i = +b.dataset.si, sec = order[i];
         const shown = shownSec(sec), solo = shown && soloSec(sec);
-        /* what a click will do, in the state the sector is in: the last one
-           showing cannot be hidden, so a click on it brings them all back.
-           A keyboard cannot double-click, so for it the card names the
-           "only" button that follows the entry instead. */
-        const hint = viaKey
-          ? (solo ? "Enter to show all sectors"
-            : (shown ? "Enter to hide" : "Enter to bring back") + "<br>\u201cOnly\u201d, the next button, keeps only")
-          : (solo ? "Click to show all sectors"
-            : (shown ? "Click to hide" : "Click to bring back") + "<br>Double-click to keep only");
+        const f = secFacts.get(sec);
+        const was = tipEl.contains(document.activeElement) ? document.activeElement.dataset.act : null;
+        tipEl.dataset.si = i;
         tipEl.innerHTML =
           '<span class="skt-name"><i class="skt-sw" style="--sw:' + (sectorColors[sec] || "#ccc") + '"></i><b>' + escHtml(sec) + '</b></span>' +
-          '<span class="skt-hint">' + HAND + '<span id="' + p + 'KeyHint">' + hint + '</span></span>';
+          /* the same rows, in the same order and dress, as the cell's card */
+          '<dl class="skt-grid" id="' + p + 'KeyHint">' +
+            '<dt>Industries</dt><dd>' + f.n + '</dd>' +
+            '<dt>Jobs</dt><dd>' + fmtJobsFull(f.jobs) + '</dd>' +
+            '<dt>Share of metro jobs</dt><dd>' + (f.share * 100).toFixed(2) + '%</dd>' +
+          '</dl>' +
+          '<span class="skt-verbs">' +
+            (solo
+              ? '<button type="button" class="skt-btn" data-act="all">Show all</button>'
+              : '<button type="button" class="skt-btn" data-act="hide">' + (shown ? 'Hide' : 'Bring back') + '</button>' +
+                '<button type="button" class="skt-btn" data-act="only">Keep only</button>') +
+          '</span>';
         tipEl.hidden = false;
         lis.forEach((li, k) => {
           li.classList.toggle("is-open", k === i);
-          /* the card describes its entry, so a reader arriving by keyboard hears what a click will do */
+          /* the card describes its entry, so a reader arriving by keyboard hears what the sector is */
           const sb = li.querySelector(".sk-sec");
           if (k === i) sb.setAttribute("aria-describedby", p + "KeyHint"); else sb.removeAttribute("aria-describedby");
         });
-        const fb = fig.getBoundingClientRect(), bb = b.getBoundingClientRect(), kb = key.getBoundingClientRect();
+        const fb = fig.getBoundingClientRect(), bb = b.closest(".sk-item").getBoundingClientRect();
         const w = tipEl.offsetWidth, h = tipEl.offsetHeight;
         const left = bb.left - fb.left + bb.width / 2 - w / 2;
         tipEl.style.left = Math.max(0, Math.min(left, Math.max(0, fb.width - w))) + "px";
-        tipEl.style.top = Math.max(0, kb.top - fb.top - h - 8) + "px";
+        tipEl.style.top = Math.max(0, bb.top - fb.top - h - 4) + "px";
+        if (keepFocus){
+          const t = (was && tipEl.querySelector('[data-act="' + was + '"]')) || tipEl.querySelector("button");
+          if (t) t.focus({ preventScroll: true });
+        }
       }
-      /* a click and a double-click on the same entry mean different things,
-         so under opt-2 a click waits long enough to know it is not the first
-         half of a double-click before it acts */
-      let clickT = null;
-      disposers.push(() => clearTimeout(clickT));
       on(key, "click", ev => {
         if (ev.target.closest(".sk-reset")){ resetSec(); hideTip(); return; }
         const only = ev.target.closest(".sk-only");
@@ -5197,29 +5241,50 @@
         if (hideB){ toggleSec(order[+hideB.dataset.si]); return; }
         const b = ev.target.closest(".sk-sec");
         if (!b) return;
-        const sec = order[+b.dataset.si];
-        /* a keyboard cannot double-click, so its activations act at once */
-        if (!cardMode() || ev.detail === 0){
-          clearTimeout(clickT); toggleSec(sec);
-          if (cardMode()) showTip(b, ev.detail === 0);
-          return;
-        }
-        clearTimeout(clickT);
-        clickT = setTimeout(() => {
-          toggleSec(sec);
-          /* the card follows the change only if the reader is still on the entry */
-          const li = b.closest(".sk-item");
-          if (li.matches(":hover") || b.matches(":focus-visible")) showTip(b);
-        }, 230);
+        toggleSec(order[+b.dataset.si]);
+        if (cardMode()) showTip(b);
       });
-      on(key, "dblclick", ev => {
+      /* the card's own buttons */
+      on(tipEl, "click", ev => {
+        const btn = ev.target.closest("[data-act]");
+        if (!btn) return;
+        const i = +tipEl.dataset.si, sec = order[i], act = btn.dataset.act;
+        const held = tipEl.contains(document.activeElement) || ev.detail === 0;
+        if (act === "hide") toggleSec(sec); else if (act === "only") onlySec(sec); else resetSec();
+        showTip(items[i], held);
+      });
+      /* Tab walks from the entry into its card, and out of the card to
+         whatever follows the entry; Shift+Tab from the card's first button
+         returns to the entry */
+      const tabbables = () => [].slice.call(fig.querySelectorAll('button,a[href],select,input,[tabindex]:not([tabindex="-1"])'))
+        .filter(e => !tipEl.contains(e) && !e.disabled && !e.hidden && e.offsetParent !== null && !e.closest("[inert]"));
+      on(key, "keydown", ev => {
+        if (ev.key !== "Tab" || ev.shiftKey || !cardMode() || tipEl.hidden) return;
         const b = ev.target.closest(".sk-sec");
-        if (!b || !cardMode()) return;
-        ev.preventDefault();
-        clearTimeout(clickT);
-        onlySec(order[+b.dataset.si]);
-        showTip(b);
+        if (!b || +b.dataset.si !== +tipEl.dataset.si) return;
+        const first = tipEl.querySelector("button");
+        if (!first) return;
+        ev.preventDefault(); first.focus({ preventScroll: true });
       });
+      on(tipEl, "keydown", ev => {
+        if (ev.key !== "Tab") return;
+        const btns = [].slice.call(tipEl.querySelectorAll("button")), at = btns.indexOf(document.activeElement);
+        const i = +tipEl.dataset.si;
+        if (ev.shiftKey && at === 0){ ev.preventDefault(); items[i].focus({ preventScroll: true }); return; }
+        if (!ev.shiftKey && at === btns.length - 1){
+          ev.preventDefault();
+          const list = tabbables(), k = list.indexOf(items[i]), next = k >= 0 ? list[k + 1] : null;
+          hideTip(true);
+          if (next) next.focus({ preventScroll: true });
+        }
+      });
+      on(tipEl, "mouseenter", () => {
+        clearTimeout(hideT);
+        const sec = order[+tipEl.dataset.si];
+        if (sec && shownSec(sec) && view === "map" && mapLayout && !pinned) showOutline(sectorBlocks([sec]), 1.5);
+      });
+      on(tipEl, "mouseleave", () => { if (!pinned) clearOutline(); laterHide(); });
+      on(tipEl, "focusout", () => laterHide());
       /* pointing at an entry outlines its block on the map - and, under
          opt-2, opens its card */
       lis.forEach((li, i) => {
@@ -5227,9 +5292,9 @@
         const lit = () => { if (shownSec(sec) && view === "map" && mapLayout && !pinned) showOutline(sectorBlocks([sec]), 1.5); };
         const unlit = () => { if (!pinned) clearOutline(); };
         on(li, "mouseenter", () => { lit(); if (cardMode()) showTip(b); });
-        on(li, "mouseleave", () => { unlit(); if (cardMode()) hideTip(); });
-        on(li, "focusin", () => { lit(); if (cardMode() && document.activeElement === b) showTip(b, true); });
-        on(li, "focusout", () => { unlit(); if (cardMode()) hideTip(); });
+        on(li, "mouseleave", () => { unlit(); if (cardMode()) laterHide(); });
+        on(li, "focusin", () => { lit(); if (cardMode() && !quiet && document.activeElement === b) showTip(b); });
+        on(li, "focusout", () => { unlit(); if (cardMode()) laterHide(); });
       });
       syncKey();
     }
@@ -5472,17 +5537,17 @@
       if (lit) lit.dispatchEvent(new MouseEvent("mouseenter"));
     });
 
-    /* a study control: the sector palette with trade & transportation in
-       mint (opt-1, as shipped) or in periwinkle (opt-2), the two house sets
-       sector-palette-sketches.html compares. The colour is read at paint by
-       the map, the cells under it and the bars, so a repaint carries it;
-       the key's swatch is set once, so it is set again here. */
-    const PAL_TRADE = { mint: "#86c8ab", periwinkle: "#92b2eb" };
+    /* a study control: the sector palette as shipped (opt-1) or with trade
+       & transportation in lavender (opt-2), from SECTOR_PALETTES. The colours
+       are read at paint by the map, the cells under it and the bars, so a
+       repaint carries them; the key's swatches are set once, so they are
+       set again here. The set survives a year's rebuild: sectorColors is
+       one object for every build. */
     const palEl = document.getElementById(p + "Pal");
     if (palEl) on(palEl, "change", () => {
-      const v = PAL_TRADE[palEl.value] ? palEl.value : "mint";
-      if (sectorColors["Trade & Transportation"] === PAL_TRADE[v]) return;
-      sectorColors["Trade & Transportation"] = PAL_TRADE[v];
+      const v = SECTOR_PALETTES[palEl.value] ? palEl.value : "house", set = SECTOR_PALETTES[v];
+      if (Object.keys(set).every(k => sectorColors[k] === set[k])) return;
+      Object.assign(sectorColors, set);
       fig.dataset.pal = v;
       if (key) key.querySelectorAll(".sk-sec").forEach(b => {
         const nm = b.querySelector(".sk-name"); if (!nm) return;

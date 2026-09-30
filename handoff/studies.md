@@ -10,7 +10,7 @@ verify a change under each option.
 |---|---|---|---|---|
 | Control row | `miRowOpt` | `data-row` = tray / sentence | opt-1 tray · opt-2 sentence | 0 1 3 4 5 6 7 |
 | Key actions | `miKeyOpt` | `data-key` = inline / card | opt-1 inline · opt-2 card | 0 4 7 |
-| Sector colours | `miPal` | `data-pal` = mint / periwinkle | opt-1 mint · opt-2 periwinkle | 0 4 |
+| Sector colours | `miPal` | `data-pal` = house / lavender | opt-1 house (mint trade) · opt-2 lavender trade | 0 4 |
 | Tier grounds | `miGround` | — | opt-1 frame · opt-2 grey | 4 |
 | Tier shares | `miTierOpt` | — | opt-1 cards · **opt-2 donut** (default) | 4 |
 | Tradability column | `miRankOpt` | — | opt-1 score · **opt-2 tier** (default) | 3 6 |
@@ -34,14 +34,20 @@ What each option is:
   words after the name ("Hide · Only"; "Bring back · Only" once the sector
   is off; "Show all" alone for the last one showing); the entry's own click
   still switches the sector; the key's "Show all" is a tinted button at the
-  row's end. opt-2: a hover card with the sector's colour and name and a
-  "Click to hide / Double-click to keep only" hint beside a tapping hand;
-  the entry does the work (click deferred 230 ms for the double-click;
-  keyboard acts at once and reads "Enter to hide / “Only”, the next button,
-  keeps only"); "Hide" stands down and "Only" stays in the tab order,
-  unseen until reached.
-- **Sector colours** — Trade & Transportation as mint (`#86c8ab`, as shipped)
-  or periwinkle; the swatches in the key, the phrases and the cards follow.
+  row's end. opt-2 (reworked 2026-09-30): hovering or focusing an entry opens a card
+  over it with the sector's colour and name, a facts line (share of metro
+  jobs · jobs · industries) and light buttons "Hide" / "Bring back" and
+  "Keep only" ("Show all" alone for the last one showing); the entry's own
+  click still toggles; the card holds while the pointer or keyboard focus
+  is in it, Tab walks into and out of it, Escape closes it back to the
+  entry; the inline verbs are hidden under this option.
+- **Sector colours** — the house set as shipped (Trade & Transportation in
+  mint `#86c8ab`) or the same with Trade in lavender `#b8a9dc` (opt-2 since
+  2026-09-30; periwinkle before). `SECTOR_PALETTES` in treemap.js holds the
+  two sets and is written over `sectorColors` in place, so a whole palette
+  can be swapped; the key's swatches, the phrases and the cards follow.
+  Runner-up candidates (peach, slate, rose) and the scoring are on
+  `sector-palette-sketches.html`.
 - **Tier grounds** — each tier's ground as a framed line, or a light grey field.
 - **Tier shares** — the tiers' shares as cards, or as the donut beside the text.
 - **Tradability column** — the ranking's last column as the score, or the tier word.

@@ -215,16 +215,24 @@ under the "Key actions" study:
   (`.sk-reset`) is a tinted button at the row's end. Under opt-2 "Hide"
   stands down (the entry's click is the hide there) and "Only" keeps its
   place for the keyboard, unseen until reached.
-- **opt-2 (card)** — hovering opens a small card (`div.sk-tip#miKeyTip`,
-  role tooltip) with the sector's colour block and name and one hint line
-  beside a tapping hand: "Click to hide / Double-click to keep only",
-  "Click to bring back…", or "Click to show all sectors" for the last one
-  showing. A pointer click is deferred 230 ms to tell it from a double-click;
-  keyboard activations (`ev.detail === 0`) act at once and get the wording
-  "Enter to hide / “Only”, the next button, keeps only" (the `.sk-only`
-  button stays in the tab order, clipped until focused). The entry carries
-  `aria-describedby="miKeyHint"` while the card is open. Escape closes the
-  card first; only a second Escape zooms out.
+- **opt-2 (card)** — hovering or focusing an entry opens a small card over
+  it (`div.sk-tip#miKeyTip`, role group; since 2026-09-30): the sector's
+  colour block and name, a facts line — "16% of metro jobs · 377K jobs ·
+  175 industries", from the whole year's rows whatever the map shows
+  (`secFacts`) — and its verbs as light buttons, `.skt-btn[data-act]`:
+  "Hide" / "Bring back" and "Keep only", or "Show all" alone for the last
+  one showing. The entry's own click still toggles the sector (no 230 ms
+  defer, no double-click any more). The card stays while the pointer or a
+  keyboard-placed focus is in it (`laterHide` waits 160 ms and checks
+  `:hover` and `:focus-visible`; a `::after` bridge covers the 4px gap to
+  the entry); Tab from the entry goes into the card, Tab from its last
+  button to whatever follows the entry (`tabbables()`), Shift+Tab from its
+  first button back to the entry; Escape closes it and returns focus to the
+  entry, quietly (`quiet` stops the entry's `focusin` reopening it). After a
+  button is used the card redraws and the same verb, or its successor,
+  takes focus back (`showTip(b, keepFocus)`). Under this option the inline
+  `.sk-verbs` are `display:none`. The entry carries
+  `aria-describedby="miKeyHint"` (the facts line) while the card is open.
 
 **The cell card** (`#miTip.rca-tip`, `mapTipHtml(c, hint)`): built row for
 row like the ranking beat's card — name over the sector in its colour, then
@@ -314,7 +322,7 @@ question still open; both options must keep working:
 |---|---|---|---|
 | Control row | `miRowOpt` | tray · sentence | 0 1 3 4 5 6 7 |
 | Key actions | `miKeyOpt` | inline · card | 0 4 7 |
-| Sector colours | `miPal` | mint · periwinkle (trade & transportation's colour) | 0 4 |
+| Sector colours | `miPal` | house · lavender (trade & transportation's colour; `SECTOR_PALETTES`) | 0 4 |
 | Tier grounds | `miGround` | frame · grey | 4 |
 | Tier shares | `miTierOpt` | cards · **donut** | 4 |
 | Tradability column | `miRankOpt` | score · **tier** | 3 6 |
@@ -390,7 +398,7 @@ Sector colours (`sectorColors` in treemap.js): Construction #a25d37,
 Education & Health #dc8271, Financial Activities #e5c95e, Leisure &
 Hospitality #9adfe7, Manufacturing #7f3c6b, Natural Resources #5d9850,
 Other #896885, Professional & Business #485fa2, Trade & Transportation
-#86c8ab (mint; periwinkle under the study). Design tokens: `--teal #255862`,
+#86c8ab (mint; lavender `#b8a9dc` under the study's opt-2, since 2026-09-30 — periwinkle was retired; the candidates and their colour-blind scores are on `sector-palette-sketches.html`). Design tokens: `--teal #255862`,
 `--teal-dark`, `--teal-tint #eef3f4`, `--ink #1a2226`, `--ink-soft #526066`
 (darkened from #5b686d in the contrast pass: 6.5 to 1 on the page, 4.8 on
 the lightest map fill — use it for every secondary grey, never a hard-coded
@@ -435,12 +443,14 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
 
 ## 8. Open items at hand-off
 
-1. **Key actions — settled for opt-1, open for opt-2.** Of the five
-   variants on `key-actions-sketches.html` (untracked) Nil picked **B**, the
-   verbs unfolding inside the entry, and it shipped as opt-1 with a
-   prominent "Show all" (`85fe10f`). The card (opt-2) is still hint-only
-   (click / double-click on the entry, "Only" reachable by keyboard); no
-   decision on giving the card its own verbs.
+1. **Key actions — both options settled.** Of the five variants on
+   `key-actions-sketches.html` (untracked) Nil picked **B**, the verbs
+   unfolding inside the entry, and it shipped as opt-1 with a prominent
+   "Show all" (`85fe10f`). For opt-2 Nil then asked (2026-09-30) that the
+   card carry the verbs as buttons and say what the sector is — its share,
+   jobs and industries — which is what it does now (§4). Still open: the
+   card stands over the bottom of the map while it is up (Nil's earlier
+   worry); a card dropping below the key (sketch A) would not.
 2. **"Show as table" into the View control?** Proposed (not asked): make it
    a third View choice — Treemap | Ranked | Table — and drop the word from
    the map's corner; the sentence variant would get "shown as a [table]" for

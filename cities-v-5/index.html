@@ -3240,20 +3240,32 @@
      reached. The entry whose card is open stays lit, which is what says
      the card is its. */
   .sector-key .sk-item{position:relative;}
-  #miFigure[data-key="card"] .sector-key .sk-verbs{display:inline-flex;margin:0;max-width:none;opacity:1;overflow:visible;}
-  #miFigure[data-key="card"] .sector-key .sk-hide,
-  #miFigure[data-key="card"] .sector-key .sk-dot{display:none;}
-  #miFigure[data-key="card"] .sector-key .sk-only:not(:focus-visible){
-    position:absolute;width:1px;height:1px;margin:0;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;
-  }
+  /* under the card the entry's inline verbs stand down: the card's buttons
+     are the verbs, for the pointer and for the keyboard alike */
+  #miFigure[data-key="card"] .sector-key .sk-verbs{display:none;}
   .sector-key .sk-item.is-open{background:var(--teal-tint);}
   .sector-key .sk-item.is-open .sk-name{color:var(--teal-dark);font-weight:600;}
   .mi-figure .sk-tip{
-    position:absolute;z-index:6;display:flex;flex-direction:column;gap:6px;
-    padding:9px 12px 10px;background:#fff;border:1px solid var(--border-strong);
-    box-shadow:var(--shadow-md);text-align:left;white-space:nowrap;pointer-events:none;
+    position:absolute;z-index:6;display:flex;flex-direction:column;gap:7px;
+    padding:10px 12px 11px;background:#fff;border:1px solid var(--border-strong);
+    box-shadow:var(--shadow-md);text-align:left;white-space:nowrap;
   }
+  /* the card sits 4px over its entry; this bridges the gap, so the pointer
+     crossing from the entry to the card never leaves the two */
+  .mi-figure .sk-tip::after{content:"";position:absolute;left:0;right:0;top:100%;height:8px;}
   .mi-figure .sk-tip[hidden]{display:none;}
+  /* the facts read as the cell's card reads: a label, a value, a row each */
+  .mi-figure .skt-grid{display:grid;grid-template-columns:auto auto;gap:5px 18px;margin:1px 0 0;}
+  .mi-figure .skt-grid dt{font-size:12.5px;color:var(--ink-soft);}
+  .mi-figure .skt-grid dd{margin:0;font-size:12.5px;font-weight:600;color:var(--ink);text-align:right;font-variant-numeric:tabular-nums;}
+  .mi-figure .skt-verbs{display:flex;gap:6px;margin-top:3px;}
+  .mi-figure .skt-btn{
+    appearance:none;border:1px solid transparent;border-radius:5px;padding:4px 11px;margin:0;
+    font:inherit;font-size:13px;font-weight:600;color:var(--teal);background:var(--teal-tint);cursor:pointer;
+    transition:border-color .15s ease,background .15s ease;
+  }
+  .mi-figure .skt-btn:hover{border-color:var(--teal);background:#e3ecee;}
+  .mi-figure .skt-btn:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
   .mi-figure .skt-name{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--ink);}
   .mi-figure .skt-sw{flex:none;width:12px;height:12px;border-radius:3px;background:var(--sw,#ccc);}
   .mi-figure .skt-hint{display:flex;align-items:center;gap:8px;font-size:12px;line-height:1.45;color:var(--ink-soft);}
@@ -5936,8 +5948,8 @@
                 <label class="mi-study" id="miPalPair">
                   <span>Sector colours</span>
                   <select id="miPal" aria-label="Which of the two house palettes the sectors wear">
-                    <option value="mint" selected>opt-1</option>
-                    <option value="periwinkle">opt-2</option>
+                    <option value="house" selected>opt-1</option>
+                    <option value="lavender">opt-2</option>
                   </select>
                 </label>
                 <label class="mi-study" id="miGroundPair">
