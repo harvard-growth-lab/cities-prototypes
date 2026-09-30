@@ -382,6 +382,23 @@ the small "Site Layout" word). The reference offers four layouts (Current,
 One scroll, Chapters, Two modes); v-5 offers the first two. The choice is
 `html[data-layout]` (`setSiteLayout(v)`) and rides the address as
 `?layout=scroll`.
+- **Navigation bar: Light / Teal** — a second group in the same menu
+  ("Navigation bar", `html[data-nav="teal"]`, `setSiteNav(v)`, `?nav=teal`;
+  independent of the layout, and the pill then reads e.g. "One scroll ·
+  teal bar"). Teal gives both bars — the toolbar and the section bar — the
+  house's dark teal (`--teal-dark`) with the **white logo**
+  (`assets/gl_logo_white.png`, supplied by Nil, same 1079×230 as the dark
+  one; the toolbar holds both `<img>`s and CSS shows one; the landing
+  header keeps the dark logo) and inverts every control on them: the
+  journey button white with teal text, the location a white-lined field with
+  white icons, the section names white on a lifted tint (active: a white
+  number disc), the hairlines and connectors white at 36 %, the part names
+  and the Worker Flows opt labels white, and focus rings white
+  (`html[data-nav="teal"] :is(.toolbar,.secbar) :focus-visible`). Every text
+  on both bars reads 4.5 to 1 or better in all five sections and at desktop,
+  1100 and phone widths. Not covered by the teal: the landing header, the
+  city menu's white panel, the "Site Layout" pill itself (dark, as on the
+  reference).
 - **Current (pages)** — as before: one section at a time, the pager's three
   cards at its foot.
 - **One scroll** — the storyline's five sections stand together in the

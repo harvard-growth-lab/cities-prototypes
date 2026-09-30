@@ -69,7 +69,10 @@ the pager's cards; **One scroll** (2026-09-30) is the reference's scroll
 variant done here: the five storyline sections in one scroll, the bar's
 chips following, a teal close after each section ("What to take with you":
 three points, the quiz button, "Keep scrolling · next") and the reference's
-teal band opening Part 2, its mini-charts drawn from v-5's own numbers. The
+teal band opening Part 2, its mini-charts drawn from v-5's own numbers. A
+second group in the same menu, **Navigation bar: Light / Teal**
+(`?nav=teal`), turns both top bars the house's dark teal with the white
+logo, whichever layout is chosen. The
 reference's Chapters and Two modes are not built. `setSiteLayout`,
 `trackSection`, `SEAL_POINTS`, the seal builder and `buildSeam` sit together
 in index.html just before the first `showSection(0, false)`; the styles are

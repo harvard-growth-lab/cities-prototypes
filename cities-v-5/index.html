@@ -599,6 +599,55 @@
   .sv-opt.is-on{background:var(--teal-tint);}
   .sv-opt.is-on::before{border:4px solid var(--teal);}
   .sv-opt:focus-visible{outline:2px solid var(--teal);outline-offset:-2px;}
+  .sv-panel [role="group"]{display:flex;flex-direction:column;gap:1px;}
+  .sv-head{margin:5px 6px 0;padding:9px 4px 3px;border-top:1px solid var(--border);font-size:9.5px;font-weight:700;letter-spacing:.2px;color:var(--ink-soft);}
+
+  /* ---- the teal navigation bar: an option of the site layout ----
+     Both bars - the toolbar with the logo and the section bar under it -
+     take the house's dark teal, as the teal bands do, with the white
+     logo, and every control on them is inverted: the journey button a
+     white one, the location a white-lined field, the section names white
+     on a lifted tint. html[data-nav="teal"], from the Site Layout menu or
+     ?nav=teal. */
+  .logo-btn .logo-white{display:none;}
+  html[data-nav="teal"] .toolbar .logo-btn .logo-dark{display:none;}
+  html[data-nav="teal"] .toolbar .logo-btn .logo-white{display:block;}
+  html[data-nav="teal"] .toolbar{background:var(--teal-dark);border-bottom:1px solid rgba(255,255,255,.14);box-shadow:none;}
+  html[data-nav="teal"] .toolbar-links a{color:rgba(255,255,255,.86);}
+  html[data-nav="teal"] .toolbar-links a:hover{color:#fff;}
+  html[data-nav="teal"] .toolbar-links a.current-page{color:#fff;text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:7px;}
+  html[data-nav="teal"] .toolbar .btn-journey{background:#fff;color:var(--teal-dark);}
+  html[data-nav="teal"] .toolbar .btn-journey:hover{background:var(--teal-tint);}
+  html[data-nav="teal"] .secbar{background:var(--teal-dark);border-bottom-color:rgba(0,0,0,.18);box-shadow:0 1px 0 rgba(0,0,0,.1);}
+  html[data-nav="teal"] .secbar .citypick--bar .citypick-btn{
+    color:#fff;background-color:rgba(255,255,255,.07);border-color:rgba(255,255,255,.4);
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%23ffffff' stroke-width='1.5' stroke-linecap='round'/></svg>"),
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='17' viewBox='0 0 24 30' fill='none' stroke='%23ffffff' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'><path d='M2 26h20'/><path d='M4 26V15h6v11'/><path d='M12 26V8h7v18'/><path d='M14.6 12h1.8M14.6 16h1.8M14.6 20h1.8'/></svg>");
+  }
+  html[data-nav="teal"] .secbar .citypick--bar .citypick-txt{color:#fff;}
+  html[data-nav="teal"] .secbar .citypick--bar .citypick-btn:hover,
+  html[data-nav="teal"] .secbar .citypick--bar .citypick-btn:focus-visible{border-color:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.16);}
+  html[data-nav="teal"] .secnav-btn{color:rgba(255,255,255,.8);}
+  html[data-nav="teal"] .secnav-btn:hover{color:#fff;}
+  html[data-nav="teal"] .secnav-btn.is-done{color:rgba(255,255,255,.92);}
+  html[data-nav="teal"] .secnav-btn.is-done .num{background:rgba(255,255,255,.18);border-color:transparent;}
+  html[data-nav="teal"] .secnav-btn.is-active{color:#fff;background:rgba(255,255,255,.13);}
+  html[data-nav="teal"] .secnav-btn.is-active .num{background:#fff;border-color:#fff;color:var(--teal-dark);}
+  /* the hairlines: the seam before the fourth section and the connectors */
+  html[data-nav="teal"] .secnav-btn:nth-child(4)::before,
+  html[data-nav="teal"] .secnav-btn:nth-child(1)::after,
+  html[data-nav="teal"] .secnav-btn:nth-child(2)::after,
+  html[data-nav="teal"] .secnav-btn:nth-child(5)::before{background:rgba(255,255,255,.36);}
+  /* the part names over the first and fourth */
+  html[data-nav="teal"] .secnav-btn:nth-child(1)::before,
+  html[data-nav="teal"] .secnav-btn:nth-child(4)::after{color:rgba(255,255,255,.78);opacity:1;}
+  html[data-nav="teal"][data-part="1"] .secnav-btn:nth-child(1)::before,
+  html[data-nav="teal"][data-part="2"] .secnav-btn:nth-child(4)::after{color:#fff;}
+  html[data-nav="teal"] .secbar .ct-optwrap .jp-opt-btn{color:rgba(255,255,255,.78);}
+  html[data-nav="teal"] .secbar .ct-optwrap .jp-opt-btn.is-active{color:#fff;}
+  html[data-nav="teal"] .secbar .ct-optwrap .jp-opt-btn:not(.is-active):hover{color:#fff;}
+  /* the ring is teal everywhere else; on teal it must be white */
+  html[data-nav="teal"] :is(.toolbar,.secbar) :focus-visible{outline-color:#fff;}
   @media (max-width:640px){
     .sv{left:10px;bottom:10px;}
     .sv-k{display:none;}
@@ -5672,7 +5721,8 @@
            away with the content and the section bar sticks to the top -->
       <div class="toolbar">
         <button class="logo-btn" onclick="backToLanding()" title="Back to start">
-          <img alt="Growth Lab" src="assets/gl_logo.png">
+          <img class="logo-dark" alt="Growth Lab" src="assets/gl_logo.png">
+          <img class="logo-white" alt="Growth Lab" src="assets/gl_logo_white.png">
         </button>
         <div class="spacer"></div>
         <nav class="toolbar-links">
@@ -7006,8 +7056,15 @@
     <svg viewBox="0 0 10 6" width="10" height="6" aria-hidden="true"><path d="M1 5l4-4 4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </button>
   <div class="sv-panel" id="svPanel" role="menu" aria-label="Site layout variants" hidden>
-    <button type="button" role="menuitemradio" aria-checked="true" class="sv-opt is-on" data-layout="pages"><b>Current</b><span>five sections, one linear flow</span></button>
-    <button type="button" role="menuitemradio" aria-checked="false" class="sv-opt" data-layout="scroll"><b>One scroll</b><span>a summary closes each section, a band opens part two</span></button>
+    <div role="group" aria-label="Layout">
+      <button type="button" role="menuitemradio" aria-checked="true" class="sv-opt is-on" data-layout="pages"><b>Current</b><span>five sections, one linear flow</span></button>
+      <button type="button" role="menuitemradio" aria-checked="false" class="sv-opt" data-layout="scroll"><b>One scroll</b><span>a summary closes each section, a band opens part two</span></button>
+    </div>
+    <p class="sv-head" aria-hidden="true">Navigation bar</p>
+    <div role="group" aria-label="Navigation bar">
+      <button type="button" role="menuitemradio" aria-checked="true" class="sv-opt is-on" data-nav="light"><b>Light</b><span>white bars, the teal logo</span></button>
+      <button type="button" role="menuitemradio" aria-checked="false" class="sv-opt" data-nav="teal"><b>Teal</b><span>teal bars, the white logo</span></button>
+    </div>
   </div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -9436,6 +9493,7 @@
   const svEl = document.getElementById("siteLayoutSwitch"), svBtn = document.getElementById("svBtn"),
         svPanel = document.getElementById("svPanel"), svNow = document.getElementById("svNow");
   const svOpts = [...svPanel.querySelectorAll(".sv-opt")];
+  const siteNav = () => document.documentElement.dataset.nav === "teal" ? "teal" : "light";
   function svOpen(open, refocus){
     svPanel.hidden = !open;
     svBtn.setAttribute("aria-expanded", String(open)); svBtn.classList.toggle("open", open);
@@ -9443,7 +9501,32 @@
     else if (refocus) svBtn.focus({ preventScroll: true });
   }
   svBtn.addEventListener("click", () => svOpen(svPanel.hidden));
-  svOpts.forEach(o => o.addEventListener("click", () => { setSiteLayout(o.dataset.layout); svOpen(false, true); }));
+  svOpts.forEach(o => o.addEventListener("click", () => {
+    if (o.dataset.layout) setSiteLayout(o.dataset.layout); else setSiteNav(o.dataset.nav);
+    svOpen(false, true);
+  }));
+  /* the menu says which of each pair is in force, and the pill names both */
+  function syncSv(){
+    const lay = siteLayout(), nav = siteNav();
+    svOpts.forEach(o => {
+      const on = o.dataset.layout ? o.dataset.layout === lay : o.dataset.nav === nav;
+      o.classList.toggle("is-on", on); o.setAttribute("aria-checked", String(on));
+    });
+    svNow.textContent = (lay === "scroll" ? "One scroll" : "Current") + (nav === "teal" ? " \u00b7 teal bar" : "");
+  }
+  function setSiteNav(v, fromUrl){
+    v = v === "teal" ? "teal" : "light";
+    if (v === "teal") document.documentElement.dataset.nav = "teal"; else delete document.documentElement.dataset.nav;
+    syncSv();
+    if (!fromUrl){
+      const u = new URL(location.href);
+      if (v === "teal") u.searchParams.set("nav", "teal"); else u.searchParams.delete("nav");
+      history.replaceState(null, "", u.pathname + u.search + u.hash);
+    }
+    /* the bars changed colour, not size, but the chips are measured */
+    if (window.fitSecNav) window.fitSecNav();
+  }
+  window.setSiteNav = setSiteNav;
   /* Escape answers here first, and stops there: the figure's layers must
      not also take a press meant for this menu */
   svEl.addEventListener("keydown", ev => {
@@ -9460,8 +9543,7 @@
     v = v === "scroll" ? "scroll" : "pages";
     const was = siteLayout();
     document.documentElement.dataset.layout = v;
-    svOpts.forEach(o => { const on = o.dataset.layout === v; o.classList.toggle("is-on", on); o.setAttribute("aria-checked", String(on)); });
-    svNow.textContent = v === "scroll" ? "One scroll" : "Current";
+    syncSv();
     if (!fromUrl){
       const u = new URL(location.href);
       if (v === "scroll") u.searchParams.set("layout", "scroll"); else u.searchParams.delete("layout");
@@ -9646,6 +9728,7 @@
     w.els.push(seam);   /* it hides and shows with its section, as the closes do */
     seam.addEventListener("click", e => { const g = e.target.closest("[data-go]"); if (g) showSection(+g.dataset.go); });
   })();
+  setSiteNav(new URLSearchParams(location.search).get("nav") === "teal" ? "teal" : "light", true);
   setSiteLayout(new URLSearchParams(location.search).get("layout") === "scroll" ? "scroll" : "pages", true);
 
   showSection(0, false);
