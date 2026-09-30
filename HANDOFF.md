@@ -354,8 +354,8 @@ sample insights). The rail no longer lists checkpoints as steps
 (`.rail .steps li[data-step^="check-"], …[data-step^="apply-"]{display:none}`).
 
 **The section bar names its two parts** (2026-09-30, copied from the
-reference build's scroll variant): "Part 1 · City Profile" stands over the
-first chip and "Part 2 · Diagnose & Act" over the fourth, 9.5px bold in
+reference build's scroll variant): "Part 1 City Profile" stands over the
+first chip and "Part 2 Diagnose & Act" over the fourth, 9.5px bold in
 `--ink-soft`, the part the reader is in written in teal via
 `html[data-part]` (set in `showSection`: sections 0–2 → 1, 3–4 → 2, Extras
 → none). The names ride pseudo-elements — chip 1's `::before`, chip 4's

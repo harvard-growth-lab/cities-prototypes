@@ -4283,8 +4283,8 @@
     content:"";position:absolute;left:-11px;top:50%;transform:translateY(-50%);
     width:1px;height:26px;background:var(--border-strong);
   }
-  /* the two groups are named, as the reference build names them: "Part 1 ·
-     City Profile" stands over the first chip and "Part 2 · Diagnose & Act"
+  /* the two groups are named, as the reference build names them: "Part 1
+     City Profile" stands over the first chip and "Part 2 Diagnose & Act"
      over the fourth, in the bar's small bold, the part the reader is in
      written in teal (html[data-part], set with the section). The row takes
      12px of head-room for the names. The fourth chip's ::before is the
@@ -4293,13 +4293,13 @@
   .secnav{padding-top:12px;}
   .secnav-btn:nth-child(1)::before,
   .secnav-btn:nth-child(4)::after{
-    content:"Part 1 · City Profile";position:absolute;left:9px;right:auto;top:auto;bottom:calc(100% + 2px);
+    content:"Part 1 City Profile";position:absolute;left:9px;right:auto;top:auto;bottom:calc(100% + 2px);
     transform:none;width:auto;height:auto;background:none;
     font-size:9.5px;font-weight:700;line-height:1;letter-spacing:.2px;
     color:var(--ink-soft);opacity:.8;white-space:nowrap;pointer-events:none;
     transition:color .15s ease,opacity .15s ease;
   }
-  .secnav-btn:nth-child(4)::after{content:"Part 2 · Diagnose & Act";}
+  .secnav-btn:nth-child(4)::after{content:"Part 2 Diagnose & Act";}
   html[data-part="1"] .secnav-btn:nth-child(1)::before,
   html[data-part="2"] .secnav-btn:nth-child(4)::after{color:var(--teal);opacity:1;}
   /* a rule between consecutive sections, so the row reads as one run rather
