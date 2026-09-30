@@ -258,6 +258,27 @@ still under `prefers-reduced-motion`.
   sentence is plain ink, nothing bold.
 - Both keep one state: `applyView` / `applyColor` / `applyBarSort` sync the
   buttons and the blanks together.
+- **Digit level** (2026-09-30, at Nil's ask): the grain the map is tiled
+  at — a fourth pair in the tray, "Digit level 6 · 4 · 3 · 2"
+  (`#miLevel`, `data-level`), and in the sentence "shown as a [treemap] at
+  the [6-digit] level" (`#miSLevel`); `applyLevel` / `syncLevel` keep them
+  one state, `fig.dataset.level` carries it. The data holds four NAICS
+  grains per row: the 6-digit industry (`code`, 877 rows in 2024), its
+  4-digit industry group (`group`, 292), its 3-digit subsector (`sub`, 85)
+  and the sector (9). Module-level `MAP_GRAIN` is read by `layoutBands`:
+  at 4, 3 or 2 the band's industries are first rolled up **as wholes** to
+  that level (`levelUp`, one `aggCell` per group / subsector / sector, its
+  industries as `members`, PCI jobs-weighted, tier only if shared) and only
+  what is still too small folds further up; `bandsLayout`'s cache key
+  carries the grain. The cells then carry the group's or subsector's short
+  name, the card says "Industries N", the live region counts at the grain
+  ("292 industry groups shown"), the complexity colouring uses the
+  aggregate's PCI. The zoom stops at the sector on coarse grains
+  (`zoomTarget`, `drawHits` gate the group level on `MAP_GRAIN === 6`;
+  coarsening while zoomed into a group returns to its sector). The control
+  shows only while the map is up (`#miFigure:not([data-view="map"])` hides
+  the pair and the blank): the bars and the ranking stay industries, and
+  so does the table under the key. A year's rebuild keeps the grain.
 - **The ranking beats have their own row** (`#miSort`, "Sort by" with
   Concentration / Jobs / Against peers, shown on figure steps 3 and 6 only —
   a separate element from `#miView`, which carries the map beats' row). Under

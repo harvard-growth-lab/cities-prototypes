@@ -2886,6 +2886,14 @@
      screen pixels, like the labels, and the tiling makes the room for it. */
   let SEC_NAMES = "off";
   const SEC_STRIP = 16, SEC_INSET = 3, SEC_NAME_SIZE = 11;
+  /* the grain of the map: the NAICS level its cells are tiled at - 6 the
+     industries (877 in 2024), 4 the industry groups (292), 3 the
+     subsectors (85), 2 the sectors (9). A coarser grain folds every
+     industry into its group, subsector or sector as a whole before the
+     tiling; the bars and the ranking stay industries. */
+  let MAP_GRAIN = 6;
+  const GRAIN_WORDS = { 6: ["industry", "industries"], 4: ["industry group", "industry groups"], 3: ["subsector", "subsectors"], 2: ["sector", "sectors"] };
+  const grainWord = n => (GRAIN_WORDS[MAP_GRAIN] || GRAIN_WORDS[6])[n === 1 ? 0 : 1];
   const SECTOR_SHORT = { "Professional & Business": "Professional", "Education & Health": "Edu & Health",
     "Trade & Transportation": "Trade & Transport", "Leisure & Hospitality": "Leisure", "Financial Activities": "Financial",
     "Manufacturing": "Manufacturing", "Construction": "Construction", "Other": "Other", "Natural Resources": "Natural" };
@@ -2992,6 +3000,18 @@
       return [{ id: c.id, sector: c.sector, group: c.group, value: list.reduce((a, e) => a + e.value, 0), cell: c }];
     });
   }
+  /* the items of a band rolled up to a level as wholes - one item per
+     group, subsector or sector, its industries as members - for the map
+     tiled at that grain */
+  function levelUp(bandKey, items, level){
+    const buckets = new Map();
+    items.forEach(it => { const k = level.key(it.cell); if (!buckets.has(k)) buckets.set(k, []); buckets.get(k).push(it); });
+    return [...buckets].map(([k, list]) => {
+      const first = list[0], name = level.name(first.cell), title = level.title(first.cell);
+      const c = aggCell(level.id + ":" + bandKey + ":" + k, name, list.map(e => e.cell), levelMeta(level, k, name, title), title);
+      return { id: c.id, sector: c.sector, group: c.group, value: list.reduce((a, e) => a + e.value, 0), cell: c };
+    });
+  }
   /* one band tiled: sector, group, industry, each level padded by a pixel
      and rounded to whole pixels; the sectors in the reference's fixed
      order, the rest by size with the folded "Other" cells last */
@@ -3092,6 +3112,14 @@
      as wholes into their subsectors and sectors, then, each group opened
      back up, its own small industries are folded inside it */
   function layoutBands(bands){
+    /* at a coarser grain the industries are rolled up as wholes first, and
+       only what is still too small folds further up */
+    if (MAP_GRAIN !== 6){
+      const level = MAP_GRAIN === 4 ? LEVELS.group : MAP_GRAIN === 3 ? LEVELS.subsector : LEVELS.sector;
+      const coarse = bands.map(b => ({ ...b, items: levelUp(b.key, b.items, level) }));
+      const above = MAP_GRAIN === 4 ? [LEVELS.subsector, LEVELS.sector] : MAP_GRAIN === 3 ? [LEVELS.sector] : [];
+      return mergeLoop(above, coarse);
+    }
     const members = new Map();
     const grouped = bands.map(b => {
       const items = groupUp(b.key, b.items);
@@ -3286,7 +3314,7 @@
     const laid = new Map();
     function bandsLayout(key, bands){
       const s = scaleNow();
-      const k = key + "|" + s.toFixed(4) + "|" + SEC_NAMES;
+      const k = key + "|" + s.toFixed(4) + "|" + SEC_NAMES + "|" + MAP_GRAIN;
       if (laid.has(k)) return laid.get(k);
       const px = b => ({ x: b.x * s, y: b.y * s, w: b.w * s, h: b.h * s });
       const un = b => ({ x: b.x / s, y: b.y / s, w: b.w / s, h: b.h / s });
@@ -4767,7 +4795,7 @@
     const zoomTarget = c => {
       if ((step !== 0 && step !== 4 && step !== 7) || view !== "map") return null;
       if (!focus) return { sector: c.cell.sector, group: null, label: c.cell.sector };
-      if (!focusGroup && /^\d{4}$/.test(c.cell.group)) return { sector: focus, group: c.cell.group, label: c.cell.groupName };
+      if (MAP_GRAIN === 6 && !focusGroup && /^\d{4}$/.test(c.cell.group)) return { sector: focus, group: c.cell.group, label: c.cell.groupName };
       return null;
     };
     function paintMap(L, animate){
@@ -4876,7 +4904,7 @@
       const where = b => step === 4 && b.band ? " (" + b.band + ")" : "";
       if ((step === 0 || step === 4 || step === 7) && view === "map"){
         if (!focus) targets = L.blocks.map(b => ({ key: (b.band || "") + ":" + b.key, box: b.box, sector: b.sector, group: null, label: "Zoom into " + b.sector + where(b) }));
-        else if (!focusGroup) targets = L.groups.filter(g => /^\d{4}$/.test(g.group))
+        else if (MAP_GRAIN === 6 && !focusGroup) targets = L.groups.filter(g => /^\d{4}$/.test(g.group))
           .map(g => ({ key: g.key, box: g.box, sector: focus, group: g.group,
                        label: "Zoom into " + ((g.items[0] && g.items[0].cell.groupName) || g.group) + where(g) }));
       }
@@ -5055,8 +5083,12 @@
       } else if (view === "alt"){
         said = barListAll.length + " industries as bars, ordered by " + (barSort === "jobs" ? "jobs" : "complexity");
       } else {
-        const n = mapLayout ? mapLayout.rows.length : rowsAll().length;
-        said = n + " industries shown in the map" + (step === 4 ? ", in three tiers by tradability" : "");
+        /* counted at the map's grain: the industries, or the groups,
+           subsectors or sectors they are rolled up into */
+        const rows = mapLayout ? mapLayout.rows : rowsAll();
+        const n = MAP_GRAIN === 6 ? rows.length
+          : new Set(rows.map(r => MAP_GRAIN === 4 ? r.group : MAP_GRAIN === 3 ? r.sub : r.sector)).size;
+        said = n + " " + grainWord(n) + " shown in the map" + (step === 4 ? ", in three tiers by tradability" : "");
       }
       if (zoomed) said += ", zoomed into " + zoomed;
       if (secOn) said += ", " + secOn.size + " of " + sectorCount + " sectors";
@@ -5759,6 +5791,34 @@
     });
     const sViewEl = document.getElementById(p + "SView");
     if (sViewEl) on(sViewEl, "change", () => { fitPick(sViewEl); applyView(sViewEl.value); });
+
+    /* the grain: the NAICS level the map is tiled at, from the tray's
+       buttons or the sentence's blank, both showing the one state. The
+       bars stay industries, so the control shows only while the map is
+       up; a group is a cell of its own only at the finest grain, so a zoom
+       into a group comes back to its sector when the grain coarsens. */
+    const levelEl = document.getElementById(p + "Level"), sLevelEl = document.getElementById(p + "SLevel");
+    const syncLevel = () => {
+      if (levelEl) levelEl.querySelectorAll(".seg-btn[data-level]").forEach(x => {
+        const onIt = +x.dataset.level === MAP_GRAIN;
+        x.classList.toggle("is-active", onIt); x.setAttribute("aria-pressed", String(onIt));
+      });
+      if (sLevelEl && +sLevelEl.value !== MAP_GRAIN){ sLevelEl.value = String(MAP_GRAIN); fitPick(sLevelEl); }
+      fig.dataset.level = String(MAP_GRAIN);
+    };
+    const applyLevel = g => {
+      g = [6, 4, 3, 2].indexOf(+g) >= 0 ? +g : 6;
+      if (g === MAP_GRAIN) return;
+      MAP_GRAIN = g;
+      invalidateMaps(); hideMapTip(true);
+      syncLevel();
+      if (g !== 6 && focusGroup){ setFocus(focus, null); return; }
+      if (step >= 0) paint(step, !reduced());
+      syncLive();
+    };
+    syncLevel();
+    if (levelEl) on(levelEl, "click", ev => { const b = ev.target.closest(".seg-btn[data-level]"); if (b) applyLevel(b.dataset.level); });
+    if (sLevelEl) on(sLevelEl, "change", () => { fitPick(sLevelEl); applyLevel(sLevelEl.value); });
 
     /* sort: the same rows in another order, bars and names travelling together */
     const sortEl = document.getElementById(p + "Sort");
