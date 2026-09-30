@@ -1,0 +1,47 @@
+# The study switches ("opt")
+
+Each is a design question Nil has not closed. The word "opt" rides the beat's
+counter in the Metro Industries text column ("Metro Industries 1/3  opt");
+its panel lists one row per study, each a plain `<select>` whose options are
+"opt-1", "opt-2" (, "opt-3"). Both sides of every study must keep working:
+verify a change under each option.
+
+| Study | select id | figure attribute | options (default first) | shown on figure steps |
+|---|---|---|---|---|
+| Control row | `miRowOpt` | `data-row` = tray / sentence | opt-1 tray · opt-2 sentence | 0 1 3 4 5 6 7 |
+| Key actions | `miKeyOpt` | `data-key` = inline / card | opt-1 inline · opt-2 card | 0 4 7 |
+| Sector colours | `miPal` | `data-pal` = mint / periwinkle | opt-1 mint · opt-2 periwinkle | 0 4 |
+| Tier grounds | `miGround` | — | opt-1 frame · opt-2 grey | 4 |
+| Tier shares | `miTierOpt` | — | opt-1 cards · **opt-2 donut** (default) | 4 |
+| Phrase highlight | `miHlOpt` | — | opt-1 dim · opt-2 mute · **opt-3 frame** (default) | 0 4 |
+| Tradability column | `miRankOpt` | — | opt-1 score · **opt-2 tier** (default) | 3 6 |
+
+Where they live: the `<label class="mi-study" id="mi…Pair">` rows inside
+`#miStudies` in `cities-v-5/index.html`; their per-step visibility rules are
+`#page-export-basket:has(#miFigure:not([data-step="…"])) #mi…Pair{display:none;}`
+(`:has()`, because the panel no longer sits inside the figure). The handlers
+are in `treemap.js` near `const rowEl = document.getElementById(p + "RowOpt")`,
+`const keyOptEl …`, `const palEl …`, and the others by the same pattern.
+
+What each option is:
+
+- **Control row** — opt-1: the "paper tray" (no border, soft grey tray, the
+  chosen button a white tile with teal text); opt-2: the title as a sentence
+  whose blanks are native selects cut to their word ("All industries, shown
+  as a [treemap], coloured by [sector], in [2024]"). Chosen from
+  `control-row-two-ways.html`.
+- **Key actions** — opt-1: the key entry is the switch (hide/show) and an
+  "only" word beside it zooms; opt-2: a hover card with the sector's colour
+  and name and a "Click to hide / Double-click to keep only" hint beside a
+  tapping hand; the entry itself does the work (click deferred 230 ms for
+  the double-click; keyboard acts at once and reads "Enter to hide / “Only”,
+  the next button, keeps only"). Open question: where the two verbs should
+  live so nothing covers the map — five candidates on `key-actions-sketches.html`.
+- **Sector colours** — Trade & Transportation as mint (`#86c8ab`, as shipped)
+  or periwinkle; the swatches in the key, the phrases and the cards follow.
+- **Tier grounds** — each tier's ground as a framed line, or a light grey field.
+- **Tier shares** — the tiers' shares as cards, or as the donut beside the text.
+- **Phrase highlight** — a sector phrase in the text stands the rest of the
+  map down (dim), turns the rest grey (mute), or draws a line round the block
+  being named (frame).
+- **Tradability column** — the ranking's last column as the score, or the tier word.
