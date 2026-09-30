@@ -363,6 +363,33 @@ first chip and "Part 2 Diagnose & Act" over the fourth, 9.5px bold in
 moved to chip 5's `::before` — the row takes 12px of head-room, and under
 1200px the names shorten to "Part 1" / "Part 2".
 
+**The site's layout study** (2026-09-30, at Nil's request, after the
+reference build's `?site=scroll` variant): a small "layout opt-1 · opt-2"
+word in the tool's toolbar (`.site-study`, `setSiteLayout(v)`,
+`html[data-layout]`, carried in the address as `?layout=scroll`).
+- **opt-1, pages** — as before: one section at a time, the pager's three
+  cards at its foot.
+- **opt-2, scroll** — the storyline's five sections stand together in the
+  `.pages` scroll (`showSection` leaves them all on; the Extras alone still
+  take the page for themselves), the pager is hidden except at the Extras,
+  the chips follow the scroll (`trackSection`, throttled on the scroller's
+  `scroll`: the section whose top has passed 40 % of the viewport; a chip
+  click smooth-scrolls to the section and holds the tracker for a second),
+  and the hash and `data-part` follow. After each storyline section a
+  **teal close** (`section.sec-seal`, built from `SEAL_POINTS` and placed
+  after the section's top-level element in the scroller, `topOf`): number
+  and name, "What to take with you", three points drafted from the
+  section's own text and its quiz's facts, a white "Test your knowledge"
+  button (`openSecCheck(true, secIdx, opener)` — focus returns to the
+  opener when the quiz closes; `syncCheckCard` keeps the seals' counts) and
+  a "Keep scrolling · <next>" cue with a bobbing arrow (the last says "Back
+  to the start"). The two grey-ground sections bleed their ground edge to
+  edge under the white pages (`clip-path:inset(0 -100vmax)` + a 100vmax
+  box-shadow, the reference's trick). Not built: the reference's big teal
+  Part 2 introduction ("seam") — the part names in the bar do that work
+  for now. Worker Flows has no quiz data (`sectionChecksData` lacks it), so
+  its close carries no quiz button.
+
 Quiz content and state: `sectionChecksData()` (questions per section),
 `CHECK_STATE`, `CHECK_DONE`, `APPLY_DONE`. For the keyboard (`a297747`): the
 slides other than the current one are `inert` (`.kc-view{overflow:clip}` so
@@ -523,6 +550,11 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
    left as is: the key, the crumbs and the live region say what is showing.
 6. **Arrow-key roving** between a segmented control's buttons is not
    implemented (not required by WCAG; every button is a tab stop).
+7. **The scroll layout's closes** carry summary points drafted by Claude
+   from each section's text (`SEAL_POINTS` in index.html) — Nil has not
+   edited them yet; Worker Flows has no quiz to link; the reference's big
+   Part 2 introduction is not reproduced; and under opt-2 every figure is
+   built at once, which is fine for a prototype but is the cost to watch.
 
 ## 9. Where things are
 

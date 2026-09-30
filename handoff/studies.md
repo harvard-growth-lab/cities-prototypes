@@ -59,3 +59,16 @@ Retired 2026-09-30 at Nil's request: the **Phrase highlight** study
 phrase in the text draws a line round its block on the map; `hlMode` in
 treemap.js defaults to "frame" when the select is absent, and the handler is
 null-safe, so the row was simply removed from the panel.
+
+## A site-level study: the layout
+
+Not in the Metro Industries panel but in the tool's toolbar, the small
+"layout opt-1 · opt-2" word (`.site-study`), also `?layout=scroll` in the
+address. opt-1 is the page-at-a-time site with the pager's cards; opt-2
+(2026-09-30) is the reference build's scroll variant done here: the five
+storyline sections in one scroll, the bar's chips following, and after
+each section a teal close ("What to take with you": three points, the
+quiz button, "Keep scrolling · next"). `setSiteLayout`, `trackSection`,
+`SEAL_POINTS` and the seal builder sit together in index.html just before
+the first `showSection(0, false)`; the styles are under "the site's layout
+study" near the pager's rules. HANDOFF.md §5 has the detail.

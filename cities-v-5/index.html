@@ -553,6 +553,73 @@
   /* the extras' tab appears only while the reader is in the extras */
   .secnav-btn--aside:not(.is-active){display:none;}
 
+  /* ---- the site's layout study: pages (opt-1) or one scroll (opt-2) ----
+     Under opt-2 the storyline's five sections stand in one scroll, as the
+     reference build's scroll variant has them: the reader keeps scrolling
+     rather than pressing Next, the bar's chips follow the scroll, and each
+     section closes on a teal block - its main points and the way into its
+     quiz. The pager cards stand down except at the extras, which stay
+     aside. The switch is the small "layout" word in the toolbar, and
+     ?layout=scroll in the address. */
+  .site-study{display:inline-flex;align-items:center;gap:8px;margin-left:22px;font-size:9.5px;letter-spacing:.02em;color:var(--ink-soft);}
+  .site-study [role="group"]{display:inline-flex;gap:7px;}
+  .site-study-btn{appearance:none;border:0;background:none;padding:0;margin:0;font:inherit;color:var(--ink-soft);cursor:pointer;}
+  .site-study-btn:hover{color:var(--ink);}
+  .site-study-btn.is-active{color:var(--teal);font-weight:700;}
+  .site-study-btn:focus-visible{outline:2px solid var(--teal);outline-offset:3px;border-radius:2px;}
+  html[data-layout="scroll"] .secpager:not([data-sec="5"]){display:none;}
+  html[data-layout="scroll"] .pages:has(#page-export-basket){background:#fff;}
+  /* the two grey-ground sections keep their ground under the white pages,
+     bled to the edges from their 976 measure */
+  html[data-layout="scroll"] :is(#page-export-basket, #page-admin-mix){
+    background:#f9fafb;box-shadow:0 0 0 100vmax #f9fafb;clip-path:inset(0 -100vmax);
+  }
+  /* the close of a section: the house's dark teal, edge to edge, the
+     content on the sections' own 976 measure */
+  .sec-seal{display:none;}
+  html[data-layout="scroll"] .sec-seal{
+    display:block;background:var(--teal-dark);color:#fff;
+    box-shadow:0 0 0 100vmax var(--teal-dark);clip-path:inset(0 -100vmax);
+  }
+  .seal-in{
+    max-width:976px;margin-inline:auto;padding:64px 48px 56px;min-height:440px;box-sizing:border-box;
+    display:flex;flex-direction:column;justify-content:center;gap:18px;
+  }
+  .seal-eyebrow{display:flex;align-items:center;gap:9px;margin:0;font-size:12px;font-weight:700;letter-spacing:.2px;color:rgba(255,255,255,.78);}
+  .seal-num{
+    display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;
+    border:1.5px solid rgba(255,255,255,.55);font-size:11px;font-weight:700;font-style:normal;color:#fff;
+  }
+  .seal-title{margin:0;font-size:30px;font-weight:700;line-height:1.1;letter-spacing:-.3px;color:#fff;}
+  .seal-points{margin:6px 0 0;padding:0;list-style:none;max-width:680px;display:flex;flex-direction:column;gap:12px;}
+  .seal-points li{position:relative;padding-left:22px;font-size:16px;line-height:1.5;color:rgba(255,255,255,.92);}
+  .seal-points li::before{content:"";position:absolute;left:1px;top:.6em;width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.55);}
+  .seal-actions{display:flex;align-items:center;flex-wrap:wrap;gap:16px 28px;margin-top:22px;}
+  .seal-quiz{
+    display:inline-flex;align-items:center;gap:11px;appearance:none;border:1px solid #fff;border-radius:8px;
+    padding:8px 16px 8px 10px;background:#fff;color:var(--teal-dark);font:inherit;font-size:14px;font-weight:600;cursor:pointer;
+    transition:background .15s ease;
+  }
+  .seal-quiz:hover{background:var(--teal-tint);}
+  .seal-quiz:focus-visible{outline:2px solid #fff;outline-offset:3px;}
+  .seal-quiz-sub{font-size:12.5px;font-weight:400;color:var(--ink-soft);}
+  .seal-cue{display:inline-flex;align-items:center;gap:9px;margin:0;font-size:12px;font-weight:700;letter-spacing:.2px;color:rgba(255,255,255,.78);}
+  .seal-cue b{color:#fff;}
+  .seal-cue svg{display:block;animation:seal-bob 1.8s ease-in-out infinite;}
+  .seal-cue button{appearance:none;border:0;background:none;padding:0;margin:0;font:inherit;color:#fff;text-decoration:underline;text-underline-offset:3px;cursor:pointer;}
+  .seal-cue button:focus-visible{outline:2px solid #fff;outline-offset:3px;}
+  @keyframes seal-bob{0%,100%{translate:0 0;}50%{translate:0 5px;}}
+  @media (prefers-reduced-motion: reduce){ .seal-cue svg{animation:none;} }
+  @media (max-width:1199px){
+    .seal-in{padding:52px var(--frame-pad) 48px;min-height:400px;}
+  }
+  @media (max-width:640px){
+    .seal-in{padding:44px var(--frame-pad) 40px;min-height:0;gap:14px;}
+    .seal-title{font-size:24px;}
+    .seal-points li{font-size:15px;}
+    .site-study{display:none;}
+  }
+
 
   /* sections that are not the current page */
   .pages .sec-off{display:none !important;}
@@ -5497,6 +5564,11 @@
           <a href="#" class="current-page" onclick="toggleExplainers(false);return false;">City Diagnosis</a>
           <a href="#">About</a>
           <a href="#">Glossary</a>
+          <span class="site-study" id="siteLayoutStudy"><span class="site-study-word">layout</span>
+            <span role="group" aria-label="Site layout">
+              <button type="button" class="site-study-btn is-active" data-layout="pages" aria-pressed="true">opt-1</button>
+              <button type="button" class="site-study-btn" data-layout="scroll" aria-pressed="false">opt-2</button>
+            </span></span>
         </nav>
         <button class="btn-journey">
           <svg width="19" height="19" viewBox="0 0 83 83.01" fill="currentColor" aria-hidden="true"><path d="M82.92,7.06s-.01-.05-.02-.07c-.05-.13-.12-.26-.2-.37-.02-.02-.03-.04-.05-.06-.09-.11-.2-.21-.32-.3-.01,0-.01-.01-.02-.01-.12-.08-.26-.14-.41-.18-.01,0-.02-.01-.04-.02L57.86.04c-.24-.06-.49-.06-.73,0l-24,6c-.67.17-1.14.77-1.14,1.46s.47,1.29,1.14,1.46l9.86,2.47v14.07c0,.22.14.42.36.48l14,4s.09.02.14.02.09-.01.14-.02l14-4c.21-.06.36-.26.36-.48v-14.08l8-2v10.08c0,.83.67,1.5,1.5,1.5s1.5-.67,1.5-1.5V7.5c.01-.16-.02-.31-.07-.45h0ZM57.5,11.95l-17.82-4.45,17.82-4.45,17.82,4.45-17.82,4.45ZM68.5,42.01h-35.71c-.66-2.3-2.77-4-5.29-4s-4.63,1.7-5.29,4h-7.71c-6.34,0-11.5-5.16-11.5-11.5s5.16-11.5,11.5-11.5h21c.83,0,1.5-.67,1.5-1.5s-.67-1.5-1.5-1.5H14.5C6.5,16.01,0,22.51,0,30.51s6.5,14.5,14.5,14.5h7.71c.66,2.3,2.77,4,5.29,4s4.63-1.7,5.29-4h35.71c6.34,0,11.5,5.16,11.5,11.5s-5.16,11.5-11.5,11.5h-7.71c-.66-2.3-2.77-4-5.29-4s-4.63,1.7-5.29,4H18l-15.6-11.7c-.46-.34-1.06-.4-1.57-.14-.51.25-.83.77-.83,1.34v24c0,.57.32,1.09.83,1.34.21.11.44.16.67.16.32,0,.64-.1.9-.3l15.6-11.7h32.21c.66,2.3,2.77,4,5.29,4s4.63-1.7,5.29-4h7.71c8,0,14.5-6.5,14.5-14.5s-6.5-14.5-14.5-14.5h0ZM27.5,46.01c-1.38,0-2.5-1.12-2.5-2.5s1.12-2.5,2.5-2.5,2.5,1.12,2.5,2.5-1.12,2.5-2.5,2.5ZM55.5,72.01c-1.38,0-2.5-1.12-2.5-2.5s1.12-2.5,2.5-2.5,2.5,1.12,2.5,2.5-1.12,2.5-2.5,2.5Z"/></svg>
@@ -9006,14 +9078,18 @@
 
   function showSection(i, toTop){
     if(i < 0 || i >= SECTIONS.length || i === activeSec) return;
+    const prevSec = activeSec;
     activeSec = i;
     /* which of the two parts the reader is in, for the bar's part names:
        the first three sections profile the city, the next two diagnose
        and act; the extras belong to neither */
     document.documentElement.dataset.part = i <= 2 ? "1" : i <= 4 ? "2" : "";
     syncSectionHash();
+    /* under the scroll layout the storyline's sections stand together in
+       one scroll; the extras alone take the page for themselves */
+    const scrollL = siteLayout() === "scroll", EXTRAS = SECTIONS.length - 1;
     SECTIONS.forEach((sec, k) =>
-      sec.els.forEach(el => el.classList.toggle("sec-off", k !== i)));
+      sec.els.forEach(el => el.classList.toggle("sec-off", scrollL && k < EXTRAS && i < EXTRAS ? false : k !== i)));
     [...secNavEl.children].forEach((b, k) => {
       b.classList.toggle("is-active", k === i);
       /* the sections behind the reader wear a check in place of their number */
@@ -9067,10 +9143,20 @@
         '<span class="pgc-kicker">' + badge(0) + 'Start again</span><span class="pgc-name">' + SECTIONS[0].name + '</span></button>') +
       '</div>';
     wireCheckCard(name);
-    if(toTop !== false) pagesEl.scrollTo({top: 0, behavior: "instant"});
+    if(toTop !== false){
+      if (scrollL && i < EXTRAS){
+        /* the chip takes the reader to the section's top, and the chips
+           hold still while the scroll gets there */
+        const first = SECTIONS[i].els[0];
+        trackHold = Date.now() + 1000;
+        if (first) first.scrollIntoView({ block: "start",
+          behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
+      } else pagesEl.scrollTo({top: 0, behavior: "instant"});
+    }
     // Leaflet measures a hidden container as 0x0; the existing resize handler
-    // re-measures the map and re-runs the scroll zoom.
-    window.dispatchEvent(new Event("resize"));
+    // re-measures the map and re-runs the scroll zoom. Under the scroll
+    // layout nothing changes size when the chips follow the reader.
+    if (!scrollL || i === EXTRAS || prevSec === EXTRAS || prevSec < 0) window.dispatchEvent(new Event("resize"));
   }
 
   sectionDefs.forEach((sd, i) => {
@@ -9118,10 +9204,11 @@
     return c.qs.length + (c.qs.length === 1 ? " question" : " questions") +
       (answered ? " &middot; " + answered + " of " + c.qs.length + " answered" : "");
   }
+  function quizIcon(){ return '<i class="pgc-quiz" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v7a2.5 2.5 0 0 1-2.5 2.5H10l-4.2 3.3c-.5.4-1.3 0-1.3-.6V16A2.5 2.5 0 0 1 4 13.5z"/><path d="M9.6 9.2a2.4 2.4 0 1 1 3.4 2.2c-.6.3-1 .8-1 1.4v.2"/><path d="M12 15.6h.01"/></svg></i>'; }
   function checkCardHtml(name){
     if (!CHECK_READY || !sectionChecksData()[name]) return "";
     return '<button type="button" class="pgc pgc--check" aria-haspopup="dialog">' +
-      '<span class="pgc-kicker"><i class="pgc-quiz" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v7a2.5 2.5 0 0 1-2.5 2.5H10l-4.2 3.3c-.5.4-1.3 0-1.3-.6V16A2.5 2.5 0 0 1 4 13.5z"/><path d="M9.6 9.2a2.4 2.4 0 1 1 3.4 2.2c-.6.3-1 .8-1 1.4v.2"/><path d="M12 15.6h.01"/></svg></i>Optional</span>' +
+      '<span class="pgc-kicker">' + quizIcon() + 'Optional</span>' +
       '<span class="pgc-name">Test your knowledge</span>' +
       '<span class="pgc-sub">' + checkCardSub(name) + '</span></button>';
   }
@@ -9130,6 +9217,10 @@
     if (card) card.addEventListener("click", () => openSecCheck(true));
   }
   function syncCheckCard(){
+    document.querySelectorAll(".seal-quiz").forEach(b => {
+      const sub = b.querySelector(".seal-quiz-sub");
+      if (sub) sub.innerHTML = checkCardSub(SECTIONS[+b.dataset.sec].name);
+    });
     const card = secPager.querySelector(".pgc--check"); if (!card) return;
     const sub = card.querySelector(".pgc-sub");
     if (sub) sub.innerHTML = checkCardSub(SECTIONS[+secPager.dataset.sec].name);
@@ -9152,16 +9243,21 @@
     checkDlg.addEventListener("click", e => { if (e.target === checkDlg) checkDlg.close(); });
     checkDlg.addEventListener("close", () => {
       syncCheckCard();
-      const card = secPager.querySelector(".pgc--check");
+      const card = (checkOpener && checkOpener.isConnected && checkOpener.offsetParent) ? checkOpener : secPager.querySelector(".pgc--check");
+      checkOpener = null;
       if (card) card.focus({ preventScroll: true });
     });
     return checkDlg;
   }
-  function openSecCheck(open){
+  /* secIdx and opener: a seal's button opens its own section's quiz, and
+     gets the focus back when the quiz closes */
+  let checkOpener = null;
+  function openSecCheck(open, secIdx, opener){
     const dlg = checkDialog();
     if (open === false){ if (dlg.open) dlg.close(); return; }
-    const name = SECTIONS[+secPager.dataset.sec].name;
+    const name = SECTIONS[secIdx != null ? secIdx : +secPager.dataset.sec].name;
     if (!sectionChecksData()[name]) return;
+    checkOpener = opener || null;
     dlg.querySelector(".kq-body").innerHTML = renderSecClose(name, true);
     wireSecClose(name);
     if (!dlg.open) dlg.showModal();
@@ -9209,6 +9305,117 @@
     if(i >= 0) showSection(i, false);
     enterToolDirect(id);
   };
+
+  /* ---- the site's layout study ----
+     "pages" (opt-1): one section at a time, the pager's cards at its foot.
+     "scroll" (opt-2): the storyline's five sections in one scroll, the
+     chips following the reader, each section closed by a teal block that
+     says what to take from it and opens its quiz. The choice rides the
+     address as ?layout=scroll, so a link can carry it. */
+  function siteLayout(){ return document.documentElement.dataset.layout === "scroll" ? "scroll" : "pages"; }
+  function setSiteLayout(v, fromUrl){
+    v = v === "scroll" ? "scroll" : "pages";
+    const was = siteLayout();
+    document.documentElement.dataset.layout = v;
+    document.querySelectorAll(".site-study-btn").forEach(b => {
+      const on = b.dataset.layout === v;
+      b.classList.toggle("is-active", on); b.setAttribute("aria-pressed", String(on));
+    });
+    if (!fromUrl){
+      const u = new URL(location.href);
+      if (v === "scroll") u.searchParams.set("layout", "scroll"); else u.searchParams.delete("layout");
+      history.replaceState(null, "", u.pathname + u.search + u.hash);
+    }
+    if (was !== v && activeSec >= 0){
+      const cur = activeSec; activeSec = -1; showSection(cur, false);
+      const first = SECTIONS[cur].els[0];
+      if (v === "scroll" && first) first.scrollIntoView({ block: "start", behavior: "instant" });
+      else pagesEl.scrollTo({ top: 0, behavior: "instant" });
+    }
+  }
+  window.setSiteLayout = setSiteLayout;
+  document.querySelectorAll(".site-study-btn").forEach(b => b.addEventListener("click", () => setSiteLayout(b.dataset.layout)));
+
+  /* the chips follow the scroll: the section whose top has passed the
+     upper part of the viewport is the one the reader is in, and a
+     section's teal close still counts as that section */
+  var trackHold = 0, trackT = null;
+  function trackSection(){
+    if (siteLayout() !== "scroll" || activeSec === SECTIONS.length - 1 || Date.now() < trackHold) return;
+    const pr = pagesEl.getBoundingClientRect(), line = pr.top + pagesEl.clientHeight * 0.4;
+    let on = 0;
+    for (let k = 0; k < SECTIONS.length - 1; k++){
+      const el = topOf(SECTIONS[k].els[0]);
+      if (el && el.getBoundingClientRect().top <= line) on = k;
+    }
+    if (on !== activeSec) showSection(on, false);
+  }
+  pagesEl.addEventListener("scroll", () => {
+    if (trackT) return;
+    trackT = setTimeout(() => { trackT = null; trackSection(); }, 80);
+  }, { passive: true });
+
+  /* what each section leaves the reader with: three points, drafted from
+     the section's own text and the facts its quiz turns on */
+  const SEAL_POINTS = {
+    "Who are you?": [
+      "Boston proper is home to 673,458 people \u2014 about 13% of a metro of 5.0 million across 197 cities and towns.",
+      "The metro is the labor market: people commute, firms hire and housing responds across it, so most of the diagnosis reads at that scale.",
+      "The city has grown about +0.3% a year since 2016, under the national +0.8% \u2014 the first sign that something is holding it back."
+    ],
+    "Metro Industries": [
+      "2.3 million jobs across 877 industries, read three ways: by size, by the complexity of the work, and by how much of it can be sold outside the metro.",
+      "Sorted by tradability the mix falls into three tiers \u2014 traded, partly traded and local \u2014 and it is the traded tier that brings income in.",
+      "The metro\u2019s specializations are the traded industries it does far more of than a typical US metro, biotechnology R&amp;D among them: a matter of concentration, not size."
+    ],
+    "Worker Flows": [
+      "Two counts sit behind the city: 687,736 jobs inside its line and 334,026 jobs its residents hold \u2014 206 jobs here for every 100 residents hold. Boston is a net importer of workers.",
+      "Only one worker in four lives in the city, and its residents commute out too: 154,904 of their jobs are outside the line.",
+      "Finance and insurance is where the city most outdoes its metro, at 1.9\u00d7 the metro\u2019s share; Cambridge is its one near-even exchange."
+    ],
+    "Constraints Diagnosis": [
+      "Every diagnosis starts with two questions, each read against the typical city: are people arriving or leaving, and is pay rising or falling?",
+      "Boston\u2019s metro pairs fast pay growth with slow population growth \u2014 the mark of a supply constraint: people are being priced out.",
+      "Strip out what wages explain about home prices and the residual is the metro\u2019s revealed pull; home values outrunning the national trend is what housing as the wall looks like."
+    ],
+    "Levers for Change": [
+      "A lever is aimed at the binding constraint the diagnosis found \u2014 one constraint, one lever, then re-measure.",
+      "A supply constraint is loosened on the supply side: zoning, permitting and construction capacity come before anything that adds demand.",
+      "What peer cities did is evidence to weigh, not a list to copy; the case for a lever is made with your city\u2019s own numbers."
+    ]
+  };
+  const SEAL_ARROW = '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3v10M3.5 8.5 8 13l4.5-4.5"/></svg>';
+  /* a section's element in the scroller: some of a section's listed ids
+     are beats inside it, and the seal must follow the whole section */
+  const topOf = el => { let t = el; while (t && t.parentElement && t.parentElement !== pagesEl) t = t.parentElement; return t; };
+  SECTIONS.forEach((sec, k) => {
+    const EXTRAS = SECTIONS.length - 1;
+    if (k >= EXTRAS || !SEAL_POINTS[sec.name]) return;
+    const tops = [...new Set(sec.els.map(topOf).filter(Boolean))]
+      .sort((a, b) => (a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1);
+    const last = tops[tops.length - 1]; if (!last) return;
+    const next = SECTIONS[k + 1], isLast = k === EXTRAS - 1;
+    const hasQuiz = !!sectionChecksData()[sec.name];
+    const seal = document.createElement("section");
+    seal.className = "sec-seal"; seal.id = "seal-" + k; seal.setAttribute("aria-labelledby", "seal-" + k + "-t");
+    seal.innerHTML = '<div class="seal-in">' +
+      '<p class="seal-eyebrow"><i class="seal-num" aria-hidden="true">' + (k + 1) + '</i>' + sec.name + '</p>' +
+      '<h2 class="seal-title" id="seal-' + k + '-t">What to take with you</h2>' +
+      '<ul class="seal-points">' + SEAL_POINTS[sec.name].map(t => '<li>' + t + '</li>').join("") + '</ul>' +
+      '<div class="seal-actions">' +
+        (hasQuiz ? '<button type="button" class="seal-quiz" data-sec="' + k + '" aria-haspopup="dialog">' + quizIcon() +
+          'Test your knowledge<span class="seal-quiz-sub">' + checkCardSub(sec.name) + '</span></button>' : '') +
+        (isLast ? '<p class="seal-cue">The end of the storyline \u00b7 <button type="button" data-go="0">Back to the start</button></p>'
+                : '<p class="seal-cue">Keep scrolling \u00b7 <b>' + next.name + '</b>' + SEAL_ARROW + '</p>') +
+      '</div></div>';
+    last.after(seal);
+    sec.els.push(seal);   /* it hides and shows with its section */
+    seal.addEventListener("click", e => {
+      const q = e.target.closest(".seal-quiz"); if (q){ openSecCheck(true, +q.dataset.sec, q); return; }
+      const g = e.target.closest("[data-go]"); if (g) showSection(+g.dataset.go);
+    });
+  });
+  setSiteLayout(new URLSearchParams(location.search).get("layout") === "scroll" ? "scroll" : "pages", true);
 
   showSection(0, false);
 
