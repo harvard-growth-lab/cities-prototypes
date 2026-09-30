@@ -4159,8 +4159,10 @@
           }
           if (node.getComputedTextLength() > room) tn.text("Nothing here");
         }
-        g.select(".mi-card-pct").style("opacity", bare ? 0.4 : 1);
-        g.select(".mi-card-lab").style("opacity", bare ? 0.4 : 1);
+        /* a ground with nothing to show steps back, but its name and share
+           still read (0.4 left them at 2.4 to 1) */
+        g.select(".mi-card-pct").style("opacity", bare ? 0.72 : 1);
+        g.select(".mi-card-lab").style("opacity", bare ? 0.72 : 1);
       });
       /* the map itself: tiled for the beat over whatever the filters and
          the zoom leave, and faded out under the bars and the rankings. It
@@ -4686,7 +4688,7 @@
           .attr("x", spec.x / s).attr("y", lineY(spec.y, spec.size, n) / s).text(ln));
         if (spec.share) t.append("tspan").attr("class", "mi-mshare")
           .attr("x", spec.x / s).attr("y", lineY(spec.y, spec.size, spec.lines.length, true) / s)
-          .attr("font-weight", MAP.shareWeight).attr("fill-opacity", 0.7).text(share);
+          .attr("font-weight", MAP.shareWeight).text(share);
       });
       const lab = all.select("text.mi-mlab");
       if (dur) lab.style("opacity", 0).transition().delay(dur * 0.55).duration(dur * 0.45).style("opacity", 1);

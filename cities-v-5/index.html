@@ -8,6 +8,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=Inter:wght@400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style>
+  /* registered so the beats the reader is not on can ease to their quieter
+     ink instead of jumping to it */
+  @property --ink{syntax:"<color>";inherits:true;initial-value:#1a2226;}
+  @property --ink-soft{syntax:"<color>";inherits:true;initial-value:#526066;}
   :root{
     --teal:#255862;
     --teal-dark:#1c454d;
@@ -16,16 +20,23 @@
     --paper:#f4f5f2;
     --orange:#e76565;
     --orange-dark:#cf4f2c;
+    /* the accent as a text colour: --orange and --orange-dark are for marks;
+       set as words they read 2.9 and 3.9 to 1, and this reads 4.7 on the
+       lightest fill the maps put under a label */
+    --orange-text:#a93a17;
     --orange-tint:#fdf0ec;
     --border:#e2e7e8;
     --border-strong:#c3ccce;
+    /* the edge of a control the reader has to find by its edge alone - a
+       field, a select - held to 3 to 1 against the page */
+    --control-edge:#7f8f95;
     --ink:#1a2226;
-    --ink-soft:#5b686d;
+    --ink-soft:#526066;
     /* Direction is its own scale, kept deliberately clear of the brand reds.
        The old falling colour sat at deltaE 11.5 from --orange, so a number
        that had dropped was painted almost exactly the accent that means
        "this city" or "you are here". Rising never had that problem. */
-    --rise:#3d9a43;
+    --rise:#2d7d32;
     --fall:#c0244a;
     /* ---- the two geographies ----
        Option B told admin from metro by texture alone: both teal, one solid
@@ -109,7 +120,7 @@
 
   /* ============ shared controls ============ */
   .dd{
-    height:42px;border:1px solid var(--border-strong);border-radius:4px;background:#fff;
+    height:42px;border:1px solid var(--control-edge);border-radius:4px;background:#fff;
     font-size:14px;padding:0 38px 0 14px;appearance:none;-webkit-appearance:none;
     background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%23255862' stroke-width='1.5' stroke-linecap='round'/></svg>");
     background-repeat:no-repeat;background-position:right 13px center;
@@ -317,7 +328,7 @@
   .start-scrolling{
     display:flex;flex-direction:column;align-items:center;gap:5px;
     margin:8px auto 20px;background:none;border:none;
-    color:var(--orange);font-size:15px;font-weight:600;letter-spacing:.2px;
+    color:var(--orange-text);font-size:15px;font-weight:600;letter-spacing:.2px;
   }
   .start-scrolling .ss-row{display:inline-flex;align-items:center;gap:7px;}
   .start-scrolling svg.ss-chev{width:14px;height:9px;}
@@ -410,7 +421,7 @@
   .ex-thumb svg{width:100%;height:100%;display:block;}
   .ex-title-row{display:flex;align-items:baseline;gap:14px;margin-top:16px;}
   .ex-title{font-size:25px;font-weight:700;color:var(--ink);}
-  .ex-read{font-size:14px;font-weight:600;font-style:italic;color:var(--orange);white-space:nowrap;}
+  .ex-read{font-size:14px;font-weight:600;font-style:italic;color:var(--orange-text);white-space:nowrap;}
   .ex-desc{font-size:14.5px;line-height:23px;color:var(--ink-soft);margin-top:6px;}
   .beta-tag{
     background:var(--orange);color:#fff;font-size:10.5px;font-weight:700;
@@ -970,8 +981,12 @@
   @media (min-width:1200px){
     #ovWrap:not(.ov2) .ov-block{justify-content:flex-start;padding:56px 0 72px;}
   }
-  #ovWrap.ov-beats:not(.ov2) .ov-block{opacity:.35;transition:opacity .25s ease;}
-  #ovWrap.ov-beats:not(.ov2) .ov-block.is-on{opacity:1;}
+  /* the others do not fade away - at 35% their words read 1.6 to 1 - they
+     step back to a grey that still reads, and what is only picture eases
+     down; see .ct-step below for the same treatment in the scrolly beats */
+  #ovWrap.ov-beats:not(.ov2) .ov-block{transition:--ink .25s ease,--ink-soft .25s ease;}
+  #ovWrap.ov-beats:not(.ov2) .ov-block:not(.is-on){--ink:#5a656a;--ink-soft:#5a656a;}
+  #ovWrap.ov-beats:not(.ov2) .ov-block:not(.is-on) svg:not(:has(text)){opacity:.55;}
   /* one gap under every title: the metro page's own 10 set its paragraph
      tighter than the other two */
   #ovWrap:not(.ov2) .ov-block > .page-head + .lede{margin-top:16px;}
@@ -1244,7 +1259,7 @@
     font-size:13px;font-weight:600;letter-spacing:normal;color:#2c2823;
   }
   .viz-controls select{
-    height:30px;border:1px solid var(--border-strong);border-radius:4px;background:#fff;
+    height:30px;border:1px solid var(--control-edge);border-radius:4px;background:#fff;
     font-size:13px;padding:0 26px 0 10px;appearance:none;-webkit-appearance:none;cursor:pointer;
     background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' fill='none' stroke='%23255862' stroke-width='1.3' stroke-linecap='round'/></svg>");
     background-repeat:no-repeat;background-position:right 9px center;
@@ -1548,7 +1563,7 @@
   }
   #specMorphSvg .spec-grid{stroke:#e9e9eb;stroke-width:1;}
   #specMorphSvg .spec-grid.is-base{stroke:#8e9196;stroke-dasharray:3 3;}
-  #specMorphSvg .spec-ticklab{font-size:12px;font-weight:600;fill:#72767b;}
+  #specMorphSvg .spec-ticklab{font-size:12px;font-weight:600;fill:var(--ink-soft);}
   #specMorphSvg .spec-axname{font-size:12.5px;font-weight:600;fill:var(--ink);}
   #specMorphSvg .spec-name{font-size:13px;fill:var(--ink);}
   #specMorphSvg .spec-name.is-top{font-weight:700;}
@@ -1585,7 +1600,7 @@
   .split-rule{display:block;height:4px;}
   .split-col--tradable .split-label{color:var(--teal);}
   .split-col--tradable .split-rule{background:var(--teal);}
-  .split-col--nontradable .split-label{color:#9ca3af;}
+  .split-col--nontradable .split-label{color:var(--ink-soft);}
   .split-col--nontradable .split-rule{background:#d1d5db;}
 
   /* ---- Diagnostic explainer inside the collapsible ---- */
@@ -1622,7 +1637,7 @@
   /* idle shows all four flat; picking one dims the rest instead of deepening it */
   #dxChart.has-sel .dx-q:not(.is-on){opacity:.4;}
   .dx-cross{stroke:#c9c5bf;stroke-width:1.2;stroke-dasharray:4 4;}
-  .dx-axis{font-size:13px;font-weight:600;fill:#a8a49e;}
+  .dx-axis{font-size:13px;font-weight:600;fill:var(--ink-soft);}
   .dx-dot{fill:#111;stroke:#fff;stroke-width:3;pointer-events:none;}
   .dx-dot-halo{fill:none;stroke:#cbc7c1;stroke-width:1.5;stroke-dasharray:2 2;pointer-events:none;}
   .dx-caption{font-size:12px;line-height:1.5;color:var(--ink-soft);margin-top:9px;}
@@ -1688,13 +1703,13 @@
   .metro-scatter .ms-dot{fill:#c8cdd0;opacity:.55;}
   /* Peers sit a shade above the grey field but stay neutral, so only this
      city carries an accent colour. */
-  .metro-scatter .ms-dot--peer{fill:#9ea2a3;opacity:.95;}
+  .metro-scatter .ms-dot--peer{fill:#7c848c;opacity:.95;}
   .metro-scatter .ms-dot--home{fill:var(--orange-dark);opacity:1;}
   .metro-scatter .ms-home-label{
-    font-size:15px;font-weight:600;fill:var(--orange-dark);
+    font-size:15px;font-weight:600;fill:var(--orange-text);
   }
   .metro-scatter .ms-peer-label{
-    font-size:12px;font-weight:600;fill:#9ea2a3;
+    font-size:12px;font-weight:600;fill:var(--ink-soft);
   }
 
   /* ---- Admin and metro, side by side ---- */
@@ -1802,7 +1817,7 @@
     font-size:13px;font-weight:600;letter-spacing:normal;color:#2c2823;
   }
   .plc-ctl select{
-    height:30px;border:1px solid var(--border-strong);border-radius:4px;background:#fff;
+    height:30px;border:1px solid var(--control-edge);border-radius:4px;background:#fff;
     font-size:13px;padding:0 26px 0 10px;appearance:none;-webkit-appearance:none;cursor:pointer;
     background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' fill='none' stroke='%23255862' stroke-width='1.3' stroke-linecap='round'/></svg>");
     background-repeat:no-repeat;background-position:right 9px center;
@@ -1954,8 +1969,8 @@
   /* the y axis title, set flat above the tick labels at the plot's left
      edge — the modern convention, and the only title the figure carries */
   .pc-axlab{font-size:11.5px;font-weight:600;fill:#5f6367;}
-  .pc-ytick{font-size:11px;font-weight:600;fill:#72767b;text-anchor:end;}
-  .pc-xtick{font-size:11.5px;font-weight:600;fill:#72767b;}
+  .pc-ytick{font-size:11px;font-weight:600;fill:var(--ink-soft);text-anchor:end;}
+  .pc-xtick{font-size:11.5px;font-weight:600;fill:var(--ink-soft);}
   .pc-xtick.is-hl{fill:#2f3336;font-weight:700;}
   .pc-line{fill:none;stroke-linecap:round;stroke-linejoin:round;}
   .pc-pre{opacity:.38;}
@@ -2376,7 +2391,7 @@
   :is(#page-export-basket, #page-admin-mix) .ct-step .ci-mark svg{width:15px;height:15px;stroke-width:1.25;}
   #ovWrap:not(.ov2) .ov-block .collapsible-icon,
   :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-icon{
-    width:12px;height:12px;color:rgba(26,34,38,.45);stroke-width:1.25;transition:transform .16s ease-out,color .12s ease;
+    width:12px;height:12px;color:rgba(26,34,38,.62);stroke-width:1.25;transition:transform .16s ease-out,color .12s ease;
   }
   #ovWrap:not(.ov2) .ov-block .collapsible-header:hover .collapsible-icon,
   :is(#page-export-basket, #page-admin-mix) .ct-step .collapsible-header:hover .collapsible-icon{color:rgba(26,34,38,.7);}
@@ -2425,7 +2440,7 @@
     border-radius:0 8px 8px 0;padding:14px 16px;
     font-size:14px;line-height:23px;color:var(--ink);
   }
-  .takeaway strong{color:var(--orange-dark);font-size:11px;font-weight:700;letter-spacing:1.6px;
+  .takeaway strong{color:var(--orange-text);font-size:11px;font-weight:700;letter-spacing:1.6px;
     text-transform:uppercase;display:block;margin-bottom:5px;}
 
 
@@ -2572,7 +2587,7 @@
   }
   .jp-step.done{color:var(--ink);}
   .jp-step.done .sdot{border-color:var(--teal);color:var(--teal);}
-  .jp-step.current{color:var(--orange-dark);font-weight:600;}
+  .jp-step.current{color:var(--orange-text);font-weight:600;}
   .jp-step.current .sdot{border-color:var(--orange);}
   .jp-step .stick{color:#2e7d33;font-weight:700;margin-left:auto;font-size:12px;}
   .jp-step.special .sdot{background:var(--teal-tint);}
@@ -2611,7 +2626,7 @@
      no pill, no label, no chrome to spend the bar's space on */
   .secbar .ct-optwrap .jp-opt{border:0;border-radius:0;margin-top:0;gap:7px;}
   .secbar .ct-optwrap .jp-opt-btn{
-    padding:0;font-size:9.5px;letter-spacing:.02em;color:#9aa8ad;background:none;
+    padding:0;font-size:9.5px;letter-spacing:.02em;color:var(--ink-soft);background:none;
   }
   .secbar .ct-optwrap .jp-opt-btn.is-active{background:none;color:var(--teal);font-weight:700;}
   .secbar .ct-optwrap .jp-opt-btn:not(.is-active):hover{background:none;color:var(--ink-soft);}
@@ -2625,9 +2640,14 @@
   .ct-steps{padding-bottom:16vh;min-width:0;}
   .ct-step{
     min-height:82vh;display:flex;flex-direction:column;justify-content:center;
-    align-items:flex-start;opacity:.35;transition:opacity .25s ease;
+    align-items:flex-start;transition:--ink .25s ease,--ink-soft .25s ease;
   }
-  .ct-step.is-on{opacity:1;}
+  /* the beats the reader is not on step back to a grey that still reads
+     (5.7 to 1 on the page; fading them to 35% left their words at 1.6),
+     and what is only picture - an icon, a chart with no words of its own -
+     eases down instead */
+  .ct-step:not(.is-on){--ink:#5a656a;--ink-soft:#5a656a;}
+  .ct-step:not(.is-on) svg:not(:has(text)){opacity:.55;}
   /* the rail's own typographic scale: quiet counter, tight title, the
      Viewing badge as the scale cue, then prose sized to the measure */
   .ct-eyebrow{font-size:var(--t-xs);font-weight:500;color:var(--ink-soft);margin-bottom:14px;}
@@ -3180,7 +3200,7 @@
   }
   .sector-key .sk-hide:hover,.sector-key .sk-only:hover,
   .sector-key .sk-hide:focus-visible,.sector-key .sk-only:focus-visible{color:var(--ink);text-decoration:underline;outline:none;}
-  .sector-key .sk-dot{color:var(--border-strong);font-size:11px;padding:0 1px;}
+  .sector-key .sk-dot{color:var(--ink-soft);font-size:11px;padding:0 1px;}
   .sector-key .sk-item.is-solo .sk-dot,.sector-key .sk-item.is-solo .sk-only{display:none;}
   /* the way back for the whole key, dressed to be found */
   .sector-key .sk-reset{
@@ -3423,7 +3443,7 @@
      #9aa3a6 read at 2.6 to 1, which is under the floor for either */
   .mi-studies-btn{
     appearance:none;background:none;border:0;padding:2px 4px;font:inherit;font-size:12.5px;
-    color:#6e7679;cursor:pointer;text-decoration:underline;text-underline-offset:3px;
+    color:var(--ink-soft);cursor:pointer;text-decoration:underline;text-underline-offset:3px;
     text-decoration-color:rgba(26,34,38,.28);
   }
   .mi-studies-btn:hover{color:var(--ink-soft);}
@@ -3473,7 +3493,7 @@
   .mi-figure svg .mi-rect{stroke:none;}
   .mi-figure svg .mi-grid{stroke:#e9e9eb;stroke-width:1;}
   .mi-figure svg .mi-grid.is-base{stroke:#8e9196;stroke-dasharray:3 3;}
-  .mi-figure svg .mi-ticklab{font-size:11px;font-weight:500;fill:#6e7679;}
+  .mi-figure svg .mi-ticklab{font-size:11px;font-weight:500;fill:var(--ink-soft);}
 
   .mi-figure svg .mi-name{font-size:13px;fill:var(--ink);}
   .mi-figure svg .mi-name.is-top{font-weight:700;}
@@ -3607,20 +3627,20 @@
   #amMapSvg .am-flow.is-in{stroke:var(--geo-city);}
   #amMapSvg .am-flow.is-out{stroke:var(--orange);}
   #amMapSvg .am-head.is-in{fill:var(--geo-city);}
-  #amMapSvg .am-head.is-out{fill:var(--orange);}
+  #amMapSvg .am-head.is-out{fill:var(--orange-text);}
   /* the marching dash: the page's own colour riding each arc, so the
      direction of travel reads at a glance */
   #amMapSvg .am-dash{fill:none;stroke:#fff;stroke-opacity:.55;stroke-dasharray:5 13;
     animation:am-march 1.4s linear infinite;pointer-events:none;}
   @keyframes am-march{to{stroke-dashoffset:-18;}}
-  #amMapSvg .am-ctx{font-size:10px;fill:#8e9196;paint-order:stroke;stroke:#fff;stroke-width:2.5px;}
+  #amMapSvg .am-ctx{font-size:10px;fill:var(--ink-soft);paint-order:stroke;stroke:#fff;stroke-width:2.5px;}
   #amMapSvg .am-pname{font-size:12px;font-weight:600;fill:var(--ink);
     paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round;}
   #amMapSvg .am-pname.is-focus{font-size:15px;font-weight:700;fill:var(--geo-city);letter-spacing:.01em;}
   #amMapSvg .am-pval{font-size:11px;fill:var(--ink-soft);font-variant-numeric:tabular-nums;
     paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round;}
   #amMapSvg .am-pval .is-in{fill:var(--geo-city);font-weight:700;}
-  #amMapSvg .am-pval .is-out{fill:var(--orange);font-weight:700;}
+  #amMapSvg .am-pval .is-out{fill:var(--orange-text);font-weight:700;}
 
   /* ── Worker Flows, the dial ───────────────────────────────────── */
   .am-ex{display:grid;grid-template-columns:228px minmax(0,1fr);gap:22px;align-items:start;}
@@ -3687,7 +3707,7 @@
   #amDotsSvg .ad-cap .is-ink{fill:var(--ink);font-weight:700;}
   #amDotsSvg .ad-cap .is-grey{fill:#6f7c82;font-weight:700;}
   #amDotsSvg .ad-cap .is-in{fill:var(--geo-city);font-weight:700;}
-  #amDotsSvg .ad-cap .is-out{fill:var(--orange);font-weight:700;}
+  #amDotsSvg .ad-cap .is-out{fill:var(--orange-text);font-weight:700;}
   #amDotsSvg .ad-cap .is-soft{fill:var(--ink-soft);}
 
   /* ── Worker Flows: one set of rows, three readings ────────────── */
@@ -3696,9 +3716,9 @@
   #amBarsSvg .am-val-res{font-weight:400;fill:var(--ink-soft);}
   #amBarsSvg .am-grid{stroke:#e9e9eb;stroke-width:1;}
   #amBarsSvg .am-grid.is-base{stroke:#8e9196;stroke-dasharray:3 3;}
-  #amBarsSvg .am-ticklab{font-size:11.5px;font-weight:600;fill:#72767b;
+  #amBarsSvg .am-ticklab{font-size:11.5px;font-weight:600;fill:var(--ink-soft);
     font-variant-numeric:tabular-nums;}
-  #amBarsSvg .am-colhead{font-size:11.5px;font-weight:600;fill:#72767b;}
+  #amBarsSvg .am-colhead{font-size:11.5px;font-weight:600;fill:var(--ink-soft);}
   #amBarsSvg .am-row{cursor:default;}
   #amBarsSvg .am-link{stroke-width:1.5;}
   /* the key, which gains its second entry once the residents' count arrives */
@@ -3816,15 +3836,15 @@
   .jp-row.completed .num{background:#e7efe7;border-color:#e7efe7;}
   .jp-row.current{background:#fdf4ef;box-shadow:inset 0 0 0 1.5px var(--orange);}
   .jp-row.current:hover{background:#fdf4ef;}
-  .jp-row.current .num{background:var(--orange);border-color:var(--orange);color:#fff;}
+  .jp-row.current .num{background:var(--orange-text);border-color:var(--orange-text);color:#fff;}
   .jp-row .info{flex:1;min-width:0;}
   .jp-row .name{font-size:15.5px;font-weight:600;color:var(--ink);line-height:1.3;}
   .jp-row .status{font-size:13px;font-weight:600;margin-top:3px;}
   .jp-row .status.completed{color:#2e7d33;}
-  .jp-row .status.inprogress{color:var(--orange-dark);}
+  .jp-row .status.inprogress{color:var(--orange-text);}
   .jp-row .status.notstarted{color:var(--ink-soft);font-weight:400;}
   .jp-icons{display:flex;gap:24px;padding-right:6px;}
-  .jp-ic{position:relative;width:22px;height:22px;color:#9aa6aa;}
+  .jp-ic{position:relative;width:22px;height:22px;color:#6f7c82;}
   .jp-ic.done{color:var(--ink);}
   .jp-ic > svg{width:22px;height:22px;display:block;}
   .jp-ic .badge{
@@ -3943,7 +3963,7 @@
     position:fixed;bottom:26px;left:50%;transform:translateX(-50%);
     display:flex;flex-direction:column;align-items:center;gap:5px;
     background:none;border:none;padding:8px;
-    color:var(--orange);font-size:15px;font-weight:600;letter-spacing:.2px;
+    color:var(--orange-text);font-size:15px;font-weight:600;letter-spacing:.2px;
     cursor:pointer;transition:opacity .15s ease;z-index:10;
     pointer-events:auto;
   }
@@ -3974,19 +3994,19 @@
   .dd-chart .grid-dash{stroke:#8aa0a5;stroke-width:1;stroke-dasharray:5 5;}
   .dd-chart .diag{stroke:#d3ded9;stroke-width:1;}
   .dd-chart text{fill:#5b6b6d;font-size:11px;}
-  .dd-chart .quad{fill:#a7b8b4;font-size:10px;letter-spacing:.03em;text-transform:uppercase;}
+  .dd-chart .quad{fill:var(--ink-soft);font-size:10px;letter-spacing:.03em;text-transform:uppercase;}
   .dd-dot{cursor:grab;}
   .dd-dot.locked{cursor:default;}
   .dd-tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
   .dd-tile{background:#fff;border:1px solid var(--border-strong);border-radius:6px;padding:10px 12px;}
-  .dd-tile .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#6b7c7e;}
+  .dd-tile .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-soft);}
   .dd-tile .val{font-size:21px;font-weight:700;color:var(--ink);margin:2px 0;}
-  .dd-tile .note{font-size:11.5px;color:#8a9a9c;}
+  .dd-tile .note{font-size:11.5px;color:var(--ink-soft);}
   .dd-signal{margin-top:10px;background:#fff;border:1px solid var(--border-strong);border-left:4px solid #c98500;border-radius:6px;padding:10px 12px;font-size:13.5px;line-height:1.45;}
   .dd-signal .head{font-weight:700;color:var(--ink);}
   .dd-signal .read{color:#5b6b6d;margin-top:2px;}
   .dd-signal.neutral{border-left-color:#b8c4c6;}
-  .dd-cap{font-size:12.5px;color:#8a9a9c;margin-top:8px;}
+  .dd-cap{font-size:12.5px;color:var(--ink-soft);margin-top:8px;}
   .tw-tree{background:#fff;border:1px solid var(--border-strong);border-radius:6px;padding:10px 8px 4px;margin-bottom:16px;}
   .tw-crumb{font-size:12.5px;font-weight:700;letter-spacing:.04em;color:var(--teal);text-transform:uppercase;margin-bottom:10px;}
   .tw-question{font-size:19px;font-weight:600;color:var(--ink);margin-bottom:14px;}
@@ -3995,7 +4015,7 @@
   .tw-ev-top{display:flex;justify-content:space-between;gap:12px;font-size:14px;}
   .tw-ev-label{color:#5b6b6d;}
   .tw-ev-value{font-weight:700;color:var(--ink);white-space:nowrap;}
-  .tw-ev-hint{font-size:12.5px;color:#8a9a9c;margin-top:2px;}
+  .tw-ev-hint{font-size:12.5px;color:var(--ink-soft);margin-top:2px;}
   .tw-choices{display:flex;flex-direction:column;gap:12px;}
   .tw-choices button{
     display:block;text-align:left;background:#fff;border:1px solid var(--border-strong);
@@ -4003,10 +4023,10 @@
     transition:all .15s ease;box-shadow:0 1px 2px rgba(37,88,98,.05);cursor:pointer;
   }
   .tw-choices button:hover{border-color:var(--teal);transform:translateY(-1px);box-shadow:var(--shadow-sm);}
-  .tw-choices button .sub{color:#8a9a9c;font-size:13.5px;}
+  .tw-choices button .sub{color:var(--ink-soft);font-size:13.5px;}
   .tw-back{margin-top:12px;background:none;border:none;font-size:13.5px;color:#6b7c7e;text-decoration:underline;cursor:pointer;}
   .tw-verdict{background:#fff;border:1px solid var(--border-strong);border-radius:6px;padding:14px 18px;}
-  .tw-verdict .walk{font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:#6b7c7e;margin-bottom:6px;}
+  .tw-verdict .walk{font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-soft);margin-bottom:6px;}
   .tw-verdict h3{font-size:18px;color:var(--ink);margin:0 0 6px;}
   .tw-verdict p{font-size:13.5px;color:#5b6b6d;margin:0;}
   .tw-again{margin-top:12px;background:none;border:1px solid var(--border-strong);border-radius:4px;padding:8px 14px;font-size:13.5px;color:var(--ink);cursor:pointer;}
