@@ -3,6 +3,13 @@
 The commit messages are the design record: each says what changed and why, from the reader's side. `git log` for the bodies.
 
 ```
+ec928b5 2026-09-30 What the cross-check confirmed in Metro Industries, put right
+a297747 2026-09-30 The keyboard is not dropped: focus follows its own actions, Escape is layered
+ef7258d 2026-09-30 A contrast pass: every word on the page reads 4.5 to 1 or better
+a1b3fd0 2026-09-30 What the reference does for the keyboard and the screen reader, done here
+feb8814 2026-09-30 The chart's titles stay put, and the landing returns from the first section only
+85fe10f 2026-09-29 The key's entry offers both verbs, and "Show all" is a button
+857d513 2026-09-29 A hand-off for the next account: what this is, how it runs, how Nil works
 b4b9a69 2026-09-29 The check is the quiz alone, in a modal
 bf7bb44 2026-09-29 The journey line is back over the section's cards, and they speak its language
 2f6fee9 2026-09-29 A section ends on three cards: back, the optional check, and forward

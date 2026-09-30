@@ -16,6 +16,7 @@ These were the auto-memory files of the Claude account that worked on this repo 
 - [Real 2024 data in Metro Industries](real-data-2024.md) — since 2026-09-16 the figure embeds the Desktop CSV's 2024 rows; peers, admin rows and the rank card are still generated
 - [Light controls over the treemap](feedback_light_controls.md) — no dark filled buttons, every control labelled; sketch 2–5 variants first, ship the picks as an opt study
 - [Headless verification of v-5](headless-verify-v5.md) — drive Chrome over CDP when the pane resets; open the tool with enterTool, kill smooth scroll, MI.setStep(n)
+- [Accessibility fixes: Metro Industries only](feedback_a11y_scope.md) — scope a11y/contrast CSS to #page-export-basket; other sections' findings are listed in HANDOFF §8, not applied; the whole-page auditor lives in handoff/
 ```
 
 ---
@@ -217,3 +218,23 @@ Verify cities-v-5 in headless Chrome driven over the DevTools protocol from Node
 Give paints ~2.5s before reading; count visible cells via `#miTreemapSvg g.mi-mcell` rect opacity, not `rect` alone.
 ```
 
+---
+
+## feedback_a11y_scope.md (added 2026-09-30)
+
+```markdown
+---
+name: feedback-a11y-scope
+description: "Accessibility and contrast fixes go to Metro Industries only unless Nil names another section; the other sections' confirmed findings are listed, not applied"
+metadata:
+  node_type: memory
+  type: feedback
+  originSessionId: 58a9f4f7-4b48-4e12-a3ed-cb508b870dfb
+  modified: 2026-09-30T10:07:37.345Z
+---
+
+On 2026-09-30, given thirteen confirmed cross-check findings (focus rings, chart marks, quiz dots, tokens) spread over the whole page, Nil said "only apply the accessibility fixes in metro industries". Four were applied (`ec928b5`), scoped with `#page-export-basket` / `#miFigure` selectors; the nine in Overview, Worker Flows and Extras, plus the shared quiz dialog's dots, were left as they were and written up in `HANDOFF.md` §8 with the fix each verifier proposed.
+
+**Why:** the other sections are not the current work; a global token or shared-rule change would alter them uninvited.
+**How to apply:** scope accessibility CSS to the Metro Industries section (`#page-export-basket …`) rather than editing shared rules or `:root` tokens; for a shared element (the body-level `.kq-dialog` quiz, the secbar) say so and ask before touching it. The text-contrast auditor (`handoff/contrast-audit.js` + `handoff/contrast-run.mjs`) is the whole-page check; keep its result at 0 failures. Related: [[feedback_light_controls]], [[working-line-v5]].
+```

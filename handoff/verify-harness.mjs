@@ -13,7 +13,7 @@ const ws = new WebSocket(page.webSocketDebuggerUrl);
 let id = 0; const pending = new Map(); const errors = []; const out = [];
 await new Promise((res, rej) => { ws.onopen = res; ws.onerror = e => rej(new Error('ws error ' + (e.message || ''))); ws.onclose = e => rej(new Error('ws closed ' + e.code + ' ' + e.reason)); });
 const finish = code => { chrome.kill(); setTimeout(() => { try { fs.rmSync(prof, { recursive: true, force: true }); } catch {} process.exit(code); }, 300); };
-setTimeout(() => { console.log(JSON.stringify([{ HARNESS_TIMEOUT: true, partial: out }, { consoleErrors: errors }], null, 1)); finish(2); }, 150000);
+setTimeout(() => { console.log(JSON.stringify([{ HARNESS_TIMEOUT: true, partial: out }, { consoleErrors: errors }], null, 1)); finish(2); }, +process.env.HARNESS_MS || 150000);
 ws.onmessage = e => { const m = JSON.parse(e.data);
   if (m.id && pending.has(m.id)){ pending.get(m.id)(m); pending.delete(m.id); }
   if (m.method === 'Runtime.exceptionThrown') errors.push(m.params.exceptionDetails.exception?.description || m.params.exceptionDetails.text);

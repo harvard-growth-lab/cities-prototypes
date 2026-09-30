@@ -1,12 +1,13 @@
 # Hand-off: cities-prototypes
 
-Written 2026-09-29 for whoever continues this work in a fresh Claude session
-(new account, no memory of the previous ones). Everything below is what the
+Written 2026-09-29 and brought up to date 2026-09-30, for whoever continues
+this work in a fresh Claude session (new account, no memory of the previous
+ones). Everything below is what the
 previous sessions knew and had agreed with Nil. Read this file first, then the
 files under `handoff/`.
 
 Repo: `git@github.com:harvard-growth-lab/cities-prototypes.git`, branch `main`,
-192 commits at hand-off (HEAD `b4b9a69`). Local checkout:
+199 commits at hand-off (HEAD `ec928b5`). Local checkout:
 `/Users/nit880/Documents/cities-prototypes`.
 
 ---
@@ -99,6 +100,37 @@ drive the real page (not a mock) through the golden path and the edge cases,
 read computed styles and geometry, take a clipped screenshot and look at it.
 Type checks are not feature checks.
 
+**Accessibility is measured, not judged.** `handoff/contrast-audit.js` is an
+auditor injected into the page: `window.__audit()` walks every text node
+(and every field's value and placeholder), composites the real colour under
+each word — the HTML ancestors' backgrounds with their opacity, and for SVG
+text every filled shape painted beneath its centre (`isPointInFill`, so an
+arc's hollow does not count) — and applies AA (4.5 to 1, or 3 for large
+type); `window.__controls()` reads the edge of every field for 1.4.11.
+`handoff/contrast-run.mjs` drives it through 47 states — every section's top
+and beats, the three Metro Industries steps under both colourings and both
+palettes, the sentence row, Ranked, the key hidden / as a card / zoomed, an
+emptied ground, a cancelled tier, the opt panel, the table, the journey and
+explainer overlays, the city picker, the geo map, Worker Flows steps 7–10,
+the pager, the quiz with an answer, and the first section at phone width —
+and writes `$S/contrast-results.json` (`rows` are the distinct failing
+pairs, sorted by ratio). Run:
+
+```
+HARNESS_MS=900000 S=/tmp/shots node handoff/verify-harness.mjs handoff/contrast-run.mjs "http://127.0.0.1:8912/cities-v-5/"
+```
+
+The last line of the output reports `distinctFailures`; it was 0 at hand-off
+(`ef7258d` fixed the 137 pairs it first found; re-run 2026-09-30: 47 states,
+0). It takes about two minutes, so pass `HARNESS_MS` — the harness's default
+150 s is too tight to trust. `controls` in the JSON lists every field's edge
+ratio; the one under 3 at hand-off is a year select on the teal tint
+outside Metro Industries (`.viz-controls--export`, 2.99 — the
+`--control-edge` item in §8). It does **not** measure
+non-text contrast — rings, edges, chart marks — nor focus-ring clipping;
+those were done once by agents on 2026-09-30 and what is still open from
+that pass is in §8.
+
 **Review practice.** For anything substantive the previous sessions ran a
 multi-agent review: three lenses (e.g. JS lifecycle / CSS & layout / a11y &
 interaction) each reporting ≤5 concrete defects with file:line, then one
@@ -108,8 +140,8 @@ follow-up commit. This caught real regressions every time (a shadowed `on`
 helper, bars ignoring the zoom, a phone band covering a panel, a 230 ms
 click timer swallowing keyboard activations). Keep doing it.
 
-There is one known, pre-existing console error on load: a 404 for a missing
-resource. It is not from any of this work.
+There is one known, pre-existing console error on load: a 404 for
+`/favicon.ico`. It is not from any of this work.
 
 ## 4. The Metro Industries figure — how it is built
 
@@ -141,8 +173,10 @@ rule (`STATE` table), and `setStep` drops what a beat cannot carry.
 
 - `secOn` — the sector **filter**: a `Set` of shown sectors or `null`.
   `secShown(d)`, `applySec(next)`, `resetSec`. Hidden sectors leave no hole:
-  the map is re-tiled over the rest (`rebuildSecGeo`), the bars follow
-  (`reBars`), the titles follow ("8 of 9 sectors", "…, by tier").
+  the map is re-tiled over the rest (`rebuildSecGeo`) and the bars follow
+  (`reBars`). The titles do **not** follow (since `feb8814`): "All
+  industries" stays as authored under a filter or zoom, and `syncKey` resets
+  them from `dataset.title`; the key and the crumbs say what is showing.
 - `focus` / `focusGroup` — the **zoom** into one sector, then one 4-digit
   group. `inFocus(d)`, `setFocus(sec, grp)`, `zoomOut()`. Since `f19b23e`
   the zoom is the one isolate on *both* map beats and travels between them
@@ -172,7 +206,15 @@ beside each, and `.sk-reset` "Show all". `toggleSec` hides / brings back;
 hovering an entry outlines the sector's block on the map. Two dressings,
 under the "Key actions" study:
 
-- **opt-1 (inline, default)** — the entry is the switch, "only" sits beside it.
+- **opt-1 (inline, default)** — option B of `key-actions-sketches.html`
+  (`85fe10f`): the entry is the switch, and on hover or focus it unfolds its
+  verbs after the name in a `span.sk-verbs` — "Hide · Only"; "Bring back ·
+  Only" once the sector is off; "Show all" alone for the last one showing,
+  since it cannot be hidden. The verbs stay in the tab order and show a ring
+  (`.sk-verbs` opens on `:hover` / `:focus-within`); the key's "Show all"
+  (`.sk-reset`) is a tinted button at the row's end. Under opt-2 "Hide"
+  stands down (the entry's click is the hide there) and "Only" keeps its
+  place for the keyboard, unseen until reached.
 - **opt-2 (card)** — hovering opens a small card (`div.sk-tip#miKeyTip`,
   role tooltip) with the sector's colour block and name and one hint line
   beside a tapping hand: "Click to hide / Double-click to keep only",
@@ -218,6 +260,53 @@ to the head by `restore()`; the sector phrases in the first beat's text
 (`.mi-hl[data-sector]`) wear their colour block and frame their sector on
 hover; the third beat's phrases (`.mi-hl[data-ind]`) light their ranking row.
 
+**Keyboard and screen reader** (`a1b3fd0`, `a297747`; learned from the
+reference build's own page). Keep every one of these when touching the figure:
+
+- A polite live region `#miLive` (`syncLive()`) says what the map is showing
+  whenever that changes — how many industries, in tiers or as bars, zoomed
+  into what, how many sectors, which tiers, coloured by what — and the figure
+  carries `aria-label` = the map title (`mapTitleOf()`).
+- The heads that are not showing (`.mi-title-all` / `.mi-title-tier`, the
+  notes) are `inert`; the tradability menu's faded heads get `tabindex=-1`
+  and `aria-hidden` (`syncMenuHeads`, run after each paint settles); the
+  tier grounds' crosses are keyboard buttons (`.mi-card-x-hit`, `data-close`)
+  while the grounds are up; the table under the key is a focusable region;
+  the crumbs are a `nav` with `aria-current`, and the crumb's × reads "Zoom
+  out to <sector | all sectors> (Esc)" with `aria-keyshortcuts`; the text's
+  sector phrases are `role=button` and answer Enter and Space.
+- The zoom hit targets ("Zoom into …") exist only on steps 0, 4, 7 in map
+  view (`drawHits` is emptied elsewhere), so Tab finds nothing to zoom over
+  the ranking or the bars.
+- **Escape is one dispatcher** (`escLayers`, before `paint` in treemap.js),
+  taking a layer at a time from the top: 1 the studies panel, 2 the
+  tradability menu, 3 a donut card, 4 the key's card, 5 a pinned cell card,
+  6 the zoom. A press inside a `<dialog>` is the dialog's. Layers marked
+  `scoped` answer only when the event's target is inside the section's
+  `.ct-scrolly` or `#miStudies`, or the body while the figure is hovered.
+  Never add another `keydown` Escape listener — push a layer.
+- **Focus follows its own actions**: after a keyboard action
+  (`byKey = ev.detail === 0`) `refocus` is set and `applyRefocus()` runs
+  after the paint — a keyboard zoom lands on the trail's "All sectors"
+  (`crumb`), zooming out returns to the block just left (`hit`), taking a
+  tier off lands on its chip (`chip`), putting it back on that ground's
+  cross (`close`); closing the studies panel or the menu hands focus back to
+  the word that opened it.
+- In the text column the beat counter is `aria-hidden` with a `.mi-sr`
+  "step n of N" beside it, and each beat opens with an `a.skip-chart` link
+  past its text to the chart; `initCollapsible` sets `aria-expanded` /
+  `aria-controls` (ids `cc-n`); the rail is `nav[aria-label=Contents]` and
+  `updateActivePage` marks `aria-current`; the pager's current stop is
+  `aria-current="step"`.
+- Beats the reader is not on do not fade to 35 % any more (that left their
+  words at 1.6 to 1): `.ct-step:not(.is-on){--ink:#5a656a;--ink-soft:#5a656a}`
+  — `--ink` and `--ink-soft` are registered with `@property` so the change
+  eases — and what is only picture (`svg:not(:has(text))`) eases to .55,
+  except the explainer's chevron, which is a control and keeps its 4.5
+  (`ec928b5`, scoped to `#page-export-basket`).
+- Not done, by decision: arrow-key roving between the buttons of a
+  segmented control (WCAG does not ask for it).
+
 **Study switches ("opt")** — the panel behind the word. Each is a design
 question still open; both options must keep working:
 
@@ -258,7 +347,20 @@ sample insights). The rail no longer lists checkpoints as steps
 (`.rail .steps li[data-step^="check-"], …[data-step^="apply-"]{display:none}`).
 
 Quiz content and state: `sectionChecksData()` (questions per section),
-`CHECK_STATE`, `CHECK_DONE`, `APPLY_DONE`.
+`CHECK_STATE`, `CHECK_DONE`, `APPLY_DONE`. For the keyboard (`a297747`): the
+slides other than the current one are `inert` (`.kc-view{overflow:clip}` so
+Tab cannot scroll the carousel away from its dots), answered options are
+`aria-disabled` (not `disabled`, so the "(correct answer)" text stays
+reachable) and ignore a second click, each redraw restores focus to the
+control used (`again`, falling back to `.kc-dot.on`) and moves it to the
+next question on auto-advance, the question reads "Question 1 of 3" with the
+arrows named, and the dialog keeps `quizOnly` across redraws via
+`cur.closest("dialog")`.
+
+Scrolling up past the top of the page brings the landing back **from the
+first section only** (`feb8814`; the wheel-up guard checks
+`pager.dataset.sec === "0"`). From any later section the top is just the top
+of that section.
 
 ## 6. Data
 
@@ -290,9 +392,18 @@ Education & Health #dc8271, Financial Activities #e5c95e, Leisure &
 Hospitality #9adfe7, Manufacturing #7f3c6b, Natural Resources #5d9850,
 Other #896885, Professional & Business #485fa2, Trade & Transportation
 #86c8ab (mint; periwinkle under the study). Design tokens: `--teal #255862`,
-`--teal-dark`, `--teal-tint #eef3f4`, `--ink #1a2226`, `--ink-soft #5b686d`,
-`--border #e2e7e8`, `--border-strong #c3ccce`, `--paper #f4f5f2`; type is
-Source Sans 3; the key is 12.5 px; small buttons 12 px/600.
+`--teal-dark`, `--teal-tint #eef3f4`, `--ink #1a2226`, `--ink-soft #526066`
+(darkened from #5b686d in the contrast pass: 6.5 to 1 on the page, 4.8 on
+the lightest map fill — use it for every secondary grey, never a hard-coded
+one), `--orange #e76565` (marks only), `--orange-text #a93a17` (the accent
+as words: "out" figures, the scatter's home label, the journey's current
+row), `--rise #2d7d32` / `--fall #c0244a` (direction), `--control-edge
+#7f8f95` (the edge of every field and select, 3 to 1 on white), `--border
+#e2e7e8`, `--border-strong #c3ccce`, `--paper #f4f5f2`. `--ink` and
+`--ink-soft` are `@property`-registered colours so a beat can ease between
+its active and faded ink. Type is Source Sans 3; the key is 12.5 px; small
+buttons 12 px/600. Every word on the page read 4.5 to 1 or better at
+hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
 
 ## 7. How Nil likes to work — read this twice
 
@@ -325,33 +436,70 @@ Source Sans 3; the key is 12.5 px; small buttons 12 px/600.
 
 ## 8. Open items at hand-off
 
-1. **Key actions opt-2 — where the verbs live.** Nil asked for the legend
-   card to offer *Hide* / *Keep only* without covering the chart, and for a
-   brainstorm. Five variants are on `key-actions-sketches.html` (untracked):
-   A a card dropping below the key (now anchored below the whole key, gap
-   bridged), B the verbs unfolding inside the entry, C a fixed strip under
-   the key, D a pill beside the entry, E a menu on click. The previous
-   session's reading: **C first, then A**. Nil has not picked yet. When they
-   do, implement it as the card mode's behaviour (the current card is
-   hint-only: click / double-click on the entry).
+1. **Key actions — settled for opt-1, open for opt-2.** Of the five
+   variants on `key-actions-sketches.html` (untracked) Nil picked **B**, the
+   verbs unfolding inside the entry, and it shipped as opt-1 with a
+   prominent "Show all" (`85fe10f`). The card (opt-2) is still hint-only
+   (click / double-click on the entry, "Only" reachable by keyboard); no
+   decision on giving the card its own verbs.
 2. **"Show as table" into the View control?** Proposed (not asked): make it
    a third View choice — Treemap | Ranked | Table — and drop the word from
    the map's corner; the sentence variant would get "shown as a [table]" for
    free. Trade-off: the table would replace the map rather than open under
    the key. Nil asked for a sketch of both if pursued.
-3. **Reviews not run** (the account hit its session limit): the last
-   multi-lens review covered up to `a4f82d5`/`f19b23e` and its confirmed
-   findings were fixed in `bf8d5c7`. Commits after that — the cell card on
-   the ranking's design (`8e3e960`, `3809f21`), the phrase fixes and swatches
-   (`bbed8e8`), the table word's move (`361880b`), the three-card section
-   end (`2f6fee9`, `bf7bb44`) and the quiz modal (`b4b9a69`) — were verified
-   headless but not reviewed by agents. Worth one review pass.
+3. **The accessibility cross-check's remaining findings.** After the
+   contrast pass a second, independent sweep (axe: 0 violations; pixel
+   sampling of rendered text; a non-text pass over rings, edges and chart
+   marks, each finding adversarially verified) confirmed thirteen items. Nil
+   asked for **only the Metro Industries ones** to be applied — four, in
+   `ec928b5`. The nine outside that section are known and unapplied, with
+   the fix each verifier proposed:
+   - Overview scatter, phone width: the "Boston" label falls on grey dots
+     (`.metro-scatter .ms-home-label`, 3.2 to 1) — a white halo:
+     `paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round`.
+   - `.viz-controls .seg-btn:focus-visible` and `.wy-ctl .seg-btn:focus-visible`
+     lose their ring to `.seg{overflow:hidden}` — an inset ring
+     (`outline-offset:-4px`, white on the selected teal button) or
+     `.seg:has(.seg-btn:focus-visible){overflow:visible}`.
+   - `.jp-opt-btn:focus-visible` (Worker Flows' opt pills in the secbar, the
+     journey's option 1 / 2) clipped by `.jp-opt{overflow:hidden}` — same cure.
+   - Overview map: `.mc-chip` callouts stay focusable while
+     `#ovMap.pl-on .map-callouts{opacity:0}` — add `visibility:hidden` (with
+     a delayed transition) or `inert` from the code that toggles `pl-on`.
+   - `.kc-dot` quiz dots outlined at 1.63 to 1 — `border:1.5px solid
+     var(--control-edge)`. The quiz `<dialog>` is one body-level element
+     shared by every section, so this could not be done for Metro Industries
+     alone; it is one line when Nil wants it everywhere.
+   - Worker Flows: `#amMapSvg .am-flow.is-out` coral arrows under 3 to 1 on
+     the map fills — `stroke:#bd5353;opacity:1`, and `.ak-line--out` to match.
+   - Worker Flows dial and gauge zones (index.html near lines 11300 and 11408,
+     `C_BAL`, `C_INL`, also the sector list's dots): `C_BAL → #888b8e`,
+     `C_INL → #729095`.
+   - Scatter dots `.metro-scatter .ms-dot` (1.3) and `.city-in-metro .cim-dot`
+     (2.0) — keep the pale fill, add a 3 to 1 edge: `stroke:#7f8f95;
+     stroke-width:.75`, moving the field's `opacity` to `fill-opacity`.
+   - `--control-edge` reads 3.16 on the teal tint (the `#page-extras` select)
+     — `#7b8b91` passes everywhere (3.53 white, 3.16 tint).
+   And two of the Metro Industries fixes are scoped to `#page-export-basket`
+   (the explainer header's ring let out of its panel, the chevron kept at
+   opacity 1): the same lines serve Worker Flows' beats (`#page-admin-mix
+   .ct-step`) and Overview's `.ov-block` once widened.
+   **Reviews:** the keyboard batch (`a1b3fd0`, `a297747`) came from a
+   19-gap research workflow (18 closed) and the contrast pass from the
+   auditor plus the cross-check above. The commits from `8e3e960` to
+   `b4b9a69` (the cell card, the phrases, the table word, the three-card
+   section end, the quiz modal) and the five since were exercised by those
+   sweeps — which is how the quiz modal's keyboard faults were found — but
+   no multi-lens code review (§3) has read them. One pass is still worth it.
 4. **Touch.** In key opt-2 the verbs rely on hover/double-click; on touch
    there is no double-click in every browser and no way to dismiss the card
    but tapping elsewhere. Known, unaddressed.
-5. **The `.mi-title-tier` "by tier" title and the tier share captions** show
-   the metro's shares even under a filter or zoom — established behaviour,
-   flagged by reviewers as possibly misleading, left as is.
+5. **The titles and the tier share captions** stay as authored under a filter
+   or zoom (the titles by decision in `feb8814`; the captions show the
+   metro's shares regardless) — flagged by reviewers as possibly misleading,
+   left as is: the key, the crumbs and the live region say what is showing.
+6. **Arrow-key roving** between a segmented control's buttons is not
+   implemented (not required by WCAG; every button is a tab stop).
 
 ## 9. Where things are
 
@@ -359,10 +507,14 @@ Source Sans 3; the key is 12.5 px; small buttons 12 px/600.
   Save the durable ones into the new account's memory (the working-line
   rule, the data notes, the light-controls feedback, the headless recipe).
 - `handoff/verify-harness.mjs`, `handoff/verify-example.mjs` — the headless
-  harness and a test that exercises the figure end to end.
+  harness (`HARNESS_MS` raises its 150 s timeout) and a test that exercises
+  the figure end to end.
+- `handoff/contrast-audit.js`, `handoff/contrast-run.mjs` — the contrast
+  auditor and the 47-state sweep that drives it (§3).
 - `handoff/commit-history.md` — the full `git log` with dates; the commit
   messages are the design record.
 - `handoff/studies.md` — the study switches, their ids, options and beats.
 - Sketch pages (untracked, at the repo root): the two most relevant are
   `control-row-two-ways.html` (the head row's two dressings, as chosen) and
-  `key-actions-sketches.html` (open item 1). Others record earlier decisions.
+  `key-actions-sketches.html` (its option B shipped as key opt-1). Others
+  record earlier decisions.

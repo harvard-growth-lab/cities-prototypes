@@ -30,13 +30,17 @@ What each option is:
   whose blanks are native selects cut to their word ("All industries, shown
   as a [treemap], coloured by [sector], in [2024]"). Chosen from
   `control-row-two-ways.html`.
-- **Key actions** — opt-1: the key entry is the switch (hide/show) and an
-  "only" word beside it zooms; opt-2: a hover card with the sector's colour
-  and name and a "Click to hide / Double-click to keep only" hint beside a
-  tapping hand; the entry itself does the work (click deferred 230 ms for
-  the double-click; keyboard acts at once and reads "Enter to hide / “Only”,
-  the next button, keeps only"). Open question: where the two verbs should
-  live so nothing covers the map — five candidates on `key-actions-sketches.html`.
+- **Key actions** — opt-1 (option B of `key-actions-sketches.html`, shipped
+  in `85fe10f`): the entry unfolds its two verbs on hover or focus, quiet
+  words after the name ("Hide · Only"; "Bring back · Only" once the sector
+  is off; "Show all" alone for the last one showing); the entry's own click
+  still switches the sector; the key's "Show all" is a tinted button at the
+  row's end. opt-2: a hover card with the sector's colour and name and a
+  "Click to hide / Double-click to keep only" hint beside a tapping hand;
+  the entry does the work (click deferred 230 ms for the double-click;
+  keyboard acts at once and reads "Enter to hide / “Only”, the next button,
+  keeps only"); "Hide" stands down and "Only" stays in the tab order,
+  unseen until reached.
 - **Sector colours** — Trade & Transportation as mint (`#86c8ab`, as shipped)
   or periwinkle; the swatches in the key, the phrases and the cards follow.
 - **Tier grounds** — each tier's ground as a framed line, or a light grey field.
