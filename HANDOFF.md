@@ -353,6 +353,16 @@ still exists behind the `quizOnly` flag; the journey page still shows the
 sample insights). The rail no longer lists checkpoints as steps
 (`.rail .steps li[data-step^="check-"], …[data-step^="apply-"]{display:none}`).
 
+**The section bar names its two parts** (2026-09-30, copied from the
+reference build's scroll variant): "Part 1 · City Profile" stands over the
+first chip and "Part 2 · Diagnose & Act" over the fourth, 9.5px bold in
+`--ink-soft`, the part the reader is in written in teal via
+`html[data-part]` (set in `showSection`: sections 0–2 → 1, 3–4 → 2, Extras
+→ none). The names ride pseudo-elements — chip 1's `::before`, chip 4's
+`::after` (its `::before` is the seam's hairline), with the 4→5 connector
+moved to chip 5's `::before` — the row takes 12px of head-room, and under
+1200px the names shorten to "Part 1" / "Part 2".
+
 Quiz content and state: `sectionChecksData()` (questions per section),
 `CHECK_STATE`, `CHECK_DONE`, `APPLY_DONE`. For the keyboard (`a297747`): the
 slides other than the current one are `inert` (`.kc-view{overflow:clip}` so

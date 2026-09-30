@@ -4283,13 +4283,35 @@
     content:"";position:absolute;left:-11px;top:50%;transform:translateY(-50%);
     width:1px;height:26px;background:var(--border-strong);
   }
+  /* the two groups are named, as the reference build names them: "Part 1 ·
+     City Profile" stands over the first chip and "Part 2 · Diagnose & Act"
+     over the fourth, in the bar's small bold, the part the reader is in
+     written in teal (html[data-part], set with the section). The row takes
+     12px of head-room for the names. The fourth chip's ::before is the
+     seam's hairline, so its name rides its ::after, and the connector it
+     used to carry to the fifth chip is the fifth's ::before instead. */
+  .secnav{padding-top:12px;}
+  .secnav-btn:nth-child(1)::before,
+  .secnav-btn:nth-child(4)::after{
+    content:"Part 1 · City Profile";position:absolute;left:9px;right:auto;top:auto;bottom:calc(100% + 2px);
+    transform:none;width:auto;height:auto;background:none;
+    font-size:9.5px;font-weight:700;line-height:1;letter-spacing:.2px;
+    color:var(--ink-soft);opacity:.8;white-space:nowrap;pointer-events:none;
+    transition:color .15s ease,opacity .15s ease;
+  }
+  .secnav-btn:nth-child(4)::after{content:"Part 2 · Diagnose & Act";}
+  html[data-part="1"] .secnav-btn:nth-child(1)::before,
+  html[data-part="2"] .secnav-btn:nth-child(4)::after{color:var(--teal);opacity:1;}
   /* a rule between consecutive sections, so the row reads as one run rather
      than five loose chips - and deliberately not across the seam, where the
      point is that the two groups are not continuous */
   .secnav-btn:nth-child(1)::after,
-  .secnav-btn:nth-child(2)::after,
-  .secnav-btn:nth-child(4)::after{
+  .secnav-btn:nth-child(2)::after{
     content:"";position:absolute;right:-8px;top:50%;
+    width:8px;height:1.5px;background:var(--border-strong);
+  }
+  .secnav-btn:nth-child(5)::before{
+    content:"";position:absolute;left:-8px;top:50%;
     width:8px;height:1.5px;background:var(--border-strong);
   }
   /* the gap has to hold the connector and no more: at 14 the five names no
@@ -4307,6 +4329,7 @@
     .secnav-btn{padding:6px 8px;gap:7px;font-size:13px;}
     .secnav-btn .num{width:20px;height:20px;flex:0 0 20px;font-size:10.5px;}
     .secnav-btn:nth-child(4){margin-left:18px;}
+    .secnav-btn:nth-child(1)::before,.secnav-btn:nth-child(4)::after{left:8px;}
   }
   /* the last 23px the names need at 1200: the location button gives up 24
      (Boston and its country still read whole) and the gap before the
@@ -4324,7 +4347,7 @@
   .secnav.is-compact .secnav-btn:not(.is-active){padding:6px;gap:0;}
   .secnav.is-compact .secnav-btn:nth-child(1)::after,
   .secnav.is-compact .secnav-btn:nth-child(2)::after,
-  .secnav.is-compact .secnav-btn:nth-child(4)::after{display:none;}
+  .secnav.is-compact .secnav-btn:nth-child(5)::before{display:none;}
 
   /* the mark is 1079x230, so a 164px slot always clipped 5px of it */
   .logo-btn,.landing-header .logo-btn{width:auto;flex:0 0 auto;}
@@ -4358,6 +4381,9 @@
       position:relative;margin-left:24px;justify-content:flex-start;
     }
     .secnav-btn:nth-child(4){margin-left:20px;}
+    /* the part names in short, as the reference has them at this width */
+    .secnav-btn:nth-child(1)::before{content:"Part 1";}
+    .secnav-btn:nth-child(4)::after{content:"Part 2";}
     .secnav-btn{padding:6px 8px;font-size:13px;gap:6px;}
     .secnav-btn .num{width:20px;height:20px;flex:0 0 20px;font-size:10.5px;}
     .secbar .citypick--bar .citypick-btn{height:32px;font-size:13px;}
@@ -8981,6 +9007,10 @@
   function showSection(i, toTop){
     if(i < 0 || i >= SECTIONS.length || i === activeSec) return;
     activeSec = i;
+    /* which of the two parts the reader is in, for the bar's part names:
+       the first three sections profile the city, the next two diagnose
+       and act; the extras belong to neither */
+    document.documentElement.dataset.part = i <= 2 ? "1" : i <= 4 ? "2" : "";
     syncSectionHash();
     SECTIONS.forEach((sec, k) =>
       sec.els.forEach(el => el.classList.toggle("sec-off", k !== i)));
