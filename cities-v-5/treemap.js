@@ -4955,14 +4955,10 @@
         });
         onlys.forEach((b, i) => b.setAttribute("aria-label", "Show only " + order[i]));
         if (resetBtn) resetBtn.hidden = !(secFiltered() || focus);
-        /* "All industries" becomes the sector, or "8 of 9 sectors"; a zoom
-           leaves the title alone, since the crumbs say where the reader is */
-        const subject = !secOn || focus ? null
-          : secOn.size === 1 ? [...secOn][0]
-          : secOn.size + " of " + order.length + " sectors";
-        titleEls.forEach(el => {
-          el.textContent = subject ? el.dataset.title.replace(/^All industries/, subject) : el.dataset.title;
-        });
+        /* the titles stay as authored whatever is hidden or zoomed into:
+           the key and the crumbs say what the map is showing, and a title
+           that changed under the reader read as a different chart */
+        titleEls.forEach(el => { if (el.textContent !== el.dataset.title) el.textContent = el.dataset.title; });
       };
       syncKeyRef = syncKey;
       const dropFocus = () => { focus = null; focusGroup = null; fig.dataset.focus = ""; };

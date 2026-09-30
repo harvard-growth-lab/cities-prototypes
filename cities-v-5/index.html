@@ -9420,11 +9420,15 @@
     if(document.getElementById("landing").classList.contains("hidden")) return;
     if(["ArrowDown","PageDown"," "].includes(e.key)) enterTool("page-overview");
   });
+  /* scrolling up past the top brings the landing back - but only from the
+     first section, which is where the reader came in; from any later one
+     the top of the page is just the top of that section */
   pagesEl.addEventListener("wheel", e=>{
     const landing=document.getElementById("landing");
     const ex=document.getElementById("explainersView");
+    const pager=document.querySelector(".secpager");
     if(landing.classList.contains("hidden") && !(ex && ex.classList.contains("open")) &&
-       pagesEl.scrollTop<=1 && e.deltaY<-25){
+       pagesEl.scrollTop<=1 && e.deltaY<-25 && (!pager || pager.dataset.sec==="0")){
       backToLanding();
     }
   }, {passive:true});
