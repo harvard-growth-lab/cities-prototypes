@@ -4776,7 +4776,9 @@
         row("Jobs", fmtJobsFull(cell.jobs)) +
         row("Share of metro jobs", (cell.share * 100).toFixed(2) + "%") +
         '<dt>Complexity</dt>' + cx +
-        (cell.tier != null ? row("Tradability", TIER_WORDS[cell.tier]) : "") +
+        /* tradability is the second beat's reading: the whole-map beat has
+           not introduced it yet, so its card does not carry it */
+        (cell.tier != null && step !== 0 ? row("Tradability", TIER_WORDS[cell.tier]) : "") +
         '</dl>';
       return head + body + (hint ? '<p class="tip-hint">' + HAND + '<span>' + escHtml(hint) + '</span></p>' : '');
     }
