@@ -29,6 +29,9 @@ What each option is:
   whose blanks are native selects cut to their word ("All industries, shown
   as a [treemap], coloured by [sector], in [2024]"). Chosen from
   `control-row-two-ways.html`.
+  On the ranking beats (steps 3 and 6), whose row is the separate `#miSort`,
+  opt-2 reads "The most specialized tradable industries, sorted by
+  [concentration ▾]" with the same blank for jobs and for the gap against peers.
 - **Key actions** — opt-1 (option B of `key-actions-sketches.html`, shipped
   in `85fe10f`): the entry unfolds its two verbs on hover or focus, quiet
   words after the name ("Hide · Only"; "Bring back · Only" once the sector

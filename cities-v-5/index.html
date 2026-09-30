@@ -3215,6 +3215,10 @@
     display:block;flex:1 1 auto;min-width:0;margin:0;
     font-size:16px;line-height:1.6;font-weight:400;color:var(--ink);
   }
+  /* the ranking beats' row is drawn apart from the map beats' (#miSort), and
+     folds into a sentence the same way: its buttons stand down for a blank */
+  #miFigure[data-row="sentence"] #miSort > .ctl-label,
+  #miFigure[data-row="sentence"] #miSort > .seg{display:none;}
   #miFigure[data-row="sentence"] #miView > .mi-year,
   #miFigure[data-row="sentence"] #miView > .mi-ctlpair,
   #miFigure[data-row="sentence"] #miView .mi-titles .mcl-dir{display:none;}
@@ -6181,6 +6185,12 @@
                 <button type="button" class="seg-btn" data-sort="jobs" aria-pressed="false">Jobs</button>
                 <button type="button" class="seg-btn" data-sort="gap" aria-pressed="false">Against peers</button>
               </div>
+              <!-- opt-2 of the control row: the same choice as a blank in the
+                   ranking's own sentence, kept in step with the buttons -->
+              <p class="mi-sentence mi-sentence--rank" id="miSRank">
+                <span class="mi-s-rank-lead">The most specialized tradable industries,</span> sorted by
+                <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="miSSortRank" aria-label="Order of the ranking"><option value="rca">concentration</option><option value="jobs">jobs</option><option value="gap">gap against peers</option></select></span>
+              </p>
             </div>
             <!-- The studies are not controls the reader is meant to use: they
                  are the questions still to be settled. One word carries them

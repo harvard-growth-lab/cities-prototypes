@@ -258,6 +258,15 @@ still under `prefers-reduced-motion`.
   sentence is plain ink, nothing bold.
 - Both keep one state: `applyView` / `applyColor` / `applyBarSort` sync the
   buttons and the blanks together.
+- **The ranking beats have their own row** (`#miSort`, "Sort by" with
+  Concentration / Jobs / Against peers, shown on figure steps 3 and 6 only —
+  a separate element from `#miView`, which carries the map beats' row). Under
+  opt-2 it is a sentence too (fixed 2026-09-30; it had stayed as buttons):
+  "The most specialized tradable industries, sorted by [concentration ▾]"
+  (`p#miSRank`, select `#miSSortRank`, options rca / jobs / gap). The blank
+  and the buttons are one state through `applySort(key)` in treemap.js, and
+  the rebuild sets the blank from `sortKey`. Its lead matches the chart's own
+  title (`mapTitleOf`), which steps 3 and 6 share.
 
 **Other pieces on the figure:** "Show as table" (`#miTableBtn`) stands at
 the map's top-right corner on the crumbs' line (it rides between the two

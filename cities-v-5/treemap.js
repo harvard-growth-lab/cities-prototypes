@@ -5664,24 +5664,32 @@
 
     /* sort: the same rows in another order, bars and names travelling together */
     const sortEl = document.getElementById(p + "Sort");
+    /* the ranking's order as a blank in the row's sentence (opt-2 of the
+       control row), the same choice as the buttons and kept in step with them */
+    const sSortRankEl = document.getElementById(p + "SSortRank");
+    function applySort(key){
+      if (!key || key === sortKey) return;
+      sortKey = key;
+      fig.dataset.sort = sortKey;
+      if (sortEl) sortEl.querySelectorAll(".seg-btn").forEach(x => {
+        const on = x.dataset.sort === sortKey;
+        x.classList.toggle("is-active", on);
+        x.setAttribute("aria-pressed", String(on));
+      });
+      if (sSortRankEl && sSortRankEl.value !== sortKey){ sSortRankEl.value = sortKey; fitPick(sSortRankEl); }
+      reorder(R1); reorder(R2);
+      const anim = !reduced();
+      placeRanking(R1, anim); placeRanking(R2, anim);
+      if (step === 3 || step === 6) paint(step, anim);
+    }
     if (sortEl) on(sortEl, "click", ev => {
       /* the opt-1/opt-2 study shares this row and this button class: a click
          on it must not read as a sort with no key, which cleared every sort
          button's selected state and hid the brace */
       const b = ev.target.closest(".seg-btn[data-sort]");
-      if (!b || b.dataset.sort === sortKey) return;
-      sortKey = b.dataset.sort;
-      fig.dataset.sort = sortKey;
-      sortEl.querySelectorAll(".seg-btn").forEach(x => {
-        const on = x.dataset.sort === sortKey;
-        x.classList.toggle("is-active", on);
-        x.setAttribute("aria-pressed", String(on));
-      });
-      reorder(R1); reorder(R2);
-      const anim = !reduced();
-      placeRanking(R1, anim); placeRanking(R2, anim);
-      if (step === 3 || step === 6) paint(step, anim);
+      if (b) applySort(b.dataset.sort);
     });
+    if (sSortRankEl) on(sSortRankEl, "change", () => { fitPick(sSortRankEl); applySort(sSortRankEl.value); });
 
     /* the section may have mounted before this figure existed, in which
        case the beat it settled on is waiting on the figure: open there, not
@@ -5696,6 +5704,7 @@
         x.setAttribute("aria-pressed", String(onIt));
       });
     });
+    if (sSortRankEl){ sSortRankEl.value = sortKey; fitPick(sSortRankEl); }
     window[ctlName].setStep(fig.dataset.wantStep != null ? +fig.dataset.wantStep : 0);
   }
 
