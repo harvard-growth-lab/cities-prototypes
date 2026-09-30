@@ -3169,12 +3169,12 @@
   .mi-figure .skt-sw{flex:none;width:12px;height:12px;border-radius:3px;background:var(--sw,#ccc);}
   .mi-figure .skt-hint{display:flex;align-items:center;gap:8px;font-size:12px;line-height:1.45;color:var(--ink-soft);}
   /* the hand taps, gently; it holds still for a reader who asked for less motion */
-  .mi-figure .skt-hand{flex:none;color:var(--teal);animation:skt-tap 1.1s ease-in-out infinite;}
-  .mi-figure .skt-hand-marks{animation:skt-marks 1.1s ease-in-out infinite;}
+  .skt-hand{flex:none;color:var(--teal);animation:skt-tap 1.1s ease-in-out infinite;}
+  .skt-hand-marks{animation:skt-marks 1.1s ease-in-out infinite;}
   @keyframes skt-tap{0%,100%{transform:translateY(0);}50%{transform:translateY(2px);}}
   @keyframes skt-marks{0%,100%{opacity:.25;}50%{opacity:1;}}
   @media (prefers-reduced-motion: reduce){
-    .mi-figure .skt-hand,.mi-figure .skt-hand-marks{animation:none;}
+    .skt-hand,.skt-hand-marks{animation:none;}
   }
   /* the line over the map: where the reader has zoomed to, while they are */
   .mi-note{display:flex;align-items:center;gap:16px;margin:0;font-size:12.5px;color:var(--ink-soft);}
@@ -3238,16 +3238,21 @@
   @media (prefers-reduced-motion: reduce){ #miTreemapSvg .mi-mcell{transition:none;} }
   /* the map's card, after the reference: the industry's short name, its
      full name, where it sits, and its three readings */
-  .rca-tip.is-map{width:288px;padding:10px 12px;border-radius:8px;}
+  /* the cell's card: name, sector under its colour, two figures side by
+     side, the complexity diamonds with their word, and the hand's line */
+  .rca-tip.is-map{width:236px;padding:10px 12px 11px;border-radius:8px;}
   .rca-tip.is-map p{margin:0;font-size:12.5px;line-height:1.35;color:var(--ink-soft);}
   .rca-tip.is-map .tip-name{font-size:14px;font-weight:600;color:var(--ink);line-height:1.3;}
-  .rca-tip.is-map .tip-members{margin-top:4px;}
-  .rca-tip.is-map .tip-dl{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;margin:8px 0 0;font-size:12.5px;}
-  .rca-tip.is-map .tip-dl dt{color:var(--ink-soft);}
-  .rca-tip.is-map .tip-dl dd{margin:0;color:var(--ink);font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:6px;}
-  .rca-tip.is-map .tip-dl dd.is-strong{font-weight:600;}
-  .rca-tip.is-map .tip-sw{width:10px;height:10px;border-radius:2px;flex:none;}
-  .rca-tip.is-map .tip-hint{margin-top:8px;}
+  .rca-tip.is-map .tip-members{margin-top:1px;}
+  .rca-tip.is-map .tip-sec{display:flex;align-items:center;gap:7px;margin-top:5px;color:var(--ink);}
+  .rca-tip.is-map .tip-sw{width:11px;height:11px;border-radius:3px;flex:none;}
+  .rca-tip.is-map .tip-figs{display:flex;gap:18px;margin-top:9px;}
+  .rca-tip.is-map .tip-fig{display:flex;flex-direction:column;gap:1px;}
+  .rca-tip.is-map .tip-fig b{font-size:16px;font-weight:700;color:var(--ink);line-height:1.1;font-variant-numeric:tabular-nums;}
+  .rca-tip.is-map .tip-fig span{font-size:11.5px;color:var(--ink-soft);}
+  .rca-tip.is-map .tip-cxrow{display:flex;align-items:center;gap:8px;margin-top:9px;color:var(--ink);}
+  .rca-tip.is-map .tip-cx-val{color:var(--ink-soft);font-variant-numeric:tabular-nums;}
+  .rca-tip.is-map .tip-hint{display:flex;align-items:center;gap:8px;margin-top:9px;padding-top:8px;border-top:1px solid var(--border);}
   /* The filter lives on the column head it filters, so the chart says what can
      be narrowed rather than a control beside it. The head is the button; the
      menu opens under it. */

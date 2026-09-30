@@ -4747,25 +4747,31 @@
       if ((step === 0 || step === 4 || step === 7) && view === "map" && focus) zoomOut();
     });
 
-    /* ---- the card, after the reference: the industry's short name, its
-       full name, where it sits, what it stands for if it is several, and
-       its three readings; a last line says what a click does ---- */
+    /* the hand that taps, for either card's last line */
+    const HAND = '<svg class="skt-hand" viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' +
+      '<path d="M8 13V4.5a1.5 1.5 0 0 1 3 0V12M11 11.5v-2a1.5 1.5 0 0 1 3 0V12M14 10.5a1.5 1.5 0 0 1 3 0V12M17 11.5a1.5 1.5 0 0 1 3 0V16a6 6 0 0 1-6 6h-1.792a6 6 0 0 1-5.012-2.7l-.196-.3c-.312-.479-1.407-2.388-3.286-5.728a1.5 1.5 0 0 1 .536-2.022 1.867 1.867 0 0 1 2.28.28L8 13"/>' +
+      '<path class="skt-hand-marks" d="M5 3 4 2M4 7H3M14 3l1-1M15 6h1"/></svg>';
+    /* ---- the card: the industry's name, its sector with the sector's
+       colour, its share and its jobs, its complexity as the ranking's five
+       diamonds with the level and score, and a last line - beside the hand
+       - for what a click does. A folded cell says how many it stands for. ---- */
     function mapTipHtml(c, hint){
       const cell = c.cell;
-      const path = [cell.groupName !== cell.name ? cell.groupName : null, cell.sector,
-                    cell.tier != null ? TIER_WORDS[cell.tier] : null].filter(Boolean).join(" · ");
-      const members = cell.members ? '<p class="tip-members">' + cell.members.length + (c.rest ? " smaller" : "") +
-        " industries, among them " + cell.members.slice(0, 2).map(m => escHtml(m.name)).join(" and ") + ".</p>" : "";
-      const cx = colorBy === "complexity";
-      const sw = cx ? '<i class="tip-sw" style="background:' + cxFillOf(cell.pci) + '"></i>' : "";
-      return '<p class="tip-name">' + escHtml(cell.name) + '</p>' +
-        (cell.title ? '<p class="tip-title">' + escHtml(cell.title) + '</p>' : '') +
-        '<p class="tip-path">' + escHtml(path) + '</p>' + members +
-        '<dl class="tip-dl">' +
-        '<dt>Jobs</dt><dd class="is-strong">' + fmtJobsFull(cell.jobs) + ' · ' + fmtShare(cell.share) + " of the metro's</dd>" +
-        '<dt>Complexity</dt><dd' + (cx ? ' class="is-strong"' : '') + '>' + sw + cxText(cell.pci) + '</dd>' +
-        '<dt>Specialization</dt><dd>' + (cell.rca == null ? "No value" : rcaText(cell.rca) + " the national share") + '</dd>' +
-        '</dl>' + (hint ? '<p class="tip-hint">' + escHtml(hint) + '</p>' : '');
+      const members = cell.members
+        ? '<p class="tip-members">' + cell.members.length + (c.rest ? " smaller" : "") + " industries</p>" : "";
+      const b = cxBinOf(cell.pci);
+      let cx = '<span class="tip-cx" aria-hidden="true">';
+      for (let k = 0; k < 5; k++) cx += '<i' + (b != null && k <= b ? ' class="is-on"' : '') + '></i>';
+      cx += '</span>';
+      const cxWord = b == null ? '<span class="tip-cx-word">Not rated</span>'
+        : '<span class="tip-cx-word">' + CX_NAMES[b] + ' complexity</span><span class="tip-cx-val">' + cell.pci.toFixed(2) + '</span>' +
+          '<span class="tip-sr">, step ' + (b + 1) + ' of 5</span>';
+      return '<p class="tip-name">' + escHtml(cell.name) + '</p>' + members +
+        '<p class="tip-sec"><i class="tip-sw" style="background:' + (sectorColors[cell.sector] || "#ccc") + '"></i>' + escHtml(cell.sector) + '</p>' +
+        '<p class="tip-figs"><span class="tip-fig"><b>' + fmtShare(cell.share) + '</b><span>of metro jobs</span></span>' +
+        '<span class="tip-fig"><b>' + fmtJobsFull(cell.jobs) + '</b><span>jobs</span></span></p>' +
+        '<p class="tip-cxrow">' + cx + cxWord + '</p>' +
+        (hint ? '<p class="tip-hint">' + HAND + '<span>' + escHtml(hint) + '</span></p>' : '');
     }
     const hintFor = c => {
       const t = zoomTarget(c);
@@ -4975,13 +4981,11 @@
         tipEl = document.createElement("div"); tipEl.className = "sk-tip";
         tipEl.setAttribute("role", "tooltip"); fig.appendChild(tipEl);
       }
+      tipEl.id = p + "KeyTip";
       tipEl.hidden = true;
-      const HAND = '<svg class="skt-hand" viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' +
-        '<path d="M8 13V4.5a1.5 1.5 0 0 1 3 0V12M11 11.5v-2a1.5 1.5 0 0 1 3 0V12M14 10.5a1.5 1.5 0 0 1 3 0V12M17 11.5a1.5 1.5 0 0 1 3 0V16a6 6 0 0 1-6 6h-1.792a6 6 0 0 1-5.012-2.7l-.196-.3c-.312-.479-1.407-2.388-3.286-5.728a1.5 1.5 0 0 1 .536-2.022 1.867 1.867 0 0 1 2.28.28L8 13"/>' +
-        '<path class="skt-hand-marks" d="M5 3 4 2M4 7H3M14 3l1-1M15 6h1"/></svg>';
       function hideTip(){
         tipEl.hidden = true;
-        lis.forEach(li => li.classList.remove("is-open"));
+        lis.forEach(li => { li.classList.remove("is-open"); li.querySelector(".sk-sec").removeAttribute("aria-describedby"); });
       }
       hideKeyTip = hideTip;
       function showTip(b){
@@ -4996,7 +5000,12 @@
           '<span class="skt-name"><i class="skt-sw" style="--sw:' + (sectorColors[sec] || "#ccc") + '"></i><b>' + escHtml(sec) + '</b></span>' +
           '<span class="skt-hint">' + HAND + '<span>' + hint + '</span></span>';
         tipEl.hidden = false;
-        lis.forEach((li, k) => li.classList.toggle("is-open", k === i));
+        lis.forEach((li, k) => {
+          li.classList.toggle("is-open", k === i);
+          /* the card describes its entry, so a reader arriving by keyboard hears what a click will do */
+          const sb = li.querySelector(".sk-sec");
+          if (k === i) sb.setAttribute("aria-describedby", tipEl.id); else sb.removeAttribute("aria-describedby");
+        });
         const fb = fig.getBoundingClientRect(), bb = b.getBoundingClientRect(), kb = key.getBoundingClientRect();
         const w = tipEl.offsetWidth, h = tipEl.offsetHeight;
         const left = bb.left - fb.left + bb.width / 2 - w / 2;
@@ -5017,9 +5026,19 @@
         const b = ev.target.closest(".sk-sec");
         if (!b) return;
         const sec = order[+b.dataset.si];
-        if (!cardMode()){ toggleSec(sec); return; }
+        /* a keyboard cannot double-click, so its activations act at once */
+        if (!cardMode() || ev.detail === 0){
+          clearTimeout(clickT); toggleSec(sec);
+          if (cardMode()) showTip(b);
+          return;
+        }
         clearTimeout(clickT);
-        clickT = setTimeout(() => { toggleSec(sec); showTip(b); }, 230);
+        clickT = setTimeout(() => {
+          toggleSec(sec);
+          /* the card follows the change only if the reader is still on the entry */
+          const li = b.closest(".sk-item");
+          if (li.matches(":hover") || document.activeElement === b) showTip(b);
+        }, 230);
       });
       on(key, "dblclick", ev => {
         const b = ev.target.closest(".sk-sec");
