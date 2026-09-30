@@ -551,30 +551,53 @@
     display:flex;justify-content:space-between;align-items:center;gap:14px;
     padding:26px 72px 34px 56px;border-top:1px solid var(--border);background:#fff;
   }
-  /* the section's end: three ways on, as three cards - back, the optional
-     check, and forward, which is the one that matters most and is the one
-     card in the house's teal. The checkpoint opens beneath them. */
+  /* the section's end: the journey line, then three ways on as three
+     cards - back, the optional check, and forward, which is the one that
+     matters most and is the one card in the house's teal. The cards' badges
+     are the line's stops, so the two read as one thing. */
+  .pgr-line-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;}
+  .pgr-line{display:flex;align-items:center;}
+  .pgr-stop,.pgc-stop{
+    width:22px;height:22px;border-radius:50%;background:#fff;
+    border:2px solid var(--border-strong);color:var(--ink-soft);padding:0;
+    display:inline-flex;align-items:center;justify-content:center;
+    font:inherit;font-size:10.5px;font-weight:700;font-style:normal;flex:none;
+  }
+  .pgr-stop{cursor:pointer;transition:transform .15s ease,border-color .15s ease,color .15s ease;}
+  .pgr-stop:hover{transform:scale(1.15);border-color:var(--teal);color:var(--teal);}
+  .pgr-stop.is-past,.pgc-stop.is-past{background:var(--teal);border-color:var(--teal);color:#fff;}
+  .pgr-stop.is-cur{
+    border-color:var(--teal);color:var(--teal);transform:scale(1.3);
+    box-shadow:0 0 0 4px rgba(37,88,98,.12);
+  }
+  .pgr-seg{width:26px;height:2px;background:#dde3e5;flex:none;}
+  .pgr-seg.is-past{background:var(--teal);}
   .pager-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;width:100%;}
   .pgc{
-    display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-height:104px;
-    padding:20px 22px 18px;text-align:left;font:inherit;color:var(--ink);background:#fff;
+    display:flex;flex-direction:column;align-items:flex-start;gap:7px;min-height:100px;
+    padding:18px 22px 18px;text-align:left;font:inherit;color:var(--ink);background:#fff;
     border:1px solid var(--border-strong);border-radius:10px;cursor:pointer;
     transition:border-color .15s ease,background .15s ease,transform .15s ease,box-shadow .15s ease;
   }
   .pgc:hover{border-color:var(--teal);box-shadow:0 4px 14px rgba(26,34,38,.08);transform:translateY(-1px);}
   .pgc:focus-visible{outline:2px solid var(--teal);outline-offset:3px;}
-  .pgc-kicker{
-    display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;
-    letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);
-  }
+  .pgc-kicker{display:inline-flex;align-items:center;gap:9px;font-size:13px;font-weight:600;color:var(--ink-soft);}
   .pgc-name{font-size:19px;font-weight:700;line-height:1.25;}
   .pgc-sub{font-size:12.5px;color:var(--ink-soft);margin-top:auto;}
   .pgc--next{background:var(--teal);border-color:var(--teal);color:#fff;}
-  .pgc--next .pgc-kicker,.pgc--next .pgc-sub{color:rgba(255,255,255,.8);}
+  .pgc--next .pgc-kicker,.pgc--next .pgc-sub{color:rgba(255,255,255,.82);}
+  .pgc--next .pgc-stop{background:none;border-color:rgba(255,255,255,.75);color:#fff;}
   .pgc--next .pgc-name{font-size:21px;}
   .pgc--next:hover{background:var(--teal-dark);border-color:var(--teal-dark);box-shadow:0 6px 18px rgba(37,88,98,.28);}
-  .pgc--check .pgc-kicker .ktest-ic{width:20px;height:20px;font-size:12px;}
+  /* the check's mark is soft: a speech bubble with its question, in the pale tint */
+  .pgc-quiz{
+    width:26px;height:26px;border-radius:50%;flex:none;font-style:normal;
+    display:inline-flex;align-items:center;justify-content:center;
+    background:var(--teal-tint);color:var(--teal);
+  }
   .pgc--check[aria-expanded="true"]{background:var(--teal-tint);border-color:var(--teal);}
+  .pgc--check[aria-expanded="true"] .pgc-quiz{background:#fff;}
+  @media (max-width:599px){ .pgr-seg{width:14px;} .pgr-stop{width:20px;height:20px;font-size:10px;} }
   .sec-close-wrap{margin-top:16px;width:100%;}
   .sec-close-wrap[hidden]{display:none;}
   /* the rail lists the reading; the checkpoints are the section's last cards */
@@ -8865,27 +8888,32 @@
       });
     }
     const prev = SECTIONS[i-1], next = SECTIONS[i+1];
+    const name = SECTIONS[i].name;
+    /* one state language, on the line and on the cards: a teal check is
+       behind you, the enlarged ring is where you stand, grey numbers wait
+       ahead. The line's stops are buttons; the cards' badges only say. */
+    const CHECK = '<svg viewBox="0 0 10 8" width="9" height="7" aria-hidden="true"><path d="M1 4.2 3.7 6.8 9 1.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+    const stops = SECTIONS.map((sec, k) =>
+      (k ? '<i class="pgr-seg' + (k <= i ? " is-past" : "") + '"></i>' : "") +
+      '<button type="button" class="pgr-stop' + (k < i ? " is-past" : k === i ? " is-cur" : "") +
+      '" data-go="' + k + '" title="' + sec.name + '" aria-label="' + sec.name + '">' +
+      (k < i ? CHECK : '<span>' + (k + 1) + '</span>') + '</button>').join("");
+    const badge = k => '<i class="pgc-stop' + (k < i ? " is-past" : "") + '" aria-hidden="true">' + (k < i ? CHECK : (k + 1)) + '</i>';
     /* the section's end is three ways on, each a card: back; the check,
        which is optional and opens the quiz and the reflection beneath the
        cards rather than standing them in the reader's way; and forward,
        which is the one that matters most and is dressed as such */
-    const name = SECTIONS[i].name;
-    /* the count is the storyline's: the extras stand outside it */
-    const N = SECTIONS.filter(sd => sd.name !== "Extras").length;
-    const place = k => SECTIONS[k].name === "Extras" ? "Outside the storyline" : "Section " + (k + 1) + " of " + N;
     secPager.dataset.sec = i;
     secPager.innerHTML =
+      '<div class="pgr-line-wrap"><div class="pgr-line">' + stops + '</div></div>' +
       '<div class="pager-cards">' +
       (prev ? '<button type="button" class="pgc pgc--prev" data-go="' + (i-1) + '">' +
-        '<span class="pgc-kicker">&larr; Previous</span><span class="pgc-name">' + prev.name + '</span>' +
-        '<span class="pgc-sub">' + place(i-1) + '</span></button>' : '') +
+        '<span class="pgc-kicker">' + badge(i-1) + 'Previous</span><span class="pgc-name">' + prev.name + '</span></button>' : '') +
       checkCardHtml(name) +
       (next ? '<button type="button" class="pgc pgc--next" data-go="' + (i+1) + '">' +
-        '<span class="pgc-kicker">Next &rarr;</span><span class="pgc-name">' + next.name + '</span>' +
-        '<span class="pgc-sub">' + place(i+1) + '</span></button>'
+        '<span class="pgc-kicker">' + badge(i+1) + 'Next</span><span class="pgc-name">' + next.name + '</span></button>'
         : '<button type="button" class="pgc pgc--next" data-go="0">' +
-        '<span class="pgc-kicker">Back to the start &#8635;</span><span class="pgc-name">' + SECTIONS[0].name + '</span>' +
-        '<span class="pgc-sub">' + place(0) + '</span></button>') +
+        '<span class="pgc-kicker">' + badge(0) + 'Start again</span><span class="pgc-name">' + SECTIONS[0].name + '</span></button>') +
       '</div>' +
       '<div class="sec-close-wrap" id="secCheckWrap" hidden></div>';
     wireCheckCard(name);
@@ -8930,7 +8958,7 @@
   secPager.className = "secpager";
   pagesEl.appendChild(secPager);
   secPager.addEventListener("click", e => {
-    const b = e.target.closest(".pgc[data-go]");
+    const b = e.target.closest(".pgc[data-go], .pgr-stop");
     if(b) showSection(+b.dataset.go);
   });
   /* the optional check as a card: what it holds, and how far the reader is */
@@ -8944,7 +8972,7 @@
   function checkCardHtml(name){
     if (!CHECK_READY || !sectionChecksData()[name]) return "";
     return '<button type="button" class="pgc pgc--check" aria-expanded="false" aria-controls="secCheckWrap">' +
-      '<span class="pgc-kicker"><span class="ktest-ic" aria-hidden="true">?</span>Optional</span>' +
+      '<span class="pgc-kicker"><i class="pgc-quiz" aria-hidden="true"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v7a2.5 2.5 0 0 1-2.5 2.5H10l-4.2 3.3c-.5.4-1.3 0-1.3-.6V16A2.5 2.5 0 0 1 4 13.5z"/><path d="M9.6 9.2a2.4 2.4 0 1 1 3.4 2.2c-.6.3-1 .8-1 1.4v.2"/><path d="M12 15.6h.01"/></svg></i>Optional</span>' +
       '<span class="pgc-name">Test your knowledge</span>' +
       '<span class="pgc-sub">' + checkCardSub(name) + '</span></button>';
   }
