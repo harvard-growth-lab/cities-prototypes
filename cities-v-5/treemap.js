@@ -4751,27 +4751,34 @@
     const HAND = '<svg class="skt-hand" viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' +
       '<path d="M8 13V4.5a1.5 1.5 0 0 1 3 0V12M11 11.5v-2a1.5 1.5 0 0 1 3 0V12M14 10.5a1.5 1.5 0 0 1 3 0V12M17 11.5a1.5 1.5 0 0 1 3 0V16a6 6 0 0 1-6 6h-1.792a6 6 0 0 1-5.012-2.7l-.196-.3c-.312-.479-1.407-2.388-3.286-5.728a1.5 1.5 0 0 1 .536-2.022 1.867 1.867 0 0 1 2.28.28L8 13"/>' +
       '<path class="skt-hand-marks" d="M5 3 4 2M4 7H3M14 3l1-1M15 6h1"/></svg>';
-    /* ---- the card: the industry's name, its sector with the sector's
-       colour, its share and its jobs, its complexity as the ranking's five
-       diamonds with the level and score, and a last line - beside the hand
-       - for what a click does. A folded cell says how many it stands for. ---- */
+    /* ---- the card: the ranking's card, row for row - the industry's name
+       over its sector in the sector's colour, then Jobs, Share of metro
+       jobs, Complexity as the column's five diamonds with the score, and
+       Tradability - with a last line, beside the hand that taps, for what
+       a click does. A folded cell adds how many it stands for. ---- */
     function mapTipHtml(c, hint){
       const cell = c.cell;
-      const members = cell.members
-        ? '<p class="tip-members">' + cell.members.length + (c.rest ? " smaller" : "") + " industries</p>" : "";
+      const row = (k, v) => '<dt>' + k + '</dt><dd>' + v + '</dd>';
       const b = cxBinOf(cell.pci);
-      let cx = '<span class="tip-cx" aria-hidden="true">';
-      for (let k = 0; k < 5; k++) cx += '<i' + (b != null && k <= b ? ' class="is-on"' : '') + '></i>';
-      cx += '</span>';
-      const cxWord = b == null ? '<span class="tip-cx-word">Not rated</span>'
-        : '<span class="tip-cx-word">' + CX_NAMES[b] + ' complexity</span><span class="tip-cx-val">' + cell.pci.toFixed(2) + '</span>' +
-          '<span class="tip-sr">, step ' + (b + 1) + ' of 5</span>';
-      return '<p class="tip-name">' + escHtml(cell.name) + '</p>' + members +
-        '<p class="tip-sec"><i class="tip-sw" style="background:' + (sectorColors[cell.sector] || "#ccc") + '"></i>' + escHtml(cell.sector) + '</p>' +
-        '<p class="tip-figs"><span class="tip-fig"><b>' + fmtShare(cell.share) + '</b><span>of metro jobs</span></span>' +
-        '<span class="tip-fig"><b>' + fmtJobsFull(cell.jobs) + '</b><span>jobs</span></span></p>' +
-        '<p class="tip-cxrow">' + cx + cxWord + '</p>' +
-        (hint ? '<p class="tip-hint">' + HAND + '<span>' + escHtml(hint) + '</span></p>' : '');
+      let cx;
+      if (b == null) cx = '<dd class="tip-cx-cell"><em>not measured</em></dd>';
+      else {
+        let dots = '<span class="tip-cx" aria-hidden="true">';
+        for (let k = 0; k < 5; k++) dots += '<i' + (k <= b ? ' class="is-on"' : '') + '></i>';
+        cx = '<dd class="tip-cx-cell">' + dots + '</span><span class="tip-cx-val">' + cell.pci.toFixed(2) + '</span>' +
+          '<span class="tip-sr">step ' + (b + 1) + ' of 5, ' + CX_WORDS[b] + '</span></dd>';
+      }
+      const head = '<div class="tip-head"><strong>' + escHtml(cell.name) + '</strong>' +
+        '<span class="tip-sector"><i style="background:' + (sectorColors[cell.sector] || "#ccc") + '"></i>' +
+        escHtml(cell.sector) + '</span></div>';
+      const body = '<dl class="tip-grid">' +
+        (cell.members ? row("Industries", cell.members.length + (c.rest ? " smaller" : "")) : "") +
+        row("Jobs", fmtJobsFull(cell.jobs)) +
+        row("Share of metro jobs", (cell.share * 100).toFixed(2) + "%") +
+        '<dt>Complexity</dt>' + cx +
+        (cell.tier != null ? row("Tradability", TIER_WORDS[cell.tier]) : "") +
+        '</dl>';
+      return head + body + (hint ? '<p class="tip-hint">' + HAND + '<span>' + escHtml(hint) + '</span></p>' : '');
     }
     const hintFor = c => {
       const t = zoomTarget(c);

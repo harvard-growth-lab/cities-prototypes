@@ -3238,21 +3238,12 @@
   @media (prefers-reduced-motion: reduce){ #miTreemapSvg .mi-mcell{transition:none;} }
   /* the map's card, after the reference: the industry's short name, its
      full name, where it sits, and its three readings */
-  /* the cell's card: name, sector under its colour, two figures side by
-     side, the complexity diamonds with their word, and the hand's line */
-  .rca-tip.is-map{width:236px;padding:10px 12px 11px;border-radius:8px;}
-  .rca-tip.is-map p{margin:0;font-size:12.5px;line-height:1.35;color:var(--ink-soft);}
-  .rca-tip.is-map .tip-name{font-size:14px;font-weight:600;color:var(--ink);line-height:1.3;}
-  .rca-tip.is-map .tip-members{margin-top:1px;}
-  .rca-tip.is-map .tip-sec{display:flex;align-items:center;gap:7px;margin-top:5px;color:var(--ink);}
-  .rca-tip.is-map .tip-sw{width:11px;height:11px;border-radius:3px;flex:none;}
-  .rca-tip.is-map .tip-figs{display:flex;gap:18px;margin-top:9px;}
-  .rca-tip.is-map .tip-fig{display:flex;flex-direction:column;gap:1px;}
-  .rca-tip.is-map .tip-fig b{font-size:16px;font-weight:700;color:var(--ink);line-height:1.1;font-variant-numeric:tabular-nums;}
-  .rca-tip.is-map .tip-fig span{font-size:11.5px;color:var(--ink-soft);}
-  .rca-tip.is-map .tip-cxrow{display:flex;align-items:center;gap:8px;margin-top:9px;color:var(--ink);}
-  .rca-tip.is-map .tip-cx-val{color:var(--ink-soft);font-variant-numeric:tabular-nums;}
-  .rca-tip.is-map .tip-hint{display:flex;align-items:center;gap:8px;margin-top:9px;padding-top:8px;border-top:1px solid var(--border);}
+  /* the cell's card is the ranking's card, dressed by the rules above; its
+     one addition is a last line for what a click does, beside the hand */
+  .rca-tip .tip-hint{
+    display:flex;align-items:center;gap:8px;margin:10px 0 0;padding-top:9px;border-top:1px solid var(--border);
+    font-size:12.5px;line-height:1.35;color:var(--ink-soft);
+  }
   /* The filter lives on the column head it filters, so the chart says what can
      be narrowed rather than a control beside it. The head is the button; the
      menu opens under it. */
