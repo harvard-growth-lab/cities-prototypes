@@ -4919,11 +4919,14 @@
       key.innerHTML = order.map((sec, i) =>
         '<li class="sk-item"><button type="button" class="sk-sec" data-si="' + i + '" aria-pressed="true" style="--sw:' +
         (sectorColors[sec] || "#ccc") + '"><i class="sk-sw"></i><span class="sk-name">' + escHtml(sec) + '</span></button>' +
-        '<button type="button" class="sk-only" data-si="' + i + '" aria-label="Show only ' + escHtml(sec) + '">only</button></li>').join("") +
+        '<span class="sk-verbs"><button type="button" class="sk-hide" data-si="' + i + '">Hide</button>' +
+        '<span class="sk-dot" aria-hidden="true">&middot;</span>' +
+        '<button type="button" class="sk-only" data-si="' + i + '" aria-label="Show only ' + escHtml(sec) + '">Only</button></span></li>').join("") +
         '<li class="sk-item sk-item--reset"><button type="button" class="sk-reset" hidden>Show all</button></li>';
       const resetBtn = key.querySelector(".sk-reset");
       const items = [].slice.call(key.querySelectorAll(".sk-sec"));
       const onlys = [].slice.call(key.querySelectorAll(".sk-only"));
+      const hides = [].slice.call(key.querySelectorAll(".sk-hide"));
       /* the chart's titles must not still say every industry while the map
          is showing some of them: the two map beats' titles in the row, and
          the sentence's leads for the same beats. Each keeps the title as
@@ -4941,11 +4944,16 @@
           b.classList.toggle("is-off", !on);
           b.setAttribute("aria-pressed", String(on));
         });
-        onlys.forEach((b, i) => {
-          const sec = order[i], solo = shownSec(sec) && soloSec(sec);
-          b.textContent = solo ? "all" : "only";
-          b.setAttribute("aria-label", solo ? "Show all sectors" : "Show only " + sec);
+        /* the verbs say what a click will do, in the state the sector is in:
+           the last one showing cannot be hidden, so its one verb brings all
+           back and "Only" stands down */
+        hides.forEach((b, i) => {
+          const sec = order[i], on = shownSec(sec), solo = on && soloSec(sec);
+          b.textContent = solo ? "Show all" : on ? "Hide" : "Bring back";
+          b.setAttribute("aria-label", solo ? "Show all sectors" : (on ? "Hide " : "Bring back ") + sec);
+          b.closest(".sk-item").classList.toggle("is-solo", solo);
         });
+        onlys.forEach((b, i) => b.setAttribute("aria-label", "Show only " + order[i]));
         if (resetBtn) resetBtn.hidden = !(secFiltered() || focus);
         /* "All industries" becomes the sector, or "8 of 9 sectors"; a zoom
            leaves the title alone, since the crumbs say where the reader is */
@@ -5066,6 +5074,8 @@
         if (ev.target.closest(".sk-reset")){ resetSec(); hideTip(); return; }
         const only = ev.target.closest(".sk-only");
         if (only){ onlySec(order[+only.dataset.si]); return; }
+        const hideB = ev.target.closest(".sk-hide");
+        if (hideB){ toggleSec(order[+hideB.dataset.si]); return; }
         const b = ev.target.closest(".sk-sec");
         if (!b) return;
         const sec = order[+b.dataset.si];

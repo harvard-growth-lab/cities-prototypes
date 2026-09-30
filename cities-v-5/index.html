@@ -3168,18 +3168,28 @@
   }
   .sector-key .sk-sec.is-off .sk-sw{background:transparent;}
   .sector-key .sk-sec.is-off .sk-name{color:var(--ink-soft);text-decoration:line-through;text-decoration-thickness:1px;}
-  .sector-key .sk-only{
-    appearance:none;background:none;border:0;margin:0 3px 0 0;padding:2px 4px;border-radius:4px;
-    font:inherit;font-size:12.5px;color:var(--ink-soft);cursor:pointer;opacity:0;text-underline-offset:2px;
+  /* the entry's two verbs unfold inside it on hover, quiet words after the
+     name: "Hide · Only", "Bring back · Only", or "Show all" alone for the
+     last sector showing. Where there is no hover they are always out. */
+  .sector-key .sk-verbs{display:none;align-items:center;gap:1px;margin:0 4px 0 2px;}
+  .sector-key .sk-item:hover .sk-verbs,.sector-key .sk-item:focus-within .sk-verbs{display:inline-flex;}
+  @media (pointer: coarse){ .sector-key .sk-verbs{display:inline-flex;} }
+  .sector-key .sk-hide,.sector-key .sk-only{
+    appearance:none;background:none;border:0;margin:0;padding:2px 4px;border-radius:4px;
+    font:inherit;font-size:12.5px;color:var(--ink-soft);cursor:pointer;text-underline-offset:2px;white-space:nowrap;
   }
-  .sector-key .sk-item:hover .sk-only,.sector-key .sk-only:focus-visible{opacity:1;}
-  .sector-key .sk-only:hover,.sector-key .sk-only:focus-visible{color:var(--ink);text-decoration:underline;outline:none;}
-  @media (pointer: coarse){ .sector-key .sk-only{opacity:1;} }
+  .sector-key .sk-hide:hover,.sector-key .sk-only:hover,
+  .sector-key .sk-hide:focus-visible,.sector-key .sk-only:focus-visible{color:var(--ink);text-decoration:underline;outline:none;}
+  .sector-key .sk-dot{color:var(--border-strong);font-size:11px;padding:0 1px;}
+  .sector-key .sk-item.is-solo .sk-dot,.sector-key .sk-item.is-solo .sk-only{display:none;}
+  /* the way back for the whole key, dressed to be found */
   .sector-key .sk-reset{
-    appearance:none;background:none;border:0;padding:3px 7px;font:inherit;font-size:12.5px;font-weight:600;
-    color:var(--teal);cursor:pointer;text-underline-offset:2px;
+    appearance:none;border:1px solid transparent;border-radius:5px;padding:4px 11px;margin-left:4px;
+    font:inherit;font-size:12.5px;font-weight:600;color:var(--teal);background:var(--teal-tint);cursor:pointer;
+    transition:border-color .15s ease,background .15s ease;
   }
-  .sector-key .sk-reset:hover{text-decoration:underline;}
+  .sector-key .sk-reset:hover{border-color:var(--teal);background:#e3ecee;}
+  .sector-key .sk-reset:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
   .sector-key .sk-reset[hidden]{display:none;}
   /* ---- opt-2 of the key study ("Key actions" under opt): the entry's
      card. A small card over the entry - the sector's colour and its name,
@@ -3189,6 +3199,9 @@
      reached. The entry whose card is open stays lit, which is what says
      the card is its. */
   .sector-key .sk-item{position:relative;}
+  #miFigure[data-key="card"] .sector-key .sk-verbs{display:inline-flex;margin:0;}
+  #miFigure[data-key="card"] .sector-key .sk-hide,
+  #miFigure[data-key="card"] .sector-key .sk-dot{display:none;}
   #miFigure[data-key="card"] .sector-key .sk-only:not(:focus-visible){
     position:absolute;width:1px;height:1px;margin:0;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;
   }
