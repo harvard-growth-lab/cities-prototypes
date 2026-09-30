@@ -363,7 +363,10 @@
     background:#fff;
     border-bottom:1px solid var(--border);
     height:72px;flex:0 0 72px;display:flex;align-items:center;gap:14px;
-    padding-inline:var(--frame-pad);
+    /* the same edges as the section bar under it - the logo over the
+       location's left edge, the journey button over the last section's
+       right edge - so the two bars stand on one grid at every width */
+    padding-inline:max(var(--frame-pad), calc((100% - var(--grid-max)) / 2));
     box-shadow:0 1px 0 rgba(37,88,98,.03);
   }
   /* logo occupies the same width as the left rail so the dropdowns

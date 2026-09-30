@@ -363,6 +363,15 @@ first chip and "Part 2 Diagnose & Act" over the fourth, 9.5px bold in
 moved to chip 5's `::before` — the row takes 12px of head-room, and under
 1200px the names shorten to "Part 1" / "Part 2".
 
+**The two bars stand on one grid** (2026-09-30): the toolbar (logo, links,
+"My Learning Journey") takes the section bar's own padding rule,
+`max(var(--frame-pad), (100% - var(--grid-max)) / 2)`, so the logo's left
+edge is the location dropdown's and the journey button's right edge is the
+last chip's ("Levers for Change") at every width from 1200 up, with or
+without a classic scrollbar (both bars are children of `.pages`). Under
+1200 the chips are a left-flowing filmstrip, so the button then aligns with
+the bar's right edge instead. The landing's own header is unchanged.
+
 **The site's layout study** (2026-09-30, at Nil's request, after the
 reference build's `?site=scroll` variant). It is switched from the same
 control the reference has: a dark pill fixed at the **bottom left**,
