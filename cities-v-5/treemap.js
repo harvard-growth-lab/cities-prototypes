@@ -3139,7 +3139,7 @@
 
     const svg = d3.select(el);
     const TEAL = token("--teal", "#255862");
-    const MUTED = "#83969a";
+    const MUTED = "#a9c2c7";
     const ORANGE = token("--orange", "#e76565");
 
     const box = (n, dx, dy) => ({ x: n.x0 + (dx || 0), y: n.y0 + (dy || 0),

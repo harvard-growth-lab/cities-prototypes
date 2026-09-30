@@ -317,7 +317,6 @@ question still open; both options must keep working:
 | Sector colours | `miPal` | mint · periwinkle (trade & transportation's colour) | 0 4 |
 | Tier grounds | `miGround` | frame · grey | 4 |
 | Tier shares | `miTierOpt` | cards · **donut** | 4 |
-| Phrase highlight | `miHlOpt` | dim · mute · **frame** | 0 4 |
 | Tradability column | `miRankOpt` | score · **tier** | 3 6 |
 
 The visibility rules for these live in index.html as
@@ -452,7 +451,11 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
    sampling of rendered text; a non-text pass over rings, edges and chart
    marks, each finding adversarially verified) confirmed thirteen items. Nil
    asked for **only the Metro Industries ones** to be applied — four, in
-   `ec928b5`. The nine outside that section are known and unapplied, with
+   `ec928b5` — and then, by design choice, took two of them back the same
+   day: the ranking's quiet bars are the pale `#a9c2c7` again (the printed
+   values carry the reading) and the chosen tile's edge is `#c2d4d7`, not
+   teal (the white tile and its teal word say which option is on). Do not
+   re-darken either. The nine outside that section are known and unapplied, with
    the fix each verifier proposed:
    - Overview scatter, phone width: the "Boston" label falls on grey dots
      (`.metro-scatter .ms-home-label`, 3.2 to 1) — a white halo:

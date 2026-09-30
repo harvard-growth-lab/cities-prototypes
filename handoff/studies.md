@@ -13,7 +13,6 @@ verify a change under each option.
 | Sector colours | `miPal` | `data-pal` = mint / periwinkle | opt-1 mint · opt-2 periwinkle | 0 4 |
 | Tier grounds | `miGround` | — | opt-1 frame · opt-2 grey | 4 |
 | Tier shares | `miTierOpt` | — | opt-1 cards · **opt-2 donut** (default) | 4 |
-| Phrase highlight | `miHlOpt` | — | opt-1 dim · opt-2 mute · **opt-3 frame** (default) | 0 4 |
 | Tradability column | `miRankOpt` | — | opt-1 score · **opt-2 tier** (default) | 3 6 |
 
 Where they live: the `<label class="mi-study" id="mi…Pair">` rows inside
@@ -45,7 +44,10 @@ What each option is:
   or periwinkle; the swatches in the key, the phrases and the cards follow.
 - **Tier grounds** — each tier's ground as a framed line, or a light grey field.
 - **Tier shares** — the tiers' shares as cards, or as the donut beside the text.
-- **Phrase highlight** — a sector phrase in the text stands the rest of the
-  map down (dim), turns the rest grey (mute), or draws a line round the block
-  being named (frame).
 - **Tradability column** — the ranking's last column as the score, or the tier word.
+
+Retired 2026-09-30 at Nil's request: the **Phrase highlight** study
+(`miHlOpt`: dim / mute / frame). The frame is the fixed behaviour — a sector
+phrase in the text draws a line round its block on the map; `hlMode` in
+treemap.js defaults to "frame" when the select is absent, and the handler is
+null-safe, so the row was simply removed from the panel.
