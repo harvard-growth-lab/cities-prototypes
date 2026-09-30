@@ -3347,8 +3347,10 @@
     /* the bars answer to both filters, so either one has to ask what the
        other leaves before it takes anything away */
     const tierListWith = (tOn, sOn) =>
-      byJobsAll.filter(d => tOn[clusterOf(d)] && (!sOn || sOn.has(d.sector)));
+      byJobsAll.filter(d => tOn[clusterOf(d)] && (!sOn || sOn.has(d.sector)) && inFocus(d));
     const tierList = () => tierListWith(tierOn, secOn);
+    /* the bars, ranked again over what the filter and the zoom leave */
+    const reBars = () => { barListAll = tierList(); reBarRank(); drawBars(barListAll, gBarsAll); };
     let barRankAll = null;                 /* set once barOrder exists */
     const byJobsTrad = tradRows.slice().sort((a, b) => b.employ - a.employ);
     const barRankTrad = new Map(byJobsTrad.slice(0, NB).map((d, i) => [d.name, i]));
@@ -4141,7 +4143,17 @@
         /* named for what the reader zoomed into, the group if they went that far */
         const gRow = focusGroup ? industryData.find(d => d.group === focusGroup) : null;
         const zoomed = gRow ? (gRow.groupShort || gRow.groupName) : focus;
-        g.select(".mi-card-none").text(!bare ? "" : zoomed ? "Nothing here from " + zoomed : "None of the sectors shown");
+        const tn = g.select(".mi-card-none");
+        tn.text(!bare ? "" : zoomed ? "Nothing here from " + zoomed : "None of the sectors shown");
+        /* the line must fit its ground, or it prints across the next one */
+        if (bare && zoomed){
+          const node = tn.node(), room = c.w - 2 * Math.max(0, (+tn.attr("x") || c.x) - c.x);
+          let nm = zoomed;
+          while (nm.length > 3 && node.getComputedTextLength() > room){
+            nm = nm.slice(0, -1).replace(/[\s&,-]+$/, ""); tn.text("Nothing here from " + nm + "\u2026");
+          }
+          if (node.getComputedTextLength() > room) tn.text("Nothing here");
+        }
         g.select(".mi-card-pct").style("opacity", bare ? 0.4 : 1);
         g.select(".mi-card-lab").style("opacity", bare ? 0.4 : 1);
       });
@@ -4379,7 +4391,7 @@
       /* the zoom belongs to the map beats and travels between them: what
          the reader zoomed into on the whole map is what the tiers show, and
          back again. It is let go on the beats that have no map. */
-      if (i !== 0 && i !== 4 && i !== 7 && focus){ focus = null; focusGroup = null; fig.dataset.focus = ""; syncKey(); }
+      if (i !== 0 && i !== 4 && i !== 7 && focus){ focus = null; focusGroup = null; fig.dataset.focus = ""; reBars(); syncKey(); }
       /* the clusters are a movement between columns, and the ranked bars
          have none: the beat opens as the map however the last one was left */
       if (i === 4) setView("map");
@@ -4686,11 +4698,14 @@
        blocks at the top of the map, the groups inside a sector */
     function drawHits(L){
       let targets = [];
-      if ((step === 0 || step === 7) && view === "map"){
-        if (!focus) targets = L.blocks.map(b => ({ key: b.key, box: b.box, sector: b.sector, group: null, label: "Zoom into " + b.sector }));
+      /* on the tiers a sector or a group is a block in each ground, so each
+         is its own target, named for the ground it is in */
+      const where = b => step === 4 && b.band ? " (" + b.band + ")" : "";
+      if ((step === 0 || step === 4 || step === 7) && view === "map"){
+        if (!focus) targets = L.blocks.map(b => ({ key: (b.band || "") + ":" + b.key, box: b.box, sector: b.sector, group: null, label: "Zoom into " + b.sector + where(b) }));
         else if (!focusGroup) targets = L.groups.filter(g => /^\d{4}$/.test(g.group))
           .map(g => ({ key: g.key, box: g.box, sector: focus, group: g.group,
-                       label: "Zoom into " + ((g.items[0] && g.items[0].cell.groupName) || g.group) }));
+                       label: "Zoom into " + ((g.items[0] && g.items[0].cell.groupName) || g.group) + where(g) }));
       }
       const h = gMapHit.selectAll("rect.mi-mhit").data(targets, t => t.key);
       h.exit().remove();
@@ -4709,8 +4724,7 @@
        a sector, the cell itself inside a group */
     const outlineBoxes = c => {
       const L = mapLayout; if (!L) return [c.box];
-      if (step === 4) return L.blocks.filter(b => b.band === c.band && b.sector === c.cell.sector).map(b => b.box);
-      if (!focus) return L.blocks.filter(b => b.sector === c.cell.sector).map(b => b.box);
+      if (!focus) return L.blocks.filter(b => b.sector === c.cell.sector && (step !== 4 || b.band === c.band)).map(b => b.box);
       if (!focusGroup){ const g = L.groups.find(g => g.items.some(it => it.id === c.id)); return [g ? g.box : c.box]; }
       return [c.box];
     };
@@ -4737,12 +4751,14 @@
       focus = sec || null; focusGroup = focus ? grp : null;
       fig.dataset.focus = focus ? (focusGroup ? "group" : "sector") : "";
       hideMapTip(true);
+      reBars();
       if (syncKeyRef) syncKeyRef();
       if (step >= 0) paint(step, !reduced());
     }
     const zoomOut = () => { if (focusGroup) setFocus(focus, null); else if (focus) setFocus(null, null); };
     on(document, "keydown", ev => {
       if (ev.key !== "Escape" || ev.defaultPrevented) return;
+      if (hideKeyTip && hideKeyTip()) return;
       if (pinned){ hideMapTip(true); return; }
       if ((step === 0 || step === 4 || step === 7) && view === "map" && focus) zoomOut();
     });
@@ -4818,7 +4834,9 @@
             : '<span class="mi-crumb-here">' + escHtml(focus) + '</span>') +
           '<button type="button" class="mi-crumb-x" aria-label="Zoom out">×</button></span>';
       } else txt = "";
-      notes.forEach(n => { n.querySelector(".mi-note-txt").innerHTML = txt; });
+      /* only the head that is showing carries them: the other head is only
+         faded, and buttons in it would still be stops for the keyboard */
+      notes.forEach(n => { n.querySelector(".mi-note-txt").innerHTML = ((n.id === p + "Note4") === (step === 4)) ? txt : ""; });
     }
     notes.forEach(n => on(n, "click", ev => {
       const b = ev.target.closest("[data-zoom], .mi-crumb-x"); if (!b) return;
@@ -4993,27 +5011,34 @@
       tipEl.id = p + "KeyTip";
       tipEl.hidden = true;
       function hideTip(){
+        const was = !tipEl.hidden;
         tipEl.hidden = true;
         lis.forEach(li => { li.classList.remove("is-open"); li.querySelector(".sk-sec").removeAttribute("aria-describedby"); });
+        return was;
       }
       hideKeyTip = hideTip;
-      function showTip(b){
+      function showTip(b, viaKey){
         if (!cardMode()) return;
         const i = +b.dataset.si, sec = order[i];
         const shown = shownSec(sec), solo = shown && soloSec(sec);
         /* what a click will do, in the state the sector is in: the last one
-           showing cannot be hidden, so a click on it brings them all back */
-        const hint = solo ? "Click to show all sectors"
-          : (shown ? "Click to hide" : "Click to bring back") + "<br>Double-click to keep only";
+           showing cannot be hidden, so a click on it brings them all back.
+           A keyboard cannot double-click, so for it the card names the
+           "only" button that follows the entry instead. */
+        const hint = viaKey
+          ? (solo ? "Enter to show all sectors"
+            : (shown ? "Enter to hide" : "Enter to bring back") + "<br>\u201cOnly\u201d, the next button, keeps only")
+          : (solo ? "Click to show all sectors"
+            : (shown ? "Click to hide" : "Click to bring back") + "<br>Double-click to keep only");
         tipEl.innerHTML =
           '<span class="skt-name"><i class="skt-sw" style="--sw:' + (sectorColors[sec] || "#ccc") + '"></i><b>' + escHtml(sec) + '</b></span>' +
-          '<span class="skt-hint">' + HAND + '<span>' + hint + '</span></span>';
+          '<span class="skt-hint">' + HAND + '<span id="' + p + 'KeyHint">' + hint + '</span></span>';
         tipEl.hidden = false;
         lis.forEach((li, k) => {
           li.classList.toggle("is-open", k === i);
           /* the card describes its entry, so a reader arriving by keyboard hears what a click will do */
           const sb = li.querySelector(".sk-sec");
-          if (k === i) sb.setAttribute("aria-describedby", tipEl.id); else sb.removeAttribute("aria-describedby");
+          if (k === i) sb.setAttribute("aria-describedby", p + "KeyHint"); else sb.removeAttribute("aria-describedby");
         });
         const fb = fig.getBoundingClientRect(), bb = b.getBoundingClientRect(), kb = key.getBoundingClientRect();
         const w = tipEl.offsetWidth, h = tipEl.offsetHeight;
@@ -5021,8 +5046,6 @@
         tipEl.style.left = Math.max(0, Math.min(left, Math.max(0, fb.width - w))) + "px";
         tipEl.style.top = Math.max(0, kb.top - fb.top - h - 8) + "px";
       }
-      on(document, "keydown", ev => { if (ev.key === "Escape") hideTip(); });
-
       /* a click and a double-click on the same entry mean different things,
          so under opt-2 a click waits long enough to know it is not the first
          half of a double-click before it acts */
@@ -5038,7 +5061,7 @@
         /* a keyboard cannot double-click, so its activations act at once */
         if (!cardMode() || ev.detail === 0){
           clearTimeout(clickT); toggleSec(sec);
-          if (cardMode()) showTip(b);
+          if (cardMode()) showTip(b, ev.detail === 0);
           return;
         }
         clearTimeout(clickT);
@@ -5046,7 +5069,7 @@
           toggleSec(sec);
           /* the card follows the change only if the reader is still on the entry */
           const li = b.closest(".sk-item");
-          if (li.matches(":hover") || document.activeElement === b) showTip(b);
+          if (li.matches(":hover") || b.matches(":focus-visible")) showTip(b);
         }, 230);
       });
       on(key, "dblclick", ev => {
@@ -5065,7 +5088,7 @@
         const unlit = () => { if (!pinned) clearOutline(); };
         on(li, "mouseenter", () => { lit(); if (cardMode()) showTip(b); });
         on(li, "mouseleave", () => { unlit(); if (cardMode()) hideTip(); });
-        on(li, "focusin", () => { lit(); if (cardMode() && document.activeElement === b) showTip(b); });
+        on(li, "focusin", () => { lit(); if (cardMode() && document.activeElement === b) showTip(b, true); });
         on(li, "focusout", () => { unlit(); if (cardMode()) hideTip(); });
       });
       syncKey();
@@ -5307,6 +5330,7 @@
         const nm = b.querySelector(".sk-name"); if (!nm) return;
         b.style.setProperty("--sw", sectorColors[nm.textContent] || "#ccc");
       });
+      hideMapTip(true);
       if (step >= 0) paint(step, !reduced());
     });
 
