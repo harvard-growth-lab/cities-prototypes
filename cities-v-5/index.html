@@ -551,36 +551,34 @@
     display:flex;justify-content:space-between;align-items:center;gap:14px;
     padding:26px 72px 34px 56px;border-top:1px solid var(--border);background:#fff;
   }
-  .pager-btn{
-    padding:10px 18px;font:inherit;font-size:var(--t-sm);font-weight:600;color:var(--teal);
-    background:#fff;border:1px solid var(--teal);border-radius:4px;cursor:pointer;
-    transition:background .15s ease,color .15s ease;
+  /* the section's end: three ways on, as three cards - back, the optional
+     check, and forward, which is the one that matters most and is the one
+     card in the house's teal. The checkpoint opens beneath them. */
+  .pager-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;width:100%;}
+  .pgc{
+    display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-height:104px;
+    padding:20px 22px 18px;text-align:left;font:inherit;color:var(--ink);background:#fff;
+    border:1px solid var(--border-strong);border-radius:10px;cursor:pointer;
+    transition:border-color .15s ease,background .15s ease,transform .15s ease,box-shadow .15s ease;
   }
-  .pager-btn:hover{background:var(--teal);color:#fff;}
-
-  /* the pager's mini journey line */
-  .pager-row{align-items:center;gap:14px;}
-  .pgr-side{flex:1;display:flex;justify-content:flex-start;}
-  .pgr-side--r{justify-content:flex-end;}
-  .pgr-line-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;}
-  .pgr-line{display:flex;align-items:center;}
-  .pgr-stop{
-    width:22px;height:22px;border-radius:50%;background:#fff;
-    border:2px solid var(--border-strong);color:var(--ink-soft);cursor:pointer;padding:0;
-    display:inline-flex;align-items:center;justify-content:center;
-    font:inherit;font-size:10.5px;font-weight:700;flex:none;
-    transition:transform .15s ease,border-color .15s ease,color .15s ease;
+  .pgc:hover{border-color:var(--teal);box-shadow:0 4px 14px rgba(26,34,38,.08);transform:translateY(-1px);}
+  .pgc:focus-visible{outline:2px solid var(--teal);outline-offset:3px;}
+  .pgc-kicker{
+    display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;
+    letter-spacing:.04em;text-transform:uppercase;color:var(--ink-soft);
   }
-  .pgr-stop:hover{transform:scale(1.15);border-color:var(--teal);color:var(--teal);}
-  .pgr-stop.is-past{background:var(--teal);border-color:var(--teal);}
-  .pgr-stop.is-cur{
-    border-color:var(--teal);color:var(--teal);transform:scale(1.3);
-    box-shadow:0 0 0 4px rgba(37,88,98,.12);
-  }
-  .pgr-seg{width:26px;height:2px;background:#dde3e5;flex:none;}
-  .pgr-seg.is-past{background:var(--teal);}
-  .pgr-cap{font-size:var(--t-xs);color:var(--ink-soft);}
-  .pgr-cap b{color:var(--ink);font-weight:600;}
+  .pgc-name{font-size:19px;font-weight:700;line-height:1.25;}
+  .pgc-sub{font-size:12.5px;color:var(--ink-soft);margin-top:auto;}
+  .pgc--next{background:var(--teal);border-color:var(--teal);color:#fff;}
+  .pgc--next .pgc-kicker,.pgc--next .pgc-sub{color:rgba(255,255,255,.8);}
+  .pgc--next .pgc-name{font-size:21px;}
+  .pgc--next:hover{background:var(--teal-dark);border-color:var(--teal-dark);box-shadow:0 6px 18px rgba(37,88,98,.28);}
+  .pgc--check .pgc-kicker .ktest-ic{width:20px;height:20px;font-size:12px;}
+  .pgc--check[aria-expanded="true"]{background:var(--teal-tint);border-color:var(--teal);}
+  .sec-close-wrap{margin-top:16px;width:100%;}
+  .sec-close-wrap[hidden]{display:none;}
+  /* the rail lists the reading; the checkpoints are the section's last cards */
+  .rail .steps li[data-step^="check-"],.rail .steps li[data-step^="apply-"]{display:none;}
 
   /* The nav takes 49px out of every viewport-height block, so the overview
      blocks hand back padding and a little table air to stay one page each.
@@ -626,7 +624,6 @@
   }
   /* Metro Industries in its scrolly layout: the checkpoints span the stage */
   .secpager--wide{max-width:min(var(--grid-max), calc(100vw - 2 * var(--frame-pad)));}
-  .pager-row{display:flex;justify-content:space-between;align-items:center;gap:14px;}
   /* the two closing checkpoints stack, each spanning the full frame:
      the quiz first, the reflection under it */
   .sec-close{
@@ -4398,16 +4395,8 @@
        it on the edges they belong to, rather than squeezing the line
        between them until none of the three is readable */
     .secpager{padding:22px var(--frame-pad) 28px;gap:18px;}
-    .pager-row{
-      display:grid;grid-template-columns:1fr 1fr;
-      grid-template-areas:"line line" "prev next";
-      gap:16px 12px;align-items:center;
-    }
-    .pgr-line-wrap{grid-area:line;}
-    .pgr-side{grid-area:prev;flex:none;min-width:0;justify-content:flex-start;}
-    .pgr-side--r{grid-area:next;justify-content:flex-end;}
-    .pager-btn{max-width:100%;}
-    .pgr-cap{text-align:center;line-height:1.5;}
+
+
 
     /* the modals become sheets before they become unreadable: the head
        loses its 44px badge, which was decoration, not information */
@@ -4540,8 +4529,7 @@
     #amFigure[data-step="10"] .viz-big{min-width:600px;}
 
     .secpager{padding:18px var(--frame-pad) 24px;gap:14px;}
-    .pgr-seg{width:14px;}
-    .pager-btn{padding:9px 10px;}
+
     .journey-overlay{padding:0;}
     .journey-window,.chat-window{width:100%;max-width:none;height:100%;max-height:100%;border-radius:0;}
     .geo-window{width:100%;}
@@ -4973,13 +4961,8 @@
       .ktest-actions{flex-wrap:wrap;}
 
       /* the journey line takes its own row above the two section buttons */
-      .pager-row{flex-wrap:wrap;gap:14px;}
-      .pgr-line-wrap{order:-1;flex:1 1 100%;}
-      .pgr-side{flex:1 1 auto;}
-      .pgr-stop{width:20px;height:20px;font-size:10px;}
-      .pgr-seg{width:14px;}
-      .pgr-cap{text-align:center;}
-      .pager-btn{padding:9px 12px;}
+
+
 
       /* the ring stays beside the verdict — that pairing is the point —
          at a size that leaves the sentence a line it can hold */
@@ -6799,6 +6782,8 @@
   function goTo(id){
     const v=document.getElementById("explainersView");
     if(v && v.classList.contains("open")) toggleExplainers(false);
+    /* the checkpoints are folded under the section's last cards */
+    if (/^(check|apply)-/.test(id) && window.openSecCheck) window.openSecCheck(true);
     // in the scrolly layout the subsections live as steps; the engine
     // resolves their ids to the matching rail step
     const target = (window.ovStepFor && window.ovStepFor(id)) ||
@@ -8654,6 +8639,7 @@
       holder.innerHTML = renderSecClose(name);
       cur.replaceWith(holder.firstChild);
       wireSecClose(name);
+      if (window.openSecCheck) window.openSecCheck(true);
     };
     root.querySelectorAll(".ktest-opts button").forEach(b => {
       b.addEventListener("click", () => {
@@ -8879,36 +8865,30 @@
       });
     }
     const prev = SECTIONS[i-1], next = SECTIONS[i+1];
-    /* the mini line between the pager buttons — one state language only:
-       a teal check is behind you, the enlarged ring is where you stand,
-       gray numbers wait ahead */
-    const stops = SECTIONS.map((sec, k) =>
-      (k ? '<i class="pgr-seg' + (k <= i ? " is-past" : "") + '"></i>' : "") +
-      '<button type="button" class="pgr-stop' +
-      (k < i ? " is-past" : k === i ? " is-cur" : "") +
-      '" data-go="' + k + '" title="' + sec.name + '">' +
-      (k < i
-        ? '<svg viewBox="0 0 10 8" width="9" height="7" aria-hidden="true"><path d="M1 4.2 3.7 6.8 9 1.2" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>'
-        : '<span>' + (k + 1) + '</span>') +
-      '</button>'
-    ).join("");
+    /* the section's end is three ways on, each a card: back; the check,
+       which is optional and opens the quiz and the reflection beneath the
+       cards rather than standing them in the reader's way; and forward,
+       which is the one that matters most and is dressed as such */
+    const name = SECTIONS[i].name;
+    /* the count is the storyline's: the extras stand outside it */
+    const N = SECTIONS.filter(sd => sd.name !== "Extras").length;
+    const place = k => SECTIONS[k].name === "Extras" ? "Outside the storyline" : "Section " + (k + 1) + " of " + N;
     secPager.dataset.sec = i;
     secPager.innerHTML =
-      renderSecClose(SECTIONS[i].name) +
-      '<div class="pager-row">' +
-      '<span class="pgr-side">' +
-      (prev ? '<button type="button" class="pager-btn" data-go="' + (i-1) +
-              '">&larr; ' + prev.name + "</button>" : "") + '</span>' +
-      '<div class="pgr-line-wrap"><div class="pgr-line">' + stops + '</div>' +
-      '<span class="pgr-cap"><b>' + SECTIONS[i].name + '</b> &middot; ' +
-      (i + 1) + ' of ' + SECTIONS.length +
-      (next ? ' &middot; next: ' + next.name : ' &middot; the end of the line') +
-      '</span></div>' +
-      '<span class="pgr-side pgr-side--r">' +
-      (next ? '<button type="button" class="pager-btn" data-go="' + (i+1) +
-              '">' + next.name + " &rarr;</button>" : "") + '</span>' +
-      '</div>';
-    wireSecClose(SECTIONS[i].name);
+      '<div class="pager-cards">' +
+      (prev ? '<button type="button" class="pgc pgc--prev" data-go="' + (i-1) + '">' +
+        '<span class="pgc-kicker">&larr; Previous</span><span class="pgc-name">' + prev.name + '</span>' +
+        '<span class="pgc-sub">' + place(i-1) + '</span></button>' : '') +
+      checkCardHtml(name) +
+      (next ? '<button type="button" class="pgc pgc--next" data-go="' + (i+1) + '">' +
+        '<span class="pgc-kicker">Next &rarr;</span><span class="pgc-name">' + next.name + '</span>' +
+        '<span class="pgc-sub">' + place(i+1) + '</span></button>'
+        : '<button type="button" class="pgc pgc--next" data-go="0">' +
+        '<span class="pgc-kicker">Back to the start &#8635;</span><span class="pgc-name">' + SECTIONS[0].name + '</span>' +
+        '<span class="pgc-sub">' + place(0) + '</span></button>') +
+      '</div>' +
+      '<div class="sec-close-wrap" id="secCheckWrap" hidden></div>';
+    wireCheckCard(name);
     if(toTop !== false) pagesEl.scrollTo({top: 0, behavior: "instant"});
     // Leaflet measures a hidden container as 0x0; the existing resize handler
     // re-measures the map and re-runs the scroll zoom.
@@ -8950,9 +8930,41 @@
   secPager.className = "secpager";
   pagesEl.appendChild(secPager);
   secPager.addEventListener("click", e => {
-    const b = e.target.closest(".pager-btn, .pgr-stop");
+    const b = e.target.closest(".pgc[data-go]");
     if(b) showSection(+b.dataset.go);
   });
+  /* the optional check as a card: what it holds, and how far the reader is */
+  function checkCardSub(name){
+    const c = sectionChecksData()[name], st = checkStateFor(name);
+    const answered = Object.keys(st.answers).length;
+    return c.qs.length + (c.qs.length === 1 ? " question" : " questions") + " and a note to keep" +
+      (answered ? " &middot; " + answered + " of " + c.qs.length + " answered" : "") +
+      (st.saved ? " &middot; note saved" : "");
+  }
+  function checkCardHtml(name){
+    if (!CHECK_READY || !sectionChecksData()[name]) return "";
+    return '<button type="button" class="pgc pgc--check" aria-expanded="false" aria-controls="secCheckWrap">' +
+      '<span class="pgc-kicker"><span class="ktest-ic" aria-hidden="true">?</span>Optional</span>' +
+      '<span class="pgc-name">Test your knowledge</span>' +
+      '<span class="pgc-sub">' + checkCardSub(name) + '</span></button>';
+  }
+  function wireCheckCard(name){
+    const card = secPager.querySelector(".pgc--check");
+    if (card) card.addEventListener("click", () => openSecCheck(card.getAttribute("aria-expanded") !== "true"));
+  }
+  /* the checkpoint opens beneath the cards, drawn the first time it is
+     asked for; the rail and the journey reach it by its id through goTo */
+  function openSecCheck(open){
+    const card = secPager.querySelector(".pgc--check"), wrap = secPager.querySelector("#secCheckWrap");
+    if (!card || !wrap) return;
+    const name = SECTIONS[+secPager.dataset.sec].name;
+    if (open === undefined) open = true;
+    if (open && !wrap.firstChild){ wrap.innerHTML = renderSecClose(name); wireSecClose(name); }
+    wrap.hidden = !open;
+    card.setAttribute("aria-expanded", String(open));
+    const sub = card.querySelector(".pgc-sub"); if (sub) sub.innerHTML = checkCardSub(name);
+  }
+  window.openSecCheck = openSecCheck;
 
   // Pair every lede with the collapsible that follows it. Overview ledes are
   // exempt — that section's layout is its own — and so are the two sections
