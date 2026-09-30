@@ -3633,7 +3633,8 @@
           g.append("text").attr("class", "mi-card-pct");
           g.append("text").attr("class", "mi-card-none");
           const x = g.append("g").attr("class", "mi-card-x");
-          x.append("rect").attr("class", "mi-card-x-hit").attr("y", 5).attr("width", 20).attr("height", 20);
+          x.append("rect").attr("class", "mi-card-x-hit").attr("y", 5).attr("width", 20).attr("height", 20)
+            .attr("role", "button").attr("tabindex", -1).attr("focusable", "true");
           x.append("path").attr("class", "mi-card-x-mark");
           x.append("title");
           return g;
@@ -3660,7 +3661,9 @@
                "M" + (x + r) + "," + (y - r) + "L" + (x - r) + "," + (y + r);
       });
       sel.select("title").text(c => "Take " + TIER_NAMES[c.k].toLowerCase() + " off the map");
-      sel.select("rect.mi-card-x-hit").on("click", (ev, c) => { ev.stopPropagation(); setTier(c.k, false); });
+      sel.select("rect.mi-card-x-hit").attr("aria-label", c => "Take " + TIER_NAMES[c.k].toLowerCase() + " off the map")
+        .on("click", (ev, c) => { ev.stopPropagation(); setTier(c.k, false); })
+        .on("keydown", (ev, c) => { if (ev.key === "Enter" || ev.key === " "){ ev.preventDefault(); ev.stopPropagation(); setTier(c.k, false); } });
     }
     drawCards(false);
     /* the grounds a reader has cancelled, offered back above the chart */
@@ -4134,6 +4137,8 @@
       if (closeMenuRef && !(((i === 4 || i === 0) && view === "alt") || i === 6)) closeMenuRef();
       const cardsOn = i === 4 && view === "map";
       gCards.classed("is-on", cardsOn);
+      /* the crosses are for the keyboard only while the grounds are up */
+      gCards.selectAll("rect.mi-card-x-hit").attr("tabindex", cardsOn && cardBox.length > 1 ? 0 : -1);
       show(gCards, cardsOn);
       /* a ground the filter empties keeps its width - the tiers' shares are
          the metro's, not the filter's - and says why it is bare */
@@ -4384,6 +4389,10 @@
       step = i;
       fig.dataset.step = String(i);
       seatTableBtn(i);
+      /* a head that is only faded still held its buttons for the keyboard */
+      [[p + "AllHead", i === 0], [p + "ClusterHead", i === 4], [p + "Sort", i === 3 || i === 6]].forEach(([id, on]) => {
+        const h = document.getElementById(id); if (h) h.inert = !on;
+      });
       /* a blank the beat has just brought into the flow - the bars' order
          on the first beat - could not be measured while it was out of it */
       fitPicks(fig);
@@ -4631,6 +4640,7 @@
     let mapLayout = null;                 /* the tiling on screen */
     const mapTip = document.getElementById(p + "Tip");
     const mapWrap = el.closest(".tradable-viz-wrapper");
+    const svgEl = document.getElementById(p + "TreemapSvg");
     let pinned = null, syncKeyRef = null, hlSwatchRef = null;
     const mapFillOf = c => colorBy === "complexity" ? cxFillOf(c.cell.pci) : sectorColors[c.cell.sector];
     const mapInkOf = c => colorBy === "complexity" ? cellInk(cxFillOf(c.cell.pci)) : sectorInk(c.cell.sector);
@@ -4827,17 +4837,43 @@
       if (focus){
         const gRow = focusGroup ? industryData.find(d => d.group === focusGroup) : null;
         const gName = gRow ? (gRow.groupShort || gRow.groupName) : focusGroup;
-        txt = '<span class="mi-crumbs"><button type="button" class="mi-crumb" data-zoom="all">All sectors</button>' +
+        txt = '<span class="mi-crumbs" role="navigation" aria-label="Zoom"><button type="button" class="mi-crumb" data-zoom="all">All sectors</button>' +
           '<span class="mi-crumb-sep" aria-hidden="true">›</span>' +
           (focusGroup
             ? '<button type="button" class="mi-crumb" data-zoom="sector">' + escHtml(focus) + '</button>' +
-              '<span class="mi-crumb-sep" aria-hidden="true">›</span><span class="mi-crumb-here">' + escHtml(gName) + '</span>'
-            : '<span class="mi-crumb-here">' + escHtml(focus) + '</span>') +
+              '<span class="mi-crumb-sep" aria-hidden="true">›</span><span class="mi-crumb-here" aria-current="location">' + escHtml(gName) + '</span>'
+            : '<span class="mi-crumb-here" aria-current="location">' + escHtml(focus) + '</span>') +
           '<button type="button" class="mi-crumb-x" aria-label="Zoom out">×</button></span>';
       } else txt = "";
       /* only the head that is showing carries them: the other head is only
          faded, and buttons in it would still be stops for the keyboard */
       notes.forEach(n => { n.querySelector(".mi-note-txt").innerHTML = ((n.id === p + "Note4") === (step === 4)) ? txt : ""; });
+      syncLive();
+    }
+    /* what the map is showing, said for a reader who cannot see it - only
+       when it changes, so the line is not read twice for one move */
+    const liveEl = document.getElementById(p + "Live");
+    const sectorCount = new Set(industryData.map(d => d.sector)).size;
+    const mapTitleOf = () => step === 4 ? "All industries, by tier" : step === 6 || step === 3 ? "Most specialized tradable industries" : step === 7 || step === 5 ? "The tradable industries" : "All industries";
+    function syncLive(){
+      if (!liveEl) return;
+      const gRow = focusGroup ? industryData.find(d => d.group === focusGroup) : null;
+      const zoomed = gRow ? (gRow.groupShort || gRow.groupName) : focus;
+      let said;
+      if (step === 6 || step === 3){
+        said = "A ranking of the most specialized tradable industries";
+      } else if (view === "alt"){
+        said = barListAll.length + " industries as bars, ordered by " + (barSort === "jobs" ? "jobs" : "complexity");
+      } else {
+        const n = mapLayout ? mapLayout.rows.length : rowsAll().length;
+        said = n + " industries shown in the map" + (step === 4 ? ", in three tiers by tradability" : "");
+      }
+      if (zoomed) said += ", zoomed into " + zoomed;
+      if (secOn) said += ", " + secOn.size + " of " + sectorCount + " sectors";
+      if (tierOn && !tierOn.every(Boolean)) said += ", " + tierOn.map((on, k) => on ? TIER_NAMES[k] : null).filter(Boolean).join(" and ") + " only";
+      if (colorBy === "complexity") said += ", coloured by complexity";
+      if (liveEl.textContent !== said) liveEl.textContent = said;
+      if (svgEl) svgEl.setAttribute("aria-label", mapTitleOf());
     }
     notes.forEach(n => on(n, "click", ev => {
       const b = ev.target.closest("[data-zoom], .mi-crumb-x"); if (!b) return;

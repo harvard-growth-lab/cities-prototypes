@@ -3277,6 +3277,7 @@
   /* room for the two-word heads to break once, not four times */
   .mi-tbl thead th.num{min-width:72px;}
   .mi-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
+  #miTreemapSvg .mi-card-x-hit:focus-visible{outline:2px solid var(--teal);outline-offset:1px;}
   #miFigure:not([data-step="0"]):not([data-step="4"]) .mi-table,
   #miFigure[data-view="alt"] .mi-table{display:none;}
   /* the industry map's cells: no stroke, the gaps come from the tiling;
@@ -5798,7 +5799,7 @@
         <!-- One figure serves all three beats. The engine lifts it into the
              scrolly's stage, where it stays put while the text scrolls past
              and each beat drives it to its own state. -->
-        <div class="mi-figure" id="miFigure" data-step="0">
+        <div class="mi-figure" id="miFigure" data-step="0" role="group" aria-label="Figure" tabindex="-1">
           <!-- how the mix is arranged: grouped into its sectors, or laid out
                in plain size order. Every beat that shows cells offers it — the
                mix, the clusters, the tradable cluster — while the rankings
@@ -5955,8 +5956,11 @@
               <p class="mi-note" id="miNote"><span class="mi-note-txt"></span></p>
             </div>
           </div>
+          <!-- what the map is showing, for a reader who cannot see it: said
+               again, politely, whenever it changes -->
+          <p class="mi-sr" id="miLive" aria-live="polite"></p>
           <div class="tradable-viz-wrapper">
-            <svg class="viz-big" id="miTreemapSvg" width="880" height="500" viewBox="0 0 880 500" xmlns="http://www.w3.org/2000/svg" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;"></svg>
+            <svg class="viz-big" id="miTreemapSvg" role="group" aria-label="All industries" tabindex="-1" width="880" height="500" viewBox="0 0 880 500" xmlns="http://www.w3.org/2000/svg" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;"></svg>
             <div class="rca-tip" id="miTip" role="tooltip" hidden></div>
             <!-- the tradability filter, opened from the column head it filters -->
             <div class="trad-menu" id="miTradMenu" role="group" aria-label="Which tradability tiers to show" hidden>
@@ -5991,7 +5995,7 @@
                largest first, with the readings the card carries -->
           <div class="mi-table" id="miTable">
             <button type="button" class="mi-table-btn" id="miTableBtn" aria-expanded="false" aria-controls="miTableWrap"><span class="mi-table-btn-txt">Show as table</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
-            <div class="mi-table-wrap" id="miTableWrap" hidden></div>
+            <div class="mi-table-wrap" id="miTableWrap" hidden tabindex="0" role="region" aria-label="The industries on the map, as a table"></div>
           </div>
         </div>
 
@@ -8642,17 +8646,20 @@
         '<button type="button" data-q="' + qi + '" data-o="' + oi + '"' +
         (answered ? " disabled" : "") +
         ' class="' + (answered && ok ? "is-right " : "") +
-        (answered && oi === picked && !ok ? "is-picked " : "") + '">' + t + "</button>").join("");
+        (answered && oi === picked && !ok ? "is-picked " : "") + '">' + t +
+        (answered && ok ? '<span class="mi-sr"> (correct answer)</span>' : "") +
+        (answered && oi === picked && !ok ? '<span class="mi-sr"> (your answer, incorrect)</span>' : "") + "</button>").join("");
       const fb = answered
         ? '<p class="ktest-fb">' + (qq.opts[picked][1] ? "Right. " : "Not quite. ") + qq.fb + "</p>"
         : "";
-      return '<div class="kc-slide"><p class="ktest-q">' + qq.q + '</p>' +
+      return '<div class="kc-slide"><p class="ktest-q"><span class="mi-sr">Question ' + (qi + 1) + ' of ' + c.qs.length + ': </span>' + qq.q + '</p>' +
         '<div class="ktest-opts">' + opts + "</div>" + fb + "</div>";
     }).join("");
     const dots = c.qs.map((_, qi) =>
       '<button type="button" class="kc-dot' + (qi === st.qIdx ? " on" : "") +
       (st.answers[qi] !== undefined ? " answered" : "") +
-      '" data-goq="' + qi + '" aria-label="Question ' + (qi + 1) + '"></button>').join("");
+      '" data-goq="' + qi + '"' + (qi === st.qIdx ? ' aria-current="step"' : '') +
+      ' aria-label="Question ' + (qi + 1) + (st.answers[qi] !== undefined ? ', answered' : '') + '"></button>').join("");
     const answered = Object.keys(st.answers).length;
     return '<div class="sec-close">' +
       '<div class="ktest" id="check-' + c.slug + '">' +
@@ -8660,11 +8667,11 @@
           '<span class="kc-count">' + answered + " / " + c.qs.length + " answered</span></div>" +
         '<div class="kc-view"><div class="kc-track" style="transform:translateX(-' + (st.qIdx * 100) + '%)">' +
           slides + "</div></div>" +
-        '<div class="kc-nav">' +
-          '<button type="button" class="kc-arrow" data-dq="-1"' + (st.qIdx === 0 ? " disabled" : "") + '>&larr;</button>' +
+        '<nav class="kc-nav" aria-label="Questions">' +
+          '<button type="button" class="kc-arrow" data-dq="-1"' + (st.qIdx === 0 ? " disabled" : "") + ' aria-label="Previous question">&larr;</button>' +
           '<span class="kc-dots">' + dots + "</span>" +
-          '<button type="button" class="kc-arrow" data-dq="1"' + (st.qIdx === c.qs.length - 1 ? " disabled" : "") + '>&rarr;</button>' +
-        "</div></div>" +
+          '<button type="button" class="kc-arrow" data-dq="1"' + (st.qIdx === c.qs.length - 1 ? " disabled" : "") + ' aria-label="Next question">&rarr;</button>' +
+        "</nav></div>" +
       (quizOnly ? "" : '<div class="ktest ktest--apply" id="apply-' + c.slug + '">' +
         '<div class="ktest-head"><span class="ktest-ic">&#9998;</span><h3>Put your insights</h3></div>' +
         '<p class="ktest-q">' + c.prompt + "</p>" +
@@ -8695,6 +8702,8 @@
     root.querySelectorAll(".ktest-opts button").forEach(b => {
       b.addEventListener("click", () => {
         st.answers[+b.dataset.q] = +b.dataset.o;
+        const said = document.querySelector(".kq-status"), qq = c.qs[+b.dataset.q];
+        if (said && qq) said.textContent = (qq.opts[+b.dataset.o][1] ? "Right. " : "Not quite. ") + qq.fb;
         if (Object.keys(st.answers).length === c.qs.length) CHECK_DONE.add(name);
         const next = c.qs.findIndex((qq, qi) => st.answers[qi] === undefined);
         if (next >= 0) setTimeout(() => {
@@ -9021,7 +9030,7 @@
     checkDlg = document.createElement("dialog");
     checkDlg.className = "kq-dialog";
     checkDlg.setAttribute("aria-label", "Test your knowledge");
-    checkDlg.innerHTML = '<div class="kq-body"></div>' +
+    checkDlg.innerHTML = '<div class="kq-body"></div><p class="mi-sr kq-status" aria-live="polite"></p>' +
       '<button type="button" class="kq-close" aria-label="Close">' +
       '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M3 3l10 10M13 3 3 13"/></svg></button>';
     document.body.appendChild(checkDlg);
