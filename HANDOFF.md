@@ -322,7 +322,7 @@ question still open; both options must keep working:
 |---|---|---|---|
 | Control row | `miRowOpt` | tray · sentence | 0 1 3 4 5 6 7 |
 | Key actions | `miKeyOpt` | inline · card | 0 4 7 |
-| Sector colours | `miPal` | house · lavender (trade & transportation's colour; `SECTOR_PALETTES`) | 0 4 |
+| Sector colours | `miPal` | house · tol (Paul Tol's muted set, grey Other; `SECTOR_PALETTES`) | 0 4 |
 | Tier grounds | `miGround` | frame · grey | 4 |
 | Tier shares | `miTierOpt` | cards · **donut** | 4 |
 | Tradability column | `miRankOpt` | score · **tier** | 3 6 |
@@ -398,7 +398,7 @@ Sector colours (`sectorColors` in treemap.js): Construction #a25d37,
 Education & Health #dc8271, Financial Activities #e5c95e, Leisure &
 Hospitality #9adfe7, Manufacturing #7f3c6b, Natural Resources #5d9850,
 Other #896885, Professional & Business #485fa2, Trade & Transportation
-#86c8ab (mint; lavender `#b8a9dc` under the study's opt-2, since 2026-09-30 — periwinkle was retired; the candidates and their colour-blind scores are on `sector-palette-sketches.html`). Design tokens: `--teal #255862`,
+#86c8ab. The study's opt-2 (since 2026-09-30) is a set of another character: Paul Tol's muted scheme with a grey on Other and its rose lightened to `#cf6b7b` — wine `#882255` Professional, rose Education & Health, sand `#ddcc77` Trade, cyan `#88ccee` Leisure, olive `#999933` Financial, indigo `#332288` Manufacturing, purple `#aa4499` Construction, grey `#b3b3b3` Other, green `#117733` Natural. Periwinkle and a lavender-trade variant came before it; every candidate and its colour-blind score is on `sector-palette-sketches.html`. Design tokens: `--teal #255862`,
 `--teal-dark`, `--teal-tint #eef3f4`, `--ink #1a2226`, `--ink-soft #526066`
 (darkened from #5b686d in the contrast pass: 6.5 to 1 on the page, 4.8 on
 the lightest map fill — use it for every secondary grey, never a hard-coded

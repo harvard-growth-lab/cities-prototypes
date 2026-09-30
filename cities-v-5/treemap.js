@@ -140,15 +140,28 @@
     "Trade & Transportation": "#86c8ab"
   };
   /* the sets the sector-colour study offers: the house set as shipped, and
-     the same with trade & transportation in lavender, so the three big
-     blocks are navy, coral and lavender - three families still, and the
-     blues stay two. Every pair keeps the mint set's colour-blind floors
-     (the scoring is on sector-palette-sketches.html). sectorColors is
+     a set of another character altogether - Paul Tol's muted scheme (SRON,
+     2021), the one published nine-colour set rated colour-blind safe, with
+     its teal given up to the brand and a grey on Other in its place, and
+     its rose a shade lighter so the labels on it read 4.5 to 1. Wine,
+     rose and sand on the three big blocks; every pair clears an OKLab
+     distance of 8 in normal, protan and deutan vision (9.5 / 9.2 / 8.0;
+     the scoring is on sector-palette-sketches.html). sectorColors is
      written over in place, since the map, the cells, the bars and the
      cards all read it at paint. */
   const SECTOR_PALETTES = {
     house: Object.assign({}, sectorColors),
-    lavender: Object.assign({}, sectorColors, { "Trade & Transportation": "#b8a9dc" })
+    tol: {
+      "Construction": "#aa4499",
+      "Education & Health": "#cf6b7b",
+      "Financial Activities": "#999933",
+      "Leisure & Hospitality": "#88ccee",
+      "Manufacturing": "#332288",
+      "Natural Resources": "#117733",
+      "Other": "#b3b3b3",
+      "Professional & Business": "#882255",
+      "Trade & Transportation": "#ddcc77"
+    }
   };
 
   /* Boston-Cambridge-Newton (metro 14460), 2024, 6-digit NAICS, as the
@@ -5537,8 +5550,8 @@
       if (lit) lit.dispatchEvent(new MouseEvent("mouseenter"));
     });
 
-    /* a study control: the sector palette as shipped (opt-1) or with trade
-       & transportation in lavender (opt-2), from SECTOR_PALETTES. The colours
+    /* a study control: the sector palette as shipped (opt-1) or Paul Tol's
+       muted set (opt-2), from SECTOR_PALETTES. The colours
        are read at paint by the map, the cells under it and the bars, so a
        repaint carries them; the key's swatches are set once, so they are
        set again here. The set survives a year's rebuild: sectorColors is
