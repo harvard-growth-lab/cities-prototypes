@@ -73,11 +73,12 @@ variant done here: the five storyline sections in one scroll, the bar's
 chips following, a teal close after each section ("What to take with you":
 three points, the quiz button, "Keep scrolling · next") and the reference's
 teal band opening Part 2, its mini-charts drawn from v-5's own numbers. A
-second group in the same menu, **Navigation bar: Light / Dark teal / Tint**
-(`?nav=teal`, `?nav=tint`; also `?nav=mid|wash|paper`), sets the ground of
-both top bars whichever layout is chosen: dark teal (with the white logo)
-was found too heavy, so a pale tint is offered; `nav-tone-sketches.html`
-compares all six. The
+second group in the same menu, **Navigation bar: Light / Tint**
+(`?nav=tint`), sets the ground of both top bars whichever layout is chosen:
+white, or the pale teal tint. A dark teal bar (white logo) was built first
+and found too heavy; a mid teal, a wash and a paper ground were built
+beside the tint and dropped, all six compared on `nav-tone-sketches.html`
+(their code: commit `bf2a67b`). The
 reference's Chapters and Two modes are not built. `setSiteLayout`,
 `trackSection`, `SEAL_POINTS`, the seal builder and `buildSeam` sit together
 in index.html just before the first `showSection(0, false)`; the styles are
