@@ -3558,6 +3558,9 @@
   /* the sectors' frames and names (the sector-names study): they dim and
      grey with the cells they frame */
   #miTreemapSvg .mi-secname{pointer-events:none;}
+  /* a block's card and its ghosted tiling ride the cell: no pointer of their own */
+  #miTreemapSvg .mi-mcard text,#miTreemapSvg .mi-mcard circle,#miTreemapSvg .mi-mghost rect{pointer-events:none;}
+  #miTreemapSvg .mi-mcell.is-mute .mi-mcard text{fill:#60686b;}
   #miTreemapSvg .mi-secg.is-zoomable .mi-sechead{cursor:pointer;}
   #miTreemapSvg .mi-secg.is-dim{opacity:.13;}
   #miTreemapSvg .mi-secg.is-mute .mi-sechead{fill:#cfd6d8;}
@@ -3675,6 +3678,9 @@
   /* and the palette's to the beats that colour by sector */
   #page-export-basket:has(#miFigure:not([data-step="0"]):not([data-step="4"])) #miPalPair{display:none;}
   #page-export-basket:has(#miFigure:not([data-step="0"]):not([data-step="4"])) #miSecNamesPair{display:none;}
+  /* the blocks' dressing belongs to the map resting at the sector level */
+  #page-export-basket:has(#miFigure:not([data-step="0"]):not([data-step="4"])) #miSecBlockPair,
+  #page-export-basket:has(#miFigure:not([data-level="2"])) #miSecBlockPair{display:none;}
   /* the row study's, to the beats that show the row */
   #page-export-basket:has(#miFigure:not([data-step="0"]):not([data-step="1"]):not([data-step="3"]):not([data-step="4"]):not([data-step="5"]):not([data-step="6"]):not([data-step="7"])) #miRowPair{display:none;}
   /* and the key's, to the beats that show the key */
@@ -6222,6 +6228,16 @@
                     <option value="off" selected>opt-1</option>
                     <option value="band">opt-2</option>
                     <option value="gutter">opt-3</option>
+                  </select>
+                </label>
+                <label class="mi-study" id="miSecBlockPair">
+                  <span>Sector blocks</span>
+                  <select id="miSecBlock" aria-label="What a sector's block carries when the map rests at the sector level">
+                    <option value="plain" selected>opt-1</option>
+                    <option value="card">opt-2</option>
+                    <option value="ghost">opt-3</option>
+                    <option value="cardghost">opt-4</option>
+                    <option value="change">opt-5</option>
                   </select>
                 </label>
                 <label class="mi-study" id="miGroundPair">

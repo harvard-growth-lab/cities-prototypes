@@ -12,6 +12,7 @@ verify a change under each option.
 | Key actions | `miKeyOpt` | `data-key` = inline / card | opt-1 inline · opt-2 card | 0 4 7 |
 | Sector colours | `miPal` | `data-pal` = house / tol | opt-1 house · opt-2 Paul Tol muted | 0 4 |
 | Sector names | `miSecNames` | `data-secnames` = off / band / gutter | opt-1 off · opt-2 band · opt-3 gutter | 0 4 |
+| Sector blocks | `miSecBlock` | `data-secblock` = plain / card / ghost / cardghost / change | opt-1 plain · opt-2 card · opt-3 ghost · opt-4 card over ghost · opt-5 card with change since 2014 | 0 4, only at Level = Sector |
 | Tier grounds | `miGround` | — | opt-1 frame · opt-2 grey | 4 |
 | Tier shares | `miTierOpt` | — | opt-1 cards · **opt-2 donut** (default) | 4 |
 | Tradability column | `miRankOpt` | — | opt-1 score · **opt-2 tier** (default) | 3 6 |
@@ -61,6 +62,12 @@ What each option is:
   the block's cells inset 3px. Names that do not fit fall to a short form
   (`SECTOR_SHORT`), then stand down. Four framings on
   `sector-frame-sketches.html`.
+- **Sector blocks** (2026-09-30) — what a sector's block carries when the
+  map rests at the sector level: name and share (plain); the block as a
+  card (name, share and jobs, the three largest groups, the complexity
+  steps); the groups' tiling ghosted inside at 30 %; the card over the
+  ghosting; the card with the sector's yearly change in jobs 2014→2024.
+  Sketched on `sector-level-sketches.html`; all five built, none chosen.
 - **Tier grounds** — each tier's ground as a framed line, or a light grey field.
 - **Tier shares** — the tiers' shares as cards, or as the donut beside the text.
 - **Tradability column** — the ranking's last column as the score, or the tier word.

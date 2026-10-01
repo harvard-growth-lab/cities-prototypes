@@ -394,6 +394,36 @@ sectors, so most names there fall to the short form or stand down.
 tiling: band, gutter, chip (a label over the cells, no room taken) and rule
 (a strip in the block's own colour); the last two were not built.
 
+**The sector blocks' dressing** (the "Sector blocks" study, built
+2026-09-30 from `sector-level-sketches.html`, all five at Nil's "just build
+them"; the row shows only while the map rests at the sector level,
+`#miFigure[data-level="2"]`). Module-level `SEC_BLOCK`; `paintCards(all,
+L, dur)` runs from `paintMap` after the labels and applies only when
+`L.grain === 2` (zoomed in, the grain is finer and the blocks are plain
+cells again). Each cell gets a `g.mi-mghost` (under the label) and a
+`g.mi-mcard` (over it), emptied and rebuilt every paint, fading in with
+the labels. opt-2 **card**: the plain label stands down and the card
+writes, top down and only what fits (`line()` measures with `mapTextW`
+against the block's width less 7px each side and its height less 4), the
+sector's name (14/700; the short form at 12 if the full one will not go),
+"26% of metro jobs · 596K", a "Largest groups" heading over the three
+largest 4-digit groups with their shares (`groupsOf(cell)` rolls the
+aggregate's `members` up by `group`), and the five complexity steps with
+the word "complexity" (`cxBinOf(cell.pci)`); a line that will not fit is
+left out with everything beneath it, so Construction and Other carry the
+name alone. opt-3 **ghost**: the groups' own treemap tiled inside the
+block (`d3.treemap` over `groupsOf`, `paddingInner(1)`) as white hairlines
+at 30 %, the plain label kept. opt-4 **cardghost**: both. opt-5
+**change**: the card with one more line, the sector's jobs in 2024 against
+2014 as a yearly rate (`sectorJobs(year)` sums each year's file by sector;
+"+1.7% a year, 2014 to 2024"), left off the tiers beat where a block is a
+sector's share of one tier. With the sector-names band on, the card drops
+its name line (the band has it). Ink is `mapInkOf(c)` (so under the
+complexity colouring the card follows the ramp's cell), the soft tone
+white or ink at 80 %; the card's texts and circles take no pointer, so
+the cell's hover and click (the zoom) are as before. Nil has not said
+which to keep.
+
 **Study switches ("opt")** — the panel behind the word. Each is a design
 question still open; both options must keep working:
 
@@ -403,6 +433,7 @@ question still open; both options must keep working:
 | Key actions | `miKeyOpt` | inline · card | 0 4 7 |
 | Sector colours | `miPal` | house · tol (Paul Tol's muted set, grey Other; `SECTOR_PALETTES`) | 0 4 |
 | Sector names | `miSecNames` | off · band · gutter (the sectors named on the map, see below) | 0 4 |
+| Sector blocks | `miSecBlock` | plain · card · ghost · cardghost · change (what a block carries at the sector level, see below) | 0 4, at Level = Sector |
 | Tier grounds | `miGround` | frame · grey | 4 |
 | Tier shares | `miTierOpt` | cards · **donut** | 4 |
 | Tradability column | `miRankOpt` | score · **tier** | 3 6 |
@@ -630,8 +661,9 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
    Business +1.7 %/yr, Manufacturing −1.0 %/yr; the 2014 file makes this
    possible only at this level). The nested rule — **the Level is where the
    map rests and the zoom walks down from there, sector → 4-digit →
-   6-digit** — is built (§4); what is still open is only the dressing of
-   the nine blocks. The brainstorm began with a
+   6-digit** — is built (§4), and so are all five dressings of the nine
+   blocks, as the "Sector blocks" study (§4); what is open is which of the
+   five Nil keeps. The brainstorm began with a
    misreading — "bar control area" was taken for the bar chart and a page
    of bar variants was drawn and discarded; Nil meant the control bar of
    the treemap. At 4 digits the one addition proposed is an industry count

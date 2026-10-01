@@ -2899,6 +2899,22 @@
      tiled is the finer of the level chosen and the depth zoomed to */
   const GRAIN_STEPS = [2, 4, 6];
   const effectiveGrain = (grain, depth) => GRAIN_STEPS[Math.max(GRAIN_STEPS.indexOf(grain) < 0 ? 2 : GRAIN_STEPS.indexOf(grain), depth)];
+  /* the sector blocks' dressing (the "Sector blocks" study), for the map
+     resting at the sector grain: "plain" the name and share; "card" the
+     block as a card - name, share and jobs, its three largest groups, the
+     complexity steps; "ghost" the groups' tiling faint inside the block;
+     "cardghost" both; "change" the card with the sector's yearly change
+     in jobs, 2014 to 2024. Zoomed in, the grain is finer and none of it
+     applies. */
+  let SEC_BLOCK = "plain";
+  const SEC_BLOCK_MODES = ["plain", "card", "ghost", "cardghost", "change"];
+  const SECTOR_JOBS_YEAR = {};
+  function sectorJobs(year){
+    if (SECTOR_JOBS_YEAR[year]) return SECTOR_JOBS_YEAR[year];
+    const out = {}, src = YEARS[year];
+    if (src) rowsFrom(src).forEach(r => { out[r.sector] = (out[r.sector] || 0) + r.employ; });
+    return (SECTOR_JOBS_YEAR[year] = out);
+  }
   const SECTOR_SHORT = { "Professional & Business": "Professional", "Education & Health": "Edu & Health",
     "Trade & Transportation": "Trade & Transport", "Leisure & Hospitality": "Leisure", "Financial Activities": "Financial",
     "Manufacturing": "Manufacturing", "Construction": "Construction", "Other": "Other", "Natural Resources": "Natural" };
@@ -4830,6 +4846,8 @@
         const t = d3.select(this).select("text.mi-mlab");
         t.selectAll("tspan").remove();
         if (c.rest) return;
+        /* under a card the block's name and share are the card's first lines */
+        if (L.grain === 2 && SEC_BLOCK !== "plain" && SEC_BLOCK !== "ghost") return;
         const share = fmtShare(c.cell.share);
         /* at the sector grain with the band naming the block, the cell keeps its share alone */
         const shareOnly = L.grain === 2 && SEC_NAMES !== "off";
@@ -4846,6 +4864,7 @@
       const lab = all.select("text.mi-mlab");
       if (dur) lab.style("opacity", 0).transition().delay(dur * 0.55).duration(dur * 0.45).style("opacity", 1);
       else lab.interrupt().style("opacity", 1);
+      paintCards(all, L, dur);
       all.on("mouseenter", (ev, c) => { if (!pinned) showMapTip(c, ev); })
          .on("mousemove", ev => { if (!pinned && mapTip && !mapTip.hidden) cursorTipPos(ev, mapWrap, mapTip); })
          .on("mouseleave", () => { if (!pinned) hideMapTip(false); })
@@ -4860,6 +4879,76 @@
       drawHits(L);
       clearOutline();
       syncNote(); syncTable();
+    }
+    /* the sector blocks' dressing, at the sector grain: a faint tiling of
+       the block's groups, a card of its facts, or both. The card fits what
+       the block's size allows, from the top down: name, share and jobs, the
+       change, the largest groups, the complexity steps; a line that will
+       not fit is left out, and the lines beneath it with it. */
+    const fmtJobsK = v => v >= 1e6 ? (v / 1e6).toFixed(1) + "M" : v >= 1000 ? Math.round(v / 1000) + "K" : String(Math.round(v));
+    const groupsOf = cell => {
+      const members = cell.members || [cell];
+      return d3.rollups(members, v => d3.sum(v, m => m.jobs), m => m.group)
+        .map(([g, jobs]) => ({ group: g, name: (members.find(m => m.group === g) || {}).groupName || g, jobs: jobs }))
+        .sort((a, b) => b.jobs - a.jobs);
+    };
+    function paintCards(all, L, dur){
+      const s = L.s, mode = L.grain === 2 ? SEC_BLOCK : "plain";
+      const ghostOn = mode === "ghost" || mode === "cardghost" || mode === "change";
+      const cardOn = mode === "card" || mode === "cardghost" || mode === "change";
+      all.each(function(c){
+        const g = d3.select(this);
+        let ghost = g.select("g.mi-mghost"), card = g.select("g.mi-mcard");
+        if (ghost.empty()) ghost = g.insert("g", "text.mi-mlab").attr("class", "mi-mghost");
+        if (card.empty()) card = g.append("g").attr("class", "mi-mcard");
+        ghost.selectAll("*").remove(); card.selectAll("*").remove();
+        if (c.rest || mode === "plain") return;
+        const px = c.px, sec = c.cell.sector, groups = groupsOf(c.cell);
+        if (ghostOn && groups.length > 1){
+          const root = d3.hierarchy({ children: groups }).sum(d => d.jobs).sort((a, b) => b.value - a.value);
+          d3.treemap().size([px.w, px.h]).paddingInner(1).round(true)(root);
+          root.leaves().forEach(n => ghost.append("rect")
+            .attr("x", (px.x + n.x0) / s).attr("y", (px.y + n.y0) / s)
+            .attr("width", Math.max(0, n.x1 - n.x0) / s).attr("height", Math.max(0, n.y1 - n.y0) / s)
+            .attr("fill", "none").attr("stroke", "#fff").attr("stroke-opacity", 0.3).attr("stroke-width", 1 / s));
+        }
+        if (!cardOn) return;
+        const ink = mapInkOf(c), soft = /^#f/i.test(ink) ? "rgba(255,255,255,.82)" : "rgba(26,34,38,.78)";
+        const pad = 7, room = px.w - 2 * pad, bottom = px.y + px.h - 4;
+        let y = px.y + pad;
+        const line = (txt, size, weight, fill) => {
+          if (mapTextW(txt, size, weight) > room || y + size * 1.05 > bottom) return false;
+          y += size * 1.02;
+          card.append("text").attr("x", (px.x + pad) / s).attr("y", y / s)
+            .attr("font-size", size / s).attr("font-weight", weight).attr("fill", fill).text(txt);
+          y += size * 0.28; return true;
+        };
+        /* the band names the block already when the sector-names study is on */
+        if (SEC_NAMES === "off" && !line(sec, 14, 700, ink) && !line(SECTOR_SHORT[sec] || sec, 12, 700, ink)) return;
+        if (!line(fmtShare(c.cell.share) + " of metro jobs \u00b7 " + fmtJobsK(c.cell.jobs), 12.5, 400, ink)) return;
+        if (mode === "change" && step !== 4){
+          const j14 = sectorJobs(2014)[sec], j24 = sectorJobs(2024)[sec];
+          if (j14 > 0 && j24 > 0){
+            const r = Math.pow(j24 / j14, 1 / 10) - 1;
+            line((r >= 0 ? "+" : "\u2212") + Math.abs(r * 100).toFixed(1) + "% a year, 2014 to 2024", 12.5, 400, soft);
+          }
+        }
+        const gl = groups.slice(0, 3).map(gr => gr.name + " " + fmtShare(gr.jobs / jobsTotal)).filter(t => mapTextW(t, 12, 500) <= room);
+        if (gl.length && y + 6 + 11 * 1.3 + 12 * 1.3 <= bottom){
+          y += 6; line("Largest groups", 11, 700, soft);
+          for (const t of gl) if (!line(t, 12, 500, ink)) break;
+        }
+        const bin = cxBinOf(c.cell.pci);
+        if (bin != null && y + 16 <= bottom && room >= 62 + mapTextW("complexity", 11.5, 400)){
+          y += 8;
+          for (let k = 0; k < 5; k++) card.append("circle").attr("cx", (px.x + pad + 4 + k * 11) / s).attr("cy", (y + 4) / s).attr("r", 3.2 / s)
+            .attr("fill", k <= bin ? ink : "none").attr("stroke", ink).attr("stroke-opacity", k <= bin ? 1 : 0.55).attr("stroke-width", 1 / s);
+          card.append("text").attr("x", (px.x + pad + 62) / s).attr("y", (y + 8) / s).attr("font-size", 11.5 / s).attr("fill", soft).text("complexity");
+        }
+      });
+      const dress = all.selectAll("g.mi-mghost, g.mi-mcard");
+      if (dur) dress.style("opacity", 0).transition().delay(dur * 0.55).duration(dur * 0.45).style("opacity", 1);
+      else dress.interrupt().style("opacity", 1);
     }
     /* the sectors' frames and names, one per block the tiling made, drawn
        under the cells in the room the tiling left above them. A name that
@@ -5716,6 +5805,19 @@
     };
     setSecNames(secNamesEl ? secNamesEl.value : SEC_NAMES, true);
     if (secNamesEl) on(secNamesEl, "change", () => setSecNames(secNamesEl.value));
+    /* a study control: what a sector's block carries when the map rests at
+       the sector grain; a repaint without re-tiling is enough */
+    const secBlockEl = document.getElementById(p + "SecBlock");
+    const setSecBlock = (v, first) => {
+      const mode = SEC_BLOCK_MODES.indexOf(v) >= 0 ? v : "plain";
+      if (!first && mode === SEC_BLOCK) return;
+      SEC_BLOCK = mode; fig.dataset.secblock = mode;
+      if (first) return;
+      hideMapTip(true);
+      if (step >= 0) paint(step, false);
+    };
+    setSecBlock(secBlockEl ? secBlockEl.value : SEC_BLOCK, true);
+    if (secBlockEl) on(secBlockEl, "change", () => setSecBlock(secBlockEl.value));
     const groundEl = document.getElementById(p + "Ground");
     const setGround = v => { fig.dataset.ground = v === "grey" ? "grey" : "frame"; };
     setGround(groundEl ? groundEl.value : "frame");
