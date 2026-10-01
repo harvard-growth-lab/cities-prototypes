@@ -3156,7 +3156,7 @@
   .mi-view .mi-titles{display:inline-grid;align-items:center;margin-right:2px;}
   /* the year, beside the title: a plain dropdown in the head's own dress */
   .mi-view .mi-year{display:inline-flex;align-items:center;margin-right:2px;}
-  .mi-view .mi-year select{
+  .mi-view .mi-year select,.mi-view #miLevelSel{
     height:28px;border:1px solid var(--border-strong);border-radius:4px;background:#fff;
     font:inherit;font-size:13px;font-weight:600;color:var(--teal);padding:0 22px 0 9px;cursor:pointer;
     appearance:none;-webkit-appearance:none;
@@ -3164,7 +3164,7 @@
     background-repeat:no-repeat;background-position:right 7px center;
   }
   .mi-view .mi-year select:hover,.mi-view .mi-year select:focus{border-color:var(--teal);outline:none;}
-  .mi-view .mi-year select:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+  .mi-view .mi-year select:focus-visible,.mi-view #miLevelSel:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
   /* ---- The head's row, two ways (a study, "Control row" under opt).
      opt-1 keeps the labelled pairs but sets them in a paper tray: no border,
      a soft grey field, and the chosen one a white tile. A dark tile in each
@@ -3178,8 +3178,8 @@
      family, the teal in its word */
   #miFigure .mi-view .seg-btn.is-active{background:#fff;color:var(--teal);box-shadow:inset 0 0 0 1.5px #c2d4d7,0 1px 2px rgba(26,34,38,.12);}
   #miFigure .mi-view .mi-year{gap:10px;}
-  #miFigure .mi-view .mi-year select{border:0;border-radius:6px;background-color:var(--paper);height:28px;font-size:12px;padding:0 24px 0 10px;}
-  #miFigure .mi-view .mi-year select:hover,#miFigure .mi-view .mi-year select:focus{background-color:#eceeea;}
+  #miFigure .mi-view .mi-year select,.mi-view #miLevelSel{border:0;border-radius:6px;background-color:var(--paper);height:28px;font-size:12px;padding:0 24px 0 10px;}
+  #miFigure .mi-view .mi-year select:hover,#miFigure .mi-view .mi-year select:focus,#miFigure .mi-view #miLevelSel:hover,#miFigure .mi-view #miLevelSel:focus{background-color:#eceeea;}
   /* opt-2 folds the row into the title: one sentence, with the choices as
      blanks in it. Nothing in the head is a box then. The sentence is set as
      plain running text - ink, regular, its subject no heavier than the rest -
@@ -3210,6 +3210,9 @@
   /* the grain belongs to the map: the bars and the ranking stay industries */
   #miFigure:not([data-view="map"]) #miLevelPair,
   #miFigure:not([data-view="map"]) .mi-s-level{display:none;}
+  /* the level-control study: the toggle (opt-1) or the menu (opt-2) */
+  #miFigure[data-levelctl="menu"] #miLevel{display:none;}
+  #miFigure:not([data-levelctl="menu"]) #miLevelSel{display:none;}
   .mi-pick{position:relative;display:inline-block;vertical-align:baseline;}
   /* a hidden twin of the chosen word, measured to cut the select to its
      width: left alone, a select stands at the width of its longest option */
@@ -3678,6 +3681,7 @@
   /* and the palette's to the beats that colour by sector */
   #page-export-basket:has(#miFigure:not([data-step="0"]):not([data-step="4"])) #miPalPair{display:none;}
   #page-export-basket:has(#miFigure:not([data-step="0"]):not([data-step="4"])) #miSecNamesPair{display:none;}
+  #page-export-basket:has(#miFigure:not([data-step="0"]):not([data-step="4"])) #miLevelOptPair{display:none;}
   /* the blocks' dressing belongs to the map resting at the sector level */
   #page-export-basket:has(#miFigure:not([data-step="0"]):not([data-step="4"])) #miSecBlockPair,
   #page-export-basket:has(#miFigure:not([data-level="2"])) #miSecBlockPair{display:none;}
@@ -6162,11 +6166,17 @@
                    at. The bars stay industries, so it shows with the map only -->
               <span class="mi-ctlpair" id="miLevelPair">
                 <span class="ctl-label">Level</span>
+                <!-- opt-1 of the level-control study: a toggle, sector or industry -->
                 <div class="seg" id="miLevel" role="group" aria-label="The level the map is tiled at">
                   <button type="button" class="seg-btn" data-level="2" aria-pressed="false">Sector</button>
-                  <button type="button" class="seg-btn" data-level="4" aria-pressed="false" aria-label="4-digit industry groups">4-digit</button>
-                  <button type="button" class="seg-btn is-active" data-level="6" aria-pressed="true" aria-label="6-digit industries">6-digit</button>
+                  <button type="button" class="seg-btn is-active" data-level="6" aria-pressed="true" aria-label="Industry, 6-digit">Industry</button>
                 </div>
+                <!-- opt-2: a menu of the three grains -->
+                <select id="miLevelSel" aria-label="The level the map is tiled at">
+                  <option value="6" selected>6-digit</option>
+                  <option value="4">4-digit</option>
+                  <option value="2">Sector</option>
+                </select>
               </span>
               <!-- the bars' own order, offered only while the bars are up:
                    the length of the bar, or the complexity beside it -->
@@ -6206,6 +6216,13 @@
                   <select id="miRowOpt" aria-label="How the head's controls are set">
                     <option value="tray" selected>opt-1</option>
                     <option value="sentence">opt-2</option>
+                  </select>
+                </label>
+                <label class="mi-study" id="miLevelOptPair">
+                  <span>Level control</span>
+                  <select id="miLevelOpt" aria-label="The level control as a toggle or as a menu">
+                    <option value="toggle" selected>opt-1</option>
+                    <option value="menu">opt-2</option>
                   </select>
                 </label>
                 <label class="mi-study" id="miKeyPair">

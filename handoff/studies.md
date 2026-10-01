@@ -9,6 +9,7 @@ verify a change under each option.
 | Study | select id | figure attribute | options (default first) | shown on figure steps |
 |---|---|---|---|---|
 | Control row | `miRowOpt` | `data-row` = tray / sentence | opt-1 tray · opt-2 sentence | 0 1 3 4 5 6 7 |
+| Level control | `miLevelOpt` | `data-levelctl` = toggle / menu | opt-1 toggle Sector · Industry · opt-2 menu 6-digit · 4-digit · Sector | 0 4 |
 | Key actions | `miKeyOpt` | `data-key` = inline / card | opt-1 inline · opt-2 card | 0 4 7 |
 | Sector colours | `miPal` | `data-pal` = house / tol | opt-1 house · opt-2 Paul Tol muted | 0 4 |
 | Sector names | `miSecNames` | `data-secnames` = off / band / gutter | opt-1 off · opt-2 band · opt-3 gutter | 0 4 |
@@ -34,6 +35,10 @@ What each option is:
   On the ranking beats (steps 3 and 6), whose row is the separate `#miSort`,
   opt-2 reads "The most specialized tradable industries, sorted by
   [concentration ▾]" with the same blank for jobs and for the gap against peers.
+- **Level control** (2026-09-30) — the map's grain as a two-way toggle,
+  Sector or Industry (opt-1, default), or as a menu of the three grains,
+  6-digit, 4-digit, Sector (opt-2). The grain itself, the nested zoom and
+  the sentence's blank are the same under both.
 - **Key actions** — opt-1 (option B of `key-actions-sketches.html`, shipped
   in `85fe10f`): the entry unfolds its two verbs on hover or focus, quiet
   words after the name ("Hide · Only"; "Bring back · Only" once the sector

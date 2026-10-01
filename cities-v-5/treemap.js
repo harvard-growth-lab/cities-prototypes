@@ -5910,12 +5910,14 @@
        bars stay industries, so the control shows only while the map is
        up; a group is a cell of its own only at the finest grain, so a zoom
        into a group comes back to its sector when the grain coarsens. */
-    const levelEl = document.getElementById(p + "Level"), sLevelEl = document.getElementById(p + "SLevel");
+    const levelEl = document.getElementById(p + "Level"), sLevelEl = document.getElementById(p + "SLevel"),
+          levelSelEl = document.getElementById(p + "LevelSel");
     const syncLevel = () => {
       if (levelEl) levelEl.querySelectorAll(".seg-btn[data-level]").forEach(x => {
         const onIt = +x.dataset.level === MAP_GRAIN;
         x.classList.toggle("is-active", onIt); x.setAttribute("aria-pressed", String(onIt));
       });
+      if (levelSelEl && +levelSelEl.value !== MAP_GRAIN) levelSelEl.value = String(MAP_GRAIN);
       if (sLevelEl && +sLevelEl.value !== MAP_GRAIN){ sLevelEl.value = String(MAP_GRAIN); fitPick(sLevelEl); }
       fig.dataset.level = String(MAP_GRAIN);
     };
@@ -5933,7 +5935,20 @@
     };
     syncLevel();
     if (levelEl) on(levelEl, "click", ev => { const b = ev.target.closest(".seg-btn[data-level]"); if (b) applyLevel(b.dataset.level); });
+    if (levelSelEl) on(levelSelEl, "change", () => applyLevel(levelSelEl.value));
     if (sLevelEl) on(sLevelEl, "change", () => { fitPick(sLevelEl); applyLevel(sLevelEl.value); });
+    /* a study control: the level as a toggle between the sectors and the
+       industries (opt-1), or as a menu of the three grains (opt-2). The
+       toggle has no 4-digit, so going back to it from a map at 4 digits
+       returns the map to the industries. */
+    const levelOptEl = document.getElementById(p + "LevelOpt");
+    const setLevelCtl = (v, first) => {
+      const mode = v === "menu" ? "menu" : "toggle";
+      fig.dataset.levelctl = mode;
+      if (!first && mode === "toggle" && MAP_GRAIN === 4) applyLevel(6);
+    };
+    setLevelCtl(levelOptEl ? levelOptEl.value : "toggle", true);
+    if (levelOptEl) on(levelOptEl, "change", () => setLevelCtl(levelOptEl.value));
 
     /* sort: the same rows in another order, bars and names travelling together */
     const sortEl = document.getElementById(p + "Sort");

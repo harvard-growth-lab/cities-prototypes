@@ -266,10 +266,17 @@ still under `prefers-reduced-motion`.
 - Both keep one state: `applyView` / `applyColor` / `applyBarSort` sync the
   buttons and the blanks together.
 - **Level** (2026-09-30, at Nil's ask): the grain the map is tiled at — a
-  fourth pair in the tray, "Level Sector · 4-digit · 6-digit" (`#miLevel`,
-  `data-level` 2 / 4 / 6; the 3-digit subsectors are tiled the same way but
-  not offered, Nil having asked for these three), and in the sentence
-  "shown as a [treemap] at the [6-digit] level" (`#miSLevel`); `applyLevel` / `syncLevel` keep them
+  fourth pair in the tray, and in the sentence "shown as a [treemap] at the
+  [6-digit] level" (`#miSLevel`). The control has two forms, the
+  **"Level control" study** (`#miLevelOpt`, `fig.dataset.levelctl`, on the
+  map beats): opt-1 (default) a toggle **Sector | Industry** (`#miLevel`,
+  `data-level` 2 / 6), opt-2 a menu **6-digit · 4-digit · Sector**
+  (`select#miLevelSel`, dressed as the Year select). Only one shows at a
+  time; both and the sentence's blank are one state (`syncLevel`). Going
+  back to the toggle from a map at 4 digits returns it to the industries
+  (`setLevelCtl`), since the toggle has no 4. The 3-digit subsectors are
+  tiled the same way but not offered. Nil named the sector grain "1" in
+  the ask; the options say "Sector"; `applyLevel` / `syncLevel` keep them
   one state, `fig.dataset.level` carries it. The data holds four NAICS
   grains per row: the 6-digit industry (`code`, 877 rows in 2024), its
   4-digit industry group (`group`, 292), its 3-digit subsector (`sub`, 85)
