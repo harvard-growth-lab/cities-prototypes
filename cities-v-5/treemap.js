@@ -2877,7 +2877,10 @@
      figure's units to be drawn.
      ========================================================================= */
   const MAP = { padding: 1, minSide: 4, inset: 3, first: 1.1, step: 0.9, shareGap: 0.3,
-                descent: 0.25, size: 12, min: 10, weight: 500, shareWeight: 400 };
+                descent: 0.25, size: 12, min: 10, weight: 500, shareWeight: 400,
+                /* at the sector level the nine blocks are the cells, and a
+                   12px label is lost in them: the fit starts higher there */
+                sectorSize: 18 };
   const MAP_FONT = '"Source Sans 3", "Source Sans Pro", sans-serif';
   /* the sector-names study: "off", or the sectors named on the map -
      "band", a 16px strip in a deeper shade of the sector's colour with a
@@ -3177,9 +3180,9 @@
     if (cur) out.push(cur);
     return out;
   }
-  function fitLines(name, shareText, box){
+  function fitLines(name, shareText, box, maxSize){
     const words = name.split(/\s+/);
-    for (let size = MAP.size; size >= MAP.min; size--){
+    for (let size = maxSize || MAP.size; size >= MAP.min; size--){
       const lines = wrapFit(words, size, MAP.weight, box.w);
       if (!lines || blockH(lines.length, size, false) > box.h) continue;
       const share = mapTextW(shareText, size, MAP.shareWeight) <= box.w && blockH(lines.length, size, true) <= box.h;
@@ -3190,8 +3193,8 @@
   /* the fit depends only on the words and the cell's size, so it is cached
      on those; the cell's own corner is added on the way out */
   const _mapLab = new Map();
-  function fitCellLabel(name, shareText, cell){
-    const key = name + "|" + shareText + "|" + Math.round(cell.w) + "|" + Math.round(cell.h);
+  function fitCellLabel(name, shareText, cell, maxSize){
+    const key = name + "|" + shareText + "|" + Math.round(cell.w) + "|" + Math.round(cell.h) + "|" + (maxSize || 0);
     let fit = _mapLab.get(key);
     if (fit === undefined){
       fit = null;
@@ -3199,7 +3202,7 @@
       if (box.w > 0 && box.h > 0){
         const bare = name.replace(/\s*\([^)]*\)/g, "").trim();
         for (const n of (bare && bare !== name ? [name, bare] : [name])){
-          fit = fitLines(n, shareText, box);
+          fit = fitLines(n, shareText, box, maxSize);
           if (fit) break;
         }
       }
@@ -4851,7 +4854,8 @@
         const share = fmtShare(c.cell.share);
         /* at the sector grain with the band naming the block, the cell keeps its share alone */
         const shareOnly = L.grain === 2 && SEC_NAMES !== "off";
-        const spec = shareOnly ? fitCellLabel(share, "", c.px) : fitCellLabel(c.cell.name, share, c.px);
+        const ceil = L.grain === 2 ? MAP.sectorSize : MAP.size;
+        const spec = shareOnly ? fitCellLabel(share, "", c.px, ceil) : fitCellLabel(c.cell.name, share, c.px, ceil);
         if (!spec) return;
         const ink = mapInkOf(c);
         t.attr("font-size", spec.size / s).attr("fill", ink).attr("data-ink", ink).attr("font-weight", MAP.weight);

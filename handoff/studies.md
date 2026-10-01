@@ -73,6 +73,8 @@ What each option is:
   steps); the groups' tiling ghosted inside at 30 %; the card over the
   ghosting; the card with the sector's yearly change in jobs 2014→2024.
   Sketched on `sector-level-sketches.html`; all five built, none chosen.
+  Since 2026-10-01 the plain and ghost labels at this level fit from 18px
+  down (`MAP.sectorSize`) rather than the 12px the industry cells use.
 - **Tier grounds** — each tier's ground as a framed line, or a light grey field.
 - **Tier shares** — the tiers' shares as cards, or as the donut beside the text.
 - **Tradability column** — the ranking's last column as the score, or the tier word.
