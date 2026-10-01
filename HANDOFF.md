@@ -1,14 +1,18 @@
 # Hand-off: cities-prototypes
 
-Written 2026-09-29 and brought up to date 2026-09-30, for whoever continues
-this work in a fresh Claude session (new account, no memory of the previous
-ones). Everything below is what the
-previous sessions knew and had agreed with Nil. Read this file first, then the
-files under `handoff/`.
+Written 2026-09-29 and brought up to date through the evening of
+2026-09-30, for whoever continues this work in a fresh Claude session (new
+account, no memory of the previous ones). Everything below is what the
+previous sessions knew and had agreed with Nil. Read this file first, then
+`handoff/studies.md` and `handoff/memory-notes.md`; the opening message
+Nil sends a new session is `handoff/START-HERE.md`.
 
 Repo: `git@github.com:harvard-growth-lab/cities-prototypes.git`, branch `main`,
-199 commits at hand-off (HEAD `ec928b5`). Local checkout:
-`/Users/nit880/Documents/cities-prototypes`.
+216 commits at hand-off (HEAD `14f3494`). Local checkout:
+`/Users/nit880/Documents/cities-prototypes`. The sketch pages at the repo
+root are **untracked and only on this machine**; the ones that record
+open or recent decisions are copied under `handoff/sketches/` (tracked,
+paths adjusted) so a fresh clone or a worktree still has them.
 
 ---
 
@@ -58,7 +62,10 @@ The two files that matter:
 **Serve the repo root** at http://127.0.0.1:8912/ with a no-cache Python
 server. `.claude/launch.json` has it as the `prototypes` configuration
 (`python3 -c "…SimpleHTTPRequestHandler with Cache-Control: no-store…"`,
-port 8912). The site is then at http://127.0.0.1:8912/cities-v-5/ .
+port 8912). The site is then at http://127.0.0.1:8912/cities-v-5/ . The
+desktop app **stops this server on its own** every hour or two (five times
+on 2026-09-30); when a page stops answering, start it again before
+blaming the page — Nil says "run the localhost".
 
 **How to reach the figure programmatically** (three traps, all in the site,
 not in any harness):
@@ -597,20 +604,38 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
 
 ## 8. Open items at hand-off
 
-1. **Key actions — both options settled.** Of the five variants on
-   `key-actions-sketches.html` (untracked) Nil picked **B**, the verbs
-   unfolding inside the entry, and it shipped as opt-1 with a prominent
-   "Show all" (`85fe10f`). For opt-2 Nil then asked (2026-09-30) that the
-   card carry the verbs as buttons and say what the sector is — its share,
-   jobs and industries — which is what it does now (§4). Still open: the
-   card stands over the bottom of the map while it is up (Nil's earlier
-   worry); a card dropping below the key (sketch A) would not.
-2. **"Show as table" into the View control?** Proposed (not asked): make it
+1. **The map at the sector level — Nil's pick is pending.** This is the
+   live question at hand-off. The Level control (§4) tiles the map at the
+   sector, 4-digit or 6-digit grain; at the sector the nine blocks carry
+   only a name and a share, which says what the key says. Five dressings
+   are sketched on `handoff/sketches/sector-level-sketches.html` (also at
+   the root): 0 as built; 1 the block as a card (name, share and jobs, the
+   three largest 4-digit groups with shares, the complexity steps); 2 the
+   groups' tiling ghosted inside each block at 30 %; 3 **the card over the
+   ghosted tiling** (the previous session's recommendation); 4 the card
+   with the sector's yearly change in jobs 2014→2024 (Professional &
+   Business +1.7 %/yr, Manufacturing −1.0 %/yr; the 2014 file makes this
+   possible only at this level). Paired with it, a proposed rule not yet
+   built: **the Level sets where the map starts and the zoom always opens
+   one level finer** — a sector opens at 4 digits, a group at 6 — since
+   today the zoom stops at the sector on coarse grains (`zoomTarget`,
+   `drawHits` gate on `MAP_GRAIN === 6`) and a zoomed sector at the sector
+   level is one block filling the map. The brainstorm began with a
+   misreading — "bar control area" was taken for the bar chart and a page
+   of bar variants was drawn and discarded; Nil meant the control bar of
+   the treemap. At 4 digits the one addition proposed is an industry count
+   in the cell ("· 4 industries").
+2. **Key actions — settled.** Of the five variants on
+   `key-actions-sketches.html` Nil picked **B** (opt-1, `85fe10f`), and
+   opt-2's card carries the facts and the verbs (§4, `d5d1256`). Still
+   open: the card stands over the bottom of the map while it is up; a card
+   dropping below the key (sketch A) would not.
+3. **"Show as table" into the View control?** Proposed (not asked): make it
    a third View choice — Treemap | Ranked | Table — and drop the word from
    the map's corner; the sentence variant would get "shown as a [table]" for
    free. Trade-off: the table would replace the map rather than open under
    the key. Nil asked for a sketch of both if pursued.
-3. **The accessibility cross-check's remaining findings.** After the
+4. **The accessibility cross-check's remaining findings.** After the
    contrast pass a second, independent sweep (axe: 0 violations; pixel
    sampling of rendered text; a non-text pass over rings, edges and chart
    marks, each finding adversarially verified) confirmed thirteen items. Nil
@@ -619,8 +644,8 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
    day: the ranking's quiet bars are the pale `#a9c2c7` again (the printed
    values carry the reading) and the chosen tile's edge is `#c2d4d7`, not
    teal (the white tile and its teal word say which option is on). Do not
-   re-darken either. The nine outside that section are known and unapplied, with
-   the fix each verifier proposed:
+   re-darken either. The nine outside that section are known and unapplied,
+   with the fix each verifier proposed:
    - Overview scatter, phone width: the "Boston" label falls on grey dots
      (`.metro-scatter .ms-home-label`, 3.2 to 1) — a white halo:
      `paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round`.
@@ -653,27 +678,42 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
    .ct-step`) and Overview's `.ov-block` once widened.
    **Reviews:** the keyboard batch (`a1b3fd0`, `a297747`) came from a
    19-gap research workflow (18 closed) and the contrast pass from the
-   auditor plus the cross-check above. The commits from `8e3e960` to
-   `b4b9a69` (the cell card, the phrases, the table word, the three-card
-   section end, the quiz modal) and the five since were exercised by those
-   sweeps — which is how the quiz modal's keyboard faults were found — but
-   no multi-lens code review (§3) has read them. One pass is still worth it.
-4. **Touch.** In key opt-2 the verbs rely on hover/double-click; on touch
-   there is no double-click in every browser and no way to dismiss the card
-   but tapping elsewhere. Known, unaddressed.
-5. **The titles and the tier share captions** stay as authored under a filter
+   auditor plus the cross-check above. Everything since `8e3e960` was
+   exercised by the headless checks each commit describes, but no
+   multi-lens code review (§3) has read the 2026-09-30 work — the scroll
+   layout, the band, the key card, the sector names and the level control
+   are the most worth one pass.
+5. **Touch.** The key's opt-2 card opens on hover and holds on
+   `:hover`/`:focus-visible`; on touch there is no hover, so the card
+   appears on the first tap and its buttons take the second. Known,
+   unaddressed.
+6. **The titles and the tier share captions** stay as authored under a filter
    or zoom (the titles by decision in `feb8814`; the captions show the
    metro's shares regardless) — flagged by reviewers as possibly misleading,
    left as is: the key, the crumbs and the live region say what is showing.
-6. **Arrow-key roving** between a segmented control's buttons is not
+7. **Arrow-key roving** between a segmented control's buttons is not
    implemented (not required by WCAG; every button is a tab stop).
-7. **The scroll layout** — its closes carry summary points drafted by
+8. **The scroll layout** — its closes carry summary points drafted by
    Claude from each section's text (`SEAL_POINTS` in index.html), which Nil
    has not edited yet; Worker Flows has no quiz to link; the band's
    Constraints and Levers cards are schematic (a quadrant sketch, three
    sliders), not live charts; the reference's other two layouts (Chapters,
    Two modes) are not built; and under One scroll every figure is built at
    once, fine for a prototype but the cost to watch.
+9. **Not built from the sector-names sketches**: the chip (a label over
+   the cells, no room taken) and the rule (a strip in the block's own
+   colour) on `sector-frame-sketches.html`; Nil took the band and the
+   gutter. The 3-digit subsector grain is tiled but not offered (Nil asked
+   for Sector · 4 · 6).
+10. **Decided and closed on 2026-09-30, so nobody reopens them**: the
+   control-row sentence on the ranking beat; the key at 13px; the muted
+   bars pale (`#a9c2c7`) and the chosen tile's edge `#c2d4d7`; the phrase
+   highlight study removed from the panel (the frame is fixed); the colour
+   study's opt-2 Paul Tol muted (lavender and periwinkle before it); the
+   part names "Part 1 City Profile / Part 2 Diagnose & Act" without a dot;
+   the toolbar on the section bar's grid; the navigation bar Light or Tint
+   only (dark teal, mid teal, wash and paper tried and dropped, code at
+   `bf2a67b`, pictures in `handoff/sketches/nav-tone-images/`).
 
 ## 9. Where things are
 
@@ -688,7 +728,15 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
 - `handoff/commit-history.md` — the full `git log` with dates; the commit
   messages are the design record.
 - `handoff/studies.md` — the study switches, their ids, options and beats.
-- Sketch pages (untracked, at the repo root): the two most relevant are
-  `control-row-two-ways.html` (the head row's two dressings, as chosen) and
-  `key-actions-sketches.html` (its option B shipped as key opt-1). Others
-  record earlier decisions.
+- `handoff/START-HERE.md` — the message Nil pastes into a new session.
+- `handoff/sketches/` — tracked copies (paths adjusted to `../../cities-v-5/`)
+  of the sketch pages that record open or recent decisions:
+  `sector-level-sketches.html` (**open**, item 1), `sector-frame-sketches.html`
+  (the band and gutter shipped), `nav-tone-sketches.html` with
+  `nav-tone-images/` (Light and Tint kept), `sector-palette-sketches.html`
+  (the house set and Paul Tol), `key-actions-sketches.html` (B shipped),
+  `control-row-two-ways.html` (tray and sentence). Open them through the
+  same server (http://127.0.0.1:8912/handoff/sketches/…); the live ones
+  need `cities-v-5/` beside `handoff/`.
+- Sketch pages at the repo root are the originals, untracked by convention
+  and only on this machine; the rest of them record earlier decisions.

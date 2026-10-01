@@ -3,6 +3,23 @@
 The commit messages are the design record: each says what changed and why, from the reader's side. `git log` for the bodies.
 
 ```
+14f3494 2026-09-30 The map's level is Sector, 4-digit or 6-digit
+5aa4a2f 2026-09-30 The map at four grains: a digit-level control in the row
+8ed3bea 2026-09-30 The sectors named on the map: a band, or a gutter
+24b3a1f 2026-09-30 The navigation bar's options are Light and Tint
+bf2a67b 2026-09-30 Pale navigation bars, for when the dark teal is too much
+d43b4f9 2026-09-30 The ranking beat's row folds into a sentence under the control row's opt-2
+3386573 2026-09-30 A teal navigation bar, as an option of the site layout
+317f1c0 2026-09-30 The top bar stands on the section bar's grid
+a6fb91a 2026-09-30 The layout is switched from a floating pill, and part two opens on the reference's teal band
+4221568 2026-09-30 A layout study: the storyline as one scroll, each section closed in teal
+c0489cd 2026-09-30 The part names lose their dot
+93666ff 2026-09-30 The section bar names its two parts
+5342047 2026-09-30 The colour study's opt-2 is a set of another character: Paul Tol's muted nine
+d5d1256 2026-09-30 The key's card carries the sector's facts and its verbs, and the colour study's alternative is lavender
+99de0aa 2026-09-30 Four adjustments on the figure: the ranking's key, its bars, the chosen tile, the opt panel
+5698a2b 2026-09-30 The key reads at 13px
+2093181 2026-09-30 The hand-off catches up: the key's verbs, the keyboard, the contrast, and what is left
 ec928b5 2026-09-30 What the cross-check confirmed in Metro Industries, put right
 a297747 2026-09-30 The keyboard is not dropped: focus follows its own actions, Escape is layered
 ef7258d 2026-09-30 A contrast pass: every word on the page reads 4.5 to 1 or better

@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Key actions, five ways</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --teal:#255862;--teal-dark:#1d454d;--teal-tint:#eef3f4;--ink:#1a2226;--ink-soft:#5b686d;
+    --border:#e2e7e8;--border-strong:#c3ccce;--paper:#f4f5f2;--shadow-md:0 6px 18px rgba(26,34,38,.12);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;padding:40px 44px 80px;font-family:'Source Sans 3',sans-serif;color:var(--ink);background:#fff;}
+  h1{font-size:22px;margin:0 0 6px;font-weight:700;letter-spacing:-.2px;}
+  .sub{margin:0 0 36px;color:var(--ink-soft);font-size:14px;line-height:1.5;max-width:820px;}
+  h2{font-size:15px;font-weight:700;margin:0 0 4px;}
+  h2 .n{display:inline-block;width:22px;height:22px;border-radius:50%;background:var(--teal);color:#fff;font-size:12px;
+        text-align:center;line-height:22px;margin-right:8px;vertical-align:1px;}
+  .why{margin:0 0 14px;font-size:13px;color:var(--ink-soft);line-height:1.5;max-width:820px;}
+  section{margin:0 0 56px;}
+
+  /* the figure's frame, as the site draws it: title row, map, key, foot */
+  .frame{position:relative;width:100%;max-width:940px;border:1px solid var(--border);border-radius:6px;padding:14px 16px 12px;background:#fff;}
+  .head{display:flex;align-items:center;gap:12px;min-height:26px;margin-bottom:10px;}
+  .title{font-size:16px;font-weight:700;color:var(--teal);white-space:nowrap;}
+  .crumbs{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-soft);}
+  .crumbs button{appearance:none;background:none;border:0;padding:2px 6px;border-radius:4px;font:inherit;font-size:12.5px;color:var(--teal);cursor:pointer;}
+  .crumbs button:hover{background:var(--teal-tint);}
+  .crumbs .here{color:var(--ink);font-weight:600;}
+  .crumbs .x{color:var(--ink-soft);font-size:14px;line-height:1;}
+  .map{width:100%;height:340px;display:block;}
+  .map text{font-family:'Source Sans 3',sans-serif;pointer-events:none;}
+  .map rect.sec.lit{stroke:#1a2226;stroke-width:1.5;}
+
+  /* the key, as the site sets it: a row of plain entries, each a switch */
+  .key{display:flex;flex-wrap:wrap;gap:2px 4px;margin:10px 0 0;padding:0;list-style:none;font-size:12.5px;color:var(--ink);}
+  .key li{display:inline-flex;align-items:center;position:relative;border-radius:6px;transition:background .12s ease;}
+  .key li:hover,.key li:focus-within,.key li.is-open{background:var(--teal-tint);}
+  .key .sec{display:inline-flex;align-items:center;gap:7px;appearance:none;background:none;border:0;border-radius:6px;
+    padding:3px 7px;font:inherit;color:inherit;cursor:pointer;white-space:nowrap;}
+  .key .sec:focus-visible{outline:2px solid var(--teal);outline-offset:-1px;}
+  .key .sw{flex:none;width:13px;height:13px;border-radius:3px;border:2px solid var(--c);background:var(--c);}
+  .key li.off .sw{background:transparent;}
+  .key li.off .name{color:var(--ink-soft);text-decoration:line-through;text-decoration-thickness:1px;}
+  .key li.is-open .name{color:var(--teal-dark);font-weight:600;}
+  .key .reset{appearance:none;background:none;border:0;padding:3px 7px;font:inherit;font-size:12.5px;font-weight:600;color:var(--teal);cursor:pointer;}
+  .key .reset:hover{text-decoration:underline;text-underline-offset:2px;}
+  .key .reset[hidden]{display:none;}
+  .foot{margin-top:10px;font-size:12.5px;color:var(--ink-soft);}
+  .foot span{color:var(--teal);}
+
+  /* the house's small button, for a verb the reader is meant to reach */
+  .vb{appearance:none;border:1px solid var(--border-strong);background:#fff;border-radius:3px;padding:4px 9px;
+    font:inherit;font-size:12px;font-weight:600;color:var(--teal);cursor:pointer;white-space:nowrap;}
+  .vb:hover{background:var(--teal-tint);border-color:var(--teal);}
+  .vb:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+  /* and the quieter word, where the verb sits in running text */
+  .vw{appearance:none;background:none;border:0;padding:2px 5px;border-radius:4px;font:inherit;font-size:12px;color:var(--ink-soft);
+    cursor:pointer;text-underline-offset:2px;white-space:nowrap;}
+  .vw:hover,.vw:focus-visible{color:var(--ink);text-decoration:underline;outline:none;}
+  .swi{display:inline-block;width:11px;height:11px;border-radius:3px;background:var(--c);flex:none;}
+
+  /* A: the card drops from the entry, below the key */
+  .card{position:absolute;z-index:6;top:100%;left:0;margin-top:6px;min-width:224px;padding:10px 12px 11px;
+    --gap:6px;}
+  /* the strip between the entry and its card belongs to the card, so the
+     pointer's travel down to the buttons never crosses another entry */
+  .card::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:var(--gap);}
+  .card{
+    background:#fff;border:1px solid var(--border-strong);border-radius:4px;box-shadow:var(--shadow-md);
+    display:flex;flex-direction:column;gap:5px;font-size:12.5px;white-space:nowrap;text-align:left;}
+  .card[hidden]{display:none;}
+  .card .nm{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--ink);}
+  .card .st{color:var(--ink-soft);}
+  .card .acts{display:flex;gap:6px;margin-top:4px;}
+
+  /* B: the verbs unfold inside the entry */
+  .verbs{display:none;align-items:center;gap:1px;margin:0 3px 0 -3px;}
+  .key li:hover .verbs,.key li.is-hot .verbs,.key li:focus-within .verbs{display:inline-flex;}
+  .verbs .dot{color:var(--border-strong);font-size:11px;padding:0 1px;}
+
+  /* C: one strip under the key answers the pointer */
+  .strip{display:flex;align-items:center;gap:10px;min-height:32px;margin-top:8px;padding:4px 8px 0;border-top:1px solid var(--border);
+    font-size:12.5px;color:var(--ink-soft);}
+  .strip .nm{display:flex;align-items:center;gap:7px;color:var(--ink);font-weight:600;}
+  .strip .st{color:var(--ink-soft);}
+  .strip .acts{display:flex;gap:6px;margin-left:auto;}
+  .strip .hint{color:#8b9599;}
+
+  /* D: a pill beside the entry, on the key's own line */
+  .pill{position:absolute;z-index:6;top:50%;left:100%;transform:translateY(-50%);margin-left:6px;
+    display:flex;align-items:center;gap:6px;padding:3px 6px 3px 9px;background:#fff;border:1px solid var(--border-strong);
+    border-radius:16px;box-shadow:var(--shadow-md);font-size:12.5px;white-space:nowrap;}
+  .pill::before{content:"";position:absolute;top:0;bottom:0;right:100%;width:8px;}
+  .pill.flip{left:auto;right:100%;margin-left:0;margin-right:6px;}
+  .pill.flip::before{right:auto;left:100%;}
+  .pill[hidden]{display:none;}
+  .pill .nm{display:flex;align-items:center;gap:7px;color:var(--ink);font-weight:600;}
+  .pill .sep{width:1px;height:14px;background:var(--border);margin:0 2px;}
+
+  /* E: a menu opens on a click */
+  .menu{position:absolute;z-index:6;top:100%;left:0;margin-top:0;min-width:208px;padding:0 0 6px;
+    background:#fff;border:1px solid var(--border-strong);border-radius:4px;box-shadow:var(--shadow-md);font-size:12.5px;text-align:left;}
+  .menu[hidden]{display:none;}
+  .menu .hd{padding:8px 12px 8px;border-bottom:1px solid var(--border);margin-bottom:5px;}
+  .menu .hd .nm{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--ink);}
+  .menu .hd .st{color:var(--ink-soft);margin-top:2px;font-size:12px;}
+  .menu button{display:block;width:100%;text-align:left;appearance:none;background:none;border:0;padding:6px 12px;
+    font:inherit;font-size:12.5px;color:var(--ink);cursor:pointer;}
+  .menu button:hover,.menu button:focus-visible{background:var(--teal-tint);outline:none;}
+
+  .note{margin-top:44px;padding:18px 20px;background:var(--paper);border-radius:6px;max-width:940px;font-size:13.5px;line-height:1.55;}
+  .note h3{font-size:14px;margin:0 0 8px;}
+  .note p{margin:0 0 8px;}
+  .note p:last-child{margin:0;}
+</style>
+</head>
+<body>
+<h1>Hide and keep only, from the key</h1>
+<p class="sub">Opt-2 of the key study, thought again: five places the two verbs can live so that nothing stands over the map — and how much the key says about a sector while it offers them. Every frame is live over the 2024 rows: point at the key, then hide a sector or keep only it. "Show all" and the crumbs bring everything back.</p>
+
+<section id="a">
+  <h2><span class="n">A</span>A card that drops below the key</h2>
+  <p class="why">The card the reader knows, turned to open downward: it lands over the figure's foot, never over the map. Name, one line of figures, and the two verbs as buttons the pointer can travel down to.</p>
+  <div class="frame" data-variant="a"><div class="head"><span class="title">All industries</span><span class="crumbs"></span></div><svg class="map"></svg><ul class="key"></ul><p class="foot">Show as table <span>›</span></p></div>
+</section>
+
+<section id="b">
+  <h2><span class="n">B</span>The verbs in the entry</h2>
+  <p class="why">No card at all. Pointing at an entry unfolds "Hide · Only" inside it, the way "only" already sits beside a name in opt-1 — both verbs, and the entry's own tint says which sector they mean. Nothing floats and nothing is covered, at the price of saying nothing more about the sector — and the row reflows as the verbs unfold, so the entries to the right shift under the pointer.</p>
+  <div class="frame" data-variant="b"><div class="head"><span class="title">All industries</span><span class="crumbs"></span></div><svg class="map"></svg><ul class="key"></ul><p class="foot">Show as table <span>›</span></p></div>
+</section>
+
+<section id="c">
+  <h2><span class="n">C</span>One strip under the key</h2>
+  <p class="why">A line the key keeps beneath itself, empty until an entry is pointed at; then it names the sector, gives its figures, and offers the two buttons at its right end. One fixed place for everything, so the pointer always knows where to go and the map is never touched.</p>
+  <div class="frame" data-variant="c"><div class="head"><span class="title">All industries</span><span class="crumbs"></span></div><svg class="map"></svg><ul class="key"></ul><div class="strip"><span class="hint">Point at a sector to hide it, or to keep only it.</span></div><p class="foot">Show as table <span>›</span></p></div>
+</section>
+
+<section id="d">
+  <h2><span class="n">D</span>A pill beside the entry</h2>
+  <p class="why">One line on the key's own row, next to the entry it belongs to: the name and the two verbs. It may cover a neighbouring entry for a moment, but it stays in the key's band and never reaches the map. The lightest card there is.</p>
+  <div class="frame" data-variant="d"><div class="head"><span class="title">All industries</span><span class="crumbs"></span></div><svg class="map"></svg><ul class="key"></ul><p class="foot">Show as table <span>›</span></p></div>
+</section>
+
+<section id="e">
+  <h2><span class="n">E</span>A menu, on a click</h2>
+  <p class="why">Pointing only lights the sector's block on the map. A click opens a small menu under the entry — a header with the figures, then "Hide" and "Keep only" as items. Nothing appears until it is asked for, and it is what a keyboard and a thumb already know how to open.</p>
+  <div class="frame" data-variant="e"><div class="head"><span class="title">All industries</span><span class="crumbs"></span></div><svg class="map"></svg><ul class="key"></ul><p class="foot">Show as table <span>›</span></p></div>
+</section>
+
+<div class="note">
+  <h3>Where each one stands</h3>
+  <p><strong>Nothing over the map:</strong> all five. A and E drop below the key, over the foot; B, C and D never leave the key's band.</p>
+  <p><strong>What they say about the sector:</strong> B and D say only its name (the colour and the entry already do); A, C and E carry one line of figures — jobs, share of the metro, how many industries.</p>
+  <p><strong>Reachable by a keyboard and a thumb:</strong> B (the verbs are in the tab order behind the entry), C (the buttons stay put), E (a menu). A and D ask the pointer to travel to them.</p>
+  <p><strong>My reading:</strong> C first, then A. C gives the figures a fixed home and keeps every verb in one place, and nothing on the row moves; A is the card the reader knows, turned to drop below the key. B is the quietest but reflows the row under the pointer; D moves with the entry; E costs a click.</p>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="../../cities-v-5/industries-2024.js"></script>
+<script>
+(function(){
+  const SECTOR = {
+    "construction":"#a25d37","education-health":"#dc8271","financial":"#e5c95e","leisure":"#9adfe7",
+    "manufacturing":"#7f3c6b","natural-resources":"#5d9850","other":"#896885","professional":"#485fa2","trade-transport":"#86c8ab"
+  };
+  const SRC = window.BOSTON_INDUSTRIES_2024;
+  const LABEL = {}; SRC.sectors.forEach(s => LABEL[s.key] = s.label);
+  const ORDER = SRC.sectors.map(s => s.key);
+
+  /* rows -> sector -> group, at the group grain; and each sector's figures */
+  const F = SRC.fields, ix = n => F.indexOf(n);
+  const iS = ix("sectorKey"), iG = ix("group"), iGN = ix("groupShort"), iJ = ix("employ");
+  const bySec = new Map(), fig = {};
+  let total = 0;
+  SRC.rows.forEach(r => {
+    const s = r[iS], g = r[iG], j = +r[iJ] || 0;
+    total += j;
+    if (!bySec.has(s)) bySec.set(s, new Map());
+    const m = bySec.get(s);
+    if (!m.has(g)) m.set(g, { name: r[iGN] || g, sector: s, jobs: 0 });
+    m.get(g).jobs += j;
+    fig[s] = fig[s] || { jobs: 0, n: 0 };
+    fig[s].jobs += j; fig[s].n += 1;
+  });
+  const SECTORS = ORDER.filter(k => bySec.has(k));
+  const statOf = s => d3.format(",")(Math.round(fig[s].jobs)) + " jobs · " + (fig[s].jobs / total * 100).toFixed(1) + "% of the metro · " + fig[s].n + " industries";
+
+  const ink = hex => { const c = d3.color(hex).rgb(); const L = (0.2126*c.r + 0.7152*c.g + 0.0722*c.b) / 255; return L > 0.62 ? "#1a2226" : "#fff"; };
+  const fits = (el, t, w) => { el.textContent = t; return el.getComputedTextLength() <= w; };
+  const clean = t => t.replace(/[\s&,-]+$/, "");
+  function label(el, name, w, h){
+    if (fits(el, name, w)) return;
+    const sp = name.indexOf(" ");
+    if (h > 34 && sp > 0){
+      const a = name.slice(0, sp), b = name.slice(sp + 1);
+      if (fits(el, a, w)){
+        el.textContent = "";
+        d3.select(el).append("tspan").attr("x", 5).text(a);
+        const t2 = d3.select(el).append("tspan").attr("x", 5).attr("dy", 12);
+        let r = b; while (r.length > 3 && !fits(t2.node(), r + "…", w)) r = clean(r.slice(0, -1));
+        if (fits(t2.node(), b, w)) t2.text(b); else if (r.length >= 3) t2.text(r + "…"); else t2.remove();
+        return;
+      }
+    }
+    let r = name; while (r.length > 3 && !fits(el, r + "…", w)) r = clean(r.slice(0, -1));
+    if (r.length < 5) el.textContent = ""; else el.textContent = r + "…";
+  }
+
+  /* the map, tiled over whatever the filter and the zoom leave */
+  function draw(svg, state){
+    const W = svg.clientWidth || 906, H = 340;
+    const s = d3.select(svg).attr("viewBox", [0, 0, W, H]);
+    s.selectAll("*").remove();
+    const shown = SECTORS.filter(k => state.only ? k === state.only : !state.hidden.has(k));
+    const children = shown.map(k => ({ name: LABEL[k], sector: k, children: [...bySec.get(k).values()] }));
+    if (!children.length) return;
+    const root = d3.hierarchy({ name: "all", children }).sum(d => d.jobs || 0).sort((a, b) => b.value - a.value);
+    d3.treemap().size([W, H]).paddingInner(1).paddingOuter(0).round(true)(root);
+    const g = s.selectAll("g").data(root.leaves()).join("g").attr("transform", d => `translate(${d.x0},${d.y0})`);
+    g.append("rect").attr("width", d => Math.max(0, d.x1 - d.x0)).attr("height", d => Math.max(0, d.y1 - d.y0)).attr("fill", d => SECTOR[d.data.sector]);
+    g.filter(d => (d.x1 - d.x0) > 44 && (d.y1 - d.y0) > 20).append("text")
+      .attr("x", 5).attr("y", 13).attr("font-size", 11).attr("font-weight", 600).attr("fill", d => ink(SECTOR[d.data.sector]))
+      .each(function(d){ label(this, d.data.name, d.x1 - d.x0 - 9, d.y1 - d.y0); });
+    s.selectAll("rect.sec").data(root.children).join("rect").attr("class", "sec").attr("data-sector", d => d.data.sector)
+      .attr("x", d => d.x0 + .5).attr("y", d => d.y0 + .5).attr("width", d => d.x1 - d.x0 - 1).attr("height", d => d.y1 - d.y0 - 1)
+      .attr("fill", "none").attr("stroke", "#fff").attr("stroke-width", 2).attr("pointer-events", "none");
+  }
+
+  function frame(el){
+    const variant = el.dataset.variant, svg = el.querySelector("svg.map"), key = el.querySelector(".key"), crumbs = el.querySelector(".crumbs");
+    const state = { hidden: new Set(), only: null };
+    const shownSec = k => state.only ? k === state.only : !state.hidden.has(k);
+    const soloSec = k => shownSec(k) && SECTORS.every(o => o === k || !shownSec(o));
+
+    /* the two verbs, whichever control asks */
+    const hide = k => {
+      if (soloSec(k)){ reset(); return; }
+      if (state.only){ state.hidden = new Set(SECTORS.filter(o => o !== state.only && o !== k)); state.only = null; }
+      else if (state.hidden.has(k)) state.hidden.delete(k); else state.hidden.add(k);
+      if (state.hidden.size === SECTORS.length) state.hidden.clear();
+      render();
+    };
+    const only = k => { if (soloSec(k)) reset(); else { state.only = k; state.hidden.delete(k); render(); } };
+    const reset = () => { state.hidden.clear(); state.only = null; render(); };
+    const verbHide = k => soloSec(k) ? "Show all" : shownSec(k) ? "Hide" : "Bring back";
+    const verbOnly = k => soloSec(k) ? null : "Keep only";
+
+    key.innerHTML = SECTORS.map(k => '<li data-k="' + k + '" style="--c:' + SECTOR[k] + '"><button type="button" class="sec" aria-pressed="true"><i class="sw"></i><span class="name">' + LABEL[k] + '</span></button></li>').join("") +
+      '<li class="reset-li"><button type="button" class="reset" hidden>Show all</button></li>';
+    const lis = [...key.querySelectorAll("li[data-k]")];
+    const resetBtn = key.querySelector(".reset");
+    resetBtn.addEventListener("click", reset);
+
+    function render(){
+      draw(svg, state);
+      lis.forEach(li => {
+        const k = li.dataset.k, on = shownSec(k);
+        li.classList.toggle("off", !on);
+        li.querySelector(".sec").setAttribute("aria-pressed", String(on));
+      });
+      resetBtn.hidden = !(state.hidden.size || state.only);
+      crumbs.innerHTML = state.only
+        ? '<button type="button" data-all>All sectors</button><span>›</span><span class="here">' + LABEL[state.only] + '</span><button type="button" data-all class="x" aria-label="Zoom out">×</button>' : "";
+      crumbs.querySelectorAll("[data-all]").forEach(b => b.addEventListener("click", reset));
+      if (sync) sync();
+    }
+    let sync = null;
+    const lit = (k, on) => svg.querySelectorAll("rect.sec").forEach(r => r.classList.toggle("lit", on && r.dataset.sector === k));
+
+    /* ---- the variants ---- */
+    const acts = (k, cls) => '<span class="acts"><button type="button" class="' + cls + '" data-act="hide">' + verbHide(k) + '</button>' +
+      (verbOnly(k) ? '<button type="button" class="' + cls + '" data-act="only">' + verbOnly(k) + '</button>' : '') + '</span>';
+    const nm = k => '<span class="nm"><i class="swi" style="--c:' + SECTOR[k] + '"></i>' + LABEL[k] + '</span>';
+    const wire = (root, k) => root.querySelectorAll("[data-act]").forEach(b => b.addEventListener("click", ev => { ev.stopPropagation(); (b.dataset.act === "hide" ? hide : only)(k); }));
+
+    if (variant === "a"){
+      /* the card drops from the entry; leaving either only arms the close */
+      let openLi = null, t = null;
+      const close = () => { clearTimeout(t); if (openLi){ const c = openLi.querySelector(".card"); if (c) c.remove(); openLi.classList.remove("is-open"); lit(openLi.dataset.k, false); openLi = null; } };
+      const open = li => {
+        clearTimeout(t); if (openLi && openLi !== li) close();
+        openLi = li; li.classList.add("is-open"); lit(li.dataset.k, true);
+        let c = li.querySelector(".card"); if (!c){ c = document.createElement("div"); c.className = "card"; li.appendChild(c); }
+        const k = li.dataset.k;
+        c.innerHTML = nm(k) + '<span class="st">' + statOf(k) + '</span>' + acts(k, "vb");
+        wire(c, k);
+        c.addEventListener("mouseenter", () => clearTimeout(t));
+        c.addEventListener("mouseleave", () => { t = setTimeout(close, 180); });
+        /* below the whole key, whichever row the entry is on */
+        const lb = li.getBoundingClientRect(), kb = key.getBoundingClientRect();
+        const gap = kb.bottom - lb.bottom + 6;
+        c.style.top = (lb.height + gap - 6) + "px"; c.style.setProperty("--gap", gap + "px");
+        const fb = el.getBoundingClientRect(), cb = c.getBoundingClientRect();
+        if (cb.right > fb.right - 8) c.style.left = (fb.right - 8 - cb.width - lb.left) + "px";
+      };
+      lis.forEach(li => { li.addEventListener("mouseenter", () => open(li)); li.addEventListener("mouseleave", () => { t = setTimeout(close, 180); });
+        li.querySelector(".sec").addEventListener("click", () => open(li)); });
+      sync = () => { if (openLi) open(openLi); };
+    }
+    if (variant === "b"){
+      lis.forEach(li => {
+        const k = li.dataset.k;
+        const v = document.createElement("span"); v.className = "verbs"; li.appendChild(v);
+        /* a class beside :hover, so a tap opens the verbs where there is no hover */
+        li.addEventListener("mouseenter", () => { lit(k, true); li.classList.add("is-hot"); });
+        li.addEventListener("mouseleave", () => { lit(k, false); li.classList.remove("is-hot"); });
+        li.querySelector(".sec").addEventListener("click", () => hide(k));
+      });
+      sync = () => lis.forEach(li => {
+        const k = li.dataset.k, v = li.querySelector(".verbs");
+        v.innerHTML = '<button type="button" class="vw" data-act="hide">' + verbHide(k) + '</button>' +
+          (verbOnly(k) ? '<span class="dot">·</span><button type="button" class="vw" data-act="only">Only</button>' : '');
+        wire(v, k);
+      });
+    }
+    if (variant === "c"){
+      const strip = el.querySelector(".strip");
+      let cur = null;
+      const show = k => { cur = k; strip.innerHTML = nm(k) + '<span class="st">' + statOf(k) + '</span>' + acts(k, "vb"); wire(strip, k); };
+      lis.forEach(li => { const k = li.dataset.k;
+        li.addEventListener("mouseenter", () => { lit(k, true); show(k); });
+        li.addEventListener("mouseleave", () => lit(k, false));
+        li.querySelector(".sec").addEventListener("focus", () => show(k));
+        li.querySelector(".sec").addEventListener("click", () => hide(k)); });
+      sync = () => { if (cur) show(cur); };
+    }
+    if (variant === "d"){
+      let openLi = null, t = null;
+      const close = () => { clearTimeout(t); if (openLi){ const p = openLi.querySelector(".pill"); if (p) p.remove(); openLi.classList.remove("is-open"); lit(openLi.dataset.k, false); openLi = null; } };
+      const open = li => {
+        clearTimeout(t); if (openLi && openLi !== li) close();
+        openLi = li; li.classList.add("is-open"); lit(li.dataset.k, true);
+        let p = li.querySelector(".pill"); if (!p){ p = document.createElement("span"); p.className = "pill"; li.appendChild(p); }
+        const k = li.dataset.k;
+        p.innerHTML = nm(k) + '<span class="sep"></span>' + acts(k, "vw");
+        wire(p, k);
+        p.addEventListener("mouseenter", () => clearTimeout(t));
+        p.addEventListener("mouseleave", () => { t = setTimeout(close, 180); });
+        p.classList.toggle("flip", p.getBoundingClientRect().right > el.getBoundingClientRect().right - 8);
+      };
+      lis.forEach(li => { li.addEventListener("mouseenter", () => open(li)); li.addEventListener("mouseleave", () => { t = setTimeout(close, 180); });
+        li.querySelector(".sec").addEventListener("click", () => open(li)); });
+      sync = () => { if (openLi) open(openLi); };
+    }
+    if (variant === "e"){
+      let openLi = null;
+      const close = () => { if (openLi){ const m = openLi.querySelector(".menu"); if (m) m.remove(); openLi.classList.remove("is-open"); openLi.querySelector(".sec").setAttribute("aria-expanded", "false"); openLi = null; } };
+      const open = li => {
+        if (openLi === li){ close(); return; }
+        close(); openLi = li; li.classList.add("is-open");
+        const k = li.dataset.k, b = li.querySelector(".sec"); b.setAttribute("aria-expanded", "true");
+        const m = document.createElement("div"); m.className = "menu"; m.setAttribute("role", "menu"); li.appendChild(m);
+        m.innerHTML = '<div class="hd">' + nm(k) + '<div class="st">' + statOf(k) + '</div></div>' +
+          '<button type="button" role="menuitem" data-act="hide">' + verbHide(k) + '</button>' +
+          (verbOnly(k) ? '<button type="button" role="menuitem" data-act="only">' + verbOnly(k) + '</button>' : '');
+        wire(m, k);
+        const lb = li.getBoundingClientRect(), kb = key.getBoundingClientRect();
+        m.style.top = (lb.height + (kb.bottom - lb.bottom) + 4) + "px";
+        const fb = el.getBoundingClientRect(), mb = m.getBoundingClientRect();
+        if (mb.right > fb.right - 8) m.style.left = (fb.right - 8 - mb.width - lb.left) + "px";
+        m.querySelector("button").focus({ preventScroll: true });
+      };
+      lis.forEach(li => { const k = li.dataset.k, b = li.querySelector(".sec");
+        b.setAttribute("aria-haspopup", "menu"); b.setAttribute("aria-expanded", "false");
+        li.addEventListener("mouseenter", () => lit(k, true)); li.addEventListener("mouseleave", () => lit(k, false));
+        b.addEventListener("click", ev => { ev.stopPropagation(); open(li); }); });
+      document.addEventListener("click", ev => { if (openLi && !openLi.contains(ev.target)) close(); });
+      document.addEventListener("keydown", ev => { if (ev.key === "Escape") close(); });
+      sync = () => { if (openLi){ const li = openLi; close(); open(li); } };
+    }
+    render();
+    return () => draw(svg, state);
+  }
+
+  const redraws = [...document.querySelectorAll(".frame")].map(frame);
+  let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => redraws.forEach(f => f()), 120); });
+  document.fonts && document.fonts.ready.then(() => redraws.forEach(f => f()));
+})();
+</script>
+</body>
+</html>

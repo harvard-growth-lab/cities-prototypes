@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>The sectors named on the map: four framings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--teal:#255862;--teal-tint:#eef3f4;--ink:#1a2226;--ink-soft:#526066;--border:#e2e7e8;--border-strong:#c3ccce;--paper:#f4f5f2;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:40px 44px 80px;font-family:'Source Sans 3',sans-serif;color:var(--ink);background:#fff;}
+  h1{font-size:22px;margin:0 0 6px;font-weight:700;letter-spacing:-.2px;}
+  .sub{margin:0 0 34px;color:var(--ink-soft);font-size:14px;line-height:1.55;max-width:860px;}
+  section{margin:0 0 44px;max-width:1000px;}
+  h2{font-size:15px;font-weight:700;margin:0 0 3px;display:flex;align-items:center;gap:9px;}
+  h2 .n{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--teal);color:#fff;font-size:12px;font-weight:700;}
+  h2 .tag{font-size:11.5px;font-weight:600;color:var(--teal);background:var(--teal-tint);border-radius:4px;padding:2px 8px;}
+  .why{margin:0 0 12px;font-size:13px;color:var(--ink-soft);line-height:1.5;max-width:860px;}
+  .frame{width:100%;max-width:900px;border:1px solid var(--border);border-radius:6px;padding:12px 14px 14px;background:#fff;}
+  .map{width:100%;height:auto;display:block;}
+  .map text{font-family:'Source Sans 3',sans-serif;pointer-events:none;}
+  .foot{margin-top:6px;font-size:13px;color:var(--ink-soft);max-width:860px;line-height:1.55;}
+</style>
+<h1>The sectors named on the map: four framings</h1>
+<p class="sub">Today the map names industries and the key names the sectors; a sector's block is outlined only while its key entry or its phrase is pointed at. These are four ways of writing the sector's name on the map itself, each on the real 2024 tiling at the figure's own proportions (880 by 500), with the same nine colours. The cost in every case is room: whatever carries the name is taken from the sector's cells, and the smallest sectors pay most.</p>
+<div id="out"></div>
+<p class="foot">The band (1) is the most literal frame; the gutter (2) keeps the names in ink on white like the rest of the page's type; the chip (3) costs no room but covers cells; the rule (4) is the lightest touch. In every one a name that will not fit its block at 11px tries its short form, then stands down and leaves the frame alone.</p>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="../../cities-v-5/industries-2024.js"></script>
+<script>
+(function(){
+  const COL = { "Construction": "#a25d37", "Education & Health": "#dc8271", "Financial Activities": "#e5c95e", "Leisure & Hospitality": "#9adfe7",
+    "Manufacturing": "#7f3c6b", "Natural Resources": "#5d9850", "Other": "#896885", "Professional & Business": "#485fa2", "Trade & Transportation": "#86c8ab" };
+  const SHORT = { "Construction": "Construction", "Education & Health": "Edu & Health", "Financial Activities": "Financial", "Leisure & Hospitality": "Leisure",
+    "Manufacturing": "Manufacturing", "Natural Resources": "Natural", "Other": "Other", "Professional & Business": "Professional", "Trade & Transportation": "Trade & Transport" };
+  const ORDER = ["Professional & Business","Education & Health","Trade & Transportation","Leisure & Hospitality","Financial Activities","Manufacturing","Construction","Other","Natural Resources"];
+  const D = window.BOSTON_INDUSTRIES_2024, F = D.fields;
+  const rows = D.rows.map(a => { const o = {}; F.forEach((f, i) => o[f] = a[i]); return o; });
+  const secLabel = Object.fromEntries(D.sectors.map(s => [s.key, s.label]));
+  const W = 880, H = 500;
+  const hex2rgb = h => { const s = h.replace("#", ""); return [0, 2, 4].map(i => parseInt(s.slice(i, i + 2), 16) / 255); };
+  const lin = v => v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  const relLum = ([r, g, b]) => 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+  const contrast = (h1, h2) => { const a = relLum(hex2rgb(h1)), b = relLum(hex2rgb(h2)); return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05); };
+  const inkFor = h => contrast(h, "#ffffff") >= contrast(h, "#1a2226") ? "#ffffff" : "#1a2226";
+  const deeper = h => d3.color(h).darker(0.55).formatHex();
+  const cv = document.createElement("canvas").getContext("2d");
+  const textW = (s, size, w) => { cv.font = w + " " + size + "px 'Source Sans 3', sans-serif"; return cv.measureText(s).width; };
+
+  function tile(secTop, secPad){
+    const bySec = d3.group(rows, r => secLabel[r.sectorKey]);
+    const tree = { children: ORDER.map(sec => ({ sector: sec, children: [...d3.group(bySec.get(sec) || [], r => r.group)]
+      .map(([g, l]) => ({ group: g, children: l.map(r => ({ r: r, value: r.employ })) })) })) };
+    const root = d3.hierarchy(tree).sum(d => d.value || 0)
+      .sort((a, b) => (a.depth === 1 && b.depth === 1) ? ORDER.indexOf(a.data.sector) - ORDER.indexOf(b.data.sector) : (b.value - a.value));
+    d3.treemap().size([W, H]).paddingInner(1).paddingOuter(n => n.depth === 1 ? (secPad || 1) : 1)
+      .paddingTop(n => n.depth === 1 ? secTop : 1).round(true)(root);
+    return root;
+  }
+  const esc = s => s.replace(/&/g, "&amp;");
+  /* the cells, as the figure labels them: name at 12 down to 10, share beneath where it fits */
+  function cells(root, fillOf, inkOf){
+    let s = "";
+    root.leaves().filter(l => l.x1 - l.x0 >= 1 && l.y1 - l.y0 >= 1).forEach(l => {
+      const r = l.data.r, sec = secLabel[r.sectorKey], c = fillOf(sec), w = l.x1 - l.x0, h = l.y1 - l.y0;
+      s += '<rect x="' + l.x0 + '" y="' + l.y0 + '" width="' + w + '" height="' + h + '" fill="' + c + '"/>';
+      const name = r.short || r.name, share = (r.employ / D.total * 100).toFixed(2) + "%";
+      for (let size = 12; size >= 10; size--){
+        const words = name.split(/\s+/); const lines = []; let cur = "";
+        let ok = true;
+        for (const wd of words){ if (textW(wd, size, 500) > w - 6){ ok = false; break; } const nx = cur ? cur + " " + wd : wd; if (textW(nx, size, 500) <= w - 6) cur = nx; else { lines.push(cur); cur = wd; } }
+        if (!ok) continue; if (cur) lines.push(cur);
+        const need = size * 1.1 + size * 0.9 * (lines.length - 1) + size * 0.25;
+        if (need > h) continue;
+        const ink = inkOf(sec);
+        lines.forEach((ln, i) => { s += '<text x="' + (l.x0 + 3) + '" y="' + (l.y0 + size * 1.1 + size * 0.9 * i) + '" font-size="' + size + '" font-weight="500" fill="' + ink + '">' + esc(ln) + '</text>'; });
+        if (textW(share, size, 400) <= w - 6 && need + size * 0.9 + size * 0.3 <= h)
+          s += '<text x="' + (l.x0 + 3) + '" y="' + (l.y0 + size * 1.1 + size * 0.9 * lines.length + size * 0.3) + '" font-size="' + size + '" font-weight="400" fill="' + ink + '">' + share + '</text>';
+        break;
+      }
+    });
+    return s;
+  }
+  const fitName = (sec, room, size) => { for (const n of [sec, SHORT[sec]]) if (textW(n, size, 700) <= room) return n; return null; };
+  const SIZE = 11;
+  function svgOf(inner){ return '<svg class="map" viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg"><rect width="' + W + '" height="' + H + '" fill="#fff"/>' + inner + '</svg>'; }
+
+  const opts = [
+    { name: "The band", tag: "a frame with the name in it", why: "Each sector's block gets a 16px band across its top in a deeper shade of its own colour, the name set in it in white or ink, and a hairline of the same shade round the block: the frame Nil described. Reads as one object per sector; costs 16px of every block's height, so the smallest blocks lose a third of their room.",
+      draw(){ const root = tile(16, 1); let s = "";
+        root.children.forEach(n => { const sec = n.data.sector, c = COL[sec], d = deeper(c), w = n.x1 - n.x0, h = n.y1 - n.y0;
+          s += '<rect x="' + n.x0 + '" y="' + n.y0 + '" width="' + w + '" height="16" fill="' + d + '"/>';
+          s += '<rect x="' + (n.x0 + 0.5) + '" y="' + (n.y0 + 0.5) + '" width="' + (w - 1) + '" height="' + (h - 1) + '" fill="none" stroke="' + d + '" stroke-width="1"/>';
+          const nm = fitName(sec, w - 10, SIZE); if (nm) s += '<text x="' + (n.x0 + 5) + '" y="' + (n.y0 + 11.5) + '" font-size="' + SIZE + '" font-weight="700" fill="' + inkFor(d) + '">' + esc(nm) + '</text>'; });
+        return svgOf(s + cells(root, sec => COL[sec], sec => inkFor(COL[sec]))); } },
+    { name: "The gutter", tag: "the name outside the colour", why: "The same 16px, but white: the name stands in the page's own ground above the block, in the sector's ink at 700, with the block a plain rectangle of colour under it. The names read like the page's type, and the map becomes nine labelled islands with white between them; it costs the same room as the band and a little more between sectors.",
+      draw(){ const root = tile(17, 3); let s = "";
+        root.children.forEach(n => { const sec = n.data.sector, c = COL[sec], w = n.x1 - n.x0;
+          const nm = fitName(sec, w - 6, SIZE); if (nm) s += '<text x="' + (n.x0 + 3) + '" y="' + (n.y0 + 11.5) + '" font-size="' + SIZE + '" font-weight="700" fill="' + d3.color(c).darker(1.1).formatHex() + '">' + esc(nm) + '</text>'; });
+        return svgOf(s + cells(root, sec => COL[sec], sec => inkFor(COL[sec]))); } },
+    { name: "The chip", tag: "no room taken", why: "No padding at all: a 1.5px white frame round each block, and the name on a small white chip pinned inside the block's top-left corner, over whatever cells are there. Nothing shrinks, but the chip covers the corner of the biggest cell in every sector, and on the small blocks it covers most of them.",
+      draw(){ const root = tile(1, 1); let s = cells(root, sec => COL[sec], sec => inkFor(COL[sec]));
+        root.children.forEach(n => { const sec = n.data.sector, w = n.x1 - n.x0;
+          s += '<rect x="' + (n.x0 + 0.75) + '" y="' + (n.y0 + 0.75) + '" width="' + (w - 1.5) + '" height="' + (n.y1 - n.y0 - 1.5) + '" fill="none" stroke="#fff" stroke-width="1.5"/>';
+          const nm = fitName(sec, w - 16, SIZE); if (!nm) return; const tw = textW(nm, SIZE, 700) + 12;
+          s += '<rect x="' + (n.x0 + 4) + '" y="' + (n.y0 + 4) + '" width="' + tw + '" height="16" rx="3" fill="#fff"/>';
+          s += '<text x="' + (n.x0 + 10) + '" y="' + (n.y0 + 15.5) + '" font-size="' + SIZE + '" font-weight="700" fill="#1a2226">' + esc(nm) + '</text>'; });
+        return svgOf(s); } },
+    { name: "The rule", tag: "the lightest touch", why: "A 14px strip at the top of each block that stays the block's own colour, the name in the sector's ink at 700 with a hairline under it, so the name sits inside the colour with no second tone added. Quieter than the band; the frame is only a rule, and the smallest blocks lose 14px.",
+      draw(){ const root = tile(14, 1); let s = "";
+        root.children.forEach(n => { const sec = n.data.sector, c = COL[sec], w = n.x1 - n.x0, h = n.y1 - n.y0;
+          s += '<rect x="' + n.x0 + '" y="' + n.y0 + '" width="' + w + '" height="14" fill="' + c + '"/>';
+          s += '<line x1="' + (n.x0 + 1) + '" x2="' + (n.x1 - 1) + '" y1="' + (n.y0 + 14) + '" y2="' + (n.y0 + 14) + '" stroke="' + inkFor(c) + '" stroke-opacity=".45" stroke-width="1"/>';
+          const nm = fitName(sec, w - 8, SIZE); if (nm) s += '<text x="' + (n.x0 + 4) + '" y="' + (n.y0 + 10.5) + '" font-size="' + SIZE + '" font-weight="700" fill="' + inkFor(c) + '">' + esc(nm) + '</text>'; });
+        return svgOf(s + cells(root, sec => COL[sec], sec => inkFor(COL[sec]))); } }
+  ];
+  const out = document.getElementById("out");
+  opts.forEach((o, i) => {
+    const sec = document.createElement("section");
+    sec.innerHTML = '<h2><span class="n">' + (i + 1) + '</span>' + o.name + ' <span class="tag">' + o.tag + '</span></h2><p class="why">' + o.why + '</p><div class="frame">' + o.draw() + '</div>';
+    out.appendChild(sec);
+  });
+})();
+</script>

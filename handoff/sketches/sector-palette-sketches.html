@@ -1,0 +1,216 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Nine sectors, nine colours — palette sketches</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--teal:#255862;--teal-dark:#1c454d;--teal-tint:#eef3f4;--ink:#1a2226;--ink-soft:#5b686d;--border:#e2e7e8;--border-strong:#c3ccce;--paper:#f4f5f2;}
+  body{margin:0;padding:36px 44px 60px;font-family:'Source Sans 3',sans-serif;color:var(--ink);background:#fff;}
+  h1{font-size:24px;margin:0 0 6px;}
+  p.lede{margin:0 0 10px;color:var(--ink-soft);max-width:860px;font-size:15px;line-height:1.5;}
+  .rules{margin:0 0 26px;max-width:860px;font-size:13.5px;line-height:1.5;color:var(--ink);padding-left:18px;}
+  .rules li{margin:2px 0;}
+  .rules b{font-weight:600;}
+  .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:26px 32px;max-width:1300px;}
+  .card{border:1px solid var(--border);border-radius:10px;padding:18px 20px 16px;background:#fff;}
+  .card.is-pick{border-color:var(--teal);box-shadow:0 0 0 1px var(--teal) inset;}
+  .card h2{font-size:16px;margin:0 0 2px;display:flex;align-items:baseline;gap:10px;}
+  .card h2 .tag{font-size:11.5px;font-weight:600;color:#fff;background:var(--teal);border-radius:3px;padding:1px 6px;}
+  .card .sub{font-size:13px;color:var(--ink-soft);margin:0 0 12px;line-height:1.45;}
+  .card svg{display:block;}
+  .map{width:100%;height:auto;}
+  .key{display:flex;flex-wrap:wrap;gap:3px 14px;margin:10px 0 0;font-size:12.5px;}
+  .key span{display:inline-flex;align-items:center;gap:6px;}
+  .key i{width:13px;height:13px;border-radius:3px;display:inline-block;}
+  .key small{color:var(--ink-soft);font-variant-numeric:tabular-nums;margin-left:2px;}
+  .cvd{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:12px;}
+  .cvd figure{margin:0;}
+  .cvd figcaption{font-size:11.5px;color:var(--ink-soft);margin-top:4px;}
+  .ui{display:flex;align-items:center;gap:8px;margin-top:12px;padding:8px 10px;background:var(--paper);border-radius:6px;font-size:12px;color:var(--ink-soft);flex-wrap:wrap;}
+  .ui .seg{display:inline-flex;border:1px solid var(--border-strong);border-radius:4px;overflow:hidden;}
+  .ui .seg b{padding:4px 9px;font-size:12px;font-weight:600;background:var(--teal);color:#fff;}
+  .ui .seg span{padding:4px 9px;font-size:12px;color:var(--teal);font-weight:600;}
+  .ui .tier{display:inline-flex;align-items:center;gap:5px;}
+  .ui .tier i{width:11px;height:11px;display:inline-block;}
+  .ui .cx{display:inline-block;width:60px;height:10px;background:linear-gradient(90deg,#e4a368,#f8e7d7,#008379);}
+  .ui .sw{display:inline-flex;gap:2px;margin-left:auto;}
+  .ui .sw i{width:14px;height:14px;display:inline-block;border-radius:2px;}
+  .verdict{margin-top:10px;font-size:12.5px;line-height:1.5;color:var(--ink);}
+  .verdict b{font-weight:700;}
+  .stat{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;margin-top:8px;font-size:12px;color:var(--ink-soft);font-variant-numeric:tabular-nums;}
+  .stat dt{margin:0;}
+  .stat dd{margin:0;color:var(--ink);}
+  .ok{color:#2f7d3b;font-weight:700;} .warn{color:#b26a00;font-weight:700;} .bad{color:#b23a3a;font-weight:700;}
+  .note{max-width:860px;font-size:13px;color:var(--ink-soft);line-height:1.5;margin:30px 0 0;}
+</style>
+<h1>Nine sectors, nine colours</h1>
+<p class="lede">The treemap keeps its nine sector colours. Today three of them are the same warm red — professional, education &amp; health and trade &amp; transportation, which happen to be the three largest blocks and sit side by side — and for colour-blind readers manufacturing, construction and other collapse into one. Each sketch below tiles the real 2024 map (877 industries) in a candidate palette, shows it as a deuteranope and a protanope would see it, and scores the closest pair of colours (OKLab ΔE&nbsp;×100; 8 is the target, under 5 is a merge). The strip under each key sets the swatches beside the page's own teal, tier chips and complexity ramp.</p>
+<ul class="rules">
+  <li><b>Vary lightness, not just hue.</b> Tableau 10 and Observable 10 separate confusable colours by lightness; Datawrapper's guide says the same, and that a palette should still read in greyscale.</li>
+  <li><b>Off the pure hues, softer on the big areas.</b> Datawrapper: shift 5–10° off the primaries; desaturate light colours, put the saturation in the dark ones. Large blocks in loud colour tire the eye.</li>
+  <li><b>Nine is the ceiling.</b> Paul Tol's <i>muted</i> scheme is the only published 9-colour set rated colour-blind safe; ColorBrewer's safe palettes stop at four. Past eight, position and labels have to carry some of the load — the map has both.</li>
+  <li><b>Keep the encodings apart.</b> Teal already means the brand, the traded tier and the complex end of the ramp, so no sector should sit on it.</li>
+</ul>
+<div class="grid" id="grid"></div>
+<p class="note" id="note"></p>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- Machado, Oliveira &amp; Fernandes 2009, severity 1, in linear RGB (the filter default) -->
+    <filter id="deutan" color-interpolation-filters="linearRGB"><feColorMatrix type="matrix" values="0.367322 0.860646 -0.227968 0 0  0.280085 0.672501 0.047413 0 0  -0.011820 0.042940 0.968881 0 0  0 0 0 1 0"/></filter>
+    <filter id="protan" color-interpolation-filters="linearRGB"><feColorMatrix type="matrix" values="0.152286 1.052583 -0.204868 0 0  0.114503 0.786281 0.099216 0 0  -0.003882 -0.048116 1.051998 0 0  0 0 0 1 0"/></filter>
+    <filter id="grey" color-interpolation-filters="linearRGB"><feColorMatrix type="matrix" values="0.2126 0.7152 0.0722 0 0  0.2126 0.7152 0.0722 0 0  0.2126 0.7152 0.0722 0 0  0 0 0 1 0"/></filter>
+  </defs>
+</svg>
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="../../cities-v-5/industries-2024.js"></script>
+<script>
+(function(){
+  const SECTORS = ["Professional & Business","Education & Health","Trade & Transportation","Leisure & Hospitality",
+                   "Financial Activities","Manufacturing","Construction","Other","Natural Resources"];
+  const SHORT = ["Professional","Edu & Health","Trade & Transport","Leisure","Financial","Manufacturing","Construction","Other","Natural"];
+  /* every candidate, in the sectors' order above */
+  const OPTIONS = [
+    { id: "current", name: "Today", sub: "The reference build's palette: three warm reds on the three biggest blocks, and two teals beside the brand's own.",
+      hex: ["#b94a44","#e8836e","#e0938a","#8fd0d8","#f4c542","#4f8fa3","#c084a2","#8b7ba8","#7cb342"] },
+    { id: "tableau", name: "Tableau 10", sub: "Maureen Stone's 2016 set, softer than its 'Crayola' predecessor and the default in most tools since; nine of its ten, with grey on Other.",
+      hex: ["#4e79a7","#e15759","#f28e2b","#76b7b2","#edc948","#9c755f","#b07aa1","#bab0ac","#59a14f"] },
+    { id: "observable", name: "Observable 10", sub: "Observable Plot's 2024 default, tuned on light and dark grounds; vivid, and built for lines and dots more than for areas.",
+      hex: ["#4269d0","#ff725c","#efb118","#6cc5b0","#a463f2","#9c6b4e","#ff8ab7","#9498a0","#3ca951"] },
+    { id: "okabe", name: "Okabe–Ito + grey", sub: "The 2008 colour-blind set (eight, with black), the standard in the sciences; a grey stands in for the ninth.",
+      hex: ["#0072b2","#d55e00","#e69f00","#56b4e9","#f0e442","#009e73","#cc79a7","#999999","#000000"] },
+    { id: "tol", name: "Paul Tol, muted", sub: "The only published nine-colour scheme rated colour-blind safe (SRON technical note, 2021); wine on professional, rose on health, sand on trade.",
+      hex: ["#882255","#cc6677","#ddcc77","#88ccee","#999933","#332288","#aa4499","#44aa99","#117733"] },
+    { id: "houseA", name: "House, mint trade", pick: true, sub: "Made for this page: navy, coral and mint on the three big blocks, lightness stepped so the colour-blind reading holds, chroma kept in the page's register; teal left to the brand.",
+      hex: ["#485fa2","#dc8271","#86c8ab","#9adfe7","#e5c95e","#7f3c6b","#a25d37","#896885","#5d9850"] },
+    { id: "houseC", name: "House, periwinkle trade (was opt-2)", sub: "The same set with trade &amp; transportation in a light periwinkle instead of mint: the three big blocks are then navy, coral and sky, the widest spread of all.",
+      hex: ["#485fa2","#dc8271","#92b2eb","#9adfe7","#e5c95e","#7f3c6b","#a25d37","#896885","#5d9850"] },
+    { id: "houseL", name: "House, lavender trade", sub: "The same set with trade &amp; transportation in lavender: navy, coral and lavender on the three big blocks, three families still, and the blues stay two. Keeps every floor of the mint set and lifts the normal-vision minimum to 10.9. Was opt-2 for an hour on 2026-09-30; Nil asked for a set of another character.",
+      hex: ["#485fa2","#dc8271","#b8a9dc","#9adfe7","#e5c95e","#7f3c6b","#a25d37","#896885","#5d9850"] },
+    { id: "tolPick", name: "Paul Tol muted, grey Other", pick: true, sub: "The one published nine-colour scheme rated colour-blind safe, with its teal given up to the brand (a grey stands on Other) and its rose a shade lighter so the labels on it read 4.5 to 1. Wine, rose and sand on the three big blocks; every pair clears 8 in normal, protan and deutan vision (9.5 / 9.2 / 8.0). Shipped as opt-2 on 2026-09-30.",
+      hex: ["#882255","#cf6b7b","#ddcc77","#88ccee","#999933","#332288","#aa4499","#b3b3b3","#117733"] },
+    { id: "houseP", name: "House, peach trade", sub: "A warm alternative: keeps the mint set's floors (normal 9.7, deutan 6.7) but puts two warm blocks, coral and peach, side by side on the map.",
+      hex: ["#485fa2","#dc8271","#f2bda3","#9adfe7","#e5c95e","#7f3c6b","#a25d37","#896885","#5d9850"] },
+    { id: "houseS", name: "House, slate trade", sub: "A blue-grey: cool and quiet, clears every check, but a third blue beside navy and sky, which is what periwinkle was.",
+      hex: ["#485fa2","#dc8271","#9db3c6","#9adfe7","#e5c95e","#7f3c6b","#a25d37","#896885","#5d9850"] },
+    { id: "houseR", name: "House, rose trade", sub: "A rose: clears every check, but sits beside the coral of education &amp; health, so the two biggest blocks are both pink.",
+      hex: ["#485fa2","#dc8271","#e8a6b8","#9adfe7","#e5c95e","#7f3c6b","#a25d37","#896885","#5d9850"] },
+  ];
+
+  /* ---- colour maths: OKLab, CVD simulation, contrast ---- */
+  const hex2rgb = h => { const s = h.replace("#", ""); return [0, 2, 4].map(i => parseInt(s.slice(i, i + 2), 16) / 255); };
+  const lin = v => v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+  const gam = v => v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - 0.055;
+  const clamp = v => Math.max(0, Math.min(1, v));
+  function oklab([r, g, b]){
+    const R = lin(r), G = lin(g), B = lin(b);
+    const l = Math.cbrt(0.4122214708 * R + 0.5363325363 * G + 0.0514459929 * B);
+    const m = Math.cbrt(0.2119034982 * R + 0.6806995451 * G + 0.1073969566 * B);
+    const s = Math.cbrt(0.0883024619 * R + 0.2817188376 * G + 0.6299787005 * B);
+    return [0.2104542553 * l + 0.7936177850 * m - 0.0040720468 * s,
+            1.9779984951 * l - 2.4285922050 * m + 0.4505937099 * s,
+            0.0259040371 * l + 0.7827717662 * m - 0.8086757660 * s];
+  }
+  const MACH = {
+    protan: [[0.152286, 1.052583, -0.204868], [0.114503, 0.786281, 0.099216], [-0.003882, -0.048116, 1.051998]],
+    deutan: [[0.367322, 0.860646, -0.227968], [0.280085, 0.672501, 0.047413], [-0.011820, 0.042940, 0.968881]],
+    normal: [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+  };
+  const sim = (rgb, k) => { const L = rgb.map(lin), M = MACH[k]; return M.map(r => clamp(gam(r[0] * L[0] + r[1] * L[1] + r[2] * L[2]))); };
+  const dE = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]) * 100;
+  const relLum = ([r, g, b]) => 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+  const contrast = (h1, h2) => { const a = relLum(hex2rgb(h1)), b = relLum(hex2rgb(h2)); return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05); };
+  const inkFor = h => contrast(h, "#ffffff") >= contrast(h, "#1a2226") ? "#ffffff" : "#1a2226";
+  const TEAL = ["#255862", "#59838c"].map(h => oklab(hex2rgb(h)));
+  function score(hex){
+    const labs = {}; ["normal", "protan", "deutan"].forEach(k => { labs[k] = hex.map(h => oklab(sim(hex2rgb(h), k))); });
+    const out = {};
+    ["normal", "protan", "deutan"].forEach(k => {
+      let min = 1e9, pair = "";
+      for (let i = 0; i < 9; i++) for (let j = i + 1; j < 9; j++){ const d = dE(labs[k][i], labs[k][j]); if (d < min){ min = d; pair = SHORT[i] + " / " + SHORT[j]; } }
+      out[k] = { min: min, pair: pair };
+    });
+    out.textFail = hex.map((h, i) => { const c = Math.max(contrast(h, "#ffffff"), contrast(h, "#1a2226")); return c < 4.5 ? SHORT[i] + " " + c.toFixed(1) + ":1" : null; }).filter(Boolean);
+    out.nearTeal = hex.map((h, i) => { const d = Math.min(...TEAL.map(t => dE(oklab(hex2rgb(h)), t))); return d < 9 ? SHORT[i] + " " + d.toFixed(0) : null; }).filter(Boolean);
+    const Ls = hex.map(h => oklab(hex2rgb(h))[0]);
+    out.L = [Math.min(...Ls), Math.max(...Ls)];
+    return out;
+  }
+
+  /* ---- one tiling of the real map, coloured per option ---- */
+  const D = window.BOSTON_INDUSTRIES_2024, F = D.fields;
+  const rows = D.rows.map(a => { const o = {}; F.forEach((f, i) => o[f] = a[i]); return o; });
+  const secLabel = Object.fromEntries(D.sectors.map(s => [s.key, s.label]));
+  const W = 600, H = 330;
+  function tile(){
+    const bySec = d3.group(rows, r => r.sectorKey);
+    const tree = { children: D.sectors.map(s => ({ sector: s.label, children: [...d3.group(bySec.get(s.key) || [], r => r.group)]
+      .map(([g, l]) => ({ group: g, children: l.map(r => ({ r: r, value: r.employ })) })) })) };
+    const root = d3.hierarchy(tree).sum(d => d.value || 0)
+      .sort((a, b) => (a.depth === 1 && b.depth === 1) ? 0 : (b.value - a.value));
+    d3.treemap().size([W, H]).paddingInner(1).paddingOuter(1).round(true)(root);
+    return root.leaves().filter(l => l.x1 - l.x0 >= 1 && l.y1 - l.y0 >= 1);
+  }
+  const leaves = tile();
+  const SI = Object.fromEntries(SECTORS.map((s, i) => [s, i]));
+  function mapSvg(hex, cls, filter, labels){
+    const idx = r => SI[secLabel[r.sectorKey]];
+    let s = '<svg class="' + cls + '" viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg"' + (filter ? ' style="filter:url(#' + filter + ')"' : '') + '>';
+    s += '<rect width="' + W + '" height="' + H + '" fill="#fff"/>';
+    leaves.forEach(l => {
+      const r = l.data.r, c = hex[idx(r)];
+      s += '<rect x="' + l.x0 + '" y="' + l.y0 + '" width="' + (l.x1 - l.x0) + '" height="' + (l.y1 - l.y0) + '" fill="' + c + '"/>';
+    });
+    if (labels){
+      leaves.filter(l => (l.x1 - l.x0) >= 62 && (l.y1 - l.y0) >= 26).forEach(l => {
+        const r = l.data.r, c = hex[idx(r)];
+        const name = (r.short || r.name);
+        const maxCh = Math.floor((l.x1 - l.x0 - 6) / 5.6);
+        const txt = name.length > maxCh ? name.slice(0, Math.max(3, maxCh - 1)) + "…" : name;
+        s += '<text x="' + (l.x0 + 3) + '" y="' + (l.y0 + 12) + '" font-size="10.5" font-weight="500" fill="' + inkFor(c) + '" font-family="Source Sans 3, sans-serif">' + txt.replace(/&/g, "&amp;") + '</text>';
+      });
+    }
+    return s + '</svg>';
+  }
+  const tone = v => v >= 8 ? "ok" : v >= 5 ? "warn" : "bad";
+  const grid = document.getElementById("grid");
+  OPTIONS.forEach(o => {
+    const sc = score(o.hex);
+    const card = document.createElement("div");
+    card.className = "card" + (o.pick ? " is-pick" : "");
+    card.innerHTML =
+      '<h2>' + o.name + (o.pick ? ' <span class="tag">house</span>' : '') + '</h2><p class="sub">' + o.sub + '</p>' +
+      mapSvg(o.hex, "map", null, true) +
+      '<div class="key">' + SECTORS.map((s, i) => '<span><i style="background:' + o.hex[i] + '"></i>' + s.replace(/&/g, "&amp;") + '<small>' + o.hex[i] + '</small></span>').join("") + '</div>' +
+      '<div class="cvd">' +
+        '<figure>' + mapSvg(o.hex, "map", "deutan", false) + '<figcaption>Deuteranopia (red-green, the common one)</figcaption></figure>' +
+        '<figure>' + mapSvg(o.hex, "map", "protan", false) + '<figcaption>Protanopia</figcaption></figure>' +
+        '<figure>' + mapSvg(o.hex, "map", "grey", false) + '<figcaption>Greyscale: the lightness ladder</figcaption></figure>' +
+      '</div>' +
+      '<div class="ui"><span class="seg"><b>Treemap</b><span>Ranked</span></span>' +
+        '<span class="tier"><i style="background:#255862"></i>Traded</span><span class="tier"><i style="background:#59838c"></i>Partly</span><span class="tier"><i style="background:#b9ccd0"></i>Local</span>' +
+        '<span>complexity <span class="cx"></span></span>' +
+        '<span class="sw">' + o.hex.map(h => '<i style="background:' + h + '"></i>').join("") + '</span></div>' +
+      '<dl class="stat">' +
+        '<dt>Closest pair, normal vision</dt><dd><span class="' + tone(sc.normal.min) + '">ΔE ' + sc.normal.min.toFixed(1) + '</span> · ' + sc.normal.pair + '</dd>' +
+        '<dt>Closest pair, deuteranopia</dt><dd><span class="' + tone(sc.deutan.min) + '">ΔE ' + sc.deutan.min.toFixed(1) + '</span> · ' + sc.deutan.pair + '</dd>' +
+        '<dt>Closest pair, protanopia</dt><dd><span class="' + tone(sc.protan.min) + '">ΔE ' + sc.protan.min.toFixed(1) + '</span> · ' + sc.protan.pair + '</dd>' +
+        '<dt>Lightness range (OKLab L)</dt><dd>' + sc.L[0].toFixed(2) + ' – ' + sc.L[1].toFixed(2) + '</dd>' +
+        '<dt>Label ink under 4.5:1</dt><dd>' + (sc.textFail.length ? '<span class="bad">' + sc.textFail.join(", ") + '</span>' : '<span class="ok">none</span>') + '</dd>' +
+        '<dt>Within ΔE 9 of the UI teals</dt><dd>' + (sc.nearTeal.length ? '<span class="warn">' + sc.nearTeal.join(", ") + '</span>' : '<span class="ok">none</span>') + '</dd>' +
+      '</dl>' +
+      '<p class="verdict">' + verdict(o, sc) + '</p>';
+    grid.appendChild(card);
+  });
+  function verdict(o, sc){
+    const worst = Math.min(sc.normal.min, sc.deutan.min, sc.protan.min);
+    if (o.id === "current") return "<b>The problem, measured.</b> Two of the three biggest blocks are 4 apart, and three sectors merge for a colour-blind reader.";
+    if (o.id === "tableau") return "<b>Familiar and calm</b>, but nine of Tableau's ten were never meant to be told apart at once: leisure and other, and health and natural resources, merge without red-green vision.";
+    if (o.id === "observable") return "<b>Modern and loud.</b> Made for marks on a chart, not areas; on 26% of a map the blue and the orange shout over the page's teal, and the pink and brown merge for a deuteranope.";
+    if (o.id === "okabe") return "<b>Safe on paper</b>, but a black sector and an acid yellow have no place in this UI, and construction and other still merge for a deuteranope.";
+    if (o.id === "tol") return "<b>Built for nine</b> and it shows: no pair under 5 in any vision. The cost is the register - indigo, purple and wine at full chroma sit heavier than anything else on the page, and one sector lands on teal.";
+    return "<b>Every pair clears 8</b> except professional / other for a protanope at " + sc.protan.min.toFixed(1) + ", where the map's grouping and the key take over. Chroma stays where the page's own colours sit, the three big blocks are three different families, and teal is left alone.";
+  }
+  document.getElementById("note").innerHTML = "Scores are the smallest OKLab distance (×100) between any two of the nine, computed here in the page; colour-blind vision is simulated with the Machado, Oliveira &amp; Fernandes (2009) matrices at full severity, the same model the Datawrapper and Viz Palette checkers use. Label ink is whichever of white or the page's ink reads better on the fill; the treemap's own labels are 12px, where WCAG asks 4.5:1.";
+})();
+</script>

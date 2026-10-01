@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>The navigation bar: grounds that are not white</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{--teal:#255862;--teal-tint:#eef3f4;--ink:#1a2226;--ink-soft:#526066;--border:#e2e7e8;--border-strong:#c3ccce;--paper:#f4f5f2;}
+  *{box-sizing:border-box;}
+  body{margin:0;padding:40px 44px 80px;font-family:'Source Sans 3',sans-serif;color:var(--ink);background:#fff;}
+  h1{font-size:22px;margin:0 0 6px;font-weight:700;letter-spacing:-.2px;}
+  .sub{margin:0 0 34px;color:var(--ink-soft);font-size:14px;line-height:1.55;max-width:860px;}
+  section{margin:0 0 40px;max-width:1000px;}
+  h2{font-size:15px;font-weight:700;margin:0 0 3px;display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
+  h2 .n{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;
+        background:var(--teal);color:#fff;font-size:12px;font-weight:700;}
+  h2 .tag{font-size:11.5px;font-weight:600;color:var(--teal);background:var(--teal-tint);border-radius:4px;padding:2px 8px;}
+  h2 .tag.warn{color:#8a4a12;background:#fbf0e3;}
+  .why{margin:0 0 12px;font-size:13px;color:var(--ink-soft);line-height:1.5;max-width:860px;}
+  .why code{font-size:12px;background:var(--paper);padding:1px 5px;border-radius:3px;}
+  /* the live bars: the real page, cropped to its two bars; the switch at its foot is cropped away */
+  .crop{position:relative;width:980px;height:98px;overflow:hidden;border:1px solid var(--border-strong);border-radius:6px;background:#fff;}
+  .crop img{position:absolute;left:0;top:0;width:980px;height:auto;display:block;}
+  .crop iframe{position:absolute;left:0;top:0;width:1440px;height:640px;border:0;transform:scale(.6806);transform-origin:0 0;}
+  .nums{margin:8px 0 0;font-size:12px;color:var(--ink-soft);}
+  .nums b{color:var(--ink);font-weight:600;}
+  .foot{margin-top:6px;font-size:13px;color:var(--ink-soft);max-width:860px;line-height:1.55;}
+</style>
+<h1>The navigation bar: grounds that are not white</h1>
+<p class="sub">The dark teal bar is heavy: two full-height bands the weight of the teal closes, over the content they introduce. These are the other ways of not being white, each the real bars of v-5 (live, so the chips, the location and the journey button work), each with the contrast it measures. Two of the pale ones used grounds the site already has - the tint its chosen blanks and hovers wear, and the paper its control tray sits on - so nothing new enters the palette. The dark teal and the light bars are here for comparison.</p>
+
+<section>
+  <h2><span class="n">1</span>Light <span class="tag">in the menu</span></h2>
+  <p class="why">White bars, the teal logo. The reference point.</p>
+  <div class="crop"><iframe title="Light bars" src="../../cities-v-5/index.html#worker-flows" loading="lazy"></iframe></div>
+  <p class="nums"><b>Ground</b> #ffffff · <b>Part names</b> 7.9 / 6.5 to 1 · <b>Text</b> 6.5 to 1 or better</p>
+</section>
+
+<section>
+  <h2><span class="n">2</span>Dark teal <span class="tag warn">too heavy, not kept</span></h2>
+  <p class="why">Both bars in <code>--teal-dark</code> #1c454d with the white logo, as shipped a moment ago. White on it reads 10.5 to 1, and that is the trouble: it is the darkest thing on a page whose figures are the subject.</p>
+  <div class="crop"><img alt="Dark teal bars" src="nav-tone-images/teal.png"></div>
+  <p class="nums"><b>Ground</b> #1c454d · <b>Part names</b> 10.5 / 7.1 to 1 · <b>Text</b> 7.1 to 1 or better</p>
+</section>
+
+<section>
+  <h2><span class="n">3</span>Mid teal <span class="tag warn">not kept</span></h2>
+  <p class="why">Keeps the white logo and the colour, at about half the weight: #33707d, the lightest teal that still holds white text at 5.6 to 1. The bolder of the alternatives, and the only one that stays a coloured band.</p>
+  <div class="crop"><img alt="Mid teal bars" src="nav-tone-images/mid.png"></div>
+  <p class="nums"><b>Ground</b> #33707d · <b>Part names</b> 5.6 / 5.2 to 1 · <b>Text</b> 4.7 to 1 or better · location edge 3.4 to 1</p>
+</section>
+
+<section>
+  <h2><span class="n">4</span>Tint <span class="tag">in the menu</span></h2>
+  <p class="why">Both bars on <code>--teal-tint</code> #eef3f4, the tint the site already lays under a chosen blank or a hover. The logo stays the teal one; the location becomes a white field and the section you are in a white lifted tile, the same tile the control row uses for its chosen button; the sections behind you wear a check in a white disc; and the journey button, the one filled teal thing on the bar, becomes its accent. It is the quietest way of being coloured.</p>
+  <div class="crop"><iframe title="Tint bars" src="../../cities-v-5/index.html?nav=tint#worker-flows" loading="lazy"></iframe></div>
+  <p class="nums"><b>Ground</b> #eef3f4 · <b>Part names</b> 7.1 / 5.8 to 1 · <b>Text</b> 5.8 to 1 or better · location edge 3.7 to 1</p>
+</section>
+
+<section>
+  <h2><span class="n">5</span>Wash <span class="tag warn">not kept</span></h2>
+  <p class="why">The same, a step deeper: #e1ebed. It reads as colour rather than as off-white, and the white field and tile stand out from it more. The soft grey text is still 5.4 to 1.</p>
+  <div class="crop"><img alt="Wash bars" src="nav-tone-images/wash.png"></div>
+  <p class="nums"><b>Ground</b> #e1ebed · <b>Part names</b> 6.5 / 5.4 to 1 · <b>Text</b> 5.4 to 1 or better · location edge 3.4 to 1</p>
+</section>
+
+<section>
+  <h2><span class="n">6</span>Paper <span class="tag warn">not kept</span></h2>
+  <p class="why">The warm grey the control tray sits on, #f4f5f2: not a teal at all, so the bar recedes furthest and only the logo and the journey button carry colour.</p>
+  <div class="crop"><img alt="Paper bars" src="nav-tone-images/paper.png"></div>
+  <p class="nums"><b>Ground</b> #f4f5f2 · <b>Part names</b> 7.2 / 6.0 to 1 · <b>Text</b> 6.0 to 1 or better · location edge 3.8 to 1</p>
+</section>
+
+<script>
+  /* each frame is the real page: once it has opened its section, take it to the top so both bars show */
+  document.querySelectorAll('.crop iframe').forEach(function(f){
+    f.addEventListener('load', function(){
+      [1800, 3500].forEach(function(ms){ setTimeout(function(){
+        try { var p = f.contentDocument.querySelector('.pages'); if (p){ p.style.scrollBehavior = 'auto'; p.scrollTop = 0; } } catch (e) {}
+      }, ms); });
+    });
+  });
+</script>
+<p class="foot">Decided: the Site Layout pill at the bottom left of v-5 offers <b>Light</b> and <b>Tint</b> (1 and 4) as its Navigation bar. The other four are kept here as pictures taken from the live bars; their code is in the repository at commit <code>bf2a67b</code>.</p>
