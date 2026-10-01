@@ -3151,8 +3151,13 @@
   #miFigure[data-step="0"] .mi-head{min-height:0;padding-bottom:30px;margin-bottom:3px;}
   #miFigure[data-step="4"] .mi-head > .mi-view:not(.mi-sort),
   #miFigure[data-step="0"] .mi-head > .mi-view:not(.mi-sort){
-    position:relative;left:auto;right:auto;bottom:auto;padding-right:36px;
+    position:relative;left:auto;right:auto;bottom:auto;
   }
+  /* the row has the head's whole width - except under opt's Layout 1, where
+     the study word sits in the head's top-right corner and the row stops
+     short of it; in the scrolly the word rides the beat's counter instead */
+  #miFigure[data-step="4"] .mi-head:has(> .mi-studies) > .mi-view:not(.mi-sort),
+  #miFigure[data-step="0"] .mi-head:has(> .mi-studies) > .mi-view:not(.mi-sort){padding-right:36px;}
   .mi-view .mi-titles{display:inline-grid;align-items:center;margin-right:2px;}
   /* the year, beside the title: a plain dropdown in the head's own dress */
   .mi-view .mi-year{display:inline-flex;align-items:center;margin-right:2px;}
