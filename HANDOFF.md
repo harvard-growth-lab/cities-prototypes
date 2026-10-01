@@ -198,6 +198,27 @@ rule (`STATE` table), and `setStep` drops what a beat cannot carry.
 - `view` — `"map"` or `"alt"` (Ranked bars); `colorBy` — `"sector"` or
   `"complexity"` (complexity colouring hides the key and resets the filter);
   `barSort` — the bars' order.
+- **The names' gutter is measured** (2026-10-01). The bars and the ranking
+  set their names right-aligned in a gutter on the left. It was a fixed 292
+  units (`BML`, `ML`), the width the phone needs with names at 18 units; at
+  the desktop's 13 the longest name needs about 200, so about 100 units
+  stood empty at the figure's left edge and the chart read narrower than
+  the map (Nil's report). Now `barGutter(names)` and `rankGutter(ranked)`
+  size it to the widest name it holds at the type the names are set in
+  (`measureFor(cls)`: a probe's own `getComputedTextLength` when the
+  figure is on screen, a canvas in the same computed font while the page
+  is hidden); 292 stays the ceiling. Each set
+  of bars keeps its own `{ml, scale}` (`barGeoAll`, `barGeoTrad`), fitted
+  inside `drawBars`, and `asBars` reads the matching scale; each ranking
+  carries `R.ml` (never narrower than the "Most specialized…" label over
+  its leading rows). Names carry `data-max` for `refitNames`.
+  `refitGutters()` re-fits and redraws all four when `typeSig()` changes
+  (the names' computed font, or blind → measurable): from the debounced
+  resize (a width crossing a breakpoint), from `remeasure` only while the
+  last fit was blind, and, forced, once the page's face has loaded. It
+  closes an open tier menu and keeps a lit row lit; a paint without
+  animation now interrupts a transition still running on the cells, whose
+  targets would otherwise overwrite the new fit.
 - Year: `#miYear` (2024 / 2014) **destroys and rebuilds** the figure over
   the other year's rows. Every listener is attached through the `on()`
   helper, which records disposers. **Never name a local variable `on`

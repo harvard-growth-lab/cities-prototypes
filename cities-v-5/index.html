@@ -4843,8 +4843,8 @@
        wide, a 0.434 render of the 880 box, so holding 9px on screen wants
        roughly x2. Most classes cannot take it: the sizes below are each
        class's ceiling, worked from the geometry treemap.js bakes in —
-       .mi-name 18px (31 chars of the longest label fills the 282-unit
-       gutter), .mi-colhead 14px ("tradability" would meet the last tick),
+       .mi-name 18px (31 chars of the longest label fills 282 units, the
+       ceiling of the names' gutter, which is otherwise fitted to them), .mi-colhead 14px ("tradability" would meet the last tick),
        .mi-lab 14px (fitLabel budgets 8 units a character and sets the
        baseline at box.y+11), .mi-val 16px (it reaches the tradability
        track). Everything else has margin and simply doubles. */

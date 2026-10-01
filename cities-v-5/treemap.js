@@ -3428,7 +3428,49 @@
        place to stand: ordered by jobs answers "what is biggest", and the
        column beside it answers "and does it sell outward", which is the
        question this beat is actually asking */
-    const NB = 25, BML = 292, BMT = 62, BRH = 17.2, BBAR = 12, BPR = 740;
+    const NB = 25, BMT = 62, BRH = 17.2, BBAR = 12, BPR = 740;
+    /* ---- the names' gutter ----
+       The bars and the ranking set their names in a gutter on the left,
+       right-aligned against the plot. It was a fixed 292 units: the width
+       the phone needs, where the names are set at 18 units and the longest
+       fills it. At the desktop's 13 the longest name needs about 200, and
+       the rest stood empty at the figure's left edge, so the chart read
+       narrower than the map it replaces. The gutter is now as wide as the
+       widest name it holds, at the size the names are set at where the
+       figure stands - measured on a canvas, which reads true while the
+       page is still hidden, where getComputedTextLength reads nought. The
+       old width stays as the ceiling; a name past it is trimmed on paint. */
+    const GUT_MAX = 292, GUT_MIN = 60, TOP_LAB = "Most specialized tradable industries";
+    const gutCtx = document.createElement("canvas").getContext("2d");
+    /* a measure for one class of text in this figure: off the page's own
+       text when the figure is on screen - the measure refitNames tests the
+       names against - and off a canvas in the same type while the page is
+       still hidden, where the page's measure reads nought. The probe is
+       gone again before anything else looks at the svg. */
+    const measureFor = cls => {
+      const t = svg.append("text").attr("class", cls).style("visibility", "hidden").text("M");
+      const node = t.node(), cs = getComputedStyle(node);
+      const font = (cs.fontWeight || "400") + " " + (parseFloat(cs.fontSize) || 13) + "px " + (cs.fontFamily || "sans-serif");
+      const live = !!node.getComputedTextLength && node.getComputedTextLength() > 0;
+      return { live, font, done: () => t.remove(),
+        w: str => {
+          if (live){ node.textContent = str; return node.getComputedTextLength(); }
+          gutCtx.font = font; return gutCtx.measureText(str).width;
+        } };
+    };
+    const widest = (cls, strs) => {
+      const m = measureFor(cls), w = strs.reduce((a, str) => Math.max(a, m.w(str)), 0);
+      m.done();
+      return w;
+    };
+    /* what the gutters were last fitted to - the type, and whether it could
+       be measured on the page - so a resize that changes neither costs a
+       comparison and no more */
+    const typeSig = () => ["mi-name", "mi-name is-top", "mi-toplab"]
+      .map(c => { const m = measureFor(c); m.done(); return m.font + (m.live ? "/live" : "/blind"); }).join("|");
+    /* the bars' gutter: the widest name, the 10 between it and the plot,
+       and 2 to spare */
+    const barGutter = names => Math.max(GUT_MIN, Math.min(GUT_MAX, Math.ceil(widest("mi-name", names)) + 12));
     /* the bars' head is the ranking's head, line for line: the column names
        on one baseline, a rule under each column, the tick row below that */
     const BHEAD_Y = BMT - 46, BRULE_Y = BMT - 36, BTICK_Y = BMT - 14, BGRID_TOP = BMT - 8;
@@ -3457,8 +3499,12 @@
         : rows;
     };
     const byJobsAll = industryData.slice().sort((a, b) => b.employ - a.employ);
-    const barScale = d3.scaleLinear()
-      .domain([0, (byJobsAll[0] ? byJobsAll[0].employ : 1) * 1.04]).range([BML + 12, BPR]);
+    /* each set of bars keeps its own gutter and scale - the whole mix's
+       and the tradable cluster's hold different names - fitted whenever
+       the set is drawn, and read by the cells that become its bars */
+    const mkBarGeo = () => ({ ml: GUT_MAX, scale: d3.scaleLinear()
+      .domain([0, (byJobsAll[0] ? byJobsAll[0].employ : 1) * 1.04]).range([GUT_MAX + 12, BPR]) });
+    const barGeoAll = mkBarGeo(), barGeoTrad = mkBarGeo();
     let closeMenuRef = null;
     /* the bars answer to both filters, so either one has to ask what the
        other leaves before it takes anything away */
@@ -3473,6 +3519,7 @@
     const barY = i => BMT + i * BRH + BRH / 2;
     const asBars = (d, rankMap, fill, fallback) => {
       const r = rankMap.get(d.name);
+      const barScale = (rankMap === barRankTrad ? barGeoTrad : barGeoAll).scale;
       return r == null
         ? { box: fallback, fill, op: 0, rx: 0 }
         : { box: { x: barScale(0), y: barY(r) - BBAR / 2,
@@ -3480,7 +3527,7 @@
     };
     window[ctlName + "_CLUSTERS"] = { share: clusterShare, gap: CGAP, width: MI_W };
 
-    const ML = 292, MT = 62, RH = 34, BAR_H = 17, PLOT_R = 712;
+    const MT = 62, RH = 34, BAR_H = 17, PLOT_R = 712;
     /* the three heads share a baseline, and the rules sit under them - the tick
        row keeps its own line below, so the labels of the columns and the
        readings of the scale never sit on the same line. The tick row sits
@@ -3497,7 +3544,6 @@
        subtree, which silently passed every name through untrimmed. So the
        names are trimmed on paint, when the figure is on screen, and the
        character rule stands in until then. */
-    const NAME_MAX = ML - 10 - 30;
     const charFit = n => n.length > 34 ? n.slice(0, 33).replace(/\s+\S*$/, "") + "\u2026" : n;
     function refitNames(){
       svg.selectAll("text.mi-name").each(function(){
@@ -3506,12 +3552,14 @@
         this.textContent = full;
         const w0 = this.getComputedTextLength();
         if (w0 === 0){ this.textContent = charFit(full); return; }
-        if (w0 <= NAME_MAX) return;
+        /* each name knows the room its own gutter gives it */
+        const max = +this.getAttribute("data-max") || (GUT_MAX - 40);
+        if (w0 <= max) return;
         let cut = full;
         while (cut.length > 4){
           cut = cut.slice(0, -1).replace(/\s+$/, "");
           this.textContent = cut + "\u2026";
-          if (this.getComputedTextLength() <= NAME_MAX) return;
+          if (this.getComputedTextLength() <= max) return;
         }
       });
     }
@@ -3610,24 +3658,34 @@
        round the block, "mute" turns the rest grey, "dim" fades it */
     const hlOptEl0 = document.getElementById(p + "HlOpt");
     let hlMode = hlOptEl0 && /^(dim|mute|frame)$/.test(hlOptEl0.value) ? hlOptEl0.value : "frame";
+    /* the ranking's gutter: the badge's room, the widest name - the
+       leading three are set bold - and its clearance; and never narrower
+       than the label over the leading rows, which the plot starts clear of */
+    const rankGutter = ranked => {
+      const names = ranked.map(d => charFit(d.label));
+      const w = Math.max(widest("mi-name is-top", names.slice(0, 3)), widest("mi-name", names.slice(3)));
+      const lab = 4 + widest("mi-toplab", [TOP_LAB]);
+      return Math.max(GUT_MIN, Math.min(GUT_MAX, Math.max(30 + Math.ceil(w) + 12, Math.ceil(lab))));
+    };
     function ranking(rows, among){
       const base = among ? specializedAmong(rows) : specializedWithPeers(rows);
       const ranked = base.sort((a, b) => b.rca - a.rca).slice(0, MI_TOP_N);
+      const ml = rankGutter(ranked);
       /* only the ranking among the clusters - the third beat's - ever
          shows the tier words */
       const right = plotR(among && rankMode === "tier");
-      return { ranked,
+      return { ranked, ml,
         rankIdx: new Map(ranked.map((d, i) => [d.name, i])),   /* by concentration: the badges' order */
         pos: new Map(ranked.map((d, i) => [d.name, i])),       /* the order on screen, which sorting changes */
         rankRow: new Map(ranked.map(d => [d.name, d])),
         xr: d3.scaleLinear()
           .domain([1, (d3.max(ranked, d => Math.max(d.rca, d.peerAvg)) || 2) * 1.06])
-          .range([ML + 12, right]),
+          .range([ml + 12, right]),
         /* the gap against the peer average, symmetric so the average sits
            mid-chart: ahead to the right, behind to the left */
         xg: (function(){
           const g = Math.max(0.5, (d3.max(ranked, d => Math.abs(d.rca - d.peerAvg)) || 0.5) * 1.15);
-          return d3.scaleLinear().domain([-g, g]).range([ML + 12, right]);
+          return d3.scaleLinear().domain([-g, g]).range([ml + 12, right]);
         })() };
     }
     const gapOf = d => d.rca - d.peerAvg;
@@ -3895,12 +3953,12 @@
           .attr("x", d => R.xg(d)).attr("y", TICK_Y).attr("text-anchor", "middle")
           .text(d => (d > 0 ? "+" : "") + d + "\u00d7"));
       AG.append("text").attr("class", "mi-axname")
-        .attr("x", ML + 12).attr("y", HEAD_Y)
+        .attr("x", R.ml + 12).attr("y", HEAD_Y)
         .text("Against the peer average");
       AG.append("text").attr("class", "mi-colhead")
         .attr("x", JOBS_R).attr("y", HEAD_Y).attr("text-anchor", "end").text("Jobs");
       tradHead(AG, R);
-      headRules(AG, ML + 12, plotR(inTier(R)), inTier(R));
+      headRules(AG, R.ml + 12, plotR(inTier(R)), inTier(R));
     }
     /* the tradability column's head, its range on the same line, and the rules
        that make the three columns read as a table head */
@@ -3955,13 +4013,13 @@
           .attr("x", d => R.xr(d)).attr("y", TICK_Y).attr("text-anchor", "middle")
           .text(d => d + "\u00d7"));
       A.append("text").attr("class", "mi-axname")
-        .attr("x", ML + 12).attr("y", HEAD_Y)
+        .attr("x", R.ml + 12).attr("y", HEAD_Y)
         .text("Times more concentrated");
       /* the jobs column: its head, and each row's count at the right edge */
       A.append("text").attr("class", "mi-colhead")
         .attr("x", JOBS_R).attr("y", HEAD_Y).attr("text-anchor", "end").text("Jobs");
       tradHead(A, R);
-      headRules(A, ML + 12, plotR(tierMode), tierMode);
+      headRules(A, R.ml + 12, plotR(tierMode), tierMode);
       /* the leading three by concentration, braced only while that is the order */
       const topN = Math.min(3, R.ranked.length);
       R.brace = A.append("g").attr("class", "mi-bracewrap");
@@ -3970,7 +4028,7 @@
         R.brace.append("path").attr("class", "mi-brace").attr("d", "M4," + y0 + "V" + y1);
         R.brace.append("text").attr("class", "mi-toplab")
           .attr("x", 4).attr("y", y0 - 9)
-          .text("Most specialized tradable industries");
+          .text(TOP_LAB);
       }
       const row = G.selectAll("g.mi-row").data(R.ranked, d => d.name)
         .join("g").attr("class", "mi-row")
@@ -3981,7 +4039,8 @@
         .attr("x", 0).attr("y", -RH / 2).attr("width", MI_W).attr("height", RH);
       const top = d => R.rankIdx.get(d.name) < 3;
       row.append("text").attr("class", d => "mi-name" + (top(d) ? " is-top" : ""))
-        .attr("x", ML - 10).attr("y", 4).attr("text-anchor", "end")
+        .attr("x", R.ml - 10).attr("y", 4).attr("text-anchor", "end")
+        .attr("data-max", R.ml - 40)
         .attr("data-full", d => d.label).text(d => charFit(d.label));
       row.append("text").attr("class", d => "mi-val" + (top(d) ? " is-top" : ""))
         .attr("x", d => Math.max(R.xr(d.rca), R.xr(d.peerAvg)) + 9).attr("y", 4)
@@ -4076,6 +4135,14 @@
       G.selectAll("*").remove();
       const rows = barOrder(list);
       const tierMode = barMode === "tier";
+      /* the bars name their industries as the map does, by the short name;
+         the gutter is fitted to the names this set holds, and the plot
+         takes the room from there to its right edge */
+      const barName = d => d.label || shortLabel(d.name) || d.name;
+      const geo = G === gBarsTrad ? barGeoTrad : barGeoAll;
+      geo.ml = barGutter(rows.map(d => charFit(barName(d))));
+      geo.scale.range([geo.ml + 12, BPR]);
+      const BML = geo.ml, barScale = geo.scale;
       G.selectAll("g.mi-tick").data(barScale.ticks(4)).join("g").attr("class", "mi-tick")
         .call(g => g.append("line").attr("class", d => "mi-grid" + (d === 0 ? " is-base" : ""))
           .attr("x1", d => barScale(d)).attr("x2", d => barScale(d))
@@ -4109,10 +4176,9 @@
           .attr("x1", seg[0]).attr("x2", seg[1]).attr("y1", BRULE_Y).attr("y2", BRULE_Y);
       });
       const row = G.selectAll("g.mi-row").data(rows, d => d.name).join("g").attr("class", "mi-row");
-      /* the bars name their industries as the map does, by the short name */
-      const barName = d => d.label || shortLabel(d.name) || d.name;
       row.append("text").attr("class", "mi-name")
         .attr("x", BML - 10).attr("y", (d, i) => barY(i) + 4).attr("text-anchor", "end")
+        .attr("data-max", BML - 10)
         .attr("data-full", barName).text(d => charFit(barName(d)));
       /* the reading sits at the end of the bar it belongs to, as the
          ranking's does */
@@ -4144,7 +4210,38 @@
     const reBarRank = () => { barRankAll = new Map(barOrder(barListAll).map((d, i) => [d.name, i])); };
     reBarRank();
     drawBars(byJobsAll, gBarsAll);
-    { const keep = barMode; barMode = "tier"; drawBars(byJobsTrad, gBarsTrad); barMode = keep; }
+    const drawBarsTrad = () => { const keep = barMode; barMode = "tier"; drawBars(byJobsTrad, gBarsTrad); barMode = keep; };
+    drawBarsTrad();
+    /* the names' size follows the page's breakpoints, and its face arrives
+       after the figure is built: when either changes what a name measures,
+       every gutter is fitted again and its chart drawn again. Says whether
+       anything changed, so the caller knows to repaint. */
+    let gutSig = typeSig();
+    function refitGutters(force){
+      const sig = typeSig();
+      if (!force && sig === gutSig) return false;
+      gutSig = sig;
+      /* the heads are drawn again closed, so a tier menu standing open
+         closes with them rather than hanging from a head that is gone */
+      if (closeMenuRef) closeMenuRef();
+      [[R1, gAxis, gAxisGap, gRows], [R2, gAxis2, gAxisGap2, gRows2]].forEach(([R, A, AG, G]) => {
+        const right = R.xr.range()[1];
+        /* a row a phrase in the text has lit stays lit across the redraw */
+        const lit = new Set();
+        G.selectAll("g.mi-row.is-lit").each(d => lit.add(d.name));
+        R.ml = rankGutter(R.ranked);
+        R.xr.range([R.ml + 12, right]); R.xg.range([R.ml + 12, right]);
+        A.selectAll("*").remove(); AG.selectAll("*").remove(); G.selectAll("*").remove();
+        drawGapAxis(R, AG);
+        drawRanking(R, A, G);
+        placeRanking(R, false);
+        if (wireRowsRef) wireRowsRef(R);
+        if (lit.size && R.row) R.row.classed("is-lit", d => lit.has(d.name));
+      });
+      drawBars(barListAll, gBarsAll);
+      drawBarsTrad();
+      return true;
+    }
 
     /* the labels are fitted when a beat paints; when the window crosses one
        of the widths that change the unit scale, the beat on screen is
@@ -4156,7 +4253,10 @@
         timer = setTimeout(() => {
           if (dead) return;
           const u = labUnit();
-          if (lastUnit !== null && u !== lastUnit && step >= 0) paint(step, false);
+          /* the same widths change the names' size, and with it the
+             gutters of the bars and the rankings */
+          const refit = refitGutters();
+          if ((refit || (lastUnit !== null && u !== lastUnit)) && step >= 0) paint(step, false);
           lastUnit = u;
         }, 150);
       });
@@ -4224,8 +4324,11 @@
       const mapOn = view === "map" && (i === 0 || i === 4 || i === 5 || i === 7);
       const opOf = d => mapOn ? 0 : at(d).op;
       const rects = cell.select(".mi-rect");
+      /* a paint without animation also ends one still running on the
+         cells: its targets were fixed when it began, and a gutter fitted
+         since would be overwritten by them */
       const sel = dur ? rects.transition().delay(d => at(d).delay || 0)
-        .duration(dur).ease(d3.easeCubicInOut) : rects;
+        .duration(dur).ease(d3.easeCubicInOut) : rects.interrupt();
       sel.attr("x", d => at(d).box.x).attr("y", d => at(d).box.y)
          .attr("width", d => at(d).box.w).attr("height", d => at(d).box.h)
          .attr("fill", d => at(d).fill).attr("rx", d => at(d).rx)
@@ -5303,18 +5406,25 @@
        figure comes on screen and again whenever that width changes, and
        its labels fitted again once the page's face has loaded */
     const remeasure = () => {
+      /* gutters fitted while the page was still hidden were fitted blind,
+         on a canvas: the first tick with the figure on screen fits them
+         to the page's own measure. After that this costs nothing; the
+         breakpoints are the debounced resize's to watch. */
+      const refit = /blind/.test(gutSig) && refitGutters();
       const s2 = measureS();
-      if (!s2 || Math.abs(s2 - S) < 1e-4) return;
+      if (!s2 || Math.abs(s2 - S) < 1e-4){ if (refit && step >= 0) paint(step, false); return; }
       S = s2; invalidateMaps();
       fitPicks(fig);                                    /* the blanks, once the figure has a width to measure in */
-      if (step >= 0 && view === "map") paint(step, false);
+      if (step >= 0 && (view === "map" || refit)) paint(step, false);
     };
     if (window.ResizeObserver){ const ro = new ResizeObserver(remeasure); ro.observe(el); disposers.push(() => ro.disconnect()); }
     on(window, "resize", remeasure);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => {
       if (dead) return;
       clearMapMeasure();
-      if (step >= 0 && view === "map") paint(step, false);
+      /* the names were measured in whatever face stood in for the page's */
+      refitGutters(true);
+      if (step >= 0) paint(step, false);
     });
 
 
