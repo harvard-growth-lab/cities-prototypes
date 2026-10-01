@@ -254,7 +254,7 @@ still under `prefers-reduced-motion`.
 **The head row** (`#miView`), under the "Control row" study:
 
 - **opt-1 (tray, default)** — title + Year (labelled) + View Treemap|Ranked
-  + Color by Sector|Complexity (+ Sort by when bars are up), dressed as a
+  + Color Sector|Complexity (+ Sort by when bars are up), dressed as a
   "paper tray": no border, soft grey tray (`--paper #f4f5f2`), the chosen
   button a white tile with teal text and a soft shadow.
 - **opt-2 (sentence)** — the title is a sentence, "All industries, shown as
