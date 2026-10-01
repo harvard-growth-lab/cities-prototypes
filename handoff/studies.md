@@ -40,7 +40,8 @@ What each option is:
   6-digit, 4-digit, Sector (opt-2). The grain itself, the nested zoom and
   the sentence's blank are the same under both.
   On the tradable beat the map is held at the industry level and the
-  control is disabled (2026-10-01): tradability is an industry measure.
+  control is held with it (2026-10-01), reachable but marked as held and
+  saying why: tradability is an industry measure.
 - **Key actions** — opt-1 (option B of `key-actions-sketches.html`, shipped
   in `85fe10f`): the entry unfolds its two verbs on hover or focus, quiet
   words after the name ("Hide · Only"; "Bring back · Only" once the sector

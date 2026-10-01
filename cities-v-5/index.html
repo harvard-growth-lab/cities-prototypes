@@ -3183,13 +3183,14 @@
      family, the teal in its word */
   #miFigure .mi-view .seg-btn.is-active{background:#fff;color:var(--teal);box-shadow:inset 0 0 0 1.5px #c2d4d7,0 1px 2px rgba(26,34,38,.12);}
   /* a level that is set but not offered (the tradable beat holds the map
-     at the industry level): the chosen tile stays as it is, the others
-     fade, and the menu or the sentence's blank goes quiet the same way */
-  #miFigure .mi-view .seg-btn:disabled{cursor:default;}
-  #miFigure .mi-view .seg-btn:disabled:not(.is-active){opacity:.45;}
-  #miFigure .mi-view #miLevelSel:disabled,#miFigure .mi-pick select:disabled{opacity:.55;cursor:default;}
-  #miFigure .mi-view #miLevelSel:disabled:hover{background-color:var(--paper);}
-  #miFigure .mi-pick select:disabled:hover{background-color:var(--teal-tint);}
+     at the industry level): the other tiles are out of reach and fade; the
+     chosen tile stays as it is, a stop for the keyboard marked as held;
+     the menu or the sentence's blank takes no pointer and loses its
+     chevron, its word at full strength */
+  #miFigure .mi-view .seg-btn:disabled{cursor:default;opacity:.45;background:none;}
+  #miFigure .mi-view .seg-btn[aria-disabled="true"]{cursor:default;}
+  #miFigure .mi-view #miLevelSel[aria-disabled="true"],#miFigure .mi-pick select[aria-disabled="true"]{pointer-events:none;background-image:none;cursor:default;}
+  #miFigure .mi-pick select[aria-disabled="true"]{background-color:transparent;padding-right:7px;}
   #miFigure .mi-view .mi-year{gap:6px;}
   #miFigure .mi-view .mi-year select,.mi-view #miLevelSel{border:0;border-radius:6px;background-color:var(--paper);height:28px;font-size:12px;padding:0 24px 0 10px;}
   #miFigure .mi-view .mi-year select:hover,#miFigure .mi-view .mi-year select:focus,#miFigure .mi-view #miLevelSel:hover,#miFigure .mi-view #miLevelSel:focus{background-color:#eceeea;}

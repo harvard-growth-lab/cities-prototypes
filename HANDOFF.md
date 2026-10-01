@@ -276,11 +276,18 @@ still under `prefers-reduced-motion`.
   back to the toggle from a map at 4 digits returns it to the industries
   (`setLevelCtl`), since the toggle has no 4. The tradable beat (state 4)
   reads at the industry level whatever the map rested at: `setStep`
-  brings `MAP_GRAIN` back to 6 before painting it, and `syncLevel`
-  disables the toggle, the menu and the sentence's blank there
-  (`levelLocked`, `fig.dataset.levellock`, a title saying why); the level
-  stays at 6 when the reader goes back, so the control always says what
-  the map shows. The 3-digit subsectors are
+  brings `MAP_GRAIN` back to 6 before painting it (and lets a pinned card
+  go, as every beat change now does), and `syncLevel` holds the control
+  there (`levelLocked`, `fig.dataset.levellock`): the other tiles are
+  `disabled` and fade, while the chosen tile, the menu and the sentence's
+  blank stay reachable but `aria-disabled`, each pointing
+  (`aria-describedby`) at a hidden `.mi-sr` note that says why
+  (`LEVEL_LOCK_WHY`, also the pair's title for the pointer); focus on a
+  tile going out of reach moves to the chosen one; a held blank takes no
+  key that would change it (`holdKeys`) and `applyLevel` puts a change
+  back; the live region says the level was set back when it was. The
+  level stays at 6 when the reader goes back, so the control always says
+  what the map shows. The 3-digit subsectors are
   tiled the same way but not offered. Nil named the sector grain "1" in
   the ask; the options say "Sector"; `applyLevel` / `syncLevel` keep them
   one state, `fig.dataset.level` carries it. The data holds four NAICS

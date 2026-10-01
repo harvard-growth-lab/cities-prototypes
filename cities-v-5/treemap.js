@@ -3220,7 +3220,9 @@
     const o = sel.options[sel.selectedIndex];
     if (!m || !o) return;
     m.textContent = o.text;
-    if (m.offsetWidth) sel.style.width = (m.offsetWidth + 24) + "px";
+    /* a held blank has no chevron, so it is cut to the word and its sides */
+    const room = sel.getAttribute("aria-disabled") === "true" ? 14 : 24;
+    if (m.offsetWidth) sel.style.width = (m.offsetWidth + room) + "px";
   }
   function fitPicks(root){ (root || document).querySelectorAll(".mi-pick select").forEach(fitPick); }
 
@@ -4560,7 +4562,10 @@
          rested at: the grain goes back to 6 before the beat is painted,
          and the level control follows the beat (set, or set and held) */
       const forced = i === 4 && MAP_GRAIN !== 6;
-      if (forced){ MAP_GRAIN = 6; invalidateMaps(); hideMapTip(true); }
+      if (forced){ MAP_GRAIN = 6; invalidateMaps(); }
+      /* a card pinned on one beat does not ride into the next; every other
+         retile lets it go, and so does the beat change */
+      hideMapTip(true);
       syncLevel();
       seatTableBtn(i);
       /* a head that is only faded still held its buttons for the keyboard -
@@ -4587,7 +4592,7 @@
          the city's part of it, so its first beat is played, not painted */
       if (first && i === 0 && opts.adminReveal){ paintMetroFirst(); return; }
       paint(i, !first && !reduced());
-      if (forced) syncLive();
+      if (forced) syncLive(", set back to the industry level, which this beat holds");
     } };
 
     /* the clusters' furniture: the header's columns and the captions share
@@ -5184,7 +5189,7 @@
     const liveEl = document.getElementById(p + "Live");
     const sectorCount = new Set(industryData.map(d => d.sector)).size;
     const mapTitleOf = () => step === 4 ? "All industries, by tier" : step === 6 || step === 3 ? "Most specialized tradable industries" : step === 7 || step === 5 ? "The tradable industries" : "All industries";
-    function syncLive(){
+    function syncLive(note){
       if (!liveEl) return;
       const gRow = focusGroup ? industryData.find(d => d.group === focusGroup) : null;
       const zoomed = gRow ? (gRow.groupShort || gRow.groupName) : focus;
@@ -5205,6 +5210,7 @@
       if (secOn) said += ", " + secOn.size + " of " + sectorCount + " sectors";
       if (tierOn && !tierOn.every(Boolean)) said += ", " + tierOn.map((on, k) => on ? TIER_NAMES[k] : null).filter(Boolean).join(" and ") + " only";
       if (colorBy === "complexity") said += ", coloured by complexity";
+      if (note) said += note;
       if (liveEl.textContent !== said) liveEl.textContent = said;
       if (svgEl) svgEl.setAttribute("aria-label", mapTitleOf());
       fig.setAttribute("aria-label", mapTitleOf());
@@ -5928,24 +5934,56 @@
        but not offered there; setStep brings the grain back to 6 first */
     const LEVEL_LOCK_WHY = "Tradability is measured by industry, so this beat reads the map at the industry level";
     const levelLocked = () => step === 4;
+    /* the reason, as a hidden note beside each form of the control for the
+       held controls to point at, and as the pair's title for the pointer */
+    const levelPair = levelEl && levelEl.closest(".mi-ctlpair"), sLevelHost = sLevelEl && sLevelEl.closest(".mi-s-level");
+    const lockNote = (host, id) => {
+      if (!host) return null;
+      const n = document.createElement("span"); n.className = "mi-sr"; n.id = id; host.appendChild(n);
+      disposers.push(() => n.remove());
+      return n;
+    };
+    const levelWhy = lockNote(levelPair, p + "LevelWhy"), sLevelWhy = lockNote(sLevelHost, p + "SLevelWhy");
     const syncLevel = () => {
       const lock = levelLocked();
-      if (levelEl) levelEl.querySelectorAll(".seg-btn[data-level]").forEach(x => {
-        const onIt = +x.dataset.level === MAP_GRAIN;
-        x.classList.toggle("is-active", onIt); x.setAttribute("aria-pressed", String(onIt));
-        x.disabled = lock;
-      });
-      if (levelSelEl){ if (+levelSelEl.value !== MAP_GRAIN) levelSelEl.value = String(MAP_GRAIN); levelSelEl.disabled = lock; }
-      if (sLevelEl){ if (+sLevelEl.value !== MAP_GRAIN){ sLevelEl.value = String(MAP_GRAIN); fitPick(sLevelEl); } sLevelEl.disabled = lock; }
-      [levelEl && levelEl.closest(".mi-ctlpair"), sLevelEl && sLevelEl.closest(".mi-s-level")].forEach(h => {
+      [[levelWhy, levelPair], [sLevelWhy, sLevelHost]].forEach(([n, h]) => {
+        if (n) n.textContent = lock ? LEVEL_LOCK_WHY : "";
         if (!h) return;
         if (lock) h.setAttribute("title", LEVEL_LOCK_WHY); else h.removeAttribute("title");
       });
+      /* set but not offered: the control stays where the keyboard and a
+         screen reader can reach it, marked as held and pointing at the why */
+      const held = (el, why) => {
+        if (lock){ el.setAttribute("aria-disabled", "true"); if (why) el.setAttribute("aria-describedby", why.id); }
+        else { el.removeAttribute("aria-disabled"); el.removeAttribute("aria-describedby"); }
+      };
+      if (levelEl){
+        const onTile = levelEl.querySelector('.seg-btn[data-level="' + MAP_GRAIN + '"]');
+        levelEl.querySelectorAll(".seg-btn[data-level]").forEach(x => {
+          const onIt = +x.dataset.level === MAP_GRAIN;
+          x.classList.toggle("is-active", onIt); x.setAttribute("aria-pressed", String(onIt));
+          /* the other levels are out of reach; the chosen tile is the
+             group's stop. Focus on a tile going out of reach moves to it
+             first, or the keyboard would be dropped to the page */
+          const off = lock && !onIt;
+          if (off && x === document.activeElement && onTile) onTile.focus({ preventScroll: true });
+          x.disabled = off;
+          if (onIt) held(x, levelWhy); else { x.removeAttribute("aria-disabled"); x.removeAttribute("aria-describedby"); }
+        });
+      }
+      if (levelSelEl){ if (+levelSelEl.value !== MAP_GRAIN) levelSelEl.value = String(MAP_GRAIN); held(levelSelEl, levelWhy); }
+      if (sLevelEl){ if (+sLevelEl.value !== MAP_GRAIN) sLevelEl.value = String(MAP_GRAIN); held(sLevelEl, sLevelWhy); fitPick(sLevelEl); }
       fig.dataset.level = String(MAP_GRAIN);
       fig.dataset.levellock = lock ? "1" : "";
     };
+    /* a held blank takes no key that would change it; a change that gets
+       through all the same (a pick from a menu opened another way) is put
+       back by applyLevel */
+    const holdKeys = ev => {
+      if (levelLocked() && !ev.metaKey && !ev.ctrlKey && ev.key !== "Tab" && ev.key !== "Escape") ev.preventDefault();
+    };
     const applyLevel = g => {
-      if (levelLocked()) return;
+      if (levelLocked()){ syncLevel(); return; }
       g = [6, 4, 2].indexOf(+g) >= 0 ? +g : 6;   /* the 3-digit subsectors are tiled too, but not offered */
       if (g === MAP_GRAIN) return;
       MAP_GRAIN = g;
@@ -5959,8 +5997,8 @@
     };
     syncLevel();
     if (levelEl) on(levelEl, "click", ev => { const b = ev.target.closest(".seg-btn[data-level]"); if (b) applyLevel(b.dataset.level); });
-    if (levelSelEl) on(levelSelEl, "change", () => applyLevel(levelSelEl.value));
-    if (sLevelEl) on(sLevelEl, "change", () => { fitPick(sLevelEl); applyLevel(sLevelEl.value); });
+    if (levelSelEl){ on(levelSelEl, "change", () => applyLevel(levelSelEl.value)); on(levelSelEl, "keydown", holdKeys); }
+    if (sLevelEl){ on(sLevelEl, "change", () => { fitPick(sLevelEl); applyLevel(sLevelEl.value); }); on(sLevelEl, "keydown", holdKeys); }
     /* a study control: the level as a toggle between the sectors and the
        industries (opt-1), or as a menu of the three grains (opt-2). The
        toggle has no 4-digit, so going back to it from a map at 4 digits
