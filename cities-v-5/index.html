@@ -3178,10 +3178,18 @@
   #miFigure .mi-view .ctl-label{font-size:12.5px;color:var(--ink-soft);}
   #miFigure .mi-view .seg{border:0;background:var(--paper);border-radius:6px;padding:2px;gap:2px;overflow:visible;}
   #miFigure .mi-view .seg-btn{border-left:0;height:24px;padding:0 10px;border-radius:4px;color:var(--ink-soft);}
-  #miFigure .mi-view .seg-btn:hover:not(.is-active){background:none;color:var(--ink);}
+  #miFigure .mi-view .seg-btn:hover:not(.is-active):not(:disabled){background:none;color:var(--ink);}
   /* the chosen tile: white on the tray, a soft edge in the tint's own
      family, the teal in its word */
   #miFigure .mi-view .seg-btn.is-active{background:#fff;color:var(--teal);box-shadow:inset 0 0 0 1.5px #c2d4d7,0 1px 2px rgba(26,34,38,.12);}
+  /* a level that is set but not offered (the tradable beat holds the map
+     at the industry level): the chosen tile stays as it is, the others
+     fade, and the menu or the sentence's blank goes quiet the same way */
+  #miFigure .mi-view .seg-btn:disabled{cursor:default;}
+  #miFigure .mi-view .seg-btn:disabled:not(.is-active){opacity:.45;}
+  #miFigure .mi-view #miLevelSel:disabled,#miFigure .mi-pick select:disabled{opacity:.55;cursor:default;}
+  #miFigure .mi-view #miLevelSel:disabled:hover{background-color:var(--paper);}
+  #miFigure .mi-pick select:disabled:hover{background-color:var(--teal-tint);}
   #miFigure .mi-view .mi-year{gap:6px;}
   #miFigure .mi-view .mi-year select,.mi-view #miLevelSel{border:0;border-radius:6px;background-color:var(--paper);height:28px;font-size:12px;padding:0 24px 0 10px;}
   #miFigure .mi-view .mi-year select:hover,#miFigure .mi-view .mi-year select:focus,#miFigure .mi-view #miLevelSel:hover,#miFigure .mi-view #miLevelSel:focus{background-color:#eceeea;}
@@ -3687,8 +3695,9 @@
   #page-export-basket:has(#miFigure:not([data-step="0"]):not([data-step="4"])) #miPalPair{display:none;}
   #page-export-basket:has(#miFigure:not([data-step="0"]):not([data-step="4"])) #miSecNamesPair{display:none;}
   #page-export-basket:has(#miFigure:not([data-step="0"]):not([data-step="4"])) #miLevelOptPair{display:none;}
-  /* the blocks' dressing belongs to the map resting at the sector level */
-  #page-export-basket:has(#miFigure:not([data-step="0"]):not([data-step="4"])) #miSecBlockPair,
+  /* the blocks' dressing belongs to the map resting at the sector level,
+     which only the mix beat does: the tradable beat holds the industries */
+  #page-export-basket:has(#miFigure:not([data-step="0"])) #miSecBlockPair,
   #page-export-basket:has(#miFigure:not([data-level="2"])) #miSecBlockPair{display:none;}
   /* the row study's, to the beats that show the row */
   #page-export-basket:has(#miFigure:not([data-step="0"]):not([data-step="1"]):not([data-step="3"]):not([data-step="4"]):not([data-step="5"]):not([data-step="6"]):not([data-step="7"])) #miRowPair{display:none;}

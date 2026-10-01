@@ -13,7 +13,7 @@ verify a change under each option.
 | Key actions | `miKeyOpt` | `data-key` = inline / card | opt-1 inline · opt-2 card | 0 4 7 |
 | Sector colours | `miPal` | `data-pal` = house / tol | opt-1 house · opt-2 Paul Tol muted | 0 4 |
 | Sector names | `miSecNames` | `data-secnames` = off / band / gutter | opt-1 off · opt-2 band · opt-3 gutter | 0 4 |
-| Sector blocks | `miSecBlock` | `data-secblock` = plain / card / ghost / cardghost / change | opt-1 plain · opt-2 card · opt-3 ghost · opt-4 card over ghost · opt-5 card with change since 2014 | 0 4, only at Level = Sector |
+| Sector blocks | `miSecBlock` | `data-secblock` = plain / card / ghost / cardghost / change | opt-1 plain · opt-2 card · opt-3 ghost · opt-4 card over ghost · opt-5 card with change since 2014 | 0, only at Level = Sector |
 | Tier grounds | `miGround` | — | opt-1 frame · opt-2 grey | 4 |
 | Tier shares | `miTierOpt` | — | opt-1 cards · **opt-2 donut** (default) | 4 |
 | Tradability column | `miRankOpt` | — | opt-1 score · **opt-2 tier** (default) | 3 6 |
@@ -39,6 +39,8 @@ What each option is:
   Sector or Industry (opt-1, default), or as a menu of the three grains,
   6-digit, 4-digit, Sector (opt-2). The grain itself, the nested zoom and
   the sentence's blank are the same under both.
+  On the tradable beat the map is held at the industry level and the
+  control is disabled (2026-10-01): tradability is an industry measure.
 - **Key actions** — opt-1 (option B of `key-actions-sketches.html`, shipped
   in `85fe10f`): the entry unfolds its two verbs on hover or focus, quiet
   words after the name ("Hide · Only"; "Bring back · Only" once the sector

@@ -274,7 +274,13 @@ still under `prefers-reduced-motion`.
   (`select#miLevelSel`, dressed as the Year select). Only one shows at a
   time; both and the sentence's blank are one state (`syncLevel`). Going
   back to the toggle from a map at 4 digits returns it to the industries
-  (`setLevelCtl`), since the toggle has no 4. The 3-digit subsectors are
+  (`setLevelCtl`), since the toggle has no 4. The tradable beat (state 4)
+  reads at the industry level whatever the map rested at: `setStep`
+  brings `MAP_GRAIN` back to 6 before painting it, and `syncLevel`
+  disables the toggle, the menu and the sentence's blank there
+  (`levelLocked`, `fig.dataset.levellock`, a title saying why); the level
+  stays at 6 when the reader goes back, so the control always says what
+  the map shows. The 3-digit subsectors are
   tiled the same way but not offered. Nil named the sector grain "1" in
   the ask; the options say "Sector"; `applyLevel` / `syncLevel` keep them
   one state, `fig.dataset.level` carries it. The data holds four NAICS
@@ -423,8 +429,7 @@ block (`d3.treemap` over `groupsOf`, `paddingInner(1)`) as white hairlines
 at 30 %, the plain label kept. opt-4 **cardghost**: both. opt-5
 **change**: the card with one more line, the sector's jobs in 2024 against
 2014 as a yearly rate (`sectorJobs(year)` sums each year's file by sector;
-"+1.7% a year, 2014 to 2024"), left off the tiers beat where a block is a
-sector's share of one tier. With the sector-names band on, the card drops
+"+1.7% a year, 2014 to 2024"). With the sector-names band on, the card drops
 its name line (the band has it). Ink is `mapInkOf(c)` (so under the
 complexity colouring the card follows the ramp's cell), the soft tone
 white or ink at 80 %; the card's texts and circles take no pointer, so
@@ -440,7 +445,7 @@ question still open; both options must keep working:
 | Key actions | `miKeyOpt` | inline · card | 0 4 7 |
 | Sector colours | `miPal` | house · tol (Paul Tol's muted set, grey Other; `SECTOR_PALETTES`) | 0 4 |
 | Sector names | `miSecNames` | off · band · gutter (the sectors named on the map, see below) | 0 4 |
-| Sector blocks | `miSecBlock` | plain · card · ghost · cardghost · change (what a block carries at the sector level, see below) | 0 4, at Level = Sector |
+| Sector blocks | `miSecBlock` | plain · card · ghost · cardghost · change (what a block carries at the sector level, see below) | 0, at Level = Sector (the tradable beat holds the industry level) |
 | Tier grounds | `miGround` | frame · grey | 4 |
 | Tier shares | `miTierOpt` | cards · **donut** | 4 |
 | Tradability column | `miRankOpt` | score · **tier** | 3 6 |

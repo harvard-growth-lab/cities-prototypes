@@ -4556,6 +4556,12 @@
       const first = step < 0;
       step = i;
       fig.dataset.step = String(i);
+      /* the tradable beat reads at the industry level whatever the map
+         rested at: the grain goes back to 6 before the beat is painted,
+         and the level control follows the beat (set, or set and held) */
+      const forced = i === 4 && MAP_GRAIN !== 6;
+      if (forced){ MAP_GRAIN = 6; invalidateMaps(); hideMapTip(true); }
+      syncLevel();
       seatTableBtn(i);
       /* a head that is only faded still held its buttons for the keyboard -
          and so did the title slots, whose chips bring a tier back */
@@ -4581,6 +4587,7 @@
          the city's part of it, so its first beat is played, not painted */
       if (first && i === 0 && opts.adminReveal){ paintMetroFirst(); return; }
       paint(i, !first && !reduced());
+      if (forced) syncLive();
     } };
 
     /* the clusters' furniture: the header's columns and the captions share
@@ -4930,7 +4937,7 @@
         /* the band names the block already when the sector-names study is on */
         if (SEC_NAMES === "off" && !line(sec, 14, 700, ink) && !line(SECTOR_SHORT[sec] || sec, 12, 700, ink)) return;
         if (!line(fmtShare(c.cell.share) + " of metro jobs \u00b7 " + fmtJobsK(c.cell.jobs), 12.5, 400, ink)) return;
-        if (mode === "change" && step !== 4){
+        if (mode === "change"){
           const j14 = sectorJobs(2014)[sec], j24 = sectorJobs(2024)[sec];
           if (j14 > 0 && j24 > 0){
             const r = Math.pow(j24 / j14, 1 / 10) - 1;
@@ -5916,16 +5923,29 @@
        into a group comes back to its sector when the grain coarsens. */
     const levelEl = document.getElementById(p + "Level"), sLevelEl = document.getElementById(p + "SLevel"),
           levelSelEl = document.getElementById(p + "LevelSel");
+    /* tradability is read industry by industry, so the tradable beat
+       holds the map at the industry level and the level control is set
+       but not offered there; setStep brings the grain back to 6 first */
+    const LEVEL_LOCK_WHY = "Tradability is measured by industry, so this beat reads the map at the industry level";
+    const levelLocked = () => step === 4;
     const syncLevel = () => {
+      const lock = levelLocked();
       if (levelEl) levelEl.querySelectorAll(".seg-btn[data-level]").forEach(x => {
         const onIt = +x.dataset.level === MAP_GRAIN;
         x.classList.toggle("is-active", onIt); x.setAttribute("aria-pressed", String(onIt));
+        x.disabled = lock;
       });
-      if (levelSelEl && +levelSelEl.value !== MAP_GRAIN) levelSelEl.value = String(MAP_GRAIN);
-      if (sLevelEl && +sLevelEl.value !== MAP_GRAIN){ sLevelEl.value = String(MAP_GRAIN); fitPick(sLevelEl); }
+      if (levelSelEl){ if (+levelSelEl.value !== MAP_GRAIN) levelSelEl.value = String(MAP_GRAIN); levelSelEl.disabled = lock; }
+      if (sLevelEl){ if (+sLevelEl.value !== MAP_GRAIN){ sLevelEl.value = String(MAP_GRAIN); fitPick(sLevelEl); } sLevelEl.disabled = lock; }
+      [levelEl && levelEl.closest(".mi-ctlpair"), sLevelEl && sLevelEl.closest(".mi-s-level")].forEach(h => {
+        if (!h) return;
+        if (lock) h.setAttribute("title", LEVEL_LOCK_WHY); else h.removeAttribute("title");
+      });
       fig.dataset.level = String(MAP_GRAIN);
+      fig.dataset.levellock = lock ? "1" : "";
     };
     const applyLevel = g => {
+      if (levelLocked()) return;
       g = [6, 4, 2].indexOf(+g) >= 0 ? +g : 6;   /* the 3-digit subsectors are tiled too, but not offered */
       if (g === MAP_GRAIN) return;
       MAP_GRAIN = g;
