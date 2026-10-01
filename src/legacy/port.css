@@ -1,4 +1,4 @@
-/* What the port needs on top of main's own stylesheet (cities-v-1). */
+/* What the port needs on top of main's own stylesheet (cities-v-5). */
 
 /* no box of its own: #landing and #tool lay out as on main */
 .v3-shell{display:contents;}
@@ -16,6 +16,13 @@ html[data-v3-instant] #landing{transition:none !important;}
   top:var(--chrome-h);
   height:calc(100dvh - var(--chrome-h) - 24px);
 }
+
+/* Main's v-5 has a layout study of its own (a "Site Layout" pill, a one
+   scroll with a teal close under each section), modelled on this branch's.
+   The port holds it on its "pages" layout (scripts/v3/port.mjs), and its
+   pill stands down: the one on screen is this branch's (src/site/), which
+   offers the layouts studied here. */
+#siteLayoutSwitch{display:none !important;}
 
 /* Levers for Change is a placeholder chapter: main's dashed frame under its
    heading (the markup is a port swap). The frame is flex:1 inside a .page,

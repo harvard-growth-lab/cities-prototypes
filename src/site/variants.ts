@@ -9,24 +9,25 @@
 
      paged     main's page, untouched — the baseline to compare against
      scroll    everything in one scroll; a threshold band marks the crossing
-     chapters  one section per page with Prev / Next kept; the crossing is a
-               title page in the sequence
-     modes     two modes — the profile browsed as one scroll in any order,
-               the diagnosis stepped through — with the profile on call
+     halves    each half its own scroll; the first ends on a Next in its
+               last section's close, and the same board opens the second
+
+   (Two more were tried and deleted in Oct 2026: "chapters", a title page in
+   the Prev / Next sequence, and "modes", a browsed profile beside a stepped
+   diagnosis.)
 
    The variant is read once, from the URL, before v-3's page boots: what the
    section switch asks of React (src/legacy/bridge.ts) is fixed for the life
    of the page, so changing variant is a navigation, not a state change. */
 
-export type SiteVariant = "paged" | "scroll" | "chapters" | "modes";
+export type SiteVariant = "paged" | "scroll" | "halves";
 
 export const DEFAULT_SITE_VARIANT: SiteVariant = "paged";
 
 export const SITE_VARIANTS: { id: SiteVariant; label: string; note: string }[] = [
   { id: "paged", label: "Current", note: "five sections, one linear flow" },
   { id: "scroll", label: "One scroll", note: "a threshold band marks part two" },
-  { id: "chapters", label: "Chapters", note: "prev / next kept, a title page between" },
-  { id: "modes", label: "Two modes", note: "browse the profile, step the diagnosis" },
+  { id: "halves", label: "Two scrolls", note: "each part one scroll, a Next between" },
 ];
 
 /** The two halves, by the names v-3's sectionDefs carry. The part names are
@@ -36,7 +37,7 @@ export const PARTS = [
     n: 1,
     name: "City Profile",
     kind: "read",
-    sections: ["Economic Fundamentals", "Metro Industries", "Admin Industries"],
+    sections: ["Who are you?", "Metro Industries", "Worker Flows"],
   },
   {
     n: 2,

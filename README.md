@@ -2,7 +2,8 @@
 
 A shared repository for housing prototypes related to the 2026–2027 Bloomberg Cities project.
 
-This branch is `cities-v-3` from `main` — the static prototype: its landing, masthead, section
+This branch is `cities-v-5` from `main` (called v-3 below and in the file names, after the folder
+the port first took; main has since copied it to v-1 and then v-5) — the static prototype: its landing, masthead, section
 tabs and pager, journey window and dialogs, and every section but one — with **City Constraints**
 built here in React: the pizza chart, the four-quadrant diagnostic tree told as a guided walk, and
 the branch analysis. v-3's page runs as-is inside a Vite + React app (`src/legacy/`, generated
@@ -20,8 +21,8 @@ node scripts/shots.mjs ./shots --widths 390,768,1440   # screenshot every view; 
 
 ## Site layout variants (a study)
 
-The five sections fall into two halves of different kinds — **Economic Fundamentals, Metro
-Industries, Admin Industries** describe the city (an overview, read); **Constraints Diagnosis,
+The five sections fall into two halves of different kinds — **Who are you?, Metro
+Industries, Worker Flows** describe the city (an overview, read); **Constraints Diagnosis,
 Levers for Change** diagnose it and act (interactive, built on the first three). On main they
 run as one linear flow. `?site=` tries other ways of organising the two halves and marking the
 crossing between them; the dark **Site layout** pill at the bottom-left switches between them
@@ -29,10 +30,9 @@ crossing between them; the dark **Site layout** pill at the bottom-left switches
 
 | `?site=` | what it tries |
 | --- | --- |
-| *(none)* | **Current** — main's page, untouched: five tabs, one section per page, Prev / Next |
-| `scroll` | **One scroll** — every section on one page; the tabs carry their part's name and follow the scroll; a full-screen **threshold band** marks part two (what you bring → what you do with it); each section closes (quiz + insight) where it ends |
-| `chapters` | **Chapters** — one section per page, Prev / Next kept; the crossing is a **title page in the pager's sequence** (in both directions), the pager's line and buttons mark the seam, the tabs carry their part's name |
-| `modes` | **Two modes** — the bar's first choice is the half: the profile is one scroll browsed in any order (no numbers, no checks), the diagnosis is stepped (1 → 2, Prev / Next) and wears the bar dark, with the **profile on call** as a panel; the profile ends on a hand-off |
+| *(none)* | **Current** — main's page (`cities-v-5`, its own "pages" layout), untouched: five tabs under their part's name, one section per page, Previous / Next cards |
+| `scroll` | **One scroll** — every section on one page; the tabs follow the scroll; a full-screen **threshold band** marks part two (what you bring → what you do with it); each section closes (quiz + insight) where it ends |
+| `halves` | **Two scrolls** — each half is one scroll on a page of its own; the break under each section is **main's teal close** from v-5's own one-scroll layout ("What to take with you", three points, the quiz in main's dialog — placeholders for sections 4–5, which are this branch's); the first half's last close carries the way on (**Next · Part 2: Diagnose & Act**, in place of main's "Keep scrolling" cue), and the second opens on the same board as its first screen; the second's pager leads back (Previous) and out (Extras); the tabs follow the scroll |
 
 Copy is placeholder throughout. The part names ("City profile", "Diagnose & act") are working
 labels, written once in `src/site/variants.ts`. How it is built: `src/site/` (the variants, what
@@ -54,7 +54,7 @@ the viewport.
 ## Project structure
 
 ```
-scripts/v3/port.mjs         regenerates src/legacy from a checkout of main's cities-v-3
+scripts/v3/port.mjs         regenerates src/legacy from a checkout of main's cities-v-5
 public/legacy/              the logo and the all-metros page the Extras section frames (verbatim)
 src/
   main.tsx                  entry point; v-3's stylesheet first, then this branch's

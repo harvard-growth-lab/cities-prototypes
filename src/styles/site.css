@@ -3,270 +3,186 @@
    here hangs off html[data-site="…"], set before v-3's page boots, so with
    no variant chosen ("paged") none of it applies and the page is main's.
 
-     data-site        paged | scroll | chapters | modes
+     data-site        paged | scroll | halves
      data-site-part   1 | 2 — the half the current section belongs to (0: Extras)
      data-site-sec    the current section's index
-     data-site-gate   chapters only: the title page between the halves is up
+     data-site-exit   1 on the storyline's last section (its Next leads out)
 
-   The part names printed over the tabs come from --site-part-1 / -2, which
-   runtime.ts sets from variants.ts — the one place they are written. */
+   The part names over the tabs are main's own since its v-5 (html[data-part],
+   in every layout); the ones the phone's section menu prints here come from
+   --site-part-1 / -2, which runtime.ts sets from variants.ts.
+
+   Main's v-5 also carries a layout study modelled on this one, with the same
+   class names (.sv, .seam). It is held dormant by the port; the classes here
+   are prefixed site- so the two sheets never meet. */
 
 /* ====================================================================
    The study's own control: bottom-left, dark, off the tool's chrome — it
    belongs to the prototype, not the product.
    ==================================================================== */
-.sv{position:fixed;left:16px;bottom:16px;z-index:500;font-family:'Source Sans 3','Source Sans Pro',sans-serif;}
-.sv-btn{
+.site-sv{position:fixed;left:16px;bottom:16px;z-index:500;font-family:'Source Sans 3','Source Sans Pro',sans-serif;}
+.site-sv-btn{
   display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px 0 13px;
   border:0;border-radius:16px;background:var(--ink);color:#fff;cursor:pointer;
   font:inherit;font-size:12.5px;line-height:1;
   box-shadow:0 6px 20px rgba(26,34,38,.28);
   transition:background .15s ease;
 }
-.sv-btn:hover,.sv-btn.open{background:#000;}
-.sv-k{font-size:9.5px;font-weight:700;letter-spacing: 0.2px;text-transform: none;opacity:.62;}
-.sv-now{font-weight:700;}
-.sv-btn svg{opacity:.7;transition:transform .2s ease;}
-.sv-btn.open svg{transform:rotate(180deg);}
-.sv-panel{
+.site-sv-btn:hover,.site-sv-btn.open{background:#000;}
+.site-sv-k{font-size:9.5px;font-weight:700;letter-spacing: 0.2px;text-transform: none;opacity:.62;}
+.site-sv-now{font-weight:700;}
+.site-sv-btn svg{opacity:.7;transition:transform .2s ease;}
+.site-sv-btn.open svg{transform:rotate(180deg);}
+.site-sv-panel{
   position:absolute;left:0;bottom:calc(100% + 8px);width:286px;padding:5px;
   display:flex;flex-direction:column;gap:1px;
   background:#fff;border:1px solid var(--border-strong);border-radius:10px;box-shadow:var(--shadow-md);
 }
-.sv-opt{
+.site-sv-opt{
   display:grid;grid-template-columns:14px minmax(0,1fr);column-gap:8px;row-gap:1px;
   padding:9px 10px 10px;border-radius:7px;text-decoration:none;color:var(--ink);
 }
-.sv-opt::before{
+.site-sv-opt::before{
   content:"";grid-row:1 / span 2;width:12px;height:12px;margin-top:3px;border-radius:50%;
   border:1.5px solid var(--border-strong);background:#fff;box-sizing:border-box;
 }
-.sv-opt b{font-size:13.5px;font-weight:700;line-height:1.25;}
-.sv-opt span{grid-column:2;font-size:12px;line-height:1.3;color:var(--ink-soft);}
-.sv-opt:hover{background:#f4f6f5;}
-.sv-opt.is-on{background:var(--teal-tint);}
-.sv-opt.is-on::before{border:4px solid var(--teal);}
+.site-sv-opt b{font-size:13.5px;font-weight:700;line-height:1.25;}
+.site-sv-opt span{grid-column:2;font-size:12px;line-height:1.3;color:var(--ink-soft);}
+.site-sv-opt:hover{background:#f4f6f5;}
+.site-sv-opt.is-on{background:var(--teal-tint);}
+.site-sv-opt.is-on::before{border:4px solid var(--teal);}
 /* on a phone the pager's Prev sits in this corner: the control shrinks to
    its value, and the page's foot leaves it room */
 @media (max-width:640px){
-  .sv{left:10px;bottom:10px;}
-  .sv-k{display:none;}
-  .sv-panel{width:min(286px, calc(100vw - 20px));}
+  .site-sv{left:10px;bottom:10px;}
+  .site-sv-k{display:none;}
+  .site-sv-panel{width:min(286px, calc(100vw - 20px));}
   .pages > .secpager{padding-bottom:64px;}
 }
 
 /* ====================================================================
-   One scroll + chapters: the tabs say which half they belong to.
-   Main already parts the row with a hairline before the fourth tab; here
-   each group also carries its part's name. The label takes the fourth
-   tab's ::before (main's hairline), so the hairline moves to the third
-   tab's ::after — the one connector main leaves unused, because the row
-   is deliberately not continuous across the seam.
+   One scroll + two scrolls: the halves in the bar. Main names the two
+   parts over its tabs itself; the phone's section menu (src/legacy/port.css)
+   is this branch's, so its part names are printed here.
    ==================================================================== */
-html:is([data-site="scroll"],[data-site="chapters"]) .secnav{padding-top:12px;}
-/* at 1440 the five names fill the row exactly (main measured it), and the
-   study switch some sections add beside it pushes the strip into scrolling —
-   which slid part one's name under the chip. The row gives up some of its
-   lead instead. */
-@media (min-width:1440px){
-  html:is([data-site="scroll"],[data-site="chapters"]) .secnav{margin-left:28px;}
-}
-html:is([data-site="scroll"],[data-site="chapters"]) .secnav-btn:nth-child(1)::before,
-html:is([data-site="scroll"],[data-site="chapters"]) .secnav-btn:nth-child(4)::before{
-  content:var(--site-part-1);
-  position:absolute;left:9px;top:auto;bottom:calc(100% + 2px);transform:none;
-  width:auto;height:auto;background:none;white-space:nowrap;pointer-events:none;
-  font-size:9.5px;line-height:1;font-weight:700;letter-spacing: 0.2px;text-transform: none;
-  color:var(--ink-soft);opacity:.8;transition:color .15s ease,opacity .15s ease;
-}
-html:is([data-site="scroll"],[data-site="chapters"]) .secnav-btn:nth-child(4)::before{content:var(--site-part-2);}
-html:is([data-site="scroll"],[data-site="chapters"])[data-site-part="1"] .secnav-btn:nth-child(1)::before,
-html:is([data-site="scroll"],[data-site="chapters"])[data-site-part="2"] .secnav-btn:nth-child(4)::before{
-  color:var(--teal);opacity:1;
-}
-html:is([data-site="scroll"],[data-site="chapters"]) .secnav-btn:nth-child(3)::after{
-  content:"";position:absolute;right:-17px;top:50%;transform:translateY(-50%);
-  width:1px;height:26px;background:var(--border-strong);
-}
-@media (max-width:1439px){
-  html:is([data-site="scroll"],[data-site="chapters"]) .secnav-btn:nth-child(3)::after{right:-12px;}
-  /* marks only at this width: the label hangs from a 34px mark, so it is
-     anchored on the mark's edge rather than inset to a name that is not there */
-  html:is([data-site="scroll"],[data-site="chapters"]) .secnav-btn:nth-child(1)::before,
-  html:is([data-site="scroll"],[data-site="chapters"]) .secnav-btn:nth-child(4)::before{left:6px;}
-}
-/* marks only, and three of them are narrower than "Part 1 · City profile":
-   the halves keep their number */
-@media (max-width:1199px){
-  html:is([data-site="scroll"],[data-site="chapters"]) .secnav-btn:nth-child(1)::before{content:"Part 1";}
-  html:is([data-site="scroll"],[data-site="chapters"]) .secnav-btn:nth-child(4)::before{content:"Part 2";}
-}
 /* the phone's menu lists the five; the halves head their groups */
 @media (max-width:599px){
-  html:is([data-site="scroll"],[data-site="chapters"]) .secmenu-opt{flex-wrap:wrap;}
-  html:is([data-site="scroll"],[data-site="chapters"]) .secmenu-opt:is(:nth-child(1),:nth-child(4))::before{
+  html:is([data-site="scroll"],[data-site="halves"]) .secmenu-opt{flex-wrap:wrap;}
+  html:is([data-site="scroll"],[data-site="halves"]) .secmenu-opt:is(:nth-child(1),:nth-child(4))::before{
     content:var(--site-part-1);flex:0 0 100%;margin:2px 0 4px;
     font-size:10px;font-weight:700;letter-spacing: 0.2px;text-transform: none;color:var(--ink-soft);
   }
-  html:is([data-site="scroll"],[data-site="chapters"]) .secmenu-opt:nth-child(4)::before{content:var(--site-part-2);}
-  html:is([data-site="scroll"],[data-site="chapters"]) .secmenu-opt:nth-child(4){
+  html:is([data-site="scroll"],[data-site="halves"]) .secmenu-opt:nth-child(4)::before{content:var(--site-part-2);}
+  html:is([data-site="scroll"],[data-site="halves"]) .secmenu-opt:nth-child(4){
     margin-top:5px;border-top:1px solid var(--border);border-radius:0 0 4px 4px;padding-top:12px;
   }
 }
 
 /* ====================================================================
-   The crossing — one board, two settings: a band in the one scroll, a page
-   of its own in the chapters. Dark, full-bleed, a screen tall: in a scroll
-   of light pages it cannot be read past. On the left what the reader brings
+   The crossing — one board, two settings: a band scrolled through in the
+   one scroll, the second half's first screen in the two scrolls. Dark,
+   full-bleed, a screen tall: in a scroll of light pages it cannot be read
+   past. On the left what the reader brings
    (the three sections, filed and checked, each a click from being reopened);
    on the right what is done with it (the two ahead, lit).
    ==================================================================== */
-.seam{
+.site-seam{
   display:flex;align-items:center;
   min-height:calc(100dvh - var(--chrome-h));
   background:var(--teal-dark);color:#fff;
 }
-.seam--page{min-height:calc(100dvh - var(--chrome-h) - 72px);}
-.seam-in{
+.site-seam-in{
   width:min(var(--grid-max), calc(100% - 2 * var(--frame-pad)));margin-inline:auto;
   padding:64px 0 40px;display:flex;flex-direction:column;gap:44px;
 }
-.seam-head{display:flex;flex-direction:column;gap:10px;max-width:640px;}
-.seam-eyebrow{
+.site-seam-head{display:flex;flex-direction:column;gap:10px;max-width:640px;}
+.site-seam-eyebrow{
   margin:0;font-size:12px;font-weight:700;letter-spacing: 0.2px;text-transform: none;
   color:rgba(255,255,255,.6);
 }
-.seam-head h2{margin:0;font-size:clamp(2rem, 1.4rem + 2.4vw, 3.25rem);line-height:1.05;font-weight:700;color:#fff;}
-.seam-lede{margin:6px 0 0;font-size:var(--t-base);line-height:1.5;}
-.seam .ph{color:rgba(255,255,255,.66);border-bottom-color:rgba(255,255,255,.3);}
+.site-seam-head h2{margin:0;font-size:clamp(2rem, 1.4rem + 2.4vw, 3.25rem);line-height:1.05;font-weight:700;color:#fff;}
+.site-seam-lede{margin:6px 0 0;font-size:var(--t-base);line-height:1.5;}
+.site-seam .ph{color:rgba(255,255,255,.66);border-bottom-color:rgba(255,255,255,.3);}
 
-.seam-board{
+.site-seam-board{
   display:grid;grid-template-columns:minmax(0,3fr) auto minmax(0,2.3fr);
   gap:22px;align-items:stretch;
 }
-.seam-group{display:flex;flex-direction:column;gap:12px;min-width:0;}
-.seam-tag{margin:0;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
-.seam-tag b{font-size:11px;font-weight:700;letter-spacing: 0.2px;text-transform: none;color:#fff;}
-.seam-tag span{font-size:13px;font-style:italic;color:rgba(255,255,255,.6);}
-.seam-group--done .seam-tag b{color:rgba(255,255,255,.72);}
-.seam-group :is(ul,ol){
+.site-seam-group{display:flex;flex-direction:column;gap:12px;min-width:0;}
+.site-seam-tag{margin:0;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
+.site-seam-tag b{font-size:11px;font-weight:700;letter-spacing: 0.2px;text-transform: none;color:#fff;}
+.site-seam-tag span{font-size:13px;font-style:italic;color:rgba(255,255,255,.6);}
+.site-seam-group--done .site-seam-tag b{color:rgba(255,255,255,.72);}
+.site-seam-group :is(ul,ol){
   flex:1;display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:12px;
   list-style:none;margin:0;padding:0;
 }
-.seam-card{
+.site-seam-card{
   display:flex;flex-direction:column;align-items:flex-start;gap:9px;
   min-height:164px;padding:16px 16px 14px;border-radius:10px;
 }
-.seam-card b{font-size:16px;line-height:1.22;font-weight:700;}
-.seam-card .ph{font-size:13px;line-height:1.45;}
-.seam-num{
+.site-seam-card b{font-size:16px;line-height:1.22;font-weight:700;}
+.site-seam-card .ph{font-size:13px;line-height:1.45;}
+.site-seam-num{
   width:22px;height:22px;flex:none;border-radius:50%;
   display:inline-flex;align-items:center;justify-content:center;
   font-size:11px;font-weight:700;line-height:1;
 }
-.seam-group--done .seam-card{
+.site-seam-group--done .site-seam-card{
   background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.16);color:rgba(255,255,255,.9);
 }
-.seam-group--done .seam-num{background:rgba(255,255,255,.16);color:#fff;}
-.seam-group--next .seam-card{
+.site-seam-group--done .site-seam-num{background:rgba(255,255,255,.16);color:#fff;}
+.site-seam-group--next .site-seam-card{
   background:#fff;border:1px solid #fff;color:var(--ink);box-shadow:0 14px 34px rgba(0,0,0,.22);
 }
-.seam-group--next .seam-card .ph{color:var(--ink-soft);border-bottom-color:var(--border-strong);}
-.seam-group--next .seam-num{background:var(--teal);color:#fff;}
-.seam-link{
+.site-seam-group--next .site-seam-card .ph{color:var(--ink-soft);border-bottom-color:var(--border-strong);}
+.site-seam-group--next .site-seam-num{background:var(--teal);color:#fff;}
+.site-seam-link{
   margin-top:auto;padding:0;border:0;background:none;cursor:pointer;
   font:inherit;font-size:12.5px;font-weight:600;color:rgba(255,255,255,.82);
   text-decoration:underline;text-decoration-color:rgba(255,255,255,.35);text-underline-offset:3px;
 }
-.seam-link:hover{color:#fff;text-decoration-color:#fff;}
-.seam-join{
+.site-seam-link:hover{color:#fff;text-decoration-color:#fff;}
+.site-seam-join{
   align-self:center;display:flex;flex-direction:column;align-items:center;gap:7px;
   margin-top:26px;color:rgba(255,255,255,.6);
   font-size:10px;font-weight:700;letter-spacing: 0.2px;text-transform: none;white-space:nowrap;
 }
-.seam-join .site-arrow{width:34px;height:auto;}
+.site-seam-join .site-arrow{width:34px;height:auto;}
 .site-arrow{flex:none;}
 
-.seam-foot{margin-top:4px;}
-.seam-cue{
+.site-seam-foot{margin-top:4px;}
+.site-seam-cue{
   margin:0;display:flex;flex-direction:column;align-items:center;gap:10px;
   font-size:11px;font-weight:700;letter-spacing: 0.2px;text-transform: none;color:rgba(255,255,255,.55);
 }
-.seam-cue .site-arrow{animation:seam-bob 1.8s ease-in-out infinite;}
-@keyframes seam-bob{0%,100%{translate:0 0;}50%{translate:0 5px;}}
-@media (prefers-reduced-motion:reduce){.seam-cue .site-arrow{animation:none;}}
-/* the page's foot is the pager it stands in for: back on the left, on on the right */
-.seam-pager{display:flex;justify-content:space-between;align-items:center;gap:14px;}
-.seam-btn{
-  display:inline-flex;align-items:center;gap:10px;padding:11px 18px;
-  border:1px solid rgba(255,255,255,.42);border-radius:4px;background:none;color:#fff;cursor:pointer;
-  font:inherit;font-size:var(--t-sm);font-weight:600;transition:background .15s ease,color .15s ease,border-color .15s ease;
-}
-.seam-btn:hover{background:rgba(255,255,255,.1);border-color:#fff;}
-.seam-btn--go{background:#fff;border-color:#fff;color:var(--teal-dark);}
-.seam-btn--go:hover{background:var(--teal-tint);}
+.site-seam-cue .site-arrow{animation:site-seam-bob 1.8s ease-in-out infinite;}
+@keyframes site-seam-bob{0%,100%{translate:0 0;}50%{translate:0 5px;}}
+@media (prefers-reduced-motion:reduce){.site-seam-cue .site-arrow{animation:none;}}
 
 @media (max-width:1099px){
-  .seam-board{grid-template-columns:minmax(0,1fr);gap:18px;}
-  .seam-join{flex-direction:row;margin-top:0;}
-  .seam-join .site-arrow{rotate:90deg;width:22px;}
-  .seam-card{min-height:136px;}
+  .site-seam-board{grid-template-columns:minmax(0,1fr);gap:18px;}
+  .site-seam-join{flex-direction:row;margin-top:0;}
+  .site-seam-join .site-arrow{rotate:90deg;width:22px;}
+  .site-seam-card{min-height:136px;}
 }
 @media (max-width:640px){
-  .seam-in{padding:44px 0 32px;gap:30px;}
-  .seam-group :is(ul,ol){grid-auto-flow:row;}
-  .seam-card{min-height:0;flex-direction:row;flex-wrap:wrap;align-items:center;column-gap:10px;padding:13px 14px;}
-  .seam-card .ph{flex:0 0 100%;}
-  .seam-card b{flex:1;min-width:0;}
-  .seam-link{margin-top:0;}
-  .seam-pager{flex-direction:column-reverse;align-items:stretch;}
-  .seam-btn{justify-content:center;}
+  .site-seam-in{padding:44px 0 32px;gap:30px;}
+  .site-seam-group :is(ul,ol){grid-auto-flow:row;}
+  /* number, name and "Revisit" on one line, the mark under them at the
+     card's full width — as main lays out its copy of the board: the mark's
+     own width cap let it squeeze in beside the name and run over it */
+  .site-seam-card{min-height:0;flex-direction:row;flex-wrap:wrap;align-items:center;column-gap:10px;row-gap:6px;padding:13px 14px;}
+  .site-seam-card .ph{flex:0 0 100%;}
+  .site-seam-card b{flex:1 1 0;min-width:0;}
+  .site-seam-card .site-seam-link{order:2;margin:0;}
+  .site-seam-card .site-seam-viz{order:3;flex:0 0 100%;width:100%;max-width:none;margin-top:4px;}
 }
-
-/* ---- chapters: while the title page is up it IS the page ---- */
-html[data-site-gate] .pages > :is(.ov-wrap, section.page, .sec-root, .secpager){display:none !important;}
-/* …and the row above says so: the section it was reached from stands down
-   to a plain mark, and part two's name lights */
-html[data-site-gate] .secnav-btn.is-active{background:none;color:var(--teal);font-weight:600;}
-html[data-site-gate] .secnav-btn.is-active .num{background:#e2ebec;border-color:transparent;color:var(--teal);}
-html[data-site="chapters"][data-site-gate] .secnav-btn:nth-child(1)::before{color:var(--ink-soft);opacity:.8;}
-html[data-site="chapters"][data-site-gate] .secnav-btn:nth-child(4)::before{color:var(--teal);opacity:1;}
-
-/* chapters: the pager's own line and buttons mark the crossing too. The
-   line's children run stop, seg, stop, …, so the seg between the third and
-   fourth stops is the sixth child; the crossing is the pager of section
-   index 2 (its Next) and 3 (its Prev). */
-html[data-site="chapters"] .pgr-line > .pgr-seg:nth-child(6){
-  position:relative;width:46px;
-  background:linear-gradient(90deg, #dde3e5 0 15px, transparent 15px 31px, #dde3e5 31px);
-}
-html[data-site="chapters"] .pgr-line > .pgr-seg.is-past:nth-child(6){
-  background:linear-gradient(90deg, var(--teal) 0 15px, transparent 15px 31px, var(--teal) 31px);
-}
-html[data-site="chapters"] .pgr-line > .pgr-seg:nth-child(6)::after{
-  content:"";position:absolute;left:50%;top:50%;width:7px;height:7px;
-  translate:-50% -50%;rotate:45deg;border:1.5px solid var(--border-strong);background:#fff;box-sizing:border-box;
-}
-html[data-site="chapters"] .pgr-line > .pgr-seg.is-past:nth-child(6)::after{border-color:var(--teal);background:var(--teal);}
-html[data-site="chapters"] .secpager[data-sec="2"] .pgr-side--r,
-html[data-site="chapters"] .secpager[data-sec="3"] .pgr-side:not(.pgr-side--r){
-  flex-direction:column;justify-content:center;gap:7px;
-  /* the caption rides above the button without moving it off the line's axis */
-  margin-top:-16px;
-}
-html[data-site="chapters"] .secpager[data-sec="2"] .pgr-side--r{align-items:flex-end;}
-html[data-site="chapters"] .secpager[data-sec="3"] .pgr-side:not(.pgr-side--r){align-items:flex-start;}
-html[data-site="chapters"] .secpager[data-sec="2"] .pgr-side--r::before,
-html[data-site="chapters"] .secpager[data-sec="3"] .pgr-side:not(.pgr-side--r)::before{
-  content:var(--site-part-2);
-  font-size:9.5px;line-height:1;font-weight:700;letter-spacing: 0.2px;text-transform: none;color:var(--teal);
-}
-html[data-site="chapters"] .secpager[data-sec="3"] .pgr-side:not(.pgr-side--r)::before{content:var(--site-part-1);color:var(--ink-soft);}
 
 /* ====================================================================
-   One scroll (and the modes' profile): several sections on one page.
+   One scroll, two scrolls: several sections on one page.
    ==================================================================== */
-/* each section closes where it ends (src/site/runtime.ts), on the frame */
+/* the one scroll: each section closes where it ends (src/site/runtime.ts), on the frame */
 .site-close{
   width:min(var(--grid-max), calc(100% - 2 * var(--frame-pad)));margin-inline:auto;
   padding:40px 0 80px;
@@ -275,13 +191,12 @@ html[data-site="chapters"] .secpager[data-sec="3"] .pgr-side:not(.pgr-side--r)::
 /* main tints the page while a framed-figure section is up; with every
    section up that is always, so the tint is the page's and the sections
    that are white on main carry their own white, bled to the edges */
-html:is([data-site="scroll"],[data-site="modes"]) :is(.ov-wrap, #page-levers){
+html:is([data-site="scroll"],[data-site="halves"]) :is(.ov-wrap, #page-levers){
   background:#fff;box-shadow:0 0 0 100vmax #fff;clip-path:inset(0 -100vmax);
 }
 /* a section is a screen at least on main, because it is the page; in a
    scroll that floor is dead air under a short section */
-html[data-site="scroll"] .pages > section.page,
-html[data-site="modes"][data-site-part="1"] .pages > section.page{min-height:0;}
+html:is([data-site="scroll"],[data-site="halves"]) .pages > section.page{min-height:0;}
 /* outside the storyline (Extras) the page is that section alone */
 html[data-site="scroll"][data-site-part="0"] #site-seam-slot{display:none;}
 /* the pager's Prev / Next are what the scroll replaces. What stays is the
@@ -289,154 +204,67 @@ html[data-site="scroll"][data-site-part="0"] #site-seam-slot{display:none;}
    so the pager shows at the foot of the LAST storyline section and nowhere
    else: every other Next named a section already on the page (Sept 2026,
    the user's call about the Next to Levers for Change). */
-html[data-site="scroll"]:not([data-site-part="0"]) .secpager :is(.pgr-line-wrap, .pgr-side:not(.pgr-side--r) .pager-btn){display:none;}
+html[data-site="scroll"]:not([data-site-part="0"]) .secpager :is(.pgr-line-wrap, .pgc--prev){display:none;}
 html[data-site="scroll"]:not([data-site-part="0"]):not([data-site-exit="1"]) .secpager{display:none;}
 html[data-site="scroll"]:not([data-site-part="0"]) .secpager{
-  border-top:0;padding-top:0;background:none;
+  border-top:0;padding-top:24px;background:none;
   max-width:min(var(--grid-max), calc(100% - 2 * var(--frame-pad)));padding-inline:0;
 }
+/* the one card left keeps a card's width, at the row's end */
+html[data-site="scroll"]:not([data-site-part="0"]) .pager-cards{grid-template-columns:minmax(220px,340px);justify-content:end;}
 
-/* ====================================================================
-   Two modes. The bar's first choice is the half — the profile, browsed in
-   any order in one scroll; the diagnosis, stepped through — and the tabs
-   show only that half's sections. The diagnosis wears the bar dark: the
-   reader has left the reading room for the workbench, and the profile
-   comes along as a panel on call.
-   ==================================================================== */
-#site-mode-slot{align-self:center;flex:none;margin-left:56px;}
-.modes{
-  display:inline-flex;gap:2px;padding:3px;border-radius:9px;
-  background:#f1f4f4;border:1px solid var(--border);
+/* ---- two scrolls: a half to a page ----
+   The board is the second half's first screen. The first half ends in its
+   last section's teal close, which carries the Next (below); the second
+   ends on main's pager, its Previous and Next cards re-aimed across the
+   halves (aimPager, src/site/runtime.ts). No five-stop line, which counts
+   pages this layout retires. */
+html[data-site="halves"]:not([data-site-part="2"]) #site-seam-slot{display:none;}
+html[data-site="halves"][data-site-part="1"] .secpager{display:none;}
+html[data-site="halves"][data-site-part="2"] .secpager .pgr-line-wrap{display:none;}
+/* white to the edges, under a teal close, on a page main tints */
+html[data-site="halves"][data-site-part="2"] .secpager{box-shadow:0 0 0 100vmax #fff;clip-path:inset(0 -100vmax);}
+/* The way on to the second half, at the foot of the close that ends the
+   first (built by endFirstHalf, src/site/runtime.ts). It is the layout's
+   one big move, so it is not another white button in the close's action
+   row, where the optional quiz sits: it has a row of its own under a
+   hairline, set in the band's own type — the close's eyebrow for "Next",
+   its title weight for the part's name, which is the headline the reader
+   lands on — and one white mark, the arrow's disc, to say it is a door.
+   The whole cluster is the button; the wash on hover shows its extent. */
+.site-next-row{margin-top:10px;padding-top:26px;border-top:1px solid rgba(255,255,255,.2);}
+.site-next{
+  display:inline-grid;grid-template-columns:auto auto;column-gap:22px;row-gap:5px;align-items:center;
+  margin:-12px -16px;padding:12px 16px;border:0;border-radius:10px;background:none;color:#fff;
+  font:inherit;text-align:left;cursor:pointer;appearance:none;transition:background .15s ease;
 }
-.modes-btn{
-  display:flex;flex-direction:column;align-items:flex-start;gap:3px;
-  padding:5px 14px 6px 12px;border:0;border-radius:6px;background:none;cursor:pointer;
-  font:inherit;font-size:13.5px;line-height:1;font-weight:700;color:var(--ink-soft);white-space:nowrap;
-  transition:background .15s ease,color .15s ease;
+.site-next-k{grid-column:1;font-size:12px;font-weight:700;line-height:1;letter-spacing:.2px;color:rgba(255,255,255,.78);}
+.site-next-name{grid-column:1;font-size:26px;font-weight:700;line-height:1.12;letter-spacing:-.3px;}
+.site-next-go{
+  grid-column:2;grid-row:1 / span 2;width:46px;height:46px;border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;
+  background:#fff;color:var(--teal-dark);transition:translate .18s ease;
 }
-.modes-btn small{font-size:9px;font-weight:700;letter-spacing: 0.2px;text-transform: none;opacity:.7;}
-.modes-btn:hover{color:var(--ink);}
-.modes-btn.is-on{background:#fff;color:var(--ink);box-shadow:var(--shadow-sm);cursor:default;}
-.modes-btn.is-on small{color:var(--teal);opacity:1;}
+.site-next:hover{background:rgba(255,255,255,.07);}
+.site-next:hover .site-next-go{translate:5px 0;}
+.site-next:focus-visible{outline:2px solid #fff;outline-offset:2px;}
+@media (prefers-reduced-motion:reduce){.site-next-go{transition:none;}}
+@media (max-width:640px){
+  /* the name takes the line, the disc its end; the band is the page's foot
+     here, so it clears the study's pill */
+  .site-next{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:14px;width:calc(100% + 32px);}
+  .site-next-name{font-size:24px;}
+  .sec-seal:has(.site-next) .seal-in{padding-bottom:84px;}
+}
 
-html[data-site="modes"] .secnav{justify-content:flex-start;gap:6px;margin-left:22px;}
-/* only the current half's tabs (outside the storyline — Extras — main's row stands) */
-html[data-site="modes"][data-site-part="1"] .secnav-btn:nth-child(n+4):not(.secnav-btn--aside),
-html[data-site="modes"][data-site-part="2"] .secnav-btn:nth-child(-n+3){display:none;}
-/* the seam is the switch now, not a hairline in the row */
-html[data-site="modes"] .secnav-btn:nth-child(4){margin-left:0;}
-html[data-site="modes"] .secnav-btn:nth-child(4)::before{display:none;}
-/* two or three names always fit: they keep their names at every width */
-html[data-site="modes"] .secnav-btn .secnav-lbl{display:inline;}
-html[data-site="modes"] .secnav-btn:not(.is-active){padding:6px 10px;gap:8px;}
-/* the profile is browsed, not stepped: no numbers, no checks, no connectors */
-html[data-site="modes"][data-site-part="1"] .secnav-btn .num,
-html[data-site="modes"][data-site-part="1"] .secnav-btn::after{display:none;}
-html[data-site="modes"][data-site-part="1"] .secnav-btn.is-done{color:var(--ink-soft);}
-html[data-site="modes"][data-site-part="1"] .secnav-btn.is-done:hover{color:var(--ink);}
-/* the diagnosis is stepped, and its steps count from one */
-html[data-site="modes"][data-site-part="2"] .secnav-btn:not(.is-done) .num{font-size:0;}
-html[data-site="modes"][data-site-part="2"] .secnav-btn:not(.is-done) .num::after{font-size:11px;}
-html[data-site="modes"][data-site-part="2"] .secnav-btn:nth-child(4):not(.is-done) .num::after{content:"1";}
-html[data-site="modes"][data-site-part="2"] .secnav-btn:nth-child(5):not(.is-done) .num::after{content:"2";}
-html[data-site="modes"][data-site-part="2"] .secnav-btn:nth-child(4)::after{display:block;}
-
-/* ---- the workbench: the bar goes dark ---- */
-html[data-site="modes"][data-site-part="2"] .secbar{
-  background:var(--teal-dark);border-bottom-color:var(--teal-dark);box-shadow:0 1px 0 rgba(0,0,0,.2);
-}
-html[data-site="modes"][data-site-part="2"] .secbar .citypick--bar .citypick-btn{
-  background-color:rgba(255,255,255,.07);border-color:rgba(255,255,255,.28);color:#fff;
-  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%23ffffff' stroke-width='1.5' stroke-linecap='round'/></svg>"),
-    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='17' viewBox='0 0 24 30' fill='none' stroke='%23ffffff' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'><path d='M2 26h20'/><path d='M4 26V15h6v11'/><path d='M12 26V8h7v18'/><path d='M14.6 12h1.8M14.6 16h1.8M14.6 20h1.8'/></svg>");
-}
-html[data-site="modes"][data-site-part="2"] .secbar .citypick--bar .citypick-txt{color:#fff;}
-html[data-site="modes"][data-site-part="2"] .secbar .citypick--bar .citypick-btn:is(:hover,:focus-visible){
-  border-color:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.14);
-}
-html[data-site="modes"][data-site-part="2"] .modes{background:rgba(0,0,0,.18);border-color:rgba(255,255,255,.14);}
-html[data-site="modes"][data-site-part="2"] .modes-btn{color:rgba(255,255,255,.72);}
-html[data-site="modes"][data-site-part="2"] .modes-btn:hover{color:#fff;}
-html[data-site="modes"][data-site-part="2"] .modes-btn.is-on{background:#fff;color:var(--teal-dark);box-shadow:none;}
-html[data-site="modes"][data-site-part="2"] .secnav-btn{color:rgba(255,255,255,.7);}
-html[data-site="modes"][data-site-part="2"] .secnav-btn:hover{color:#fff;}
-html[data-site="modes"][data-site-part="2"] .secnav-btn.is-done{color:rgba(255,255,255,.88);}
-html[data-site="modes"][data-site-part="2"] .secnav-btn.is-done .num{background:rgba(255,255,255,.18);}
-html[data-site="modes"][data-site-part="2"] .secnav-btn.is-active{background:rgba(255,255,255,.12);color:#fff;}
-html[data-site="modes"][data-site-part="2"] .secnav-btn.is-active .num{background:#fff;border-color:#fff;color:var(--teal-dark);}
-html[data-site="modes"][data-site-part="2"] .secnav-btn:nth-child(4)::after{background:rgba(255,255,255,.35);}
-
-/* ---- the profile on call ---- */
-#site-recall-slot{align-self:center;flex:none;margin-left:12px;}
-#site-recall-slot:empty{display:none;}
-.recall{position:relative;}
-.recall-btn{
-  display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 12px 0 14px;
-  border:1px solid rgba(255,255,255,.34);border-radius:4px;background:none;color:#fff;cursor:pointer;
-  font:inherit;font-size:13px;font-weight:600;white-space:nowrap;
-  transition:background .15s ease,border-color .15s ease;
-}
-.recall-btn:hover,.recall-btn.open{background:rgba(255,255,255,.1);border-color:#fff;}
-.recall-btn svg{transition:transform .2s ease;}
-.recall-btn.open svg{transform:rotate(180deg);}
-.recall-panel{
-  position:absolute;right:0;top:calc(100% + 15px);z-index:60;
-  width:min(780px, calc(100vw - 2 * var(--frame-pad)));padding:16px 16px 18px;
-  background:#fff;color:var(--ink);border:1px solid var(--border-strong);border-radius:10px;box-shadow:var(--shadow-md);
-}
-.recall-head{margin:0 2px 12px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;}
-.recall-head b{font-size:11px;font-weight:700;letter-spacing: 0.2px;text-transform: none;color:var(--teal);}
-.recall-head span{font-size:13px;font-style:italic;color:var(--ink-soft);}
-.recall-panel ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;}
-.recall-card{
-  display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-height:138px;
-  padding:14px 14px 12px;border:1px solid var(--border);border-radius:8px;background:#f9fafb;
-}
-.recall-card b{font-size:15px;line-height:1.22;}
-.recall-card .ph{font-size:13px;line-height:1.4;}
-.recall-card .seam-link{color:var(--teal);text-decoration-color:rgba(37,88,98,.35);}
-.recall-card .seam-link:hover{color:var(--teal-dark);text-decoration-color:var(--teal-dark);}
-
-/* ---- the hand-off at the foot of the profile ---- */
-html[data-site="modes"]:not([data-site-part="1"]) #site-seam-slot{display:none;}
-.handoff{
-  width:min(var(--grid-max), calc(100% - 2 * var(--frame-pad)));margin:8px auto 72px;
-  display:flex;align-items:center;justify-content:space-between;gap:32px;
-  padding:30px 34px;border-radius:12px;background:var(--teal-dark);color:#fff;
-}
-.handoff-txt{display:flex;flex-direction:column;gap:8px;min-width:0;}
-.handoff h2{margin:0;font-size:var(--t-h2);line-height:1.1;color:#fff;}
-.handoff p{margin:0;}
-.handoff .ph{color:rgba(255,255,255,.66);border-bottom-color:rgba(255,255,255,.3);}
-.handoff-btn{
-  flex:none;display:inline-flex;align-items:center;gap:10px;padding:13px 20px;
-  border:1px solid #fff;border-radius:4px;background:#fff;color:var(--teal-dark);cursor:pointer;
-  font:inherit;font-size:var(--t-sm);font-weight:700;white-space:nowrap;transition:background .15s ease;
-}
-.handoff-btn:hover{background:var(--teal-tint);}
-/* the profile has no Prev / Next — it is one scroll, left by the hand-off —
-   and the diagnosis keeps both, without the five-stop line the modes retire */
-html[data-site="modes"][data-site-part="1"] .secpager{display:none;}
-html[data-site="modes"][data-site-part="2"] .pgr-line-wrap{visibility:hidden;}
-
-@media (max-width:1199px){
-  #site-mode-slot{margin-left:16px;}
-  html[data-site="modes"] .secnav{margin-left:12px;}
-  .modes-btn{padding:5px 10px 6px;font-size:13px;}
-}
-@media (max-width:899px){
-  /* the bar holds the chip, the switch and the half's names; what does not
-     fit rides main's filmstrip, which centres the one the reader is on */
-  .modes-btn small{display:none;}
-  .modes-btn{padding:8px 10px;}
-  .recall-panel ul{grid-template-columns:minmax(0,1fr);}
-  .recall-card{min-height:0;}
-  .handoff{flex-direction:column;align-items:flex-start;gap:20px;padding:24px 22px;}
-}
-@media (max-width:599px){
-  /* main's phone tier: the section menu stands in for the tabs and lists
-     all five, so the switch stands down with them */
-  #site-mode-slot,#site-recall-slot{display:none;}
+/* the breaks between sections are main's, from its own one-scroll layout:
+   the teal close under each section ("What to take with you", its quiz).
+   Main builds them in every layout and shows them only in that one
+   (html[data-layout="scroll"] .sec-seal, src/legacy/v3.css); this is that
+   rule, for this layout. They hide and show with their sections. */
+html[data-site="halves"] .sec-seal{
+  display:block;background:var(--teal-dark);color:#fff;
+  box-shadow:0 0 0 100vmax var(--teal-dark);clip-path:inset(0 -100vmax);
 }
 
 /* ====================================================================
@@ -446,34 +274,13 @@ html[data-site="modes"][data-site-part="2"] .pgr-line-wrap{visibility:hidden;}
    Nothing here is copy to be written. (Until Sept 2026 the tree was also
    drawn large beside the header; the card carries it alone now.)
    ==================================================================== */
-.seam-top{display:block;}
-.seam-diag{margin:6px 0 0;font-size:16px;line-height:1.5;color:rgba(255,255,255,.82);}
-.seam-diag b{color:#fff;white-space:nowrap;}
-.seam-diag .qmark{width:1.05em;height:1.05em;vertical-align:-0.15em;margin-right:.2em;}
-.seam-tree{
-  background:#fff;color:var(--ink);border-radius:14px;padding:16px 18px 14px;
-  box-shadow:0 12px 34px rgba(0,0,0,.22);
-}
-.seam-tree svg{display:block;width:100%;height:auto;}
-.seam-tree-k{margin:0 0 4px;font-size:12.5px;font-weight:600;color:var(--ink-soft);}
-.seam-tree-t{font-size:11.5px;font-weight:700;}
-.seam-tree-t.root{font-weight:600;fill:var(--ink-soft);}
-.seam-tree-t.faint{opacity:.55;}
-.seam-tree-chip{font-size:10.5px;font-weight:700;fill:#fff;}
-.seam-legend{display:flex;flex-wrap:wrap;gap:6px 18px;margin:10px 0 0;padding:0;list-style:none;font-size:12.5px;color:var(--ink-soft);}
-.seam-legend li{display:inline-flex;align-items:center;gap:6px;}
-.seam-legend li.is-on{color:var(--ink);font-weight:700;}
-.seam-legend .qmark{width:16px;height:16px;}
-.seam-viz{display:block;width:100%;max-width:230px;height:auto;margin-top:4px;}
+.site-seam-top{display:block;}
+.site-seam-diag{margin:6px 0 0;font-size:16px;line-height:1.5;color:rgba(255,255,255,.82);}
+.site-seam-diag b{color:#fff;white-space:nowrap;}
+.site-seam-diag .qmark{width:1.05em;height:1.05em;vertical-align:-0.15em;margin-right:.2em;}
+.site-seam-viz{display:block;width:100%;max-width:230px;height:auto;margin-top:4px;}
 /* the card's tree gets the card's width — it is a shape, not a diagram */
-.seam-viz--tree{max-width:100%;margin-top:8px;}
-.seam-viz-t{font-size:10px;font-weight:600;}
-.seam-group--done .seam-viz-t{fill:rgba(255,255,255,.75);}
-.seam-group--next .seam-viz-t{fill:var(--ink-soft);}
-.handoff-tree{flex:0 0 min(420px, 44%);}
-.handoff-tree .seam-tree{padding:12px 14px 10px;}
-.recall-card .seam-viz{max-width:100%;}
-.recall-card .seam-viz-t{fill:var(--ink-soft);}
-@media (max-width:920px){
-  .handoff-tree{flex-basis:100%;}
-}
+.site-seam-viz--tree{max-width:100%;margin-top:8px;}
+.site-seam-viz-t{font-size:10px;font-weight:600;}
+.site-seam-group--done .site-seam-viz-t{fill:rgba(255,255,255,.75);}
+.site-seam-group--next .site-seam-viz-t{fill:var(--ink-soft);}

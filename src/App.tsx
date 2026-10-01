@@ -93,9 +93,8 @@ export default function App() {
   const [currentPageId, setCurrentPageId] = useState<string | null>(null);
   /* the hash effects wait for v-3 to be booted */
   const [ready, setReady] = useState(false);
-  /* the section v-3's switch is on, and the elements the site-level layout
-     variants add to its markup (src/site/runtime.ts) */
-  const [section, setSection] = useState(0);
+  /* the elements the site-level layout variants add to v-3's markup
+     (src/site/runtime.ts) */
   const [siteSlots, setSiteSlots] = useState<SiteSlots | null>(null);
 
   /* The scroll spy rewrites the hash on every section that drifts past, so
@@ -149,7 +148,7 @@ export default function App() {
            which otherwise stays mounted and reappears the next time */
         if (!open) setOpenExplainer(null);
       },
-      ...siteHooks(setSection),
+      ...siteHooks(),
     });
     legacy.current = api;
     setSiteSlots(mountSite(api));
@@ -271,7 +270,6 @@ export default function App() {
           api={legacy.current}
           variant={SITE_VARIANT}
           slots={siteSlots}
-          section={section}
           inTool={landingHidden}
         />
       )}

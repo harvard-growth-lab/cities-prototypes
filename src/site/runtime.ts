@@ -1,7 +1,10 @@
 /* The site-level layout variants, outside React: what v-3's section switch
    asks (src/legacy/bridge.ts), and the few elements the variants add to
-   v-3's markup — the seam's slot between the two halves, the closes under
-   each section in the one-scroll layouts, and two slots in the section bar.
+   v-3's markup — the seam's slot between the two halves, and, in the one
+   scroll, the closes under each section. (The two scrolls break their
+   sections with main's own teal closes, which v-3 builds for its one-scroll
+   layout and hides and shows with each section; site.css only lets them be
+   seen.)
    Like the constraints slot, those elements live inside markup React never
    re-renders, so they are built once, by hand, and React portals into them. */
 
@@ -12,8 +15,6 @@ import { PARTS, partOfName, type SiteVariant } from "./variants";
    sectionDefs arrive (the switch runs once while the page is still booting) */
 let parts: (0 | 1 | -1)[] = [0, 0, 0, 1, 1, -1];
 export const partOf = (i: number): 0 | 1 | -1 => parts[i] ?? -1;
-/** the section a half opens on */
-export const firstOfPart = (p: 0 | 1) => parts.indexOf(p);
 /** the two sections either side of the crossing */
 export const seamSections = () => ({ last: parts.lastIndexOf(0), first: parts.indexOf(1) });
 
@@ -25,9 +26,9 @@ let current = 0;
 /** are sections k and i up at the same time — one scroll — under this variant? */
 function together(k: number, i: number) {
   if (k === i) return true;
-  if (variant === "scroll") return partOf(k) >= 0 && partOf(i) >= 0;
-  if (variant === "modes") return partOf(k) === 0 && partOf(i) === 0;
-  return false;
+  if (partOf(k) < 0 || partOf(i) < 0) return false;
+  /* the one scroll keeps the storyline up; the two scrolls, a half each */
+  return variant === "scroll" || (variant === "halves" && partOf(k) === partOf(i));
 }
 export const sharesScroll = (i: number) => parts.some((_, k) => k !== i && together(k, i));
 
@@ -88,6 +89,59 @@ function paint(i: number) {
   closes.forEach((el, k) => {
     el.hidden = !together(k, i);
   });
+  if (variant === "halves") aimPager(i);
+}
+
+/** The two scrolls: main's pager names the sections either side of the
+ *  current one, and inside a half those are already on the page. In the
+ *  second half its cards are re-aimed at what is off the page — Previous
+ *  back to the first half, Next to whatever follows the storyline. v-3
+ *  rewrites the pager on every switch, before onSection, so this runs after
+ *  each rewrite; the click is still main's own, which reads data-go. (The
+ *  first half has no pager: its Next is in the close that ends it.) */
+function aimPager(i: number) {
+  if (!api || partOf(i) !== 1) return;
+  const pager = document.querySelector(".secpager");
+  const aim = (card: string, to: number, name: string) => {
+    const b = pager?.querySelector<HTMLElement>(card);
+    const label = b?.querySelector(".pgc-name");
+    if (!b || !label) return;
+    b.dataset.go = String(to);
+    label.textContent = name;
+    /* the card's badge is the target's stop: a number ahead (behind, main's check stands) */
+    const badge = b.querySelector(".pgc-stop:not(.is-past)");
+    if (badge) badge.textContent = String(to + 1);
+  };
+  aim(".pgc--prev", parts.indexOf(0), PARTS[0].name);
+  const out = parts.lastIndexOf(1) + 1;
+  if (api.sectionDefs[out]) aim(".pgc--next", out, api.sectionDefs[out].name);
+}
+
+/** The two scrolls: the first half's page ends on its last section's teal
+ *  close. Main's cue there — "Keep scrolling · <the next section>" — is
+ *  written for its one scroll; here that section is on another page, so the
+ *  cue goes and the way on takes the close's foot: a row of its own under a
+ *  hairline, named for the part it opens. The close's own click handler
+ *  (main's) follows any [data-go] inside it, so the button needs no wiring. */
+function endFirstHalf() {
+  const { last, first } = seamSections();
+  const close = document.querySelector(`#seal-${last} .seal-in`);
+  if (!close || close.querySelector(".site-next")) return;
+  const actions = close.querySelector(".seal-actions");
+  actions?.querySelector(".seal-cue")?.remove();
+  /* a close without a quiz had nothing else in that row */
+  if (actions && !actions.children.length) actions.remove();
+  const two = PARTS[1];
+  const row = document.createElement("div");
+  row.className = "site-next-row";
+  row.innerHTML =
+    `<button type="button" class="site-next" data-go="${first}">` +
+    '<span class="site-next-k">Next</span>' +
+    `<span class="site-next-name">Part ${two.n}: ${two.name.replace(/&/g, "&amp;")}</span>` +
+    '<span class="site-next-go" aria-hidden="true"><svg class="site-arrow" viewBox="0 0 16 10" width="18" height="11.25">' +
+    '<path d="M1 5h13M10 1l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>' +
+    "</button>";
+  close.append(row);
 }
 
 /** Set before v-3 boots: the variant, for the stylesheet, and the part names
@@ -99,19 +153,24 @@ export function beginSite(v: SiteVariant) {
   PARTS.forEach((p) => h.style.setProperty(`--site-part-${p.n}`, `"Part ${p.n} · ${p.name}"`));
 }
 
-/** What the section switch is answered with. The baseline and the chapters
- *  answer nothing about layout — they are main's one-section pages. */
-export function siteHooks(onSection: (i: number) => void): Partial<CitiesBridge> {
-  const oneScroll = variant === "scroll" || variant === "modes";
+/** What the section switch is answered with. The baseline answers nothing
+ *  about layout — it is main's one-section pages. */
+export function siteHooks(): Partial<CitiesBridge> {
+  const stacked = variant !== "paged";
   return {
     onSection(i) {
       current = i;
+      switching = false;
+      /* a switch made any other way than by settle() is where the reader is */
+      if (!settling) spied = i;
       paint(i);
-      onSection(i);
     },
-    ...(oneScroll && {
-      closesInline: true,
+    ...(stacked && {
+      /* the two scrolls close a section with main's teal block, whose quiz
+         is main's dialog */
+      closesInline: variant === "scroll",
       sectionHidden(k: number, i: number) {
+        beginSwitch();
         const off = !together(k, i);
         /* a section's close goes with it in the same breath — v-3 measures
            the page for its spy right after the switch, before onSection */
@@ -121,8 +180,14 @@ export function siteHooks(onSection: (i: number) => void): Partial<CitiesBridge>
       },
       sectionScroll(i: number) {
         /* a page of its own, or the head of the scroll: main's jump to the
-           top, which also brings the masthead back */
-        if (!sharesScroll(i) || i === parts.findIndex((_, k) => together(k, i))) return false;
+           top, which also brings the masthead back. The second of the two
+           scrolls has the board above its head: arriving from another page
+           lands on the board, at the top; a move inside the half goes to
+           the section. (`current` is still the section being left.) */
+        if (!sharesScroll(i)) return false;
+        const head = i === parts.findIndex((_, k) => together(k, i));
+        const underBoard = variant === "halves" && partOf(i) === 1 && together(current, i);
+        if (head && !underBoard) return false;
         return scrollToSection(i, current);
       },
     }),
@@ -131,31 +196,107 @@ export function siteHooks(onSection: (i: number) => void): Partial<CitiesBridge>
 
 /** v-3's spy names the page in view; in a shared scroll that moves the tabs */
 export function spyPage(id: string) {
-  if (!api || spyHeld) return;
+  if (!api) return;
   const i = api.sectionDefs.findIndex((sd) => sd.pages.includes(id));
-  if (i < 0 || i === current || !together(i, current)) return;
-  api.showSection(i, false);
+  if (i < 0) return;
+  spied = i;
+  settle();
+}
+
+/* ---------- the two scrolls: a close counts as its section ----------
+   v-3's spy names the page with the most of the viewport, and a teal close
+   is not a page: half-way through one the next section already has more of
+   the screen, and over the board that opens part two no page has any.
+   Main's rule in its own one scroll is that a section's close still counts
+   as that section, read at a line 40% down the viewport. The same line is
+   read here, and the board counts as the section it opens onto. */
+
+/** the section the spy last named (or a deliberate switch landed on) */
+let spied = -1;
+let settling = false;
+/* v-3's switch is under way, between its first question (sectionHidden) and
+   onSection. It fires a resize in between, on which its spy reports — off a
+   page whose sections have changed and whose html attributes have not. A
+   settle on that reading would start a second switch inside the first, and
+   the first would then finish over it. */
+let switching = false;
+function beginSwitch() {
+  if (switching) return;
+  switching = true;
+  /* a backstop, should a switch ever end without reaching onSection */
+  requestAnimationFrame(() => {
+    switching = false;
+  });
+}
+
+const readingLine = (pages: HTMLElement) => pages.getBoundingClientRect().top + pages.clientHeight * 0.4;
+const sealOf = (k: number) => (variant === "halves" ? document.getElementById(`seal-${k}`) : null);
+
+function closeUnderLine(): number {
+  const pages = pagesEl();
+  if (variant !== "halves" || !pages) return -1;
+  const line = readingLine(pages);
+  const under = (el: Element | null | undefined) => {
+    const r = el?.getBoundingClientRect();
+    return !!r && r.height > 0 && r.top <= line && r.bottom > line;
+  };
+  if (under(slots?.seam)) return seamSections().first;
+  return parts.findIndex((_, k) => under(sealOf(k)));
+}
+
+/** section k's close is up and has not reached the line yet */
+function closeAhead(k: number) {
+  const pages = pagesEl();
+  const r = sealOf(k)?.getBoundingClientRect();
+  return !!pages && !!r && r.height > 0 && r.top > readingLine(pages);
+}
+
+/** the tabs follow the close under the line, else the page the spy named —
+ *  which can be the section AFTER a close while that close is still below
+ *  the line (a sliver of the next page outweighs a section whose last page
+ *  has scrolled off): the reader is not past a close until it has passed */
+function settle() {
+  if (!api || spyHeld || switching) return;
+  const k = closeUnderLine();
+  let want = k >= 0 ? k : spied;
+  if (k < 0) while (want > 0 && closeAhead(want - 1)) want--;
+  if (want < 0 || want === current || !together(want, current)) return;
+  settling = true;
+  api.showSection(want, false);
+  settling = false;
+}
+
+let settleTick = false;
+function onPagesScroll() {
+  if (settleTick) return;
+  settleTick = true;
+  requestAnimationFrame(() => {
+    settleTick = false;
+    settle();
+  });
 }
 
 /** a tab for the section already current does nothing on main; in a shared
- *  scroll it goes to that section's start */
+ *  scroll it goes to that section's start. "Already current" is read before
+ *  the click reaches the tab (capture): main's own handler runs first on the
+ *  way back up, and a switch it has just made is not this case. */
+let currentAtClick = -1;
+function beforeTabClick() {
+  currentAtClick = current;
+}
 function onTabClick(e: Event) {
   const nav = e.currentTarget as HTMLElement;
   const b = (e.target as Element).closest(".secnav-btn");
   if (!api || !b) return;
   const i = [...nav.children].indexOf(b);
-  if (i === current && sharesScroll(i)) scrollToSection(i, current);
+  if (i === currentAtClick && i === current && sharesScroll(i)) scrollToSection(i, current);
 }
 
 /* ---------- the elements the variants add ---------- */
 
 export interface SiteSlots {
-  /** between the two halves: the threshold band, the title page, the hand-off */
+  /** between the two halves: the board the reader crosses on */
   seam: HTMLElement | null;
-  /** in the section bar, before the tabs: the mode switch */
-  mode: HTMLElement | null;
-  /** at the section bar's right edge: the profile on call */
-  recall: HTMLElement | null;
 }
 
 const closes = new Map<number, HTMLElement>();
@@ -166,7 +307,7 @@ export function mountSite(a: LegacyApi): SiteSlots {
   if (slots) return slots;
   api = a;
   parts = a.sectionDefs.map((d) => partOfName(d.name));
-  slots = { seam: null, mode: null, recall: null };
+  slots = { seam: null };
   if (variant === "paged") return slots;
 
   const make = (id: string) => {
@@ -186,9 +327,8 @@ export function mountSite(a: LegacyApi): SiteSlots {
     firstOfTwo.before(slots.seam);
   }
 
-  if (variant === "scroll" || variant === "modes") {
-    /* each section closes where it ends (in the paged layouts the one pager
-       carries whichever close is current) */
+  /* the one scroll: each section closes (quiz + insight) where it ends */
+  if (variant === "scroll")
     a.sectionDefs.forEach((sd, k) => {
       const html = a.renderSecClose(sd.name);
       const root = rootOf(sd.entry);
@@ -200,18 +340,13 @@ export function mountSite(a: LegacyApi): SiteSlots {
       a.wireSecClose(sd.name);
       closes.set(k, holder);
     });
-    document.getElementById("secnav")?.addEventListener("click", onTabClick);
-  }
-
-  if (variant === "modes") {
-    const bar = document.querySelector(".secbar");
-    const nav = document.getElementById("secnav");
-    if (bar && nav) {
-      slots.mode = make("site-mode-slot");
-      nav.before(slots.mode);
-      slots.recall = make("site-recall-slot");
-      bar.append(slots.recall);
-    }
+  document.getElementById("secnav")?.addEventListener("click", beforeTabClick, true);
+  document.getElementById("secnav")?.addEventListener("click", onTabClick);
+  /* the spy speaks only when the page in view changes; a close passing the
+     line needs every scroll */
+  if (variant === "halves") {
+    pagesEl()?.addEventListener("scroll", onPagesScroll, { passive: true });
+    endFirstHalf();
   }
 
   paint(current);

@@ -3,6 +3,8 @@
 
 import "leaflet/dist/leaflet.css";
 import "./xch_geo.js"; // sets window.XCH_GEO_RAW, which the maps read
+import "./industries-2024.js"; // sets window.BOSTON_INDUSTRIES_2024, which Metro Industries reads
+import "./industries-2014.js"; // …and window.BOSTON_INDUSTRIES_2014, for its change over time
 import landingBg from "./assets/landing-page.webp";
 import { loadTreemaps } from "./treemap.js";
 import { initPage } from "./v3-page.js";

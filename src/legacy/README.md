@@ -1,7 +1,7 @@
-# Main's cities-v-1 page, as this app's shell
+# Main's cities-v-5 page, as this app's shell
 
-`cities-v-1/` on `main` — the static prototype, and main's main line — is the
-app: its landing, masthead, section tabs and pager, journey window, dialogs
+`cities-v-5/` on `main` — the static prototype, and the folder main's work
+happens in — is the app: its landing, masthead, section tabs and pager, journey window, dialogs
 and every section but Constraints Diagnosis run here as they are. React
 draws exactly two things into slots inside that markup: **Constraints
 Diagnosis** (this branch's section) and the **Explainers** content.
@@ -11,17 +11,38 @@ Everything in this folder except `bridge.ts`, `index.ts`, `LegacyShell.tsx`,
 Don't edit the generated files; edit the script and re-run it:
 
 ```bash
-TMP=$(mktemp -d) && git archive origin/main cities-v-1 | tar -x -C $TMP
-node scripts/v3/port.mjs --src $TMP/cities-v-1
+TMP=$(mktemp -d) && git archive origin/main cities-v-5 | tar -x -C $TMP
+node scripts/v3/port.mjs --src $TMP/cities-v-5
 ```
 
-Last port: `origin/main` at `ceff4f8` (2026-09-17, "Economic Fundamentals
-hangs from the same left edge as the top bar on wide screens"). The ports
-before it took `cities-v-3` — last at `2994068` (2026-09-09) — which is why
-the script's folder and the generated files are still called `v3`: on
-2026-09-14 main re-created `cities-v-1/` as an exact copy of `cities-v-3/`
-and moved the layout work there, so the source changed folder without
-changing lineage, and the names here were kept so nothing had to be rewired.
+Last port: `origin/main` at `7a7d6bc` (2026-10-01, "The held level control
+stays within reach, and says why"), from `cities-v-5` — taken so the first
+three sections are main's current ones: **Who are you?** (was Economic
+Fundamentals), **Metro Industries** and **Worker Flows** (was Admin
+Industries). The ports before it took `cities-v-1` — last at `ceff4f8`
+(2026-09-17) — and before that `cities-v-3`, last at `2994068` (2026-09-09),
+which is why the script's folder and the generated files are still called
+`v3`: main copied v-3 to v-1 on 2026-09-14 and v-1 to v-5 on 2026-09-21, so
+the source changed folder twice without changing lineage, and the names here
+were kept so nothing had to be rewired.
+
+What v-5's shell brought with it, beyond the three sections: the pager is a
+line of stops over **cards** (Previous, an optional "Test your knowledge"
+that opens the quiz in a dialog, Next), the tabs keep their names whenever
+they fit and carry **main's own part names** ("Part 1 City Profile", "Part 2
+Diagnose & Act"), and the landing only returns on a scroll up from the first
+section.
+
+Two things in v-5 are switched off here, because this branch already has its
+own (and main's were modelled on them): its **layout study** (a Site Layout
+pill, `?layout=scroll`, a teal close under each section, a band before part
+two) is held on its "pages" layout with its pill hidden, and its **section
+links** (`#metro-industries`) stand down for this branch's hash routing. Both
+are `[port]` patches; the code stays in the page, dormant. One piece of
+that study IS used: its teal close under each section (`.sec-seal`), which
+this branch's two-scroll layout shows as its break between sections
+(`src/styles/site.css`). Main's take-aways for sections 4 and 5 describe its
+own drafts of them, so a patch swaps those two for placeholders.
 
 ## What is generated, and how it differs from upstream
 
@@ -32,6 +53,7 @@ changing lineage, and the names here were kept so nothing had to be rewired.
 | `v3-page.js` | the two inline scripts, in order, as one `initPage()` | the module's preamble sets `window.d3 = d3` — main loads d3 as a `<script src>` global, and `initPlacesInMetro` is the one place in the file that reaches for it off `window`, so with it unset the places table in "Explore the admins in your metro", its picker and the metro's cells on the map all stay empty, silently and with no error (Leaflet's UMD build assigns `window.L` on import; d3's ESM build does not). Every other edit is a `PAGE_PATCHES` entry in the script and marked `[port]` in the output: the constraints ids in `pageIds` / `sectionDefs` / the section switch; three calls that tell React about the city, the page in view and the Explainers tab; the rail highlight resolving scrolly steps; init that main ran on `load` / `DOMContentLoaded` running immediately; the exports at the end; and the **phone section menu** — a button naming the current section and a menu of the five, built beside the tab strip and rendered by `showSection` (Sept 17; the CSS is in `port.css`). (The other small-screen patches of Sept 15–16 are gone: main's page now does all of that itself.) |
 | `treemap.js` | the Metro Industries / Extras charts | the IIFE returns its `init()` instead of running it on `DOMContentLoaded` |
 | `xch_geo.js` | the metro's boundaries | verbatim |
+| `industries-2024.js`, `industries-2014.js` | the metro's industry rows, each a window global | verbatim |
 | `assets/`, `public/legacy/` | the landing image, the logo, the framed all-metros page | verbatim |
 
 ## The seam
@@ -48,7 +70,9 @@ React pieces into their slots, then runs `initLegacy()` once.
   `enterTool`, `backToLanding`, `toggleExplainers`, `openJourney`, and reads
   `sectionDefs` for the routable ids.
 - Hash routing (deep links, the Back button) is this branch's, layered over
-  main's navigation; main's page itself has none.
+  main's navigation. Main's v-5 has section links of its own, coarser (one
+  per section, always replaced); they are unwired here so the two do not
+  write the same address bar.
 
 ## The site-level layout variants
 
@@ -58,18 +82,19 @@ each a `[port]` patch that **asks** `window.__cities` and falls back to
 main's behaviour when nothing answers — so the default page is main's:
 
 - `sectionHidden(k, i)` — which sections stay up with section `i` (one
-  scroll keeps the storyline up; the modes keep the profile up);
+  scroll keeps the storyline up; the two scrolls keep a half up);
 - `sectionScroll(i)` — aim at a section's start instead of the page's top;
 - `closesInline` — the closes (quiz + insight) sit under their sections,
-  so the pager stops rendering and wiring "the" close, and `wireSecClose`
-  finds a close by the id it already carries (`check-<slug>`) rather than
-  by class, since there is more than one;
+  so a rail or journey step for one scrolls to it rather than opening
+  main's quiz dialog, and `wireSecClose` finds a close by the id it already
+  carries (`check-<slug>`) rather than by class, since there is more than
+  one;
 - `onSection(i)` — the section the switch landed on.
 
 `initPage()` also returns `showSection`, `renderSecClose` and
 `wireSecClose` for them. Everything else the variants do is outside the
-generated files: a slot before `#constraints-slot`, the closes, two slots
-in `.secbar`, and `src/styles/site.css` keyed on `html[data-site]`.
+generated files: a slot before `#constraints-slot`, the closes, and
+`src/styles/site.css` keyed on `html[data-site]`.
 
 ## Not main's
 

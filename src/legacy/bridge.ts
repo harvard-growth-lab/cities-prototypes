@@ -17,10 +17,11 @@ export interface CitiesBridge {
   /* ---- the site-level layout variants (src/site/) ----
      Questions v-3's section switch asks; each is optional, and unanswered
      the switch behaves as it does on main (one section up, scrolled to the
-     top, its close in the pager). */
+     top, its quiz a card in the pager). */
   /** is section `k` hidden while section `i` is the current one? */
   sectionHidden?(k: number, i: number): boolean;
-  /** the closes (quiz + insight) sit under their sections, not in the pager */
+  /** the closes (quiz + insight) sit under their sections, so a rail or
+   *  journey step for one scrolls to it instead of opening main's quiz dialog */
   closesInline?: boolean;
   /** scroll to section `i` after a switch; true = handled, false = go to the top */
   sectionScroll?(i: number): boolean;
