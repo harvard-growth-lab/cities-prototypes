@@ -2886,11 +2886,11 @@
      screen pixels, like the labels, and the tiling makes the room for it. */
   let SEC_NAMES = "off";
   const SEC_STRIP = 16, SEC_INSET = 3, SEC_NAME_SIZE = 11;
-  /* the grain of the map: the NAICS level its cells are tiled at - 6 the
-     industries (877 in 2024), 4 the industry groups (292), 3 the
-     subsectors (85), 2 the sectors (9). A coarser grain folds every
-     industry into its group, subsector or sector as a whole before the
-     tiling; the bars and the ranking stay industries. */
+  /* the grain of the map: the level its cells are tiled at - 6 the
+     industries (877 in 2024), 4 the industry groups (292), 2 the sectors
+     (9); 3, the subsectors (85), is tiled the same way but not offered. A
+     coarser grain folds every industry into its group or sector as a
+     whole before the tiling; the bars and the ranking stay industries. */
   let MAP_GRAIN = 6;
   const GRAIN_WORDS = { 6: ["industry", "industries"], 4: ["industry group", "industry groups"], 3: ["subsector", "subsectors"], 2: ["sector", "sectors"] };
   const grainWord = n => (GRAIN_WORDS[MAP_GRAIN] || GRAIN_WORDS[6])[n === 1 ? 0 : 1];
@@ -5807,7 +5807,7 @@
       fig.dataset.level = String(MAP_GRAIN);
     };
     const applyLevel = g => {
-      g = [6, 4, 3, 2].indexOf(+g) >= 0 ? +g : 6;
+      g = [6, 4, 2].indexOf(+g) >= 0 ? +g : 6;   /* the 3-digit subsectors are tiled too, but not offered */
       if (g === MAP_GRAIN) return;
       MAP_GRAIN = g;
       invalidateMaps(); hideMapTip(true);

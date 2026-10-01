@@ -6116,7 +6116,7 @@
                 <span class="mi-s-lead mi-s-spec">The most specialized industries,</span>
                 <span class="mi-s-first">shown</span> as a
                 <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="miSView" aria-label="The mix as a treemap or as a ranking"><option value="map">treemap</option><option value="alt">ranking</option></select></span><span class="mi-s-level"> at the
-                <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="miSLevel" aria-label="The NAICS level the map is tiled at"><option value="6" selected>6-digit</option><option value="4">4-digit</option><option value="3">3-digit</option><option value="2">2-digit</option></select></span> level</span><span class="mi-s-sort"> sorted by
+                <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="miSLevel" aria-label="The level the map is tiled at"><option value="6" selected>6-digit</option><option value="4">4-digit</option><option value="2">sector</option></select></span> level</span><span class="mi-s-sort"> sorted by
                 <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="miSSort" aria-label="Order of the bars"><option value="jobs">jobs</option><option value="cx">complexity</option></select></span></span>, coloured by
                 <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="miSColor" aria-label="What the cells are coloured by"><option value="sector">sector</option><option value="complexity">complexity</option></select></span>, in
                 <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="miSYear" aria-label="Year"><option value="2024" selected>2024</option><option value="2014">2014</option></select></span>
@@ -6155,12 +6155,11 @@
               <!-- the grain of the map: the NAICS level its cells are tiled
                    at. The bars stay industries, so it shows with the map only -->
               <span class="mi-ctlpair" id="miLevelPair">
-                <span class="ctl-label">Digit level</span>
-                <div class="seg" id="miLevel" role="group" aria-label="The NAICS level the map is tiled at">
-                  <button type="button" class="seg-btn is-active" data-level="6" aria-pressed="true" aria-label="6-digit industries">6</button>
-                  <button type="button" class="seg-btn" data-level="4" aria-pressed="false" aria-label="4-digit industry groups">4</button>
-                  <button type="button" class="seg-btn" data-level="3" aria-pressed="false" aria-label="3-digit subsectors">3</button>
-                  <button type="button" class="seg-btn" data-level="2" aria-pressed="false" aria-label="2-digit sectors">2</button>
+                <span class="ctl-label">Level</span>
+                <div class="seg" id="miLevel" role="group" aria-label="The level the map is tiled at">
+                  <button type="button" class="seg-btn" data-level="2" aria-pressed="false">Sector</button>
+                  <button type="button" class="seg-btn" data-level="4" aria-pressed="false" aria-label="4-digit industry groups">4-digit</button>
+                  <button type="button" class="seg-btn is-active" data-level="6" aria-pressed="true" aria-label="6-digit industries">6-digit</button>
                 </div>
               </span>
               <!-- the bars' own order, offered only while the bars are up:

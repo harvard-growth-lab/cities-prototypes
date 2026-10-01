@@ -258,10 +258,11 @@ still under `prefers-reduced-motion`.
   sentence is plain ink, nothing bold.
 - Both keep one state: `applyView` / `applyColor` / `applyBarSort` sync the
   buttons and the blanks together.
-- **Digit level** (2026-09-30, at Nil's ask): the grain the map is tiled
-  at — a fourth pair in the tray, "Digit level 6 · 4 · 3 · 2"
-  (`#miLevel`, `data-level`), and in the sentence "shown as a [treemap] at
-  the [6-digit] level" (`#miSLevel`); `applyLevel` / `syncLevel` keep them
+- **Level** (2026-09-30, at Nil's ask): the grain the map is tiled at — a
+  fourth pair in the tray, "Level Sector · 4-digit · 6-digit" (`#miLevel`,
+  `data-level` 2 / 4 / 6; the 3-digit subsectors are tiled the same way but
+  not offered, Nil having asked for these three), and in the sentence
+  "shown as a [treemap] at the [6-digit] level" (`#miSLevel`); `applyLevel` / `syncLevel` keep them
   one state, `fig.dataset.level` carries it. The data holds four NAICS
   grains per row: the 6-digit industry (`code`, 877 rows in 2024), its
   4-digit industry group (`group`, 292), its 3-digit subsector (`sub`, 85)
