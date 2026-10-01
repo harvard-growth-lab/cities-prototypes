@@ -2945,15 +2945,12 @@
   /* white or ink on a sector's fill, whichever reads better on it */
   const sectorInk = sec => cellInk(sectorColors[sec] || "#ccc");
   const TIER_WORDS = ["Traded", "Partly traded", "Local"];
-  const CX_NAMES = ["Lowest", "Low", "Middle", "High", "Highest"];
   const cxBinOf = pci => {
     if (pci == null) return null;
     let b = 0; while (b < PCI_CUTS.length && pci >= PCI_CUTS[b]) b++;
     return b;
   };
-  const cxText = pci => { const b = cxBinOf(pci); return b == null ? "Not rated" : CX_NAMES[b] + " (PCI " + pci.toFixed(2) + ")"; };
   const cxFillOf = pci => { const b = cxBinOf(pci); return b == null ? "#c3ccce" : complexityPalette[b]; };
-  const rcaText = v => v == null ? null : v.toFixed(v < 10 ? 2 : 1) + "×";
   /* shares as the reference prints them: 26%, 5.4%, 0.55% */
   const fmtShare = v => { const t = v * 100; return t.toFixed(t >= 10 ? 0 : t >= 1 ? 1 : 2) + "%"; };
   const fmtJobsFull = v => Math.round(v).toLocaleString("en-US");
@@ -5223,13 +5220,14 @@
       else setFocus(focus, null, byKey);
     }));
 
-    /* ---- the same industries as a table, under the key: whatever the map
-       is showing, largest first, with the readings the card carries ---- */
+    /* ---- what the map shows, as a table, over the map: its cells at the
+       level it is tiled at, largest first, with the readings the card
+       carries and nothing the page does not show ---- */
     const tableHost = document.getElementById(p + "Table");
     /* the word that opens the table stands at the map's top right corner, on
        the line the crumbs take when the reader has zoomed - the note of the
        beat showing - and travels between the two map beats' notes. The
-       table itself opens where it did, under the key. */
+       table itself opens over the map, which gives up height to it. */
     const tableBtn = document.getElementById(p + "TableBtn") || (tableHost && tableHost.querySelector(".mi-table-btn"));
     const seatTableBtn = i => {
       const note = document.getElementById(p + (i === 4 ? "Note4" : "Note"));
@@ -5245,18 +5243,56 @@
       btn.querySelector(".mi-table-btn-txt").textContent = on ? "Hide table" : "Show as table";
       fig.classList.toggle("has-table", on);
       if (!on){ wrapT.innerHTML = ""; return; }
-      const rows = mapLayout.rows.slice().sort((a, b) => b.employ - a.employ);
       const td = (v, cls) => '<td' + (cls ? ' class="' + cls + '"' : '') + '>' + v + '</td>';
-      wrapT.innerHTML = '<table class="mi-tbl"><caption class="mi-sr">' + rows.length +
-        ' industries shown in the map, largest first</caption>' +
-        '<thead><tr><th scope="col">Industry</th><th scope="col">Industry group</th><th scope="col">Sector</th>' +
-        '<th scope="col">Tier</th><th scope="col" class="num">Jobs</th><th scope="col" class="num">Share of metro jobs</th>' +
-        '<th scope="col">Complexity</th><th scope="col" class="num">Location quotient</th></tr></thead><tbody>' +
-        rows.map(r => '<tr><th scope="row">' + escHtml(r.short || r.name) + '</th>' +
-          td(escHtml(r.groupShort || r.groupName)) + td(escHtml(r.sector)) + td(TIER_WORDS[r.tier]) +
+      const th = (t, cls) => '<th scope="col"' + (cls ? ' class="' + cls + '"' : '') + '>' + t + '</th>';
+      /* complexity as the card draws it: the five diamonds and the score,
+         with the step said in words for a screen reader */
+      const cx = pci => {
+        const b = cxBinOf(pci);
+        if (b == null) return td('<span class="mi-tbl-none">Not measured</span>', "nw");
+        let d = '<span class="mi-tbl-dia" aria-hidden="true">';
+        for (let k = 0; k < 5; k++) d += '<i' + (k <= b ? ' class="is-on"' : '') + '></i>';
+        return td('<span class="mi-tbl-cx">' + d + '</span><span class="mi-tbl-cxval">' + pci.toFixed(2) +
+          '</span><span class="mi-sr">step ' + (b + 1) + ' of 5, ' + CX_WORDS[b] + '</span></span>', "nw");
+      };
+      const grain = mapLayout.grain || 6;
+      let n, head, body;
+      if (grain === 6){
+        /* the industries, with what the card says of each; tradability is
+           the second beat's reading, so the first beat's table leaves it out */
+        const showTier = step !== 0;
+        const rows = mapLayout.rows.slice().sort((a, b) => b.employ - a.employ);
+        n = rows.length;
+        head = th("Industry") + th("Industry group") + th("Sector") + (showTier ? th("Tradability") : "") +
+          th("Jobs", "num") + th("Share of metro jobs", "num") + th("Complexity");
+        body = rows.map(r => '<tr><th scope="row">' + escHtml(r.short || r.name) + '</th>' +
+          td(escHtml(r.groupShort || r.groupName)) + td(escHtml(r.sector)) + (showTier ? td(TIER_WORDS[r.tier], "nw") : "") +
           td(fmtJobsFull(r.employ), "num") + td(fmtShare(r.employ / jobsTotal), "num") +
-          td(cxText(r.pci)) + td(rcaText(r.rca) || "No value", "num") + '</tr>').join("") +
-        '</tbody></table>';
+          cx(r.pci) + '</tr>').join("");
+      } else {
+        /* a coarser map is listed at its own level - the groups, or the
+           sectors - each row what its block's card says: how many
+           industries it holds, its jobs and share, and its complexity,
+           the industries' weighted by their jobs */
+        const byGroup = grain === 4, by = new Map();
+        mapLayout.rows.forEach(r => {
+          const k = byGroup ? r.group : r.sector;
+          let a = by.get(k);
+          if (!a){ a = { name: byGroup ? (r.groupShort || r.groupName) : r.sector, sector: r.sector, jobs: 0, n: 0, pci: 0, pciJobs: 0 }; by.set(k, a); }
+          a.jobs += r.employ; a.n++;
+          if (r.pci != null && r.employ > 0){ a.pci += r.pci * r.employ; a.pciJobs += r.employ; }
+        });
+        const rows = Array.from(by.values()).sort((a, b) => b.jobs - a.jobs);
+        n = rows.length;
+        head = th(byGroup ? "Industry group" : "Sector") + (byGroup ? th("Sector") : "") + th("Industries", "num") +
+          th("Jobs", "num") + th("Share of metro jobs", "num") + th("Complexity");
+        body = rows.map(a => '<tr><th scope="row">' + escHtml(a.name) + '</th>' +
+          (byGroup ? td(escHtml(a.sector)) : "") + td(String(a.n), "num") +
+          td(fmtJobsFull(a.jobs), "num") + td(fmtShare(a.jobs / jobsTotal), "num") +
+          cx(a.pciJobs > 0 ? a.pci / a.pciJobs : null) + '</tr>').join("");
+      }
+      wrapT.innerHTML = '<table class="mi-tbl"><caption class="mi-sr">' + n + ' ' + grainWordAt(grain, n) +
+        ' shown in the map, largest first</caption><thead><tr>' + head + '</tr></thead><tbody>' + body + '</tbody></table>';
     }
     if (tableHost && tableBtn) on(tableBtn, "click", () => {
       tableOpen = !tableOpen; syncTable();

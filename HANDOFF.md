@@ -318,8 +318,8 @@ still under `prefers-reduced-motion`.
   band on at the sector level the cell keeps its share only, since the band
   names the block (`shareOnly` in `paintMap`). The control shows only while
   the map is up (`#miFigure:not([data-view="map"])` hides the pair and the
-  blank): the bars and the ranking stay industries, and so does the table
-  under the key. A year's rebuild keeps the grain.
+  blank): the bars and the ranking stay industries; the table follows the
+  map's level (see below). A year's rebuild keeps the grain.
 - **The ranking beats have their own row** (`#miSort`, "Sort by" with
   Concentration / Jobs / Against peers, shown on figure steps 3 and 6 only —
   a separate element from `#miView`, which carries the map beats' row). Under
@@ -332,7 +332,17 @@ still under `prefers-reduced-motion`.
 
 **Other pieces on the figure:** "Show as table" (`#miTableBtn`) stands at
 the map's top-right corner on the crumbs' line (it rides between the two
-notes with the beat; the table itself opens under the key); the "opt" study
+notes with the beat; since 2026-10-01 the table itself opens **over the
+map**, `#miTable` sitting before `.tradable-viz-wrapper`, the map giving up
+height to it, and lists the map at the level it is tiled at with only what
+the page shows: at 6 digits Industry, Industry group, Sector, Jobs, Share
+of metro jobs, Complexity, plus Tradability on the tradable beat alone, as
+the card does; at 4 digits or the sector level one row per group or sector
+with its count of industries, jobs, share and jobs-weighted complexity.
+Complexity is drawn as the card draws it, five diamonds and the score, no
+level word and no "PCI".
+The Location quotient column is gone - nothing on the page shows it -
+`syncTable`); the "opt" study
 word (`#miStudies`) rides the beat's eyebrow counter in the text column
 ("Metro Industries 1/3  opt"), moved there by `activate(i)` and handed back
 to the head by `restore()`; the sector phrases in the first beat's text
@@ -350,7 +360,7 @@ reference build's own page). Keep every one of these when touching the figure:
   notes) are `inert`; the tradability menu's faded heads get `tabindex=-1`
   and `aria-hidden` (`syncMenuHeads`, run after each paint settles); the
   tier grounds' crosses are keyboard buttons (`.mi-card-x-hit`, `data-close`)
-  while the grounds are up; the table under the key is a focusable region;
+  while the grounds are up; the table over the map is a focusable region;
   the crumbs are a `nav` with `aria-current`, and the crumb's × reads "Zoom
   out to <sector | all sectors> (Esc)" with `aria-keyshortcuts`; the text's
   sector phrases are `role=button` and answer Enter and Space.
@@ -695,8 +705,8 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
 3. **"Show as table" into the View control?** Proposed (not asked): make it
    a third View choice — Treemap | Ranked | Table — and drop the word from
    the map's corner; the sentence variant would get "shown as a [table]" for
-   free. Trade-off: the table would replace the map rather than open under
-   the key. Nil asked for a sketch of both if pursued.
+   free. Trade-off: the table would replace the map rather than open over
+   it. Nil asked for a sketch of both if pursued.
 4. **The accessibility cross-check's remaining findings.** After the
    contrast pass a second, independent sweep (axe: 0 violations; pixel
    sampling of rendered text; a non-text pass over rings, edges and chart
