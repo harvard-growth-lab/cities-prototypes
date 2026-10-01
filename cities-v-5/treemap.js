@@ -2893,7 +2893,12 @@
      whole before the tiling; the bars and the ranking stay industries. */
   let MAP_GRAIN = 6;
   const GRAIN_WORDS = { 6: ["industry", "industries"], 4: ["industry group", "industry groups"], 3: ["subsector", "subsectors"], 2: ["sector", "sectors"] };
-  const grainWord = n => (GRAIN_WORDS[MAP_GRAIN] || GRAIN_WORDS[6])[n === 1 ? 0 : 1];
+  const grainWordAt = (grain, n) => (GRAIN_WORDS[grain] || GRAIN_WORDS[6])[n === 1 ? 0 : 1];
+  /* the level is where the map rests; the zoom walks down from there as it
+     always has, sector, then group, then the industries - so what is
+     tiled is the finer of the level chosen and the depth zoomed to */
+  const GRAIN_STEPS = [2, 4, 6];
+  const effectiveGrain = (grain, depth) => GRAIN_STEPS[Math.max(GRAIN_STEPS.indexOf(grain) < 0 ? 2 : GRAIN_STEPS.indexOf(grain), depth)];
   const SECTOR_SHORT = { "Professional & Business": "Professional", "Education & Health": "Edu & Health",
     "Trade & Transportation": "Trade & Transport", "Leisure & Hospitality": "Leisure", "Financial Activities": "Financial",
     "Manufacturing": "Manufacturing", "Construction": "Construction", "Other": "Other", "Natural Resources": "Natural" };
@@ -3111,13 +3116,13 @@
   /* the bands laid out at the industry grain: first the groups are folded
      as wholes into their subsectors and sectors, then, each group opened
      back up, its own small industries are folded inside it */
-  function layoutBands(bands){
+  function layoutBands(bands, grain){
     /* at a coarser grain the industries are rolled up as wholes first, and
        only what is still too small folds further up */
-    if (MAP_GRAIN !== 6){
-      const level = MAP_GRAIN === 4 ? LEVELS.group : MAP_GRAIN === 3 ? LEVELS.subsector : LEVELS.sector;
+    if (grain && grain !== 6){
+      const level = grain === 4 ? LEVELS.group : grain === 3 ? LEVELS.subsector : LEVELS.sector;
       const coarse = bands.map(b => ({ ...b, items: levelUp(b.key, b.items, level) }));
-      const above = MAP_GRAIN === 4 ? [LEVELS.subsector, LEVELS.sector] : MAP_GRAIN === 3 ? [LEVELS.sector] : [];
+      const above = grain === 4 ? [LEVELS.subsector, LEVELS.sector] : grain === 3 ? [LEVELS.sector] : [];
       return mergeLoop(above, coarse);
     }
     const members = new Map();
@@ -3303,6 +3308,9 @@
     const tierShown = d => tierOn[clusterOf(d)];
     let focus = null, focusGroup = null;
     const inFocus = d => !focus || (d.sector === focus && (!focusGroup || d.group === focusGroup));
+    /* what the map is tiled at now: the level chosen, or finer where the
+       zoom has gone further down */
+    const effGrain = () => effectiveGrain(MAP_GRAIN, focusGroup ? 2 : focus ? 1 : 0);
     const clusterRows = [0, 1, 2].map(k => industryData.filter(d => clusterOf(d) === k));
     const clusterShare = clusterRows.map(l => d3.sum(l, d => d.employ) / jobsTotal);
     const tradRows = clusterRows[0].concat(clusterRows[1]);
@@ -3314,13 +3322,14 @@
     const laid = new Map();
     function bandsLayout(key, bands){
       const s = scaleNow();
-      const k = key + "|" + s.toFixed(4) + "|" + SEC_NAMES + "|" + MAP_GRAIN;
+      const grain = effGrain();
+      const k = key + "|" + s.toFixed(4) + "|" + SEC_NAMES + "|" + grain;
       if (laid.has(k)) return laid.get(k);
       const px = b => ({ x: b.x * s, y: b.y * s, w: b.w * s, h: b.h * s });
       const un = b => ({ x: b.x / s, y: b.y / s, w: b.w / s, h: b.h / s });
       const live = bands.filter(b => b.rows.length);
-      const res = layoutBands(live.map(b => ({ key: b.key, items: b.rows.map(itemOf), box: px(b.box) })));
-      const out = { cells: [], blocks: [], groups: [], spot: new Map(), rows: [], byId: new Map(), s: s };
+      const res = layoutBands(live.map(b => ({ key: b.key, items: b.rows.map(itemOf), box: px(b.box) })), grain);
+      const out = { cells: [], blocks: [], groups: [], spot: new Map(), rows: [], byId: new Map(), s: s, grain: grain };
       res.layouts.forEach((L, i) => {
         const band = live[i].key;
         L.cells.forEach(c => {
@@ -4795,7 +4804,7 @@
     const zoomTarget = c => {
       if ((step !== 0 && step !== 4 && step !== 7) || view !== "map") return null;
       if (!focus) return { sector: c.cell.sector, group: null, label: c.cell.sector };
-      if (MAP_GRAIN === 6 && !focusGroup && /^\d{4}$/.test(c.cell.group)) return { sector: focus, group: c.cell.group, label: c.cell.groupName };
+      if (!focusGroup && /^\d{4}$/.test(c.cell.group)) return { sector: focus, group: c.cell.group, label: c.cell.groupName };
       return null;
     };
     function paintMap(L, animate){
@@ -4822,13 +4831,15 @@
         t.selectAll("tspan").remove();
         if (c.rest) return;
         const share = fmtShare(c.cell.share);
-        const spec = fitCellLabel(c.cell.name, share, c.px);
+        /* at the sector grain with the band naming the block, the cell keeps its share alone */
+        const shareOnly = L.grain === 2 && SEC_NAMES !== "off";
+        const spec = shareOnly ? fitCellLabel(share, "", c.px) : fitCellLabel(c.cell.name, share, c.px);
         if (!spec) return;
         const ink = mapInkOf(c);
         t.attr("font-size", spec.size / s).attr("fill", ink).attr("data-ink", ink).attr("font-weight", MAP.weight);
         spec.lines.forEach((ln, n) => t.append("tspan")
           .attr("x", spec.x / s).attr("y", lineY(spec.y, spec.size, n) / s).text(ln));
-        if (spec.share) t.append("tspan").attr("class", "mi-mshare")
+        if (spec.share && !shareOnly) t.append("tspan").attr("class", "mi-mshare")
           .attr("x", spec.x / s).attr("y", lineY(spec.y, spec.size, spec.lines.length, true) / s)
           .attr("font-weight", MAP.shareWeight).text(share);
       });
@@ -4904,7 +4915,7 @@
       const where = b => step === 4 && b.band ? " (" + b.band + ")" : "";
       if ((step === 0 || step === 4 || step === 7) && view === "map"){
         if (!focus) targets = L.blocks.map(b => ({ key: (b.band || "") + ":" + b.key, box: b.box, sector: b.sector, group: null, label: "Zoom into " + b.sector + where(b) }));
-        else if (MAP_GRAIN === 6 && !focusGroup) targets = L.groups.filter(g => /^\d{4}$/.test(g.group))
+        else if (!focusGroup) targets = L.groups.filter(g => /^\d{4}$/.test(g.group))
           .map(g => ({ key: g.key, box: g.box, sector: focus, group: g.group,
                        label: "Zoom into " + ((g.items[0] && g.items[0].cell.groupName) || g.group) + where(g) }));
       }
@@ -5085,10 +5096,10 @@
       } else {
         /* counted at the map's grain: the industries, or the groups,
            subsectors or sectors they are rolled up into */
-        const rows = mapLayout ? mapLayout.rows : rowsAll();
-        const n = MAP_GRAIN === 6 ? rows.length
-          : new Set(rows.map(r => MAP_GRAIN === 4 ? r.group : MAP_GRAIN === 3 ? r.sub : r.sector)).size;
-        said = n + " " + grainWord(n) + " shown in the map" + (step === 4 ? ", in three tiers by tradability" : "");
+        const rows = mapLayout ? mapLayout.rows : rowsAll(), grain = effGrain();
+        const n = grain === 6 ? rows.length
+          : new Set(rows.map(r => grain === 4 ? r.group : grain === 3 ? r.sub : r.sector)).size;
+        said = n + " " + grainWordAt(grain, n) + " shown in the map" + (step === 4 ? ", in three tiers by tradability" : "");
       }
       if (zoomed) said += ", zoomed into " + zoomed;
       if (secOn) said += ", " + secOn.size + " of " + sectorCount + " sectors";
@@ -5812,8 +5823,10 @@
       MAP_GRAIN = g;
       invalidateMaps(); hideMapTip(true);
       syncLevel();
-      if (g !== 6 && focusGroup){ setFocus(focus, null); return; }
-      if (step >= 0) paint(step, !reduced());
+      /* the level is where the map starts, so choosing one goes back to
+         the start; from there the zoom walks down as before */
+      if (focus) setFocus(null, null);
+      else if (step >= 0) paint(step, !reduced());
       syncLive();
     };
     syncLevel();

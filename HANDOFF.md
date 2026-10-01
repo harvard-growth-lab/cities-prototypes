@@ -281,12 +281,25 @@ still under `prefers-reduced-motion`.
   carries the grain. The cells then carry the group's or subsector's short
   name, the card says "Industries N", the live region counts at the grain
   ("292 industry groups shown"), the complexity colouring uses the
-  aggregate's PCI. The zoom stops at the sector on coarse grains
-  (`zoomTarget`, `drawHits` gate the group level on `MAP_GRAIN === 6`;
-  coarsening while zoomed into a group returns to its sector). The control
-  shows only while the map is up (`#miFigure:not([data-view="map"])` hides
-  the pair and the blank): the bars and the ranking stay industries, and
-  so does the table under the key. A year's rebuild keeps the grain.
+  aggregate's PCI. **The level is where the map rests; the zoom walks down
+  from there as it always has** (nested, at Nil's insistence — the first
+  cut stopped the zoom at the sector on coarse grains): what is tiled is
+  the finer of the level chosen and the depth zoomed to
+  (`effectiveGrain(MAP_GRAIN, depth)` over `GRAIN_STEPS [2, 4, 6]`;
+  `effGrain()` in the figure reads `focus`/`focusGroup`; `bandsLayout`
+  keys its cache with it and hands it to `layoutBands(bands, grain)`). So
+  at 4-digit: groups inside sectors → click → the sector's groups → click
+  → the group's industries. At the sector level: nine blocks → click → the
+  sector's groups → click → its industries. Escape walks back up. Choosing
+  a level while zoomed goes back to the top at that level (`applyLevel`
+  calls `setFocus(null, null)`). The zoom hint, the crumbs, the keyboard
+  targets and the live region ("32 industry groups shown in the map,
+  zoomed into Professional & Business") all follow. With the sector-names
+  band on at the sector level the cell keeps its share only, since the band
+  names the block (`shareOnly` in `paintMap`). The control shows only while
+  the map is up (`#miFigure:not([data-view="map"])` hides the pair and the
+  blank): the bars and the ranking stay industries, and so does the table
+  under the key. A year's rebuild keeps the grain.
 - **The ranking beats have their own row** (`#miSort`, "Sort by" with
   Concentration / Jobs / Against peers, shown on figure steps 3 and 6 only —
   a separate element from `#miView`, which carries the map beats' row). Under
@@ -615,12 +628,10 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
    ghosted tiling** (the previous session's recommendation); 4 the card
    with the sector's yearly change in jobs 2014→2024 (Professional &
    Business +1.7 %/yr, Manufacturing −1.0 %/yr; the 2014 file makes this
-   possible only at this level). Paired with it, a proposed rule not yet
-   built: **the Level sets where the map starts and the zoom always opens
-   one level finer** — a sector opens at 4 digits, a group at 6 — since
-   today the zoom stops at the sector on coarse grains (`zoomTarget`,
-   `drawHits` gate on `MAP_GRAIN === 6`) and a zoomed sector at the sector
-   level is one block filling the map. The brainstorm began with a
+   possible only at this level). The nested rule — **the Level is where the
+   map rests and the zoom walks down from there, sector → 4-digit →
+   6-digit** — is built (§4); what is still open is only the dressing of
+   the nine blocks. The brainstorm began with a
    misreading — "bar control area" was taken for the bar chart and a page
    of bar variants was drawn and discarded; Nil meant the control bar of
    the treemap. At 4 digits the one addition proposed is an industry count
