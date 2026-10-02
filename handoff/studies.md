@@ -15,7 +15,6 @@ verify a change under each option.
 | Sector names | `miSecNames` | `data-secnames` = off / band / gutter | opt-1 off · opt-2 band · opt-3 gutter | 0 4 |
 | Sector blocks | `miSecBlock` | `data-secblock` = plain / card / ghost / cardghost / change | opt-1 plain · opt-2 card · opt-3 ghost · opt-4 card over ghost · opt-5 card with change since 2014 | 0, only at Level = Sector |
 | Tier grounds | `miGround` | — | opt-1 frame · opt-2 grey | 4 |
-| Tier shares | `miTierOpt` | — | opt-1 cards · **opt-2 donut** (default) | 4 |
 | Tradability column | `miRankOpt` | — | opt-1 score · **opt-2 tier** (default) | 3 6 |
 
 Where they live: the `<label class="mi-study" id="mi…Pair">` rows inside
@@ -79,7 +78,8 @@ What each option is:
   Since 2026-10-01 the plain and ghost labels at this level fit from 18px
   down (`MAP.sectorSize`) rather than the 12px the industry cells use.
 - **Tier grounds** — each tier's ground as a framed line, or a light grey field.
-- **Tier shares** — the tiers' shares as cards, or as the donut beside the text.
+- (**Tier shares**, removed 2026-10-02: the shares are printed on the tier
+  grounds, after each name; the donut beside the text is gone.)
 - **Tradability column** — the ranking's last column as the score, or the tier word.
 
 Retired 2026-09-30 at Nil's request: the **Phrase highlight** study

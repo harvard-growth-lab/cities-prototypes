@@ -175,8 +175,18 @@ rule (`STATE` table), and `setStep` drops what a beat cannot carry.
   `mapFull()`; title "All industries".
 - **Step 4** — the same cells sorted into three tier grounds (Traded /
   Partly traded / Local), `mapTiers()` over `clusterRows[k]` into `cardBox`;
-  title "All industries, by tier"; each ground is a card with a head, a
-  share caption, a `.mi-card-none` line and a × that cancels the tier.
+  title "All industries, by tier"; each ground is a card with a band
+  across its top (the tier's name, then its share of the metro's jobs:
+  "Traded 23%"), a `.mi-card-none` line and a × that cancels the tier.
+  **The shares live on the chart** (2026-10-02, Nil: "remove the donut
+  chart from the second beat, instead put the percentages on the chart").
+  The donut that stood under the beat's paragraph, its hover card and the
+  "Tier shares" study that switched between the two are gone, with the
+  older key of tier names and examples (`#miTradScale`); the beat's text
+  is now title, paragraph, questions. `fitBandRef()` measures each name
+  and share and, where any ground is too narrow for the two side by side
+  with the cross (a phone), sets `bandStacked`: every band then takes a
+  second line for the share, and `bandH()` grows by 17px on screen.
 - **Step 6** — the ranking of the most specialized tradable industries
   (`R2 = ranking(rankPool(), true)`), with "Sort by" Concentration / Jobs /
   Against peers.
@@ -409,7 +419,7 @@ reference build's own page). Keep every one of these when touching the figure:
   the ranking or the bars.
 - **Escape is one dispatcher** (`escLayers`, before `paint` in treemap.js),
   taking a layer at a time from the top: 1 the studies panel, 2 the
-  tradability menu, 3 a donut card, 4 the key's card, 5 a pinned cell card,
+  tradability menu, 4 the key's card, 5 a pinned cell card,
   6 the zoom. A press inside a `<dialog>` is the dialog's. Layers marked
   `scoped` answer only when the event's target is inside the section's
   `.ct-scrolly` or `#miStudies`, or the body while the figure is hovered.
@@ -504,7 +514,6 @@ question still open; both options must keep working:
 | Sector names | `miSecNames` | off · band · gutter (the sectors named on the map, see below) | 0 4 |
 | Sector blocks | `miSecBlock` | plain · card · ghost · cardghost · change (what a block carries at the sector level, see below) | 0, at Level = Sector (the tradable beat holds the industry level) |
 | Tier grounds | `miGround` | frame · grey | 4 |
-| Tier shares | `miTierOpt` | cards · **donut** | 4 |
 | Tradability column | `miRankOpt` | score · **tier** | 3 6 |
 
 The visibility rules for these live in index.html as
@@ -586,8 +595,9 @@ frames it (control labels and tiles, ticks, column heads, notes).
   on the map and the sector-card lines (both studies) are 12.5 too.
 - **Geometry that follows the type.** The tier grounds' band is
   `bandH()` = at least 26px on screen (30 units where the figure is drawn
-  near its own size), its words on its middle line, the cells starting 14
-  units under it (`cardHead()`, `cardH()`); the top three's badge is a
+  near its own size; a second line where the share is stacked under the
+  name), its words on its middle line, the cells starting 14 units under
+  it (`cardHead()`, `cardH()`); the top three's badge is a
   disc of at least 9.5px radius on screen with its number centred.
 - **Where a chart cannot hold the type, it pans.** Twenty-five bars stand
   17 units apart, so under about 700px of drawing their names would touch.

@@ -3401,7 +3401,12 @@
        name is a fixed size on screen, so where the figure is drawn smaller
        the band is taller in units - never less than 26px on screen - and
        the cells start 14 units under it */
-    const bandH = () => Math.max(30, Math.ceil(26 / scaleNow()));
+    /* The band also says the tier's share of the metro's jobs, after its
+       name. Where a ground is too narrow for the two side by side, with
+       the cross beside them (a phone, where "Partly traded" alone nearly
+       fills its ground), every band takes a second line for the share. */
+    let bandStacked = false, fitBandRef = null;
+    const bandH = () => { const s = scaleNow(), one = Math.max(30, Math.ceil(26 / s)); return bandStacked ? one + Math.ceil(17 / s) : one; };
     const cardHead = () => bandH() + 14;
     const cardH = () => MI_H - cardHead() - CARD_BOT;
     let cardBox = [];
@@ -3416,6 +3421,7 @@
         cardBox.push({ x: x0, w: w, k: k });
         x0 += w + CGAP;
       });
+      if (fitBandRef) fitBandRef();
     }
     layoutClusters();
     const mapTiers = () => bandsLayout("tiers|" + tierOn.map(Number).join("") + "|" + secKey() + "|" + (focus || "") + "|" + (focusGroup || ""),
@@ -3473,6 +3479,19 @@
       m.done();
       return w;
     };
+    /* the tier grounds' bands: how wide each one's name and share are, and
+       whether any ground is too narrow to set them on one line */
+    const sharePct = k => Math.round(clusterShare[k] * 100) + "%";
+    const bandNameW = [0, 0, 0], bandGap = () => 7 / scaleNow();
+    fitBandRef = () => {
+      const mn = measureFor("mi-card-lab"), mp = measureFor("mi-card-pct");
+      const pw = [0, 1, 2].map(k => { bandNameW[k] = mn.w(TIER_NAMES[k]); return mp.w(sharePct(k)); });
+      mn.done(); mp.done();
+      /* the cross, where there is one, keeps 22 units and 6 clear of the words */
+      const right = cardBox.length > 1 ? CARD_TXT + 22 : CARD_TXT;
+      bandStacked = cardBox.some(c => CARD_TXT + bandNameW[c.k] + bandGap() + pw[c.k] > c.w - right);
+    };
+    fitBandRef();
     /* what the gutters were last fitted to - the type, and whether it could
        be measured on the page - so a resize that changes neither costs a
        comparison and no more */
@@ -3827,17 +3846,20 @@
       /* the words are set at once and only the geometry travels: text put on
          a transition arrives with it, and a ground coming back would carry a
          blank band the whole way */
-      /* the band's words sit on its middle line, whatever its height */
-      const bh = bandH(), mid = bh / 2;
+      /* the band's words sit on its middle line, whatever its height: the
+         name, then the share after it - or under it, on a second line,
+         where the grounds are too narrow for both */
+      const bh = bandH(), half = 8.5 / scaleNow();
+      const mid = bandStacked ? bh / 2 - half : bh / 2, mid2 = bandStacked ? bh / 2 + half : mid;
       sel.select("rect.mi-card-band").attr("height", bh);
       sel.select("text.mi-card-lab").attr("y", mid).attr("dy", "0.35em").text(c => TIER_NAMES[c.k]);
-      sel.select("text.mi-card-pct").attr("y", mid).attr("dy", "0.35em").attr("text-anchor", "end")
-        .text(c => Math.round(clusterShare[c.k] * 100) + "%");
+      sel.select("text.mi-card-pct").attr("y", mid2).attr("dy", "0.35em").attr("text-anchor", "start")
+        .text(c => sharePct(c.k));
       sel.select("text.mi-card-none").attr("y", cardHead() + 26);
       go(sel.select("rect.mi-card")).attr("x", c => c.x).attr("width", c => c.w);
       go(sel.select("rect.mi-card-band")).attr("x", c => c.x).attr("width", c => c.w);
       go(sel.select("text.mi-card-lab")).attr("x", c => c.x + CARD_TXT);
-      go(sel.select("text.mi-card-pct")).attr("x", c => c.x + c.w - CARD_TXT - 22);
+      go(sel.select("text.mi-card-pct")).attr("x", c => c.x + CARD_TXT + (bandStacked ? 0 : bandNameW[c.k] + bandGap()));
       go(sel.select("text.mi-card-none")).attr("x", c => c.x + CARD_TXT);
       /* the cross only where there is another ground to fall back on */
       sel.select("g.mi-card-x").style("display", cardBox.length > 1 ? null : "none");
@@ -4762,133 +4784,9 @@
       }
       sizeClusterHead();
       on(window, "resize", sizeClusterHead);
-      /* the second beat's scale: the score runs from 1 on the left to 0 on
-         the right, as the map does, each band drawn as wide as its stretch of
-         the score, and each named with two of the metro's largest industries
-         in it, so 0 and 1 arrive with things the reader already knows */
-      const scaleHost = document.getElementById(p + "TradScale");
-      if (scaleHost){
-        /* only a generic tail is cut ("Restaurants and Other Eating Places"
-           reads as "Restaurants"); a name that would lose its meaning in the
-           cutting is passed over for the next largest industry instead */
-        /* a single word left before the generic tail stands on its own
-           ("Restaurants"); a longer one would be left hanging ("Executive
-           Legislative"), so that name is kept whole and, being long, gives
-           way to the next industry */
-        const shortOf = n => {
-          const t = n.replace(/ \(.*\)$/, "").trim(), m = t.match(/^(\S+) and Other /);
-          return m ? m[1] : t;
-        };
-        /* each tier's two largest industries, by name */
-        const examples = k => clusterRows[k].slice().sort((a, b) => b.employ - a.employ)
-          .map(d => shortOf(d.name)).filter(t => t.length <= 30).slice(0, 2).join(", ");
-        const bands = [
-          { k: 0, name: TIER_NAMES[0], tone: "#255862" },
-          { k: 1, name: TIER_NAMES[1], tone: "#59838c" },
-          { k: 2, name: TIER_NAMES[2], tone: "#b9ccd0" }
-        ];
-        /* the score is not shown anywhere any more, so the key says only
-           what the chart cannot: the three tiers by name, each with two of
-           the metro's own industries from inside it */
-        scaleHost.innerHTML =
-          '<span class="ts-rows">' + bands.map(b =>
-            '<span class="ts-row"><i style="background:' + b.tone + '"></i><span>' +
-            '<span class="ts-name">' + b.name + '</span>' +
-            '<span class="ts-eg">e.g. ' + examples(b.k) + '</span></span></span>').join("") + '</span>';
-        scaleHost.hidden = false;
-
-        /* The tier study's second option, which ships. The shares leave the
-           grounds for a donut beside the lede, so the chart carries the
-           tier's name alone; each tier, hovered or focused, names its three
-           largest industries with their jobs. opt-1 keeps the earlier beat:
-           the share on each ground, and the key of names and examples. */
-        const donutHost = document.getElementById(p + "TierDonut");
-        const tierOptEl = document.getElementById(p + "TierOpt");
-        let clearTierHot = () => {};
-        if (donutHost){
-          /* a small ring: the list beside it carries the reading, so the ring
-             only has to show the three parts and their order */
-          const R = 34, RI = 23, SZ = R * 2 + 2;
-          const jobsOf = n => Math.round(n).toLocaleString();
-          const tierJobs = k => d3.sum(clusterRows[k], d => d.employ);
-          const labelOf = d => shortLabel(d.name) || shortOf(d.name);
-          const largest = k => clusterRows[k].slice().sort((a, b) => b.employ - a.employ).slice(0, 3);
-          donutHost.innerHTML =
-            '<svg class="tdn-ring" width="' + SZ + '" height="' + SZ + '" viewBox="0 0 ' + SZ + ' ' + SZ +
-              '" role="img" aria-label="Share of metro jobs in each tradability tier"></svg>' +
-            '<div class="tdn-rows">' + bands.map(b =>
-              '<button type="button" class="tdn-row" data-tier="' + b.k + '" aria-describedby="' + p + 'TierTip">' +
-              '<i style="background:' + b.tone + '"></i><b>' + b.name + '</b>' +
-              '<span class="tdn-pct">' + pct(clusterShare[b.k]) + '</span></button>').join("") + '</div>' +
-            /* the rows describe themselves by the card, so a reader who
-               cannot see it still gets the tier's largest industries */
-            '<div class="tdn-tip" id="' + p + 'TierTip" hidden></div>';
-          const ring = d3.select(donutHost).select("svg.tdn-ring").append("g")
-            .attr("transform", "translate(" + SZ / 2 + "," + SZ / 2 + ")");
-          /* a thin ring, in the order the grounds take, with a hairline of
-             ground between the segments */
-          const arcs = d3.pie().sort(null).value(d => clusterShare[d.k]).padAngle(0.014)(bands);
-          const arc = d3.arc().innerRadius(RI).outerRadius(R);
-          ring.selectAll("path.tdn-arc").data(arcs).join("path")
-            .attr("class", "tdn-arc").attr("data-tier", d => d.data.k)
-            .attr("d", arc).attr("fill", d => d.data.tone);
-          const tipEl = donutHost.querySelector(".tdn-tip");
-          /* the pointer, the keyboard and a press each hold their own tier,
-             the pointer's first; the card is rebuilt only when the shown
-             tier changes, so crossing a row's parts does not rebuild it */
-          let hoverK = null, focusK = null, pinK = null, shownK = null;
-          const hot = k => {
-            if (k === shownK) return;
-            shownK = k;
-            donutHost.classList.toggle("is-hot", k != null);
-            donutHost.querySelectorAll("[data-tier]").forEach(n =>
-              n.classList.toggle("is-hot", k != null && +n.getAttribute("data-tier") === k));
-            if (k == null){ tipEl.hidden = true; return; }
-            const b = bands[k], n = clusterRows[k].length;
-            tipEl.innerHTML =
-              '<div class="tdn-head"><b>' + b.name + '</b><span>' + pct(clusterShare[k]) +
-                ' of metro jobs \u00b7 ' + jobsOf(tierJobs(k)) + ' jobs</span></div>' +
-              '<ul class="tdn-list">' + largest(k).map(d =>
-                '<li><span>' + labelOf(d) + '</span><span>' + jobsOf(d.employ) + '</span></li>').join("") + '</ul>' +
-              '<p class="tdn-note">The three largest of the ' + n + ' industries in the tier</p>';
-            tipEl.hidden = false;
-          };
-          const apply = () => hot(hoverK != null ? hoverK : focusK != null ? focusK : pinK);
-          const putAway = () => { hoverK = focusK = pinK = null; apply(); };
-          const tierAt = ev => { const t = ev.target.closest && ev.target.closest("[data-tier]"); return t ? +t.getAttribute("data-tier") : null; };
-          on(donutHost, "mouseover", ev => { const k = tierAt(ev); if (k != null){ hoverK = k; apply(); } });
-          on(donutHost, "mouseleave", () => { hoverK = null; apply(); });
-          on(donutHost, "focusin", ev => { const k = tierAt(ev); if (k != null){ focusK = k; apply(); } });
-          on(donutHost, "focusout", ev => { if (!donutHost.contains(ev.relatedTarget)){ focusK = null; apply(); } });
-          /* a press on a row opens its card and holds it, and a second press
-             puts it away - the path a touch has, since touch sends no
-             mouseleave, and a keyboard's way to dismiss without leaving */
-          on(donutHost, "click", ev => {
-            const k = tierAt(ev); if (k == null) return;
-            if (shownK === k) putAway(); else { pinK = k; apply(); }
-          });
-          /* a tap elsewhere, or Escape, puts the card away */
-          on(document, "pointerdown", ev => {
-            if (shownK != null && !donutHost.contains(ev.target)) putAway();
-          });
-          escLayers.push({ p: 3, open: () => shownK != null, close: putAway });
-          clearTierHot = putAway;
-        }
-        /* the switch between the two: the share on the grounds and the key,
-           or the name alone on the grounds and the donut */
-        const setTierOpt = mode => {
-          const donut = mode === "donut";
-          fig.dataset.tier = donut ? "donut" : "cards";
-          scaleHost.hidden = donut;
-          if (donutHost) donutHost.hidden = !donut;
-          clearTierHot();
-          /* the name keeps its place on the band either way now; only the
-             share stands down when the donut carries the shares */
-          if (tierOptEl) tierOptEl.value = donut ? "donut" : "cards";
-        };
-        setTierOpt(tierOptEl && tierOptEl.value === "cards" ? "cards" : "donut");
-        if (tierOptEl) on(tierOptEl, "change", () => setTierOpt(tierOptEl.value));
-      }
+      /* each tier's share of the metro's jobs is printed on its own ground,
+         beside its name (2026-10-02; it stood in a donut beside the text,
+         with the grounds carrying the name alone) */
     })();
 
     /* the coarse map, laid out for whichever arrangement is chosen. `split`
@@ -5463,7 +5361,7 @@
       const moved = !!s2 && Math.abs(s2 - S) >= 1e-4;
       /* the scale first: the stylesheet sizes the charts' type from it, and
          the gutters below are fitted to that type */
-      if (moved){ S = s2; tellScale(); invalidateMaps(); drawCards(false); }
+      if (moved){ S = s2; tellScale(); fitBandRef(); invalidateMaps(); drawCards(false); }
       /* gutters fitted while the page was still hidden were fitted blind,
          on a canvas: the first tick with the figure on screen fits them
          to the page's own measure. A change of scale changes the type's
