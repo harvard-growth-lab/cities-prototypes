@@ -744,7 +744,19 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
    the screen); and the answers are written for 2024, so the blocks stand
    down while Year is 2014 (`[data-year="2014"]`, and a guard in `ask`).
    The review's "state" lens and several verifications were cut off by a
-   session limit; they were re-run on the next change.
+   session limit; the whole review was run again after the terms went in
+   and confirmed thirteen things, all fixed (`rev13` in the commit
+   message): a taken beat's hold is released by where the scroll puts the
+   reader - scrolling toward it keeps it, 100px away or off the screen
+   gives the decision back (`spy()` in `mount`), and the way back gives
+   it back too (`ct:release`, sent after the answer has closed so the
+   text is laid out as it will stay); a beat that is left keeps its box
+   (`freezeSteps` sets the pinned step's min-height before its answer
+   closes, `settleSteps` puts its text back inside that box), so nothing
+   collapses above the reader; the pressed row is also held when the
+   other question's answer closes above it (the pin's padding takes the
+   difference); and only a real change of width unpins (the page sends
+   "resize" to its figures on every beat change).
    **In the figure** (treemap.js, "Ask the chart"): `ASKS` maps each key
    to a beat and its settings; `setNamed(set)` puts the figure in the
    beat's own view plus those settings through the controls' own
@@ -794,8 +806,15 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
    tiers by tradability: how much of their output sells outside the
    metro", beat 3 "most specialized in … Specialization is not size".
    Complexity has no place in beat 1's paragraph, so its term stands in
-   the answers that speak of it (b1q1, b1q2, b2q1). The complexity rank
-   card still comes forward under Color: Complexity. Other sections keep
+   the answers that speak of it (b1q1, b1q2, b2q1) and on the complexity
+   rank card ("Complexity rank, 2024"), which still comes forward under
+   Color: Complexity, so a reader who colours by hand has the definition
+   too. From the review: the glossary's entries are a keyboard stop
+   (`.gl-body`, so the arrow keys scroll them), Tab cannot leave the
+   dialog from the entry it opened at, it stands over the journey and
+   chat windows (z-index 51); a card closes with the answer it hangs in
+   and no longer swallows an Escape meant for the figure; the pointer
+   coming back onto a term from its card keeps the card. Other sections keep
    their explainer panels; Nil asked about Metro Industries.
 1. **The map at the sector level — Nil's pick is pending.** This is the
    live question at hand-off. The Level control (§4) tiles the map at the

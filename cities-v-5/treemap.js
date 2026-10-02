@@ -4607,7 +4607,8 @@
     });
 
     const colorEl = document.getElementById(p + "Color");
-    /* the complexity rank and the complexity explainer in the first beat's text */
+    /* the complexity rank in the first beat's text (and, where a section
+       still has one, its complexity explainer) */
     const complexityBits = [p + "RankCard", p + "ComplexityInfo"]
       .map(id => document.getElementById(id)).filter(Boolean);
     function setColorBy(c){
@@ -6230,51 +6231,81 @@
         const on = b.dataset.ask === key;
         b.setAttribute("aria-expanded", String(on));
         const item = b.closest(".ask-item"); if (item) item.classList.toggle("is-on", on);
-        const ans = document.getElementById(b.getAttribute("aria-controls")); if (ans) ans.hidden = !on;
+        const ans = document.getElementById(b.getAttribute("aria-controls"));
+        if (!ans) return;
+        /* a term's card open inside an answer goes with the answer */
+        if (!on && !ans.hidden && window.closeTermCard && ans.querySelector(".term-card")) window.closeTermCard(false);
+        ans.hidden = !on;
       });
     }
     /* the beat's text is centred in its step, so an answer opening under a
        row would move the row out from under the pointer that pressed it -
        and the row is the way back. The step is pinned where it stands from
-       the first question until the beat is left. */
+       the first question on, and three things keep the page still after:
+       the pressed row is held where it is when an answer above it closes
+       (the pin's padding takes up the difference); a beat that is left
+       keeps its box, its height frozen before its answer closes, so
+       nothing collapses above the reader; and only a real change of
+       width, which re-flows the text anyway, lets the steps go. */
     const pinStep = st => {
       if (!st || st.dataset.pinned) return;
       const first = st.firstElementChild; if (!first) return;
-      const off = first.getBoundingClientRect().top - st.getBoundingClientRect().top;
+      const off = Math.max(0, first.getBoundingClientRect().top - st.getBoundingClientRect().top);
       st.style.justifyContent = "flex-start";
-      st.style.paddingTop = Math.max(0, off) + "px";
-      st.dataset.pinned = "1";
+      st.style.paddingTop = off + "px";
+      st.dataset.pinned = "1"; st.dataset.pad0 = String(off);
     };
-    const unpinSteps = () => {
-      [].forEach.call(document.querySelectorAll(".ct-step[data-pinned]"), st => {
-        st.style.justifyContent = ""; st.style.paddingTop = ""; delete st.dataset.pinned;
-      });
-    };
+    const pinnedSteps = () => [].slice.call(document.querySelectorAll(".ct-step[data-pinned]"));
+    const unpinSteps = () => pinnedSteps().forEach(st => {
+      st.style.justifyContent = ""; st.style.paddingTop = ""; st.style.minHeight = "";
+      delete st.dataset.pinned; delete st.dataset.pad0;
+    });
+    const freezeSteps = () => pinnedSteps().forEach(st => { st.style.minHeight = st.offsetHeight + "px"; });
+    /* behind the reader, a step's text goes back to where it began, inside the box it kept */
+    const settleSteps = active => pinnedSteps().forEach(st => { if (st !== active) st.style.paddingTop = (st.dataset.pad0 || "0") + "px"; });
+    const rowOf = key => askRows.find(b => b.dataset.ask === key) || null;
     function ask(key){
       const q = key ? ASKS[key] : null;
       if (key && (!q || q.step !== step)) return;
       /* the answers are written for 2024 */
       if (key && (fig.dataset.year || "2024") !== "2024") return;
       const was = asked;
-      if (q){ const row = askRows.find(b => b.dataset.ask === key); pinStep(row && row.closest(".ct-step")); }
+      const row = key ? rowOf(key) : null, st = row && row.closest(".ct-step");
+      if (q) pinStep(st);
+      const y0 = row ? row.getBoundingClientRect().top : 0;
       asked = null;                         /* the paint that follows must not judge the old question */
       setNamed(q ? q.set : {});
       asked = q ? { key: key, sig: askSig() } : null;
       syncAsk();
+      /* the other question's answer, closing above this row, would have
+         drawn the row up from under the pointer */
+      if (row && st && st.dataset.pinned){
+        const dy = y0 - row.getBoundingClientRect().top;
+        if (Math.abs(dy) > 0.5) st.style.paddingTop = ((parseFloat(st.style.paddingTop) || 0) + dy) + "px";
+      }
       if (q || was) syncLive(q ? ", changed to answer the question" : ", back to the starting view");
     }
     if (askRows.length){
       checkAskRef = () => { if (asked && askSig() !== asked.sig){ asked = null; syncAsk(); } };
-      leaveAskRef = () => { if (!asked) return; asked = null; setNamed({}, true); syncAsk(); };
+      leaveAskRef = () => { if (!asked) return; freezeSteps(); asked = null; setNamed({}, true); syncAsk(); };
       /* a question pressed in a beat the reader is not on brings that beat
          in first, and is asked once the figure has arrived there */
       let pending = null;
       afterStepRef = i => {
-        unpinSteps();
+        freezeSteps();
+        settleSteps((fig.closest(".ct-scrolly") || document).querySelector(".ct-step.is-on"));
         if (!pending) return;
         const k = pending.key, fresh = Date.now() - pending.at < 4000;
         if (!fresh){ pending = null; return; }
         if (ASKS[k].step === i){ pending = null; ask(k); }
+      };
+      /* the way back. The answer closes first, so the text is laid out
+         as it will stay; then a beat taken by a press is given back, and
+         the scroll decides again - where that is another beat, the figure
+         goes there */
+      const backToStart = row => {
+        if (asked) ask(null);
+        if (row) row.dispatchEvent(new CustomEvent("ct:release", { bubbles: true }));
       };
       askRows.forEach(b => on(b, "click", () => {
         const key = b.dataset.ask, q = ASKS[key];
@@ -6288,18 +6319,23 @@
           if (step !== q.step && window[ctlName]) window[ctlName].setStep(q.step);
           return;
         }
-        ask(asked && asked.key === key ? null : key);
+        if (asked && asked.key === key) backToStart(b); else ask(key);
       }));
       /* a width that re-flows the text re-centres it; an open answer's
-         step is pinned again where it then stands */
+         step is pinned again where it then stands. The page also sends
+         "resize" to its figures when a beat changes, with the width as it
+         was: those are not this */
+      let pinW = window.innerWidth;
       on(window, "resize", () => {
+        if (window.innerWidth === pinW) return;
+        pinW = window.innerWidth;
         unpinSteps();
-        if (asked){ const row = askRows.find(b => b.dataset.ask === asked.key); pinStep(row && row.closest(".ct-step")); }
+        if (asked){ const row = rowOf(asked.key); pinStep(row && row.closest(".ct-step")); }
       });
       /* Escape, once nothing else is open, is the same way back */
       escLayers.push({ p: 7, scoped: true, open: () => !!asked, close: () => {
-        const row = askRows.find(b => b.dataset.ask === asked.key);
-        ask(null);
+        const row = rowOf(asked.key);
+        backToStart(row);
         if (row && document.activeElement && row.closest(".ask-chart").contains(document.activeElement)) row.focus({ preventScroll: true });
       } });
       syncAsk();

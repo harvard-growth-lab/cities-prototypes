@@ -2999,6 +2999,8 @@
   #page-export-basket .term:hover::after,#page-export-basket .term[aria-expanded="true"]::after{border-color:var(--teal);color:var(--teal);}
   #page-export-basket .term:focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:2px;}
   #page-export-basket .has-term-card{position:relative;}
+  /* the rank card clips its own growing; a term's card hanging from it is let out */
+  #page-export-basket #miRankCard.has-term-card{overflow:visible;}
   .term-card{
     position:absolute;z-index:30;display:block;width:300px;max-width:100%;padding:12px 14px 12px;
     background:#fff;border:1px solid var(--border-strong);border-radius:8px;box-shadow:0 6px 18px rgba(26,34,38,.14);
@@ -3015,8 +3017,12 @@
   .term-card .tc-more:focus-visible{outline:2px solid #255862;outline-offset:2px;}
   .term-card .tc-more svg{width:14px;height:14px;}
   /* the glossary's window: one entry per term, the one asked for marked */
+  /* over the site's other windows: it can be reached from the navigation
+     while one of them is open */
+  #glossaryOverlay{z-index:51;}
   .gl-window{width:680px;}
   .gl-body{padding:6px 32px 30px;}
+  .gl-body:focus-visible{outline:2px solid var(--teal);outline-offset:-2px;}
   .gl-entry{padding:22px 0 16px 14px;border-top:1px solid var(--border);border-left:3px solid transparent;margin-left:-17px;outline:none;}
   .gl-entry:first-child{border-top:0;}
   .gl-entry.is-here{border-left-color:var(--teal);}
@@ -6230,7 +6236,7 @@
             </div>
             <div class="ac-body">
               <p class="ac-head"><span class="ac-anchor" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18"/><path d="M8.5 20v-8h7v8"/><path d="M3 20v-4.5h5.5"/><path d="M15.5 14H21v6"/><path d="m12 3.2 1.1 2.2 2.4.4-1.7 1.7.4 2.4L12 8.8l-2.2 1.1.4-2.4-1.7-1.7 2.4-.4z"/></svg></span><span>of 382 US metros</span></p>
-              <p class="rc-sub">Complexity rank, 2024</p>
+              <p class="rc-sub"><button type="button" class="term" data-term="complexity" aria-expanded="false">Complexity</button> rank, 2024</p>
             </div>
           </div>
         <!-- One figure serves all three beats. The engine lifts it into the
@@ -6547,7 +6553,7 @@
             <div class="ask-item">
               <button type="button" class="ask-q" data-ask="b3q1" aria-expanded="false" aria-controls="miAsk-b3q1" aria-describedby="miAskHint"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Where are the universities on this list?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
               <div class="ask-ans" id="miAsk-b3q1" hidden>
-                <p class="ask-a">They miss the list&rsquo;s cut-off, at 4.3 times. Among partly traded industries, shown here, they rank second.</p>
+                <p class="ask-a">At 4.3 times, they miss the list&rsquo;s cut-off. Among partly traded industries, shown here, they rank second.</p>
               </div>
             </div>
             <div class="ask-item">
@@ -7157,7 +7163,7 @@
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 2l12 12M14 2 2 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
       </button>
     </div>
-    <div class="journey-body gl-body">
+    <div class="journey-body gl-body" tabindex="0" role="region" aria-label="Glossary entries">
       <section class="gl-entry" id="gl-complexity" tabindex="-1" aria-labelledby="gl-complexity-h">
         <h3 id="gl-complexity-h">Complexity</h3>
         <p><strong>Complexity</strong> measures the knowledge an industry takes to run. Work that needs many people
@@ -7187,7 +7193,7 @@
         <p>An industry counts as a <strong>specialization</strong> when the metro does more of it than the
         country does. The measure divides the industry&rsquo;s share of jobs here by its share of jobs
         nationally: <strong>1.0&times;</strong> is exactly the national rate, <strong>2.0&times;</strong> is
-        twice as concentrated here as anywhere else.</p>
+        twice the national share.</p>
         <p>It says nothing about size. A small industry can be a powerful specialization and a large one can be
         entirely ordinary &mdash; this measures what is <em>distinctive</em> about the metro, not what
         employs the most people.</p>
@@ -7885,7 +7891,7 @@
     termCard.querySelector(".tc-def").textContent = t.def;
     /* the card hangs in the term's own paragraph, under the term (or over
        it where the screen has no room below), held inside the paragraph */
-    const host = b.closest("p") || b.parentNode;
+    const host = b.closest(".rank-strip") || b.closest("p") || b.parentNode;
     host.classList.add("has-term-card");
     b.insertAdjacentElement("afterend", termCard);
     const hr = host.getBoundingClientRect(), br = b.getBoundingClientRect();
@@ -7905,18 +7911,24 @@
   });
   document.addEventListener("mouseover", ev => {
     const b = ev.target.closest && ev.target.closest("button.term[data-term]");
-    if (!b || (termOpen === b)) return;
+    if (!b) return;
+    if (termOpen === b){ clearTimeout(termT); return; }      /* back on the open term: it stays */
     clearTimeout(termT); termT = setTimeout(() => openTerm(b, false), 160);
   });
   document.addEventListener("mouseout", ev => {
     const b = ev.target.closest && ev.target.closest("button.term[data-term]");
     if (!b) return;
     clearTimeout(termT);
-    if (termOpen === b && !termPinned) termT = setTimeout(() => closeTerm(false), 240);
+    /* whichever term the pointer leaves, an unpinned card closes unless
+       the pointer arrives on it or on its term in time */
+    if (termOpen && !termPinned) termT = setTimeout(() => closeTerm(false), 240);
   });
   /* Escape closes the card first and stops there, so one press does one thing */
   document.addEventListener("keydown", ev => {
     if (ev.key !== "Escape" || !termOpen) return;
+    /* a card whose text has gone from the screen is put away without
+       taking the key from whatever it was meant for */
+    if (!termOpen.getClientRects().length){ closeTerm(false); return; }
     const inIt = ev.target === termOpen || (termCard && termCard.contains(ev.target));
     ev.preventDefault(); ev.stopPropagation();
     closeTerm(inIt);
@@ -7934,7 +7946,7 @@
     ov.querySelectorAll(".gl-entry").forEach(e => e.classList.toggle("is-here", e === entry));
     const body = ov.querySelector(".gl-body");
     if (entry){ body.scrollTop = Math.max(0, entry.offsetTop - body.offsetTop - 6); entry.focus({ preventScroll: true }); }
-    else { body.scrollTop = 0; ov.querySelector(".journey-close").focus({ preventScroll: true }); }
+    else { body.scrollTop = 0; body.focus({ preventScroll: true }); }      /* the arrow keys then scroll the entries */
     document.addEventListener("keydown", glossaryKey, true);
   }
   function closeGlossary(){
@@ -7952,12 +7964,14 @@
     const stops = [].slice.call(ov.querySelectorAll('button, [href], [tabindex]:not([tabindex="-1"])')).filter(x => x.offsetParent !== null);
     if (!stops.length) return;
     const first = stops[0], last = stops[stops.length - 1], a = document.activeElement;
-    if (!ov.contains(a)){ e.preventDefault(); first.focus(); }
-    else if (e.shiftKey && (a === first || a.classList.contains("gl-entry"))){ e.preventDefault(); last.focus(); }
+    /* from anywhere that is not one of the stops - outside the window, or
+       on the entry the glossary opened at - Tab goes to a stop inside */
+    if (stops.indexOf(a) < 0){ e.preventDefault(); (e.shiftKey ? last : first).focus(); }
+    else if (e.shiftKey && a === first){ e.preventDefault(); last.focus(); }
     else if (!e.shiftKey && a === last){ e.preventDefault(); first.focus(); }
   }
   document.getElementById("glossaryOverlay").addEventListener("click", e => { if (e.target === e.currentTarget) closeGlossary(); });
-  window.openGlossary = openGlossary; window.closeGlossary = closeGlossary;
+  window.openGlossary = openGlossary; window.closeGlossary = closeGlossary; window.closeTermCard = closeTerm;
   document.getElementById("geoMapOverlay").addEventListener("click",
     e => { if (e.target.id === "geoMapOverlay") closeGeoMap(); });
 
@@ -10713,21 +10727,32 @@
     held = { top: pagesEl.scrollTop, st: st };
     activate(i);
   });
+  page.addEventListener("ct:release", function(){
+    if (!held) return;
+    held = null;
+    spy();
+  });
   function spy(){
     if (!built) return;
-    /* held while the reader stays near where they pressed and the beat is
-       still on screen */
-    if (held){
-      var hr = held.st.getBoundingClientRect();
-      if (Math.abs(pagesEl.scrollTop - held.top) < 100 && hr.bottom > 0 && hr.top < window.innerHeight) return;
-      held = null;
-    }
     var mid = window.innerHeight * 0.45, best = 0, bd = Infinity;
     built.steps.forEach(function(st, i){
       var r = st.getBoundingClientRect();
       var d = Math.abs((r.top + r.bottom) / 2 - mid);
       if (d < bd){ bd = d; best = i; }
     });
+    /* a taken beat is held while it is on screen and the reader has not
+       scrolled away from it: scrolling toward it keeps it (the scroll will
+       reach it on its own), and so do the first 100px the other way */
+    if (held){
+      var hi = built.steps.indexOf(held.st), hr = held.st.getBoundingClientRect();
+      if (best === hi || hi < 0) held = null;
+      else if (hr.bottom > 0 && hr.top < window.innerHeight){
+        var moved = pagesEl.scrollTop - held.top;
+        var toward = hi < best ? moved <= 0 : moved >= 0;
+        if (toward || Math.abs(moved) < 100) return;
+        held = null;
+      } else held = null;
+    }
     activate(best);
   }
   pagesEl.addEventListener("scroll", spy, { passive: true });
