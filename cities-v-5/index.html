@@ -83,7 +83,7 @@
        16.4 at a 970px window, 17.0 on a 14-inch laptop at 1512, easing to
        17.5 on a 1920 monitor. Body carries none of the drama; the
        headings do, on a steeper ramp that stops at 1440. */
-    --t-xs:    clamp(0.75rem,   0.729rem + 0.093vw, 0.8125rem);  /* 12 → 13 */
+    --t-xs:    clamp(0.78125rem, 0.729rem + 0.093vw, 0.8125rem); /* 12.5 → 13: nothing on the site is set under 12.5 */
     --t-sm:    clamp(0.8125rem, 0.792rem + 0.093vw, 0.875rem);   /* 13 → 14 */
     --t-note:  clamp(0.875rem,  0.854rem + 0.093vw, 0.9375rem);  /* 14 → 15 */
     --t-base:  clamp(1rem,      0.96rem  + 0.110vw, 1.125rem);   /* 16 → 17 at 1512 → 17.5 at 1920 */
@@ -94,6 +94,30 @@
     --t-hero:  clamp(1.8125rem, 0.958rem + 3.796vw, 4.375rem);   /* 29 → 70 */
     /* the measure the section bar and the page grid share */
     --grid-max:1360px;
+    --ct-frame:min(var(--grid-max), calc(100vw - 2 * var(--frame-pad)));
+    /* ── the two figure sections' grid (Metro Industries, Worker Flows) ──
+       A text column beside a framed figure. The column is 336 at a desk
+       and narrows with the window; it was a fixed 392 down to 1200, which
+       left the figure 672 of a 1200 window. The gap and the frame's own
+       padding give way the same way, so the figure's share of the window
+       grows as the window shrinks, with no step at any width. The section
+       bar reads the same two numbers, so its names stand over the figure. */
+    --ct-rail:clamp(248px, 24vw, 336px);
+    --ct-rail-max:520px;
+    --ct-gap:clamp(24px, 3vw, 44px);
+    --panel-px:clamp(16px, 2vw, 32px);
+    --panel-pt:clamp(18px, 2vw, 28px);
+    --panel-pb:clamp(16px, 1.7vw, 24px);
+    /* what is left clear above and below the frame when it is as tall as
+       the window allows */
+    --stage-air:16px;
+  }
+  /* a short window: the frame's own top and bottom padding and the air
+     round it give way before the figure does */
+  @media (max-height:800px){
+    :root{--panel-pt:clamp(14px, 1.25vw, 18px);--panel-pb:clamp(12px, 1vw, 14px);--stage-air:8px;}
+  }
+  :root{
     /* the landing composes on its own, narrower measure (the hero grid),
        so its masthead hangs from that edge rather than the tool's */
     --landing-pad:max(24px, calc((100vw - 1140px) / 2));
@@ -502,12 +526,12 @@
      column, and the section names span the visualisation panel from its
      left edge to its right */
   .secbar .citypick{flex:none;align-self:center;}
-  .secbar .citypick--bar{width:392px;min-width:0;}
+  .secbar .citypick--bar{width:var(--ct-rail-now, 336px);min-width:0;}
   /* One length, whichever city is chosen. Sized to its content the chip
      swung 113px across the list — Chicago 269, Nairobi 156 — and a control
      that resizes under the reader reads as a label rather than a control.
      300px holds the longest of them — Chicago with its country, at 269 —
-     with a little air after it, and no more: the column's full 392 lined
+     with a little air after it, and no more: the column's full width lined
      the chip up with the prose beneath but left a slab of empty field. */
   .secbar .citypick--bar .citypick-btn{width:300px;display:flex;}
   .secbar .citypick--bar .citypick-txt{
@@ -530,7 +554,7 @@
   }
   .secnav{
     display:flex;gap:4px;align-items:center;justify-content:space-between;
-    height:100%;flex:1 1 auto;min-width:0;background:none;border:0;margin-left:56px;
+    height:100%;flex:1 1 auto;min-width:0;background:none;border:0;margin-left:var(--ct-gap);
   }
   /* the section names as chips: a check where the reader has been, the
      current one lifted on a tint, the ones ahead numbered and quiet */
@@ -542,7 +566,7 @@
   }
   .secnav-btn .num{
     width:22px;height:22px;flex:0 0 22px;border-radius:50%;
-    border:1.5px solid currentColor;font-size:11px;font-weight:700;
+    border:1.5px solid currentColor;font-size:12.5px;font-weight:700;
     color:inherit;background:none;
     display:inline-flex;align-items:center;justify-content:center;
     transition:background-color .15s ease,border-color .15s ease;
@@ -576,7 +600,7 @@
   }
   .sv-btn:hover,.sv-btn.open{background:#000;}
   .sv-btn:focus-visible{outline:2px solid #fff;outline-offset:-4px;box-shadow:0 0 0 2px var(--ink),0 6px 20px rgba(26,34,38,.28);}
-  .sv-k{font-size:9.5px;font-weight:700;letter-spacing:.2px;opacity:.78;}
+  .sv-k{font-size:12.5px;font-weight:600;letter-spacing:0;opacity:.78;}
   .sv-now{font-weight:700;}
   .sv-btn svg{opacity:.8;transition:transform .2s;}
   .sv-btn.open svg{transform:rotate(180deg);}
@@ -594,13 +618,13 @@
     border:1.5px solid var(--control-edge);border-radius:50%;background:#fff;
   }
   .sv-opt b{font-size:13.5px;font-weight:700;line-height:1.25;}
-  .sv-opt span{grid-column:2;font-size:12px;line-height:1.3;color:var(--ink-soft);}
+  .sv-opt span{grid-column:2;font-size:12.5px;line-height:1.3;color:var(--ink-soft);}
   .sv-opt:hover{background:#f4f6f5;}
   .sv-opt.is-on{background:var(--teal-tint);}
   .sv-opt.is-on::before{border:4px solid var(--teal);}
   .sv-opt:focus-visible{outline:2px solid var(--teal);outline-offset:-2px;}
   .sv-panel [role="group"]{display:flex;flex-direction:column;gap:1px;}
-  .sv-head{margin:5px 6px 0;padding:9px 4px 3px;border-top:1px solid var(--border);font-size:9.5px;font-weight:700;letter-spacing:.2px;color:var(--ink-soft);}
+  .sv-head{margin:5px 6px 0;padding:9px 4px 3px;border-top:1px solid var(--border);font-size:12.5px;font-weight:700;letter-spacing:0;color:var(--ink-soft);}
 
   /* ---- the tint navigation bar: an option of the site layout ----
      The bars - the toolbar with the logo and the section bar under it -
@@ -646,7 +670,7 @@
     max-width:976px;margin-inline:auto;padding:64px 48px 56px;min-height:440px;box-sizing:border-box;
     display:flex;flex-direction:column;justify-content:center;gap:18px;
   }
-  .seal-eyebrow{display:flex;align-items:center;gap:9px;margin:0;font-size:12px;font-weight:700;letter-spacing:.2px;color:rgba(255,255,255,.78);}
+  .seal-eyebrow{display:flex;align-items:center;gap:9px;margin:0;font-size:12.5px;font-weight:700;letter-spacing:.2px;color:rgba(255,255,255,.78);}
   .seal-num{
     display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;
     border:1.5px solid rgba(255,255,255,.55);font-size:11px;font-weight:700;font-style:normal;color:#fff;
@@ -664,7 +688,7 @@
   .seal-quiz:hover{background:var(--teal-tint);}
   .seal-quiz:focus-visible{outline:2px solid #fff;outline-offset:3px;}
   .seal-quiz-sub{font-size:12.5px;font-weight:400;color:var(--ink-soft);}
-  .seal-cue{display:inline-flex;align-items:center;gap:9px;margin:0;font-size:12px;font-weight:700;letter-spacing:.2px;color:rgba(255,255,255,.78);}
+  .seal-cue{display:inline-flex;align-items:center;gap:9px;margin:0;font-size:12.5px;font-weight:700;letter-spacing:.2px;color:rgba(255,255,255,.78);}
   .seal-cue b{color:#fff;}
   .seal-cue svg{display:block;animation:seal-bob 1.8s ease-in-out infinite;}
   .seal-cue button{appearance:none;border:0;background:none;padding:0;margin:0;font:inherit;color:#fff;text-decoration:underline;text-underline-offset:3px;cursor:pointer;}
@@ -689,7 +713,7 @@
     display:flex;flex-direction:column;gap:44px;
   }
   .seam-head{display:flex;flex-direction:column;gap:10px;max-width:640px;}
-  .seam-eyebrow{margin:0;font-size:12px;font-weight:700;letter-spacing:.2px;color:rgba(255,255,255,.78);}
+  .seam-eyebrow{margin:0;font-size:12.5px;font-weight:700;letter-spacing:.2px;color:rgba(255,255,255,.78);}
   .seam-head h2{margin:0;font-size:clamp(2rem,1.4rem + 2.4vw,3.25rem);font-weight:700;line-height:1.05;color:#fff;}
   .seam-diag{margin:6px 0 0;font-size:16px;line-height:1.5;color:rgba(255,255,255,.86);}
   .seam-diag b{color:#fff;white-space:nowrap;}
@@ -697,7 +721,7 @@
   .seam-board{display:grid;grid-template-columns:minmax(0,3fr) auto minmax(0,2.3fr);align-items:stretch;gap:22px;}
   .seam-group{display:flex;flex-direction:column;gap:12px;min-width:0;}
   .seam-tag{margin:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;}
-  .seam-tag b{font-size:11px;font-weight:700;letter-spacing:.2px;color:#fff;}
+  .seam-tag b{font-size:12.5px;font-weight:700;letter-spacing:.2px;color:#fff;}
   .seam-tag span{font-size:13px;font-style:italic;color:rgba(255,255,255,.78);}
   .seam-group--done .seam-tag b{color:rgba(255,255,255,.86);}
   .seam-group :is(ul,ol){
@@ -716,7 +740,7 @@
   .seam-group--next .seam-num{background:var(--teal);color:#fff;}
   .seam-viz{display:block;width:100%;max-width:230px;height:auto;margin-top:4px;}
   .seam-viz--wide{max-width:100%;margin-top:8px;}
-  .seam-viz-t{font-size:10px;font-weight:600;}
+  .seam-viz-t{font-size:12.5px;font-weight:600;}
   .seam-group--done .seam-viz-t{fill:rgba(255,255,255,.86);}
   .seam-group--next .seam-viz-t{fill:var(--ink-soft);}
   .seam-link{
@@ -731,7 +755,7 @@
   }
   .seam-join svg{width:34px;height:auto;}
   .seam-foot{margin-top:4px;}
-  .seam-cue{margin:0;display:flex;flex-direction:column;align-items:center;gap:10px;font-size:11px;font-weight:700;letter-spacing:.2px;color:rgba(255,255,255,.78);}
+  .seam-cue{margin:0;display:flex;flex-direction:column;align-items:center;gap:10px;font-size:12.5px;font-weight:700;letter-spacing:.2px;color:rgba(255,255,255,.78);}
   .seam-cue svg{animation:seal-bob 1.8s ease-in-out infinite;}
   @media (prefers-reduced-motion: reduce){ .seam-cue svg{animation:none;} }
   @media (max-width:1099px){
@@ -777,7 +801,7 @@
     width:22px;height:22px;border-radius:50%;background:#fff;
     border:2px solid var(--border-strong);color:var(--ink-soft);padding:0;
     display:inline-flex;align-items:center;justify-content:center;
-    font:inherit;font-size:10.5px;font-weight:700;font-style:normal;flex:none;
+    font:inherit;font-size:12.5px;font-weight:700;font-style:normal;flex:none;
   }
   .pgr-stop{cursor:pointer;transition:transform .15s ease,border-color .15s ease,color .15s ease;}
   .pgr-stop:hover{transform:scale(1.15);border-color:var(--teal);color:var(--teal);}
@@ -830,7 +854,7 @@
   }
   .kq-close:hover{background:var(--teal-tint);color:var(--ink);}
   .kq-close:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
-  @media (max-width:599px){ .pgr-seg{width:14px;} .pgr-stop{width:20px;height:20px;font-size:10px;} }
+  @media (max-width:599px){ .pgr-seg{width:12px;} }
   /* the rail lists the reading; the checkpoints are the section's last cards */
   .rail .steps li[data-step^="check-"],.rail .steps li[data-step^="apply-"]{display:none;}
 
@@ -889,7 +913,7 @@
     padding:20px 24px 22px;
   }
   .sec-close .ktest--apply{border-top:1px solid var(--border);border-radius:0;}
-  .kc-count{margin-left:auto;font-size:12px;color:var(--ink-soft);font-weight:600;}
+  .kc-count{margin-left:auto;font-size:12.5px;color:var(--ink-soft);font-weight:600;}
   .kc-view{overflow:clip;}
   /* a link past the beat's text to the figure it drives: out of sight until
      a keyboard lands on it */
@@ -2776,7 +2800,7 @@
   .jp-opt{display:inline-flex;border:1px solid var(--border);border-radius:999px;overflow:hidden;flex:none;align-self:flex-start;margin-top:4px;}
   .jp-opt-btn{
     border:none;background:none;cursor:pointer;padding:5px 12px;
-    font-size:11.5px;color:var(--ink-soft);
+    font-size:12.5px;color:var(--ink-soft);
   }
   .jp-opt-btn.is-active{background:var(--teal);color:#fff;}
   .jp-opt-btn:not(.is-active):hover{background:var(--teal-tint);color:var(--teal);}
@@ -2840,11 +2864,11 @@
     position:static;transform:none;flex:none;align-self:center;
     margin:0 0 0 14px;padding:0;display:flex;align-items:center;
   }
-  /* a study control, not a feature: two words of the smallest legible size,
+  /* a study control, not a feature: two words at the site's smallest size,
      no pill, no label, no chrome to spend the bar's space on */
   .secbar .ct-optwrap .jp-opt{border:0;border-radius:0;margin-top:0;gap:7px;}
   .secbar .ct-optwrap .jp-opt-btn{
-    padding:0;font-size:9.5px;letter-spacing:.02em;color:var(--ink-soft);background:none;
+    padding:0;font-size:12.5px;letter-spacing:0;color:var(--ink-soft);background:none;
   }
   .secbar .ct-optwrap .jp-opt-btn.is-active{background:none;color:var(--teal);font-weight:700;}
   .secbar .ct-optwrap .jp-opt-btn:not(.is-active):hover{background:none;color:var(--ink-soft);}
@@ -2974,14 +2998,128 @@
      (2026-10-01), so its prose follows the title directly. */
   .pages:has(#page-export-basket:not(.sec-off)),
   .pages:has(#page-admin-mix:not(.sec-off)){background:#f9fafb;}
+  /* The figure is drawn on a box of fixed proportions, so a wider frame is
+     a taller one, and past a point it no longer fits under the bar. The
+     frame is therefore as wide as the window's width allows or as its
+     height allows, whichever is less (--stage-max: the height left under
+     the bar, less the frame's own furniture, times the box's proportions).
+     Where the height is what binds, the room the figure cannot use goes to
+     the text column, up to a comfortable measure, and past that the pair
+     is centred. The numbers are per section: each has its own tallest box
+     (--fig-ratio, width over height) and its own furniture above and below
+     it (--fig-furn). They are declared on the page as well, so the section
+     bar can stand its names over the frame. */
+  .pages{--fig-furn:0px;--fig-ratio:9;}
+  .pages:has(#page-export-basket:not(.sec-off)),#page-export-basket{--fig-furn:132px;--fig-ratio:1.76;}
+  .pages:has(#page-admin-mix:not(.sec-off)),#page-admin-mix{--fig-furn:72px;--fig-ratio:1.375;}
+  /* Metro Industries' furniture is its control row, the gap under the
+     drawing and the key: 132 with the controls on one line and the key on
+     two. The controls take a second line (34 more) once the drawing is
+     under about 780 wide, which is any window under 1280, or one so short
+     that the height holds the frame narrower than that; the key takes a
+     third (27 more) under 1024. */
+  @media (max-height:700px), (max-width:1279px){
+    .pages:has(#page-export-basket:not(.sec-off)),#page-export-basket{--fig-furn:166px;}
+  }
+  @media (max-width:1023px){
+    .pages:has(#page-export-basket:not(.sec-off)),#page-export-basket{--fig-furn:193px;}
+  }
+  .pages,#page-export-basket,#page-admin-mix{
+    --stage-max:max(420px, calc((100vh - var(--chrome-h) - var(--stage-air) - var(--panel-pt) - var(--panel-pb) - 2px - var(--fig-furn)) * var(--fig-ratio) + 2 * var(--panel-px) + 2px));
+    --ct-rail-now:clamp(var(--ct-rail), calc(var(--ct-frame) - var(--ct-gap) - var(--stage-max)), var(--ct-rail-max));
+  }
   :is(#page-export-basket, #page-admin-mix) .ct-scrolly{
-    grid-template-columns:392px minmax(0,1fr);gap:56px;
-    width:min(var(--grid-max), calc(100vw - 2 * var(--frame-pad)));
-    margin-inline:calc((100% - min(var(--grid-max), 100vw - 2 * var(--frame-pad))) / 2);
+    --ct-w:min(var(--ct-frame), calc(var(--ct-rail-now) + var(--ct-gap) + var(--stage-max)));
+    grid-template-columns:var(--ct-rail-now) minmax(0,1fr);gap:var(--ct-gap);
+    width:var(--ct-w);
+    margin-inline:calc((100% - var(--ct-w)) / 2);
   }
   :is(#page-export-basket, #page-admin-mix) .ct-panel{
-    background:#fff;border:1px solid var(--border);border-radius:10px;padding:28px 32px 24px;
+    background:#fff;border:1px solid var(--border);border-radius:10px;
+    padding:var(--panel-pt) var(--panel-px) var(--panel-pb);
   }
+  /* the figure fills its frame: the 880 every other figure on the site is
+     held to was 34 short of this one already, and would leave the drawing
+     narrower than its own controls and key */
+  :is(#page-export-basket, #page-admin-mix) .ct-stage .viz-big,
+  :is(#page-export-basket, #page-admin-mix) .ct-stage .tradable-split-header{width:100%;}
+  /* the text column's own scale, for the narrower measure: a title that
+     holds its question in two or three lines, and prose at 16 so a line
+     still carries about seven words. Stacked, under 900, the prose has the
+     whole width and keeps the site's sizes. */
+  @media (min-width:900px){
+    :is(#page-export-basket, #page-admin-mix) .ct-step h2,
+    :is(#page-export-basket, #page-admin-mix) .ct-step h3{
+      font-size:clamp(1.375rem, .9rem + .9vw, 1.625rem);line-height:1.2;letter-spacing:-.3px;margin-bottom:14px;
+    }
+    :is(#page-export-basket, #page-admin-mix) .ct-step .lede{font-size:1rem;line-height:1.6;}
+  }
+  /* ── Metro Industries: one type scale, nothing under 12.5px ───────────
+     Three sizes carry the figure. 16 for its title; 13 for what is read as
+     content (industry names, values, the keys); 12.5 for what frames it
+     (control labels and tiles, ticks, column heads, notes). The floor
+     holds at every width: where a narrower band used to step these down
+     to 11 and 11.5 they now stop at 12.5.
+     The charts' type lives inside the drawing, which is scaled to the
+     frame, so a size in its units used to shrink with it (11 units read
+     as 7.6px in a 1200 window). The figure now tells the stylesheet its
+     scale (--mi-s, treemap.js) and each class divides by it: these are
+     sizes on screen, at any width. The rules carry two ids so they hold
+     over the per-band unit sizes further down, which still serve the
+     city's figure. */
+  #miFigure{--mi-s:1;}
+  #miFigure #miTreemapSvg .mi-name,
+  #miFigure #miTreemapSvg .mi-val,
+  #miFigure #miTreemapSvg .mi-card-lab{font-size:calc(13px / var(--mi-s));}
+  #miFigure #miTreemapSvg .mi-jobs,
+  #miFigure #miTreemapSvg .mi-trad,
+  #miFigure #miTreemapSvg .mi-rows.is-tier .mi-jobs,
+  #miFigure #miTreemapSvg .mi-trad.is-tier,
+  #miFigure #miTreemapSvg .mi-ticklab,
+  #miFigure #miTreemapSvg .mi-axname,
+  #miFigure #miTreemapSvg .mi-colhead,
+  #miFigure #miTreemapSvg .mi-badge,
+  #miFigure #miTreemapSvg .mi-toplab,
+  #miFigure #miTreemapSvg .mi-card-pct,
+  #miFigure #miTreemapSvg .mi-card-none{font-size:calc(12.5px / var(--mi-s));}
+  /* the figure's own controls and keys */
+  #miFigure .mi-view .seg-btn{font-size:12.5px;}
+  #miFigure .mi-view .mi-year select,#miFigure #miLevelSel{font-size:12.5px;}
+  #miFigure .sector-key .sk-dot{font-size:12.5px;}
+  #miFigure .complexity-legend .cl-label{font-size:13px;color:var(--ink);}
+  #miTip .tip-rank{min-width:20px;height:20px;line-height:20px;border-radius:10px;font-size:12.5px;}
+  #page-export-basket .tdn-tip .tdn-note{font-size:12.5px;}
+  @media (max-width:899px){
+    #miFigure .sector-key,#miFigure .spec-key,
+    #miFigure .mcl-lab,#miFigure .mcl-axis{font-size:12.5px;}
+    /* stacked, the band under the ranking keeps only the ranking's own
+       one-line key: the sector key, which holds this slot's height at a
+       desk so the frame does not move between beats, is four lines on a
+       phone and the ranking does not use it */
+    #miFigure[data-step="6"] .mi-caption{min-height:0;}
+    #miFigure[data-step="6"] .mi-caption > .sector-key{display:none;}
+    #miFigure[data-step="6"]:not([data-sort="gap"]) .mi-caption > .spec-key:not(.spec-key--gap),
+    #miFigure[data-step="6"][data-sort="gap"] .mi-caption > .spec-key--gap{position:relative;}
+  }
+  /* Where the frame is too narrow for a chart's rows to hold that type -
+     25 bars stand 17 units apart, so under about 700px of drawing their
+     names would touch - the chart keeps the width it needs and pans
+     sideways inside the frame instead (data-pan, set by the figure when
+     its frame is narrower than that). The map never needs it: it is tiled
+     to whatever width it has. */
+  #miFigure[data-pan="1"][data-view="alt"] .tradable-viz-wrapper,
+  #miFigure[data-pan="1"][data-step="6"] .tradable-viz-wrapper{
+    overflow-x:auto;overflow-y:hidden;
+    overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin;
+    /* a soft edge on the side that has more: it fades as that end is reached */
+    background:
+      linear-gradient(to right, #fff 45%, rgba(255,255,255,0)) 0 0 / 30px 100% no-repeat local,
+      linear-gradient(to left, #fff 45%, rgba(255,255,255,0)) 100% 0 / 30px 100% no-repeat local,
+      linear-gradient(to right, rgba(26,34,38,.16), rgba(26,34,38,0)) 0 0 / 12px 100% no-repeat scroll,
+      linear-gradient(to left, rgba(26,34,38,.16), rgba(26,34,38,0)) 100% 0 / 12px 100% no-repeat scroll;
+  }
+  #miFigure[data-pan="1"][data-view="alt"] .viz-big,
+  #miFigure[data-pan="1"][data-step="6"] .viz-big{min-width:704px;}
   /* ---- terms: a word the tool uses in its own sense. In the text it stays
      plain and is followed by a small info mark; no rule under it, since a
      ruled phrase here is one that acts on the chart. Pressed or pointed at,
@@ -3290,7 +3428,7 @@
      nothing. The year gets its label, so the three pairs are set alike. */
   #miFigure .mi-view .ctl-label{font-size:12.5px;color:var(--ink-soft);}
   #miFigure .mi-view .seg{border:0;background:var(--paper);border-radius:6px;padding:2px;gap:2px;overflow:visible;}
-  #miFigure .mi-view .seg-btn{border-left:0;height:24px;padding:0 10px;border-radius:4px;color:var(--ink-soft);}
+  #miFigure .mi-view .seg-btn{border-left:0;height:24px;padding:0 8px;border-radius:4px;color:var(--ink-soft);}
   #miFigure .mi-view .seg-btn:hover:not(.is-active):not(:disabled){background:none;color:var(--ink);}
   /* the chosen tile: white on the tray, a soft edge in the tint's own
      family, the teal in its word */
@@ -3610,7 +3748,7 @@
   .mi-figure .skt-btn:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
   .mi-figure .skt-name{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--ink);}
   .mi-figure .skt-sw{flex:none;width:12px;height:12px;border-radius:3px;background:var(--sw,#ccc);}
-  .mi-figure .skt-hint{display:flex;align-items:center;gap:8px;font-size:12px;line-height:1.45;color:var(--ink-soft);}
+  .mi-figure .skt-hint{display:flex;align-items:center;gap:8px;font-size:12.5px;line-height:1.45;color:var(--ink-soft);}
   /* the hand taps, gently; it holds still for a reader who asked for less motion */
   .skt-hand{flex:none;color:var(--teal);animation:skt-tap 1.1s ease-in-out infinite;}
   .skt-hand-marks{animation:skt-marks 1.1s ease-in-out infinite;}
@@ -4583,7 +4721,7 @@
      bar the two belong on one line: as flex items they would stack, and the
      country would read as a sentence beginning with a comma. */
   .citypick:not(.citypick--bar) .citypick-txt{display:block;}
-  .citypick-sub{font-size:12px;font-weight:600;}
+  .citypick-sub{font-size:12.5px;font-weight:600;}
   .citypick-sub.down{color:var(--fall);}
   .citypick-sub.up{color:var(--rise);}
   .citypick-menu{
@@ -4598,7 +4736,7 @@
   }
   .citypick-opt:hover,.citypick-opt.is-on{background:var(--teal-tint);}
   .citypick-opt-name{display:flex;flex-direction:column;font-size:14px;font-weight:600;color:var(--ink);}
-  .citypick-opt-ctry{font-size:11.5px;font-weight:400;color:var(--ink-soft);}
+  .citypick-opt-ctry{font-size:12.5px;font-weight:400;color:var(--ink-soft);}
   .citypick-opt-verdict{font-size:12.5px;font-weight:700;white-space:nowrap;}
   .citypick-opt-verdict.down{color:var(--fall);}
   .citypick-opt-verdict.up{color:var(--rise);}
@@ -4662,12 +4800,12 @@
      12px of head-room for the names. The fourth chip's ::before is the
      seam's hairline, so its name rides its ::after, and the connector it
      used to carry to the fifth chip is the fifth's ::before instead. */
-  .secnav{padding-top:12px;}
+  .secnav{padding-top:15px;}
   .secnav-btn:nth-child(1)::before,
   .secnav-btn:nth-child(4)::after{
-    content:"Part 1 City Profile";position:absolute;left:9px;right:auto;top:auto;bottom:calc(100% + 2px);
+    content:"Part 1 City Profile";position:absolute;left:9px;right:auto;top:auto;bottom:calc(100% + 1px);
     transform:none;width:auto;height:auto;background:none;
-    font-size:9.5px;font-weight:700;line-height:1;letter-spacing:.2px;
+    font-size:12.5px;font-weight:700;line-height:1;letter-spacing:.1px;
     color:var(--ink-soft);opacity:1;white-space:nowrap;pointer-events:none;
     transition:color .15s ease;
   }
@@ -4691,15 +4829,16 @@
   .secnav{gap:9px;}
   .secnav-btn{padding:6px 9px;}
   /* Below 1440 the names are given the room rather than taken away: the
-     location slot stops reserving its 392 and hugs the 300 button, the gap
-     before the names narrows from 56 to 32, and the chips tighten a step.
+     location slot stops reserving the text column's width and hugs the 300
+     button, the gap before the names narrows to 32, and the chips tighten
+     a step.
      All five names then fit from about 1210 up, where they used to vanish
      at 1439 with half the bar empty. */
   @media (max-width:1439px){
     .secbar .citypick--bar{width:auto;}
     .secnav{margin-left:32px;gap:8px;}
     .secnav-btn{padding:6px 8px;gap:7px;font-size:13px;}
-    .secnav-btn .num{width:20px;height:20px;flex:0 0 20px;font-size:10.5px;}
+    .secnav-btn .num{width:20px;height:20px;flex:0 0 20px;font-size:12.5px;}
     .secnav-btn:nth-child(4){margin-left:18px;}
     .secnav-btn:nth-child(1)::before,.secnav-btn:nth-child(4)::after{left:8px;}
   }
@@ -4757,16 +4896,11 @@
     .secnav-btn:nth-child(1)::before{content:"Part 1";}
     .secnav-btn:nth-child(4)::after{content:"Part 2";}
     .secnav-btn{padding:6px 8px;font-size:13px;gap:6px;}
-    .secnav-btn .num{width:20px;height:20px;flex:0 0 20px;font-size:10.5px;}
+    .secnav-btn .num{width:20px;height:20px;flex:0 0 20px;font-size:12.5px;}
     .secbar .citypick--bar .citypick-btn{height:32px;font-size:13px;}
 
-    /* the rail gives up 392→236px on a fluid measure and the gap halves,
-       so the stage falls only to 0.87 of the 880 box at 1199 */
-    :is(#page-export-basket, #page-admin-mix) .ct-scrolly{
-      grid-template-columns:clamp(236px, 27vw, 392px) minmax(0,1fr);
-      gap:28px;
-    }
-    :is(#page-export-basket, #page-admin-mix) .ct-panel{padding:18px 16px 16px;}
+    /* the two figure sections' grid is fluid from the root (--ct-rail,
+       --ct-gap, --panel-*), so this band restates nothing for it */
 
     /* the type inside the box: one multiplier for the band, x1.25, set
        against its narrow end. At 900 an 11px class lands at 8.6px, at
@@ -4833,7 +4967,11 @@
        bottom of it. */
     :is(#page-export-basket, #page-admin-mix) .ct-scrolly{
       display:flex;flex-direction:column;gap:0;
+      width:var(--ct-frame);margin-inline:calc((100% - var(--ct-frame)) / 2);
     }
+    /* the band is the pair's width and no more: left to size itself it
+       took the width of a chart that pans, and ran off the screen with it */
+    :is(#page-export-basket, #page-admin-mix) .ct-stage{align-self:stretch;min-width:0;}
     :is(#page-export-basket, #page-admin-mix) .ct-steps{padding-block:0 6vh;min-width:0;}
 
     /* the band, pinned to the foot of the viewport rather than the head.
@@ -4937,7 +5075,7 @@
     .secnav{margin-left:8px;}
     .secnav-btn{align-self:stretch;padding:0 9px;border-radius:0;font-size:12.5px;gap:6px;}
     .secnav-btn.is-active{box-shadow:inset 0 -2px 0 var(--teal);}
-    .secnav-btn .num{width:18px;height:18px;flex:0 0 18px;font-size:10px;}
+    .secnav-btn .num{width:20px;height:20px;flex:0 0 20px;font-size:12.5px;}
     .secbar .ct-optwrap{margin-left:8px;}
     .secbar .ct-optwrap .jp-opt{flex-direction:column;align-items:flex-end;gap:2px;line-height:1.2;}
     /* masthead: the mark, and the journey as its icon. font-size:0

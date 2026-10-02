@@ -157,9 +157,10 @@ This is where most of the recent work lives. Read `treemap.js` from
 
 **Beats and steps.** The section is a scrolly built by `mount()` in
 index.html (`function build()` / `activate(i)` / `restore()`): three text
-beats in a 330 px left column (`.ct-step`, each opening with an eyebrow
+beats in a left column (`.ct-step`, each opening with an eyebrow
 "Metro Industries **1/3**"), the figure lifted into a sticky stage on the
-right. The mount config is `{ pageId:"page-export-basket", ctl:"MI",
+right. The column is 336 px at a desk and fluid below it; see "The grid,
+the frame and the type floor" at the end of this section. The mount config is `{ pageId:"page-export-basket", ctl:"MI",
 noClassic:true, noBadge:true, states:{"2":[0,4,6]} }` — beat → figure step
 0, 4, 6. `noBadge` (2026-10-01, at Nil's request): the beats carry no
 "Viewing: Boston Metro" tag under their titles and no rule under it, the
@@ -438,13 +439,13 @@ reference build's own page). Keep every one of these when touching the figure:
 **The sectors named on the map** (the "Sector names" study, 2026-09-30, at
 Nil's ask "the sector names should be displayed as well … build another
 frame around it"). Both options share one mechanism: the tiling
-(`tileBand`, module-level) gives every sector node 16 screen pixels of
+(`tileBand`, module-level) gives every sector node 18 screen pixels of
 `paddingTop` (`SEC_STRIP`; module-level `SEC_NAMES` is the mode and is in
 `bandsLayout`'s cache key), and `paintFrames(L, dur)` — called from
 `paintMap`, drawing into `gMapFrames`, a layer between the hits and the
 cells — draws one `g.mi-secg` per block of `L.blocks`: `rect.mi-secframe`
 (a hairline round the block), `rect.mi-sechead` (the strip) and
-`text.mi-secname` (11px/700; the full name if it fits the block's width
+`text.mi-secname` (12.5px/700; the full name if it fits the block's width
 less 10px, else `SECTOR_SHORT`, else nothing; nothing under 20px of
 height). opt-2 **band**: strip and hairline in `secDeeper(sector)`, the
 sector's colour taken down until white or ink reads 4.5 to 1 on it, the
@@ -510,6 +511,115 @@ The visibility rules for these live in index.html as
 `#page-export-basket:has(#miFigure:not([data-step=…])) #miXPair{display:none}`
 (they use `:has()` because the panel no longer sits inside the figure).
 
+**The grid, the frame and the type floor** (2026-10-02; Nil relaying the
+stakeholders: a slightly narrower text column, more room for the
+visualisations, nothing set under 12.5px, good at every screen size). This
+covers the two figure sections, Metro Industries and Worker Flows, which
+share one grid rule.
+
+*The grid.* Everything is driven from custom properties on `:root`
+(index.html, beside `--grid-max`): `--ct-rail: clamp(248px, 24vw, 336px)`
+(the text column; it was a fixed 392 down to 1200, then a clamp, with a
+127px jump in the figure's width at 1199/1200), `--ct-gap: clamp(24px,
+3vw, 44px)` (was 56, then 28), and the frame's padding `--panel-px`,
+`--panel-pt`, `--panel-pb`. There is no step at any width any more; the
+900–1199 band restates nothing for the grid. Measured figure widths, Metro
+Industries: 846 → 915–921 at 1440 and wider, 686 → 801 at 1280, 606 → 746
+at 1200, 638 → 654 at 1024. The **section bar reads the same numbers**
+(`.secbar .citypick--bar{width:var(--ct-rail-now)}`,
+`.secnav{margin-left:var(--ct-gap)}`), so at 1440 and up the location slot
+is the text column's width and the section names run from the frame's left
+edge to its right. Do not put literals back in either place.
+
+*The frame fits the window's height.* The figure is drawn on a box of
+fixed proportions, so a wider frame is a taller one; before this change
+the frame already ran under the fold on short windows (76px at 1366×650).
+`--stage-max` is the widest the frame may be for the height there is:
+`(100vh − --chrome-h − --stage-air − the frame's padding and border −
+--fig-furn) × --fig-ratio + the side padding`. `--fig-furn` and
+`--fig-ratio` are **per section** and set on `.pages:has(#page-…
+:not(.sec-off))` as well as on the page, so the bar can read them: Metro
+Industries 132px and 1.76 (the 880×500 box), Worker Flows 72px and 1.375
+(its tallest box, the 880×640 map). Metro Industries' furniture grows
+where its control row takes a second line (166px: any window under 1280
+wide, or under 700 tall) and where the key takes a third (193px: under
+1024 wide). If a control or the key is added to the figure, **re-measure
+these three numbers** (`handoff/type-audit.mjs` prints `fig` and `panel`
+heights; furniture = figure height − svg height). Where the height is
+what binds, the room the figure cannot use goes to the text column
+(`--ct-rail-now`, up to `--ct-rail-max` 520px), and past that the pair is
+centred (`--ct-w`). Under 800px of height the frame's top and bottom
+padding and `--stage-air` tighten. Stacked (under 900) none of this
+applies: the pair is `--ct-frame` wide.
+
+*The figure fills its frame.* `.tool-body .viz-big{width:880px}` still
+holds every other figure on the site; inside these two stages it is
+`width:100%`. The Metro Industries svg can therefore be drawn above its
+own 880 units (S up to about 1.05).
+
+*The text column's own scale* (≥ 900px only): the beat title is
+`clamp(22px, .9rem + .9vw, 26px)` at line-height 1.2 (was `--t-h2`, 30px
+at 1440) and the paragraph 16px at 1.6 (was `--t-base`, 16.9px at 1.62),
+so the narrower measure still carries about seven words a line and the
+title holds its question in two or three lines. Stacked, the prose has
+the whole width and keeps the site's sizes.
+
+*The type floor: 12.5px, everywhere in Metro Industries and the shared
+chrome.* Three sizes carry the figure: 16 its title, 13 what is read as
+content (industry names, values, the keys, the map's labels), 12.5 what
+frames it (control labels and tiles, ticks, column heads, notes).
+- **Chart text is sized on screen, not in units.** The charts' text lives
+  inside the svg, which is scaled to the frame, so "11px" in the
+  stylesheet used to mean 11 *units*: 10.6px at 1440 and 7.6px at 1200.
+  The figure now publishes its scale, `--mi-s` on `#miFigure`
+  (`tellScale()` in treemap.js, at init and in `remeasure()` *before*
+  anything measures text), and the stylesheet divides by it:
+  `#miFigure #miTreemapSvg .mi-name{font-size:calc(13px / var(--mi-s))}`
+  and so on. The two ids are there to beat the per-band unit sizes further
+  down (`@media (max-width:1199px)` and `599px`), which still serve the
+  city's figure. `remeasure()` calls `refitGutters()` whenever the scale
+  moves, since the gutters are fitted to the type; `typeSig` also watches
+  `mi-colhead`.
+- **The map's labels** are 13px, or 12.5 where that is what fits
+  (`MAP.size`, `MAP.min`, the ladder `mapSizes()`); they were 12 down to
+  10. Fewer small cells carry a name as a result: accepted. Sector names
+  on the map and the sector-card lines (both studies) are 12.5 too.
+- **Geometry that follows the type.** The tier grounds' band is
+  `bandH()` = at least 26px on screen (30 units where the figure is drawn
+  near its own size), its words on its middle line, the cells starting 14
+  units under it (`cardHead()`, `cardH()`); the top three's badge is a
+  disc of at least 9.5px radius on screen with its number centred.
+- **Where a chart cannot hold the type, it pans.** Twenty-five bars stand
+  17 units apart, so under about 700px of drawing their names would touch.
+  When the frame is narrower than `PAN_MIN` (704px), the figure sets
+  `data-pan="1"` and the Ranked view and the ranking keep `min-width:
+  704px` and scroll sideways inside `.tradable-viz-wrapper`, with a soft
+  shadow on the side that has more. That is any window under about 1090
+  wide, and every phone. The map never needs it: it is tiled to the width
+  it has. `cursorTipPos` and the tier menu add the wrapper's `scrollLeft`,
+  or they land in the wrong place while panned. This replaced the phone's
+  old 600px pan for beat 3, whose text rendered at 6–10px.
+- **The chrome.** Section-nav numbers 12.5 (were 11 / 10.5 / 10), the part
+  names over the nav 12.5 (9.5), pager stops 12.5 (10.5), the Site Layout
+  pill and panel 12.5 (9.5 and 12), the opt-1/opt-2 words in Worker Flows'
+  bar 12.5 (9.5), the one-scroll layout's seals and seam 12.5, and
+  `--t-xs` no longer falls under 12.5 on a phone.
+- **Not done, by scope:** the type inside Worker Flows' own figure and in
+  the other sections' figures is unchanged and still has sizes under 12.5
+  (they are unit-scaled the old way). The same `--mi-s` approach would
+  carry over.
+
+*Checking it.* `handoff/type-audit.mjs` walks 14 Metro Industries states
+at one viewport (`W`, `H` in the environment), prints the grid's numbers
+and whether the frame fits, and lists every text node rendered under the
+floor (`FLOOR`, default 12.5; svg text is measured through its screen
+matrix; pseudo-element text is included); `SHOTS=prefix` writes a
+screenshot per state. `handoff/type-audit-city.mjs` does the fit check for
+Worker Flows. At hand-off both were clean at 1920×970, 1728×1000,
+1512×860, 1440×789, 1366×650, 1280×720, 1200×800, 1100×800, 1024×768,
+900×700, 820×1180 and 390×844, with one exception that is left alone:
+at 1366×650 the Ranked view's frame runs 15px past the fold.
+
 ## 5. The end of a section, the quiz, the navigation
 
 Every section ends in `secPager` (built in `showSection(i)` in index.html):
@@ -534,12 +644,12 @@ sample insights). The rail no longer lists checkpoints as steps
 
 **The section bar names its two parts** (2026-09-30, copied from the
 reference build's scroll variant): "Part 1 City Profile" stands over the
-first chip and "Part 2 Diagnose & Act" over the fourth, 9.5px bold in
+first chip and "Part 2 Diagnose & Act" over the fourth, 12.5px bold in
 `--ink-soft`, the part the reader is in written in teal via
 `html[data-part]` (set in `showSection`: sections 0–2 → 1, 3–4 → 2, Extras
 → none). The names ride pseudo-elements — chip 1's `::before`, chip 4's
 `::after` (its `::before` is the seam's hairline), with the 4→5 connector
-moved to chip 5's `::before` — the row takes 12px of head-room, and under
+moved to chip 5's `::before` — the row takes 15px of head-room, and under
 1200px the names shorten to "Part 1" / "Part 2".
 
 **The two bars stand on one grid** (2026-09-30): the toolbar (logo, links,
@@ -951,6 +1061,9 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
   the figure end to end.
 - `handoff/contrast-audit.js`, `handoff/contrast-run.mjs` — the contrast
   auditor and the 47-state sweep that drives it (§3).
+- `handoff/type-audit.mjs`, `handoff/type-audit-city.mjs` — the type-floor
+  and frame-fit audit for the two figure sections (§4, "The grid, the
+  frame and the type floor").
 - `handoff/commit-history.md` — the full `git log` with dates; the commit
   messages are the design record.
 - `handoff/studies.md` — the study switches, their ids, options and beats.

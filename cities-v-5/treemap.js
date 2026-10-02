@@ -2229,7 +2229,10 @@
     }
     let top = y - th - 10;
     if (top < 0) top = y + 14;
-    tip.style.left = Math.max(0, Math.min(left, Math.max(0, w.width - tw))) + "px";
+    /* the card is laid out inside the frame, so where the frame has been
+       panned sideways the card's place moves by as much */
+    const sx = wrap.scrollLeft || 0;
+    tip.style.left = (sx + Math.max(0, Math.min(left, Math.max(0, w.width - tw)))) + "px";
     tip.style.top  = Math.max(0, Math.min(top, Math.max(0, w.height - th))) + "px";
   }
 
@@ -2873,22 +2876,26 @@
      into an "Other ..." cell of the group - or, where the group is one big
      industry and a few tiny ones, into a single cell that carries the
      group's own name. The map is tiled in screen pixels so the gaps are a
-     pixel and the type is 12px at any width, and read back into the
+     pixel and the type is 13px at any width (12.5 where that is what
+     fits; nothing on this figure is set smaller), and read back into the
      figure's units to be drawn.
      ========================================================================= */
   const MAP = { padding: 1, minSide: 4, inset: 3, first: 1.1, step: 0.9, shareGap: 0.3,
-                descent: 0.25, size: 12, min: 10, weight: 500, shareWeight: 400,
+                descent: 0.25, size: 13, min: 12.5, weight: 500, shareWeight: 400,
                 /* at the sector level the nine blocks are the cells, and a
-                   12px label is lost in them: the fit starts higher there */
+                   13px label is lost in them: the fit starts higher there */
                 sectorSize: 18 };
+  /* the sizes a label is tried at: whole pixels from its ceiling down,
+     ending on the floor itself, which is not a whole pixel */
+  const mapSizes = max => { const out = []; for (let v = max; v > MAP.min; v--) out.push(v); out.push(MAP.min); return out; };
   const MAP_FONT = '"Source Sans 3", "Source Sans Pro", sans-serif';
   /* the sector-names study: "off", or the sectors named on the map -
-     "band", a 16px strip in a deeper shade of the sector's colour with a
+     "band", an 18px strip in a deeper shade of the sector's colour with a
      hairline round its block, or "gutter", the name in ink on the page's
      white above the block, the block's cells inset from it. The strip is
      screen pixels, like the labels, and the tiling makes the room for it. */
   let SEC_NAMES = "off";
-  const SEC_STRIP = 16, SEC_INSET = 3, SEC_NAME_SIZE = 11;
+  const SEC_STRIP = 18, SEC_INSET = 3, SEC_NAME_SIZE = 12.5;
   /* the grain of the map: the level its cells are tiled at - 6 the
      industries (877 in 2024), 4 the industry groups (292), 2 the sectors
      (9); 3, the subsectors (85), is tiled the same way but not offered. A
@@ -3143,8 +3150,8 @@
     return mergeLoop([oneGroup ? LEVELS.group : LEVELS.sector], bands, true);
   }
 
-  /* ---- the cell labels: the name whole, wrapped by words, at 12px down to
-     10, and the share under it where that still fits; a name that cannot
+  /* ---- the cell labels: the name whole, wrapped by words, at 13px or at
+     12.5, and the share under it where that still fits; a name that cannot
      be set whole leaves the cell bare ---- */
   const _mapCtx = (function(){ try { return document.createElement("canvas").getContext("2d"); } catch (e){ return null; } })();
   const _mapW = new Map();
@@ -3170,7 +3177,7 @@
   }
   function fitLines(name, shareText, box, maxSize){
     const words = name.split(/\s+/);
-    for (let size = maxSize || MAP.size; size >= MAP.min; size--){
+    for (const size of mapSizes(maxSize || MAP.size)){
       const lines = wrapFit(words, size, MAP.weight, box.w);
       if (!lines || blockH(lines.length, size, false) > box.h) continue;
       const share = mapTextW(shareText, size, MAP.shareWeight) <= box.w && blockH(lines.length, size, true) <= box.h;
@@ -3286,12 +3293,17 @@
     /* ---- the industry map, in screen pixels ----
        S is the scale from the figure's 880 units to the pixels it is drawn
        at. The map is tiled in pixels, so its gaps are a pixel and its type
-       12px on any screen, and read back into units to be drawn. It is
+       13px on any screen, and read back into units to be drawn. It is
        measured once the figure is on screen and laid out again whenever
        the width changes; until then it is tiled at the width the reference
-       column gives it. */
+       column gives it.
+       The charts' own type - names, values, ticks, heads - is set by class
+       in the stylesheet, and that is in units too: the stylesheet is told
+       the scale (--mi-s on the figure) and divides by it, so that type is
+       a fixed size on screen as well, whatever width the figure is drawn
+       at. */
     let S = 0;
-    const DEFAULT_S = 686 / MI_W;
+    const DEFAULT_S = 880 / MI_W;
     /* the drawing keeps its proportions inside the element, so when the
        element is held shorter than that the drawing is narrower than it */
     const measureS = () => {
@@ -3299,6 +3311,8 @@
       return r.width > 0 && r.height > 0 ? Math.min(r.width / MI_W, r.height / MI_H) : 0;
     };
     const scaleNow = () => S || DEFAULT_S;
+    const tellScale = () => { if (fig) fig.style.setProperty("--mi-s", String(+scaleNow().toFixed(4))); };
+    tellScale();
     const cellOf = new Map();                       /* row name -> its cell */
     industryData.forEach(r => cellOf.set(r.name, cellOfRow(r, jobsTotal)));
     const itemOf = r => { const c = cellOf.get(r.name); return { id: c.id, sector: c.sector, group: c.group, value: r.employ, cell: c }; };
@@ -3382,9 +3396,14 @@
        into the room. ---- */
     const CL_HI = 0.8, CL_LO = 0.2;
     const CGAP = 8, CW = MI_W - 2 * CGAP;
-    const CARD_PAD = 9, CARD_HEAD = 44, CARD_BOT = 9, CARD_TXT = CARD_PAD + 7;
-    const BAND_H = 30;
-    const CARD_Y = CARD_HEAD, CARD_H = MI_H - CARD_HEAD - CARD_BOT;
+    const CARD_PAD = 9, CARD_BOT = 9, CARD_TXT = CARD_PAD + 7;
+    /* the band is 30 units where the figure is drawn near its own size; its
+       name is a fixed size on screen, so where the figure is drawn smaller
+       the band is taller in units - never less than 26px on screen - and
+       the cells start 14 units under it */
+    const bandH = () => Math.max(30, Math.ceil(26 / scaleNow()));
+    const cardHead = () => bandH() + 14;
+    const cardH = () => MI_H - cardHead() - CARD_BOT;
     let cardBox = [];
     function layoutClusters(){
       cardBox = [];
@@ -3401,7 +3420,7 @@
     layoutClusters();
     const mapTiers = () => bandsLayout("tiers|" + tierOn.map(Number).join("") + "|" + secKey() + "|" + (focus || "") + "|" + (focusGroup || ""),
       cardBox.map(c => ({ key: TIER_NAMES[c.k], rows: clusterRows[c.k].filter(d => secShown(d) && inFocus(d)),
-        box: { x: c.x + CARD_PAD, y: CARD_Y, w: Math.max(20, c.w - CARD_PAD * 2), h: CARD_H } })));
+        box: { x: c.x + CARD_PAD, y: cardHead(), w: Math.max(20, c.w - CARD_PAD * 2), h: cardH() } })));
     const clusterSpot = d => mapTiers().spot.get(d.name) || allSpot(d);
     const clusterFill = fillBy;
     let resetSec = null;              /* the key fills this in: applySec(null) */
@@ -3457,7 +3476,7 @@
     /* what the gutters were last fitted to - the type, and whether it could
        be measured on the page - so a resize that changes neither costs a
        comparison and no more */
-    const typeSig = () => ["mi-name", "mi-name is-top", "mi-toplab"]
+    const typeSig = () => ["mi-name", "mi-name is-top", "mi-toplab", "mi-colhead"]
       .map(c => { const m = measureFor(c); m.done(); return m.font + (m.live ? "/live" : "/blind"); }).join("|");
     /* the bars' gutter: the widest name, the 10 between it and the plot,
        and 2 to spare */
@@ -3793,12 +3812,12 @@
         .join(enter => {
           const g = enter.append("g").attr("class", "mi-card-g");
           g.append("rect").attr("class", "mi-card").attr("y", 0).attr("height", MI_H).attr("rx", 0);
-          g.append("rect").attr("class", "mi-card-band").attr("y", 0).attr("height", BAND_H);
+          g.append("rect").attr("class", "mi-card-band").attr("y", 0);
           g.append("text").attr("class", "mi-card-lab");
           g.append("text").attr("class", "mi-card-pct");
           g.append("text").attr("class", "mi-card-none");
           const x = g.append("g").attr("class", "mi-card-x");
-          x.append("rect").attr("class", "mi-card-x-hit").attr("y", 5).attr("width", 20).attr("height", 20)
+          x.append("rect").attr("class", "mi-card-x-hit").attr("width", 20).attr("height", 20)
             .attr("role", "button").attr("tabindex", -1).attr("focusable", "true");
           x.append("path").attr("class", "mi-card-x-mark");
           x.append("title");
@@ -3808,10 +3827,13 @@
       /* the words are set at once and only the geometry travels: text put on
          a transition arrives with it, and a ground coming back would carry a
          blank band the whole way */
-      sel.select("text.mi-card-lab").attr("y", 20).text(c => TIER_NAMES[c.k]);
-      sel.select("text.mi-card-pct").attr("y", 20).attr("text-anchor", "end")
+      /* the band's words sit on its middle line, whatever its height */
+      const bh = bandH(), mid = bh / 2;
+      sel.select("rect.mi-card-band").attr("height", bh);
+      sel.select("text.mi-card-lab").attr("y", mid).attr("dy", "0.35em").text(c => TIER_NAMES[c.k]);
+      sel.select("text.mi-card-pct").attr("y", mid).attr("dy", "0.35em").attr("text-anchor", "end")
         .text(c => Math.round(clusterShare[c.k] * 100) + "%");
-      sel.select("text.mi-card-none").attr("y", CARD_HEAD + 26);
+      sel.select("text.mi-card-none").attr("y", cardHead() + 26);
       go(sel.select("rect.mi-card")).attr("x", c => c.x).attr("width", c => c.w);
       go(sel.select("rect.mi-card-band")).attr("x", c => c.x).attr("width", c => c.w);
       go(sel.select("text.mi-card-lab")).attr("x", c => c.x + CARD_TXT);
@@ -3819,9 +3841,10 @@
       go(sel.select("text.mi-card-none")).attr("x", c => c.x + CARD_TXT);
       /* the cross only where there is another ground to fall back on */
       sel.select("g.mi-card-x").style("display", cardBox.length > 1 ? null : "none");
+      sel.select("rect.mi-card-x-hit").attr("y", mid - 10);
       go(sel.select("rect.mi-card-x-hit")).attr("x", c => c.x + c.w - CARD_TXT - 16);
       go(sel.select("path.mi-card-x-mark")).attr("d", c => {
-        const x = c.x + c.w - CARD_TXT - 10, y = 15, r = 4;
+        const x = c.x + c.w - CARD_TXT - 10, y = mid, r = 4;
         return "M" + (x - r) + "," + (y - r) + "L" + (x + r) + "," + (y + r) +
                "M" + (x + r) + "," + (y - r) + "L" + (x - r) + "," + (y + r);
       });
@@ -4066,8 +4089,12 @@
         .attr("x1", TC_R - TC_W + tw(CL_HI)).attr("x2", TC_R - TC_W + tw(CL_HI))
         .attr("y1", 10).attr("y2", 13.5);
       row.filter(top).call(g => {
-        g.append("circle").attr("class", "mi-badge-bg").attr("cx", 14).attr("cy", 0).attr("r", 9);
-        g.append("text").attr("class", "mi-badge").attr("x", 14).attr("y", 3.5)
+        /* the number is a fixed size on screen, so its disc is too: 9
+           units where the figure is drawn at its own size, more where it
+           is drawn smaller, inside the 30 the gutter keeps for it */
+        const br = Math.min(13, Math.max(9, 9.5 / scaleNow()));
+        g.append("circle").attr("class", "mi-badge-bg").attr("cx", br + 3).attr("cy", 0).attr("r", br);
+        g.append("text").attr("class", "mi-badge").attr("x", br + 3).attr("y", 0).attr("dy", "0.35em")
           .attr("text-anchor", "middle").text(d => R.rankIdx.get(d.name) + 1);
       });
       R.row = row;
@@ -4527,7 +4554,8 @@
         const mw = menuEl.offsetWidth;
         let left = hb.right - pb.left - mw;
         left = Math.max(4, Math.min(left, pb.width - mw - 4));
-        menuEl.style.left = left + "px";
+        /* the menu sits inside the wrapper: where that has been panned, its place moves with it */
+        menuEl.style.left = (left + (host.scrollLeft || 0)) + "px";
         menuEl.style.top = (hb.bottom - pb.top + 6) + "px";
         g.classList.add("is-open");
         g.setAttribute("aria-expanded", "true");
@@ -5048,7 +5076,7 @@
           y += size * 0.28; return true;
         };
         /* the band names the block already when the sector-names study is on */
-        if (SEC_NAMES === "off" && !line(sec, 14, 700, ink) && !line(SECTOR_SHORT[sec] || sec, 12, 700, ink)) return;
+        if (SEC_NAMES === "off" && !line(sec, 14, 700, ink) && !line(SECTOR_SHORT[sec] || sec, 12.5, 700, ink)) return;
         if (!line(fmtShare(c.cell.share) + " of metro jobs \u00b7 " + fmtJobsK(c.cell.jobs), 12.5, 400, ink)) return;
         if (mode === "change"){
           const j14 = sectorJobs(2014)[sec], j24 = sectorJobs(2024)[sec];
@@ -5057,17 +5085,17 @@
             line((r >= 0 ? "+" : "\u2212") + Math.abs(r * 100).toFixed(1) + "% a year, 2014 to 2024", 12.5, 400, soft);
           }
         }
-        const gl = groups.slice(0, 3).map(gr => gr.name + " " + fmtShare(gr.jobs / jobsTotal)).filter(t => mapTextW(t, 12, 500) <= room);
-        if (gl.length && y + 6 + 11 * 1.3 + 12 * 1.3 <= bottom){
-          y += 6; line("Largest groups", 11, 700, soft);
-          for (const t of gl) if (!line(t, 12, 500, ink)) break;
+        const gl = groups.slice(0, 3).map(gr => gr.name + " " + fmtShare(gr.jobs / jobsTotal)).filter(t => mapTextW(t, 12.5, 500) <= room);
+        if (gl.length && y + 6 + 12.5 * 1.3 + 12.5 * 1.3 <= bottom){
+          y += 6; line("Largest groups", 12.5, 700, soft);
+          for (const t of gl) if (!line(t, 12.5, 500, ink)) break;
         }
         const bin = cxBinOf(c.cell.pci);
-        if (bin != null && y + 16 <= bottom && room >= 62 + mapTextW("complexity", 11.5, 400)){
+        if (bin != null && y + 16 <= bottom && room >= 62 + mapTextW("complexity", 12.5, 400)){
           y += 8;
           for (let k = 0; k < 5; k++) card.append("circle").attr("cx", (px.x + pad + 4 + k * 11) / s).attr("cy", (y + 4) / s).attr("r", 3.2 / s)
             .attr("fill", k <= bin ? ink : "none").attr("stroke", ink).attr("stroke-opacity", k <= bin ? 1 : 0.55).attr("stroke-width", 1 / s);
-          card.append("text").attr("x", (px.x + pad + 62) / s).attr("y", (y + 8) / s).attr("font-size", 11.5 / s).attr("fill", soft).text("complexity");
+          card.append("text").attr("x", (px.x + pad + 62) / s).attr("y", (y + 8) / s).attr("font-size", 12.5 / s).attr("fill", soft).text("complexity");
         }
       });
       const dress = all.selectAll("g.mi-mghost, g.mi-mcard");
@@ -5111,7 +5139,7 @@
           for (const n of [b.sector, SECTOR_SHORT[b.sector] || b.sector]) if (mapTextW(n, SEC_NAME_SIZE, 700) <= room){ name = n; break; }
         const ink = mode === "band" ? cellInk(secDeeper(b.sector)) : gutterInk(b.sector);
         t.text(name).attr("font-size", SEC_NAME_SIZE / s).attr("font-weight", 700).attr("fill", ink).attr("data-ink", ink);
-        go(t).attr("x", b.box.x + 5 / s).attr("y", b.box.y + 11.5 / s);
+        go(t).attr("x", b.box.x + 5 / s).attr("y", b.box.y + 13 / s);
       });
       (dur ? all.transition().delay(dur * 0.4).duration(dur * 0.6) : all.interrupt()).style("opacity", 1);
       all.on("mouseenter", (ev, b) => { if (!pinned) showOutline([b.box], 1.5); })
@@ -5420,19 +5448,33 @@
     /* the map is tiled at the width it is drawn at: measured when the
        figure comes on screen and again whenever that width changes, and
        its labels fitted again once the page's face has loaded */
+    /* a chart's rows cannot hold the type under about 700px of drawing (the
+       bars stand 17 units apart), so in a frame narrower than that the
+       bars and the ranking keep that width and pan inside the frame: the
+       stylesheet does it, off this flag */
+    const PAN_MIN = 704;
+    const syncPan = () => {
+      const w = el.parentNode ? el.parentNode.clientWidth : 0, v = w && w < PAN_MIN ? "1" : "";
+      if ((fig.dataset.pan || "") !== v) fig.dataset.pan = v;
+    };
     const remeasure = () => {
+      syncPan();
+      const s2 = measureS();
+      const moved = !!s2 && Math.abs(s2 - S) >= 1e-4;
+      /* the scale first: the stylesheet sizes the charts' type from it, and
+         the gutters below are fitted to that type */
+      if (moved){ S = s2; tellScale(); invalidateMaps(); drawCards(false); }
       /* gutters fitted while the page was still hidden were fitted blind,
          on a canvas: the first tick with the figure on screen fits them
-         to the page's own measure. After that this costs nothing; the
-         breakpoints are the debounced resize's to watch. */
-      const refit = /blind/.test(gutSig) && refitGutters();
-      const s2 = measureS();
-      if (!s2 || Math.abs(s2 - S) < 1e-4){ if (refit && step >= 0) paint(step, false); return; }
-      S = s2; invalidateMaps();
+         to the page's own measure. A change of scale changes the type's
+         size in units, and the gutters with it. Otherwise this costs a
+         comparison. */
+      const refit = (moved || /blind/.test(gutSig)) && refitGutters();
+      if (!moved){ if (refit && step >= 0) paint(step, false); return; }
       fitPicks(fig);                                    /* the blanks, once the figure has a width to measure in */
       if (step >= 0 && (view === "map" || refit)) paint(step, false);
     };
-    if (window.ResizeObserver){ const ro = new ResizeObserver(remeasure); ro.observe(el); disposers.push(() => ro.disconnect()); }
+    if (window.ResizeObserver){ const ro = new ResizeObserver(remeasure); ro.observe(el); if (el.parentNode) ro.observe(el.parentNode); disposers.push(() => ro.disconnect()); }
     on(window, "resize", remeasure);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => {
       if (dead) return;
@@ -6324,11 +6366,16 @@
       /* a width that re-flows the text re-centres it; an open answer's
          step is pinned again where it then stands. The page also sends
          "resize" to its figures when a beat changes, with the width as it
-         was: those are not this */
-      let pinW = window.innerWidth;
+         was: those are not this. What is watched is the text column's own
+         width: it follows the window's width, and on a short window its
+         height too, since the column takes the room the figure cannot use
+         - while a phone's address bar coming and going moves neither */
+      const railW = () => { const st = fig.closest(".ct-scrolly"), c = st && st.querySelector(".ct-steps"); return (c ? c.offsetWidth : 0) + "|" + window.innerWidth; };
+      let pinW = railW();
       on(window, "resize", () => {
-        if (window.innerWidth === pinW) return;
-        pinW = window.innerWidth;
+        const w = railW();
+        if (w === pinW) return;
+        pinW = w;
         unpinSteps();
         if (asked){ const row = rowOf(asked.key); pinStep(row && row.closest(".ct-step")); }
       });
