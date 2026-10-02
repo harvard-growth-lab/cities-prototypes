@@ -794,15 +794,27 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
    `openGlossary(term, opener)` / `closeGlossary()`, Escape, backdrop,
    focus kept inside and given back; the two "Glossary" links in the
    site's navs open it too). In the text a **term** is
-   `button.term[data-term]`: a dashed rule and a small "i" (the phrases
-   that act on the chart keep their dotted teal rule). Pointed at or
+   `button.term[data-term]`: the plain word followed by a small info mark,
+   and **no rule under it** (2026-10-02: Nil found the dashed rule read as
+   a chart interaction, since the phrases that act on the chart carry a
+   dotted teal rule). The mark is drawn, not typed: a ring, a dot and a
+   stem in one SVG, masked into `.term::after` so it takes the text's
+   colour (ink-soft, teal when pointed at or open). It is .875em wide and
+   never under 13px, with its centre .32em above the baseline, which puts
+   it between the middle of the lowercase and of the capitals in both
+   faces the terms sit in (Inter in the paragraphs, Source Sans 3 in the
+   answers and the rank card). The earlier mark was a typed "i" in a
+   bordered box, which sat off the text's line and off its own centre.
+   The section's narrative and the glossary also carry **no em dashes**
+   (same date); asides are set off with commas or "such as". Pointed at or
    pressed, it opens one small card beside itself (`#termCard`, `TERMS`
    in index.html's script): the term, one or two sentences, and "More in
    the glossary", which opens the dialog at that entry. The card sits in
    the text's own order, so Tab goes from the term to its button; Escape
    closes the card first and stops there. The paragraphs were reworded to
-   name their terms **without growing** (Nil's condition; beat 2 is 321
-   characters before and after, beat 3 325): beat 2 "sorted into three
+   name their terms **without growing** (Nil's condition; beat 2 was 321
+   characters before and after, beat 3 325; without their dashes they are
+   313 and 324): beat 2 "sorted into three
    tiers by tradability: how much of their output sells outside the
    metro", beat 3 "most specialized in … Specialization is not size".
    Complexity has no place in beat 1's paragraph, so its term stands in
