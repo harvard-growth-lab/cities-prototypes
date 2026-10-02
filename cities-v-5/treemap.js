@@ -3009,18 +3009,6 @@
                                            subsector: key, subsectorName: name, subsectorTitle: title };
     return { group: "sector:" + key, groupName: name, subsector: "sector:" + key, subsectorName: name };
   }
-  /* the items of a band rolled up one level: one item per group, carrying
-     its industries as members; a group of one stays as it is */
-  function groupUp(bandKey, items){
-    const buckets = new Map();
-    items.forEach(it => { if (!buckets.has(it.group)) buckets.set(it.group, []); buckets.get(it.group).push(it); });
-    return [...buckets].flatMap(([k, list]) => {
-      if (list.length === 1) return list;
-      const first = list[0];
-      const c = aggCell("group:" + bandKey + ":" + k, first.cell.groupName, list.map(e => e.cell), {}, first.cell.groupTitle);
-      return [{ id: c.id, sector: c.sector, group: c.group, value: list.reduce((a, e) => a + e.value, 0), cell: c }];
-    });
-  }
   /* the items of a band rolled up to a level as wholes - one item per
      group, subsector or sector, its industries as members - for the map
      tiled at that grain */
@@ -3033,15 +3021,19 @@
       return { id: c.id, sector: c.sector, group: c.group, value: list.reduce((a, e) => a + e.value, 0), cell: c };
     });
   }
-  /* one band tiled: sector, group, industry, each level padded by a pixel
-     and rounded to whole pixels; the sectors in the reference's fixed
-     order, the rest by size with the folded "Other" cells last */
-  function tileBand(items, box, bandKey){
+  /* one band tiled, each level padded by a pixel and rounded to whole
+     pixels; the sectors in the reference's fixed order, the rest by size
+     with the folded "Other" cells last. Flat, a sector holds its cells
+     directly - the industry map, clustered by sector and no further.
+     Otherwise a group layer stands between them, which at the coarser
+     grains is each cell's own box and the zoom's target. */
+  function tileBand(items, box, bandKey, flat){
     const out = { blocks: [], groups: [], cells: [] };
     if (!items.length || box.w <= 0 || box.h <= 0) return out;
     const bySector = new Map();
     items.forEach(it => { if (!bySector.has(it.sector)) bySector.set(it.sector, []); bySector.get(it.sector).push(it); });
     const tree = { kind: "root", children: [...bySector].map(([sector, list]) => {
+      if (flat) return { kind: "sector", sector: sector, children: list.map(it => ({ kind: "item", item: it })) };
       const byGroup = new Map();
       list.forEach(it => { const g = it.group ?? it.id; if (!byGroup.has(g)) byGroup.set(g, []); byGroup.get(g).push(it); });
       return { kind: "sector", sector: sector, children: [...byGroup].map(([group, l]) =>
@@ -3117,21 +3109,23 @@
   }
   /* tile, fold whatever came out under four pixels a side, tile again,
      until every cell can be seen or nothing more will fold */
-  function mergeLoop(levels, bands){
+  function mergeLoop(levels, bands, flat){
     let cur = bands;
     for (let guard = 0; guard < 60; guard++){
-      const layouts = cur.map(b => tileBand(b.items, b.box, b.key));
+      const layouts = cur.map(b => tileBand(b.items, b.box, b.key, flat));
       const tiny = new Set(layouts.flatMap(L => L.cells.filter(c => Math.min(c.w, c.h) < MAP.minSide).map(c => c.item.id)));
       if (!tiny.size) return { bands: cur, layouts: layouts };
       const next = mergeOnce(levels, cur, tiny);
       if (!next) return { bands: cur, layouts: layouts };
       cur = next;
     }
-    return { bands: cur, layouts: cur.map(b => tileBand(b.items, b.box, b.key)) };
+    return { bands: cur, layouts: cur.map(b => tileBand(b.items, b.box, b.key, flat)) };
   }
-  /* the bands laid out at the industry grain: first the groups are folded
-     as wholes into their subsectors and sectors, then, each group opened
-     back up, its own small industries are folded inside it */
+  /* the bands laid out. At the industry grain the map is clustered by
+     sector and no further: each sector holds its industries directly, and
+     the industries too small to see fold into one "Other" cell for their
+     sector. (Until 2026-10-01 a 4-digit group layer stood between the two,
+     with its own gutters, its own "Other" cells and a zoom of its own.) */
   function layoutBands(bands, grain){
     /* at a coarser grain the industries are rolled up as wholes first, and
        only what is still too small folds further up */
@@ -3141,15 +3135,12 @@
       const above = grain === 4 ? [LEVELS.subsector, LEVELS.sector] : grain === 3 ? [LEVELS.sector] : [];
       return mergeLoop(above, coarse);
     }
-    const members = new Map();
-    const grouped = bands.map(b => {
-      const items = groupUp(b.key, b.items);
-      items.forEach(it => { if (it.cell.members) members.set(it.id, b.items.filter(e => e.group === it.group)); });
-      return { ...b, items: items };
-    });
-    const pass1 = mergeLoop([LEVELS.subsector, LEVELS.sector], grouped).bands
-      .map(b => ({ ...b, items: b.items.flatMap(it => members.get(it.id) || [it]) }));
-    return mergeLoop([LEVELS.group], pass1);
+    /* a map that holds one group alone - a zoom into a group, made from
+       a coarser level and carried here - folds within that group, so the
+       cell is "Other <group>", named for where the reader stands, and a
+       pair in which one is too small to see becomes the group's own cell */
+    const oneGroup = new Set(bands.flatMap(b => b.items.map(it => it.group))).size === 1;
+    return mergeLoop([oneGroup ? LEVELS.group : LEVELS.sector], bands, true);
   }
 
   /* ---- the cell labels: the name whole, wrapped by words, at 12px down to
@@ -4930,12 +4921,15 @@
     const mapInkOf = c => colorBy === "complexity" ? cellInk(cxFillOf(c.cell.pci)) : sectorInk(c.cell.sector);
     function layoutFor(i){ return i === 4 ? mapTiers() : (i === 5 || i === 7) ? mapTrad() : mapFull(); }
     /* what a click on a cell does: at the top of the map it zooms into the
-       cell's sector, inside a sector into the cell's group, and inside a
-       group there is nowhere further to go, so it pins the card */
+       cell's sector; inside a sector whose cells are groups - a map
+       resting at a coarser level - into the cell's group; and where the
+       cells are industries there is nowhere further to go, so it pins
+       the card */
     const zoomTarget = c => {
       if ((step !== 0 && step !== 4 && step !== 7) || view !== "map") return null;
       if (!focus) return { sector: c.cell.sector, group: null, label: c.cell.sector };
-      if (!focusGroup && /^\d{4}$/.test(c.cell.group)) return { sector: focus, group: c.cell.group, label: c.cell.groupName };
+      if (!focusGroup && mapLayout && mapLayout.grain === 4 && /^\d{4}$/.test(c.cell.group))
+        return { sector: focus, group: c.cell.group, label: c.cell.groupName };
       return null;
     };
     function paintMap(L, animate){
@@ -5111,7 +5105,8 @@
          .on("click", (ev, b) => { ev.stopPropagation(); if (!focus && hitsLive()) setFocus(b.sector, null); });
     }
     /* the zoom's targets, under the cells for the keyboard: the sector
-       blocks at the top of the map, the groups inside a sector */
+       blocks at the top of the map, and inside a sector the groups, where
+       the cells are groups (the industry map has no group layer) */
     function hitsLive(){ return (step === 0 || step === 4 || step === 7) && view === "map"; }
     function drawHits(L){
       let targets = [];
@@ -5120,7 +5115,7 @@
       const where = b => step === 4 && b.band ? " (" + b.band + ")" : "";
       if ((step === 0 || step === 4 || step === 7) && view === "map"){
         if (!focus) targets = L.blocks.map(b => ({ key: (b.band || "") + ":" + b.key, box: b.box, sector: b.sector, group: null, label: "Zoom into " + b.sector + where(b) }));
-        else if (!focusGroup) targets = L.groups.filter(g => /^\d{4}$/.test(g.group))
+        else if (!focusGroup && L.grain === 4) targets = L.groups.filter(g => /^\d{4}$/.test(g.group))
           .map(g => ({ key: g.key, box: g.box, sector: focus, group: g.group,
                        label: "Zoom into " + ((g.items[0] && g.items[0].cell.groupName) || g.group) + where(g) }));
       }
@@ -5137,8 +5132,8 @@
         .on("blur", () => showRing(null));
     }
     /* what the pointer's outline goes round: the cell's sector block at the
-       top of the map (in its own tier on the tiers beat), its group inside
-       a sector, the cell itself inside a group */
+       top of the map (in its own tier on the tiers beat); inside a sector
+       the cell itself, which where the cells are groups is its group's box */
     const outlineBoxes = c => {
       const L = mapLayout; if (!L) return [c.box];
       if (!focus) return L.blocks.filter(b => b.sector === c.cell.sector && (step !== 4 || b.band === c.band)).map(b => b.box);
@@ -5178,6 +5173,12 @@
       } else if (r.kind === "hit"){
         const hits = [].slice.call(el.querySelectorAll("rect.mi-mhit"));
         node = hits.find(h => { const t = d3.select(h).datum(); return r.group ? t.group === r.group : (t.sector === r.sector && !t.group); }) || hits[0];
+        /* inside a sector whose cells are industries there are no blocks
+           to land on: the zoom's own trail takes the keyboard instead */
+        if (!node && focus){
+          const note = document.getElementById(p + (step === 4 ? "Note4" : "Note"));
+          node = note && note.querySelector('.mi-crumb[data-zoom="all"]');
+        }
       } else if (r.kind === "chip"){
         node = tierBack && tierBack.querySelector('.mcl-chip[data-tier="' + r.k + '"]');
       } else if (r.kind === "close"){
@@ -5366,10 +5367,10 @@
         const showTier = step !== 0;
         const rows = mapLayout.rows.slice().sort((a, b) => b.employ - a.employ);
         n = rows.length;
-        head = th("Industry") + th("Industry group") + th("Sector") + (showTier ? th("Tradability") : "") +
+        head = th("Industry") + th("Sector") + (showTier ? th("Tradability") : "") +
           th("Jobs", "num") + th("Share of metro jobs", "num") + th("Complexity");
         body = rows.map(r => '<tr><th scope="row">' + escHtml(r.short || r.name) + '</th>' +
-          td(escHtml(r.groupShort || r.groupName)) + td(escHtml(r.sector)) + (showTier ? td(TIER_WORDS[r.tier], "nw") : "") +
+          td(escHtml(r.sector)) + (showTier ? td(TIER_WORDS[r.tier], "nw") : "") +
           td(fmtJobsFull(r.employ), "num") + td(fmtShare(r.employ / jobsTotal), "num") +
           cx(r.pci) + '</tr>').join("");
       } else {

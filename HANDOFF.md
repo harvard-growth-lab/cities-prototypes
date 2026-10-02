@@ -168,7 +168,9 @@ head too. The city's section keeps its tag and rule. The
 figure's own state machine has steps 0–7; `paint(step)` has a per-step cell
 rule (`STATE` table), and `setStep` drops what a beat cannot carry.
 
-- **Step 0** — every industry as a treemap (sector → group → industry),
+- **Step 0** — every industry as a treemap, clustered and coloured by
+  sector with the 6-digit industries as its cells (sector → industry;
+  since 2026-10-01 no 4-digit group layer between them, at Nil's request),
   `mapFull()`; title "All industries".
 - **Step 4** — the same cells sorted into three tier grounds (Traded /
   Partly traded / Local), `mapTiers()` over `clusterRows[k]` into `cardBox`;
@@ -335,7 +337,18 @@ still under `prefers-reduced-motion`.
   keys its cache with it and hands it to `layoutBands(bands, grain)`). So
   at 4-digit: groups inside sectors → click → the sector's groups → click
   → the group's industries. At the sector level: nine blocks → click → the
-  sector's groups → click → its industries. Escape walks back up. Choosing
+  sector's groups → click → its industries. Escape walks back up. **At the
+  industry level there is no group step** (2026-10-01): the map is tiled
+  sector → industry (`tileBand(…, flat)`, `layoutBands` at grain 6 is
+  `mergeLoop([LEVELS.sector], bands, true)`), the industries too small to
+  draw fold into one "Other <sector>" cell per sector (per tier on the
+  tradable beat) where they used to fold per group and subsector, and a
+  click inside a zoomed sector pins the card (`zoomTarget` offers a group
+  only where the cells are groups, `mapLayout.grain === 4`). A group zoom
+  made from the Sector or 4-digit level still rides into the tradable
+  beat; a map holding one group alone folds within it ("Other
+  instruments", `oneGroup` in `layoutBands`), and a keyboard zoom-out
+  with no blocks to land on takes the crumb (`applyRefocus`). Choosing
   a level while zoomed goes back to the top at that level (`applyLevel`
   calls `setFocus(null, null)`). The zoom hint, the crumbs, the keyboard
   targets and the live region ("32 industry groups shown in the map,
@@ -360,8 +373,9 @@ the map's top-right corner on the crumbs' line (it rides between the two
 notes with the beat; since 2026-10-01 the table itself opens **over the
 map**, `#miTable` sitting before `.tradable-viz-wrapper`, the map giving up
 height to it, and lists the map at the level it is tiled at with only what
-the page shows: at 6 digits Industry, Industry group, Sector, Jobs, Share
-of metro jobs, Complexity, plus Tradability on the tradable beat alone, as
+the page shows: at 6 digits Industry, Sector, Jobs, Share of metro jobs,
+Complexity (the Industry group column went with the map's group layer),
+plus Tradability on the tradable beat alone, as
 the card does; at 4 digits or the sector level one row per group or sector
 with its count of industries, jobs, share and jobs-weighted complexity.
 Complexity is drawn as the card draws it, five diamonds and the score, no
