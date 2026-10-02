@@ -806,7 +806,10 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
    answers and the rank card). The earlier mark was a typed "i" in a
    bordered box, which sat off the text's line and off its own centre.
    The section's narrative and the glossary also carry **no em dashes**
-   (same date); asides are set off with commas or "such as". Pointed at or
+   (same date); asides are set off with commas or "such as". Nor do the
+   beat paragraphs carry **bold** (same date, Nil): the four figures that
+   were set in `<strong>` (2.3 million, 5.4%, 600 jobs, 62,000) are plain,
+   as the answers already were. Pointed at or
    pressed, it opens one small card beside itself (`#termCard`, `TERMS`
    in index.html's script): the term, one or two sentences, and "More in
    the glossary", which opens the dialog at that entry. The card sits in
