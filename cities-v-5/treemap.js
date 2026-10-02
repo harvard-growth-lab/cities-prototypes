@@ -6233,10 +6233,30 @@
         const ans = document.getElementById(b.getAttribute("aria-controls")); if (ans) ans.hidden = !on;
       });
     }
+    /* the beat's text is centred in its step, so an answer opening under a
+       row would move the row out from under the pointer that pressed it -
+       and the row is the way back. The step is pinned where it stands from
+       the first question until the beat is left. */
+    const pinStep = st => {
+      if (!st || st.dataset.pinned) return;
+      const first = st.firstElementChild; if (!first) return;
+      const off = first.getBoundingClientRect().top - st.getBoundingClientRect().top;
+      st.style.justifyContent = "flex-start";
+      st.style.paddingTop = Math.max(0, off) + "px";
+      st.dataset.pinned = "1";
+    };
+    const unpinSteps = () => {
+      [].forEach.call(document.querySelectorAll(".ct-step[data-pinned]"), st => {
+        st.style.justifyContent = ""; st.style.paddingTop = ""; delete st.dataset.pinned;
+      });
+    };
     function ask(key){
       const q = key ? ASKS[key] : null;
       if (key && (!q || q.step !== step)) return;
+      /* the answers are written for 2024 */
+      if (key && (fig.dataset.year || "2024") !== "2024") return;
       const was = asked;
+      if (q){ const row = askRows.find(b => b.dataset.ask === key); pinStep(row && row.closest(".ct-step")); }
       asked = null;                         /* the paint that follows must not judge the old question */
       setNamed(q ? q.set : {});
       asked = q ? { key: key, sig: askSig() } : null;
@@ -6250,6 +6270,7 @@
          in first, and is asked once the figure has arrived there */
       let pending = null;
       afterStepRef = i => {
+        unpinSteps();
         if (!pending) return;
         const k = pending.key, fresh = Date.now() - pending.at < 4000;
         if (!fresh){ pending = null; return; }
@@ -6259,14 +6280,22 @@
         const key = b.dataset.ask, q = ASKS[key];
         if (!q) return;
         if (q.step !== step){
+          /* the beat is taken where it stands, with no scroll: the scrolly
+             makes it the active one, the figure follows, and the question
+             is asked on arrival */
           pending = { key: key, at: Date.now() };
-          const st = b.closest(".ct-step");
-          if (st) st.scrollIntoView({ block: "center", behavior: reduced() ? "auto" : "smooth" });
-          else if (window[ctlName]) window[ctlName].setStep(q.step);
+          b.dispatchEvent(new CustomEvent("ct:take", { bubbles: true }));
+          if (step !== q.step && window[ctlName]) window[ctlName].setStep(q.step);
           return;
         }
         ask(asked && asked.key === key ? null : key);
       }));
+      /* a width that re-flows the text re-centres it; an open answer's
+         step is pinned again where it then stands */
+      on(window, "resize", () => {
+        unpinSteps();
+        if (asked){ const row = askRows.find(b => b.dataset.ask === asked.key); pinStep(row && row.closest(".ct-step")); }
+      });
       /* Escape, once nothing else is open, is the same way back */
       escLayers.push({ p: 7, scoped: true, open: () => !!asked, close: () => {
         const row = askRows.find(b => b.dataset.ask === asked.key);

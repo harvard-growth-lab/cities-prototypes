@@ -726,13 +726,25 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
    third's rows with the answer in the text column, "very short and
    direct", for all three beats.
    **In the page:** an `.ask-chart` block in each beat's text (index.html,
-   after the paragraph and before the explainer row; `.ask-chart` is in
-   the scrolly's `TEXT_SEL` so it travels into the step). A row is a
+   after the paragraph, the last thing in the beat's text now that the
+   explainer rows are gone; `.ask-chart` is in the scrolly's `TEXT_SEL`
+   so it travels into the step). A row is a
    button (`.ask-q[data-ask]`): a bars mark, the question, "Show →",
    which reads "Showing" with a dot once asked; its answer (`.ask-ans`)
    opens under it on the row's tint: one short answer in plain words and
    nothing else (Nil: no bold, no "Changed:" line, no Back link). The row
    pressed again is the way back to the beat's starting view.
+   From the review of the feature (2026-10-02): the pressed row must not
+   move, since it is the way back, so the step is pinned where it stands
+   from the first question until the beat is left (`pinStep` /
+   `unpinSteps`; the step's text is otherwise centred and re-centres as an
+   answer opens); a question pressed in a beat the reader is not on takes
+   that beat without a scroll (`ct:take`, heard by the scrolly's `mount`,
+   which holds the beat until the reader has scrolled 100px or it leaves
+   the screen); and the answers are written for 2024, so the blocks stand
+   down while Year is 2014 (`[data-year="2014"]`, and a guard in `ask`).
+   The review's "state" lens and several verifications were cut off by a
+   session limit; they were re-run on the next change.
    **In the figure** (treemap.js, "Ask the chart"): `ASKS` maps each key
    to a beat and its settings; `setNamed(set)` puts the figure in the
    beat's own view plus those settings through the controls' own
@@ -761,6 +773,30 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
    where the data file's own `peerRca` says 3 — the peer ticks on that
    beat are still generated — so no question points at it; and the 2014
    industry rows are estimates, so no question rests on the year.
+0b. **Terms and the glossary — built 2026-10-02.** Nil found the question
+   block and the collapsible explainer panels together "cluttering the
+   space": the three panels in Metro Industries are gone ("What is
+   economic complexity?", "How do we measure tradability?", "What is
+   specialization?"). Their text lives on as the three entries of a
+   **Glossary** dialog (`#glossaryOverlay`, the journey overlay's window;
+   `openGlossary(term, opener)` / `closeGlossary()`, Escape, backdrop,
+   focus kept inside and given back; the two "Glossary" links in the
+   site's navs open it too). In the text a **term** is
+   `button.term[data-term]`: a dashed rule and a small "i" (the phrases
+   that act on the chart keep their dotted teal rule). Pointed at or
+   pressed, it opens one small card beside itself (`#termCard`, `TERMS`
+   in index.html's script): the term, one or two sentences, and "More in
+   the glossary", which opens the dialog at that entry. The card sits in
+   the text's own order, so Tab goes from the term to its button; Escape
+   closes the card first and stops there. The paragraphs were reworded to
+   name their terms **without growing** (Nil's condition; beat 2 is 321
+   characters before and after, beat 3 325): beat 2 "sorted into three
+   tiers by tradability: how much of their output sells outside the
+   metro", beat 3 "most specialized in … Specialization is not size".
+   Complexity has no place in beat 1's paragraph, so its term stands in
+   the answers that speak of it (b1q1, b1q2, b2q1). The complexity rank
+   card still comes forward under Color: Complexity. Other sections keep
+   their explainer panels; Nil asked about Metro Industries.
 1. **The map at the sector level — Nil's pick is pending.** This is the
    live question at hand-off. The Level control (§4) tiles the map at the
    sector, 4-digit or 6-digit grain; at the sector the nine blocks carry
