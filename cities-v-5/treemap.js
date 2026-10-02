@@ -4255,6 +4255,11 @@
     }
 
     let step = -1, painted = -1, arriving = false;
+    /* a named view sets several things at once and paints once: while the
+       hold is up a paint is only noted (see setNamed). And the question
+       the chart is answering, if any, with the hooks the beat change and
+       the paint reach it through (see "Ask the chart") */
+    let holdPaint = 0, heldPaint = false, asked = null, checkAskRef = null, leaveAskRef = null, afterStepRef = null;
     /* set once the tooltips are wired; the beat change calls it so a phrase
        left lit cannot dim the next beat */
     let clearHighlight = null;
@@ -4299,6 +4304,10 @@
     }
 
     function paint(i, animate){
+      if (holdPaint){ heldPaint = true; return; }
+      /* every change to what the chart shows ends in a paint: an answer
+         in the text stands only while the chart still shows it */
+      if (checkAskRef) checkAskRef();
       /* the zoom targets belong to the map beats and the map view: anywhere
          else they are drawn away, or a keyboard would still find them */
       if (!((i === 0 || i === 4 || i === 7) && view === "map")) drawHits({ blocks: [], groups: [] });
@@ -4646,6 +4655,9 @@
       if (i === step) return;
       /* a phrase left lit must not dim the beat that follows it */
       if (clearHighlight) clearHighlight();
+      /* nor does a question's view travel: the beat being left goes back
+         to its own view first */
+      if (leaveAskRef) leaveAskRef();
       const first = step < 0;
       step = i;
       fig.dataset.step = String(i);
@@ -4684,6 +4696,7 @@
       if (first && i === 0 && opts.adminReveal){ paintMetroFirst(); return; }
       paint(i, !first && !reduced());
       if (forced) syncLive(", set back to the industry level, which this beat holds");
+      if (afterStepRef) afterStepRef(i);
     } };
 
     /* the clusters' furniture: the header's columns and the captions share
@@ -6158,6 +6171,110 @@
     };
     setLevelCtl(levelOptEl ? levelOptEl.value : "toggle", true);
     if (levelOptEl) on(levelOptEl, "change", () => setLevelCtl(levelOptEl.value));
+
+    /* ---- "Ask the chart": questions in a beat's text that set the figure ----
+       Each beat's chart answers more than its paragraph says, under some
+       setting of the controls most readers never try. A question row in
+       the text sets that view and opens a short answer under itself. The
+       rules that keep it from confusing anyone: one question at a time; a
+       question is the beat's own view plus its settings, never stacked on
+       what the reader had; it moves the real controls, and the ones it
+       moved are marked; the answer stands only while the chart shows it;
+       one way back - the row itself, pressed again; and leaving the beat
+       puts the beat back. */
+    const ASKS = {
+      b1q1: { step: 0, set: { view: "alt", barSort: "cx" }, marks: "view barsort" },
+      b1q2: { step: 0, set: { colorBy: "complexity" }, marks: "color" },
+      b2q1: { step: 4, set: { colorBy: "complexity" }, marks: "color" },
+      b2q2: { step: 4, set: { tiers: [true, false, false] }, marks: "" },
+      b3q1: { step: 6, set: { rankTiers: [false, true, false] }, marks: "trad" },
+      b3q2: { step: 6, set: { sortKey: "jobs" }, marks: "sort" }
+    };
+    const askRows = [].slice.call(document.querySelectorAll('.ask-chart[data-fig="' + p + '"] .ask-q[data-ask]'));
+    /* the beat's own view with a question's settings over it, through the
+       same doors the controls use, held to one paint */
+    const setNamed = (set, noPaint) => {
+      holdPaint++;
+      try {
+        if (step === 0 || step === 4){
+          if (focus) setFocus(null, null);
+          if (secFiltered() && resetSec) resetSec();
+          const tiers = set.tiers || [true, true, true];
+          tiers.forEach((on, k) => { if (on) setTier(k, true); });
+          tiers.forEach((on, k) => { if (!on) setTier(k, false); });
+          if (step === 0) applyLevel(6);
+          applyView(set.view || "map");
+          applyColor(set.colorBy || "sector");
+          if (step === 0) applyBarSort(set.barSort || "jobs");
+        } else if (step === 6){
+          applySort(set.sortKey || "rca");
+          const want = set.rankTiers || TIER_DEFAULT6();
+          if (rankMode === "tier" && want.some((v, k) => v !== tierOn6[k])){
+            tierOn6 = want.slice();
+            if (closeMenuRef) closeMenuRef();
+            if (rebuildR2Ref) rebuildR2Ref(!reduced());
+          }
+        }
+      } finally { holdPaint--; }
+      const dirty = heldPaint; heldPaint = false;
+      if (dirty && !noPaint && !holdPaint && step >= 0) paint(step, !reduced());
+    };
+    /* everything a reader's hand can change that an answer depends on */
+    const askSig = () => [step, view, colorBy, barSort, sortKey, MAP_GRAIN, focus || "", focusGroup || "",
+      secOn ? Array.from(secOn).sort().join(",") : "", tierOn.map(Number).join(""), tierOn6.map(Number).join("")].join("|");
+    function syncAsk(){
+      const key = asked ? asked.key : "";
+      fig.dataset.asked = key;
+      fig.dataset.askmarks = key ? ASKS[key].marks : "";
+      askRows.forEach(b => {
+        const on = b.dataset.ask === key;
+        b.setAttribute("aria-expanded", String(on));
+        const item = b.closest(".ask-item"); if (item) item.classList.toggle("is-on", on);
+        const ans = document.getElementById(b.getAttribute("aria-controls")); if (ans) ans.hidden = !on;
+      });
+    }
+    function ask(key){
+      const q = key ? ASKS[key] : null;
+      if (key && (!q || q.step !== step)) return;
+      const was = asked;
+      asked = null;                         /* the paint that follows must not judge the old question */
+      setNamed(q ? q.set : {});
+      asked = q ? { key: key, sig: askSig() } : null;
+      syncAsk();
+      if (q || was) syncLive(q ? ", changed to answer the question" : ", back to the starting view");
+    }
+    if (askRows.length){
+      checkAskRef = () => { if (asked && askSig() !== asked.sig){ asked = null; syncAsk(); } };
+      leaveAskRef = () => { if (!asked) return; asked = null; setNamed({}, true); syncAsk(); };
+      /* a question pressed in a beat the reader is not on brings that beat
+         in first, and is asked once the figure has arrived there */
+      let pending = null;
+      afterStepRef = i => {
+        if (!pending) return;
+        const k = pending.key, fresh = Date.now() - pending.at < 4000;
+        if (!fresh){ pending = null; return; }
+        if (ASKS[k].step === i){ pending = null; ask(k); }
+      };
+      askRows.forEach(b => on(b, "click", () => {
+        const key = b.dataset.ask, q = ASKS[key];
+        if (!q) return;
+        if (q.step !== step){
+          pending = { key: key, at: Date.now() };
+          const st = b.closest(".ct-step");
+          if (st) st.scrollIntoView({ block: "center", behavior: reduced() ? "auto" : "smooth" });
+          else if (window[ctlName]) window[ctlName].setStep(q.step);
+          return;
+        }
+        ask(asked && asked.key === key ? null : key);
+      }));
+      /* Escape, once nothing else is open, is the same way back */
+      escLayers.push({ p: 7, scoped: true, open: () => !!asked, close: () => {
+        const row = askRows.find(b => b.dataset.ask === asked.key);
+        ask(null);
+        if (row && document.activeElement && row.closest(".ask-chart").contains(document.activeElement)) row.focus({ preventScroll: true });
+      } });
+      syncAsk();
+    }
 
     /* sort: the same rows in another order, bars and names travelling together */
     const sortEl = document.getElementById(p + "Sort");

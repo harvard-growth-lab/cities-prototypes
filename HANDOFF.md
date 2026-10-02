@@ -716,44 +716,51 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
 
 ## 8. Open items at hand-off
 
-0. **Questions the chart can answer — Nil's pick is pending** (2026-10-01).
+0. **"Ask the chart" — built 2026-10-01; the wording is Nil's to tune.**
    Nil asked for questions in the narrative that lead a reader to the
-   views the controls hide ("when the user views bars sorted by
-   complexity, they'd find the most complex industry may not have the most
-   employees"), at most two per beat, about complexity and tradability,
-   presented "without confusing them". Sketched, not built:
-   `handoff/sketches/explore-questions-sketches.html` (also at the repo
-   root), with captures of the real figure in each question's view.
-   **The six questions**, each recomputed from `industries-2024.js` and
-   checked on the live page (the first of each pair is the stronger):
-   beat 1 "Are the metro's biggest industries also its most complex?"
-   (View Ranked, Sort by Complexity: hospitals fall to 17th of 25,
-   software publishers lead) and "Which of the two largest sectors holds
-   the metro's complex work?" (Color Complexity: professional & business
-   about 45% of jobs in the upper two steps, education & health about 4%);
-   beat 2 "Is the work the metro sells outside also its most complex
-   work?" (Color Complexity: 63% of traded jobs in the upper two steps,
-   9% partly traded, 6% local) and "What does the metro actually sell
-   outside its borders?" (Traded ground alone: professional & business
-   61% of 522,000 traded jobs, manufacturing 21%, finance 9%); beat 3
-   "Where are the universities on this list?" (Tradability filter Partly
-   traded only: 4.3 times on 86,000 jobs, 14th and so below the cut,
-   second once narrowed) and, the weakest, "How many people work in these
-   twelve specialties?" (Sort by Jobs: about 86,000, biotech 62,000 of
-   them). **Three presentations**, live mocks on beat 1: question lines
-   in the prose, a question card in the text column (recommended), and
-   rows in the text answered by a strip at the figure. All three keep six
-   rules: one question at a time; a question is the beat's own view plus
-   its settings; it moves the real controls and marks which; the answer
-   shows only while the chart shows it; one named way back; a reader who
-   never asks loses nothing. **To build it** needs a setter and a
-   leave-the-beat reset for beat 3's tier filter (`tierOn6` is internal),
-   a one-line gloss of complexity on beat 2, and one "set the figure to
-   this named view" function. **Found on the way:** the ranking's
-   "Against peers" view shows the metro ahead in 8 of the 12 where the
-   data file's own `peerRca` says 3 — the peer ticks on that beat are
-   still generated — so no question points at it; and the 2014 industry
-   rows are estimates, so no question rests on the year.
+   views the controls hide, at most two per beat, about complexity and
+   tradability, presented "without confusing them". Six questions and
+   three presentations were sketched
+   (`handoff/sketches/explore-questions-sketches.html`, also at the repo
+   root, with captures of the real figure in each view); Nil chose the
+   third's rows with the answer in the text column, "very short and
+   direct", for all three beats.
+   **In the page:** an `.ask-chart` block in each beat's text (index.html,
+   after the paragraph and before the explainer row; `.ask-chart` is in
+   the scrolly's `TEXT_SEL` so it travels into the step). A row is a
+   button (`.ask-q[data-ask]`): a bars mark, the question, "Show →",
+   which reads "Showing" with a dot once asked; its answer (`.ask-ans`)
+   opens under it on the row's tint: one short answer in plain words and
+   nothing else (Nil: no bold, no "Changed:" line, no Back link). The row
+   pressed again is the way back to the beat's starting view.
+   **In the figure** (treemap.js, "Ask the chart"): `ASKS` maps each key
+   to a beat and its settings; `setNamed(set)` puts the figure in the
+   beat's own view plus those settings through the controls' own
+   appliers, held to one paint (`holdPaint`); `ask(key)` records
+   `asked = {key, sig}`; `paint()` calls `checkAskRef`, which closes the
+   answer when `askSig()` no longer matches (the chart is left as the
+   reader set it); `setStep` calls `leaveAskRef` first (the beat goes
+   back to its own view) and `afterStepRef` last (a question pressed in
+   a beat the reader is not on scrolls it in and is asked on arrival);
+   Escape is the last `escLayer`. `fig.dataset.asked` / `askmarks` drive
+   the marks on the controls a question moved (the label in teal with a
+   dot; on the ranking, the Tradability head).
+   **The six** (first of each pair the stronger; every figure recomputed
+   from `industries-2024.js` and checked on the live page): beat 1 "Are
+   the metro's biggest industries also its most complex?" (View Ranked,
+   Sort by Complexity) and "Which of the two largest sectors holds the
+   metro's complex work?" (Color Complexity); beat 2 "Is the work the
+   metro sells outside also its most complex work?" (Color Complexity)
+   and "What does the metro actually sell outside its borders?" (the
+   Traded ground alone); beat 3 "Where are the universities on this
+   list?" (Tradability filter: Partly traded only; hidden while the rank
+   study shows the score) and "How many people work in these twelve
+   specialties?" (Sort by Jobs; the weakest, since it extends the
+   paragraph's own point). **Found on the way, still open:** the
+   ranking's "Against peers" view shows the metro ahead in 8 of the 12
+   where the data file's own `peerRca` says 3 — the peer ticks on that
+   beat are still generated — so no question points at it; and the 2014
+   industry rows are estimates, so no question rests on the year.
 1. **The map at the sector level — Nil's pick is pending.** This is the
    live question at hand-off. The Level control (§4) tiles the map at the
    sector, 4-digit or 6-digit grain; at the sector the nine blocks carry
@@ -886,7 +893,7 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
   (the house set and Paul Tol), `key-actions-sketches.html` (B shipped),
   `control-row-two-ways.html` (tray and sentence),
   `explore-questions-sketches.html` with `explore-questions-images/`
-  (**open**, item 0). Open them through the
+  (the third's rows with the answer in the text were built, item 0). Open them through the
   same server (http://127.0.0.1:8912/handoff/sketches/…); the live ones
   need `cities-v-5/` beside `handoff/`.
 - Sketch pages at the repo root are the originals, untracked by convention

@@ -2982,6 +2982,55 @@
   :is(#page-export-basket, #page-admin-mix) .ct-panel{
     background:#fff;border:1px solid var(--border);border-radius:10px;padding:28px 32px 24px;
   }
+  /* ---- "Ask the chart": questions in a beat's text that set the figure.
+     Rows on hairlines under a small label: a bars mark (the explainer rows
+     keep their lightbulb), the question, and "Show" with an arrow toward
+     the chart - no chevron, which belongs to the explainers. Asked, the
+     row takes the tint, reads "Showing" with a dot, and its answer opens
+     beneath it on the same tint: one short answer in plain words, nothing
+     else. Pressing the row again goes back to the beat's starting view. */
+  #page-export-basket .ask-chart{align-self:stretch;width:100%;margin:20px 0 0;}
+  #page-export-basket .ask-lab{margin:0 0 4px;font-size:12.5px;font-weight:600;color:var(--ink-soft);}
+  #page-export-basket .ask-item{margin:0 -10px;border-top:1px solid var(--border);border-radius:0;transition:background .15s ease;}
+  #page-export-basket .ask-item:last-child{border-bottom:1px solid var(--border);}
+  #page-export-basket .ask-item.is-on{background:var(--teal-tint);}
+  #page-export-basket .ask-q{
+    display:flex;gap:10px;align-items:center;width:100%;min-height:44px;margin:0;padding:10px;
+    appearance:none;background:none;border:0;text-align:left;cursor:pointer;
+    font:inherit;font-size:15px;line-height:1.35;color:var(--ink);
+  }
+  #page-export-basket .ask-q:hover{background:var(--teal-tint);}
+  #page-export-basket .ask-q:focus-visible{outline:2px solid var(--teal);outline-offset:-2px;}
+  #page-export-basket .ask-gly{flex:none;width:15px;height:15px;color:var(--ink-soft);}
+  #page-export-basket .ask-txt{flex:1;}
+  #page-export-basket .ask-go{flex:none;display:inline-flex;align-items:center;font-size:12.5px;font-weight:600;color:var(--teal);white-space:nowrap;}
+  #page-export-basket .ask-off{display:inline-flex;align-items:center;gap:5px;}
+  #page-export-basket .ask-off svg{width:14px;height:14px;}
+  #page-export-basket .ask-on{display:none;align-items:center;gap:6px;}
+  #page-export-basket .ask-on::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--teal);}
+  #page-export-basket .ask-q[aria-expanded="true"] .ask-off{display:none;}
+  #page-export-basket .ask-q[aria-expanded="true"] .ask-on{display:inline-flex;}
+  /* the answer hangs under the question's words, not under its mark */
+  #page-export-basket .ask-ans{padding:0 10px 12px 35px;}
+  #page-export-basket .ask-ans[hidden]{display:none;}
+  #page-export-basket .ask-a{margin:0;font-size:15px;line-height:1.5;color:var(--ink);}
+  /* the question that needs the tier filter has nothing to set while the
+     ranking's study shows the score instead */
+  #page-export-basket:has(#miFigure[data-rank="score"]) .ask-item:has([data-ask="b3q1"]){display:none;}
+  /* at the figure, the controls a question moved are marked for as long as
+     its answer stands: the label in teal with a dot before it; on the
+     ranking, the column head that holds the filter */
+  #miFigure[data-askmarks~="view"] #miView .mi-ctlpair:has([data-view]) > .ctl-label,
+  #miFigure[data-askmarks~="color"] #miView .mi-colorlab,
+  #miFigure[data-askmarks~="barsort"] #miBarSortPair > .ctl-label,
+  #miFigure[data-askmarks~="sort"] #miSort > .ctl-label{color:var(--teal);font-weight:600;}
+  #miFigure[data-askmarks~="view"] #miView .mi-ctlpair:has([data-view]) > .ctl-label::before,
+  #miFigure[data-askmarks~="color"] #miView .mi-colorlab::before,
+  #miFigure[data-askmarks~="barsort"] #miBarSortPair > .ctl-label::before,
+  #miFigure[data-askmarks~="sort"] #miSort > .ctl-label::before{
+    content:"";display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--teal);margin-right:5px;vertical-align:2px;
+  }
+  #miFigure[data-askmarks~="trad"] #miTreemapSvg g.mi-tradmenu.is-rank text{fill:var(--teal);font-weight:700;}
   /* The line closes the Viewing badge, so it belongs to whatever the step
      actually shows next — and on a section that carries two narratives the
      next sibling can be the one the toggle has hidden, which is how the
@@ -6103,6 +6152,28 @@
             sixth. The single largest industry is general hospitals, at <strong>5.4%</strong> of all jobs, then
             full-service restaurants at 4.6% and colleges and universities at 3.7%.</p>
         </div>
+        <!-- "Ask the chart": questions the figure answers under settings most
+             readers never try. A row sets that view (the beat's own view plus
+             the question's settings, treemap.js ASKS) and opens its answer
+             here, in plain words; the row, reading "Showing", is the way
+             back. One at a time, and the answer stands only while the chart
+             shows it -->
+        <div class="ask-chart" data-fig="mi" role="group" aria-labelledby="miAskLab1">
+          <p class="ask-lab" id="miAskLab1">Ask the chart</p>
+          <span class="mi-sr" id="miAskHint">Changes the chart to answer this question. Press again to go back to the starting view.</span>
+          <div class="ask-item">
+            <button type="button" class="ask-q" data-ask="b1q1" aria-expanded="false" aria-controls="miAsk-b1q1" aria-describedby="miAskHint"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Are the metro&rsquo;s biggest industries also its most complex?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
+            <div class="ask-ans" id="miAsk-b1q1" hidden>
+              <p class="ask-a">No. General hospitals, the largest, is 17th of these 25 by complexity. Software publishers leads.</p>
+            </div>
+          </div>
+          <div class="ask-item">
+            <button type="button" class="ask-q" data-ask="b1q2" aria-expanded="false" aria-controls="miAsk-b1q2" aria-describedby="miAskHint"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Which of the two largest sectors holds the metro&rsquo;s complex work?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
+            <div class="ask-ans" id="miAsk-b1q2" hidden>
+              <p class="ask-a">Professional &amp; business. About 45% of its jobs are in the teal, more complex cells. In education &amp; health, about 4%.</p>
+            </div>
+          </div>
+        </div>
         <!-- the complexity rank is the complexity colouring's takeaway: it comes
              forward when the reader colours the map by complexity -->
         <div class="rank-strip anchor-card rank-card is-off" id="miRankCard" aria-hidden="true" inert>
@@ -6399,6 +6470,27 @@
                  its largest industries and their jobs -->
             <div class="tier-donut" id="miTierDonut" hidden></div>
           </div>
+          <!-- "Ask the chart": questions the figure answers under settings most
+               readers never try. A row sets that view (the beat's own view plus
+               the question's settings, treemap.js ASKS) and opens its answer
+               here, in plain words; the row, reading "Showing", is the way
+               back. One at a time, and the answer stands only while the chart
+               shows it -->
+          <div class="ask-chart" data-fig="mi" role="group" aria-labelledby="miAskLab2">
+            <p class="ask-lab" id="miAskLab2">Ask the chart</p>
+            <div class="ask-item">
+              <button type="button" class="ask-q" data-ask="b2q1" aria-expanded="false" aria-controls="miAsk-b2q1" aria-describedby="miAskHint"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Is the work the metro sells outside also its most complex work?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
+              <div class="ask-ans" id="miAsk-b2q1" hidden>
+                <p class="ask-a">Largely, yes. 63% of traded jobs are in the teal, more complex cells, against 6% of local jobs.</p>
+              </div>
+            </div>
+            <div class="ask-item">
+              <button type="button" class="ask-q" data-ask="b2q2" aria-expanded="false" aria-controls="miAsk-b2q2" aria-describedby="miAskHint"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">What does the metro actually sell outside its borders?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
+              <div class="ask-ans" id="miAsk-b2q2" hidden>
+                <p class="ask-a">Mostly knowledge services. Professional &amp; business is 61% of traded jobs; manufacturing, 21%.</p>
+              </div>
+            </div>
+          </div>
           <div class="collapsible-info">
             <button class="collapsible-header">
               <span class="ci-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.75a6.25 6.25 0 0 0-3.75 11.25c.53.4.87 1 .96 1.66l.09.59h5.4l.09-.59c.09-.66.43-1.26.96-1.66A6.25 6.25 0 0 0 12 2.75Z"/><path d="M9.6 18.6h4.8"/><path d="M10.5 21h3"/></svg></span>
@@ -6439,6 +6531,27 @@
               tabindex="0">guided missile and space vehicle parts</span> at 10.3. Concentration is not size: fabric
               coating mills reach 12 times on <strong>600 jobs</strong>, while biotechnology R&amp;D employs
               <strong>62,000</strong> at 10.8 &mdash; the one industry that is both.</p>
+          </div>
+          <!-- "Ask the chart": questions the figure answers under settings most
+               readers never try. A row sets that view (the beat's own view plus
+               the question's settings, treemap.js ASKS) and opens its answer
+               here, in plain words; the row, reading "Showing", is the way
+               back. One at a time, and the answer stands only while the chart
+               shows it -->
+          <div class="ask-chart" data-fig="mi" role="group" aria-labelledby="miAskLab3">
+            <p class="ask-lab" id="miAskLab3">Ask the chart</p>
+            <div class="ask-item">
+              <button type="button" class="ask-q" data-ask="b3q1" aria-expanded="false" aria-controls="miAsk-b3q1" aria-describedby="miAskHint"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Where are the universities on this list?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
+              <div class="ask-ans" id="miAsk-b3q1" hidden>
+                <p class="ask-a">Just below the cut. At 4.3 times, on 86,000 jobs, they rank second among partly traded industries.</p>
+              </div>
+            </div>
+            <div class="ask-item">
+              <button type="button" class="ask-q" data-ask="b3q2" aria-expanded="false" aria-controls="miAsk-b3q2" aria-describedby="miAskHint"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">How many people work in these twelve specialties?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
+              <div class="ask-ans" id="miAsk-b3q2" hidden>
+                <p class="ask-a">About 86,000. Biotechnology R&amp;D alone is 62,000 of them.</p>
+              </div>
+            </div>
           </div>
           <div class="collapsible-info">
             <button class="collapsible-header">
@@ -10279,7 +10392,7 @@
   var page = document.getElementById(cfg.pageId);
   var pagesEl = document.getElementById("pages");
   if (!page || !pagesEl) return;
-  var TEXT_SEL = ".subsection-header, .lede, .lede-stat-row, .lean-note, .collapsible-info, .rank-strip";
+  var TEXT_SEL = ".subsection-header, .lede, .lede-stat-row, .lean-note, .ask-chart, .collapsible-info, .rank-strip";
   var ctLayout = "1", built = null, cur = -1;
 
   /* the whole section is read at the metro scale, so every beat's tag says
