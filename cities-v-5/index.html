@@ -2969,8 +2969,9 @@
      the same. The page area under the bar takes a faint tint, the text
      column sits on it bare, and the visualisation — the figure with its
      controls, title and key, and whatever a beat adds beneath — sits in one
-     white framed panel. Each step's Viewing badge is closed by a rule
-     before the prose. */
+     white framed panel. In the city's section each step's Viewing badge is
+     closed by a rule before the prose; Metro Industries carries no badge
+     (2026-10-01), so its prose follows the title directly. */
   .pages:has(#page-export-basket:not(.sec-off)),
   .pages:has(#page-admin-mix:not(.sec-off)){background:#f9fafb;}
   :is(#page-export-basket, #page-admin-mix) .ct-scrolly{
@@ -2987,10 +2988,10 @@
      admin page lost its line while still computing a border on a
      display:none paragraph. Step past what is hidden. The run is two today
      (opt-2's first beat); three is the headroom. */
-  :is(#page-export-basket, #page-admin-mix) .ct-step > .geo-badge + *:not([hidden]),
-  :is(#page-export-basket, #page-admin-mix) .ct-step > .geo-badge + [hidden] + *:not([hidden]),
-  :is(#page-export-basket, #page-admin-mix) .ct-step > .geo-badge + [hidden] + [hidden] + *:not([hidden]),
-  :is(#page-export-basket, #page-admin-mix) .ct-step > .geo-badge + [hidden] + [hidden] + [hidden] + *:not([hidden]){
+  #page-admin-mix .ct-step > .geo-badge + *:not([hidden]),
+  #page-admin-mix .ct-step > .geo-badge + [hidden] + *:not([hidden]),
+  #page-admin-mix .ct-step > .geo-badge + [hidden] + [hidden] + *:not([hidden]),
+  #page-admin-mix .ct-step > .geo-badge + [hidden] + [hidden] + [hidden] + *:not([hidden]){
     align-self:stretch;border-top:1px solid var(--border);padding-top:18px;
   }
   /* the captions stack in one place rather than in sequence: only one shows
@@ -6085,9 +6086,10 @@
 
       <!-- 2 Metro Industries · What the metro does for a living -->
       <section class="page" id="page-export-basket">
-        <div class="page-head page-head--geo">
+        <!-- no "Viewing" tag here: the section is named for the metro, in the
+             bar and in each beat's counter, and its title says the scale -->
+        <div class="page-head">
           <h2>What does the metro do for a living?</h2>
-          <button type="button" class="geo-badge geo-badge--metro" onclick="openGeoMap('metro')" title="See this geography on the map"><svg viewBox="0 0 30 22" width="25" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="15" cy="11" rx="13" ry="8.6" stroke-dasharray="2.6 3"/><path d="M10.5 15.5h9"/><path d="M12.2 15.5V10h3v5.5"/><path d="M16.6 15.5V7h3v8.5"/></svg><span class="gb-view">Viewing:</span><span class="gb-name"><span class="city-short">Boston</span> Metro</span></button>
         </div>
         <!-- beat 1: every industry, sized by its jobs and grouped into
              sectors; the complexity pieces sit here, since this is the beat
@@ -10350,7 +10352,8 @@
       kids.forEach(function(k){
         if (k.matches && k.matches(TEXT_SEL)){
           st.appendChild(k);
-          if (badged && k.classList.contains("subsection-header")) st.appendChild(mkBadge(cfg.badge || "metro"));
+          /* a section named for its scale carries no tag under its titles */
+          if (badged && !cfg.noBadge && k.classList.contains("subsection-header")) st.appendChild(mkBadge(cfg.badge || "metro"));
         } else sl.appendChild(k);
       });
       col.appendChild(st); panel.appendChild(sl);
@@ -10548,7 +10551,7 @@
   /* Metro Industries reads one way: every industry, then the same blocks
      sorted into their three tiers, then the ranking drawn over the two
      tiers that sell outward */
-  mount({ pageId: "page-export-basket", ctl: "MI", seg: "ctLayoutSeg", noClassic: true, noToggle: true,
+  mount({ pageId: "page-export-basket", ctl: "MI", seg: "ctLayoutSeg", noClassic: true, noToggle: true, noBadge: true,
           states: { "2": [0, 4, 6] } });
   /* this section reads the administrative city, so its beats wear the
      city's mark, not the metro's */

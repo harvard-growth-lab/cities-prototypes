@@ -160,7 +160,11 @@ index.html (`function build()` / `activate(i)` / `restore()`): three text
 beats in a 330 px left column (`.ct-step`, each opening with an eyebrow
 "Metro Industries **1/3**"), the figure lifted into a sticky stage on the
 right. The mount config is `{ pageId:"page-export-basket", ctl:"MI",
-noClassic:true, states:{"2":[0,4,6]} }` — beat → figure step 0, 4, 6. The
+noClassic:true, noBadge:true, states:{"2":[0,4,6]} }` — beat → figure step
+0, 4, 6. `noBadge` (2026-10-01, at Nil's request): the beats carry no
+"Viewing: Boston Metro" tag under their titles and no rule under it, the
+prose following the title directly; the button is gone from this page's
+head too. The city's section keeps its tag and rule. The
 figure's own state machine has steps 0–7; `paint(step)` has a per-step cell
 rule (`STATE` table), and `setStep` drops what a beat cannot carry.
 
