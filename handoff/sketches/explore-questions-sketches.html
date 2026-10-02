@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Questions the chart can answer</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --teal:#255862;--teal-dark:#1d454d;--teal-tint:#eef3f4;--ink:#1a2226;--ink-soft:#526066;
+    --border:#e2e7e8;--border-strong:#c3ccce;--paper:#f4f5f2;--page:#f9fafb;--hl:#4a6a72;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;padding:40px 44px 96px;font-family:'Source Sans 3',sans-serif;color:var(--ink);background:#fff;}
+  h1{font-size:24px;margin:0 0 6px;font-weight:700;letter-spacing:-.2px;}
+  .sub{margin:0 0 14px;color:var(--ink-soft);font-size:15px;line-height:1.5;max-width:860px;}
+  h2{font-size:19px;font-weight:700;margin:56px 0 6px;letter-spacing:-.1px;}
+  h3{font-size:15px;font-weight:700;margin:0 0 4px;}
+  h3 .n{display:inline-block;width:22px;height:22px;border-radius:50%;background:var(--teal);color:#fff;font-size:12px;
+        text-align:center;line-height:22px;margin-right:8px;vertical-align:1px;}
+  .why{margin:0 0 16px;font-size:14px;color:var(--ink-soft);line-height:1.5;max-width:860px;}
+  .why b{color:var(--ink);font-weight:600;}
+  .pick{display:inline-block;margin-left:8px;padding:1px 8px;border-radius:10px;background:var(--teal-tint);color:var(--teal);
+        font-size:12px;font-weight:600;vertical-align:2px;}
+
+  /* part 1: the questions */
+  .beat{margin:26px 0 0;}
+  .beat > .bt{font-size:13px;color:var(--ink-soft);margin:0 0 10px;}
+  .beat > .bt b{color:var(--ink);font-weight:600;}
+  .qs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;max-width:1180px;}
+  .qc{border:1px solid var(--border);border-radius:8px;padding:16px 18px 16px;background:#fff;}
+  .qc h4{font-size:17px;line-height:1.3;font-weight:700;margin:0 0 8px;letter-spacing:-.1px;}
+  .qc .sets{font-size:13px;color:var(--ink-soft);margin:0 0 10px;}
+  .qc .sets b{color:var(--teal);font-weight:600;}
+  .qc .ans{font-size:14.5px;line-height:1.5;margin:0 0 12px;}
+  .qc .ans b{font-weight:700;}
+  .qc img{display:block;width:100%;height:auto;border:1px solid var(--border);border-radius:4px;}
+  .qc .note{font-size:12.5px;color:var(--ink-soft);line-height:1.45;margin:10px 0 0;}
+  .qc .note b{color:var(--ink);font-weight:600;}
+  details.left{max-width:1180px;margin:14px 0 0;font-size:13.5px;color:var(--ink-soft);line-height:1.5;}
+  details.left summary{cursor:pointer;color:var(--teal);font-weight:600;font-size:13px;}
+  details.left ul{margin:8px 0 0;padding-left:18px;}
+  details.left li{margin:0 0 5px;}
+  details.left li b{color:var(--ink);font-weight:600;}
+
+  /* part 2: shared rules */
+  .rules{max-width:860px;margin:10px 0 0;padding:0;list-style:none;counter-reset:r;}
+  .rules li{counter-increment:r;position:relative;padding:0 0 9px 30px;font-size:14.5px;line-height:1.5;}
+  .rules li::before{content:counter(r);position:absolute;left:0;top:1px;width:20px;height:20px;border-radius:50%;
+    border:1px solid var(--border-strong);font-size:11.5px;line-height:19px;text-align:center;color:var(--ink-soft);}
+  .rules li b{font-weight:600;}
+
+  /* the mock: the beat's text column beside the figure, as the site sets them */
+  section.v{margin:40px 0 0;}
+  .stagewrap{background:var(--page);border:1px solid var(--border);border-radius:8px;padding:28px 28px 30px;max-width:1180px;}
+  .stage{display:grid;grid-template-columns:392px minmax(0,1fr);gap:44px;align-items:start;}
+  .col{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+  .eyebrow{font-family:'Source Sans 3',sans-serif;font-size:13px;font-weight:500;color:var(--ink-soft);margin:0 0 14px;}
+  .eyebrow b{color:var(--ink);font-weight:600;}
+  .col h5{font-family:'Source Sans 3',sans-serif;font-size:30px;line-height:1.16;font-weight:700;letter-spacing:-.4px;margin:0 0 16px;}
+  .col p.lede{font-size:16px;line-height:1.6;margin:0;color:var(--ink);}
+  .col p.lede b{font-weight:700;}
+  .hl{border-bottom:1.5px dotted var(--hl);}
+  .hl i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:0;}
+  .panel{background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px 20px 16px;position:relative;}
+  .figbox{position:relative;line-height:0;}
+  .figbox img{display:block;width:100%;height:auto;}
+  /* the mark on a control a question moved: a teal rule under its label
+     (in the build, the label itself turns teal with a dot before it) */
+  .figbox .dot{position:absolute;height:2px;border-radius:1px;background:var(--teal);}
+  .figbox .dot[hidden]{display:none;}
+  button{font:inherit;color:inherit;}
+  .state{margin:12px 0 0;font-size:12.5px;color:var(--ink-soft);}
+  .state b{color:var(--ink);font-weight:600;}
+
+  /* A. question lines */
+  .a-lab{font-family:'Source Sans 3',sans-serif;font-size:13px;font-weight:500;color:var(--ink-soft);margin:20px 0 6px;}
+  .a-q{display:block;appearance:none;background:none;border:0;padding:6px 0;margin:0;text-align:left;cursor:pointer;
+    font-size:15px;line-height:22px;font-weight:500;color:var(--ink);}
+  .a-q span{border-bottom:1.5px dotted var(--hl);padding:1px 2px;margin:0 -2px;border-radius:2px 2px 0 0;}
+  .a-q:hover span,.a-q[aria-expanded="true"] span{background:var(--teal-tint);border-bottom:1.5px solid var(--teal);}
+  .a-q[aria-expanded="true"]{font-weight:600;}
+  .a-q:focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:3px;}
+  .a-ans{margin:2px 0 10px;padding:0 0 0 12px;border-left:2px solid #c2d4d7;}
+  .a-ans[hidden]{display:none;}
+  .setline{font-family:'Source Sans 3',sans-serif;font-size:13px;color:var(--ink-soft);margin:0 0 6px;}
+  .setline::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--teal);margin-right:7px;vertical-align:1px;}
+  .setline b{color:var(--teal);font-weight:600;}
+  .a-ans p.t{font-size:15px;line-height:1.55;margin:0 0 6px;}
+  .a-ans p.t b{font-weight:700;}
+  .back{appearance:none;background:none;border:0;padding:2px 0;font-family:'Source Sans 3',sans-serif;font-size:13.5px;font-weight:600;
+    color:var(--teal);cursor:pointer;text-decoration:underline;text-underline-offset:2px;}
+  .back:focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:3px;}
+
+  /* B. question card */
+  .b-head{font-family:'Source Sans 3',sans-serif;margin:22px 0 8px;font-size:13px;line-height:18px;}
+  .b-head b{display:block;font-weight:600;color:var(--ink);}
+  .b-head span{color:var(--ink-soft);}
+  .b-card{background:#fff;border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+  .b-row + .b-row{border-top:1px solid var(--border);}
+  .b-q{display:flex;gap:12px;align-items:flex-start;width:100%;appearance:none;background:none;border:0;padding:12px 14px;margin:0;
+    text-align:left;cursor:pointer;font-family:'Source Sans 3',sans-serif;font-size:16px;line-height:22px;font-weight:600;color:var(--ink);
+    box-shadow:inset 0 0 0 0 var(--teal);}
+  .b-q:hover{background:var(--teal-tint);}
+  .b-q:focus-visible{outline:2px solid var(--teal);outline-offset:-2px;}
+  .b-q .txt{flex:1;}
+  .b-q svg{flex:none;width:16px;height:16px;margin-top:3px;color:var(--teal);}
+  .b-q .x{display:none;}
+  .b-row.is-open .b-q{background:var(--teal-tint);color:var(--teal-dark);box-shadow:inset 3px 0 0 0 var(--teal);}
+  .b-row.is-open .b-q .arr{display:none;}
+  .b-row.is-open .b-q .x{display:block;}
+  .b-ans{padding:2px 14px 14px 14px;background:var(--teal-tint);box-shadow:inset 3px 0 0 0 var(--teal);}
+  .b-ans[hidden]{display:none;}
+  .b-ans p.t{font-size:15px;line-height:1.55;margin:0;}
+  .b-ans p.t b{font-weight:700;}
+  .b-reset{margin:10px 0 0;min-height:22px;}
+  .b-reset[hidden]{visibility:hidden;display:block;}
+
+  /* C. the answer strip at the figure */
+  .c-lab{font-family:'Source Sans 3',sans-serif;font-size:12.5px;font-weight:600;color:var(--ink-soft);margin:22px 0 4px;}
+  .c-q{display:flex;gap:10px;align-items:center;width:calc(100% + 20px);min-height:44px;appearance:none;background:none;border:0;
+    border-top:1px solid var(--border);padding:10px;margin:0 -10px;text-align:left;cursor:pointer;font-size:15px;line-height:1.35;color:var(--ink);}
+  .c-q:last-of-type{border-bottom:1px solid var(--border);}
+  .c-q:hover,.c-q[aria-pressed="true"]{background:var(--teal-tint);}
+  .c-q:focus-visible{outline:2px solid var(--teal);outline-offset:-2px;}
+  .c-q .gly{flex:none;width:15px;height:15px;color:var(--ink-soft);}
+  .c-q .txt{flex:1;}
+  .c-q .go{flex:none;font-family:'Source Sans 3',sans-serif;font-size:12.5px;font-weight:600;color:var(--teal);white-space:nowrap;display:inline-flex;align-items:center;gap:5px;}
+  .c-q .go svg{width:14px;height:14px;}
+  .c-q .go .on{display:none;}
+  .c-q[aria-pressed="true"] .go .off{display:none;}
+  .c-q[aria-pressed="true"] .go .on{display:inline-flex;align-items:center;gap:6px;}
+  .c-q .go .on::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--teal);}
+  .slice{position:relative;overflow:hidden;line-height:0;}
+  .slice img{display:block;width:100%;height:auto;}
+  .strip{background:var(--teal-tint);border-radius:6px;padding:9px 12px 10px;margin:6px 0 8px;font-family:'Source Sans 3',sans-serif;line-height:1.4;}
+  .strip[hidden]{display:none;}
+  .strip .l1{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap;font-size:13.5px;}
+  .strip .l1 .q{font-weight:700;color:var(--teal-dark);}
+  .strip .l1 .chg{color:var(--ink-soft);}
+  .strip .l1 .chg::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--teal);margin-right:6px;vertical-align:1px;}
+  .strip .l1 .back{margin-left:auto;font-size:13px;}
+  .strip .l2{font-size:14px;margin:4px 0 0;color:var(--ink);}
+  .strip .l2 b{font-weight:700;}
+
+  .pros{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 28px;max-width:1180px;margin:14px 0 0;font-size:13.5px;line-height:1.5;color:var(--ink-soft);}
+  .pros b{color:var(--ink);font-weight:600;}
+  .pros p{margin:0;}
+  .rec{max-width:860px;margin:14px 0 0;padding:16px 18px;border:1px solid var(--border);border-left:3px solid var(--teal);border-radius:6px;font-size:14.5px;line-height:1.55;}
+  .rec b{font-weight:600;}
+  .rec p{margin:0 0 8px;} .rec p:last-child{margin:0;}
+  @media (max-width:1100px){ .stage{grid-template-columns:1fr;} .qs,.pros{grid-template-columns:1fr;} }
+</style>
+</head>
+<body>
+
+<h1>Questions the chart can answer</h1>
+<p class="sub">Each Metro Industries beat holds answers that only show under some setting of the controls, and most readers never find them. This page proposes six questions, two per beat, and three ways to put them in the text column. Every number was recomputed from the 2024 data file, and every view was checked on the live page; the pictures are captures of the real figure in that view.</p>
+<p class="sub">Sketched 2026-10-01. Nothing here is in v-5 yet.</p>
+
+<h2>Part 1 · The questions</h2>
+<p class="why">A question earned its place only if its answer is true in the data, visible on screen in a view the controls can reach, and not already said by the beat's own paragraph. The first question in each pair is the stronger.</p>
+
+<div class="beat">
+  <p class="bt"><b>Beat 1</b> · What does the metro do for a living?</p>
+  <div class="qs">
+    <div class="qc">
+      <h4>Are the metro's biggest industries also its most complex?<span class="pick">stronger</span></h4>
+      <p class="sets">Sets <b>View: Ranked</b> · <b>Sort by: Complexity</b></p>
+      <p class="ans"><b>No.</b> Sorted by complexity, general hospitals, the largest industry with 126K jobs, falls to 17th of the 25 bars, and full-service restaurants to 18th. Software publishers, only 10th by size, leads. None of the 25 largest reaches the fifth diamond.</p>
+      <img src="explore-questions-images/b1-q1.png" alt="The 25 largest industries as bars, sorted by complexity: short navy bars at the top, the two longest bars in rows 17 and 18.">
+      <p class="note"><b>What carries it:</b> the two longest bars sit two thirds of the way down with one diamond each; the top five rows are short navy bars with four. Bar length visibly has nothing to do with position.</p>
+    </div>
+    <div class="qc">
+      <h4>Which of the two largest sectors holds the metro's complex work?</h4>
+      <p class="sets">Sets <b>Color: Complexity</b></p>
+      <p class="ans"><b>Professional &amp; business.</b> About 45% of its jobs are in the two most complex steps, the teal cells: biotechnology R&amp;D, software, programming. In education &amp; health, a sector almost the same size, it is about 4%, and the block is nearly all orange.</p>
+      <img src="explore-questions-images/b1-q2.png" alt="The treemap coloured by complexity: large teal cells in the top-left block, the block beneath it almost entirely orange.">
+      <p class="note"><b>Needs:</b> under this colouring the sector key gives way to the ramp, so the map no longer names its blocks. The paragraph's two sector phrases still outline their blocks on hover, so the answer should name the sectors by position, or carry the same phrases.</p>
+    </div>
+  </div>
+  <details class="left"><summary>Left out of beat 1, and why</summary><ul>
+    <li><b>How many jobs are in the most complex industries?</b> True (3.4% of jobs on the top step), but the view cannot show it: the darkest cells are small and unnamed, and no share per step is printed.</li>
+    <li><b>Which sector has the most complex mix?</b> Manufacturing, on the numbers, but it is 6% of jobs and the answer needs a zoom to see. Weaker than the two kept.</li>
+    <li><b>Have the complex industries grown since 2014?</b> The arithmetic works (+65% among the largest), but the 2014 industry rows are estimates built from group totals, so the answer would rest on them.</li>
+  </ul></details>
+</div>
+
+<div class="beat">
+  <p class="bt"><b>Beat 2</b> · How tradable is the metro's work?</p>
+  <div class="qs">
+    <div class="qc">
+      <h4>Is the work the metro sells outside also its most complex work?<span class="pick">stronger</span></h4>
+      <p class="sets">Sets <b>Color: Complexity</b></p>
+      <p class="ans"><b>Largely, yes.</b> About 63% of traded jobs sit in the two more complex steps, against 9% of partly traded jobs and 6% of local jobs. The Traded ground turns teal and cream; the other two stay mostly orange.</p>
+      <img src="explore-questions-images/b2-q1.png" alt="The three tier grounds coloured by complexity: Traded mostly teal and cream, Partly traded and Local mostly orange.">
+      <p class="note"><b>Needs:</b> the percentages are printed nowhere on the chart, so the answer text carries them. The "What is economic complexity?" explainer only comes forward on beat 1, so this answer wants a one-line gloss of complexity.</p>
+    </div>
+    <div class="qc">
+      <h4>What does the metro actually sell outside its borders?</h4>
+      <p class="sets">Sets <b>Traded only</b> (the Partly traded and Local grounds closed)</p>
+      <p class="ans"><b>Mostly knowledge services, not goods.</b> Professional &amp; business services are 61% of the 522,000 traded jobs, manufacturing 21% and finance 9%. Biotechnology R&amp;D, with 62,000 jobs, is the largest single piece.</p>
+      <img src="explore-questions-images/b2-q2.png" alt="The Traded ground alone across the whole map: more than half of it the blue of professional and business services.">
+      <p class="note"><b>Mind:</b> the percentages printed in the cells stay shares of all metro jobs, not of traded jobs, so 61 / 21 / 9% are read from area. The two chips beside the title bring the other grounds back, and push the Level control to a second line.</p>
+    </div>
+  </div>
+  <details class="left"><summary>Left out of beat 2, and why</summary><ul>
+    <li><b>Do the metro's biggest employers sell outside it?</b> True and visible in the Ranked view (8 of the 25 largest are traded), but the weakest of the sound ones.</li>
+    <li><b>Do hospitals and universities count as work sold outside?</b> Partly: none of education &amp; health is in the Traded tier. It needs the sector key's "Only", and the answer turns on a tier cut that universities sit right on.</li>
+    <li><b>Is the metro selling more outside than ten years ago?</b> Traded jobs rose 14%, but again on the estimated 2014 rows.</li>
+  </ul></details>
+</div>
+
+<div class="beat">
+  <p class="bt"><b>Beat 3</b> · Which tradable industries is the metro most specialized in?</p>
+  <div class="qs">
+    <div class="qc">
+      <h4>Where are the universities on this list?<span class="pick">stronger</span></h4>
+      <p class="sets">Sets <b>Tradability: Partly traded only</b></p>
+      <p class="ans"><b>Just below it.</b> Colleges and universities are 4.3 times the national rate on about 86,000 jobs, but the list cuts off at 5.0 times. Narrowed to partly traded work, they come second.</p>
+      <img src="explore-questions-images/b3-q1.png" alt="The ranking narrowed to partly traded industries: savings institutions first, colleges and universities second with 86K jobs.">
+      <p class="note"><b>Mind:</b> the filter has no setter of its own yet, and it is not reset on leaving the beat today; both would need building. One peer tick at 18.9× stretches the axis and squeezes the bars.</p>
+    </div>
+    <div class="qc">
+      <h4>How many people work in these twelve specialties?</h4>
+      <p class="sets">Sets <b>Sort by: Jobs</b></p>
+      <p class="ans"><b>About 86,000, and one industry is most of it.</b> Biotechnology R&amp;D is 62,000. The other eleven together employ about 24,000, about 1% of the metro's jobs.</p>
+      <img src="explore-questions-images/b3-q2.png" alt="The same twelve industries sorted by jobs: biotechnology R and D at the top with 62K, every other row 7K or less.">
+      <p class="note"><b>The weakest of the six.</b> It extends a point the paragraph already makes ("concentration is not size"), and the totals are printed nowhere on screen. I would ship beat 3 with one question, or keep this as the second.</p>
+    </div>
+  </div>
+  <details class="left"><summary>Left out of beat 3, and why</summary><ul>
+    <li><b>Where is the metro ahead of its peer metros?</b> The screen and the data disagree: the "Against peers" view shows the metro ahead in 8 of the 12, the data file's own peer figures say 3. The peer ticks on this beat are still generated by the prototype. Worth fixing before any question points at it.</li>
+    <li><b>Is any local work unusually concentrated here?</b> True on the numbers, but the axis rescales so the local bars look as long as the traded ones did.</li>
+    <li><b>Was biotech this dominant ten years ago?</b> The Year control is hidden on this beat, and nothing says which year is showing.</li>
+  </ul></details>
+</div>
+
+<h2>Part 2 · Three ways to present them</h2>
+<p class="why">Three designers worked independently and arrived at the same six rules. I treat these as settled whichever look is chosen; the three variants below differ only in where the question and its answer sit.</p>
+<ol class="rules">
+  <li><b>One question at a time.</b> The chart has one state, so asking a second question closes the first.</li>
+  <li><b>A question is the beat's own view plus its settings.</b> It never stacks on what the reader had; a zoom or a hidden sector is cleared, so the written answer is always true of what is on screen.</li>
+  <li><b>It moves the real controls, and says which.</b> The toggles flip as if the reader had pressed them, each one that moved is marked (here a teal rule under its label), and a line names them in the control row's own words. The reader learns where the view lives.</li>
+  <li><b>The answer shows only while the chart shows it.</b> Change a control by hand and the answer closes, rather than sitting beside a chart it no longer describes.</li>
+  <li><b>One way back, named for where it goes.</b> The same action from a link, from pressing the question again, and from Escape. Scrolling to the next beat does it too.</li>
+  <li><b>A reader who never asks loses nothing.</b> The paragraph and the chart are as they are today.</li>
+</ol>
+<p class="why" style="margin-top:14px">The three mocks below are live: press a question. Each uses beat 1 and its two questions.</p>
+
+<!-- ============ A ============ -->
+<section class="v" data-v="a">
+  <h3><span class="n">1</span>Question lines, in the prose</h3>
+  <p class="why">The quietest. Each question is a plain line under the paragraph, wearing the dotted underline the page already uses for phrases that act on the chart. The answer unfolds beneath it. Nothing is added to the figure except the marks on the controls.</p>
+  <div class="stagewrap"><div class="stage">
+    <div class="col">
+      <p class="eyebrow">Metro Industries <b>1/3</b></p>
+      <h5>What does the metro do for a living?</h5>
+      <p class="lede"><b>2.3 million</b> jobs across 877 industries. <span class="hl"><i style="background:#4a5fa5"></i>Professional &amp; business services</span> and <span class="hl"><i style="background:#db8271"></i>education &amp; health</span> are the two largest sectors, each about a quarter of the jobs, and <span class="hl"><i style="background:#87c8ab"></i>trade &amp; transportation</span> holds another sixth.</p>
+      <p class="a-lab">Questions the chart can answer</p>
+      <button type="button" class="a-q" data-q="q1" aria-expanded="false"><span>Are the metro's biggest industries also its most complex?</span></button>
+      <div class="a-ans" data-ans="q1" hidden>
+        <p class="setline">Chart set to <b>View Ranked</b> · <b>Sort by Complexity</b></p>
+        <p class="t"><b>No.</b> General hospitals, the longest bar, is 17th of these 25, and full-service restaurants 18th. Software publishers, 10th by size, is at the top. Read the diamonds on the right: none of the 25 has all five.</p>
+        <button type="button" class="back">Back to the treemap</button>
+      </div>
+      <button type="button" class="a-q" data-q="q2" aria-expanded="false"><span>Which of the two largest sectors holds the metro's complex work?</span></button>
+      <div class="a-ans" data-ans="q2" hidden>
+        <p class="setline">Chart set to <b>Color Complexity</b></p>
+        <p class="t"><b>Professional &amp; business</b>, the block at the top left. About 45% of its jobs are in the teal cells. Education &amp; health, the block below it and almost the same size, is nearly all orange: about 4%.</p>
+        <button type="button" class="back">Back to the treemap</button>
+      </div>
+    </div>
+    <div class="panel"><div class="figbox">
+      <img data-fig alt="The Metro Industries figure in the view the mock is showing.">
+      <span class="dot" data-dot></span><span class="dot" data-dot></span>
+    </div></div>
+  </div></div>
+  <div class="pros">
+    <p><b>For.</b> Costs the least room, about 110px of column. Speaks the page's existing language for "this phrase acts on the chart". The figure stays untouched.</p>
+    <p><b>Against.</b> Easy to miss: the dotted underline is only learnt by trying one. A third kind of question in the column, between the title and the "What is economic complexity?" explainer.</p>
+  </div>
+</section>
+
+<!-- ============ B ============ -->
+<section class="v" data-v="b">
+  <h3><span class="n">2</span>A question card, in the text column<span class="pick">my pick</span></h3>
+  <p class="why">A small white framed card under the paragraph: the figure panel's own frame in small, so it reads as the chart's territory. Each row is a question; the open one turns teal, states what it set, and gives the answer. One line under the card always leads back.</p>
+  <div class="stagewrap"><div class="stage">
+    <div class="col">
+      <p class="eyebrow">Metro Industries <b>1/3</b></p>
+      <h5>What does the metro do for a living?</h5>
+      <p class="lede"><b>2.3 million</b> jobs across 877 industries. <span class="hl"><i style="background:#4a5fa5"></i>Professional &amp; business services</span> and <span class="hl"><i style="background:#db8271"></i>education &amp; health</span> are the two largest sectors, each about a quarter of the jobs, and <span class="hl"><i style="background:#87c8ab"></i>trade &amp; transportation</span> holds another sixth.</p>
+      <p class="b-head"><b>Questions this chart can answer</b><span>Choose one and the chart changes to answer it.</span></p>
+      <div class="b-card">
+        <div class="b-row" data-row="q1">
+          <button type="button" class="b-q" data-q="q1" aria-expanded="false"><span class="txt">Are the metro's biggest industries also its most complex?</span>
+            <svg class="arr" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+            <svg class="x" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+          <div class="b-ans" data-ans="q1" hidden>
+            <p class="setline">Chart set to <b>View: Ranked</b> · <b>Sort by: Complexity</b></p>
+            <p class="t"><b>No.</b> General hospitals, the longest bar, is 17th of these 25, and full-service restaurants 18th. Software publishers, 10th by size, is at the top. Read the diamonds on the right: none of the 25 has all five.</p>
+          </div>
+        </div>
+        <div class="b-row" data-row="q2">
+          <button type="button" class="b-q" data-q="q2" aria-expanded="false"><span class="txt">Which of the two largest sectors holds the metro's complex work?</span>
+            <svg class="arr" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+            <svg class="x" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+          <div class="b-ans" data-ans="q2" hidden>
+            <p class="setline">Chart set to <b>Color: Complexity</b></p>
+            <p class="t"><b>Professional &amp; business</b>, the block at the top left. About 45% of its jobs are in the teal cells. Education &amp; health, the block below it and almost the same size, is nearly all orange: about 4%.</p>
+          </div>
+        </div>
+      </div>
+      <p class="b-reset" hidden><button type="button" class="back">Reset the chart to this step's opening view</button></p>
+    </div>
+    <div class="panel"><div class="figbox">
+      <img data-fig alt="The Metro Industries figure in the view the mock is showing.">
+      <span class="dot" data-dot></span><span class="dot" data-dot></span>
+    </div></div>
+  </div></div>
+  <div class="pros">
+    <p><b>For.</b> Hard to miss and plainly bounded; the header says what a press will do before anyone presses. The answer sits with its question, and the reset line is always in the same place, shown even after the reader's own tinkering.</p>
+    <p><b>Against.</b> The tallest: about 210px of column at rest, more when open, and beat 2 already carries the tier donut. It could be read as a second accordion like the explainer row; the white frame and the arrow in place of a chevron are the guard.</p>
+  </div>
+</section>
+
+<!-- ============ C ============ -->
+<section class="v" data-v="c">
+  <h3><span class="n">3</span>Ask in the text, answered at the figure</h3>
+  <p class="why">The question rows sit in the text, but the answer opens as a strip on the figure, under the controls it moved and over the chart that proves it. Cause, answer and evidence stack in one place; the pressed row wears the same tint so the two ends read as one state.</p>
+  <div class="stagewrap"><div class="stage">
+    <div class="col">
+      <p class="eyebrow">Metro Industries <b>1/3</b></p>
+      <h5>What does the metro do for a living?</h5>
+      <p class="lede"><b>2.3 million</b> jobs across 877 industries. <span class="hl"><i style="background:#4a5fa5"></i>Professional &amp; business services</span> and <span class="hl"><i style="background:#db8271"></i>education &amp; health</span> are the two largest sectors, each about a quarter of the jobs, and <span class="hl"><i style="background:#87c8ab"></i>trade &amp; transportation</span> holds another sixth.</p>
+      <p class="c-lab">Ask the chart</p>
+      <button type="button" class="c-q" data-q="q1" aria-pressed="false">
+        <svg class="gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg>
+        <span class="txt">Are the metro's biggest industries also its most complex?</span>
+        <span class="go"><span class="off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-3px"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="on">Showing</span></span></button>
+      <button type="button" class="c-q" data-q="q2" aria-pressed="false">
+        <svg class="gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg>
+        <span class="txt">Which of the two largest sectors holds the metro's complex work?</span>
+        <span class="go"><span class="off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-3px"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="on">Showing</span></span></button>
+    </div>
+    <div class="panel">
+      <div class="figbox slice" data-top><img data-fig alt="The figure's control row.">
+        <span class="dot" data-dot></span><span class="dot" data-dot></span></div>
+      <div class="strip" data-strip="q1" hidden>
+        <div class="l1"><span class="q">Are the metro's biggest industries also its most complex?</span><span class="chg">Changed: View, Sort by</span><button type="button" class="back">Back to the starting view</button></div>
+        <p class="l2"><b>No.</b> Sorted by complexity, general hospitals, the largest, falls to 17th of these 25; software publishers, 10th by jobs, leads.</p>
+      </div>
+      <div class="strip" data-strip="q2" hidden>
+        <div class="l1"><span class="q">Which of the two largest sectors holds the metro's complex work?</span><span class="chg">Changed: Color</span><button type="button" class="back">Back to the starting view</button></div>
+        <p class="l2"><b>Professional &amp; business</b>, top left. Coloured by complexity, about 45% of its jobs are teal; in education &amp; health, below it, about 4%.</p>
+      </div>
+      <div class="slice" data-bot><img data-fig2 alt="The chart under the control row."></div>
+    </div>
+  </div></div>
+  <div class="pros">
+    <p><b>For.</b> The eye is on the chart when it changes, and the answer is already there: no looking back to the text. The text column stays the shortest of the three, about 120px.</p>
+    <p><b>Against.</b> The answer has to be one sentence. The strip takes about 60px of the figure, so on a short window the chart shrinks; and the panel shifts a little when it opens. On a phone, where the text sits above the figure, the pressed row and its answer are a scroll apart.</p>
+  </div>
+</section>
+
+<h2>Recommendation</h2>
+<div class="rec">
+  <p><b>Ship variant 2, the question card, with the marks on the controls.</b> The request was that readers find these views and are not confused by them. The card is the only one of the three that says what will happen before the press, keeps the question, what it set and the answer in one place, and holds the way back in a fixed spot.</p>
+  <p><b>Take from variant 3</b> the habit of opening every answer with the setting that produced it and a position in the chart ("the longest bar", "top left"), so the sentence can be checked against the picture.</p>
+  <p><b>Start with one question per beat</b> if the column height in beat 2 worries you: the three marked "stronger" cover complexity against size, tradability against complexity, and what the ranking's cut-off hides.</p>
+  <p><b>Needs building before it can ship:</b> a setter for beat 3's tradability filter and a reset for it on leaving the beat; a one-line gloss of complexity for beat 2; and a single "set the figure to this named view" function, so a question, the reset and a beat change all go through one door.</p>
+</div>
+
+<script>
+/* the three views of beat 1, as captured from the live figure, and where the
+   controls that moved stand in each capture (fractions of the figure's box) */
+var VIEWS = {
+  own: { img: "explore-questions-images/b1-own.png", dots: [] },
+  q1:  { img: "explore-questions-images/b1-q1.png",  dots: [[0.3193, 0.0229, 0.0303], [0.7438, 0.0229, 0.0455]] },
+  q2:  { img: "explore-questions-images/b1-q2.png",  dots: [[0.5275, 0.0229, 0.0343]] }
+};
+var FIG_RATIO = 612 / 846, TOP_CUT = 0.058;   /* the control row is the top 5.8% of the capture */
+Object.keys(VIEWS).forEach(function(k){ var i = new Image(); i.src = VIEWS[k].img; });
+
+document.querySelectorAll("section.v").forEach(function(sec){
+  var kind = sec.dataset.v, cur = null;
+  var imgs = sec.querySelectorAll("img[data-fig], img[data-fig2]");
+  var dots = sec.querySelectorAll("[data-dot]");
+  var qBtns = sec.querySelectorAll("[data-q]");
+  var top = sec.querySelector("[data-top]"), bot = sec.querySelector("[data-bot]");
+  function layoutSlices(){
+    if (!top) return;
+    var w = top.clientWidth, h = w * FIG_RATIO, cut = Math.round(h * TOP_CUT);
+    top.style.height = cut + "px";
+    bot.style.height = Math.round(h - cut) + "px";
+    bot.querySelector("img").style.marginTop = (-cut) + "px";
+  }
+  function show(q){
+    cur = q;
+    var v = VIEWS[q || "own"];
+    imgs.forEach(function(im){ im.src = v.img; });
+    var box = sec.querySelector(".figbox"), fullH = box.clientWidth * FIG_RATIO;
+    dots.forEach(function(d, i){
+      var p = v.dots[i];
+      d.hidden = !p;
+      if (p){ d.style.left = (p[0] * 100) + "%"; d.style.width = (p[2] * 100) + "%"; d.style.top = Math.round((p[1] + 0.019) * fullH) + "px"; }
+    });
+    qBtns.forEach(function(b){
+      var on = b.dataset.q === q;
+      if (kind === "c") b.setAttribute("aria-pressed", String(on)); else b.setAttribute("aria-expanded", String(on));
+      var row = b.closest(".b-row"); if (row) row.classList.toggle("is-open", on);
+    });
+    sec.querySelectorAll("[data-ans]").forEach(function(a){ a.hidden = a.dataset.ans !== q; });
+    sec.querySelectorAll("[data-strip]").forEach(function(a){ a.hidden = a.dataset.strip !== q; });
+    var reset = sec.querySelector(".b-reset"); if (reset) reset.hidden = !q;
+    layoutSlices();
+  }
+  qBtns.forEach(function(b){ b.addEventListener("click", function(){ show(cur === b.dataset.q ? null : b.dataset.q); }); });
+  sec.querySelectorAll(".back").forEach(function(b){ b.addEventListener("click", function(){
+    var was = cur; show(null);
+    var q = sec.querySelector('[data-q="' + was + '"]'); if (q) q.focus();
+  }); });
+  sec.addEventListener("keydown", function(e){ if (e.key === "Escape" && cur){ var was = cur; show(null); var q = sec.querySelector('[data-q="' + was + '"]'); if (q) q.focus(); } });
+  window.addEventListener("resize", function(){ show(cur); });
+  show(null);
+});
+</script>
+</body>
+</html>
