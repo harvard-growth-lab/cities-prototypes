@@ -238,3 +238,45 @@ On 2026-09-30, given thirteen confirmed cross-check findings (focus rings, chart
 **Why:** the other sections are not the current work; a global token or shared-rule change would alter them uninvited.
 **How to apply:** scope accessibility CSS to the Metro Industries section (`#page-export-basket …`) rather than editing shared rules or `:root` tokens; for a shared element (the body-level `.kq-dialog` quiz, the secbar) say so and ask before touching it. The text-contrast auditor (`handoff/contrast-audit.js` + `handoff/contrast-run.mjs`) is the whole-page check; keep its result at 0 failures. Related: [[feedback_light_controls]], [[working-line-v5]].
 ```
+
+---
+
+## feedback_narrative_plain.md (added 2026-10-03)
+
+```markdown
+---
+name: feedback-narrative-plain
+description: "Narrative text beside the figures is plain: no em dashes, no bold, terms get an info mark (never an underline), paragraphs not lengthened, numbers go on the chart not in extra graphics"
+metadata:
+  node_type: memory
+  type: feedback
+  originSessionId: 58a9f4f7-4b48-4e12-a3ed-cb508b870dfb
+  modified: 2026-10-03T21:33:40.951Z
+---
+
+In the Metro Industries beats (cities-v-5), Nil asked on 2026-10-02 for: no "—" in the narrative; no bold text in it (nor in the "Ask the chart" answers); terms such as tradability, specialization and complexity marked with a small drawn info icon that opens a definition card with a link to the glossary, never with a dashed or dotted underline, "as it confuses with the chart interactions" (the phrases that drive the chart carry a dotted teal rule); and "do not make the narrative text longer" when working terms in. The same day Nil removed the tier donut from beat 2 and asked for the percentages on the chart instead; earlier they removed the Viewing badge and the collapsible explainer panels as clutter.
+
+**Why:** the text column sits beside a busy nine-colour figure; anything that competes with the prose or looks like a chart control reads as clutter or confusion.
+**How to apply:** set asides off with commas or "such as"; keep figures plain; reserve underlines in narrative for chart-linked phrases; when a number belongs to the chart, label it on the chart. Related: [[feedback_type_floor]], [[feedback_light_controls]], [[working-line-v5]].
+```
+
+---
+
+## feedback_type_floor.md (added 2026-10-03)
+
+```markdown
+---
+name: feedback-type-floor
+description: "Stakeholders' floor is 12.5px rendered for every text on the site; chart text in the scaled SVG must be measured on screen, not trusted from CSS units"
+metadata:
+  node_type: memory
+  type: feedback
+  originSessionId: 58a9f4f7-4b48-4e12-a3ed-cb508b870dfb
+  modified: 2026-10-03T21:33:45.777Z
+---
+
+On 2026-10-02 Nil relayed the stakeholders: a narrower text column, more room for the visualisations, "make sure smallest font is 12.5px", a clear size hierarchy, good at every screen size. Done in cities-v-5 commit 16cc5b7 for Metro Industries and the shared chrome; Worker Flows' own figure and other sections' figures were left out of scope and still have smaller unit-scaled text.
+
+**Why:** the figures are SVGs on a fixed 880-unit box scaled to the frame, so a CSS size inside them is in units and shrinks with the frame (11 units read as 7.6px in a 1200 window); "12px in the stylesheet" is not what the reader sees.
+**How to apply:** for new or changed text near the figures, keep it ≥12.5px on screen at every width; in Metro Industries size SVG text as calc(Npx / var(--mi-s)); check with handoff/type-audit.mjs (measures through getScreenCTM) at desktop, laptop and phone sizes. Related: [[feedback_narrative_plain]], [[headless-verify-v5]].
+```

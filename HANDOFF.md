@@ -1,14 +1,16 @@
 # Hand-off: cities-prototypes
 
-Written 2026-09-29 and brought up to date through the evening of
-2026-09-30, for whoever continues this work in a fresh Claude session (new
+Written 2026-09-29 and brought up to date on 2026-10-03, for whoever
+continues this work in a fresh Claude session (new
 account, no memory of the previous ones). Everything below is what the
 previous sessions knew and had agreed with Nil. Read this file first, then
 `handoff/studies.md` and `handoff/memory-notes.md`; the opening message
 Nil sends a new session is `handoff/START-HERE.md`.
 
 Repo: `git@github.com:harvard-growth-lab/cities-prototypes.git`, branch `main`,
-216 commits at hand-off (HEAD `14f3494`). Local checkout:
+238 commits at hand-off; the last code change is `87a1774` (2026-10-02,
+the tiers' shares on the chart), and the commit after it carries this
+note. Local checkout:
 `/Users/nit880/Documents/cities-prototypes`. The sketch pages at the repo
 root are **untracked and only on this machine**; the ones that record
 open or recent decisions are copied under `handoff/sketches/` (tracked,
@@ -50,10 +52,10 @@ changed), never `git add -A` — the root is full of untracked sketches.
 
 The two files that matter:
 
-- `cities-v-5/index.html` — ~11,400 lines: all markup, all CSS, and all page
+- `cities-v-5/index.html` — ~12,550 lines: all markup, all CSS, and all page
   script (landing, section switching, scrolly engines, the quiz system, the
   Overview map, the commute maps…).
-- `cities-v-5/treemap.js` — ~5,600 lines: the Metro Industries figure
+- `cities-v-5/treemap.js` — ~6,450 lines: the Metro Industries figure
   (`initIndustryFigure`) and the Worker Flows figure that shares its grammar.
 - `cities-v-5/industries-2024.js`, `industries-2014.js` — the data (§6).
 
@@ -129,7 +131,8 @@ HARNESS_MS=900000 S=/tmp/shots node handoff/verify-harness.mjs handoff/contrast-
 
 The last line of the output reports `distinctFailures`; it was 0 at hand-off
 (`ef7258d` fixed the 137 pairs it first found; re-run 2026-09-30: 47 states,
-0). It takes about two minutes, so pass `HARNESS_MS` — the harness's default
+0; last re-run 2026-10-02 on `16cc5b7`, the new layout and type sizes: 47
+states, 0). It takes about two minutes, so pass `HARNESS_MS` — the harness's default
 150 s is too tight to trust. `controls` in the JSON lists every field's edge
 ratio; the one under 3 at hand-off is a year select on the teal tint
 outside Metro Industries (`.viz-controls--export`, 2.99 — the
@@ -145,7 +148,13 @@ adversarial verifier per finding told to *refute* it and to treat
 pre-existing conditions as not-real. Confirmed findings were fixed in a
 follow-up commit. This caught real regressions every time (a shadowed `on`
 helper, bars ignoring the zoom, a phone band covering a panel, a 230 ms
-click timer swallowing keyboard activations). Keep doing it.
+click timer swallowing keyboard activations). Keep doing it. One caution
+from 2026-10-02: four reviewers each told to cover 15–18 screen sizes and
+a dozen states stalled (the workflow gives up on an agent after ten
+minutes without progress, six times over); only the narrowest brief
+finished. Give each agent a few sizes or one concern, and more agents.
+The review of the layout change is kept as
+`handoff/review-layout-type.workflow.js` for re-running (§8, item 0c).
 
 There is one known, pre-existing console error on load: a 404 for
 `/favicon.ico`. It is not from any of this work.
@@ -832,6 +841,17 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
   two sentences. When they ask an open question ("where should I put…"),
   answer in 2–3 sentences with a recommendation and the trade-off, and offer
   a sketch.
+- **The narrative is plain text** (2026-10-02, Metro Industries): no em
+  dashes (set asides off with commas or "such as"), no bold, and a term
+  the reader may not know carries a small info mark and a definition card,
+  never an underline, because a ruled phrase in this text is one that acts
+  on the chart. Do not make a paragraph longer to fit a term in.
+- **Nothing under 12.5px**, the stakeholders' floor (2026-10-02). Check it
+  with `handoff/type-audit.mjs`, which measures svg text on screen.
+- **Keep the text column lean.** Nil has removed what competes with the
+  prose beside the figure: the Viewing badge, the explainer panels, the
+  donut (2026-10-01/02). When a number belongs to the chart, put it on the
+  chart rather than in a second graphic in the text.
 - Sketch pages and `nt-prototypes/` stay untracked; `.claude/` is untracked.
 
 ## 8. Open items at hand-off
@@ -951,6 +971,65 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
    and no longer swallows an Escape meant for the figure; the pointer
    coming back onto a term from its card keeps the card. Other sections keep
    their explainer panels; Nil asked about Metro Industries.
+0c. **The narrower text column and the type floor: the review did not
+   finish, and its one finished lens found six problems.** The change
+   (`16cc5b7`, the shares-on-the-chart follow-up `87a1774`; §4, "The grid,
+   the frame and the type floor") was verified headless at twelve sizes
+   and is pushed, but the four-lens review stalled; only the
+   **JavaScript lens** finished, and its skeptic never ran, so the
+   findings below are **one reviewer's, with evidence, not yet
+   independently confirmed**. Confirm each, fix, then re-run the review
+   (`handoff/review-layout-type.workflow.js`, with narrower briefs).
+   1. *High.* Wherever the chart pans (`data-pan="1"`: windows under about
+      1090 wide, every phone, and short windows like 1366×650), switching
+      Treemap ↔ Ranked and moving between beats 2 and 3 **snap instead of
+      morphing**. The scale differs between the map and the panned
+      charts, so the animated paint starts at the old scale and the next
+      `remeasure()` (the beat's synthetic resize, or the ResizeObserver)
+      sees the scale move, refits the gutters and repaints without
+      animation. Fix: in `applyView` and `setStep`, after setting
+      `data-view` / `data-step`, settle the scale first (`syncPan`,
+      `measureS`, `tellScale`, `fitBandRef`, `invalidateMaps`,
+      `drawCards(false)`, `refitGutters()`) and only then paint animated.
+   2. *Medium.* A continuous window resize now costs about 170–190 ms per
+      event in every state (was about 95, and nothing in the Ranked view):
+      `remeasure()` calls `refitGutters()` on every change of scale, which
+      tears down and redraws both rankings and both bar charts, showing or
+      not. Fix: keep `tellScale()` immediate and move the refit to the
+      existing 150 ms debounced resize handler, or refit only the chart on
+      screen and mark the others dirty.
+   3. *Medium.* On a phone the **Ranked view's band is 654px tall** (the
+      704px drawing is 400px high, plus the title row, two control rows
+      and a four-line key), leaving 34–86px for the beat's text; on a
+      360×740 screen 21px of the key is below the fold. Fix: in the
+      stacked layout, when `data-pan="1"` and `data-view="alt"`, cap the
+      wrapper's height or drop the sector key, as was done for beat 3's
+      caption.
+   4. *Medium.* "None of the sectors shown" (a tier ground emptied by the
+      key) is now a fixed 12.5px and **runs past a narrow ground**
+      (frames under about 750px wide, every phone), cut by the next
+      ground's cells. Only the zoomed wording ("Nothing here from …") is
+      fitted to its ground. Fix: fit this wording too, falling back to a
+      shorter line or two lines.
+   5. *Low.* Any resize that moves the scale **closes an open tier menu
+      and drops keyboard focus** to the page (the refit removes and
+      redraws the head that had focus). Fix: remember the open menu and
+      the focused head or item in `refitGutters` and restore them, or
+      defer the refit while the menu is open.
+   6. *Low.* With the **table open on beat 2** (the svg letterboxed to
+      180px), "Partly traded" runs 3px past its band and over the cross,
+      and the cross itself (8 units, a 20-unit target) stays in units
+      while the band and its type hold their screen size. Fix: give the
+      cross the same 1/S treatment and reserve its width in the stacked
+      fit, or drop the cross on a ground too narrow for it.
+   The same lens checked and found sound: no ResizeObserver loops or
+   exceptions in width and height sweeps; no stale scale after quick view
+   flips, year switches, table toggles and beat changes; the first paint;
+   the tier grounds and the tiling cache after scale and tier changes;
+   tooltips and the tier menu while panned; the "Ask the chart" pin
+   across beat changes and resizes; lit rows, sort order and the tier
+   filter surviving a refit; badges and the map's label ladder.
+
 1. **The map at the sector level — Nil's pick is pending.** This is the
    live question at hand-off. The Level control (§4) tiles the map at the
    sector, 4-digit or 6-digit grain; at the sector the nine blocks carry
@@ -1033,9 +1112,9 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
    `:hover`/`:focus-visible`; on touch there is no hover, so the card
    appears on the first tap and its buttons take the second. Known,
    unaddressed.
-6. **The titles and the tier share captions** stay as authored under a filter
-   or zoom (the titles by decision in `feb8814`; the captions show the
-   metro's shares regardless) — flagged by reviewers as possibly misleading,
+6. **The titles and the tiers' shares** stay as authored under a filter
+   or zoom (the titles by decision in `feb8814`; the shares on the tier
+   bands show the metro's shares regardless) — flagged by reviewers as possibly misleading,
    left as is: the key, the crumbs and the live region say what is showing.
 7. **Arrow-key roving** between a segmented control's buttons is not
    implemented (not required by WCAG; every button is a tab stop).
@@ -1074,6 +1153,8 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
 - `handoff/type-audit.mjs`, `handoff/type-audit-city.mjs` — the type-floor
   and frame-fit audit for the two figure sections (§4, "The grid, the
   frame and the type floor").
+- `handoff/review-layout-type.workflow.js` — the four-lens review of that
+  change, as a Claude Code workflow script (§3, §8 item 0c).
 - `handoff/commit-history.md` — the full `git log` with dates; the commit
   messages are the design record.
 - `handoff/studies.md` — the study switches, their ids, options and beats.
