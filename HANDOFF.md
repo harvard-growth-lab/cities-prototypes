@@ -971,6 +971,18 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
    and no longer swallows an Escape meant for the figure; the pointer
    coming back onto a term from its card keeps the card. Other sections keep
    their explainer panels; Nil asked about Metro Industries.
+0d. **"Ask the chart": what changed, and the way back — Nil's pick is
+   pending.** Nil (2026-10-03): "it's not clear to the user what has
+   changed and how they can return to the previous view." Sketched as
+   `ask-chart-return-sketches.html` (repo root, tracked copy in
+   `handoff/sketches/`), four working mocks over captures of the real
+   chart: 1 the row as a switch; 2 before and after marked on the moved
+   controls, the old value being the way back; 3 a "Starting view |
+   Answer" switch in the figure's head while a question stands
+   (recommended: it works on the phone band, where the row has often
+   scrolled away); 4 a tab on the frame, "Showing an answer · Back to
+   the treemap". Build the pick as an opt study.
+
 0c. **The narrower text column and the type floor: the review did not
    finish; its one finished lens found six problems, all fixed on
    2026-10-03.** Three of the four review lenses stalled; the JavaScript
@@ -1135,7 +1147,11 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
   (the house set and Paul Tol), `key-actions-sketches.html` (B shipped),
   `control-row-two-ways.html` (tray and sentence),
   `explore-questions-sketches.html` with `explore-questions-images/`
-  (the third's rows with the answer in the text were built, item 0). Open them through the
+  (the third's rows with the answer in the text were built, item 0),
+  `ask-chart-return-sketches.html` with `ask-return-images/` (**open**,
+  2026-10-03: four ways for "Ask the chart" to show what changed and the
+  way back; 3, a "Starting view | Answer" switch in the figure's head, is
+  recommended). Open them through the
   same server (http://127.0.0.1:8912/handoff/sketches/…); the live ones
   need `cities-v-5/` beside `handoff/`.
 - Sketch pages at the repo root are the originals, untracked by convention

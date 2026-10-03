@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ask the chart: what changed, and the way back</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --teal:#255862;--teal-dark:#1c454d;--teal-tint:#eef3f4;--ink:#1a2226;--ink-soft:#526066;
+    --border:#e2e7e8;--border-strong:#c3ccce;--paper:#f1f3f2;--page:#f9fafb;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;padding:40px 44px 96px;font-family:'Source Sans 3',sans-serif;color:var(--ink);background:#fff;}
+  h1{font-size:24px;margin:0 0 6px;font-weight:700;letter-spacing:-.2px;}
+  .sub{margin:0 0 10px;color:var(--ink-soft);font-size:15px;line-height:1.5;max-width:900px;}
+  .how{margin:0 0 6px;font-size:14px;color:var(--ink);line-height:1.5;max-width:900px;}
+  h2{font-size:19px;font-weight:700;margin:52px 0 4px;letter-spacing:-.1px;display:flex;align-items:center;gap:10px;}
+  h2 .n{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;
+        background:var(--teal);color:#fff;font-size:13px;flex:none;}
+  h2 .n.o{background:none;border:1.5px solid var(--border-strong);color:var(--ink-soft);}
+  h2 .pick{padding:1px 9px;border-radius:10px;background:var(--teal-tint);color:var(--teal);font-size:12.5px;font-weight:600;}
+  .lead{margin:0 0 14px;font-size:14.5px;color:var(--ink-soft);line-height:1.5;max-width:900px;}
+  .notes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px 22px;max-width:1240px;margin:14px 0 0;}
+  .notes div{font-size:13px;line-height:1.5;color:var(--ink-soft);}
+  .notes b{display:block;color:var(--ink);font-weight:600;font-size:12.5px;margin:0 0 2px;}
+
+  /* ── the mock: a beat's text column beside the framed figure ── */
+  .stagewrap{background:var(--page);border:1px solid var(--border);border-radius:8px;padding:26px 26px 28px;max-width:1240px;}
+  .stage{display:grid;grid-template-columns:336px minmax(0,1fr);gap:40px;align-items:start;}
+  .eyebrow{font-size:13px;font-weight:500;color:var(--ink-soft);margin:0 0 12px;}
+  .eyebrow b{color:var(--ink);font-weight:600;}
+  .col h5{font-size:26px;line-height:1.2;font-weight:700;letter-spacing:-.3px;margin:0 0 12px;}
+  .col p.lede{font-family:Inter,-apple-system,sans-serif;font-size:16px;line-height:1.6;margin:0;color:var(--ink);}
+  .askl{margin:20px 0 4px;font-size:12.5px;font-weight:600;color:var(--ink-soft);}
+  .item{margin:0 -10px;border-top:1px solid var(--border);transition:background .15s ease;}
+  .item:last-child{border-bottom:1px solid var(--border);}
+  .item.on{background:var(--teal-tint);}
+  .q{display:flex;gap:10px;align-items:center;width:100%;min-height:44px;margin:0;padding:10px;appearance:none;background:none;border:0;
+     text-align:left;cursor:pointer;font:inherit;font-size:15px;line-height:1.35;color:var(--ink);}
+  .q:hover{background:var(--teal-tint);}
+  .q:focus-visible{outline:2px solid var(--teal);outline-offset:-2px;}
+  .gly{flex:none;width:15px;height:15px;color:var(--ink-soft);}
+  .qt{flex:1;}
+  .go{flex:none;display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:600;color:var(--teal);white-space:nowrap;}
+  .go svg{width:14px;height:14px;}
+  .go .dot{width:6px;height:6px;border-radius:50%;background:var(--teal);}
+  .ans{padding:0 10px 12px 35px;font-size:15px;line-height:1.5;margin:0;display:none;}
+  .item.on .ans{display:block;}
+  .term-i{display:inline-block;width:13px;height:13px;margin-left:3px;vertical-align:-2px;border:1.3px solid var(--ink-soft);border-radius:50%;
+          position:relative;}
+  .term-i::before{content:"";position:absolute;left:50%;top:5px;width:1.4px;height:4.2px;margin-left:-.7px;background:var(--ink-soft);}
+  .term-i::after{content:"";position:absolute;left:50%;top:2.2px;width:1.8px;height:1.8px;margin-left:-.9px;border-radius:50%;background:var(--ink-soft);}
+
+  .panel{background:#fff;border:1px solid var(--border);border-radius:10px;padding:22px 26px 18px;position:relative;
+         transition:border-color .2s ease,box-shadow .2s ease;}
+  /* the control row, as the site sets it */
+  .head{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;min-height:30px;margin:0 0 6px;}
+  .title{font-size:16px;font-weight:700;color:var(--teal);white-space:nowrap;margin-right:6px;transition:opacity .3s ease;}
+  .pair{display:inline-flex;align-items:center;gap:6px;border-radius:7px;transition:background-color 1.2s ease;}
+  .pair.wash{background:rgba(37,88,98,.16);transition:none;}
+  .lab{font-size:12.5px;font-weight:600;color:var(--ink-soft);}
+  .lab.mk{color:var(--teal);}
+  .lab.mk::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--teal);margin:0 5px 1px 0;}
+  .seg{display:inline-flex;gap:2px;padding:2px;background:var(--paper);border-radius:6px;}
+  .sb{appearance:none;border:0;background:none;height:24px;padding:0 8px;border-radius:4px;font:inherit;font-size:12.5px;font-weight:600;
+      color:var(--ink-soft);cursor:pointer;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
+  .sb.on{background:#fff;color:var(--teal);box-shadow:inset 0 0 0 1.5px #c2d4d7,0 1px 2px rgba(26,34,38,.12);}
+  .year{display:inline-flex;align-items:center;gap:6px;}
+  .year span.v{background:var(--paper);border-radius:6px;height:28px;padding:0 10px;display:inline-flex;align-items:center;gap:6px;
+               font-size:12.5px;font-weight:600;color:var(--teal);}
+  .hide{display:none !important;}
+  .fig{position:relative;margin-top:6px;}
+  .fig img{display:block;width:100%;height:auto;transition:opacity .45s ease;}
+  .fig img + img{position:absolute;left:0;top:0;}
+  .fig img.off{opacity:0;}
+
+  /* ── 1. the row as a switch ── */
+  .sw{position:relative;display:inline-block;width:26px;height:15px;border-radius:8px;border:1px solid var(--border-strong);background:#fff;
+      transition:background .16s ease,border-color .16s ease;}
+  .sw::after{content:"";position:absolute;top:2.5px;left:2.5px;width:8px;height:8px;border-radius:50%;background:var(--ink-soft);
+      transition:transform .16s ease-out,background .16s ease;}
+  .q:hover .sw::after{background:var(--teal);}
+  .item.on .sw{border-color:var(--teal);background:#dbe7e9;}
+  .item.on .sw::after{transform:translateX(11px);background:var(--teal);}
+
+  /* ── 2. before and after on the controls ── */
+  .sb.was{color:var(--ink-soft);box-shadow:inset 0 0 0 1px rgba(37,88,98,.55);background:none;}
+  .sb.was::before{content:"";width:6px;height:6px;border-radius:50%;box-shadow:inset 0 0 0 1.4px var(--teal);}
+  .sb.was:hover{background:#fff;color:var(--teal);}
+  .sb.now::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--teal);}
+  .tip2{font-size:12.5px;color:var(--ink-soft);margin:2px 0 0;min-height:18px;}
+  .tip2 .rg{display:inline-block;width:6px;height:6px;border-radius:50%;box-shadow:inset 0 0 0 1.4px var(--teal);margin:0 4px 1px 0;}
+  .tip2 .fd{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--teal);margin:0 4px 1px 0;}
+
+  /* ── 3. Starting view | Answer, in the title's place ── */
+  .answ{display:none;}
+  .stage.v3.asked .answ,.stage.v3.kept .answ{display:inline-flex;}
+  .stage.v3.asked .title,.stage.v3.kept .title{display:none;}
+
+  /* ── 4. a tab on the frame ── */
+  .stage.v4.asked .panel{border-color:var(--teal);box-shadow:0 0 0 .5px var(--teal);}
+  .tab{position:absolute;left:18px;top:-13px;display:none;align-items:center;gap:8px;height:26px;padding:0 10px;background:#fff;
+       border:1px solid var(--teal);border-radius:13px;font-size:12.5px;color:var(--ink-soft);}
+  .stage.v4.asked .tab{display:inline-flex;}
+  .tab .dot{width:6px;height:6px;border-radius:50%;background:var(--teal);}
+  .tab .sep{width:1px;height:14px;background:var(--border-strong);}
+  .tab button{appearance:none;border:0;background:none;padding:0;font:inherit;font-size:12.5px;font-weight:600;color:var(--teal);cursor:pointer;
+              display:inline-flex;align-items:center;gap:4px;}
+  .tab button:hover{text-decoration:underline;text-underline-offset:2px;}
+  .tab svg{width:13px;height:13px;}
+
+  .verdict{max-width:900px;margin:56px 0 0;padding:16px 20px;border:1px solid var(--border);border-radius:8px;background:#fff;}
+  .verdict h3{font-size:16px;margin:0 0 6px;}
+  .verdict p{font-size:14.5px;line-height:1.55;margin:0 0 8px;}
+  .verdict p:last-child{margin:0;}
+  @media (max-width:1100px){ .stage{grid-template-columns:1fr;} .notes{grid-template-columns:repeat(2,minmax(0,1fr));} }
+</style>
+</head>
+<body>
+
+<h1>Ask the chart: what changed, and the way back</h1>
+<p class="sub">Today a question row sets the figure to the view that answers it and says "Showing", and pressing the row again goes back. Readers do not see what changed in the figure, or that the row is the way back. Four ways to make both plain, each a working mock of beat 1 beside the real chart.</p>
+<p class="how">In each mock, press the first question. Then go back the way that option offers. Nothing here adds words to the beat's paragraph or the answer.</p>
+
+<!-- ═════════ today ═════════ -->
+<h2><span class="n o">0</span>Today, for comparison</h2>
+<p class="lead">The row turns tinted and reads "Showing"; the labels of the controls the question moved turn teal with a dot. Both marks are small and far apart, and nothing says the row is the way back.</p>
+<div class="stagewrap"><div class="stage v0" data-v="0"></div></div>
+
+<!-- ═════════ 1 ═════════ -->
+<h2><span class="n">1</span>The row is a switch</h2>
+<p class="lead">"Show" carries a small switch. Pressed, its knob slides across and turns teal, the same teal dot the moved controls wear, and the row reads "Showing". A switch says "press again to turn this off" without a word.</p>
+<div class="stagewrap"><div class="stage v1" data-v="1"></div></div>
+<div class="notes">
+  <div><b>What changed</b>Only by matching the knob's teal to the dots on the controls; the switch itself does not name the change.</div>
+  <div><b>The way back</b>The same row, flipped back. Strong: everyone reads a switch as reversible.</div>
+  <div><b>On a phone</b>Works by tap, in the text the reader is looking at; but once the row has scrolled away, the band offers no way back.</div>
+  <div><b>Cost and risk</b>Small (the row's right end and its CSS). It can look like a lasting setting, though it turns off when the beat is left.</div>
+</div>
+
+<!-- ═════════ 2 ═════════ -->
+<h2><span class="n">2</span>Before and after, on the controls</h2>
+<p class="lead">In each control the question moved, the new value gets a filled teal dot and the value it left keeps a hollow ring and a faint outline, with a short wash over the pair at the moment it changes. The ringed value is the way back: pressing it returns the whole beat's view.</p>
+<div class="stagewrap"><div class="stage v2" data-v="2"></div></div>
+<div class="notes">
+  <div><b>What changed</b>Strongest: the from and the to stand side by side on the exact controls, e.g. View ○ Treemap ● Ranked.</div>
+  <div><b>The way back</b>The ringed value, or the row. Pressing Treemap to get the treemap back is what a reader tries anyway.</div>
+  <div><b>On a phone</b>The control row is in the band, so the marks and the way back stay in view after the text has scrolled.</div>
+  <div><b>Cost and risk</b>Medium (the figure's segment buttons). The ring and dot are learned, not labelled; a ringed value also resets the other control it moved.</div>
+</div>
+
+<!-- ═════════ 3 ═════════ -->
+<h2><span class="n">3</span>"Starting view | Answer" in the figure's head <span class="pick">my pick</span></h2>
+<p class="lead">While a question stands, the figure's title gives way to a two-way switch in the same light dress as View and Color: "Starting view | Answer", with Answer pressed. Pressing "Starting view" brings the beat's view back; the switch stays for the rest of the beat, so the reader can flip between the two and watch the chart change.</p>
+<div class="stagewrap"><div class="stage v3" data-v="3"></div></div>
+<div class="notes">
+  <div><b>What changed</b>The figure says, in its own head, that it is showing an answer, and flipping shows the change as it happens.</div>
+  <div><b>The way back</b>"Starting view", where the reader is looking at the chart; the row's "Showing" still works too.</div>
+  <div><b>On a phone</b>It sits in the band's head where the title was: no extra height, and the way back is there when the text has scrolled away.</div>
+  <div><b>Cost and risk</b>Medium. A second way back besides the row, which you asked to be the way back; the title hides while an answer stands.</div>
+</div>
+
+<!-- ═════════ 4 ═════════ -->
+<h2><span class="n">4</span>A tab on the frame</h2>
+<p class="lead">The frame's border turns teal and a small tab sits on it, like a label on a folder: "Showing an answer", then "Back to the treemap" (named for each beat's own view). It never covers the chart.</p>
+<div class="stagewrap"><div class="stage v4" data-v="4"></div></div>
+<div class="notes">
+  <div><b>What changed</b>The whole frame says "answer"; the moved controls keep their teal marks.</div>
+  <div><b>The way back</b>Named and explicit: "Back to the treemap".</div>
+  <div><b>On a phone</b>The tab hangs from the band's top edge, so it stays visible after the question row has scrolled away.</div>
+  <div><b>Cost and risk</b>Small. Closest to the "Back to the starting view" link you turned down, though it sits on the figure, not in the text.</div>
+</div>
+
+<div class="verdict">
+  <h3>Where each stands</h3>
+  <p><b>3</b> answers both halves of the problem where the reader is looking at the chart, works on a phone, and uses only the figure's own kind of control; the cost is a second way back next to "Showing".</p>
+  <p><b>2</b> shows the change most precisely, and pairs well with 3 or 1 if the dots alone prove too subtle. <b>1</b> is the smallest change and fixes "how do I go back" in the text, but not "what changed". <b>4</b> is the most explicit, and the closest to what you turned down before.</p>
+</div>
+
+<template id="tpl">
+  <div class="col">
+    <p class="eyebrow">Metro Industries <b>1/3</b></p>
+    <h5>What does the metro do for a living?</h5>
+    <p class="lede">2.3 million jobs across 877 industries. Professional &amp; business services and education &amp; health are the two largest sectors, each about a quarter of the jobs.</p>
+    <p class="askl">Ask the chart</p>
+    <div class="items">
+      <div class="item" data-k="q1">
+        <button type="button" class="q"><svg class="gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg>
+          <span class="qt">Are the metro’s biggest industries also its most complex?</span><span class="go"></span></button>
+        <p class="ans">No. General hospitals, the largest, is 17th of these 25 by complexity<span class="term-i"></span>. Software publishers leads.</p>
+      </div>
+      <div class="item" data-k="q2">
+        <button type="button" class="q"><svg class="gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg>
+          <span class="qt">Which of the two largest sectors holds the metro’s complex work?</span><span class="go"></span></button>
+        <p class="ans">Professional &amp; business. About 45% of its jobs are in the teal cells, of higher complexity<span class="term-i"></span>. In education &amp; health, about 4%.</p>
+      </div>
+    </div>
+  </div>
+  <div class="panel">
+    <span class="tab"><span class="dot"></span>Showing an answer<span class="sep"></span><button type="button" class="tabback"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 6.5h6a3.5 3.5 0 0 1 0 7H7"/><path d="M6 3.5 3 6.5l3 3"/></svg><span class="tabtxt">Back to the treemap</span></button></span>
+    <div class="head">
+      <span class="title">All industries</span>
+      <span class="pair answ"><span class="seg"><button type="button" class="sb sv">Starting view</button><button type="button" class="sb av on">Answer</button></span></span>
+      <span class="year"><span class="lab">Year</span><span class="v">2024 <svg width="10" height="7" viewBox="0 0 12 8"><path d="M1 1l5 5 5-5" fill="none" stroke="#255862" stroke-width="1.6"/></svg></span></span>
+      <span class="pair p-view"><span class="lab">View</span><span class="seg"><button type="button" class="sb" data-c="view" data-v="map">Treemap</button><button type="button" class="sb" data-c="view" data-v="alt">Ranked</button></span></span>
+      <span class="pair p-color"><span class="lab">Color</span><span class="seg"><button type="button" class="sb" data-c="color" data-v="sector">Sector</button><button type="button" class="sb" data-c="color" data-v="complexity">Complexity</button></span></span>
+      <span class="pair p-level"><span class="lab">Level</span><span class="seg"><button type="button" class="sb">Sector</button><button type="button" class="sb on">Industry</button></span></span>
+      <span class="pair p-sort"><span class="lab">Sort by</span><span class="seg"><button type="button" class="sb" data-c="sort" data-v="jobs">Jobs</button><button type="button" class="sb" data-c="sort" data-v="cx">Complexity</button></span></span>
+    </div>
+    <p class="tip2"></p>
+    <div class="fig"><img class="i-map" src="ask-return-images/b1-map.png" alt="The treemap, coloured by sector"><img class="i-q1 off" src="ask-return-images/b1q1-ranked.png" alt="The 25 largest industries, ranked by complexity"><img class="i-q2 off" src="ask-return-images/b1q2-complexity.png" alt="The treemap coloured by complexity"></div>
+  </div>
+</template>
+
+<script>
+(function(){
+  const ARROW = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg>';
+  /* what each question sets, against the beat's own view */
+  const START = { view: "map", color: "sector", sort: "jobs" };
+  const ASK = { q1: { view: "alt", sort: "cx" }, q2: { color: "complexity" } };
+  const NAMES = { view: "View", color: "Color", sort: "Sort by" };
+  document.querySelectorAll(".stage[data-v]").forEach(stage => {
+    const v = +stage.dataset.v;
+    stage.appendChild(document.getElementById("tpl").content.cloneNode(true));
+    let asked = null, kept = null;            /* the question standing; for 3, the last one asked in the beat */
+    const st = () => Object.assign({}, START, asked ? ASK[asked] : {});
+    const goLabel = (k, on) => {
+      if (v === 1) return '<span class="gotxt">' + (on ? "Showing" : "Show") + '</span><span class="sw" aria-hidden="true"></span>';
+      return on ? '<span class="dot"></span>Showing' : 'Show ' + ARROW;
+    };
+    const wash = pairs => pairs.forEach(p => { p.classList.add("wash"); void p.offsetWidth; requestAnimationFrame(() => requestAnimationFrame(() => p.classList.remove("wash"))); });
+    const render = (washIt) => {
+      const s = st(), moved = asked ? Object.keys(ASK[asked]) : [];
+      stage.classList.toggle("asked", !!asked);
+      stage.classList.toggle("kept", v === 3 && !asked && !!kept);
+      stage.querySelectorAll(".item").forEach(it => {
+        const on = it.dataset.k === asked;
+        it.classList.toggle("on", on);
+        it.querySelector(".q").setAttribute("aria-pressed", String(on));
+        it.querySelector(".go").innerHTML = goLabel(it.dataset.k, on);
+      });
+      /* the controls */
+      stage.querySelectorAll(".sb[data-c]").forEach(b => {
+        const c = b.dataset.c, isOn = s[c] === b.dataset.v;
+        b.classList.toggle("on", isOn);
+        b.classList.remove("was", "now");
+        if (v === 2 && moved.includes(c)){
+          if (isOn) b.classList.add("now");
+          else if (START[c] === b.dataset.v) b.classList.add("was");
+        }
+      });
+      stage.querySelector(".p-level").classList.toggle("hide", s.view !== "map");
+      stage.querySelector(".p-sort").classList.toggle("hide", s.view === "map");
+      /* today's mark on the moved controls' labels, in 0, 1, 3 and 4 */
+      [["view", ".p-view"], ["color", ".p-color"], ["sort", ".p-sort"]].forEach(([c, sel]) => {
+        stage.querySelector(sel + " .lab").classList.toggle("mk", v !== 2 && moved.includes(c));
+      });
+      if (v === 2){
+        stage.querySelector(".tip2").innerHTML = asked
+          ? '<span class="fd"></span>set by the question &nbsp; <span class="rg"></span>the beat’s view: press it to go back'
+          : "";
+        if (washIt) wash(moved.map(c => stage.querySelector(".p-" + c)));
+      }
+      /* 3: the switch in the title's place */
+      if (v === 3){
+        stage.querySelector(".sv").classList.toggle("on", !asked);
+        stage.querySelector(".av").classList.toggle("on", !!asked);
+      }
+      /* 4: the tab names the beat's own view */
+      if (v === 4) stage.querySelector(".tabtxt").textContent = asked === "q1" ? "Back to the treemap" : "Back to sector colours";
+      /* the picture */
+      stage.querySelector(".i-q1").classList.toggle("off", asked !== "q1");
+      stage.querySelector(".i-q2").classList.toggle("off", asked !== "q2");
+    };
+    const ask = k => { asked = k; if (k) kept = k; render(true); };
+    stage.querySelectorAll(".item").forEach(it => it.querySelector(".q").addEventListener("click", () => ask(asked === it.dataset.k ? null : it.dataset.k)));
+    /* 2: the value the question left is the way back; any other press on a control ends the question in the build too */
+    stage.querySelectorAll(".sb[data-c]").forEach(b => b.addEventListener("click", () => { if (asked && v === 2 && b.classList.contains("was")) ask(null); }));
+    if (v === 3){
+      stage.querySelector(".sv").addEventListener("click", () => { if (asked) ask(null); });
+      stage.querySelector(".av").addEventListener("click", () => { if (!asked && kept) ask(kept); });
+    }
+    if (v === 4) stage.querySelector(".tabback").addEventListener("click", () => ask(null));
+    render(false);
+  });
+})();
+</script>
+</body>
+</html>
