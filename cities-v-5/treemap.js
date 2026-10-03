@@ -3483,13 +3483,29 @@
        whether any ground is too narrow to set them on one line */
     const sharePct = k => Math.round(clusterShare[k] * 100) + "%";
     const bandNameW = [0, 0, 0], bandGap = () => 7 / scaleNow();
+    /* the name a band carries: the tier's, or where even that alone is too
+       wide for its ground (the drawing letterboxed under the open table on
+       a narrow screen) the first word of it, "Partly" */
+    const bandName = [TIER_NAMES[0], TIER_NAMES[1], TIER_NAMES[2]];
     fitBandRef = () => {
+      const u = 1 / scaleNow();
       const mn = measureFor("mi-card-lab"), mp = measureFor("mi-card-pct");
-      const pw = [0, 1, 2].map(k => { bandNameW[k] = mn.w(TIER_NAMES[k]); return mp.w(sharePct(k)); });
-      mn.done(); mp.done();
-      /* the cross, where there is one, keeps 22 units and 6 clear of the words */
-      const right = cardBox.length > 1 ? CARD_TXT + 22 : CARD_TXT;
+      [0, 1, 2].forEach(k => { bandName[k] = TIER_NAMES[k]; bandNameW[k] = mn.w(bandName[k]); });
+      const pw = [0, 1, 2].map(k => mp.w(sharePct(k)));
+      /* the cross, where there is one, keeps the band's last 22px on screen */
+      const crosses = cardBox.length > 1, right = crosses ? 22 * u : CARD_TXT;
       bandStacked = cardBox.some(c => CARD_TXT + bandNameW[c.k] + bandGap() + pw[c.k] > c.w - right);
+      if (bandStacked) cardBox.forEach(c => {
+        if (CARD_TXT + bandNameW[c.k] <= c.w - 4 * u || !/\s/.test(TIER_NAMES[c.k])) return;
+        bandName[c.k] = TIER_NAMES[c.k].split(/\s+/)[0];
+        bandNameW[c.k] = mn.w(bandName[c.k]);
+      });
+      mn.done(); mp.done();
+      /* stacked, a ground whose words do not clear the cross goes without
+         one (a phone, or the drawing letterboxed small under the open
+         table); the tier can still be taken off from a wider frame, and
+         brought back from the chips above the chart */
+      cardBox.forEach(c => { c.noX = crosses && bandStacked && CARD_TXT + Math.max(bandNameW[c.k], pw[c.k]) > c.w - right; });
     };
     fitBandRef();
     /* what the gutters were last fitted to - the type, and whether it could
@@ -3534,7 +3550,7 @@
     const mkBarGeo = () => ({ ml: GUT_MAX, scale: d3.scaleLinear()
       .domain([0, (byJobsAll[0] ? byJobsAll[0].employ : 1) * 1.04]).range([GUT_MAX + 12, BPR]) });
     const barGeoAll = mkBarGeo(), barGeoTrad = mkBarGeo();
-    let closeMenuRef = null;
+    let closeMenuRef = null, keepMenuRef = null;
     /* the bars answer to both filters, so either one has to ask what the
        other leaves before it takes anything away */
     const tierListWith = (tOn, sOn) =>
@@ -3836,7 +3852,7 @@
           g.append("text").attr("class", "mi-card-pct");
           g.append("text").attr("class", "mi-card-none");
           const x = g.append("g").attr("class", "mi-card-x");
-          x.append("rect").attr("class", "mi-card-x-hit").attr("width", 20).attr("height", 20)
+          x.append("rect").attr("class", "mi-card-x-hit")
             .attr("role", "button").attr("tabindex", -1).attr("focusable", "true");
           x.append("path").attr("class", "mi-card-x-mark");
           x.append("title");
@@ -3852,7 +3868,7 @@
       const bh = bandH(), half = 8.5 / scaleNow();
       const mid = bandStacked ? bh / 2 - half : bh / 2, mid2 = bandStacked ? bh / 2 + half : mid;
       sel.select("rect.mi-card-band").attr("height", bh);
-      sel.select("text.mi-card-lab").attr("y", mid).attr("dy", "0.35em").text(c => TIER_NAMES[c.k]);
+      sel.select("text.mi-card-lab").attr("y", mid).attr("dy", "0.35em").text(c => bandName[c.k]);
       sel.select("text.mi-card-pct").attr("y", mid2).attr("dy", "0.35em").attr("text-anchor", "start")
         .text(c => sharePct(c.k));
       sel.select("text.mi-card-none").attr("y", cardHead() + 26);
@@ -3861,12 +3877,15 @@
       go(sel.select("text.mi-card-lab")).attr("x", c => c.x + CARD_TXT);
       go(sel.select("text.mi-card-pct")).attr("x", c => c.x + CARD_TXT + (bandStacked ? 0 : bandNameW[c.k] + bandGap()));
       go(sel.select("text.mi-card-none")).attr("x", c => c.x + CARD_TXT);
-      /* the cross only where there is another ground to fall back on */
-      sel.select("g.mi-card-x").style("display", cardBox.length > 1 ? null : "none");
-      sel.select("rect.mi-card-x-hit").attr("y", mid - 10);
-      go(sel.select("rect.mi-card-x-hit")).attr("x", c => c.x + c.w - CARD_TXT - 16);
+      /* the cross only where there is another ground to fall back on, and
+         a fixed size on screen like the words beside it: an 8px mark 13px
+         in from the band's right edge, on a 20px target */
+      sel.select("g.mi-card-x").style("display", c => cardBox.length > 1 && !c.noX ? null : "none");
+      const u = 1 / scaleNow(), hit = Math.min(20 * u, bh);
+      sel.select("rect.mi-card-x-hit").attr("y", mid - hit / 2).attr("width", hit).attr("height", hit);
+      go(sel.select("rect.mi-card-x-hit")).attr("x", c => c.x + c.w - 13 * u - hit / 2);
       go(sel.select("path.mi-card-x-mark")).attr("d", c => {
-        const x = c.x + c.w - CARD_TXT - 10, y = mid, r = 4;
+        const x = c.x + c.w - 13 * u, y = mid, r = 4 * u;
         return "M" + (x - r) + "," + (y - r) + "L" + (x + r) + "," + (y + r) +
                "M" + (x + r) + "," + (y - r) + "L" + (x - r) + "," + (y + r);
       });
@@ -4261,9 +4280,10 @@
       const sig = typeSig();
       if (!force && sig === gutSig) return false;
       gutSig = sig;
-      /* the heads are drawn again closed, so a tier menu standing open
-         closes with them rather than hanging from a head that is gone */
-      if (closeMenuRef) closeMenuRef();
+      /* the heads are drawn again; a tier menu standing open stays open and
+         is hung from the new head, and the focus, if it was on a head,
+         goes to that head's successor rather than to the page */
+      const keepMenu = keepMenuRef ? keepMenuRef.save() : null;
       [[R1, gAxis, gAxisGap, gRows], [R2, gAxis2, gAxisGap2, gRows2]].forEach(([R, A, AG, G]) => {
         const right = R.xr.range()[1];
         /* a row a phrase in the text has lit stays lit across the redraw */
@@ -4280,6 +4300,7 @@
       });
       drawBars(barListAll, gBarsAll);
       drawBarsTrad();
+      if (keepMenu) keepMenuRef.restore(keepMenu);
       return true;
     }
 
@@ -4304,6 +4325,13 @@
     }
 
     let step = -1, painted = -1, arriving = false;
+    /* a view or a beat whose chart pans draws wider than the map does, so
+       the scale can move without the window moving: it is settled, and
+       the gutters fitted to it, before the move is painted, or the next
+       measure would cut the animation short (set where the scale is
+       measured, below) */
+    let settleScaleRef = null;
+    const settleForPaint = () => { if (settleScaleRef && settleScaleRef()){ refitGutters(); fitPicks(fig); } };
     /* a named view sets several things at once and paints once: while the
        hold is up a paint is only noted (see setNamed). And the question
        the chart is answering, if any, with the hooks the beat change and
@@ -4450,7 +4478,7 @@
       const cardsOn = i === 4 && view === "map";
       gCards.classed("is-on", cardsOn);
       /* the crosses are for the keyboard only while the grounds are up */
-      gCards.selectAll("rect.mi-card-x-hit").attr("tabindex", cardsOn && cardBox.length > 1 ? 0 : -1);
+      gCards.selectAll("rect.mi-card-x-hit").attr("tabindex", c => cardsOn && cardBox.length > 1 && !c.noX ? 0 : -1);
       show(gCards, cardsOn);
       /* a ground the filter empties keeps its width - the tiers' shares are
          the metro's, not the filter's - and says why it is bare */
@@ -4463,13 +4491,18 @@
         const tn = g.select(".mi-card-none");
         tn.text(!bare ? "" : zoomed ? "Nothing here from " + zoomed : "None of the sectors shown");
         /* the line must fit its ground, or it prints across the next one */
+        const node = tn.node(), room = c.w - 2 * Math.max(0, (+tn.attr("x") || c.x) - c.x);
         if (bare && zoomed){
-          const node = tn.node(), room = c.w - 2 * Math.max(0, (+tn.attr("x") || c.x) - c.x);
           let nm = zoomed;
           while (nm.length > 3 && node.getComputedTextLength() > room){
             nm = nm.slice(0, -1).replace(/[\s&,-]+$/, ""); tn.text("Nothing here from " + nm + "\u2026");
           }
           if (node.getComputedTextLength() > room) tn.text("Nothing here");
+        }
+        /* it is a fixed size on screen, so a narrow ground takes a shorter line */
+        if (bare && !zoomed) for (const t of ["None of these sectors", "None shown", "None"]){
+          if (node.getComputedTextLength() <= room) break;
+          tn.text(t);
         }
         /* a ground with nothing to show steps back, but its name and share
            still read (0.4 left them at 2.4 to 1) */
@@ -4641,6 +4674,25 @@
       });
       escLayers.push({ p: 2, open: isOpen, close: () => closeMenu(true) });
       closeMenuRef = closeMenu;
+      keepMenuRef = {
+        save: () => {
+          const a = document.activeElement, head = a && el.contains(a) && a.closest ? a.closest("g.mi-tradmenu") : null;
+          return { open: isOpen(), ctx: menuCtx, head: head ? ctxOf(head) : null };
+        },
+        restore: st => {
+          if (st.open){
+            /* re-anchored without moving the focus, which is still on the menu's item if it was */
+            el.querySelectorAll("g.mi-tradmenu").forEach(g => { g.classList.remove("is-open"); g.setAttribute("aria-expanded", "false"); });
+            menuCtx = st.ctx; openMenu(false);
+          }
+          /* the head that had the focus, found again in its own chart */
+          if (st.head){
+            const keep = menuCtx; menuCtx = st.head;
+            const g = headG(); if (g && g.focus) g.focus({ preventScroll: true });
+            if (!st.open) menuCtx = keep;
+          }
+        }
+      };
     }
 
     /* the ranking's own study: tier word (shipped) or score in the
@@ -4745,6 +4797,7 @@
       /* the reveal section opens on the metro's own mix and only then shows
          the city's part of it, so its first beat is played, not painted */
       if (first && i === 0 && opts.adminReveal){ paintMetroFirst(); return; }
+      settleForPaint();
       paint(i, !first && !reduced());
       if (forced) syncLive(", set back to the industry level, which this beat holds");
       if (afterStepRef) afterStepRef(i);
@@ -5355,19 +5408,34 @@
       const w = el.parentNode ? el.parentNode.clientWidth : 0, v = w && w < PAN_MIN ? "1" : "";
       if ((fig.dataset.pan || "") !== v) fig.dataset.pan = v;
     };
-    const remeasure = () => {
+    /* the scale, settled without painting. The scale first: the stylesheet
+       sizes the charts' type from it, the bands and the tilings follow it,
+       and the gutters are fitted to that type. Says whether it moved. */
+    settleScaleRef = () => {
       syncPan();
       const s2 = measureS();
-      const moved = !!s2 && Math.abs(s2 - S) >= 1e-4;
-      /* the scale first: the stylesheet sizes the charts' type from it, and
-         the gutters below are fitted to that type */
-      if (moved){ S = s2; tellScale(); fitBandRef(); invalidateMaps(); drawCards(false); }
+      if (!s2 || Math.abs(s2 - S) < 1e-4) return false;
+      S = s2; tellScale(); fitBandRef(); invalidateMaps(); drawCards(false);
+      return true;
+    };
+    /* the gutters follow a change of scale once it has stopped moving:
+       refitting them redraws all four charts, which every step of a
+       dragged window edge cannot afford; meanwhile the type itself has
+       already taken its size from the stylesheet */
+    let refitT = null;
+    const scheduleRefit = () => {
+      clearTimeout(refitT);
+      refitT = setTimeout(() => { if (!dead && refitGutters() && step >= 0) paint(step, false); }, 150);
+    };
+    disposers.push(() => clearTimeout(refitT));
+    const remeasure = () => {
+      const moved = settleScaleRef();
       /* gutters fitted while the page was still hidden were fitted blind,
          on a canvas: the first tick with the figure on screen fits them
-         to the page's own measure. A change of scale changes the type's
-         size in units, and the gutters with it. Otherwise this costs a
-         comparison. */
-      const refit = (moved || /blind/.test(gutSig)) && refitGutters();
+         to the page's own measure, at once */
+      const blind = /blind/.test(gutSig);
+      const refit = blind && refitGutters();
+      if (moved && !blind) scheduleRefit();
       if (!moved){ if (refit && step >= 0) paint(step, false); return; }
       fitPicks(fig);                                    /* the blanks, once the figure has a width to measure in */
       if (step >= 0 && (view === "map" || refit)) paint(step, false);
@@ -6014,6 +6082,7 @@
       fig.dataset.view = view;
       syncViewCtl();
       if (opts.adminReveal && step === 0){ placeCoarse(!reduced(), true); return; }
+      settleForPaint();
       if (step === 0 || step === 1 || step === 4 || step === 5 || step === 7) paint(step, !reduced());
     };
     if (viewEl) on(viewEl, "click", ev => {

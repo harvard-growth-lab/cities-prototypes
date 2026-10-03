@@ -3099,6 +3099,14 @@
     #miFigure[data-step="6"] .mi-caption > .sector-key{display:none;}
     #miFigure[data-step="6"]:not([data-sort="gap"]) .mi-caption > .spec-key:not(.spec-key--gap),
     #miFigure[data-step="6"][data-sort="gap"] .mi-caption > .spec-key--gap{position:relative;}
+    /* the Ranked view pans at 704 wide, a drawing 400 tall; with the sector
+       key under it the band took the screen and left the beat's text two
+       lines. The bars name their industries, and the map the reader comes
+       from carries the key, so here it stands down (a complexity colouring
+       keeps its own legend) */
+    #miFigure[data-pan="1"][data-view="alt"] .mi-caption{min-height:0;}
+    #miFigure[data-pan="1"][data-view="alt"] .mi-caption > .sector-key{display:none;}
+    #miFigure[data-pan="1"][data-view="alt"][data-color="complexity"] .mi-caption > .complexity-legend{position:relative;}
   }
   /* Where the frame is too narrow for a chart's rows to hold that type -
      25 bars stand 17 units apart, so under about 700px of drawing their
@@ -3853,7 +3861,7 @@
   #miTreemapSvg .mi-card-pct{font-size:13px;font-weight:400;fill:var(--ink);font-variant-numeric:tabular-nums;}
   #miTreemapSvg .mi-cards{pointer-events:none;}
   /* the cross answers the pointer only while the grounds are the beat showing */
-  #miTreemapSvg .mi-card-x-mark{stroke:#7c858a;stroke-width:1.6;stroke-linecap:round;fill:none;}
+  #miTreemapSvg .mi-card-x-mark{stroke:#7c858a;stroke-width:1.6;stroke-linecap:round;fill:none;vector-effect:non-scaling-stroke;}
   #miTreemapSvg .mi-card-x-hit{fill:transparent;cursor:pointer;pointer-events:none;}
   #miTreemapSvg .mi-cards.is-on .mi-card-x-hit{pointer-events:auto;}
   #miTreemapSvg .mi-card-x:hover .mi-card-x-mark{stroke:var(--ink);}

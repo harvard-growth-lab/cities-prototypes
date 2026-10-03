@@ -972,63 +972,31 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
    coming back onto a term from its card keeps the card. Other sections keep
    their explainer panels; Nil asked about Metro Industries.
 0c. **The narrower text column and the type floor: the review did not
-   finish, and its one finished lens found six problems.** The change
-   (`16cc5b7`, the shares-on-the-chart follow-up `87a1774`; §4, "The grid,
-   the frame and the type floor") was verified headless at twelve sizes
-   and is pushed, but the four-lens review stalled; only the
-   **JavaScript lens** finished, and its skeptic never ran, so the
-   findings below are **one reviewer's, with evidence, not yet
-   independently confirmed**. Confirm each, fix, then re-run the review
-   (`handoff/review-layout-type.workflow.js`, with narrower briefs).
-   1. *High.* Wherever the chart pans (`data-pan="1"`: windows under about
-      1090 wide, every phone, and short windows like 1366×650), switching
-      Treemap ↔ Ranked and moving between beats 2 and 3 **snap instead of
-      morphing**. The scale differs between the map and the panned
-      charts, so the animated paint starts at the old scale and the next
-      `remeasure()` (the beat's synthetic resize, or the ResizeObserver)
-      sees the scale move, refits the gutters and repaints without
-      animation. Fix: in `applyView` and `setStep`, after setting
-      `data-view` / `data-step`, settle the scale first (`syncPan`,
-      `measureS`, `tellScale`, `fitBandRef`, `invalidateMaps`,
-      `drawCards(false)`, `refitGutters()`) and only then paint animated.
-   2. *Medium.* A continuous window resize now costs about 170–190 ms per
-      event in every state (was about 95, and nothing in the Ranked view):
-      `remeasure()` calls `refitGutters()` on every change of scale, which
-      tears down and redraws both rankings and both bar charts, showing or
-      not. Fix: keep `tellScale()` immediate and move the refit to the
-      existing 150 ms debounced resize handler, or refit only the chart on
-      screen and mark the others dirty.
-   3. *Medium.* On a phone the **Ranked view's band is 654px tall** (the
-      704px drawing is 400px high, plus the title row, two control rows
-      and a four-line key), leaving 34–86px for the beat's text; on a
-      360×740 screen 21px of the key is below the fold. Fix: in the
-      stacked layout, when `data-pan="1"` and `data-view="alt"`, cap the
-      wrapper's height or drop the sector key, as was done for beat 3's
-      caption.
-   4. *Medium.* "None of the sectors shown" (a tier ground emptied by the
-      key) is now a fixed 12.5px and **runs past a narrow ground**
-      (frames under about 750px wide, every phone), cut by the next
-      ground's cells. Only the zoomed wording ("Nothing here from …") is
-      fitted to its ground. Fix: fit this wording too, falling back to a
-      shorter line or two lines.
-   5. *Low.* Any resize that moves the scale **closes an open tier menu
-      and drops keyboard focus** to the page (the refit removes and
-      redraws the head that had focus). Fix: remember the open menu and
-      the focused head or item in `refitGutters` and restore them, or
-      defer the refit while the menu is open.
-   6. *Low.* With the **table open on beat 2** (the svg letterboxed to
-      180px), "Partly traded" runs 3px past its band and over the cross,
-      and the cross itself (8 units, a 20-unit target) stays in units
-      while the band and its type hold their screen size. Fix: give the
-      cross the same 1/S treatment and reserve its width in the stacked
-      fit, or drop the cross on a ground too narrow for it.
-   The same lens checked and found sound: no ResizeObserver loops or
-   exceptions in width and height sweeps; no stale scale after quick view
-   flips, year switches, table toggles and beat changes; the first paint;
-   the tier grounds and the tiling cache after scale and tier changes;
-   tooltips and the tier menu while panned; the "Ask the chart" pin
-   across beat changes and resizes; lit rows, sort order and the tier
-   filter surviving a refit; badges and the map's label ladder.
+   finish; its one finished lens found six problems, all fixed on
+   2026-10-03.** Three of the four review lenses stalled; the JavaScript
+   lens finished and its findings were reproduced with its own probes,
+   fixed, and re-run clean:
+   1. The morphs snapped instead of animating wherever the chart pans
+      (`data-pan`): the scale is now settled before an animated paint
+      (`settleForPaint()` in `applyView` and `setStep`), so the next
+      measure finds nothing moved.
+   2. A dragged window edge cost about 180 ms per event: the gutter refit
+      now runs 150 ms after the scale stops moving (`scheduleRefit`),
+      and a 42-step resize sweep shows no long tasks in any state.
+   3. The phone's Ranked band was 654px tall: the sector key stands down
+      there while the chart pans (546px; 194px left for the text at
+      390×844, 121 at 360×740).
+   4. "None of the sectors shown" overran a narrow ground: it falls back
+      to "None of these sectors", "None shown", "None".
+   5. A refit closed an open tier menu and dropped the focus: the menu is
+      re-hung from the new head and the focus returns to the head it
+      was on (`keepMenuRef`).
+   6. Tier bands with the table open: the cross is a fixed size on screen
+      (an 8px mark on a 20px target, 13px in from the band's edge); a
+      ground whose words do not clear it goes without a cross, and a
+      name too wide even alone is cut to its first word ("Partly").
+   The other three lenses (fit, type, css) never reported; re-run them
+   with narrower briefs (`handoff/review-layout-type.workflow.js`).
 
 1. **The map at the sector level — Nil's pick is pending.** This is the
    live question at hand-off. The Level control (§4) tiles the map at the
