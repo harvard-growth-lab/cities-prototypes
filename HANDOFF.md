@@ -300,11 +300,12 @@ still under `prefers-reduced-motion`.
 
 **The head row** (`#miView`), under the "Control row" study:
 
-- **opt-1 (tray, default)** — title + Year (labelled) + View Treemap|Ranked
+- **opt-1 (tray)** — title + Year (labelled) + View Treemap|Ranked
   + Color Sector|Complexity (+ Sort by when bars are up), dressed as a
   "paper tray": no border, soft grey tray (`--paper #f4f5f2`), the chosen
   button a white tile with teal text and a soft shadow.
-- **opt-2 (sentence)** — the title is a sentence, "All industries, shown as
+- **opt-2 (sentence, the default since 2026-10-04 at Nil's ask)** — the
+  title is a sentence, "All industries, shown as
   a [treemap ▾], coloured by [sector ▾], in [2024 ▾]", each blank a native
   `<select>` cut to the width of its word (`fitPick` measures a hidden twin;
   refit on view/step/year changes). Leads per beat: "All industries," /
@@ -517,7 +518,8 @@ question still open; both options must keep working:
 
 | Study | id | options (default first) | beats |
 |---|---|---|---|
-| Control row | `miRowOpt` | tray · sentence | 0 1 3 4 5 6 7 |
+| Control row | `miRowOpt` | tray · **sentence** | 0 1 3 4 5 6 7 |
+| Answer shown | `miAskCue` | marks · **tab** | 0 4 6 |
 | Key actions | `miKeyOpt` | inline · card | 0 4 7 |
 | Sector colours | `miPal` | house · tol (Paul Tol's muted set, grey Other; `SECTOR_PALETTES`) | 0 4 |
 | Sector names | `miSecNames` | off · band · gutter (the sectors named on the map, see below) | 0 4 |
@@ -971,17 +973,37 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
    and no longer swallows an Escape meant for the figure; the pointer
    coming back onto a term from its card keeps the card. Other sections keep
    their explainer panels; Nil asked about Metro Industries.
-0d. **"Ask the chart": what changed, and the way back — Nil's pick is
-   pending.** Nil (2026-10-03): "it's not clear to the user what has
-   changed and how they can return to the previous view." Sketched as
-   `ask-chart-return-sketches.html` (repo root, tracked copy in
-   `handoff/sketches/`), four working mocks over captures of the real
-   chart: 1 the row as a switch; 2 before and after marked on the moved
-   controls, the old value being the way back; 3 a "Starting view |
-   Answer" switch in the figure's head while a question stands
-   (recommended: it works on the phone band, where the row has often
-   scrolled away); 4 a tab on the frame, "Showing an answer · Back to
-   the treemap". Build the pick as an opt study.
+0d. **"Ask the chart": what changed, and the way back — built
+   2026-10-04 (option 4).** Nil (2026-10-03): "it's not clear to the user
+   what has changed and how they can return to the previous view."
+   Sketched as `ask-chart-return-sketches.html` (repo root, tracked copy
+   in `handoff/sketches/`): 1 the row as a switch; 2 before and after on
+   the moved controls; 3 a "Starting view | Answer" switch in the head;
+   4 a tab on the frame. **Nil chose 4.** While a question's answer
+   stands, the frame's border turns teal and a tab sits on its top edge:
+   "• Showing an answer | ↺ Back to …", the back label named for the view
+   the beat returns to (`BACK_TO` in the ask module: "Back to the
+   treemap", "Back to sector colours", "Back to all three tiers", "Back
+   to both tradable tiers", "Back to most specialized"). The button runs
+   the row's own way back (`backToStart`), and from the keyboard returns
+   the focus to the question row. The tab is built in treemap.js and hung
+   on the scrolly's `.ct-panel` (`.mi-asktab`, `.ct-panel.is-asked`); on a
+   phone the band has no frame, so its top hairline turns teal and the
+   tab hangs from the band's top edge over the text scrolling behind,
+   which keeps the way back on screen after the question row has scrolled
+   away. It stands 13px above the frame: `--stage-air` went from 16 to
+   30 (28 on short windows) and the stage starts 14px under the bar at
+   900 and up, so the tab is never under the section bar. Shipped as the
+   **"Answer shown" study** (`#miAskCue`): opt-1 marks only, as before;
+   **opt-2 the tab**, the default. Known: at 1366×650 the frame runs past
+   the fold by 24px with b1q1 open and 6px with b2q2 (both add a row to
+   the head).
+
+0e. **The control row's sentence is the default** (2026-10-04, Nil: "For
+   Control Row options, make opt 2 the default"). On the stacked layout
+   the band's head now follows the sentence's own height on the map beats
+   and on the ranking (it reserved the tray's wrapped rows, and the
+   ranking's two-line sentence rose out of the band).
 
 0c. **The narrower text column and the type floor: the review did not
    finish; its one finished lens found six problems, all fixed on

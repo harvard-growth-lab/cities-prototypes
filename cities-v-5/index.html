@@ -109,13 +109,14 @@
     --panel-pt:clamp(18px, 2vw, 28px);
     --panel-pb:clamp(16px, 1.7vw, 24px);
     /* what is left clear above and below the frame when it is as tall as
-       the window allows */
-    --stage-air:16px;
+       the window allows: enough above it for the tab a question's answer
+       hangs on the frame's top edge (13px), clear of the section bar */
+    --stage-air:30px;
   }
   /* a short window: the frame's own top and bottom padding and the air
      round it give way before the figure does */
   @media (max-height:800px){
-    :root{--panel-pt:clamp(14px, 1.25vw, 18px);--panel-pb:clamp(12px, 1vw, 14px);--stage-air:8px;}
+    :root{--panel-pt:clamp(14px, 1.25vw, 18px);--panel-pb:clamp(12px, 1vw, 14px);--stage-air:28px;}
   }
   :root{
     /* the landing composes on its own, narrower measure (the hero grid),
@@ -3225,6 +3226,48 @@
   /* the answers are written for 2024: while the other year is showing the
      questions stand down rather than answer for a chart they are not about */
   #page-export-basket:has(#miFigure[data-year="2014"]) .ask-chart{display:none;}
+  /* "Ask the chart": while a question's answer stands, the figure's frame
+     says so (opt-2 of the "Answer shown" study, shipped 2026-10-04, from
+     ask-chart-return-sketches.html, option 4). The frame's edge turns teal
+     and a tab sits on its top edge, like a label on a folder: "Showing an
+     answer", then the way back, named for the view the beat returns to.
+     It stands above the frame, so it never covers the chart; on a phone
+     it hangs from the band's top edge over the text scrolling behind, so
+     the way back is there after the question row has scrolled away. */
+  #page-export-basket .ct-panel{position:relative;}
+  /* where the frame is taller than the room under the bar (the Ranked view
+     on a short window), it starts 14px down, so the tab is not under the bar */
+  @media (min-width:900px){ #page-export-basket .ct-stage:has(.mi-figure){padding-top:14px;} }
+  #page-export-basket .ct-panel.is-asked{border-color:var(--teal);box-shadow:0 0 0 .5px var(--teal);}
+  .mi-asktab{
+    position:absolute;left:18px;top:-13px;z-index:6;display:inline-flex;align-items:center;gap:8px;
+    height:26px;max-width:calc(100% - 36px);padding:0 3px 0 11px;background:#fff;border:1px solid var(--teal);border-radius:13px;
+    font-family:'Source Sans 3','Source Sans Pro',sans-serif;font-size:12.5px;line-height:1;color:var(--ink-soft);white-space:nowrap;
+    animation:mi-asktab-in .2s ease-out;
+  }
+  .mi-asktab[hidden]{display:none;}
+  .mi-asktab-dot{flex:none;width:6px;height:6px;border-radius:50%;background:var(--teal);}
+  .mi-asktab-sep{flex:none;width:1px;height:14px;background:var(--border-strong);}
+  .mi-asktab-back{
+    position:relative;appearance:none;display:inline-flex;align-items:center;gap:5px;height:20px;margin:0;padding:0 8px;
+    border:0;border-radius:10px;background:none;font:inherit;font-size:12.5px;font-weight:600;color:var(--teal);cursor:pointer;
+    overflow:hidden;text-overflow:ellipsis;
+  }
+  /* a 44px target on a 20px button */
+  .mi-asktab-back::before{content:"";position:absolute;left:-4px;right:-4px;top:-12px;bottom:-12px;}
+  .mi-asktab-back:hover{background:var(--teal-tint);}
+  .mi-asktab-back:focus-visible{outline:2px solid var(--teal);outline-offset:1px;}
+  .mi-asktab-back svg{flex:none;width:13px;height:13px;}
+  @keyframes mi-asktab-in{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:none;}}
+  @media (prefers-reduced-motion:reduce){ .mi-asktab{animation:none;} }
+  @media (max-width:899px){
+    /* the band has no frame, only its top hairline: that is what turns teal */
+    #page-export-basket .ct-panel.is-asked{border:0;box-shadow:none;}
+    #page-export-basket .ct-stage:has(.ct-panel.is-asked){
+      border-top-color:var(--teal);box-shadow:0 -1px 0 var(--teal),0 -6px 12px -9px rgba(26,34,38,.30);
+    }
+    .mi-asktab{left:12px;max-width:calc(100% - 24px);}
+  }
   /* at the figure, the controls a question moved are marked for as long as
      its answer stands: the label in teal with a dot before it; on the
      ranking, the column head that holds the filter */
@@ -4968,6 +5011,12 @@
     #miFigure[data-step="6"] .mi-head{min-height:34px;}
     #miFigure[data-step="4"] .mi-head,
     #miFigure[data-step="0"] .mi-head{min-height:104px;}
+    #miFigure[data-row="sentence"][data-step="4"] .mi-head,
+    #miFigure[data-row="sentence"][data-step="0"] .mi-head{min-height:0;}
+    /* and on the ranking the sentence is in the flow too: held to the
+       foot of a one-line head, its second line rose out of the band */
+    #miFigure[data-row="sentence"][data-step="6"] .mi-head{min-height:0;}
+    #miFigure[data-row="sentence"][data-step="6"] .mi-head > .mi-sort{position:relative;left:auto;right:auto;bottom:auto;}
     #amFigure .mi-head{min-height:56px;margin-bottom:8px;}
     #amFigure[data-step="9"] .mi-head,
     #amFigure[data-step="10"] .mi-head{min-height:92px;}
@@ -5083,6 +5132,11 @@
     #miFigure[data-step="6"] .mi-head{min-height:36px;}
     #miFigure[data-step="4"] .mi-head,
     #miFigure[data-step="0"] .mi-head{min-height:118px;}
+    /* the sentence row (opt-2, the default since 2026-10-04) is one
+       sentence that wraps as it needs: the head is as tall as it is, not
+       the height the tray's wrapped rows reserved */
+    #miFigure[data-row="sentence"][data-step="4"] .mi-head,
+    #miFigure[data-row="sentence"][data-step="0"] .mi-head{min-height:0;}
     #amFigure .mi-head{min-height:64px;margin-bottom:6px;}
     #amFigure[data-step="9"] .mi-head,
     #amFigure[data-step="10"] .mi-head{min-height:104px;}
@@ -6442,8 +6496,8 @@
                 <label class="mi-study" id="miRowPair">
                   <span>Control row</span>
                   <select id="miRowOpt" aria-label="How the head's controls are set">
-                    <option value="tray" selected>opt-1</option>
-                    <option value="sentence">opt-2</option>
+                    <option value="tray">opt-1</option>
+                    <option value="sentence" selected>opt-2</option>
                   </select>
                 </label>
                 <label class="mi-study" id="miLevelOptPair">
@@ -6490,6 +6544,13 @@
                   <select id="miGround" aria-label="How the tiers' grounds are drawn">
                     <option value="frame" selected>opt-1</option>
                     <option value="grey">opt-2</option>
+                  </select>
+                </label>
+                <label class="mi-study" id="miAskCuePair">
+                  <span>Answer shown</span>
+                  <select id="miAskCue" aria-label="How the figure says it is showing a question's answer">
+                    <option value="marks">opt-1</option>
+                    <option value="tab" selected>opt-2</option>
                   </select>
                 </label>
                 <label class="mi-study" id="miRankOptPair">

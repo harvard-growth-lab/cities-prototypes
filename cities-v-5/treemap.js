@@ -6232,10 +6232,33 @@
     /* everything a reader's hand can change that an answer depends on */
     const askSig = () => [step, view, colorBy, barSort, sortKey, MAP_GRAIN, focus || "", focusGroup || "",
       secOn ? Array.from(secOn).sort().join(",") : "", tierOn.map(Number).join(""), tierOn6.map(Number).join("")].join("|");
+    /* the tab on the frame while an answer stands (the "Answer shown"
+       study's opt-2, shipped): what the figure is showing, and the way
+       back, named for the view the beat goes back to */
+    const BACK_TO = { b1q1: "Back to the treemap", b1q2: "Back to sector colours", b2q1: "Back to sector colours",
+                      b2q2: "Back to all three tiers", b3q1: "Back to both tradable tiers", b3q2: "Back to most specialized" };
+    const askTab = document.createElement("div");
+    askTab.className = "mi-asktab"; askTab.hidden = true;
+    askTab.innerHTML = '<span class="mi-asktab-dot" aria-hidden="true"></span><span class="mi-asktab-txt">Showing an answer</span>' +
+      '<span class="mi-asktab-sep" aria-hidden="true"></span><button type="button" class="mi-asktab-back">' +
+      '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 6.5h6a3.5 3.5 0 0 1 0 7H7"/><path d="M6 3.5 3 6.5l3 3"/></svg>' +
+      '<span class="mi-asktab-lab"></span></button>';
+    const askCueEl = document.getElementById(p + "AskCue");
+    let askCue = askCueEl && askCueEl.value === "marks" ? "marks" : "tab";
+    /* the frame is the scrolly's panel, built round the figure after it;
+       the tab is hung on it the first time it is needed */
+    const askHost = () => fig.closest(".ct-panel") || fig;
     function syncAsk(){
       const key = asked ? asked.key : "";
       fig.dataset.asked = key;
       fig.dataset.askmarks = key ? ASKS[key].marks : "";
+      const host = askHost(), cue = askCue === "tab" && !!key;
+      if (cue && askTab.parentNode !== host) host.appendChild(askTab);
+      if (cue) askTab.querySelector(".mi-asktab-lab").textContent = BACK_TO[key] || "Back to the starting view";
+      /* a press on the tab's own button leaves the focus on the figure, not the page */
+      if (!cue && askTab.contains(document.activeElement)) fig.focus({ preventScroll: true });
+      askTab.hidden = !cue;
+      if (host.classList) host.classList.toggle("is-asked", cue);
       askRows.forEach(b => {
         const on = b.dataset.ask === key;
         b.setAttribute("aria-expanded", String(on));
@@ -6316,6 +6339,15 @@
         if (asked) ask(null);
         if (row) row.dispatchEvent(new CustomEvent("ct:release", { bubbles: true }));
       };
+      /* the tab's way back is the row's */
+      on(askTab.querySelector(".mi-asktab-back"), "click", () => {
+        if (!asked) return;
+        const row = rowOf(asked.key), kb = askTab.contains(document.activeElement);
+        backToStart(row);
+        /* from the keyboard, the focus goes back to the question that was asked */
+        if (kb && row) row.focus({ preventScroll: true });
+      });
+      if (askCueEl) on(askCueEl, "change", () => { askCue = askCueEl.value === "marks" ? "marks" : "tab"; syncAsk(); });
       askRows.forEach(b => on(b, "click", () => {
         const key = b.dataset.ask, q = ASKS[key];
         if (!q) return;

@@ -8,7 +8,8 @@ verify a change under each option.
 
 | Study | select id | figure attribute | options (default first) | shown on figure steps |
 |---|---|---|---|---|
-| Control row | `miRowOpt` | `data-row` = tray / sentence | opt-1 tray · opt-2 sentence | 0 1 3 4 5 6 7 |
+| Control row | `miRowOpt` | `data-row` = tray / sentence | opt-1 tray · **opt-2 sentence** (default since 2026-10-04) | 0 1 3 4 5 6 7 |
+| Answer shown | `miAskCue` | `.ct-panel.is-asked` | opt-1 marks only · **opt-2 tab on the frame** (default) | all three beats |
 | Level control | `miLevelOpt` | `data-levelctl` = toggle / menu | opt-1 toggle Sector · Industry · opt-2 menu 6-digit · 4-digit · Sector | 0 4 |
 | Key actions | `miKeyOpt` | `data-key` = inline / card | opt-1 inline · opt-2 card | 0 4 7 |
 | Sector colours | `miPal` | `data-pal` = house / tol | opt-1 house · opt-2 Paul Tol muted | 0 4 |
@@ -26,6 +27,10 @@ are in `treemap.js` near `const rowEl = document.getElementById(p + "RowOpt")`,
 
 What each option is:
 
+- **Answer shown** — while an "Ask the chart" answer stands: opt-1 only the
+  teal marks on the controls it moved; opt-2 the frame's edge turns teal
+  and a tab on it says "Showing an answer" with the way back named for the
+  beat's view. Chosen from `ask-chart-return-sketches.html` (option 4).
 - **Control row** — opt-1: the "paper tray" (no border, soft grey tray, the
   chosen button a white tile with teal text); opt-2: the title as a sentence
   whose blanks are native selects cut to their word ("All industries, shown
