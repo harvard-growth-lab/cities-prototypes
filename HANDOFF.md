@@ -198,7 +198,14 @@ rule (`STATE` table), and `setStep` drops what a beat cannot carry.
   second line for the share, and `bandH()` grows by 17px on screen.
 - **Step 6** — the ranking of the most specialized tradable industries
   (`R2 = ranking(rankPool(), true)`), with "Sort by" Concentration / Jobs /
-  Against peers.
+  Against peers. The peers are the source's own (2026-10-04, see §6):
+  `peerRca` is the metro's concentration measured against its five peer
+  metros, so "Against peers" sorts by it on a log scale from the 1× line
+  ("Times as concentrated as in the peer metros"; 71× for fabric coating,
+  all 12 ahead), and the tick on the concentration view is the peers'
+  own rate against the nation, `rca / peerRca`, keyed "The five peer
+  metros together". The national axis now starts at 0 with a 1× mark, so
+  a peer rate under 1× has a place left of the bars.
 - Steps 1, 3, 5, 7 are variants not used by the scrolly (7 = the tradable
   cluster alone; 3 = the whole-mix ranking).
 
@@ -780,15 +787,52 @@ of that section.
   2024, **6-digit NAICS**, 877 industries, 2,318,249 jobs, as the reference
   build's "What We Produce" carries it: name, short name, code, jobs, group
   and subsector, the Growth Lab sector (NAICS 51 with Professional & Business,
-  22 with Construction), RCA against the national mix and the peers, PCI, the
+  22 with Construction), RCA against the national mix and against the peer metros, PCI, the
   tradability score 0–1 and the tier (0 traded / 1 partly / 2 local).
   Original source: `/Users/nit880/Desktop/files/boston_tradeability_20260916.csv`
   (a 4-digit file; the 6-digit rows came later — see commit `22a6741`).
 - `industries-2014.js` — 2014, built from the source's group panel at 2024's
   grain (see its header).
-- Still **generated, not real**: peer-metro averages ("Against peers"), the
-  admin-city rows for Worker Flows, the complexity rank card. Read numbers
-  from the rows; never regenerate them.
+- **Aligned with the reference build, 2026-10-04.** Nil supplied the
+  reference's own page for Boston (`/Users/nit880/Downloads/boston-ma-industries.html`,
+  a single-file build of "What We Produce"; its data is one
+  `JSON.parse` blob: `usa/industries.json`, `usa/metros/14460/industries.json`,
+  profile and place files). `industries-2024.js` matches it row for row
+  (877 industries; jobs, rca, peerRca, PCI, tier, tradability, national
+  share; total 2,318,249; rank 8 of 382; the five peers). What changed to
+  match it:
+  - **The peers are real.** `peerRca` is the metro's concentration measured
+    against its peers (Washington, Seattle, San Diego, Denver, Baltimore),
+    not the peers' average RCA: 1× is the same share as the peers. The
+    seeded per-peer values and the generated averages (`peersQuiet`,
+    `nameRand`) are gone from the figure; `withPeers()` derives `peerRca`,
+    the peers' own rate `rca / peerRca`, and `ahead` (peerRca ≥ 1). The
+    module's `peersFor` still runs for the whole-mix ranking and the
+    other sections, so their drawn values do not shift.
+  - **Private Households (814110) has no tier, no tradability and no PCI**
+    in the reference, and now here (null in both data files): it is in
+    beat 1's map and table ("Not rated"), and in no tier, no tier share and
+    not in the ranking's pool. Unrated complexity is grey (#c3ccce) with a
+    "Not rated" entry in the legend, and lights no diamonds.
+  - **RCA is unrounded** (it was rounded to two places in two places, which
+    put seafood processing above plumbing fittings).
+  - **Shares divide by the total the source quotes** (2,318,249), not the
+    rows' sum (24 fewer); tooltips print shares as the reference does
+    (26%, 5.4%, 0.55%).
+  - **Wording:** beat 2 "Much of the metro's work", since local is 49%;
+    beat 3 "599 jobs" and "61,687"; the ranking card reads the multiple as
+    "the national share", not "a typical US metro"; "Not rated" for a
+    missing PCI.
+  Still differing from the reference, by design rather than data (Nil's
+  to decide): the ranked bars are labelled with jobs where the reference
+  prints the share; the tooltip shows complexity as diamonds and a score
+  where the reference writes "Highest (PCI 1.93)"; the top complexity
+  colour is #008379 (reference #029287); the map is grouped by sector
+  only; the rank card says "of 382 US metros" and "Complexity rank"; the
+  table has no location quotient column (removed at Nil's ask). **The 2014
+  year option has no counterpart in the reference** (its 6-digit split is
+  an estimate). Still generated elsewhere: the admin-city rows for Worker
+  Flows. Read numbers from the rows; never regenerate them.
 - The reference site's whole dataset is parquet under
   `https://cities.taimur.sh/data/` (see `handoff/memory-notes.md` for the
   file list, ids, and the 2012→2022 CAGR window it uses). It was mirrored
@@ -922,11 +966,9 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
    list?" (Tradability filter: Partly traded only; hidden while the rank
    study shows the score) and "How many people work in these twelve
    specialties?" (Sort by Jobs; the weakest, since it extends the
-   paragraph's own point). **Found on the way, still open:** the
-   ranking's "Against peers" view shows the metro ahead in 8 of the 12
-   where the data file's own `peerRca` says 3 — the peer ticks on that
-   beat are still generated — so no question points at it; and the 2014
-   industry rows are estimates, so no question rests on the year.
+   paragraph's own point). (The "Against peers" view was generated when
+   these were written; since 2026-10-04 it reads the source, §6. The 2014
+   industry rows are estimates, so no question rests on the year.)
 0b. **Terms and the glossary — built 2026-10-02.** Nil found the question
    block and the collapsible explainer panels together "cluttering the
    space": the three panels in Metro Industries are gone ("What is

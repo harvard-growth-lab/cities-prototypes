@@ -77,9 +77,13 @@
     "Other": 0.19, "Professional & Business": 0.34,
     "Trade & Transportation": 0.16
   };
-  function tradabilityOf(name){ return tradByName.has(name) ? tradByName.get(name) : 0; }
-  /* the tier the source assigns, 0 traded, 1 partly traded, 2 local */
-  function tierOf(name){ return tierByName.has(name) ? tierByName.get(name) : 2; }
+  /* the score for drawing and ordering; an industry the source leaves
+     unrated (Private Households) draws as 0 and prints as "None" */
+  function tradabilityOf(name){ const v = tradByName.get(name); return v == null ? 0 : v; }
+  /* the tier the source assigns, 0 traded, 1 partly traded, 2 local, or
+     null where it gives none (Private Households): such an industry is in
+     the whole map but in no tier, as the reference has it */
+  function tierOf(name){ return tierByName.has(name) ? tierByName.get(name) : null; }
 
   const colorMode  = { exportTreemapSvg:SECTOR, tradableAnimatedSvg:SECTOR,
                        complexityTreemapSvg:COMPLEXITY };
@@ -88,15 +92,17 @@
      later "Color by" change can recolour without losing the split. */
   const splitState = { exportTreemapSvg:null, tradableAnimatedSvg:null };
 
-  /* the five bins are the metro's own quintiles of PCI in 2024; the one
-     industry with no PCI in the source sits in the middle bin */
+  /* the five bins are the reference build's own fixed cuts (Lowest, Low,
+     Middle, High, Highest; a value on a cut goes up); the one industry
+     with no PCI in the source, Private Households, is "Not rated", in grey */
   const PCI_CUTS = [-0.72, -0.4, 0.08, 0.65];
+  const PCI_NONE = "#c3ccce";
   function complexityColor(name){
     if(!complexityByName.has(name)){
       const v = pciByName.get(name);
-      let bin = 2;
-      if (v != null){ bin = 0; while (bin < PCI_CUTS.length && v >= PCI_CUTS[bin]) bin++; }
-      complexityByName.set(name, complexityPalette[bin]);
+      let fill = PCI_NONE;
+      if (v != null){ let bin = 0; while (bin < PCI_CUTS.length && v >= PCI_CUTS[bin]) bin++; fill = complexityPalette[bin]; }
+      complexityByName.set(name, fill);
     }
     return complexityByName.get(name);
   }
@@ -196,7 +202,9 @@
      them; nothing here is generated any more */
   const tradByName = new Map(rawData.map(r => [r.name, r.trad]));
   const tierByName = new Map(rawData.map(r => [r.name, r.tier]));
-  const rcaReal    = new Map(rawData.map(r => [r.name, Math.round(r.rca * 100) / 100]));
+  /* unrounded: rounding to two places tied plumbing fittings (5.472) with
+     seafood processing (5.468) and put them in the wrong order */
+  const rcaReal    = new Map(rawData.map(r => [r.name, r.rca]));
   const pciByName  = new Map(rawData.map(r => [r.name, r.pci]));
   const tradableByName = new Map(rawData.map(r => [r.name, r.tradable]));
 
@@ -3238,11 +3246,13 @@
        own tiers, scores and shares */
     const tierByName = new Map(rows.map(r => [r.name, r.tier]));
     const tradByName = new Map(rows.map(r => [r.name, r.trad]));
-    const rcaReal = new Map(rows.map(r => [r.name, Math.round((r.rca || 0) * 100) / 100]));
+    const rcaReal = new Map(rows.map(r => [r.name, r.rca || 0]));
     const pciByName = new Map(rows.map(r => [r.name, r.pci]));
     const tradableByName = new Map(rows.map(r => [r.name, r.tradable]));
-    const tierOf = name => tierByName.has(name) ? tierByName.get(name) : 2;
-    const tradabilityOf = name => tradByName.has(name) ? tradByName.get(name) : 0;
+    /* null where the source gives no tier (Private Households): in the
+       whole map, in no tier, and out of the ranking's pool */
+    const tierOf = name => tierByName.has(name) ? tierByName.get(name) : null;
+    const tradabilityOf = name => { const v = tradByName.get(name); return v == null ? 0 : v; };
     const rcaOf = name => rcaReal.has(name) ? rcaReal.get(name) : 0;
     const isTradable = name => tradableByName.get(name) === true;
 
@@ -3286,7 +3296,10 @@
     /* what the map beats colour their cells by: the sector, or how much
        know-how each industry takes */
     let colorBy = "sector";
-    const jobsTotal = d3.sum(industryData, d => d.employ) || 1;
+    /* shares are of the total the source quotes (2,318,249 in 2024), as the
+       reference divides by; its rows sum to 24 fewer */
+    const yearSrc = YEARS[fig.dataset.year || "2024"];
+    const jobsTotal = (yearSrc && yearSrc.total) || d3.sum(industryData, d => d.employ) || 1;
     const fillBy = d => colorBy === "complexity" ? complexityColor(d.name) : sectorColors[d.sector];
     const TIER_NAMES = ["Traded", "Partly traded", "Local"];
 
@@ -3525,7 +3538,7 @@
     /* the five complexity steps, the same cuts the map's ramp is built on */
     const cxBin = name => {
       const v = pciByName.get(name);
-      if (v == null) return 2;
+      if (v == null) return null;
       let b = 0; while (b < PCI_CUTS.length && v >= PCI_CUTS[b]) b++;
       return b;
     };
@@ -3633,39 +3646,25 @@
        stands, and one not yet drawn comes from a generator seeded on the
        industry's own name, with the same formula, touching neither the shared
        sequence nor its caches. */
-    const nameRand = key => {
-      let h = 2166136261;
-      for (const c of key){ h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); }
-      let st = (h >>> 0) || 1;
-      return () => (st = (st * 1664525 + 1013904223) >>> 0) / 4294967296;
-    };
-    /* the RCA as the source gives it; the peer values below are still
-       generated, since the source carries no peer metros */
-    const rcaQuiet = name => rcaOf(name);
-    const peersQuiet = (name, cityRca) => {
-      if (peerByName.has(name)) return peerByName.get(name);
-      /* the peers' average is the source's own where it carries one; the
-         values around it are still drawn, since the source has no per-peer figure */
-      const real = peerRcaByName.get(name);
-      const r = nameRand(name + "|peers");
-      const target = real != null ? real : Math.max(1.15, cityRca * (0.4 + r() * 0.85));
-      const jitter = PEERS.map(() => 0.62 + r() * 0.76);
-      const mean = jitter.reduce((a, j) => a + j, 0) / jitter.length;
-      const values = jitter.map(j => Math.round(target * (j / mean) * 10) / 10);
-      const avg = real != null ? Math.round(real * 10) / 10
-        : Math.round((values.reduce((a, v) => a + v, 0) / values.length) * 10) / 10;
-      return { values: values, avg: avg };
+    /* The peers. The source carries one figure per industry, peerRca: the
+       metro's concentration measured against its five peer metros
+       (Washington, Seattle, San Diego, Denver, Baltimore) instead of the
+       nation, so 1x is the same share as the peers and 4.5x four and a half
+       times theirs. The peers' own rate against the nation follows from it,
+       rca / peerRca, and that is the tick drawn on the national axis. The
+       values once drawn here at random around a guessed average are gone. */
+    const withPeers = d => {
+      const pq = peerRcaByName.get(d.name);
+      return Object.assign(d, { peerRca: pq == null ? null : pq, peerRate: pq ? d.rca / pq : null, ahead: pq != null && pq >= 1 });
     };
     function specializedAmong(rows){
-      const total = d3.sum(industryData, d => d.employ) || 1;
-      const shown = v => Math.round(v * 10) / 10;
-      return rows.filter(d => rcaQuiet(d.name) > 1).map(d => {
-        const rca = rcaQuiet(d.name), localPct = d.employ / total * 100, pr = peersQuiet(d.name, rca);
-        return { name: d.name, sector: d.sector, employ: d.employ, rca: rca,
+      const total = jobsTotal;
+      return rows.filter(d => rcaOf(d.name) > 1).map(d => {
+        const rca = rcaOf(d.name), localPct = d.employ / total * 100;
+        return withPeers({ name: d.name, sector: d.sector, employ: d.employ, rca: rca,
           localPct: localPct, worldPct: localPct / rca,
           label: shortLabel(d.name) ||
-                 (d.name.length > 40 ? d.name.slice(0, 37) + "\u2026" : d.name),
-          peerAvg: pr.avg, peerValues: pr.values, ahead: shown(rca) >= shown(pr.avg) };
+                 (d.name.length > 40 ? d.name.slice(0, 37) + "\u2026" : d.name) });
       });
     }
     /* The ranking ships as its second option: the tradability column names
@@ -3686,7 +3685,7 @@
     const rankPool = () => rankMode === "tier"
       ? clusterRows.filter((_, k) => tierOn6[k]).flat()
       : clusterRows[0].concat(clusterRows[1]);
-    const tierLabel = d => TIER_NAMES[clusterOf(d)];
+    const tierLabel = d => { const k = clusterOf(d); return k == null ? "None" : TIER_NAMES[k]; };
     /* A word is wider than a number, so the plot gives up room to the column
        while the words are showing - 54 units, not more. At 82 the value
        labels sat 70.8 from the words where opt-1's scores sit 44.6; the widest
@@ -3713,7 +3712,10 @@
       return Math.max(GUT_MIN, Math.min(GUT_MAX, Math.max(30 + Math.ceil(w) + 12, Math.ceil(lab))));
     };
     function ranking(rows, among){
-      const base = among ? specializedAmong(rows) : specializedWithPeers(rows);
+      /* the whole mix's ranking (step 3, not shown in this section) still
+         asks the module's generator, so the other sections' drawn values do
+         not shift; its peers are then taken from the source like the rest */
+      const base = among ? specializedAmong(rows) : specializedWithPeers(rows).map(d => withPeers(Object.assign({}, d, { rca: rcaOf(d.name) })));
       const ranked = base.sort((a, b) => b.rca - a.rca).slice(0, MI_TOP_N);
       const ml = rankGutter(ranked);
       /* only the ranking among the clusters - the third beat's - ever
@@ -3723,27 +3725,35 @@
         rankIdx: new Map(ranked.map((d, i) => [d.name, i])),   /* by concentration: the badges' order */
         pos: new Map(ranked.map((d, i) => [d.name, i])),       /* the order on screen, which sorting changes */
         rankRow: new Map(ranked.map(d => [d.name, d])),
+        /* from 0, so a peer rate under the national one (most of them, for
+           these industries) still has a place to stand left of the bars,
+           which rise from 1x */
         xr: d3.scaleLinear()
-          .domain([1, (d3.max(ranked, d => Math.max(d.rca, d.peerAvg)) || 2) * 1.06])
+          .domain([0, (d3.max(ranked, d => Math.max(d.rca, d.peerRate || 0)) || 2) * 1.06])
           .range([ml + 12, right]),
-        /* the gap against the peer average, symmetric so the average sits
-           mid-chart: ahead to the right, behind to the left */
+        /* against the peers: the metro's concentration over theirs, on a log
+           scale from the 1x line (the same share as the peers) - ahead to the
+           right, behind to the left */
         xg: (function(){
-          const g = Math.max(0.5, (d3.max(ranked, d => Math.abs(d.rca - d.peerAvg)) || 0.5) * 1.15);
-          return d3.scaleLinear().domain([-g, g]).range([ml + 12, right]);
+          const vals = ranked.map(d => d.peerRca).filter(v => v != null);
+          const lo = Math.min(1, d3.min(vals) || 1) / 1.25, hi = Math.max(1, d3.max(vals) || 2) * 1.15;
+          return d3.scaleLog().domain([lo, hi]).range([ml + 12, right]);
         })() };
     }
-    const gapOf = d => d.rca - d.peerAvg;
+    const gapOf = d => d.peerRca;
     const gapBox = (R, d, pos) => {
-      const g = gapOf(d), x0 = Math.min(R.xg(0), R.xg(g));
-      return { x: x0, y: rowY(pos) - BAR_H / 2, w: Math.max(2, Math.abs(R.xg(g) - R.xg(0))), h: BAR_H };
+      const g = gapOf(d), base = R.xg(1);
+      if (g == null) return { x: base, y: rowY(pos) - BAR_H / 2, w: 0, h: BAR_H };
+      return { x: Math.min(base, R.xg(g)), y: rowY(pos) - BAR_H / 2, w: Math.max(2, Math.abs(R.xg(g) - base)), h: BAR_H };
     };
+    /* "71x", "4.5x": a decimal under 10, none above, as the reference prints a multiple */
+    const fmtX = v => v.toFixed(v < 10 ? 1 : 0) + "\u00d7";
     /* the three orders a reader can ask for: how concentrated, how big, and
        how far ahead of or behind the peers */
     const SORTS = {
       rca:  (a, b) => b.rca - a.rca,
       jobs: (a, b) => b.employ - a.employ,
-      gap:  (a, b) => (b.rca - b.peerAvg) - (a.rca - a.peerAvg),
+      gap:  (a, b) => (b.peerRca == null ? -1 : b.peerRca) - (a.peerRca == null ? -1 : a.peerRca),
       trad: (a, b) => tradabilityOf(b.name) - tradabilityOf(a.name)
     };
     let sortKey = "rca";
@@ -3781,7 +3791,7 @@
       3: d => d.rank < 0
         ? { box: posSplit.get(d.name) || allSpot(d), fill: GREY, op: 0, rx: 0 }
         : sortKey === "gap"
-          ? { box: gapBox(R1, d.row, R1.pos.get(d.name)), fill: gapOf(d.row) >= 0 ? TEAL : ORANGE, op: 1, rx: 0 }
+          ? { box: gapBox(R1, d.row, R1.pos.get(d.name)), fill: (gapOf(d.row) || 0) >= 1 ? TEAL : ORANGE, op: 1, rx: 0 }
           : { box: { x: xr(1), y: rowY(R1.pos.get(d.name)) - BAR_H / 2,
                      w: Math.max(2, xr(d.row.rca) - xr(1)), h: BAR_H },
               fill: d.rank < 3 ? TEAL : MUTED, op: 1, rx: 0 },
@@ -3819,7 +3829,7 @@
       6: d => d.rank2 < 0
         ? { box: clusterSpot(d), fill: fillBy(d), op: 0, rx: 0 }
         : sortKey === "gap"
-          ? { box: gapBox(R2, d.row2, R2.pos.get(d.name)), fill: gapOf(d.row2) >= 0 ? TEAL : ORANGE,
+          ? { box: gapBox(R2, d.row2, R2.pos.get(d.name)), fill: (gapOf(d.row2) || 0) >= 1 ? TEAL : ORANGE,
               op: 1, rx: 0, delay: arriving ? 300 : 0 }
           : { box: { x: R2.xr(1), y: rowY(R2.pos.get(d.name)) - BAR_H / 2,
                      w: Math.max(2, R2.xr(d.row2.rca) - R2.xr(1)), h: BAR_H },
@@ -3999,17 +4009,18 @@
        its state: the axis and its name, the leading three braced, and each
        row's name, value, peer tick and badge */
     function drawGapAxis(R, AG){
-      const ticks = R.xg.ticks(5);
+      const [lo, hi] = R.xg.domain();
+      const ticks = [0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100, 200].filter(t => t >= lo && t <= hi);
       AG.selectAll("g.mi-tick").data(ticks).join("g").attr("class", "mi-tick")
-        .call(g => g.append("line").attr("class", d => "mi-grid" + (d === 0 ? " is-base" : ""))
+        .call(g => g.append("line").attr("class", d => "mi-grid" + (d === 1 ? " is-base" : ""))
           .attr("x1", d => R.xg(d)).attr("x2", d => R.xg(d))
           .attr("y1", GRID_TOP).attr("y2", MT + R.ranked.length * RH))
         .call(g => g.append("text").attr("class", "mi-ticklab")
           .attr("x", d => R.xg(d)).attr("y", TICK_Y).attr("text-anchor", "middle")
-          .text(d => (d > 0 ? "+" : "") + d + "\u00d7"));
+          .text(d => d + "\u00d7"));
       AG.append("text").attr("class", "mi-axname")
         .attr("x", R.ml + 12).attr("y", HEAD_Y)
-        .text("Against the peer average");
+        .text("Times as concentrated as in the peer metros");
       AG.append("text").attr("class", "mi-colhead")
         .attr("x", JOBS_R).attr("y", HEAD_Y).attr("text-anchor", "end").text("Jobs");
       tradHead(AG, R);
@@ -4059,7 +4070,8 @@
       /* the rows carry the mode, so the score's track stands down under
          the words without touching the first ranking's rows */
       G.classed("is-tier", tierMode);
-      A.selectAll("g.mi-tick").data(R.xr.ticks(5).filter(t => t >= 1)).join("g")
+      /* 1x, the national rate the bars rise from, and the even steps above it */
+      A.selectAll("g.mi-tick").data([1].concat(R.xr.ticks(5).filter(t => t >= 2))).join("g")
         .attr("class", "mi-tick")
         .call(g => g.append("line").attr("class", d => "mi-grid" + (d === 1 ? " is-base" : ""))
           .attr("x1", d => R.xr(d)).attr("x2", d => R.xr(d))
@@ -4098,11 +4110,14 @@
         .attr("data-max", R.ml - 40)
         .attr("data-full", d => d.label).text(d => charFit(d.label));
       row.append("text").attr("class", d => "mi-val" + (top(d) ? " is-top" : ""))
-        .attr("x", d => Math.max(R.xr(d.rca), R.xr(d.peerAvg)) + 9).attr("y", 4)
+        .attr("x", d => Math.max(R.xr(d.rca), R.xr(d.peerRate || 0)) + 9).attr("y", 4)
         .text(d => d.rca.toFixed(1) + "\u00d7");
+      /* the peer metros together, against the nation; none where the
+         source gives no peer figure */
       row.append("line").attr("class", "mi-peer")
-        .attr("x1", d => R.xr(d.peerAvg)).attr("x2", d => R.xr(d.peerAvg))
-        .attr("y1", -BAR_H / 2 - 4).attr("y2", BAR_H / 2 + 4);
+        .attr("x1", d => R.xr(d.peerRate || 0)).attr("x2", d => R.xr(d.peerRate || 0))
+        .attr("y1", -BAR_H / 2 - 4).attr("y2", BAR_H / 2 + 4)
+        .style("display", d => d.peerRate == null ? "none" : null);
       /* the jobs column: the count, and a short bar beneath it so size reads
          as a second small chart in every order the rows can take. Beside the
          tier word the count sits on the row's common baseline, as the word
@@ -4120,7 +4135,7 @@
       const tw = d3.scaleLinear().domain([0, 1]).range([0, TC_W]);
       row.append("text").attr("class", "mi-trad" + (tierMode ? " is-tier" : ""))
         .attr("x", TC_R).attr("y", tierMode ? 4 : 1).attr("text-anchor", "end")
-        .text(d => tierMode ? tierLabel(d) : tradabilityOf(d.name).toFixed(2));
+        .text(d => tierMode ? tierLabel(d) : (tradByName.get(d.name) == null ? "None" : tradabilityOf(d.name).toFixed(2)));
       row.append("rect").attr("class", "mi-tradtrack")
         .attr("x", TC_R - TC_W).attr("y", 5).attr("width", TC_W).attr("height", 4).attr("rx", 0);
       row.append("rect").attr("class", "mi-tradbar")
@@ -4167,15 +4182,15 @@
       t(R.row).attr("transform", d => "translate(0," + rowY(R.pos.get(d.name)) + ")");
       (dur ? R.brace.transition().duration(dur / 2) : R.brace)
         .style("opacity", sortKey === "rca" ? 1 : 0);
-      /* under the peers order the value is the gap, printed at the bar's
-         far end; the peer tick stands down, since the average is the line */
+      /* under the peers order the value is the metro over the peers,
+         printed at the bar's far end; the peer tick stands down, since the
+         peers are the 1x line */
       const gap = sortKey === "gap";
       const val = R.row.select(".mi-val");
-      val.text(d => gap ? ((gapOf(d) >= 0 ? "+" : "\u2212") + Math.abs(gapOf(d)).toFixed(1) + "\u00d7")
-                        : d.rca.toFixed(1) + "\u00d7");
-      t(val).attr("x", d => gap ? (gapOf(d) >= 0 ? R.xg(gapOf(d)) + 8 : R.xg(gapOf(d)) - 8)
-                                : Math.max(R.xr(d.rca), R.xr(d.peerAvg)) + 9)
-        .attr("text-anchor", d => gap && gapOf(d) < 0 ? "end" : "start");
+      val.text(d => gap ? (gapOf(d) == null ? "No value" : fmtX(gapOf(d))) : d.rca.toFixed(1) + "\u00d7");
+      t(val).attr("x", d => gap ? (gapOf(d) == null ? R.xg(1) + 8 : gapOf(d) >= 1 ? R.xg(gapOf(d)) + 8 : R.xg(gapOf(d)) - 8)
+                                : Math.max(R.xr(d.rca), R.xr(d.peerRate || 0)) + 9)
+        .attr("text-anchor", d => gap && gapOf(d) != null && gapOf(d) < 1 ? "end" : "start");
       t(R.row.select(".mi-peer")).style("opacity", gap ? 0 : 1);
     }
     drawRanking(R1, gAxis, gRows);
@@ -4259,7 +4274,7 @@
         const g = d3.select(this), on = cxBin(d.name), y = barY(i);
         for (let k = 0; k < 5; k++){
           const x = CX_L + CX_D + k * CX_GAP;
-          g.append("path").attr("class", "mi-cxdot" + (k <= on ? " is-on" : ""))
+          g.append("path").attr("class", "mi-cxdot" + (on != null && k <= on ? " is-on" : ""))
             .attr("d", "M" + x + "," + (y - CX_D) + "L" + (x + CX_D) + "," + y +
                        "L" + x + "," + (y + CX_D) + "L" + (x - CX_D) + "," + y + "Z");
         }
@@ -5215,7 +5230,7 @@
       const row = (k, v) => '<dt>' + k + '</dt><dd>' + v + '</dd>';
       const b = cxBinOf(cell.pci);
       let cx;
-      if (b == null) cx = '<dd class="tip-cx-cell"><em>not measured</em></dd>';
+      if (b == null) cx = '<dd class="tip-cx-cell"><em>Not rated</em></dd>';
       else {
         let dots = '<span class="tip-cx" aria-hidden="true">';
         for (let k = 0; k < 5; k++) dots += '<i' + (k <= b ? ' class="is-on"' : '') + '></i>';
@@ -5228,7 +5243,7 @@
       const body = '<dl class="tip-grid">' +
         (cell.members ? row("Industries", cell.members.length + (c.rest ? " smaller" : "")) : "") +
         row("Jobs", fmtJobsFull(cell.jobs)) +
-        row("Share of metro jobs", (cell.share * 100).toFixed(2) + "%") +
+        row("Share of metro jobs", fmtShare(cell.share)) +
         '<dt>Complexity</dt>' + cx +
         /* tradability is the second beat's reading: the whole-map beat has
            not introduced it yet, so its card does not carry it */
@@ -5346,7 +5361,7 @@
          with the step said in words for a screen reader */
       const cx = pci => {
         const b = cxBinOf(pci);
-        if (b == null) return td('<span class="mi-tbl-none">Not measured</span>', "nw");
+        if (b == null) return td('<span class="mi-tbl-none">Not rated</span>', "nw");
         let d = '<span class="mi-tbl-dia" aria-hidden="true">';
         for (let k = 0; k < 5; k++) d += '<i' + (k <= b ? ' class="is-on"' : '') + '></i>';
         return td('<span class="mi-tbl-cx">' + d + '</span><span class="mi-tbl-cxval">' + pci.toFixed(2) +
@@ -5719,16 +5734,16 @@
     const tip = document.getElementById(p + "Tip");
     if (wrap && tip){
       const cellOf = (k, v) => '<dt>' + k + '</dt><dd>' + v + '</dd>';
-      const pct = v => v.toFixed(2) + "%";
-      /* the number the ranking is ordered by, given the size it is ordered by */
+      /* the number the ranking is ordered by: the industry's share of the
+         metro's jobs over its share of the nation's */
       const tipLead = r => '<div class="tip-lead"><b>' + r.rca.toFixed(1) +
-        '\u00d7</b><span>more concentrated here than in<br>a typical US metro</span></div>';
+        '\u00d7</b><span>the national share</span></div>';
       /* complexity reads the same here as it does in the chart's own column -
          the five steps - with the score beside them, since a card has room
          for the number the column has no space to carry */
       const cxCell = name => {
         if (pciByName.get(name) == null)
-          return '<dd class="tip-cx-cell"><em>not measured</em></dd>';
+          return '<dd class="tip-cx-cell"><em>Not rated</em></dd>';
         const on = cxBin(name);
         let dots = '<span class="tip-cx" aria-hidden="true">';
         for (let k = 0; k < 5; k++) dots += '<i' + (k <= on ? ' class="is-on"' : '') + '></i>';
@@ -5759,10 +5774,10 @@
         const body = (onRank ? tipLead(rrow) : "") +
           '<dl class="tip-grid">' +
           cellOf("Jobs", Math.round(d.employ).toLocaleString()) +
-          cellOf("Share of metro jobs", pct(d.employ / jobsTotal * 100)) +
+          cellOf("Share of metro jobs", fmtShare(d.employ / jobsTotal)) +
           '<dt>Complexity</dt>' + cxCell(d.name) +
-          cellOf("Tradability", tierLabel(d)) +
-          (onRank ? cellOf("Peer metros average", rrow.peerAvg.toFixed(1) + "\u00d7") : "") +
+          (clusterOf(d) == null ? "" : cellOf("Tradability", tierLabel(d))) +
+          (onRank ? cellOf("Against the peer metros", rrow.peerRca == null ? "No value" : fmtX(rrow.peerRca) + " their share") : "") +
           '</dl>';
         const labRow = rrow;
         const rank = (step === 6 && R2.rankIdx.has(d.name) && R2.rankIdx.get(d.name) < 3)

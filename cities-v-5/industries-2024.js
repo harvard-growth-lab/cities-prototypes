@@ -3,7 +3,8 @@
    carries them. Taken from that page's embedded data (usa/industries.json,
    usa/metros/14460/industries.json and its short-name table), joined on
    the NAICS code. 877 industries, 2,318,249 jobs. Private Households has
-   no tier or tradability there and is held local, at 0.
+   no tier or tradability there, and none here either (null): it is in
+   the whole map but in no tier.
 
    Each row: code, name, short name, industry-group code (4-digit), group
    name, group short name, subsector code (3-digit), subsector short name,
@@ -108,7 +109,7 @@ window.BOSTON_INDUSTRIES_2024 = {
     ["457110","Gasoline Stations with Convenience Stores","Gas & convenience","4571","Gasoline Stations","Gas stations","457","Gas stations & fuel","trade-transport",5179,0.486,0.771,-1.576,2,0,0.004596957],
     ["624310","Vocational Rehabilitation Services","Vocational rehabilitation","6243","Vocational Rehabilitation Services","Vocational rehabilitation","624","Social assistance","education-health",5067,1.198,0.916,-0.985,2,0.01,0.001824134],
     ["722320","Caterers","Caterers","7223","Special Food Services","Catering & food service","722","Restaurants & bars","leisure",5060,1.482,1.19,0.125,2,0,0.001472869],
-    ["814110","Private Households","Private households","8141","Private Households","Private households","814","Private households","other",5017,1.224,0.765,null,2,0,0.001767478],
+    ["814110","Private Households","Private households","8141","Private Households","Private households","814","Private households","other",5017,1.224,0.765,null,null,null,0.001767478],
     ["459110","Sporting Goods Retailers","Sporting goods stores","4591","Sporting Goods, Hobby, and Musical Instrument Retailers","Sporting & hobby stores","459","Hobby, sport & book stores","trade-transport",4955,0.816,0.84,-0.791,2,0,0.002618384],
     ["519290","Web Search Portals and All Other Information Services","Web search portals","5192","Web Search Portals, Libraries, Archives, and Other Information Services","Information services","519","Information services","professional",4839,2.349,1.113,0.722,0,1,0.000888628],
     ["621330","Offices of Mental Health Practitioners (except Physicians)","Mental health counselors","6213","Offices of Other Health Practitioners","Other health practitioners","621","Ambulatory care","education-health",4813,0.957,0.782,-0.443,2,0,0.002168942],

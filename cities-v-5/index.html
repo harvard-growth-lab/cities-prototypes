@@ -3088,6 +3088,10 @@
   #miFigure .mi-view .mi-year select,#miFigure #miLevelSel{font-size:12.5px;}
   #miFigure .sector-key .sk-dot{font-size:12.5px;}
   #miFigure .complexity-legend .cl-label{font-size:13px;color:var(--ink);}
+  /* the one industry the source leaves without a PCI, Private Households,
+     is drawn grey, as the reference does, and the legend says why */
+  .complexity-legend .cl-none{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-soft);}
+  .complexity-legend .cl-none i{width:11px;height:11px;border-radius:2px;background:#c3ccce;}
   #miTip .tip-rank{min-width:20px;height:20px;line-height:20px;border-radius:10px;font-size:12.5px;}
   @media (max-width:899px){
     #miFigure .sector-key,#miFigure .spec-key,
@@ -6483,7 +6487,7 @@
                    ranking's own sentence, kept in step with the buttons -->
               <p class="mi-sentence mi-sentence--rank" id="miSRank">
                 <span class="mi-s-rank-lead">The most specialized tradable industries,</span> sorted by
-                <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="miSSortRank" aria-label="Order of the ranking"><option value="rca">concentration</option><option value="jobs">jobs</option><option value="gap">gap against peers</option></select></span>
+                <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="miSSortRank" aria-label="Order of the ranking"><option value="rca">concentration</option><option value="jobs">jobs</option><option value="gap">concentration against peers</option></select></span>
               </p>
             </div>
             <!-- The studies are not controls the reader is meant to use: they
@@ -6619,15 +6623,16 @@
                 <span class="cl-gradient"></span>
                 <span class="cl-label">More complex</span>
               </div>
+              <span class="cl-none"><i aria-hidden="true"></i>Not rated</span>
             </div>
             <p class="spec-key" id="miSpecKey">
-              <span class="sk-item"><i class="sk-peer"></i>Peer metro average</span>
+              <span class="sk-item"><i class="sk-peer"></i>The five peer metros together</span>
             </p>
             <!-- the key for the peers order, where the bar is the gap itself -->
             <p class="spec-key spec-key--gap" id="miSpecKeyGap">
               <span class="sk-item"><i class="sk-ahead"></i>more concentrated here than in the peer metros</span>
               <span class="sk-item"><i class="sk-behind"></i>less than in the peer metros</span>
-              <span class="sk-item"><i class="sk-base"></i>the peer average</span>
+              <span class="sk-item"><i class="sk-base"></i>the same share as the peers</span>
             </p>
           </div>
         </div>
@@ -6640,7 +6645,7 @@
             <h3>How tradable is the metro&rsquo;s work?</h3>
           </div>
           <div class="lede-stat-row">
-            <p class="lede">The same blocks sorted into three tiers by <button type="button" class="term" data-term="tradability" aria-expanded="false">tradability</button>: how much of their output sells outside the metro. Most of the metro&rsquo;s work does not sell outward. Local work, such as restaurants
+            <p class="lede">The same blocks sorted into three tiers by <button type="button" class="term" data-term="tradability" aria-expanded="false">tradability</button>: how much of their output sells outside the metro. Much of the metro&rsquo;s work does not sell outward. Local work, such as restaurants
               and grocers, is 49% of jobs, and another 28% is partly traded. Only 23% is
               traded, and that is the part bringing new income in.</p>
           </div>
@@ -6682,8 +6687,8 @@
               biotechnology</span> at 10.8 and <span class="mi-hl" data-on="6"
               data-ind="Other Guided Missile and Space Vehicle Parts and Auxiliary Equipment Manufacturing"
               tabindex="0">guided missile and space vehicle parts</span> at 10.3. <button type="button" class="term" data-term="specialization" aria-expanded="false">Specialization</button> is not size: fabric
-              coating mills reach 12 times on 600 jobs, while biotechnology R&amp;D employs
-              62,000 at 10.8, the one industry that is both.</p>
+              coating mills reach 12 times on 599 jobs, while biotechnology R&amp;D employs
+              61,687 at 10.8, the one industry that is both.</p>
           </div>
           <!-- "Ask the chart": questions the figure answers under settings most
                readers never try. A row sets that view (the beat's own view plus
