@@ -3682,9 +3682,13 @@
     let tierOn6 = TIER_DEFAULT6();
     /* the industries the third beat ranks over: whatever the filter has
        checked under opt-2, the two tradable tiers under opt-1 */
-    const rankPool = () => rankMode === "tier"
+    /* industries the third beat leaves out of its ranking, at Nil's ask
+       (2026-10-04): fabric coating mills, 12 times the national rate on a
+       single plant's 599 jobs. They stay in the maps of the first two beats. */
+    const RANK_LEAVE_OUT = new Set(["313320"]);
+    const rankPool = () => (rankMode === "tier"
       ? clusterRows.filter((_, k) => tierOn6[k]).flat()
-      : clusterRows[0].concat(clusterRows[1]);
+      : clusterRows[0].concat(clusterRows[1])).filter(d => !RANK_LEAVE_OUT.has(d.code));
     const tierLabel = d => { const k = clusterOf(d); return k == null ? "None" : TIER_NAMES[k]; };
     /* A word is wider than a number, so the plot gives up room to the column
        while the words are showing - 54 units, not more. At 82 the value

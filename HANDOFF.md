@@ -206,6 +206,18 @@ rule (`STATE` table), and `setStep` drops what a beat cannot carry.
   own rate against the nation, `rca / peerRca`, keyed "The five peer
   metros together". The national axis now starts at 0 with a 1× mark, so
   a peer rate under 1× has a place left of the bars.
+  **Fabric coating mills are left out of this ranking** (2026-10-04, Nil:
+  "from the last beat, remove the Fabric coating"): `RANK_LEAVE_OUT` in
+  `rankPool()`. In the source it is the most specialized tradable
+  industry, 12× on 599 jobs; it stays in beats 1 and 2. The list now
+  opens with biotechnology R&D and closes with storage devices (4.6×),
+  and the paragraph reads "The list opens with R&D in biotechnology …
+  then guided missile and space vehicle parts at 10.3 and laboratory
+  instruments at 9.0. Specialization is not size: marine fishing reaches
+  8.5 times on 74 jobs …". The answers still hold: universities at 4.3×
+  miss the 4.6× cut-off, and the twelve employ about 86,000 (86,003).
+  `handoff/reference-check.py` prints the source's own top 12, fabric
+  coating included.
 - Steps 1, 3, 5, 7 are variants not used by the scrolly (7 = the tradable
   cluster alone; 3 = the whole-mix ranking).
 
