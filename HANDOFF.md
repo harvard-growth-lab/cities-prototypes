@@ -978,6 +978,36 @@ still exists behind the `quizOnly` flag; the journey page still shows the
 sample insights). The rail no longer lists checkpoints as steps
 (`.rail .steps li[data-step^="check-"], …[data-step^="apply-"]{display:none}`).
 
+**The section bar by part** (2026-10-05, the default; Nil found the chip
+row "confusing and too busy"). Six directions were drawn on
+`section-nav-sketches.html` (untracked, at the repo root, with pictures in
+`section-nav-images/`), judged by three reviewers (simplicity, wayfinding,
+house rules; F ranked first twice), and Nil chose F with two changes: "when
+in part 1, do not show the sections under part 2; make part 2 slightly
+larger with a right arrow; get inspiration from chapter books". Built in
+`showSection`'s block: `partsEl` (`.sn-parts`) holds, for each part, a
+group (`.sn-part`: `.sn-head` "**Part 1** City Profile", the number 700 and
+the name 500, over a hairline that spans exactly its sections, teal for the
+part the reader is in; `.sn-tab` buttons, plain words, the current one 700
+with a 2px teal line on the bar's bottom edge, its bold width held by an
+unseen copy and its text left-aligned on the head's edge) and a door
+(`.sn-door`, "Part 2" on the heads' line, the part's name 16px bold under
+it with the arrow of the seal's Next; from part two "Part 1" and "← City
+Profile"; in Extras both doors point back). Only the current part's group
+shows (`.sn-parts[data-cur]`, set by `syncSecParts(i)`). No numbers on the
+sections, no checks, no dashes. The part names are labels, not buttons.
+14px tabs at 1440 and up, 13px below; the 56px bar under 1200 lifts the
+heads 4px. Where the row does not fit (measured in `fitSecNav`, which also
+counts Worker Flows' study switch) and always at 899 and under, it folds
+(`.secnav.is-compact`): one button (`.sn-now`, the part's head over the
+section, a chevron) that opens `#snMenu` under the bar, the part's
+sections as 44px rows and the door to the other part as a row, with
+Escape, arrows and an outside click; from 600 the forward door stays
+beside the button. `navTo(i)` is the one press handler for both drawings.
+The old chips are kept in `.sn-chips` (`display:contents`, so their
+`nth-child` rules still count them) and come back with the Site Layout
+menu's **Section bar: All five** (`setSecBar`, `?secbar=chips`).
+
 **The section bar names its two parts** (2026-09-30, copied from the
 reference build's scroll variant): "Part 1 City Profile" stands over the
 first chip and "Part 2 Diagnose & Act" over the fourth, 12.5px bold in

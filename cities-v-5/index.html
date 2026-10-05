@@ -5217,6 +5217,137 @@
   .secnav.is-compact .secnav-btn:nth-child(2)::after,
   .secnav.is-compact .secnav-btn:nth-child(5)::before{display:none;}
 
+  /* ---- the section bar by part (2026-10-05; the JS has the why) ----
+     One part at a time, like a book's running head: the part's name over
+     a hairline that spans exactly its own sections, the sections as plain
+     words, and the other part as a door set like a part's title page.
+     html[data-secbar="chips"] brings back the five numbered chips. */
+  .sn-chips{display:contents;}
+  html:not([data-secbar="chips"]) .sn-chips{display:none;}
+  html[data-secbar="chips"] .sn-parts,
+  html[data-secbar="chips"] .sn-menu{display:none !important;}
+  html:not([data-secbar="chips"]) .secnav{padding-top:0;gap:0;justify-content:flex-start;}
+  .sn-parts{display:flex;align-items:stretch;gap:44px;height:100%;width:max-content;flex:none;}
+  .sn-part{display:flex;flex-direction:column;flex:none;}
+  .sn-parts[data-cur="0"] .sn-part[data-part="1"],
+  .sn-parts[data-cur="1"] .sn-part[data-part="0"],
+  .sn-parts[data-cur="x"] .sn-part,
+  .sn-parts[data-cur="0"] .sn-door[data-part="0"],
+  .sn-parts[data-cur="1"] .sn-door[data-part="1"]{display:none;}
+  /* the part's name, a label: the number bold, the name lighter, a real
+     space between, and the hairline after it to the end of the part's
+     last section; teal for the part the reader is in */
+  .sn-head{
+    display:flex;align-items:center;height:16px;margin-top:11px;padding:0 12px;
+    font-size:12.5px;line-height:16px;font-weight:500;color:var(--ink-soft);white-space:nowrap;
+  }
+  .sn-head b{font-weight:700;margin-right:2px;}
+  .sn-part > .sn-head::after{content:"";flex:1 1 auto;height:1px;margin-left:10px;background:var(--border-strong);}
+  .sn-part.is-current > .sn-head{color:var(--teal);}
+  .sn-part.is-current > .sn-head::after{background:var(--teal);}
+  .sn-tabs{display:flex;flex:1 1 auto;}
+  /* the sections: words; the one you are on bold with a teal line on the
+     bar's edge. The bold width is held by an unseen copy and the text sits
+     at the box's left, on the part name's edge, so nothing shifts. */
+  .sn-tab{
+    position:relative;display:inline-flex;flex-direction:column;align-items:flex-start;justify-content:center;
+    margin:0;padding:0 12px 3px;border:0;border-radius:4px 4px 0 0;background:none;
+    font:inherit;font-size:14px;line-height:20px;font-weight:600;color:var(--ink-soft);
+    cursor:pointer;white-space:nowrap;transition:color .15s ease;
+  }
+  .sn-tab::after{content:attr(data-label);font-weight:700;height:0;overflow:hidden;visibility:hidden;}
+  .sn-tab::before{content:"";position:absolute;left:12px;right:12px;bottom:0;height:2px;background:transparent;transition:background-color .15s ease;}
+  .sn-tab:hover{color:var(--ink);}
+  .sn-tab:hover::before{background:var(--border-strong);}
+  .sn-tab[aria-current]{color:var(--ink);font-weight:700;}
+  .sn-tab[aria-current]::before{background:var(--teal);}
+  .sn-tab:focus-visible,.sn-door:focus-visible,.sn-now:focus-visible{outline:2px solid var(--teal);outline-offset:-2px;}
+  .sn-tab--aside{padding-top:27px;}
+  .sn-tab--aside:not([aria-current]){display:none;}
+  /* the door to the other part: "Part 2" on the heads' line, the part's
+     name under it a size up from a section, and the arrow of the Next that
+     ends part one (from part two, the arrow points back, before the name) */
+  .sn-door{
+    display:flex;flex-direction:column;align-items:flex-start;flex:none;gap:0;
+    margin:0;padding:0 12px;border:0;border-radius:4px;background:none;color:var(--ink);
+    font:inherit;text-align:left;cursor:pointer;
+  }
+  .sn-door-k{display:block;height:16px;margin-top:11px;font-size:12.5px;line-height:16px;font-weight:700;letter-spacing:.2px;color:var(--ink-soft);}
+  .sn-door-t{display:flex;align-items:center;gap:8px;flex:1 1 auto;padding-bottom:3px;font-size:16px;line-height:20px;font-weight:700;color:var(--ink);transition:color .15s ease;}
+  .sn-arrow{display:none;flex:none;color:var(--teal);transition:translate .18s ease;}
+  .sn-door:not(.is-back) .sn-arrow--on,
+  .sn-door.is-back .sn-arrow--back{display:block;}
+  .sn-door:hover .sn-door-t{color:var(--teal);}
+  .sn-door:not(.is-back):hover .sn-arrow--on{translate:3px 0;}
+  .sn-door.is-back:hover .sn-arrow--back{translate:-3px 0;}
+  @media (prefers-reduced-motion: reduce){ .sn-arrow{transition:none;} }
+  /* the folded bar: one button, the part over the section, and its list */
+  .sn-now{display:none;}
+  .secnav.is-compact .sn-part,
+  .secnav.is-compact .sn-door,
+  .secnav.is-compact .sn-tab--aside{display:none;}
+  .secnav.is-compact .sn-parts{gap:20px;width:100%;}
+  .secnav.is-compact .sn-now{
+    display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto minmax(0,1fr);column-gap:10px;
+    flex:1 1 auto;min-width:0;max-width:340px;margin:0;padding:0 8px 0 0;border:0;border-radius:4px 4px 0 0;background:none;
+    font:inherit;text-align:left;color:var(--ink);cursor:pointer;
+  }
+  .sn-now .sn-head{grid-column:1;grid-row:1;margin-top:7px;padding:0;color:var(--teal);}
+  .sn-now .sn-head::after{content:"";flex:1 1 auto;height:1px;margin-left:10px;background:var(--teal);}
+  .sn-now-t{
+    grid-column:1;grid-row:2;align-self:end;justify-self:start;position:relative;max-width:100%;
+    padding-bottom:6px;font-size:14.5px;line-height:20px;font-weight:700;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .sn-now-t::after{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--teal);}
+  .sn-chev{grid-column:2;grid-row:1 / span 2;align-self:center;color:var(--teal);transition:transform .15s ease;}
+  .sn-now[aria-expanded="true"] .sn-chev{transform:rotate(180deg);}
+  .sn-now:hover{background:var(--teal-tint);}
+  /* from 600 the folded bar keeps the door forward beside the button */
+  @media (min-width:600px){
+    .secnav.is-compact .sn-parts[data-cur="0"] .sn-door[data-part="1"]{display:flex;}
+    .secnav.is-compact .sn-door-k{margin-top:7px;}
+    .secnav.is-compact .sn-door-t{font-size:14.5px;padding-bottom:6px;}
+  }
+  .sn-menu{
+    position:absolute;top:calc(100% + 1px);left:var(--sn-left, 10px);width:var(--sn-w, 340px);z-index:40;
+    display:flex;flex-direction:column;padding:6px 8px 10px;background:#fff;
+    border:1px solid var(--border-strong);border-radius:4px;box-shadow:var(--shadow-md, 0 8px 24px rgba(26,34,38,.14));
+  }
+  .sn-menu[hidden]{display:none;}
+  .sn-menu .sn-head{margin:10px 0 2px;padding:0 8px;color:var(--teal);}
+  .sn-menu .sn-head::after{content:"";flex:1 1 auto;height:1px;margin-left:10px;background:var(--teal);}
+  .sn-mitem{
+    display:flex;align-items:center;min-height:44px;margin:0;padding:0 8px;border:0;border-radius:4px;background:none;
+    font:inherit;font-size:15px;font-weight:600;color:var(--ink-soft);text-align:left;cursor:pointer;
+  }
+  .sn-mitem span{position:relative;padding-bottom:3px;}
+  .sn-mitem:hover{color:var(--ink);background:#f4f6f5;}
+  .sn-mitem[aria-current]{color:var(--ink);font-weight:700;}
+  .sn-mitem[aria-current] span::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--teal);}
+  .sn-mitem:focus-visible,.sn-menu .sn-door:focus-visible{outline:2px solid var(--teal);outline-offset:-2px;}
+  .sn-menu .sn-door--row{
+    display:flex;width:100%;min-height:58px;margin-top:8px;padding:8px 8px 10px;border-top:1px solid var(--border);border-radius:0 0 4px 4px;
+  }
+  .sn-menu .sn-door--row.is-back{margin:0 0 4px;border-top:0;border-bottom:1px solid var(--border);border-radius:4px 4px 0 0;}
+  .sn-menu .sn-door--row .sn-door-k{margin-top:0;}
+  .sn-menu .sn-door--row .sn-door-t{padding-bottom:0;}
+  .sn-menu .sn-door--row:hover{background:#f4f6f5;}
+  /* the 56px bar, under 1200: a step smaller, the heads 4px higher */
+  @media (max-width:1199px){
+    .sn-head,.sn-door-k{margin-top:7px;}
+    .sn-head{padding:0 10px;}
+    .sn-tab{font-size:13px;padding:0 10px 3px;}
+    .sn-tab::before{left:10px;right:10px;}
+    .sn-tab--aside{padding-top:23px;}
+    .sn-door{padding:0 10px;}
+    .sn-door-t{font-size:15px;}
+    .sn-parts{gap:32px;}
+  }
+  @media (max-width:1439px){
+    .sn-tab{font-size:13px;}
+  }
+
   /* the mark is 1079x230, so a 164px slot always clipped 5px of it */
   .logo-btn,.landing-header .logo-btn{width:auto;flex:0 0 auto;}
 
@@ -7813,6 +7944,11 @@
       <button type="button" role="menuitemradio" aria-checked="false" class="sv-opt" data-layout="scroll"><b>One scroll</b><span>a summary closes each section, a band opens part two</span></button>
       <button type="button" role="menuitemradio" aria-checked="false" class="sv-opt" data-layout="halves"><b>Two scrolls</b><span>each part one scroll, a Next between</span></button>
     </div>
+    <p class="sv-head" aria-hidden="true">Section bar</p>
+    <div role="group" aria-label="Section bar">
+      <button type="button" role="menuitemradio" aria-checked="false" class="sv-opt" data-secbar="parts"><b>By part</b><span>the part you are in, the other a door</span></button>
+      <button type="button" role="menuitemradio" aria-checked="false" class="sv-opt" data-secbar="chips"><b>All five</b><span>the numbered chips, as before</span></button>
+    </div>
     <p class="sv-head" aria-hidden="true">Navigation bar</p>
     <div role="group" aria-label="Navigation bar">
       <button type="button" role="menuitemradio" aria-checked="true" class="sv-opt is-on" data-nav="light"><b>Light</b><span>white bars</span></button>
@@ -10354,6 +10490,14 @@
      switch, which keeps the journey panel, the landing jump cards and every
      internal link working unchanged. */
   const secNavEl = document.getElementById("secnav");
+  /* Two drawings of the section bar, one shown (setSecBar, ?secbar=):
+     "parts", the default since 2026-10-05, and "chips", the five numbered
+     chips it replaced. The chips live in a box that lays them out as the
+     bar's own children (display:contents), so their rules still count
+     them by position. */
+  const partsEl = document.createElement("div"); partsEl.className = "sn-parts";
+  const chipsEl = document.createElement("div"); chipsEl.className = "sn-chips";
+  secNavEl.append(partsEl, chipsEl);
   const secPager = document.createElement("div");
   let activeSec = -1;
 
@@ -10395,7 +10539,8 @@
        where part two's scroll begins, and rides with part two */
     const seamEl = document.getElementById("seam");
     if (seamEl && halves) seamEl.classList.toggle("sec-off", partOf(i) !== 1);
-    [...secNavEl.children].forEach((b, k) => {
+    syncSecParts(i);
+    [...chipsEl.children].forEach((b, k) => {
       b.classList.toggle("is-active", k === i);
       /* the sections behind the reader wear a check in place of their number */
       b.classList.toggle("is-done", k < i);
@@ -10411,8 +10556,8 @@
        on to the middle of it, so the bar answers "where am I" without a
        swipe. .secnav is position:relative under that breakpoint, so
        offsetLeft measures against the scroller, not the sticky bar. */
-    const actBtn = secNavEl.children[i];
-    if(actBtn && secNavEl.scrollWidth > secNavEl.clientWidth + 1){
+    const actBtn = chipsEl.children[i];
+    if(actBtn && secBar() === "chips" && secNavEl.scrollWidth > secNavEl.clientWidth + 1){
       secNavEl.scrollTo({
         left: Math.max(0, actBtn.offsetLeft - (secNavEl.clientWidth - actBtn.offsetWidth) / 2),
         behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"
@@ -10481,6 +10626,20 @@
     if (!sameScroll) window.dispatchEvent(new Event("resize"));
   }
 
+  /* a section's name pressed in the bar, either drawing */
+  function navTo(i){
+    /* under the two scrolls the name of the section the reader is in
+       takes them back to its top, as the reference build's does */
+    if (i === activeSec && siteLayout() === "halves" && i < SECTIONS.length - 1){
+      const first = SECTIONS[i].els[0];
+      trackHold = Date.now() + 1000;
+      dropPadFor(first);
+      if (first) first.scrollIntoView({ block: "start",
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
+      return;
+    }
+    showSection(i);
+  }
   sectionDefs.forEach((sd, i) => {
     const b = document.createElement("button");
     b.type = "button"; b.className = "secnav-btn";
@@ -10490,21 +10649,138 @@
        the reader is actually there. */
     if (sd.name === "Extras") b.classList.add("secnav-btn--aside");
     b.innerHTML = '<span class="num">' + (i + 1) + '</span><span class="secnav-lbl">' + sd.name + "</span>";
-    b.addEventListener("click", () => {
-      /* under the two scrolls the chip of the section the reader is in
-         takes them back to its top, as the reference build's does */
-      if (i === activeSec && siteLayout() === "halves" && i < SECTIONS.length - 1){
-        const first = SECTIONS[i].els[0];
-        trackHold = Date.now() + 1000;
-        dropPadFor(first);
-        if (first) first.scrollIntoView({ block: "start",
-          behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
-        return;
-      }
-      showSection(i);
-    });
-    secNavEl.appendChild(b);
+    b.addEventListener("click", () => navTo(i));
+    chipsEl.appendChild(b);
   });
+
+  /* ---- the section bar by part (2026-10-05) ----
+     Option F of section-nav-sketches.html as Nil adapted it ("when in part
+     1, do not show the sections under part 2; make part 2 slightly larger
+     with a right arrow; get inspiration from chapter books"). The bar
+     reads like a book's running head: the part you are in, its name over
+     a hairline that runs over exactly its own sections, and the sections
+     as plain words, the one you are on bold with a teal line on the bar's
+     edge. The other part is not listed; it is a door, set like a part's
+     title page - "Part 2" small over its name, larger than a section,
+     with the arrow of the Next that ends part one - or, from part two,
+     "Part 1" with an arrow back. No numbers on the sections, no checks,
+     no dashes. Where the row does not fit (the stacked layout, or a large
+     zoom) it folds to one button naming the part and the section, which
+     opens the part's sections and the door to the other. */
+  const SN_ARROW = dir => '<svg class="sn-arrow sn-arrow--' + (dir < 0 ? "back" : "on") + '" viewBox="0 0 16 10" width="16" height="10" aria-hidden="true"><path d="' +
+    (dir < 0 ? "M15 5H2M6 1 2 5l4 4" : "M1 5h13M10 1l4 4-4 4") + '" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  const snEsc = t => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  const partSecs = q => SECTIONS.map((_, k) => k).filter(k => partOf(k) === q);
+  const partHead = q => '<b>Part ' + (q + 1) + '</b> ' + snEsc(PART_NAMES[q]);
+  const doorInner = q => '<span class="sn-door-k">Part ' + (q + 1) + '</span><span class="sn-door-t">' + SN_ARROW(-1) +
+    '<span class="sn-door-n">' + snEsc(PART_NAMES[q]) + '</span>' + SN_ARROW(1) + '</span>';
+  const snTabs = [], snGroups = [], snDoors = [];
+  const snDoor = q => {
+    const d = document.createElement("button");
+    d.type = "button"; d.className = "sn-door"; d.dataset.part = q;
+    d.innerHTML = doorInner(q);
+    d.setAttribute("aria-label", "Part " + (q + 1) + ": " + PART_NAMES[q]);
+    d.addEventListener("click", () => showSection(partSecs(q)[0]));
+    snDoors[q] = d;
+    return d;
+  };
+  partsEl.appendChild(snDoor(0));
+  [0, 1].forEach(q => {
+    const g = document.createElement("div");
+    g.className = "sn-part"; g.dataset.part = q;
+    g.setAttribute("role", "group"); g.setAttribute("aria-labelledby", "snHead" + q);
+    g.innerHTML = '<span class="sn-head" id="snHead' + q + '">' + partHead(q) + '</span><span class="sn-tabs"></span>';
+    partSecs(q).forEach(k => {
+      const t = document.createElement("button");
+      t.type = "button"; t.className = "sn-tab"; t.dataset.label = SECTIONS[k].name;
+      t.textContent = SECTIONS[k].name;
+      t.addEventListener("click", () => navTo(k));
+      g.querySelector(".sn-tabs").appendChild(t);
+      snTabs[k] = t;
+    });
+    snGroups[q] = g;
+    partsEl.appendChild(g);
+  });
+  partsEl.appendChild(snDoor(1));
+  /* the extras belong to neither part: a word of their own, only while
+     the reader is there */
+  {
+    const k = SECTIONS.length - 1, t = document.createElement("button");
+    t.type = "button"; t.className = "sn-tab sn-tab--aside"; t.dataset.label = SECTIONS[k].name;
+    t.textContent = SECTIONS[k].name;
+    t.addEventListener("click", () => navTo(k));
+    partsEl.appendChild(t);
+    snTabs[k] = t;
+  }
+  /* the folded bar: one button, and its list under the bar */
+  const snNow = document.createElement("button");
+  snNow.type = "button"; snNow.className = "sn-now";
+  snNow.setAttribute("aria-expanded", "false"); snNow.setAttribute("aria-controls", "snMenu");
+  snNow.innerHTML = '<span class="sn-head"></span><span class="sn-now-t"></span>' +
+    '<svg class="sn-chev" viewBox="0 0 12 8" width="12" height="8" aria-hidden="true"><path d="M1 1l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  partsEl.prepend(snNow);
+  const snMenu = document.createElement("div");
+  snMenu.className = "sn-menu"; snMenu.id = "snMenu"; snMenu.hidden = true;
+  snMenu.setAttribute("role", "group"); snMenu.setAttribute("aria-label", "Sections");
+  (secNavEl.parentNode || document.body).appendChild(snMenu);
+  function buildSnMenu(){
+    const i = activeSec, q = partOf(i);
+    const door = (r, back) => '<button type="button" class="sn-door sn-door--row' + (back ? " is-back" : "") + '" data-go="' + partSecs(r)[0] + '">' + doorInner(r) + '</button>';
+    let h = "";
+    if (q === 1 || q < 0) h += door(0, true);
+    if (q < 0) h += door(1, true);
+    if (q >= 0) h += '<p class="sn-head">' + partHead(q) + '</p>' + partSecs(q).map(k =>
+      '<button type="button" class="sn-mitem" data-go="' + k + '"' + (k === i ? ' aria-current="page"' : '') + '><span>' + snEsc(SECTIONS[k].name) + '</span></button>').join("");
+    if (q === 0) h += door(1, false);
+    snMenu.innerHTML = h;
+    /* the list hangs under the button, inside the bar's width */
+    const bar = snMenu.parentNode.getBoundingClientRect(), b = snNow.getBoundingClientRect();
+    const w = Math.min(360, bar.width - 20);
+    snMenu.style.setProperty("--sn-left", Math.max(10, Math.min(b.left - bar.left, bar.width - w - 10)) + "px");
+    snMenu.style.setProperty("--sn-w", w + "px");
+  }
+  function snOpen(open, refocus){
+    if (open) buildSnMenu();
+    snMenu.hidden = !open;
+    snNow.setAttribute("aria-expanded", String(open));
+    if (open){ const f = snMenu.querySelector('[aria-current="page"]') || snMenu.querySelector("button"); if (f) f.focus({ preventScroll: true }); }
+    else if (refocus) snNow.focus({ preventScroll: true });
+  }
+  snNow.addEventListener("click", () => snOpen(snMenu.hidden));
+  snMenu.addEventListener("click", e => {
+    const b = e.target.closest("[data-go]"); if (!b) return;
+    const k = +b.dataset.go;
+    snOpen(false, true);
+    if (b.classList.contains("sn-mitem")) navTo(k); else showSection(k);
+  });
+  /* Escape closes and stops there; the arrows walk the list */
+  [snNow, snMenu].forEach(el => el.addEventListener("keydown", ev => {
+    if (snMenu.hidden) return;
+    if (ev.key === "Escape"){ ev.preventDefault(); ev.stopPropagation(); snOpen(false, true); return; }
+    if (ev.key === "ArrowDown" || ev.key === "ArrowUp"){
+      ev.preventDefault();
+      const all = [...snMenu.querySelectorAll("button")], at = all.indexOf(document.activeElement);
+      const n = all[(at + (ev.key === "ArrowDown" ? 1 : -1) + all.length) % all.length];
+      if (n) n.focus({ preventScroll: true });
+    }
+  }));
+  document.addEventListener("pointerdown", ev => { if (!snMenu.hidden && !snMenu.contains(ev.target) && !snNow.contains(ev.target)) snOpen(false); });
+  snMenu.addEventListener("focusout", ev => { if (!snMenu.hidden && ev.relatedTarget && !snMenu.contains(ev.relatedTarget) && ev.relatedTarget !== snNow) snOpen(false); });
+  function syncSecParts(i){
+    const q = partOf(i);
+    partsEl.dataset.cur = q < 0 ? "x" : String(q);
+    snGroups.forEach((g, r) => g.classList.toggle("is-current", r === q));
+    snDoors[0].classList.add("is-back");
+    snDoors[1].classList.toggle("is-back", q < 0);
+    snTabs.forEach((t, k) => { if (k === i) t.setAttribute("aria-current", "page"); else t.removeAttribute("aria-current"); });
+    snNow.querySelector(".sn-head").innerHTML = q < 0 ? "Outside the two parts" : partHead(q);
+    snNow.querySelector(".sn-now-t").textContent = SECTIONS[i].name;
+    snNow.setAttribute("aria-label", (q < 0 ? "" : "Part " + (q + 1) + ", " + PART_NAMES[q] + ": ") + SECTIONS[i].name + ". Sections");
+    if (!snMenu.hidden) buildSnMenu();
+  }
+  /* which drawing of the bar is shown */
+  const SECBARS = { parts: "By part", chips: "All five" }, SECBAR_DEFAULT = "parts";
+  function secBar(){ const v = document.documentElement.dataset.secbar; return SECBARS[v] ? v : SECBAR_DEFAULT; }
   /* The names show whenever they fit. The row is measured with every name
      out, and only if it runs past the bar does it collapse to the marks and
      the active name. Run when the bar changes size, when the section
@@ -10513,7 +10789,16 @@
   function fitSecNav(){
     if (!secNavEl || !secNavEl.offsetParent) return;
     secNavEl.classList.remove("is-compact");
-    const btns = [...secNavEl.children].filter(b => getComputedStyle(b).display !== "none");
+    if (secBar() === "parts"){
+      /* the row at its natural width against the room the bar gives it;
+         the stacked layout folds whatever the room */
+      const fold = window.matchMedia("(max-width:899px)").matches ||
+        partsEl.getBoundingClientRect().width > secNavEl.clientWidth + 0.5;
+      secNavEl.classList.toggle("is-compact", fold);
+      if (!fold && !snMenu.hidden) snOpen(false);
+      return;
+    }
+    const btns = [...chipsEl.children].filter(b => getComputedStyle(b).display !== "none");
     let need = (parseFloat(getComputedStyle(secNavEl).columnGap) || 0) * Math.max(0, btns.length - 1);
     btns.forEach(b => {
       const cs = getComputedStyle(b);
@@ -10680,17 +10965,19 @@
   }
   svBtn.addEventListener("click", () => svOpen(svPanel.hidden));
   svOpts.forEach(o => o.addEventListener("click", () => {
-    if (o.dataset.layout) setSiteLayout(o.dataset.layout); else setSiteNav(o.dataset.nav);
+    if (o.dataset.layout) setSiteLayout(o.dataset.layout);
+    else if (o.dataset.secbar) setSecBar(o.dataset.secbar);
+    else setSiteNav(o.dataset.nav);
     svOpen(false, true);
   }));
   /* the menu says which of each pair is in force, and the pill names both */
   function syncSv(){
     const lay = siteLayout(), nav = siteNav();
     svOpts.forEach(o => {
-      const on = o.dataset.layout ? o.dataset.layout === lay : o.dataset.nav === nav;
+      const on = o.dataset.layout ? o.dataset.layout === lay : o.dataset.secbar ? o.dataset.secbar === secBar() : o.dataset.nav === nav;
       o.classList.toggle("is-on", on); o.setAttribute("aria-checked", String(on));
     });
-    svNow.textContent = LAYOUTS[lay] + (nav !== "light" ? " \u00b7 " + NAVS[nav] + " bar" : "");
+    svNow.textContent = LAYOUTS[lay] + (secBar() !== SECBAR_DEFAULT ? " \u00b7 all five" : "") + (nav !== "light" ? " \u00b7 " + NAVS[nav] + " bar" : "");
   }
   function setSiteNav(v, fromUrl){
     v = NAVS[v] ? v : "light";
@@ -10705,6 +10992,19 @@
     if (window.fitSecNav) window.fitSecNav();
   }
   window.setSiteNav = setSiteNav;
+  function setSecBar(v, fromUrl){
+    v = SECBARS[v] ? v : SECBAR_DEFAULT;
+    document.documentElement.dataset.secbar = v;
+    syncSv();
+    if (!fromUrl){
+      const u = new URL(location.href);
+      if (v !== SECBAR_DEFAULT) u.searchParams.set("secbar", v); else u.searchParams.delete("secbar");
+      history.replaceState(null, "", u.pathname + u.search + u.hash);
+    }
+    if (!snMenu.hidden) snOpen(false);
+    fitSecNav();
+  }
+  window.setSecBar = setSecBar;
   /* Escape answers here first, and stops there: the figure's layers must
      not also take a press meant for this menu */
   svEl.addEventListener("keydown", ev => {
@@ -10922,6 +11222,7 @@
     seam.addEventListener("click", e => { const g = e.target.closest("[data-go]"); if (g) showSection(+g.dataset.go); });
   })();
   setSiteNav(new URLSearchParams(location.search).get("nav") || "light", true);
+  setSecBar(new URLSearchParams(location.search).get("secbar"), true);
   setSiteLayout(new URLSearchParams(location.search).get("layout"), true);
 
   showSection(0, false);
