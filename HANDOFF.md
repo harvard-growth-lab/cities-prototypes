@@ -913,19 +913,33 @@ carries its workers under its name. **No arrows, and no camera move**
 stays in the same zoomed out level of the previous beat"): beats 3 and 4
 hold beat 2's camera, the whole metro, so moving between beats 2, 3 and
 4 changes only the layers. There is one camera, the scroll-linked one
-(`ovZoom` → `ovCamTarget`, which has reached the metro's fit by the time
-beat 3 is the reader's; `whoBeat` and `whoShow` only swap the layers and
-the key; `whoFit` and the flights are gone; reset and resize go through
-`ovZoom`; the dormant `ovMapStep` fits the metro for 3 and 4 as for 2).
-At the metro's zoom the partners crowd round Boston, so the names are
-placed (`declutter`): Boston's stands on Boston, and each partner's,
-largest flow first, takes the first clear place of four round its own
-(above, below, right, left), clear of the other names, the key, the zoom
+(`ovZoom` → `ovCamTarget`, which holds p = 1, the metro's fit, on the
+commuting beats; `whoBeat` and `whoShow` only swap the layers and the
+key; `whoFit` and the flights are gone; the dormant `ovMapStep` fits the
+metro for 3 and 4 as for 2). On beats 3 and 4 the camera is set only as
+the beat is entered, when the map changes size, and on reset (`ovZoom(true)`
+from the reset button and the resize handler; as the scroll listener it
+gets the event, so the test is `force === true`), and otherwise left
+alone, so a reader's pinch, double tap or drag survives the scroll (a
+review found every scroll tick snapping it back). At the metro's zoom
+the partners crowd round Boston, so the names are placed (`declutter`):
+Boston's stands on Boston while it is clear of the key and the frame
+(else it gives way; the key names Boston), and each partner's, largest
+flow first, takes the first clear place of eight round its own (the four
+sides and four corners, those facing away from Boston first, since a
+name on Boston's side reads as a nearer place), then the same eight 26px
+out with a 1.25px `--ink-soft` leader line back to the place
+(`layers[mode].leaders`), clear of the other names, the key, the zoom
 buttons and the frame's edge, and gives way only when none is. At 1440
-that names three of the four and three of the five (Waltham, Somerville
-and Brookline give way); at 1024, two of each; on a phone, Cambridge.
-The names carry their map's mode (`who-lbl--out`/`--in`), so the last
-map's, which linger 200ms as Leaflet fades them, are never measured.
+that names all four partners on beat 3 and four of five on beat 4
+(Somerville gives way); at 1024, four and three; on a phone, Cambridge
+and Quincy on beat 3, and Quincy, Cambridge and Brookline on beat 4. The
+key says "the largest flows named where they fit". The names carry their
+map's mode (`who-lbl--out`/`--in`) and the outgoing map's are hidden at
+once (`.who-lbl` holds `opacity:1 !important`, so Leaflet's 200ms fade
+would print them over the new ones). A jump (`goTo`, a chip) out of a
+section whose figure is pinned on a phone drops the scroller's
+`scroll-padding-top` first (`dropPadFor`), or it lands a beat short.
 Headless captures at the metro zoom can show white hairlines between
 tiles over the water; the browser does not draw them. The metro fits
 with room round it, and on a stack the camera reaches the metro once

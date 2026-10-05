@@ -9398,11 +9398,9 @@
               '<span>' + fmtN(q[wkey]) + (mode === "out" ? " Boston residents work here" : " of them") + '</span>',
               { sticky: true, className: "who-tip", direction: "top", offset: [0, -10] }); }
         });
-        /* Boston first, so the names that would overlap it give way */
         /* Boston first, then the partners, largest flow first: the order
            the names are placed in (declutter). Each carries its map's mode,
-           so a map's names are never measured against the last map's,
-           which linger a moment as they fade */
+           and the last map's are put out of sight as it goes (whoShow) */
         const name = (ll, html, cls, dir, off) => L.circleMarker(ll, { radius: 0, opacity: 0, fillOpacity: 0, interactive: false })
           .bindTooltip(html, { permanent: true, direction: dir, offset: off, className: "map-lbl who-lbl who-lbl--" + mode + cls });
         const names = [name(WHO.boston.centroid, "Boston", " who-lbl--city", "center", [0, 0])]
@@ -9413,42 +9411,65 @@
         legend.innerHTML = '<span class="wl-txt">' + esc(D.legend) + '</span>' +
           '<span class="wl-ramp"><i style="background:linear-gradient(to right,' + rgba(col, .12) + ',' + rgba(col, .82) + ')"></i></span>' +
           '<span class="wl-ends"><span>0%</span><span>' + pct(D.maxShare) + '</span></span>' +
-          '<span class="wl-sub">' + D.places + ' places with data; the largest flows named</span>' +
+          '<span class="wl-sub">' + D.places + ' places with data; the largest flows named where they fit</span>' +
           '<span class="wl-city"><i></i>Boston</span>';
         ovLeaflet.getContainer().appendChild(legend);
-        layers[mode] = { fill, labels, names, legend };
+        /* the thin lines from a place to its name, where the name has had
+           to stand off from it (declutter) */
+        const leaders = L.layerGroup();
+        layers[mode] = { fill, labels, names, leaders, legend };
       });
       /* The names on a commuting map, placed so that none covers another,
          the key or the zoom buttons, and none runs off the frame. Boston's
-         stands on Boston; each partner's, largest flow first, takes the
-         first clear place of four round its own (above, as drawn, then
-         below, right and left), and gives way only when none is clear. The
-         maps hold the metro's zoom (2026-10-05), where the partners crowd
-         round Boston, so most names move off their default place. */
+         stands on Boston while it is clear of those (a hand zoom can carry
+         it under the key, where it gives way; the key names Boston too).
+         Each partner's, largest flow first, takes the first clear place of
+         eight round its own, those on the side away from Boston first (a
+         name on Boston's side would read as a place nearer the city), and
+         failing those, the same eight farther out, with a thin line back to
+         the place. Only then does it give way. The maps
+         hold the metro's zoom (2026-10-05), where the partners crowd round
+         Boston, so most names stand off their place. */
       let whoMode = null;
       const declutter = () => {
         if (!whoMode) return;
+        const Ly = layers[whoMode];
         const host = ovLeaflet.getContainer(), box = host.getBoundingClientRect();
         const taken = [...host.querySelectorAll(".who-legend:not([hidden]), .map-ctls")]
           .map(e => e.getBoundingClientRect()).filter(r => r.width > 0);
         const clear = r => r.left >= box.left + 2 && r.right <= box.right - 2 && r.top >= box.top + 2 && r.bottom <= box.bottom - 2 &&
           !taken.some(q => r.left < q.right + 4 && r.right > q.left - 4 && r.top < q.bottom + 2 && r.bottom > q.top - 2);
-        layers[whoMode].names.forEach((m, i) => {
+        Ly.leaders.clearLayers();
+        const hub = ovLeaflet.latLngToContainerPoint(Ly.names[0].getLatLng());
+        Ly.names.forEach((m, i) => {
           const el = m.getTooltip() && m.getTooltip().getElement();
           if (!el) return;
           el.style.visibility = ""; el.style.marginLeft = ""; el.style.marginTop = "";
           const r = el.getBoundingClientRect();
-          if (!i){ taken.push(r); return; }
+          if (!i){ if (clear(r)) taken.push(r); else el.style.visibility = "hidden"; return; }
           const cs = getComputedStyle(el), ml = parseFloat(cs.marginLeft) || 0, mt = parseFloat(cs.marginTop) || 0;
           const pt = ovLeaflet.latLngToContainerPoint(m.getLatLng()), x = box.left + pt.x, y = box.top + pt.y;
           const w = r.width, h = r.height;
-          const spot = [[x - w / 2, r.top], [x - w / 2, y + 8], [x + 8, y - h / 2], [x - 8 - w, y - h / 2]]
-            .map(([left, top]) => ({ left, top, right: left + w, bottom: top + h }))
-            .find(clear);
+          /* how far a spot points away from Boston: its centre's direction
+             from the place, against the place's direction from Boston */
+          const ax = pt.x - hub.x, ay = pt.y - hub.y, al = Math.hypot(ax, ay) || 1;
+          const away = q => { const cx = q.left + w / 2 - x, cy = q.top + h / 2 - y, cl = Math.hypot(cx, cy) || 1; return (cx * ax + cy * ay) / (cl * al); };
+          const ring = (g, far) => { const d = g * .7; return [
+            [x - w / 2, y - g - h], [x - w / 2, y + g], [x + g, y - h / 2], [x - g - w, y - h / 2],
+            [x + d, y - d - h], [x - d - w, y - d - h], [x + d, y + d], [x - d - w, y + d]]
+            .map(([left, top]) => ({ left, top, right: left + w, bottom: top + h, far }))
+            .sort((p, q) => away(q) - away(p)); };
+          const spot = ring(8, false).concat(ring(26, true)).find(clear);
           if (!spot){ el.style.visibility = "hidden"; return; }
           el.style.marginLeft = (ml + spot.left - r.left) + "px";
           el.style.marginTop = (mt + spot.top - r.top) + "px";
           taken.push(spot);
+          if (spot.far){
+            /* from the place to the nearest point of its name */
+            const ex = Math.min(Math.max(x, spot.left), spot.right) - box.left, ey = Math.min(Math.max(y, spot.top), spot.bottom) - box.top;
+            Ly.leaders.addLayer(L.polyline([m.getLatLng(), ovLeaflet.containerPointToLatLng([ex, ey])],
+              { interactive: false, color: "#526066", weight: 1.25, opacity: 1 }));
+          }
         });
       };
       ovLeaflet.on("zoomend moveend", declutter);
@@ -9456,7 +9477,11 @@
         whoMode = mode;
         ["out", "in"].forEach(m => {
           const Ly = layers[m], on = m === mode;
-          [Ly.fill, Ly.labels].forEach(g => { if (on){ if (!ovLeaflet.hasLayer(g)) g.addTo(ovLeaflet); } else if (ovLeaflet.hasLayer(g)) ovLeaflet.removeLayer(g); });
+          /* Leaflet fades a name out over 200ms, but the names hold full
+             strength (.who-lbl), so the last map's would print over the
+             next one's: they go out of sight at once */
+          if (!on && ovLeaflet.hasLayer(Ly.labels)) Ly.names.forEach(n => { const el = n.getTooltip() && n.getTooltip().getElement(); if (el) el.style.visibility = "hidden"; });
+          [Ly.fill, Ly.labels, Ly.leaders].forEach(g => { if (on){ if (!ovLeaflet.hasLayer(g)) g.addTo(ovLeaflet); } else if (ovLeaflet.hasLayer(g)) ovLeaflet.removeLayer(g); });
           Ly.legend.hidden = !on;
         });
         /* Boston keeps its teal on the commuting maps, a heavier edge, and
@@ -9510,7 +9535,7 @@
     ctlBtns[2].onclick = () => {
       ovManual = false;
       if (window.ovScrollyOn && window.ovMapStep) window.ovMapStep(window.ovCurStep || 0);
-      else ovZoom();
+      else ovZoom(true);
     };
     ctlBtns[3].onclick = () => { if (window.ovToggleMapX) window.ovToggleMapX(); };
 
@@ -10183,11 +10208,14 @@
     if (mode){ window.ovMetroHidden = true; ovMsaVis(false); }
     if (window.ovUpdateCallouts) window.ovUpdateCallouts();
   };
-  function ovZoom(){
+  /* force (true only from reset and resize; as the scroll listener it is
+     handed the event) sets the camera on a commuting beat too */
+  function ovZoom(force){
     const on = ovBeat();
     if(window.ovScrollyOn) return;       // the ov2 engine drives the map
     if(!ovWrap||!ovLeaflet) return;
-    if (on != null && on !== whoOn) whoBeat(on);
+    const entered = on != null && on !== whoOn;
+    if (entered) whoBeat(on);
     /* the first page is the admin's alone: its boundary and label, and no
        metro yet. The metro's edge and chip are drawn only once the page
        that introduces it — city against metro — has come into view. The
@@ -10208,10 +10236,17 @@
        is not an island" always opens on the whole region, admin inside it.
        (msaEl is the page looked up above for the metro's visibility.) */
     const sz = ovLeaflet.getSize();
+    let resized = false;
     if (sz.x !== ovZoomSize.x || sz.y !== ovZoomSize.y){
       ovLeaflet.invalidateSize({ animate: false });
       ovZoomSize = ovLeaflet.getSize();
+      resized = true;
     }
+    /* on the commuting beats the camera stands still at the metro's fit:
+       set as the beat is entered, when the map changes size and on reset,
+       and otherwise left alone, so the reader's own pinch, double tap or
+       drag is not undone by the next tick of the scroll */
+    if (WHO_BEAT[whoOn] && !entered && !resized && force !== true) return;
     const t = ovCamTarget();
     if (t) ovLeaflet.setView(t.center, t.zoom, { animate: false });
   }
@@ -10232,6 +10267,9 @@
       : -Infinity;
     let p=Math.min(1, Math.max(0, (H-t2)/span));
     if (whoOn >= 1 && window.matchMedia && matchMedia("(max-width:899px)").matches) p = 1;
+    /* the commuting beats hold the metro's fit itself, however short the
+       second beat left the pull-back */
+    if (WHO_BEAT[whoOn]) p = 1;
     const sz = ovLeaflet.getSize();
     const cb = L.latLngBounds(cityPoly), mb = L.latLngBounds(msaPoly);
     const pad = L.point(28, 28);
@@ -10308,7 +10346,7 @@
     }
     lastScrollTop=pagesEl.scrollTop;
   }, {passive:true});
-  window.addEventListener("resize", ()=>{ if(ovLeaflet){ ovLeaflet.invalidateSize(); ovZoom(); } });
+  window.addEventListener("resize", ()=>{ if(ovLeaflet){ ovLeaflet.invalidateSize(); ovZoom(true); } });
 
   /* ---------- v-3 navigation option: one page per section ----------
      Built from sectionDefs, so the nav, the pager and the journey panel can
@@ -10427,11 +10465,13 @@
         /* the chip takes the reader to the section's top, and the chips
            hold still while the scroll gets there */
         trackHold = Date.now() + 1000;
+        dropPadFor(first);
         if (first) first.scrollIntoView({ block: "start",
           behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
       } else if (halves && first && partOf(i) >= 0 && i !== SECTIONS.findIndex((_, k) => partOf(k) === partOf(i))){
         /* into the other part, at a section after its first: straight there */
         trackHold = Date.now() + 400;
+        dropPadFor(first);
         first.scrollIntoView({ block: "start", behavior: "instant" });
       } else pagesEl.scrollTo({top: 0, behavior: "instant"});
     }
@@ -10456,6 +10496,7 @@
       if (i === activeSec && siteLayout() === "halves" && i < SECTIONS.length - 1){
         const first = SECTIONS[i].els[0];
         trackHold = Date.now() + 1000;
+        dropPadFor(first);
         if (first) first.scrollIntoView({ block: "start",
           behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
         return;
@@ -10582,10 +10623,21 @@
     }
   });
 
+  /* On a phone a figure pinned at the top pads the scroller's top by its
+     own height while it is held (the scrolly's spy), so a beat lands under
+     it. A jump to anything outside that figure's section must not keep the
+     padding, or it lands that far short (a beat early). */
+  function dropPadFor(target){
+    const by = pagesEl.dataset.padBy;
+    if (by && !(target && target.closest && target.closest("#" + by))){
+      pagesEl.style.scrollPaddingTop = ""; delete pagesEl.dataset.padBy;
+    }
+  }
   const goToScroll = goTo;
   goTo = function(id){
     const i = sectionIndexOf(id);
     if(i >= 0) showSection(i, false);
+    dropPadFor(document.getElementById(id));
     goToScroll(id);
   };
 
