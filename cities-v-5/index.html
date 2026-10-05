@@ -3272,9 +3272,6 @@
   #page-export-basket .ask-ans{padding:0 10px 12px 35px;}
   #page-export-basket .ask-ans[hidden]{display:none;}
   #page-export-basket .ask-a{margin:0;font-size:15px;line-height:1.5;color:var(--ink);}
-  /* the question that needs the tier filter has nothing to set while the
-     ranking's study shows the score instead */
-  #page-export-basket:has(#miFigure[data-rank="score"]) .ask-item:has([data-ask="b3q1"]){display:none;}
   /* the answers are written for 2024: while the other year is showing the
      questions stand down rather than answer for a chart they are not about */
   #page-export-basket:has(#miFigure[data-year="2014"]) .ask-chart{display:none;}
@@ -6984,15 +6981,15 @@
           <div class="ask-chart" data-fig="mi" role="group" aria-labelledby="miAskLab3">
             <p class="ask-lab" id="miAskLab3">Ask the chart</p>
             <div class="ask-item">
-              <button type="button" class="ask-q" data-ask="b3q1" aria-expanded="false" aria-controls="miAsk-b3q1" aria-describedby="miAskHint"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Where are the universities on this list?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
+              <button type="button" class="ask-q" data-ask="b3q1" aria-expanded="false" aria-controls="miAsk-b3q1" aria-describedby="miAskHint"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">How do these specialties compare with the peer metros?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
               <div class="ask-ans" id="miAsk-b3q1" hidden>
-                <p class="ask-a">At 4.3 times, they miss the list&rsquo;s cut-off. Among partly traded industries, shown here, they rank second.</p>
+                <p class="ask-a">All twelve are more concentrated here than in the five <button type="button" class="term" data-term="peers" aria-expanded="false">peer metros</button> together. Guided missile and space vehicle parts lead, at 54 times their share; biotechnology R&amp;D, the largest, is ninth at 4.5 times, as the peers are strong in it too.</p>
               </div>
             </div>
             <div class="ask-item">
-              <button type="button" class="ask-q" data-ask="b3q2" aria-expanded="false" aria-controls="miAsk-b3q2" aria-describedby="miAskHint"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">How many people work in these twelve specialties?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
+              <button type="button" class="ask-q" data-ask="b3q2" aria-expanded="false" aria-controls="miAsk-b3q2" aria-describedby="miAskHint"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Which of these specialties employ the most people?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
               <div class="ask-ans" id="miAsk-b3q2" hidden>
-                <p class="ask-a">About 86,000. Biotechnology R&amp;D alone is 62,000 of them.</p>
+                <p class="ask-a">Biotechnology R&amp;D, with 61,687 of the twelve&rsquo;s 86,003 jobs. Laboratory instruments and savings institutions follow, at about 7,000 each; two of the twelve have fewer than 100.</p>
               </div>
             </div>
           </div>

@@ -6251,7 +6251,9 @@
       b1q2: { step: 0, set: { colorBy: "complexity" }, marks: "color" },
       b2q1: { step: 4, set: { colorBy: "complexity" }, marks: "color" },
       b2q2: { step: 4, set: { tiers: [true, false, false] }, marks: "" },
-      b3q1: { step: 6, set: { rankTiers: [false, true, false] }, marks: "trad" },
+      /* the third beat's two other orders (Nil, 2026-10-05): against the
+         peer metros, and by jobs */
+      b3q1: { step: 6, set: { sortKey: "gap" }, marks: "sort" },
       b3q2: { step: 6, set: { sortKey: "jobs" }, marks: "sort" }
     };
     const askRows = [].slice.call(document.querySelectorAll('.ask-chart[data-fig="' + p + '"] .ask-q[data-ask]'));
@@ -6290,7 +6292,7 @@
        study's opt-2, shipped): what the figure is showing, and the way
        back, named for the view the beat goes back to */
     const BACK_TO = { b1q1: "Back to the treemap", b1q2: "Back to sector colours", b2q1: "Back to sector colours",
-                      b2q2: "Back to all three tiers", b3q1: "Back to both tradable tiers", b3q2: "Back to most specialized" };
+                      b2q2: "Back to all three tiers", b3q1: "Back to most specialized", b3q2: "Back to most specialized" };
     const askTab = document.createElement("div");
     askTab.className = "mi-asktab"; askTab.hidden = true;
     askTab.innerHTML = '<span class="mi-asktab-dot" aria-hidden="true"></span><span class="mi-asktab-txt">Showing an answer</span>' +
