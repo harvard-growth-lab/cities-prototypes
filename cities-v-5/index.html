@@ -3082,6 +3082,7 @@
   #miFigure #miTreemapSvg .mi-colhead,
   #miFigure #miTreemapSvg .mi-badge,
   #miFigure #miTreemapSvg .mi-toplab,
+  #miFigure #miTreemapSvg .mi-nation-lab,
   #miFigure #miTreemapSvg .mi-card-none{font-size:calc(12.5px / var(--mi-s));}
   /* the figure's own controls and keys */
   #miFigure .mi-view .seg-btn{font-size:12.5px;}
@@ -4039,6 +4040,14 @@
   .mi-figure svg .mi-val{font-size:12.5px;font-weight:600;fill:var(--ink);}
   .mi-figure svg .mi-val.is-top{fill:var(--teal);font-weight:700;}
   .mi-figure svg .mi-peer{stroke:#1a2226;stroke-width:2;stroke-linecap:round;}
+  /* a white edge under the peer mark: the bars start at 0, so every mark
+     now crosses a bar, three of them dark teal */
+  .mi-figure svg .mi-peer-halo{stroke:#fff;stroke-width:5;stroke-linecap:round;}
+  /* the national rate on the ranking: the line it is read against */
+  .mi-figure svg .mi-nation{stroke:#1a2226;stroke-width:1.5;stroke-dasharray:4 3;pointer-events:none;}
+  .mi-figure svg .mi-nation-halo{stroke:#fff;stroke-width:4;pointer-events:none;}
+  .mi-figure svg .mi-nation-tick{font-weight:700;fill:var(--ink);}
+  .mi-figure svg .mi-nation-lab{font-weight:600;fill:var(--ink-soft);}
   /* the whole row answers the cursor, not just the bar: a name at one end
      and a jobs count at the other belong to the same reading */
   /* the band is only ever a hit target — the tint it used to carry sat in

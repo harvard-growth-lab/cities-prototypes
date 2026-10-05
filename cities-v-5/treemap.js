@@ -3729,9 +3729,10 @@
         rankIdx: new Map(ranked.map((d, i) => [d.name, i])),   /* by concentration: the badges' order */
         pos: new Map(ranked.map((d, i) => [d.name, i])),       /* the order on screen, which sorting changes */
         rankRow: new Map(ranked.map(d => [d.name, d])),
-        /* from 0, so a peer rate under the national one (most of them, for
-           these industries) still has a place to stand left of the bars,
-           which rise from 1x */
+        /* the axis and the bars start at 0 (2026-10-04, from
+           peer-mark-sketches.html, option 1), so a peer rate under the
+           national one - most of them, for these industries - falls inside
+           the plot; 1x, the national rate, is a line of its own */
         xr: d3.scaleLinear()
           .domain([0, (d3.max(ranked, d => Math.max(d.rca, d.peerRate || 0)) || 2) * 1.06])
           .range([ml + 12, right]),
@@ -3796,8 +3797,8 @@
         ? { box: posSplit.get(d.name) || allSpot(d), fill: GREY, op: 0, rx: 0 }
         : sortKey === "gap"
           ? { box: gapBox(R1, d.row, R1.pos.get(d.name)), fill: (gapOf(d.row) || 0) >= 1 ? TEAL : ORANGE, op: 1, rx: 0 }
-          : { box: { x: xr(1), y: rowY(R1.pos.get(d.name)) - BAR_H / 2,
-                     w: Math.max(2, xr(d.row.rca) - xr(1)), h: BAR_H },
+          : { box: { x: xr(0), y: rowY(R1.pos.get(d.name)) - BAR_H / 2,
+                     w: Math.max(2, xr(d.row.rca) - xr(0)), h: BAR_H },
               fill: d.rank < 3 ? TEAL : MUTED, op: 1, rx: 0 },
       /* the three clusters by tradability, the most tradable on the left */
       4: d => !secShown(d) || !inFocus(d) || !tierShown(d) ? { box: clusterSpot(d), fill: clusterFill(d), op: 0, rx: 0 }
@@ -3835,8 +3836,8 @@
         : sortKey === "gap"
           ? { box: gapBox(R2, d.row2, R2.pos.get(d.name)), fill: (gapOf(d.row2) || 0) >= 1 ? TEAL : ORANGE,
               op: 1, rx: 0, delay: arriving ? 300 : 0 }
-          : { box: { x: R2.xr(1), y: rowY(R2.pos.get(d.name)) - BAR_H / 2,
-                     w: Math.max(2, R2.xr(d.row2.rca) - R2.xr(1)), h: BAR_H },
+          : { box: { x: R2.xr(0), y: rowY(R2.pos.get(d.name)) - BAR_H / 2,
+                     w: Math.max(2, R2.xr(d.row2.rca) - R2.xr(0)), h: BAR_H },
               fill: d.rank2 < 3 ? TEAL : MUTED, op: 1, rx: 0, delay: arriving ? 300 : 0 }
     };
 
@@ -4074,15 +4075,28 @@
       /* the rows carry the mode, so the score's track stands down under
          the words without touching the first ranking's rows */
       G.classed("is-tier", tierMode);
-      /* 1x, the national rate the bars rise from, and the even steps above it */
-      A.selectAll("g.mi-tick").data([1].concat(R.xr.ticks(5).filter(t => t >= 2))).join("g")
+      /* 0, where the bars start, and the even steps above it */
+      const yEnd = MT + R.ranked.length * RH;
+      A.selectAll("g.mi-tick").data([0].concat(R.xr.ticks(5).filter(t => t >= 2))).join("g")
         .attr("class", "mi-tick")
-        .call(g => g.append("line").attr("class", d => "mi-grid" + (d === 1 ? " is-base" : ""))
+        .call(g => g.append("line").attr("class", "mi-grid")
           .attr("x1", d => R.xr(d)).attr("x2", d => R.xr(d))
-          .attr("y1", GRID_TOP).attr("y2", MT + R.ranked.length * RH))
+          .attr("y1", GRID_TOP).attr("y2", yEnd))
         .call(g => g.append("text").attr("class", "mi-ticklab")
           .attr("x", d => R.xr(d)).attr("y", TICK_Y).attr("text-anchor", "middle")
-          .text(d => d + "\u00d7"));
+          .text(d => d === 0 ? "0" : d + "\u00d7"));
+      /* 1x, the national rate: every industry here stands beyond it, and the
+         peers' marks fall either side of it, so it is the line the chart is
+         read against - darker than the grid, carried past the rows, named */
+      const nx = R.xr(1);
+      /* drawn in the rows' layer, over the bars, on a white edge, so it
+         reads across the dark ones too */
+      [["mi-nation-halo"], ["mi-nation"]].forEach(([cls]) => G.append("line").attr("class", cls)
+        .attr("x1", nx).attr("x2", nx).attr("y1", GRID_TOP - 6).attr("y2", yEnd + 4));
+      A.append("text").attr("class", "mi-ticklab mi-nation-tick")
+        .attr("x", nx).attr("y", TICK_Y).attr("text-anchor", "middle").text("1\u00d7");
+      A.append("text").attr("class", "mi-nation-lab")
+        .attr("x", nx + 5).attr("y", yEnd + 18).text("National rate");
       A.append("text").attr("class", "mi-axname")
         .attr("x", R.ml + 12).attr("y", HEAD_Y)
         .text("Times more concentrated");
@@ -4118,6 +4132,10 @@
         .text(d => d.rca.toFixed(1) + "\u00d7");
       /* the peer metros together, against the nation; none where the
          source gives no peer figure */
+      row.append("line").attr("class", "mi-peer-halo")
+        .attr("x1", d => R.xr(d.peerRate || 0)).attr("x2", d => R.xr(d.peerRate || 0))
+        .attr("y1", -BAR_H / 2 - 4).attr("y2", BAR_H / 2 + 4)
+        .style("display", d => d.peerRate == null ? "none" : null);
       row.append("line").attr("class", "mi-peer")
         .attr("x1", d => R.xr(d.peerRate || 0)).attr("x2", d => R.xr(d.peerRate || 0))
         .attr("y1", -BAR_H / 2 - 4).attr("y2", BAR_H / 2 + 4)
@@ -4196,6 +4214,7 @@
                                 : Math.max(R.xr(d.rca), R.xr(d.peerRate || 0)) + 9)
         .attr("text-anchor", d => gap && gapOf(d) != null && gapOf(d) < 1 ? "end" : "start");
       t(R.row.select(".mi-peer")).style("opacity", gap ? 0 : 1);
+      t(R.row.select(".mi-peer-halo")).style("opacity", gap ? 0 : 1);
     }
     drawRanking(R1, gAxis, gRows);
     drawRanking(R2, gAxis2, gRows2);

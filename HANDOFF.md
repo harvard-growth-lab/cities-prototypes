@@ -204,8 +204,8 @@ rule (`STATE` table), and `setStep` drops what a beat cannot carry.
   ("Times as concentrated as in the peer metros"; 71× for fabric coating,
   all 12 ahead), and the tick on the concentration view is the peers'
   own rate against the nation, `rca / peerRca`, keyed "The five peer
-  metros together". The national axis now starts at 0 with a 1× mark, so
-  a peer rate under 1× has a place left of the bars.
+  metros together". The bars and the axis start at 0, and 1×, the
+  national rate, is a labelled line over them (item 0f in §8).
   **Fabric coating mills are left out of this ranking** (2026-10-04, Nil:
   "from the last beat, remove the Fabric coating"): `RANK_LEAVE_OUT` in
   `rankPool()`. In the source it is the most specialized tradable
@@ -1053,17 +1053,21 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
    the fold by 24px with b1q1 open and 6px with b2q2 (both add a row to
    the head).
 
-0f. **Beat 3's peer marks: a design pick is pending** (2026-10-04). Nil:
-   "some peers ave line are outside of the chart … We still want to show
-   the industries above 1". The peers' own rate against the nation is
-   under 1× for eight of the twelve, so their marks fall left of where the
-   bars start. `peer-mark-sketches.html` (repo root; tracked copy in
-   `handoff/sketches/`) draws four answers from the real data: 1 bars and
-   axis from 0 with 1× as a dashed line; **2 a log axis from 0.1× to 15×,
-   bars still rising from 1×, the side below 1× shaded** (recommended: the
-   gap from mark to bar end is the lead over the peers, the quantity
-   "Against peers" sorts by); 3 two dots per industry; 4 the peers as a
-   column beside Jobs, the mark dropped.
+0f. **Beat 3's peer marks: built 2026-10-04 (option 1).** Nil: "some
+   peers ave line are outside of the chart … We still want to show the
+   industries above 1". The peers' own rate against the nation is under
+   1× for eight of the twelve, so their marks fell left of where the bars
+   started. Sketched as `peer-mark-sketches.html` (repo root; tracked copy
+   in `handoff/sketches/`): 1 bars and axis from 0 with 1× as a line; 2 a
+   log axis; 3 two dots per industry; 4 the peers as a column. **Nil chose
+   1, with the 1× line "more prominent" and labelled.** The ranking's bars
+   now start at 0 (`xr(0)` in the step 3 and 6 boxes); the axis reads 0,
+   then 2×, 4× …; the national rate is its own line (`.mi-nation`, 1.5px
+   dashed ink on a 4px white edge, `.mi-nation-halo`), drawn in the rows'
+   layer over the bars and carried past them, with a bold "1×" in the tick
+   row and "National rate" under the last row (`.mi-nation-lab`, 12.5px on
+   screen). The peer marks carry a white edge too (`.mi-peer-halo`), since
+   every one now crosses a bar, three of them dark.
 
 0e. **The control row's sentence is the default** (2026-10-04, Nil: "For
    Control Row options, make opt 2 the default"). On the stacked layout
@@ -1238,7 +1242,7 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
   (the third's rows with the answer in the text were built, item 0),
   `ask-chart-return-sketches.html` with `ask-return-images/` (option 4,
   the tab on the frame, was built), `peer-mark-sketches.html` with
-  `peer-mark-images/` (**open**, item 0f). Open them through the
+  `peer-mark-images/` (option 1 was built, item 0f). Open them through the
   same server (http://127.0.0.1:8912/handoff/sketches/…); the live ones
   need `cities-v-5/` beside `handoff/`.
 - Sketch pages at the repo root are the originals, untracked by convention
