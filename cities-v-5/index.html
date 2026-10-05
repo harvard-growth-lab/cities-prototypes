@@ -3103,8 +3103,6 @@
        phone and the ranking does not use it */
     #miFigure[data-step="6"] .mi-caption{min-height:0;}
     #miFigure[data-step="6"] .mi-caption > .sector-key{display:none;}
-    #miFigure[data-step="6"]:not([data-sort="gap"]) .mi-caption > .spec-key:not(.spec-key--gap),
-    #miFigure[data-step="6"][data-sort="gap"] .mi-caption > .spec-key--gap{position:relative;}
     /* the Ranked view pans at 704 wide, a drawing 400 tall; with the sector
        key under it the band took the screen and left the beat's text two
        lines. The bars name their industries, and the map the reader comes
@@ -3231,6 +3229,38 @@
   /* the answers are written for 2024: while the other year is showing the
      questions stand down rather than answer for a chart they are not about */
   #page-export-basket:has(#miFigure[data-year="2014"]) .ask-chart{display:none;}
+  /* the ranking's key in its head row: at the right end, at the row's own
+     16px, one key at a time - the peers' mark, or under the peers order the
+     bars' readings ("less" only when some bar is behind) */
+  #miSort .spec-key{
+    display:none;flex-wrap:wrap;align-items:center;gap:4px 18px;margin:0 0 0 auto;
+    font-size:16px;line-height:1.3;color:var(--ink);opacity:1;pointer-events:auto;
+  }
+  #miFigure[data-step="6"]:not([data-sort="gap"]) #miSort .spec-key:not(.spec-key--gap),
+  #miFigure[data-step="6"][data-sort="gap"] #miSort .spec-key--gap{display:inline-flex;}
+  #miSort .spec-key .sk-item{gap:8px;}
+  #miSort .spec-key .sk-peer{width:2px;height:18px;}
+  #miSort .spec-key .sk-ahead,#miSort .spec-key .sk-behind{width:18px;height:13px;}
+  #miSort .spec-key .sk-base{height:18px;}
+  #miSort .spec-key .sk-behind-item{display:none;}
+  #miFigure[data-peerbehind="1"] #miSort .spec-key .sk-behind-item{display:inline-flex;}
+  /* on the ranking the row is in the flow, so a key that wraps takes a
+     line of its own rather than rising over the frame's edge */
+  #miFigure[data-step="6"] .mi-head{display:flex;align-items:flex-end;}
+  #miFigure[data-step="6"] .mi-head > .mi-sort{position:relative;left:auto;right:auto;bottom:auto;width:100%;}
+  /* the peer card's table: the metro and its five peers */
+  .term-card .tc-stats{display:grid;grid-template-columns:1fr auto auto auto;gap:3px 12px;margin:9px 0 0;font-size:13px;font-variant-numeric:tabular-nums;}
+  .term-card .tc-stats > span{display:block;text-align:right;}
+  .term-card .tc-stats > span.tc-m{text-align:left;}
+  .term-card .tc-stats > span.tc-h{font-size:12.5px;font-weight:600;color:#526066;}
+  .term-card .tc-stats > span.tc-me{font-weight:600;}
+  .term-card .tc-note{display:block;margin:6px 0 0;font-size:12.5px;color:#526066;}
+  .gl-tbl{width:100%;border-collapse:collapse;margin:6px 0 4px;font-size:14px;font-variant-numeric:tabular-nums;}
+  .gl-tbl th,.gl-tbl td{padding:5px 8px;border-bottom:1px solid var(--border);text-align:right;}
+  .gl-tbl th:first-child{text-align:left;}
+  .gl-tbl thead th{font-size:12.5px;font-weight:600;color:var(--ink-soft);}
+  .gl-tbl tbody th{font-weight:400;}
+  .gl-tbl tr.is-me th,.gl-tbl tr.is-me td{font-weight:600;}
   /* "Ask the chart": while a question's answer stands, the figure's frame
      says so (opt-2 of the "Answer shown" study, shipped 2026-10-04, from
      ask-chart-return-sketches.html, option 4). The frame's edge turns teal
@@ -4045,7 +4075,7 @@
   .mi-figure svg .mi-peer-halo{stroke:#fff;stroke-width:5;stroke-linecap:round;}
   /* the national rate on the ranking: the line it is read against */
   .mi-figure svg .mi-nation{stroke:#1a2226;stroke-width:1.5;stroke-dasharray:4 3;pointer-events:none;}
-  .mi-figure svg .mi-nation-halo{stroke:#fff;stroke-width:4;pointer-events:none;}
+  .mi-figure svg .mi-nation-halo{stroke:#fff;stroke-opacity:.5;stroke-width:4;pointer-events:none;}
   .mi-figure svg .mi-nation-tick{font-weight:700;fill:var(--ink);}
   .mi-figure svg .mi-nation-lab{font-weight:600;fill:var(--ink-soft);}
   /* the whole row answers the cursor, not just the bar: a name at one end
@@ -6498,6 +6528,18 @@
                 <span class="mi-s-rank-lead">The most specialized tradable industries,</span> sorted by
                 <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="miSSortRank" aria-label="Order of the ranking"><option value="rca">concentration</option><option value="jobs">jobs</option><option value="gap">concentration against peers</option></select></span>
               </p>
+              <!-- the ranking's key, at the right of its own row (2026-10-04,
+                   moved up from under the chart): the peers' mark, named as a
+                   term, so a press or a pointer opens a card on the five peer
+                   metros; under the peers order, the bars' two readings -->
+              <p class="spec-key" id="miSpecKey">
+                <span class="sk-item"><i class="sk-peer" aria-hidden="true"></i><button type="button" class="term" data-term="peers" aria-expanded="false">The five peer metros together</button></span>
+              </p>
+              <p class="spec-key spec-key--gap" id="miSpecKeyGap">
+                <span class="sk-item"><i class="sk-ahead" aria-hidden="true"></i>more concentrated here</span>
+                <span class="sk-item sk-behind-item"><i class="sk-behind" aria-hidden="true"></i>less</span>
+                <span class="sk-item"><i class="sk-base" aria-hidden="true"></i><span>the same share as the <button type="button" class="term" data-term="peers" aria-expanded="false">peers</button></span></span>
+              </p>
             </div>
             <!-- The studies are not controls the reader is meant to use: they
                  are the questions still to be settled. One word carries them
@@ -6634,15 +6676,6 @@
               </div>
               <span class="cl-none"><i aria-hidden="true"></i>Not rated</span>
             </div>
-            <p class="spec-key" id="miSpecKey">
-              <span class="sk-item"><i class="sk-peer"></i>The five peer metros together</span>
-            </p>
-            <!-- the key for the peers order, where the bar is the gap itself -->
-            <p class="spec-key spec-key--gap" id="miSpecKeyGap">
-              <span class="sk-item"><i class="sk-ahead"></i>more concentrated here than in the peer metros</span>
-              <span class="sk-item"><i class="sk-behind"></i>less than in the peer metros</span>
-              <span class="sk-item"><i class="sk-base"></i>the same share as the peers</span>
-            </p>
           </div>
         </div>
 
@@ -7355,6 +7388,18 @@
         entirely ordinary. This measures what is <em>distinctive</em> about the metro, not what
         employs the most people.</p>
       </section>
+      <section class="gl-entry" id="gl-peers" tabindex="-1" aria-labelledby="gl-peers-h">
+        <h3 id="gl-peers-h">Peer metros</h3>
+        <p>The reference build compares Boston with five <strong>peer metros</strong>: Washington, Seattle,
+        San Diego, Denver and Baltimore. The figure for each industry is the metro&rsquo;s share of its jobs
+        measured against the five peers&rsquo; share taken together, instead of against the nation&rsquo;s:
+        <strong>1.0&times;</strong> is the same share as the peers, <strong>4.5&times;</strong> four and a half
+        times theirs.</p>
+        <p>The ranking&rsquo;s black mark is the peers&rsquo; own rate against the nation, which follows from
+        the two: where it falls short of the metro&rsquo;s bar, the metro is the more specialized of the six.
+        The &ldquo;Against peers&rdquo; order ranks the industries by that lead.</p>
+        <div class="gl-peers" id="glPeers"></div>
+      </section>
     </div>
   </div>
 </div>
@@ -8014,8 +8059,33 @@
     tradability: { name: "Tradability",
       def: "How much of what an industry makes can be sold outside the metro. Each industry falls in one of three tiers: traded, partly traded or local." },
     specialization: { name: "Specialization",
-      def: "An industry the metro does more of than the country does. 2.0× means twice the national share of jobs." }
+      def: "An industry the metro does more of than the country does. 2.0× means twice the national share of jobs." },
+    peers: { name: "The five peer metros",
+      def: "Washington, Seattle, San Diego, Denver and Baltimore, the metros the reference build compares Boston with. The mark is their share of an industry's jobs, taken together, against the nation's.",
+      stats: true }
   };
+  /* the metro and its peers side by side, from the data file's peerStats */
+  const peerStatsHtml = () => {
+    const P = (window.BOSTON_INDUSTRIES_2024 || {}).peerStats; if (!P) return "";
+    const m = v => (v / 1e6).toFixed(1) + "M", usd = v => "$" + Math.round(v / 1000) + "K";
+    const row = (r, me) => '<span class="tc-m' + (me ? ' tc-me' : '') + '" role="cell">' + r.name + '</span>' +
+      ['population', 'employment', 'wage'].map(k => '<span role="cell"' + (me ? ' class="tc-me"' : '') + '>' + (k === 'wage' ? usd(r[k]) : m(r[k])) + '</span>').join("");
+    return '<span class="tc-stats" role="table" aria-label="Boston and its five peer metros">' +
+      '<span class="tc-h tc-m" role="columnheader">Metro</span><span class="tc-h" role="columnheader">People</span>' +
+      '<span class="tc-h" role="columnheader">Jobs</span><span class="tc-h" role="columnheader">Average salary</span>' +
+      row(P.metro, true) + P.peers.map(r => row(r, false)).join("") + '</span>' +
+      '<span class="tc-note">People ' + P.years.population + ', jobs ' + P.years.employment + ', salary ' + P.years.wage + '.</span>';
+  };
+  /* the glossary's peers entry carries the same figures, as a table */
+  (function(){
+    const host = document.getElementById("glPeers"), P = (window.BOSTON_INDUSTRIES_2024 || {}).peerStats;
+    if (!host || !P) return;
+    const n = v => v.toLocaleString("en-US");
+    host.innerHTML = '<table class="gl-tbl"><thead><tr><th scope="col">Metro</th><th scope="col">People, ' + P.years.population +
+      '</th><th scope="col">Jobs, ' + P.years.employment + '</th><th scope="col">Average salary, ' + P.years.wage + '</th></tr></thead><tbody>' +
+      [P.metro].concat(P.peers).map((r, i) => '<tr' + (i ? '' : ' class="is-me"') + '><th scope="row">' + r.name + '</th><td>' + n(r.population) +
+        '</td><td>' + n(r.employment) + '</td><td>$' + n(r.wage) + '</td></tr>').join("") + '</tbody></table>';
+  })();
   let termCard = null, termOpen = null, termPinned = false, termT = null;
   function closeTerm(refocus){
     clearTimeout(termT);
@@ -8046,9 +8116,12 @@
     }
     termCard.querySelector(".tc-name").textContent = t.name;
     termCard.querySelector(".tc-def").textContent = t.def;
+    termCard.querySelectorAll(".tc-stats, .tc-note").forEach(n => n.remove());
+    if (t.stats) termCard.querySelector(".tc-def").insertAdjacentHTML("afterend", peerStatsHtml());
     /* the card hangs in the term's own paragraph, under the term (or over
        it where the screen has no room below), held inside the paragraph */
-    const host = b.closest(".rank-strip") || b.closest("p") || b.parentNode;
+    /* in the ranking's head row the card is held to the row, not the key's own short line */
+    const host = b.closest(".rank-strip") || b.closest(".mi-sort") || b.closest("p") || b.parentNode;
     host.classList.add("has-term-card");
     b.insertAdjacentElement("afterend", termCard);
     const hr = host.getBoundingClientRect(), br = b.getBoundingClientRect();

@@ -1068,6 +1068,21 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
    row and "National rate" under the last row (`.mi-nation-lab`, 12.5px on
    screen). The peer marks carry a white edge too (`.mi-peer-halo`), since
    every one now crosses a bar, three of them dark.
+   Then (same day, Nil): the 1× line's white edge is at half opacity;
+   **the ranking's key moved up into its head row**, right-aligned in
+   `#miSort`, at the row's 16px (`#miSort .spec-key`; on the ranking the
+   row is in the flow, so a key that does not fit takes a line of its own);
+   under the peers order the key reads "more concentrated here", "less"
+   (only while some bar trails its peers, `data-peerbehind`) and "the same
+   share as the peers". **"The five peer metros together" is a term**
+   (`data-term="peers"`): its card names the five and shows Boston and
+   each peer's people (2024), jobs (2023) and average salary (2024), from
+   the reference page's profile.json, stored as `peerStats` in
+   `industries-2024.js`; "More in the glossary" opens a new **Peer metros**
+   entry (`#gl-peers`) with the same figures as a table. The card hangs
+   from the head row (`host = .mi-sort`) and drops over the chart's right
+   columns while it is open. The national-rate line sits in the rows'
+   layer, so it is put away by hand under the peers order (`R.nation`).
 
 0e. **The control row's sentence is the default** (2026-10-04, Nil: "For
    Control Row options, make opt 2 the default"). On the stacked layout

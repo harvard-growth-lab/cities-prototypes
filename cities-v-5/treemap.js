@@ -4093,6 +4093,8 @@
          reads across the dark ones too */
       [["mi-nation-halo"], ["mi-nation"]].forEach(([cls]) => G.append("line").attr("class", cls)
         .attr("x1", nx).attr("x2", nx).attr("y1", GRID_TOP - 6).attr("y2", yEnd + 4));
+      /* the rows' layer stays up under the peers order, so the line is put away there by hand */
+      R.nation = G.selectAll(".mi-nation, .mi-nation-halo");
       A.append("text").attr("class", "mi-ticklab mi-nation-tick")
         .attr("x", nx).attr("y", TICK_Y).attr("text-anchor", "middle").text("1\u00d7");
       A.append("text").attr("class", "mi-nation-lab")
@@ -4181,8 +4183,12 @@
        replaced, because every state closure holds it; the cells relearn
        their place in it; and its three groups are cleared and drawn again,
        since the axis furniture is appended rather than joined. */
+    /* the key's "less" shows only while some bar in the ranking is behind its peers */
+    const syncPeerBehind = () => { fig.dataset.peerbehind = R2.ranked.some(d => d.peerRca != null && !d.ahead) ? "1" : ""; };
+    syncPeerBehind();
     function rebuildR2(animate){
       Object.assign(R2, ranking(rankPool(), true));
+      syncPeerBehind();
       cells.forEach(c => {
         c.rank2 = R2.rankIdx.has(c.name) ? R2.rankIdx.get(c.name) : -1;
         c.row2 = R2.rankRow.get(c.name) || null;
@@ -4215,6 +4221,7 @@
         .attr("text-anchor", d => gap && gapOf(d) != null && gapOf(d) < 1 ? "end" : "start");
       t(R.row.select(".mi-peer")).style("opacity", gap ? 0 : 1);
       t(R.row.select(".mi-peer-halo")).style("opacity", gap ? 0 : 1);
+      if (R.nation) t(R.nation).style("opacity", gap ? 0 : 1);
     }
     drawRanking(R1, gAxis, gRows);
     drawRanking(R2, gAxis2, gRows2);

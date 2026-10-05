@@ -16,6 +16,19 @@ window.BOSTON_INDUSTRIES_2024 = {
   total: 2318249,
   complexity: {"year": 2024, "rank": 8, "of": 382},
   peers: ["Washington", "Seattle", "San Diego", "Denver", "Baltimore"],
+  /* the metro and its five peers, as the reference page's profile.json
+     gives them: people (2024), jobs (2023), average salary (2024) */
+  peerStats: {
+    years: {"population": 2024, "employment": 2023, "wage": 2024},
+    metro: {"name": "Boston", "population": 5025517, "employment": 2811395, "wage": 114779},
+    peers: [
+      {"name": "Washington", "population": 6436489, "employment": 3140158, "wage": 108532},
+      {"name": "Seattle", "population": 4145494, "employment": 2129194, "wage": 126678},
+      {"name": "San Diego", "population": 3298799, "employment": 1516991, "wage": 94592},
+      {"name": "Denver", "population": 3052498, "employment": 1626132, "wage": 96324},
+      {"name": "Baltimore", "population": 2859024, "employment": 1345787, "wage": 90122}
+    ]
+  },
   sectors: [{"key": "professional", "label": "Professional & Business"}, {"key": "education-health", "label": "Education & Health"}, {"key": "trade-transport", "label": "Trade & Transportation"}, {"key": "leisure", "label": "Leisure & Hospitality"}, {"key": "financial", "label": "Financial Activities"}, {"key": "manufacturing", "label": "Manufacturing"}, {"key": "construction", "label": "Construction"}, {"key": "other", "label": "Other"}, {"key": "natural-resources", "label": "Natural Resources"}],
   fields: ["code","name","short","group","groupName","groupShort","sub","subShort","sectorKey","employ","rca","peerRca","pci","tier","trad","nationalShare"],
   rows: [
