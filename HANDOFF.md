@@ -1007,6 +1007,27 @@ beside the button. `navTo(i)` is the one press handler for both drawings.
 The old chips are kept in `.sn-chips` (`display:contents`, so their
 `nth-child` rules still count them) and come back with the Site Layout
 menu's **Section bar: All five** (`setSecBar`, `?secbar=chips`).
+A review then fixed: the Site Layout menu, three groups tall now, scrolls
+inside itself in a short window (`max-height`, it ran off the top of a
+phone on its side); under 600 the folded button's gap and padding give the
+section's name 8px more ("Constraints Diagnosis" was cut at 360); the
+button reaches 6px left of its words so its focus ring does not cross
+them; the tint bar has a hover for it; the Extras list ends without a rule;
+switching to All five centres the current chip (`centreChip`); and the
+folded door shares the section's baseline. A second, keyboard-led pass
+fixed: a door pressed hands the focus to what now stands in its place (the
+other door, `snRefocus(true)`), and a fold or unfold to the current
+section or the folded button; the fit is re-measured when the nav's own
+width changes (Worker Flows' study switch and the presenter's bar door
+appear after `showSection`, so at about 905 the door was clipped); the open
+list is re-placed on a resize (`placeSnMenu`, gutter to gutter on a phone)
+and keeps its focus when the scroll rebuilds it; ArrowUp from the button
+starts at the last row; the folded button's focus ring sits inside the
+scroller's clip (the 6px is the nav's padding); a folded button under
+160px drops the door beside it (`is-tight`); the door's line is lifted to
+the names' baseline at 1200 and up; and under One scroll part two's band
+counts as Constraints Diagnosis, as under Two scrolls, so the bar shows
+part two there (the chips' Part 2 label follows too).
 
 **The section bar names its two parts** (2026-09-30, copied from the
 reference build's scroll variant): "Part 1 City Profile" stands over the

@@ -618,6 +618,9 @@
   .sv-panel{
     position:absolute;left:0;bottom:calc(100% + 8px);width:286px;display:flex;flex-direction:column;gap:1px;padding:5px;
     background:#fff;border:1px solid var(--border-strong);border-radius:10px;box-shadow:var(--shadow-md);
+    /* three groups now: in a short window (a phone on its side) it scrolls
+       inside itself rather than running off the top */
+    max-height:calc(100svh - 72px);overflow-y:auto;overscroll-behavior:contain;
   }
   .sv-panel[hidden]{display:none;}
   .sv-opt{
@@ -660,7 +663,7 @@
   @media (max-width:640px){
     .sv{left:10px;bottom:10px;}
     .sv-k{display:none;}
-    .sv-panel{width:min(286px,calc(100vw - 20px));}
+    .sv-panel{width:min(286px,calc(100vw - 20px));max-height:calc(100svh - 64px);}
     .pages > .secpager{padding-bottom:64px;}
   }
   html[data-layout="scroll"] .secpager:not([data-sec="5"]){display:none;}
@@ -5292,7 +5295,11 @@
     flex:1 1 auto;min-width:0;max-width:340px;margin:0;padding:0 8px 0 0;border:0;border-radius:4px 4px 0 0;background:none;
     font:inherit;text-align:left;color:var(--ink);cursor:pointer;
   }
-  .sn-now .sn-head{grid-column:1;grid-row:1;margin-top:7px;padding:0;color:var(--teal);}
+  .sn-now .sn-head{grid-column:1;grid-row:1;margin-top:7px;padding:0;color:var(--teal);min-width:0;overflow:hidden;}
+  .secnav.is-compact.is-tight .sn-door{display:none !important;}
+  /* the scroller clips at its padding edge, so the folded button's 6px
+     reach (and its focus ring) has to sit inside it */
+  html:not([data-secbar="chips"]) .secnav.is-compact{padding-left:6px;}
   .sn-now .sn-head::after{content:"";flex:1 1 auto;height:1px;margin-left:10px;background:var(--teal);}
   .sn-now-t{
     grid-column:1;grid-row:2;align-self:end;justify-self:start;position:relative;max-width:100%;
@@ -5303,11 +5310,24 @@
   .sn-chev{grid-column:2;grid-row:1 / span 2;align-self:center;color:var(--teal);transition:transform .15s ease;}
   .sn-now[aria-expanded="true"] .sn-chev{transform:rotate(180deg);}
   .sn-now:hover{background:var(--teal-tint);}
+  html[data-nav="tint"] .sn-now:hover{background:#fff;}
+  /* the button reaches 6px left of its words, so its focus ring does not
+     cross them */
+  .secnav.is-compact .sn-now{padding-left:6px;margin-left:-6px;}
+  @media (max-width:899px){
+    html:not([data-secbar="chips"]) .secnav.is-compact{margin-left:8px;}
+  }
+  @media (max-width:599px){
+    .secnav.is-compact .sn-now{column-gap:6px;padding-right:4px;}
+    html:not([data-secbar="chips"]) .secnav.is-compact{margin-left:2px;}
+  }
+  /* the 16px door's line sits a pixel under the 14px names: lifted */
+  @media (min-width:1200px){ .sn-door-t{padding-bottom:4px;} }
   /* from 600 the folded bar keeps the door forward beside the button */
   @media (min-width:600px){
     .secnav.is-compact .sn-parts[data-cur="0"] .sn-door[data-part="1"]{display:flex;}
     .secnav.is-compact .sn-door-k{margin-top:7px;}
-    .secnav.is-compact .sn-door-t{font-size:14.5px;padding-bottom:6px;}
+    .secnav.is-compact .sn-door-t{font-size:14.5px;padding-bottom:4px;}
   }
   .sn-menu{
     position:absolute;top:calc(100% + 1px);left:var(--sn-left, 10px);width:var(--sn-w, 340px);z-index:40;
@@ -5330,6 +5350,7 @@
     display:flex;width:100%;min-height:58px;margin-top:8px;padding:8px 8px 10px;border-top:1px solid var(--border);border-radius:0 0 4px 4px;
   }
   .sn-menu .sn-door--row.is-back{margin:0 0 4px;border-top:0;border-bottom:1px solid var(--border);border-radius:4px 4px 0 0;}
+  .sn-menu .sn-door--row.is-back:last-child{margin-bottom:0;border-bottom:0;}
   .sn-menu .sn-door--row .sn-door-k{margin-top:0;}
   .sn-menu .sn-door--row .sn-door-t{padding-bottom:0;}
   .sn-menu .sn-door--row:hover{background:#f4f6f5;}
@@ -5594,7 +5615,8 @@
     .secnav-btn{align-self:stretch;padding:0 9px;border-radius:0;font-size:12.5px;gap:6px;}
     .secnav-btn.is-active{box-shadow:inset 0 -2px 0 var(--teal);}
     .secnav-btn .num{width:20px;height:20px;flex:0 0 20px;font-size:12.5px;}
-    .secbar .ct-optwrap{margin-left:8px;}
+    /* air between the folded section button's chevron and the study word */
+    .secbar .ct-optwrap{margin-left:14px;}
     .secbar .ct-optwrap .jp-opt{flex-direction:column;align-items:flex-end;gap:2px;line-height:1.2;}
     /* masthead: the mark, and the journey as its icon. font-size:0
        collapses the button's bare text node; the svg carries width and
@@ -10556,13 +10578,7 @@
        on to the middle of it, so the bar answers "where am I" without a
        swipe. .secnav is position:relative under that breakpoint, so
        offsetLeft measures against the scroller, not the sticky bar. */
-    const actBtn = chipsEl.children[i];
-    if(actBtn && secBar() === "chips" && secNavEl.scrollWidth > secNavEl.clientWidth + 1){
-      secNavEl.scrollTo({
-        left: Math.max(0, actBtn.offsetLeft - (secNavEl.clientWidth - actBtn.offsetWidth) / 2),
-        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"
-      });
-    }
+    centreChip(i);
     /* the pager's two ways on. Under the two scrolls it stands only at the
        foot of part two, and offers part one from its start and the extras */
     let prev = SECTIONS[i-1] && { k: i - 1, name: SECTIONS[i-1].name },
@@ -10626,6 +10642,15 @@
     if (!sameScroll) window.dispatchEvent(new Event("resize"));
   }
 
+  function centreChip(i, instant){
+    const actBtn = chipsEl.children[i];
+    if(actBtn && secBar() === "chips" && secNavEl.scrollWidth > secNavEl.clientWidth + 1){
+      secNavEl.scrollTo({
+        left: Math.max(0, actBtn.offsetLeft - (secNavEl.clientWidth - actBtn.offsetWidth) / 2),
+        behavior: instant || window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"
+      });
+    }
+  }
   /* a section's name pressed in the bar, either drawing */
   function navTo(i){
     /* under the two scrolls the name of the section the reader is in
@@ -10680,7 +10705,14 @@
     d.type = "button"; d.className = "sn-door"; d.dataset.part = q;
     d.innerHTML = doorInner(q);
     d.setAttribute("aria-label", "Part " + (q + 1) + ": " + PART_NAMES[q]);
-    d.addEventListener("click", () => showSection(partSecs(q)[0]));
+    d.addEventListener("click", () => {
+      const had = document.activeElement === d;
+      showSection(partSecs(q)[0]);
+      /* the pressed door is hidden now (its part is the one shown): the
+         keyboard goes on from what stands in its place, the other door,
+         or the section now current, or the folded button */
+      if (had) snRefocus(true);
+    });
     snDoors[q] = d;
     return d;
   };
@@ -10732,11 +10764,23 @@
     if (q >= 0) h += '<p class="sn-head">' + partHead(q) + '</p>' + partSecs(q).map(k =>
       '<button type="button" class="sn-mitem" data-go="' + k + '"' + (k === i ? ' aria-current="page"' : '') + '><span>' + snEsc(SECTIONS[k].name) + '</span></button>').join("");
     if (q === 0) h += door(1, false);
+    /* rebuilt while open (the scroll moved the reader on): the focus stays
+       on the same row, or on the section now current */
+    const fo = snMenu.contains(document.activeElement) ? document.activeElement.dataset.go : null;
     snMenu.innerHTML = h;
-    /* the list hangs under the button, inside the bar's width */
-    const bar = snMenu.parentNode.getBoundingClientRect(), b = snNow.getBoundingClientRect();
-    const w = Math.min(360, bar.width - 20);
-    snMenu.style.setProperty("--sn-left", Math.max(10, Math.min(b.left - bar.left, bar.width - w - 10)) + "px");
+    if (fo != null){
+      const back = snMenu.querySelector('[data-go="' + fo + '"]') || snMenu.querySelector('[aria-current="page"]') || snMenu.querySelector("button");
+      if (back) back.focus({ preventScroll: true });
+    }
+    placeSnMenu();
+  }
+  /* the list hangs under the button, inside the page's gutters */
+  function placeSnMenu(){
+    const barEl = snMenu.parentNode, bar = barEl.getBoundingClientRect(), b = snNow.getBoundingClientRect();
+    const pad = parseFloat(getComputedStyle(barEl).paddingLeft) || 10;
+    /* gutter to gutter on a phone; a 360 list under the button where there is room */
+    const room = bar.width - 2 * pad, w = room < 420 ? room : 360;
+    snMenu.style.setProperty("--sn-left", Math.max(pad, Math.min(b.left - bar.left, bar.width - w - pad)) + "px");
     snMenu.style.setProperty("--sn-w", w + "px");
   }
   function snOpen(open, refocus){
@@ -10759,13 +10803,22 @@
     if (ev.key === "Escape"){ ev.preventDefault(); ev.stopPropagation(); snOpen(false, true); return; }
     if (ev.key === "ArrowDown" || ev.key === "ArrowUp"){
       ev.preventDefault();
-      const all = [...snMenu.querySelectorAll("button")], at = all.indexOf(document.activeElement);
-      const n = all[(at + (ev.key === "ArrowDown" ? 1 : -1) + all.length) % all.length];
+      const all = [...snMenu.querySelectorAll("button")], at = all.indexOf(document.activeElement), down = ev.key === "ArrowDown";
+      const n = at < 0 ? all[down ? 0 : all.length - 1] : all[(at + (down ? 1 : -1) + all.length) % all.length];
       if (n) n.focus({ preventScroll: true });
     }
   }));
   document.addEventListener("pointerdown", ev => { if (!snMenu.hidden && !snMenu.contains(ev.target) && !snNow.contains(ev.target)) snOpen(false); });
   snMenu.addEventListener("focusout", ev => { if (!snMenu.hidden && ev.relatedTarget && !snMenu.contains(ev.relatedTarget) && ev.relatedTarget !== snNow) snOpen(false); });
+  const snShown = el => !!el && el.getClientRects().length > 0 && getComputedStyle(el).visibility !== "hidden";
+  /* doorFirst: after a door, the other door stands in its place; after a
+     fold or unfold, the section the reader is in */
+  function snRefocus(doorFirst){
+    const tab = snTabs.find(t => t && t.getAttribute("aria-current") && snShown(t));
+    const to = secNavEl.classList.contains("is-compact") ? snNow
+             : doorFirst ? snDoors.find(snShown) || tab : tab || snDoors.find(snShown);
+    if (to && snShown(to)) to.focus({ preventScroll: true });
+  }
   function syncSecParts(i){
     const q = partOf(i);
     partsEl.dataset.cur = q < 0 ? "x" : String(q);
@@ -10790,12 +10843,20 @@
     if (!secNavEl || !secNavEl.offsetParent) return;
     secNavEl.classList.remove("is-compact");
     if (secBar() === "parts"){
+      const ae = document.activeElement, hadFocus = !!ae && (secNavEl.contains(ae) || snMenu.contains(ae));
+      secNavEl.classList.remove("is-tight");
       /* the row at its natural width against the room the bar gives it;
          the stacked layout folds whatever the room */
       const fold = window.matchMedia("(max-width:899px)").matches ||
         partsEl.getBoundingClientRect().width > secNavEl.clientWidth + 0.5;
       secNavEl.classList.toggle("is-compact", fold);
       if (!fold && !snMenu.hidden) snOpen(false);
+      /* folded, the door beside the button gives way where the button
+         would be left too narrow to name the section */
+      if (fold && snNow.getBoundingClientRect().width < 160) secNavEl.classList.add("is-tight");
+      if (fold && !snMenu.hidden) placeSnMenu();
+      /* a fold or an unfold took away the control the keyboard was on */
+      if (hadFocus && !snShown(document.activeElement)) snRefocus();
       return;
     }
     const btns = [...chipsEl.children].filter(b => getComputedStyle(b).display !== "none");
@@ -10807,7 +10868,10 @@
     if (need > secNavEl.clientWidth + 0.5) secNavEl.classList.add("is-compact");
   }
   window.fitSecNav = fitSecNav;
-  if (window.ResizeObserver) new ResizeObserver(() => fitSecNav()).observe(secNavEl.parentNode || secNavEl);
+  /* the bar's own width, and the nav's: the nav is the room the bar's
+     other pieces leave (the study switch and the presenter's door come
+     and go with the section), and folding never changes it */
+  if (window.ResizeObserver){ const ro = new ResizeObserver(() => fitSecNav()); ro.observe(secNavEl.parentNode || secNavEl); ro.observe(secNavEl); }
   else window.addEventListener("resize", fitSecNav);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitSecNav);
   secPager.className = "secpager";
@@ -11003,6 +11067,7 @@
     }
     if (!snMenu.hidden) snOpen(false);
     fitSecNav();
+    if (activeSec >= 0) centreChip(activeSec, true);
   }
   window.setSecBar = setSecBar;
   /* Escape answers here first, and stops there: the figure's layers must
@@ -11053,11 +11118,13 @@
       const el = topOf(SECTIONS[k].els[0]);
       if (el && el.getBoundingClientRect().top <= line) on = k;
     });
+    /* the band that opens part two belongs to part two: under One scroll
+       too it counts as part two's first section (2026-10-05, so the bar by
+       part shows part two there, as Two scrolls does) */
+    const seam = lay === "scroll" && document.getElementById("seam");
+    if (seam && on <= 2 && seam.getBoundingClientRect().top <= line) on = ks.find(k => partOf(k) === 1);
     if (on !== activeSec) showSection(on, false);
     if (lay !== "scroll") return;
-    /* the band that opens part two belongs to part two, though the chip
-       still names the section above it until the diagnosis begins */
-    const seam = document.getElementById("seam");
     if (seam && on <= 2){
       const crossed = seam.getBoundingClientRect().top <= line;
       document.documentElement.dataset.part = crossed ? "2" : "1";
