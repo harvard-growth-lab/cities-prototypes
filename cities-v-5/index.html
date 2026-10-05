@@ -3333,6 +3333,10 @@
   html.is-presenting :is(#page-export-basket, #page-admin-mix){clip-path:none !important;}
   .pages:has(.ct-panel.is-presenting){overflow:hidden;}
   :is(#page-export-basket, #page-admin-mix) .ct-panel.is-presenting > .mi-figure{flex:none;width:var(--pv-w, 100%);max-width:100%;margin:0 auto;}
+  /* after a beat's morph, the frame eases to the width the next drawing wants */
+  @media (prefers-reduced-motion:no-preference){
+    :is(#page-export-basket, #page-admin-mix) .ct-panel.is-presenting > .mi-figure{transition:width .35s ease;}
+  }
   .ct-panel.is-presenting .pv-open--frame,
   .ct-panel.is-presenting > .mi-asktab{display:none !important;}
   .pv-bar{
@@ -11549,7 +11553,15 @@
     if (before !== w + "px" || depth) window.dispatchEvent(new Event("resize"));
   }
   let fitT = null;
-  const fitSoon = (ms) => { clearTimeout(fitT); fitT = setTimeout(() => fit(), ms || 0); };
+  /* while a beat's figure is morphing into the next (about a second), the
+     view is not refitted: a new width would redraw the figure at its new
+     scale and cut the morph short. The fit waits for it, and the frame
+     then eases to its new width. */
+  const fitSoon = (ms) => {
+    clearTimeout(fitT);
+    const hold = pres && pres.morphUntil ? pres.morphUntil - performance.now() : 0;
+    fitT = setTimeout(() => fit(), Math.max(ms || 0, hold));
+  };
 
   function syncBar(){
     const { bar, steps, i } = pres;
@@ -11620,12 +11632,14 @@
     if (!pres) return;
     i = Math.max(0, Math.min(pres.steps.length - 1, i));
     if (i === pres.i && pres.started) return;
+    /* a change of beat morphs the figure; the fit waits for it (fitSoon) */
+    if (pres.started) pres.morphUntil = performance.now() + 1250;
     pres.i = i; pres.started = true;
     setK(viewK());
     pres.steps[i].dispatchEvent(new CustomEvent("ct:take", { bubbles: true }));
     syncBar(); syncFoot();
     say(sectionName(pres.steps[i]) + ", " + (i + 1) + " of " + pres.steps.length + ". " + titleOf(pres.steps[i]));
-    fitSoon(40); fitSoon(900);
+    fitSoon(40);
   }
 
   function enter(page, fromStep){

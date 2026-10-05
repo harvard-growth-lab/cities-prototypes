@@ -624,9 +624,65 @@ these three numbers** (`handoff/type-audit.mjs` prints `fig` and `panel`
 heights; furniture = figure height − svg height). Where the height is
 what binds, the room the figure cannot use goes to the text column
 (`--ct-rail-now`, up to `--ct-rail-max` 520px), and past that the pair is
-centred (`--ct-w`). Under 800px of height the frame's top and bottom
-padding and `--stage-air` tighten. Stacked (under 900) none of this
-applies: the pair is `--ct-frame` wide.
+centred (`--ct-w`; since 2026-10-04 pinned to the grid's left edge
+instead, see "Wide windows"). Under 800px of height the frame's top and
+bottom padding and `--stage-air` tighten. Stacked (under 900) none of
+this applies: the pair is `--ct-frame` wide.
+
+*Stacked: the figure on top* (2026-10-05, Nil: "see how the vis is at
+top and text the bottom" on the reference page's phone view, and do the
+same). Under 900 the figure's band is held at the **head** of the
+screen, under the section bar (`position:sticky; top:var(--secbar-h)`,
+52px, 48 under 600; the stage is brought before the steps with
+`order:-1`), and the beats' text reads underneath it. It was a band held
+at the foot. The band runs edge to edge on the section's own ground
+(#f9fafb) with 12px of padding (8 under 600), a hairline and a shadow
+cast downward, and the figure sits in it as the white card it is at a
+desk (1px border, 10px corners, 10/10/8 padding), as the reference's
+card does: the drawing is 352 wide on a 390 phone (it was 382 when the
+band was the frame). The answer's tab and the Present button hang from
+the card's foot (`bottom:-13px`, `bottom:-21px`). The scroll spy has a
+second rule for this layout: a beat becomes the reader's once its top
+has risen past a line 60% of the way down the screen the band leaves
+(the screen's middle is behind the band); because the band is as tall
+as the beat's figure (Metro Industries 439 on the map beats, 529 on the
+ranking; Worker Flows 367 on the map, 520 on the bars), going back
+waits until the beat is 160px (or 40% of that screen) below the line,
+so a band that grows cannot push the text back over the line and flip
+the beat (Safari, which does not anchor the scroll). Checked scrolling
+in 40px steps both ways, with and without scroll anchoring: three
+changes each way, none repeated. On a short screen (a phone on its
+side, under 540px tall) the band is not held, as the reference does
+(nor is Who are you?'s map). Who are you?'s map was already first and
+held; it now sits at the bar's foot (`--secbar-h`) instead of 3px
+under it.
+
+The text keeps at least a third of the screen or 260px, whichever is
+less: the band's `top` is `min(--secbar-h, max(66svh, 100svh − 260px)
+− --band-h)`, with `--band-h` kept by a ResizeObserver in the scrolly's
+mount, so where a figure is taller (the ranking, Worker Flows' bars on
+a phone Safari leaves 660 to 750px of) the band's head, the control
+sentence, slides under the bar while the chart and key stay; it comes
+back while one of its controls has the focus (`:focus-within`). At
+390×844 that costs the ranking 3px; at 390×664 the text keeps 225px
+where it had about 85. The band has 18px under the card, so the
+answer's tab and the Present button hang inside it. While a band is
+held, the scroller's `scroll-padding-top` is the band's foot (set by
+spy()), so a control taking the focus and a jump land under it; a jump
+to a beat (`goTo`: the journey panel, the rail, deep links) takes the
+beat first and lands it under the band, and the presenter's exit lands
+there instantly. A question asked on a stack holds its row by the
+scroll (treemap.js `ask()`), not by the step's padding, and keeps it
+clear of a band that grew. Also on the stack: the MI table caps at
+`max(96px, min(240px, 100svh − 560px))`, the complexity ramp narrows
+(`clamp(110px, 100vw − 260px, 300px)`), Worker Flows' empty control row
+on the map beat and MI's hidden sector key under the complexity scale
+give their room back, and Worker Flows' comparison (it pans at 600px on
+a phone) opens with the 1× line in the middle. Worker Flows' bar names
+were cut at the drawing's left edge on every width (a fixed 176-unit
+gutter; on a phone the names are drawn larger): the gutter is now the
+longest name's measured width (`fitGutter`), set before each beat
+paints.
 
 *The figure fills its frame.* `.tool-body .viz-big{width:880px}` still
 holds every other figure on the site; inside these two stages it is
@@ -754,7 +810,14 @@ beat's door.
 *The size.* `fit()` holds the figure (`--pv-w`) to the width the
 screen's height leaves its drawing, from the visible svg's viewBox and
 the furniture round it, and runs again from a ResizeObserver on the
-figure and the footer. The type is scaled for the room by `--pv-k`
+figure and the footer. Each beat's drawing wants its own width (at
+1440 the treemap 1064, the ranking 1193), so a change of beat held to
+the old width would be cut short by the refit: since 2026-10-05 (Nil:
+"make sure the viz transitions from beat 2 to beat 3") the fit waits
+for the morph (`pres.morphUntil`, 1.25s) and the frame then eases to
+its new width (`transition: width .35s`). Measured frame by frame,
+the beat 2 to 3 morph runs on the page at 1440, 1920, 820 and 390, and
+in the presenter at 1440, 1920 and 390. The type is scaled for the room by `--pv-k`
 (1 at about 1100×700, up to 1.35, `min(w/1100, h/700)`): it feeds
 `--mi-type`, which treemap.js reads as `TYPE_K` and multiplies into
 the chart's type and everything sized to it (bands, cards, badges, the
@@ -1101,11 +1164,19 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
    metro's complex work?" (Color Complexity); beat 2 "Is the work the
    metro sells outside also its most complex work?" (Color Complexity)
    and "What does the metro actually sell outside its borders?" (the
-   Traded ground alone); beat 3 "Where are the universities on this
-   list?" (Tradability filter: Partly traded only; hidden while the rank
-   study shows the score) and "How many people work in these twelve
-   specialties?" (Sort by Jobs; the weakest, since it extends the
-   paragraph's own point). (The "Against peers" view was generated when
+   Traded ground alone); beat 3, since 2026-10-05 (Nil: its questions
+   "can be about sorted by peer and jobs", general ones such as how the
+   most specialized industries do against the peers) "How do these
+   specialties compare with the peer metros?" (Sort: concentration
+   against peers; all twelve are more concentrated here than in the five
+   peers together, missile parts leads at 54 times their share,
+   biotechnology R&D is ninth at 4.5 as the peers are strong in it too;
+   "peer metros" is the term with its card) and "Which of these
+   specialties employ the most people?" (Sort: jobs; biotechnology R&D
+   with 61,687 of the twelve's 86,003, laboratory instruments and savings
+   institutions about 7,000 each, two under 100). Both ways back read
+   "Back to most specialized". The universities question (the Partly
+   traded filter) was dropped for the peers one. (The "Against peers" view was generated when
    these were written; since 2026-10-04 it reads the source, §6. The 2014
    industry rows are estimates, so no question rests on the year.)
 0b. **Terms and the glossary — built 2026-10-02.** Nil found the question
@@ -1169,16 +1240,30 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
    the row's own way back (`backToStart`), and from the keyboard returns
    the focus to the question row. The tab is built in treemap.js and hung
    on the scrolly's `.ct-panel` (`.mi-asktab`, `.ct-panel.is-asked`); on a
-   phone the band has no frame, so its top hairline turns teal and the
-   tab hangs from the band's top edge over the text scrolling behind,
-   which keeps the way back on screen after the question row has scrolled
-   away. It stands 13px above the frame: `--stage-air` went from 16 to
+   phone (since 2026-10-05, the band at the head of the screen) the card
+   keeps its frame, which turns teal as at a desk, and the tab hangs from
+   the card's foot over the text scrolling under the band, which keeps
+   the way back on screen after the question row has scrolled away. It stands 13px above the frame: `--stage-air` went from 16 to
    30 (28 on short windows) and the stage starts 14px under the bar at
    900 and up, so the tab is never under the section bar. Shipped as the
    **"Answer shown" study** (`#miAskCue`): opt-1 marks only, as before;
    **opt-2 the tab**, the default. Known: at 1366×650 the frame runs past
    the fold by 24px with b1q1 open and 6px with b2q2 (both add a row to
    the head).
+
+0i. **The phone: the figure on top, built 2026-10-05** (§4, "Stacked:
+   the figure on top"). From the reference page's phone view. Two
+   reviews (code; the captures against the reference) found the jump,
+   focus, asked-row, landscape and Worker Flows problems now fixed, and
+   these left for Nil: the reference holds its band at a fixed 62svh
+   with the chart filling the card (a taller treemap on a phone, a
+   one-row key naming only the beat's sectors, "Show as table" in a foot
+   row); v-5's band is as tall as the figure, capped as described. The
+   floating Site Layout control covers reading text on a phone; the
+   section bar clips at 360 wide and carries Worker Flows' opt links;
+   Who are you?'s prose and Worker Flows' beat 2 use em dashes and bold.
+   Worker Flows' figure text is drawn in drawing units, so on a phone it
+   is under the 12.5px floor (outside the floor's scope so far).
 
 0h. **Wide windows: built 2026-10-04** (§4, "Wide windows"). The grid
    grows past 1440 at half the window's rate to 1720; the figure
