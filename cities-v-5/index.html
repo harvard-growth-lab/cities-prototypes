@@ -3068,11 +3068,11 @@
      sizes on screen, at any width. The rules carry two ids so they hold
      over the per-band unit sizes further down, which still serve the
      city's figure. */
-  #miFigure{--mi-s:1;}
+  #miFigure{--mi-s:1;--mi-type:1;}
   #miFigure #miTreemapSvg .mi-name,
   #miFigure #miTreemapSvg .mi-val,
   #miFigure #miTreemapSvg .mi-card-lab,
-  #miFigure #miTreemapSvg .mi-card-pct{font-size:calc(13px / var(--mi-s));}
+  #miFigure #miTreemapSvg .mi-card-pct{font-size:calc(13px * var(--mi-type) / var(--mi-s));}
   #miFigure #miTreemapSvg .mi-jobs,
   #miFigure #miTreemapSvg .mi-trad,
   #miFigure #miTreemapSvg .mi-rows.is-tier .mi-jobs,
@@ -3083,7 +3083,7 @@
   #miFigure #miTreemapSvg .mi-badge,
   #miFigure #miTreemapSvg .mi-toplab,
   #miFigure #miTreemapSvg .mi-nation-lab,
-  #miFigure #miTreemapSvg .mi-card-none{font-size:calc(12.5px / var(--mi-s));}
+  #miFigure #miTreemapSvg .mi-card-none{font-size:calc(12.5px * var(--mi-type) / var(--mi-s));}
   /* the figure's own controls and keys */
   #miFigure .mi-view .seg-btn{font-size:12.5px;}
   #miFigure .mi-view .mi-year select,#miFigure #miLevelSel{font-size:12.5px;}
@@ -3130,7 +3130,7 @@
       linear-gradient(to left, rgba(26,34,38,.16), rgba(26,34,38,0)) 100% 0 / 12px 100% no-repeat scroll;
   }
   #miFigure[data-pan="1"][data-view="alt"] .viz-big,
-  #miFigure[data-pan="1"][data-step="6"] .viz-big{min-width:704px;}
+  #miFigure[data-pan="1"][data-step="6"] .viz-big{min-width:calc(704px * var(--mi-type, 1));}
   /* ---- terms: a word the tool uses in its own sense. In the text it stays
      plain and is followed by a small info mark; no rule under it, since a
      ruled phrase here is one that acts on the chart. Pressed or pointed at,
@@ -3229,6 +3229,164 @@
   /* the answers are written for 2024: while the other year is showing the
      questions stand down rather than answer for a chart they are not about */
   #page-export-basket:has(#miFigure[data-year="2014"]) .ask-chart{display:none;}
+  /* ---- the presenter view (2026-10-04) ----
+     A teaching tool's slide show: the framed figure - its controls, the
+     chart, its key - fills the screen, a slim bar names the beat and steps
+     through the beats, and a footer carries the beat's questions. Its
+     door has three places to try, an "opt" study (html[data-presentat]):
+     a tab on the frame's top-right edge (opt-1, mirroring the answer's tab
+     on the left), a word in the beat's counter (opt-2), a button in the
+     section bar (opt-3). P opens it from anywhere in the two sections. */
+  .pv-open{
+    display:none;align-items:center;gap:6px;appearance:none;border:0;background:none;cursor:pointer;
+    font:inherit;font-size:12.5px;font-weight:600;color:var(--teal);white-space:nowrap;
+  }
+  .pv-open .pv-ico{flex:none;width:15px;height:15px;}
+  .pv-open:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+  /* opt-1: on the frame's edge, as a pill, at the right */
+  .pv-open--frame{
+    position:absolute;z-index:6;top:calc(-1 * var(--panel-pt) - 14px);right:calc(-1 * var(--panel-px) + 18px);
+    height:26px;padding:0 11px 0 9px;background:#fff;border:1px solid var(--border-strong);border-radius:13px;color:var(--ink-soft);
+  }
+  .pv-open--frame:hover{border-color:var(--teal);color:var(--teal);}
+  html:not([data-presentat]) .pv-open--frame,
+  html[data-presentat="frame"] .pv-open--frame{display:inline-flex;}
+  /* opt-2: after the beat's count */
+  .pv-open--eyebrow{margin-left:12px;padding:0 2px;font-size:inherit;}
+  .pv-open--eyebrow:hover span{text-decoration:underline;text-underline-offset:2px;}
+  html[data-presentat="eyebrow"] .pv-open--eyebrow{display:inline-flex;}
+  /* opt-3: at the right end of the section bar */
+  .pv-open--bar{
+    align-self:center;flex:none;margin-left:16px;height:32px;padding:0 12px;border:1px solid var(--border-strong);border-radius:6px;
+    font-size:13.5px;color:var(--ink);background:#fff;
+  }
+  .pv-open--bar:hover{border-color:var(--teal);color:var(--teal);}
+  html[data-presentat="bar"][data-pvlive] .pv-open--bar{display:inline-flex;}
+  @media (max-width:899px){
+    .pv-open--frame{top:-24px;right:12px;}
+    .pv-open--bar span{display:none;}
+  }
+  @media (max-width:599px){
+    .pv-open--frame{top:-22px;}
+    /* on a phone the answer's tab takes the whole strip: the door waits */
+    .ct-panel.is-asked .pv-open--frame{display:none;}
+  }
+
+  /* the view itself: the frame, fixed over the page (and full screen where
+     the browser allows), the figure held to the width the screen's height
+     allows (--pv-w, fitted by the script) */
+  :is(#page-export-basket, #page-admin-mix) .ct-panel.is-presenting{
+    position:fixed;inset:0;z-index:1000;margin:0;border:0;border-radius:0;box-shadow:none;
+    display:flex;flex-direction:column;align-items:center;overflow:hidden auto;overscroll-behavior:contain;
+    padding:0 clamp(16px, 3vw, 48px) 14px;background:#fff;
+  }
+  :is(#page-export-basket, #page-admin-mix) .ct-stage:has(.ct-panel.is-presenting){z-index:1000;}
+  /* the one-scroll layout clips each grey section to its own box, which
+     would clip the fixed view too */
+  html.is-presenting :is(#page-export-basket, #page-admin-mix){clip-path:none !important;}
+  .pages:has(.ct-panel.is-presenting){overflow:hidden;}
+  :is(#page-export-basket, #page-admin-mix) .ct-panel.is-presenting > .mi-figure{flex:none;width:var(--pv-w, 100%);max-width:100%;margin:0 auto;}
+  .ct-panel.is-presenting .pv-open--frame,
+  .ct-panel.is-presenting > .mi-asktab{display:none !important;}
+  .pv-bar{
+    flex:none;align-self:stretch;display:flex;align-items:center;gap:20px;
+    padding:16px 0 12px;margin:0 0 12px;border-bottom:1px solid var(--border);
+  }
+  .pv-where{flex:none;font-size:15px;font-weight:500;color:var(--ink-soft);white-space:nowrap;}
+  .pv-where b{color:var(--ink);font-weight:600;}
+  .pv-title:focus{outline:none;}
+  .pv-title{flex:1;min-width:0;margin:0;font-size:clamp(20px, 1.2vw + 10px, 28px);font-weight:700;line-height:1.2;letter-spacing:-.2px;color:var(--ink);}
+  .pv-nav{flex:none;display:flex;align-items:center;gap:8px;}
+  .pv-btn{
+    appearance:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;height:38px;min-width:38px;padding:0 12px;
+    background:#fff;border:1px solid var(--border-strong);border-radius:8px;cursor:pointer;
+    font:inherit;font-size:15px;font-weight:600;color:var(--ink);
+  }
+  .pv-btn:hover:not(:disabled){border-color:var(--teal);color:var(--teal);}
+  .pv-btn:disabled{opacity:.4;cursor:default;}
+  .pv-btn:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+  .pv-btn svg{width:16px;height:16px;}
+  .pv-btn kbd{font:inherit;font-size:12.5px;font-weight:500;color:var(--ink-soft);}
+  .pv-foot{
+    flex:none;align-self:stretch;display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;
+    margin:auto 0 0;padding:12px 0 0;border-top:1px solid var(--border);
+  }
+  .pv-foot[hidden]{display:none;}
+  .pv-foot-lab{font-size:14px;font-weight:600;color:var(--ink-soft);margin-right:4px;}
+  .pv-q{
+    appearance:none;display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:6px 12px;
+    background:#fff;border:1px solid var(--border-strong);border-radius:8px;cursor:pointer;text-align:left;
+    font:inherit;font-size:16px;line-height:1.3;color:var(--ink);
+  }
+  .pv-q:hover{border-color:var(--teal);}
+  .pv-q[aria-pressed="true"]{background:var(--teal-tint);border-color:var(--teal);color:var(--teal-dark);}
+  .pv-q[aria-pressed="true"]::before{content:"";flex:none;width:7px;height:7px;border-radius:50%;background:var(--teal);}
+  .pv-q:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+  .pv-ans{flex-basis:100%;margin:2px 0 0;font-size:18px;line-height:1.45;color:var(--ink);}
+  .pv-ans[hidden]{display:none;}
+  /* the way back from an answer, as the answer's tab words it on the page */
+  .pv-back{
+    appearance:none;display:inline-flex;align-items:center;gap:5px;margin-left:10px;padding:0;border:0;background:none;cursor:pointer;
+    font:inherit;font-size:16px;font-weight:600;color:var(--teal);vertical-align:baseline;
+  }
+  .pv-back svg{width:14px;height:14px;flex:none;}
+  .pv-back:hover span{text-decoration:underline;text-underline-offset:2px;}
+  .pv-back:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+  /* Metro Industries, a size up for the back of a room: --pv-k, set by
+     the script from the screen (1 on a 1024 by 768 projector, up to 1.35
+     on a large one, and lowered where the ranked chart would otherwise
+     pan), scales the chart's own type through --mi-type (treemap.js sizes
+     what is drawn to it) and the controls and keys beside it */
+  .ct-panel.is-presenting #miFigure{--mi-type:var(--pv-k, 1);}
+  .ct-panel.is-presenting #miFigure .mi-sentence,
+  .ct-panel.is-presenting #miFigure .mi-pick select,
+  .ct-panel.is-presenting #miFigure .mcl-dir,
+  .ct-panel.is-presenting #miSort .spec-key{font-size:max(16px, calc(15.5px * var(--pv-k, 1)));}
+  .ct-panel.is-presenting #miFigure .mi-view .ctl-label,
+  .ct-panel.is-presenting #miFigure .mi-view .seg-btn,
+  .ct-panel.is-presenting #miFigure .mi-view .mi-year select,
+  .ct-panel.is-presenting #miFigure #miLevelSel{font-size:calc(12.5px * var(--pv-k, 1));}
+  .ct-panel.is-presenting #miFigure .mi-view .seg-btn{height:calc(26px * var(--pv-k, 1));padding:0 calc(10px * var(--pv-k, 1));}
+  .ct-panel.is-presenting #miFigure .sector-key,
+  .ct-panel.is-presenting #miFigure .complexity-legend .cl-label,
+  .ct-panel.is-presenting #miFigure .complexity-legend .cl-none{font-size:max(13px, calc(12.5px * var(--pv-k, 1)));}
+  .ct-panel.is-presenting #miFigure .mi-note,
+  .ct-panel.is-presenting #miFigure .mi-table-btn,
+  .ct-panel.is-presenting #miFigure .mcl-chip{font-size:max(12.5px, calc(11.5px * var(--pv-k, 1)));}
+  /* the slot under the ranking holds the sector key's height on the page
+     so the frame does not move between beats; the presenter fits each beat
+     on its own, so the ranking gets that room (as it does stacked) */
+  .ct-panel.is-presenting #miFigure[data-step="6"] .mi-caption{min-height:0;}
+  .ct-panel.is-presenting #miFigure[data-step="6"] .mi-caption > .sector-key{display:none;}
+  /* a short screen (a window, not the full screen): slimmer bar and footer */
+  @media (max-height:760px){
+    .pv-bar{padding:10px 0 8px;margin-bottom:8px;}
+    .pv-title{font-size:20px;}
+    .pv-btn{height:34px;min-width:34px;}
+    .pv-foot{padding-top:8px;}
+    .pv-q{min-height:32px;padding:4px 10px;font-size:15px;}
+    .pv-ans{font-size:16px;}
+  }
+  /* a narrow screen: the question takes its own line under the count and
+     the buttons */
+  @media (max-width:899px){
+    .pv-bar{flex-wrap:wrap;gap:8px 12px;padding:10px 0 10px;margin-bottom:10px;}
+    .pv-title{order:3;flex-basis:100%;font-size:19px;}
+    .pv-nav{margin-left:auto;}
+    .pv-btn{height:34px;min-width:34px;}
+    .pv-btn kbd{display:none;}
+    .pv-btn{padding:0 10px;}
+    .pv-foot{gap:6px 8px;padding-top:10px;}
+    .pv-foot-lab{flex-basis:100%;}
+    .pv-q{font-size:15px;min-height:34px;}
+    .pv-ans{font-size:16px;}
+  }
+  /* a phone: the buttons take a line of their own under the question */
+  @media (max-width:599px){
+    .pv-nav{order:4;flex-basis:100%;justify-content:flex-end;}
+  }
+  @media (prefers-reduced-motion:no-preference){ :is(#page-export-basket, #page-admin-mix) .ct-panel.is-presenting{animation:pv-in .22s ease-out;} }
+  @keyframes pv-in{from{opacity:0;}to{opacity:1;}}
   /* the ranking's key in its head row: at the right end, at the row's own
      16px, one key at a time - the peers' mark, or under the peers order the
      bars' readings ("less" only when some bar is behind) */
@@ -3269,7 +3427,7 @@
      It stands above the frame, so it never covers the chart; on a phone
      it hangs from the band's top edge over the text scrolling behind, so
      the way back is there after the question row has scrolled away. */
-  #page-export-basket .ct-panel{position:relative;}
+  :is(#page-export-basket, #page-admin-mix) .ct-panel{position:relative;}
   /* where the frame is taller than the room under the bar (the Ranked view
      on a short window), it starts 14px down, so the tab is not under the bar */
   @media (min-width:900px){ #page-export-basket .ct-stage:has(.mi-figure){padding-top:14px;} }
@@ -6067,6 +6225,9 @@
           <option>Nairobi, Kenya</option>
         </select>
         <nav class="secnav" id="secnav" aria-label="Sections"></nav>
+        <!-- the presenter view's door in the bar (opt-3 of its study): only
+             while a section with a framed figure is showing -->
+        <button type="button" class="pv-open pv-open--bar" data-present title="Present the figure full screen (P)"><svg class="pv-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1.75" y="2.5" width="12.5" height="8.5" rx="1"/><path d="M8 11v2.5M5.5 13.5h5"/></svg><span>Present</span></button>
       </div>
 
       <!-- 0 Introduction to your City (gapminder-style intro quiz, horizontal carousel) -->
@@ -6548,6 +6709,14 @@
             <div class="mi-studies" id="miStudies">
               <button type="button" class="mi-studies-btn" aria-expanded="false" aria-controls="miStudiesPanel">opt</button>
               <div class="mi-studies-panel" id="miStudiesPanel" role="group" aria-label="Design studies" hidden>
+                <label class="mi-study" id="miPresentPair">
+                  <span>Present button</span>
+                  <select id="miPresentAt" aria-label="Where the presenter view's button sits">
+                    <option value="frame" selected>opt-1</option>
+                    <option value="eyebrow">opt-2</option>
+                    <option value="bar">opt-3</option>
+                  </select>
+                </label>
                 <label class="mi-study" id="miRowPair">
                   <span>Control row</span>
                   <select id="miRowOpt" aria-label="How the head's controls are set">
@@ -10847,10 +11016,16 @@
       var eye = document.createElement("span"); eye.className = "ct-eyebrow";
       eye.textContent = secName;
       var cnt = document.createElement("b"); cnt.className = "ct-count";
+      /* the presenter view's door in the beat's counter (opt-2 of its study) */
+      var pvb = document.createElement("button"); pvb.type = "button";
+      pvb.className = "pv-open pv-open--eyebrow"; pvb.setAttribute("data-present", "");
+      pvb.title = "Present the figure full screen (P)";
+      pvb.innerHTML = '<svg class="pv-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1.75" y="2.5" width="12.5" height="8.5" rx="1"/><path d="M8 11v2.5M5.5 13.5h5"/></svg><span>Present</span>';
       cnt.textContent = n + "/" + total;
       /* "1/3" is read literally; a screen reader is told the step instead */
       cnt.setAttribute("aria-hidden", "true");
       eye.appendChild(cnt);
+      eye.appendChild(pvb);
       var srn = document.createElement("span"); srn.className = "mi-sr";
       srn.textContent = " step " + n + " of " + total;
       eye.appendChild(srn);
@@ -10964,6 +11139,9 @@
   });
   function spy(){
     if (!built) return;
+    /* the presenter view steps the beats itself: a scroll under it (the
+       page re-laid out for the full screen) does not take them back */
+    if (document.documentElement.classList.contains("is-presenting")) return;
     var mid = window.innerHeight * 0.45, best = 0, bd = Infinity;
     built.steps.forEach(function(st, i){
       var r = st.getBoundingClientRect();
@@ -11104,6 +11282,390 @@
      the same bars against the metro (with the dial on a click) */
   mount({ pageId: "page-admin-mix",     ctl: "AM", seg: "amLayoutSeg", badge: "city", altNarrative: true, noClassic: true,
           states: { "3": [7, 9, 10] }, defaultLayout: "3" });
+})();
+
+/* ---- the presenter view ----------------------------------------------
+   The section's framed figure, full screen, to teach from: a bar with the
+   beat's count and question, previous and next, and the way out; the
+   figure, held to the size the screen's height allows; the beat's "Ask
+   the chart" questions in a footer, each pressed as its row would be,
+   with the answer under it. The beats change through the scrolly itself
+   (a ct:take on the beat), so the text, the figure and the questions stay
+   one state; on the way out the page is scrolled to the beat the teacher
+   ended on. Arrow keys and Page Up/Down step, Home and End jump, Escape
+   (or the browser's own full-screen exit) leaves. */
+(function(){
+  const PAGES = ["page-export-basket", "page-admin-mix"];
+  const ICON_PREV = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3 5 8l5 5"/></svg>';
+  const ICON_NEXT = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 3 5 5-5 5"/></svg>';
+  const ICON_X = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9"/></svg>';
+  const ICON_PRES = '<svg class="pv-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1.75" y="2.5" width="12.5" height="8.5" rx="1"/><path d="M8 11v2.5M5.5 13.5h5"/></svg>';
+  const ICON_BACK = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6.5 4 2.5 8l4 4M3 8h10.5"/></svg>';
+  const esc = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+  /* the answer tab's own words for the way back, while it stands (the tab
+     itself is put away in the view) */
+  const backLabel = () => {
+    const b = pres && pres.panel.querySelector(".mi-asktab:not([hidden]) .mi-asktab-back");
+    const t = b && b.textContent.replace(/\s+/g, " ").trim();
+    return t || "Back to the starting view";
+  };
+  let pres = null;
+  /* the tool is what is on screen: not the landing, not the explainers */
+  const toolOpen = () => {
+    const tool = document.getElementById("tool"), land = document.getElementById("landing"), ex = document.getElementById("explainersView");
+    return !!(tool && tool.classList.contains("active") && (!land || land.classList.contains("hidden")) && !(ex && ex.classList.contains("open")));
+  };
+  const shown = pg => !!(pg && !pg.classList.contains("sec-off") && pg.getClientRects().length && pg.querySelector(".ct-panel"));
+  /* the figure section the reader is in: in the one-scroll layout every
+     section is on, so it is the one across the middle of the screen */
+  const liveSection = () => {
+    if (!toolOpen()) return null;
+    const mid = innerHeight / 2;
+    return PAGES.map(id => document.getElementById(id)).find(pg => {
+      if (!shown(pg)) return false;
+      const r = pg.getBoundingClientRect();
+      return r.top <= mid && r.bottom >= mid;
+    }) || null;
+  };
+  /* opt-1's door rides the figure itself, which every rebuild of the frame carries over */
+  PAGES.forEach(id => {
+    const fig = document.querySelector("#" + id + " .mi-figure");
+    if (!fig || fig.querySelector(".pv-open--frame")) return;
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "pv-open pv-open--frame"; b.setAttribute("data-present", "");
+    b.title = "Present the figure full screen (P)";
+    b.innerHTML = ICON_PRES + "<span>Present</span>";
+    fig.appendChild(b);
+  });
+  /* the study switch: where the door sits */
+  const atEl = document.getElementById("miPresentAt");
+  const setAt = v => { document.documentElement.dataset.presentat = v || "frame"; };
+  setAt(atEl ? atEl.value : "frame");
+  if (atEl) atEl.addEventListener("change", () => setAt(atEl.value));
+  /* opt-3's door is in the section bar, so it is shown from the same
+     reading of which section is live (html[data-pvlive]); a section
+     closed or left while the view stands closes the view */
+  let liveT = 0;
+  function syncLive(){
+    liveT = 0;
+    const on = !!liveSection();
+    if (on) document.documentElement.dataset.pvlive = "1"; else delete document.documentElement.dataset.pvlive;
+    if (pres && (!toolOpen() || !shown(pres.page))) exit();
+  }
+  const syncLiveSoon = () => { if (!liveT) liveT = requestAnimationFrame(syncLive); };
+  const pagesEl = document.getElementById("pages");
+  if (pagesEl) pagesEl.addEventListener("scroll", syncLiveSoon, { passive: true });
+  window.addEventListener("resize", syncLiveSoon);
+  const liveMO = new MutationObserver(syncLiveSoon);
+  PAGES.concat(["tool", "landing", "explainersView"]).forEach(id => {
+    const el = document.getElementById(id);
+    if (el) liveMO.observe(el, { attributes: true, attributeFilter: ["class"] });
+  });
+  syncLiveSoon();
+
+  function stepsOf(page){ return [].slice.call(page.querySelectorAll(".ct-step")); }
+  function titleOf(st){ const h = st && st.querySelector("h2, h3"); return h ? h.textContent.trim() : ""; }
+  function sectionName(st){
+    const e = st && st.querySelector(".ct-eyebrow");
+    if (!e) return "";
+    return [].slice.call(e.childNodes).filter(n => n.nodeType === 3).map(n => n.textContent).join("").trim();
+  }
+  const visibleEl = el => !!(el && el.getClientRects().length && getComputedStyle(el).visibility !== "hidden");
+  const tabbables = root => [].slice.call(root.querySelectorAll('button, [href], select, input, textarea, [tabindex]:not([tabindex="-1"])'))
+    .filter(el => !el.disabled && visibleEl(el));
+
+  function build(page){
+    const panel = page.querySelector(".ct-panel"), fig = panel && panel.querySelector(".mi-figure");
+    if (!panel || !fig) return null;
+    const bar = document.createElement("div");
+    bar.className = "pv-bar";
+    bar.innerHTML = '<span class="pv-where"></span><h2 class="pv-title" tabindex="-1"></h2>' +
+      '<span class="pv-nav"><button type="button" class="pv-btn pv-prev" title="Previous beat (←)">' + ICON_PREV + '<span>Previous</span></button>' +
+      '<button type="button" class="pv-btn pv-next" title="Next beat (→)"><span>Next</span>' + ICON_NEXT + '</button>' +
+      '<button type="button" class="pv-btn pv-exit">' + ICON_X + '<span>Exit</span> <kbd>Esc</kbd></button></span>' +
+      /* what changed, said: the beat, and an answer when one opens */
+      '<p class="pv-live mi-sr" aria-live="polite"></p>';
+    const foot = document.createElement("div");
+    foot.className = "pv-foot"; foot.setAttribute("role", "group"); foot.setAttribute("aria-label", "Ask the chart");
+    panel.insertBefore(bar, panel.firstChild);
+    panel.appendChild(foot);
+    bar.querySelector(".pv-prev").addEventListener("click", () => go(pres.i - 1));
+    bar.querySelector(".pv-next").addEventListener("click", () => go(pres.i + 1));
+    bar.querySelector(".pv-exit").addEventListener("click", () => exit());
+    return { page, panel, fig, bar, foot, steps: stepsOf(page), i: 0 };
+  }
+  const say = t => { if (pres) pres.bar.querySelector(".pv-live").textContent = t; };
+
+  /* the type's size for the room: 1 at about 1100 by 700, up to 1.35 */
+  const PAN = 704;
+  const viewK = () => Math.max(1, Math.min(1.35, innerWidth / 1100, innerHeight / 700));
+  const setK = k => { pres.k = Math.round(k * 100) / 100; pres.panel.style.setProperty("--pv-k", String(pres.k)); };
+  /* the figure as wide as the screen's height lets its drawing be, in two
+     or three passes since the furniture round it wraps with the width */
+  function fit(depth){
+    if (!pres) return;
+    const { panel, fig, bar, foot } = pres;
+    const svg = [].slice.call(fig.querySelectorAll("svg.viz-big")).find(sv => getComputedStyle(sv).display !== "none" && sv.getBoundingClientRect().width > 0);
+    const vb = svg && svg.viewBox && svg.viewBox.baseVal, ratio = vb && vb.height ? vb.width / vb.height : 1.76;
+    const cs = getComputedStyle(panel);
+    const slots = [].slice.call(panel.querySelectorAll(":scope > .ct-slot")).reduce((a, sl) => a + sl.offsetHeight, 0);
+    const avH = panel.clientHeight - bar.offsetHeight - parseFloat(getComputedStyle(bar).marginBottom) - (foot.hidden ? 0 : foot.offsetHeight) - parseFloat(cs.paddingBottom) - slots - 8;
+    const full = panel.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    /* the ranked chart holds its type only over 704px of drawing at that
+       size; under it the chart would pan inside the frame */
+    const ranks = fig.dataset.step === "6" || fig.dataset.view === "alt";
+    const minW = ranks && depth ? Math.min(full, PAN * pres.k) : 280;
+    const before = panel.style.getPropertyValue("--pv-w");
+    let w = full;
+    for (let k = 0; k < 4; k++){
+      panel.style.setProperty("--pv-w", Math.floor(w) + "px");
+      const sh = svg ? svg.getBoundingClientRect().height : 0;
+      const furn = fig.getBoundingClientRect().height - sh;
+      const maxW = (avH - furn) * ratio;
+      if (maxW >= w - 2) break;
+      w = Math.max(minW, maxW);
+    }
+    w = Math.floor(w);
+    panel.style.setProperty("--pv-w", w + "px");
+    /* so where the height would leave the ranking narrower than that, the
+       type gives way first, then the chart keeps the width (and the view
+       scrolls, on a screen too short for both). The type is set back to
+       the room's size whenever what is shown changes (the beat, the view,
+       an answer), not on the resizes this fitting makes itself. */
+    if (ranks && !depth && w < PAN * pres.k - 1){ if (pres.k > 1) setK(Math.max(1, w / PAN)); fit(1); return; }
+    if (before !== w + "px" || depth) window.dispatchEvent(new Event("resize"));
+  }
+  let fitT = null;
+  const fitSoon = (ms) => { clearTimeout(fitT); fitT = setTimeout(() => fit(), ms || 0); };
+
+  function syncBar(){
+    const { bar, steps, i } = pres;
+    bar.querySelector(".pv-where").innerHTML = esc(sectionName(steps[i])) + " <b>" + (i + 1) + " of " + steps.length + "</b>";
+    bar.querySelector(".pv-title").textContent = titleOf(steps[i]);
+    const prev = bar.querySelector(".pv-prev"), next = bar.querySelector(".pv-next");
+    /* a button about to be disabled under the keyboard hands it on first */
+    const offPrev = i <= 0, offNext = i >= steps.length - 1;
+    if (offPrev && document.activeElement === prev) (offNext ? bar.querySelector(".pv-title") : next).focus({ preventScroll: true });
+    if (offNext && document.activeElement === next) (offPrev ? bar.querySelector(".pv-title") : prev).focus({ preventScroll: true });
+    prev.disabled = offPrev; next.disabled = offNext;
+  }
+  /* an answer's words, without a term card that may be open inside it */
+  function answerText(ans){
+    const c = ans.cloneNode(true);
+    c.querySelectorAll(".term-card, .mi-sr, [aria-hidden='true']").forEach(n => n.remove());
+    return c.textContent.replace(/\s+/g, " ").trim();
+  }
+  /* the beat's questions, mirrored from its rows: pressed as the row is,
+     and the answer under them while one stands. Rebuilt on every change,
+     with the keyboard's place kept. */
+  function syncFoot(){
+    const { foot, steps, i } = pres;
+    const a = document.activeElement, had = foot.contains(a) ? (a.classList.contains("pv-back") ? "back" : a.dataset.ask || "") : null;
+    const rows = [].slice.call(steps[i].querySelectorAll(".ask-q[data-ask]"));
+    const visible = rows.filter(r => getComputedStyle(r.closest(".ask-item") || r).display !== "none" && getComputedStyle(r.closest(".ask-chart") || r).display !== "none");
+    if (!visible.length){
+      foot.hidden = true; foot.innerHTML = ""; pres.lastAns = "";
+      if (had !== null) pres.bar.querySelector(".pv-title").focus({ preventScroll: true });
+      return;
+    }
+    foot.hidden = false;
+    const on = visible.find(r => r.getAttribute("aria-expanded") === "true");
+    const ans = on && document.getElementById(on.getAttribute("aria-controls"));
+    const txt = ans ? answerText(ans) : "";
+    foot.innerHTML = '<span class="pv-foot-lab">Ask the chart</span>' +
+      visible.map(r => '<button type="button" class="pv-q" data-ask="' + esc(r.dataset.ask) + '" aria-pressed="' + (r === on) + '"' +
+        (r === on ? ' aria-describedby="pvAns"' : '') + '>' + esc((r.querySelector(".ask-txt") || r).textContent.trim()) + '</button>').join("") +
+      '<p class="pv-ans" id="pvAns"' + (ans ? '' : ' hidden') + '>' + esc(txt) +
+      (ans ? '<button type="button" class="pv-back" data-for="' + esc(on.dataset.ask) + '">' + ICON_BACK + '<span>' + esc(backLabel()) + '</span></button>' : '') + '</p>';
+    /* a new answer is said once */
+    const key = on ? on.dataset.ask : "";
+    if (key && key !== pres.lastAns) say(txt);
+    pres.lastAns = key;
+    const back = foot.querySelector(".pv-back");
+    if (back) back.addEventListener("click", () => {
+      /* the keyboard lands on the question that was asked, which stays */
+      const q = foot.querySelector('.pv-q[data-ask="' + back.dataset.for + '"]');
+      if (q) q.focus({ preventScroll: true });
+      if (on) on.click();
+      setTimeout(() => { if (pres) { syncFoot(); fitSoon(60); } }, 30);
+    });
+    foot.querySelectorAll(".pv-q").forEach(b => b.addEventListener("click", () => {
+      const row = visible.find(r => r.dataset.ask === b.dataset.ask);
+      if (row) row.click();
+      setTimeout(() => { if (pres) { syncFoot(); fitSoon(60); } }, 30);
+    }));
+    /* the focus goes back where it was, or as near as the new footer allows */
+    if (had !== null){
+      const to = (had === "back" && foot.querySelector(".pv-back")) ||
+        (had && had !== "back" && foot.querySelector('.pv-q[data-ask="' + had + '"]')) ||
+        (had === "back" && foot.querySelector(".pv-q[aria-pressed='true']")) || pres.bar.querySelector(".pv-title");
+      to.focus({ preventScroll: true });
+    }
+  }
+
+  function go(i){
+    if (!pres) return;
+    i = Math.max(0, Math.min(pres.steps.length - 1, i));
+    if (i === pres.i && pres.started) return;
+    pres.i = i; pres.started = true;
+    setK(viewK());
+    pres.steps[i].dispatchEvent(new CustomEvent("ct:take", { bubbles: true }));
+    syncBar(); syncFoot();
+    say(sectionName(pres.steps[i]) + ", " + (i + 1) + " of " + pres.steps.length + ". " + titleOf(pres.steps[i]));
+    fitSoon(40); fitSoon(900);
+  }
+
+  function enter(page, fromStep){
+    page = page || liveSection();
+    if (pres || !page || !toolOpen() || !shown(page)) return;
+    const panel0 = page.querySelector(".ct-panel");
+    if (!panel0 || !panel0.getClientRects().length) return;
+    /* a term card open at the moment (a hover) is closed before its words are read */
+    if (window.closeTermCard) window.closeTermCard(false);
+    const p = build(page);
+    if (!p) return;
+    pres = p;
+    pres.opener = document.activeElement;
+    /* a door in a beat's own counter opens at that beat; otherwise the beat the reader is on */
+    const at = fromStep ? pres.steps.indexOf(fromStep) : -1;
+    const now = pres.steps.findIndex(st => st.classList.contains("is-on"));
+    pres.i = at >= 0 ? at : (now < 0 ? 0 : now);
+    /* the glossary is opened from the figure's term cards, so it comes
+       into the full-screen frame while the view stands */
+    const gl = document.getElementById("glossaryOverlay");
+    if (gl){ pres.glHome = gl.parentNode; pres.glNext = gl.nextSibling; pres.panel.appendChild(gl); }
+    pres.panel.classList.add("is-presenting");
+    pres.panel.setAttribute("role", "dialog"); pres.panel.setAttribute("aria-modal", "true");
+    pres.panel.setAttribute("aria-label", "Presenter view");
+    document.documentElement.classList.add("is-presenting");
+    /* the shown state can change from inside the figure too (an answer, the
+       view): the type is set back to the room's size, the footer follows */
+    pres.mo = new MutationObserver(() => { if (pres) { setK(viewK()); syncFoot(); fitSoon(60); } });
+    pres.mo.observe(pres.fig, { attributes: true, attributeFilter: ["data-asked", "data-step", "data-view"] });
+    /* and the figure is fitted again whenever its height or the footer's
+       moves: a chart redrawn to a new length, an answer that wraps */
+    if (window.ResizeObserver){
+      pres.ro = new ResizeObserver(() => fitSoon(80));
+      pres.ro.observe(pres.fig); pres.ro.observe(pres.foot);
+    }
+    pres.native = false;
+    const panel = pres.panel;
+    if (panel.requestFullscreen && !document.fullscreenElement){
+      panel.requestFullscreen({ navigationUI: "hide" }).then(() => {
+        /* left before the browser got there: the full screen is given back */
+        if (!pres || pres.panel !== panel){ if (document.fullscreenElement === panel) document.exitFullscreen().catch(() => {}); return; }
+        pres.native = true; fitSoon(30);
+        /* where the browser allows it, Escape stays the page's, so it can
+           close a card or an answer before the view (held, it still leaves) */
+        if (navigator.keyboard && navigator.keyboard.lock) navigator.keyboard.lock(["Escape"]).catch(() => {});
+      }).catch(() => {});
+    }
+    go(pres.i);
+    fitSoon(0); fitSoon(400);
+    pres.bar.querySelector(".pv-title").focus({ preventScroll: true });
+  }
+
+  function exit(){
+    if (!pres) return;
+    const p = pres; pres = null;
+    clearTimeout(fitT);
+    if (p.mo) p.mo.disconnect();
+    if (p.ro) p.ro.disconnect();
+    if (navigator.keyboard && navigator.keyboard.unlock) navigator.keyboard.unlock();
+    const gl = document.getElementById("glossaryOverlay");
+    if (gl && p.glHome){ if (window.closeGlossary) window.closeGlossary(); p.glHome.insertBefore(gl, p.glNext); }
+    if (window.closeTermCard) window.closeTermCard(false);
+    p.bar.remove(); p.foot.remove();
+    p.panel.classList.remove("is-presenting");
+    p.panel.removeAttribute("role"); p.panel.removeAttribute("aria-modal"); p.panel.removeAttribute("aria-label");
+    p.panel.style.removeProperty("--pv-w"); p.panel.style.removeProperty("--pv-k");
+    document.documentElement.classList.remove("is-presenting");
+    /* back on the page at the beat the teacher ended on, handed back to
+       the scroll - once the browser has left full screen, since the page
+       is laid out again for the window's size. The keyboard goes back to
+       the door it came from when that is in the beat on screen, or else
+       to a door that is. */
+    const st = p.steps[p.i];
+    const land = () => {
+      if (st && shown(p.page)){
+        st.scrollIntoView({ block: "center", behavior: "instant" });
+        requestAnimationFrame(() => p.page.dispatchEvent(new CustomEvent("ct:release")));
+      }
+      window.dispatchEvent(new Event("resize"));
+      const o = p.opener, oStep = o && o.closest && o.closest(".ct-step");
+      const back = (o && o.isConnected && visibleEl(o) && o !== document.body && (!oStep || oStep === st)) ? o
+        : [st && st.querySelector(".pv-open--eyebrow"), p.panel.querySelector(".pv-open--frame")].find(visibleEl);
+      if (back) back.focus({ preventScroll: true });
+    };
+    if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().then(land, land);
+    else land();
+  }
+
+  document.addEventListener("click", ev => {
+    const b = ev.target.closest && ev.target.closest("[data-present]");
+    if (!b) return;
+    ev.preventDefault();
+    enter(b.closest("#page-export-basket, #page-admin-mix") || liveSection(), b.closest(".ct-step"));
+  });
+  /* the browser left full screen by itself (its own Escape, where the page
+     cannot keep that key): a card or an answer open in the view is what
+     that press meant to close, so it is closed and the view stays, over
+     the window; with nothing open, the view closes */
+  document.addEventListener("fullscreenchange", () => {
+    if (!pres) return;
+    if (!pres.native || document.fullscreenElement){ fitSoon(30); return; }
+    pres.native = false;
+    const gl = document.getElementById("glossaryOverlay");
+    const row = pres.fig.dataset.asked && pres.steps[pres.i].querySelector('.ask-q[data-ask="' + pres.fig.dataset.asked + '"]');
+    if (gl && gl.classList.contains("open")){ if (window.closeGlossary) window.closeGlossary(); }
+    else if (pres.panel.querySelector(".term-card")){ if (window.closeTermCard) window.closeTermCard(false); }
+    else if (row) row.click();
+    else { exit(); return; }
+    fitSoon(30);
+  });
+  /* a real change of the window's size (not the page's own nudges) sets the type again */
+  let lastWH = "";
+  window.addEventListener("resize", () => {
+    if (!pres) return;
+    const wh = innerWidth + "x" + innerHeight;
+    if (wh === lastWH) return;
+    lastWH = wh;
+    clearTimeout(pres.rT); pres.rT = setTimeout(() => { if (pres) { setK(viewK()); fit(); } }, 120);
+  });
+  /* keys: P opens it; inside it the arrows step, Escape leaves, and Tab
+     stays inside the view. A dialog open over it, a field, and the places
+     that scroll with these keys (the glossary, the table, a term card)
+     keep them. */
+  const typing = t => t && (t.isContentEditable || /^(INPUT|SELECT|TEXTAREA)$/.test(t.tagName));
+  const scrolls = t => !!(t && t.closest && t.closest('.gl-body, .mi-table-wrap, .term-card, [role="region"]'));
+  window.addEventListener("keydown", ev => {
+    if (ev.defaultPrevented || ev.altKey || ev.ctrlKey || ev.metaKey) return;
+    if (!pres){
+      if ((ev.key === "p" || ev.key === "P") && !typing(ev.target) && !document.querySelector(".journey-overlay.open, dialog[open]")){
+        const pg = liveSection();
+        if (pg){ ev.preventDefault(); enter(pg); }
+      }
+      return;
+    }
+    if (document.querySelector(".journey-overlay.open, dialog[open]")) return;
+    if (ev.key === "Escape"){ ev.preventDefault(); exit(); return; }
+    if (typing(ev.target) || scrolls(ev.target)) return;
+    if (ev.key === "ArrowRight" || ev.key === "PageDown"){ ev.preventDefault(); go(pres.i + 1); }
+    else if (ev.key === "ArrowLeft" || ev.key === "PageUp"){ ev.preventDefault(); go(pres.i - 1); }
+    else if (ev.key === "Home"){ ev.preventDefault(); go(0); }
+    else if (ev.key === "End"){ ev.preventDefault(); go(pres.steps.length - 1); }
+  });
+  /* the view keeps the keyboard: a Tab out of its end comes back to its
+     start, a Shift+Tab out of its start goes round to its end */
+  document.addEventListener("focusin", ev => {
+    if (!pres || pres.panel.contains(ev.target)) return;
+    const back = ev.relatedTarget && pres.panel.contains(ev.relatedTarget) &&
+      (pres.panel.compareDocumentPosition(ev.target) & Node.DOCUMENT_POSITION_PRECEDING);
+    const list = back ? tabbables(pres.panel).filter(el => !el.closest(".journey-overlay:not(.open)")) : [];
+    const to = back && list.length ? list[list.length - 1] : pres.bar.querySelector(".pv-title");
+    if (to) to.focus({ preventScroll: true });
+  });
+  window.presenter = { enter: () => enter(liveSection()), exit, go: i => go(i), get on(){ return !!pres; } };
 })();
 
 /* Economic Fundamentals layout, option 2: the same scrolly grammar as
@@ -11634,6 +12196,9 @@
   }
   function spy(){
     if (!built) return;
+    /* the presenter view steps the beats itself: a scroll under it (the
+       page re-laid out for the full screen) does not take them back */
+    if (document.documentElement.classList.contains("is-presenting")) return;
     var mid = window.innerHeight * 0.45, best = 0, bd = Infinity;
     built.steps.forEach(function(st, i){
       var r = st.getBoundingClientRect();

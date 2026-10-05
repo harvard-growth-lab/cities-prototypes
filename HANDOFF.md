@@ -660,6 +660,92 @@ Worker Flows. At hand-off both were clean at 1920×970, 1728×1000,
 900×700, 820×1180 and 390×844, with one exception that is left alone:
 at 1366×650 the Ranked view's frame runs 15px past the fold.
 
+**The presenter view** (2026-10-04; Nil: "implement a presenter view mode
+… similar to PowerPoint. This is a teaching tool so intention is to give
+the teacher full view of the visualization"). Both figure sections,
+Metro Industries and Worker Flows, can put their frame full screen.
+
+*What it is.* The section's `.ct-panel` gets `.is-presenting` (and
+`html.is-presenting`), becomes a fixed layer over the page and asks the
+browser for real full screen (`requestFullscreen` on the panel; where
+that is refused, as it is headless, the fixed layer is the view). The
+script adds a bar on top (`.pv-bar`: "Metro Industries 2 of 3", the
+beat's question from its heading, previous, next, "Exit Esc") and a
+footer (`.pv-foot`) that mirrors the beat's "Ask the chart" rows: a
+press on one clicks the row itself, so the figure, the marks and the
+answer are the page's own; the answer is shown under the questions with
+the answer tab's own "Back to …" words (the tab is hidden while
+presenting). Worker Flows has no questions, so its footer stays hidden.
+Beats change through the scrolly (`ct:take` on the step), so text,
+figure and questions stay one state; the scrolly's `spy()` returns
+early while `html.is-presenting`, since a re-laid-out page under the
+view would otherwise scroll it back. On the way out the page is scrolled
+to the beat the teacher ended on and the beat is released to the scroll.
+The glossary overlay is moved into the panel while it stands (the peer
+metros card opens it) and put back on exit.
+
+*Which section.* `liveSection()`: only while the tool is on screen (not
+the landing, not the explainers), and the figure section across the
+middle of the screen, so in the one-scroll layout, where every section
+is on, P on Constraints does nothing and P on Worker Flows opens Worker
+Flows. The same reading sets `html[data-pvlive]`, which shows opt-3's
+bar button; the view closes itself if its section is closed or the
+landing comes back. The one-scroll layout clips each grey section to
+its box (`clip-path`), lifted while presenting.
+
+*Keys.* P opens it (not in a field, not while an overlay is open); → /
+PageDown next, ← / PageUp previous, Home and End, except inside the
+glossary, a term card, the table or a field, which keep those keys;
+Escape follows the site's ladder, one thing per press (the glossary, a
+card, the zoom, an open answer, then the view). In real full screen
+the page asks to keep Escape (`navigator.keyboard.lock`, Chromium: a
+held Escape still leaves); where the browser takes it anyway, the press
+closes whatever card or answer was open and the view stays over the
+window, and with nothing open the view closes. A full-screen request
+that lands after the view was left is given back.
+
+*Focus and announcements.* The title takes the focus on entry; Tab
+runs round inside the view both ways; the footer is rebuilt on every
+change with the keyboard's place kept (a question stays on its
+question, "Back to …" lands on the question it answered), and a Next or
+Previous about to be disabled under the keyboard hands it to the other.
+A polite live region in the bar says the beat ("Metro Industries, 2 of
+3. How tradable …") and a new answer. On exit the focus goes back to
+the door it came from if that is in the beat on screen, or else to that
+beat's door.
+
+*The size.* `fit()` holds the figure (`--pv-w`) to the width the
+screen's height leaves its drawing, from the visible svg's viewBox and
+the furniture round it, and runs again from a ResizeObserver on the
+figure and the footer. The type is scaled for the room by `--pv-k`
+(1 at about 1100×700, up to 1.35, `min(w/1100, h/700)`): it feeds
+`--mi-type`, which treemap.js reads as `TYPE_K` and multiplies into
+the chart's type and everything sized to it (bands, cards, badges, the
+map's label limits, the pan threshold), and the controls, sentence and
+keys beside the chart scale with it in CSS. The ranked chart pans under
+704px of drawing times `TYPE_K` (the CSS pan width now scales with it
+too), so on a ranking the type gives way first, then the chart keeps
+that width and the view scrolls on a screen too short for both. The
+empty sector-key slot under the ranking is dropped in the view.
+
+*Where its button sits — an opt study ("Present button",
+`#miPresentAt`, `html[data-presentat]`).* opt-1 (default) a "Present"
+pill on the frame's top-right edge (`.pv-open--frame`, built into each
+figure, the mirror of the answer tab on the left); opt-2 a "Present"
+word after the beat's count in the text column (`.pv-open--eyebrow`,
+made by the mount with each eyebrow); opt-3 a "Present" button at the
+right end of the section bar, only while a figure section is showing
+(`.pv-open--bar`). Any element with `data-present` opens it.
+
+*Checking it.* `handoff/presenter-edges.mjs` runs the cases above;
+`handoff/presenter-check.mjs` (with the harness; `W`, `H`,
+`SHOTS=1` writes to `$S/pv/`) opens the view from the frame's pill,
+steps the three beats, asks and un-asks a question from the footer,
+uses Home, Escape and P, and lists the three placements; it prints
+whether the figure fits between the bar and the footer and the smallest
+text on screen. Clean at 1920×1080, 1440×900, 1366×650, 1024×768 and
+390×844 (on a phone the ranking pans, as on the page).
+
 ## 5. The end of a section, the quiz, the navigation
 
 Every section ends in `secPager` (built in `showSection(i)` in index.html):
@@ -1053,6 +1139,20 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
    the fold by 24px with b1q1 open and 6px with b2q2 (both add a row to
    the head).
 
+0g. **The presenter view: built 2026-10-04** (§4, "The presenter view").
+   Nil asked to brainstorm where its button goes; three places are built
+   as the "Present button" study (frame pill, the beat's counter, the
+   section bar), with the frame pill as the default. A three-lens review
+   (logic, CSS and full screen, keyboard) found 13 problems, all fixed
+   the same day and covered by `handoff/presenter-edges.mjs`; it also
+   found that a year switch left the old build's answer tab on the frame
+   (treemap.js now removes it with its build). Open: which place
+   Nil keeps, and whether the view should also offer the beat's text as
+   speaker notes (not built). Found while testing, not changed: in Worker
+   Flows' second beat the longest bar name ("Utilities, agriculture &
+   mining") starts 5px left of the drawing at every width, on the page
+   as well as in the view.
+
 0f. **Beat 3's peer marks: built 2026-10-04 (option 1).** Nil: "some
    peers ave line are outside of the chart … We still want to show the
    industries above 1". The peers' own rate against the nation is under
@@ -1240,6 +1340,8 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
 - `handoff/type-audit.mjs`, `handoff/type-audit-city.mjs` — the type-floor
   and frame-fit audit for the two figure sections (§4, "The grid, the
   frame and the type floor").
+- `handoff/presenter-check.mjs`, `handoff/presenter-edges.mjs` — the
+  presenter view end to end and its edge cases (§4, "The presenter view").
 - `handoff/review-layout-type.workflow.js` — the four-lens review of that
   change, as a Claude Code workflow script (§3, §8 item 0c).
 - `handoff/commit-history.md` — the full `git log` with dates; the commit

@@ -2895,7 +2895,7 @@
                 sectorSize: 18 };
   /* the sizes a label is tried at: whole pixels from its ceiling down,
      ending on the floor itself, which is not a whole pixel */
-  const mapSizes = max => { const out = []; for (let v = max; v > MAP.min; v--) out.push(v); out.push(MAP.min); return out; };
+  const mapSizes = (max, min) => { const lo = min || MAP.min, out = []; for (let v = max; v > lo; v--) out.push(v); out.push(lo); return out; };
   const MAP_FONT = '"Source Sans 3", "Source Sans Pro", sans-serif';
   /* the sector-names study: "off", or the sectors named on the map -
      "band", an 18px strip in a deeper shade of the sector's colour with a
@@ -3183,9 +3183,9 @@
     if (cur) out.push(cur);
     return out;
   }
-  function fitLines(name, shareText, box, maxSize){
+  function fitLines(name, shareText, box, maxSize, minSize){
     const words = name.split(/\s+/);
-    for (const size of mapSizes(maxSize || MAP.size)){
+    for (const size of mapSizes(maxSize || MAP.size, minSize)){
       const lines = wrapFit(words, size, MAP.weight, box.w);
       if (!lines || blockH(lines.length, size, false) > box.h) continue;
       const share = mapTextW(shareText, size, MAP.shareWeight) <= box.w && blockH(lines.length, size, true) <= box.h;
@@ -3196,8 +3196,8 @@
   /* the fit depends only on the words and the cell's size, so it is cached
      on those; the cell's own corner is added on the way out */
   const _mapLab = new Map();
-  function fitCellLabel(name, shareText, cell, maxSize){
-    const key = name + "|" + shareText + "|" + Math.round(cell.w) + "|" + Math.round(cell.h) + "|" + (maxSize || 0);
+  function fitCellLabel(name, shareText, cell, maxSize, minSize){
+    const key = name + "|" + shareText + "|" + Math.round(cell.w) + "|" + Math.round(cell.h) + "|" + (maxSize || 0) + "|" + (minSize || 0);
     let fit = _mapLab.get(key);
     if (fit === undefined){
       fit = null;
@@ -3205,7 +3205,7 @@
       if (box.w > 0 && box.h > 0){
         const bare = name.replace(/\s*\([^)]*\)/g, "").trim();
         for (const n of (bare && bare !== name ? [name, bare] : [name])){
-          fit = fitLines(n, shareText, box, maxSize);
+          fit = fitLines(n, shareText, box, maxSize, minSize);
           if (fit) break;
         }
       }
@@ -3317,6 +3317,12 @@
        at. */
     let S = 0;
     const DEFAULT_S = 880 / MI_W;
+    /* the type's size on screen, as a multiple: 1, or larger in the
+       presenter view (--mi-type on the figure). Geometry sized to the type
+       - the tier bands, the badges, the crosses, the map's labels, where
+       the charts begin to pan - is multiplied by it too. */
+    let TYPE_K = 1;
+    const readTypeK = () => parseFloat(getComputedStyle(fig).getPropertyValue("--mi-type")) || 1;
     /* the drawing keeps its proportions inside the element, so when the
        element is held shorter than that the drawing is narrower than it */
     const measureS = () => {
@@ -3419,7 +3425,7 @@
        the cross beside them (a phone, where "Partly traded" alone nearly
        fills its ground), every band takes a second line for the share. */
     let bandStacked = false, fitBandRef = null;
-    const bandH = () => { const s = scaleNow(), one = Math.max(30, Math.ceil(26 / s)); return bandStacked ? one + Math.ceil(17 / s) : one; };
+    const bandH = () => { const s = scaleNow() / TYPE_K, one = Math.max(30, Math.ceil(26 / s)); return bandStacked ? one + Math.ceil(17 / s) : one; };
     const cardHead = () => bandH() + 14;
     const cardH = () => MI_H - cardHead() - CARD_BOT;
     let cardBox = [];
@@ -3495,13 +3501,13 @@
     /* the tier grounds' bands: how wide each one's name and share are, and
        whether any ground is too narrow to set them on one line */
     const sharePct = k => Math.round(clusterShare[k] * 100) + "%";
-    const bandNameW = [0, 0, 0], bandGap = () => 7 / scaleNow();
+    const bandNameW = [0, 0, 0], bandGap = () => 7 * TYPE_K / scaleNow();
     /* the name a band carries: the tier's, or where even that alone is too
        wide for its ground (the drawing letterboxed under the open table on
        a narrow screen) the first word of it, "Partly" */
     const bandName = [TIER_NAMES[0], TIER_NAMES[1], TIER_NAMES[2]];
     fitBandRef = () => {
-      const u = 1 / scaleNow();
+      const u = TYPE_K / scaleNow();
       const mn = measureFor("mi-card-lab"), mp = measureFor("mi-card-pct");
       [0, 1, 2].forEach(k => { bandName[k] = TIER_NAMES[k]; bandNameW[k] = mn.w(bandName[k]); });
       const pw = [0, 1, 2].map(k => mp.w(sharePct(k)));
@@ -3880,7 +3886,7 @@
       /* the band's words sit on its middle line, whatever its height: the
          name, then the share after it - or under it, on a second line,
          where the grounds are too narrow for both */
-      const bh = bandH(), half = 8.5 / scaleNow();
+      const bh = bandH(), half = 8.5 * TYPE_K / scaleNow();
       const mid = bandStacked ? bh / 2 - half : bh / 2, mid2 = bandStacked ? bh / 2 + half : mid;
       sel.select("rect.mi-card-band").attr("height", bh);
       sel.select("text.mi-card-lab").attr("y", mid).attr("dy", "0.35em").text(c => bandName[c.k]);
@@ -3896,7 +3902,7 @@
          a fixed size on screen like the words beside it: an 8px mark 13px
          in from the band's right edge, on a 20px target */
       sel.select("g.mi-card-x").style("display", c => cardBox.length > 1 && !c.noX ? null : "none");
-      const u = 1 / scaleNow(), hit = Math.min(20 * u, bh);
+      const u = TYPE_K / scaleNow(), hit = Math.min(20 * u, bh);
       sel.select("rect.mi-card-x-hit").attr("y", mid - hit / 2).attr("width", hit).attr("height", hit);
       go(sel.select("rect.mi-card-x-hit")).attr("x", c => c.x + c.w - 13 * u - hit / 2);
       go(sel.select("path.mi-card-x-mark")).attr("d", c => {
@@ -4172,7 +4178,7 @@
         /* the number is a fixed size on screen, so its disc is too: 9
            units where the figure is drawn at its own size, more where it
            is drawn smaller, inside the 30 the gutter keeps for it */
-        const br = Math.min(13, Math.max(9, 9.5 / scaleNow()));
+        const br = Math.min(13 * TYPE_K, Math.max(9, 9.5 * TYPE_K / scaleNow()));
         g.append("circle").attr("class", "mi-badge-bg").attr("cx", br + 3).attr("cy", 0).attr("r", br);
         g.append("text").attr("class", "mi-badge").attr("x", br + 3).attr("y", 0).attr("dy", "0.35em")
           .attr("text-anchor", "middle").text(d => R.rankIdx.get(d.name) + 1);
@@ -4998,8 +5004,9 @@
         const share = fmtShare(c.cell.share);
         /* at the sector grain with the band naming the block, the cell keeps its share alone */
         const shareOnly = L.grain === 2 && SEC_NAMES !== "off";
-        const ceil = L.grain === 2 ? MAP.sectorSize : MAP.size;
-        const spec = shareOnly ? fitCellLabel(share, "", c.px, ceil) : fitCellLabel(c.cell.name, share, c.px, ceil);
+        /* the presenter view sets the type a size up, the floor with it */
+        const ceil = Math.round((L.grain === 2 ? MAP.sectorSize : MAP.size) * TYPE_K * 2) / 2, floor = Math.round(MAP.min * TYPE_K * 2) / 2;
+        const spec = shareOnly ? fitCellLabel(share, "", c.px, ceil, floor) : fitCellLabel(c.cell.name, share, c.px, ceil, floor);
         if (!spec) return;
         const ink = mapInkOf(c);
         t.attr("font-size", spec.size / s).attr("fill", ink).attr("data-ink", ink).attr("font-weight", MAP.weight);
@@ -5450,16 +5457,18 @@
        stylesheet does it, off this flag */
     const PAN_MIN = 704;
     const syncPan = () => {
-      const w = el.parentNode ? el.parentNode.clientWidth : 0, v = w && w < PAN_MIN ? "1" : "";
+      const w = el.parentNode ? el.parentNode.clientWidth : 0, v = w && w < PAN_MIN * TYPE_K ? "1" : "";
       if ((fig.dataset.pan || "") !== v) fig.dataset.pan = v;
     };
     /* the scale, settled without painting. The scale first: the stylesheet
        sizes the charts' type from it, the bands and the tilings follow it,
        and the gutters are fitted to that type. Says whether it moved. */
     settleScaleRef = () => {
+      const k2 = readTypeK(), kMoved = Math.abs(k2 - TYPE_K) > 1e-4;
+      TYPE_K = k2;
       syncPan();
       const s2 = measureS();
-      if (!s2 || Math.abs(s2 - S) < 1e-4) return false;
+      if (!s2 || (Math.abs(s2 - S) < 1e-4 && !kMoved)) return false;
       S = s2; tellScale(); fitBandRef(); invalidateMaps(); drawCards(false);
       return true;
     };
@@ -6288,6 +6297,8 @@
       '<span class="mi-asktab-sep" aria-hidden="true"></span><button type="button" class="mi-asktab-back">' +
       '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 6.5h6a3.5 3.5 0 0 1 0 7H7"/><path d="M6 3.5 3 6.5l3 3"/></svg>' +
       '<span class="mi-asktab-lab"></span></button>';
+    /* a rebuild (the year switch) makes its own tab: this one goes with its build */
+    disposers.push(() => { askTab.remove(); const h = fig.closest(".ct-panel"); if (h) h.classList.remove("is-asked"); });
     const askCueEl = document.getElementById(p + "AskCue");
     let askCue = askCueEl && askCueEl.value === "marks" ? "marks" : "tab";
     /* the frame is the scrolly's panel, built round the figure after it;
