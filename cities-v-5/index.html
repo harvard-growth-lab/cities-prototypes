@@ -664,16 +664,21 @@
     .pages > .secpager{padding-bottom:64px;}
   }
   html[data-layout="scroll"] .secpager:not([data-sec="5"]){display:none;}
-  html[data-layout="scroll"] .pages:has(#page-export-basket){background:#fff;}
+  /* the two scrolls: no pager in part one, whose last close leads on;
+     part two's, at its foot, without the line or the quiz card (each
+     section's close carries its quiz) */
+  html[data-layout="halves"][data-part="1"] .secpager{display:none;}
+  html[data-layout="halves"][data-part="2"] .secpager :is(.pgr-line-wrap, .pgc--check){display:none;}
+  html:is([data-layout="scroll"],[data-layout="halves"]) .pages:has(#page-export-basket){background:#fff;}
   /* the two grey-ground sections keep their ground under the white pages,
      bled to the edges from their 976 measure */
-  html[data-layout="scroll"] :is(#page-export-basket, #page-admin-mix){
+  html:is([data-layout="scroll"],[data-layout="halves"]) :is(#page-export-basket, #page-admin-mix){
     background:#f9fafb;box-shadow:0 0 0 100vmax #f9fafb;clip-path:inset(0 -100vmax);
   }
   /* the close of a section: the house's dark teal, edge to edge, the
      content on the sections' own 976 measure */
   .sec-seal{display:none;}
-  html[data-layout="scroll"] .sec-seal{
+  html:is([data-layout="scroll"],[data-layout="halves"]) .sec-seal{
     display:block;background:var(--teal-dark);color:#fff;
     box-shadow:0 0 0 100vmax var(--teal-dark);clip-path:inset(0 -100vmax);
   }
@@ -705,6 +710,31 @@
   .seal-cue button{appearance:none;border:0;background:none;padding:0;margin:0;font:inherit;color:#fff;text-decoration:underline;text-underline-offset:3px;cursor:pointer;}
   .seal-cue button:focus-visible{outline:2px solid #fff;outline-offset:3px;}
   @keyframes seal-bob{0%,100%{translate:0 0;}50%{translate:0 5px;}}
+  /* the end of part one under the two scrolls: the cue to keep scrolling
+     gives way to the way into part two, as the reference build has it - a
+     line across, the part's name large, and a white disc with the arrow */
+  .seal-next-row{display:none;}
+  html[data-layout="halves"] .seal-next-row{display:block;margin-top:10px;padding-top:26px;border-top:1px solid rgba(255,255,255,.2);}
+  html[data-layout="halves"] .sec-seal--part-end .seal-cue{display:none;}
+  .seal-next{
+    display:inline-grid;grid-template-columns:auto auto;align-items:center;gap:5px 22px;margin:-12px -16px;padding:12px 16px;
+    appearance:none;border:0;border-radius:4px;background:none;color:#fff;font:inherit;text-align:left;cursor:pointer;
+    transition:background .15s ease;
+  }
+  .seal-next-k{grid-column:1;font-size:12.5px;font-weight:700;letter-spacing:.2px;line-height:1;color:rgba(255,255,255,.78);}
+  .seal-next-name{grid-column:1;font-size:26px;font-weight:700;letter-spacing:-.3px;line-height:1.12;}
+  .seal-next-go{
+    grid-area:1 / 2 / span 2;display:inline-flex;align-items:center;justify-content:center;width:46px;height:46px;
+    border-radius:50%;background:#fff;color:var(--teal-dark);transition:translate .18s ease;
+  }
+  .seal-next:hover{background:rgba(255,255,255,.07);}
+  .seal-next:hover .seal-next-go{translate:5px 0;}
+  .seal-next:focus-visible{outline:2px solid #fff;outline-offset:2px;}
+  @media (prefers-reduced-motion: reduce){ .seal-next-go{transition:none;} }
+  @media (max-width:640px){
+    .seal-next{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:14px;width:calc(100% + 32px);}
+    .seal-next-name{font-size:24px;}
+  }
   @media (prefers-reduced-motion: reduce){ .seal-cue svg{animation:none;} }
   @media (max-width:1199px){
     .seal-in{padding:52px var(--frame-pad) 48px;min-height:400px;}
@@ -715,10 +745,13 @@
      holds, before the diagnosis begins. It follows the last section of
      part one and its close, divided from it by a hairline. */
   .seam{display:none;}
-  html[data-layout="scroll"] .seam{
+  html:is([data-layout="scroll"],[data-layout="halves"]) .seam{
     display:flex;align-items:center;min-height:calc(100dvh - var(--chrome-h) - 64px);
     background:var(--teal-dark);color:#fff;border-top:1px solid rgba(255,255,255,.16);
   }
+  /* under the two scrolls it is the top of part two's scroll: the whole
+     screen under the bars, and nothing above it to divide it from */
+  html[data-layout="halves"] .seam{min-height:calc(100dvh - var(--chrome-h));border-top:0;}
   .seam-in{
     width:min(var(--grid-max),calc(100% - 2 * var(--frame-pad)));margin-inline:auto;padding:64px 0 40px;
     display:flex;flex-direction:column;gap:44px;
@@ -1274,7 +1307,7 @@
      same air above and below; its share of the width is as before. The
      titles and the prose take the beats' scale. */
   .pages:has(#ovWrap:not(.sec-off)){background:#f9fafb;}
-  html[data-layout="scroll"] #ovWrap{background:#f9fafb;box-shadow:0 0 0 100vmax #f9fafb;clip-path:inset(0 -100vmax);}
+  html:is([data-layout="scroll"],[data-layout="halves"]) #ovWrap{background:#f9fafb;box-shadow:0 0 0 100vmax #f9fafb;clip-path:inset(0 -100vmax);}
   @media (min-width:900px){
     .tool-body #ovWrap:not(.ov2){
       padding-left:max(0px, calc((100% - var(--grid-max)) / 2 - var(--frame-pad)));
@@ -7771,13 +7804,14 @@
 
 <div class="sv" id="siteLayoutSwitch">
   <button type="button" class="sv-btn" id="svBtn" aria-expanded="false" aria-haspopup="menu" aria-controls="svPanel">
-    <span class="sv-k">Site Layout</span><span class="sv-now" id="svNow">Current</span>
+    <span class="sv-k">Site Layout</span><span class="sv-now" id="svNow">Two scrolls</span>
     <svg viewBox="0 0 10 6" width="10" height="6" aria-hidden="true"><path d="M1 5l4-4 4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </button>
   <div class="sv-panel" id="svPanel" role="menu" aria-label="Site layout variants" hidden>
     <div role="group" aria-label="Layout">
-      <button type="button" role="menuitemradio" aria-checked="true" class="sv-opt is-on" data-layout="pages"><b>Current</b><span>five sections, one linear flow</span></button>
+      <button type="button" role="menuitemradio" aria-checked="false" class="sv-opt" data-layout="pages"><b>Current</b><span>five sections, one linear flow</span></button>
       <button type="button" role="menuitemradio" aria-checked="false" class="sv-opt" data-layout="scroll"><b>One scroll</b><span>a summary closes each section, a band opens part two</span></button>
+      <button type="button" role="menuitemradio" aria-checked="false" class="sv-opt" data-layout="halves"><b>Two scrolls</b><span>each part one scroll, a Next between</span></button>
     </div>
     <p class="sv-head" aria-hidden="true">Navigation bar</p>
     <div role="group" aria-label="Navigation bar">
@@ -10296,6 +10330,11 @@
   }));
 
   const sectionIndexOf = id => sectionDefs.findIndex(sd => sd.pages.includes(id));
+  /* the storyline's two parts, by section: 0 the city's profile (the first
+     three), 1 the diagnosis and the levers (the next two); the extras, the
+     last section, belong to neither */
+  const partOf = k => k < 0 || k >= SECTIONS.length - 1 ? -1 : k <= 2 ? 0 : 1;
+  const PART_NAMES = ["City Profile", "Diagnose & Act"];
 
   function showSection(i, toTop){
     if(i < 0 || i >= SECTIONS.length || i === activeSec) return;
@@ -10307,10 +10346,17 @@
     document.documentElement.dataset.part = i <= 2 ? "1" : i <= 4 ? "2" : "";
     syncSectionHash();
     /* under the scroll layout the storyline's sections stand together in
-       one scroll; the extras alone take the page for themselves */
-    const scrollL = siteLayout() === "scroll", EXTRAS = SECTIONS.length - 1;
+       one scroll, under the two scrolls each part's do; the extras alone
+       take the page for themselves */
+    const lay = siteLayout(), scrollL = lay === "scroll", halves = lay === "halves", EXTRAS = SECTIONS.length - 1;
+    const together = k => k === i || (k < EXTRAS && i < EXTRAS && (scrollL || (halves && partOf(k) === partOf(i))));
     SECTIONS.forEach((sec, k) =>
-      sec.els.forEach(el => el.classList.toggle("sec-off", scrollL && k < EXTRAS && i < EXTRAS ? false : k !== i)));
+      sec.els.forEach(el => el.classList.toggle("sec-off", !together(k))));
+    /* the band that opens part two follows part one's last close in the one
+       scroll, and so rides with that section; under the two scrolls it is
+       where part two's scroll begins, and rides with part two */
+    const seamEl = document.getElementById("seam");
+    if (seamEl && halves) seamEl.classList.toggle("sec-off", partOf(i) !== 1);
     [...secNavEl.children].forEach((b, k) => {
       b.classList.toggle("is-active", k === i);
       /* the sections behind the reader wear a check in place of their number */
@@ -10334,7 +10380,14 @@
         behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"
       });
     }
-    const prev = SECTIONS[i-1], next = SECTIONS[i+1];
+    /* the pager's two ways on. Under the two scrolls it stands only at the
+       foot of part two, and offers part one from its start and the extras */
+    let prev = SECTIONS[i-1] && { k: i - 1, name: SECTIONS[i-1].name },
+        next = SECTIONS[i+1] && { k: i + 1, name: SECTIONS[i+1].name };
+    if (halves && partOf(i) === 1){
+      prev = { k: 0, name: PART_NAMES[0] };
+      next = { k: EXTRAS, name: SECTIONS[EXTRAS].name };
+    }
     const name = SECTIONS[i].name;
     /* one state language, on the line and on the cards: a teal check is
        behind you, the enlarged ring is where you stand, grey numbers wait
@@ -10355,29 +10408,37 @@
     secPager.innerHTML =
       '<div class="pgr-line-wrap"><div class="pgr-line">' + stops + '</div></div>' +
       '<div class="pager-cards">' +
-      (prev ? '<button type="button" class="pgc pgc--prev" data-go="' + (i-1) + '">' +
-        '<span class="pgc-kicker">' + badge(i-1) + 'Previous</span><span class="pgc-name">' + prev.name + '</span></button>' : '') +
+      (prev ? '<button type="button" class="pgc pgc--prev" data-go="' + prev.k + '">' +
+        '<span class="pgc-kicker">' + badge(prev.k) + 'Previous</span><span class="pgc-name">' + prev.name + '</span></button>' : '') +
       checkCardHtml(name) +
-      (next ? '<button type="button" class="pgc pgc--next" data-go="' + (i+1) + '">' +
-        '<span class="pgc-kicker">' + badge(i+1) + 'Next</span><span class="pgc-name">' + next.name + '</span></button>'
+      (next ? '<button type="button" class="pgc pgc--next" data-go="' + next.k + '">' +
+        '<span class="pgc-kicker">' + badge(next.k) + 'Next</span><span class="pgc-name">' + next.name + '</span></button>'
         : '<button type="button" class="pgc pgc--next" data-go="0">' +
         '<span class="pgc-kicker">' + badge(0) + 'Start again</span><span class="pgc-name">' + SECTIONS[0].name + '</span></button>') +
       '</div>';
     wireCheckCard(name);
+    /* whether the section the reader was in stands in the same scroll as
+       this one: then nothing is shown or hidden, and the way there is a
+       scroll through what is already on the page */
+    const sameScroll = prevSec >= 0 && (scrollL || halves) && together(prevSec);
     if(toTop !== false){
-      if (scrollL && i < EXTRAS){
+      const first = SECTIONS[i].els[0];
+      if ((scrollL && i < EXTRAS) || sameScroll){
         /* the chip takes the reader to the section's top, and the chips
            hold still while the scroll gets there */
-        const first = SECTIONS[i].els[0];
         trackHold = Date.now() + 1000;
         if (first) first.scrollIntoView({ block: "start",
           behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
+      } else if (halves && first && partOf(i) >= 0 && i !== SECTIONS.findIndex((_, k) => partOf(k) === partOf(i))){
+        /* into the other part, at a section after its first: straight there */
+        trackHold = Date.now() + 400;
+        first.scrollIntoView({ block: "start", behavior: "instant" });
       } else pagesEl.scrollTo({top: 0, behavior: "instant"});
     }
     // Leaflet measures a hidden container as 0x0; the existing resize handler
-    // re-measures the map and re-runs the scroll zoom. Under the scroll
-    // layout nothing changes size when the chips follow the reader.
-    if (!scrollL || i === EXTRAS || prevSec === EXTRAS || prevSec < 0) window.dispatchEvent(new Event("resize"));
+    // re-measures the map and re-runs the scroll zoom. Within one scroll
+    // nothing changes size when the chips follow the reader.
+    if (!sameScroll) window.dispatchEvent(new Event("resize"));
   }
 
   sectionDefs.forEach((sd, i) => {
@@ -10389,7 +10450,18 @@
        the reader is actually there. */
     if (sd.name === "Extras") b.classList.add("secnav-btn--aside");
     b.innerHTML = '<span class="num">' + (i + 1) + '</span><span class="secnav-lbl">' + sd.name + "</span>";
-    b.addEventListener("click", () => showSection(i));
+    b.addEventListener("click", () => {
+      /* under the two scrolls the chip of the section the reader is in
+         takes them back to its top, as the reference build's does */
+      if (i === activeSec && siteLayout() === "halves" && i < SECTIONS.length - 1){
+        const first = SECTIONS[i].els[0];
+        trackHold = Date.now() + 1000;
+        if (first) first.scrollIntoView({ block: "start",
+          behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
+        return;
+      }
+      showSection(i);
+    });
     secNavEl.appendChild(b);
   });
   /* The names show whenever they fit. The row is measured with every name
@@ -10528,12 +10600,20 @@
   };
 
   /* ---- the site's layout study ----
-     "pages" (opt-1): one section at a time, the pager's cards at its foot.
-     "scroll" (opt-2): the storyline's five sections in one scroll, the
-     chips following the reader, each section closed by a teal block that
-     says what to take from it and opens its quiz. The choice rides the
-     address as ?layout=scroll, so a link can carry it. */
-  function siteLayout(){ return document.documentElement.dataset.layout === "scroll" ? "scroll" : "pages"; }
+     "pages" (opt-1, "Current"): one section at a time, the pager's cards
+     at its foot.
+     "scroll" (opt-2, "One scroll"): the storyline's five sections in one
+     scroll, the chips following the reader, each section closed by a teal
+     block that says what to take from it and opens its quiz.
+     "halves" (opt-3, "Two scrolls", the default since 2026-10-05): as the
+     reference build's "halves", each part one scroll - the city's profile,
+     then the diagnosis and the levers - with the same closes; part one's
+     last close ends on a Next into part two, whose scroll opens on the
+     band that introduces it and ends on the pager's cards.
+     The choice rides the address as ?layout=pages or ?layout=scroll (the
+     default needs none), so a link can carry it. */
+  const LAYOUTS = { pages: "Current", scroll: "One scroll", halves: "Two scrolls" }, LAYOUT_DEFAULT = "halves";
+  function siteLayout(){ const v = document.documentElement.dataset.layout; return LAYOUTS[v] ? v : LAYOUT_DEFAULT; }
   const svEl = document.getElementById("siteLayoutSwitch"), svBtn = document.getElementById("svBtn"),
         svPanel = document.getElementById("svPanel"), svNow = document.getElementById("svNow");
   const svOpts = [...svPanel.querySelectorAll(".sv-opt")];
@@ -10558,7 +10638,7 @@
       const on = o.dataset.layout ? o.dataset.layout === lay : o.dataset.nav === nav;
       o.classList.toggle("is-on", on); o.setAttribute("aria-checked", String(on));
     });
-    svNow.textContent = (lay === "scroll" ? "One scroll" : "Current") + (nav !== "light" ? " \u00b7 " + NAVS[nav] + " bar" : "");
+    svNow.textContent = LAYOUTS[lay] + (nav !== "light" ? " \u00b7 " + NAVS[nav] + " bar" : "");
   }
   function setSiteNav(v, fromUrl){
     v = NAVS[v] ? v : "light";
@@ -10586,19 +10666,19 @@
   svEl.addEventListener("focusout", ev => { if (!svPanel.hidden && !svEl.contains(ev.relatedTarget)) svOpen(false); });
   document.addEventListener("pointerdown", ev => { if (!svPanel.hidden && !svEl.contains(ev.target)) svOpen(false); });
   function setSiteLayout(v, fromUrl){
-    v = v === "scroll" ? "scroll" : "pages";
+    v = LAYOUTS[v] ? v : LAYOUT_DEFAULT;
     const was = siteLayout();
     document.documentElement.dataset.layout = v;
     syncSv();
     if (!fromUrl){
       const u = new URL(location.href);
-      if (v === "scroll") u.searchParams.set("layout", "scroll"); else u.searchParams.delete("layout");
+      if (v !== LAYOUT_DEFAULT) u.searchParams.set("layout", v); else u.searchParams.delete("layout");
       history.replaceState(null, "", u.pathname + u.search + u.hash);
     }
     if (was !== v && activeSec >= 0){
       const cur = activeSec; activeSec = -1; showSection(cur, false);
       const first = SECTIONS[cur].els[0];
-      if (v === "scroll" && first) first.scrollIntoView({ block: "start", behavior: "instant" });
+      if (v !== "pages" && cur < SECTIONS.length - 1 && first) first.scrollIntoView({ block: "start", behavior: "instant" });
       else pagesEl.scrollTo({ top: 0, behavior: "instant" });
     }
   }
@@ -10609,14 +10689,20 @@
      section's teal close still counts as that section */
   var trackHold = 0, trackT = null;
   function trackSection(){
-    if (siteLayout() !== "scroll" || activeSec === SECTIONS.length - 1 || Date.now() < trackHold) return;
+    const lay = siteLayout();
+    if ((lay !== "scroll" && lay !== "halves") || activeSec < 0 || activeSec === SECTIONS.length - 1 || Date.now() < trackHold) return;
     const pr = pagesEl.getBoundingClientRect(), line = pr.top + pagesEl.clientHeight * 0.4;
-    let on = 0;
-    for (let k = 0; k < SECTIONS.length - 1; k++){
+    /* the sections in the scroll the reader is in: all five, or the part's
+       own (the other part's are hidden, and a hidden section's top reads 0).
+       Part two's band counts as its first section, as nothing names it */
+    const ks = SECTIONS.map((_, k) => k).filter(k => k < SECTIONS.length - 1 && (lay === "scroll" || partOf(k) === partOf(activeSec)));
+    let on = ks[0];
+    ks.forEach(k => {
       const el = topOf(SECTIONS[k].els[0]);
       if (el && el.getBoundingClientRect().top <= line) on = k;
-    }
+    });
     if (on !== activeSec) showSection(on, false);
+    if (lay !== "scroll") return;
     /* the band that opens part two belongs to part two, though the chip
        still names the section above it until the diagnosis begins */
     const seam = document.getElementById("seam");
@@ -10682,7 +10768,16 @@
           'Test your knowledge<span class="seal-quiz-sub">' + checkCardSub(sec.name) + '</span></button>' : '') +
         (isLast ? '<p class="seal-cue">The end of the storyline \u00b7 <button type="button" data-go="0">Back to the start</button></p>'
                 : '<p class="seal-cue">Keep scrolling \u00b7 <b>' + next.name + '</b>' + SEAL_ARROW + '</p>') +
-      '</div></div>';
+      '</div>' +
+      /* the end of part one: under the two scrolls, the way into part two,
+         in place of the cue to keep scrolling (there is nothing below) */
+      (partOf(k) === 0 && partOf(k + 1) === 1
+        ? '<div class="seal-next-row"><button type="button" class="seal-next" data-go="' + (k + 1) + '">' +
+          '<span class="seal-next-k">Next</span><span class="seal-next-name">Part 2: ' + PART_NAMES[1].replace(/&/g, "&amp;") + '</span>' +
+          '<span class="seal-next-go" aria-hidden="true"><svg viewBox="0 0 16 10" width="18" height="11.25"><path d="M1 5h13M10 1l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span></button></div>'
+        : '') +
+      '</div>';
+    if (partOf(k) === 0 && partOf(k + 1) === 1) seal.classList.add("sec-seal--part-end");
     last.after(seal);
     sec.els.push(seal);   /* it hides and shows with its section */
     seal.addEventListener("click", e => {
@@ -10775,7 +10870,7 @@
     seam.addEventListener("click", e => { const g = e.target.closest("[data-go]"); if (g) showSection(+g.dataset.go); });
   })();
   setSiteNav(new URLSearchParams(location.search).get("nav") || "light", true);
-  setSiteLayout(new URLSearchParams(location.search).get("layout") === "scroll" ? "scroll" : "pages", true);
+  setSiteLayout(new URLSearchParams(location.search).get("layout"), true);
 
   showSection(0, false);
 

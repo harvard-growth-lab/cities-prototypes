@@ -989,10 +989,15 @@ control the reference has: a dark pill fixed at the **bottom left**,
 "Site Layout · Current", that opens its choices upward (`#siteLayoutSwitch`,
 `.sv*`; a menu of `menuitemradio` buttons; Escape, arrows and an outside
 click close/move; it shows only once the tool is open; on a phone it drops
-the small "Site Layout" word). The reference offers four layouts (Current,
-One scroll, Chapters, Two modes); v-5 offers the first two. The choice is
-`html[data-layout]` (`setSiteLayout(v)`) and rides the address as
-`?layout=scroll`.
+the small "Site Layout" word). The reference has offered Current, One
+scroll, Chapters, Two modes and, since, **Two scrolls** (`?site=halves`);
+v-5 offers Current, One scroll and Two scrolls, and **Two scrolls is the
+default** (2026-10-05, Nil: "add a final and default option ... a scroll
+for part 1 and a scroll for part 2"). The choice is `html[data-layout]`
+(`pages`, `scroll`, `halves`; `setSiteLayout(v)`, `LAYOUTS`,
+`LAYOUT_DEFAULT`) and rides the address as `?layout=pages` or
+`?layout=scroll`; the default needs none, so **an address without
+`?layout` now opens Two scrolls, not Current**.
 - **Navigation bar: Light / Tint** — a second group in the same menu
   ("Navigation bar", `html[data-nav]`, `setSiteNav(v)`, `?nav=tint`;
   independent of the layout, and the pill then reads e.g. "One scroll ·
@@ -1057,6 +1062,29 @@ One scroll, Chapters, Two modes); v-5 offers the first two. The choice is
   phone each card is name and "Revisit" on one line with its chart below.
   Worker Flows has no quiz (`sectionChecksData` lacks it), so its close
   has no quiz button.
+- **Two scrolls (the default)** — the reference build's `halves`: each
+  part one scroll. `partOf(k)` gives a section's part (0 for the first
+  three, 1 for Constraints and Levers, -1 for the Extras, which stay on
+  their own), and `showSection` leaves on every section of the part the
+  reader is in. Part one is Who are you?, Metro Industries and Worker
+  Flows with their teal closes, as under One scroll, and no pager: Worker
+  Flows' close (`.sec-seal--part-end`) trades its "Keep scrolling" cue for
+  the reference's way on, a line across and "Next / Part 2: Diagnose &
+  Act" large with a white disc and an arrow (`.seal-next`, `data-go` to
+  Constraints; 4px corner on its hover ground). Part two's scroll opens on
+  the band (`#seam`, which under this layout rides with part two rather
+  than with Worker Flows, a full screen under the bars and no hairline),
+  then Constraints, Levers and their closes, and ends on the pager's two
+  cards, "Previous · City Profile" (to Who are you?, the top of part one)
+  and "Next · Extras", without the line of stops or the quiz card (the
+  closes carry the quizzes). The chips follow the scroll within the part
+  (`trackSection` reads only the part's own sections; on the band the chip
+  is Constraints). A chip in the same part smooth-scrolls there, the chip
+  of the section the reader is in goes back to its top, a chip in the
+  other part switches scrolls (to the top for the part's first section, so
+  part two opens on its band; straight to the section otherwise), and
+  `goTo`, the band's "Revisit" links, the hash and the journey land the
+  same way. `data-part` is the active section's part.
 
 Quiz content and state: `sectionChecksData()` (questions per section),
 `CHECK_STATE`, `CHECK_DONE`, `APPLY_DONE`. For the keyboard (`a297747`): the
@@ -1579,9 +1607,12 @@ reads 2022 (687,736 jobs, 206 per 100), so the two sections now disagree
    Claude from each section's text (`SEAL_POINTS` in index.html), which Nil
    has not edited yet; Worker Flows has no quiz to link; the band's
    Constraints and Levers cards are schematic (a quadrant sketch, three
-   sliders), not live charts; the reference's other two layouts (Chapters,
-   Two modes) are not built; and under One scroll every figure is built at
-   once, fine for a prototype but the cost to watch.
+   sliders), not live charts; the reference's Chapters and Two modes are
+   not built; and under One scroll (and in part one of Two scrolls) every
+   figure is built at once, fine for a prototype but the cost to watch.
+   The harness modules in handoff/ were written when Current was the
+   default; they address sections by id and still run, but a check meant
+   for Current must now add `?layout=pages`.
 9. **Not built from the sector-names sketches**: the chip (a label over
    the cells, no room taken) and the rule (a strip in the block's own
    colour) on `sector-frame-sketches.html`; Nil took the band and the

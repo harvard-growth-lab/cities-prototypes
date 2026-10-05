@@ -104,7 +104,11 @@ null-safe, so the row was simply removed from the panel.
 
 Not in the Metro Industries panel: the floating **Site Layout** pill at the
 bottom left, as on the reference build (`#siteLayoutSwitch`), also
-`?layout=scroll` in the address. **Current** is the page-at-a-time site with
+`?layout=pages` / `?layout=scroll` in the address. **Two scrolls**
+(2026-10-05, the default) is the reference's `halves`: each part one
+scroll, part one ending on a large "Next / Part 2: Diagnose & Act", part
+two opening on the teal band and ending on the pager's cards (City
+Profile, Extras). **Current** is the page-at-a-time site with
 the pager's cards; **One scroll** (2026-09-30) is the reference's scroll
 variant done here: the five storyline sections in one scroll, the bar's
 chips following, a teal close after each section ("What to take with you":
