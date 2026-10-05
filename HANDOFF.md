@@ -570,6 +570,43 @@ at 1200, 638 → 654 at 1024. The **section bar reads the same numbers**
 is the text column's width and the section names run from the frame's left
 edge to its right. Do not put literals back in either place.
 
+*Wide windows* (2026-10-04, Nil: past about 1440 "widen the visualization
+area to some extent", let the margins grow too, stop the figure "after
+some point", and the text area "never gets wider"). `--grid-max` is no
+longer a fixed 1360: it is `clamp(1360px, 1360px + (100vw - 1440px) / 2,
+1720px)`, so past a 1440 window half of each further pixel goes to the
+grid and half to the margins, and it stops at 1720 (a 2160 window). The
+bars, the figure sections, the pager under them and the Who are you?
+column all read it. In the figure sections the text column is fitted
+against `--ct-frame-rail` (the old 1360 measure), so it is the width it
+always was at every window (336 on a tall one, more on a short one, as
+before), and the frame takes the whole of the growth: Metro Industries
+and Worker Flows frames 980 at 1440, 1100 at 1680, 1220 at 1920, 1340
+from 2160 (drawing 1274 wide), with margins 100, 160, 420, 860 a side at
+1680, 1920, 2560, 3440. The chart's type stays 13px (it is sized to the
+screen, not the drawing). The bars stay on the grid at every width.
+Where the window's height holds the frame narrower than the grid, the
+pair is **pinned to the grid's left edge** (it was centred), so the text
+starts under the location chip and the logo and the frame under the
+first tab in every section, and the room it cannot use falls to the
+frame's right (this also applies to very short windows under 1440,
+where the rail reaches its 520). Past 1440 the stage starts up to 30px
+higher (eased in from 1440 to 1560), so a frame as tall as the window
+allows is already stuck to the bar on the first beat instead of running
+past the fold until the reader scrolls on. **Who are you?** follows the
+same rule from 1440 up: the reading keeps 760 from the grid's left
+edge, the map runs from it to the grid's right edge, where the bars
+end, and stops at about 904 (it was pinned to the window's edge, 680 at
+most, a strip far from the text on a wide screen); off the window's
+edge it is framed as the figures are (1px border, 10px corners, the
+stage's air above and below). Its edges are worked out on the wrap's
+padding from the same width the bars use, so a classic scroll bar does
+not put them out of line. Its closing card is on the grid too (it ran
+edge to edge). Below 1440 the figure sections are unchanged except as
+above, and Who are you? is unchanged. The landing (its own 1140 measure) and the
+reading pages (Constraints, Levers, Extras at 880, their charts drawn at
+880) were left as they were.
+
 *The frame fits the window's height.* The figure is drawn on a box of
 fixed proportions, so a wider frame is a taller one; before this change
 the frame already ran under the fold on short windows (76px at 1366×650).
@@ -1142,6 +1179,25 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
    **opt-2 the tab**, the default. Known: at 1366×650 the frame runs past
    the fold by 24px with b1q1 open and 6px with b2q2 (both add a row to
    the head).
+
+0h. **Wide windows: built 2026-10-04** (§4, "Wide windows"). The grid
+   grows past 1440 at half the window's rate to 1720; the figure
+   sections' frames take it (980 → 1340), the text never widens, the
+   pair is pinned left where the height binds, Who are you? is on the
+   grid with its map framed. A two-lens review (CSS maths, the captures)
+   moved the section bar back onto the grid (it had followed the pair,
+   which split it from the masthead on short wide windows and moved it
+   between sections), fixed Who are you?'s edges for classic scroll
+   bars and its 1440 to 1600 overhang, and found the first-beat overrun
+   that the stage's 30px lead now removes. Open, for Nil: the cap (1720, frame 1340)
+   and the rate (half) are the two numbers to tune; the landing's 1140
+   measure and the reading pages' 880 now sit inside a wider bar on a
+   wide screen (the logo moves further between the landing and the tool,
+   and the location chip stands further left of the reading pages'
+   headings); the Site Layout control is pinned to the window's corner;
+   Metro Industries' sector key wraps nine and one around 1680 (one line
+   from about 1900); whether the reading pages' scatter should grow
+   with the brief too.
 
 0g. **The presenter view: built 2026-10-04** (§4, "The presenter view").
    Nil asked to brainstorm where its button goes; three places are built

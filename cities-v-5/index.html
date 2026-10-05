@@ -92,8 +92,13 @@
     --t-h2:    clamp(1.375rem,  1.208rem + 0.741vw, 1.875rem);   /* 22 → 30 */
     --t-q:     clamp(1.375rem,  1.188rem + 0.833vw, 1.9375rem);  /* 22 → 31 */
     --t-hero:  clamp(1.8125rem, 0.958rem + 3.796vw, 4.375rem);   /* 29 → 70 */
-    /* the measure the section bar and the page grid share */
-    --grid-max:1360px;
+    /* the measure the section bar and the page grid share. It is 1360 up
+       to a 1440 window; past that it takes half of each further pixel and
+       leaves the other half to the margins, so the figure grows and the
+       page still sits with air on both sides; it stops at 1720 (a 2160
+       window), where a larger figure would only look blown up. The bars,
+       the figure sections and the pager under them all read it. */
+    --grid-max:clamp(1360px, calc(1360px + (100vw - 1440px) / 2), 1720px);
     --ct-frame:min(var(--grid-max), calc(100vw - 2 * var(--frame-pad)));
     /* ── the two figure sections' grid (Metro Industries, Worker Flows) ──
        A text column beside a framed figure. The column is 336 at a desk
@@ -104,6 +109,11 @@
        bar reads the same two numbers, so its names stand over the figure. */
     --ct-rail:clamp(248px, 24vw, 336px);
     --ct-rail-max:520px;
+    /* the measure the text column is fitted against: the grid as it was
+       before it grew past 1440, so the text is the same width at every
+       window it was, and a wider grid only ever widens the figure (Nil,
+       2026-10-04: the text area never gets wider) */
+    --ct-frame-rail:min(1360px, calc(100vw - 2 * var(--frame-pad)));
     --ct-gap:clamp(24px, 3vw, 44px);
     --panel-px:clamp(16px, 2vw, 32px);
     --panel-pt:clamp(18px, 2vw, 28px);
@@ -899,7 +909,9 @@
     flex-direction:column;align-items:stretch;gap:22px;
   }
   .secpager[data-sec="0"]{
-    max-width:none;width:auto;margin-inline:var(--frame-pad);padding:26px 0 34px;
+    /* on the grid, as the bars are: the frame pad up to 1440, then the
+       grid's margin (it ran edge to edge on any window) */
+    max-width:none;width:auto;margin-inline:max(var(--frame-pad), calc((100% - var(--grid-max)) / 2));padding:26px 0 34px;
   }
   /* Metro Industries in its scrolly layout: the checkpoints span the stage */
   .secpager--wide{max-width:min(var(--grid-max), calc(100vw - 2 * var(--frame-pad)));}
@@ -1233,6 +1245,31 @@
      gap: at 36% the reading capped at its 760 measure and the slack all fell
      between them. Still the smaller half — this section is the reading's. */
   .ov-wrap:not(.ov2) .ov-map{flex:0 0 clamp(420px, 42%, 680px);}
+  /* From 1440 the page sits on the grid like the figure sections: the
+     reading keeps its 760 from the grid's left edge, under the location
+     chip, and the map runs from it to the grid's right edge, where the
+     bars end, and stops growing when the grid does (it was pinned to the
+     window's edge, 680 at most: on a wide screen a strip far from the
+     text). Off the window's edge it is framed as the figures are, with
+     air above and below. The edges are taken from the same width the bars
+     use (the page less its scroll bar), on the wrap's own padding. Held
+     to 1440 and up, since these outrank the narrower windows' own map
+     rules below; below 1440 the map still runs to the window's edge. */
+  @media (min-width:1440px){
+    .tool-body #ovWrap:not(.ov2){
+      padding-left:max(0px, calc((100% - var(--grid-max)) / 2 - var(--frame-pad)));
+      padding-right:max(var(--frame-pad), calc((100% - var(--grid-max)) / 2));
+    }
+    .tool-body #ovWrap:not(.ov2) .ov-left{padding-left:0;}
+    .tool-body #ovWrap:not(.ov2) .ov-map{
+      flex-basis:max(clamp(420px, 42%, 680px), calc(100% - var(--frame-pad) - 760px - clamp(28px, 3vw, 56px)));
+    }
+    .tool-body #ovWrap:not(.ov2) .ov-map-inner{
+      top:calc(var(--chrome-h) + var(--stage-air));
+      height:calc(100vh - var(--chrome-h) - 2 * var(--stage-air));
+      border:1px solid var(--border);border-radius:10px;
+    }
+  }
   /* the tile credit is hidden for the prototype's sake — CARTO and
      OpenStreetMap both require it on anything published, so it has to
      come back (or move into an about/credits page) before this ships */
@@ -2988,6 +3025,14 @@
     min-height:calc(100vh - var(--chrome-h));
   }
   .ct-stage .mi-figure{width:100%;flex:0 0 auto;}
+  /* past 1440 the frame is often as tall as the window allows; on the
+     first beat the stage had not yet reached the bar (14 to 30px short),
+     so the frame's foot ran past the fold until the reader scrolled on.
+     The stage starts that much higher, eased in from 1440 (unchanged
+     there) to 1560. */
+  @media (min-width:1440px){
+    :is(#page-export-basket, #page-admin-mix) .ct-stage:has(.mi-figure){margin-top:calc(-1 * clamp(0px, (100vw - 1440px) / 4, 30px));}
+  }
   /* ── the two figure sections on the redesign's frame ───────────────────
      Metro Industries and Worker Flows are the same composition — a
      reading column beside one figure a scroll drives — so they are dressed
@@ -3027,13 +3072,17 @@
   }
   .pages,#page-export-basket,#page-admin-mix{
     --stage-max:max(420px, calc((100vh - var(--chrome-h) - var(--stage-air) - var(--panel-pt) - var(--panel-pb) - 2px - var(--fig-furn)) * var(--fig-ratio) + 2 * var(--panel-px) + 2px));
-    --ct-rail-now:clamp(var(--ct-rail), calc(var(--ct-frame) - var(--ct-gap) - var(--stage-max)), var(--ct-rail-max));
+    --ct-rail-now:clamp(var(--ct-rail), calc(var(--ct-frame-rail) - var(--ct-gap) - var(--stage-max)), var(--ct-rail-max));
   }
   :is(#page-export-basket, #page-admin-mix) .ct-scrolly{
     --ct-w:min(var(--ct-frame), calc(var(--ct-rail-now) + var(--ct-gap) + var(--stage-max)));
     grid-template-columns:var(--ct-rail-now) minmax(0,1fr);gap:var(--ct-gap);
     width:var(--ct-w);
-    margin-inline:calc((100% - var(--ct-w)) / 2);
+    /* the pair starts at the grid's left edge, under the location chip and
+       the logo; where the window's height holds it narrower than the grid,
+       the room it cannot use falls to the frame's right, and the bars
+       above stay on the grid at every width */
+    margin-left:calc((100% - var(--ct-frame)) / 2);margin-right:0;
   }
   :is(#page-export-basket, #page-admin-mix) .ct-panel{
     background:#fff;border:1px solid var(--border);border-radius:10px;
