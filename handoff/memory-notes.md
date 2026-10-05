@@ -281,8 +281,12 @@ On 2026-10-02 Nil relayed the stakeholders: a narrower text column, more room fo
 **How to apply:** for new or changed text near the figures, keep it ≥12.5px on screen at every width; in Metro Industries size SVG text as calc(Npx / var(--mi-s)); check with handoff/type-audit.mjs (measures through getScreenCTM) at desktop, laptop and phone sizes. Related: [[feedback_narrative_plain]], [[headless-verify-v5]].
 ```
 
-### feedback_no_pills.md
 
+---
+
+## feedback_no_pills.md (added 2026-10-04)
+
+```markdown
 ---
 name: feedback-no-pills
 description: Buttons and tabs use the house 4px rounded rectangle, never pill shapes; nested controls take 2px
@@ -294,3 +298,4 @@ On 2026-10-04 Nil asked that the presenter view's buttons and the "Showing an an
 
 **Why:** a fully rounded control reads as a different design language from the rest of the tool; Nil wants one corner across the controls.
 **How to apply:** for any new button, tab, chip or door in cities-v-5, use 4px corners; a control set inside another (an inner hover ground) uses 2px so the corners nest. Status dots and markers stay round (50%). Related: [[feedback_light_controls]].
+```
