@@ -6359,12 +6359,25 @@
       if (key && (fig.dataset.year || "2024") !== "2024") return;
       const was = asked;
       const row = key ? rowOf(key) : null, st = row && row.closest(".ct-step");
-      if (q) pinStep(st);
+      /* on a stack the figure is held above the text, in the flow: a
+         question that changes its height moves the text under it */
+      const stage = fig.closest(".ct-stage"), pagesEl = document.getElementById("pages");
+      const stacked = !!(stage && pagesEl && window.matchMedia("(max-width:899px)").matches && getComputedStyle(stage).position === "sticky");
+      if (q && !stacked) pinStep(st);
       const y0 = row ? row.getBoundingClientRect().top : 0;
       asked = null;                         /* the paint that follows must not judge the old question */
       setNamed(q ? q.set : {});
       asked = q ? { key: key, sig: askSig() } : null;
       syncAsk();
+      if (stacked && row){
+        /* so the pressed row is held where it was, by the scroll, and kept
+           clear of the band's foot if the band has grown over it */
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          const want = Math.max(y0, stage.getBoundingClientRect().bottom + 8);
+          const dy = row.getBoundingClientRect().top - want;
+          if (Math.abs(dy) > 0.5) pagesEl.scrollTo({ top: pagesEl.scrollTop + dy, behavior: "instant" });
+        }));
+      } else
       /* the other question's answer, closing above this row, would have
          drawn the row up from under the pointer */
       if (row && st && st.dataset.pinned){
