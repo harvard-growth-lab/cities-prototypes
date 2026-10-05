@@ -1053,6 +1053,18 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
    the fold by 24px with b1q1 open and 6px with b2q2 (both add a row to
    the head).
 
+0f. **Beat 3's peer marks: a design pick is pending** (2026-10-04). Nil:
+   "some peers ave line are outside of the chart … We still want to show
+   the industries above 1". The peers' own rate against the nation is
+   under 1× for eight of the twelve, so their marks fall left of where the
+   bars start. `peer-mark-sketches.html` (repo root; tracked copy in
+   `handoff/sketches/`) draws four answers from the real data: 1 bars and
+   axis from 0 with 1× as a dashed line; **2 a log axis from 0.1× to 15×,
+   bars still rising from 1×, the side below 1× shaded** (recommended: the
+   gap from mark to bar end is the lead over the peers, the quantity
+   "Against peers" sorts by); 3 two dots per industry; 4 the peers as a
+   column beside Jobs, the mark dropped.
+
 0e. **The control row's sentence is the default** (2026-10-04, Nil: "For
    Control Row options, make opt 2 the default"). On the stacked layout
    the band's head now follows the sentence's own height on the map beats
@@ -1224,10 +1236,9 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
   `control-row-two-ways.html` (tray and sentence),
   `explore-questions-sketches.html` with `explore-questions-images/`
   (the third's rows with the answer in the text were built, item 0),
-  `ask-chart-return-sketches.html` with `ask-return-images/` (**open**,
-  2026-10-03: four ways for "Ask the chart" to show what changed and the
-  way back; 3, a "Starting view | Answer" switch in the figure's head, is
-  recommended). Open them through the
+  `ask-chart-return-sketches.html` with `ask-return-images/` (option 4,
+  the tab on the frame, was built), `peer-mark-sketches.html` with
+  `peer-mark-images/` (**open**, item 0f). Open them through the
   same server (http://127.0.0.1:8912/handoff/sketches/…); the live ones
   need `cities-v-5/` beside `handoff/`.
 - Sketch pages at the repo root are the originals, untracked by convention

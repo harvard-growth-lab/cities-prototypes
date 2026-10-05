@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Beat 3: keeping the peer mark inside the chart</title>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --teal:#255862;--teal-mid:#a9c1c6;--teal-tint:#eef3f4;--ink:#1a2226;--ink-soft:#526066;
+    --border:#e2e7e8;--border-strong:#c3ccce;--page:#f9fafb;--orange:#e76565;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;padding:40px 44px 96px;font-family:'Source Sans 3',sans-serif;color:var(--ink);background:#fff;}
+  h1{font-size:24px;margin:0 0 6px;font-weight:700;letter-spacing:-.2px;}
+  .sub{margin:0 0 8px;color:var(--ink-soft);font-size:15px;line-height:1.5;max-width:920px;}
+  h2{font-size:19px;font-weight:700;margin:48px 0 4px;letter-spacing:-.1px;display:flex;align-items:center;gap:10px;}
+  h2 .n{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;
+        background:var(--teal);color:#fff;font-size:13px;flex:none;}
+  h2 .n.o{background:none;border:1.5px solid var(--border-strong);color:var(--ink-soft);}
+  h2 .pick{padding:1px 9px;border-radius:10px;background:var(--teal-tint);color:var(--teal);font-size:12.5px;font-weight:600;}
+  .lead{margin:0 0 12px;font-size:14.5px;color:var(--ink-soft);line-height:1.5;max-width:920px;}
+  .frame{background:#fff;border:1px solid var(--border);border-radius:10px;padding:20px 24px 16px;max-width:980px;}
+  .frame img{display:block;width:100%;height:auto;}
+  svg{display:block;width:100%;height:auto;font-family:'Source Sans 3',sans-serif;}
+  .notes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px 22px;max-width:980px;margin:12px 0 0;}
+  .notes div{font-size:13px;line-height:1.5;color:var(--ink-soft);}
+  .notes b{display:block;color:var(--ink);font-weight:600;font-size:12.5px;margin:0 0 2px;}
+  .verdict{max-width:920px;margin:52px 0 0;padding:16px 20px;border:1px solid var(--border);border-radius:8px;}
+  .verdict h3{font-size:16px;margin:0 0 6px;}
+  .verdict p{font-size:14.5px;line-height:1.55;margin:0 0 8px;}
+  .verdict p:last-child{margin:0;}
+  /* the chart's own type, at the sizes the figure uses on screen */
+  .name{font-size:13px;fill:var(--ink);}
+  .name.top{font-weight:700;}
+  .val{font-size:13px;font-weight:600;fill:var(--ink);}
+  .val.top{fill:var(--teal);font-weight:700;}
+  .tick{font-size:12.5px;fill:var(--ink-soft);}
+  .axname{font-size:12.5px;font-weight:600;fill:var(--ink-soft);}
+  .note{font-size:12.5px;fill:var(--ink-soft);}
+  .grid{stroke:#e6eaec;stroke-width:1;}
+  .base{stroke:#8a979b;stroke-width:1;stroke-dasharray:3 3;}
+  .peer{stroke:var(--ink);stroke-width:2;}
+  .key{font-size:12.5px;fill:var(--ink);}
+  @media (max-width:1100px){ .notes{grid-template-columns:repeat(2,minmax(0,1fr));} }
+</style>
+</head>
+<body>
+
+<h1>Beat 3: keeping the peer mark inside the chart</h1>
+<p class="sub">The ranking shows the metro's twelve most specialized tradable industries, every one above 1×, the national rate. Its bars rise from 1×. The black mark is the five peer metros together, and for most of these industries the peers sit below the national rate: 0.17× for missile parts, 0.14× for plumbing fittings. Those marks land left of where the bars start, so they read as outside the chart. Four ways to give them a place, each drawn here from the real 2024 data.</p>
+
+<h2><span class="n o">0</span>Today</h2>
+<p class="lead">The axis is 0 to 11×, the bars start at 1×, and eight of the twelve peer marks fall in the strip between the names and the bars.</p>
+<div class="frame"><img src="peer-mark-images/today.png" alt="Today's ranking, with most peer marks left of the bars"></div>
+
+<h2><span class="n">1</span>Start the bars at 0, mark 1× as a line</h2>
+<p class="lead">The plot and the bars both start at 0. A dashed line at 1× says where the national rate is, so every bar still reads as above it. The peer marks fall inside the plot, between 0 and 1×.</p>
+<div class="frame"><svg id="opt1" viewBox="0 0 880 566"></svg></div>
+<div class="notes">
+  <div><b>Fits the marks</b>Every mark is inside the plot.</div>
+  <div><b>Reads</b>Plain linear bars; the 1× line carries "above the national rate".</div>
+  <div><b>Weak spot</b>All eight low peer marks crowd into the first 40px; 0.14× and 0.57× look much the same.</div>
+  <div><b>Cost</b>Small: the bars' base and one line.</div>
+</div>
+
+<h2><span class="n">2</span>A log axis, with the national rate in the middle <span class="pick">my pick</span></h2>
+<p class="lead">The axis runs from 0.1× to 15× on a log scale, the way the "Against peers" view already does. The bars still rise from 1×, the national rate, which sits about a third of the way in; the shaded side to its left is "below the national rate", where most peers sit. Equal steps on the axis are equal multiples, so the distance from a peer mark to the end of its bar is how far the metro leads its peers.</p>
+<div class="frame"><svg id="opt2" viewBox="0 0 880 566"></svg></div>
+<div class="notes">
+  <div><b>Fits the marks</b>Every mark is inside, with room to tell 0.14× from 0.57×.</div>
+  <div><b>Reads</b>The gap from mark to bar end is the metro's lead over its peers, the same quantity "Against peers" sorts by.</div>
+  <div><b>Weak spot</b>Bar lengths are logs, so 10× is not ten times as long as 1.1×; the axis labels have to carry that.</div>
+  <div><b>Cost</b>Medium: the scale, its ticks, and the shaded half.</div>
+</div>
+
+<h2><span class="n">3</span>Two dots per industry</h2>
+<p class="lead">On the same log axis, each industry is a filled dot for the metro and an open dot for its peers, joined by a line. The line's length is the lead over the peers. No bars at all.</p>
+<div class="frame"><svg id="opt3" viewBox="0 0 880 566"></svg></div>
+<div class="notes">
+  <div><b>Fits the marks</b>Every mark is inside.</div>
+  <div><b>Reads</b>The comparison with the peers becomes the picture itself.</div>
+  <div><b>Weak spot</b>A new mark type: the cells of beat 2 no longer travel into bars, and "most specialized" loses its bars.</div>
+  <div><b>Cost</b>Largest: the ranking's marks and its morph.</div>
+</div>
+
+<h2><span class="n">4</span>The peers in a column of their own</h2>
+<p class="lead">The bars stay exactly as they are and the mark goes. The comparison moves to a column beside Jobs: how many times as concentrated the metro is as its peers, with a small bar, as the Jobs column has.</p>
+<div class="frame"><svg id="opt4" viewBox="0 0 880 566"></svg></div>
+<div class="notes">
+  <div><b>Fits the marks</b>There is no mark to fit.</div>
+  <div><b>Reads</b>The ranking stays one simple bar chart; the peers are a number per row.</div>
+  <div><b>Weak spot</b>The peers' own level is gone; only the ratio is left, which "Against peers" already shows.</div>
+  <div><b>Cost</b>Small to medium: a column where the tick was.</div>
+</div>
+
+<div class="verdict">
+  <h3>Where each stands</h3>
+  <p><b>2</b> keeps the bars, keeps the national rate as the line the bars rise from, and gives the peers a true place, with the gap between the mark and the bar end meaning the same thing as the "Against peers" order.</p>
+  <p><b>1</b> is the smallest change but crowds the low marks together. <b>3</b> is the clearest picture of metro against peers but gives up the bars and the morph into them. <b>4</b> is the simplest chart but drops the peers' own level.</p>
+</div>
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="../../cities-v-5/industries-2024.js"></script>
+<script>
+(function(){
+  const D = window.BOSTON_INDUSTRIES_2024, ix = Object.fromEntries(D.fields.map((f, i) => [f, i]));
+  /* the third beat's list: the two tradable tiers, above 1x, fabric coating left out, the top twelve */
+  const rows = D.rows.map(r => ({ code: r[ix.code], short: r[ix.short], tier: r[ix.tier], rca: r[ix.rca], peer: r[ix.peerRca], jobs: r[ix.employ] }))
+    .filter(r => (r.tier === 0 || r.tier === 1) && r.rca > 1 && r.code !== "313320")
+    .sort((a, b) => b.rca - a.rca).slice(0, 12)
+    .map((r, i) => Object.assign(r, { rank: i, rate: r.peer ? r.rca / r.peer : null }));
+  const W = 880, ML = 210, PL = 222, PR = 700, JOBS_R = 790, TOP = 92, RH = 34, BAR = 17;
+  const rowY = i => TOP + i * RH + RH / 2;
+  const fx = v => v.toFixed(v < 10 ? (v < 1 ? 2 : 1) : 0) + "×";
+  const fjobs = n => n >= 1000 ? Math.round(n / 1000) + "K" : String(n);
+
+  function frame(svg, axisName, x, ticks, opts){
+    const s = d3.select(svg);
+    s.append("text").attr("class", "axname").attr("x", PL).attr("y", 30).text(axisName);
+    s.append("line").attr("x1", PL).attr("x2", PR).attr("y1", 40).attr("y2", 40).attr("stroke", "#b3bcbf");
+    ticks.forEach(t => {
+      s.append("line").attr("class", t === 1 ? "base" : "grid").attr("x1", x(t)).attr("x2", x(t)).attr("y1", TOP - 8).attr("y2", TOP + 12 * RH);
+      s.append("text").attr("class", "tick").attr("x", x(t)).attr("y", 66).attr("text-anchor", "middle").text(t + "×");
+    });
+    if (opts && opts.nationLabel) s.append("text").attr("class", "note").attr("x", x(1) + 4).attr("y", TOP + 12 * RH + 18).text("the national rate");
+    if (!(opts && opts.noJobs)){
+      s.append("text").attr("class", "axname").attr("x", JOBS_R).attr("y", 30).attr("text-anchor", "end").text("Jobs");
+      s.append("line").attr("x1", JOBS_R - 58).attr("x2", JOBS_R).attr("y1", 40).attr("y2", 40).attr("stroke", "#b3bcbf");
+    }
+    rows.forEach(r => {
+      const y = rowY(r.rank);
+      s.append("text").attr("class", "name" + (r.rank < 3 ? " top" : "")).attr("x", ML).attr("y", y + 4).attr("text-anchor", "end").text(r.short);
+      if (!(opts && opts.noJobs)) s.append("text").attr("class", "tick").attr("x", JOBS_R).attr("y", y + 4).attr("text-anchor", "end").text(fjobs(r.jobs));
+    });
+    return s;
+  }
+  function key(s, items){
+    let x = PL; const y = 552;
+    items.forEach(it => {
+      const g = s.append("g").attr("transform", "translate(" + x + "," + y + ")");
+      it.mark(g);
+      const t = g.append("text").attr("class", "key").attr("x", 16).attr("y", 4).text(it.label);
+      x += 16 + t.node().getComputedTextLength() + 26;
+    });
+  }
+  const barFill = r => r.rank < 3 ? "#255862" : "#a9c1c6";
+  const peerKey = g => g.append("line").attr("class", "peer").attr("x1", 5).attr("x2", 5).attr("y1", -7).attr("y2", 7);
+
+  /* 1: linear from 0, bars from 0, 1x dashed */
+  (function(){
+    const x = d3.scaleLinear().domain([0, 11.6]).range([PL, PR]);
+    const s = frame("#opt1", "Times the national rate", x, [0, 1, 2, 4, 6, 8, 10], { nationLabel: true });
+    rows.forEach(r => {
+      const y = rowY(r.rank);
+      s.append("rect").attr("x", x(0)).attr("y", y - BAR / 2).attr("width", x(r.rca) - x(0)).attr("height", BAR).attr("fill", barFill(r));
+      if (r.rate != null) s.append("line").attr("class", "peer").attr("x1", x(r.rate)).attr("x2", x(r.rate)).attr("y1", y - BAR / 2 - 4).attr("y2", y + BAR / 2 + 4);
+      s.append("text").attr("class", "val" + (r.rank < 3 ? " top" : "")).attr("x", x(r.rca) + 8).attr("y", y + 4).text(r.rca.toFixed(1) + "×");
+    });
+    key(s, [{ mark: peerKey, label: "The five peer metros together" }]);
+  })();
+
+  /* 2: log 0.1..15, bars from 1x, the left side shaded */
+  (function(){
+    const x = d3.scaleLog().domain([0.1, 15]).range([PL, PR]);
+    const s = d3.select("#opt2");
+    s.append("rect").attr("x", x(0.1)).attr("y", TOP - 8).attr("width", x(1) - x(0.1)).attr("height", 12 * RH + 8).attr("fill", "#f4f6f6");
+    s.append("text").attr("class", "note").attr("x", (x(0.1) + x(1)) / 2).attr("y", TOP + 12 * RH + 18).attr("text-anchor", "middle").text("below the national rate");
+    frame("#opt2", "Times the national rate", x, [0.1, 0.2, 0.5, 1, 2, 5, 10], { nationLabel: false });
+    s.append("text").attr("class", "note").attr("x", x(1) + 4).attr("y", TOP + 12 * RH + 18).text("above it");
+    rows.forEach(r => {
+      const y = rowY(r.rank);
+      s.append("rect").attr("x", x(1)).attr("y", y - BAR / 2).attr("width", x(r.rca) - x(1)).attr("height", BAR).attr("fill", barFill(r));
+      if (r.rate != null) s.append("line").attr("class", "peer").attr("x1", x(r.rate)).attr("x2", x(r.rate)).attr("y1", y - BAR / 2 - 4).attr("y2", y + BAR / 2 + 4);
+      s.append("text").attr("class", "val" + (r.rank < 3 ? " top" : "")).attr("x", x(r.rca) + 8).attr("y", y + 4).text(r.rca.toFixed(1) + "×");
+    });
+    key(s, [{ mark: peerKey, label: "The five peer metros together" }]);
+  })();
+
+  /* 3: dumbbells on the log axis */
+  (function(){
+    const x = d3.scaleLog().domain([0.1, 15]).range([PL, PR]);
+    const s = frame("#opt3", "Times the national rate", x, [0.1, 0.2, 0.5, 1, 2, 5, 10], { nationLabel: true });
+    rows.forEach(r => {
+      const y = rowY(r.rank);
+      if (r.rate != null){
+        s.append("line").attr("x1", x(r.rate)).attr("x2", x(r.rca)).attr("y1", y).attr("y2", y).attr("stroke", "#a9c1c6").attr("stroke-width", 3);
+        s.append("circle").attr("cx", x(r.rate)).attr("cy", y).attr("r", 5.5).attr("fill", "#fff").attr("stroke", "#1a2226").attr("stroke-width", 1.5);
+      }
+      s.append("circle").attr("cx", x(r.rca)).attr("cy", y).attr("r", 6).attr("fill", "#255862");
+      s.append("text").attr("class", "val" + (r.rank < 3 ? " top" : "")).attr("x", x(r.rca) + 12).attr("y", y + 4).text(r.rca.toFixed(1) + "×");
+    });
+    key(s, [
+      { mark: g => g.append("circle").attr("cx", 5).attr("r", 6).attr("fill", "#255862"), label: "The metro" },
+      { mark: g => g.append("circle").attr("cx", 5).attr("r", 5.5).attr("fill", "#fff").attr("stroke", "#1a2226").attr("stroke-width", 1.5), label: "The five peer metros together" }
+    ]);
+  })();
+
+  /* 4: the bars as today, the peers as a column */
+  (function(){
+    const x = d3.scaleLinear().domain([0, 11.6]).range([PL, 620]);
+    const s = d3.select("#opt4");
+    const PEER_R = 860, PEER_W = 54;
+    const ticks = [1, 2, 4, 6, 8, 10];
+    s.append("text").attr("class", "axname").attr("x", PL).attr("y", 30).text("Times the national rate");
+    s.append("line").attr("x1", PL).attr("x2", 620).attr("y1", 40).attr("y2", 40).attr("stroke", "#b3bcbf");
+    ticks.forEach(t => {
+      s.append("line").attr("class", t === 1 ? "base" : "grid").attr("x1", x(t)).attr("x2", x(t)).attr("y1", TOP - 8).attr("y2", TOP + 12 * RH);
+      s.append("text").attr("class", "tick").attr("x", x(t)).attr("y", 66).attr("text-anchor", "middle").text(t + "×");
+    });
+    s.append("text").attr("class", "axname").attr("x", 720).attr("y", 30).attr("text-anchor", "end").text("Jobs");
+    s.append("line").attr("x1", 662).attr("x2", 720).attr("y1", 40).attr("y2", 40).attr("stroke", "#b3bcbf");
+    s.append("text").attr("class", "axname").attr("x", PEER_R).attr("y", 30).attr("text-anchor", "end").text("Against peers");
+    s.append("line").attr("x1", 752).attr("x2", PEER_R).attr("y1", 40).attr("y2", 40).attr("stroke", "#b3bcbf");
+    const pw = d3.scaleLog().domain([1, 80]).range([2, PEER_W]);
+    rows.forEach(r => {
+      const y = rowY(r.rank);
+      s.append("text").attr("class", "name" + (r.rank < 3 ? " top" : "")).attr("x", ML).attr("y", y + 4).attr("text-anchor", "end").text(r.short);
+      s.append("rect").attr("x", x(1)).attr("y", y - BAR / 2).attr("width", x(r.rca) - x(1)).attr("height", BAR).attr("fill", barFill(r));
+      s.append("text").attr("class", "val" + (r.rank < 3 ? " top" : "")).attr("x", x(r.rca) + 8).attr("y", y + 4).text(r.rca.toFixed(1) + "×");
+      s.append("text").attr("class", "tick").attr("x", 720).attr("y", y + 4).attr("text-anchor", "end").text(fjobs(r.jobs));
+      if (r.peer != null){
+        s.append("text").attr("class", "val").attr("x", PEER_R).attr("y", y + 1).attr("text-anchor", "end").text(fx(r.peer));
+        s.append("rect").attr("x", PEER_R - pw(r.peer)).attr("y", y + 5).attr("width", pw(r.peer)).attr("height", 3).attr("fill", r.peer >= 1 ? "#255862" : "#e76565");
+      }
+    });
+    s.append("text").attr("class", "note").attr("x", PL).attr("y", 552).text("Against peers: how many times as concentrated the metro is as its five peer metros together");
+  })();
+})();
+</script>
+</body>
+</html>
