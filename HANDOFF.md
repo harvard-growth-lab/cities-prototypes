@@ -846,6 +846,73 @@ whether the figure fits between the bar and the footer and the smallest
 text on screen. Clean at 1920×1080, 1440×900, 1366×650, 1024×768 and
 390×844 (on a phone the ranking pans, as on the page).
 
+**Who are you?, rebuilt (2026-10-05).** Nil: "for now, we will get the
+first 4 sections of this website (cities.taimur.sh/usa/place/boston-ma)
+and make it the who are you section (it will have 4 beats)", keeping the
+map's share of the width and v-5's design. The section (`#ovWrap`, the
+reading on the left, the Leaflet map `#ovMap` on the right) now has the
+reference's first four screens as its beats:
+1. `#page-overview` "Where does Boston stand?": the four measures
+   (population, average salary, home value, unemployment; 2024) in a
+   table, each with its source, its level over its rank ("25th of 9,593"),
+   and a strip against every US place: whiskers the 5th to 95th
+   percentiles, the box the middle half, the median as a labelled line,
+   Boston's dot (the strip runs from the 2nd to the 98th percentile,
+   widened to take Boston; log scale for the counts and dollars, as the
+   reference draws it); then the closest peer places as chips. Map: the
+   city.
+2. `#page-overview-msa` "Your city is not an island": the same for the
+   Boston MSA among US metros, its peer metros, and the term "metro area"
+   (`data-term="msa"`, glossary `#gl-msa`). Map: the metro's outline
+   (the scroll-linked pull-back from the city, as before).
+3. `#page-overview-out` "Not everyone who lives in Boston works there":
+   where residents work (LODES 2023), a table of the four destinations the
+   reference names. Map: each of 100 places shaded by the share of its jobs
+   held by Boston residents, arrows to the four, their names.
+4. `#page-overview-in` "More people commute into Boston than out of it":
+   where Boston's workers live, the five origins, 207 jobs here per 100
+   its residents hold. Map: 259 places shaded by the share of their
+   employed residents who work in Boston, arrows in.
+The design is v-5's, not the reference's: the counters ("Who are you?
+1/4", built from the blocks), the beats' title scale and 16px prose, plain
+narrative (no bold, no dashes), the figure sections' tinted ground, the
+map a framed card from 900px up (it was framed only from 1440; its share
+of the width is unchanged: 42%, 32% from 900 to 1199), light chips and
+4px corners, nothing under 12.5px (the map's callout chips went from 10
+to 12.5px, light white tiles named "Boston" and "Boston MSA" as the prose
+names them), and colours: Boston keeps its teal on all four maps (named
+on the commuting maps, where the chips stand aside), orange
+(`--orange`, heads `--orange-text`) for residents working out, as in
+Worker Flows, and **blue (#3a76b0) for commuters coming in**, as the
+reference draws them, so the teal stays Boston's (Worker Flows uses teal
+for the same inflow; a reviewer found teal on both Boston and its
+neighbours read as Boston being one of the empty places). The commuting
+maps follow the reference's construction (opacity 0.12 + 0.7·√(share /
+largest), named partners outlined darker, arrows 2 + 9·√(workers /
+largest) wide with SVG marker heads, ending short of Boston's middle so
+the heads fan out, a key in the frame with a Boston swatch, a place's
+figures on hover with the state where it is not Massachusetts) and put
+the numbers on the map: each named partner carries its workers under
+its name; names that would overlap give way to the larger flow's. The camera flies to each commuting beat's
+frame (Boston and the named places, clear of the key) and back to the
+metro; beats 1 and 2 keep the scroll-linked camera (`whoBeat`, `whoFit`,
+`whoShow` beside `ovBeat` and `ovZoom`; `ovCamTarget` is the scroll
+camera's target, which the flight back from a commuting beat also flies
+to, so it lands without a jump; a jump from another section lands without
+a flight). The metro now fits with room round it, and on a stack the
+camera reaches the metro once beat 2 is the reader's. The map now draws the real
+outlines (`data/geo/who_commute_geo.js`) instead of the hand-drawn city
+and metro shapes, which remain only as a stand-in. Removed: "Your
+Admin"/"Your Metro" with their Levels/Comparison tiles (`wyBuild` is no
+longer called), the MSA explainer panel, and "Admins in your metro" with
+its places table and picker (its places' figures were generated; its
+script now finds no table and stops). The section's checkpoint questions
+were rewritten for the new beats, and the text elsewhere that described
+the old section with it: the One-scroll seal's three points, the metro
+dialog's place count (130, as the term and glossary say; it said 197),
+and the checkpoint's writing prompt. A two-lens review (code; captures
+against the reference and v-5's rules) found 18 problems, all fixed.
+
 ## 5. The end of a section, the quiz, the navigation
 
 Every section ends in `secPager` (built in `showSection(i)` in index.html):
@@ -1058,6 +1125,25 @@ its active and faded ink. Type is Source Sans 3; the key is 13 px (its verbs
 and "Show all" too); small buttons 12 px/600. Every word on the page read 4.5 to 1 or better at
 hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
 
+**Who are you?'s data** (`cities-v-5/who-2024.js`, `window.WHO_2024`;
+`cities-v-5/data/geo/who_commute_geo.js`, `window.WHO_COMMUTE_GEO`). Worked
+from the reference's parquet (`cities.taimur.sh/data/usa/place_panel`,
+`city_panel`, `place_commute`, `place_flows`, `place_directory`) by the
+live bundle's own rules and checked against its rendered page: every
+level, median, quartile, percentile, rank and peer, every commuting count
+and share, and the 100 and 259 map places match. Notes: salary is the
+site's "nowcast" (labelled IRS SOI, carried, 2023–25); the box plots
+compare against every place (or metro) with a value that year, so the
+count differs by measure; the peers are matched on 2014 values, and
+Boston has no 2014 pay, so pay is not in its place match whatever the
+reference's own note says (v-5's note leaves it out). The outlines are
+the reference's (`/data/geo/usa/...`) for Boston, the MSA and the 260
+places either map needs, 117 of which were not in `xch_geo.js`; three
+place ids changed since that file was made (Watertown, Amesbury,
+Methuen). The commuting beats read **LODES 2023**; Worker Flows still
+reads 2022 (687,736 jobs, 206 per 100), so the two sections now disagree
+(§8 0j).
+
 ## 7. How Nil likes to work — read this twice
 
 - **Sketch first, then ship both picks as a study.** For any control or
@@ -1250,6 +1336,15 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
    **opt-2 the tab**, the default. Known: at 1366×650 the frame runs past
    the fold by 24px with b1q1 open and 6px with b2q2 (both add a row to
    the head).
+
+0j. **Who are you?, rebuilt 2026-10-05** (§4, "Who are you?, rebuilt"; §6).
+   Open, for Nil: Worker Flows reads LODES 2022 and these beats 2023, so
+   Boston's jobs read 687,736 there and 718,571 here (206 and 207 per
+   100); its beats 2 to 4 and 8 also tell the commuting story these new
+   beats now open with. The section has no "Ask the chart" questions yet
+   and no presenter view (the view opens only the sections with a framed
+   scrolly panel). The reference's peers note says pay was matched; for
+   Boston it was not (§6).
 
 0i. **The phone: the figure on top, built 2026-10-05** (§4, "Stacked:
    the figure on top"). From the reference page's phone view. Two
@@ -1485,6 +1580,8 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
 - `handoff/type-audit.mjs`, `handoff/type-audit-city.mjs` — the type-floor
   and frame-fit audit for the two figure sections (§4, "The grid, the
   frame and the type floor").
+- `cities-v-5/who-2024.js`, `cities-v-5/data/geo/who_commute_geo.js` — Who
+  are you?'s numbers and outlines (§4, §6).
 - `handoff/presenter-check.mjs`, `handoff/presenter-edges.mjs` — the
   presenter view end to end and its edge cases (§4, "The presenter view").
 - `handoff/review-layout-type.workflow.js` — the four-lens review of that

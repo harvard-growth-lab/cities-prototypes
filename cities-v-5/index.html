@@ -1071,9 +1071,7 @@
   /* Every scrolly paragraph reads the same, whichever section it belongs to:
      Economic Fundamentals in either layout, and Metro Industries with it. */
   .ct-step .lede,
-  #page-overview .lede,
-  #page-overview-msa .lede,
-  #page-overview-places .lede{
+  #ovWrap .ov-block .lede{
     font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
     font-size:var(--t-base);line-height:1.5;font-weight:400;letter-spacing:normal;
     color:#2c2823;
@@ -1269,6 +1267,88 @@
       height:calc(100vh - var(--chrome-h) - 2 * var(--stage-air));
       border:1px solid var(--border);border-radius:10px;
     }
+  }
+  /* ---- Who are you? in the figure sections' dress (2026-10-05) ----
+     The section's ground is theirs, and from 900 up its map is a framed
+     card at every width (it ran to the window's edge under 1440), on the
+     same air above and below; its share of the width is as before. The
+     titles and the prose take the beats' scale. */
+  .pages:has(#ovWrap:not(.sec-off)){background:#f9fafb;}
+  html[data-layout="scroll"] #ovWrap{background:#f9fafb;box-shadow:0 0 0 100vmax #f9fafb;clip-path:inset(0 -100vmax);}
+  @media (min-width:900px){
+    .tool-body #ovWrap:not(.ov2){
+      padding-left:max(0px, calc((100% - var(--grid-max)) / 2 - var(--frame-pad)));
+      padding-right:max(var(--frame-pad), calc((100% - var(--grid-max)) / 2));
+    }
+    .tool-body #ovWrap:not(.ov2) .ov-left{padding-left:0;}
+    .tool-body #ovWrap:not(.ov2) .ov-map-inner{
+      top:calc(var(--chrome-h) + var(--stage-air));
+      height:calc(100vh - var(--chrome-h) - 2 * var(--stage-air));
+      border:1px solid var(--border);border-radius:10px;
+    }
+    #ovWrap .ov-block .page-head h2{
+      font-size:clamp(1.375rem, .9rem + .9vw, 1.625rem);font-weight:700;line-height:1.2;letter-spacing:-.3px;
+    }
+    #ovWrap .ov-block .lede{font-size:1rem;line-height:1.6;}
+  }
+  /* the tables: a measure's name over its source, its level over its rank,
+     and the strip; the flows' place, workers (with a bar) and share */
+  .who-tbl{width:100%;border-collapse:collapse;table-layout:fixed;font-variant-numeric:tabular-nums;color:var(--ink);}
+  .who-tbl th,.who-tbl td{padding:10px 0;border-bottom:1px solid var(--border);vertical-align:middle;text-align:left;font-weight:400;}
+  .who-tbl thead th{padding:0 0 8px;font-size:12.5px;line-height:1.3;color:var(--ink-soft);border-bottom:1px solid var(--border-strong);vertical-align:bottom;}
+  .who-tbl .num{text-align:right;}
+  .who-tbl--ind th:first-child{width:36%;}
+  .who-tbl--ind .num{width:24%;padding-right:22px;}
+  .who-tbl--ind .ws-head{padding-left:4px;}
+  .who-m{display:block;font-size:15px;line-height:1.3;}
+  .who-src{display:block;margin-top:2px;font-size:12.5px;line-height:1.3;color:var(--ink-soft);}
+  .who-lvl{display:block;font-size:17px;font-weight:600;line-height:1.25;}
+  .who-rk{display:block;margin-top:2px;font-size:12.5px;line-height:1.3;color:var(--ink-soft);white-space:nowrap;}
+  .who-strip{position:relative;display:block;height:36px;margin:0 6px;}
+  .ws-wh{position:absolute;top:24px;height:1.5px;background:#9fb0b4;}
+  .ws-box{position:absolute;top:18px;height:13px;box-sizing:border-box;background:#e2e7e8;border:1px solid #9fb0b4;border-radius:2px;}
+  .ws-med{position:absolute;top:15px;width:2px;height:19px;margin-left:-1px;background:var(--ink-soft);}
+  .ws-medlab{position:absolute;top:0;transform:translateX(-50%);font-size:12.5px;line-height:13px;color:var(--ink-soft);white-space:nowrap;}
+  .ws-dot{position:absolute;top:24.75px;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:var(--geo-city);box-shadow:0 0 0 2px #fff;}
+  .who-cap,.who-note{margin:10px 0 0;font-size:13px;line-height:1.5;color:var(--ink-soft);}
+  .who-peers{margin:16px 0 0;font-size:15px;line-height:1.5;color:var(--ink);}
+  .who-peers + .who-note{margin-top:2px;}
+  .who-tbl--flow th:first-child{width:44%;font-size:15px;}
+  .who-tbl--flow thead th:first-child{font-size:12.5px;}
+  .who-tbl--flow td{font-size:15px;}
+  .who-tbl--flow th:first-child{width:52%;}
+  /* on the commuting maps: the key in the frame's corner, the partners
+     named on the map, a place's figures on hover */
+  .who-legend{
+    position:absolute;left:10px;bottom:10px;z-index:500;display:flex;flex-direction:column;gap:4px;
+    max-width:min(280px, calc(100% - 20px));padding:8px 10px;box-sizing:border-box;
+    background:rgba(255,255,255,.95);border:1px solid var(--border);border-radius:4px;
+    font-size:12.5px;line-height:1.35;color:var(--ink);pointer-events:none;
+  }
+  .who-legend[hidden]{display:none;}
+  .who-legend .wl-ramp i{display:block;height:9px;border-radius:2px;}
+  .who-legend .wl-ends{display:flex;justify-content:space-between;color:var(--ink-soft);}
+  .who-legend .wl-sub{color:var(--ink-soft);}
+  .who-legend .wl-city{display:flex;align-items:center;gap:6px;color:var(--ink);}
+  .who-legend .wl-city i{width:12px;height:9px;border-radius:2px;background:rgba(37,88,98,.55);box-shadow:0 0 0 1.5px var(--geo-city);}
+  .who-lbl.leaflet-tooltip{opacity:1 !important;font-size:13px;line-height:1.2;text-align:center;text-shadow:0 0 2px #fff,0 0 3px #fff,0 0 5px #fff,0 0 7px #fff;}
+  .who-lbl.leaflet-tooltip b{display:block;font-weight:600;}
+  .who-lbl.leaflet-tooltip span{display:block;font-weight:500;font-size:12.5px;color:var(--ink-soft);}
+  .who-lbl--city.leaflet-tooltip{font-size:15px;font-weight:700;color:var(--geo-city);}
+  .who-tip.leaflet-tooltip{
+    padding:7px 9px;font-family:inherit;font-size:13px;line-height:1.4;color:var(--ink);white-space:normal;max-width:240px;
+    background:#fff;border:1px solid var(--border-strong);border-radius:4px;box-shadow:0 4px 12px rgba(26,34,38,.12);
+  }
+  .who-tip.leaflet-tooltip b{display:block;font-weight:600;}
+  .who-tip.leaflet-tooltip span{display:block;color:var(--ink-soft);}
+  @media (max-width:599px){
+    .who-tbl--ind th:first-child{width:36%;}
+    .who-tbl--ind .num{width:28%;padding-right:12px;}
+    .who-m,.who-tbl--flow th:first-child,.who-tbl--flow td{font-size:14px;}
+    .who-lvl{font-size:16px;}
+    .who-rk{white-space:normal;}
+    .who-legend{left:6px;bottom:6px;padding:6px 8px;max-width:calc(100% - 12px);}
+    .who-legend .wl-sub{display:none;}
   }
   /* the tile credit is hidden for the prototype's sake — CARTO and
      OpenStreetMap both require it on anything published, so it has to
@@ -2305,11 +2385,13 @@
   .mc-dot--metro{fill:var(--geo-metro);}
   .mc-chip{
     position:absolute;pointer-events:auto;cursor:pointer;border:none;
-    font:inherit;font-size:10px;font-weight:700;color:#fff;
-    padding:3px 8px;border-radius:3px;box-shadow:0 1px 4px rgba(15,35,40,.25);
+    font:inherit;font-size:12.5px;font-weight:600;color:#fff;
+    padding:3px 8px;border-radius:4px;box-shadow:0 1px 4px rgba(15,35,40,.25);
   }
-  .mc-chip--city{background:var(--geo-city);}
-  .mc-chip--metro{background:var(--geo-metro);}
+  /* light, as the tool's controls are: a white tile in the geography's colour */
+  .mc-chip--city{background:#fff;color:var(--geo-city);box-shadow:0 0 0 1px var(--geo-city),0 1px 4px rgba(15,35,40,.18);}
+  .mc-chip--metro{background:#fff;color:var(--geo-metro);box-shadow:0 0 0 1px var(--geo-metro),0 1px 4px rgba(15,35,40,.18);}
+  #ovMap.who-commute .map-callouts{display:none;}
   #ovMap.pl-on .map-callouts{opacity:0;pointer-events:none;}
   .geo-mark{display:inline-flex;}
   .geo-mark[data-geo="city"]{color:var(--geo-city);}
@@ -3189,24 +3271,24 @@
      has its centre .32em above the baseline, between the middle of the
      lowercase and of the capitals. The beats' explainer panels made way
      for these. */
-  #page-export-basket .term{
+  :is(#page-export-basket, #ovWrap) .term{
     appearance:none;background:none;border:0;padding:0;margin:0;font:inherit;color:inherit;cursor:help;
     border-radius:0;text-align:inherit;
     --term-ico:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23000' stroke-linecap='round'%3E%3Ccircle cx='8' cy='8' r='6.6' stroke-width='1.3'/%3E%3Cpath d='M8 7.5v3.7' stroke-width='1.5'/%3E%3Ccircle cx='8' cy='4.95' r='.95' fill='%23000' stroke='none'/%3E%3C/svg%3E");
   }
-  #page-export-basket .term::after{
+  :is(#page-export-basket, #ovWrap) .term::after{
     --s:max(.875em, 13px);
     content:"";display:inline-block;width:var(--s);height:var(--s);margin:0 1px 0 .22em;
     vertical-align:calc(.32em - var(--s) / 2);background-color:var(--ink-soft);
     -webkit-mask:var(--term-ico) center / 100% 100% no-repeat;mask:var(--term-ico) center / 100% 100% no-repeat;
   }
-  #page-export-basket .term:hover,#page-export-basket .term[aria-expanded="true"]{color:var(--teal-dark);}
-  #page-export-basket .term:hover::after,#page-export-basket .term[aria-expanded="true"]::after{background-color:var(--teal);}
-  #page-export-basket .term:focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:2px;}
+  :is(#page-export-basket, #ovWrap) .term:hover,:is(#page-export-basket, #ovWrap) .term[aria-expanded="true"]{color:var(--teal-dark);}
+  :is(#page-export-basket, #ovWrap) .term:hover::after,:is(#page-export-basket, #ovWrap) .term[aria-expanded="true"]::after{background-color:var(--teal);}
+  :is(#page-export-basket, #ovWrap) .term:focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:2px;}
   @media (forced-colors:active){
-    #page-export-basket .term::after{background-color:ButtonText;forced-color-adjust:none;}
+    :is(#page-export-basket, #ovWrap) .term::after{background-color:ButtonText;forced-color-adjust:none;}
   }
-  #page-export-basket .has-term-card{position:relative;}
+  :is(#page-export-basket, #ovWrap) .has-term-card{position:relative;}
   /* the rank card clips its own growing; a term's card hanging from it is let out */
   #page-export-basket #miRankCard.has-term-card{overflow:visible;}
   .term-card{
@@ -6206,12 +6288,13 @@
       <div class="sec" data-sec="page-intro-q1 page-intro-q2 page-intro-q3 page-intro-q4 page-intro-q5 page-intro-q6 page-intro-q7">
         <button class="sec-head" onclick="goTo('page-intro-q1')"><span class="num"><svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13" aria-hidden="true"><path d="M12 2l2.9 6.2 6.6.8-4.9 4.6 1.3 6.5L12 16.9 6.1 20l1.3-6.5L2.5 9l6.6-.8L12 2z"/></svg></span>Explore Your Assumption</button>
       </div>
-      <div class="sec" data-sec="page-overview page-overview-msa page-overview-places page-overview-practice">
+      <div class="sec" data-sec="page-overview page-overview-msa page-overview-out page-overview-in page-overview-practice">
         <button class="sec-head" onclick="goTo('page-overview')"><span class="num">1</span>Who are you?</button>
         <ul class="steps">
-          <li data-step="page-overview"><span class="dot"></span><button onclick="goTo('page-overview')">Your Admin</button></li>
-          <li data-step="page-overview-msa"><span class="dot"></span><button onclick="goTo('page-overview-msa')">Your Metro</button></li>
-          <li data-step="page-overview-places"><span class="dot"></span><button onclick="goTo('page-overview-places')">Admins in your metro</button></li>
+          <li data-step="page-overview"><span class="dot"></span><button onclick="goTo('page-overview')">Where Boston stands</button></li>
+          <li data-step="page-overview-msa"><span class="dot"></span><button onclick="goTo('page-overview-msa')">Not an island</button></li>
+          <li data-step="page-overview-out"><span class="dot"></span><button onclick="goTo('page-overview-out')">Where residents work</button></li>
+          <li data-step="page-overview-in"><span class="dot"></span><button onclick="goTo('page-overview-in')">Where workers live</button></li>
           <li data-step="check-overview"><span class="dot"></span><button onclick="goTo('check-overview')">Test your knowledge</button></li>
           <li data-step="apply-overview"><span class="dot"></span><button onclick="goTo('apply-overview')">Put your insights</button></li>
           <li data-step="page-overview-practice"><span class="dot"></span><button onclick="goTo('page-overview-practice')">Put in Practice</button></li>
@@ -6473,112 +6556,55 @@
 
       <!-- 1 City Overview -->
       <div class="ov-wrap" id="ovWrap">
+        <!-- Who are you? (2026-10-05): the first four screens of the reference
+             place page, as four beats. The reading on the left, the map on the
+             right (its share of the width as before), each beat setting the map:
+             the city, the metro, where residents work, where workers live.
+             Numbers from who-2024.js; outlines from data/geo/who_commute_geo.js. -->
         <div class="ov-left">
 
           <section class="ov-block" id="page-overview">
             <div class="page-head">
-              <h2>Your Admin</h2>
+              <h2>Where does <span class="city-short">Boston</span> stand?</h2>
             </div>
-            <p class="lede">This is <span class="city-short">Boston</span> &mdash; a city in Massachusetts. Here is
-              where it stands today: each measure&rsquo;s level, its rank among US places, and the places most
-              like it.</p>
-            <p class="lede"><span class="city-short">Boston</span> is home to <strong>673,458</strong> people, the
-              25th largest of 9,593 US places, and its residents earn an average salary of
-              <strong>$106,267</strong>. The typical home is worth <strong>$972,529</strong>, and
-              <strong>3.8%</strong> of its labor force is out of work. The places most like it &mdash; the closest
-              on population, density, wage, home value and share of metro &mdash; are Washington DC, Oakland,
-              Long Beach and Cambridge. <strong>Switch the view to comparison</strong> to set each figure beside
-              the metro&rsquo;s, the peers&rsquo; and the national average.</p>
-            <!-- nothing on this side but the four measures, a tile each: the
-                 level and the rank among US places, and on request the same
-                 measure for the metro, the peer average and the national
-                 average as bars. Built by wyBuild from the WY data below. -->
-            <div class="wy-block" data-wy="admin"></div>
-
+            <p class="lede"><span class="city-short">Boston</span> is a city in Massachusetts. Each of its
+              measures is set here against every other US place, and beside the places most like it.</p>
+            <div class="who-ind" data-who="place"></div>
           </section>
 
           <section class="ov-block" id="page-overview-msa">
             <div class="page-head">
-              <h2>Your Metro</h2>
+              <h2>Your city is not an island</h2>
             </div>
-            <p class="lede">The administrative city is one piece of a larger machine. People commute, firms hire,
-              and housing supply responds across a region far wider than the city line &mdash; the labor market.
-              We approximate it with the Metropolitan Statistical Area. <span class="city-short">Boston</span> sits
-              inside the <span class="city-short">Boston</span> MSA, and most of what follows is read at that
-              scale.</p>
-            <p class="lede">The <span class="city-short">Boston</span> MSA holds <strong>5,025,517</strong> people,
-              the 11th largest of 387 US metros, and pays an average salary of <strong>$114,779</strong>, the 5th
-              highest. The typical home is worth <strong>$717,120</strong>, and <strong>3.7%</strong> of its labor
-              force is out of work. Its closest peer metros, by population, density, wage and home value, are
-              Washington, Seattle, San Diego and Denver; the comparison view sets each figure beside theirs and
-              beside the national average.</p>
-            <!-- the same four measures for the metro: ranked among US metros,
-                 and on request set against the peer metros and the national
-                 average -->
-            <div class="wy-block" data-wy="metro"></div>
-            <div class="collapsible-info">
-              <button class="collapsible-header">
-                <span class="ci-mark" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 2.75a6.25 6.25 0 0 0-3.75 11.25c.53.4.87 1 .96 1.66l.09.59h5.4l.09-.59c.09-.66.43-1.26.96-1.66A6.25 6.25 0 0 0 12 2.75Z"/>
-                    <path d="M9.6 18.6h4.8"/>
-                    <path d="M10.5 21h3"/>
-                  </svg>
-                </span>
-                <span class="ci-title">What is a metro area (MSA)?</span>
-                <svg class="collapsible-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M6 9l6 6 6-6"/>
-                </svg>
-              </button>
-              <div class="collapsible-content">
-                <p>A <strong>metropolitan statistical area</strong> is how the US Census draws the functional city: a dense core plus every surrounding county tied to it by commuting. It is the closest official shape to the real labor market — the area within which people can change jobs or homes without changing lives.</p>
-                <p><span class="city-short">Boston</span>’s metro spans 197 cities and towns and about 4.9M people; the administrative city is one of them, home to roughly 13% of the metro’s residents. That is why most of what follows is read at the metro scale.</p>
-              </div>
-            </div>
+            <p class="lede">People live in one town and work in another, and firms hire from all over the
+              region. The economy that matters is that wider labor market, read here at the scale of the
+              <button type="button" class="term" data-term="msa" aria-expanded="false">metro area</button>: for
+              <span class="city-short">Boston</span>, the <span class="city-short">Boston</span> MSA. Much of what
+              follows is read at that scale.</p>
+            <div class="who-ind" data-who="metro"></div>
           </section>
 
-          <!-- 1d Places in your metro — experimental. The map on the right is
-               the picker: while this block is on screen it grows a cell for
-               every place in the MSA; clicking one adds it to the table here.
-               The table carries the numbers, each with its rank in the MSA. -->
-          <section class="ov-block" id="page-overview-places">
-            <div class="page-head page-head--geo">
-              <!-- no geography badge here: the beat is about every place in
-                   the metro rather than about one of them -->
-              <h2>Admins in your metro</h2>
+          <section class="ov-block" id="page-overview-out">
+            <div class="page-head">
+              <h2>Not everyone who lives in <span class="city-short">Boston</span> works there</h2>
             </div>
-            <p class="lede"><span class="city-short">Boston</span> is one of many places inside the
-              <span class="city-short">Boston</span> MSA. How much of the metro is it &mdash; its share of the
-              region&rsquo;s people and its wage bill &mdash; and how does it rank against the metro&rsquo;s other
-              places? It holds <strong>24.8%</strong> of the metro&rsquo;s people and <strong>19.9%</strong> of its
-              wage bill, the largest shares of any place in the region, on an average salary a little under the
-              metro&rsquo;s own.</p>
-            <p class="lede">The table sets the admin beside the metro as a whole and beside its peers, each figure
-              with its rank among the metro&rsquo;s places. <strong>Add any place from the menu, or click it on the
-              map</strong>, and it joins them.</p>
+            <p class="lede">55% of the jobs held by <span class="city-short">Boston</span>&rsquo;s residents are in
+              <span class="city-short">Boston</span> itself (54% in 2014). The other 157,434 are elsewhere, mostly
+              in Cambridge, Newton, Waltham and Quincy. The map shades each place by how much of its workforce
+              lives in <span class="city-short">Boston</span>, up to 26% in Brookline.</p>
+            <div class="who-flow" data-who-flow="out"></div>
+          </section>
 
-            <div class="ctl plc-ctl">
-              <span class="ctl-label">Add a place</span>
-              <select id="placesPickSel" aria-label="Add a place to the table">
-                <option value="" selected>Choose a place&hellip;</option>
-              </select>
-              <!-- the colour-by control is set aside for now; the wrapper
-                   keeps it and its script intact for when it returns -->
-              <span class="plc-fill" hidden>
-                <span class="ctl-label">Color map by</span>
-                <select id="placesFillSel" aria-label="Color the map by a measure">
-                  <option value="none" selected>None</option>
-                </select>
-                <span class="plc-legend" id="placesLegend" hidden>
-                  <span class="lo"></span><i class="plc-ramp"></i><span class="hi"></span>
-                </span>
-              </span>
+          <section class="ov-block" id="page-overview-in">
+            <div class="page-head">
+              <h2>More people commute into <span class="city-short">Boston</span> than out of it</h2>
             </div>
-            <!-- the table stands from the start: the admin, the metro and the
-                 peers, with the reader's picks added beside them -->
-            <div class="plc-wrap">
-              <table class="plc-table" id="placesTable" aria-live="polite"></table>
-            </div>
+            <p class="lede">Of the 718,571 jobs in <span class="city-short">Boston</span>, residents hold 26%. The
+              other 528,488 are filled by commuters, mostly from Quincy, Cambridge, Somerville, Brookline and
+              Newton. Winthrop sends 41% of its working residents here.</p>
+            <p class="lede">That makes 207 jobs here for every 100 its residents hold. Follow these exchanges
+              outward and you trace, roughly, the edges of the <span class="city-short">Boston</span> MSA.</p>
+            <div class="who-flow" data-who-flow="in"></div>
           </section>
 
         </div>
@@ -7632,6 +7658,14 @@
         entirely ordinary. This measures what is <em>distinctive</em> about the metro, not what
         employs the most people.</p>
       </section>
+      <section class="gl-entry" id="gl-msa" tabindex="-1" aria-labelledby="gl-msa-h">
+        <h3 id="gl-msa-h">Metro area</h3>
+        <p>A <strong>metropolitan statistical area</strong> (MSA) is how the US Census draws the functional city: a
+        dense core and every county tied to it by commuting. It is the closest official shape to a labor market,
+        the area within which people can change jobs or homes without changing lives.</p>
+        <p>The Boston MSA, Boston-Cambridge-Newton, has 130 places and 5,025,517 people (2024). Boston itself
+        holds 13.4% of them. That is why most of what follows is read at the metro scale.</p>
+      </section>
       <section class="gl-entry" id="gl-peers" tabindex="-1" aria-labelledby="gl-peers-h">
         <h3 id="gl-peers-h">Peer metros</h3>
         <p>The reference build compares Boston with five <strong>peer metros</strong>: Washington, Seattle,
@@ -7753,6 +7787,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://d3js.org/d3.v7.min.js"></script>
 <script src="data/geo/xch_geo.js"></script>
+<script src="who-2024.js"></script>
+<script src="data/geo/who_commute_geo.js"></script>
 <script src="industries-2024.js"></script>
 <script src="industries-2014.js"></script>
 <script src="treemap.js?v=handoff"></script>
@@ -7787,7 +7823,7 @@
     setTimeout(initCollapsible, 200);
   });
 
-  const pageIds = ["page-overview","page-overview-msa","page-overview-places","page-export-basket","page-admin-mix",
+  const pageIds = ["page-overview","page-overview-msa","page-overview-out","page-overview-in","page-export-basket","page-admin-mix",
                    "page-constraints","page-city-in-metro","page-constraints-lorem","page-levers"];
 
   /* ---------- view switching ---------- */
@@ -7878,7 +7914,7 @@
 
   /* ---------- journey state ---------- */
   const sectionDefs=[
-    {name:"Who are you?", pages:["page-overview","page-overview-msa","page-overview-places","check-overview","apply-overview"], entry:"page-overview"},
+    {name:"Who are you?", pages:["page-overview","page-overview-msa","page-overview-out","page-overview-in","check-overview","apply-overview"], entry:"page-overview"},
     {name:"Metro Industries",    pages:["page-export-basket","tierSection","specializedSection","check-export","apply-export"], entry:"page-export-basket"},
     {name:"Worker Flows", pages:["page-admin-mix","adminWhoFills","adminResidentsOut","adminBalance","adminJobsHere","adminResidents","adminSpecialized","adminExchange","adminGauge","am2Bars","am2Compare","check-adminmix","apply-adminmix"], entry:"page-admin-mix"},
     {name:"Constraints Diagnosis",pages:["page-constraints","page-city-in-metro","page-constraints-lorem","check-constraints","apply-constraints"],entry:"page-constraints"},
@@ -8269,8 +8305,8 @@
     document.getElementById("geoMapTitle").textContent =
       "Viewing: " + city + (view === "metro" ? " metro" : " admin");
     document.getElementById("geoMapSub").textContent = view === "metro"
-      ? "The whole labor market — 197 cities and towns inside the dashed edge."
-      : "The administrative city — one municipality among the metro\u2019s 197.";
+      ? "The whole labor market: 130 places inside the dashed edge."
+      : "The city itself, one of the metro\u2019s 130 places.";
     loadXchGeo(() => {
       const host = document.getElementById("geoMapHost");
       host.innerHTML = "";
@@ -8317,6 +8353,8 @@
       def: "How much of what an industry makes can be sold outside the metro. Each industry falls in one of three tiers: traded, partly traded or local." },
     specialization: { name: "Specialization",
       def: "An industry the metro does more of than the country does. 2.0× means twice the national share of jobs." },
+    msa: { name: "Metro area",
+      def: "A metropolitan statistical area: a dense core and the counties tied to it by commuting, as the US Census draws it. The Boston MSA has 130 places and 5.0 million people (2024)." },
     peers: { name: "The five peer metros",
       def: "Washington, Seattle, San Diego, Denver and Baltimore, the metros the reference build compares Boston with. The mark is their share of an industry's jobs, taken together, against the nation's.",
       stats: true }
@@ -8752,20 +8790,40 @@
         pagesEl=document.getElementById("pages");
   let ovLeaflet=null, ovMsaLayer=null, ovCityLayer=null;
 
-  const cityPoly=[ // simplified Boston city boundary
+  const cityPoly0=[ // simplified Boston city boundary (a stand-in, below)
     [42.397,-71.035],[42.386,-71.076],[42.353,-71.117],[42.355,-71.167],
     [42.335,-71.169],[42.342,-71.125],[42.318,-71.125],[42.295,-71.115],
     [42.255,-71.163],[42.227,-71.130],[42.250,-71.090],[42.272,-71.070],
     [42.280,-71.030],[42.310,-71.020],[42.330,-71.020],[42.360,-71.000],
     [42.370,-70.990],[42.390,-70.985]
   ];
-  const msaPoly=[ // simplified Boston MSA boundary
+  const msaPoly0=[ // simplified Boston MSA boundary (a stand-in, below)
     [43.30,-71.05],[43.22,-70.82],[42.98,-70.75],[42.86,-70.80],
     [42.68,-70.60],[42.55,-70.85],[42.42,-70.92],[42.30,-70.87],
     [42.15,-70.60],[41.95,-70.55],[41.93,-70.85],[42.05,-71.05],
     [42.13,-71.30],[42.25,-71.50],[42.45,-71.55],[42.63,-71.55],
     [42.70,-71.30],[42.88,-71.40],[43.10,-71.25]
   ];
+  /* the real outlines (data/geo/who_commute_geo.js, 2026-10-05), as the
+     reference draws them; the hand-drawn shapes above stand in only when
+     that file is missing. cityPoly and msaPoly are each outline's largest
+     ring, for the camera's fits and the callouts' placing. */
+  const WHO_GEO = window.WHO_COMMUTE_GEO || null;
+  const ringOf = fc => {
+    let best = null, area = 0;
+    ((fc && fc.features) || []).forEach(f => {
+      const g = f.geometry; if (!g) return;
+      (g.type === "Polygon" ? [g.coordinates] : g.type === "MultiPolygon" ? g.coordinates : []).forEach(poly => {
+        const r = poly[0]; let a = 0;
+        for (let k = 0, m = r.length - 1; k < r.length; m = k++) a += (r[m][0] + r[k][0]) * (r[m][1] - r[k][1]);
+        a = Math.abs(a); if (a > area){ area = a; best = r; }
+      });
+    });
+    return best ? best.map(c => [c[1], c[0]]) : null;
+  };
+  const cityPoly = (WHO_GEO && ringOf(WHO_GEO.boston)) || cityPoly0;
+  const msaPoly = (WHO_GEO && ringOf(WHO_GEO.msa)) || msaPoly0;
+  let whoShow = null;     /* the commuting beats' map layers, set up with the map below */
 
   /* ---------- peer chips in the overview panel ----------
      Deliberately independent of the peer code in Metro Industries: that one is
@@ -9262,17 +9320,127 @@
     const geo = n => getComputedStyle(document.documentElement)
                        .getPropertyValue(n).trim();
     const GEO_CITY = geo("--geo-city"), GEO_METRO = geo("--geo-metro");
-    ovMsaLayer=L.polygon(msaPoly,{
-      // interactive:false, or this fill — the whole metro — sits on top of the
-      // places picker and swallows every click and hover meant for a cell
-      interactive:false,
-      color:GEO_METRO,weight:2,dashArray:"6 6",
-      fillColor:GEO_CITY,fillOpacity:.04
-    }).addTo(ovLeaflet);
-    ovCityLayer=L.polygon(cityPoly,{
-      interactive:false,
-      color:GEO_CITY,weight:2,fillColor:GEO_CITY,fillOpacity:.45
-    }).addTo(ovLeaflet);
+    // interactive:false, or this fill (the whole metro) would swallow every
+    // click and hover meant for the places under it
+    const msaOpts = { interactive:false, color:GEO_METRO, weight:2, dashArray:"6 6", fillColor:GEO_CITY, fillOpacity:.04 };
+    ovMsaLayer = (WHO_GEO ? L.geoJSON(WHO_GEO.msa, { interactive:false, style: () => msaOpts })
+                          : L.polygon(msaPoly, msaOpts)).addTo(ovLeaflet);
+    const cityOpts = { interactive:false, color:GEO_CITY, weight:2, fillColor:GEO_CITY, fillOpacity:.45 };
+    ovCityLayer = (WHO_GEO ? L.geoJSON(WHO_GEO.boston, { interactive:false, style: () => cityOpts })
+                           : L.polygon(cityPoly, cityOpts)).addTo(ovLeaflet);
+
+    /* The commuting beats (3 and 4): each place shaded by its share, as the
+       reference draws it (opacity 0.12 + 0.7 times the square root of the
+       share over the map's largest), the named partners outlined darker,
+       an arrow from Boston to each (or from each to Boston, width by the
+       workers), the partners named, and a key in the frame. v-5's own pair
+       of colours, as in Worker Flows: orange for residents working out,
+       teal for commuters coming in. Off the map on the other beats. */
+    const WHO = window.WHO_2024 || null;
+    if (WHO_GEO && WHO_GEO.places && WHO){
+      /* orange for residents working out, as in Worker Flows; blue for
+         commuters coming in, as the reference draws them, so Boston keeps
+         its teal on every map */
+      const OUTC = geo("--orange") || "#e76565", INC = "#3a76b0";
+      const DARK = { out: geo("--orange-text") || "#a93a17", in: "#1f4f7d" };
+      const esc = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+      const fmtN = n => n.toLocaleString("en-US");
+      const pct = v => { const x = v * 100; return (x < 10 ? x.toFixed(1) : Math.round(x)) + "%"; };
+      const rgba = (hex, a) => { const h = hex.replace("#", ""); const n = parseInt(h.length === 3 ? h.replace(/./g, "$&$&") : h, 16);
+        return "rgba(" + (n >> 16 & 255) + "," + (n >> 8 & 255) + "," + (n & 255) + "," + a + ")"; };
+      /* a curve from a to b, bent a sixth of its length, ending short of b
+         so the head does not sit on the place's middle */
+      const arc = (a, b, t0, t1) => {
+        const k = Math.cos(a[0] * Math.PI / 180), ax = a[1] * k, ay = a[0], bx = b[1] * k, by = b[0];
+        const dx = bx - ax, dy = by - ay, len = Math.hypot(dx, dy) || 1;
+        const cx = (ax + bx) / 2 - dy / len * len * .16, cy = (ay + by) / 2 + dx / len * len * .16;
+        const pts = [];
+        for (let t = t0; t <= t1 + 1e-4; t += (t1 - t0) / 24){
+          const u = 1 - t;
+          pts.push([u * u * ay + 2 * u * t * cy + t * t * by, (u * u * ax + 2 * u * t * cx + t * t * bx) / k]);
+        }
+        return pts;
+      };
+      const layers = {};
+      ["out", "in"].forEach(mode => {
+        const D = WHO[mode], col = mode === "out" ? OUTC : INC, dark = DARK[mode];
+        const key = mode + "Share", wkey = mode + "Workers", nkey = mode + "Named";
+        const fill = L.geoJSON(WHO_GEO.places, {
+          filter: f => f.properties[key] != null,
+          style: f => { const q = f.properties, named = !!q[nkey];
+            return { color: named ? dark : col, weight: named ? 1.75 : .8, opacity: named ? .95 : .55,
+                     fillColor: col, fillOpacity: .12 + .7 * Math.sqrt(Math.min(1, q[key] / D.maxShare)) }; },
+          onEachFeature: (f, l) => { const q = f.properties;
+            l.bindTooltip('<b>' + esc(q.name) + (q.state && q.state !== "MA" ? ", " + esc(q.state) : "") + '</b>' + pct(q[key]) +
+              (mode === "out" ? " of its jobs are held by Boston residents" : " of its working residents work in Boston") +
+              '<span>' + fmtN(q[wkey]) + (mode === "out" ? " Boston residents work here" : " of them") + '</span>',
+              { sticky: true, className: "who-tip", direction: "top", offset: [0, -10] }); }
+        });
+        const maxW = Math.max.apply(null, D.top.map(t => t.workers));
+        const arrows = L.layerGroup(D.top.map(t => L.polyline(
+          mode === "out" ? arc(WHO.boston.centroid, t.centroid, .14, .88) : arc(t.centroid, WHO.boston.centroid, .08, .78), {
+            interactive: false, color: dark, weight: 2 + 9 * Math.sqrt(t.workers / maxW), opacity: .85,
+            lineCap: "round", lineJoin: "round", className: "who-arrow" })));
+        /* Boston first, so the names that would overlap it give way */
+        const labels = L.layerGroup([L.circleMarker(WHO.boston.centroid, { radius: 0, opacity: 0, fillOpacity: 0, interactive: false })
+          .bindTooltip("Boston", { permanent: true, direction: "center", className: "map-lbl who-lbl who-lbl--city" })]
+          .concat(D.top.map(t => L.circleMarker(t.centroid, { radius: 0, opacity: 0, fillOpacity: 0, interactive: false })
+          .bindTooltip("<b>" + esc(t.name) + "</b><span>" + fmtN(t.workers) + "</span>", { permanent: true, direction: "top", offset: [0, -4], className: "map-lbl who-lbl" }))));
+        const legend = document.createElement("div");
+        legend.className = "who-legend who-legend--" + mode; legend.hidden = true;
+        legend.innerHTML = '<span class="wl-txt">' + esc(D.legend) + '</span>' +
+          '<span class="wl-ramp"><i style="background:linear-gradient(to right,' + rgba(col, .12) + ',' + rgba(col, .82) + ')"></i></span>' +
+          '<span class="wl-ends"><span>0%</span><span>' + pct(D.maxShare) + '</span></span>' +
+          '<span class="wl-sub">' + D.places + ' places with data; arrows mark the largest flows</span>' +
+          '<span class="wl-city"><i></i>Boston</span>';
+        ovLeaflet.getContainer().appendChild(legend);
+        layers[mode] = { fill, arrows, labels, legend, dark };
+      });
+      /* the arrows' heads: one marker per colour in the vector pane's svg */
+      const heads = () => {
+        const svg = ovLeaflet.getPanes().overlayPane.querySelector("svg");
+        if (!svg || svg.querySelector("#whoAh-out")) return;
+        const NS = "http://www.w3.org/2000/svg", defs = document.createElementNS(NS, "defs");
+        ["out", "in"].forEach(m => {
+          const mk = document.createElementNS(NS, "marker");
+          mk.setAttribute("id", "whoAh-" + m); mk.setAttribute("viewBox", "0 0 10 10");
+          mk.setAttribute("refX", "6"); mk.setAttribute("refY", "5");
+          mk.setAttribute("markerWidth", "2.6"); mk.setAttribute("markerHeight", "2.6"); mk.setAttribute("orient", "auto");
+          const ph = document.createElementNS(NS, "path"); ph.setAttribute("d", "M0,0 L10,5 L0,10 z"); ph.setAttribute("fill", layers[m].dark);
+          mk.appendChild(ph); defs.appendChild(mk);
+        });
+        svg.insertBefore(defs, svg.firstChild);
+      };
+      /* where two partners' names would overlap at this zoom, the one with
+         the smaller flow gives way (they are listed largest first) */
+      const declutter = () => {
+        const seen = [];
+        document.querySelectorAll("#ovMap .who-lbl").forEach(el => {
+          el.style.visibility = "";
+          const r = el.getBoundingClientRect();
+          if (seen.some(q => r.left < q.right + 4 && r.right > q.left - 4 && r.top < q.bottom && r.bottom > q.top)) el.style.visibility = "hidden";
+          else seen.push(r);
+        });
+      };
+      ovLeaflet.on("zoomend moveend", declutter);
+      whoShow = mode => {
+        ["out", "in"].forEach(m => {
+          const Ly = layers[m], on = m === mode;
+          [Ly.fill, Ly.arrows, Ly.labels].forEach(g => { if (on){ if (!ovLeaflet.hasLayer(g)) g.addTo(ovLeaflet); } else if (ovLeaflet.hasLayer(g)) ovLeaflet.removeLayer(g); });
+          Ly.legend.hidden = !on;
+        });
+        /* Boston keeps its teal on the commuting maps, a heavier edge, and
+           its name instead of the chips (which would land on its neighbours) */
+        ovCityLayer.setStyle(mode ? Object.assign({}, cityOpts, { weight: 2.5, fillOpacity: .55 }) : cityOpts);
+        ovCityLayer.bringToFront();
+        ovLeaflet.getContainer().classList.toggle("who-commute", !!mode);
+        if (mode){
+          heads();
+          layers[mode].arrows.eachLayer(l => { l.bringToFront(); const el = l.getElement && l.getElement(); if (el) el.setAttribute("marker-end", "url(#whoAh-" + mode + ")"); });
+          requestAnimationFrame(declutter);
+        }
+      };
+    }
 
     /* Name both shapes on the map itself. The metro label sits up in the
        north of the region rather than at its centre, which would land it on
@@ -9290,9 +9458,9 @@
         '<line class="mc-line mc-line--metro"/><circle class="mc-dot mc-dot--metro" r="2.6"/>' +
       '</svg>' +
       '<button type="button" class="mc-chip mc-chip--city" onclick="openGeoMap(\'city\')" ' +
-        'title="See this geography on the map"><span class="city-short">Boston</span> admin</button>' +
+        'title="See this geography on the map"><span class="city-short">Boston</span></button>' +
       '<button type="button" class="mc-chip mc-chip--metro" onclick="openGeoMap(\'metro\')" ' +
-        'title="See this geography on the map"><span class="city-short">Boston</span> metro</button>';
+        'title="See this geography on the map"><span class="city-short">Boston</span> MSA</button>';
     ovLeaflet.getContainer().appendChild(co);
 
     /* zoom in / out / reset — reset refits whatever the story is showing */
@@ -9316,6 +9484,7 @@
     ctlBtns[2].onclick = () => {
       ovManual = false;
       if (window.ovScrollyOn && window.ovMapStep) window.ovMapStep(window.ovCurStep || 0);
+      else if (typeof whoOn !== "undefined" && WHO_BEAT[whoOn]) whoFit(whoOn, false);
       else ovZoom();
     };
     ctlBtns[3].onclick = () => { if (window.ovToggleMapX) window.ovToggleMapX(); };
@@ -9754,18 +9923,18 @@
       "Who are you?": {
         slug: "overview",
         qs: [
-          { q: "Roughly what share of the Boston metro’s residents live in Boston proper?",
-            opts: [["About 13%",1],["About half",0],["Nearly all of them",0]],
-            fb: "Around 13% — the administrative city is one piece of a much larger labor market, which is why most of the diagnosis reads at the metro scale." },
           { q: "Which geography does most of the diagnosis read at?",
-            opts: [["The administrative city",0],["The metro — the whole labor market",1],["The state",0]],
-            fb: "The metro: people commute, firms hire and housing responds across the whole labor market, so that is the scale most measures read at." },
-          { q: "What has Boston proper’s population done over the last decade?",
-            opts: [["Grown slowly, about +0.3% a year",1],["Grown quickly",0],["Shrunk",0]],
-            fb: "It has grown about +0.3% a year since 2016, well under the national +0.8% — the clearest signal that something is holding the city back." }
+            opts: [["The city on its own",0],["The metro, the whole labor market",1],["The state",0]],
+            fb: "The metro. People live in one town and work in another, and firms hire across the region, so that wider labor market is the scale most measures read at." },
+          { q: "Of the jobs Boston’s residents hold, how many are in Boston itself?",
+            opts: [["About a quarter",0],["Just over half",1],["Nearly all of them",0]],
+            fb: "55% in 2023 (54% in 2014). The other 157,434 are elsewhere, mostly in Cambridge, Newton, Waltham and Quincy." },
+          { q: "How many jobs are there in Boston for every 100 its residents hold?",
+            opts: [["About 50",0],["About 100",0],["About 207",1]],
+            fb: "207. Of its 718,571 jobs, residents hold 26%, and commuters fill the other 528,488." }
         ],
-        prompt: "What single fact about how your city is doing would you flag for a colleague — and what would you want to check next?",
-        ph: "The population trend surprised me because…"
+        prompt: "What single fact about your city would you flag for a colleague, and what would you want to check next?",
+        ph: "The commuting numbers surprised me because…"
       },
       "Metro Industries": {
         slug: "export",
@@ -9971,57 +10140,117 @@
     ovBeatBlocks.forEach((b, i) => { if (b.getBoundingClientRect().top <= line) on = i; });
     ovBeatBlocks.forEach((b, i) => b.classList.toggle("is-on", i === on));
     wrap.classList.add("ov-beats");
+    return on;
   }
+  /* the commuting beats' camera: Boston and the places the beat names,
+     clear of the key at the frame's foot */
+  const WHO_BEAT = { 2: "out", 3: "in" };
+  let whoOn = -1, whoFlying = false;
+  const whoFit = (on, animate) => {
+    const W = window.WHO_2024, mode = WHO_BEAT[on];
+    const b = mode && W ? L.latLngBounds(W[mode].bounds) : L.latLngBounds(msaPoly);
+    /* the key holds the frame's bottom-left corner: where the frame is wide
+       enough, the fit keeps clear of its width; otherwise of its height,
+       and never more than a third of the frame */
+    const key = mode && document.querySelector(".who-legend--" + mode), sz = ovLeaflet.getSize();
+    let opt = { padding: [28, 28] };
+    if (mode){
+      const kw = key && !key.hidden ? key.offsetWidth + 16 : 0, kh = key && !key.hidden ? key.offsetHeight + 16 : 0;
+      opt = kw && sz.x - kw > sz.y * .9 ? { paddingTopLeft: [kw, 20], paddingBottomRight: [20, 20] }
+                                        : { paddingTopLeft: [20, 20], paddingBottomRight: [20, Math.max(20, Math.min(kh, sz.y / 3))] };
+    }
+    const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (animate && !reduce){
+      whoFlying = true;
+      ovLeaflet.once("moveend", () => { whoFlying = false; ovZoom(); });
+      ovLeaflet.flyToBounds(b, Object.assign({ duration: .9 }, opt));
+    } else ovLeaflet.fitBounds(b, Object.assign({ animate: false }, opt));
+  };
+  const whoBeat = on => {
+    const was = whoOn; whoOn = on;
+    const mode = WHO_BEAT[on] || null;
+    if (whoShow) whoShow(mode);
+    /* the metro's edge belongs to beats 2 and after, but not to the
+       commuting maps, which are about the places, not the line */
+    if (mode){ window.ovMetroHidden = true; ovMsaVis(false); }
+    if (window.ovUpdateCallouts) window.ovUpdateCallouts();
+    if (ovManual) return;
+    /* into a commuting beat and between them: a flight, when the reader
+       has scrolled from the next beat; back out, a flight to where the
+       scroll camera stands for the beat arrived at; a jump from elsewhere
+       (another section, a link) lands without one */
+    const nextTo = was >= 0 && Math.abs(on - was) === 1;
+    if (mode) whoFit(on, nextTo);
+    else if (was in WHO_BEAT){
+      const t = ovCamTarget(); if (!t) return;
+      const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (nextTo && !reduce){
+        whoFlying = true;
+        ovLeaflet.once("moveend", () => { whoFlying = false; ovZoom(); });
+        ovLeaflet.flyTo(t.center, t.zoom, { duration: .9 });
+      } else ovLeaflet.setView(t.center, t.zoom, { animate: false });
+    }
+  };
   function ovZoom(){
-    ovBeat();
+    const on = ovBeat();
     if(window.ovScrollyOn) return;       // the ov2 engine drives the map
     if(!ovWrap||!ovLeaflet) return;
+    if (on != null && on !== whoOn) whoBeat(on);
+    if (WHO_BEAT[whoOn]) return;         // a commuting map holds its own frame
     /* the first page is the admin's alone: its boundary and label, and no
        metro yet. The metro's edge and chip are drawn only once the page
        that introduces it — city against metro — has come into view. */
     const msaEl = document.getElementById("page-overview-msa");
     const hideMetro = !!msaEl &&
       msaEl.getBoundingClientRect().top >= pagesEl.clientHeight * 0.6;
-    if (hideMetro !== !!window.ovMetroHidden){
+    if (hideMetro !== !!window.ovMetroHidden || (!hideMetro && ovMsaHidden)){
       window.ovMetroHidden = hideMetro;
       ovMsaVis(!hideMetro);
       if (window.ovUpdateCallouts) window.ovUpdateCallouts();
     }
     if(ovManual) return;                 // the reader has the wheel until reset
+    if (whoFlying) return;               // the flight back to the metro runs out first
     /* The pull-back from admin to metro runs while the second page slides
        in: the camera holds the city until that page's top enters at the foot
        of the viewport, reaches the full metro fit as the page settles under
        the section bar, and holds there for everything after — so "Your city
        is not an island" always opens on the whole region, admin inside it.
        (msaEl is the page looked up above for the metro's visibility.) */
-    const chrome=parseFloat(getComputedStyle(document.documentElement)
-      .getPropertyValue("--chrome-h"))||57;
-    const H=pagesEl.clientHeight, span=H-chrome;
-    if(span<=0) return;
-    const t2=msaEl
-      ? msaEl.getBoundingClientRect().top-pagesEl.getBoundingClientRect().top
-      : -Infinity;
-    const p=Math.min(1, Math.max(0, (H-t2)/span));
-    /* The camera used to be two hand-tuned numbers (zoom 11.4 down to 8.5),
-       which only framed correctly at the one map width they were tuned
-       against — narrow the column and the city overflowed it. Fit the two
-       boundaries instead and interpolate between those fits, so the framing
-       is correct at whatever width the column is given. */
     const sz = ovLeaflet.getSize();
     if (sz.x !== ovZoomSize.x || sz.y !== ovZoomSize.y){
       ovLeaflet.invalidateSize({ animate: false });
       ovZoomSize = ovLeaflet.getSize();
     }
+    const t = ovCamTarget();
+    if (t) ovLeaflet.setView(t.center, t.zoom, { animate: false });
+  }
+  /* where the scroll camera stands: between the city's fit and the
+     metro's, as the second beat slides in (on a stack, the metro's once
+     that beat is the reader's: the band hides the top of the screen the
+     slide is measured on). The camera used to be two hand-tuned numbers,
+     which framed correctly only at the width they were tuned against; it
+     fits the two outlines and interpolates between those fits. */
+  function ovCamTarget(){
+    const msaEl = document.getElementById("page-overview-msa");
+    const chrome=parseFloat(getComputedStyle(document.documentElement)
+      .getPropertyValue("--chrome-h"))||57;
+    const H=pagesEl.clientHeight, span=H-chrome;
+    if(span<=0) return null;
+    const t2=msaEl
+      ? msaEl.getBoundingClientRect().top-pagesEl.getBoundingClientRect().top
+      : -Infinity;
+    let p=Math.min(1, Math.max(0, (H-t2)/span));
+    if (whoOn >= 1 && window.matchMedia && matchMedia("(max-width:899px)").matches) p = 1;
+    const sz = ovLeaflet.getSize();
     const cb = L.latLngBounds(cityPoly), mb = L.latLngBounds(msaPoly);
     const pad = L.point(28, 28);
     /* one level out from the tight fit, so the city opens inside its
-       surroundings rather than pressed against the frame */
+       surroundings rather than pressed against the frame; the metro with
+       room round it, so its edge reads against the coast and the states */
     const z0 = ovLeaflet.getBoundsZoom(cb, false, pad) - 1;
-    const z1 = ovLeaflet.getBoundsZoom(mb, false, pad);
+    const z1 = ovLeaflet.getBoundsZoom(mb, false, L.point(Math.min(110, sz.x * .2), Math.min(110, sz.y * .2)));
     const c0 = cb.getCenter(), c1 = mb.getCenter();
-    ovLeaflet.setView(
-      [c0.lat + (c1.lat - c0.lat) * p, c0.lng + (c1.lng - c0.lng) * p],
-      z0 + (z1 - z0) * p, { animate: false });
+    return { center: [c0.lat + (c1.lat - c0.lat) * p, c0.lng + (c1.lng - c0.lng) * p], zoom: z0 + (z1 - z0) * p };
   }
   var ovZoomSize = { x: 0, y: 0 };   // last size the camera was fitted for
   var ovManual = false;              // set by the zoom buttons, cleared by reset
@@ -10029,9 +10258,12 @@
   /* map states for the ov2 scrolly — one call per step: city view first,
      the metro once the story widens, the places picker on the last stop */
   let ovFitLast = null;
+  let ovMsaHidden = false;
   const ovMsaVis = show => {
+    ovMsaHidden = !show;
     if (!ovMsaLayer) return;
-    const el = ovMsaLayer.getElement && ovMsaLayer.getElement();
+    const lyr = ovMsaLayer.getLayers ? ovMsaLayer.getLayers()[0] : ovMsaLayer;
+    const el = lyr && lyr.getElement && lyr.getElement();
     if (el){
       el.classList.add("msa-fade");
       el.classList.toggle("msa-off", !show);
@@ -10042,6 +10274,15 @@
   };
   window.ovMapStep = function(k){
     if(!ovLeaflet) return;
+    /* the commuting beats, for the dormant second layout too */
+    if (whoShow) whoShow(WHO_BEAT[k] || null);
+    if (WHO_BEAT[k]){
+      ovLeaflet.invalidateSize({ animate: false });
+      window.ovMetroHidden = true; ovMsaVis(false);
+      whoFit(k, false); ovFitLast = k;
+      if (window.ovUpdateCallouts) window.ovUpdateCallouts();
+      return;
+    }
     /* the map's container now changes size without the window doing so —
        it moves between the figure's locator slot and the full stage — and
        Leaflet fits against a cached size until it is told otherwise. Done
@@ -10064,7 +10305,7 @@
     window.ovMetroHidden = k === 0;
     ovMsaVis(k !== 0);
     const mapEl = document.getElementById("ovMap");
-    if (mapEl) mapEl.classList.toggle("pl-on", k === 2);   // the places explorer is the third stop
+    if (mapEl) mapEl.classList.remove("pl-on");   // the places explorer is gone (2026-10-05)
     if (window.ovUpdateCallouts) window.ovUpdateCallouts();
   };
   window.ovMetroReset = function(){
@@ -10081,7 +10322,7 @@
     }
     lastScrollTop=pagesEl.scrollTop;
   }, {passive:true});
-  window.addEventListener("resize", ()=>{ if(ovLeaflet){ ovLeaflet.invalidateSize(); ovZoom(); } });
+  window.addEventListener("resize", ()=>{ if(ovLeaflet){ ovLeaflet.invalidateSize(); if (WHO_BEAT[whoOn] && !ovManual) whoFit(whoOn, false); ovZoom(); } });
 
   /* ---------- v-3 navigation option: one page per section ----------
      Built from sectionDefs, so the nav, the pager and the journey panel can
@@ -10441,9 +10682,9 @@
      the section's own text and the facts its quiz turns on */
   const SEAL_POINTS = {
     "Who are you?": [
-      "Boston proper is home to 673,458 people \u2014 about 13% of a metro of 5.0 million across 197 cities and towns.",
-      "The metro is the labor market: people commute, firms hire and housing responds across it, so most of the diagnosis reads at that scale.",
-      "The city has grown about +0.3% a year since 2016, under the national +0.8% \u2014 the first sign that something is holding it back."
+      "Boston is home to 673,458 people, 13.4% of a metro of 5.0 million across 130 places.",
+      "The metro is the labor market: people live in one town and work in another, so most of the diagnosis reads at that scale.",
+      "55% of the jobs Boston\u2019s residents hold are in Boston, and there are 207 jobs in Boston for every 100 they hold."
     ],
     "Metro Industries": [
       "2.3 million jobs across 877 industries, read three ways: by size, by the complexity of the work, and by how much of it can be sold outside the metro.",
@@ -10675,7 +10916,69 @@
       });
     });
   }
-  wyBuild();
+  /* wyBuild's tiles made way for the reference's tables (2026-10-05) */
+
+  /* ---- Who are you?: the indicator tables (beats 1 and 2) and the flow
+     tables (3 and 4), from who-2024.js. A measure's row: its name and
+     source, its level and rank, and a strip setting it against every US
+     place (or metro): the whiskers the 5th to 95th percentiles, the box
+     the middle half, the line the median (named above it), the dot
+     Boston. The strip runs from the 2nd to the 98th percentile, widened
+     to take Boston, on a log scale for the counts and dollars. ---- */
+  (function(){
+    const W = window.WHO_2024; if (!W) return;
+    const esc = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+    const fmtN = n => n.toLocaleString("en-US");
+    const ord = n => { const m = n % 100, k = n % 10; return fmtN(n) + (m >= 11 && m <= 13 ? "th" : k === 1 ? "st" : k === 2 ? "nd" : k === 3 ? "rd" : "th"); };
+    /* compact, as the reference prints it: two significant figures, but no
+       whole digits dropped */
+    const compact = (v, key) => {
+      if (key === "unemployment") return v.toFixed(1) + "%";
+      const abs = Math.abs(v), unit = abs >= 1e6 ? [1e6, "M"] : abs >= 1e3 ? [1e3, "K"] : [1, ""];
+      const x = v / unit[0], digits = Math.max(0, 2 - String(Math.floor(Math.abs(x))).length);
+      const t = (x).toFixed(digits).replace(/\.0$/, "") + unit[1];
+      return (key === "salary" || key === "home_value" ? "$" : "") + t;
+    };
+    const listOf = a => a.length < 2 ? a.join("") : a.slice(0, -1).join(", ") + " and " + a[a.length - 1];
+    const strip = (r, who) => {
+      const [p05, p25, p50, p75, p95] = r.q, log = r.scale === "log";
+      let lo = Math.min(r.axis[0], r.value), hi = Math.max(r.axis[1], r.value);
+      const f = v => log ? Math.log(v) : v;
+      const pad = (f(hi) - f(lo)) * .04, a = f(lo) - pad, b = f(hi) + pad;
+      const x = v => Math.max(0, Math.min(100, (f(v) - a) / (b - a) * 100));
+      const lab = esc(who) + " " + esc(r.display) + "; median " + esc(r.median) + "; the middle half from " +
+        compact(p25, r.key) + " to " + compact(p75, r.key);
+      return '<span class="who-strip" role="img" aria-label="' + lab + '">' +
+        '<span class="ws-wh" style="left:' + x(p05) + '%;width:' + (x(p95) - x(p05)) + '%"></span>' +
+        '<span class="ws-box" style="left:' + x(p25) + '%;width:' + (x(p75) - x(p25)) + '%"></span>' +
+        '<span class="ws-med" style="left:' + x(p50) + '%"></span><span class="ws-medlab" style="left:' + x(p50) + '%">' + esc(r.median) + '</span>' +
+        '<span class="ws-dot" style="left:' + x(r.value) + '%"></span></span>';
+    };
+    document.querySelectorAll(".who-ind[data-who]").forEach(el => {
+      const D = W[el.dataset.who]; if (!D) return;
+      const uni = D.universe;
+      el.innerHTML = '<table class="who-tbl who-tbl--ind"><thead><tr><th scope="col">Measure</th>' +
+        '<th scope="col" class="num">Level</th><th scope="col" class="ws-head">Among ' + esc(uni) + '</th></tr></thead><tbody>' +
+        D.ind.map(r => '<tr><th scope="row"><span class="who-m">' + esc(r.label) + '</span><span class="who-src">' + esc(r.source) + '</span></th>' +
+          '<td class="num"><span class="who-lvl">' + esc(r.display) + '</span><span class="who-rk">' + ord(r.rank) + (r.low ? " lowest" : "") + ' of ' + fmtN(r.of) + '</span></td>' +
+          '<td class="ws-cell">' + strip(r, D.name) + '</td></tr>').join("") + '</tbody></table>' +
+        '<p class="who-cap">The dot is ' + esc(D.name.replace(/ MSA$/, "")) + '; the box holds the middle half of ' + esc(uni) +
+          ', the line inside it is the median, and the whiskers reach the 5th and 95th percentiles.</p>' +
+        '<p class="who-peers">Closest peers: ' + esc(listOf(D.peers.map(n => n.replace(/, ([A-Z]{2})$/, " $1")))) + '.</p>' +
+          '<p class="who-note">' + esc(D.peersNote) + '</p>';
+    });
+    document.querySelectorAll(".who-flow[data-who-flow]").forEach(el => {
+      const mode = el.dataset.whoFlow, D = W[mode]; if (!D) return;
+      const out = mode === "out";
+      el.innerHTML = '<table class="who-tbl who-tbl--flow who-tbl--' + mode + '"><thead><tr>' +
+        '<th scope="col">' + (out ? "Where Boston&rsquo;s residents work" : "Where Boston&rsquo;s workers live") + '</th>' +
+        '<th scope="col" class="num">Workers</th><th scope="col" class="num">' + (out ? "Share of resident workers" : "Share of jobs here") + '</th></tr></thead><tbody>' +
+        D.top.map(t => '<tr><th scope="row">' + esc(t.name) + '</th><td class="num">' + fmtN(t.workers) + '</td><td class="num">' + esc(t.share) + '</td></tr>').join("") + '</tbody></table>' +
+        '<p class="who-note">LODES ' + D.year + '. Counts jobs, not people, so someone with two jobs is counted twice. Another ' + esc(D.outsideLabel) +
+          (out ? ' work outside any incorporated place, so they appear in neither the table nor the map.'
+               : ' live outside any incorporated place, so they appear in neither the table nor the map.') + '</p>';
+    });
+  })();
 
   /* ---------- links to sections ----------
      index.html#metro-industries opens the tool on that section, skipping
@@ -12373,7 +12676,7 @@
   };
 
   /* rail-step ids -> scrolly steps, while built */
-  var OV_IDS = ["page-overview", "page-overview-msa", "page-overview-places"];
+  var OV_IDS = ["page-overview", "page-overview-msa", "page-overview-out", "page-overview-in"];
   window.ovStepFor = function(id){
     if (!built) return null;
     var k = OV_IDS.indexOf(id);
