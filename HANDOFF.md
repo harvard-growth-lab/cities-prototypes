@@ -885,11 +885,11 @@ reference's first four screens as its beats:
 3. `#page-overview-out` "Not everyone who lives in Boston works there":
    where residents work (LODES 2023), a table of the four destinations the
    reference names. Map: each of 100 places shaded by the share of its jobs
-   held by Boston residents, arrows to the four, their names.
+   held by Boston residents, the four named.
 4. `#page-overview-in` "More people commute into Boston than out of it":
    where Boston's workers live, the five origins, 207 jobs here per 100
    its residents hold. Map: 259 places shaded by the share of their
-   employed residents who work in Boston, arrows in.
+   employed residents who work in Boston, the five named.
 The design is v-5's, not the reference's: the counters ("Who are you?
 1/4", built from the blocks), the beats' title scale and 16px prose, plain
 narrative (no bold, no dashes), the figure sections' tinted ground, the
@@ -905,19 +905,31 @@ reference draws them, so the teal stays Boston's (Worker Flows uses teal
 for the same inflow; a reviewer found teal on both Boston and its
 neighbours read as Boston being one of the empty places). The commuting
 maps follow the reference's construction (opacity 0.12 + 0.7·√(share /
-largest), named partners outlined darker, arrows 2 + 9·√(workers /
-largest) wide with SVG marker heads, ending short of Boston's middle so
-the heads fan out, a key in the frame with a Boston swatch, a place's
-figures on hover with the state where it is not Massachusetts) and put
-the numbers on the map: each named partner carries its workers under
-its name; names that would overlap give way to the larger flow's. The camera flies to each commuting beat's
-frame (Boston and the named places, clear of the key) and back to the
-metro; beats 1 and 2 keep the scroll-linked camera (`whoBeat`, `whoFit`,
-`whoShow` beside `ovBeat` and `ovZoom`; `ovCamTarget` is the scroll
-camera's target, which the flight back from a commuting beat also flies
-to, so it lands without a jump; a jump from another section lands without
-a flight). The metro now fits with room round it, and on a stack the
-camera reaches the metro once beat 2 is the reader's. The map now draws the real
+largest), named partners outlined darker, a key in the frame with a
+Boston swatch, a place's figures on hover with the state where it is not
+Massachusetts) and put the numbers on the map: each named partner
+carries its workers under its name. **No arrows, and no camera move**
+(2026-10-05, Nil: "remove the arrows from the map and make sure the map
+stays in the same zoomed out level of the previous beat"): beats 3 and 4
+hold beat 2's camera, the whole metro, so moving between beats 2, 3 and
+4 changes only the layers. There is one camera, the scroll-linked one
+(`ovZoom` → `ovCamTarget`, which has reached the metro's fit by the time
+beat 3 is the reader's; `whoBeat` and `whoShow` only swap the layers and
+the key; `whoFit` and the flights are gone; reset and resize go through
+`ovZoom`; the dormant `ovMapStep` fits the metro for 3 and 4 as for 2).
+At the metro's zoom the partners crowd round Boston, so the names are
+placed (`declutter`): Boston's stands on Boston, and each partner's,
+largest flow first, takes the first clear place of four round its own
+(above, below, right, left), clear of the other names, the key, the zoom
+buttons and the frame's edge, and gives way only when none is. At 1440
+that names three of the four and three of the five (Waltham, Somerville
+and Brookline give way); at 1024, two of each; on a phone, Cambridge.
+The names carry their map's mode (`who-lbl--out`/`--in`), so the last
+map's, which linger 200ms as Leaflet fades them, are never measured.
+Headless captures at the metro zoom can show white hairlines between
+tiles over the water; the browser does not draw them. The metro fits
+with room round it, and on a stack the camera reaches the metro once
+beat 2 is the reader's. The map now draws the real
 outlines (`data/geo/who_commute_geo.js`) instead of the hand-drawn city
 and metro shapes, which remain only as a stand-in. Removed: "Your
 Admin"/"Your Metro" with their Levels/Comparison tiles (`wyBuild` is no

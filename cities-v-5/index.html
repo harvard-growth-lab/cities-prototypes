@@ -9333,11 +9333,10 @@
 
     /* The commuting beats (3 and 4): each place shaded by its share, as the
        reference draws it (opacity 0.12 + 0.7 times the square root of the
-       share over the map's largest), the named partners outlined darker,
-       an arrow from Boston to each (or from each to Boston, width by the
-       workers), the partners named, and a key in the frame. v-5's own pair
-       of colours, as in Worker Flows: orange for residents working out,
-       teal for commuters coming in. Off the map on the other beats. */
+       share over the map's largest), the named partners outlined darker and
+       named with their workers, and a key in the frame. No arrows (Nil,
+       2026-10-05: "remove the arrows from the map"); the shading carries the
+       flows. Off the map on the other beats. */
     const WHO = window.WHO_2024 || null;
     if (WHO_GEO && WHO_GEO.places && WHO){
       /* orange for residents working out, as in Worker Flows; blue for
@@ -9350,19 +9349,6 @@
       const pct = v => { const x = v * 100; return (x < 10 ? x.toFixed(1) : Math.round(x)) + "%"; };
       const rgba = (hex, a) => { const h = hex.replace("#", ""); const n = parseInt(h.length === 3 ? h.replace(/./g, "$&$&") : h, 16);
         return "rgba(" + (n >> 16 & 255) + "," + (n >> 8 & 255) + "," + (n & 255) + "," + a + ")"; };
-      /* a curve from a to b, bent a sixth of its length, ending short of b
-         so the head does not sit on the place's middle */
-      const arc = (a, b, t0, t1) => {
-        const k = Math.cos(a[0] * Math.PI / 180), ax = a[1] * k, ay = a[0], bx = b[1] * k, by = b[0];
-        const dx = bx - ax, dy = by - ay, len = Math.hypot(dx, dy) || 1;
-        const cx = (ax + bx) / 2 - dy / len * len * .16, cy = (ay + by) / 2 + dx / len * len * .16;
-        const pts = [];
-        for (let t = t0; t <= t1 + 1e-4; t += (t1 - t0) / 24){
-          const u = 1 - t;
-          pts.push([u * u * ay + 2 * u * t * cy + t * t * by, (u * u * ax + 2 * u * t * cx + t * t * bx) / k]);
-        }
-        return pts;
-      };
       const layers = {};
       ["out", "in"].forEach(mode => {
         const D = WHO[mode], col = mode === "out" ? OUTC : INC, dark = DARK[mode];
@@ -9378,57 +9364,65 @@
               '<span>' + fmtN(q[wkey]) + (mode === "out" ? " Boston residents work here" : " of them") + '</span>',
               { sticky: true, className: "who-tip", direction: "top", offset: [0, -10] }); }
         });
-        const maxW = Math.max.apply(null, D.top.map(t => t.workers));
-        const arrows = L.layerGroup(D.top.map(t => L.polyline(
-          mode === "out" ? arc(WHO.boston.centroid, t.centroid, .14, .88) : arc(t.centroid, WHO.boston.centroid, .08, .78), {
-            interactive: false, color: dark, weight: 2 + 9 * Math.sqrt(t.workers / maxW), opacity: .85,
-            lineCap: "round", lineJoin: "round", className: "who-arrow" })));
         /* Boston first, so the names that would overlap it give way */
-        const labels = L.layerGroup([L.circleMarker(WHO.boston.centroid, { radius: 0, opacity: 0, fillOpacity: 0, interactive: false })
-          .bindTooltip("Boston", { permanent: true, direction: "center", className: "map-lbl who-lbl who-lbl--city" })]
-          .concat(D.top.map(t => L.circleMarker(t.centroid, { radius: 0, opacity: 0, fillOpacity: 0, interactive: false })
-          .bindTooltip("<b>" + esc(t.name) + "</b><span>" + fmtN(t.workers) + "</span>", { permanent: true, direction: "top", offset: [0, -4], className: "map-lbl who-lbl" }))));
+        /* Boston first, then the partners, largest flow first: the order
+           the names are placed in (declutter). Each carries its map's mode,
+           so a map's names are never measured against the last map's,
+           which linger a moment as they fade */
+        const name = (ll, html, cls, dir, off) => L.circleMarker(ll, { radius: 0, opacity: 0, fillOpacity: 0, interactive: false })
+          .bindTooltip(html, { permanent: true, direction: dir, offset: off, className: "map-lbl who-lbl who-lbl--" + mode + cls });
+        const names = [name(WHO.boston.centroid, "Boston", " who-lbl--city", "center", [0, 0])]
+          .concat(D.top.map(t => name(t.centroid, "<b>" + esc(t.name) + "</b><span>" + fmtN(t.workers) + "</span>", "", "top", [0, -4])));
+        const labels = L.layerGroup(names);
         const legend = document.createElement("div");
         legend.className = "who-legend who-legend--" + mode; legend.hidden = true;
         legend.innerHTML = '<span class="wl-txt">' + esc(D.legend) + '</span>' +
           '<span class="wl-ramp"><i style="background:linear-gradient(to right,' + rgba(col, .12) + ',' + rgba(col, .82) + ')"></i></span>' +
           '<span class="wl-ends"><span>0%</span><span>' + pct(D.maxShare) + '</span></span>' +
-          '<span class="wl-sub">' + D.places + ' places with data; arrows mark the largest flows</span>' +
+          '<span class="wl-sub">' + D.places + ' places with data; the largest flows named</span>' +
           '<span class="wl-city"><i></i>Boston</span>';
         ovLeaflet.getContainer().appendChild(legend);
-        layers[mode] = { fill, arrows, labels, legend, dark };
+        layers[mode] = { fill, labels, names, legend };
       });
-      /* the arrows' heads: one marker per colour in the vector pane's svg */
-      const heads = () => {
-        const svg = ovLeaflet.getPanes().overlayPane.querySelector("svg");
-        if (!svg || svg.querySelector("#whoAh-out")) return;
-        const NS = "http://www.w3.org/2000/svg", defs = document.createElementNS(NS, "defs");
-        ["out", "in"].forEach(m => {
-          const mk = document.createElementNS(NS, "marker");
-          mk.setAttribute("id", "whoAh-" + m); mk.setAttribute("viewBox", "0 0 10 10");
-          mk.setAttribute("refX", "6"); mk.setAttribute("refY", "5");
-          mk.setAttribute("markerWidth", "2.6"); mk.setAttribute("markerHeight", "2.6"); mk.setAttribute("orient", "auto");
-          const ph = document.createElementNS(NS, "path"); ph.setAttribute("d", "M0,0 L10,5 L0,10 z"); ph.setAttribute("fill", layers[m].dark);
-          mk.appendChild(ph); defs.appendChild(mk);
-        });
-        svg.insertBefore(defs, svg.firstChild);
-      };
-      /* where two partners' names would overlap at this zoom, the one with
-         the smaller flow gives way (they are listed largest first) */
+      /* The names on a commuting map, placed so that none covers another,
+         the key or the zoom buttons, and none runs off the frame. Boston's
+         stands on Boston; each partner's, largest flow first, takes the
+         first clear place of four round its own (above, as drawn, then
+         below, right and left), and gives way only when none is clear. The
+         maps hold the metro's zoom (2026-10-05), where the partners crowd
+         round Boston, so most names move off their default place. */
+      let whoMode = null;
       const declutter = () => {
-        const seen = [];
-        document.querySelectorAll("#ovMap .who-lbl").forEach(el => {
-          el.style.visibility = "";
+        if (!whoMode) return;
+        const host = ovLeaflet.getContainer(), box = host.getBoundingClientRect();
+        const taken = [...host.querySelectorAll(".who-legend:not([hidden]), .map-ctls")]
+          .map(e => e.getBoundingClientRect()).filter(r => r.width > 0);
+        const clear = r => r.left >= box.left + 2 && r.right <= box.right - 2 && r.top >= box.top + 2 && r.bottom <= box.bottom - 2 &&
+          !taken.some(q => r.left < q.right + 4 && r.right > q.left - 4 && r.top < q.bottom + 2 && r.bottom > q.top - 2);
+        layers[whoMode].names.forEach((m, i) => {
+          const el = m.getTooltip() && m.getTooltip().getElement();
+          if (!el) return;
+          el.style.visibility = ""; el.style.marginLeft = ""; el.style.marginTop = "";
           const r = el.getBoundingClientRect();
-          if (seen.some(q => r.left < q.right + 4 && r.right > q.left - 4 && r.top < q.bottom && r.bottom > q.top)) el.style.visibility = "hidden";
-          else seen.push(r);
+          if (!i){ taken.push(r); return; }
+          const cs = getComputedStyle(el), ml = parseFloat(cs.marginLeft) || 0, mt = parseFloat(cs.marginTop) || 0;
+          const pt = ovLeaflet.latLngToContainerPoint(m.getLatLng()), x = box.left + pt.x, y = box.top + pt.y;
+          const w = r.width, h = r.height;
+          const spot = [[x - w / 2, r.top], [x - w / 2, y + 8], [x + 8, y - h / 2], [x - 8 - w, y - h / 2]]
+            .map(([left, top]) => ({ left, top, right: left + w, bottom: top + h }))
+            .find(clear);
+          if (!spot){ el.style.visibility = "hidden"; return; }
+          el.style.marginLeft = (ml + spot.left - r.left) + "px";
+          el.style.marginTop = (mt + spot.top - r.top) + "px";
+          taken.push(spot);
         });
       };
       ovLeaflet.on("zoomend moveend", declutter);
       whoShow = mode => {
+        whoMode = mode;
         ["out", "in"].forEach(m => {
           const Ly = layers[m], on = m === mode;
-          [Ly.fill, Ly.arrows, Ly.labels].forEach(g => { if (on){ if (!ovLeaflet.hasLayer(g)) g.addTo(ovLeaflet); } else if (ovLeaflet.hasLayer(g)) ovLeaflet.removeLayer(g); });
+          [Ly.fill, Ly.labels].forEach(g => { if (on){ if (!ovLeaflet.hasLayer(g)) g.addTo(ovLeaflet); } else if (ovLeaflet.hasLayer(g)) ovLeaflet.removeLayer(g); });
           Ly.legend.hidden = !on;
         });
         /* Boston keeps its teal on the commuting maps, a heavier edge, and
@@ -9436,11 +9430,7 @@
         ovCityLayer.setStyle(mode ? Object.assign({}, cityOpts, { weight: 2.5, fillOpacity: .55 }) : cityOpts);
         ovCityLayer.bringToFront();
         ovLeaflet.getContainer().classList.toggle("who-commute", !!mode);
-        if (mode){
-          heads();
-          layers[mode].arrows.eachLayer(l => { l.bringToFront(); const el = l.getElement && l.getElement(); if (el) el.setAttribute("marker-end", "url(#whoAh-" + mode + ")"); });
-          requestAnimationFrame(declutter);
-        }
+        if (mode) requestAnimationFrame(declutter);
       };
     }
 
@@ -9486,7 +9476,6 @@
     ctlBtns[2].onclick = () => {
       ovManual = false;
       if (window.ovScrollyOn && window.ovMapStep) window.ovMapStep(window.ovCurStep || 0);
-      else if (typeof whoOn !== "undefined" && WHO_BEAT[whoOn]) whoFit(whoOn, false);
       else ovZoom();
     };
     ctlBtns[3].onclick = () => { if (window.ovToggleMapX) window.ovToggleMapX(); };
@@ -10144,74 +10133,40 @@
     wrap.classList.add("ov-beats");
     return on;
   }
-  /* the commuting beats' camera: Boston and the places the beat names,
-     clear of the key at the frame's foot */
+  /* the commuting beats. They keep the second beat's camera, the whole
+     metro (Nil, 2026-10-05: the map "stays in the same zoomed out level of
+     the previous beat"): the scroll camera has reached the metro's fit by
+     the time either is the reader's, and holds it, so moving between beats
+     2, 3 and 4 changes only what is drawn on the map */
   const WHO_BEAT = { 2: "out", 3: "in" };
-  let whoOn = -1, whoFlying = false;
-  const whoFit = (on, animate) => {
-    const W = window.WHO_2024, mode = WHO_BEAT[on];
-    const b = mode && W ? L.latLngBounds(W[mode].bounds) : L.latLngBounds(msaPoly);
-    /* the key holds the frame's bottom-left corner: where the frame is wide
-       enough, the fit keeps clear of its width; otherwise of its height,
-       and never more than a third of the frame */
-    const key = mode && document.querySelector(".who-legend--" + mode), sz = ovLeaflet.getSize();
-    let opt = { padding: [28, 28] };
-    if (mode){
-      const kw = key && !key.hidden ? key.offsetWidth + 16 : 0, kh = key && !key.hidden ? key.offsetHeight + 16 : 0;
-      opt = kw && sz.x - kw > sz.y * .9 ? { paddingTopLeft: [kw, 20], paddingBottomRight: [20, 20] }
-                                        : { paddingTopLeft: [20, 20], paddingBottomRight: [20, Math.max(20, Math.min(kh, sz.y / 3))] };
-    }
-    const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (animate && !reduce){
-      whoFlying = true;
-      ovLeaflet.once("moveend", () => { whoFlying = false; ovZoom(); });
-      ovLeaflet.flyToBounds(b, Object.assign({ duration: .9 }, opt));
-    } else ovLeaflet.fitBounds(b, Object.assign({ animate: false }, opt));
-  };
+  let whoOn = -1;
   const whoBeat = on => {
-    const was = whoOn; whoOn = on;
+    whoOn = on;
     const mode = WHO_BEAT[on] || null;
     if (whoShow) whoShow(mode);
     /* the metro's edge belongs to beats 2 and after, but not to the
        commuting maps, which are about the places, not the line */
     if (mode){ window.ovMetroHidden = true; ovMsaVis(false); }
     if (window.ovUpdateCallouts) window.ovUpdateCallouts();
-    if (ovManual) return;
-    /* into a commuting beat and between them: a flight, when the reader
-       has scrolled from the next beat; back out, a flight to where the
-       scroll camera stands for the beat arrived at; a jump from elsewhere
-       (another section, a link) lands without one */
-    const nextTo = was >= 0 && Math.abs(on - was) === 1;
-    if (mode) whoFit(on, nextTo);
-    else if (was in WHO_BEAT){
-      const t = ovCamTarget(); if (!t) return;
-      const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
-      if (nextTo && !reduce){
-        whoFlying = true;
-        ovLeaflet.once("moveend", () => { whoFlying = false; ovZoom(); });
-        ovLeaflet.flyTo(t.center, t.zoom, { duration: .9 });
-      } else ovLeaflet.setView(t.center, t.zoom, { animate: false });
-    }
   };
   function ovZoom(){
     const on = ovBeat();
     if(window.ovScrollyOn) return;       // the ov2 engine drives the map
     if(!ovWrap||!ovLeaflet) return;
     if (on != null && on !== whoOn) whoBeat(on);
-    if (WHO_BEAT[whoOn]) return;         // a commuting map holds its own frame
     /* the first page is the admin's alone: its boundary and label, and no
        metro yet. The metro's edge and chip are drawn only once the page
-       that introduces it — city against metro — has come into view. */
+       that introduces it — city against metro — has come into view. The
+       commuting maps leave the edge off (whoBeat) */
     const msaEl = document.getElementById("page-overview-msa");
     const hideMetro = !!msaEl &&
       msaEl.getBoundingClientRect().top >= pagesEl.clientHeight * 0.6;
-    if (hideMetro !== !!window.ovMetroHidden || (!hideMetro && ovMsaHidden)){
+    if (!WHO_BEAT[whoOn] && (hideMetro !== !!window.ovMetroHidden || (!hideMetro && ovMsaHidden))){
       window.ovMetroHidden = hideMetro;
       ovMsaVis(!hideMetro);
       if (window.ovUpdateCallouts) window.ovUpdateCallouts();
     }
     if(ovManual) return;                 // the reader has the wheel until reset
-    if (whoFlying) return;               // the flight back to the metro runs out first
     /* The pull-back from admin to metro runs while the second page slides
        in: the camera holds the city until that page's top enters at the foot
        of the viewport, reaches the full metro fit as the page settles under
@@ -10277,14 +10232,9 @@
   window.ovMapStep = function(k){
     if(!ovLeaflet) return;
     /* the commuting beats, for the dormant second layout too */
+    /* the commuting beats keep the metro's fit, as the second beat has it */
+    const commute = !!WHO_BEAT[k];
     if (whoShow) whoShow(WHO_BEAT[k] || null);
-    if (WHO_BEAT[k]){
-      ovLeaflet.invalidateSize({ animate: false });
-      window.ovMetroHidden = true; ovMsaVis(false);
-      whoFit(k, false); ovFitLast = k;
-      if (window.ovUpdateCallouts) window.ovUpdateCallouts();
-      return;
-    }
     /* the map's container now changes size without the window doing so —
        it moves between the figure's locator slot and the full stage — and
        Leaflet fits against a cached size until it is told otherwise. Done
@@ -10304,8 +10254,8 @@
     ovFitLast = k;
     /* the first step is the admin's alone — the metro edge fades in as the
        flight pulls back to the region */
-    window.ovMetroHidden = k === 0;
-    ovMsaVis(k !== 0);
+    window.ovMetroHidden = k === 0 || commute;
+    ovMsaVis(k !== 0 && !commute);
     const mapEl = document.getElementById("ovMap");
     if (mapEl) mapEl.classList.remove("pl-on");   // the places explorer is gone (2026-10-05)
     if (window.ovUpdateCallouts) window.ovUpdateCallouts();
@@ -10324,7 +10274,7 @@
     }
     lastScrollTop=pagesEl.scrollTop;
   }, {passive:true});
-  window.addEventListener("resize", ()=>{ if(ovLeaflet){ ovLeaflet.invalidateSize(); if (WHO_BEAT[whoOn] && !ovManual) whoFit(whoOn, false); ovZoom(); } });
+  window.addEventListener("resize", ()=>{ if(ovLeaflet){ ovLeaflet.invalidateSize(); ovZoom(); } });
 
   /* ---------- v-3 navigation option: one page per section ----------
      Built from sectionDefs, so the nav, the pager and the journey panel can
