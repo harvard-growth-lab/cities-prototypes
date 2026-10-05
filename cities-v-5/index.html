@@ -3243,10 +3243,11 @@
   }
   .pv-open .pv-ico{flex:none;width:15px;height:15px;}
   .pv-open:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
-  /* opt-1: on the frame's edge, as a pill, at the right */
+  /* opt-1: on the frame's edge, at the right (a 4px corner, as the
+     answer's tab: Nil, 2026-10-04, no pills on these) */
   .pv-open--frame{
     position:absolute;z-index:6;top:calc(-1 * var(--panel-pt) - 14px);right:calc(-1 * var(--panel-px) + 18px);
-    height:26px;padding:0 11px 0 9px;background:#fff;border:1px solid var(--border-strong);border-radius:13px;color:var(--ink-soft);
+    height:26px;padding:0 11px 0 9px;background:#fff;border:1px solid var(--border-strong);border-radius:4px;color:var(--ink-soft);
   }
   .pv-open--frame:hover{border-color:var(--teal);color:var(--teal);}
   html:not([data-presentat]) .pv-open--frame,
@@ -3257,7 +3258,7 @@
   html[data-presentat="eyebrow"] .pv-open--eyebrow{display:inline-flex;}
   /* opt-3: at the right end of the section bar */
   .pv-open--bar{
-    align-self:center;flex:none;margin-left:16px;height:32px;padding:0 12px;border:1px solid var(--border-strong);border-radius:6px;
+    align-self:center;flex:none;margin-left:16px;height:32px;padding:0 12px;border:1px solid var(--border-strong);border-radius:4px;
     font-size:13.5px;color:var(--ink);background:#fff;
   }
   .pv-open--bar:hover{border-color:var(--teal);color:var(--teal);}
@@ -3299,7 +3300,7 @@
   .pv-nav{flex:none;display:flex;align-items:center;gap:8px;}
   .pv-btn{
     appearance:none;display:inline-flex;align-items:center;justify-content:center;gap:6px;height:38px;min-width:38px;padding:0 12px;
-    background:#fff;border:1px solid var(--border-strong);border-radius:8px;cursor:pointer;
+    background:#fff;border:1px solid var(--border-strong);border-radius:4px;cursor:pointer;
     font:inherit;font-size:15px;font-weight:600;color:var(--ink);
   }
   .pv-btn:hover:not(:disabled){border-color:var(--teal);color:var(--teal);}
@@ -3315,7 +3316,7 @@
   .pv-foot-lab{font-size:14px;font-weight:600;color:var(--ink-soft);margin-right:4px;}
   .pv-q{
     appearance:none;display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:6px 12px;
-    background:#fff;border:1px solid var(--border-strong);border-radius:8px;cursor:pointer;text-align:left;
+    background:#fff;border:1px solid var(--border-strong);border-radius:4px;cursor:pointer;text-align:left;
     font:inherit;font-size:16px;line-height:1.3;color:var(--ink);
   }
   .pv-q:hover{border-color:var(--teal);}
@@ -3434,7 +3435,7 @@
   #page-export-basket .ct-panel.is-asked{border-color:var(--teal);box-shadow:0 0 0 .5px var(--teal);}
   .mi-asktab{
     position:absolute;left:18px;top:-13px;z-index:6;display:inline-flex;align-items:center;gap:8px;
-    height:26px;max-width:calc(100% - 36px);padding:0 3px 0 11px;background:#fff;border:1px solid var(--teal);border-radius:13px;
+    height:26px;max-width:calc(100% - 36px);padding:0 3px 0 11px;background:#fff;border:1px solid var(--teal);border-radius:4px;
     font-family:'Source Sans 3','Source Sans Pro',sans-serif;font-size:12.5px;line-height:1;color:var(--ink-soft);white-space:nowrap;
     animation:mi-asktab-in .2s ease-out;
   }
@@ -3443,7 +3444,7 @@
   .mi-asktab-sep{flex:none;width:1px;height:14px;background:var(--border-strong);}
   .mi-asktab-back{
     position:relative;appearance:none;display:inline-flex;align-items:center;gap:5px;height:20px;margin:0;padding:0 8px;
-    border:0;border-radius:10px;background:none;font:inherit;font-size:12.5px;font-weight:600;color:var(--teal);cursor:pointer;
+    border:0;border-radius:2px;background:none;font:inherit;font-size:12.5px;font-weight:600;color:var(--teal);cursor:pointer;
     overflow:hidden;text-overflow:ellipsis;
   }
   /* a 44px target on a 20px button */

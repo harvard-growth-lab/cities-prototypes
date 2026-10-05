@@ -730,7 +730,7 @@ empty sector-key slot under the ranking is dropped in the view.
 
 *Where its button sits — an opt study ("Present button",
 `#miPresentAt`, `html[data-presentat]`).* opt-1 (default) a "Present"
-pill on the frame's top-right edge (`.pv-open--frame`, built into each
+button on the frame's top-right edge (`.pv-open--frame`, built into each
 figure, the mirror of the answer tab on the left); opt-2 a "Present"
 word after the beat's count in the text column (`.pv-open--eyebrow`,
 made by the mount with each eyebrow); opt-3 a "Present" button at the
@@ -739,7 +739,7 @@ right end of the section bar, only while a figure section is showing
 
 *Checking it.* `handoff/presenter-edges.mjs` runs the cases above;
 `handoff/presenter-check.mjs` (with the harness; `W`, `H`,
-`SHOTS=1` writes to `$S/pv/`) opens the view from the frame's pill,
+`SHOTS=1` writes to `$S/pv/`) opens the view from the frame's button,
 steps the three beats, asks and un-asks a question from the footer,
 uses Home, Escape and P, and lists the three placements; it prints
 whether the figure fits between the bar and the footer and the smallest
@@ -996,6 +996,10 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
   prose beside the figure: the Viewing badge, the explainer panels, the
   donut (2026-10-01/02). When a number belongs to the chart, put it on the
   chart rather than in a second graphic in the text.
+- **Buttons and tabs are 4px rounded rectangles, not pills** (2026-10-04,
+  Nil, on the presenter view and the "Showing an answer" tab). The house
+  corner is 4px; a control nested inside one (the tab's "Back to …") takes
+  2px so the two corners sit together. Round dots stay round.
 - Sketch pages and `nt-prototypes/` stay untracked; `.claude/` is untracked.
 
 ## 8. Open items at hand-off
@@ -1141,8 +1145,8 @@ hand-off (`ef7258d`); keep it so — run the auditor (§3) after colour work.
 
 0g. **The presenter view: built 2026-10-04** (§4, "The presenter view").
    Nil asked to brainstorm where its button goes; three places are built
-   as the "Present button" study (frame pill, the beat's counter, the
-   section bar), with the frame pill as the default. A three-lens review
+   as the "Present button" study (frame button, the beat's counter, the
+   section bar), with the frame button as the default. A three-lens review
    (logic, CSS and full screen, keyboard) found 13 problems, all fixed
    the same day and covered by `handoff/presenter-edges.mjs`; it also
    found that a year switch left the old build's answer tab on the frame

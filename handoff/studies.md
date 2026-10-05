@@ -10,7 +10,7 @@ verify a change under each option.
 |---|---|---|---|---|
 | Control row | `miRowOpt` | `data-row` = tray / sentence | opt-1 tray · **opt-2 sentence** (default since 2026-10-04) | 0 1 3 4 5 6 7 |
 | Answer shown | `miAskCue` | `.ct-panel.is-asked` | opt-1 marks only · **opt-2 tab on the frame** (default) | all three beats |
-| Present button | `miPresentAt` | `html[data-presentat]` = frame / eyebrow / bar | **opt-1 pill on the frame** (default) · opt-2 word after the beat's count · opt-3 button in the section bar | all three beats (and Worker Flows) |
+| Present button | `miPresentAt` | `html[data-presentat]` = frame / eyebrow / bar | **opt-1 button on the frame** (default) · opt-2 word after the beat's count · opt-3 button in the section bar | all three beats (and Worker Flows) |
 | Level control | `miLevelOpt` | `data-levelctl` = toggle / menu | opt-1 toggle Sector · Industry · opt-2 menu 6-digit · 4-digit · Sector | 0 4 |
 | Key actions | `miKeyOpt` | `data-key` = inline / card | opt-1 inline · opt-2 card | 0 4 7 |
 | Sector colours | `miPal` | `data-pal` = house / tol | opt-1 house · opt-2 Paul Tol muted | 0 4 |
@@ -29,7 +29,7 @@ are in `treemap.js` near `const rowEl = document.getElementById(p + "RowOpt")`,
 What each option is:
 
 - **Present button** — where the presenter view's door sits (HANDOFF §4,
-  "The presenter view"): opt-1 a "Present" pill on the frame's top-right
+  "The presenter view"): opt-1 a "Present" button on the frame's top-right
   edge, mirroring the answer tab on the left; opt-2 "Present" after the
   beat's count in the text column ("Metro Industries 1/3  Present  opt");
   opt-3 a "Present" button at the right end of the section bar, shown only

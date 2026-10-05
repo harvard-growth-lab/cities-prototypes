@@ -280,3 +280,17 @@ On 2026-10-02 Nil relayed the stakeholders: a narrower text column, more room fo
 **Why:** the figures are SVGs on a fixed 880-unit box scaled to the frame, so a CSS size inside them is in units and shrinks with the frame (11 units read as 7.6px in a 1200 window); "12px in the stylesheet" is not what the reader sees.
 **How to apply:** for new or changed text near the figures, keep it ≥12.5px on screen at every width; in Metro Industries size SVG text as calc(Npx / var(--mi-s)); check with handoff/type-audit.mjs (measures through getScreenCTM) at desktop, laptop and phone sizes. Related: [[feedback_narrative_plain]], [[headless-verify-v5]].
 ```
+
+### feedback_no_pills.md
+
+---
+name: feedback-no-pills
+description: Buttons and tabs use the house 4px rounded rectangle, never pill shapes; nested controls take 2px
+metadata:
+  type: feedback
+---
+
+On 2026-10-04 Nil asked that the presenter view's buttons and the "Showing an answer" tab on the Metro Industries frame stop being pills: "make them our 4px round rectangles". The site's own corner is `border-radius:4px` (the selects, the dark buttons, the focus ring); the pills had been 13px on 26px-tall controls, and the presenter's bar and footer buttons 6 to 8px. Done in cities-v-5 (the commit after d2d47f9).
+
+**Why:** a fully rounded control reads as a different design language from the rest of the tool; Nil wants one corner across the controls.
+**How to apply:** for any new button, tab, chip or door in cities-v-5, use 4px corners; a control set inside another (an inner hover ground) uses 2px so the corners nest. Status dots and markers stay round (50%). Related: [[feedback_light_controls]].

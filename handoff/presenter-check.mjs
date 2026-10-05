@@ -1,6 +1,6 @@
 /* The presenter view, end to end (HANDOFF §4, "The presenter view").
    HARNESS_MS=120000 S=<dir> W=1440 H=900 [SHOTS=1] node handoff/verify-harness.mjs handoff/presenter-check.mjs "http://127.0.0.1:8912/cities-v-5/"
-   Opens the view from the frame pill, steps the beats, asks and un-asks a question from the footer,
+   Opens the view from the frame button, steps the beats, asks and un-asks a question from the footer,
    uses Home, Escape and P, lists the three placements; prints whether the figure fits between the
    bar and the footer and the smallest text on screen. SHOTS=1 writes to $S/pv/ (make it first). */
 export async function run({ evalJs, sleep, shot, emulate, log }){
