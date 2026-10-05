@@ -27,6 +27,8 @@ const evalJs = async expr => { const r = await send('Runtime.evaluate', { expres
   if (r.result.exceptionDetails) throw new Error(r.result.exceptionDetails.exception?.description || JSON.stringify(r.result.exceptionDetails)); return r.result.result.value; };
 const shot = async (name, clip) => { const r = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true, ...(clip ? { clip } : {}) }); fs.writeFileSync(name, Buffer.from(r.result.data, 'base64')); };
 try {
+  /* PRELOAD=<file>: a script run in the page before its own, to stage data the source does not have */
+  if (process.env.PRELOAD) await send('Page.addScriptToEvaluateOnNewDocument', { source: fs.readFileSync(process.env.PRELOAD, 'utf8') });
   await send('Page.navigate', { url: process.argv[3] }); await sleep(2500);
   const mod = await import(pathToFileURL(path.resolve(process.argv[2])).href);
   await mod.run({ evalJs, sleep, shot, emulate, log: x => out.push(x) });

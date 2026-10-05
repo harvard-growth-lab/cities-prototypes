@@ -95,6 +95,10 @@ module `handoff/verify-example.mjs`. Run:
 S=/tmp/shots node handoff/verify-harness.mjs handoff/verify-example.mjs "http://127.0.0.1:8912/cities-v-5/"
 ```
 
+`PRELOAD=<file>` runs a script in the page before its own, to stage data the
+source does not have (2026-10-05: a setter on `window.BOSTON_INDUSTRIES_2024`
+that put two of beat 3's twelve behind their peers, to draw the left-hand bars).
+
 Notes on the harness: Chrome is `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`;
 it needs `--remote-allow-origins=*`; `const`/`let` at the top level of a
 `Runtime.evaluate` persist between calls, so wrap expressions in an IIFE;
@@ -200,11 +204,24 @@ rule (`STATE` table), and `setStep` drops what a beat cannot carry.
   (`R2 = ranking(rankPool(), true)`), with "Sort by" Concentration / Jobs /
   Against peers. The peers are the source's own (2026-10-04, see §6):
   `peerRca` is the metro's concentration measured against its five peer
-  metros, so "Against peers" sorts by it on a log scale from the 1× line
-  ("Times as concentrated as in the peer metros"; 71× for fabric coating,
-  all 12 ahead), and the tick on the concentration view is the peers'
-  own rate against the nation, `rca / peerRca`, keyed "The five peer
-  metros together". The bars and the axis start at 0, and 1×, the
+  metros, and the tick on the concentration view is the peers' own rate
+  against the nation, `rca / peerRca`, keyed "The five peer metros
+  together". "Against peers" sorts by the lead, `gapOf()`: the metro's
+  rate less the peers', both as printed (10.8 − 2.4 = 8.4), drawn from 0
+  on the concentration view's own linear axis ("Ahead of the peer
+  metros, in times the national rate", ticks +2× … +10×, 0 named "Same
+  as the peers"); ahead is teal to the right, behind orange to the left
+  (2026-10-05, Nil: "keep the x-axis as how it's in other format", the
+  diverging bars of the generated version back, replacing a log axis of
+  the ratio). With nothing behind, the domain is the concentration
+  view's, so the ticks hold still when the order changes. All 12 are
+  ahead in the source (missile parts +10.1, biotechnology R&D +8.4,
+  storage devices last at +2.7), so no bar goes left in Boston; of the
+  258 industries over 1×, 52 are behind their peers, all lower in the
+  ranking. With one behind, `fitGap()` reaches the domain left until the
+  longest bar there keeps its label's measured width before the plot's
+  edge (refitted with the gutters). The card on a row gives the peers'
+  rate and the ratio. The bars and the axis start at 0, and 1×, the
   national rate, is a labelled line over them (item 0f in §8).
   **Fabric coating mills are left out of this ranking** (2026-10-04, Nil:
   "from the last beat, remove the Fabric coating"): `RANK_LEAVE_OUT` in
@@ -1255,8 +1272,9 @@ reads 2022 (687,736 jobs, 206 per 100), so the two sections now disagree
    most specialized industries do against the peers) "How do these
    specialties compare with the peer metros?" (Sort: concentration
    against peers; all twelve are more concentrated here than in the five
-   peers together, missile parts leads at 54 times their share,
-   biotechnology R&D is ninth at 4.5 as the peers are strong in it too;
+   peers together, so every bar runs right; missile parts lead, 10.3
+   against the peers' 0.2, and biotechnology R&D is second, 10.8 against
+   2.4;
    "peer metros" is the term with its card) and "Which of these
    specialties employ the most people?" (Sort: jobs; biotechnology R&D
    with 61,687 of the twelve's 86,003, laboratory instruments and savings

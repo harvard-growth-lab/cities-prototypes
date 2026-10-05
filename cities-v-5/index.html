@@ -7013,7 +7013,7 @@
             <div class="ask-item">
               <button type="button" class="ask-q" data-ask="b3q1" aria-expanded="false" aria-controls="miAsk-b3q1" aria-describedby="miAskHint"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">How do these specialties compare with the peer metros?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
               <div class="ask-ans" id="miAsk-b3q1" hidden>
-                <p class="ask-a">All twelve are more concentrated here than in the five <button type="button" class="term" data-term="peers" aria-expanded="false">peer metros</button> together. Guided missile and space vehicle parts lead, at 54 times their share; biotechnology R&amp;D, the largest, is ninth at 4.5 times, as the peers are strong in it too.</p>
+                <p class="ask-a">All twelve are more concentrated here than in the five <button type="button" class="term" data-term="peers" aria-expanded="false">peer metros</button> together, so every bar runs right of their line. Guided missile and space vehicle parts lead, at 10.3 times the national rate against the peers&rsquo; 0.2. Biotechnology R&amp;D, the largest, is second: the peers are strong in it too, at 2.4, but the metro is at 10.8.</p>
               </div>
             </div>
             <div class="ask-item">
@@ -7675,7 +7675,9 @@
         times theirs.</p>
         <p>The ranking&rsquo;s black mark is the peers&rsquo; own rate against the nation, which follows from
         the two: where it falls short of the metro&rsquo;s bar, the metro is the more specialized of the six.
-        The &ldquo;Against peers&rdquo; order ranks the industries by that lead.</p>
+        The &ldquo;Against peers&rdquo; order ranks the industries by that lead, the metro&rsquo;s rate less
+        the peers&rsquo;, and draws it as the bar from 0: to the right where the metro is ahead, to the left
+        where it is behind.</p>
         <div class="gl-peers" id="glPeers"></div>
       </section>
     </div>
@@ -7791,7 +7793,7 @@
 <script src="data/geo/who_commute_geo.js"></script>
 <script src="industries-2024.js"></script>
 <script src="industries-2014.js"></script>
-<script src="treemap.js?v=handoff"></script>
+<script src="treemap.js?v=2026-10-05-peers"></script>
 <script>
   /* ---------- treemaps: color by ----------
      Handled entirely in treemap.js — it wires the visible .seg controls and

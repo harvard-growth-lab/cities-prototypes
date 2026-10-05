@@ -3731,7 +3731,7 @@
       /* only the ranking among the clusters - the third beat's - ever
          shows the tier words */
       const right = plotR(among && rankMode === "tier");
-      return { ranked, ml,
+      const R = { ranked, ml,
         rankIdx: new Map(ranked.map((d, i) => [d.name, i])),   /* by concentration: the badges' order */
         pos: new Map(ranked.map((d, i) => [d.name, i])),       /* the order on screen, which sorting changes */
         rankRow: new Map(ranked.map(d => [d.name, d])),
@@ -3742,29 +3742,51 @@
         xr: d3.scaleLinear()
           .domain([0, (d3.max(ranked, d => Math.max(d.rca, d.peerRate || 0)) || 2) * 1.06])
           .range([ml + 12, right]),
-        /* against the peers: the metro's concentration over theirs, on a log
-           scale from the 1x line (the same share as the peers) - ahead to the
-           right, behind to the left */
-        xg: (function(){
-          const vals = ranked.map(d => d.peerRca).filter(v => v != null);
-          const lo = Math.min(1, d3.min(vals) || 1) / 1.25, hi = Math.max(1, d3.max(vals) || 2) * 1.15;
-          return d3.scaleLog().domain([lo, hi]).range([ml + 12, right]);
-        })() };
+        /* against the peers: how far the metro's rate is ahead of theirs,
+           in the concentration view's own unit and on its own linear axis
+           (2026-10-05, Nil: "keep the x-axis as how it's in other format"),
+           from 0, the same rate as the peers - ahead to the right, behind
+           to the left. With nothing behind, the domain is the concentration
+           view's, so the ticks stay put when the order changes; a lead
+           below 0 opens room on the left for its bar and its label (fitGap) */
+        xg: d3.scaleLinear().range([ml + 12, right]) };
+      fitGap(R);
+      return R;
     }
-    const gapOf = d => d.peerRca;
+    /* the metro's rate less the peers' own, both against the nation, from
+       the figures as printed (10.8 and 2.4 make 8.4), so the lead on the
+       bar is the difference of the two numbers a reader can see */
+    function gapOf(d){
+      return d.peerRate == null ? null : Math.round((+d.rca.toFixed(1) - +d.peerRate.toFixed(1)) * 10) / 10;
+    }
     const gapBox = (R, d, pos) => {
-      const g = gapOf(d), base = R.xg(1);
+      const g = gapOf(d), base = R.xg(0);
       if (g == null) return { x: base, y: rowY(pos) - BAR_H / 2, w: 0, h: BAR_H };
       return { x: Math.min(base, R.xg(g)), y: rowY(pos) - BAR_H / 2, w: Math.max(2, Math.abs(R.xg(g) - base)), h: BAR_H };
     };
     /* "71x", "4.5x": a decimal under 10, none above, as the reference prints a multiple */
     const fmtX = v => v.toFixed(v < 10 ? 1 : 0) + "\u00d7";
+    /* a lead, signed: "+8.4x", "\u22120.6x" */
+    const fmtLead = v => (v > 0 ? "+" : v < 0 ? "\u2212" : "") + Math.abs(v).toFixed(1) + "\u00d7";
+    /* the peers order's domain: the concentration view's while every lead is
+       ahead; with one behind, it reaches far enough left that the longest
+       bar there still has its label's width, and 14 more, before the plot's
+       edge. Measured, so it is fitted again whenever the gutters are, since
+       the label is a fixed size on screen and the units are not. */
+    function fitGap(R){
+      const hi = R.xr.domain()[1];
+      const min = Math.min(0, d3.min(R.ranked, gapOf) || 0);
+      if (min >= 0){ R.xg.domain([0, hi]); return; }
+      const [a, b] = R.xg.range();
+      const k = Math.min(0.5, (widest("mi-val is-top", [fmtLead(min)]) + 14) / (b - a));
+      R.xg.domain([(min - k * hi) / (1 - k), hi]);
+    }
     /* the three orders a reader can ask for: how concentrated, how big, and
        how far ahead of or behind the peers */
     const SORTS = {
       rca:  (a, b) => b.rca - a.rca,
       jobs: (a, b) => b.employ - a.employ,
-      gap:  (a, b) => (b.peerRca == null ? -1 : b.peerRca) - (a.peerRca == null ? -1 : a.peerRca),
+      gap:  (a, b) => (gapOf(b) == null ? -Infinity : gapOf(b)) - (gapOf(a) == null ? -Infinity : gapOf(a)) || b.rca - a.rca,
       trad: (a, b) => tradabilityOf(b.name) - tradabilityOf(a.name)
     };
     let sortKey = "rca";
@@ -3802,7 +3824,7 @@
       3: d => d.rank < 0
         ? { box: posSplit.get(d.name) || allSpot(d), fill: GREY, op: 0, rx: 0 }
         : sortKey === "gap"
-          ? { box: gapBox(R1, d.row, R1.pos.get(d.name)), fill: (gapOf(d.row) || 0) >= 1 ? TEAL : ORANGE, op: 1, rx: 0 }
+          ? { box: gapBox(R1, d.row, R1.pos.get(d.name)), fill: d.row.ahead ? TEAL : ORANGE, op: 1, rx: 0 }
           : { box: { x: xr(0), y: rowY(R1.pos.get(d.name)) - BAR_H / 2,
                      w: Math.max(2, xr(d.row.rca) - xr(0)), h: BAR_H },
               fill: d.rank < 3 ? TEAL : MUTED, op: 1, rx: 0 },
@@ -3840,7 +3862,7 @@
       6: d => d.rank2 < 0
         ? { box: clusterSpot(d), fill: fillBy(d), op: 0, rx: 0 }
         : sortKey === "gap"
-          ? { box: gapBox(R2, d.row2, R2.pos.get(d.name)), fill: (gapOf(d.row2) || 0) >= 1 ? TEAL : ORANGE,
+          ? { box: gapBox(R2, d.row2, R2.pos.get(d.name)), fill: d.row2.ahead ? TEAL : ORANGE,
               op: 1, rx: 0, delay: arriving ? 300 : 0 }
           : { box: { x: R2.xr(0), y: rowY(R2.pos.get(d.name)) - BAR_H / 2,
                      w: Math.max(2, R2.xr(d.row2.rca) - R2.xr(0)), h: BAR_H },
@@ -4020,18 +4042,26 @@
        its state: the axis and its name, the leading three braced, and each
        row's name, value, peer tick and badge */
     function drawGapAxis(R, AG){
-      const [lo, hi] = R.xg.domain();
-      const ticks = [0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100, 200].filter(t => t >= lo && t <= hi);
+      /* the concentration view's steps, signed, and 0 - the peers' own rate -
+         as the line the bars leave from, named under the rows as the
+         national rate is in that view */
+      const yEnd = MT + R.ranked.length * RH;
+      /* the steps are the concentration view's own (2x as shipped), carried
+         below 0 when a lead is negative */
+      const step = d3.tickStep(0, R.xr.domain()[1], 5), [lo, hi] = R.xg.domain();
+      const ticks = d3.range(Math.ceil(lo / step) * step, hi + 1e-9, step).map(t => Math.round(t * 1e6) / 1e6);
       AG.selectAll("g.mi-tick").data(ticks).join("g").attr("class", "mi-tick")
-        .call(g => g.append("line").attr("class", d => "mi-grid" + (d === 1 ? " is-base" : ""))
+        .call(g => g.append("line").attr("class", d => "mi-grid" + (d === 0 ? " is-base" : ""))
           .attr("x1", d => R.xg(d)).attr("x2", d => R.xg(d))
-          .attr("y1", GRID_TOP).attr("y2", MT + R.ranked.length * RH))
-        .call(g => g.append("text").attr("class", "mi-ticklab")
+          .attr("y1", GRID_TOP).attr("y2", d => d === 0 ? yEnd + 4 : yEnd))
+        .call(g => g.append("text").attr("class", d => "mi-ticklab" + (d === 0 ? " mi-nation-tick" : ""))
           .attr("x", d => R.xg(d)).attr("y", TICK_Y).attr("text-anchor", "middle")
-          .text(d => d + "\u00d7"));
+          .text(d => d === 0 ? "0" : fmtLead(d).replace(".0", "")));
+      AG.append("text").attr("class", "mi-nation-lab")
+        .attr("x", R.xg(0) + 5).attr("y", yEnd + 18).text("Same as the peers");
       AG.append("text").attr("class", "mi-axname")
         .attr("x", R.ml + 12).attr("y", HEAD_Y)
-        .text("Times as concentrated as in the peer metros");
+        .text("Ahead of the peer metros, in times the national rate");
       AG.append("text").attr("class", "mi-colhead")
         .attr("x", JOBS_R).attr("y", HEAD_Y).attr("text-anchor", "end").text("Jobs");
       tradHead(AG, R);
@@ -4216,15 +4246,15 @@
       t(R.row).attr("transform", d => "translate(0," + rowY(R.pos.get(d.name)) + ")");
       (dur ? R.brace.transition().duration(dur / 2) : R.brace)
         .style("opacity", sortKey === "rca" ? 1 : 0);
-      /* under the peers order the value is the metro over the peers,
-         printed at the bar's far end; the peer tick stands down, since the
-         peers are the 1x line */
+      /* under the peers order the value is the metro's lead over the peers,
+         signed, printed at the bar's far end; the peer tick stands down,
+         since the peers are the 0 line */
       const gap = sortKey === "gap";
       const val = R.row.select(".mi-val");
-      val.text(d => gap ? (gapOf(d) == null ? "No value" : fmtX(gapOf(d))) : d.rca.toFixed(1) + "\u00d7");
-      t(val).attr("x", d => gap ? (gapOf(d) == null ? R.xg(1) + 8 : gapOf(d) >= 1 ? R.xg(gapOf(d)) + 8 : R.xg(gapOf(d)) - 8)
+      val.text(d => gap ? (gapOf(d) == null ? "No value" : fmtLead(gapOf(d))) : d.rca.toFixed(1) + "\u00d7");
+      t(val).attr("x", d => gap ? (gapOf(d) == null ? R.xg(0) + 8 : gapOf(d) >= 0 ? R.xg(gapOf(d)) + 8 : R.xg(gapOf(d)) - 8)
                                 : Math.max(R.xr(d.rca), R.xr(d.peerRate || 0)) + 9)
-        .attr("text-anchor", d => gap && gapOf(d) != null && gapOf(d) < 1 ? "end" : "start");
+        .attr("text-anchor", d => gap && gapOf(d) != null && gapOf(d) < 0 ? "end" : "start");
       t(R.row.select(".mi-peer")).style("opacity", gap ? 0 : 1);
       t(R.row.select(".mi-peer-halo")).style("opacity", gap ? 0 : 1);
       if (R.nation) t(R.nation).style("opacity", gap ? 0 : 1);
@@ -4341,7 +4371,7 @@
         const lit = new Set();
         G.selectAll("g.mi-row.is-lit").each(d => lit.add(d.name));
         R.ml = rankGutter(R.ranked);
-        R.xr.range([R.ml + 12, right]); R.xg.range([R.ml + 12, right]);
+        R.xr.range([R.ml + 12, right]); R.xg.range([R.ml + 12, right]); fitGap(R);
         A.selectAll("*").remove(); AG.selectAll("*").remove(); G.selectAll("*").remove();
         drawGapAxis(R, AG);
         drawRanking(R, A, G);
@@ -5816,7 +5846,8 @@
           cellOf("Share of metro jobs", fmtShare(d.employ / jobsTotal)) +
           '<dt>Complexity</dt>' + cxCell(d.name) +
           (clusterOf(d) == null ? "" : cellOf("Tradability", tierLabel(d))) +
-          (onRank ? cellOf("Against the peer metros", rrow.peerRca == null ? "No value" : fmtX(rrow.peerRca) + " their share") : "") +
+          (onRank ? cellOf("The peer metros", rrow.peerRate == null ? "No value" : rrow.peerRate.toFixed(1) + "\u00d7") +
+                    cellOf("Against the peer metros", rrow.peerRca == null ? "No value" : fmtX(rrow.peerRca) + " their share") : "") +
           '</dl>';
         const labRow = rrow;
         const rank = (step === 6 && R2.rankIdx.has(d.name) && R2.rankIdx.get(d.name) < 3)
