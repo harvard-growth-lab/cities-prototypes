@@ -1224,6 +1224,44 @@ first section only** (`feb8814`; the guard, `ltAtStart`, checks
 and for a finger pulling down. From any later section the top is just the
 top of that section.
 
+**The top bar folded into a menu** (2026-10-05, a Site Layout choice, Top
+bar: "Full bar" (default) or "In a menu", `html[data-masthead="menu"]`,
+`?masthead=menu`, `setMasthead`). Nil: "when the user scrolls down from the
+landing, the whole top nav becomes a hamburger menu before the location
+dropdown, and the top nav bar is not shown in the city diagnosis". In the
+tool the toolbar is gone and the section bar is the page's one bar; a 38px
+button (32 under 1200, 30 on a phone; light, 4px corners, labelled for
+screen readers) stands at its left, before the location (which narrows to
+120px on a phone), and opens a panel: the Growth Lab mark ("Back to the
+start", the logo's job), City Diagnosis (current, teal tint and a teal
+edge), About, Glossary, My Learning Journey; Escape, the arrows, an outside
+press close or move. On the way in the top bar's pieces (the mark, the
+links, the journey button) gather into the button, smaller as they go, and
+the bar under them dissolves onto the section bar (`G.menu`, `G.hk` in
+`ltRender`); back, they come out of it. Checked headless at 1440 and 390,
+contrast 0 failures in 68 states under it.
+
+**City Diagnosis is marked as the page** (2026-10-05, Nil: "more
+prominently highlighted"): in the top bar, on the landing and in the tool
+alike, it is bold teal with a 3px teal line on the bar's bottom edge, as the
+section tabs mark theirs (`.toolbar-links a.current-page::after`; the links
+now stand the bar's full height), and it carries `aria-current="page"`.
+
+**The two ways are one movement** (Nil: "the transition should work the
+same up and down scroll, going forward and backward"). A run starts only
+from a gesture that began at the edge (`ltFromEdge`): going down, at the
+landing's end; going up, at the tool's top. So a swipe up that scrolls the
+tool to its top stops there, as a swipe down that runs the transition stops
+at the tool's top: the gesture that ran it is spent on it (`ltSpend`, a
+non-passive capture listener on both scrollers), so its momentum or more
+notches do not scroll the tool on, or the phone's landing back up. A wheel
+gesture is its events less than 160ms apart and the same way; a touch is a
+finger from down to up. The keys mirror too: ArrowDown, PageDown or Space on
+the landing play it in; ArrowUp, PageUp or Home at the top of the first
+section play it back (not from a field, a menu or a dialog). Within a run
+the scroll moves it either way freely. Checked headless with a trackpad's
+streams, a mouse wheel's notches, the keys and a finger on a phone.
+
 ## 6. Data
 
 - `cities-v-5/industries-2024.js` → `window.BOSTON_INDUSTRIES_2024 =

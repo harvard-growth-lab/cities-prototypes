@@ -191,6 +191,51 @@
     transition:transform .75s cubic-bezier(.22,.75,.25,1);
   }
   #landing.up{transform:translateY(-100%);}
+  /* ---- the top bar folded into a menu (2026-10-05, a Site Layout choice,
+     html[data-masthead="menu"], ?masthead=menu) ----
+     In the tool the top bar is gone: its pieces (the mark, City Diagnosis,
+     About, Glossary, My Learning Journey) live in a menu behind a button at
+     the section bar's left, before the location, and the section bar is the
+     page's one bar. On the way in from the landing the top bar's pieces
+     gather into that button. */
+  .mh{display:none;}
+  html[data-masthead="menu"] #tool .toolbar{display:none;}
+  html[data-masthead="menu"] .secbar .mh{display:flex;align-items:center;flex:none;position:relative;margin-right:12px;}
+  .mh-btn{
+    width:38px;height:38px;display:inline-flex;align-items:center;justify-content:center;padding:0;
+    border:1px solid var(--border-strong);border-radius:4px;background:#fff;color:var(--teal);cursor:pointer;
+    transition:background-color .15s ease,border-color .15s ease;
+  }
+  .mh-btn:hover,.mh-btn[aria-expanded="true"]{border-color:var(--teal);background:var(--teal-tint);}
+  .mh-btn:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+  .mh-menu{
+    position:absolute;top:calc(100% + 10px);left:0;z-index:50;width:264px;padding:8px;
+    display:flex;flex-direction:column;gap:2px;
+    background:#fff;border:1px solid var(--border-strong);border-radius:4px;box-shadow:var(--shadow-md);
+  }
+  .mh-menu[hidden]{display:none;}
+  .mh-item{
+    display:flex;align-items:center;gap:10px;min-height:42px;margin:0;padding:0 12px;
+    border:0;border-radius:4px;background:none;font:inherit;font-size:15px;font-weight:600;
+    color:var(--ink);text-align:left;text-decoration:none;cursor:pointer;
+  }
+  .mh-item:hover{background:#f4f6f5;}
+  .mh-item:focus-visible{outline:2px solid var(--teal);outline-offset:-2px;}
+  .mh-item[aria-current]{color:var(--teal);font-weight:700;background:var(--teal-tint);box-shadow:inset 3px 0 0 var(--teal);}
+  .mh-home{flex-direction:column;align-items:flex-start;justify-content:center;gap:4px;min-height:58px;margin-bottom:4px;border-bottom:1px solid var(--border);border-radius:4px 4px 0 0;}
+  .mh-home img{height:26px;display:block;}
+  .mh-home span{font-size:12.5px;font-weight:600;color:var(--ink-soft);}
+  .mh-journey{margin-top:6px;color:var(--teal);border-top:1px solid var(--border);border-radius:0 0 4px 4px;}
+  .mh-journey svg{flex:none;}
+  @media (max-width:1199px){ .mh-btn{width:32px;height:32px;} }
+  @media (max-width:599px){
+    html[data-masthead="menu"] .secbar .mh{margin-right:8px;}
+    .mh-btn{width:30px;height:30px;}
+    /* room for the button: the location is the city alone here anyway */
+    html[data-masthead="menu"] .secbar .citypick--bar{width:120px;}
+    .mh-menu{width:min(264px, calc(100vw - 2 * var(--frame-pad)));}
+  }
+
   /* the scroll's transition into the tool (2026-10-05; the script has the
      why): two stand-ins travel, the originals stand aside while they do */
   html.lt-run #landing .citypick-btn{visibility:hidden;}
@@ -433,13 +478,18 @@
   .logo-btn img{height:36px;display:block;}
   .toolbar .spacer{flex:1;}
   .landing-header .spacer{flex:1;}
-  .toolbar-links{display:flex;gap:28px;margin-right:14px;align-items:center;flex-shrink:0;}
+  .toolbar-links{display:flex;gap:28px;margin-right:14px;align-items:stretch;align-self:stretch;flex-shrink:0;}
   .toolbar-links a{
+    position:relative;display:flex;align-items:center;
     font-size:14px;font-weight:600;color:var(--ink);text-decoration:none;
     transition:color .15s ease;white-space:nowrap;
   }
   .toolbar-links a:hover{color:var(--teal);}
-  .toolbar-links a.current-page{color:var(--teal);}
+  /* the page the reader is on, marked as the section tabs mark theirs
+     (2026-10-05, Nil: City Diagnosis "more prominently highlighted"): bold
+     teal, and a teal line on the bar's bottom edge, over its hairline */
+  .toolbar-links a.current-page{color:var(--teal);font-weight:700;}
+  .toolbar-links a.current-page::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:3px;background:var(--teal);}
   .datachat-btn{
     display:inline-flex;align-items:center;gap:5px;
     background:none;border:none;border-radius:4px;padding:8px 12px;
@@ -6408,7 +6458,7 @@
     </button>
     <div class="spacer"></div>
     <nav class="toolbar-links">
-      <a href="#" class="current-page" onclick="toggleExplainers(false);return false;">City Diagnosis</a>
+      <a href="#" class="current-page" aria-current="page" onclick="toggleExplainers(false);return false;">City Diagnosis</a>
       <a href="#">About</a>
       <a href="#" onclick="openGlossary(null, this);return false;">Glossary</a>
     </nav>
@@ -6578,7 +6628,7 @@
         </button>
         <div class="spacer"></div>
         <nav class="toolbar-links">
-          <a href="#" class="current-page" onclick="toggleExplainers(false);return false;">City Diagnosis</a>
+          <a href="#" class="current-page" aria-current="page" onclick="toggleExplainers(false);return false;">City Diagnosis</a>
           <a href="#">About</a>
           <a href="#" onclick="openGlossary(null, this);return false;">Glossary</a>
         </nav>
@@ -7998,6 +8048,11 @@
     <div role="group" aria-label="Section bar">
       <button type="button" role="menuitemradio" aria-checked="false" class="sv-opt" data-secbar="parts"><b>By part</b><span>the part you are in, the other a door</span></button>
       <button type="button" role="menuitemradio" aria-checked="false" class="sv-opt" data-secbar="chips"><b>All five</b><span>the numbered chips, as before</span></button>
+    </div>
+    <p class="sv-head" aria-hidden="true">Top bar</p>
+    <div role="group" aria-label="Top bar">
+      <button type="button" role="menuitemradio" aria-checked="false" class="sv-opt" data-masthead="full"><b>Full bar</b><span>the logo and the links stay over the tool</span></button>
+      <button type="button" role="menuitemradio" aria-checked="false" class="sv-opt" data-masthead="menu"><b>In a menu</b><span>folds into a button before the location</span></button>
     </div>
     <p class="sv-head" aria-hidden="true">Navigation bar</p>
     <div role="group" aria-label="Navigation bar">
@@ -10863,6 +10918,54 @@
     snNow.setAttribute("aria-label", (q < 0 ? "" : "Part " + (q + 1) + ", " + PART_NAMES[q] + ": ") + SECTIONS[i].name + ". Sections");
     if (!snMenu.hidden) buildSnMenu();
   }
+  /* the top bar's menu: a button at the section bar's left, shown only when
+     the Site Layout's Top bar is "In a menu" (CSS); its rows do what the top
+     bar's pieces do */
+  {
+    const bar = secNavEl.parentNode, wrap = document.createElement("div");
+    wrap.className = "mh";
+    wrap.innerHTML =
+      '<button type="button" class="mh-btn" aria-expanded="false" aria-controls="mhMenu" aria-label="Menu: Growth Lab, City Diagnosis, About, Glossary, My Learning Journey" title="Menu">' +
+        '<svg viewBox="0 0 18 14" width="18" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M1 1.5h16M1 7h16M1 12.5h16"/></svg></button>' +
+      '<div class="mh-menu" id="mhMenu" role="group" aria-label="Site" hidden>' +
+        '<button type="button" class="mh-item mh-home" data-mh="home"><img src="assets/gl_logo.png" alt="Growth Lab"><span>Back to the start</span></button>' +
+        '<a href="#" class="mh-item" data-mh="diag" aria-current="page">City Diagnosis</a>' +
+        '<a href="#" class="mh-item" data-mh="about">About</a>' +
+        '<a href="#" class="mh-item" data-mh="glossary">Glossary</a>' +
+        '<button type="button" class="mh-item mh-journey" data-mh="journey"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7l9-4 9 4-9 4z"/><path d="M7 9.5V15c0 1.4 2.2 3 5 3s5-1.6 5-3V9.5"/></svg>My Learning Journey</button>' +
+      '</div>';
+    bar.insertBefore(wrap, bar.firstChild);
+    const btn = wrap.querySelector(".mh-btn"), menu = wrap.querySelector(".mh-menu");
+    const open = (on, refocus) => {
+      menu.hidden = !on; btn.setAttribute("aria-expanded", String(on));
+      if (on){ const f = menu.querySelector(".mh-item"); if (f) f.focus({ preventScroll: true }); }
+      else if (refocus) btn.focus({ preventScroll: true });
+    };
+    window.mhClose = () => open(false);
+    btn.addEventListener("click", () => open(menu.hidden));
+    menu.addEventListener("click", e => {
+      const it = e.target.closest("[data-mh]"); if (!it) return;
+      e.preventDefault();
+      const what = it.dataset.mh;
+      open(false, what !== "home");
+      if (what === "home") backToLanding();
+      else if (what === "diag") toggleExplainers(false);
+      else if (what === "glossary") openGlossary(null, btn);
+      else if (what === "journey") openJourney();
+    });
+    wrap.addEventListener("keydown", ev => {
+      if (menu.hidden) return;
+      if (ev.key === "Escape"){ ev.preventDefault(); ev.stopPropagation(); open(false, true); return; }
+      if (ev.key === "ArrowDown" || ev.key === "ArrowUp"){
+        ev.preventDefault();
+        const all = [...menu.querySelectorAll(".mh-item")], at = all.indexOf(document.activeElement), down = ev.key === "ArrowDown";
+        const n = at < 0 ? all[down ? 0 : all.length - 1] : all[(at + (down ? 1 : -1) + all.length) % all.length];
+        if (n) n.focus({ preventScroll: true });
+      }
+    });
+    document.addEventListener("pointerdown", ev => { if (!menu.hidden && !wrap.contains(ev.target)) open(false); });
+    wrap.addEventListener("focusout", ev => { if (!menu.hidden && ev.relatedTarget && !wrap.contains(ev.relatedTarget)) open(false); });
+  }
   /* which drawing of the bar is shown */
   const SECBARS = { parts: "By part", chips: "All five" }, SECBAR_DEFAULT = "parts";
   function secBar(){ const v = document.documentElement.dataset.secbar; return SECBARS[v] ? v : SECBAR_DEFAULT; }
@@ -11063,6 +11166,7 @@
   svOpts.forEach(o => o.addEventListener("click", () => {
     if (o.dataset.layout) setSiteLayout(o.dataset.layout);
     else if (o.dataset.secbar) setSecBar(o.dataset.secbar);
+    else if (o.dataset.masthead) setMasthead(o.dataset.masthead);
     else setSiteNav(o.dataset.nav);
     svOpen(false, true);
   }));
@@ -11070,10 +11174,11 @@
   function syncSv(){
     const lay = siteLayout(), nav = siteNav();
     svOpts.forEach(o => {
-      const on = o.dataset.layout ? o.dataset.layout === lay : o.dataset.secbar ? o.dataset.secbar === secBar() : o.dataset.nav === nav;
+      const on = o.dataset.layout ? o.dataset.layout === lay : o.dataset.secbar ? o.dataset.secbar === secBar()
+               : o.dataset.masthead ? o.dataset.masthead === masthead() : o.dataset.nav === nav;
       o.classList.toggle("is-on", on); o.setAttribute("aria-checked", String(on));
     });
-    svNow.textContent = LAYOUTS[lay] + (secBar() !== SECBAR_DEFAULT ? " \u00b7 all five" : "") + (nav !== "light" ? " \u00b7 " + NAVS[nav] + " bar" : "");
+    svNow.textContent = LAYOUTS[lay] + (secBar() !== SECBAR_DEFAULT ? " \u00b7 all five" : "") + (masthead() === "menu" ? " \u00b7 menu" : "") + (nav !== "light" ? " \u00b7 " + NAVS[nav] + " bar" : "");
   }
   function setSiteNav(v, fromUrl){
     v = NAVS[v] ? v : "light";
@@ -11102,6 +11207,22 @@
     if (activeSec >= 0) centreChip(activeSec, true);
   }
   window.setSecBar = setSecBar;
+  /* the top bar: full over the tool, or folded into the section bar's menu */
+  const MASTHEADS = { full: "Full bar", menu: "In a menu" }, MASTHEAD_DEFAULT = "full";
+  function masthead(){ const v = document.documentElement.dataset.masthead; return MASTHEADS[v] ? v : MASTHEAD_DEFAULT; }
+  function setMasthead(v, fromUrl){
+    v = MASTHEADS[v] ? v : MASTHEAD_DEFAULT;
+    const was = masthead();
+    if (v !== MASTHEAD_DEFAULT) document.documentElement.dataset.masthead = v; else delete document.documentElement.dataset.masthead;
+    syncSv();
+    if (!fromUrl){
+      const u = new URL(location.href);
+      if (v !== MASTHEAD_DEFAULT) u.searchParams.set("masthead", v); else u.searchParams.delete("masthead");
+      history.replaceState(null, "", u.pathname + u.search + u.hash);
+    }
+    if (was !== v){ if (window.mhClose) window.mhClose(); fitSecNav(); window.dispatchEvent(new Event("resize")); }
+  }
+  window.setMasthead = setMasthead;
   /* Escape answers here first, and stops there: the figure's layers must
      not also take a press meant for this menu */
   svEl.addEventListener("keydown", ev => {
@@ -11325,6 +11446,7 @@
   })();
   setSiteNav(new URLSearchParams(location.search).get("nav") || "light", true);
   setSecBar(new URLSearchParams(location.search).get("secbar"), true);
+  setMasthead(new URLSearchParams(location.search).get("masthead"), true);
   setSiteLayout(new URLSearchParams(location.search).get("layout"), true);
 
   showSection(0, false);
@@ -11733,7 +11855,7 @@
      the logo plays it back. A link that opens on a section, and a reader
      who asks for less motion, get the end state at once. */
   const LT_RUN = 760;
-  const lt = { p:0, target:0, raf:0, tw:null, idle:0, dir:1, after:null };
+  const lt = { p:0, target:0, raf:0, tw:null, idle:0, dir:1, spent:0, spentDir:0 };
   let ltG = null;
   const ltSeg = (p, a, b) => Math.min(1, Math.max(0, (p - a) / (b - a)));
   const ltEase = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
@@ -11776,10 +11898,19 @@
       kids: [...panel.children].filter(k => !k.classList.contains("field")), label: panel.querySelector(".field label"),
       /* the header becomes the toolbar only where the toolbar is in view
          at the end; over a later section it fades instead */
-      tbTop: !!tb && Math.abs(tb.getBoundingClientRect().top) < 1,
+      tbTop: !!tb && tb.getClientRects().length > 0 && Math.abs(tb.getBoundingClientRect().top) < 1,
+      /* under the menu layout the top bar folds into the section bar's
+         menu button: its pieces gather there, and the bar dissolves */
+      menu: document.documentElement.dataset.masthead === "menu",
       a: ltRect(src), b: ltRect(dst), ca: ltRect(panel), cb: ltRect(map), vw: innerWidth, vh: innerHeight };
     /* the words' size and their start inside the button, at each end; and
        whether the bar drops the country, which then fades on the way */
+    if (G.menu){
+      const mb = ltRect(document.querySelector(".secbar .mh-btn"));
+      G.mh = ltSeen(mb) ? mb : null;
+      G.hk = [...hdr.children].filter(k => !k.classList.contains("spacer") && k.getClientRects().length)
+        .map(el => { const r = ltRect(el); return { el, cx: r.x + r.w / 2, cy: r.y + r.h / 2 }; });
+    }
     const txt = el => el && el.querySelector(".citypick-txt");
     G.fa = txt(src) ? parseFloat(getComputedStyle(txt(src)).fontSize) : 14.5;
     G.fb = txt(dst) ? parseFloat(getComputedStyle(txt(dst)).fontSize) : 14;
@@ -11812,7 +11943,20 @@
     if (G.label) G.label.style.opacity = (1 - ltSeg(p, 0, .2)).toFixed(3);
     /* the header stays; only over a later section, where the toolbar is
        scrolled away, does it fade */
-    if (!G.tbTop) G.hdr.style.opacity = (1 - ltSeg(p, .55, .95)).toFixed(3);
+    if (G.menu){
+      /* the pieces gather into the menu button, smaller as they go, and the
+         bar under them dissolves onto the section bar */
+      const t = ltEase(ltSeg(p, .05, .6)), o = (1 - ltSeg(p, .15, .55)).toFixed(3);
+      G.hk.forEach(k => {
+        const dx = G.mh ? (G.mh.x + G.mh.w / 2 - k.cx) * t : 0, dy = G.mh ? (G.mh.y + G.mh.h / 2 - k.cy) * t : 0;
+        k.el.style.transform = "translate(" + dx.toFixed(1) + "px," + dy.toFixed(1) + "px) scale(" + (1 - .85 * t).toFixed(3) + ")";
+        k.el.style.opacity = o;
+      });
+      const g = 1 - ltSeg(p, .4, .8);
+      G.hdr.style.backgroundColor = "rgba(255,255,255," + g.toFixed(3) + ")";
+      G.hdr.style.borderBottomColor = "rgba(226,231,232," + g.toFixed(3) + ")";
+      G.hdr.style.boxShadow = "none";
+    } else if (!G.tbTop) G.hdr.style.opacity = (1 - ltSeg(p, .55, .95)).toFixed(3);
     /* the dropdown flies, a size down; where it has nowhere to land it fades */
     if (G.fly && G.a){
       const t = ltEase(ltSeg(p, .08, .85)), b = G.b || G.a;
@@ -11842,10 +11986,12 @@
      run set comes off, and the landing is hidden (into the tool) or left up */
   function ltEnd(into){
     const G = ltG; if (!G) return;
-    [landingEl, G.mapBg, G.hdr, G.label, G.dst].concat(G.kids, G.copy).forEach(el => { if (el) el.removeAttribute("style"); });
+    [landingEl, G.mapBg, G.hdr, G.label, G.dst].concat(G.kids, G.copy, (G.hk || []).map(k => k.el)).forEach(el => { if (el) el.removeAttribute("style"); });
     if (G.card) G.card.remove(); if (G.fly) G.fly.remove();
     document.documentElement.classList.remove("lt-run");
     ltG = null; lt.tw = null; lt.p = lt.target = into ? 1 : 0;
+    /* what is left of the gesture that ran it is spent on it (ltSpend) */
+    lt.spent = performance.now() + 220; lt.spentDir = into ? 1 : -1;
     if (into){
       landingEl.classList.add("hidden");
       if (typeof updateActivePage === "function") updateActivePage();
@@ -11902,24 +12048,63 @@
     if (lt.tw || lt.p !== lt.target || (lt.p > 0 && lt.p < 1)) ltTween(lt.dir > 0 ? 1 : 0, 0);
   });
   const ltDelta = e => e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? innerHeight : 1);
+  /* The two ways are one movement. The gesture that ran the transition is
+     spent on it, either way: what is left of it - a wheel's momentum, more
+     notches in the same flick - does not scroll the tool on past its top
+     after going in, or the landing's own scroller (on a phone) after coming
+     back. It is the same gesture while its events keep coming within 160ms
+     of each other and the same way; a new one, or one the other way, moves
+     the page (or the transition) again. */
+  const ltSpend = (e, dy) => {
+    const now = performance.now();
+    if (now < lt.spent && dy !== 0 && Math.sign(dy) === lt.spentDir){
+      lt.spent = now + 160;
+      if (e.cancelable) e.preventDefault();
+      e.stopImmediatePropagation();
+      return true;
+    }
+    return false;
+  };
+  pagesEl.addEventListener("wheel", e => { ltSpend(e, ltDelta(e)); }, { passive:false, capture:true });
+  landingEl.addEventListener("wheel", e => { ltSpend(e, ltDelta(e)); }, { passive:false, capture:true });
+  /* A run starts only from a gesture that began at the edge: at the
+     landing's end going down, at the tool's top going up. A gesture that
+     scrolled the tool up to its top (or a phone's landing down to its end)
+     stops there, as one that ran the transition stops at its far side; the
+     next one moves on. A wheel gesture is its events less than 160ms apart
+     and the same way; a touch is a finger from down to up. */
+  const ltGest = { last:0, dir:0, edge:false };
+  const ltFromEdge = (dy, edgeNow) => {
+    const now = performance.now(), d = Math.sign(dy);
+    if (now - ltGest.last > 160 || d !== ltGest.dir){ ltGest.edge = edgeNow; ltGest.dir = d; }
+    ltGest.last = now;
+    return ltGest.edge;
+  };
   landingEl.addEventListener("wheel", e=>{
-    const dy = ltDelta(e);
-    if (!ltG && !(dy > 0 && landingAtEnd())) return;
+    const dy = ltDelta(e), edge = ltFromEdge(dy, landingAtEnd());
+    if (!ltG && !(dy > 0 && edge && landingAtEnd())) return;
     ltNudge(dy);
   }, {passive:true});
-  let touchY=null;
-  landingEl.addEventListener("touchstart", e=>{ touchY=e.touches[0].clientY; }, {passive:true});
+  let touchY=null, touchEdge=false;
+  landingEl.addEventListener("touchstart", e=>{ touchY=e.touches[0].clientY; touchEdge=landingAtEnd(); }, {passive:true});
   landingEl.addEventListener("touchmove", e=>{
     if (touchY === null) return;
     const y = e.touches[0].clientY, dy = (touchY - y) * 1.6; touchY = y;
-    if (!ltG && !(dy > 0 && landingAtEnd())) return;
+    if (!ltG && !(dy > 0 && touchEdge && landingAtEnd())) return;
     ltNudge(dy);
   }, {passive:true});
   /* a finger lifted settles it the way it was going */
   landingEl.addEventListener("touchend", ()=>{ touchY=null; if (ltG) ltSettleSoon(0); }, {passive:true});
+  /* the keys, both ways: down from the landing plays it in, up from the top
+     of the first section plays it back (not from a field, a menu or a dialog) */
   document.addEventListener("keydown", e=>{
-    if(document.getElementById("landing").classList.contains("hidden") && !ltG) return;
-    if(["ArrowDown","PageDown"," "].includes(e.key)) enterTool("page-overview");
+    if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
+    const t = e.target;
+    if (t && t.closest && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable ||
+        t.closest('[role="menu"], .citypick-menu, .sn-menu, dialog'))) return;
+    const landingUp = !document.getElementById("landing").classList.contains("hidden") || !!ltG;
+    if (landingUp && ["ArrowDown","PageDown"," "].includes(e.key)){ enterTool("page-overview"); return; }
+    if (["ArrowUp","PageUp","Home"].includes(e.key) && (ltG || ltAtStart())){ e.preventDefault(); window.ltBack(); }
   });
   /* scrolling up past the top brings the landing back - but only from the
      first section, which is where the reader came in; from any later one
@@ -11932,15 +12117,15 @@
       pagesEl.scrollTop<=1 && (!pager || pager.dataset.sec==="0");
   };
   pagesEl.addEventListener("wheel", e=>{
-    const dy = ltDelta(e);
-    if (dy < 0 && ltAtStart()) ltNudge(dy);
+    const dy = ltDelta(e), edge = ltFromEdge(dy, ltAtStart());
+    if (dy < 0 && edge && ltAtStart()) ltNudge(dy);
   }, {passive:true});
-  let toolTouchY=null;
-  pagesEl.addEventListener("touchstart", e=>{ toolTouchY=e.touches[0].clientY; }, {passive:true});
+  let toolTouchY=null, toolTouchEdge=false;
+  pagesEl.addEventListener("touchstart", e=>{ toolTouchY=e.touches[0].clientY; toolTouchEdge=ltAtStart(); }, {passive:true});
   pagesEl.addEventListener("touchmove", e=>{
     if (toolTouchY === null) return;
     const y = e.touches[0].clientY, dy = (toolTouchY - y) * 1.6; toolTouchY = y;
-    if (dy < 0 && ltAtStart()) ltNudge(dy);
+    if (dy < 0 && toolTouchEdge && ltAtStart()) ltNudge(dy);
   }, {passive:true});
   pagesEl.addEventListener("touchend", ()=>{ toolTouchY=null; if (ltG) ltSettleSoon(0); }, {passive:true});
 
