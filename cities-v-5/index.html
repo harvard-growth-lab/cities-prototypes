@@ -5230,6 +5230,24 @@
   html[data-secbar="chips"] .sn-parts,
   html[data-secbar="chips"] .sn-menu{display:none !important;}
   html:not([data-secbar="chips"]) .secnav{padding-top:0;gap:0;justify-content:flex-start;}
+  /* Where it sits (2026-10-05, option H of section-bar-placement-sketches.html):
+     beside the location, as one phrase - Boston, Part 1 City Profile, Who
+     are you? - its words 40px after the dropdown at every desktop width
+     and on every section. Tying it to a section's columns could not hold:
+     Metro Industries and Worker Flows have a narrow narrative and a wide
+     chart, Who are you? the reverse, part 2 one centred column. So the
+     dropdown keeps its own width (it reserved the figure sections' text
+     column from 1440) and the bar never moves between sections; only the
+     part it shows changes. The chips keep their old place. */
+  @media (min-width:900px){
+    html:not([data-secbar="chips"]) .secbar .citypick--bar{width:auto;}
+    html:not([data-secbar="chips"]) .secnav:not(.is-compact){margin-left:28px;}
+  }
+  @media (min-width:900px) and (max-width:1199px){
+    /* the button filled its 184 slot; it keeps that width without it */
+    html:not([data-secbar="chips"]) .secbar .citypick--bar .citypick-btn{width:184px;}
+    html:not([data-secbar="chips"]) .secnav:not(.is-compact){margin-left:30px;}
+  }
   .sn-parts{display:flex;align-items:stretch;gap:44px;height:100%;width:max-content;flex:none;}
   .sn-part{display:flex;flex-direction:column;flex:none;}
   .sn-parts[data-cur="0"] .sn-part[data-part="1"],

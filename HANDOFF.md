@@ -1007,6 +1007,21 @@ beside the button. `navTo(i)` is the one press handler for both drawings.
 The old chips are kept in `.sn-chips` (`display:contents`, so their
 `nth-child` rules still count them) and come back with the Site Layout
 menu's **Section bar: All five** (`setSecBar`, `?secbar=chips`).
+**Where it sits** (2026-10-05, option H of
+`section-bar-placement-sketches.html`, untracked, pictures in
+`section-nav-images/generic-*`): beside the location, as one phrase, its
+words 40px after the dropdown at every desktop width and on every section
+(the nav's `margin-left` is 28px, 30px under 1200, plus the tabs' own
+12/10px). Nil found the panel-tied placements (the words on the figure
+panel's edge, or on the chart's words) could not hold, since Who are you?
+has the narrative wide and the map narrow, the figure sections the
+reverse, and part 2 one centred column; the generic choices were centred
+(E), on the right margin (F), spread (G) and beside the location (H), and
+Nil chose H, the steadiest: the bar never moves between sections, only the
+part shown changes. So in the by-part bar the dropdown keeps its own width
+(300, 276 at 1200-1279, 184 under 1200) instead of reserving the figure
+sections' text column from 1440, and the bar no longer ends under My
+Learning Journey; the chips keep their old place.
 A review then fixed: the Site Layout menu, three groups tall now, scrolls
 inside itself in a short window (`max-height`, it ran off the top of a
 phone on its side); under 600 the folded button's gap and padding give the
@@ -1046,7 +1061,8 @@ edge is the location dropdown's and the journey button's right edge is the
 last chip's ("Levers for Change") at every width from 1200 up, with or
 without a classic scrollbar (both bars are children of `.pages`). Under
 1200 the chips are a left-flowing filmstrip, so the button then aligns with
-the bar's right edge instead. The landing's own header is unchanged.
+the bar's right edge instead. The landing's own header is unchanged. (This is the chips' drawing; the by-part bar, the default since
+2026-10-05, starts 40px after the dropdown and ends where its words do.)
 
 **The site's layout study** (2026-09-30, at Nil's request, after the
 reference build's `?site=scroll` variant). It is switched from the same
