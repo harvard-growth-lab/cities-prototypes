@@ -131,7 +131,6 @@
   :root{
     /* the landing composes on its own, narrower measure (the hero grid),
        so its masthead hangs from that edge rather than the tool's */
-    --landing-pad:max(24px, calc((100vw - 1140px) / 2));
 
     --shadow-sm:0 1px 3px rgba(37,88,98,.10);
     --shadow-md:0 8px 28px rgba(37,88,98,.14);
@@ -192,6 +191,22 @@
     transition:transform .75s cubic-bezier(.22,.75,.25,1);
   }
   #landing.up{transform:translateY(-100%);}
+  /* the scroll's transition into the tool (2026-10-05; the script has the
+     why): two stand-ins travel, the originals stand aside while they do */
+  html.lt-run #landing .citypick-btn{visibility:hidden;}
+  html.lt-run .diagnose-panel{background:transparent;border-color:transparent;box-shadow:none;}
+  html.lt-run #landing .landing-hero{pointer-events:none;}
+  #landing .lt-card{
+    position:fixed;z-index:0;pointer-events:none;box-sizing:border-box;
+    background:#fff;border:1px solid var(--border);border-radius:14px;
+  }
+  html.lt-run #landing .citypick-btn.lt-fly,
+  #landing .citypick-btn.lt-fly{
+    position:fixed;z-index:3;margin:0;pointer-events:none;box-sizing:border-box;visibility:visible;
+    justify-content:flex-start;overflow:hidden;
+  }
+  /* out of its picker the landing's one-line rule no longer reaches it */
+  #landing .lt-fly .citypick-txt{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:inherit;}
   #landing .map-bg{
     position:absolute;inset:0;
     background-image:url("assets/landing-page.webp");
@@ -203,11 +218,15 @@
       radial-gradient(ellipse 70% 55% at 50% 42%, rgba(255,255,255,.55) 0%, rgba(255,255,255,.18) 55%, rgba(255,255,255,0) 100%);
   }
 
+  /* the landing's header is the tool's toolbar, rule for rule (2026-10-05,
+     Nil: "make the landing page nav bar the same as the city diagnosis
+     page's, so it can stay exactly as it is"): the same edges, sizes and
+     breakpoints, so the transition into the tool leaves it where it is */
   .landing-header{
     background:#fff;
     border-bottom:1px solid var(--border);
     height:72px;flex:0 0 72px;display:flex;align-items:center;gap:14px;
-    padding-inline:var(--landing-pad);
+    padding-inline:max(var(--frame-pad), calc((100% - var(--grid-max)) / 2));
     box-shadow:0 1px 0 rgba(37,88,98,.03);z-index:2;
   }
   .landing-header .logo-btn{
@@ -653,7 +672,7 @@
      were tried and not kept; nav-tone-sketches.html shows them, and commit
      bf2a67b has their code.) */
   html[data-nav="tint"]{--nb:#eef3f4;--nline:rgba(37,88,98,.13);}
-  html[data-nav="tint"] .toolbar{background:var(--nb);border-bottom:1px solid var(--nline);box-shadow:none;}
+  html[data-nav="tint"] :is(.toolbar, .landing-header){background:var(--nb);border-bottom:1px solid var(--nline);box-shadow:none;}
   html[data-nav="tint"] .secbar{background:var(--nb);border-bottom-color:var(--nline);box-shadow:none;}
   html[data-nav="tint"] .secbar .citypick--bar .citypick-btn{background-color:#fff;border-color:#6f8087;}
   html[data-nav="tint"] .secbar .citypick--bar .citypick-btn:hover,
@@ -6215,7 +6234,6 @@
       gap:40px;
     }
     .toolbar-links{gap:20px;}
-    .landing-header .logo-btn{width:148px;flex:0 0 148px;}
 
     /* give the carousel's edge buttons their own lane instead of letting the
        max(14px, 50% - 455px) fallback drop them onto the card. 72px of page
@@ -6292,18 +6310,10 @@
   /* ---------- below 600: mobile ---------- */
   @media (max-width:599px){
 
-    :root{--landing-pad:16px;}
 
-    /* the masthead sheds what it cannot carry. .btn-journey's label is a bare
-       text node with no element to hide, so font-size:0 collapses it and the
-       svg — which carries width/height attributes — survives at full size. */
-    .landing-header{height:56px;flex:0 0 56px;gap:10px;}
-    .landing-header .logo-btn{width:124px;flex:0 0 124px;}
-    .landing-header .logo-btn img{height:28px;}
-    .landing-header .toolbar-links{display:none;}
-    .landing-header .btn-journey{
-      width:42px;padding:0;gap:0;font-size:0;justify-content:center;flex:none;
-    }
+    /* the masthead sheds what it cannot carry as the toolbar does, by the
+       toolbar's own rules (the 56px bar, the 24px mark, the journey as its
+       38px icon), so the two stay one bar */
 
     .landing-hero{padding:22px 16px 36px;}
     .landing-hero h1{letter-spacing:-.3px;}
@@ -8050,6 +8060,9 @@
       if(el) el.scrollIntoView({behavior:"smooth", block:"start"});
       return;
     }
+    /* the landing hands over to the tool: the movement the scroll drives
+       (ltGo, with the landing's handlers below), played through */
+    if(window.ltGo){ window.ltGo(targetId); return; }
     landingAnim=true;
     document.getElementById("tool").classList.add("active");
     exploredCities.add(document.getElementById("citySelectTool").value);
@@ -8078,6 +8091,7 @@
   }
   function backToLanding(){
     const landing=document.getElementById("landing");
+    if(window.ltBack && landing.classList.contains("hidden")){ window.ltBack(); return; }
     if(landingAnim || !landing.classList.contains("hidden")) return;
     landingAnim=true;
     landing.classList.add("up");        // start above the viewport…
@@ -11126,6 +11140,9 @@
   function trackSection(){
     const lay = siteLayout();
     if ((lay !== "scroll" && lay !== "halves") || activeSec < 0 || activeSec === SECTIONS.length - 1 || Date.now() < trackHold) return;
+    /* not while the tool is shut or the landing stands over it: hidden,
+       every section's top reads 0 and the last would win */
+    if (!toolIsOpen() || !document.getElementById("landing").classList.contains("hidden")) return;
     const pr = pagesEl.getBoundingClientRect(), line = pr.top + pagesEl.clientHeight * 0.4;
     /* the sections in the scroll the reader is in: all five, or the part's
        own (the other part's are hidden, and a hidden section's top reads 0).
@@ -11504,8 +11521,9 @@
        so the section is entered, not only switched behind it */
     if (landing && !landing.classList.contains("hidden")){
       /* a link opens straight onto its section: no slide from the landing */
-      if (instant) landing.style.transition = "none";
+      if (instant){ landing.style.transition = "none"; window.ltInstant = true; }
       enterTool(sectionDefs[i].entry);
+      window.ltInstant = false;
       if (instant) requestAnimationFrame(() => requestAnimationFrame(() => { landing.style.transition = ""; }));
     } else if (i !== activeSec){
       showSection(i);
@@ -11693,30 +11711,238 @@
     const slack=el.scrollHeight-el.clientHeight;
     return slack<=1 || el.scrollTop>=slack-2;
   };
+  /* ---- from the landing into the tool, on the scroll (2026-10-05) ----
+     After the reference's place page (boston-ma-landing.html, which plays
+     it on a press), with two changes Nil asked for: the top navigation is
+     kept, and the scroll drives it. The landing does not scroll; the
+     wheel, the trackpad or a finger moves the transition itself, forward
+     and back, and it settles toward the way the reader was going once they
+     stop. A press (Diagnose, a jump link, the arrow keys) plays the same
+     movement through. What moves:
+       - the landing's words and the card's contents fade and lift away;
+       - the location dropdown flies from the card to the section bar's
+         place for it, a size down;
+       - the card's frame becomes the Who are you? map's frame, and opens
+         onto the map;
+       - the landing's ground fades, and the tool is there beneath it,
+         its top showing: the toolbar, the section bar, the first beat;
+       - the landing's header stays exactly where it is: it is the tool's
+         toolbar, rule for rule, so when the landing goes the toolbar is
+         under it.
+     Going back up from the top of the first section runs it in reverse;
+     the logo plays it back. A link that opens on a section, and a reader
+     who asks for less motion, get the end state at once. */
+  const LT_RUN = 760;
+  const lt = { p:0, target:0, raf:0, tw:null, idle:0, dir:1, after:null };
+  let ltG = null;
+  const ltSeg = (p, a, b) => Math.min(1, Math.max(0, (p - a) / (b - a)));
+  const ltEase = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  const ltLerp = (a, b, t) => a + (b - a) * t;
+  const ltReduced = () => window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const ltRect = el => { if (!el || !el.getClientRects().length) return null; const r = el.getBoundingClientRect(); return { x:r.left, y:r.top, w:r.width, h:r.height }; };
+  const ltSeen = r => !!r && r.w > 0 && r.h > 0 && r.y < innerHeight && r.y + r.h > 0 && r.x < innerWidth && r.x + r.w > 0;
+  /* the tool beneath the landing, at the page asked for, its top in view */
+  function ltPrepareTool(targetId){
+    const tool = document.getElementById("tool");
+    tool.classList.add("active");
+    exploredCities.add(document.getElementById("citySelectTool").value);
+    if (ovLeaflet) ovLeaflet.invalidateSize();
+    const id = targetId || "page-overview", el = document.getElementById(id);
+    /* the section is set here as the jump links' route sets it, since the
+       scroll reaches this without passing through enterTool */
+    const si = sectionIndexOf(id);
+    if (si >= 0 && si !== activeSec) showSection(si, false);
+    if (id === "page-overview" || !el) pagesEl.scrollTop = 0;
+    else el.scrollIntoView({ behavior:"instant", block:"start" });
+    ovZoom();
+    if (window.ovScrollyOn && window.ovMapStep) setTimeout(() => window.ovMapStep(window.ovCurStep || 0), 60);
+    if (typeof updateActivePage === "function") updateActivePage();
+    window.dispatchEvent(new Event("resize"));
+  }
+  /* one run: the landing up over the tool, everything measured, the two
+     pieces that travel drawn as stand-ins */
+  function ltBegin(targetId){
+    if (ltG) return;
+    const back = landingEl.classList.contains("hidden");
+    if (!back) ltPrepareTool(targetId);
+    landingEl.classList.remove("hidden", "up");
+    const hdr = landingEl.querySelector(".landing-header"), tb = document.querySelector("#tool .toolbar");
+    const src = landingEl.querySelector(".citypick-btn"), dst = document.querySelector(".secbar .citypick-btn");
+    const panel = landingEl.querySelector(".diagnose-panel"), map = document.getElementById("ovMap");
+    const G = ltG = { hdr, src, dst, panel,
+      /* the copy's own pieces: on a stack its box is display:contents, and
+         a fade set on it would reach nothing */
+      copy: [...landingEl.querySelector(".hero-copy").children], mapBg: landingEl.querySelector(".map-bg"),
+      kids: [...panel.children].filter(k => !k.classList.contains("field")), label: panel.querySelector(".field label"),
+      /* the header becomes the toolbar only where the toolbar is in view
+         at the end; over a later section it fades instead */
+      tbTop: !!tb && Math.abs(tb.getBoundingClientRect().top) < 1,
+      a: ltRect(src), b: ltRect(dst), ca: ltRect(panel), cb: ltRect(map), vw: innerWidth, vh: innerHeight };
+    /* the words' size and their start inside the button, at each end; and
+       whether the bar drops the country, which then fades on the way */
+    const txt = el => el && el.querySelector(".citypick-txt");
+    G.fa = txt(src) ? parseFloat(getComputedStyle(txt(src)).fontSize) : 14.5;
+    G.fb = txt(dst) ? parseFloat(getComputedStyle(txt(dst)).fontSize) : 14;
+    G.pa = src ? parseFloat(getComputedStyle(src).paddingLeft) : 12;
+    G.pb = dst ? parseFloat(getComputedStyle(dst).paddingLeft) : 12;
+    const rest = dst && dst.querySelector(".cp-rest");
+    G.dropRest = !!rest && getComputedStyle(rest).display === "none";
+    if (!ltSeen(G.b)) G.b = null;
+    if (!ltSeen(G.cb)) G.cb = null;
+    /* the stand-ins live in the landing: the card under its words, the
+       dropdown over everything */
+    G.card = document.createElement("div"); G.card.className = "lt-card"; G.card.setAttribute("aria-hidden", "true");
+    G.mapBg.after(G.card);
+    if (src){
+      G.fly = src.cloneNode(true); G.fly.classList.add("lt-fly"); G.fly.removeAttribute("id");
+      G.fly.setAttribute("aria-hidden", "true"); G.fly.tabIndex = -1;
+      landingEl.appendChild(G.fly);
+    }
+    document.documentElement.classList.add("lt-run");
+    if (back){ lt.p = lt.target = 1; }
+    ltRender(lt.p);
+  }
+  function ltRender(p){
+    const G = ltG; if (!G) return;
+    landingEl.style.backgroundColor = "rgba(255,255,255," + (1 - ltSeg(p, .3, .85)).toFixed(3) + ")";
+    if (G.mapBg) G.mapBg.style.opacity = (1 - ltSeg(p, .05, .6)).toFixed(3);
+    const co = (1 - ltSeg(p, 0, .35)).toFixed(3), cy = "translateY(" + (-28 * ltEase(ltSeg(p, 0, .45))).toFixed(1) + "px)";
+    G.copy.forEach(el => { el.style.opacity = co; el.style.transform = cy; });
+    G.kids.forEach(k => { k.style.opacity = (1 - ltSeg(p, 0, .3)).toFixed(3); });
+    if (G.label) G.label.style.opacity = (1 - ltSeg(p, 0, .2)).toFixed(3);
+    /* the header stays; only over a later section, where the toolbar is
+       scrolled away, does it fade */
+    if (!G.tbTop) G.hdr.style.opacity = (1 - ltSeg(p, .55, .95)).toFixed(3);
+    /* the dropdown flies, a size down; where it has nowhere to land it fades */
+    if (G.fly && G.a){
+      const t = ltEase(ltSeg(p, .08, .85)), b = G.b || G.a;
+      const st = G.fly.style;
+      st.left = ltLerp(G.a.x, b.x, G.b ? t : 0).toFixed(1) + "px"; st.top = ltLerp(G.a.y, b.y, G.b ? t : 0).toFixed(1) + "px";
+      st.width = ltLerp(G.a.w, b.w, G.b ? t : 0).toFixed(1) + "px"; st.height = ltLerp(G.a.h, b.h, G.b ? t : 0).toFixed(1) + "px";
+      st.fontSize = ltLerp(G.fa, G.fb, G.b ? t : 0).toFixed(2) + "px";
+      st.paddingLeft = ltLerp(G.pa, G.pb, G.b ? t : 0).toFixed(1) + "px";
+      /* it hands over to the bar's own button, which fades in under it */
+      st.opacity = G.b ? (1 - ltSeg(p, .9, 1)).toFixed(3) : (1 - ltSeg(p, 0, .4)).toFixed(3);
+      const rest = G.fly.querySelector(".cp-rest");
+      if (rest && G.dropRest) rest.style.opacity = (1 - ltSeg(p, .3, .7)).toFixed(3);
+    }
+    if (G.dst) G.dst.style.opacity = G.b ? ltSeg(p, .86, 1).toFixed(3) : "";
+    /* the card's frame becomes the map's, and opens onto it */
+    if (G.ca){
+      const t = ltEase(ltSeg(p, .12, .9)), b = G.cb || G.ca, st = G.card.style;
+      st.left = ltLerp(G.ca.x, b.x, G.cb ? t : 0).toFixed(1) + "px"; st.top = ltLerp(G.ca.y, b.y, G.cb ? t : 0).toFixed(1) + "px";
+      st.width = ltLerp(G.ca.w, b.w, G.cb ? t : 0).toFixed(1) + "px"; st.height = ltLerp(G.ca.h, b.h, G.cb ? t : 0).toFixed(1) + "px";
+      st.borderRadius = ltLerp(14, 0, G.cb ? t : 0).toFixed(1) + "px";
+      st.boxShadow = "0 18px 48px rgba(37,88,98," + (.18 * (1 - (G.cb ? t : ltSeg(p, 0, .5)))).toFixed(3) + ")";
+      st.backgroundColor = "rgba(255,255,255," + (1 - (G.cb ? ltSeg(p, .78, .98) : ltSeg(p, .1, .55))).toFixed(3) + ")";
+      st.borderColor = "rgba(226,231,232," + (1 - ltSeg(p, .85, 1)).toFixed(3) + ")";
+    }
+  }
+  /* the end of a run, either way: the stand-ins go, every inline style the
+     run set comes off, and the landing is hidden (into the tool) or left up */
+  function ltEnd(into){
+    const G = ltG; if (!G) return;
+    [landingEl, G.mapBg, G.hdr, G.label, G.dst].concat(G.kids, G.copy).forEach(el => { if (el) el.removeAttribute("style"); });
+    if (G.card) G.card.remove(); if (G.fly) G.fly.remove();
+    document.documentElement.classList.remove("lt-run");
+    ltG = null; lt.tw = null; lt.p = lt.target = into ? 1 : 0;
+    if (into){
+      landingEl.classList.add("hidden");
+      if (typeof updateActivePage === "function") updateActivePage();
+      syncSectionHash();
+    } else if (location.hash) history.replaceState(null, "", location.pathname + location.search);
+  }
+  function ltTick(now){
+    lt.raf = 0;
+    if (lt.tw){
+      const k = lt.tw.d ? Math.min(1, (now - lt.tw.t0) / lt.tw.d) : 1;
+      lt.p = ltLerp(lt.tw.from, lt.tw.to, ltEase(k));
+      if (k >= 1){ lt.p = lt.target = lt.tw.to; lt.tw = null; }
+    } else {
+      lt.p += (lt.target - lt.p) * .2;
+      if (Math.abs(lt.target - lt.p) < .002) lt.p = lt.target;
+    }
+    ltRender(lt.p);
+    if (!lt.tw && lt.p === lt.target && (lt.p >= 1 || lt.p <= 0)){ ltEnd(lt.p >= 1); return; }
+    if (lt.tw || lt.p !== lt.target) lt.raf = requestAnimationFrame(ltTick);
+  }
+  const ltRun = () => { if (!lt.raf) lt.raf = requestAnimationFrame(ltTick); };
+  function ltTween(to, ms){
+    clearTimeout(lt.idle);
+    if (ltReduced() || window.ltInstant){ lt.p = lt.target = to; ltRender(to); ltEnd(to >= 1); return; }
+    lt.tw = { from: lt.p, to, t0: performance.now(), d: (ms || 1000) * Math.max(.35, Math.abs(to - lt.p)) };
+    lt.target = to; ltRun();
+  }
+  /* the scroll moves it; when the reader stops, it settles the way they were going */
+  function ltNudge(dy){
+    if (!ltG) ltBegin();
+    if (ltReduced()){ ltTween(dy > 0 ? 1 : 0); return; }
+    lt.tw = null; lt.dir = dy > 0 ? 1 : -1;
+    lt.target = Math.min(1, Math.max(0, lt.target + dy / LT_RUN));
+    ltSettleSoon(360);
+    ltRun();
+  }
+  /* (window.ltHoldSnap holds it, for the headless checks that photograph a run midway) */
+  function ltSettleSoon(ms){
+    clearTimeout(lt.idle);
+    lt.idle = setTimeout(() => {
+      if (!ltG || !(lt.target > 0 && lt.target < 1)) return;
+      if (window.ltHoldSnap){ ltSettleSoon(ms || 360); return; }
+      ltTween(lt.dir > 0 ? 1 : 0, 700);
+    }, ms);
+  }
+  window.ltGo = targetId => { if (!ltG) ltBegin(targetId); ltTween(1); };
+  window.ltBack = () => { if (!ltG) ltBegin(); ltTween(0); };
+  /* a resize mid-run would leave the measured places stale: it ends there */
+  /* (only a real change of the window's size: the page fires its own
+     resize events to make the maps measure again, one of them as the run
+     begins) */
+  window.addEventListener("resize", () => {
+    if (!ltG || (innerWidth === ltG.vw && innerHeight === ltG.vh)) return;
+    if (lt.tw || lt.p !== lt.target || (lt.p > 0 && lt.p < 1)) ltTween(lt.dir > 0 ? 1 : 0, 0);
+  });
+  const ltDelta = e => e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? innerHeight : 1);
   landingEl.addEventListener("wheel", e=>{
-    if(e.deltaY>8 && landingAtEnd()) enterTool("page-overview");
+    const dy = ltDelta(e);
+    if (!ltG && !(dy > 0 && landingAtEnd())) return;
+    ltNudge(dy);
   }, {passive:true});
   let touchY=null;
   landingEl.addEventListener("touchstart", e=>{ touchY=e.touches[0].clientY; }, {passive:true});
   landingEl.addEventListener("touchmove", e=>{
-    if(touchY!==null && touchY-e.touches[0].clientY>30 && landingAtEnd()){ touchY=null; enterTool("page-overview"); }
+    if (touchY === null) return;
+    const y = e.touches[0].clientY, dy = (touchY - y) * 1.6; touchY = y;
+    if (!ltG && !(dy > 0 && landingAtEnd())) return;
+    ltNudge(dy);
   }, {passive:true});
+  /* a finger lifted settles it the way it was going */
+  landingEl.addEventListener("touchend", ()=>{ touchY=null; if (ltG) ltSettleSoon(0); }, {passive:true});
   document.addEventListener("keydown", e=>{
-    if(document.getElementById("landing").classList.contains("hidden")) return;
+    if(document.getElementById("landing").classList.contains("hidden") && !ltG) return;
     if(["ArrowDown","PageDown"," "].includes(e.key)) enterTool("page-overview");
   });
   /* scrolling up past the top brings the landing back - but only from the
      first section, which is where the reader came in; from any later one
      the top of the page is just the top of that section */
-  pagesEl.addEventListener("wheel", e=>{
+  const ltAtStart = () => {
     const landing=document.getElementById("landing");
     const ex=document.getElementById("explainersView");
     const pager=document.querySelector(".secpager");
-    if(landing.classList.contains("hidden") && !(ex && ex.classList.contains("open")) &&
-       pagesEl.scrollTop<=1 && e.deltaY<-25 && (!pager || pager.dataset.sec==="0")){
-      backToLanding();
-    }
+    return landing.classList.contains("hidden") && !(ex && ex.classList.contains("open")) &&
+      pagesEl.scrollTop<=1 && (!pager || pager.dataset.sec==="0");
+  };
+  pagesEl.addEventListener("wheel", e=>{
+    const dy = ltDelta(e);
+    if (dy < 0 && ltAtStart()) ltNudge(dy);
   }, {passive:true});
+  let toolTouchY=null;
+  pagesEl.addEventListener("touchstart", e=>{ toolTouchY=e.touches[0].clientY; }, {passive:true});
+  pagesEl.addEventListener("touchmove", e=>{
+    if (toolTouchY === null) return;
+    const y = e.touches[0].clientY, dy = (toolTouchY - y) * 1.6; toolTouchY = y;
+    if (dy < 0 && ltAtStart()) ltNudge(dy);
+  }, {passive:true});
+  pagesEl.addEventListener("touchend", ()=>{ toolTouchY=null; if (ltG) ltSettleSoon(0); }, {passive:true});
 
   updateCityHint(cityL.value);
   buildCityPickers();

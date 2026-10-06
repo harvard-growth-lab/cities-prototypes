@@ -1103,7 +1103,7 @@ for part 1 and a scroll for part 2"). The choice is `html[data-layout]`
   `bf2a67b`, and `nav-tone-sketches.html` (untracked; its four removed
   grounds are pictures in `nav-tone-images/`) shows them. The white logo
   file is now unused. Unknown `?nav=` values fall back to light. Not
-  covered: the landing header, the city menu's white panel, the "Site
+  covered: the city menu's white panel, the "Site
   Layout" pill (dark, as on the reference). While Worker Flows is the
   section the study's "opt-1 opt-2" word takes the bar's right end, so the
   chips stop short of the journey button there.
@@ -1178,10 +1178,51 @@ next question on auto-advance, the question reads "Question 1 of 3" with the
 arrows named, and the dialog keeps `quizOnly` across redraws via
 `cur.closest("dialog")`.
 
+**From the landing into the tool, on the scroll** (2026-10-05, after the
+reference place page `boston-ma-landing.html`, which Nil shared from
+Downloads and which plays it once on a press, dropping its top bar; Nil
+asked to keep the top navigation and have the scroll drive it). The landing
+does not scroll: the wheel, the trackpad or a finger moves the transition
+itself, `p` from 0 to 1 over `LT_RUN` (760px of wheel), forward and back,
+eased by a per-frame lerp; when the reader stops (360ms, or a finger
+lifted) it settles the way they were going (`ltSettleSoon`). A press
+(Diagnose, a jump link, ArrowDown, PageDown, Space) plays the same run
+through in about a second (`ltGo`, which `enterTool` now calls while the
+landing is up); the logo plays it back (`ltBack`). The run
+(`ltBegin` → `ltRender(p)` → `ltEnd`): the tool is opened beneath the
+landing at the page asked for with its top in view (`ltPrepareTool`: the
+section set, the toolbar kept, the map sized), everything measured once,
+and two stand-ins travel while the originals stand aside
+(`html.lt-run`): the city dropdown (`.lt-fly`, a clone of the landing's
+button) flies from the card to the section bar's dropdown, its words a size
+down and its padding to the bar's, the country fading where the bar drops
+it, and hands over to the bar's own button, which fades in under it; and
+the card's frame (`.lt-card`) becomes the Who are you? map's frame
+(`#ovMap`) and opens onto the map. The landing's copy and the card's
+contents fade and lift away (the copy piece by piece, since on a stack its
+box is `display:contents`), its ground and map picture fade, and the tool is
+there beneath. The landing's header stays exactly where it is: it is the
+tool's toolbar rule for rule (Nil, the same day: "make the landing page nav
+bar the same as the city diagnosis page's so that it can stay as it is";
+`.landing-header` takes the toolbar's grid padding instead of the landing's
+1140 measure, and its own phone sizes went, so the 56px bar, the 24px mark
+and the 38px journey icon are the toolbar's; the tint bar covers it too;
+checked identical at seven widths from 1920 to 360, light and tint), so when
+the landing goes the toolbar is under it. Over a later section (a jump
+link) the toolbar is scrolled away, so the header fades instead and the
+stand-ins with no place to land fade where they are.
+Deep links and `prefers-reduced-motion` get the end state at once
+(`window.ltInstant`, set by `routeFromHash`); a real change of the window's
+size mid-run ends it (the page fires its own `resize` events, which are
+ignored). `trackSection` now waits while the landing is up (hidden, every
+section's top read 0 and the last won). `window.ltHoldSnap` freezes the
+settle for headless checks that photograph a run midway.
+
 Scrolling up past the top of the page brings the landing back **from the
-first section only** (`feb8814`; the wheel-up guard checks
-`pager.dataset.sec === "0"`). From any later section the top is just the top
-of that section.
+first section only** (`feb8814`; the guard, `ltAtStart`, checks
+`pager.dataset.sec === "0"`), now by the same run in reverse, for the wheel
+and for a finger pulling down. From any later section the top is just the
+top of that section.
 
 ## 6. Data
 
