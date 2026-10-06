@@ -241,17 +241,26 @@
   html.lt-run #landing .citypick-btn{visibility:hidden;}
   html.lt-run .diagnose-panel{background:transparent;border-color:transparent;box-shadow:none;}
   html.lt-run #landing .landing-hero{pointer-events:none;}
+  /* nothing scrolls beneath a run: a gesture that began on the tool stays
+     on it (the browser latches it there), and it moves the run instead */
+  html.lt-run .pages,
+  html.lt-run #landing .landing-hero{overflow:hidden !important;}
+  /* the pull down at the top of the tool is the way back, not a refresh */
+  .pages{overscroll-behavior-y:contain;}
+  /* the Site Layout switch belongs to the tool, not to the landing over it */
+  body:has(#landing:not(.hidden)) .sv{display:none !important;}
   #landing .lt-card{
     position:fixed;z-index:0;pointer-events:none;box-sizing:border-box;
     background:#fff;border:1px solid var(--border);border-radius:14px;
   }
+  /* under the header (2), over the landing's words (1, earlier in order) */
   html.lt-run #landing .citypick-btn.lt-fly,
   #landing .citypick-btn.lt-fly{
-    position:fixed;z-index:3;margin:0;pointer-events:none;box-sizing:border-box;visibility:visible;
+    position:fixed;z-index:1;margin:0;pointer-events:none;box-sizing:border-box;visibility:visible;
     justify-content:flex-start;overflow:hidden;
   }
   /* out of its picker the landing's one-line rule no longer reaches it */
-  #landing .lt-fly .citypick-txt{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:inherit;}
+  #landing .lt-fly .citypick-txt{display:block;white-space:nowrap;overflow:hidden;text-overflow:clip;font-size:inherit;}
   #landing .map-bg{
     position:absolute;inset:0;
     background-image:url("assets/landing-page.webp");
@@ -11867,14 +11876,19 @@
   function ltPrepareTool(targetId){
     const tool = document.getElementById("tool");
     tool.classList.add("active");
-    exploredCities.add(document.getElementById("citySelectTool").value);
     if (ovLeaflet) ovLeaflet.invalidateSize();
     const id = targetId || "page-overview", el = document.getElementById(id);
     /* the section is set here as the jump links' route sets it, since the
        scroll reaches this without passing through enterTool */
     const si = sectionIndexOf(id);
     if (si >= 0 && si !== activeSec) showSection(si, false);
-    if (id === "page-overview" || !el) pagesEl.scrollTop = 0;
+    /* a section that begins its scroll (every one under Current, the first
+       of each part under Two scrolls) opens at the scroll's top, the top bar
+       above it, as its chip opens it; one further down a scroll is brought
+       to the top of the screen */
+    const lay = siteLayout();
+    const opensScroll = si === 0 || (si > 0 && (lay === "pages" || (lay === "halves" && si === SECTIONS.findIndex((_, k) => partOf(k) === partOf(si)))));
+    if (!el || (opensScroll && id === sectionDefs[si].entry)) pagesEl.scrollTop = 0;
     else el.scrollIntoView({ behavior:"instant", block:"start" });
     ovZoom();
     if (window.ovScrollyOn && window.ovMapStep) setTimeout(() => window.ovMapStep(window.ovCurStep || 0), 60);
@@ -11886,12 +11900,23 @@
   function ltBegin(targetId){
     if (ltG) return;
     const back = landingEl.classList.contains("hidden");
+    /* an open menu does not ride along: the city menus, the folded section
+       list and the top bar's menu shut first */
+    document.querySelectorAll(".citypick-menu").forEach(m => { if (!m.hidden){ m.hidden = true; const b = m.parentNode && m.parentNode.querySelector(".citypick-btn"); if (b && b.hasAttribute("aria-expanded")) b.setAttribute("aria-expanded", "false"); } });
+    if (typeof snOpen === "function" && !snMenu.hidden) snOpen(false);
+    if (window.mhClose) window.mhClose();
     if (!back) ltPrepareTool(targetId);
     landingEl.classList.remove("hidden", "up");
+    /* the tool takes no focus and says nothing while the landing is over it */
+    document.getElementById("tool").inert = true;
     const hdr = landingEl.querySelector(".landing-header"), tb = document.querySelector("#tool .toolbar");
     const src = landingEl.querySelector(".citypick-btn"), dst = document.querySelector(".secbar .citypick-btn");
     const panel = landingEl.querySelector(".diagnose-panel"), map = document.getElementById("ovMap");
-    const G = ltG = { hdr, src, dst, panel,
+    /* the card starts where the reader can see it: on a short screen whose
+       landing has scrolled the card under the header, it comes down first */
+    const hero = landingEl.querySelector(".landing-hero"), hb = hdr.getBoundingClientRect().bottom, pt = panel.getBoundingClientRect().top;
+    if (hero && pt < hb + 8) hero.scrollTop = Math.max(0, hero.scrollTop - (hb + 8 - pt));
+    const G = ltG = { hdr, src, dst, panel, mapEl: map, target: targetId || "page-overview",
       /* the copy's own pieces: on a stack its box is display:contents, and
          a fade set on it would reach nothing */
       copy: [...landingEl.querySelector(".hero-copy").children], mapBg: landingEl.querySelector(".map-bg"),
@@ -11918,6 +11943,15 @@
     G.pb = dst ? parseFloat(getComputedStyle(dst).paddingLeft) : 12;
     const rest = dst && dst.querySelector(".cp-rest");
     G.dropRest = !!rest && getComputedStyle(rest).display === "none";
+    /* where the bar's chevron sits, taken over at the hand-over */
+    G.chevB = dst ? getComputedStyle(dst).backgroundPosition : "";
+    /* the card starts as the panel is drawn at this width: its corners and
+       its shadow */
+    const pcs = getComputedStyle(panel);
+    G.r0 = parseFloat(pcs.borderTopLeftRadius) || 14;
+    const sm = /rgba?\(([\d.\s,]+?)(?:,\s*([\d.]+))?\)\s+(-?[\d.]+)px\s+(-?[\d.]+)px\s+([\d.]+)px(?:\s+(-?[\d.]+)px)?/.exec(pcs.boxShadow || "");
+    G.sh = sm ? { rgb: sm[1].split(",").slice(0, 3).map(v => v.trim()).join(","), a: sm[2] != null ? +sm[2] : 1, x: +sm[3], y: +sm[4], b: +sm[5], s: +(sm[6] || 0) }
+              : { rgb: "37,88,98", a: .18, x: 0, y: 18, b: 48, s: 0 };
     if (!ltSeen(G.b)) G.b = null;
     if (!ltSeen(G.cb)) G.cb = null;
     /* the stand-ins live in the landing: the card under its words, the
@@ -11956,7 +11990,7 @@
       G.hdr.style.backgroundColor = "rgba(255,255,255," + g.toFixed(3) + ")";
       G.hdr.style.borderBottomColor = "rgba(226,231,232," + g.toFixed(3) + ")";
       G.hdr.style.boxShadow = "none";
-    } else if (!G.tbTop) G.hdr.style.opacity = (1 - ltSeg(p, .55, .95)).toFixed(3);
+    } else if (!G.tbTop) G.hdr.style.opacity = (1 - ltSeg(p, .15, .45)).toFixed(3);   /* gone before the dropdown lands under it */
     /* the dropdown flies, a size down; where it has nowhere to land it fades */
     if (G.fly && G.a){
       const t = ltEase(ltSeg(p, .08, .85)), b = G.b || G.a;
@@ -11969,15 +12003,20 @@
       st.opacity = G.b ? (1 - ltSeg(p, .9, 1)).toFixed(3) : (1 - ltSeg(p, 0, .4)).toFixed(3);
       const rest = G.fly.querySelector(".cp-rest");
       if (rest && G.dropRest) rest.style.opacity = (1 - ltSeg(p, .3, .7)).toFixed(3);
+      st.backgroundPosition = G.b && p >= .9 ? G.chevB : "";
     }
+    /* the map shows only once the card has its frame, so two maps are
+       never on screen together and none is seen round the card */
+    if (G.mapEl && G.cb) G.mapEl.style.opacity = ltSeg(p, .78, .98).toFixed(3);
     if (G.dst) G.dst.style.opacity = G.b ? ltSeg(p, .86, 1).toFixed(3) : "";
     /* the card's frame becomes the map's, and opens onto it */
     if (G.ca){
       const t = ltEase(ltSeg(p, .12, .9)), b = G.cb || G.ca, st = G.card.style;
       st.left = ltLerp(G.ca.x, b.x, G.cb ? t : 0).toFixed(1) + "px"; st.top = ltLerp(G.ca.y, b.y, G.cb ? t : 0).toFixed(1) + "px";
       st.width = ltLerp(G.ca.w, b.w, G.cb ? t : 0).toFixed(1) + "px"; st.height = ltLerp(G.ca.h, b.h, G.cb ? t : 0).toFixed(1) + "px";
-      st.borderRadius = ltLerp(14, 0, G.cb ? t : 0).toFixed(1) + "px";
-      st.boxShadow = "0 18px 48px rgba(37,88,98," + (.18 * (1 - (G.cb ? t : ltSeg(p, 0, .5)))).toFixed(3) + ")";
+      st.borderRadius = ltLerp(G.r0, 0, G.cb ? t : 0).toFixed(1) + "px";
+      const sh = G.sh;
+      st.boxShadow = sh.x + "px " + sh.y + "px " + sh.b + "px " + sh.s + "px rgba(" + sh.rgb + "," + (sh.a * (1 - (G.cb ? t : ltSeg(p, 0, .5)))).toFixed(3) + ")";
       st.backgroundColor = "rgba(255,255,255," + (1 - (G.cb ? ltSeg(p, .78, .98) : ltSeg(p, .1, .55))).toFixed(3) + ")";
       st.borderColor = "rgba(226,231,232," + (1 - ltSeg(p, .85, 1)).toFixed(3) + ")";
     }
@@ -11986,17 +12025,31 @@
      run set comes off, and the landing is hidden (into the tool) or left up */
   function ltEnd(into){
     const G = ltG; if (!G) return;
-    [landingEl, G.mapBg, G.hdr, G.label, G.dst].concat(G.kids, G.copy, (G.hk || []).map(k => k.el)).forEach(el => { if (el) el.removeAttribute("style"); });
+    const tool = document.getElementById("tool"), ae = document.activeElement;
+    [landingEl, G.mapBg, G.hdr, G.label, G.dst, G.mapEl].concat(G.kids, G.copy, (G.hk || []).map(k => k.el)).forEach(el => { if (el) el.removeAttribute("style"); });
     if (G.card) G.card.remove(); if (G.fly) G.fly.remove();
     document.documentElement.classList.remove("lt-run");
     ltG = null; lt.tw = null; lt.p = lt.target = into ? 1 : 0;
     /* what is left of the gesture that ran it is spent on it (ltSpend) */
     lt.spent = performance.now() + 220; lt.spentDir = into ? 1 : -1;
+    tool.inert = false;
     if (into){
       landingEl.classList.add("hidden");
+      exploredCities.add(document.getElementById("citySelectTool").value);
       if (typeof updateActivePage === "function") updateActivePage();
       syncSectionHash();
-    } else if (location.hash) history.replaceState(null, "", location.pathname + location.search);
+      /* a keyboard that was on the landing goes on from the page's heading */
+      if (!ae || ae === document.body || landingEl.contains(ae)){
+        const page = document.getElementById(G.target), h = page && page.querySelector("h1, h2, h3");
+        if (h){ if (!h.hasAttribute("tabindex")) h.setAttribute("tabindex", "-1"); h.focus({ preventScroll: true }); }
+      }
+    } else {
+      /* back on the landing the tool is shut, as it was before the reader
+         came in: nothing behind the landing to tab to or to hear */
+      tool.classList.remove("active");
+      if (location.hash) history.replaceState(null, "", location.pathname + location.search);
+      if (!ae || ae === document.body || tool.contains(ae)){ const d = document.getElementById("diagnoseBtn"); if (d) d.focus({ preventScroll: true }); }
+    }
   }
   function ltTick(now){
     lt.raf = 0;
@@ -12016,14 +12069,19 @@
   function ltTween(to, ms){
     clearTimeout(lt.idle);
     if (ltReduced() || window.ltInstant){ lt.p = lt.target = to; ltRender(to); ltEnd(to >= 1); return; }
-    lt.tw = { from: lt.p, to, t0: performance.now(), d: (ms || 1000) * Math.max(.35, Math.abs(to - lt.p)) };
+    const dur = ms == null ? 1000 : ms;
+    lt.tw = { from: lt.p, to, t0: performance.now(), d: dur * Math.max(.35, Math.abs(to - lt.p)) };
     lt.target = to; ltRun();
   }
   /* the scroll moves it; when the reader stops, it settles the way they were going */
   function ltNudge(dy){
+    if (!dy) return;
     if (!ltG) ltBegin();
     if (ltReduced()){ ltTween(dy > 0 ? 1 : 0); return; }
-    lt.tw = null; lt.dir = dy > 0 ? 1 : -1;
+    /* a scroll during a settle or a press takes it from where it is, not
+       from where the settle was going */
+    if (lt.tw){ lt.target = lt.p; lt.tw = null; }
+    lt.dir = dy > 0 ? 1 : -1;
     lt.target = Math.min(1, Math.max(0, lt.target + dy / LT_RUN));
     ltSettleSoon(360);
     ltRun();
@@ -12037,8 +12095,25 @@
       ltTween(lt.dir > 0 ? 1 : 0, 700);
     }, ms);
   }
-  window.ltGo = targetId => { if (!ltG) ltBegin(targetId); ltTween(1); };
-  window.ltBack = () => { if (!ltG) ltBegin(); ltTween(0); };
+  /* a press mid-run for another section: the tool beneath moves there, and
+     the stand-ins aim at its places */
+  function ltRetarget(targetId){
+    const G = ltG; if (!G) return;
+    ltPrepareTool(targetId); G.target = targetId;
+    const tb = document.querySelector("#tool .toolbar");
+    G.tbTop = !!tb && tb.getClientRects().length > 0 && Math.abs(tb.getBoundingClientRect().top) < 1;
+    const b = ltRect(G.dst), cb = ltRect(G.mapEl);
+    G.b = ltSeen(b) ? b : null; G.cb = ltSeen(cb) ? cb : null;
+    if (G.menu){ const mb = ltRect(document.querySelector(".secbar .mh-btn")); G.mh = ltSeen(mb) ? mb : null; }
+    if (!G.cb && G.mapEl) G.mapEl.style.opacity = "";
+  }
+  window.ltGo = targetId => {
+    if (!ltG) ltBegin(targetId);
+    else if (targetId && targetId !== ltG.target) ltRetarget(targetId);
+    if (lt.tw && lt.tw.to === 1) return;
+    ltTween(1);
+  };
+  window.ltBack = () => { if (!ltG) ltBegin(); if (lt.tw && lt.tw.to === 0) return; ltTween(0); };
   /* a resize mid-run would leave the measured places stale: it ends there */
   /* (only a real change of the window's size: the page fires its own
      resize events to make the maps measure again, one of them as the run
@@ -12048,6 +12123,12 @@
     if (lt.tw || lt.p !== lt.target || (lt.p > 0 && lt.p < 1)) ltTween(lt.dir > 0 ? 1 : 0, 0);
   });
   const ltDelta = e => e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? innerHeight : 1);
+  /* the move a wheel event makes on the transition: its vertical part, and
+     none when it is mostly sideways (a trackpad's sideways swipe drifts a
+     pixel or two up or down) */
+  const ltDy = e => { const dy = ltDelta(e), dx = e.deltaX * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? innerWidth : 1); return Math.abs(dy) <= Math.abs(dx) ? 0 : dy; };
+  /* the least move that starts a run, in px */
+  const LT_MIN = 4;
   /* The two ways are one movement. The gesture that ran the transition is
      spent on it, either way: what is left of it - a wheel's momentum, more
      notches in the same flick - does not scroll the tool on past its top
@@ -12065,8 +12146,9 @@
     }
     return false;
   };
-  pagesEl.addEventListener("wheel", e => { ltSpend(e, ltDelta(e)); }, { passive:false, capture:true });
-  landingEl.addEventListener("wheel", e => { ltSpend(e, ltDelta(e)); }, { passive:false, capture:true });
+  /* and during a run nothing beneath it scrolls: the event moves the run */
+  pagesEl.addEventListener("wheel", e => { if (ltG){ if (e.cancelable) e.preventDefault(); return; } ltSpend(e, ltDelta(e)); }, { passive:false, capture:true });
+  landingEl.addEventListener("wheel", e => { if (ltG){ if (e.cancelable) e.preventDefault(); return; } ltSpend(e, ltDelta(e)); }, { passive:false, capture:true });
   /* A run starts only from a gesture that began at the edge: at the
      landing's end going down, at the tool's top going up. A gesture that
      scrolled the tool up to its top (or a phone's landing down to its end)
@@ -12080,28 +12162,43 @@
     ltGest.last = now;
     return ltGest.edge;
   };
+  /* A run under way takes every move that reaches it, either way, on
+     whichever of the two it lands: the browser keeps a wheel gesture, and a
+     touch, on the element it began on, so the rest of a gesture that began
+     on the tool keeps arriving there after the landing comes up over it. */
   landingEl.addEventListener("wheel", e=>{
-    const dy = ltDelta(e), edge = ltFromEdge(dy, landingAtEnd());
-    if (!ltG && !(dy > 0 && edge && landingAtEnd())) return;
-    ltNudge(dy);
+    const dy = ltDy(e);
+    if (!dy) return;
+    if (ltG){ ltNudge(dy); return; }
+    if (landingEl.classList.contains("hidden")) return;
+    const edge = ltFromEdge(dy, landingAtEnd());
+    if (dy >= LT_MIN && edge && landingAtEnd()) ltNudge(dy);
   }, {passive:true});
   let touchY=null, touchEdge=false;
   landingEl.addEventListener("touchstart", e=>{ touchY=e.touches[0].clientY; touchEdge=landingAtEnd(); }, {passive:true});
   landingEl.addEventListener("touchmove", e=>{
     if (touchY === null) return;
     const y = e.touches[0].clientY, dy = (touchY - y) * 1.6; touchY = y;
-    if (!ltG && !(dy > 0 && touchEdge && landingAtEnd())) return;
-    ltNudge(dy);
+    if (!dy) return;
+    if (ltG){ ltNudge(dy); return; }
+    /* a finger that went in with the landing: the rest of its drag is spent */
+    if (landingEl.classList.contains("hidden")) return;
+    if (dy > 0 && touchEdge && landingAtEnd()) ltNudge(dy);
   }, {passive:true});
   /* a finger lifted settles it the way it was going */
   landingEl.addEventListener("touchend", ()=>{ touchY=null; if (ltG) ltSettleSoon(0); }, {passive:true});
   /* the keys, both ways: down from the landing plays it in, up from the top
      of the first section plays it back (not from a field, a menu or a dialog) */
   document.addEventListener("keydown", e=>{
-    if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
+    /* one press, one run: a held key's repeats are not new presses */
+    if (e.defaultPrevented || e.repeat || e.altKey || e.ctrlKey || e.metaKey) return;
     const t = e.target;
     if (t && t.closest && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.isContentEditable ||
-        t.closest('[role="menu"], .citypick-menu, .sn-menu, dialog'))) return;
+        t.closest('[role="menu"], .citypick-menu, .sn-menu, .mh-menu, dialog, [role="dialog"], [aria-modal="true"]'))) return;
+    /* not while a panel (the glossary, the journey, a map) is open over the page */
+    if (document.querySelector(".journey-overlay.open, dialog[open]")) return;
+    /* Space or Enter on a control is that control's own press */
+    if ((e.key === " " || e.key === "Enter") && t && t.closest && t.closest('button, a, [role="button"], summary')) return;
     const landingUp = !document.getElementById("landing").classList.contains("hidden") || !!ltG;
     if (landingUp && ["ArrowDown","PageDown"," "].includes(e.key)){ enterTool("page-overview"); return; }
     if (["ArrowUp","PageUp","Home"].includes(e.key) && (ltG || ltAtStart())){ e.preventDefault(); window.ltBack(); }
@@ -12117,14 +12214,19 @@
       pagesEl.scrollTop<=1 && (!pager || pager.dataset.sec==="0");
   };
   pagesEl.addEventListener("wheel", e=>{
-    const dy = ltDelta(e), edge = ltFromEdge(dy, ltAtStart());
-    if (dy < 0 && edge && ltAtStart()) ltNudge(dy);
+    const dy = ltDy(e);
+    if (!dy) return;
+    if (ltG){ ltNudge(dy); return; }
+    const edge = ltFromEdge(dy, ltAtStart());
+    if (dy <= -LT_MIN && edge && ltAtStart()) ltNudge(dy);
   }, {passive:true});
   let toolTouchY=null, toolTouchEdge=false;
   pagesEl.addEventListener("touchstart", e=>{ toolTouchY=e.touches[0].clientY; toolTouchEdge=ltAtStart(); }, {passive:true});
   pagesEl.addEventListener("touchmove", e=>{
     if (toolTouchY === null) return;
     const y = e.touches[0].clientY, dy = (toolTouchY - y) * 1.6; toolTouchY = y;
+    if (!dy) return;
+    if (ltG){ ltNudge(dy); return; }
     if (dy < 0 && toolTouchEdge && ltAtStart()) ltNudge(dy);
   }, {passive:true});
   pagesEl.addEventListener("touchend", ()=>{ toolTouchY=null; if (ltG) ltSettleSoon(0); }, {passive:true});

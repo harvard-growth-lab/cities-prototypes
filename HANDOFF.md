@@ -1224,6 +1224,46 @@ first section only** (`feb8814`; the guard, `ltAtStart`, checks
 and for a finger pulling down. From any later section the top is just the
 top of that section.
 
+**A review of the transition** (two lenses, each finding verified by a
+second agent; 18 confirmed, all fixed, 2026-10-06):
+- **The way back is driven by the scroll on real devices.** Chrome keeps a
+  wheel gesture, and a touch, on the element it began on, so once the
+  landing came up the rest of a swipe that began on the tool kept reaching
+  `.pages`, whose handler needed the landing hidden: only the first event
+  moved it and the settle played the rest. Now a run under way takes every
+  move that reaches either element, and nothing beneath a run scrolls
+  (`html.lt-run` sets both scrollers `overflow:hidden`, and the capture
+  listeners cancel the wheel). Checked with `Input.synthesizeScrollGesture`
+  (phased, as trackpads send): 300px up scrubs about 60% back, 150px down
+  scrubs it on again. `.pages` has `overscroll-behavior-y:contain`, so the
+  pull down is not a refresh.
+- A scroll during a settle or a press starts from where the run is, not
+  from where the settle was going; a mostly sideways wheel event moves
+  nothing, and a run starts only on 4px or more (`ltDy`, `LT_MIN`).
+- The keys stand down inside a field, a menu, a dialog or while a panel is
+  open (`.journey-overlay.open`); a key's repeats are not presses; Space or
+  Enter on a control is that control's press; a press already heading the
+  same way is not restarted; a press for another section mid-run retargets
+  the tool and the stand-ins (`ltRetarget`).
+- Back on the landing the tool is shut again (`#tool.active` off), it is
+  `inert` during a run, the Site Layout pill hides while the landing is up,
+  and the focus is handed on: to the page's heading going in, to Diagnose
+  coming back. The city is counted as explored only once the reader is in.
+- Open menus (the city menus, the folded section list, the top bar's menu)
+  shut as a run begins; a real resize ends a run at once (`ltTween(.., 0)`
+  really is 0 now); a finger that went in with the landing does not reopen it.
+- Under Current, and for the first section of each part under Two scrolls,
+  a jump link opens at the scroll's top with the top bar above it, as the
+  chips do (it had landed with the bar scrolled away, so the header faded).
+- Visual: the map stays hidden until the card has its frame (no map round
+  the card, no two maps at once); the travelling dropdown clips rather than
+  keeping a full-strength ellipsis where the bar drops the country; it takes
+  the bar's chevron position at the hand-over (two chevrons showed on a
+  phone); on a short landscape phone the landing brings the card into view
+  first, and the dropdown travels under the header, not over it; over a
+  later section the header goes before the dropdown lands under it; the card
+  starts from the panel's own corners and shadow at each width.
+
 **The top bar folded into a menu** (2026-10-05, a Site Layout choice, Top
 bar: "Full bar" (default) or "In a menu", `html[data-masthead="menu"]`,
 `?masthead=menu`, `setMasthead`). Nil: "when the user scrolls down from the
