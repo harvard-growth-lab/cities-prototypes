@@ -201,8 +201,34 @@ rule (`STATE` table), and `setStep` drops what a beat cannot carry.
   with the cross (a phone), sets `bandStacked`: every band then takes a
   second line for the share, and `bandH()` grows by 17px on screen.
 - **Step 6** — the ranking of the most specialized tradable industries
-  (`R2 = ranking(rankPool(), true)`), with "Sort by" Concentration / Jobs /
-  Against peers. The peers are the source's own (2026-10-04, see §6):
+  (`R2 = ranking(rankPool(), true)`), with "Sort by" Specialization / Jobs /
+  Against peers (the words were "concentration" until 2026-10-07, Nil: "in
+  the third beat, change all 'concentration' to 'Specialization'": the
+  sort's button and blank, the axis's "Times more specialized", the peers
+  answer; other sections' charts
+  and the section's summary line keep theirs). Under the peers order the
+  beat shows the two ends of its whole pool, the ten furthest ahead of the
+  peers and the ten furthest behind (2026-10-07, Nil: "When sorted against
+  peer, show top 10 and bottom 10"; `SPLIT_N`, `R.split`), the second ten
+  half a row lower under a dashed rule (`.mi-split`); the badges keep the
+  pool's specialization rank. Going into or out of that order rebuilds the
+  ranking (`applySort`); Show all there lists all 200 by their lead and
+  folds back with "Show the top and bottom 10".
+  **Full height, the bars' style** (2026-10-07, Nil: "beat 3 visualization
+  does not use the full height, make sure its style and use of space
+  aligns with other visualization. If it needs to show more bar, it can do
+  that"): the ranking holds 15 rows (`RANK_N`, was 12, then 25 until Nil
+  found it too dense) in bars as thick as the first two beats' (`BBAR`,
+  14), spread over the whole height the beat
+  has (`R2.rh = rankPitch(span)`, never closer than the bars' 16.2 nor
+  wider than the old 34; per-ranking geometry in `rowY(i, R)`, `rhOf`,
+  `bhOf`, `spanOf`). That height is the drawing's plus the strip under it
+  that the other beats keep for their key: beat 3's key is in its head row,
+  so `syncRankRoom()` folds the strip (`data-capfold`) and gives its
+  measured height to the drawing (`rank6H`, `frameBase(6)`); the panel keeps
+  its height. A resize re-spreads the rows. The top three's number discs
+  stand down where the rows are under 17.5px apart (a phone). Step 3's
+  ranking (R1) keeps 12 rows at 34. The peers are the source's own (2026-10-04, see §6):
   `peerRca` is the metro's concentration measured against its five peer
   metros, and the tick on the concentration view is the peers' own rate
   against the nation, `rca / peerRca`, keyed "The five peer metros
@@ -287,6 +313,12 @@ rule (`STATE` table), and `setStep` drops what a beat cannot carry.
   inside these blocks** — twice now a `const on = () => …` shadowed the
   helper, so `on(el, "mouseenter", on)` ran the handler once at build and
   attached nothing (the key's hover outline, then the phrase highlights).
+
+**The sector key's verbs keep their room** (2026-10-07, Nil: "have a
+spacing for hide and only already there so that legend labels wouldn't
+move as the user hovers"): "Hide · Only" is laid out on every entry at all
+times and only fades in on hover or focus (`.sk-verbs` opacity), so the
+names never shift; the key wraps to three lines at 1440 instead of two.
 
 **The sector key** (`#miSectorKey`, built in the block starting
 `const key = document.getElementById(p + "SectorKey")`): one entry per
@@ -416,14 +448,115 @@ still under `prefers-reduced-motion`.
   blank): the bars and the ranking stay industries; the table follows the
   map's level (see below). A year's rebuild keeps the grain.
 - **The ranking beats have their own row** (`#miSort`, "Sort by" with
-  Concentration / Jobs / Against peers, shown on figure steps 3 and 6 only —
+  Specialization / Jobs / Against peers, shown on figure steps 3 and 6 only —
   a separate element from `#miView`, which carries the map beats' row). Under
   opt-2 it is a sentence too (fixed 2026-09-30; it had stayed as buttons):
-  "The most specialized tradable industries, sorted by [concentration ▾]"
+  "The most specialized tradable industries, sorted by [specialization ▾]"
   (`p#miSRank`, select `#miSSortRank`, options rca / jobs / gap). The blank
   and the buttons are one state through `applySort(key)` in treemap.js, and
   the rebuild sets the blank from `sortKey`. Its lead matches the chart's own
   title (`mapTitleOf`), which steps 3 and 6 share.
+
+**Show all** (2026-10-06; Nil: "Add 'Show all' to all 3 bar graphs in the
+Metro Industries beat … when clicked on show all, we'll need to see all
+industries"). The three bar charts (beat 1's and beat 2's Ranked view, 25
+of 877 industries — 876 on beat 2, whose tiers leave out the unrated
+Private Households — and beat 3's ranking, 12 of the 200 specialised ones)
+carry a "Show all 877" button (`moreBtn()`, `g.mi-more`, a button for the
+keyboard, a stop only on the chart that is showing). Since 2026-10-07 it is
+a box (Nil: "it's hard to see it, make it a box"): the word and its caret
+in a box with the house's 4px corner, sized from the type it holds - a teal
+outline on white, or (the "Show all box" study, `#miMoreLook`, opt-2) the
+sentence's own tinted blank. It stands under the last row on all three
+charts (Nil: "try putting show all on the bottom. 1st and 2nd beat", then
+"also on the bottom on the 3rd beat"), right-aligned with the names; on
+beat 3 it sits beside the national rate's name. The "Show all" study
+(`#miMoreAt`, `moreAt`) puts it back over the names (opt-1, the first
+build) on all three. Pressed, every row is drawn and "Show the top 25" (12
+on the ranking) stands at both ends (the foot's drawn after the rows so the
+keyboard meets the head's filter first; on the ranking the head's button is
+drawn in the axis groups, before its filter). To give the box its line
+inside the 880×500 drawing the bars went to 16.2 apart for a while (17.2
+before), with the pan width raised to 748 to keep the names apart. **Later
+the same day (Nil: "right now, bar design looks too dense and overwhelming.
+Revise the spacing in bar graph design, so it looks cleaner") every bar
+chart shows its top 15, not 25** (`NB`, `RANK_N`): the bars stand 27 apart,
+14 thick (`BRH`, `BBAR`), the ranking spreads its 15 over its full height,
+the Show box keeps its place under the last row, and the pan width is back
+at 704 (`PAN_MIN`, the stylesheet's min-width, the presenter's `PAN`). The
+peers order still shows its ten and ten. On a
+desk window too short to show the drawing's foot (about 600px and under)
+the folded button stands over the names instead (`syncFootRoom()`). A
+pointer's press on the button, or on the pinned head's copies, does not
+take the focus (`mousedown` default prevented); and on the stacked page
+(899px and under) the band is brought forward under the bar only for the
+keyboard's focus (`.ct-stage:has(:focus-visible)` in Metro Industries;
+Worker Flows keeps `:focus-within`) or while a list runs long
+(`:has(.mi-vscroll.is-tall)`, so its pinned head is not under the bar).
+The pointer's focus had moved the band 20px between the press and the
+release, and the click was lost.
+
+**Tab inside the held band (stacked).** The browser scrolled the page
+toward where the band sits in the flow whenever a control inside it took
+the keyboard's focus, which put the page back a beat (and hid the beat's
+own controls). While the band is held, a Tab whose next stop is inside it
+is moved there by the figure itself with `preventScroll`; stops outside the
+band are left to the browser, and nothing is done from outside the
+section's story or with a dialog, the glossary or the presenter open.
+
+**The bars' order.** Beat 1's bars are sorted by jobs or complexity (the
+sentence's "sorted by" blank, `#miSSort`, or the tray's `#miBarSort`);
+beat 2's, since 2026-10-07 (Nil: "when view is rank, provide sort by
+options"), by jobs or tradability, most tradable first (`tierSort`,
+`#miSSortTier` in `span.mi-s-sort4`, the tray's `#miTierSort`). Either way
+the set is the 25 biggest and the order is what changes; `barOrder(list,
+all, G)` picks the key, and the traded bars of steps 5/7 keep jobs. The
+bars' mode (`barMode`, tier or cx) is switched at the very start of
+`paint`, before the cells' targets are read: switched later, the cells went
+to the last beat's order while the names were set in this one's.
+
+- **The figure keeps its size.** The drawing grows taller (`figHeight()`
+  sets the viewBox and height) and the box round the svg, `div.mi-vscroll`
+  (made by the figure at init; `vizWrap` is the old `.tradable-viz-wrapper`,
+  which the pan, the tier menu and the observers now read), takes the
+  drawing's usual height and scrolls it (`syncFrame()`). Its width is never
+  set: it is the wrapper's, and its height is taken from that width, so a
+  scrollbar or a resize cannot feed back into it (the first build did, and
+  on a Windows-style scrollbar the frame shrank to nothing). The presenter's
+  `fit()` measures this frame, at the drawing's usual proportions
+  (`data-ratio`), not the long drawing inside it. While tall, the svg's margin moves onto the box so nothing
+  jumps; where the figure pans (`data-pan`), the tall box scrolls both ways
+  itself, the wrapper handing it its sideways position.
+- **The head stays in view.** Once the list has moved, `syncPin()` shows a
+  copy of the chart's head (axis steps, column names, rules, the filter and
+  the button) as a small svg of its own, `div.mi-pinbox`, stuck to the top
+  of the box by the stylesheet. It is rebuilt when the head changes (end of
+  `paint`, `syncFrame`), never on scroll: drawn into the big svg it made
+  every scroll frame repaint 877 rows (8 fps). The copy carries its look
+  inline (`wearLook`), is `aria-hidden`; its button folds, its filter takes
+  the box back to the top and opens the real menu. A scroll closes an open
+  tier menu.
+- **Only the chart on screen runs long** (`moreBars` steps 0/1/4,
+  `moreTrad` 5/7, `rankAll` 6). Long lists are measured on the canvas
+  (`widest`) and `refitNames` writes every name and then reads every width,
+  in one pass each: the first build froze the page for 5 s on expanding.
+- **It folds back** on every beat change, view change and question
+  (`foldMore()`, `setNamed`); `askSig` counts it, so an answer clears when
+  the reader shows all. `#miLive` says "The top 25 of 877 …" or "All 877 …".
+- **The keyboard.** A Show button is a stop only on the chart the state
+  shows (`syncMoreTabs()`, at the start of every paint). When a redraw or a
+  beat or view change takes the button the focus was on, it goes to the same
+  end of the chart now showing, else its head, else the figure
+  (`landMore()`); only a keyboard's focus moves the list to show it.
+- **Beat 1's bars no longer take beat 2's tier filter** (`tierList()` asks
+  `barMode`); this was there before, the count on the button showed it.
+
+On a phone, or with the pointer over the figure, a wheel or swipe scrolls
+the list before the page; the page takes over at the list's end. With all
+877 rows drawn, a repaint of the drawing (a hover, the pinned head coming
+or going) costs Chrome about 50–100 ms of layerizing at a 2x screen; the
+scroll itself holds 60 fps. Paging the list (the next 25) would avoid it,
+if it matters.
 
 **Other pieces on the figure:** "Show as table" (`#miTableBtn`) stands at
 the map's top-right corner on the crumbs' line (it rides between the two
@@ -560,7 +693,7 @@ question still open; both options must keep working:
 | Sector colours | `miPal` | house · tol (Paul Tol's muted set, grey Other; `SECTOR_PALETTES`) | 0 4 |
 | Sector names | `miSecNames` | off · band · gutter (the sectors named on the map, see below) | 0 4 |
 | Sector blocks | `miSecBlock` | plain · card · ghost · cardghost · change (what a block carries at the sector level, see below) | 0, at Level = Sector (the tradable beat holds the industry level) |
-| Tier grounds | `miGround` | frame · grey | 4 |
+| Tier grounds | `miGround` | frame · grey · **clean** (since 2026-10-07, Nil: "remove the padding in the frame. it adds clutterness. make the clean tree cluster and labeling": no frame or padding round the cells, which run edge to edge; then, at Nil's ask the same day, "Frame the labels so that they are not overflowing in the space. make put some background color": the name and share on a teal-tint band the cluster's width, 8 in from its edge, 3 units above the cells, the cross inside it, the share taking a second line where the band is narrow; 16 units of white between the tiers; `isClean()`, `cardPad()`, `cardTxt()`, `cgap()`) | 4 |
 | Tradability column | `miRankOpt` | score · **tier** | 3 6 |
 
 The visibility rules for these live in index.html as
@@ -1510,13 +1643,17 @@ reads 2022 (687,736 jobs, 206 per 100), so the two sections now disagree
    Traded ground alone); beat 3, since 2026-10-05 (Nil: its questions
    "can be about sorted by peer and jobs", general ones such as how the
    most specialized industries do against the peers) "How do these
-   specialties compare with the peer metros?" (Sort: concentration
-   against peers; all twelve are more concentrated here than in the five
-   peers together, so every bar runs right; missile parts lead, 10.3
-   against the peers' 0.2, and biotechnology R&D is second, 10.8 against
-   2.4;
+   specialties compare with the peer metros?" (Sort: specialization
+   against peers; since 2026-10-07 the chart shows the ten furthest ahead
+   and the ten furthest behind: of all 200, 157 are more specialized here,
+   14 match the peers and 29 trail them; missile parts lead, 10.3 against
+   the peers' 0.2, then biotechnology R&D, 10.8 against 2.4; IT systems
+   design and emergency relief trail furthest, by 1.1;
    "peer metros" is the term with its card) and "Which of these
-   specialties employ the most people?" (Sort: jobs; biotechnology R&D
+   specialties employ the most people?" (Sort: jobs; since 2026-10-07, over
+   15 rows: colleges and universities with 85,523 of the 15's 173,162,
+   then biotechnology R&D with 61,687, more than four jobs in five between
+   them; two under 100; before, over 12: biotechnology R&D
    with 61,687 of the twelve's 86,003, laboratory instruments and savings
    institutions about 7,000 each, two under 100). Both ways back read
    "Back to most specialized". The universities question (the Partly
@@ -1670,9 +1807,10 @@ reads 2022 (687,736 jobs, 206 per 100), so the two sections now disagree
    **the ranking's key moved up into its head row**, right-aligned in
    `#miSort`, at the row's 16px (`#miSort .spec-key`; on the ranking the
    row is in the flow, so a key that does not fit takes a line of its own);
-   under the peers order the key reads "more concentrated here", "less"
-   (only while some bar trails its peers, `data-peerbehind`) and "the same
-   share as the peers". **"The five peer metros together" is a term**
+   under the peers order the key reads "the same share as the peers" (its
+   two bar swatches, "more concentrated here" and "less", were taken out on
+   2026-10-07 at Nil's ask: "Third beat, specialization against peers >>
+   Delete the bars from legend"). **"The five peer metros together" is a term**
    (`data-term="peers"`): its card names the five and shows Boston and
    each peer's people (2024), jobs (2023) and average salary (2024), from
    the reference page's profile.json, stored as `peerStats` in

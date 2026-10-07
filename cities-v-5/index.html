@@ -3358,13 +3358,17 @@
     #miFigure[data-pan="1"][data-view="alt"][data-color="complexity"] .mi-caption > .complexity-legend{position:relative;}
   }
   /* Where the frame is too narrow for a chart's rows to hold that type -
-     25 bars stand 17 units apart, so under about 700px of drawing their
-     names would touch - the chart keeps the width it needs and pans
+     the names' gutter, the plot and the columns beside it need about 700px
+     of drawing - the chart keeps the width it needs and pans
      sideways inside the frame instead (data-pan, set by the figure when
      its frame is narrower than that). The map never needs it: it is tiled
      to whatever width it has. */
   #miFigure[data-pan="1"][data-view="alt"] .tradable-viz-wrapper,
   #miFigure[data-pan="1"][data-step="6"] .tradable-viz-wrapper{
+    /* room under the drawing for a scrollbar that floats over the content
+       (a Mac's), which otherwise covered the Show box under the last row
+       for a moment after every sideways scroll and took its press */
+    padding-bottom:12px;
     overflow-x:auto;overflow-y:hidden;
     overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin;
     /* a soft edge on the side that has more: it fades as that end is reached */
@@ -3510,6 +3514,8 @@
     .pv-open--frame{top:auto;bottom:-21px;right:2px;}
     .pv-open--bar span{display:none;}
   }
+  /* under 350px the tab reached the corner of the ranking's Show box */
+  @media (max-width:349px){ .pv-open--frame{bottom:-26px;} }
   @media (max-width:599px){
     /* on a phone the answer's tab takes the whole strip: the door waits */
     .ct-panel.is-asked .pv-open--frame{display:none;}
@@ -3647,8 +3653,6 @@
   #miSort .spec-key .sk-peer{width:2px;height:18px;}
   #miSort .spec-key .sk-ahead,#miSort .spec-key .sk-behind{width:18px;height:13px;}
   #miSort .spec-key .sk-base{height:18px;}
-  #miSort .spec-key .sk-behind-item{display:none;}
-  #miFigure[data-peerbehind="1"] #miSort .spec-key .sk-behind-item{display:inline-flex;}
   /* on the ranking the row is in the flow, so a key that wraps takes a
      line of its own rather than rising over the frame's edge */
   #miFigure[data-step="6"] .mi-head{display:flex;align-items:flex-end;}
@@ -3835,6 +3839,8 @@
      they are showing */
   #miFigure:not([data-step="0"]) #miBarSortPair,
   #miFigure:not([data-view="alt"]) #miBarSortPair{display:none;}
+  #miFigure:not([data-step="4"]) #miTierSortPair,
+  #miFigure:not([data-view="alt"]) #miTierSortPair{display:none;}
   #page-export-basket:has(#miFigure:not([data-step="4"])) #miGroundPair{display:none;}
   #page-export-basket:has(#miFigure:not([data-step="3"]):not([data-step="6"])) #miRankOptPair{display:none;}
   /* a ground with nothing left in it says so where its cells would be */
@@ -3947,6 +3953,9 @@
   /* the bars' order is a blank only while the bars are up */
   #miFigure:not([data-step="0"]) .mi-s-sort,
   #miFigure:not([data-view="alt"]) .mi-s-sort{display:none;}
+  /* the tiers beat's bars have an order of their own: jobs or tradability */
+  #miFigure:not([data-step="4"]) .mi-s-sort4,
+  #miFigure:not([data-view="alt"]) .mi-s-sort4{display:none;}
   /* the grain belongs to the map: the bars and the ranking stay industries */
   #miFigure:not([data-view="map"]) #miLevelPair,
   #miFigure:not([data-view="map"]) .mi-s-level{display:none;}
@@ -4109,18 +4118,20 @@
   }
   .sector-key .sk-sec.is-off .sk-sw{background:transparent;}
   .sector-key .sk-sec.is-off .sk-name{color:var(--ink-soft);text-decoration:line-through;text-decoration-thickness:1px;}
-  /* the entry's two verbs unfold inside it on hover, quiet words after the
-     name: "Hide · Only", "Bring back · Only", or "Show all" alone for the
-     last sector showing. Where there is no hover they are always out. */
+  /* the entry's two verbs, quiet words after the name: "Hide · Only",
+     "Bring back · Only", or "Show all" alone for the last sector showing.
+     Their room is kept whether they show or not (2026-10-07, Nil: "have a
+     spacing for hide and only already there so that legend labels wouldn't
+     move as the user hovers"): they only fade in on hover, and the names
+     after them stay put. Where there is no hover they are always out. */
   .sector-key .sk-verbs{
-    display:inline-flex;align-items:center;gap:1px;margin:0;max-width:0;overflow:hidden;opacity:0;
+    display:inline-flex;align-items:center;gap:1px;margin:0 4px 0 2px;opacity:0;transition:opacity .12s ease;
   }
   /* out of sight until wanted, but never out of the tab order: Shift+Tab
-     from the next entry must land on them, and a focused verb opens them */
-  .sector-key .sk-item:hover .sk-verbs,.sector-key .sk-item:focus-within .sk-verbs{
-    max-width:220px;opacity:1;margin:0 4px 0 2px;overflow:visible;
-  }
-  @media (pointer: coarse){ .sector-key .sk-verbs{max-width:220px;opacity:1;margin:0 4px 0 2px;overflow:visible;} }
+     from the next entry must land on them, and a focused verb shows them */
+  .sector-key .sk-item:hover .sk-verbs,.sector-key .sk-item:focus-within .sk-verbs{opacity:1;}
+  @media (pointer: coarse){ .sector-key .sk-verbs{opacity:1;} }
+  @media (prefers-reduced-motion: reduce){ .sector-key .sk-verbs{transition:none;} }
   .sector-key .sk-hide,.sector-key .sk-only{
     appearance:none;background:none;border:0;margin:0;padding:2px 4px;border-radius:4px;
     font:inherit;font-size:13px;color:var(--ink-soft);cursor:pointer;text-underline-offset:2px;white-space:nowrap;
@@ -4298,6 +4309,61 @@
   #miTreemapSvg .mi-tradmenu:hover .mi-tradmenu-caret,
   #miTreemapSvg .mi-tradmenu.is-open .mi-tradmenu-caret{stroke:var(--teal);}
   #miTreemapSvg .mi-tradmenu:focus-visible .mi-tradmenu-hit{fill:var(--teal-tint);}
+  /* "Show all" (2026-10-06; a box since 2026-10-07, Nil: "it's hard to see
+     it, make it a box"): the word and its caret in a box with the house's
+     corner, a teal outline on white or (the "Show all box" study's opt-2)
+     the sentence's own tinted blank. The outline is a pixel at any scale;
+     the keyboard's ring is the ink, two pixels. And the frame that scrolls
+     a long chart. */
+  #miTreemapSvg .mi-more{cursor:pointer;outline:none;}
+  :is(#miTreemapSvg .mi-more, #miFigure .mi-pinsvg .mi-more-pin) .mi-more-txt{fill:var(--teal);font-weight:600;}
+  :is(#miTreemapSvg .mi-more, #miFigure .mi-pinsvg .mi-more-pin) .mi-more-caret{stroke:var(--teal);stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round;}
+  :is(#miTreemapSvg .mi-more, #miFigure .mi-pinsvg .mi-more-pin) .mi-more-box{fill:#fff;stroke:var(--teal);stroke-width:1;vector-effect:non-scaling-stroke;}
+  :is(#miTreemapSvg .mi-more, #miFigure .mi-pinsvg .mi-more-pin):hover .mi-more-box{fill:var(--teal-tint);}
+  #miFigure[data-morelook="tint"] :is(#miTreemapSvg .mi-more, .mi-pinsvg .mi-more-pin) .mi-more-box{fill:var(--teal-tint);stroke:#738d93;}
+  #miFigure[data-morelook="tint"] :is(#miTreemapSvg .mi-more, .mi-pinsvg .mi-more-pin):hover .mi-more-box{fill:#e2ebed;}
+  #miFigure #miTreemapSvg .mi-more:focus-visible .mi-more-box{stroke:var(--ink);stroke-width:2;}
+  /* the peers order's two ends: the rows between them are not drawn, and a
+     faint dashed rule says so */
+  #miTreemapSvg .mi-split{stroke:var(--border-strong);stroke-width:1;stroke-dasharray:3 3;vector-effect:non-scaling-stroke;}
+  /* beat 3's key is in its head row, so the strip under the drawing that
+     the other beats keep for theirs is folded and given to the drawing
+     (treemap.js syncRankRoom) */
+  #miFigure[data-capfold="1"] .mi-caption{display:none;}
+  /* coming back from beat 3, the key fades in rather than appearing */
+  @keyframes mi-cap-in{from{opacity:0}to{opacity:1}}
+  #miFigure:not([data-capfold="1"]) .mi-caption{animation:mi-cap-in .35s ease;}
+  @media (prefers-reduced-motion:reduce){ #miFigure .mi-caption{animation:none;} }
+  #miFigure[data-capfold="1"] .tradable-viz-wrapper{margin-bottom:0;}
+  #miFigure .mi-vscroll{position:relative;}
+  #miFigure .mi-vscroll.is-tall{overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;-webkit-overflow-scrolling:touch;}
+  /* where the chart pans, the long one pans in its own frame, which scrolls
+     both ways, with the wrapper's soft edge on the side that has more */
+  #miFigure[data-pan="1"] .mi-vscroll.is-tall{
+    overflow-x:auto;overscroll-behavior-x:contain;
+    background:
+      linear-gradient(to right, #fff 45%, rgba(255,255,255,0)) 0 0 / 30px 100% no-repeat local,
+      linear-gradient(to left, #fff 45%, rgba(255,255,255,0)) 100% 0 / 30px 100% no-repeat local,
+      linear-gradient(to right, rgba(26,34,38,.16), rgba(26,34,38,0)) 0 0 / 12px 100% no-repeat scroll,
+      linear-gradient(to left, rgba(26,34,38,.16), rgba(26,34,38,0)) calc(100% - var(--mi-sbw, 0px)) 0 / 12px 100% no-repeat scroll;
+  }
+  /* the head held at the top of a scrolled list (syncPin): a small drawing
+     of its own, stuck to the frame's top, shown once the list has moved;
+     the panel's white under it, a hairline where the rows go under, and
+     its two controls live. Its text carries its look inline. */
+  #miFigure .mi-pinbox{display:none;}
+  #miFigure .mi-vscroll.is-tall.is-scrolled .mi-pinbox{display:block;position:sticky;top:0;left:0;z-index:3;}
+  #miFigure .mi-pinsvg{display:block;overflow:hidden;}
+  #miFigure .mi-pinsvg .mi-pin-ground{fill:#fff;}
+  #miFigure .mi-pinsvg .mi-pin-edge{stroke:var(--border);stroke-width:1;}
+  #miFigure .mi-pinsvg [data-pin]{cursor:pointer;}
+  #miFigure .mi-pinsvg .mi-tradmenu-hit{fill:transparent;stroke:none;}
+  #miFigure .mi-pinsvg [data-pin]:hover .mi-tradmenu-hit{fill:var(--teal-tint);}
+  #miFigure .mi-pinsvg :is(.mi-tradmenu-caret, .mi-more-caret){stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round;}
+  #miFigure .mi-pinsvg .mi-tradmenu-pin text{fill:var(--ink-soft);}
+  #miFigure .mi-pinsvg .mi-tradmenu-pin .mi-tradmenu-caret{stroke:var(--ink-soft);}
+  #miFigure .mi-pinsvg .mi-tradmenu-pin:hover text{fill:var(--teal);}
+  #miFigure .mi-pinsvg .mi-tradmenu-pin:hover .mi-tradmenu-caret{stroke:var(--teal);}
   .trad-menu{
     position:absolute;z-index:40;min-width:186px;padding:5px;
     background:#fff;border:1px solid var(--border-strong);border-radius:6px;
@@ -4336,6 +4402,14 @@
   /* the share sits on that darker band, so it takes a darker soft ink to
      stay at 4.6 to 1 on it */
   #miFigure[data-ground="grey"] #miTreemapSvg .mi-card-pct{fill:#546065;}
+  /* opt-3, the default since 2026-10-07 (Nil: "remove the padding in the
+     frame. it adds clutterness", then "Frame the labels so that they are
+     not overflowing in the space. make put some background color"): no
+     frame round the cells, which run edge to edge, and the tier's name and
+     share on a tinted band the cluster's width, a hair above them; the
+     white between the tiers parts them */
+  #miFigure[data-ground="clean"] #miTreemapSvg .mi-card{display:none;}
+  #miFigure[data-ground="clean"] #miTreemapSvg .mi-card-band{fill:var(--teal-tint);}
   #miTreemapSvg .mi-card-lab{font-size:13px;font-weight:600;fill:var(--ink);}
   /* the tier's share of the metro's jobs, after its name: the name's size,
      a lighter weight, so the pair reads "Traded 23%" with the tier first */
@@ -5584,8 +5658,14 @@
        the complexity scale, which it was holding unseen */
     #amFigure[data-step="7"] .mi-head{min-height:0;margin-bottom:4px;}
     /* a band whose head has slid under the bar brings it back while one of
-       its controls has the focus, so a control is never used unseen */
-    :is(#page-export-basket, #page-admin-mix) .ct-stage:focus-within{top:var(--secbar-h);}
+       its controls has the focus, so a control is never used unseen. In
+       Metro Industries only the keyboard's focus does it (2026-10-07): a
+       pointer's press moved the band 20px between the press and the
+       release and the click was lost; and a list shown in full holds its
+       pinned head under the bar the same way */
+    #page-admin-mix .ct-stage:focus-within{top:var(--secbar-h);}
+    #page-export-basket .ct-stage:has(:focus-visible),
+    #page-export-basket .ct-stage:has(.mi-vscroll.is-tall){top:var(--secbar-h);}
     #miFigure[data-color="complexity"] .mi-caption > .sector-key{display:none;}
     /* the complexity scale's ramp gives way so its two words keep a line
        each inside the card (a 300px ramp between them ran off a phone) */
@@ -6944,7 +7024,7 @@
           <div class="ask-item">
             <button type="button" class="ask-q" data-ask="b1q1" aria-expanded="false" aria-controls="miAsk-b1q1" aria-describedby="miAskHint"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Are the metro&rsquo;s biggest industries also its most complex?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
             <div class="ask-ans" id="miAsk-b1q1" hidden>
-              <p class="ask-a">No. General hospitals, the largest, is 17th of these 25 by <button type="button" class="term" data-term="complexity" aria-expanded="false">complexity</button>. Software publishers leads.</p>
+              <p class="ask-a">No. General hospitals, the largest, is 10th of these 15 by <button type="button" class="term" data-term="complexity" aria-expanded="false">complexity</button>. Software publishers leads.</p>
             </div>
           </div>
           <div class="ask-item">
@@ -6987,7 +7067,8 @@
                 <span class="mi-s-first">shown</span> as a
                 <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="miSView" aria-label="The mix as a treemap or as a ranking"><option value="map">treemap</option><option value="alt">ranking</option></select></span><span class="mi-s-level"> at the
                 <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="miSLevel" aria-label="The level the map is tiled at"><option value="6" selected>6-digit</option><option value="4">4-digit</option><option value="2">sector</option></select></span> level</span><span class="mi-s-sort"> sorted by
-                <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="miSSort" aria-label="Order of the bars"><option value="jobs">jobs</option><option value="cx">complexity</option></select></span></span>, coloured by
+                <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="miSSort" aria-label="Order of the bars"><option value="jobs">jobs</option><option value="cx">complexity</option></select></span></span><span class="mi-s-sort4"> sorted by
+                <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="miSSortTier" aria-label="Order of the bars"><option value="jobs">jobs</option><option value="trad">tradability</option></select></span></span>, coloured by
                 <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="miSColor" aria-label="What the cells are coloured by"><option value="sector">sector</option><option value="complexity">complexity</option></select></span>, in
                 <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="miSYear" aria-label="Year"><option value="2024" selected>2024</option><option value="2014">2014</option></select></span>
               </p>
@@ -7047,13 +7128,24 @@
                   <button type="button" class="seg-btn" data-barsort="cx" aria-pressed="false">Complexity</button>
                 </div>
               </span>
+              <!-- the tiers beat's bars: the length of the bar, or the
+                   tradability beside it -->
+              <span class="mi-ctlpair" id="miTierSortPair">
+                <span class="ctl-label">Sort by</span>
+                <div class="seg" id="miTierSort" role="group" aria-label="Order of the bars">
+                  <button type="button" class="seg-btn is-active" data-tiersort="jobs" aria-pressed="true">Jobs</button>
+                  <button type="button" class="seg-btn" data-tiersort="trad" aria-pressed="false">Tradability</button>
+                </div>
+              </span>
             </div>
-            <!-- the ranking's order: by concentration, by size, or by the gap
+            <!-- the ranking's order (its words "specialization" since 2026-10-07,
+                 Nil: "in the third beat, change all concentration to
+                 Specialization"): by specialization, by size, or by the gap
                  against the peers; the rows and their bars travel together -->
             <div class="mi-view mi-sort" id="miSort">
               <span class="ctl-label">Sort by</span>
               <div class="seg" role="group" aria-label="Order of the ranking">
-                <button type="button" class="seg-btn is-active" data-sort="rca" aria-pressed="true">Concentration</button>
+                <button type="button" class="seg-btn is-active" data-sort="rca" aria-pressed="true">Specialization</button>
                 <button type="button" class="seg-btn" data-sort="jobs" aria-pressed="false">Jobs</button>
                 <button type="button" class="seg-btn" data-sort="gap" aria-pressed="false">Against peers</button>
               </div>
@@ -7061,18 +7153,19 @@
                    ranking's own sentence, kept in step with the buttons -->
               <p class="mi-sentence mi-sentence--rank" id="miSRank">
                 <span class="mi-s-rank-lead">The most specialized tradable industries,</span> sorted by
-                <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="miSSortRank" aria-label="Order of the ranking"><option value="rca">concentration</option><option value="jobs">jobs</option><option value="gap">concentration against peers</option></select></span>
+                <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="miSSortRank" aria-label="Order of the ranking"><option value="rca">specialization</option><option value="jobs">jobs</option><option value="gap">specialization against peers</option></select></span>
               </p>
               <!-- the ranking's key, at the right of its own row (2026-10-04,
                    moved up from under the chart): the peers' mark, named as a
                    term, so a press or a pointer opens a card on the five peer
-                   metros; under the peers order, the bars' two readings -->
+                   metros; under the peers order, the line the bars leave from
+                   (its two bar swatches, "more specialized here" and "less",
+                   were taken out on 2026-10-07 at Nil's ask: the signed
+                   values and the axis say which way a bar runs) -->
               <p class="spec-key" id="miSpecKey">
                 <span class="sk-item"><i class="sk-peer" aria-hidden="true"></i><button type="button" class="term" data-term="peers" aria-expanded="false">The five peer metros together</button></span>
               </p>
               <p class="spec-key spec-key--gap" id="miSpecKeyGap">
-                <span class="sk-item"><i class="sk-ahead" aria-hidden="true"></i>more concentrated here</span>
-                <span class="sk-item sk-behind-item"><i class="sk-behind" aria-hidden="true"></i>less</span>
                 <span class="sk-item"><i class="sk-base" aria-hidden="true"></i><span>the same share as the <button type="button" class="term" data-term="peers" aria-expanded="false">peers</button></span></span>
               </p>
             </div>
@@ -7140,8 +7233,9 @@
                 <label class="mi-study" id="miGroundPair">
                   <span>Tier grounds</span>
                   <select id="miGround" aria-label="How the tiers' grounds are drawn">
-                    <option value="frame" selected>opt-1</option>
+                    <option value="frame">opt-1</option>
                     <option value="grey">opt-2</option>
+                    <option value="clean" selected>opt-3</option>
                   </select>
                 </label>
                 <label class="mi-study" id="miAskCuePair">
@@ -7149,6 +7243,20 @@
                   <select id="miAskCue" aria-label="How the figure says it is showing a question's answer">
                     <option value="marks">opt-1</option>
                     <option value="tab" selected>opt-2</option>
+                  </select>
+                </label>
+                <label class="mi-study" id="miMoreAtPair">
+                  <span>Show all</span>
+                  <select id="miMoreAt" aria-label="Where the Show all button stands: over the names, or under the last row">
+                    <option value="head">opt-1</option>
+                    <option value="foot" selected>opt-2</option>
+                  </select>
+                </label>
+                <label class="mi-study" id="miMoreLookPair">
+                  <span>Show all box</span>
+                  <select id="miMoreLook" aria-label="How the Show all box is drawn: a teal outline, or a tinted box">
+                    <option value="outline" selected>opt-1</option>
+                    <option value="tint">opt-2</option>
                   </select>
                 </label>
                 <label class="mi-study" id="miRankOptPair">
@@ -7273,7 +7381,7 @@
               data-ind="Analytical Laboratory Instrument Manufacturing" tabindex="0">laboratory instruments</span> at 9.0.
               <button type="button" class="term" data-term="specialization" aria-expanded="false">Specialization</button> is not size:
               marine fishing reaches 8.5 times on 74 jobs, while biotechnology R&amp;D employs
-              61,687 at 10.8, the one industry that is both.</p>
+              61,687 at 10.8; only colleges and universities, at 4.3, employ more.</p>
           </div>
           <!-- "Ask the chart": questions the figure answers under settings most
                readers never try. A row sets that view (the beat's own view plus
@@ -7286,13 +7394,13 @@
             <div class="ask-item">
               <button type="button" class="ask-q" data-ask="b3q1" aria-expanded="false" aria-controls="miAsk-b3q1" aria-describedby="miAskHint"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">How do these specialties compare with the peer metros?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
               <div class="ask-ans" id="miAsk-b3q1" hidden>
-                <p class="ask-a">All twelve are more concentrated here than in the five <button type="button" class="term" data-term="peers" aria-expanded="false">peer metros</button> together, so every bar runs right of their line. Guided missile and space vehicle parts lead, at 10.3 times the national rate against the peers&rsquo; 0.2. Biotechnology R&amp;D, the largest, is second: the peers are strong in it too, at 2.4, but the metro is at 10.8.</p>
+                <p class="ask-a">The chart shows the ten furthest ahead of the five <button type="button" class="term" data-term="peers" aria-expanded="false">peer metros</button> together and the ten furthest behind. Of all 200, 157 are more specialized here, 14 match the peers and 29 trail them. Guided missile and space vehicle parts lead, at 10.3 times the national rate against the peers&rsquo; 0.2, then biotechnology R&amp;D, at 10.8 against 2.4. The two furthest behind, IT systems design and emergency relief, trail by 1.1; IT systems design is also one of the largest, with 28,225 jobs.</p>
               </div>
             </div>
             <div class="ask-item">
               <button type="button" class="ask-q" data-ask="b3q2" aria-expanded="false" aria-controls="miAsk-b3q2" aria-describedby="miAskHint"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Which of these specialties employ the most people?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
               <div class="ask-ans" id="miAsk-b3q2" hidden>
-                <p class="ask-a">Biotechnology R&amp;D, with 61,687 of the twelve&rsquo;s 86,003 jobs. Laboratory instruments and savings institutions follow, at about 7,000 each; two of the twelve have fewer than 100.</p>
+                <p class="ask-a">Colleges and universities, with 85,523 of the 15&rsquo;s 173,162 jobs, then biotechnology R&amp;D, with 61,687: the two hold more than four jobs in five. Laboratory instruments and savings institutions follow, at about 7,000 each; two of the 15 have fewer than 100.</p>
               </div>
             </div>
           </div>
@@ -8077,7 +8185,7 @@
 <script src="data/geo/who_commute_geo.js"></script>
 <script src="industries-2024.js"></script>
 <script src="industries-2014.js"></script>
-<script src="treemap.js?v=2026-10-05-peers"></script>
+<script src="treemap.js?v=2026-10-07-clean-tiers3"></script>
 <script>
   /* ---------- treemaps: color by ----------
      Handled entirely in treemap.js — it wires the visible .seg controls and
@@ -12824,7 +12932,11 @@
     if (!pres) return;
     const { panel, fig, bar, foot } = pres;
     const svg = [].slice.call(fig.querySelectorAll("svg.viz-big")).find(sv => getComputedStyle(sv).display !== "none" && sv.getBoundingClientRect().width > 0);
-    const vb = svg && svg.viewBox && svg.viewBox.baseVal, ratio = vb && vb.height ? vb.width / vb.height : 1.76;
+    /* a chart showing all its rows is a frame its usual size that scrolls
+       a longer drawing: the frame is what is fitted */
+    const tall = svg && svg.parentNode && svg.parentNode.classList.contains("is-tall") ? svg.parentNode : null;
+    const vb = svg && svg.viewBox && svg.viewBox.baseVal;
+    const ratio = tall ? (+tall.dataset.ratio || 1.76) : vb && vb.height ? vb.width / vb.height : 1.76;
     const cs = getComputedStyle(panel);
     const slots = [].slice.call(panel.querySelectorAll(":scope > .ct-slot")).reduce((a, sl) => a + sl.offsetHeight, 0);
     const avH = panel.clientHeight - bar.offsetHeight - parseFloat(getComputedStyle(bar).marginBottom) - (foot.hidden ? 0 : foot.offsetHeight) - parseFloat(cs.paddingBottom) - slots - 8;
@@ -12837,7 +12949,7 @@
     let w = full;
     for (let k = 0; k < 4; k++){
       panel.style.setProperty("--pv-w", Math.floor(w) + "px");
-      const sh = svg ? svg.getBoundingClientRect().height : 0;
+      const sh = tall ? tall.getBoundingClientRect().height : svg ? svg.getBoundingClientRect().height : 0;
       const furn = fig.getBoundingClientRect().height - sh;
       const maxW = (avH - furn) * ratio;
       if (maxW >= w - 2) break;
