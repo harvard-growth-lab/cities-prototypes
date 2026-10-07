@@ -4163,7 +4163,9 @@
      are the verbs, for the pointer and for the keyboard alike */
   #miFigure[data-key="card"] .sector-key .sk-verbs{display:none;}
   .sector-key .sk-item.is-open{background:var(--teal-tint);}
-  .sector-key .sk-item.is-open .sk-name{color:var(--teal-dark);font-weight:600;}
+  /* the open entry is marked by its colour and its ground, not by a bolder
+     name, which was wider and moved the names after it (2026-10-07) */
+  .sector-key .sk-item.is-open .sk-name{color:var(--teal-dark);}
   .mi-figure .sk-tip{
     position:absolute;z-index:6;display:flex;flex-direction:column;gap:7px;
     padding:10px 12px 11px;background:#fff;border:1px solid var(--border-strong);
@@ -7201,8 +7203,8 @@
                 <label class="mi-study" id="miKeyPair">
                   <span>Key actions</span>
                   <select id="miKeyOpt" aria-label="What the key's entries do">
-                    <option value="inline" selected>opt-1</option>
-                    <option value="card">opt-2</option>
+                    <option value="inline">opt-1</option>
+                    <option value="card" selected>opt-2</option>
                   </select>
                 </label>
                 <label class="mi-study" id="miPalPair">

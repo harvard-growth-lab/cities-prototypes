@@ -328,7 +328,7 @@ beside each, and `.sk-reset` "Show all". `toggleSec` hides / brings back;
 hovering an entry outlines the sector's block on the map. Two dressings,
 under the "Key actions" study:
 
-- **opt-1 (inline, default)** — option B of `key-actions-sketches.html`
+- **opt-1 (inline)** — option B of `key-actions-sketches.html`
   (`85fe10f`): the entry is the switch, and on hover or focus it unfolds its
   verbs after the name in a `span.sk-verbs` — "Hide · Only"; "Bring back ·
   Only" once the sector is off; "Show all" alone for the last one showing,
@@ -337,7 +337,11 @@ under the "Key actions" study:
   (`.sk-reset`) is a tinted button at the row's end. Under opt-2 "Hide"
   stands down (the entry's click is the hide there) and "Only" keeps its
   place for the keyboard, unseen until reached.
-- **opt-2 (card)** — hovering or focusing an entry opens a small card over
+- **opt-2 (card, the default since 2026-10-07 at Nil's ask: "make key
+  option opt-2 by default")** — the open entry is marked by its colour and
+  ground only, no bolder name, so the names after it never move; under
+  this option the inline verbs and their reserved room stand down, and the
+  key keeps its two lines at 1440. Hovering or focusing an entry opens a small card over
   it (`div.sk-tip#miKeyTip`, role group; since 2026-09-30): the sector's
   colour block and name, a facts line — "16% of metro jobs · 377K jobs ·
   175 industries", from the whole year's rows whatever the map shows
@@ -689,7 +693,7 @@ question still open; both options must keep working:
 |---|---|---|---|
 | Control row | `miRowOpt` | tray · **sentence** | 0 1 3 4 5 6 7 |
 | Answer shown | `miAskCue` | marks · **tab** | 0 4 6 |
-| Key actions | `miKeyOpt` | inline · card | 0 4 7 |
+| Key actions | `miKeyOpt` | inline · **card** | 0 4 7 |
 | Sector colours | `miPal` | house · tol (Paul Tol's muted set, grey Other; `SECTOR_PALETTES`) | 0 4 |
 | Sector names | `miSecNames` | off · band · gutter (the sectors named on the map, see below) | 0 4 |
 | Sector blocks | `miSecBlock` | plain · card · ghost · cardghost · change (what a block carries at the sector level, see below) | 0, at Level = Sector (the tradable beat holds the industry level) |

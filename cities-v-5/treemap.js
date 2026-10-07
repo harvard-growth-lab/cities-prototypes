@@ -6750,7 +6750,7 @@
        sector's figures and the two actions as buttons */
     const keyOptEl = document.getElementById(p + "KeyOpt");
     const setKeyMode = v => { fig.dataset.key = v === "card" ? "card" : "inline"; if (hideKeyTip) hideKeyTip(); };
-    setKeyMode(keyOptEl ? keyOptEl.value : "inline");
+    setKeyMode(keyOptEl ? keyOptEl.value : "card");
     if (keyOptEl) on(keyOptEl, "change", () => setKeyMode(keyOptEl.value));
 
     /* one word in the head carries every study: it opens a panel of plain
