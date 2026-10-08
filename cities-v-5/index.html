@@ -1413,8 +1413,8 @@
       flex-basis:max(clamp(420px, 42%, 680px), calc(100% - var(--frame-pad) - 760px - clamp(28px, 3vw, 56px)));
     }
     .tool-body #ovWrap:not(.ov2) .ov-map-inner{
-      top:calc(var(--chrome-h) + var(--stage-air));
-      height:calc(100vh - var(--chrome-h) - 2 * var(--stage-air));
+      top:var(--ov-map-top, calc(var(--chrome-h) + var(--stage-air)));
+      height:var(--ov-map-h, calc(100vh - var(--chrome-h) - 2 * var(--stage-air)));
       border:1px solid var(--border);border-radius:10px;
     }
   }
@@ -1428,14 +1428,19 @@
   /* the beat titles of both sections share one size, weight and leading (2026-10-07) */
   #ovWrap .ov-block .page-head h2{font-size:var(--t-h2);font-weight:700;line-height:1.16;letter-spacing:-.4px;color:var(--ink);}
   @media (min-width:900px){
+    /* the map box takes Metro Industries' panel's place (top and height, set
+       by the script as --ov-map-top / --ov-map-h), and the beats start
+       under the section bar on the same top padding as the figure
+       sections, so arriving at either section looks the same (2026-10-08) */
     .tool-body #ovWrap:not(.ov2){
+      padding-top:52px;
       padding-left:max(0px, calc((100% - var(--grid-max)) / 2 - var(--frame-pad)));
       padding-right:max(var(--frame-pad), calc((100% - var(--grid-max)) / 2));
     }
     .tool-body #ovWrap:not(.ov2) .ov-left{padding-left:0;}
     .tool-body #ovWrap:not(.ov2) .ov-map-inner{
-      top:calc(var(--chrome-h) + var(--stage-air));
-      height:calc(100vh - var(--chrome-h) - 2 * var(--stage-air));
+      top:var(--ov-map-top, calc(var(--chrome-h) + var(--stage-air)));
+      height:var(--ov-map-h, calc(100vh - var(--chrome-h) - 2 * var(--stage-air)));
       border:1px solid var(--border);border-radius:10px;
     }
     #ovWrap .ov-block .page-head h2{
@@ -6164,6 +6169,7 @@
        gutters reading as dead space. */
     @media (max-width:1199px){
       .tool-body .page{padding:44px 40px 52px;}
+      .tool-body #ovWrap:not(.ov2){padding-top:44px;}
       .secpager{padding:24px 40px 32px;}
     }
 
@@ -8205,7 +8211,7 @@
 <script src="data/geo/who_commute_geo.js"></script>
 <script src="industries-2024.js"></script>
 <script src="industries-2014.js"></script>
-<script src="treemap.js?v=2026-10-08-type13b"></script>
+<script src="treemap.js?v=2026-10-08-align"></script>
 <script>
   /* ---------- treemaps: color by ----------
      Handled entirely in treemap.js — it wires the visible .seg controls and
@@ -10731,6 +10737,38 @@
     lastScrollTop=pagesEl.scrollTop;
   }, {passive:true});
   window.addEventListener("resize", ()=>{ if(ovLeaflet){ ovLeaflet.invalidateSize(); ovZoom(true); } });
+  /* Who are you?'s map box stands where Metro Industries' panel stands when
+     stuck: the same top and the same height, read from the panel itself, so
+     the two sections' boxes line up as the reader moves between them. Under
+     900 the sections stack and the map keeps its own rules. */
+  (function(){
+    const wrap = document.getElementById("ovWrap"), sec = document.getElementById("page-export-basket");
+    if (!wrap || !sec || typeof ResizeObserver === "undefined") return;
+    let last = "";
+    const sync = () => {
+      const st = sec.querySelector(".ct-stage"), p = sec.querySelector(".ct-panel");
+      if (!st || !p || window.innerWidth < 900 || p.classList.contains("is-presenting")){
+        if (last){ wrap.style.removeProperty("--ov-map-top"); wrap.style.removeProperty("--ov-map-h"); last = ""; if (ovLeaflet) ovLeaflet.invalidateSize(); }
+        return;
+      }
+      const a = st.getBoundingClientRect(), b = p.getBoundingClientRect();
+      if (!b.height) return;
+      const top = Math.round((parseFloat(getComputedStyle(st).top) || 0) + (b.top - a.top));
+      const h = Math.round(Math.min(b.height, window.innerHeight - top - 12));
+      const key = top + "/" + h;
+      if (key === last) return;
+      last = key;
+      wrap.style.setProperty("--ov-map-top", top + "px");
+      wrap.style.setProperty("--ov-map-h", h + "px");
+      if (ovLeaflet){ ovLeaflet.invalidateSize({ animate: false }); ovZoom(true); }
+    };
+    let t = 0;
+    const later = () => { clearTimeout(t); t = setTimeout(sync, 80); };
+    const p0 = sec.querySelector(".ct-panel");
+    if (p0) new ResizeObserver(later).observe(p0);
+    window.addEventListener("resize", later);
+    sync();
+  })();
 
   /* ---------- v-3 navigation option: one page per section ----------
      Built from sectionDefs, so the nav, the pager and the journey panel can

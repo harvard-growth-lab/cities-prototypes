@@ -1661,6 +1661,24 @@ side by side, so Waltham no longer reads as one row with Cambridge (it
 stands off with its leader); the map tooltip wraps at its 240px measure
 (`width:max-content`) instead of one word a line.
 
+**Who are you? stands where Metro Industries stands (2026-10-08).** Nil:
+"when I arrive in /#metro-industries, I see some gap between the chart box
+and the section narrative box. But don't see the same thing in Who are You
+section ... make sure Who are you section aligns with Metro Industries
+section". The horizontal gap was already the same (43px at 1440). The
+difference was vertical: Metro Industries' panel floats in its stage (138
+to 844 at 1440 by 900), while Who are you?'s map box ran from the bar to the
+window's foot (97 to 870), and its first beat began under the section bar.
+Now a small script in the main script, next to the map's resize handler,
+reads the Metro Industries panel's stuck top and height (relative to its
+sticky stage, so it works from either section) and sets `--ov-map-top` and
+`--ov-map-h` on `#ovWrap`. The map box uses them from 900 up and falls back
+to its old inset. #ovWrap takes the figure sections' top padding (52px,
+44px under 1200), so the first beat clears the bar. Measured at 1440, 1512,
+1280 and 1024: the two boxes share top, bottom and right edges within 1px.
+Known and untouched: at 1024 by 768, Metro Industries' own first beat is
+taller than the window and its eyebrow sits under the bar on arrival.
+
 ### 6c. The colour system (site-wide, thirteen colours)
 
 Nil, 2026-10-07: "there are too many color options. just like in the font
