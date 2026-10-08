@@ -6682,7 +6682,7 @@
         <button class="sec-head" onclick="goTo('page-intro-q1')"><span class="num"><svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13" aria-hidden="true"><path d="M12 2l2.9 6.2 6.6.8-4.9 4.6 1.3 6.5L12 16.9 6.1 20l1.3-6.5L2.5 9l6.6-.8L12 2z"/></svg></span>Explore Your Assumption</button>
       </div>
       <div class="sec" data-sec="page-overview page-overview-msa page-overview-out page-overview-in page-overview-practice">
-        <button class="sec-head" onclick="goTo('page-overview')"><span class="num">1</span>Who are you?</button>
+        <button class="sec-head" onclick="goTo('page-overview')"><span class="num" aria-hidden="true"></span>Who are you?</button>
         <ul class="steps">
           <li data-step="page-overview"><span class="dot"></span><button onclick="goTo('page-overview')">Where Boston stands</button></li>
           <li data-step="page-overview-msa"><span class="dot"></span><button onclick="goTo('page-overview-msa')">Not an island</button></li>
@@ -6694,7 +6694,7 @@
         </ul>
       </div>
       <div class="sec" data-sec="page-export-basket">
-        <button class="sec-head" onclick="goTo('page-export-basket')"><span class="num">2</span>Metro Industries</button>
+        <button class="sec-head" onclick="goTo('page-export-basket')"><span class="num" aria-hidden="true"></span>Metro Industries</button>
         <ul class="steps">
           <li data-step="page-export-basket"><span class="dot"></span><button onclick="goTo('page-export-basket')">What does the metro do for a living?</button></li>
           <li data-step="tierSection"><span class="dot"></span><button onclick="goTo('tierSection')">How tradable is the metro&rsquo;s work?</button></li>
@@ -6704,7 +6704,7 @@
         </ul>
       </div>
       <div class="sec" data-sec="page-admin-mix">
-        <button class="sec-head" onclick="goTo('page-admin-mix')"><span class="num">3</span>Worker Flows</button>
+        <button class="sec-head" onclick="goTo('page-admin-mix')"><span class="num" aria-hidden="true"></span>Worker Flows</button>
         <ul class="steps">
           <li data-step="page-admin-mix"><span class="dot"></span><button onclick="goTo('page-admin-mix')">One city, two workforces</button></li>
           <li data-step="adminWhoFills" class="mi-rail-default"><span class="dot"></span><button onclick="goTo('adminWhoFills')">Who fills those jobs</button></li>
@@ -6723,7 +6723,7 @@
         </ul>
       </div>
       <div class="sec" data-sec="page-constraints page-city-in-metro page-constraints-lorem">
-        <button class="sec-head" onclick="goTo('page-constraints')"><span class="num">4</span>Constraints Diagnosis</button>
+        <button class="sec-head" onclick="goTo('page-constraints')"><span class="num" aria-hidden="true"></span>Constraints Diagnosis</button>
         <ul class="steps">
           <li data-step="page-constraints"><span class="dot"></span><button onclick="goTo('page-constraints')">How is the metro performing?</button></li>
           <li data-step="page-city-in-metro"><span class="dot"></span><button onclick="goTo('page-city-in-metro')">Is your city pulling with the metro?</button></li>
@@ -6733,14 +6733,14 @@
         </ul>
       </div>
       <div class="sec" data-sec="page-levers">
-        <button class="sec-head" onclick="goTo('page-levers')"><span class="num">5</span>Levers for Change</button>
+        <button class="sec-head" onclick="goTo('page-levers')"><span class="num" aria-hidden="true"></span>Levers for Change</button>
         <ul class="steps">
           <li data-step="check-levers"><span class="dot"></span><button onclick="goTo('check-levers')">Test your knowledge</button></li>
           <li data-step="apply-levers"><span class="dot"></span><button onclick="goTo('apply-levers')">Put your insights</button></li>
         </ul>
       </div>
       <div class="sec" data-sec="page-extras">
-        <button class="sec-head" onclick="goTo('page-extras')"><span class="num">6</span>Extras</button>
+        <button class="sec-head" onclick="goTo('page-extras')"><span class="num" aria-hidden="true"></span>Extras</button>
         <ul class="steps">
           <li data-step="specializationSection"><span class="dot"></span><button onclick="goTo('specializationSection')">Your City’s Most Specialized Industries</button></li>
         </ul>
@@ -9070,7 +9070,7 @@
         const lx = Math.max(70, Math.min(W - 70, s.x));
         svg += '<text class="jl-ch" x="' + lx + '" y="' + (s.y - 36) +
           '" fill="' + s.color + '" text-anchor="middle" onclick="journeyGoTo(\'' +
-          s.board.entry + '\')">' + s.board.num + ' · ' + s.board.name + '</text>';
+          s.board.entry + '\')">' + s.board.name + '</text>';
       }
       svg += '<circle class="jl-stn' + (s.done ? ' done' : '') + '" cx="' + s.x + '" cy="' + s.y +
         '" r="6" stroke="' + s.color + '"' + (s.done ? ' fill="' + s.color + '"' : '') +
@@ -9165,7 +9165,7 @@
       }).join("");
       return '<div class="jp-sec">'+
         '<button class="jp-row'+rowCls+'" onclick="journeyGoTo(\''+s.entry+'\')">'+
-        '<span class="num">'+String(i+1).padStart(2,"0")+'</span>'+
+        '<span class="num" aria-hidden="true">'+(s.completed?"\u2713":"")+'</span>'+
         '<span class="info"><span class="name">'+s.name+'</span>'+
         '<div class="status '+stKey+'">'+stText+'</div></span>'+
         '<span class="jp-icons">'+
@@ -10847,7 +10847,7 @@
       const n = b.querySelector(".num");
       if(n) n.innerHTML = k < i
         ? '<svg viewBox="0 0 10 8" width="9" height="7" aria-hidden="true"><path d="M1 4.2 3.7 6.8 9 1.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>'
-        : String(k + 1);
+        : "";
       if(k === i) b.setAttribute("aria-current", "page");
       else b.removeAttribute("aria-current");
     });
@@ -10867,16 +10867,17 @@
     }
     const name = SECTIONS[i].name;
     /* one state language, on the line and on the cards: a teal check is
-       behind you, the enlarged ring is where you stand, grey numbers wait
-       ahead. The line's stops are buttons; the cards' badges only say. */
+       behind you, the enlarged ring is where you stand, empty rings wait
+       ahead (sections are not numbered). The line's stops are buttons; the cards' badges only say. */
     const CHECK = '<svg viewBox="0 0 10 8" width="9" height="7" aria-hidden="true"><path d="M1 4.2 3.7 6.8 9 1.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
     const stops = SECTIONS.map((sec, k) =>
       (k ? '<i class="pgr-seg' + (k <= i ? " is-past" : "") + '"></i>' : "") +
       '<button type="button" class="pgr-stop' + (k < i ? " is-past" : k === i ? " is-cur" : "") +
       '" data-go="' + k + '" title="' + sec.name + '" aria-label="' + sec.name + '"' +
       (k === i ? ' aria-current="step"' : '') + '>' +
-      (k < i ? CHECK : '<span>' + (k + 1) + '</span>') + '</button>').join("");
-    const badge = k => '<i class="pgc-stop' + (k < i ? " is-past" : "") + '" aria-hidden="true">' + (k < i ? CHECK : (k + 1)) + '</i>';
+      (k < i ? CHECK : '') + '</button>').join("");
+    /* sections are not numbered (2026-10-08): a section behind you wears its check, the others no badge */
+    const badge = k => k < i ? '<i class="pgc-stop is-past" aria-hidden="true">' + CHECK + '</i>' : '';
     /* the section's end is three ways on, each a card: back; the check,
        which is optional and opens the quiz and the reflection beneath the
        cards rather than standing them in the reader's way; and forward,
@@ -10951,7 +10952,7 @@
        (everything here addresses the tabs by position) and shows only while
        the reader is actually there. */
     if (sd.name === "Extras") b.classList.add("secnav-btn--aside");
-    b.innerHTML = '<span class="num">' + (i + 1) + '</span><span class="secnav-lbl">' + sd.name + "</span>";
+    b.innerHTML = '<span class="num" aria-hidden="true"></span><span class="secnav-lbl">' + sd.name + "</span>";
     b.addEventListener("click", () => navTo(i));
     chipsEl.appendChild(b);
   });
@@ -11526,7 +11527,7 @@
     const seal = document.createElement("section");
     seal.className = "sec-seal"; seal.id = "seal-" + k; seal.setAttribute("aria-labelledby", "seal-" + k + "-t");
     seal.innerHTML = '<div class="seal-in">' +
-      '<p class="seal-eyebrow"><i class="seal-num" aria-hidden="true">' + (k + 1) + '</i>' + sec.name + '</p>' +
+      '<p class="seal-eyebrow">' + sec.name + '</p>' +
       '<h2 class="seal-title" id="seal-' + k + '-t">What to take with you</h2>' +
       '<ul class="seal-points">' + SEAL_POINTS[sec.name].map(t => '<li>' + t + '</li>').join("") + '</ul>' +
       '<div class="seal-actions">' +
@@ -11629,8 +11630,8 @@
             '<button type="button" class="seam-link" data-go="' + k + '">Revisit</button></li>').join("") + '</ul></div>' +
         '<div class="seam-join" aria-hidden="true"><span>builds on</span>' + ARROW(0) + '</div>' +
         '<div class="seam-group seam-group--next"><p class="seam-tag"><b>Part 2 Diagnose &amp; Act</b><span>what you do with it</span></p><ol>' +
-          '<li class="seam-card"><span class="seam-num">4</span><b>Constraints Diagnosis</b>' + vizQuad + '</li>' +
-          '<li class="seam-card"><span class="seam-num">5</span><b>Levers for Change</b>' + vizLevers + '</li></ol></div>' +
+          '<li class="seam-card"><b>Constraints Diagnosis</b>' + vizQuad + '</li>' +
+          '<li class="seam-card"><b>Levers for Change</b>' + vizLevers + '</li></ol></div>' +
       '</div>' +
       '<footer class="seam-foot"><p class="seam-cue">keep scrolling to begin' + ARROW(90) + '</p></footer></div>';
     anchor.after(seam);

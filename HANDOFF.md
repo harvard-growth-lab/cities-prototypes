@@ -1707,6 +1707,22 @@ to its old inset. #ovWrap takes the figure sections' top padding (52px,
 Known and untouched: at 1024 by 768, Metro Industries' own first beat is
 taller than the window and its eyebrow sits under the bar on arrival.
 
+**Sections are not numbered (2026-10-08).** Nil: "We're not using
+numbers for sections any more, so remove all numbering like 1 Who are you..
+etc". No section number is drawn anywhere now:
+- the section-bar chips: a check when done, an empty ring otherwise;
+- the pager's line of stops: a check behind you, a ring ahead; its cards
+  keep a check badge for a section behind you and no badge otherwise;
+- the section-end seal's eyebrow: the section's name alone;
+- the Part 2 opening's next cards: the name alone;
+- the journey's rows: a check when completed, an empty ring otherwise;
+- the journey map's boards: the name alone;
+- the hidden rail: empty markers.
+
+The parts keep their labels ("Part 1 City Profile", "Part 2 Diagnose &
+Act", "Part 2 of 2"), and the beats keep their counters ("Who are you?
+1/4"): neither numbers a section.
+
 ### 6c. The colour system (site-wide, thirteen colours)
 
 Nil, 2026-10-07: "there are too many color options. just like in the font
