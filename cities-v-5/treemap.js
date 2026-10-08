@@ -777,6 +777,8 @@
     for (let t = 2; t <= hi; t++) {
       svg.append("line").attr("class", "rca-grid")
         .attr("x1", x(t)).attr("y1", MT - 12).attr("x2", x(t)).attr("y2", gridBottom);
+      /* a tick that would sit under the "RCA = 1" marker keeps its line, not its label */
+      if (x(t) - 10 < x(1) + 7 + 52 + 6) continue;
       svg.append("text").attr("class", "rca-tick")
         .attr("x", x(t)).attr("y", MT - 20).attr("text-anchor", "middle").text(t + "×");
     }
@@ -1045,6 +1047,8 @@
     for (let t = 2; t <= hi; t++) {
       svg.append("line").attr("class", "rca-grid")
         .attr("x1", x(t)).attr("y1", MT - 12).attr("x2", x(t)).attr("y2", gridBottom);
+      /* a tick that would sit under the "RCA = 1" marker keeps its line, not its label */
+      if (x(t) - 10 < x(1) + 7 + 52 + 6) continue;
       svg.append("text").attr("class", "rca-tick")
         .attr("x", x(t)).attr("y", MT - 20).attr("text-anchor", "middle").text(t + "×");
     }
@@ -1701,9 +1705,13 @@
 
     // Reference lines get named in place — "typical" is what the dashed
     // crosshair actually means, and saying so beats a legend.
+    /* on a phone the label holds the 11px floor, about twice its drawn size:
+       it shortens to "Typical" and stands left of the line, clear of its mark */
+    const PHONE_S = !!(window.matchMedia && matchMedia("(max-width: 599px)").matches);
     svg.append("text").attr("class", "ms-typical")
-      .attr("x", x(METRO_X_MED)).attr("y", M.top - 10).attr("text-anchor", "middle")
-      .text("Typical population growth");
+      .attr("x", PHONE_S ? x(METRO_X_MED) - 8 : x(METRO_X_MED)).attr("y", PHONE_S ? M.top - 4 : M.top - 10)
+      .attr("text-anchor", PHONE_S ? "end" : "middle")
+      .text(PHONE_S ? "Typical" : "Typical population growth");
     svg.append("path").attr("class", "ms-typical-mark")
       .attr("d", "M" + (x(METRO_X_MED) - 4) + " " + (M.top - 6) +
                  "L" + (x(METRO_X_MED) + 4) + " " + (M.top - 6) +
@@ -1859,8 +1867,12 @@
     const ring = svg.append("g").attr("class", "cim-ring").style("opacity", 0);
     ring.append("circle").attr("class", "cim-ring-c")
       .attr("cx", mx).attr("cy", my).attr("r", mr + 7);
+    /* on a phone the label is about twice its drawn size and would cross the
+       dashed median to its right: it goes to the ring's left there */
+    const PHONE_R = !!(window.matchMedia && matchMedia("(max-width: 599px)").matches);
     ring.append("text").attr("class", "cim-ring-label")
-      .attr("x", mx + mr + 14).attr("y", my + 4)
+      .attr("x", PHONE_R ? mx - mr - 14 : mx + mr + 14).attr("y", my + 4)
+      .attr("text-anchor", PHONE_R ? "end" : "start")
       .text("Boston metro");
 
     const places = svg.append("g").attr("class", "cim-places")
@@ -2895,7 +2907,7 @@
      fits; nothing on this figure is set smaller), and read back into the
      figure's units to be drawn.
      ========================================================================= */
-  const MAP = { padding: 1, minSide: 4, inset: 3, first: 1.1, step: 0.9, shareGap: 0.3,
+  const MAP = { padding: 1, minSide: 4, inset: 2, first: 1.1, step: 0.9, shareGap: 0.3,
                 descent: 0.25, size: 13, min: 13, weight: 500, shareWeight: 400,
                 /* at the sector level the nine blocks are the cells, and a
                    13px label is lost in them: the fit starts higher there */
@@ -5685,7 +5697,7 @@
         /* at the sector grain with the band naming the block, the cell keeps its share alone */
         const shareOnly = L.grain === 2 && SEC_NAMES !== "off";
         /* the presenter view sets the type a size up, the floor with it */
-        const ceil = Math.round((L.grain === 2 ? MAP.sectorSize : MAP.size) * TYPE_K * 2) / 2, floor = Math.round(MAP.min * TYPE_K * 2) / 2;
+        const ceil = Math.round((L.grain === 2 ? MAP.sectorSize : MAP.size) * TYPE_K * 2) / 2, floor = Math.max(MAP.min, Math.round((MAP.min - 0.5) * TYPE_K * 2) / 2);   /* the presenter keeps its one shrink step, never under 13 */
         const spec = shareOnly ? fitCellLabel(share, "", c.px, ceil, floor) : fitCellLabel(c.cell.name, share, c.px, ceil, floor);
         if (!spec) return;
         const ink = mapInkOf(c);

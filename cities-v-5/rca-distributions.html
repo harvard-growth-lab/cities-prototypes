@@ -167,7 +167,7 @@
     top:auto;bottom:100%;
     border-top-color:transparent;border-bottom-color:var(--teal);
   }
-  .intro-label.wide{white-space:normal;width:330px;text-align:left;line-height:1.45;}
+  .intro-label.wide{white-space:normal;width:350px;text-align:left;line-height:1.45;}
 
   /* ---- replay sits at the right end of the key row ---- */
   #replayBtn{
@@ -191,7 +191,9 @@
   /* ---- table ---- */
   table{border-collapse:collapse; width:100%; margin-top:22px; font-size:13.5px}
     th,td{padding:7px 10px; border-bottom:1px solid var(--border); text-align:right; font-variant-numeric:tabular-nums}
-  th{font-size:13px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft); font-weight:700; border-bottom:1px solid var(--border-strong)}
+  /* a wide table scrolls inside the frame, not the page */
+  #tablewrap{overflow-x:auto;}
+  th{font-size:13px; letter-spacing:.02em; text-transform:uppercase; color:var(--ink-soft); font-weight:700; border-bottom:1px solid var(--border-strong)}
   th:first-child,td:first-child{text-align:left; font-variant-numeric:normal}
   tbody tr:hover{background:var(--teal-tint)}
   td.hi{font-weight:700; color:var(--orange-text)}

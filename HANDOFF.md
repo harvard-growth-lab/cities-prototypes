@@ -1589,6 +1589,34 @@ pitch, refits its name gutter when the scale moves, and keeps one figure
 column (the jobs). Check with handoff/type-audit.mjs (`FLOOR=13`) and the
 whole-site paint sweep.
 
+After a before/after layout review of the floor (scratchpad
+`review13/verify/`, three lenses), these were fixed with the type kept at
+13:
+
+- **The Part 2 opening band.** Its three Part 1 cards draw their charts as
+  HTML rows (`.seam-viz--rows`: a name and its figure over a bar), not a
+  scaled drawing. The cards are 140 to 200px wide, and no fixed drawing
+  holds 13px text at that width.
+- **Presenter treemap.** It keeps its one shrink step (16.5, never under 13).
+- **Treemap cell inset.** 3 → 2, so names that missed by a pixel or two are
+  labelled again.
+- **Who are you? tables at 390.** The source and rank columns take 2 points
+  from the strip.
+- **Worker Flows.**
+  - The bars' right margin is 152 on desktop, so the two figure heads clear.
+  - Newton's figures on the city map moved up a step.
+  - The dial's chip column is 236 with an 8px gap.
+  - The mini bars read "Jobs in Boston" and "Held by residents".
+- **Small fixes elsewhere.**
+  - The journey's step dot is 20px.
+  - The Extras design list's gap is 8 at 390.
+  - The scatters' "Typical" captions take a paper halo. On a phone they
+    shorten and move left of the line, and the city-in-metro ring label
+    flips to the ring's left.
+  - A tick label that would sit under "RCA = 1" keeps only its line.
+  - In the box-plot iframe, the intro bubble is 350 wide, the table heads
+    track at .02em, and the table scrolls inside its frame.
+
 **Type: six roles** (as set on 2026-10-07; 12.5 is now 13). The frame and content sizes are fixed pixels so they
 hold on screen at every width and inside the SVG (`#miTreemapSvg` scales
 them by `--mi-type / --mi-s`); the reading sizes follow the site's ramp.

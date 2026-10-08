@@ -904,6 +904,17 @@
   .seam-viz{display:block;width:100%;max-width:230px;height:auto;margin-top:4px;}
   .seam-viz--wide{max-width:100%;margin-top:8px;}
   .seam-viz-t{font-size:max(13px, calc(var(--chart-floor) / var(--k, 1)));font-weight:600;}
+  /* the Part 1 cards' charts as HTML rows: a name and its figure over a bar */
+  .seam-viz--rows{display:flex;flex-direction:column;gap:3px;max-width:none;margin-top:6px;font-size:13px;line-height:1.3;font-weight:600;}
+  .sv-row{display:flex;justify-content:space-between;align-items:baseline;gap:10px;}
+  .sv-v{flex:none;font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .sv-bar{display:block;height:8px;border-radius:2px;background:var(--on-dark);margin:0 0 5px;}
+  .sv-track{position:relative;display:block;height:14px;margin:0 0 4px;}
+  .sv-track::before{content:"";position:absolute;left:0;right:0;top:6.5px;height:1px;background:var(--on-dark-line);}
+  .sv-grow{position:absolute;left:0;top:5.5px;height:3px;border-radius:2px;background:var(--on-dark);}
+  .sv-grow::after{content:"";position:absolute;right:-4.5px;top:-3px;width:9px;height:9px;border-radius:50%;background:var(--on-dark);}
+  .sv-tick{position:absolute;top:0;width:2.5px;height:14px;margin-left:-1.25px;background:var(--on-dark-soft);}
+  .sv-note{display:block;margin-top:2px;}
   .seam-group--done .seam-viz-t{fill:var(--on-dark);}
   .seam-group--next .seam-viz-t{fill:var(--ink-soft);}
   .seam-link{
@@ -1499,8 +1510,9 @@
   .who-tip.leaflet-tooltip b{display:block;font-weight:600;}
   .who-tip.leaflet-tooltip span{display:block;color:var(--ink-soft);}
   @media (max-width:599px){
-    .who-tbl--ind th:first-child{width:36%;}
-    .who-tbl--ind .num{width:28%;padding-right:12px;}
+    /* at 13px the source and the rank need a little more than they had: the strip gives it */
+    .who-tbl--ind th:first-child{width:38%;}
+    .who-tbl--ind .num{width:29%;padding-right:8px;}
     .who-rk{white-space:normal;}
     .who-legend{left:6px;bottom:6px;padding:6px 8px;max-width:calc(100% - 12px);}
     .who-legend .wl-sub{display:none;}
@@ -2167,6 +2179,7 @@
   .metro-scatter .ms-axis-years{font-size:max(13px, calc(var(--chart-floor) / var(--k, 1)));fill:var(--ink-soft);}
   .metro-scatter .ms-typical{
     font-size:max(13px, calc(var(--chart-floor) / var(--k, 1)));font-style:italic;fill:var(--ink-soft);
+    paint-order:stroke;stroke:var(--white);stroke-width:3px;stroke-linejoin:round;
   }
   .metro-scatter .ms-typical-mark{fill:var(--ink-soft);}
 
@@ -3093,7 +3106,7 @@
   }
   .jp-step:hover{background:var(--teal-tint);color:var(--ink);}
   .jp-step .sdot{
-    width:16px;height:16px;border-radius:50%;flex:none;
+    width:20px;height:20px;border-radius:50%;flex:none;
     border:1.5px solid var(--mark-grey);
     display:inline-flex;align-items:center;justify-content:center;
     font-size:13px;font-weight:700;color:var(--ink-soft);background:var(--white);
@@ -4722,11 +4735,11 @@
   #amMapSvg .am-pval .is-out{fill:var(--orange-text);font-weight:700;}
 
   /* ── Worker Flows, the dial ───────────────────────────────────── */
-  .am-ex{display:grid;grid-template-columns:228px minmax(0,1fr);gap:22px;align-items:start;}
+  .am-ex{display:grid;grid-template-columns:236px minmax(0,1fr);gap:22px;align-items:start;}
   .am-chips{display:flex;flex-direction:column;gap:3px;}
   .am-chips-lbl{font-size:13px;font-weight:700;letter-spacing:.02em;color:var(--ink-soft);margin-bottom:6px;}
   .am-chip{
-    display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;text-align:left;
+    display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;text-align:left;
     appearance:none;font:inherit;font-size:13px;color:var(--ink);background:transparent;
     border:1px solid transparent;border-radius:3px;padding:5px 9px;cursor:pointer;
     transition:background .15s ease,border-color .15s ease;
@@ -6327,6 +6340,7 @@
       .viz-controls .replay-btn,
       .viz-controls .design-list,
       .viz-controls .design-opt{margin-left:0;}
+      .viz-controls .design-list{gap:8px;}
       .subsection-header{gap:10px;}
       .scatter-footnote,
       .rca-footnote{gap:8px 16px;font-size:13px;margin-top:10px;}
@@ -7885,7 +7899,7 @@
                The query string pins its opening state; its own seg controls stay
                live inside the frame. -->
           <div class="rca-dist-wrap" data-rcaview="dist">
-            <iframe id="rcaDistFrame" src="rca-distributions.html?dots=peers&amp;design=band&amp;v=type13" title="Boston metro specialization across all US metros"></iframe>
+            <iframe id="rcaDistFrame" src="rca-distributions.html?dots=peers&amp;design=band&amp;v=layout13" title="Boston metro specialization across all US metros"></iframe>
           </div>
         </div>
       </section>
@@ -8211,7 +8225,7 @@
 <script src="data/geo/who_commute_geo.js"></script>
 <script src="industries-2024.js"></script>
 <script src="industries-2014.js"></script>
-<script src="treemap.js?v=2026-10-08-align"></script>
+<script src="treemap.js?v=2026-10-08-layout13"></script>
 <script>
   /* ---------- treemaps: color by ----------
      Handled entirely in treemap.js — it wires the visible .seg controls and
@@ -11553,18 +11567,21 @@
     const W = "rgba(255,255,255,";
     /* who are you: the metro's growth against the median metro, as the growth chart has it */
     const G = window.BOSTON_GROWTH || { pop: 0.4, pay: 5.3, popMed: 0.7, payMed: 4.0 };
-    const growthRow = (label, y, v, med, k) => {
-      const x = Math.min(80, v * k), m = Math.min(80, med * k);
-      return '<g><text class="seam-viz-t" x="0" y="' + (y + 4) + '">' + label + '</text>' +
-        '<line x1="104" x2="104" y1="' + (y - 8) + '" y2="' + (y + 8) + '" stroke="' + W + '.2)"/>' +
-        '<line x1="' + (104 + m) + '" x2="' + (104 + m) + '" y1="' + (y - 7) + '" y2="' + (y + 7) + '" stroke="' + W + '.78)" stroke-width="2.5"/>' +
-        '<line x1="104" x2="' + (104 + x) + '" y1="' + y + '" y2="' + y + '" stroke="' + W + '.92)" stroke-width="3" stroke-linecap="round"/>' +
-        '<circle cx="' + (104 + x) + '" cy="' + y + '" r="4.5" fill="' + W + '.92)"/>' +
-        '<text class="seam-viz-t" x="' + (112 + x) + '" y="' + (y + 4) + '">+' + v.toFixed(1) + '%/yr</text></g>';
-    };
-    const vizProfile = svg("0 0 250 62", "Boston’s metro population and pay growth against the median metro",
-      growthRow("population", 14, G.pop, G.popMed, 24) + growthRow("pay", 40, G.pay, G.payMed, 15) +
-      '<text class="seam-viz-t" x="104" y="60" text-anchor="middle">tick: the median metro</text>');
+    /* The three Part 1 cards draw their charts as rows of HTML, not a scaled
+       drawing: at the 13px floor the words are too big for a fixed drawing
+       in a card 140 to 200px wide, so each row is its name and figure on one
+       line over its bar, and the rows reflow with the card (2026-10-08). */
+    const pctW = n => Math.max(0, Math.min(100, n)).toFixed(1) + "%";
+    const svRow = (label, value) => '<span class="sv-row"><span>' + label + '</span><span class="sv-v">' + value + '</span></span>';
+    const rows = (label, inner) => '<div class="seam-viz seam-viz--rows" role="img" aria-label="' + label + '">' + inner + '</div>';
+    /* who are you: the metro's growth against the median metro; each track
+       runs to the rate the old drawing ran to (3.3% a year for population,
+       5.3% for pay) */
+    const growthRow = (label, v, med, top) => svRow(label, "+" + v.toFixed(1) + "%/yr") +
+      '<span class="sv-track"><i class="sv-grow" style="width:' + pctW(v / top * 100) + '"></i><i class="sv-tick" style="left:' + pctW(med / top * 100) + '"></i></span>';
+    const vizProfile = rows("Boston’s metro population and pay growth against the median metro",
+      growthRow("population", G.pop, G.popMed, 10 / 3) + growthRow("pay", G.pay, G.payMed, 16 / 3) +
+      '<span class="sv-note">tick: the median metro</span>');
     /* metro industries: the four biggest sectors' share of the metro's jobs */
     const D = window.BOSTON_INDUSTRIES_2024;
     let vizSectors = "";
@@ -11573,18 +11590,16 @@
       D.rows.forEach(r => { tot[r[iK]] = (tot[r[iK]] || 0) + r[iJ]; });
       const SHORT = { professional: "Professional", "education-health": "Education & Health", "trade-transport": "Trade & Transport", leisure: "Leisure", financial: "Financial", manufacturing: "Manufacturing", construction: "Construction", other: "Other", "natural-resources": "Natural resources" };
       const top = Object.entries(tot).sort((a, b) => b[1] - a[1]).slice(0, 4), max = top[0][1];
-      vizSectors = svg("0 0 230 92", "The metro’s jobs by sector: the four largest",
-        top.map(([k, v], i) => { const y = 12 + i * 22, bw = Math.max(6, v / max * 96);
-          return '<text class="seam-viz-t" x="0" y="' + (y + 3.5) + '">' + SHORT[k] + '</text>' +
-            '<rect x="100" y="' + (y - 4.5) + '" width="' + bw.toFixed(1) + '" height="9" rx="2" fill="' + W + '.92)"/>' +
-            '<text class="seam-viz-t" x="' + (106 + bw).toFixed(1) + '" y="' + (y + 3.5) + '">' + Math.round(v / D.total * 100) + '%</text>'; }).join(""));
+      vizSectors = rows("The metro’s jobs by sector: the four largest",
+        top.map(([k, v]) => svRow(SHORT[k], Math.round(v / D.total * 100) + "%") +
+          '<span class="sv-bar" style="width:' + pctW(v / max * 100) + '"></span>').join(""));
     }
     /* worker flows: the two counts behind the city, jobs here and jobs its residents hold */
     const HERE = 687736, HELD = 334026;
-    const vizFlows = svg("0 0 230 72", "Jobs located in Boston, and jobs its residents hold",
-      '<text class="seam-viz-t" x="0" y="18">jobs here</text><rect x="100" y="9" width="96" height="9" rx="2" fill="' + W + '.92)"/><text class="seam-viz-t" x="202" y="17.5">688K</text>' +
-      '<text class="seam-viz-t" x="0" y="42">held by residents</text><rect x="100" y="33" width="' + (HELD / HERE * 96).toFixed(1) + '" height="9" rx="2" fill="' + W + '.85)"/><text class="seam-viz-t" x="' + (106 + HELD / HERE * 96).toFixed(1) + '" y="41.5">334K</text>' +
-      '<text class="seam-viz-t" x="100" y="64" text-anchor="middle">206 jobs here per 100 its residents hold</text>');
+    const vizFlows = rows("Jobs located in Boston, and jobs its residents hold",
+      svRow("jobs here", "688K") + '<span class="sv-bar" style="width:100%"></span>' +
+      svRow("held by residents", "334K") + '<span class="sv-bar" style="width:' + pctW(HELD / HERE * 100) + '"></span>' +
+      '<span class="sv-note">206 jobs here per 100 its residents hold</span>');
     /* constraints: the growth scatter's four quadrants, the city in the constrained-supply one */
     let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
     let dots = "";
@@ -13937,7 +13952,7 @@
      their drawn size against the rows: the rows get a wider pitch and the
      axis more room above, so the lines do not touch (set once, at load) */
   var PHONE_B = !!(window.matchMedia && matchMedia("(max-width: 599px)").matches);
-  var W = 880, ML = 176, MR = 132, MT = PHONE_B ? 56 : 34, RH = PHONE_B ? 42 : 27, MB = 16;
+  var W = 880, ML = 176, MR = PHONE_B ? 132 : 152, MT = PHONE_B ? 56 : 34, RH = PHONE_B ? 42 : 27, MB = 16;
   var rows = AM_SECTORS.slice().sort(function(a, b){ return b.j - a.j; });
   var H = MT + rows.length * RH + MB;
   el.setAttribute("viewBox", "0 0 " + W + " " + H);
@@ -14603,7 +14618,7 @@
           "2545560":{lx:-14,ly:2,an:"end"}, "2572600":{lx:-6,ly:-18,an:"end"} }
       : { "2511000":{lx:-14,ly:-22,an:"end"}, "2562535":{lx:10,ly:-30,an:"start"},
           "2555745":{lx:12,ly:26,an:"start"}, "2509210":{lx:-18,ly:14,an:"end"},
-          "2545560":{lx:-8,ly:22,an:"end"}, "2572600":{lx:-6,ly:-22,an:"end"} };
+          "2545560":{lx:-8,ly:10,an:"end"}, "2572600":{lx:-6,ly:-22,an:"end"} };
     var ceilings = ceilingsFor;
     var arcs = [];
     Object.keys(partners).forEach(function(id){
@@ -14848,8 +14863,8 @@
     $("amTShare").textContent = Math.round((d.all ? d.share : d.sm) * 100) + "%";
     var mx = Math.max(d.j, d.r) * 1.25;
     $("amMini").innerHTML =
-      "<div class=\"mrow\"><span>Jobs located in Boston</span><div class=\"mtrack\"><div class=\"mbar is-jobs\" style=\"width:" + (d.j / mx * 100).toFixed(1) + "%\"></div><span class=\"mv\" style=\"left:" + (d.j / mx * 100).toFixed(1) + "%\">" + fmtC(d.j) + "</span></div></div>" +
-      "<div class=\"mrow\"><span>Held by Boston residents</span><div class=\"mtrack\"><div class=\"mbar is-res\" style=\"width:" + (d.r / mx * 100).toFixed(1) + "%\"></div><span class=\"mv\" style=\"left:" + (d.r / mx * 100).toFixed(1) + "%\">" + fmtC(d.r) + "</span></div></div>";
+      "<div class=\"mrow\"><span>Jobs in Boston</span><div class=\"mtrack\"><div class=\"mbar is-jobs\" style=\"width:" + (d.j / mx * 100).toFixed(1) + "%\"></div><span class=\"mv\" style=\"left:" + (d.j / mx * 100).toFixed(1) + "%\">" + fmtC(d.j) + "</span></div></div>" +
+      "<div class=\"mrow\"><span>Held by residents</span><div class=\"mtrack\"><div class=\"mbar is-res\" style=\"width:" + (d.r / mx * 100).toFixed(1) + "%\"></div><span class=\"mv\" style=\"left:" + (d.r / mx * 100).toFixed(1) + "%\">" + fmtC(d.r) + "</span></div></div>";
   }
   select(ALL);
   window.AMGAUGE = { select:select, reset:function(){ select(ALL); } };
@@ -14934,8 +14949,8 @@
        sentence that used to spell it out again is gone */
     var mx = Math.max(d.j, d.r) * 1.25;
     $("am2Mini").innerHTML =
-      "<div class=\"mrow\"><span>Jobs located in Boston</span><div class=\"mtrack\"><div class=\"mbar is-jobs\" style=\"width:" + (d.j / mx * 100).toFixed(1) + "%\"></div><span class=\"mv\" style=\"left:" + (d.j / mx * 100).toFixed(1) + "%\">" + fmtC(d.j) + "</span></div></div>" +
-      "<div class=\"mrow\"><span>Held by Boston residents</span><div class=\"mtrack\"><div class=\"mbar is-res\" style=\"width:" + (d.r / mx * 100).toFixed(1) + "%\"></div><span class=\"mv\" style=\"left:" + (d.r / mx * 100).toFixed(1) + "%\">" + fmtC(d.r) + "</span></div></div>";
+      "<div class=\"mrow\"><span>Jobs in Boston</span><div class=\"mtrack\"><div class=\"mbar is-jobs\" style=\"width:" + (d.j / mx * 100).toFixed(1) + "%\"></div><span class=\"mv\" style=\"left:" + (d.j / mx * 100).toFixed(1) + "%\">" + fmtC(d.j) + "</span></div></div>" +
+      "<div class=\"mrow\"><span>Held by residents</span><div class=\"mtrack\"><div class=\"mbar is-res\" style=\"width:" + (d.r / mx * 100).toFixed(1) + "%\"></div><span class=\"mv\" style=\"left:" + (d.r / mx * 100).toFixed(1) + "%\">" + fmtC(d.r) + "</span></div></div>";
     if (window.AMBARS && window.AMBARS.pick) window.AMBARS.pick(d.all ? null : d.n);
     var pick = $("am2Pick"); if (pick) pick.classList.toggle("is-off", !d.all);
   }
