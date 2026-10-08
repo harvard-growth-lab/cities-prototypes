@@ -1532,11 +1532,13 @@
 
     const S = 300, PAD = 26, MID = S / 2;
     const svg = d3.select(svgEl);
-    // Flat pastels, butted edge to edge with no separator. Selection is shown
-    // by dimming the other three rather than by deepening this one.
-    // two grounds, set as a checkerboard so each quadrant meets the other
-    const fills = { tl:"#ffffff", tr:"#eef3f4",
-                    bl:"#eef3f4", br:"#ffffff" };
+    // Flat pastels, butted edge to edge with no separator: the four
+    // diagnoses, so a data palette and outside the twelve interface colours
+    // (merging them left two quarters white on the white card and two
+    // diagnoses in one fill). Selection dims the other three and gives the
+    // picked one a teal edge.
+    const fills = { tl:"#f6f2e9", tr:"#e8ecf2",
+                    bl:"#f9edec", br:"#e9efeb" };
     const box = { tl:[PAD, PAD], tr:[MID, PAD], bl:[PAD, MID], br:[MID, MID] };
     Object.keys(box).forEach(k => {
       svg.append("rect").attr("class", "dx-q dx-q--" + k)
@@ -1574,7 +1576,11 @@
       const q = (state.pop && state.pay)
         ? (state.pay === "up" ? "t" : "b") + (state.pop === "up" ? "r" : "l")
         : null;
-      if (q) svg.select(".dx-q--" + q).classed("is-on", true);
+      if (q){
+        // the picked quarter on top so its edge is whole, then the cross, labels and dot back over it
+        svg.select(".dx-q--" + q).classed("is-on", true).raise();
+        svg.selectAll(".dx-cross, .dx-axis, .dx-dot-g").raise();
+      }
       svg.classed("has-sel", !!q);
 
       document.querySelectorAll(".dx-opt").forEach(b => {

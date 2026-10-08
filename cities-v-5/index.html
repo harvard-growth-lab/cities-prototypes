@@ -145,7 +145,7 @@
   body{
     font-family:'Source Sans 3','Source Sans Pro',sans-serif;
     color:var(--ink);
-    background:#fff;
+    background:var(--white);
     -webkit-font-smoothing:antialiased;
   }
   button{font-family:inherit;cursor:pointer;}
@@ -184,7 +184,7 @@
     transition:background .15s ease, transform .15s ease;
     white-space:nowrap;flex-shrink:0;
   }
-  .btn-journey:hover{background:var(--teal-dark);box-shadow:var(--shadow-md);}
+  .btn-journey:hover{background:var(--teal-dark);box-shadow:inset 0 0 0 999px rgba(26,34,38,.2);}
   .btn-orange{
     background:var(--orange);color:var(--white);border:none;border-radius:4px;
     height:42px;padding:0 26px;font-size:14px;font-weight:600;letter-spacing:.28px;
@@ -373,7 +373,7 @@
     box-shadow:0 6px 18px rgba(37,88,98,.22);
   }
   .btn-diagnose:hover{transform:translateY(-1px);}
-  .btn-diagnose:hover{background:var(--teal-dark);box-shadow:var(--shadow-md);}
+  .btn-diagnose:hover{background:var(--teal-dark);box-shadow:inset 0 0 0 999px rgba(26,34,38,.2),0 6px 18px rgba(37,88,98,.22);}
   .btn-diagnose .city-build{width:22px;height:22px;flex:none;}
   .btn-diagnose .bd-chev{width:14px;height:9px;flex:none;}
 
@@ -591,7 +591,7 @@
     height:44px;padding:0 18px;font-size:14px;font-weight:600;
     transition:background .15s ease;
   }
-  .chat-send:hover{background:var(--teal-dark);box-shadow:var(--shadow-md);}
+  .chat-send:hover{background:var(--teal-dark);box-shadow:inset 0 0 0 999px rgba(26,34,38,.2);}
   #citySelectTool{width:290px;}
 
   .tool-body{flex:1;display:flex;min-height:0;}
@@ -696,7 +696,7 @@
     appearance:none;border:0;border-radius:16px;background:var(--ink);color:var(--white);cursor:pointer;
     font:inherit;font-size:12.5px;line-height:1;box-shadow:0 6px 20px rgba(26,34,38,.28);
   }
-  .sv-btn:hover,.sv-btn.open{background:var(--ink);}
+  .sv-btn:hover,.sv-btn.open{background:var(--ink-soft);}
   .sv-btn:focus-visible{outline:2px solid var(--white);outline-offset:-4px;box-shadow:0 0 0 2px var(--ink),0 6px 20px rgba(26,34,38,.28);}
   .sv-k{font-size:12.5px;font-weight:600;letter-spacing:0;opacity:.78;}
   .sv-now{font-weight:700;}
@@ -962,7 +962,7 @@
   .pgc--next .pgc-kicker,.pgc--next .pgc-sub{color:var(--on-dark);}
   .pgc--next .pgc-stop{background:none;border-color:var(--on-dark-soft);color:var(--white);}
   .pgc--next .pgc-name{font-size:21px;}
-  .pgc--next:hover{background:var(--teal-dark);border-color:var(--teal-dark);box-shadow:0 6px 18px rgba(37,88,98,.22);}
+  .pgc--next:hover{background:var(--teal-dark);border-color:var(--teal-dark);box-shadow:inset 0 0 0 999px rgba(26,34,38,.2),0 6px 18px rgba(37,88,98,.22);}
   /* the check's mark is soft: a speech bubble with its question, in the pale tint */
   .pgc-quiz{
     width:26px;height:26px;border-radius:50%;flex:none;font-style:normal;
@@ -1492,7 +1492,7 @@
   }
   /* Two bold things per row, not four: the name finds the row and the change
      tells the story. Levels, ranks and column heads are reference — they stay
-     legible without competing. Pure var(--ink) is gone; the section runs on one ink
+     legible without competing. Pure #000 is gone; the section runs on one ink
      scale, --ink for what you read and --ink-soft for what you refer to. */
   .ind-head span{
     font-size:13px;font-weight:400;color:var(--ink);padding-bottom:6px;
@@ -1835,7 +1835,7 @@
     display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;
   }
   /* Match the section headings elsewhere (.page-head h2) — colour is inherited
-     so it picks up the same ink, rather than a hardcoded var(--ink). */
+     so it picks up the same ink, rather than a hardcoded #000. */
   .export-subsection h3{
     font-size:var(--t-h3);font-weight:600;letter-spacing:-.3px;margin:0;
   }
@@ -1971,7 +1971,7 @@
   }
   .ktest-opts button:hover:not(:disabled):not([aria-disabled="true"]){border-color:var(--teal);}
   .ktest-opts button.is-right{border-color:var(--rise);box-shadow:inset 0 0 0 1px var(--rise);}
-  .ktest-opts button.is-picked:not(.is-right){border-color:var(--fall);box-shadow:inset 0 0 0 1px var(--fall);background:var(--orange-tint);}
+  .ktest-opts button.is-picked:not(.is-right){border-color:var(--fall);box-shadow:inset 0 0 0 1px var(--fall);background:var(--white);}
   .ktest-opts button:disabled,.ktest-opts button[aria-disabled="true"]{cursor:default;}
   .ktest-q:focus{outline:none;}
   .ktest-fb{font-size:13.5px;color:var(--ink);margin-top:12px;max-width:72ch;}
@@ -1984,7 +1984,7 @@
     font:inherit;font-size:13.5px;font-weight:600;color:var(--white);background:var(--teal);
     border:none;border-radius:5px;padding:9px 16px;cursor:pointer;
   }
-  .ktest-save:hover:not(:disabled){background:var(--teal-dark);box-shadow:var(--shadow-md);}
+  .ktest-save:hover:not(:disabled){background:var(--teal-dark);box-shadow:inset 0 0 0 999px rgba(26,34,38,.2);}
   .ktest-save:disabled{opacity:.55;cursor:default;}
   .ktest-saved{font-size:13px;font-weight:700;color:var(--rise);}
   .ov-block--check{min-height:auto;justify-content:flex-start;padding:8px 0 40px;}
@@ -2107,6 +2107,8 @@
   .dx-q{transition:opacity .2s ease;opacity:1;}
   /* idle shows all four flat; picking one dims the rest instead of deepening it */
   #dxChart.has-sel .dx-q:not(.is-on){opacity:.4;}
+  /* and the picked quarter takes a teal edge, so a pale one still reads as picked */
+  #dxChart .dx-q.is-on{stroke:var(--teal);stroke-width:2;}
   .dx-cross{stroke:var(--border-strong);stroke-width:1.2;stroke-dasharray:4 4;}
   .dx-axis{font-size:13px;font-weight:600;fill:var(--ink-soft);}
   .dx-dot{fill:var(--ink);stroke:var(--white);stroke-width:3;pointer-events:none;}
@@ -2125,7 +2127,7 @@
   .metro-scatter .ms-axis-line{stroke:var(--ink);stroke-width:1;}
   .metro-scatter .ms-median{stroke:var(--ink);stroke-width:1.5;stroke-dasharray:6 5;}
   /* the quadrant the section is arguing about */
-  .metro-scatter .ms-quad{fill:var(--orange-tint);opacity:.55;}
+  .metro-scatter .ms-quad{fill:var(--teal-tint);opacity:1;}
   .metro-scatter .ms-tick{font-size:13px;fill:var(--ink);}
   .metro-scatter .ms-axis-title{font-size:14px;fill:var(--ink);}
   .metro-scatter .ms-axis-years{font-size:12px;fill:var(--ink-soft);}
@@ -2648,7 +2650,7 @@
   .rca-chart .rca-value{font-size:13px;fill:var(--ink);}
   /* translucent wash on hover rather than an opaque tint */
   .rca-chart .rca-hit{fill:transparent;}
-  .rca-chart .rca-row:hover .rca-hit{fill:var(--teal-tint);}
+  .rca-chart .rca-row:hover .rca-hit{fill:var(--teal);fill-opacity:.07;}
 
   /* ---- peer comparison marks ---- */
   /* Direction is encoded by texture, not hue: a solid run past the peer tick
@@ -2954,7 +2956,7 @@
     height:42px;padding:0 24px;font-size:var(--t-note);font-weight:600;letter-spacing:.2px;
     transition:background .15s ease, box-shadow .15s ease, transform .15s ease;
   }
-  .btn-save:hover{background:var(--teal-dark);box-shadow:0 4px 14px rgba(37,88,98,.22);}
+  .btn-save:hover{background:var(--teal-dark);box-shadow:inset 0 0 0 999px rgba(26,34,38,.2),0 4px 14px rgba(37,88,98,.22);}
   .btn-save:active{transform:translateY(1px);}
   .practice-confirm{
     font-size:var(--t-note);font-weight:600;color:var(--teal);display:none;align-items:center;gap:7px;
@@ -4657,9 +4659,12 @@
   /* ── Worker Flows, the exchange map ───────────────────────────── */
   #amMapSvg .am-place{fill:var(--teal-tint);stroke:var(--border-strong);stroke-width:.6;}
   #amMapSvg .am-place.is-partner{fill:var(--border);}
-  #amMapSvg .am-place.is-focus{fill:var(--border);stroke:var(--geo-city);stroke-width:1.1;}
+  /* the focus place a step down from its partners: the teal at .2 (a partner's
+     label running over it still reads 4.7 in the soft ink); the hover a step
+     further, with a heavier edge */
+  #amMapSvg .am-place.is-focus{fill:var(--teal);fill-opacity:.2;stroke:var(--geo-city);stroke-width:1.1;}
   #amMapSvg .am-place{cursor:default;transition:fill .12s ease;}
-  #amMapSvg .am-place.is-hot{fill:var(--border-strong);stroke:var(--geo-city);stroke-width:1.1;}
+  #amMapSvg .am-place.is-hot{fill:var(--teal);fill-opacity:.28;stroke:var(--geo-city);stroke-width:2;}
   #amTip .tip-foot{font-size:12.5px;line-height:1.45;color:var(--ink-soft);
     margin:7px 0 0;padding-top:7px;border-top:1px solid var(--border);}
   #amMapSvg .am-msa{fill:none;stroke:var(--geo-metro);stroke-width:1.3;stroke-dasharray:6 6;}
@@ -4867,7 +4872,7 @@
     background:none;border:none;text-align:left;width:100%;cursor:pointer;
     position:relative;font-family:inherit;transition:background .15s ease;
   }
-  .jp-row:hover{background:var(--ground);}
+  .jp-row:hover{background:var(--teal-tint);}
   .jp-row .num{
     width:40px;height:40px;flex:0 0 40px;border-radius:50%;position:relative;z-index:1;
     background:var(--white);border:1.5px solid var(--border);color:var(--ink);
@@ -5021,7 +5026,7 @@
     background:var(--teal);color:var(--white);border:none;border-radius:4px;
     padding:12px 22px;font-size:16px;font-weight:600;transition:all .15s ease;cursor:pointer;
   }
-  .lock-btn:hover{background:var(--teal-dark);box-shadow:var(--shadow-md);}
+  .lock-btn:hover{background:var(--teal-dark);box-shadow:inset 0 0 0 999px rgba(26,34,38,.2);}
   .lock-btn:disabled{opacity:.45;cursor:default;}
   .slider-row{display:flex;align-items:center;gap:22px;max-width:520px;}
   .slider-row input[type=range]{flex:1;accent-color:var(--teal);height:6px;}
@@ -7439,7 +7444,7 @@ if (/[?&]colours=16\b/.test(location.search)) document.documentElement.dataset.c
               <span class="sk-item ak-res-count"><i class="ak-sw" style="background:var(--orange)"></i>jobs held by <span class="city-short">Boston</span> residents</span>
               <span class="sk-item ak-div-hi-j"><i class="ak-sw" style="background:var(--geo-city)"></i>a larger share of the jobs here than of the metro&rsquo;s</span>
               <span class="sk-item ak-div-hi-r"><i class="ak-sw" style="background:var(--orange)"></i>a larger share of residents&rsquo; jobs than of the metro&rsquo;s</span>
-              <span class="sk-item ak-div-lo"><i class="ak-sw" style="background:#8fb5bb"></i>a smaller share</span>
+              <span class="sk-item ak-div-lo"><i class="ak-sw" style="background:var(--control-edge)"></i>a smaller share</span>
             </p>
             <!-- opt-2's one control: which count the bars show. The site puts
                  this switch, and nothing else, on this part of its page -->
@@ -7845,7 +7850,7 @@ if (/[?&]colours=16\b/.test(location.search)) document.documentElement.dataset.c
                The query string pins its opening state; its own seg controls stay
                live inside the frame. -->
           <div class="rca-dist-wrap" data-rcaview="dist">
-            <iframe id="rcaDistFrame" src="rca-distributions.html?dots=peers&amp;design=band" title="Boston metro specialization across all US metros"></iframe>
+            <iframe id="rcaDistFrame" src="rca-distributions.html?dots=peers&amp;design=band&amp;v=colour12" title="Boston metro specialization across all US metros"></iframe>
           </div>
         </div>
       </section>
@@ -8171,7 +8176,7 @@ if (/[?&]colours=16\b/.test(location.search)) document.documentElement.dataset.c
 <script src="data/geo/who_commute_geo.js"></script>
 <script src="industries-2024.js"></script>
 <script src="industries-2014.js"></script>
-<script src="treemap.js?v=2026-10-07-colour12"></script>
+<script src="treemap.js?v=2026-10-07-colour12c"></script>
 <script>
   /* ---------- treemaps: color by ----------
      Handled entirely in treemap.js — it wires the visible .seg controls and
@@ -14026,7 +14031,7 @@ if (/[?&]colours=16\b/.test(location.search)) document.documentElement.dataset.c
         /* above the line, the colour of the count being compared — teal for
            the jobs located here, orange for the jobs residents hold, as on
            the map and the dial; below the line, grey */
-        .attr("fill", function(d){ return d[lq] >= 1 ? (key === "j" ? C_JOBS : C_RES) : "#8fb5bb"; })
+        .attr("fill", function(d){ return d[lq] >= 1 ? (key === "j" ? C_JOBS : C_RES) : "#7f8f95"; })
         .style("opacity", 1);
       go(row.select(".am-bar-res")).style("opacity", 0);
       go(row.select(".am-val"))

@@ -1676,7 +1676,7 @@ bands are the teal; a filled button's hover is now a lift, `--shadow-md`,
 and a sentence blank's hover a teal edge, since those were the only places
 the dark teal was the whole cue), and the green and orange tints into
 `--teal-tint` (right and wrong, up and down keep their green and red in the
-words, edges and icons; the dx quadrants became a two-ground checkerboard).
+words, edges and icons).
 The four names stay as aliases (`--ground:var(--white)` and so on) only so
 that `?colours=16` can show the sixteen beside the twelve; when one is
 chosen, the aliases and the switch go.
@@ -1706,14 +1706,17 @@ seam's chart lines) → `--border-strong`; ten hairline greys →
 #2e7d33, #1d4750 and the olive #5c8a3a → `--rise` / `--teal-dark`; four
 green tints → `--rise-tint`; four pinks and peach tints → `--orange-tint`;
 #b23a3a and #c14f4f → `--fall`; #cf4f2c and #b0533a → `--orange-text`;
-twenty white alphas → the four on-dark steps; the dx quadrants' four
-pastels → `--ground`, `--teal-tint`, `--orange-tint`, `--rise-tint`;
-Worker Flows' "both" grey → `--control-edge`, its balance grey →
-`--border-strong`, and its two light teals into one (#8fb5bb).
+twenty white alphas → the four on-dark steps; Worker Flows' "both" grey →
+`--control-edge`, its balance grey → `--border-strong`, its "a smaller
+share" bars → `--control-edge` (grey below the line, as its comment says;
+the light teal #8fb5bb is left to the dial's "in, light" band alone).
 
 Outside the system, on purpose (data): the sector palette and the Tol set,
 the complexity ramp and its legend, `MUTED` #a9c2c7 and the glossary's tier
-swatches (they match the treemap), the commuting choropleths (coral out,
+swatches (they match the treemap), the strategy diagram's four quarters
+(#f6f2e9, #e8ecf2, #f9edec, #e9efeb: four diagnoses; merged, two quarters
+went white on the white card and two diagnoses shared a fill), the
+commuting choropleths (coral out,
 blue in), the Boston fill at .55 in the map key, Worker Flows' light teal,
 the journey's section lines and its travelled amber, the explainer
 illustration, and the hidden intro quiz's amber states. Dead code keeps its
@@ -1722,8 +1725,38 @@ data series (the S1 population chart).
 Two quiet-beat inks are re-anchored with `--ink:initial` (the registered
 #1a2226): a term card opened in a quiet beat, and Worker Flows' quiet
 paragraphs, which read in the ink as they did before the scale. The
-tradability score track is on `--ground` so the bar keeps 3:1 (it was 2.7
+tradability score track is on the tint so the bar keeps 3:1 (it was 2.7
 on `--border`).
+
+Fixes after an adversarial before/after check of the merge (scratchpad
+`review12/verify/`, three lenses: screenshots, source, distinctions):
+- **Filled teal buttons.** Their hover darkens with the ink laid over the
+  teal (`box-shadow: inset 0 0 0 999px rgba(26,34,38,.2)`). There is no
+  dark teal any more, and this adds no colour.
+- **The strategy diagram.** The picked quarter takes a teal edge and is
+  raised so the edge is whole, because a pale quarter cannot show a pick by
+  dimming the others.
+- **The Worker Flows map.** The focus place is the teal at fill-opacity .2,
+  a step down from its partners at `--border`. A partner's label that runs
+  over it still reads 4.7 in the soft ink; `--border-strong` read 3.99. Hover
+  is the teal at .28 with a 2px edge.
+- **A wrong quiz pick.** It is white with its red edge, so the tint keeps
+  meaning "chosen".
+- **The RCA chart's row hover.** It is the teal at fill-opacity .07 again.
+  An opaque tint had covered the gridlines and the top-three band.
+- **The journey rows.** They hover to the tint; the ground they used is now
+  white.
+- **The site-layout switch.** It hovers to the soft ink; its black had
+  become its own ink.
+- **The metro scatter's home quarter.** It is the full tint, since the
+  orange tint at .55 had faded to ΔE 1.8.
+- **`rca-distributions.html`** (Extras' default box-plot view, in an
+  iframe). Its own `:root` is on the system now: the soft ink #526066, the
+  faint ink split into the soft ink for words and the control edge for
+  marks, `--orange-text` for the highlighted cell, and the range bands on
+  the two borders. Its 11px labels are still under the floor; that is not
+  part of this pass.
+- **Two comments** that the merge script had rewritten now say `#000` again.
 
 ## 7. How Nil likes to work — read this twice
 

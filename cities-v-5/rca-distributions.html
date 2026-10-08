@@ -13,11 +13,12 @@
     font-weight:400 700; font-style:normal; font-display:swap;
   }
   :root{
-    --teal:#255862; --teal-dark:#1c454d; --teal-tint:#eef3f4; --teal-light:#8fb3ba;
-    --orange:#e76565; --orange-dark:#cf4f2c; --orange-tint:#fdf0ec;
-    --border:#e2e7e8; --border-strong:#c3ccce;
-    --ink:#1a2226; --ink-soft:#5b686d; --ink-faint:#9aa6aa;
-    --paper:#ffffff; --paper-soft:#fbfcfc;
+    /* the tool's twelve colours (index.html :root, HANDOFF 6c), those this page uses */
+    --teal:#255862; --teal-tint:#eef3f4;
+    --orange:#e76565; --orange-text:#a93a17;
+    --border:#e2e7e8; --border-strong:#c3ccce; --control-edge:#7f8f95;
+    --ink:#1a2226; --ink-soft:#526066;
+    --white:#fff; --paper:var(--white);
     --shadow-md:0 8px 28px rgba(37,88,98,.14);
     color-scheme: light;
   }
@@ -34,7 +35,7 @@
   /* ---- controls ---- */
   .controls{display:flex; flex-wrap:wrap; gap:22px; align-items:flex-end; margin:0; padding:0 0 14px; border-bottom:1px solid var(--border)}
   .ctl{display:flex; flex-direction:column; gap:5px}
-  .ctl label{font-size:11px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-faint)}
+  .ctl label{font-size:11px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-soft)}
   .seg{display:flex; border:1px solid var(--border-strong); border-radius:3px; overflow:hidden}
   .seg button{
     appearance:none; border:0; background:var(--paper); color:var(--ink-soft);
@@ -43,7 +44,7 @@
   }
   .seg button:last-child{border-right:0}
   .seg button:hover{background:var(--teal-tint); color:var(--teal)}
-  .seg button[aria-pressed="true"]{background:var(--teal); color:#fff}
+  .seg button[aria-pressed="true"]{background:var(--teal); color:var(--white)}
   .seg button:focus-visible{outline:2px solid var(--orange); outline-offset:-2px}
 
   /* ---- key ---- */
@@ -61,14 +62,14 @@
   /* ---- chart ---- */
   .chart{position:relative; margin-top:6px}
   svg{display:block; width:100%; overflow:visible}
-  text.tick{font-size:11.5px; fill:var(--ink-faint)}
+  text.tick{font-size:11.5px; fill:var(--ink-soft)}
   .grid{stroke:var(--border); stroke-width:1}
   .unity{stroke:var(--ink); stroke-width:1.25}
   .unity-label{font-size:12px; font-weight:700; fill:var(--ink)}
   .axis-title{font-size:13.5px; font-weight:600; fill:var(--ink)}
   .row-label{font-size:14.5px; font-weight:600; fill:var(--ink)}
-  .row-sub{font-size:12.5px; fill:var(--ink-faint)}
-  .band{fill:var(--paper-soft)}
+  .row-sub{font-size:12.5px; fill:var(--ink-soft)}
+  .band{fill:var(--white)}
   .design-band .band{fill:none}
   .design-band .key-item{gap:5px}
   .key-item b{font-weight:400}
@@ -80,16 +81,16 @@
     font:inherit;font-size:12.5px;font-weight:600;color:var(--teal);cursor:pointer;
     text-decoration:underline;text-underline-offset:3px;
   }
-  .kdl{stroke:var(--ink-faint);stroke-width:1}
-  .whisk{stroke:var(--ink-faint); stroke-width:1}
-  .cap{stroke:var(--ink-faint); stroke-width:1}
-  .boxr{fill:var(--teal-tint); stroke:var(--teal-light); stroke-width:1}
+  .kdl{stroke:var(--control-edge);stroke-width:1}
+  .whisk{stroke:var(--control-edge); stroke-width:1}
+  .cap{stroke:var(--control-edge); stroke-width:1}
+  .boxr{fill:var(--teal-tint); stroke:var(--control-edge); stroke-width:1}
   .med{stroke:var(--teal); stroke-width:2.5; stroke-linecap:round}
   /* Background MSAs sit well back — they are context for the box, not marks to
      read one by one. Hover promotes the one under the pointer to full strength
      (.dot-hover), which is the only time an individual one needs to be legible. */
-  .dot-bg{fill:var(--ink-faint); opacity:.16}
-  .dot-peer{fill:var(--ink-faint); opacity:.38; stroke:var(--paper); stroke-width:1.5}
+  .dot-bg{fill:var(--control-edge); opacity:.16}
+  .dot-peer{fill:var(--control-edge); opacity:.38; stroke:var(--paper); stroke-width:1.5}
   .dot-hover{fill:var(--ink-soft); stroke:var(--paper); stroke-width:1.5}
   .dot-focus{fill:var(--teal); stroke:var(--paper); stroke-width:2}
   .dot-focus-sm{fill:var(--teal); stroke:var(--paper); stroke-width:1.75}
@@ -101,8 +102,8 @@
   .halo{fill:none; stroke:var(--ink-soft); stroke-width:2}
   .halo-subject{stroke:var(--teal)}
   .sep{stroke:var(--border); stroke-width:1}
-  .bandr{fill:#dfe6e8}
-  .bandm{fill:#b7c9ce}
+  .bandr{fill:var(--border)}
+  .bandm{fill:var(--border-strong)}
 
   /* ---- intro choreography: the chart assembles itself in four steps ---- */
   .intro-anim .dot-bg,.intro-anim .dot-peer,
@@ -151,7 +152,7 @@
   #chart{position:relative;}
   .intro-label{
     position:absolute;transform:translate(-50%,-100%);
-    background:var(--teal);color:#fff;font-size:12px;font-weight:600;
+    background:var(--teal);color:var(--white);font-size:12px;font-weight:600;
     padding:4px 9px;border-radius:4px;white-space:nowrap;pointer-events:none;
     opacity:0;transition:opacity .3s ease;z-index:4;
   }
@@ -190,10 +191,10 @@
   /* ---- table ---- */
   table{border-collapse:collapse; width:100%; margin-top:22px; font-size:13.5px}
     th,td{padding:7px 10px; border-bottom:1px solid var(--border); text-align:right; font-variant-numeric:tabular-nums}
-  th{font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-faint); font-weight:700; border-bottom:1px solid var(--border-strong)}
+  th{font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft); font-weight:700; border-bottom:1px solid var(--border-strong)}
   th:first-child,td:first-child{text-align:left; font-variant-numeric:normal}
   tbody tr:hover{background:var(--teal-tint)}
-  td.hi{font-weight:700; color:var(--orange-dark)}
+  td.hi{font-weight:700; color:var(--orange-text)}
   [hidden]{display:none !important}
 
   /* ---- notes ---- */
