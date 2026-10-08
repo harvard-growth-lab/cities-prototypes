@@ -1566,7 +1566,30 @@ them. `type-colour-scale.html` at the repo root shows the result live.
 The colour half of this review was then taken site-wide the same day:
 see §6c, which supersedes the colour table below.
 
-**Type: six roles.** The frame and content sizes are fixed pixels so they
+**The floor is now 13px (2026-10-08).** Nil: "In UI, make the smallest
+text 13px", then "let's say on phone you can go down to 11 px" for the
+charts. Every size under 13 on the site went to 13: 228 declarations in
+the stylesheet (10, 10.5, 11, 11.5, 12 and 12.5px), `--t-xs` (now a fixed
+13), the presenter's scaled sizes, treemap.js's 12.5 sizes (`fsUnits`,
+`SEC_NAME_SIZE`, the sector-block card's lines and their measures) and
+rca-distributions.html. So the frame and content rows of the table below
+are one 13px step now; weight carries the difference. A chart drawn on a
+fixed viewBox scales its text with it, so those charts (Worker Flows' map,
+dots, bars and dial; the two Part 2 scatters; the seam's mini charts; the
+exchange map overlay) carry their drawn scale as `--k` (a small script
+watches them and sends `chartscale` when it moves), and their text is set
+at `max(its own size, var(--chart-floor) / var(--k))`, where
+`--chart-floor` is 13px, or 11px under 600px wide. Metro Industries keeps
+its own scaling and measures 13 at every width. On a phone, Worker Flows
+gets a layout for the bigger type: the map keeps the place names and
+steps any that would overlap apart, and leaves the figures and context
+towns to the tip; the dot rows put their count and words above each row;
+the dots' captions are the counts alone; the bar chart widens its row
+pitch, refits its name gutter when the scale moves, and keeps one figure
+column (the jobs). Check with handoff/type-audit.mjs (`FLOOR=13`) and the
+whole-site paint sweep.
+
+**Type: six roles** (as set on 2026-10-07; 12.5 is now 13). The frame and content sizes are fixed pixels so they
 hold on screen at every width and inside the SVG (`#miTreemapSvg` scales
 them by `--mi-type / --mi-s`); the reading sizes follow the site's ramp.
 Nothing renders under 12.5px.
@@ -1638,7 +1661,7 @@ side by side, so Waltham no longer reads as one row with Cambridge (it
 stands off with its leader); the map tooltip wraps at its 240px measure
 (`width:max-content`) instead of one word a line.
 
-### 6c. The colour system (site-wide, twelve colours)
+### 6c. The colour system (site-wide, thirteen colours)
 
 Nil, 2026-10-07: "there are too many color options. just like in the font
 sizes, merge the closest one and have a better system for colors", and
@@ -1648,9 +1671,10 @@ literal in the source, and every colour painted in 219 states at 1440 and
 390) found 245 distinct values in the source, 128 of them interface rather
 than data, and 79 interface colours on screen, of which only 20 were
 tokens. The merge first went to sixteen, and on Nil's "16 is still a lot.
-is there way to get rid of some" to twelve. Every interface colour now sits
-on one of the twelve, defined once in `:root` and used by reference in the
-stylesheet; the scripts write the same
+is there way to get rid of some" to twelve; on 2026-10-08 the section
+ground came back ("bring back the background color in the narrative area and
+surrounding"), so thirteen. Every interface colour now sits on one of the
+thirteen, defined once in `:root` and used by reference in the stylesheet; the scripts write the same
 values (SVG attributes and d3 take the hex, since a `var()` there is only
 safe where it was already used).
 
@@ -1661,7 +1685,8 @@ safe where it was already used).
 | neutral | `--control-edge` | #7f8f95 | the edge a control is found by, chart axes, quiet marks and bars | 3.4 / 3.2 / 3.0 / 2.7 |
 | neutral | `--border-strong` | #c3ccce | field and card edges, the rule under a table head, map place edges | decorative |
 | neutral | `--border` | #e2e7e8 | hairlines, gridlines, tracks | decorative |
-| neutral | `--white` | #fff | every ground: the page, panels, cards, the gaps between tiles, words on the teal | 7.9 on teal |
+| neutral | `--ground` | #f9fafb | the ground of the narrative sections (Who are you?, Metro Industries, Worker Flows) around their white panels, quiet fills | decorative |
+| neutral | `--white` | #fff | the page elsewhere, panels, cards, menus, the gaps between tiles, words on the teal | 7.9 on teal |
 | accent | `--teal` | #255862 | links, the chosen, the city | 7.9 / 7.6 / 7.1 / 6.3 |
 | accent | `--teal-tint` | #eef3f4 | the one tint: a control's ground, a hover, a chosen row, a done step, a right or wrong answer, an up or down verdict | decorative |
 | warm | `--orange` | #e76565 | this place, you are here: marks only | 3.3 (not for words) |
@@ -1670,16 +1695,16 @@ safe where it was already used).
 | direction | `--fall` | #c0244a | down, wrong | 5.8; 5.2 on the tint |
 
 The four the twelve absorbed: the section ground #f9fafb into `--white`
-(the panels keep their `--border` edge; the tradability score track moved
-to the tint), the dark teal #1c454d into `--teal` (the seal, seam and pager
+(brought back on 2026-10-08; the tradability score track stays on the
+tint), the dark teal #1c454d into `--teal` (the seal, seam and pager
 bands are the teal; a filled button's hover is now a lift, `--shadow-md`,
 and a sentence blank's hover a teal edge, since those were the only places
 the dark teal was the whole cue), and the green and orange tints into
 `--teal-tint` (right and wrong, up and down keep their green and red in the
 words, edges and icons).
-The four names stay as aliases (`--ground:var(--white)` and so on) only so
-that `?colours=16` can show the sixteen beside the twelve; when one is
-chosen, the aliases and the switch go.
+The three merged names stay as aliases (`--teal-dark:var(--teal)` and so
+on) only so that `?colours=16` can show the sixteen beside the thirteen;
+when one is chosen, the aliases and the switch go.
 
 Below twelve, as studies (2026-10-08, Nil: "can we go down the 12 colors",
 then "do 11, 10 and 9"): `?colours=11` drops `--border-strong` (lines and
@@ -1695,7 +1720,7 @@ stays twelve until one is chosen. `colour-count-sketches.html` at the repo
 root (untracked, with `colour-count-images/`) shows nine screens at each
 count.
 
-Around the twelve: white on the teal bands in four strengths (`--on-dark`
+Around the thirteen: white on the teal bands in four strengths (`--on-dark`
 .92 for words, 7.0:1 on `--teal`; `--on-dark-soft` .78, 5.6:1;
 `--on-dark-line` .2; `--on-dark-fill` .07), `--scrim` (ink at .45, behind a
 dialog), and the shadows on two inks at fixed alphas (teal .04 / .10 / .14

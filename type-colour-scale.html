@@ -9,7 +9,7 @@
 <style>
   :root{
     --ink:#1a2226; --ink-soft:#526066; --control-edge:#7f8f95; --border-strong:#c3ccce; --border:#e2e7e8;
-    --white:#fff; --teal:#255862; --teal-tint:#eef3f4;
+    --ground:#f9fafb; --white:#fff; --teal:#255862; --teal-tint:#eef3f4;
     --orange:#e76565; --orange-text:#a93a17; --rise:#2d7d32; --fall:#c0244a;
     --on-dark:rgba(255,255,255,.92); --on-dark-soft:rgba(255,255,255,.78); --on-dark-line:rgba(255,255,255,.2); --on-dark-fill:rgba(255,255,255,.07);
     --scrim:rgba(26,34,38,.45); --geo-city:var(--teal); --geo-metro:var(--ink-soft);
@@ -29,17 +29,17 @@
   p.lead{font-size:var(--t-note);color:var(--ink-soft);margin:0 0 28px;max-width:720px}
   p{margin:0 0 12px}
   table{width:100%;border-collapse:collapse;font-size:var(--t-note)}
-  th{text-align:left;font-size:12.5px;font-weight:600;color:var(--ink-soft);padding:0 10px 8px 0;border-bottom:1px solid var(--border-strong);vertical-align:bottom}
+  th{text-align:left;font-size:13px;font-weight:600;color:var(--ink-soft);padding:0 10px 8px 0;border-bottom:1px solid var(--border-strong);vertical-align:bottom}
   td{padding:10px 10px 10px 0;border-bottom:1px solid var(--border);vertical-align:top}
   td.sample{white-space:nowrap;width:260px}
   td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
   .sw{display:inline-block;width:28px;height:20px;border-radius:4px;vertical-align:middle;margin-right:8px;box-shadow:inset 0 0 0 1px rgba(26,34,38,.12)}
   .pair{display:inline-flex;align-items:center;gap:8px;padding:3px 10px;border-radius:4px;white-space:nowrap}
-  code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;background:var(--teal-tint);padding:1px 5px;border-radius:3px}
-  .note{font-size:12.5px;color:var(--ink-soft)}
-  tr.fam td{font-size:12.5px;font-weight:600;color:var(--ink-soft);padding-top:18px;border-bottom:1px solid var(--border-strong)}
-  .ctl{display:inline-flex;align-items:center;height:26px;padding:0 10px;border:1px solid var(--control-edge);border-radius:4px;background:#fff;color:var(--ink-soft);font-size:12.5px;font-weight:600}
-  .box{display:inline-flex;align-items:center;gap:6px;height:20px;padding:0 9px;border:1px solid var(--teal);border-radius:4px;background:#fff;color:var(--teal);font-size:12.5px;font-weight:600}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;background:var(--teal-tint);padding:1px 5px;border-radius:3px}
+  .note{font-size:13px;color:var(--ink-soft)}
+  tr.fam td{font-size:13px;font-weight:600;color:var(--ink-soft);padding-top:18px;border-bottom:1px solid var(--border-strong)}
+  .ctl{display:inline-flex;align-items:center;height:26px;padding:0 10px;border:1px solid var(--control-edge);border-radius:4px;background:#fff;color:var(--ink-soft);font-size:13px;font-weight:600}
+  .box{display:inline-flex;align-items:center;gap:6px;height:20px;padding:0 9px;border:1px solid var(--teal);border-radius:4px;background:#fff;color:var(--teal);font-size:13px;font-weight:600}
   .pick{display:inline-block;padding:1px 7px;border-radius:4px;background:var(--teal-tint);color:var(--teal);font-weight:700}
   .inter{font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;line-height:1.6}
   .dash{display:inline-block;width:40px;border-top:1.5px dashed var(--ink);vertical-align:middle}
@@ -51,26 +51,26 @@
 <body>
 <main>
   <h1>Type and colour scale</h1>
-  <p class="lead">The type of Who are you? and Metro Industries, and the colours of the whole tool, after the reviews of 2026-10-07. Every interface colour the site draws is one of the twelve below; anything not here is data (the sector palette, the complexity ramp, the maps' shading).</p>
+  <p class="lead">The type of Who are you? and Metro Industries, and the colours of the whole tool, after the reviews of 2026-10-07. Every interface colour the site draws is one of the thirteen below; anything not here is data (the sector palette, the complexity ramp, the maps' shading).</p>
 
   <h2>Type</h2>
-  <p>Six roles. The frame and content sizes are fixed pixels so they hold the same size at every window width and inside the SVG charts; the reading sizes follow the site's ramp. The floor is 12.5px: nothing renders under it, at any width.</p>
+  <p>Six roles. The frame and content sizes are fixed pixels so they hold the same size at every window width and inside the SVG charts; the reading sizes follow the site's ramp. The floor is 13px: nothing renders under it, at any width, except chart text on a phone (under 600px wide), which may go down to 11px (2026-10-08).</p>
   <table>
     <thead><tr><th>Sample</th><th>Size</th><th>Role</th><th>Weights</th></tr></thead>
     <tbody>
-      <tr><td class="sample"><span style="font-size:12.5px;font-weight:500;color:var(--ink-soft)">Jobs in the metro &nbsp; 50K &nbsp; 100K</span></td><td class="num">12.5px, fixed</td><td>The frame: axis ticks and names, column heads, control labels and buttons, the selects, table heads and cells, tooltip and card labels, chips and crumbs, notes, sources and ranks, the map's chips and the worker counts. The beat counter joins it on a phone through <code>--t-xs</code>.</td><td>400 notes · 500 passive frame · 600 controls and values · 700 badges, the 1× tick, the brace label</td></tr>
+      <tr><td class="sample"><span style="font-size:13px;font-weight:500;color:var(--ink-soft)">Jobs in the metro &nbsp; 50K &nbsp; 100K</span></td><td class="num">13px, fixed (was 12.5)</td><td>The frame: axis ticks and names, column heads, control labels and buttons, the selects, table heads and cells, tooltip and card labels, chips and crumbs, notes, sources and ranks, the map's chips and the worker counts. The beat counter joins it on a phone through <code>--t-xs</code>.</td><td>400 notes · 500 passive frame · 600 controls and values · 700 badges, the 1× tick, the brace label</td></tr>
       <tr><td class="sample"><span style="font-size:13px">General hospitals <b style="font-weight:600">126K</b></span></td><td class="num">13px, fixed</td><td>Content inside a figure or a table's small print: industry names and values, tier names and shares, the sector key, the legend's ends, the key card's name and verbs, table captions and notes, the place names on the commuting maps.</td><td>400 names · 600 values and verbs · 700 the top three, the sector band</td></tr>
       <tr><td class="sample"><span style="font-size:var(--t-note)">Colleges and universities, with 85,523 jobs</span></td><td class="num"><code>--t-note</code> 14 → 15</td><td>Table text and reading inside a card: the indicator tables' measures and peers line, the flow tables, the Ask questions and answers, the term card, the cell card's text, the map tooltip and the Boston label, the presenter bar.</td><td>400 text · 500 the presenter's where-line · 600 names and buttons</td></tr>
       <tr><td class="sample"><span class="inter" style="font-size:16px">The metro is the labor market.</span> <span class="pick">treemap ⌄</span></td><td class="num">16px, fixed (≥ 900); <code>--t-base</code> under</td><td>Prose and the figure's head: the beat paragraphs (Inter, line-height 1.6), the head sentence and its blanks, the figure title, the ranking key, the level number in the indicator table, the rank card's head.</td><td>400 prose · 600 the level number · 700 the figure title and the blanks</td></tr>
-      <tr><td class="sample"><span style="font-size:var(--t-title);font-weight:700;line-height:1">10.8×</span> <span style="font-size:12.5px;color:var(--ink-soft)">the national share</span></td><td class="num"><code>--t-title</code> 18 → 22</td><td>One lead figure: the cell card's number.</td><td>700</td></tr>
+      <tr><td class="sample"><span style="font-size:var(--t-title);font-weight:700;line-height:1">10.8×</span> <span style="font-size:13px;color:var(--ink-soft)">the national share</span></td><td class="num"><code>--t-title</code> 18 → 22</td><td>One lead figure: the cell card's number.</td><td>700</td></tr>
       <tr><td class="sample"><span style="font-size:var(--t-beat);font-weight:700;line-height:1.2;letter-spacing:-.3px">How tradable is the metro's work?</span></td><td class="num"><code>--t-beat</code> 22 → 26 (≥ 900); <code>--t-h2</code> under</td><td>The beat titles in both sections' text columns.</td><td>700</td></tr>
       <tr><td class="sample"><span style="font-size:34px;font-weight:700;line-height:1;color:var(--teal)">7<span style="font-size:19px">th</span></span></td><td class="num">display pairs, kept</td><td>The complexity rank card's numeral (34, 28 on a phone) and ordinal (19); the treemap's sector-level labels at 18 (14 on a phone); the presenter view, every size × its room scale; the map zoom glyphs at 15.</td><td>700</td></tr>
     </tbody>
   </table>
-  <p class="note">Purged in the review: 17, 15 (fixed), 14, 14.5, 15.5, 16.5, 21, 22 and the phone step-downs of Who are you?; the 12px year select; dead rules at 9.5 and 12px. Everything on the map now sets in the house family at a 12.5px base instead of Leaflet's Helvetica Neue at 12.</p>
+  <p class="note">On 2026-10-08 every size under 13 went to 13, so the frame and content rows are one step and weight tells them apart. Purged in the first review: 17, 15 (fixed), 14, 14.5, 15.5, 16.5, 21, 22 and the phone step-downs of Who are you?; the 12px year select; dead rules at 9.5 and 12px. Everything on the map now sets in the house family at a 12.5px base instead of Leaflet's Helvetica Neue at 12.</p>
 
   <h2>Colour</h2>
-  <p>Twelve colours for the whole tool, defined once in <code>:root</code>: a neutral ramp from the ink to the white, one accent with its tint, a warm accent in two steps, and the two directions; one white for every ground and one tint for every highlighted ground. Text reads at 4.5:1 or better on every ground it sits on; furniture a reader finds by its edge reads at 3:1. Ratios are on white / the old ground / tint.</p>
+  <p>Thirteen colours for the whole tool, defined once in <code>:root</code>: a neutral ramp from the ink to the white, one accent with its tint, a warm accent in two steps, and the two directions; one tint for every highlighted ground. Text reads at 4.5:1 or better on every ground it sits on; furniture a reader finds by its edge reads at 3:1. Ratios are on white / the old ground / tint.</p>
   <table>
     <thead><tr><th>Sample</th><th>Token</th><th>Role</th><th>Ratio</th></tr></thead>
     <tbody>
@@ -80,7 +80,8 @@
       <tr><td class="sample"><span class="sw" style="background:var(--control-edge)"></span><span class="ctl">Present</span></td><td class="num"><code>--control-edge</code> #7f8f95</td><td>The edge a control is found by, chart axes and base lines, quiet marks and bars, peer dots.</td><td class="num">3.4 / 3.2 / 3.0</td></tr>
       <tr><td class="sample"><span class="sw" style="background:var(--border-strong)"></span>cards and menus</td><td class="num"><code>--border-strong</code> #c3ccce</td><td>Field and card edges, the rule under a table head, map place edges, the not-rated cell.</td><td class="num">decorative</td></tr>
       <tr><td class="sample"><span class="sw" style="background:var(--border)"></span><span class="grid"></span> rules</td><td class="num"><code>--border</code> #e2e7e8</td><td>Hairlines, gridlines, tracks, panel edges.</td><td class="num">decorative</td></tr>
-      <tr><td class="sample"><span class="sw" style="background:var(--white)"></span><span class="pair" style="background:var(--teal);color:var(--white);font-weight:700">1</span></td><td class="num"><code>--white</code> #fff</td><td>Every ground: the page, panels, cards, menus, tooltips, the gaps between tiles, words on the teal.</td><td class="num">7.9 on teal</td></tr>
+      <tr><td class="sample"><span class="sw" style="background:var(--ground)"></span>Ground</td><td class="num"><code>--ground</code> #f9fafb</td><td>The ground of the narrative sections (Who are you?, Metro Industries, Worker Flows) around their white panels; quiet fills. Merged into the white on 10-07, brought back on 10-08.</td><td class="num">decorative</td></tr>
+      <tr><td class="sample"><span class="sw" style="background:var(--white)"></span><span class="pair" style="background:var(--teal);color:var(--white);font-weight:700">1</span></td><td class="num"><code>--white</code> #fff</td><td>The page elsewhere, panels, cards, menus, tooltips, the gaps between tiles, words on the teal.</td><td class="num">7.9 on teal</td></tr>
       <tr class="fam"><td colspan="4">The accent</td></tr>
       <tr><td class="sample"><span class="sw" style="background:var(--teal)"></span><span style="color:var(--teal);font-weight:600">Links, the chosen</span> <span class="box">Show all ⌄</span></td><td class="num"><code>--teal</code> #255862</td><td>Links and control words, the chosen, focus rings, the city geography (solid).</td><td class="num">7.9 / 7.6 / 7.1</td></tr>
       <tr><td class="sample"><span class="sw" style="background:var(--teal-tint)"></span><span class="pick">sector ⌄</span></td><td class="num"><code>--teal-tint</code> #eef3f4</td><td>The one tint: a control's ground, a hover, a chosen row, the tray under segmented buttons, a done step, a right or wrong answer, an up or down verdict.</td><td class="num">decorative</td></tr>
@@ -92,18 +93,18 @@
       <tr><td class="sample"><span class="sw" style="background:var(--fall)"></span><span style="color:var(--fall);font-weight:700">−0.8%</span></td><td class="num"><code>--fall</code> #c0244a</td><td>Down, wrong. Kept clear of the warm accent (ΔE 17.5).</td><td class="num">5.8; 5.2 on the tint</td></tr>
     </tbody>
   </table>
-  <h2>Around the twelve</h2>
+  <h2>Around the thirteen</h2>
   <table>
     <thead><tr><th>Sample</th><th>Token</th><th>Role</th><th>Ratio</th></tr></thead>
     <tbody>
       <tr><td class="sample"><span class="pair" style="background:var(--teal);color:var(--on-dark)">words</span> <span class="pair" style="background:var(--teal);color:var(--on-dark-soft)">quieter</span></td><td class="num"><code>--on-dark</code> .92 · <code>--on-dark-soft</code> .78</td><td>Words on the teal bands (seal, seam, pager).</td><td class="num">7.0 · 5.6</td></tr>
       <tr><td class="sample"><span class="pair" style="background:var(--teal);color:var(--white);box-shadow:inset 0 0 0 1px var(--on-dark-line)">rule</span> <span class="pair" style="background:var(--teal);color:var(--white)"><span style="background:var(--on-dark-fill);padding:0 6px;border-radius:2px">fill</span></span></td><td class="num"><code>--on-dark-line</code> .2 · <code>--on-dark-fill</code> .07</td><td>Rules and card fills on the teal bands.</td><td class="num">decorative</td></tr>
       <tr><td class="sample"><span class="sw" style="background:var(--scrim)"></span>scrim</td><td class="num"><code>--scrim</code></td><td>Behind a dialog or an overlay (the ink at .45).</td><td class="num">n/a</td></tr>
-      <tr><td class="sample"><span style="display:inline-block;padding:6px 10px;border:1px solid var(--border-strong);border-radius:4px;box-shadow:var(--shadow-md);font-size:12.5px">a floating card</span></td><td class="num"><code>--shadow-sm</code> / <code>--shadow-md</code></td><td>Small for tiles, medium for floating cards. Other shadows use the teal at .04 / .10 / .14 / .22 or the ink at .08 / .14 / .28, nothing else.</td><td class="num">n/a</td></tr>
+      <tr><td class="sample"><span style="display:inline-block;padding:6px 10px;border:1px solid var(--border-strong);border-radius:4px;box-shadow:var(--shadow-md);font-size:13px">a floating card</span></td><td class="num"><code>--shadow-sm</code> / <code>--shadow-md</code></td><td>Small for tiles, medium for floating cards. Other shadows use the teal at .04 / .10 / .14 / .22 or the ink at .08 / .14 / .28, nothing else.</td><td class="num">n/a</td></tr>
       <tr><td class="sample"><span class="dash" style="border-color:var(--geo-metro)"></span> <span style="display:inline-block;width:40px;border-top:2px solid var(--geo-city);vertical-align:middle"></span></td><td class="num"><code>--geo-metro</code> · <code>--geo-city</code></td><td>Role names for the two geographies, pointing at <code>--ink-soft</code> (dashed) and <code>--teal</code> (solid). The texture carries the pair; the colour is the second channel.</td><td class="num">6.5 · 7.9</td></tr>
     </tbody>
   </table>
-  <p class="note">Merged into these on 2026-10-07: first to sixteen, then the section ground into the white, the dark teal into the teal, and the green and orange tints into the one tint (<code>?colours=16</code> on the tool shows the sixteen for comparison). Before that: <code>--paper</code>, <code>--orange-dark</code>, <code>--geo-metro</code>'s own grey-teal, <code>--geo-metro-fill</code> and the unused <code>--geo-city-fill</code>; seven whites, pure black and a warm near-black, five slates, about twenty mid greys, fifteen light greys, ten hairline greys, two hover greys, four green tints, four pink tints, three reds, two orange-browns, twenty white alphas and the shadows' stray inks. Data stays outside: the sector palette and the Tol set, the complexity ramp, the muted bar grey and the tier swatches, the commuting choropleths, the journey's section lines, the explainer illustration.</p>
+  <p class="note">Merged into these on 2026-10-07: first to sixteen, then the dark teal into the teal, and the green and orange tints into the one tint (<code>?colours=16</code> on the tool shows the sixteen for comparison). Before that: <code>--paper</code>, <code>--orange-dark</code>, <code>--geo-metro</code>'s own grey-teal, <code>--geo-metro-fill</code> and the unused <code>--geo-city-fill</code>; seven whites, pure black and a warm near-black, five slates, about twenty mid greys, fifteen light greys, ten hairline greys, two hover greys, four green tints, four pink tints, three reds, two orange-browns, twenty white alphas and the shadows' stray inks. Data stays outside: the sector palette and the Tol set, the complexity ramp, the muted bar grey and the tier swatches, the commuting choropleths, the journey's section lines, the explainer illustration.</p>
 </main>
 </body>
 </html>

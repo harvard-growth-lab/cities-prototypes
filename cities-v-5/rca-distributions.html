@@ -35,7 +35,7 @@
   /* ---- controls ---- */
   .controls{display:flex; flex-wrap:wrap; gap:22px; align-items:flex-end; margin:0; padding:0 0 14px; border-bottom:1px solid var(--border)}
   .ctl{display:flex; flex-direction:column; gap:5px}
-  .ctl label{font-size:11px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-soft)}
+  .ctl label{font-size:13px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-soft)}
   .seg{display:flex; border:1px solid var(--border-strong); border-radius:3px; overflow:hidden}
   .seg button{
     appearance:none; border:0; background:var(--paper); color:var(--ink-soft);
@@ -62,23 +62,23 @@
   /* ---- chart ---- */
   .chart{position:relative; margin-top:6px}
   svg{display:block; width:100%; overflow:visible}
-  text.tick{font-size:11.5px; fill:var(--ink-soft)}
+  text.tick{font-size:13px; fill:var(--ink-soft)}
   .grid{stroke:var(--border); stroke-width:1}
   .unity{stroke:var(--ink); stroke-width:1.25}
-  .unity-label{font-size:12px; font-weight:700; fill:var(--ink)}
+  .unity-label{font-size:13px; font-weight:700; fill:var(--ink)}
   .axis-title{font-size:13.5px; font-weight:600; fill:var(--ink)}
   .row-label{font-size:14.5px; font-weight:600; fill:var(--ink)}
-  .row-sub{font-size:12.5px; fill:var(--ink-soft)}
+  .row-sub{font-size:13px; fill:var(--ink-soft)}
   .band{fill:var(--white)}
   .design-band .band{fill:none}
   .design-band .key-item{gap:5px}
   .key-item b{font-weight:400}
   /* direct labels on the band swatch */
   .kd{font-size:13px;fill:var(--ink)}
-  .col-head{font-size:10px;font-weight:700;letter-spacing:.09em;fill:var(--ink-soft)}
+  .col-head{font-size:13px;font-weight:700;letter-spacing:.09em;fill:var(--ink-soft)}
   .rows-btn{
     display:block;margin:4px auto 0;appearance:none;border:0;background:none;
-    font:inherit;font-size:12.5px;font-weight:600;color:var(--teal);cursor:pointer;
+    font:inherit;font-size:13px;font-weight:600;color:var(--teal);cursor:pointer;
     text-decoration:underline;text-underline-offset:3px;
   }
   .kdl{stroke:var(--control-edge);stroke-width:1}
@@ -98,7 +98,7 @@
      carries a paper halo rather than a box */
   .val,.val-sm{paint-order:stroke fill; stroke:var(--paper); stroke-width:3.5px; stroke-linejoin:round}
   .val{font-size:13px; font-weight:700; fill:var(--ink)}
-  .val-sm{font-size:12px; font-weight:600; fill:var(--ink-soft)}
+  .val-sm{font-size:13px; font-weight:600; fill:var(--ink-soft)}
   .halo{fill:none; stroke:var(--ink-soft); stroke-width:2}
   .halo-subject{stroke:var(--teal)}
   .sep{stroke:var(--border); stroke-width:1}
@@ -152,7 +152,7 @@
   #chart{position:relative;}
   .intro-label{
     position:absolute;transform:translate(-50%,-100%);
-    background:var(--teal);color:var(--white);font-size:12px;font-weight:600;
+    background:var(--teal);color:var(--white);font-size:13px;font-weight:600;
     padding:4px 9px;border-radius:4px;white-space:nowrap;pointer-events:none;
     opacity:0;transition:opacity .3s ease;z-index:4;
   }
@@ -171,7 +171,7 @@
 
   /* ---- replay sits at the right end of the key row ---- */
   #replayBtn{
-    appearance:none;border:0;background:none;font:inherit;font-size:12.5px;font-weight:600;
+    appearance:none;border:0;background:none;font:inherit;font-size:13px;font-weight:600;
     color:var(--teal);cursor:pointer;text-decoration:underline;text-underline-offset:3px;
     white-space:nowrap;margin-left:auto;
   }
@@ -184,14 +184,14 @@
   }
   .tip .tv{font-size:21px; font-weight:700; letter-spacing:-.01em; line-height:1.1}
   .tip .tn{font-size:13.5px; font-weight:600; color:var(--ink); margin-top:2px}
-  .tip .tm{font-size:12.5px; color:var(--ink-soft); margin-top:3px}
-  .tip dl{margin:7px 0 0; padding-top:7px; border-top:1px solid var(--border); display:grid; grid-template-columns:auto auto; gap:2px 14px; font-size:12.5px}
+  .tip .tm{font-size:13px; color:var(--ink-soft); margin-top:3px}
+  .tip dl{margin:7px 0 0; padding-top:7px; border-top:1px solid var(--border); display:grid; grid-template-columns:auto auto; gap:2px 14px; font-size:13px}
   .tip dt{color:var(--ink-soft)} .tip dd{margin:0; text-align:right; font-variant-numeric:tabular-nums; color:var(--ink)}
 
   /* ---- table ---- */
   table{border-collapse:collapse; width:100%; margin-top:22px; font-size:13.5px}
     th,td{padding:7px 10px; border-bottom:1px solid var(--border); text-align:right; font-variant-numeric:tabular-nums}
-  th{font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft); font-weight:700; border-bottom:1px solid var(--border-strong)}
+  th{font-size:13px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-soft); font-weight:700; border-bottom:1px solid var(--border-strong)}
   th:first-child,td:first-child{text-align:left; font-variant-numeric:normal}
   tbody tr:hover{background:var(--teal-tint)}
   td.hi{font-weight:700; color:var(--orange-text)}

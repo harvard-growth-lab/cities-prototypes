@@ -395,7 +395,7 @@
     cells.append("text")
       .attr("class", "industry-text")
       .attr("x", d => d.x0 + 4).attr("y", d => d.y0 + 11)
-      .style("font-size", "8px")
+      .style("font-size", "13px")
       .text(d => fitLabel(d.data.name, { width: d.x1 - d.x0, height: d.y1 - d.y0 }));
 
     return { svg, root, sectorLayer, cells };
@@ -2128,7 +2128,7 @@
           d => x(Math.max(1, d.value)) - R, d => band(d.parent.data.name) + jit(d) - R,
           R * 2, R * 2, R);
         sectors.forEach(s => {
-          ov.append("text").attr("x", 4).attr("y", band(s) + 4).attr("font-size", 10)
+          ov.append("text").attr("x", 4).attr("y", band(s) + 4).attr("font-size", 13)
             .text(s.length > 16 ? s.slice(0, 15) + "…" : s);
         });
         ov.append("line").attr("x1", 110).attr("x2", W2 - 16).attr("y1", H2 - 48).attr("y2", H2 - 48);
@@ -2449,12 +2449,12 @@
       furn.append("text")
         .attr("x", BASE).attr("y", MT + cur.rows.length * ROW + 26)
         .attr("text-anchor", "middle")
-        .style("fill", "#526066").style("stroke", "none").attr("font-size", 12)
+        .style("fill", "#526066").style("stroke", "none").attr("font-size", 13)
         .text("same as the metro");
       furn.append("text")
         .attr("x", BASE).attr("y", MT + cur.rows.length * ROW + 46)
         .attr("text-anchor", "middle")
-        .style("fill", "#526066").style("stroke", "none").attr("font-size", 12)
+        .style("fill", "#526066").style("stroke", "none").attr("font-size", 13)
         .text(lens === "work"
           ? "share of " + cityName + " ÷ share of the metro"
           : "share of residents’ work ÷ share of the metro");
@@ -2896,7 +2896,7 @@
      figure's units to be drawn.
      ========================================================================= */
   const MAP = { padding: 1, minSide: 4, inset: 3, first: 1.1, step: 0.9, shareGap: 0.3,
-                descent: 0.25, size: 13, min: 12.5, weight: 500, shareWeight: 400,
+                descent: 0.25, size: 13, min: 13, weight: 500, shareWeight: 400,
                 /* at the sector level the nine blocks are the cells, and a
                    13px label is lost in them: the fit starts higher there */
                 sectorSize: 18 };
@@ -2910,7 +2910,7 @@
      white above the block, the block's cells inset from it. The strip is
      screen pixels, like the labels, and the tiling makes the room for it. */
   let SEC_NAMES = "off";
-  const SEC_STRIP = 18, SEC_INSET = 3, SEC_NAME_SIZE = 12.5;
+  const SEC_STRIP = 18, SEC_INSET = 3, SEC_NAME_SIZE = 13;
   /* the grain of the map: the level its cells are tiled at - 6 the
      industries (877 in 2024), 4 the industry groups (292), 2 the sectors
      (9); 3, the subsectors (85), is tiled the same way but not offered. A
@@ -3754,7 +3754,7 @@
        rate's name sits on the box's line */
     const RANK_N = 14, RANK_FOOT = 0.5;
     /* the type's size on screen, in the drawing's units */
-    const fsUnits = () => 12.5 * TYPE_K / scaleNow();
+    const fsUnits = () => 13 * TYPE_K / scaleNow();
     /* the footer under the third beat's rows: the half row, then the box's
        line, where the national rate's name stands too */
     const footBase = R => MT + spanOf(R) * rhOf(R) + (R === R2 ? RANK_FOOT * rhOf(R) : 0);
@@ -4439,7 +4439,7 @@
     function layoutMore(g, label, all, foot){
       const xRight = +g.attr("data-xr"), yRef = +g.attr("data-yref");
       const t = g.select("text.mi-more-txt").text(label), box = g.select("rect.mi-more-box");
-      const fs = parseFloat(getComputedStyle(t.node()).fontSize) || 12;
+      const fs = parseFloat(getComputedStyle(t.node()).fontSize) || 13;
       const m = measureFor("mi-colhead mi-more-txt"), tw = m.w(label); m.done();
       const padX = 0.7 * fs, gapC = 0.45 * fs, CW = 7, h = 1.6 * fs, w = padX + tw + gapC + CW + padX;
       const x0 = Math.max(2, xRight - w);
@@ -4898,7 +4898,7 @@
       const at500 = h1 - drawnPx + MI_H * k;
       const slot = figRef && Math.abs(figRef.w - w) < 1 ? Math.max(0, figRef.h - at500) : Math.max(0, h0 - h1);
       rank6H = MI_H + slot / k;
-      const fsU = 12.5 * TYPE_K / scaleNow();
+      const fsU = 13 * TYPE_K / scaleNow();
       /* under the rows: the national rate's name, and the Show box where it stands at the foot */
       /* under the rows and their half row: the box's line, and a margin
          to the drawing's foot */
@@ -5759,26 +5759,26 @@
           y += size * 0.28; return true;
         };
         /* the band names the block already when the sector-names study is on */
-        if (SEC_NAMES === "off" && !line(sec, 13, 700, ink) && !line(SECTOR_SHORT[sec] || sec, 12.5, 700, ink)) return;
-        if (!line(fmtShare(c.cell.share) + " of metro jobs \u00b7 " + fmtJobsK(c.cell.jobs), 12.5, 400, ink)) return;
+        if (SEC_NAMES === "off" && !line(sec, 13, 700, ink) && !line(SECTOR_SHORT[sec] || sec, 13, 700, ink)) return;
+        if (!line(fmtShare(c.cell.share) + " of metro jobs \u00b7 " + fmtJobsK(c.cell.jobs), 13, 400, ink)) return;
         if (mode === "change"){
           const j14 = sectorJobs(2014)[sec], j24 = sectorJobs(2024)[sec];
           if (j14 > 0 && j24 > 0){
             const r = Math.pow(j24 / j14, 1 / 10) - 1;
-            line((r >= 0 ? "+" : "\u2212") + Math.abs(r * 100).toFixed(1) + "% a year, 2014 to 2024", 12.5, 400, soft);
+            line((r >= 0 ? "+" : "\u2212") + Math.abs(r * 100).toFixed(1) + "% a year, 2014 to 2024", 13, 400, soft);
           }
         }
-        const gl = groups.slice(0, 3).map(gr => gr.name + " " + fmtShare(gr.jobs / jobsTotal)).filter(t => mapTextW(t, 12.5, 500) <= room);
-        if (gl.length && y + 6 + 12.5 * 1.3 + 12.5 * 1.3 <= bottom){
-          y += 6; line("Largest groups", 12.5, 700, soft);
-          for (const t of gl) if (!line(t, 12.5, 500, ink)) break;
+        const gl = groups.slice(0, 3).map(gr => gr.name + " " + fmtShare(gr.jobs / jobsTotal)).filter(t => mapTextW(t, 13, 500) <= room);
+        if (gl.length && y + 6 + 13 * 1.3 + 13 * 1.3 <= bottom){
+          y += 6; line("Largest groups", 13, 700, soft);
+          for (const t of gl) if (!line(t, 13, 500, ink)) break;
         }
         const bin = cxBinOf(c.cell.pci);
-        if (bin != null && y + 16 <= bottom && room >= 62 + mapTextW("complexity", 12.5, 400)){
+        if (bin != null && y + 16 <= bottom && room >= 62 + mapTextW("complexity", 13, 400)){
           y += 8;
           for (let k = 0; k < 5; k++) card.append("circle").attr("cx", (px.x + pad + 4 + k * 11) / s).attr("cy", (y + 4) / s).attr("r", 3.2 / s)
             .attr("fill", k <= bin ? ink : "none").attr("stroke", ink).attr("stroke-opacity", k <= bin ? 1 : 0.55).attr("stroke-width", 1 / s);
-          card.append("text").attr("x", (px.x + pad + 62) / s).attr("y", (y + 8) / s).attr("font-size", 12.5 / s).attr("fill", soft).text("complexity");
+          card.append("text").attr("x", (px.x + pad + 62) / s).attr("y", (y + 8) / s).attr("font-size", 13 / s).attr("fill", soft).text("complexity");
         }
       });
       const dress = all.selectAll("g.mi-mghost, g.mi-mcard");
