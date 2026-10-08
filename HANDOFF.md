@@ -1681,6 +1681,20 @@ The four names stay as aliases (`--ground:var(--white)` and so on) only so
 that `?colours=16` can show the sixteen beside the twelve; when one is
 chosen, the aliases and the switch go.
 
+Below twelve, as studies (2026-10-08, Nil: "can we go down the 12 colors",
+then "do 11, 10 and 9"): `?colours=11` drops `--border-strong` (lines and
+edges take `--border`; dots, halos, the box plot's box and the edges of
+buttons, fields and selects outside Metro Industries take `--control-edge`,
+through a new role name `--mark-grey`, which is `--border-strong` in the
+twelve); `?colours=10` also folds `--orange` into `--orange-text` (one burnt
+orange for marks and words); `?colours=9` also folds `--control-edge` into
+`--ink-soft`. The scripts follow the switches where they draw those colours
+(Worker Flows' greys and balanced band, the city-in-metro scatter, the seam's
+mini charts, the treemap's grey, which is read once at load). The default
+stays twelve until one is chosen. `colour-count-sketches.html` at the repo
+root (untracked, with `colour-count-images/`) shows nine screens at each
+count.
+
 Around the twelve: white on the teal bands in four strengths (`--on-dark`
 .92 for words, 7.0:1 on `--teal`; `--on-dark-soft` .78, 5.6:1;
 `--on-dark-line` .2; `--on-dark-fill` .07), `--scrim` (ink at .45, behind a

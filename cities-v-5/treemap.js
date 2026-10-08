@@ -14,7 +14,7 @@
 
   const WIDTH  = 880;    /* the figure measure: just proud of the 760 text measure, fonts 1:1 */
   const HEIGHT = 450;    /* wide-and-short (2:1) so the full map fits one view */
-  const GREY   = "#7f8f95";
+  const GREY   = token("--control-edge", "#7f8f95");   /* read once: ?colours=9 sets it to the soft ink */
 
   /* "Color by" modes. Complexity and change are dummy values for the prototype,
      but held stable per industry so a cell keeps its shade across replays. */
@@ -2429,7 +2429,7 @@
       furn.append("line")
         .attr("x1", BASE).attr("x2", BASE)
         .attr("y1", MT - 12).attr("y2", MT + cur.rows.length * ROW + 8)
-        .attr("stroke", "#7f8f95").attr("stroke-width", 1.5);
+        .attr("stroke", token("--control-edge", "#7f8f95")).attr("stroke-width", 1.5);
       cur.rows.forEach((d, i) => {
         const g0 = cur.geo.get(d.data.name);
         furn.append("text")
