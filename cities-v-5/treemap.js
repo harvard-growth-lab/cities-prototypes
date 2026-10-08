@@ -14,7 +14,7 @@
 
   const WIDTH  = 880;    /* the figure measure: just proud of the 760 text measure, fonts 1:1 */
   const HEIGHT = 450;    /* wide-and-short (2:1) so the full map fits one view */
-  const GREY   = "#9ca3af";
+  const GREY   = "#7f8f95";
 
   /* "Color by" modes. Complexity and change are dummy values for the prototype,
      but held stable per industry so a cell keeps its shade across replays. */
@@ -96,7 +96,7 @@
      Middle, High, Highest; a value on a cut goes up); the one industry
      with no PCI in the source, Private Households, is "Not rated", in grey */
   const PCI_CUTS = [-0.72, -0.4, 0.08, 0.65];
-  const PCI_NONE = "#c3ccce";
+  const PCI_NONE = token("--border-strong", "#c3ccce");
   function complexityColor(name){
     if(!complexityByName.has(name)){
       const v = pciByName.get(name);
@@ -1534,8 +1534,9 @@
     const svg = d3.select(svgEl);
     // Flat pastels, butted edge to edge with no separator. Selection is shown
     // by dimming the other three rather than by deepening this one.
-    const fills = { tl:"#f6f2e9", tr:"#e8ecf2",
-                    bl:"#f9edec", br:"#e9efeb" };
+    // two grounds, set as a checkerboard so each quadrant meets the other
+    const fills = { tl:"#ffffff", tr:"#eef3f4",
+                    bl:"#eef3f4", br:"#ffffff" };
     const box = { tl:[PAD, PAD], tr:[MID, PAD], bl:[PAD, MID], br:[MID, MID] };
     Object.keys(box).forEach(k => {
       svg.append("rect").attr("class", "dx-q dx-q--" + k)
@@ -2422,7 +2423,7 @@
       furn.append("line")
         .attr("x1", BASE).attr("x2", BASE)
         .attr("y1", MT - 12).attr("y2", MT + cur.rows.length * ROW + 8)
-        .attr("stroke", "#8a989d").attr("stroke-width", 1.5);
+        .attr("stroke", "#7f8f95").attr("stroke-width", 1.5);
       cur.rows.forEach((d, i) => {
         const g0 = cur.geo.get(d.data.name);
         furn.append("text")
@@ -2442,12 +2443,12 @@
       furn.append("text")
         .attr("x", BASE).attr("y", MT + cur.rows.length * ROW + 26)
         .attr("text-anchor", "middle")
-        .style("fill", "#5b686d").style("stroke", "none").attr("font-size", 12)
+        .style("fill", "#526066").style("stroke", "none").attr("font-size", 12)
         .text("same as the metro");
       furn.append("text")
         .attr("x", BASE).attr("y", MT + cur.rows.length * ROW + 46)
         .attr("text-anchor", "middle")
-        .style("fill", "#5b686d").style("stroke", "none").attr("font-size", 12)
+        .style("fill", "#526066").style("stroke", "none").attr("font-size", 12)
         .text(lens === "work"
           ? "share of " + cityName + " ÷ share of the metro"
           : "share of residents’ work ÷ share of the metro");
@@ -2939,7 +2940,7 @@
   /* the band's shade: the sector's colour taken down a little, and further
      where a little leaves neither white nor ink reading 4.5 to 1 on it */
   const secDeeper = sec => {
-    const c = d3.color(sectorColors[sec] || "#ccc"); if (!c) return "#888";
+    const c = d3.color(sectorColors[sec] || "#c3ccce"); if (!c) return "#7f8f95";
     for (let k = 0.55; k <= 1.6; k += 0.15){
       const d = c.darker(k), L = relLum(d.rgb());
       if (Math.max(1.05 / (L + 0.05), (L + 0.05) / (LUM_INK + 0.05)) >= 4.5) return d.formatHex();
@@ -2949,7 +2950,7 @@
   /* the name on white: the sector's colour taken down until it reads 4.5 to
      1, and ink where no shade of it does */
   const gutterInk = sec => {
-    const c = d3.color(sectorColors[sec] || "#888"); if (!c) return CELL_INK;
+    const c = d3.color(sectorColors[sec] || "#7f8f95"); if (!c) return CELL_INK;
     for (let k = 0.9; k <= 2.6; k += 0.25){
       const d = c.darker(k), r = 1.05 / (relLum(d.rgb()) + 0.05);
       if (r >= 4.5) return d.formatHex();
@@ -2958,14 +2959,14 @@
   };
   const SECTOR_RANK = new Map(SECTOR_KEYS.map((s, i) => [s.label, i]));
   /* white or ink on a sector's fill, whichever reads better on it */
-  const sectorInk = sec => cellInk(sectorColors[sec] || "#ccc");
+  const sectorInk = sec => cellInk(sectorColors[sec] || "#c3ccce");
   const TIER_WORDS = ["Traded", "Partly traded", "Local"];
   const cxBinOf = pci => {
     if (pci == null) return null;
     let b = 0; while (b < PCI_CUTS.length && pci >= PCI_CUTS[b]) b++;
     return b;
   };
-  const cxFillOf = pci => { const b = cxBinOf(pci); return b == null ? "#c3ccce" : complexityPalette[b]; };
+  const cxFillOf = pci => { const b = cxBinOf(pci); return b == null ? PCI_NONE : complexityPalette[b]; };
   /* shares as the reference prints them: 26%, 5.4%, 0.55% */
   const fmtShare = v => { const t = v * 100; return t.toFixed(t >= 10 ? 0 : t >= 1 ? 1 : 2) + "%"; };
   const fmtJobsFull = v => Math.round(v).toLocaleString("en-US");
@@ -3741,7 +3742,17 @@
        height is the drawing's, and the strip under it that the other beats
        keep for their key: beat 3's key is in its own head row, so the
        drawing takes the strip (rank6H, measured in syncRankRoom). */
-    const RANK_N = 15;
+    /* 14 since the bottom read squished at 15 (Nil, 2026-10-07: "maybe have
+       1 less bar, have space between Show All and y axis names"); the rows
+       end half a row above the Show box (RANK_FOOT), and the national
+       rate's name sits on the box's line */
+    const RANK_N = 14, RANK_FOOT = 0.5;
+    /* the type's size on screen, in the drawing's units */
+    const fsUnits = () => 12.5 * TYPE_K / scaleNow();
+    /* the footer under the third beat's rows: the half row, then the box's
+       line, where the national rate's name stands too */
+    const footBase = R => MT + spanOf(R) * rhOf(R) + (R === R2 ? RANK_FOOT * rhOf(R) : 0);
+    const footLine = R => footBase(R) + 1.45 * fsUnits();
     let rank6H = MI_H, rank6Area = null;
     /* never closer than the bars of the peers order's twenty need (16.2),
        nor further apart than the old ranking's 34 */
@@ -3858,7 +3869,7 @@
          shows the tier words */
       const right = plotR(among && rankMode === "tier");
       const R = { ranked, ml, total, split, all: !!(among && rankAll),
-        rh: !among ? RH : rankPitch(split ? 2 * SPLIT_N + 0.5 : RANK_N), bh: among ? BBAR : BAR_H,
+        rh: !among ? RH : rankPitch((split ? 2 * SPLIT_N + 0.5 : RANK_N) + RANK_FOOT), bh: among ? BBAR : BAR_H,
         /* by specialization over the whole pool: the badges' order */
         rankIdx: new Map(ranked.map(d => [d.name, rankOfAll.get(d.name)])),
         pos: new Map(ranked.map((d, i) => [d.name, i])),       /* the order on screen, which sorting changes */
@@ -4150,15 +4161,15 @@
       /* the sector's own colour, once pale and once full: the pale ground is
          the whole of that work across the metro, and the full band standing
          on the foot of the block is the part of it inside the city */
-      const pale = sec => d3.interpolateRgb(sectorColors[sec] || "#ccc", "#ffffff")(0.66);
+      const pale = sec => d3.interpolateRgb(sectorColors[sec] || "#c3ccce", "#ffffff")(0.66);
 
       const gCoarse = svg.insert("g", ".mi-cells").attr("class", "mi-coarse");
       coarseCell = gCoarse.selectAll("g.mi-cell").data(coarse, d => d.name)
         .join("g").attr("class", "mi-cell");
       coarseCell.append("rect").attr("class", "mi-rect")
-        .attr("fill", d => sectorColors[d.sector] || "#ccc");
+        .attr("fill", d => sectorColors[d.sector] || "#c3ccce");
       coarseCell.append("rect").attr("class", "mi-share")
-        .attr("fill", d => sectorColors[d.sector] || "#ccc")
+        .attr("fill", d => sectorColors[d.sector] || "#c3ccce")
         .attr("height", 0);
       coarseCell.append("text").attr("class", "mi-lab");
       /* one figure per sector, on its largest block */
@@ -4205,7 +4216,7 @@
           .attr("x", d => R.xg(d)).attr("y", TICK_Y).attr("text-anchor", "middle")
           .text(d => d === 0 ? "0" : fmtLead(d).replace(".0", "")));
       AG.append("text").attr("class", "mi-nation-lab")
-        .attr("x", R.xg(0) + 5).attr("y", yEnd + 18).text("Same as the peers");
+        .attr("x", R.xg(0) + 5).attr("y", R === R2 ? footLine(R) : yEnd + 18).text("Same as the peers");
       AG.append("text").attr("class", "mi-axname")
         .attr("x", R.ml + 12).attr("y", HEAD_Y)
         .text("Ahead of the peer metros, in times the national rate");
@@ -4282,7 +4293,7 @@
       A.append("text").attr("class", "mi-ticklab mi-nation-tick")
         .attr("x", nx).attr("y", TICK_Y).attr("text-anchor", "middle").text("1\u00d7");
       A.append("text").attr("class", "mi-nation-lab")
-        .attr("x", nx + 5).attr("y", yEnd + 18).text("National rate");
+        .attr("x", nx + 5).attr("y", R === R2 ? footLine(R) : yEnd + 18).text("National rate");
       A.append("text").attr("class", "mi-axname")
         .attr("x", R.ml + 12).attr("y", HEAD_Y)
         .text("Times more specialized");
@@ -4382,7 +4393,7 @@
         .attr("x1", 4).attr("x2", plotR(tierMode)).attr("y1", MT + (R.split + 0.25) * rh).attr("y2", MT + (R.split + 0.25) * rh);
       /* under the last row (Nil, 2026-10-07: "show all should also be on
          the bottom on the 3rd beat"), beside the national rate's name */
-      if (R === R2 && (moreAtFoot() || rankAll)) moreBtn(G, R.ml - 10, yEnd, R.total, rankTop(), "specialised industries", true, rankAll, rankFold());
+      if (R === R2 && (moreAtFoot() || rankAll)) moreBtn(G, R.ml - 10, footBase(R), R.total, rankTop(), "specialised industries", true, rankAll, rankFold());
     }
     /* "Show all N" over the names, or "Show the top N" once they all show
        (and again at the foot of the long list): set as the tradability
@@ -4856,7 +4867,8 @@
       if (!more) return base;
       const n = shownRows(i);
       if (!n || n <= (i === 6 ? RANK_N : NB)) return base;
-      return Math.max(base, Math.ceil(i === 6 ? MT + n * rhOf(R2) + 64 : BMT + n * BRH + 46));
+      /* the long list keeps the foot's box well clear of the drawing's end */
+      return Math.max(base, Math.ceil(i === 6 ? MT + (n + RANK_FOOT) * rhOf(R2) + 1.9 * fsUnits() + 34 : BMT + n * BRH + 46));
     }
     /* On the third beat the strip under the drawing that the other beats
        keep for their key is folded away (data-capfold) and given to the
@@ -4882,8 +4894,10 @@
       rank6H = MI_H + slot / k;
       const fsU = 12.5 * TYPE_K / scaleNow();
       /* under the rows: the national rate's name, and the Show box where it stands at the foot */
-      rank6Area = rank6H - MT - (moreAtFoot() || rankAll ? Math.max(24, 1.9 * fsU + 3) : 24);
-      const want = rankPitch(R2.split ? 2 * SPLIT_N + 0.5 : RANK_N);
+      /* under the rows and their half row: the box's line, and a margin
+         to the drawing's foot */
+      rank6Area = rank6H - MT - (1.9 * fsU + 8);
+      const want = rankPitch((R2.split ? 2 * SPLIT_N + 0.5 : RANK_N) + RANK_FOOT);
       if (Math.abs(want - R2.rh) < 0.05) return false;
       R2.rh = want;
       redrawR2();
@@ -5235,7 +5249,10 @@
       }
       painted = i;
       syncPin();
-      if ((i === 0 || i === 4) && !more && !holdPaint){
+      /* not while the figure still holds the third beat's taller drawing
+         on the way out (holdSix): stored then, the extra went into the
+         next visit's height, and the frame grew 7px a visit */
+      if ((i === 0 || i === 4) && !more && !holdPaint && !fig.dataset.capfold){
         const r = fig.getBoundingClientRect();
         if (r.height > 0) figRef = { w: el.getBoundingClientRect().width, h: r.height };
       }
@@ -5555,14 +5572,14 @@
     function placeCoarse(animate, split){
       if (!coarseCell) return;
       const at = d => (view === "alt" ? posCoarseFlat : posCoarse).get(d.name);
-      const pale = sec => d3.interpolateRgb(sectorColors[sec] || "#ccc", "#ffffff")(0.66);
+      const pale = sec => d3.interpolateRgb(sectorColors[sec] || "#c3ccce", "#ffffff")(0.66);
       const dur = animate ? 900 : 0;
 
       const r = coarseCell.select(".mi-rect");
       (dur ? r.transition().duration(dur).ease(d3.easeCubicInOut) : r)
         .attr("x", d => at(d).x).attr("y", d => at(d).y)
         .attr("width", d => at(d).w).attr("height", d => at(d).h)
-        .attr("fill", d => split ? pale(d.sector) : (sectorColors[d.sector] || "#ccc"));
+        .attr("fill", d => split ? pale(d.sector) : (sectorColors[d.sector] || "#c3ccce"));
 
       /* the city's band grows up from the foot of its own block */
       const band = coarseCell.select(".mi-share")
@@ -5725,7 +5742,7 @@
             .attr("fill", "none").attr("stroke", "#fff").attr("stroke-opacity", 0.3).attr("stroke-width", 1 / s));
         }
         if (!cardOn) return;
-        const ink = mapInkOf(c), soft = /^#f/i.test(ink) ? "rgba(255,255,255,.82)" : "rgba(26,34,38,.78)";
+        const ink = mapInkOf(c), soft = /^#f/i.test(ink) ? "rgba(255,255,255,.92)" : "#1a2226";
         const pad = 7, room = px.w - 2 * pad, bottom = px.y + px.h - 4;
         let y = px.y + pad;
         const line = (txt, size, weight, fill) => {
@@ -5736,7 +5753,7 @@
           y += size * 0.28; return true;
         };
         /* the band names the block already when the sector-names study is on */
-        if (SEC_NAMES === "off" && !line(sec, 14, 700, ink) && !line(SECTOR_SHORT[sec] || sec, 12.5, 700, ink)) return;
+        if (SEC_NAMES === "off" && !line(sec, 13, 700, ink) && !line(SECTOR_SHORT[sec] || sec, 12.5, 700, ink)) return;
         if (!line(fmtShare(c.cell.share) + " of metro jobs \u00b7 " + fmtJobsK(c.cell.jobs), 12.5, 400, ink)) return;
         if (mode === "change"){
           const j14 = sectorJobs(2014)[sec], j24 = sectorJobs(2024)[sec];
@@ -5932,7 +5949,7 @@
           '<span class="tip-sr">step ' + (b + 1) + ' of 5, ' + CX_WORDS[b] + '</span></dd>';
       }
       const head = '<div class="tip-head"><strong>' + escHtml(cell.name) + '</strong>' +
-        '<span class="tip-sector"><i style="background:' + (sectorColors[cell.sector] || "#ccc") + '"></i>' +
+        '<span class="tip-sector"><i style="background:' + (sectorColors[cell.sector] || "#c3ccce") + '"></i>' +
         escHtml(cell.sector) + '</span></div>';
       const body = '<dl class="tip-grid">' +
         (cell.members ? row("Industries", cell.members.length + (c.rest ? " smaller" : "")) : "") +
@@ -6182,7 +6199,7 @@
       const order = SECTOR_KEYS.map(s => s.label).filter(l => industryData.some(d => d.sector === l));
       key.innerHTML = order.map((sec, i) =>
         '<li class="sk-item"><button type="button" class="sk-sec" data-si="' + i + '" aria-pressed="true" style="--sw:' +
-        (sectorColors[sec] || "#ccc") + '"><i class="sk-sw"></i><span class="sk-name">' + escHtml(sec) + '</span></button>' +
+        (sectorColors[sec] || "#c3ccce") + '"><i class="sk-sw"></i><span class="sk-name">' + escHtml(sec) + '</span></button>' +
         '<span class="sk-verbs"><button type="button" class="sk-hide" data-si="' + i + '">Hide</button>' +
         '<span class="sk-dot" aria-hidden="true">&middot;</span>' +
         '<button type="button" class="sk-only" data-si="' + i + '" aria-label="Show only ' + escHtml(sec) + '">Only</button></span></li>').join("") +
@@ -6334,7 +6351,7 @@
         const was = tipEl.contains(document.activeElement) ? document.activeElement.dataset.act : null;
         tipEl.dataset.si = i;
         tipEl.innerHTML =
-          '<span class="skt-name"><i class="skt-sw" style="--sw:' + (sectorColors[sec] || "#ccc") + '"></i><b>' + escHtml(sec) + '</b></span>' +
+          '<span class="skt-name"><i class="skt-sw" style="--sw:' + (sectorColors[sec] || "#c3ccce") + '"></i><b>' + escHtml(sec) + '</b></span>' +
           /* the same rows, in the same order and dress, as the cell's card */
           '<dl class="skt-grid" id="' + p + 'KeyHint">' +
             '<dt>Industries</dt><dd>' + f.n + '</dd>' +
@@ -6551,10 +6568,10 @@
         cell.classed("is-mute", off);
         /* still grey, still plainly not the sector being named, but dark
            enough on that grey to be read: at #9aa3a6 it was 2.1 to 1 */
-        cell.filter(off).selectAll(".mi-lab,.mi-pct").style("fill", "#60686b");
+        cell.filter(off).selectAll(".mi-lab,.mi-pct").style("fill", token("--ink-soft", "#526066"));
         const offM = c => want.indexOf(c.cell.sector) < 0;
         gMapCells.selectAll("g.mi-mcell").classed("is-mute", offM)
-          .filter(offM).select("text.mi-mlab").attr("fill", "#60686b");
+          .filter(offM).select("text.mi-mlab").attr("fill", token("--ink-soft", "#526066"));
         gMapFrames.selectAll("g.mi-secg").classed("is-mute", b => want.indexOf(b.sector) < 0);
       };
       const hlStep = span => span.dataset.on || "0";
@@ -6627,7 +6644,7 @@
       const hlSwatch = () => hlSpans.forEach(span => {
         if (!span.dataset.sector) return;
         span.classList.add("mi-hl-sec");
-        span.style.setProperty("--sw", sectorColors[span.dataset.sector.split("|")[0]] || "#ccc");
+        span.style.setProperty("--sw", sectorColors[span.dataset.sector.split("|")[0]] || "#c3ccce");
       });
       hlSwatch();
       hlSwatchRef = hlSwatch;
@@ -6686,7 +6703,7 @@
       fig.dataset.pal = v;
       if (key) key.querySelectorAll(".sk-sec").forEach(b => {
         const nm = b.querySelector(".sk-name"); if (!nm) return;
-        b.style.setProperty("--sw", sectorColors[nm.textContent] || "#ccc");
+        b.style.setProperty("--sw", sectorColors[nm.textContent] || "#c3ccce");
       });
       hideMapTip(true);
       if (hlSwatchRef) hlSwatchRef();

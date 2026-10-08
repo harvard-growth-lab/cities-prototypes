@@ -217,9 +217,19 @@ rule (`STATE` table), and `setStep` drops what a beat cannot carry.
   **Full height, the bars' style** (2026-10-07, Nil: "beat 3 visualization
   does not use the full height, make sure its style and use of space
   aligns with other visualization. If it needs to show more bar, it can do
-  that"): the ranking holds 15 rows (`RANK_N`, was 12, then 25 until Nil
-  found it too dense) in bars as thick as the first two beats' (`BBAR`,
-  14), spread over the whole height the beat
+  that"): the ranking holds 14 rows (`RANK_N`, was 12, then 25 until Nil
+  found it too dense, then 15 until "bar chart in 3rd beat bottom looks too
+  squished. maybe have 1 less bar, have space between Show All and y axis
+  names") in bars as thick as the first two beats' (`BBAR`, 14); the rows
+  end half a row above the Show box (`RANK_FOOT`, `footBase`) and "National
+  rate" (or "Same as the peers") sits on the box's line (`footLine`); spread
+  over the whole height the beat has. Known trade-offs (reviewed
+  2026-10-07): where the chart pans (a frame under 704px) beat 3's panel
+  is taller than beats 1 and 2's and changes with the order, since its
+  drawing is wider than theirs and the other beats' height cannot be read
+  across; evening it would bring the rows back to about 23px apart. And at
+  short desk windows (1280×600) the panel runs under the top bar and past
+  the window's foot on every beat. Spread over the whole height the beat
   has (`R2.rh = rankPitch(span)`, never closer than the bars' 16.2 nor
   wider than the old 34; per-ranking geometry in `rowY(i, R)`, `rhOf`,
   `bhOf`, `spanOf`). That height is the drawing's plus the strip under it
@@ -240,11 +250,12 @@ rule (`STATE` table), and `setStep` drops what a beat cannot carry.
   (2026-10-05, Nil: "keep the x-axis as how it's in other format", the
   diverging bars of the generated version back, replacing a log axis of
   the ratio). With nothing behind, the domain is the concentration
-  view's, so the ticks hold still when the order changes. All 12 are
-  ahead in the source (missile parts +10.1, biotechnology R&D +8.4,
-  storage devices last at +2.7), so no bar goes left in Boston; of the
-  258 industries over 1×, 52 are behind their peers, all lower in the
-  ranking. With one behind, `fitGap()` reaches the domain left until the
+  view's, so the ticks hold still when the order changes. (As of
+  2026-10-04, over the top 12: all 12 were ahead, missile parts +10.1,
+  biotechnology R&D +8.4, storage devices last at +2.7; since 2026-10-07
+  the order shows the ten furthest ahead and the ten furthest behind of
+  the pool of 200, of which 29 trail the peers and 14 are level.) With one
+  behind, `fitGap()` reaches the domain left until the
   longest bar there keeps its label's measured width before the plot's
   edge (refitted with the gutters). The card on a row gives the peers'
   rate and the ratio. The bars and the axis start at 0, and 1×, the
@@ -252,13 +263,17 @@ rule (`STATE` table), and `setStep` drops what a beat cannot carry.
   **Fabric coating mills are left out of this ranking** (2026-10-04, Nil:
   "from the last beat, remove the Fabric coating"): `RANK_LEAVE_OUT` in
   `rankPool()`. In the source it is the most specialized tradable
-  industry, 12× on 599 jobs; it stays in beats 1 and 2. The list now
-  opens with biotechnology R&D and closes with storage devices (4.6×),
-  and the paragraph reads "The list opens with R&D in biotechnology …
-  then guided missile and space vehicle parts at 10.3 and laboratory
-  instruments at 9.0. Specialization is not size: marine fishing reaches
-  8.5 times on 74 jobs …". The answers still hold: universities at 4.3×
-  miss the 4.6× cut-off, and the twelve employ about 86,000 (86,003).
+  industry, 12× on 599 jobs; it stays in beats 1 and 2. The list opens
+  with biotechnology R&D; at 12 rows (2026-10-04) it closed with storage
+  devices (4.6×), universities at 4.3× missed the cut and the twelve
+  employed 86,003; at 14 rows (since 2026-10-07) it closes with directory
+  publishers (4.3×, row 14, ahead of other valves & fittings on a 4.295
+  tie by jobs), universities are row 13, and the 14 employ 172,438. The
+  paragraph reads "The list opens with R&D in biotechnology … then guided
+  missile and space vehicle parts at 10.3 and laboratory instruments at
+  9.0. Specialization is not size: marine fishing reaches 8.5 times on 74
+  jobs, while biotechnology R&D employs 61,687 at 10.8; only colleges and
+  universities, at 4.3, employ more."
   `handoff/reference-check.py` prints the source's own top 12, fabric
   coating included.
 - Steps 1, 3, 5, 7 are variants not used by the scrolly (7 = the tradable
@@ -476,7 +491,7 @@ charts (Nil: "try putting show all on the bottom. 1st and 2nd beat", then
 "also on the bottom on the 3rd beat"), right-aligned with the names; on
 beat 3 it sits beside the national rate's name. The "Show all" study
 (`#miMoreAt`, `moreAt`) puts it back over the names (opt-1, the first
-build) on all three. Pressed, every row is drawn and "Show the top 25" (12
+build) on all three. Pressed, every row is drawn and "Show the top 15" (14
 on the ranking) stands at both ends (the foot's drawn after the rows so the
 keyboard meets the head's filter first; on the ranking the head's button is
 drawn in the axis groups, before its filter). To give the box its line
@@ -484,8 +499,9 @@ inside the 880×500 drawing the bars went to 16.2 apart for a while (17.2
 before), with the pan width raised to 748 to keep the names apart. **Later
 the same day (Nil: "right now, bar design looks too dense and overwhelming.
 Revise the spacing in bar graph design, so it looks cleaner") every bar
-chart shows its top 15, not 25** (`NB`, `RANK_N`): the bars stand 27 apart,
-14 thick (`BRH`, `BBAR`), the ranking spreads its 15 over its full height,
+chart shows its top 15, not 25** (`NB`; the ranking 14, `RANK_N`, see
+below): the bars stand 27 apart, 14 thick (`BRH`, `BBAR`), the ranking
+spreads its rows over its full height,
 the Show box keeps its place under the last row, and the pan width is back
 at 704 (`PAN_MIN`, the stylesheet's min-width, the presenter's `PAN`). The
 peers order still shows its ten and ten. On a
@@ -1538,6 +1554,177 @@ Methuen). The commuting beats read **LODES 2023**; Worker Flows still
 reads 2022 (687,736 jobs, 206 per 100), so the two sections now disagree
 (§8 0j).
 
+### 6b. The type and colour scale of Who are you? and Metro Industries
+
+A review on 2026-10-07 (Nil: "Do a comprehensive review on all font sizes
+and colors for accessibility and consistency. if there are unnecessary
+one, purge them with the closest ones. Then document the different font
+sizes and colors") measured every rendered text run and every painted
+colour in both sections across every state at 1440, 390 and 1920
+(scratchpad `review9/`, four inventories and a plan), then consolidated
+them. `type-colour-scale.html` at the repo root shows the result live.
+The colour half of this review was then taken site-wide the same day:
+see §6c, which supersedes the colour table below.
+
+**Type: six roles.** The frame and content sizes are fixed pixels so they
+hold on screen at every width and inside the SVG (`#miTreemapSvg` scales
+them by `--mi-type / --mi-s`); the reading sizes follow the site's ramp.
+Nothing renders under 12.5px.
+
+| Size | Role | Weights |
+|---|---|---|
+| 12.5px fixed | the frame: axis ticks and names, column heads, control labels and segment buttons, the year and level selects, table heads and cells, tooltip and card labels, chips, crumbs, notes, sources and ranks, the map chips and worker counts; the beat counter at 390 via `--t-xs` | 400 notes · 500 passive frame · 600 controls and values · 700 badges, the 1× tick, the brace label |
+| 13px fixed | content inside a figure or small print: industry names and values, tier names and shares, the sector key, legend ends, the key card's name and verbs, table captions and notes, the map's place names; the beat counter from 1440 | 400 · 600 values, verbs · 700 the top three, the sector band |
+| `--t-note` 14→15 | table text and reading inside a card: the indicator tables' measures and peers line, the flow tables, the Ask questions and answers, the term card, the cell card's text, the map tooltip, the Boston map label, the presenter bar | 400 · 500 · 600 names and buttons |
+| 16px fixed at ≥900 (`--t-base` under) | prose (Inter, line-height 1.6, pinned to 1rem by 1406 / 3301 for the narrow column), the head sentence and its blanks, the figure title, the ranking key, the level number (600), the rank card's head (700) | 400 · 600 · 700 |
+| `--t-title` 18→22 | one lead figure: the cell card's number; the hidden practice card's h3 | 700 |
+| `--t-beat` 22→26 at ≥900 (new token; `--t-h2`/700/1.16 under 900, both sections) | the beat titles | 700 |
+| kept | the rank card's 34/19 display pair (28 at ≤599); the treemap's 18px sector-level labels (14 at 390); the presenter's scale × `--pv-k`; the map zoom glyphs 15/700 | |
+
+Purged: 17 (the level number, now 16), the fixed 15 (six rules, now
+`--t-note`), 14, 14.5, 15.5, 16.5 (the `.ac-head` trio, now 16), 21 (the
+cell card's lead, now `--t-title`), 22 (the practice h3), the phone
+step-downs of Who are you? (1461-1462), the 12px year select
+(`#miFigure .mi-view .mi-year select` had shadowed the 12.5 rule: the one
+floor breach), and the dead rules at 9.5 and 12px (`.q-sl/.q-sv`, the
+`.map-lbl--city/--metro` labels, the `.mi-studylab` / `#miNames`
+switches). `#ovMap` sets the house family at a 12.5px base, so Leaflet's
+12px Helvetica Neue no longer reaches the chips, zoom buttons, key, labels
+or tooltip. Section 1's paragraph leading is 1.6 at every width, as
+section 2's.
+
+**Colour: twelve tokens, used by reference** (as it stood after this
+review; §6c merged `--paper` into `--teal-tint` and `--geo-metro` into
+`--ink-soft`, and added the rest of the site). Text reads ≥ 4.5:1 on every
+ground it sits on; furniture a reader finds by its edge reads ≥ 3:1.
+
+| Token | Role | Ratio |
+|---|---|---|
+| `--ink` #1a2226 | the one reading ink: titles, prose, table text, names and values, card text, the national-rate line, the peer marks | 16.1 on white, 15.5 on ground, 14.3 on tint |
+| `--ink-soft` #526066 | the secondary ink: eyebrows, captions, notes, sources, ticks, column heads, control labels, the term mark, map leaders, the tier cancel cross, the tradability tick; and the ink of the beats the reader is not on (`.ct-step:not(.is-on){--ink:var(--ink-soft)}`, 6.2:1; it was a literal #5a656a at 5.7) | 6.5 / 6.2 / 5.8 / 5.3 on border |
+| `--teal` #255862 | the accent: control words, the blanks, crumbs, chips, the figure title, the top three's values, the glossary link, every focus ring, the city boundary and chip, the Show box | 7.9 / 7.1 / 7.6 |
+| `--teal-dark` #1c454d | a word pointed at or open: a term, the open key entry's name, the hot ranking row, a blank hovered (the blanks' hover is now the word, not a tint) | 10.5 / 10.0 / 9.3 |
+| #fff on `--teal` | rank badges, hovered crumbs and chips, the tier tick; the ground of every panel, card, menu, tooltip and tile | 7.9 |
+| `--geo-metro` #4a6a72 | the metro geography only (edge, chip, leader, dot); no longer borrowed for the phrase underline, which is `--ink-soft` at rest | 5.8 |
+| `--ground` #f9fafb (new) | the two sections' ground and the phone's stage (was a literal five times) | decorative |
+| `--paper` #f4f5f2 | the tray under segmented buttons and the selects; the rank card's ground (was #f4f6f7); the grey-ground study's field | decorative |
+| `--teal-tint` #eef3f4 | the one hover, lit and selected ground: Ask rows, key entries, phrases, menu items, the Show box's hover, the blanks, the tier bands, the year select's hover (was #eceeea) | decorative |
+| `--border` #e2e7e8 | decorative rules and fields: panel edges, table rules, gridlines (was #e9e9eb), the tradability track (was #e6eaec), muted cells (was #e3e8e9), the strip's box, the map frame and pre-tile ground | exempt |
+| `--border-strong` #c3ccce | edges of things that are not controls: cards, menus, tooltips, the opt panel, column-head rules (was #b3bcbf), the tier frame and split rule, the not-rated cell and swatch (`PCI_NONE` now reads the token), the chosen tray tile's ring (was #c2d4d7), muted sector bands (was #cfd6d8) | exempt |
+| `--control-edge` #7f8f95 | anything found by its edge or read as furniture at 3:1: the Present door, crumbs, chips, the tier tick box, the presenter's and the map's buttons (all were `--border-strong` at 1.6:1); the strip's whiskers and box edge (were #9fb0b4 at 2.2:1); the base gridline and its key mark (#8e9196), hollow complexity dots and diamonds (#8e9395), the jobs and tradability bars (#7c848c), the tinted Show box's outline (#738d93) | 3.5 / 3.3 / 3.0 |
+| `--shadow-sm` / `--shadow-md` | tiles (zoom buttons, chips, the chosen tray tile) / floating cards (tooltips, key card, term card, tier menu, opt panel); eight literals folded | |
+
+Contrast fixes in the pass: the worker counts on the commuting maps
+(`--ink-soft` on shaded places, 2.65-3.8:1 → `--ink`, 6.6+); the strip
+furniture (2.15 → 3.0); the sector-block card's soft line on Education &
+Health (alpha .78 → .9, 4.0 → 4.9); the map tooltip's Leaflet opacity
+(.9 → 1, 4.99 → 6.5); the Ask glyph, Show arrow and Present icon in the
+quiet beats (exempt from the .55 picture rule, as the explainer's chevron
+was); the key card's sector name (a `<b>` in a 600 span resolved to a
+synthesised 900, now 600). Data colours are off this scale: the sector
+palette and the Tol set, the complexity ramp, `MUTED` #a9c2c7, `--orange`
+for a bar behind its peers, the choropleth.
+
+Fixes after a before/after check of this pass (2026-10-07, scratchpad
+`review10/`): the flow tables' first column head is back at 12.5 with its
+neighbours (the --t-note rule now reaches only `tbody th`); the presenter
+keeps `max(16px, 15.5px*k)` and `max(12.5px, 11.5px*k)` (removing the
+max() was not a no-op at room scale and lost a treemap label); Section 2's
+paragraph leading is 1.6 under 900 too (`.ct-step .lede` was 1.62); the
+beat titles track at -.4px under 900 in both sections; table heads in Who
+are you? are 500, as Metro Industries' are; the sector-block card title in
+the opt study is 13, not 14; the commuting map's names keep 10px apart
+side by side, so Waltham no longer reads as one row with Cambridge (it
+stands off with its leader); the map tooltip wraps at its 240px measure
+(`width:max-content`) instead of one word a line.
+
+### 6c. The colour system (site-wide, twelve colours)
+
+Nil, 2026-10-07: "there are too many color options. just like in the font
+sizes, merge the closest one and have a better system for colors", and
+then "We cannot have that many colors in the tool. It's way too
+scattered". A whole-site measurement (scratchpad `review11/`: every colour
+literal in the source, and every colour painted in 219 states at 1440 and
+390) found 245 distinct values in the source, 128 of them interface rather
+than data, and 79 interface colours on screen, of which only 20 were
+tokens. The merge first went to sixteen, and on Nil's "16 is still a lot.
+is there way to get rid of some" to twelve. Every interface colour now sits
+on one of the twelve, defined once in `:root` and used by reference in the
+stylesheet; the scripts write the same
+values (SVG attributes and d3 take the hex, since a `var()` there is only
+safe where it was already used).
+
+| Family | Token | Value | Role | On white / ground / tint / border |
+|---|---|---|---|---|
+| neutral | `--ink` | #1a2226 | text | 16.1 / 15.4 / 14.4 / 12.9 (on white / the old ground / tint / border) |
+| neutral | `--ink-soft` | #526066 | secondary text, icons, the metro geography | 6.5 / 6.2 / 5.8 / 5.2 |
+| neutral | `--control-edge` | #7f8f95 | the edge a control is found by, chart axes, quiet marks and bars | 3.4 / 3.2 / 3.0 / 2.7 |
+| neutral | `--border-strong` | #c3ccce | field and card edges, the rule under a table head, map place edges | decorative |
+| neutral | `--border` | #e2e7e8 | hairlines, gridlines, tracks | decorative |
+| neutral | `--white` | #fff | every ground: the page, panels, cards, the gaps between tiles, words on the teal | 7.9 on teal |
+| accent | `--teal` | #255862 | links, the chosen, the city | 7.9 / 7.6 / 7.1 / 6.3 |
+| accent | `--teal-tint` | #eef3f4 | the one tint: a control's ground, a hover, a chosen row, a done step, a right or wrong answer, an up or down verdict | decorative |
+| warm | `--orange` | #e76565 | this place, you are here: marks only | 3.3 (not for words) |
+| warm | `--orange-text` | #a93a17 | the warm accent as words, and its darker marks | 6.4 / 6.1 / 5.7 / 5.1 |
+| direction | `--rise` | #2d7d32 | up, done, right | 5.1; 4.6 on the tint |
+| direction | `--fall` | #c0244a | down, wrong | 5.8; 5.2 on the tint |
+
+The four the twelve absorbed: the section ground #f9fafb into `--white`
+(the panels keep their `--border` edge; the tradability score track moved
+to the tint), the dark teal #1c454d into `--teal` (the seal, seam and pager
+bands are the teal; a filled button's hover is now a lift, `--shadow-md`,
+and a sentence blank's hover a teal edge, since those were the only places
+the dark teal was the whole cue), and the green and orange tints into
+`--teal-tint` (right and wrong, up and down keep their green and red in the
+words, edges and icons; the dx quadrants became a two-ground checkerboard).
+The four names stay as aliases (`--ground:var(--white)` and so on) only so
+that `?colours=16` can show the sixteen beside the twelve; when one is
+chosen, the aliases and the switch go.
+
+Around the twelve: white on the teal bands in four strengths (`--on-dark`
+.92 for words, 7.0:1 on `--teal`; `--on-dark-soft` .78, 5.6:1;
+`--on-dark-line` .2; `--on-dark-fill` .07), `--scrim` (ink at .45, behind a
+dialog), and the shadows on two inks at fixed alphas (teal .04 / .10 / .14
+/ .22, ink .08 / .14 / .28; `--shadow-sm` and `--shadow-md` as before).
+`--geo-city` and `--geo-metro` stay as role names that point at `--teal`
+and `--ink-soft`: the city solid and the metro dashed carry the pair, the
+colour is the second channel.
+
+Merged on the way to sixteen (each into the closest by CIEDE2000 and by
+role): `--paper` →
+`--teal-tint` (the tray and the selects; the tray's select hover is now a
+teal edge, since the tint was its rest); `--orange-dark` → `--orange-text`;
+`--geo-metro` #4a6a72 → `--ink-soft` (ΔE 6.3); `--geo-metro-fill` →
+`--teal-tint`; `--geo-city-fill` (never rendered) deleted; seven whites and
+off-whites → `--white` / `--ground`; pure black (32 uses) and the warm
+#2c2823 → `--ink`; five slates and the ink at .62-.78 → `--ink-soft`; about
+twenty mid greys between 2.0 and 4.1:1 (axes, dashes, peer dots, the
+collapsible edge, the sector fallback #888) → `--control-edge`; about
+fifteen light greys (#ccc fallbacks, map place edges, the dx cross, the
+seam's chart lines) → `--border-strong`; ten hairline greys →
+`--border`; the hover greys #f4f6f5, #f1f3f4 → `--teal-tint`; the copies
+#2e7d33, #1d4750 and the olive #5c8a3a → `--rise` / `--teal-dark`; four
+green tints → `--rise-tint`; four pinks and peach tints → `--orange-tint`;
+#b23a3a and #c14f4f → `--fall`; #cf4f2c and #b0533a → `--orange-text`;
+twenty white alphas → the four on-dark steps; the dx quadrants' four
+pastels → `--ground`, `--teal-tint`, `--orange-tint`, `--rise-tint`;
+Worker Flows' "both" grey → `--control-edge`, its balance grey →
+`--border-strong`, and its two light teals into one (#8fb5bb).
+
+Outside the system, on purpose (data): the sector palette and the Tol set,
+the complexity ramp and its legend, `MUTED` #a9c2c7 and the glossary's tier
+swatches (they match the treemap), the commuting choropleths (coral out,
+blue in), the Boston fill at .55 in the map key, Worker Flows' light teal,
+the journey's section lines and its travelled amber, the explainer
+illustration, and the hidden intro quiz's amber states. Dead code keeps its
+data series (the S1 population chart).
+
+Two quiet-beat inks are re-anchored with `--ink:initial` (the registered
+#1a2226): a term card opened in a quiet beat, and Worker Flows' quiet
+paragraphs, which read in the ink as they did before the scale. The
+tradability score track is on `--ground` so the bar keeps 3:1 (it was 2.7
+on `--border`).
+
 ## 7. How Nil likes to work — read this twice
 
 - **Sketch first, then ship both picks as a study.** For any control or
@@ -1655,7 +1842,7 @@ reads 2022 (687,736 jobs, 206 per 100), so the two sections now disagree
    design and emergency relief trail furthest, by 1.1;
    "peer metros" is the term with its card) and "Which of these
    specialties employ the most people?" (Sort: jobs; since 2026-10-07, over
-   15 rows: colleges and universities with 85,523 of the 15's 173,162,
+   14 rows: colleges and universities with 85,523 of the 14's 172,438,
    then biotechnology R&D with 61,687, more than four jobs in five between
    them; two under 100; before, over 12: biotechnology R&D
    with 61,687 of the twelve's 86,003, laboratory instruments and savings
