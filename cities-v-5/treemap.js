@@ -6048,17 +6048,33 @@
     /* ---- the line over the map: where the reader has zoomed to, while
        they are zoomed in, and nothing otherwise ---- */
     const notes = [p + "Note", p + "Note4"].map(id => document.getElementById(id)).filter(Boolean);
+    /* each crumb with a NAICS identity carries its code, lighter, after its
+       name (Nil, 2026-10-09): an industry group its four digits, a sector
+       the 2-digit sectors it is made of, runs of them as ranges */
+    const crumbCode = c => ' <span class="mi-crumb-code">(' + c + ')</span>';
+    const sectorCodes = sec => {
+      const keys = [...new Set(industryData.filter(d => d.sector === sec).map(d => naics2Of(d.code)))]
+        .sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
+      const out = [];
+      keys.forEach(k => {
+        const last = out[out.length - 1];
+        if (!/-/.test(k) && last && !/-/.test(last.to) && parseInt(k, 10) === parseInt(last.to, 10) + 1) last.to = k;
+        else out.push({ from: k, to: k });
+      });
+      return out.map(r => (r.from === r.to ? r.from : r.from + "-" + r.to).replace(/-/g, "\u2013")).join(", ");
+    };
     function syncNote(){
       let txt;
       if (focus){
         const gRow = focusGroup ? industryData.find(d => d.group === focusGroup) : null;
         const gName = gRow ? (gRow.groupShort || gRow.groupName) : focusGroup;
+        const sCode = sectorCodes(focus), sName = escHtml(focus) + (sCode ? crumbCode(sCode) : "");
         txt = '<span class="mi-crumbs" role="navigation" aria-label="Zoom"><button type="button" class="mi-crumb" data-zoom="all">All sectors</button>' +
           '<span class="mi-crumb-sep" aria-hidden="true">›</span>' +
           (focusGroup
-            ? '<button type="button" class="mi-crumb" data-zoom="sector">' + escHtml(focus) + '</button>' +
-              '<span class="mi-crumb-sep" aria-hidden="true">›</span><span class="mi-crumb-here" aria-current="location">' + escHtml(gName) + '</span>'
-            : '<span class="mi-crumb-here" aria-current="location">' + escHtml(focus) + '</span>') +
+            ? '<button type="button" class="mi-crumb" data-zoom="sector">' + sName + '</button>' +
+              '<span class="mi-crumb-sep" aria-hidden="true">›</span><span class="mi-crumb-here" aria-current="location">' + escHtml(gName) + crumbCode(escHtml(focusGroup)) + '</span>'
+            : '<span class="mi-crumb-here" aria-current="location">' + sName + '</span>') +
           '<button type="button" class="mi-crumb-x" aria-keyshortcuts="Escape" aria-label="Zoom out to ' +
           (focusGroup ? escHtml(focus) : "all sectors") + ' (Esc)">×</button></span>';
       } else txt = "";

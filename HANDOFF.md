@@ -1752,6 +1752,14 @@ its groups, then a group to its industries (`effectiveGrain`). The table
 lists 2-digit sectors with their sector, and the live line counts "19
 2-digit sectors". The type audit holds 13 at 1440 and 390.
 
+The zoom's breadcrumb carries the NAICS codes, after each name in the
+soft ink at 400 (Nil, 2026-10-09: "add digit number to the industry names
+in a parenthesis, maybe slightly lighter colour"). An industry group shows
+its four digits, "Headquarters (5511)". A sector shows the 2-digit sectors
+it is made of, with runs as ranges: "Professional & Business (51, 54–56)",
+"Trade & Transportation (42, 44–45, 48–49)", "Other (81)". The codes are
+`.mi-crumb-code`; on a hovered crumb they take `--on-dark-soft`.
+
 ### 6c. The colour system (site-wide, thirteen colours)
 
 Nil, 2026-10-07: "there are too many color options. just like in the font

@@ -4245,6 +4245,9 @@
   .mi-crumb:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
   .mi-crumb-sep{color:var(--ink-soft);}
   .mi-crumb-here{font-weight:600;color:var(--ink);}
+  /* a crumb's NAICS code, after its name and a step lighter */
+  .mi-crumb-code{font-weight:400;color:var(--ink-soft);}
+  .mi-crumb:hover .mi-crumb-code{color:var(--on-dark-soft);}
   .mi-crumb-x{
     appearance:none;background:none;border:0;padding:0 5px;font:inherit;font-size:16px;line-height:1;
     color:var(--ink-soft);cursor:pointer;border-radius:3px;
@@ -8227,7 +8230,7 @@
 <script src="data/geo/who_commute_geo.js"></script>
 <script src="industries-2024.js"></script>
 <script src="industries-2014.js"></script>
-<script src="treemap.js?v=2026-10-09-naics2b"></script>
+<script src="treemap.js?v=2026-10-09-crumbs"></script>
 <script>
   /* ---------- treemaps: color by ----------
      Handled entirely in treemap.js — it wires the visible .seg controls and
