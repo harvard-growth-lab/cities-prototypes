@@ -2928,17 +2928,21 @@
      (9); 3, the subsectors (85), is tiled the same way but not offered. A
      coarser grain folds every industry into its group or sector as a
      whole before the tiling; the bars and the ranking stay industries. */
-  /* the map opens at the sectors (Nil, 2026-10-09); REST_GRAIN is the level
-     the reader chose, which the map goes back to after the tradable beat
-     has held it at the industries */
-  let MAP_GRAIN = 2, REST_GRAIN = 2;
-  const GRAIN_WORDS = { 6: ["industry", "industries"], 4: ["industry group", "industry groups"], 3: ["subsector", "subsectors"], 2: ["sector", "sectors"] };
+  /* The grains: 6, 4 and 3 are the NAICS digits; 2 is the NAICS 2-digit
+     sector (19 of them in the metro: 31-33, 44-45 and 48-49 count as one
+     each), and 1 is the reference build's nine sectors, the ones the map is
+     coloured by. A 2-digit sector sits inside one of the nine, so it keeps
+     its sector's colour. The map opens at the 2-digit sectors (Nil,
+     2026-10-09); REST_GRAIN is the level the reader chose, which the map
+     goes back to after the tradable beat has held it at the industries. */
+  const DEFAULT_GRAIN = 2;
+  let MAP_GRAIN = DEFAULT_GRAIN, REST_GRAIN = DEFAULT_GRAIN;
+  const GRAIN_WORDS = { 6: ["industry", "industries"], 4: ["industry group", "industry groups"], 3: ["subsector", "subsectors"], 2: ["2-digit sector", "2-digit sectors"], 1: ["sector", "sectors"] };
   const grainWordAt = (grain, n) => (GRAIN_WORDS[grain] || GRAIN_WORDS[6])[n === 1 ? 0 : 1];
   /* the level is where the map rests; the zoom walks down from there as it
      always has, sector, then group, then the industries - so what is
      tiled is the finer of the level chosen and the depth zoomed to */
-  const GRAIN_STEPS = [2, 4, 6];
-  const effectiveGrain = (grain, depth) => GRAIN_STEPS[Math.max(GRAIN_STEPS.indexOf(grain) < 0 ? 2 : GRAIN_STEPS.indexOf(grain), depth)];
+  const effectiveGrain = (grain, depth) => depth <= 0 ? grain : depth === 1 ? Math.max(grain, 4) : 6;
   /* the sector blocks' dressing (the "Sector blocks" study), for the map
      resting at the sector grain: "plain" the name and share; "card" the
      block as a card - name, share and jobs, its three largest groups, the
@@ -2993,11 +2997,42 @@
   const fmtJobsFull = v => Math.round(v).toLocaleString("en-US");
   const escHtml = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
+  /* the NAICS 2-digit sectors: a short name for the map, the full title for
+     the card; 31-33, 44-45 and 48-49 are one sector each */
+  const NAICS2 = {
+    "11": ["Agriculture & forestry", "Agriculture, Forestry, Fishing and Hunting"],
+    "21": ["Mining, oil & gas", "Mining, Quarrying, and Oil and Gas Extraction"],
+    "22": ["Utilities", "Utilities"],
+    "23": ["Construction", "Construction"],
+    "31-33": ["Manufacturing", "Manufacturing"],
+    "42": ["Wholesale trade", "Wholesale Trade"],
+    "44-45": ["Retail trade", "Retail Trade"],
+    "48-49": ["Transportation & warehousing", "Transportation and Warehousing"],
+    "51": ["Information", "Information"],
+    "52": ["Finance & insurance", "Finance and Insurance"],
+    "53": ["Real estate & rental", "Real Estate and Rental and Leasing"],
+    "54": ["Professional & technical services", "Professional, Scientific, and Technical Services"],
+    "55": ["Management of companies", "Management of Companies and Enterprises"],
+    "56": ["Administrative & support", "Administrative and Support and Waste Management and Remediation Services"],
+    "61": ["Education", "Educational Services"],
+    "62": ["Health care & social assistance", "Health Care and Social Assistance"],
+    "71": ["Arts & recreation", "Arts, Entertainment, and Recreation"],
+    "72": ["Accommodation & food", "Accommodation and Food Services"],
+    "81": ["Other services", "Other Services (except Public Administration)"],
+    "92": ["Public administration", "Public Administration"]
+  };
+  const naics2Of = code => {
+    const p = String(code).slice(0, 2);
+    return p === "31" || p === "32" || p === "33" ? "31-33" : p === "44" || p === "45" ? "44-45" : p === "48" || p === "49" ? "48-49" : p;
+  };
+  const naics2Name = k => (NAICS2[k] || [k])[0];
+  const naics2Title = k => { const n = NAICS2[k]; return n && n[1] !== n[0] ? n[1] : undefined; };
   /* a cell for one industry: named by its short name, with the full NAICS
      name kept for the card */
   function cellOfRow(r, total){
-    const name = r.short || r.name;
+    const name = r.short || r.name, n2 = naics2Of(r.code);
     return { id: r.code, name: name, title: r.name !== name ? r.name : undefined,
+      naics2: n2, naics2Name: naics2Name(n2), naics2Title: naics2Title(n2),
       group: r.group, groupName: r.groupShort || r.groupName, groupTitle: r.groupName,
       subsector: r.sub, subsectorName: r.subShort || r.sub, subsectorTitle: undefined,
       sector: r.sector, tier: r.tier, pci: r.pci, rca: r.rca, jobs: r.employ,
@@ -3020,6 +3055,7 @@
       group: meta.group ?? d.group ?? id, groupName: meta.groupName ?? d.groupName ?? name, groupTitle: groupTitle,
       subsector: meta.subsector ?? d.subsector ?? id, subsectorName: meta.subsectorName ?? d.subsectorName ?? name,
       subsectorTitle: subTitle, sector: d.sector || "Other",
+      naics2: meta.naics2 ?? d.naics2, naics2Name: meta.naics2Name ?? d.naics2Name, naics2Title: meta.naics2 ? meta.naics2Title : d.naics2Title,
       tier: tiers.size === 1 ? (d.tier ?? null) : null,
       pci: pciJobs > 0 ? withPci.reduce((a, c) => a + (c.pci || 0) * c.jobs, 0) / pciJobs : null,
       rca: denom > 0 ? withRca.reduce((a, c) => a + c.share, 0) / denom : null,
@@ -3037,6 +3073,7 @@
   const LEVELS = {
     group:     { id: "group",     key: c => c.group,     name: c => c.groupName,     title: c => c.groupTitle },
     subsector: { id: "subsector", key: c => c.subsector, name: c => c.subsectorName, title: c => c.subsectorTitle },
+    naics2:    { id: "naics2",    key: c => c.naics2,    name: c => c.naics2Name,    title: c => c.naics2Title },
     sector:    { id: "sector",    key: c => c.sector,    name: c => c.sector,        title: () => undefined }
   };
   /* what a folded cell is grouped under, so it tiles as its own group */
@@ -3044,6 +3081,9 @@
     if (level.id === "group") return { group: key, groupName: name, groupTitle: title };
     if (level.id === "subsector") return { group: "subsector:" + key, groupName: name, groupTitle: title,
                                            subsector: key, subsectorName: name, subsectorTitle: title };
+    if (level.id === "naics2") return { group: "naics2:" + key, groupName: name, groupTitle: title,
+                                        subsector: "naics2:" + key, subsectorName: name, subsectorTitle: title,
+                                        naics2: key, naics2Name: name, naics2Title: title };
     return { group: "sector:" + key, groupName: name, subsector: "sector:" + key, subsectorName: name };
   }
   /* the items of a band rolled up to a level as wholes - one item per
@@ -3167,9 +3207,9 @@
     /* at a coarser grain the industries are rolled up as wholes first, and
        only what is still too small folds further up */
     if (grain && grain !== 6){
-      const level = grain === 4 ? LEVELS.group : grain === 3 ? LEVELS.subsector : LEVELS.sector;
+      const level = grain === 4 ? LEVELS.group : grain === 3 ? LEVELS.subsector : grain === 2 ? LEVELS.naics2 : LEVELS.sector;
       const coarse = bands.map(b => ({ ...b, items: levelUp(b.key, b.items, level) }));
-      const above = grain === 4 ? [LEVELS.subsector, LEVELS.sector] : grain === 3 ? [LEVELS.sector] : [];
+      const above = grain === 4 ? [LEVELS.subsector, LEVELS.sector] : grain === 3 || grain === 2 ? [LEVELS.sector] : [];
       return mergeLoop(above, coarse);
     }
     /* a map that holds one group alone - a zoom into a group, made from
@@ -5697,12 +5737,12 @@
         t.selectAll("tspan").remove();
         if (c.rest) return;
         /* under a card the block's name and share are the card's first lines */
-        if (L.grain === 2 && SEC_BLOCK !== "plain" && SEC_BLOCK !== "ghost") return;
+        if (L.grain === 1 && SEC_BLOCK !== "plain" && SEC_BLOCK !== "ghost") return;
         const share = fmtShare(c.cell.share);
         /* at the sector grain with the band naming the block, the cell keeps its share alone */
-        const shareOnly = L.grain === 2 && SEC_NAMES !== "off";
+        const shareOnly = L.grain === 1 && SEC_NAMES !== "off";
         /* the presenter view sets the type a size up, the floor with it */
-        const ceil = Math.round((L.grain === 2 ? MAP.sectorSize : MAP.size) * TYPE_K * 2) / 2, floor = Math.max(MAP.min, Math.round((MAP.min - 0.5) * TYPE_K * 2) / 2);   /* the presenter keeps its one shrink step, never under 13 */
+        const ceil = Math.round((L.grain === 1 ? MAP.sectorSize : MAP.size) * TYPE_K * 2) / 2, floor = Math.max(MAP.min, Math.round((MAP.min - 0.5) * TYPE_K * 2) / 2);   /* the presenter keeps its one shrink step, never under 13 */
         const spec = shareOnly ? fitCellLabel(share, "", c.px, ceil, floor) : fitCellLabel(c.cell.name, share, c.px, ceil, floor);
         if (!spec) return;
         const ink = mapInkOf(c);
@@ -5745,7 +5785,7 @@
         .sort((a, b) => b.jobs - a.jobs);
     };
     function paintCards(all, L, dur){
-      const s = L.s, mode = L.grain === 2 ? SEC_BLOCK : "plain";
+      const s = L.s, mode = L.grain === 1 ? SEC_BLOCK : "plain";
       const ghostOn = mode === "ghost" || mode === "cardghost" || mode === "change";
       const cardOn = mode === "card" || mode === "cardghost" || mode === "change";
       all.each(function(c){
@@ -6050,7 +6090,7 @@
            subsectors or sectors they are rolled up into */
         const rows = mapLayout ? mapLayout.rows : rowsAll(), grain = effGrain();
         const n = grain === 6 ? rows.length
-          : new Set(rows.map(r => grain === 4 ? r.group : grain === 3 ? r.sub : r.sector)).size;
+          : new Set(rows.map(r => grain === 4 ? r.group : grain === 3 ? r.sub : grain === 2 ? naics2Of(r.code) : r.sector)).size;
         said = n + " " + grainWordAt(grain, n) + " shown in the map" + (step === 4 ? ", in three tiers by tradability" : "");
       }
       if (zoomed) said += ", zoomed into " + zoomed;
@@ -6124,20 +6164,20 @@
            sectors - each row what its block's card says: how many
            industries it holds, its jobs and share, and its complexity,
            the industries' weighted by their jobs */
-        const byGroup = grain === 4, by = new Map();
+        const byGroup = grain === 4, byN2 = grain === 2, by = new Map();
         mapLayout.rows.forEach(r => {
-          const k = byGroup ? r.group : r.sector;
+          const k = byGroup ? r.group : byN2 ? naics2Of(r.code) : r.sector;
           let a = by.get(k);
-          if (!a){ a = { name: byGroup ? (r.groupShort || r.groupName) : r.sector, sector: r.sector, jobs: 0, n: 0, pci: 0, pciJobs: 0 }; by.set(k, a); }
+          if (!a){ a = { name: byGroup ? (r.groupShort || r.groupName) : byN2 ? naics2Name(k) : r.sector, sector: r.sector, jobs: 0, n: 0, pci: 0, pciJobs: 0 }; by.set(k, a); }
           a.jobs += r.employ; a.n++;
           if (r.pci != null && r.employ > 0){ a.pci += r.pci * r.employ; a.pciJobs += r.employ; }
         });
         const rows = Array.from(by.values()).sort((a, b) => b.jobs - a.jobs);
         n = rows.length;
-        head = th(byGroup ? "Industry group" : "Sector") + (byGroup ? th("Sector") : "") + th("Industries", "num") +
+        head = th(byGroup ? "Industry group" : byN2 ? "2-digit sector" : "Sector") + (byGroup || byN2 ? th("Sector") : "") + th("Industries", "num") +
           th("Jobs", "num") + th("Share of metro jobs", "num") + th("Complexity");
         body = rows.map(a => '<tr><th scope="row">' + escHtml(a.name) + '</th>' +
-          (byGroup ? td(escHtml(a.sector)) : "") + td(String(a.n), "num") +
+          (byGroup || byN2 ? td(escHtml(a.sector)) : "") + td(String(a.n), "num") +
           td(fmtJobsFull(a.jobs), "num") + td(fmtShare(a.jobs / jobsTotal), "num") +
           cx(a.pciJobs > 0 ? a.pci / a.pciJobs : null) + '</tr>').join("");
       }
@@ -6961,7 +7001,7 @@
     };
     const applyLevel = g => {
       if (levelLocked()){ syncLevel(); return; }
-      g = [6, 4, 2].indexOf(+g) >= 0 ? +g : 6;   /* the 3-digit subsectors are tiled too, but not offered */
+      g = [6, 4, 2, 1].indexOf(+g) >= 0 ? +g : 6;   /* the 3-digit subsectors are tiled too, but not offered */
       if (g === MAP_GRAIN) return;
       MAP_GRAIN = REST_GRAIN = g;
       invalidateMaps(); hideMapTip(true);
@@ -7000,8 +7040,10 @@
        one way back - the row itself, pressed again; and leaving the beat
        puts the beat back. */
     const ASKS = {
-      b1q1: { step: 0, set: { view: "alt", barSort: "cx" }, marks: "view barsort" },
-      b1q2: { step: 0, set: { colorBy: "complexity" }, marks: "color" },
+      /* the first beat's two questions read the industries, so they set that
+         level; the beat's own view is the map at its default level */
+      b1q1: { step: 0, set: { view: "alt", barSort: "cx", level: 6 }, marks: "view barsort" },
+      b1q2: { step: 0, set: { colorBy: "complexity", level: 6 }, marks: "color" },
       b2q1: { step: 4, set: { colorBy: "complexity" }, marks: "color" },
       b2q2: { step: 4, set: { tiers: [true, false, false] }, marks: "" },
       /* the third beat's two other orders (Nil, 2026-10-05): against the
@@ -7024,7 +7066,7 @@
           const tiers = set.tiers || [true, true, true];
           tiers.forEach((on, k) => { if (on) setTier(k, true); });
           tiers.forEach((on, k) => { if (!on) setTier(k, false); });
-          if (step === 0) applyLevel(6);
+          if (step === 0) applyLevel(set.level || DEFAULT_GRAIN);
           applyView(set.view || "map");
           applyColor(set.colorBy || "sector");
           if (step === 0) applyBarSort(set.barSort || "jobs");

@@ -412,9 +412,7 @@ still under `prefers-reduced-motion`.
   (`setLevelCtl`), since the toggle has no 4. The tradable beat (state 4)
   reads at the industry level whatever the map rested at: `setStep`
   brings `MAP_GRAIN` back to 6 before painting it, and on leaving that beat
-  puts it back to `REST_GRAIN`, the level the reader chose (the map opens at
-  the sectors, `MAP_GRAIN = REST_GRAIN = 2`, since 2026-10-09: Nil, "metro
-  industries - default to the sector level") (and lets a pinned card
+  puts it back to `REST_GRAIN`, the level the reader chose (and lets a pinned card
   go, as every beat change now does), and `syncLevel` holds the control
   there (`levelLocked`, `fig.dataset.levellock`): the other tiles are
   `disabled` and fade, while the chosen tile, the menu and the sentence's
@@ -1725,6 +1723,34 @@ etc". No section number is drawn anywhere now:
 The parts keep their labels ("Part 1 City Profile", "Part 2 Diagnose &
 Act", "Part 2 of 2"), and the beats keep their counters ("Who are you?
 1/4"): neither numbers a section.
+
+**Metro Industries' levels: 2-digit NAICS added, and the default
+(2026-10-09).** Nil first asked for the map to open at the sector level,
+then, on learning the data can give 2-digit NAICS, asked to "add 2 digit as
+a level option and default to that".
+
+The grains are now:
+- 6, 4 and 3: the NAICS digits;
+- 2: the NAICS 2-digit sector, derived from each industry's code (31-33,
+  44-45 and 48-49 count as one each; 19 in Boston's data, with no 92 Public
+  Administration);
+- 1: the reference build's nine sectors, which the map is coloured by.
+  These were grain 2 before, so the sector-block study, the sector label
+  size and `#miSecBlockPair` now key on 1.
+
+Each 2-digit sector sits inside one of the nine, so it keeps that sector's
+colour and tiles inside its block. Names and titles come from `NAICS2` in
+treemap.js; tiny ones fold into their sector.
+
+The map opens at `DEFAULT_GRAIN = 2`, and so do the sentence's level blank,
+the tray's menu and its toggle (Sector, 2-digit, Industry). The tradable
+beat still holds the map at 6, and leaving it the map returns to
+`REST_GRAIN`, the level the reader chose. The first beat's own view is the
+default level; its two Ask questions set `level: 6` because their answers
+read industries. The zoom keeps its path: from 1 or 2, a sector zooms to
+its groups, then a group to its industries (`effectiveGrain`). The table
+lists 2-digit sectors with their sector, and the live line counts "19
+2-digit sectors". The type audit holds 13 at 1440 and 390.
 
 ### 6c. The colour system (site-wide, thirteen colours)
 
