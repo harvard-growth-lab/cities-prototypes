@@ -1759,10 +1759,11 @@ its four digits, "Headquarters (5511)". A sector shows the 2-digit sectors
 it is made of, with runs as ranges: "Professional & Business (51, 54–56)",
 "Trade & Transportation (42, 44–45, 48–49)", "Other (81)". The codes are
 `.mi-crumb-code`; on a hovered crumb they take `--on-dark-soft`. The
-level is named in the parentheses too (Nil: "breadcrumbs should have
-2-digit, 3-digit etc text in parenthesis"): "Professional & Business
-(2-digit 51, 54–56) › IT services (4-digit 5415)", and the card's title
-follows suit: "Administrative & support (2-digit 56)".
+parentheses then named the level as well (Nil: "breadcrumbs should have
+2-digit, 3-digit etc text in parenthesis"), and then the level alone (Nil:
+"delete the extra information from the parenthesis, just digits"): now
+"Professional & Business (2-digit) › IT services (4-digit)", and the
+card's title follows suit, "Administrative & support (2-digit)".
 
 **The map's click (2026-10-09).** Nil: "When you hover a rectangle, it
 shows the industry info, but clicked on it, it zooms in to the sector. We
@@ -1783,7 +1784,7 @@ opens.
 - **The card leads with what a click opens.** At the top level (grain
   finer than 1), its first line is the sector's swatch and name, then "Click
   to zoom in" with a magnifier (`targetLine`, `.tip-target`). The tile's
-  name and level code follow ("(2-digit 56)", `tileCode`), with its facts
+  name and level follow ("(2-digit)", `tileCode`), with its facts
   under them. The sector chip and the foot hint go, since the first line
   carries both.
 - **The map shows it.** While a tile is pointed at:

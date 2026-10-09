@@ -6073,13 +6073,13 @@
        jobs, Complexity as the column's five diamonds with the score, and
        Tradability - with a last line, beside the hand that taps, for what
        a click does. A folded cell adds how many it stands for. ---- */
-    /* a tile's NAICS code for its card title, where the tile is one whole code */
+    /* a tile's NAICS level for its card title, where the tile is one whole code */
     const tileCode = c => {
       const g = mapLayout && mapLayout.grain, cell = c.cell;
       if (c.rest || !g) return null;
-      if (g === 6 && !cell.members) return "6-digit " + cell.id;
-      if (g === 4 && cell.members && /^\d{4}$/.test(cell.group)) return "4-digit " + cell.group;
-      if (g === 2 && cell.members && /^naics2:/.test(String(cell.id))) return "2-digit " + cell.naics2.replace(/-/g, "\u2013");
+      if (g === 6 && !cell.members) return "6-digit";
+      if (g === 4 && cell.members && /^\d{4}$/.test(cell.group)) return "4-digit";
+      if (g === 2 && cell.members && /^naics2:/.test(String(cell.id))) return "2-digit";
       return null;
     };
     const MAG = '<svg class="tip-mag" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="7" cy="7" r="4.6"/><path d="M10.4 10.4 14 14M5 7h4M7 5v4"/></svg>';
@@ -6168,33 +6168,21 @@
     /* ---- the line over the map: where the reader has zoomed to, while
        they are zoomed in, and nothing otherwise ---- */
     const notes = [p + "Note", p + "Note4"].map(id => document.getElementById(id)).filter(Boolean);
-    /* each crumb with a NAICS identity carries its level and code, lighter,
-       after its name (Nil, 2026-10-09): an industry group "(4-digit 5511)",
-       a sector the 2-digit sectors it is made of, runs of them as ranges,
-       "(2-digit 51, 54-56)" */
-    const crumbCode = (level, c) => ' <span class="mi-crumb-code">(' + level + ' ' + c + ')</span>';
-    const sectorCodes = sec => {
-      const keys = [...new Set(industryData.filter(d => d.sector === sec).map(d => naics2Of(d.code)))]
-        .sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
-      const out = [];
-      keys.forEach(k => {
-        const last = out[out.length - 1];
-        if (!/-/.test(k) && last && !/-/.test(last.to) && parseInt(k, 10) === parseInt(last.to, 10) + 1) last.to = k;
-        else out.push({ from: k, to: k });
-      });
-      return out.map(r => (r.from === r.to ? r.from : r.from + "-" + r.to).replace(/-/g, "\u2013")).join(", ");
-    };
+    /* each crumb names its NAICS level, lighter, after its name (Nil,
+       2026-10-09: "just digits"): a sector "(2-digit)", an industry group
+       "(4-digit)" */
+    const crumbCode = level => ' <span class="mi-crumb-code">(' + level + ')</span>';
     function syncNote(){
       let txt;
       if (focus){
         const gRow = focusGroup ? industryData.find(d => d.group === focusGroup) : null;
         const gName = gRow ? (gRow.groupShort || gRow.groupName) : focusGroup;
-        const sCode = sectorCodes(focus), sName = escHtml(focus) + (sCode ? crumbCode("2-digit", sCode) : "");
+        const sName = escHtml(focus) + crumbCode("2-digit");
         txt = '<span class="mi-crumbs" role="navigation" aria-label="Zoom"><button type="button" class="mi-crumb" data-zoom="all">All sectors</button>' +
           '<span class="mi-crumb-sep" aria-hidden="true">›</span>' +
           (focusGroup
             ? '<button type="button" class="mi-crumb" data-zoom="sector">' + sName + '</button>' +
-              '<span class="mi-crumb-sep" aria-hidden="true">›</span><span class="mi-crumb-here" aria-current="location">' + escHtml(gName) + crumbCode("4-digit", escHtml(focusGroup)) + '</span>'
+              '<span class="mi-crumb-sep" aria-hidden="true">›</span><span class="mi-crumb-here" aria-current="location">' + escHtml(gName) + crumbCode("4-digit") + '</span>'
             : '<span class="mi-crumb-here" aria-current="location">' + sName + '</span>') +
           '<button type="button" class="mi-crumb-x" aria-keyshortcuts="Escape" aria-label="Zoom out to ' +
           (focusGroup ? escHtml(focus) : "all sectors") + ' (Esc)">×</button></span>';
