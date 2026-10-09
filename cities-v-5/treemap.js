@@ -2928,7 +2928,10 @@
      (9); 3, the subsectors (85), is tiled the same way but not offered. A
      coarser grain folds every industry into its group or sector as a
      whole before the tiling; the bars and the ranking stay industries. */
-  let MAP_GRAIN = 6;
+  /* the map opens at the sectors (Nil, 2026-10-09); REST_GRAIN is the level
+     the reader chose, which the map goes back to after the tradable beat
+     has held it at the industries */
+  let MAP_GRAIN = 2, REST_GRAIN = 2;
   const GRAIN_WORDS = { 6: ["industry", "industries"], 4: ["industry group", "industry groups"], 3: ["subsector", "subsectors"], 2: ["sector", "sectors"] };
   const grainWordAt = (grain, n) => (GRAIN_WORDS[grain] || GRAIN_WORDS[6])[n === 1 ? 0 : 1];
   /* the level is where the map rests; the zoom walks down from there as it
@@ -5511,6 +5514,8 @@
          and the level control follows the beat (set, or set and held) */
       const forced = i === 4 && MAP_GRAIN !== 6;
       if (forced){ MAP_GRAIN = 6; invalidateMaps(); }
+      /* and leaving it, the map goes back to the level the reader chose */
+      else if (i !== 4 && MAP_GRAIN !== REST_GRAIN){ MAP_GRAIN = REST_GRAIN; invalidateMaps(); }
       /* a card pinned on one beat does not ride into the next; every other
          retile lets it go, and so does the beat change */
       hideMapTip(true);
@@ -6958,7 +6963,7 @@
       if (levelLocked()){ syncLevel(); return; }
       g = [6, 4, 2].indexOf(+g) >= 0 ? +g : 6;   /* the 3-digit subsectors are tiled too, but not offered */
       if (g === MAP_GRAIN) return;
-      MAP_GRAIN = g;
+      MAP_GRAIN = REST_GRAIN = g;
       invalidateMaps(); hideMapTip(true);
       syncLevel();
       /* the level is where the map starts, so choosing one goes back to

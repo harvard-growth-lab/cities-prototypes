@@ -411,7 +411,10 @@ still under `prefers-reduced-motion`.
   back to the toggle from a map at 4 digits returns it to the industries
   (`setLevelCtl`), since the toggle has no 4. The tradable beat (state 4)
   reads at the industry level whatever the map rested at: `setStep`
-  brings `MAP_GRAIN` back to 6 before painting it (and lets a pinned card
+  brings `MAP_GRAIN` back to 6 before painting it, and on leaving that beat
+  puts it back to `REST_GRAIN`, the level the reader chose (the map opens at
+  the sectors, `MAP_GRAIN = REST_GRAIN = 2`, since 2026-10-09: Nil, "metro
+  industries - default to the sector level") (and lets a pinned card
   go, as every beat change now does), and `syncLevel` holds the control
   there (`levelLocked`, `fig.dataset.levellock`): the other tiles are
   `disabled` and fade, while the chosen tile, the menu and the sentence's
