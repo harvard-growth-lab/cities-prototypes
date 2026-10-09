@@ -1758,7 +1758,60 @@ in a parenthesis, maybe slightly lighter colour"). An industry group shows
 its four digits, "Headquarters (5511)". A sector shows the 2-digit sectors
 it is made of, with runs as ranges: "Professional & Business (51, 54–56)",
 "Trade & Transportation (42, 44–45, 48–49)", "Other (81)". The codes are
-`.mi-crumb-code`; on a hovered crumb they take `--on-dark-soft`.
+`.mi-crumb-code`; on a hovered crumb they take `--on-dark-soft`. The
+level is named in the parentheses too (Nil: "breadcrumbs should have
+2-digit, 3-digit etc text in parenthesis"): "Professional & Business
+(2-digit 51, 54–56) › IT services (4-digit 5415)", and the card's title
+follows suit: "Administrative & support (2-digit 56)".
+
+**The map's click (2026-10-09).** Nil: "When you hover a rectangle, it
+shows the industry info, but clicked on it, it zooms in to the sector. We
+want to keep both. However, now user is confused why they do not click on
+the thing they see the tooltip for." A three-angle review found:
+- At the default 2-digit level, 15 of the 18 tiles share a block with
+  others, so the card named one thing while the click opened another.
+- The only cues were a 1.5px block outline and a soft last line.
+- On touch the first tap zoomed before the card was ever seen.
+- A card popped up under a still pointer after a zoom.
+- A double click drilled two levels.
+- The clicked tile dissolved inside the zoomed sector.
+
+The fix keeps both gestures and makes the target plain. It changes only
+the top-level map: inside a sector the hovered tile already is what a click
+opens.
+
+- **The card leads with what a click opens.** At the top level (grain
+  finer than 1), its first line is the sector's swatch and name, then "Click
+  to zoom in" with a magnifier (`targetLine`, `.tip-target`). The tile's
+  name and level code follow ("(2-digit 56)", `tileCode`), with its facts
+  under them. The sector chip and the foot hint go, since the first line
+  carries both.
+- **The map shows it.** While a tile is pointed at:
+  - the blocks a click would not open fade (`.mi-mcell.is-aside`, .38);
+  - the block takes a 2px outline;
+  - the tile keeps an inset ring of its own (`rect.mi-mtile`);
+  - the cursor is zoom-in.
+- **Landing where you clicked.** Zoomed into a sector at the group grain,
+  the groups are tiled in clusters by their 2-digit sector, 3px apart (a
+  "mid" layer in `tileBand`, passed through `mergeLoop`, `layoutBands` and
+  `bandsLayout`). The cluster the reader clicked, or the group when the map
+  rested at 4 or 6, keeps a 2.5px ink frame (`zoomFrom`, `fromOf`,
+  `markFrom`, `rect.mi-mfrom`) until the zoom changes. Keyboard zooms and
+  zooms from the sector bands carry no mark.
+- **Guard rails.** A click within 950ms of a zoom is ignored, so a double
+  click no longer drills two levels (`zoomBusy`). After a pointer zoom, no
+  card opens until the pointer has moved 4px (`holdAt`, released on
+  pointermove).
+- **Touch.** The pointer's kind is read on pointerdown (`lastPtr`). On a
+  touch screen the first tap shows and pins the card, whose first line then
+  holds a "Zoom in" button (`.tip-act`). The button, or a second tap in the
+  same block, zooms. A pinned card takes the pointer
+  (`.rca-tip.is-map.is-pinned`). On a phone the card can sit over the tapped
+  tile, so its button is the way on.
+- **Study: "Map click".** `#miClickOpt`, opt-2, `fig.dataset.click =
+  "card"`. A click pins the tile's card, and the card's "Zoom in" button
+  zooms. The hover outline goes round the tile, and the card's first line
+  reads "Click to pin".
 
 ### 6c. The colour system (site-wide, thirteen colours)
 

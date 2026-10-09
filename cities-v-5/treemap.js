@@ -3104,17 +3104,22 @@
      directly - the industry map, clustered by sector and no further.
      Otherwise a group layer stands between them, which at the coarser
      grains is each cell's own box and the zoom's target. */
-  function tileBand(items, box, bandKey, flat){
-    const out = { blocks: [], groups: [], cells: [] };
+  function tileBand(items, box, bandKey, flat, mid){
+    const out = { blocks: [], groups: [], cells: [], mids: [] };
     if (!items.length || box.w <= 0 || box.h <= 0) return out;
     const bySector = new Map();
     items.forEach(it => { if (!bySector.has(it.sector)) bySector.set(it.sector, []); bySector.get(it.sector).push(it); });
     const tree = { kind: "root", children: [...bySector].map(([sector, list]) => {
       if (flat) return { kind: "sector", sector: sector, children: list.map(it => ({ kind: "item", item: it })) };
-      const byGroup = new Map();
-      list.forEach(it => { const g = it.group ?? it.id; if (!byGroup.has(g)) byGroup.set(g, []); byGroup.get(g).push(it); });
-      return { kind: "sector", sector: sector, children: [...byGroup].map(([group, l]) =>
-        ({ kind: "group", group: group, children: l.map(it => ({ kind: "item", item: it })) })) };
+      const grouped = ls => { const byGroup = new Map();
+        ls.forEach(it => { const g = it.group ?? it.id; if (!byGroup.has(g)) byGroup.set(g, []); byGroup.get(g).push(it); });
+        return [...byGroup].map(([group, l]) => ({ kind: "group", group: group, children: l.map(it => ({ kind: "item", item: it })) })); };
+      /* zoomed into a sector, its groups are clustered by their 2-digit
+         sector first, so the tile a reader clicked stays one region */
+      if (mid){ const byN2 = new Map();
+        list.forEach(it => { const k = (it.cell && it.cell.naics2) || "?"; if (!byN2.has(k)) byN2.set(k, []); byN2.get(k).push(it); });
+        return { kind: "sector", sector: sector, children: [...byN2].map(([n2, l]) => ({ kind: "mid", n2: n2, children: grouped(l) })) }; }
+      return { kind: "sector", sector: sector, children: grouped(list) };
     }) };
     const isRest = n => n.data.kind === "item" ? n.data.item.rest === true
       : n.data.kind === "group" && (n.children || []).every(isRest);
@@ -3127,7 +3132,7 @@
         return ra === rb ? (b.value || 0) - (a.value || 0) : ra ? 1 : -1;
       });
     const named = SEC_NAMES !== "off", gutter = SEC_NAMES === "gutter";
-    d3.treemap().size([box.w, box.h]).paddingInner(MAP.padding)
+    d3.treemap().size([box.w, box.h]).paddingInner(n => mid && n.data.kind === "sector" ? 3 : MAP.padding)
       .paddingOuter(n => n.depth === 1 && gutter ? SEC_INSET : MAP.padding)
       .paddingTop(n => n.depth === 1 ? (named ? SEC_STRIP + (gutter ? 1 : 0) : MAP.padding) : MAP.padding)
       .round(true)(root);
@@ -3137,6 +3142,7 @@
       else if (n.data.kind === "group") out.groups.push({ ...r, key: bandKey + ":" + n.data.group, group: n.data.group,
         items: n.leaves().map(l => l.data.item) });
       else if (n.data.kind === "item") out.cells.push({ ...r, item: n.data.item });
+      else if (n.data.kind === "mid") out.mids.push({ ...r, n2: n.data.n2 });
     });
     return out;
   }
@@ -3186,31 +3192,31 @@
   }
   /* tile, fold whatever came out under four pixels a side, tile again,
      until every cell can be seen or nothing more will fold */
-  function mergeLoop(levels, bands, flat){
+  function mergeLoop(levels, bands, flat, mid){
     let cur = bands;
     for (let guard = 0; guard < 60; guard++){
-      const layouts = cur.map(b => tileBand(b.items, b.box, b.key, flat));
+      const layouts = cur.map(b => tileBand(b.items, b.box, b.key, flat, mid));
       const tiny = new Set(layouts.flatMap(L => L.cells.filter(c => Math.min(c.w, c.h) < MAP.minSide).map(c => c.item.id)));
       if (!tiny.size) return { bands: cur, layouts: layouts };
       const next = mergeOnce(levels, cur, tiny);
       if (!next) return { bands: cur, layouts: layouts };
       cur = next;
     }
-    return { bands: cur, layouts: cur.map(b => tileBand(b.items, b.box, b.key, flat)) };
+    return { bands: cur, layouts: cur.map(b => tileBand(b.items, b.box, b.key, flat, mid)) };
   }
   /* the bands laid out. At the industry grain the map is clustered by
      sector and no further: each sector holds its industries directly, and
      the industries too small to see fold into one "Other" cell for their
      sector. (Until 2026-10-01 a 4-digit group layer stood between the two,
      with its own gutters, its own "Other" cells and a zoom of its own.) */
-  function layoutBands(bands, grain){
+  function layoutBands(bands, grain, mid){
     /* at a coarser grain the industries are rolled up as wholes first, and
        only what is still too small folds further up */
     if (grain && grain !== 6){
       const level = grain === 4 ? LEVELS.group : grain === 3 ? LEVELS.subsector : grain === 2 ? LEVELS.naics2 : LEVELS.sector;
       const coarse = bands.map(b => ({ ...b, items: levelUp(b.key, b.items, level) }));
       const above = grain === 4 ? [LEVELS.subsector, LEVELS.sector] : grain === 3 || grain === 2 ? [LEVELS.sector] : [];
-      return mergeLoop(above, coarse);
+      return mergeLoop(above, coarse, false, mid);
     }
     /* a map that holds one group alone - a zoom into a group, made from
        a coarser level and carried here - folds within that group, so the
@@ -3454,7 +3460,7 @@
     let tierOn = [true, true, true];
     const clusterOf = d => tierOf(d.name);
     const tierShown = d => tierOn[clusterOf(d)];
-    let focus = null, focusGroup = null;
+    let focus = null, focusGroup = null, zoomFrom = null;
     const inFocus = d => !focus || (d.sector === focus && (!focusGroup || d.group === focusGroup));
     /* what the map is tiled at now: the level chosen, or finer where the
        zoom has gone further down */
@@ -3471,13 +3477,14 @@
     function bandsLayout(key, bands){
       const s = scaleNow();
       const grain = effGrain();
-      const k = key + "|" + s.toFixed(4) + "|" + SEC_NAMES + "|" + grain;
+      const mid = !!focus && !focusGroup && grain === 4;
+      const k = key + "|" + s.toFixed(4) + "|" + SEC_NAMES + "|" + grain + "|" + mid;
       if (laid.has(k)) return laid.get(k);
       const px = b => ({ x: b.x * s, y: b.y * s, w: b.w * s, h: b.h * s });
       const un = b => ({ x: b.x / s, y: b.y / s, w: b.w / s, h: b.h / s });
       const live = bands.filter(b => b.rows.length);
-      const res = layoutBands(live.map(b => ({ key: b.key, items: b.rows.map(itemOf), box: px(b.box) })), grain);
-      const out = { cells: [], blocks: [], groups: [], spot: new Map(), rows: [], byId: new Map(), s: s, grain: grain };
+      const res = layoutBands(live.map(b => ({ key: b.key, items: b.rows.map(itemOf), box: px(b.box) })), grain, mid);
+      const out = { mids: [], cells: [], blocks: [], groups: [], spot: new Map(), rows: [], byId: new Map(), s: s, grain: grain };
       res.layouts.forEach((L, i) => {
         const band = live[i].key;
         L.cells.forEach(c => {
@@ -3488,6 +3495,7 @@
         });
         L.blocks.forEach(bl => out.blocks.push({ key: band + ":" + bl.sector, band: band, sector: bl.sector, box: un(bl), value: bl.value }));
         L.groups.forEach(g => out.groups.push({ key: band + ":" + g.group, band: band, group: g.group, box: un(g), items: g.items }));
+        (L.mids || []).forEach(m => out.mids.push({ band: band, n2: m.n2, box: un(m) }));
       });
       laid.set(k, out);
       return out;
@@ -5695,6 +5703,36 @@
        line over the map and the table under it ---- */
     let mapLayout = null;                 /* the tiling on screen */
     const mapTip = document.getElementById(p + "Tip");
+    /* What a click on the top-level map does (Nil, 2026-10-09: the card named
+       a tile while a click opened its whole sector). "zoom", the default:
+       the card leads with the sector a click opens, the rest of the map
+       steps back while the pointer is over it, and the click zooms; on a
+       touch screen the first tap shows the card with a Zoom button and a
+       second tap zooms. "card", a study: a click pins the tile's card and
+       the card's button zooms. */
+    const clickOptEl = document.getElementById(p + "ClickOpt");
+    let CLICK_MODE = clickOptEl && clickOptEl.value === "card" ? "card" : "zoom";
+    fig.dataset.click = CLICK_MODE;
+    if (clickOptEl) on(clickOptEl, "change", () => { CLICK_MODE = clickOptEl.value === "card" ? "card" : "zoom"; fig.dataset.click = CLICK_MODE; hideMapTip(true); if (mapLayout) paintMap(mapLayout, false); });
+    /* the kind of pointer that pressed last (Safari's click is not a
+       PointerEvent, so it is read on pointerdown) */
+    let lastPtr = "mouse";
+    const mapSvgEl = gMapCells.node().ownerSVGElement;
+    if (mapSvgEl) mapSvgEl.addEventListener("pointerdown", ev => { lastPtr = ev.pointerType || "mouse"; }, true);
+    /* after a zoom by pointer: a click during the retile is not a second
+       zoom, and no card opens under a pointer that has not moved */
+    let zoomBusyUntil = 0, holdAt = null;
+    const zoomBusy = () => performance.now() < zoomBusyUntil;
+    /* the hold ends once the pointer has really moved (pointermove comes
+       before the mouse events, so the tile under it can open its card) */
+    if (mapSvgEl) mapSvgEl.addEventListener("pointermove", ev => {
+      if (!holdAt || ev.pointerType === "touch") return;
+      if (Math.hypot(ev.clientX - holdAt[0], ev.clientY - holdAt[1]) <= 4) return;
+      holdAt = null;
+      const g = !pinned && ev.target && ev.target.closest ? ev.target.closest("g.mi-mcell") : null;
+      if (g && mapTip && mapTip.hidden){ const c = d3.select(g).datum(); if (c) showMapTip(c, ev); }
+    }, true);
+    let pinnedCell = null;
     const mapWrap = el.closest(".tradable-viz-wrapper");
     const svgEl = document.getElementById(p + "TreemapSvg");
     let pinned = null, syncKeyRef = null, hlSwatchRef = null;
@@ -5757,20 +5795,53 @@
       if (dur) lab.style("opacity", 0).transition().delay(dur * 0.55).duration(dur * 0.45).style("opacity", 1);
       else lab.interrupt().style("opacity", 1);
       paintCards(all, L, dur);
-      all.on("mouseenter", (ev, c) => { if (!pinned) showMapTip(c, ev); })
+      all.on("mouseenter", (ev, c) => { if (!pinned && !holdAt && lastPtr !== "touch") showMapTip(c, ev); })
          .on("mousemove", ev => { if (!pinned && mapTip && !mapTip.hidden) cursorTipPos(ev, mapWrap, mapTip); })
          .on("mouseleave", () => { if (!pinned) hideMapTip(false); })
          .on("click", (ev, c) => {
            ev.stopPropagation();
-           const t = zoomTarget(c);
-           if (t){ setFocus(t.sector, t.group); return; }
+           if (zoomBusy()) return;
+           const t = zoomTarget(c), top = !!t && !focus;
+           /* at the top level the click either zooms (the default) or pins
+              the card that carries the zoom (the study); on touch the first
+              tap shows the card and the second, in the same block, zooms */
+           if (t && !(top && (CLICK_MODE === "card" || (lastPtr === "touch" && !(pinnedCell && sameBlock(pinnedCell, c)))))){
+             zoomFrom = top ? fromOf(c) : null;
+             zoomBusyUntil = performance.now() + 950;
+             if (lastPtr !== "touch") holdAt = [ev.clientX, ev.clientY];
+             setFocus(t.sector, t.group); return;
+           }
            if (pinned === c.id){ hideMapTip(true); return; }
-           pinned = c.id; showMapTip(c, ev);
+           pinned = c.id; pinnedCell = c; showMapTip(c, ev);
          });
+      /* the pointer says what a click does: zoom on the top-level map */
+      all.style("cursor", c => !focus && CLICK_MODE === "zoom" && zoomTarget(c) ? "zoom-in" : null);
       paintFrames(L, dur);
       drawHits(L);
       clearOutline();
+      markFrom(L, dur);
       syncNote(); syncTable();
+    }
+    /* the tile a reader clicked, marked where it now stands inside the
+       zoomed sector: its 2-digit cluster, or its group */
+    function fromOf(c){
+      const g = mapLayout && mapLayout.grain;
+      if (!g || g === 1) return null;
+      return { n2: c.cell.naics2 || null, group: g >= 4 && /^\d{4}$/.test(c.cell.group) ? c.cell.group : null };
+    }
+    function sameBlock(a, b){ return a.cell.sector === b.cell.sector && (step !== 4 || a.band === b.band); }
+    function markFrom(L, dur){
+      let box = null;
+      if (zoomFrom && focus && !focusGroup && L.grain === 4){
+        if (zoomFrom.group){ const g = L.groups.find(g => g.group === zoomFrom.group); box = g ? g.box : null; }
+        else if (zoomFrom.n2 && L.mids.length > 1){ const m = L.mids.find(m => m.n2 === zoomFrom.n2); box = m ? m.box : null; }
+      }
+      const s = L.s || scaleNow();
+      const fm = gMapOutline.selectAll("rect.mi-mfrom").data(box ? [box] : []).join("rect").attr("class", "mi-mfrom")
+        .attr("x", b => b.x - 1 / s).attr("y", b => b.y - 1 / s).attr("width", b => b.w + 2 / s).attr("height", b => b.h + 2 / s)
+        .attr("stroke-width", 2.5 / s);
+      if (dur && box) fm.style("opacity", 0).transition().delay(dur).duration(300).style("opacity", 1);
+      else fm.interrupt().style("opacity", 1);
     }
     /* the sector blocks' dressing, at the sector grain: a faint tiling of
        the block's groups, a card of its facts, or both. The card fits what
@@ -5884,7 +5955,7 @@
       (dur ? all.transition().delay(dur * 0.4).duration(dur * 0.6) : all.interrupt()).style("opacity", 1);
       all.on("mouseenter", (ev, b) => { if (!pinned) showOutline([b.box], 1.5); })
          .on("mouseleave", () => { if (!pinned) clearOutline(); })
-         .on("click", (ev, b) => { ev.stopPropagation(); if (!focus && hitsLive()) setFocus(b.sector, null); });
+         .on("click", (ev, b) => { ev.stopPropagation(); if (zoomBusy()) return; if (!focus && hitsLive()){ zoomFrom = null; setFocus(b.sector, null); } });
     }
     /* the zoom's targets, under the cells for the keyboard: the sector
        blocks at the top of the map, and inside a sector the groups, where
@@ -5908,8 +5979,8 @@
         .merge(h)
         .attr("x", t => t.box.x).attr("y", t => t.box.y).attr("width", t => t.box.w).attr("height", t => t.box.h)
         .attr("aria-label", t => t.label)
-        .on("click", (ev, t) => { ev.stopPropagation(); if (hitsLive()) setFocus(t.sector, t.group, ev.detail === 0); })
-        .on("keydown", (ev, t) => { if (ev.key === "Enter" || ev.key === " "){ ev.preventDefault(); if (hitsLive()) setFocus(t.sector, t.group, true); } })
+        .on("click", (ev, t) => { ev.stopPropagation(); if (zoomBusy()) return; if (hitsLive()){ zoomFrom = null; setFocus(t.sector, t.group, ev.detail === 0); } })
+        .on("keydown", (ev, t) => { if (ev.key === "Enter" || ev.key === " "){ ev.preventDefault(); if (hitsLive()){ zoomFrom = null; setFocus(t.sector, t.group, true); } } })
         .on("focus", (ev, t) => { if (ev.target.matches(":focus-visible")) showRing(t.box); })
         .on("blur", () => showRing(null));
     }
@@ -5918,6 +5989,7 @@
        the cell itself, which where the cells are groups is its group's box */
     const outlineBoxes = c => {
       const L = mapLayout; if (!L) return [c.box];
+      if (!focus && CLICK_MODE === "card" && L.grain !== 1) return [c.box];
       if (!focus) return L.blocks.filter(b => b.sector === c.cell.sector && (step !== 4 || b.band === c.band)).map(b => b.box);
       if (!focusGroup){ const g = L.groups.find(g => g.items.some(it => it.id === c.id)); return [g ? g.box : c.box]; }
       return [c.box];
@@ -5973,6 +6045,8 @@
     function setFocus(sec, grp, byKey){
       grp = grp || null;
       if (sec === focus && grp === focusGroup) return;
+      /* the "came from" mark lives only for the zoom a tile click made */
+      if (!(sec && !grp && !focus)) zoomFrom = null;
       if (byKey){
         const od = focusGroup ? 2 : focus ? 1 : 0, nd = sec ? (grp ? 2 : 1) : 0;
         refocus = nd > od ? { kind: "crumb" } : od === 2 ? { kind: "hit", group: focusGroup } : { kind: "hit", sector: focus };
@@ -5999,8 +6073,29 @@
        jobs, Complexity as the column's five diamonds with the score, and
        Tradability - with a last line, beside the hand that taps, for what
        a click does. A folded cell adds how many it stands for. ---- */
+    /* a tile's NAICS code for its card title, where the tile is one whole code */
+    const tileCode = c => {
+      const g = mapLayout && mapLayout.grain, cell = c.cell;
+      if (c.rest || !g) return null;
+      if (g === 6 && !cell.members) return "6-digit " + cell.id;
+      if (g === 4 && cell.members && /^\d{4}$/.test(cell.group)) return "4-digit " + cell.group;
+      if (g === 2 && cell.members && /^naics2:/.test(String(cell.id))) return "2-digit " + cell.naics2.replace(/-/g, "\u2013");
+      return null;
+    };
+    const MAG = '<svg class="tip-mag" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="7" cy="7" r="4.6"/><path d="M10.4 10.4 14 14M5 7h4M7 5v4"/></svg>';
+    /* the line that leads the card where a click opens more than the tile:
+       the sector it opens, and the verb (a button once the card is pinned) */
+    const targetLine = (c, pinnedNow) => {
+      const t = zoomTarget(c);
+      if (!t || focus || !mapLayout || mapLayout.grain === 1) return "";
+      const verb = pinnedNow ? '<button type="button" class="tip-act" data-act="zoom">' + MAG + '<span>Zoom in</span></button>'
+        : CLICK_MODE === "card" ? '<span class="tip-target-act">Click to pin</span>'
+        : '<span class="tip-target-act">' + MAG + '<span>' + (lastPtr === "touch" ? "Tap again to zoom in" : "Click to zoom in") + '</span></span>';
+      return '<div class="tip-target"><i style="background:' + (sectorColors[c.cell.sector] || "#c3ccce") + '"></i><b>' + escHtml(c.cell.sector) + '</b>' + verb + '</div>';
+    };
     function mapTipHtml(c, hint){
       const cell = c.cell;
+      const lead = targetLine(c, pinned === c.id);
       const row = (k, v) => '<dt>' + k + '</dt><dd>' + v + '</dd>';
       const b = cxBinOf(cell.pci);
       let cx;
@@ -6011,9 +6106,10 @@
         cx = '<dd class="tip-cx-cell">' + dots + '</span><span class="tip-cx-val">' + cell.pci.toFixed(2) + '</span>' +
           '<span class="tip-sr">step ' + (b + 1) + ' of 5, ' + CX_WORDS[b] + '</span></dd>';
       }
-      const head = '<div class="tip-head"><strong>' + escHtml(cell.name) + '</strong>' +
-        '<span class="tip-sector"><i style="background:' + (sectorColors[cell.sector] || "#c3ccce") + '"></i>' +
-        escHtml(cell.sector) + '</span></div>';
+      const code = tileCode(c);
+      const head = lead + '<div class="tip-head"><strong>' + escHtml(cell.name) + (code ? ' <span class="tip-code">(' + escHtml(code) + ')</span>' : '') + '</strong>' +
+        (lead ? '' : '<span class="tip-sector"><i style="background:' + (sectorColors[cell.sector] || "#c3ccce") + '"></i>' +
+        escHtml(cell.sector) + '</span>') + '</div>';
       const body = '<dl class="tip-grid">' +
         (cell.members ? row("Industries", cell.members.length + (c.rest ? " smaller" : "")) : "") +
         row("Jobs", fmtJobsFull(cell.jobs)) +
@@ -6023,35 +6119,60 @@
            not introduced it yet, so its card does not carry it */
         (cell.tier != null && step !== 0 ? row("Tradability", TIER_WORDS[cell.tier]) : "") +
         '</dl>';
-      return head + body + (hint ? '<p class="tip-hint">' + HAND + '<span>' + escHtml(hint) + '</span></p>' : '');
+      /* the foot line goes where the lead line says it already */
+      return head + body + (hint && !lead ? '<p class="tip-hint">' + HAND + '<span>' + escHtml(hint) + '</span></p>' : '');
     }
     const hintFor = c => {
       const t = zoomTarget(c);
-      if (t) return "Click to zoom into " + t.label;
+      if (t && !focus && CLICK_MODE === "card") return pinned === c.id ? "Click again or press Esc to unpin" : "Click to pin; the card zooms into " + t.label;
+      if (t) return (lastPtr === "touch" ? "Tap to zoom into " : "Click to zoom into ") + t.label;
       return pinned === c.id ? "Click again or press Esc to unpin" : "Click to pin";
     };
     function showMapTip(c, ev){
       if (!mapTip || !mapWrap) return;
-      mapTip.className = "rca-tip is-map";
+      mapTip.className = "rca-tip is-map" + (pinned === c.id ? " is-pinned" : "");
       mapTip.innerHTML = mapTipHtml(c, hintFor(c));
       mapTip.hidden = false;
       if (ev) cursorTipPos(ev, mapWrap, mapTip);
-      showOutline(outlineBoxes(c), pinned === c.id ? 2.5 : 1.5);
+      /* at the top level of the zooming map, the block a click opens is
+         drawn, the rest of the map steps back, and the tile under the
+         pointer keeps a ring of its own */
+      const lead = !focus && CLICK_MODE === "zoom" && mapLayout && mapLayout.grain !== 1 && !!zoomTarget(c);
+      showOutline(outlineBoxes(c), pinned === c.id ? 2.5 : lead ? 2 : 1.5);
+      gMapCells.selectAll("g.mi-mcell").classed("is-aside", lead ? d => !sameBlock(d, c) : false);
+      const s = scaleNow();
+      gMapOutline.selectAll("rect.mi-mtile").data(lead ? [c.box] : []).join("rect").attr("class", "mi-mtile")
+        .attr("x", b => b.x + 1 / s).attr("y", b => b.y + 1 / s)
+        .attr("width", b => Math.max(0, b.w - 2 / s)).attr("height", b => Math.max(0, b.h - 2 / s)).attr("stroke-width", 1.5 / s);
     }
     function hideMapTip(force){
       if (pinned && !force) return;
-      pinned = null;
-      if (mapTip && mapTip.classList.contains("is-map")){ mapTip.hidden = true; mapTip.classList.remove("is-map"); }
+      pinned = null; pinnedCell = null;
+      if (mapTip && mapTip.classList.contains("is-map")){ mapTip.hidden = true; mapTip.classList.remove("is-map", "is-pinned"); }
       clearOutline();
+      gMapCells.selectAll("g.mi-mcell.is-aside").classed("is-aside", false);
+      gMapOutline.selectAll("rect.mi-mtile").remove();
     }
+    /* the pinned card's Zoom button */
+    if (mapTip) mapTip.addEventListener("click", ev => {
+      const b = ev.target.closest('[data-act="zoom"]');
+      if (!b || !pinnedCell) return;
+      const c = pinnedCell, t = zoomTarget(c);
+      if (!t) return;
+      zoomFrom = !focus ? fromOf(c) : null;
+      zoomBusyUntil = performance.now() + 950;
+      if (lastPtr !== "touch") holdAt = [ev.clientX, ev.clientY];
+      setFocus(t.sector, t.group, ev.detail === 0);
+    });
 
     /* ---- the line over the map: where the reader has zoomed to, while
        they are zoomed in, and nothing otherwise ---- */
     const notes = [p + "Note", p + "Note4"].map(id => document.getElementById(id)).filter(Boolean);
-    /* each crumb with a NAICS identity carries its code, lighter, after its
-       name (Nil, 2026-10-09): an industry group its four digits, a sector
-       the 2-digit sectors it is made of, runs of them as ranges */
-    const crumbCode = c => ' <span class="mi-crumb-code">(' + c + ')</span>';
+    /* each crumb with a NAICS identity carries its level and code, lighter,
+       after its name (Nil, 2026-10-09): an industry group "(4-digit 5511)",
+       a sector the 2-digit sectors it is made of, runs of them as ranges,
+       "(2-digit 51, 54-56)" */
+    const crumbCode = (level, c) => ' <span class="mi-crumb-code">(' + level + ' ' + c + ')</span>';
     const sectorCodes = sec => {
       const keys = [...new Set(industryData.filter(d => d.sector === sec).map(d => naics2Of(d.code)))]
         .sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
@@ -6068,12 +6189,12 @@
       if (focus){
         const gRow = focusGroup ? industryData.find(d => d.group === focusGroup) : null;
         const gName = gRow ? (gRow.groupShort || gRow.groupName) : focusGroup;
-        const sCode = sectorCodes(focus), sName = escHtml(focus) + (sCode ? crumbCode(sCode) : "");
+        const sCode = sectorCodes(focus), sName = escHtml(focus) + (sCode ? crumbCode("2-digit", sCode) : "");
         txt = '<span class="mi-crumbs" role="navigation" aria-label="Zoom"><button type="button" class="mi-crumb" data-zoom="all">All sectors</button>' +
           '<span class="mi-crumb-sep" aria-hidden="true">›</span>' +
           (focusGroup
             ? '<button type="button" class="mi-crumb" data-zoom="sector">' + sName + '</button>' +
-              '<span class="mi-crumb-sep" aria-hidden="true">›</span><span class="mi-crumb-here" aria-current="location">' + escHtml(gName) + crumbCode(escHtml(focusGroup)) + '</span>'
+              '<span class="mi-crumb-sep" aria-hidden="true">›</span><span class="mi-crumb-here" aria-current="location">' + escHtml(gName) + crumbCode("4-digit", escHtml(focusGroup)) + '</span>'
             : '<span class="mi-crumb-here" aria-current="location">' + sName + '</span>') +
           '<button type="button" class="mi-crumb-x" aria-keyshortcuts="Escape" aria-label="Zoom out to ' +
           (focusGroup ? escHtml(focus) : "all sectors") + ' (Esc)">×</button></span>';

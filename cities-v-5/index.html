@@ -4311,6 +4311,12 @@
   #miTreemapSvg .mi-mring{fill:none;stroke:var(--teal);}
   #miTreemapSvg .mi-mlab{pointer-events:none;}
   #miTreemapSvg .mi-mcell.is-dim{opacity:.13;}
+  /* while the pointer is on a tile of the top-level map, the blocks a click
+     would not open step back; the tile keeps a ring of its own, and after a
+     zoom the cluster or group the reader came from keeps a frame */
+  #miTreemapSvg .mi-mcell.is-aside:not(.is-dim){opacity:.38;}
+  #miTreemapSvg .mi-mtile{fill:none;stroke:var(--ink);}
+  #miTreemapSvg .mi-mfrom{fill:none;stroke:var(--ink);}
   #miTreemapSvg .mi-mcell.is-mute .mi-mrect{fill:var(--border);}
   /* the sectors' frames and names (the sector-names study): they dim and
      grey with the cells they frame */
@@ -4332,6 +4338,26 @@
     display:flex;align-items:center;gap:8px;margin:10px 0 0;padding-top:9px;border-top:1px solid var(--border);
     font-size:13px;line-height:1.35;color:var(--ink-soft);
   }
+  /* where a click opens more than the tile (the top-level map), the card
+     leads with what it opens: the sector, then the verb; the tile's own
+     facts follow under a rule (2026-10-09) */
+  .rca-tip .tip-target{
+    display:flex;align-items:center;gap:8px;margin:0 0 9px;padding-bottom:8px;border-bottom:1px solid var(--border);
+    font-size:13px;line-height:1.3;
+  }
+  .rca-tip .tip-target > i{flex:none;width:11px;height:11px;border-radius:2px;}
+  .rca-tip .tip-target > b{flex:1 1 auto;min-width:0;font-weight:700;color:var(--ink);}
+  .rca-tip .tip-target-act{flex:none;display:inline-flex;align-items:center;gap:5px;font-weight:600;color:var(--teal);white-space:nowrap;}
+  .rca-tip .tip-act{
+    flex:none;display:inline-flex;align-items:center;gap:5px;appearance:none;border:0;border-radius:4px;
+    padding:5px 10px;background:var(--teal-tint);color:var(--teal);font:inherit;font-size:13px;font-weight:600;cursor:pointer;
+  }
+  .rca-tip .tip-act:hover,.rca-tip .tip-act:focus-visible{box-shadow:inset 0 0 0 1px var(--teal);outline:none;}
+  .rca-tip .tip-mag{flex:none;}
+  .rca-tip .tip-code{font-weight:400;color:var(--ink-soft);}
+  /* a pinned card takes the pointer, so its button can be pressed */
+  .rca-tip.is-map.is-pinned{pointer-events:auto;}
+  @media (pointer:coarse){ .rca-tip .tip-act{min-height:40px;padding:8px 14px;} }
   /* The filter lives on the column head it filters, so the chart says what can
      be narrowed rather than a control beside it. The head is the button; the
      menu opens under it. */
@@ -7243,6 +7269,16 @@
                     <option value="menu">opt-2</option>
                   </select>
                 </label>
+                <!-- what a click on the top-level map does: opt-1 the card leads
+                     with the sector a click opens and the click zooms; opt-2 a
+                     click pins the card and its button zooms (2026-10-09) -->
+                <label class="mi-study" id="miClickPair">
+                  <span>Map click</span>
+                  <select id="miClickOpt" aria-label="What a click on the map does">
+                    <option value="zoom" selected>opt-1</option>
+                    <option value="card">opt-2</option>
+                  </select>
+                </label>
                 <label class="mi-study" id="miKeyPair">
                   <span>Key actions</span>
                   <select id="miKeyOpt" aria-label="What the key's entries do">
@@ -8230,7 +8266,7 @@
 <script src="data/geo/who_commute_geo.js"></script>
 <script src="industries-2024.js"></script>
 <script src="industries-2014.js"></script>
-<script src="treemap.js?v=2026-10-09-crumbs"></script>
+<script src="treemap.js?v=2026-10-09-click4"></script>
 <script>
   /* ---------- treemaps: color by ----------
      Handled entirely in treemap.js — it wires the visible .seg controls and
