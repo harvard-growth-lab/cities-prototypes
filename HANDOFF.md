@@ -379,9 +379,11 @@ under the "Key actions" study:
 row like the ranking beat's card — name over the sector in its colour, then
 Jobs / Share of metro jobs / Complexity (the ranking's five diamonds + the
 score) / Tradability (not on the whole-map beat, which has not introduced
-it) — with a last line beside the hand: "Click to zoom into <sector|group>"
-(`zoomTarget`, allowed on steps 0, 4, 7) or "Click to pin". It follows the
-cursor (`cursorTipPos`). The hand glyph is the `HAND` const at figure scope
+it). Since 2026-10-09/13 it leads with a line naming what a click acts on
+and its verb, "Click to zoom in" (`targetLine`, `zoomTarget`, allowed on
+steps 0, 4, 7), and the foot line beside the hand only shows where there is
+no lead line. Nothing pins it (see §6c's notes on the map's click). It
+follows the cursor (`cursorTipPos`). The hand glyph is the `HAND` const at figure scope
 (Tabler's hand-click, MIT), animated by `.skt-hand` / `.skt-hand-marks`,
 still under `prefers-reduced-motion`.
 
