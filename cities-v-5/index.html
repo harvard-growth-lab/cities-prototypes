@@ -4347,6 +4347,8 @@
   }
   .rca-tip .tip-target > i{flex:none;width:11px;height:11px;border-radius:2px;}
   .rca-tip .tip-target > b{flex:1 1 auto;min-width:0;font-weight:700;color:var(--ink);}
+  /* where the line names the tile itself, it is the card's title: the title's size and weight */
+  .rca-tip .tip-target.is-title > b{font-size:var(--t-note);font-weight:600;}
   .rca-tip .tip-target-act{flex:none;display:inline-flex;align-items:center;gap:5px;font-weight:600;color:var(--teal);white-space:nowrap;}
   .rca-tip .tip-act{
     flex:none;display:inline-flex;align-items:center;gap:5px;appearance:none;border:0;border-radius:4px;
@@ -8266,7 +8268,7 @@
 <script src="data/geo/who_commute_geo.js"></script>
 <script src="industries-2024.js"></script>
 <script src="industries-2014.js"></script>
-<script src="treemap.js?v=2026-10-09-click5"></script>
+<script src="treemap.js?v=2026-10-13-hover-all"></script>
 <script>
   /* ---------- treemaps: color by ----------
      Handled entirely in treemap.js — it wires the visible .seg controls and

@@ -5815,7 +5815,7 @@
            pinned = c.id; pinnedCell = c; showMapTip(c, ev);
          });
       /* the pointer says what a click does: zoom on the top-level map */
-      all.style("cursor", c => !focus && CLICK_MODE === "zoom" && zoomTarget(c) ? "zoom-in" : null);
+      all.style("cursor", c => zoomTarget(c) && (focus || CLICK_MODE === "zoom") ? "zoom-in" : null);
       paintFrames(L, dur);
       drawHits(L);
       clearOutline();
@@ -6083,15 +6083,25 @@
       return null;
     };
     const MAG = '<svg class="tip-mag" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="7" cy="7" r="4.6"/><path d="M10.4 10.4 14 14M5 7h4M7 5v4"/></svg>';
-    /* the line that leads the card where a click opens more than the tile:
-       the sector it opens, and the verb (a button once the card is pinned) */
+    /* The line that leads every card, at every level and zoom (Nil,
+       2026-10-13: "apply same styling for all digit level and zoom
+       levels"): what a click acts on, and the verb. On the top-level map at
+       a grain finer than the sectors, a click opens the tile's whole
+       sector, so the line names the sector and the tile's own name follows
+       as the title. Everywhere else the click acts on the tile itself (the
+       sector at the sector grain, a group inside a sector, an industry to
+       pin inside a group), so the line is the title. The verb is a button
+       once the card is pinned and a click on it would zoom. */
+    const tileIsTarget = c => !(zoomTarget(c) && !focus && mapLayout && mapLayout.grain !== 1);
     const targetLine = (c, pinnedNow) => {
-      const t = zoomTarget(c);
-      if (!t || focus || !mapLayout || mapLayout.grain === 1) return "";
-      const verb = pinnedNow ? '<button type="button" class="tip-act" data-act="zoom">' + MAG + '<span>Zoom in</span></button>'
-        : CLICK_MODE === "card" ? '<span class="tip-target-act">Click to pin</span>'
-        : '<span class="tip-target-act">' + MAG + '<span>' + (lastPtr === "touch" ? "Tap again to zoom in" : "Click to zoom in") + '</span></span>';
-      return '<div class="tip-target"><i style="background:' + (sectorColors[c.cell.sector] || "#c3ccce") + '"></i><b>' + escHtml(c.cell.sector) + '</b>' + verb + '</div>';
+      const t = zoomTarget(c), card = !focus && CLICK_MODE === "card" && !!t;
+      const touch = lastPtr === "touch";
+      const name = tileIsTarget(c) ? escHtml(c.cell.name) + (tileCode(c) ? ' <span class="tip-code">(' + escHtml(tileCode(c)) + ')</span>' : '') : escHtml(c.cell.sector);
+      let verb;
+      if (t && pinnedNow) verb = '<button type="button" class="tip-act" data-act="zoom">' + MAG + '<span>Zoom in</span></button>';
+      else if (t && !card) verb = '<span class="tip-target-act">' + MAG + '<span>' + (touch ? "Tap again to zoom in" : "Click to zoom in") + '</span></span>';
+      else verb = '<span class="tip-target-act">' + (pinnedNow ? (touch ? "Tap to unpin" : "Click to unpin") : (touch ? "Tap to pin" : "Click to pin")) + '</span>';
+      return '<div class="tip-target' + (tileIsTarget(c) ? ' is-title' : '') + '"><i style="background:' + (sectorColors[c.cell.sector] || "#c3ccce") + '"></i><b>' + name + '</b>' + verb + '</div>';
     };
     function mapTipHtml(c, hint){
       const cell = c.cell;
@@ -6107,9 +6117,8 @@
           '<span class="tip-sr">step ' + (b + 1) + ' of 5, ' + CX_WORDS[b] + '</span></dd>';
       }
       const code = tileCode(c);
-      const head = lead + '<div class="tip-head"><strong>' + escHtml(cell.name) + (code ? ' <span class="tip-code">(' + escHtml(code) + ')</span>' : '') + '</strong>' +
-        (lead ? '' : '<span class="tip-sector"><i style="background:' + (sectorColors[cell.sector] || "#c3ccce") + '"></i>' +
-        escHtml(cell.sector) + '</span>') + '</div>';
+      /* the tile's own title only where the lead line names something larger */
+      const head = lead + (tileIsTarget(c) ? '' : '<div class="tip-head"><strong>' + escHtml(cell.name) + (code ? ' <span class="tip-code">(' + escHtml(code) + ')</span>' : '') + '</strong></div>');
       const body = '<dl class="tip-grid">' +
         (cell.members ? row("Industries", cell.members.length + (c.rest ? " smaller" : "")) : "") +
         row("Jobs", fmtJobsFull(cell.jobs)) +
@@ -6134,14 +6143,22 @@
       mapTip.innerHTML = mapTipHtml(c, hintFor(c));
       mapTip.hidden = false;
       if (ev) cursorTipPos(ev, mapWrap, mapTip);
-      /* at the top level of the zooming map, the block a click opens is
-         drawn, the rest of the map steps back, and the tile under the
-         pointer keeps a ring of its own */
-      const lead = !focus && CLICK_MODE === "zoom" && mapLayout && mapLayout.grain !== 1 && !!zoomTarget(c);
-      showOutline(outlineBoxes(c), pinned === c.id ? 2.5 : lead ? 2 : 1.5);
-      gMapCells.selectAll("g.mi-mcell").classed("is-aside", lead ? d => !sameBlock(d, c) : false);
+      /* at every level and zoom: what a click acts on is drawn, the rest of
+         the map steps back, and the tile under the pointer keeps a ring of
+         its own where it is smaller than that (the card study keeps its
+         own, quieter dressing on the top-level map) */
+      const styled = !(!focus && CLICK_MODE === "card");
+      const boxes = outlineBoxes(c);
+      showOutline(boxes, pinned === c.id ? 2.5 : styled ? 2 : 1.5);
+      const inBoxes = d => { const x = d.box.x + d.box.w / 2, y = d.box.y + d.box.h / 2;
+        return boxes.some(b => x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h); };
+      gMapCells.selectAll("g.mi-mcell").classed("is-aside", styled ? d => d !== c && !inBoxes(d) : false);
+      /* a group's box and its one cell differ by the tiling's padding: the same box, for the ring */
+      const tol = 3 / scaleNow();
+      const sameAs = (a, b) => Math.abs(a.x - b.x) < tol && Math.abs(a.y - b.y) < tol && Math.abs(a.w - b.w) < 2 * tol && Math.abs(a.h - b.h) < 2 * tol;
+      const ring = styled && !boxes.some(b => sameAs(b, c.box));
       const s = scaleNow();
-      gMapOutline.selectAll("rect.mi-mtile").data(lead ? [c.box] : []).join("rect").attr("class", "mi-mtile")
+      gMapOutline.selectAll("rect.mi-mtile").data(ring ? [c.box] : []).join("rect").attr("class", "mi-mtile")
         .attr("x", b => b.x + 1 / s).attr("y", b => b.y + 1 / s)
         .attr("width", b => Math.max(0, b.w - 2 / s)).attr("height", b => Math.max(0, b.h - 2 / s)).attr("stroke-width", 1.5 / s);
     }

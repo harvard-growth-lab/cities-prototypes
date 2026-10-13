@@ -1809,6 +1809,29 @@ opens.
   same block, zooms. A pinned card takes the pointer
   (`.rca-tip.is-map.is-pinned`). On a phone the card can sit over the tapped
   tile, so its button is the way on.
+- **The same dressing at every level and zoom (2026-10-13).** Nil liked
+  the hover and asked to "apply same styling for all digit level and zoom
+  levels". Every card now leads with what a click acts on, with its verb
+  (`targetLine`). On the top-level map at a grain finer than the sectors,
+  the line names the sector and the tile's own title follows. Everywhere
+  else the line is the title (`.tip-target.is-title`, set at the title's
+  size), naming the tile itself:
+  - the sector at the sector grain;
+  - "IT services (4-digit) · Click to zoom in" inside a sector;
+  - "IT systems design (6-digit) · Click to pin", then "Click to unpin",
+    inside a group.
+
+  On the map, at every level:
+  - what the click acts on is outlined (2px; 2.5 pinned);
+  - every tile outside it fades (`is-aside`, decided by whether a tile's
+    centre lies in the outlined boxes);
+  - the tile keeps an inset ring only where it is smaller than that
+    target (within 3px);
+  - the cursor is zoom-in wherever a click zooms.
+
+  Checked at the 2-digit, sector, 4- and 6-digit levels, inside a sector,
+  inside a group and on the tiers beat. The card study keeps its own
+  dressing on the top-level map.
 - **Study: "Map click".** `#miClickOpt`, opt-2, `fig.dataset.click =
   "card"`. A click pins the tile's card, and the card's "Zoom in" button
   zooms. The hover outline goes round the tile, and the card's first line
