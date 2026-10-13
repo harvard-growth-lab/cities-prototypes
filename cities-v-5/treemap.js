@@ -5703,17 +5703,12 @@
        line over the map and the table under it ---- */
     let mapLayout = null;                 /* the tiling on screen */
     const mapTip = document.getElementById(p + "Tip");
-    /* What a click on the top-level map does (Nil, 2026-10-09: the card named
-       a tile while a click opened its whole sector). "zoom", the default:
-       the card leads with the sector a click opens, the rest of the map
-       steps back while the pointer is over it, and the click zooms; on a
-       touch screen the first tap shows the card with a Zoom button and a
-       second tap zooms. "card", a study: a click pins the tile's card and
-       the card's button zooms. */
-    const clickOptEl = document.getElementById(p + "ClickOpt");
-    let CLICK_MODE = clickOptEl && clickOptEl.value === "card" ? "card" : "zoom";
-    fig.dataset.click = CLICK_MODE;
-    if (clickOptEl) on(clickOptEl, "change", () => { CLICK_MODE = clickOptEl.value === "card" ? "card" : "zoom"; fig.dataset.click = CLICK_MODE; hideMapTip(true); if (mapLayout) paintMap(mapLayout, false); });
+    /* What a click on the map does (Nil, 2026-10-09 and 10-13): where there
+       is somewhere to zoom, it zooms, and the card leads with what it opens;
+       nothing pins the card to the map any more (10-13, "remove the feature
+       when you pin the tooltip"). A touch screen has no hover, so there the
+       first tap shows the card, held until the next tap, with a Zoom button
+       where there is a zoom; a second tap in the same block zooms. */
     /* the kind of pointer that pressed last (Safari's click is not a
        PointerEvent, so it is read on pointerdown) */
     let lastPtr = "mouse";
@@ -5801,21 +5796,24 @@
          .on("click", (ev, c) => {
            ev.stopPropagation();
            if (zoomBusy()) return;
-           const t = zoomTarget(c), top = !!t && !focus;
-           /* at the top level the click either zooms (the default) or pins
-              the card that carries the zoom (the study); on touch the first
-              tap shows the card and the second, in the same block, zooms */
-           if (t && !(top && (CLICK_MODE === "card" || (lastPtr === "touch" && !(pinnedCell && sameBlock(pinnedCell, c)))))){
+           const t = zoomTarget(c), top = !!t && !focus, touch = lastPtr === "touch";
+           /* a click zooms where there is a zoom; on touch the first tap at
+              the top level shows the card and the second, in the same
+              block, zooms */
+           if (t && !(top && touch && !(pinnedCell && sameBlock(pinnedCell, c)))){
              zoomFrom = top ? fromOf(c) : null;
              zoomBusyUntil = performance.now() + 950;
-             if (lastPtr !== "touch") holdAt = [ev.clientX, ev.clientY];
+             if (!touch) holdAt = [ev.clientX, ev.clientY];
              setFocus(t.sector, t.group); return;
            }
+           /* no pinning: with a mouse a click with nothing to zoom does
+              nothing; on touch a tap shows the card, the next one closes it */
+           if (!touch) return;
            if (pinned === c.id){ hideMapTip(true); return; }
            pinned = c.id; pinnedCell = c; showMapTip(c, ev);
          });
-      /* the pointer says what a click does: zoom on the top-level map */
-      all.style("cursor", c => zoomTarget(c) && (focus || CLICK_MODE === "zoom") ? "zoom-in" : null);
+      /* the pointer says what a click does: zoom where it zooms, nothing else */
+      all.style("cursor", c => zoomTarget(c) ? "zoom-in" : "default");
       paintFrames(L, dur);
       drawHits(L);
       clearOutline();
@@ -5989,7 +5987,6 @@
        the cell itself, which where the cells are groups is its group's box */
     const outlineBoxes = c => {
       const L = mapLayout; if (!L) return [c.box];
-      if (!focus && CLICK_MODE === "card" && L.grain !== 1) return [c.box];
       if (!focus) return L.blocks.filter(b => b.sector === c.cell.sector && (step !== 4 || b.band === c.band)).map(b => b.box);
       if (!focusGroup){ const g = L.groups.find(g => g.items.some(it => it.id === c.id)); return [g ? g.box : c.box]; }
       return [c.box];
@@ -6089,18 +6086,19 @@
        a grain finer than the sectors, a click opens the tile's whole
        sector, so the line names the sector and the tile's own name follows
        as the title. Everywhere else the click acts on the tile itself (the
-       sector at the sector grain, a group inside a sector, an industry to
-       pin inside a group), so the line is the title. The verb is a button
-       once the card is pinned and a click on it would zoom. */
+       sector at the sector grain, a group inside a sector, an industry
+       inside a group, which a click leaves as it is), so the line is the
+       title. On touch, where the first tap holds the card up, the verb is a
+       Zoom button. */
     const tileIsTarget = c => !(zoomTarget(c) && !focus && mapLayout && mapLayout.grain !== 1);
     const targetLine = (c, pinnedNow) => {
-      const t = zoomTarget(c), card = !focus && CLICK_MODE === "card" && !!t;
+      const t = zoomTarget(c);
       const touch = lastPtr === "touch";
       const name = tileIsTarget(c) ? escHtml(c.cell.name) + (tileCode(c) ? ' <span class="tip-code">(' + escHtml(tileCode(c)) + ')</span>' : '') : escHtml(c.cell.sector);
       let verb;
       if (t && pinnedNow) verb = '<button type="button" class="tip-act" data-act="zoom">' + MAG + '<span>Zoom in</span></button>';
-      else if (t && !card) verb = '<span class="tip-target-act">' + MAG + '<span>' + (touch ? "Tap again to zoom in" : "Click to zoom in") + '</span></span>';
-      else verb = '<span class="tip-target-act">' + (pinnedNow ? (touch ? "Tap to unpin" : "Click to unpin") : (touch ? "Tap to pin" : "Click to pin")) + '</span>';
+      else if (t) verb = '<span class="tip-target-act">' + MAG + '<span>' + (touch ? "Tap again to zoom in" : "Click to zoom in") + '</span></span>';
+      else verb = pinnedNow ? '<span class="tip-target-act">Tap again to close</span>' : '';
       return '<div class="tip-target' + (tileIsTarget(c) ? ' is-title' : '') + '"><i style="background:' + (sectorColors[c.cell.sector] || "#c3ccce") + '"></i><b>' + name + '</b>' + verb + '</div>';
     };
     function mapTipHtml(c, hint){
@@ -6133,9 +6131,8 @@
     }
     const hintFor = c => {
       const t = zoomTarget(c);
-      if (t && !focus && CLICK_MODE === "card") return pinned === c.id ? "Click again or press Esc to unpin" : "Click to pin; the card zooms into " + t.label;
       if (t) return (lastPtr === "touch" ? "Tap to zoom into " : "Click to zoom into ") + t.label;
-      return pinned === c.id ? "Click again or press Esc to unpin" : "Click to pin";
+      return "";
     };
     function showMapTip(c, ev){
       if (!mapTip || !mapWrap) return;
@@ -6147,7 +6144,7 @@
          the map steps back, and the tile under the pointer keeps a ring of
          its own where it is smaller than that (the card study keeps its
          own, quieter dressing on the top-level map) */
-      const styled = !(!focus && CLICK_MODE === "card");
+      const styled = true;
       const boxes = outlineBoxes(c);
       showOutline(boxes, pinned === c.id ? 2.5 : styled ? 2 : 1.5);
       const inBoxes = d => { const x = d.box.x + d.box.w / 2, y = d.box.y + d.box.h / 2;

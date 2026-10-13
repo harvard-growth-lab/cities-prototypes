@@ -1818,8 +1818,8 @@ opens.
   size), naming the tile itself:
   - the sector at the sector grain;
   - "IT services (4-digit) · Click to zoom in" inside a sector;
-  - "IT systems design (6-digit) · Click to pin", then "Click to unpin",
-    inside a group.
+  - "IT systems design (6-digit)" inside a group, where a click does
+    nothing.
 
   On the map, at every level:
   - what the click acts on is outlined (2px; 2.5 pinned);
@@ -1830,12 +1830,17 @@ opens.
   - the cursor is zoom-in wherever a click zooms.
 
   Checked at the 2-digit, sector, 4- and 6-digit levels, inside a sector,
-  inside a group and on the tiers beat. The card study keeps its own
-  dressing on the top-level map.
-- **Study: "Map click".** `#miClickOpt`, opt-2, `fig.dataset.click =
-  "card"`. A click pins the tile's card, and the card's "Zoom in" button
-  zooms. The hover outline goes round the tile, and the card's first line
-  reads "Click to pin".
+  inside a group and on the tiers beat.
+- **No pinning (2026-10-13).** Nil: "On all tree map interactions,
+  remove the feature when you pin the tooltip."
+  - A mouse click zooms where there is a zoom and does nothing elsewhere:
+    inside a group, an industry's card follows the pointer, carries no
+    verb, and the tile takes the default cursor.
+  - The "Map click" study (click pins, the card zooms) is gone with it.
+  - A touch screen keeps the one held card it needs, since it has no
+    hover: the first tap shows the card (`pinned`, `.is-pinned`), with a
+    Zoom button where there is a zoom, or "Tap again to close" where there
+    is none. The next tap zooms or closes it.
 
 ### 6c. The colour system (site-wide, thirteen colours)
 

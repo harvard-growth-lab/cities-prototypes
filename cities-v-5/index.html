@@ -4357,7 +4357,7 @@
   .rca-tip .tip-act:hover,.rca-tip .tip-act:focus-visible{box-shadow:inset 0 0 0 1px var(--teal);outline:none;}
   .rca-tip .tip-mag{flex:none;}
   .rca-tip .tip-code{font-weight:400;color:var(--ink-soft);}
-  /* a pinned card takes the pointer, so its button can be pressed */
+  /* a card held up by a tap (touch has no hover) takes the pointer, so its Zoom button can be pressed */
   .rca-tip.is-map.is-pinned{pointer-events:auto;}
   @media (pointer:coarse){ .rca-tip .tip-act{min-height:40px;padding:8px 14px;} }
   /* The filter lives on the column head it filters, so the chart says what can
@@ -7271,16 +7271,6 @@
                     <option value="menu">opt-2</option>
                   </select>
                 </label>
-                <!-- what a click on the top-level map does: opt-1 the card leads
-                     with the sector a click opens and the click zooms; opt-2 a
-                     click pins the card and its button zooms (2026-10-09) -->
-                <label class="mi-study" id="miClickPair">
-                  <span>Map click</span>
-                  <select id="miClickOpt" aria-label="What a click on the map does">
-                    <option value="zoom" selected>opt-1</option>
-                    <option value="card">opt-2</option>
-                  </select>
-                </label>
                 <label class="mi-study" id="miKeyPair">
                   <span>Key actions</span>
                   <select id="miKeyOpt" aria-label="What the key's entries do">
@@ -8268,7 +8258,7 @@
 <script src="data/geo/who_commute_geo.js"></script>
 <script src="industries-2024.js"></script>
 <script src="industries-2014.js"></script>
-<script src="treemap.js?v=2026-10-13-hover-all"></script>
+<script src="treemap.js?v=2026-10-13-nopin"></script>
 <script>
   /* ---------- treemaps: color by ----------
      Handled entirely in treemap.js — it wires the visible .seg controls and
