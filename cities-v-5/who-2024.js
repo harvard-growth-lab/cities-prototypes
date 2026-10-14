@@ -421,3 +421,27 @@ window.WHO_COMPARE_2024 = {
     "unemployment": "Middle fifth of the 1,606 US admins of 25,000 people and up: lower than about 57 of every 100. Lower is better."
   }
 };
+
+/* The metro's comparison set (2026-10-14), as WHO_COMPARE_2024 is the
+   admin's: us = the mean of every US metro (CBSA) with the measure (387 for
+   population and unemployment, 382 salary, 380 home value); the peer metros
+   as the reference matches them (2014 values); the peer average is their
+   mean, taken by the page. bucket = where the metro stands among US metros,
+   for the figure's tooltip. From the reference's parquet (city_panel,
+   city_housing); Boston's own values are the metro rows above. */
+window.WHO_COMPARE_METRO_2024 = {
+  "us": { "population": 759392, "salary": 70060, "home_value": 342210, "unemployment": 4.03 },
+  "peers": [
+    { "name": "Washington", "st": "DC", "population": 6436489, "salary": 108532, "home_value": 575568, "unemployment": 3.1 },
+    { "name": "Seattle", "st": "WA", "population": 4145494, "salary": 126678, "home_value": 758554, "unemployment": 4.3 },
+    { "name": "San Diego", "st": "CA", "population": 3298799, "salary": 94592, "home_value": 946327, "unemployment": 4.3 },
+    { "name": "Denver", "st": "CO", "population": 3052498, "salary": 96324, "home_value": 603323, "unemployment": 4.1 }
+  ],
+  "lead": {},
+  "bucket": {
+    "population": "One of 11 US metros of 5 million people or more: larger than 97 of every 100.",
+    "salary": "Top 2% of US metros: higher than 98 of every 100.",
+    "home_value": "Top 5% of US metros: higher than 95 of every 100.",
+    "unemployment": "Near the middle of US metros: lower than about 53 of every 100. Lower is better."
+  }
+};
