@@ -1595,6 +1595,28 @@
     .wt .wt-row{grid-template-columns:1fr;gap:10px 0;}
     .wt-viz{padding-right:4px;}
   }
+  /* ---- Who are you?: the commuting beat (2026-10-14) ----
+     three clusters of dots, one for each group, named above; under them
+     the toggle that sets what the map shades the places by */
+  .who-fl{margin:4px 0 0;}
+  .who-fl-labs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 12px;text-align:center;}
+  .who-fl-lab b{display:block;font-size:18px;font-weight:700;line-height:1.2;font-variant-numeric:tabular-nums;}
+  .who-fl-lab span{display:block;font-size:var(--t-note);line-height:1.3;color:var(--ink);}
+  .who-fl-lab small{display:block;font-size:13px;line-height:1.3;color:var(--ink-soft);margin-top:1px;}
+  .who-fl-lab--both b{color:var(--geo-city);} .who-fl-lab--in b{color:#2c5f8f;} .who-fl-lab--out b{color:var(--orange-text);}
+  .who-fl-labs{opacity:0;transition:opacity .3s ease;} .who-fl.is-in .who-fl-labs{opacity:1;}
+  .who-fl svg{display:block;width:100%;height:auto;overflow:visible;}
+  .who-fl-note{margin:6px 0 0;font-size:13px;line-height:1.4;color:var(--ink-soft);}
+  .who-fl-ctl{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin:18px 0 0;}
+  .who-fl-ctl .ctl-label{font-size:13px;font-weight:600;color:var(--ink);}
+  .who-fl-ctl .seg{display:inline-flex;align-items:stretch;background:var(--white);border:1px solid var(--control-edge);border-radius:4px;overflow:hidden;}
+  .who-fl-ctl .seg-btn{appearance:none;background:none;border:0;border-left:1px solid var(--control-edge);height:30px;padding:0 12px;font:inherit;font-size:13px;font-weight:600;color:var(--ink-soft);cursor:pointer;white-space:nowrap;}
+  .who-fl-ctl .seg-btn:first-child{border-left:0;}
+  .who-fl-ctl .seg-btn:hover:not(.is-active){background:var(--teal-tint);color:var(--ink);}
+  .who-fl-ctl .seg-btn.is-active{background:var(--teal-tint);color:var(--teal);}
+  .who-fl-ctl .seg-btn:focus-visible{outline:2px solid var(--teal);outline-offset:-2px;}
+  .who-fl-what{flex-basis:100%;font-size:13px;line-height:1.4;color:var(--ink-soft);}
+  @media (prefers-reduced-motion: reduce){ .who-fl-labs{transition:none;} }
   /* ---- Who are you?: the scatter beats (2026-10-14) ----
      one chart under each of the four beats' text, in the reading column:
      the cloud of US admins, Boston, the peers in the table's colours, the
@@ -6825,16 +6847,14 @@
       <div class="sec" data-sec="page-intro-q1 page-intro-q2 page-intro-q3 page-intro-q4 page-intro-q5 page-intro-q6 page-intro-q7">
         <button class="sec-head" onclick="goTo('page-intro-q1')"><span class="num"><svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13" aria-hidden="true"><path d="M12 2l2.9 6.2 6.6.8-4.9 4.6 1.3 6.5L12 16.9 6.1 20l1.3-6.5L2.5 9l6.6-.8L12 2z"/></svg></span>Explore Your Assumption</button>
       </div>
-      <div class="sec" data-sec="page-overview page-overview-wage page-overview-home page-overview-unemp page-overview-msa page-overview-out page-overview-in page-overview-practice">
+      <div class="sec" data-sec="page-overview page-overview-wage page-overview-home page-overview-unemp page-overview-flows page-overview-practice">
         <button class="sec-head" onclick="goTo('page-overview')"><span class="num" aria-hidden="true"></span>Who are you?</button>
         <ul class="steps">
           <li data-step="page-overview"><span class="dot"></span><button onclick="goTo('page-overview')">Where Boston stands</button></li>
           <li data-step="page-overview-wage"><span class="dot"></span><button onclick="goTo('page-overview-wage')">Wages</button></li>
           <li data-step="page-overview-home"><span class="dot"></span><button onclick="goTo('page-overview-home')">Home values</button></li>
           <li data-step="page-overview-unemp"><span class="dot"></span><button onclick="goTo('page-overview-unemp')">Unemployment</button></li>
-          <li data-step="page-overview-msa"><span class="dot"></span><button onclick="goTo('page-overview-msa')">Not an island</button></li>
-          <li data-step="page-overview-out"><span class="dot"></span><button onclick="goTo('page-overview-out')">Where residents work</button></li>
-          <li data-step="page-overview-in"><span class="dot"></span><button onclick="goTo('page-overview-in')">Where workers live</button></li>
+          <li data-step="page-overview-flows"><span class="dot"></span><button onclick="goTo('page-overview-flows')">Who works here</button></li>
           <li data-step="check-overview"><span class="dot"></span><button onclick="goTo('check-overview')">Test your knowledge</button></li>
           <li data-step="apply-overview"><span class="dot"></span><button onclick="goTo('apply-overview')">Put your insights</button></li>
           <li data-step="page-overview-practice"><span class="dot"></span><button onclick="goTo('page-overview-practice')">Put in Practice</button></li>
@@ -7143,6 +7163,8 @@
             <div class="who-sc" data-measure="unemp"></div>
           </section>
 
+          <!-- set aside for now (Nil, 2026-10-14); to bring it back, uncomment and
+               restore page-overview-msa in the rail, pageIds and sectionDefs
           <section class="ov-block" id="page-overview-msa">
             <div class="page-head">
               <h2>Your city is not an island</h2>
@@ -7154,28 +7176,29 @@
               follows is read at that scale.</p>
             <div class="who-ind" data-who="metro"></div>
           </section>
+          -->
 
-          <section class="ov-block" id="page-overview-out">
+          <!-- the commuting beat (2026-10-14): the three groups Boston's
+               jobs and working residents fall into, as dots that sort
+               themselves out of one cloud; the map beside it shades the
+               places round Boston by what they send, receive or net -->
+          <section class="ov-block" id="page-overview-flows">
             <div class="page-head">
-              <h2>Not everyone who lives in <span class="city-short">Boston</span> works there</h2>
+              <h2>Who works here, who lives here, who commutes out</h2>
             </div>
-            <p class="lede">55% of the jobs held by <span class="city-short">Boston</span>&rsquo;s residents are in
-              <span class="city-short">Boston</span> itself (54% in 2014). The other 157,434 are elsewhere, mostly
-              in Cambridge, Newton, Waltham and Quincy. The map shades each place by how much of its workforce
-              lives in <span class="city-short">Boston</span>, up to 26% in Brookline.</p>
-            <div class="who-flow" data-who-flow="out"></div>
-          </section>
-
-          <section class="ov-block" id="page-overview-in">
-            <div class="page-head">
-              <h2>More people commute into <span class="city-short">Boston</span> than out of it</h2>
+            <p class="lede"><span class="city-short">Boston</span> has 718,571 jobs and 347,517 working residents.
+              190,083 people do both: they live and work in <span class="city-short">Boston</span>. Commuters fill
+              the other 528,488 jobs, and 157,434 residents commute out to work elsewhere.</p>
+            <div class="who-fl" id="whoFlows"></div>
+            <div class="who-fl-ctl" id="whoFlowCtl">
+              <span class="ctl-label">Map</span>
+              <div class="seg" role="group" aria-label="What the map shades the places by">
+                <button type="button" class="seg-btn is-active" data-flow="in" aria-pressed="true">Sending</button>
+                <button type="button" class="seg-btn" data-flow="out" aria-pressed="false">Receiving</button>
+                <button type="button" class="seg-btn" data-flow="net" aria-pressed="false">Net flows</button>
+              </div>
+              <span class="who-fl-what" id="whoFlowWhat"></span>
             </div>
-            <p class="lede">Of the 718,571 jobs in <span class="city-short">Boston</span>, residents hold 26%. The
-              other 528,488 are filled by commuters, mostly from Quincy, Cambridge, Somerville, Brookline and
-              Newton. Winthrop sends 41% of its working residents here.</p>
-            <p class="lede">That makes 207 jobs here for every 100 its residents hold. Follow these exchanges
-              outward and you trace, roughly, the edges of the <span class="city-short">Boston</span> MSA.</p>
-            <div class="who-flow" data-who-flow="in"></div>
           </section>
 
         </div>
@@ -8438,7 +8461,7 @@
     setTimeout(initCollapsible, 200);
   });
 
-  const pageIds = ["page-overview","page-overview-wage","page-overview-home","page-overview-unemp","page-overview-msa","page-overview-out","page-overview-in","page-export-basket","page-admin-mix",
+  const pageIds = ["page-overview","page-overview-wage","page-overview-home","page-overview-unemp","page-overview-flows","page-export-basket","page-admin-mix",
                    "page-constraints","page-city-in-metro","page-constraints-lorem","page-levers"];
 
   /* ---------- view switching ---------- */
@@ -8533,7 +8556,7 @@
 
   /* ---------- journey state ---------- */
   const sectionDefs=[
-    {name:"Who are you?", pages:["page-overview","page-overview-wage","page-overview-home","page-overview-unemp","page-overview-msa","page-overview-out","page-overview-in","check-overview","apply-overview"], entry:"page-overview"},
+    {name:"Who are you?", pages:["page-overview","page-overview-wage","page-overview-home","page-overview-unemp","page-overview-flows","check-overview","apply-overview"], entry:"page-overview"},
     {name:"Metro Industries",    pages:["page-export-basket","tierSection","specializedSection","check-export","apply-export"], entry:"page-export-basket"},
     {name:"Worker Flows", pages:["page-admin-mix","adminWhoFills","adminResidentsOut","adminBalance","adminJobsHere","adminResidents","adminSpecialized","adminExchange","adminGauge","am2Bars","am2Compare","check-adminmix","apply-adminmix"], entry:"page-admin-mix"},
     {name:"Constraints Diagnosis",pages:["page-constraints","page-city-in-metro","page-constraints-lorem","check-constraints","apply-constraints"],entry:"page-constraints"},
@@ -8552,7 +8575,7 @@
          sections 1 & 2 completed, Metro Industries in progress ---- */
   exploredCities.add("Boston, United States of America");
   exploredCities.add("Chicago, United States of America");
-  ["page-overview","page-overview-msa",
+  ["page-overview",
    "page-export-basket"].forEach(p=>visitedPages.add(p));
   savedInsights.push({
     section:"Metro Industries · Put in Practice",
@@ -10002,6 +10025,38 @@
         const leaders = L.layerGroup();
         layers[mode] = { fill, labels, names, leaders, legend };
       });
+      /* net: what a place sends Boston less what it takes from it, blue one
+         way and orange the other, its depth by the size of the balance */
+      {
+        const net = q => (q.inWorkers || 0) - (q.outWorkers || 0), has = f => f.properties.inWorkers != null || f.properties.outWorkers != null;
+        const maxAbs = Math.max(...WHO_GEO.places.features.filter(has).map(f => Math.abs(net(f.properties))));
+        const signed = v => (v > 0 ? "+" : v < 0 ? "\u2212" : "") + fmtN(Math.abs(v));
+        const fill = L.geoJSON(WHO_GEO.places, {
+          filter: has,
+          style: f => { const v = net(f.properties), col = v >= 0 ? INC : OUTC;
+            return { color: col, weight: .8, opacity: .55, fillColor: col, fillOpacity: .1 + .72 * Math.sqrt(Math.abs(v) / maxAbs) }; },
+          onEachFeature: (f, l) => { const q = f.properties, v = net(q);
+            l.bindTooltip('<b>' + esc(q.name) + (q.state && q.state !== "MA" ? ", " + esc(q.state) : "") + '</b>' +
+              fmtN(q.inWorkers || 0) + ' of its residents work in Boston; ' + fmtN(q.outWorkers || 0) + ' Boston residents work here' +
+              '<span>Net ' + signed(v) + (v >= 0 ? ' sent to Boston' : ' taken from Boston') + '</span>',
+              { sticky: true, className: "who-tip", direction: "top", offset: [0, -10], opacity: 1 }); }
+        });
+        const name = (ll, html, cls, dir, off) => L.circleMarker(ll, { radius: 0, opacity: 0, fillOpacity: 0, interactive: false })
+          .bindTooltip(html, { permanent: true, direction: dir, offset: off, className: "map-lbl who-lbl who-lbl--net" + cls });
+        const top = fill.getLayers().map(l => ({ l, q: l.feature.properties, v: net(l.feature.properties) }))
+          .sort((a, b) => Math.abs(b.v) - Math.abs(a.v)).slice(0, 5);
+        const names = [name(WHO.boston.centroid, "Boston", " who-lbl--city", "center", [0, 0])]
+          .concat(top.map(t => name(t.l.getBounds().getCenter(), "<b>" + esc(t.q.name) + "</b><span>" + signed(t.v) + "</span>", "", "top", [0, -4])));
+        const legend = document.createElement("div");
+        legend.className = "who-legend who-legend--net"; legend.hidden = true;
+        legend.innerHTML = '<span class="wl-txt">Net flow of workers with Boston</span>' +
+          '<span class="wl-ramp"><i style="background:linear-gradient(to right,' + rgba(OUTC, .82) + ',' + rgba(OUTC, .12) + ' 48%,' + rgba(INC, .12) + ' 52%,' + rgba(INC, .82) + ')"></i></span>' +
+          '<span class="wl-ends"><span>Takes more from Boston</span><span>Sends more to Boston</span></span>' +
+          '<span class="wl-sub">' + fill.getLayers().length + ' places with data; the largest balances named where they fit</span>' +
+          '<span class="wl-city"><i></i>Boston</span>';
+        ovLeaflet.getContainer().appendChild(legend);
+        layers.net = { fill, labels: L.layerGroup(names), names, leaders: L.layerGroup(), legend };
+      }
       /* The names on a commuting map, placed so that none covers another,
          the key or the zoom buttons, and none runs off the frame. Boston's
          stands on Boston while it is clear of those (a hand zoom can carry
@@ -10060,7 +10115,7 @@
       ovLeaflet.on("zoomend moveend", declutter);
       whoShow = mode => {
         whoMode = mode;
-        ["out", "in"].forEach(m => {
+        Object.keys(layers).forEach(m => {
           const Ly = layers[m], on = m === mode;
           /* Leaflet fades a name out over 200ms, but the names hold full
              strength (.who-lbl), so the last map's would print over the
@@ -10076,6 +10131,8 @@
         ovLeaflet.getContainer().classList.toggle("who-commute", !!mode);
         if (mode) requestAnimationFrame(declutter);
       };
+      /* the beat's toggle changes the layer while the beat is the reader's */
+      window.whoShowMode = mode => { if (whoShow && whoMode) whoShow(mode); };
     }
 
     /* Name both shapes on the map itself. The metro label sits up in the
@@ -10783,7 +10840,7 @@
      the time either is the reader's, and holds it, so moving between beats
      2, 3 and 4 changes only what is drawn on the map */
   /* keyed by the beat's id, since the scatter beats sit ahead of these */
-  const WHO_BEAT_ID = { "page-overview-out": "out", "page-overview-in": "in" };
+  const WHO_BEAT_ID = { get "page-overview-flows"(){ return window.whoFlowMode || "in"; } };
   const WHO_BEAT = new Proxy({}, { get: (o, k) => { const b = ovBeatBlocks[k]; return b ? WHO_BEAT_ID[b.id] : undefined; } });
   let whoOn = -1;
   const whoBeat = on => {
@@ -10807,7 +10864,7 @@
        metro yet. The metro's edge and chip are drawn only once the page
        that introduces it — city against metro — has come into view. The
        commuting maps leave the edge off (whoBeat) */
-    const msaEl = document.getElementById("page-overview-msa");
+    const msaEl = document.getElementById("page-overview-msa") || document.getElementById("page-overview-flows");
     const hideMetro = !!msaEl &&
       msaEl.getBoundingClientRect().top >= pagesEl.clientHeight * 0.6;
     if (!WHO_BEAT[whoOn] && (hideMetro !== !!window.ovMetroHidden || (!hideMetro && ovMsaHidden))){
@@ -10844,7 +10901,7 @@
      which framed correctly only at the width they were tuned against; it
      fits the two outlines and interpolates between those fits. */
   function ovCamTarget(){
-    const msaEl = document.getElementById("page-overview-msa");
+    const msaEl = document.getElementById("page-overview-msa") || document.getElementById("page-overview-flows");
     const chrome=parseFloat(getComputedStyle(document.documentElement)
       .getPropertyValue("--chrome-h"))||57;
     const H=pagesEl.clientHeight, span=H-chrome;
@@ -10853,7 +10910,7 @@
       ? msaEl.getBoundingClientRect().top-pagesEl.getBoundingClientRect().top
       : -Infinity;
     let p=Math.min(1, Math.max(0, (H-t2)/span));
-    const msaAt = ovBeatBlocks.findIndex(b => b.id === "page-overview-msa");
+    const msaAt = ovBeatBlocks.findIndex(b => b.id === "page-overview-msa" || b.id === "page-overview-flows");
     if (msaAt >= 0 && whoOn >= msaAt && window.matchMedia && matchMedia("(max-width:899px)").matches) p = 1;
     /* the commuting beats hold the metro's fit itself, however short the
        second beat left the pull-back */
@@ -12392,6 +12449,99 @@
       return { render };
     }
     hosts.forEach(h => Chart(h, h.dataset.measure));
+  })();
+
+  /* ---- Who are you?: the commuting beat (2026-10-14) ----
+     Everyone with a job in Boston or a home there and a job somewhere, one
+     dot for about 2,000 people, sorted into three clusters as the beat
+     arrives: commuters in, those who live and work here, residents who
+     commute out. Each is named above with its count and share. The toggle
+     under the figure sets which flow the map beside it shades the places
+     by: sending (their residents who work in Boston), receiving (their
+     jobs held by Boston residents), or the net of the two. */
+  (function(){
+    const W = window.WHO_2024, host = document.getElementById("whoFlows"), ctl = document.getElementById("whoFlowCtl");
+    if (!W || !host || !W.in || !W.out) return;
+    const NS = "http://www.w3.org/2000/svg";
+    const BOTH = W.in.heldByResidents, IN = W.in.filledByCommuters, OUT = W.out.workElsewhere, JOBS = W.in.jobsHere, RES = W.out.residentWorkers;
+    const PER = 2000;
+    const tok = (n, fb) => (getComputedStyle(document.documentElement).getPropertyValue(n).trim() || fb);
+    const COL = { in: "#3a76b0", both: tok("--geo-city", "#255862"), out: tok("--orange", "#e76565") }, GREY = tok("--mark-grey", "#c3ccce");
+    const pct = (a, b) => Math.round(a / b * 100) + "%";
+    const K = n => (n >= 1e6 ? (n / 1e6).toFixed(1) + "M" : Math.round(n / 1e3) + "K");
+    const GROUPS = [
+      { k: "in",   n: IN,   name: "commute in",         share: pct(IN, JOBS) + " of the jobs here" },
+      { k: "both", n: BOTH, name: "live and work here", share: pct(BOTH, JOBS) + " of the jobs here" },
+      { k: "out",  n: OUT,  name: "commute out",        share: pct(OUT, RES) + " of residents\u2019 jobs" }
+    ];
+    host.innerHTML = '<div class="who-fl-labs">' + GROUPS.map(g => '<div class="who-fl-lab who-fl-lab--' + g.k + '"><b>' + K(g.n) + '</b><span>' + g.name + '</span><small>' + g.share + '</small></div>').join("") + '</div>' +
+      '<svg role="img" aria-label="' + GROUPS.map(g => g.n.toLocaleString("en-US") + " " + g.name).join(", ") + '"></svg>' +
+      '<p class="who-fl-note">One dot is about ' + PER.toLocaleString("en-US") + ' people.</p>';
+    const svg = host.querySelector("svg"), labs = host.querySelector(".who-fl-labs");
+    const dots = [];
+    GROUPS.forEach(g => { const m = Math.round(g.n / PER); for (let i = 0; i < m; i++) dots.push({ k: g.k, i }); });
+    const circles = dots.map(d => { const c = document.createElementNS(NS, "circle"); c.setAttribute("fill", GREY); svg.appendChild(c); return c; });
+    /* a spiral fill, so a cloud looks scattered yet lands the same way every time */
+    const pack = (cx, cy, r, n, seed) => { const pts = [], gold = Math.PI * (3 - Math.sqrt(5));
+      for (let i = 0; i < n; i++){ const t = (i + .5) / n, rad = r * Math.sqrt(t) * .94, a = i * gold + seed; pts.push([cx + rad * Math.cos(a), cy + rad * Math.sin(a)]); }
+      return pts; };
+    const phone = () => matchMedia("(max-width:599px)").matches, reduce = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let entered = false, raf = 0, cur = null;
+    function layout(){
+      const Wd = host.clientWidth, rd = phone() ? 2.4 : 3.6, area = Math.pow(rd * 2.3, 2);
+      const R = n => Math.sqrt(n * area / Math.PI);
+      const counts = GROUPS.map(g => Math.round(g.n / PER)), Rs = counts.map(R), H = Math.ceil(Math.max(...Rs) * 2 + 24);
+      const cols = [Wd / 6, Wd / 2, Wd * 5 / 6], cy = H / 2;
+      const to = new Float32Array(dots.length * 2), from = new Float32Array(dots.length * 2);
+      let o = 0;
+      GROUPS.forEach((g, gi) => { const pts = pack(cols[gi], cy, Rs[gi], counts[gi], 1.3 * gi); pts.forEach(p => { to[2 * o] = p[0]; to[2 * o + 1] = p[1]; o++; }); });
+      /* before the beat arrives: one cloud of everyone, in the middle */
+      pack(Wd / 2, cy, R(dots.length), dots.length, .7).forEach((p, i) => { from[2 * i] = p[0]; from[2 * i + 1] = p[1]; });
+      return { Wd, H, rd, to, from };
+    }
+    function paint(p, rd, colour){
+      circles.forEach((c, i) => { c.setAttribute("cx", p[2 * i].toFixed(1)); c.setAttribute("cy", p[2 * i + 1].toFixed(1)); c.setAttribute("r", rd);
+        c.setAttribute("fill", colour ? COL[dots[i].k] : GREY); });
+    }
+    function render(animate){
+      const L = layout(); if (!L.Wd) return;
+      svg.setAttribute("width", L.Wd); svg.setAttribute("height", L.H); svg.setAttribute("viewBox", "0 0 " + L.Wd + " " + L.H);
+      cancelAnimationFrame(raf);
+      if (!entered && !reduce()){ paint(L.from, L.rd, false); labs.parentElement.classList.remove("is-in"); return; }
+      if (!animate || reduce()){ paint(L.to, L.rd, true); host.classList.add("is-in"); return; }
+      const t0 = performance.now(), dur = 1100, p = new Float32Array(dots.length * 2), ease = u => u < .5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
+      const tick = now => {
+        const u = Math.min(1, (now - t0) / dur), e = ease(u);
+        for (let i = 0; i < p.length; i++) p[i] = L.from[i] + (L.to[i] - L.from[i]) * e;
+        paint(p, L.rd, u > .45);
+        if (u < 1) raf = requestAnimationFrame(tick); else host.classList.add("is-in");
+      };
+      raf = requestAnimationFrame(tick);
+    }
+    render(false);
+    if (window.ResizeObserver){ let lw = 0; new ResizeObserver(() => { if (host.clientWidth === lw) return; lw = host.clientWidth; render(false); }).observe(host); }
+    const pagesEl = document.getElementById("pages");
+    if (window.IntersectionObserver){
+      const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)){ io.disconnect(); if (!entered){ entered = true; render(true); } } }, { root: pagesEl || null, threshold: .5 });
+      io.observe(host);
+    } else { entered = true; render(false); }
+
+    /* the map's toggle: sending, receiving, or the net of the two */
+    const WHAT = {
+      in: "The places are shaded by the share of their working residents who work in Boston, deepest where it is largest.",
+      out: "The places are shaded by the share of their jobs held by Boston residents, deepest where it is largest.",
+      net: "Blue places send Boston more workers than they take from it; orange ones take more. The deeper the shade, the larger the balance."
+    };
+    const what = document.getElementById("whoFlowWhat");
+    function setFlow(m){
+      window.whoFlowMode = m;
+      ctl.querySelectorAll(".seg-btn").forEach(b => { const on = b.dataset.flow === m; b.classList.toggle("is-active", on); b.setAttribute("aria-pressed", String(on)); });
+      if (what) what.textContent = WHAT[m];
+      const beat = document.getElementById("page-overview-flows");
+      if (beat && beat.classList.contains("is-on") && window.whoShowMode) window.whoShowMode(m);
+    }
+    ctl.addEventListener("click", ev => { const b = ev.target.closest(".seg-btn"); if (b) setFlow(b.dataset.flow); });
+    setFlow("in");
   })();
 
   /* ---------- links to sections ----------
@@ -14459,7 +14609,7 @@
   };
 
   /* rail-step ids -> scrolly steps, while built */
-  var OV_IDS = ["page-overview", "page-overview-msa", "page-overview-out", "page-overview-in"];
+  var OV_IDS = ["page-overview", "page-overview-wage", "page-overview-home", "page-overview-unemp", "page-overview-flows"];
   window.ovStepFor = function(id){
     if (!built) return null;
     var k = OV_IDS.indexOf(id);
