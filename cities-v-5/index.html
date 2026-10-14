@@ -1552,21 +1552,23 @@
   .wt{color:var(--ink);}
   .wt-sw{display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--geo-city);flex:none;box-sizing:border-box;vertical-align:-1px;}
   .wt-sw.pe{width:10px;height:10px;background:var(--pc);}
-  .wt-row{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:6px 28px;align-items:center;padding:12px 0 11px;border-bottom:1px solid var(--border);}
+  /* the text column as wide as its longest line, the visual right after it */
+  .wt-row{display:grid;grid-template-columns:minmax(0,250px) minmax(0,360px);gap:8px 32px;align-items:center;padding:14px 0 13px;border-bottom:1px solid var(--border);}
   .wt-row:first-of-type{border-top:1px solid var(--border-strong);}
   .wt-text{min-width:0;}
   .wt-viz{min-width:0;}
-  .wt-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;}
-  .wt-name{font-size:var(--t-note);font-weight:600;}
-  .wt-name .hint{font-size:13px;font-weight:400;color:var(--ink-soft);margin-left:6px;}
-  .wt-val{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;}
-  .wt-val.tipv{cursor:help;text-decoration:underline dotted var(--control-edge);text-underline-offset:3px;border-radius:2px;}
+  /* the measure's name, its figure under it, then the two comparisons */
+  .wt-head{display:flex;flex-direction:column;align-items:flex-start;gap:1px;}
+  .wt-name{font-size:13px;font-weight:600;color:var(--ink-soft);line-height:1.3;}
+  .wt-name .hint{font-weight:400;margin-left:6px;}
+  .wt-val{font-size:17px;font-weight:700;line-height:1.25;font-variant-numeric:tabular-nums;color:var(--ink);}
+  .wt-val.tipv{cursor:help;border-radius:2px;}
   .wt-val.tipv:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
   /* the lead row: the population figure set larger */
-  .wt-row--lead .wt-val{font-size:22px;}
+  .wt-row--lead .wt-val{font-size:20px;}
   .wt-lead{margin:2px 0 0;font-size:var(--t-note);line-height:1.4;color:var(--ink);}
   /* the differences: sentences led by an arrow in colour */
-  .wt-diff{display:flex;flex-direction:column;gap:3px;margin:6px 0 0;font-size:var(--t-note);line-height:1.4;color:var(--ink);}
+  .wt-diff{display:flex;flex-direction:column;gap:2px;margin:6px 0 0;font-size:var(--t-note);line-height:1.4;color:var(--ink);}
   .wt-d{display:inline-flex;align-items:center;gap:5px;}
   .wt-d b{font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;display:inline-flex;align-items:center;gap:3px;}
   .wt-d .wt-arr,.wt-rd .wt-arr{width:10px;height:10px;flex:none;}
@@ -1624,14 +1626,27 @@
      three clusters of dots, one for each group, named above; under them
      the toggle that sets what the map shades the places by */
   .who-fl{margin:4px 0 0;}
-  .who-fl-labs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 12px;text-align:center;}
+  .who-fl-head{position:relative;}
+  .who-fl-all{position:absolute;left:0;right:0;bottom:0;text-align:center;transition:opacity .7s ease;}
+  .who-fl-all b{display:block;font-size:18px;font-weight:700;line-height:1.2;font-variant-numeric:tabular-nums;color:var(--ink);}
+  .who-fl-all span{display:block;font-size:var(--t-note);line-height:1.3;color:var(--ink);}
+  .who-fl[data-stage="sorted"] .who-fl-all{opacity:0;}
+  .who-fl-labs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 14px;text-align:center;align-items:end;}
   .who-fl-lab b{display:block;font-size:18px;font-weight:700;line-height:1.2;font-variant-numeric:tabular-nums;}
   .who-fl-lab span{display:block;font-size:var(--t-note);line-height:1.3;color:var(--ink);}
   .who-fl-lab small{display:block;font-size:13px;line-height:1.3;color:var(--ink-soft);margin-top:1px;}
   .who-fl-lab--both b{color:var(--geo-city);} .who-fl-lab--in b{color:#2c5f8f;} .who-fl-lab--out b{color:var(--orange-text);}
-  .who-fl-labs{opacity:0;transition:opacity .3s ease;} .who-fl.is-in .who-fl-labs{opacity:1;}
-  .who-fl svg{display:block;width:100%;height:auto;overflow:visible;}
-  .who-fl-note{margin:6px 0 0;font-size:13px;line-height:1.4;color:var(--ink-soft);}
+  .who-fl-labs{opacity:0;transition:opacity .7s ease;}
+  .who-fl[data-stage="sorted"] .who-fl-labs{opacity:1;transition-delay:1.3s;}
+  .who-fl > svg circle{transition:fill .8s ease;}
+  .who-fl.no-fade > svg circle,.who-fl.no-fade .who-fl-labs,.who-fl.no-fade .who-fl-all{transition:none;}
+  .who-fl > svg{display:block;width:100%;height:auto;overflow:visible;}
+  .who-fl-replay svg{display:block;width:12px;height:12px;flex:none;}
+  .who-fl-note{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin:6px 0 0;font-size:13px;line-height:1.4;color:var(--ink-soft);}
+  .who-fl-replay{appearance:none;display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 9px;border:1px solid var(--control-edge);border-radius:4px;background:var(--white);font:inherit;font-size:13px;color:var(--ink);cursor:pointer;}
+  .who-fl-replay:hover{background:var(--teal-tint);}
+  .who-fl-replay:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+  @media (prefers-reduced-motion: reduce){ .who-fl > svg circle,.who-fl-labs,.who-fl-all{transition:none;} }
   .who-fl-ctl{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;margin:18px 0 0;}
   .who-fl-ctl .ctl-label{font-size:13px;font-weight:600;color:var(--ink);}
   .who-fl-ctl .seg{display:inline-flex;align-items:stretch;background:var(--white);border:1px solid var(--control-edge);border-radius:4px;overflow:hidden;}
@@ -12117,7 +12132,7 @@
              the ends */
           const all = [v, us, pa].concat(onPeers.map(pr => pr[k])), lo = Math.min(...all), hi = Math.max(...all), pad = (hi - lo || 1) * .12;
           const sxn = x => (x - lo + pad) / (hi - lo + 2 * pad) * 100, sx = x => sxn(x).toFixed(2) + "%";
-          const wpx = Math.min(host.clientWidth || 340, 340);
+          const wpx = Math.min(host.clientWidth || 360, 360);
           const lab = (t, x, cls, row) => { const w = 100 * (t.length * 6.6 + 4) / wpx, edge = x > 100 - w / 2 ? " end" : x < w / 2 ? " start" : "";
             return '<span class="wt-pn ' + cls + (row ? ' r1' : '') + edge + '" style="left:' + x.toFixed(2) + '%">' + t + '</span>'; };
           const [a1, a2] = [{ t: "US average", x: sxn(us) }, { t: "Peer average", x: sxn(pa) }].sort((p, q) => p.x - q.x);
@@ -12518,9 +12533,12 @@
 
   /* ---- Who are you?: the commuting beat (2026-10-14) ----
      Everyone with a job in Boston or a home there and a job somewhere, one
-     dot for about 2,000 people, sorted into three clusters as the beat
-     arrives: commuters in, those who live and work here, residents who
-     commute out. Each is named above with its count and share. The toggle
+     dot for about 2,000 people. Slowly, as the figure comes into view:
+     everyone in one grey cloud, named as a whole; then each dot takes its
+     group's colour; then the three groups draw apart (those who live
+     elsewhere and work in Boston, those who live and work in Boston, those
+     who live in Boston and work elsewhere), and only then are they named,
+     with count and share. "Play again" runs it once more. The toggle
      under the figure sets which flow the map beside it shades the places
      by: sending (their residents who work in Boston), receiving (their
      jobs held by Boston residents), or the net of the two. */
@@ -12534,62 +12552,79 @@
     const COL = { in: "#3a76b0", both: tok("--geo-city", "#255862"), out: tok("--orange", "#e76565") }, GREY = tok("--mark-grey", "#c3ccce");
     const pct = (a, b) => Math.round(a / b * 100) + "%";
     const K = n => (n >= 1e6 ? (n / 1e6).toFixed(1) + "M" : Math.round(n / 1e3) + "K");
+    /* named the way anyone would say it: where they live, where they work */
+    const TOTAL = IN + BOTH + OUT;
     const GROUPS = [
-      { k: "in",   n: IN,   name: "commute in",         share: pct(IN, JOBS) + " of the jobs here" },
-      { k: "both", n: BOTH, name: "live and work here", share: pct(BOTH, JOBS) + " of the jobs here" },
-      { k: "out",  n: OUT,  name: "commute out",        share: pct(OUT, RES) + " of residents\u2019 jobs" }
+      { k: "in",   n: IN,   name: "Live elsewhere, work in Boston", share: pct(IN, JOBS) + " of Boston\u2019s jobs" },
+      { k: "both", n: BOTH, name: "Live and work in Boston",        share: pct(BOTH, JOBS) + " of Boston\u2019s jobs" },
+      { k: "out",  n: OUT,  name: "Live in Boston, work elsewhere", share: pct(OUT, RES) + " of Boston\u2019s working residents" }
     ];
-    host.innerHTML = '<div class="who-fl-labs">' + GROUPS.map(g => '<div class="who-fl-lab who-fl-lab--' + g.k + '"><b>' + K(g.n) + '</b><span>' + g.name + '</span><small>' + g.share + '</small></div>').join("") + '</div>' +
-      '<svg role="img" aria-label="' + GROUPS.map(g => g.n.toLocaleString("en-US") + " " + g.name).join(", ") + '"></svg>' +
-      '<p class="who-fl-note">One dot is about ' + PER.toLocaleString("en-US") + ' people.</p>';
-    const svg = host.querySelector("svg"), labs = host.querySelector(".who-fl-labs");
+    host.innerHTML = '<div class="who-fl-head"><div class="who-fl-all"><b>' + K(TOTAL) + '</b><span>workers who live in Boston, work in Boston, or both</span></div>' +
+      '<div class="who-fl-labs">' + GROUPS.map(g => '<div class="who-fl-lab who-fl-lab--' + g.k + '"><b>' + K(g.n) + '</b><span>' + g.name + '</span><small>' + g.share + '</small></div>').join("") + '</div></div>' +
+      '<svg role="img" aria-label="' + TOTAL.toLocaleString("en-US") + ' workers: ' + GROUPS.map(g => g.n.toLocaleString("en-US") + " " + g.name.toLowerCase()).join(", ") + '"></svg>' +
+      '<p class="who-fl-note">One dot is about ' + PER.toLocaleString("en-US") + ' people. <button type="button" class="who-fl-replay">' +
+        '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M2.5 8a5.5 5.5 0 1 0 1.8-4.1M2.5 2.5v3h3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Play again</button></p>';
+    const svg = host.querySelector("svg");
     const dots = [];
     GROUPS.forEach(g => { const m = Math.round(g.n / PER); for (let i = 0; i < m; i++) dots.push({ k: g.k, i }); });
-    const circles = dots.map(d => { const c = document.createElementNS(NS, "circle"); c.setAttribute("fill", GREY); svg.appendChild(c); return c; });
+    /* the groups mixed through the cloud, as they are in the city */
+    const mixed = dots.map((d, i) => i).sort((a, b) => ((a * 7919) % 1009) - ((b * 7919) % 1009));
+    const circles = dots.map(() => { const c = document.createElementNS(NS, "circle"); c.style.fill = GREY; svg.appendChild(c); return c; });
     /* a spiral fill, so a cloud looks scattered yet lands the same way every time */
     const pack = (cx, cy, r, n, seed) => { const pts = [], gold = Math.PI * (3 - Math.sqrt(5));
       for (let i = 0; i < n; i++){ const t = (i + .5) / n, rad = r * Math.sqrt(t) * .94, a = i * gold + seed; pts.push([cx + rad * Math.cos(a), cy + rad * Math.sin(a)]); }
       return pts; };
     const phone = () => matchMedia("(max-width:599px)").matches, reduce = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
-    let entered = false, raf = 0, cur = null;
+    let stage = "all", raf = 0, timers = [];
     function layout(){
       const Wd = host.clientWidth, rd = phone() ? 2.4 : 3.6, area = Math.pow(rd * 2.3, 2);
       const R = n => Math.sqrt(n * area / Math.PI);
-      const counts = GROUPS.map(g => Math.round(g.n / PER)), Rs = counts.map(R), H = Math.ceil(Math.max(...Rs) * 2 + 24);
-      const cols = [Wd / 6, Wd / 2, Wd * 5 / 6], cy = H / 2;
+      const counts = GROUPS.map(g => Math.round(g.n / PER)), Rs = counts.map(R), Rall = R(dots.length);
+      const H = Math.ceil(Math.max(Rall, ...Rs) * 2 + 24), cols = [Wd / 6, Wd / 2, Wd * 5 / 6], cy = H / 2;
       const to = new Float32Array(dots.length * 2), from = new Float32Array(dots.length * 2);
       let o = 0;
-      GROUPS.forEach((g, gi) => { const pts = pack(cols[gi], cy, Rs[gi], counts[gi], 1.3 * gi); pts.forEach(p => { to[2 * o] = p[0]; to[2 * o + 1] = p[1]; o++; }); });
-      /* before the beat arrives: one cloud of everyone, in the middle */
-      pack(Wd / 2, cy, R(dots.length), dots.length, .7).forEach((p, i) => { from[2 * i] = p[0]; from[2 * i + 1] = p[1]; });
+      GROUPS.forEach((g, gi) => { pack(cols[gi], cy, Rs[gi], counts[gi], 1.3 * gi).forEach(p => { to[2 * o] = p[0]; to[2 * o + 1] = p[1]; o++; }); });
+      /* everyone first: one cloud in the middle, the groups mixed through it */
+      pack(Wd / 2, cy, Rall, dots.length, .7).forEach((p, j) => { const i = mixed[j]; from[2 * i] = p[0]; from[2 * i + 1] = p[1]; });
       return { Wd, H, rd, to, from };
     }
-    function paint(p, rd, colour){
-      circles.forEach((c, i) => { c.setAttribute("cx", p[2 * i].toFixed(1)); c.setAttribute("cy", p[2 * i + 1].toFixed(1)); c.setAttribute("r", rd);
-        c.setAttribute("fill", colour ? COL[dots[i].k] : GREY); });
+    function size(L){ svg.setAttribute("width", L.Wd); svg.setAttribute("height", L.H); svg.setAttribute("viewBox", "0 0 " + L.Wd + " " + L.H); }
+    function paint(p, rd){ circles.forEach((c, i) => { c.setAttribute("cx", p[2 * i].toFixed(1)); c.setAttribute("cy", p[2 * i + 1].toFixed(1)); c.setAttribute("r", rd); }); }
+    function colour(on){ circles.forEach((c, i) => { c.style.fill = on ? COL[dots[i].k] : GREY; }); }
+    function setStage(st){ stage = st; host.dataset.stage = st; }
+    const ease = u => u < .5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
+    /* slowly: everyone in one cloud, then each takes its colour, then the
+       three groups draw apart, and only then are they named */
+    function play(){
+      timers.forEach(clearTimeout); timers = []; cancelAnimationFrame(raf);
+      const L = layout(); if (!L.Wd) return; size(L);
+      if (reduce()){ paint(L.to, L.rd); colour(true); setStage("sorted"); return; }
+      /* back to the start at once, with no fade, before the slow part */
+      host.classList.add("no-fade"); paint(L.from, L.rd); colour(false); setStage("all");
+      void host.offsetWidth; host.classList.remove("no-fade");
+      timers.push(setTimeout(() => { colour(true); setStage("colour"); }, 1100));
+      timers.push(setTimeout(() => {
+        setStage("sorted");
+        const t0 = performance.now(), dur = 2000, p = new Float32Array(dots.length * 2);
+        const tick = now => { const u = Math.min(1, (now - t0) / dur), e = ease(u);
+          for (let i = 0; i < p.length; i++) p[i] = L.from[i] + (L.to[i] - L.from[i]) * e;
+          paint(p, L.rd); if (u < 1) raf = requestAnimationFrame(tick); };
+        raf = requestAnimationFrame(tick);
+      }, 2200));
     }
-    function render(animate){
-      const L = layout(); if (!L.Wd) return;
-      svg.setAttribute("width", L.Wd); svg.setAttribute("height", L.H); svg.setAttribute("viewBox", "0 0 " + L.Wd + " " + L.H);
-      cancelAnimationFrame(raf);
-      if (!entered && !reduce()){ paint(L.from, L.rd, false); labs.parentElement.classList.remove("is-in"); return; }
-      if (!animate || reduce()){ paint(L.to, L.rd, true); host.classList.add("is-in"); return; }
-      const t0 = performance.now(), dur = 1100, p = new Float32Array(dots.length * 2), ease = u => u < .5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
-      const tick = now => {
-        const u = Math.min(1, (now - t0) / dur), e = ease(u);
-        for (let i = 0; i < p.length; i++) p[i] = L.from[i] + (L.to[i] - L.from[i]) * e;
-        paint(p, L.rd, u > .45);
-        if (u < 1) raf = requestAnimationFrame(tick); else host.classList.add("is-in");
-      };
-      raf = requestAnimationFrame(tick);
+    /* before the beat arrives, and on a resize: the stage as it stands */
+    function still(){
+      const L = layout(); if (!L.Wd) return; size(L);
+      if (stage === "sorted"){ paint(L.to, L.rd); colour(true); } else { paint(L.from, L.rd); colour(stage === "colour"); }
     }
-    render(false);
-    if (window.ResizeObserver){ let lw = 0; new ResizeObserver(() => { if (host.clientWidth === lw) return; lw = host.clientWidth; render(false); }).observe(host); }
+    setStage(reduce() ? "sorted" : "all"); still();
+    if (window.ResizeObserver){ let lw = 0; new ResizeObserver(() => { if (host.clientWidth === lw) return; lw = host.clientWidth; if (!raf || stage !== "sorted") still(); }).observe(host); }
+    host.querySelector(".who-fl-replay").addEventListener("click", play);
     const pagesEl = document.getElementById("pages");
     if (window.IntersectionObserver){
-      const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)){ io.disconnect(); if (!entered){ entered = true; render(true); } } }, { root: pagesEl || null, threshold: .5 });
-      io.observe(host);
-    } else { entered = true; render(false); }
+      const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)){ io.disconnect(); play(); } }, { root: pagesEl || null, threshold: .6 });
+      io.observe(svg);
+    } else play();
 
     /* the map's toggle: sending, receiving, or the net of the two */
     const WHAT = {
