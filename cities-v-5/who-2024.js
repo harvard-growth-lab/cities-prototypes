@@ -395,3 +395,29 @@ window.WHO_2024 = {
   ]
  }
 };
+
+/* The first table's comparison set (2026-10-13): the admin against the US
+   average and its four peers, 2024. us = the mean of every US admin with the
+   measure (9,591 for population, 13,847 salary, 15,998 home value, 1,606
+   unemployment, which BLS publishes only for admins of about 25,000 and
+   up); the peers as the reference matches them (2014 values); the peer
+   average is their mean, taken by the page. bucket = where the admin
+   stands among US admins, for the figure's tooltip. From the reference's
+   parquet (place_panel, place_housing); Boston's own values are the rows
+   above. */
+window.WHO_COMPARE_2024 = {
+  "us": { "population": 20207, "salary": 81669, "home_value": 411273, "unemployment": 4.17 },
+  "peers": [
+    { "name": "Washington", "st": "DC", "population": 702250, "salary": 112737, "home_value": 654897, "unemployment": 5.3 },
+    { "name": "Oakland", "st": "CA", "population": 443554, "salary": 119963, "home_value": 967539, "unemployment": 4.7 },
+    { "name": "Long Beach", "st": "CA", "population": 450901, "salary": 77926, "home_value": 857031, "unemployment": 5.6 },
+    { "name": "Cambridge", "st": "MA", "population": 121186, "salary": 129048, "home_value": 1072890, "unemployment": 3.1 }
+  ],
+  "lead": {},
+  "bucket": {
+    "population": "One of 38 US admins over 500,000 people: larger than 99 of every 100.",
+    "salary": "Top fifth of US admins: higher than about 85 of every 100.",
+    "home_value": "Top tenth of US admins: higher than 95 of every 100.",
+    "unemployment": "Middle fifth of the 1,606 US admins of 25,000 people and up: lower than about 57 of every 100. Lower is better."
+  }
+};
