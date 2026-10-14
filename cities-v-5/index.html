@@ -1727,7 +1727,8 @@
   .who-sc .sc-dot{fill:var(--mark-grey);opacity:.75;}
   .who-sc .sc-peer{stroke:var(--white);stroke-width:1.5;}
   .who-sc .sc-here{fill:var(--geo-city);stroke:var(--white);stroke-width:2;}
-  .who-sc .sc-pavg{fill:var(--white);stroke:var(--ink);stroke-width:2;}
+  .who-sc .sc-pavg{fill:none;stroke:var(--ink);stroke-width:2;}
+  .who-sc .sc-pavg-bg{fill:var(--white);}
   .who-sc .sc-usavg{fill:none;stroke:var(--ink);stroke-width:1.5;stroke-dasharray:4 3;}
   .who-sc .sc-usavg-halo{fill:none;stroke:var(--white);stroke-opacity:.6;stroke-width:4;}
   .who-sc .sc-avglab,.who-sc .sc-lab{paint-order:stroke;stroke:var(--white);stroke-width:3px;stroke-linejoin:round;}
@@ -12528,8 +12529,11 @@
             gLabels = el("g", "sc-labels", svg), hover = el("circle", "sc-hover", svg);
       hover.setAttribute("r", 6); hover.style.display = "none";
       const dots = rows.map((r, i) => (i === hereI || peerI.indexOf(i) >= 0) ? null : el("circle", "sc-dot", gCloud));
-      const pavg = el("circle", "sc-pavg", gMarks);
+      /* the peer average: a white disc under the peers (the cloud does not
+         show through it) and its open ring over them (a peer on it still shows) */
+      const pavgBg = el("circle", "sc-pavg-bg", gMarks);
       const peerDots = peerI.map(i => { const d = el("circle", "sc-peer", gMarks); d.style.fill = "var(--pc-" + slug(rows[i][C.name]) + ")"; return d; });
+      const pavg = el("circle", "sc-pavg", gMarks);
       const hereDot = el("circle", "sc-here", gMarks);
       let cur = null, geo = null, raf = 0, entered = false;
       /* nothing is left on the edge: the unemployment axis reaches the highest rate */
@@ -12590,48 +12594,65 @@
          no room steps outward on a leader, else takes the least overlap */
       function drawLabels(L){
         gLabels.textContent = "";
-        const { pos, pa, m, W, H, fs } = L, boxes = [];
+        const { pos, pa, m, W, H, fs } = L, boxes = [], segs = [];
         gRef.querySelectorAll(".sc-avglab").forEach(e => { const b = e.getBBox(); boxes.push([b.x - 2, b.y, b.x + b.width + 2, b.y + b.height, 60]); });
+        /* the US average's line: a name across it reads as struck through */
+        if (L.y && L.k !== "emp" && US[L.k] != null){ const Y = L.y(US[L.k]); boxes.push([m.l, Y - 3, W - m.r, Y + 3, 60, "line"]); }
         const marks = [[pos[2 * hereI], pos[2 * hereI + 1], 8]].concat(peerI.filter(isOn).map(i => [pos[2 * i], pos[2 * i + 1], 6]), [[pa[0], pa[1], 8]]);
         marks.forEach(([X, Y, r]) => boxes.push([X - r, Y - r, X + r, Y + r, 12]));
         const lim = [m.l - 4, 2, W - 2, H - m.b + 4];
         const cost = b => { let c = (b[0] < lim[0] || b[2] > lim[2] || b[1] < lim[1] || b[3] > lim[3]) ? 1e6 : 0;
           boxes.forEach(o => { const w = Math.min(b[2], o[2]) - Math.max(b[0], o[0]), h = Math.min(b[3], o[3]) - Math.max(b[1], o[1]); if (w > 0 && h > 0) c += w * h * (o[4] || 3); }); return c; };
         const centres = marks.map(([X, Y]) => [X, Y]);
+        /* a name must sit clearly nearer its own mark than any other, or it reads as the other's */
         const nearer = (b, X, Y) => { const dist = (cx, cy) => Math.hypot(Math.max(b[0] - cx, 0, cx - b[2]), Math.max(b[1] - cy, 0, cy - b[3])); const own = dist(X, Y);
-          return centres.some(([cx, cy]) => Math.hypot(cx - X, cy - Y) > 4 && dist(cx, cy) + 2 < own) ? 400 : 0; };
-        const place = (X, Y, r, s, cls) => {
+          return centres.some(([cx, cy]) => Math.hypot(cx - X, cy - Y) > 4 && dist(cx, cy) < own + 4) ? 400 : 0; };
+        /* does a segment cross a box? (Liang and Barsky's clip) */
+        const hits = (x1, y1, x2, y2, b) => { let t0 = 0, t1 = 1; const dx = x2 - x1, dy = y2 - y1, P = [-dx, dx, -dy, dy], Q = [x1 - b[0], b[2] - x1, y1 - b[1], b[3] - y1];
+          for (let i = 0; i < 4; i++){ if (P[i] === 0){ if (Q[i] < 0) return false; } else { const t = Q[i] / P[i]; if (P[i] < 0){ if (t > t1) return false; if (t > t0) t0 = t; } else { if (t < t0) return false; if (t < t1) t1 = t; } } }
+          return true; };
+        const place = (X, Y, r, s, cls, may) => {
           const e = el("text", "sc-lab " + cls, gLabels); e.textContent = s;
           const w = e.getComputedTextLength(), h = fs;
           const box = (cx, cy, a) => { const x0 = a === "start" ? cx : a === "end" ? cx - w : cx - w / 2; return [x0 - 1, cy - h + 1, x0 + w + 1, cy + 3]; };
+          /* the leader from the mark's edge to the name's nearest side */
+          const lead = b => { const tx = Math.max(b[0], Math.min(X, b[2])), ty = Math.max(b[1], Math.min(Y, b[3])), dx = tx - X, dy = ty - Y, len = Math.hypot(dx, dy) || 1;
+            return [X + dx / len * (r + 1), Y + dy / len * (r + 1), tx - dx / len * 2, ty - dy / len * 2]; };
+          const own = o => X >= o[0] && X <= o[2] && Y >= o[1] && Y <= o[3];
           let best = null;
-          for (const d of [0, 14, 28, 44, 62, 84]){
+          for (const d of [0, 14, 28, 44, 62, 84, 110, 140]){
             const R = r + d, q = R * .72;
             const c = [[X + R + 4, Y + h * .35, "start"], [X - R - 4, Y + h * .35, "end"], [X, Y - R - 5, "middle"], [X, Y + R + h + 1, "middle"],
                        [X + q + 3, Y - q - 3, "start"], [X - q - 3, Y - q - 3, "end"], [X + q + 3, Y + q + h, "start"], [X - q - 3, Y + q + h, "end"]];
-            for (const [cx, cy, a] of c){ const b = box(cx, cy, a), v = cost(b) + nearer(b, X, Y) + d * 2; if (!best || v < best.v) best = { v, cx, cy, a, b, d }; }
+            for (const [cx, cy, a] of c){ const b = box(cx, cy, a);
+              /* beside its mark the name must be nearer it than anything else; a leader says whose it is */
+              let v = cost(b) + nearer(b, X, Y) * (d ? .5 : 12) + d * 2;
+              if (segs.some(g => hits(g[0], g[1], g[2], g[3], [b[0] + 1, b[1] + 1, b[2] - 1, b[3] - 1]))) v += 1e5;
+              if (d){ const g = lead(b); if (boxes.some(o => o[5] !== "line" && !own(o) && hits(g[0], g[1], g[2], g[3], o))) v += 1e5; }
+              if (!best || v < best.v) best = { v, cx, cy, a, b, d }; }
             if (best.v === best.d * 2) break;
           }
+          /* a peer's name with no clean place is left off (its chip below
+             names it in its colour) rather than set over a name or a mark */
+          if (may && best.v > 2000){ e.remove(); return; }
           e.setAttribute("x", best.cx); e.setAttribute("y", best.cy); e.setAttribute("text-anchor", best.a);
           boxes.push(best.b.concat(60));
           if (best.d){
-            const tx = Math.max(best.b[0], Math.min(X, best.b[2])), ty = Math.max(best.b[1], Math.min(Y, best.b[3]));
-            const dx = tx - X, dy = ty - Y, len = Math.hypot(dx, dy) || 1;
+            const g = lead(best.b); segs.push(g);
             const ln = el("line", "sc-leader", gLabels);
-            ln.setAttribute("x1", (X + dx / len * (r + 1)).toFixed(1)); ln.setAttribute("y1", (Y + dy / len * (r + 1)).toFixed(1));
-            ln.setAttribute("x2", (tx - dx / len * 2).toFixed(1)); ln.setAttribute("y2", (ty - dy / len * 2).toFixed(1));
+            ln.setAttribute("x1", g[0].toFixed(1)); ln.setAttribute("y1", g[1].toFixed(1)); ln.setAttribute("x2", g[2].toFixed(1)); ln.setAttribute("y2", g[3].toFixed(1));
             gLabels.insertBefore(ln, gLabels.firstChild);
           }
         };
         place(pos[2 * hereI], pos[2 * hereI + 1], 8, "Boston", "sc-lab--here");
         place(pa[0], pa[1], 8, "Peer average", "sc-lab--avg");
-        peerI.filter(isOn).sort((a, b) => pos[2 * a] - pos[2 * b]).forEach(i => place(pos[2 * i], pos[2 * i + 1], 6, rows[i][C.name], ""));
+        peerI.filter(isOn).sort((a, b) => pos[2 * a] - pos[2 * b]).forEach(i => place(pos[2 * i], pos[2 * i + 1], 6, rows[i][C.name], "", true));
       }
       function paint(p, pa){
         for (let i = 0; i < n; i++){ const d = dots[i]; if (d){ d.setAttribute("cx", p[2 * i].toFixed(1)); d.setAttribute("cy", p[2 * i + 1].toFixed(1)); } }
         peerI.forEach((i, j) => { peerDots[j].setAttribute("cx", p[2 * i]); peerDots[j].setAttribute("cy", p[2 * i + 1]); });
         hereDot.setAttribute("cx", p[2 * hereI]); hereDot.setAttribute("cy", p[2 * hereI + 1]);
-        pavg.setAttribute("cx", pa[0]); pavg.setAttribute("cy", pa[1]); pavg.setAttribute("r", 5.5);
+        [pavgBg, pavg].forEach(c => { c.setAttribute("cx", pa[0]); c.setAttribute("cy", pa[1]); c.setAttribute("r", 5.5); });
         peerI.forEach((i, j) => { peerDots[j].style.display = isOn(i) ? "" : "none"; });
       }
       /* drawn at its own positions, or, before the beat arrives, at the beat
@@ -12687,7 +12708,7 @@
       svg.addEventListener("pointermove", showTip); svg.addEventListener("pointerdown", showTip);
       svg.addEventListener("pointerleave", ev => { if (ev.pointerType === "mouse") hideTip(); });
       /* a peer switched on or off anywhere: its dot and name come and go here too */
-      document.addEventListener("who:peers", ev => { if (ev.detail && ev.detail.set && ev.detail.set !== opts.set) return; drawPeers(); if (!geo || !cur) return; paint(cur, geo.pa); if (entered) drawLabels(geo); });
+      document.addEventListener("who:peers", ev => { if (ev.detail && ev.detail.set && ev.detail.set !== opts.set) return; drawPeers(); if (!geo || !cur) return; paint(cur, entered || reduce() ? geo.pa : layout(prevK).pa); if (entered) drawLabels(geo); });
       drawPeers();
       render(false);
       if (window.ResizeObserver){ let lw = 0; new ResizeObserver(() => { if (plot.clientWidth === lw) return; lw = plot.clientWidth; render(false); }).observe(plot); }
@@ -12706,6 +12727,30 @@
   build(window.WHO_METRO_SCATTER_2024, window.WHO_COMPARE_METRO_2024, [...document.querySelectorAll('.who-sc[data-set="metro"]')],
     { set: "metro", unit: "a US metro", tag: "Metro" });
   })();
+
+  /* the commuting figure's replay (2026-10-14): it plays each time it comes
+     into view, scrolling down or back up, and goes back to its start once
+     all but out of view. In view means in the part of the column the
+     reader sees: below the map where the map sits over the column (phones
+     and tablets), the whole height where it sits beside it. */
+  function whoWatch(el, at, onIn, onOut){
+    const pages = document.getElementById("pages"), map = document.querySelector("#ovWrap .ov-map");
+    let armed = true, q = 0;
+    const share = () => {
+      const r = el.getBoundingClientRect(); if (!r.height || !r.width) return 0;
+      const pr = pages ? pages.getBoundingClientRect() : { top: 0, bottom: innerHeight };
+      let top = Math.max(pr.top, 0); const bottom = Math.min(pr.bottom, innerHeight);
+      if (map){ const mr = map.getBoundingClientRect(); if (mr.height && mr.left < r.right && mr.right > r.left && mr.top <= top + 2 && mr.bottom > top) top = mr.bottom; }
+      return Math.max(0, Math.min(r.bottom, bottom) - Math.max(r.top, top)) / r.height;
+    };
+    const check = () => { q = 0; const v = share();
+      if (armed && v >= at - .01){ armed = false; onIn(); } else if (!armed && v < .2){ armed = true; onOut(); } };
+    const ask = () => { if (!q) q = requestAnimationFrame(check); };
+    document.addEventListener("scroll", ask, { passive: true, capture: true });
+    addEventListener("resize", ask);
+    if (window.IntersectionObserver) new IntersectionObserver(ask, { threshold: [0, .25, .5, .75, 1] }).observe(el);
+    ask();
+  }
 
   /* ---- Who are you?: the commuting beat (2026-10-14) ----
      Everyone with a job in Boston or a home there and a job somewhere, one
@@ -12752,7 +12797,7 @@
       for (let i = 0; i < n; i++){ const t = (i + .5) / n, rad = r * Math.sqrt(t) * .94, a = i * gold + seed; pts.push([cx + rad * Math.cos(a), cy + rad * Math.sin(a)]); }
       return pts; };
     const phone = () => matchMedia("(max-width:599px)").matches, reduce = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
-    let stage = "all", raf = 0, timers = [];
+    let stage = "all", raf = 0, timers = [], stale = false;
     function layout(){
       const Wd = host.clientWidth, rd = phone() ? 2.4 : 3.6, area = Math.pow(rd * 2.3, 2);
       const R = n => Math.sqrt(n * area / Math.PI);
@@ -12781,11 +12826,14 @@
       void host.offsetWidth; host.classList.remove("no-fade");
       timers.push(setTimeout(() => { colour(true); setStage("colour"); }, 1100));
       timers.push(setTimeout(() => {
+        /* laid out afresh: the width may have changed since the start */
+        const L = layout(); if (!L.Wd) return; size(L);
         setStage("sorted");
         const t0 = performance.now(), dur = 2000, p = new Float32Array(dots.length * 2);
         const tick = now => { const u = Math.min(1, (now - t0) / dur), e = ease(u);
           for (let i = 0; i < p.length; i++) p[i] = L.from[i] + (L.to[i] - L.from[i]) * e;
-          paint(p, L.rd); raf = u < 1 ? requestAnimationFrame(tick) : 0; };
+          paint(p, L.rd); raf = u < 1 ? requestAnimationFrame(tick) : 0;
+          if (!raf && stale){ stale = false; still(); } };
         raf = requestAnimationFrame(tick);
       }, 2200));
     }
@@ -12795,23 +12843,17 @@
       if (stage === "sorted"){ paint(L.to, L.rd); colour(true); } else { paint(L.from, L.rd); colour(stage === "colour"); }
     }
     setStage(reduce() ? "sorted" : "all"); still();
-    if (window.ResizeObserver){ let lw = 0; new ResizeObserver(() => { if (host.clientWidth === lw) return; lw = host.clientWidth; if (!raf || stage !== "sorted") still(); }).observe(host); }
+    if (window.ResizeObserver){ let lw = 0; new ResizeObserver(() => { if (host.clientWidth === lw) return; lw = host.clientWidth; if (raf && stage === "sorted"){ stale = true; return; } still(); }).observe(host); }
     host.querySelector(".who-fl-replay").addEventListener("click", play);
     /* it plays every time it comes into view, scrolling down or back up:
        once all but out of view it goes back to the grey cloud, ready to
        play again (a small scroll back and forth does not restart it) */
     function reset(){
-      timers.forEach(clearTimeout); timers = []; cancelAnimationFrame(raf); raf = 0;
+      timers.forEach(clearTimeout); timers = []; cancelAnimationFrame(raf); raf = 0; stale = false;
       if (reduce()) return;
       host.classList.add("no-fade"); setStage("all"); still(); void host.offsetWidth; host.classList.remove("no-fade");
     }
-    const pagesEl = document.getElementById("pages");
-    if (window.IntersectionObserver){
-      let armed = true;
-      new IntersectionObserver(es => { const r = es[es.length - 1].intersectionRatio;
-        if (armed && r >= .59){ armed = false; play(); }
-        else if (!armed && r < .2){ armed = true; reset(); } }, { root: pagesEl || null, threshold: [0, .2, .6] }).observe(svg);
-    } else play();
+    whoWatch(svg, .6, play, reset);
 
     /* the map's toggle: sending, receiving, or the net of the two */
     const WHAT = {
@@ -12955,13 +12997,7 @@
       if (reduce()) return;
       host.classList.add("no-fade"); setStage("all"); still(); void host.offsetWidth; host.classList.remove("no-fade");
     }
-    const pagesEl = document.getElementById("pages");
-    if (window.IntersectionObserver){
-      let armed = true;
-      new IntersectionObserver(es => { const r = es[es.length - 1].intersectionRatio;
-        if (armed && r >= .49){ armed = false; play(); }
-        else if (!armed && r < .2){ armed = true; reset(); } }, { root: pagesEl || null, threshold: [0, .2, .5] }).observe(svg);
-    }
+    whoWatch(svg, .5, play, reset);
 
     /* the study: dots (opt-1) or flows (opt-2), in this beat's counter */
     /* v-5 shows the dots; v-6 the flows */
