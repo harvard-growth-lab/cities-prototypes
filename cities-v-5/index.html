@@ -1733,6 +1733,154 @@
   .who-sc-note{margin:6px 0 0;font-size:13px;line-height:1.5;color:var(--ink-soft);}
   .who-sc-note[hidden]{display:none;}
   .who-sc-peers .wt-peers{margin-top:12px;}
+  /* the right side's opt-1 (2026-10-15): five steps of one purple for the
+     fifths, on the chart's dots and the map's alike (data colours, outside
+     the thirteen, clear of Boston's teal and the peers') */
+  #ovWrap{--fifth-1:#b9a9d9;--fifth-2:#9e83c5;--fifth-3:#865caf;--fifth-4:#6a3d8b;--fifth-5:#4e2165;}
+  .who-sc.is-tinted .sc-dot{opacity:.9;}
+  #ovWrap[data-right="chart"] .r-map{display:none;}
+  /* ---- the right side's opt-2 (2026-10-15): no map in the scatter beats.
+     The chart becomes a framed panel that lands on the map card (same top
+     and height) and covers it; the beat's words narrow to Metro
+     Industries' column beside it: the counter, the title, the measure's
+     reading and Ask the chart. On a phone the panel is the band. ---- */
+  #ovWrap:not([data-right="chart"]) :is(.sc-say, .sc-ask, .sc-find, .sc-bandn){display:none;}
+  #ovWrap:not([data-right="chart"]) .who-sc-ctl .seg-btn[data-m="yp"]{display:none;}
+  #ovWrap[data-right="chart"] .sc-beat .who-sc-note{display:none;}
+  #ovWrap[data-right="chart"] .sc-beat > .lede{display:none;}
+  .sc-say p{margin:0 0 18px;font-size:var(--t-note);line-height:1.55;color:var(--ink);}
+  #ovWrap .sc-ask{margin:4px 0 0;}
+  #ovWrap .sc-ask .ask-lab{margin:0 0 4px;font-size:13px;font-weight:600;color:var(--ink-soft);}
+  #ovWrap .sc-ask .ask-item{margin:0 -10px;border-top:1px solid var(--border);transition:background .15s ease;}
+  #ovWrap .sc-ask .ask-item:last-child{border-bottom:1px solid var(--border);}
+  #ovWrap .sc-ask .ask-item.is-on{background:var(--teal-tint);}
+  #ovWrap .sc-ask .ask-q{display:flex;gap:10px;align-items:center;width:100%;min-height:44px;margin:0;padding:10px;appearance:none;background:none;border:0;text-align:left;cursor:pointer;font:inherit;font-size:var(--t-note);line-height:1.35;color:var(--ink);}
+  #ovWrap .sc-ask .ask-q:hover{background:var(--teal-tint);}
+  #ovWrap .sc-ask .ask-q:focus-visible{outline:2px solid var(--teal);outline-offset:-2px;}
+  #ovWrap .sc-ask .ask-gly{flex:none;width:15px;height:15px;color:var(--ink-soft);}
+  #ovWrap .sc-ask .ask-txt{flex:1;}
+  #ovWrap .sc-ask .ask-go{flex:none;display:inline-flex;align-items:center;font-size:13px;font-weight:600;color:var(--teal);white-space:nowrap;}
+  #ovWrap .sc-ask .ask-off{display:inline-flex;align-items:center;gap:5px;}
+  #ovWrap .sc-ask .ask-off svg{width:14px;height:14px;}
+  #ovWrap .sc-ask .ask-on{display:none;align-items:center;gap:6px;}
+  #ovWrap .sc-ask .ask-on::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--teal);}
+  #ovWrap .sc-ask .ask-q[aria-expanded="true"] .ask-off{display:none;}
+  #ovWrap .sc-ask .ask-q[aria-expanded="true"] .ask-on{display:inline-flex;}
+  #ovWrap .sc-ask .ask-ans{padding:0 10px 12px 35px;}
+  #ovWrap .sc-ask .ask-ans[hidden]{display:none;}
+  #ovWrap .sc-ask .ask-a{margin:0;font-size:var(--t-note);line-height:1.5;color:var(--ink);}
+  /* the panel's parts: the controls, the header on one line, the plot, the peers */
+  #ovWrap[data-right="chart"] .who-sc-ctl{margin:0;flex-wrap:wrap;row-gap:8px;}
+  .sc-find{display:inline-flex;align-items:center;gap:8px;margin-left:auto;}
+  .sc-find-box{position:relative;}
+  .sc-find input{width:220px;height:32px;box-sizing:border-box;padding:0 54px 0 10px;font:inherit;font-size:13px;color:var(--ink);background:var(--white);border:1px solid var(--control-edge);border-radius:4px;}
+  .sc-find input:focus-visible{outline:2px solid var(--teal);outline-offset:1px;}
+  .sc-find-clear{position:absolute;right:4px;top:4px;height:24px;padding:0 6px;font:inherit;font-size:13px;font-weight:600;color:var(--teal);background:none;border:0;border-radius:4px;cursor:pointer;}
+  .sc-find-clear[hidden]{display:none;}
+  .sc-find-list{position:absolute;left:0;right:0;top:36px;z-index:30;margin:0;padding:4px 0;list-style:none;background:var(--white);border:1px solid var(--border-strong);border-radius:4px;box-shadow:var(--shadow-md);min-width:260px;}
+  .sc-find-list[hidden]{display:none;}
+  .sc-find-list li{display:flex;justify-content:space-between;gap:12px;padding:6px 10px;font-size:13px;line-height:1.3;color:var(--ink);cursor:pointer;}
+  .sc-find-list li[aria-selected="true"],.sc-find-list li:hover{background:var(--teal-tint);}
+  .sc-find-list .sc-opt-pop{color:var(--ink-soft);white-space:nowrap;}
+  .sc-find-list .sc-opt-none{color:var(--ink-soft);cursor:default;}
+  #ovWrap[data-right="chart"] .sc-beat .who-sc-cmp{max-width:none;margin:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 18px;}
+  #ovWrap[data-right="chart"] .sc-beat .who-sc-cmp .wt-head{flex-direction:row;align-items:baseline;gap:8px;}
+  #ovWrap[data-right="chart"] .sc-beat .who-sc-cmp .wt-diff{flex-direction:row;flex-wrap:wrap;gap:4px 16px;margin:0;}
+  .sc-bandn{margin:0;font-size:var(--t-note);line-height:1.4;color:var(--ink);}
+  .sc-bandn b{font-weight:600;font-variant-numeric:tabular-nums;}
+  .sc-bandn b.is-good{color:var(--rise);} .sc-bandn b.is-bad{color:var(--fall);}
+  .who-sc .sc-band{fill:var(--teal-tint);}
+  .who-sc .sc-bandlab{font-weight:600;fill:var(--ink-soft);}
+  #ovWrap[data-right="chart"] .who-sc .sc-dot.in-band{fill:var(--control-edge);opacity:1;}
+  .who-sc svg.is-faded .sc-dot:not(.in-band){opacity:.3;}
+  .who-sc .sc-call{fill:none;stroke:var(--ink);stroke-width:1.5;}
+  .who-sc .sc-found{fill:none;stroke:var(--orange);stroke-width:2.5;}
+  .who-sc .sc-calldot{fill:var(--ink-soft);stroke:var(--white);stroke-width:1;}
+  .who-sc .sc-lab--call{font-weight:600;}
+  .who-sc.is-asked{border-color:var(--teal) !important;}
+  @media (min-width:900px){
+    #ovWrap[data-right="chart"] .sc-beat{position:relative;z-index:7;justify-content:flex-start;min-height:calc(var(--ov-map-h, 700px) + 30vh);}
+    #ovWrap[data-right="chart"] .sc-beat > :not(.who-sc):not(template){max-width:336px;}
+    #ovWrap[data-right="chart"] .sc-beat > .who-sc{
+      order:-1;position:sticky;top:var(--ov-map-top, calc(var(--chrome-h) + var(--stage-air)));
+      height:var(--ov-map-h, calc(100vh - var(--chrome-h) - 2 * var(--stage-air)));
+      width:var(--sc-panel-w, 900px);margin:0 0 0 379px;
+      box-sizing:border-box;padding:18px 28px 14px;display:flex;flex-direction:column;gap:12px;
+      background:var(--white);border:1px solid var(--border);border-radius:10px;
+    }
+    /* the words start at the panel's top: the panel keeps its height in the
+       flow (so it can never hang past its own beat), and the words that
+       follow it step back up beside it */
+    #ovWrap[data-right="chart"] .sc-beat > .ct-eyebrow{margin-top:calc(-1 * var(--ov-map-h, calc(100vh - var(--chrome-h) - 2 * var(--stage-air))));}
+    #ovWrap[data-right="chart"] .sc-beat .who-sc-plot{flex:1;min-height:0;position:relative;}
+    #ovWrap[data-right="chart"] .sc-beat .who-sc-plot svg{position:absolute;left:0;top:0;width:100%;height:100%;}
+    #ovWrap[data-right="chart"] .sc-beat .who-sc-peers .wt-peers{margin-top:0;}
+    /* the map steps back under the panel */
+    #ovWrap[data-right="chart"]:has(.sc-beat.is-on) .ov-map-inner{opacity:0;transition:opacity .25s ease;}
+  }
+  @media (max-width:899px){
+    #ovWrap[data-right="chart"] .sc-beat > .who-sc{
+      order:-1;position:sticky;top:var(--secbar-h, var(--chrome-h));z-index:7;
+      height:var(--ov-band-h, 320px);width:100vw;margin:0 0 14px calc(50% - 50vw);
+      box-sizing:border-box;padding:6px 8px 4px;display:flex;flex-direction:column;
+      background:var(--white);border-bottom:1px solid var(--border);
+    }
+    #ovWrap[data-right="chart"] .sc-beat .who-sc-plot{flex:1;min-height:0;position:relative;}
+    #ovWrap[data-right="chart"] .sc-beat .who-sc-plot svg{position:absolute;left:0;top:0;width:100%;height:100%;}
+    #ovWrap[data-right="chart"] .sc-slot{display:flex;flex-direction:column;gap:12px;margin:0 0 18px;}
+    /* the controls come right after the title: the chart they set is in the band above */
+    #ovWrap[data-right="chart"] .sc-beat > .ct-eyebrow{order:1;}
+    #ovWrap[data-right="chart"] .sc-beat > .page-head{order:2;}
+    #ovWrap[data-right="chart"] .sc-beat > .sc-slot{order:3;}
+    #ovWrap[data-right="chart"] .sc-beat > .sc-say{order:4;}
+    #ovWrap[data-right="chart"] .sc-beat > .sc-ask{order:5;}
+    #ovWrap[data-right="chart"] .sc-slot .who-sc-ctl .seg{display:grid !important;grid-template-columns:1fr 1fr;width:100% !important;}
+    #ovWrap[data-right="chart"] .sc-slot .who-sc-ctl .seg-btn{border:0 !important;box-shadow:inset 0 0 0 .5px var(--control-edge);height:40px !important;justify-content:center;}
+    #ovWrap[data-right="chart"] .sc-slot .sc-find{margin-left:0;flex-direction:column;align-items:stretch;width:100%;}
+    #ovWrap[data-right="chart"] .sc-slot .sc-find input{width:100%;height:44px;}
+    #ovWrap[data-right="chart"] .sc-slot .sc-find-clear{top:10px;}
+    #ovWrap[data-right="chart"] .sc-slot .sc-find-list{top:48px;}
+  }
+  #ovWrap:not([data-right="chart"]) .sc-slot{display:none;}
+  .ov-nation .leaflet-overlay-pane > svg{opacity:0;transition:opacity .3s;}
+  .ov-nation .map-callouts{display:none;}
+  /* at a fractional zoom Chrome leaves 1px seams between the scaled tiles,
+     the white ground showing through as lines on the land (plainest at the
+     US view); a transparent outline makes each tile its own layer and
+     closes them */
+  #ovMap .leaflet-tile{outline:1px solid transparent;}
+  .nat-lbls{position:absolute;inset:0;z-index:460;pointer-events:none;}
+  .nat-lbls svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;}
+  .nat-lbls line{stroke:var(--ink-soft);stroke-width:1;}
+  .nat-lbl{position:absolute;padding:2px 6px;font-size:13px;line-height:1.25;color:var(--ink);white-space:nowrap;background:var(--white);border:1px solid var(--border-strong);border-radius:4px;}
+  .nat-lbl--here{font-weight:600;border-color:var(--geo-city);}
+  .nat-card{position:absolute;z-index:470;max-width:240px;padding:7px 9px;font-size:13px;line-height:1.4;color:var(--ink);background:var(--white);border:1px solid var(--border-strong);border-radius:4px;box-shadow:var(--shadow-md);pointer-events:none;}
+  .nat-card[hidden]{display:none;}
+  .nat-card b{display:block;font-weight:600;}
+  .nat-card span{display:block;color:var(--ink-soft);}
+  .who-legend--fifths .wl-rows{display:flex;flex-direction:column;gap:2px;}
+  .who-legend--fifths .wl-row{display:flex;align-items:center;gap:7px;font-variant-numeric:tabular-nums;}
+  .who-legend--fifths .wl-row i{width:10px;height:10px;border-radius:50%;flex:none;}
+  .who-legend--fifths .wl-bar,.who-legend--fifths .wl-ends{display:none;}
+  .who-legend--fifths .wl-bar i{flex:1;height:9px;}
+  .who-legend--fifths .wl-hint{color:var(--ink-soft);margin-left:4px;}
+  .who-legend--fifths .wl-here{display:inline-flex;align-items:center;gap:5px;margin-left:8px;color:var(--ink);font-weight:600;}
+  .who-legend--fifths .wl-here i{width:10px;height:10px;border-radius:50%;background:var(--geo-city);box-shadow:0 0 0 1.5px var(--white),0 0 0 2.5px var(--geo-city);flex:none;}
+  .who-legend--fifths .wl-bar i.is-here{position:relative;}
+  .who-legend--fifths .wl-bar i.is-here::after{content:"";position:absolute;left:50%;top:-6px;width:8px;height:8px;margin-left:-4px;border-radius:50%;background:var(--geo-city);box-shadow:0 0 0 1.5px var(--white);}
+  @media (max-width:599px){
+    .who-legend--fifths .wl-rows{display:none;}
+    .who-legend--fifths .wl-bar{margin-top:6px;}
+    .who-legend--fifths .wl-bar{display:flex;gap:1px;}
+    .who-legend--fifths .wl-ends{display:flex;}
+  }
+  /* the measure switch over the chart (in the commuting toggle's dress,
+     kept in one row), and the measure's reading under it */
+  .who-sc-ctl{margin:4px 0 16px;}
+  .who-sc-ctl .seg{flex-direction:row !important;width:auto !important;flex-wrap:wrap;}
+  .who-sc-ctl .seg-btn{border-top:0 !important;border-left:1px solid var(--control-edge) !important;height:32px !important;}
+  .who-sc-ctl .seg-btn:first-child{border-left:0 !important;}
+  .who-sc-note.who-sc-say{margin:12px 0 0;max-width:640px;font-size:var(--t-note);line-height:1.55;color:var(--ink);}
   /* in the dress of the Metro Industries and Worker Flows charts: tick
      labels 13px medium soft ink, the axis names 13px semibold soft ink with
      no arrows, the grid in the border grey, the US average the house's
@@ -6964,18 +7112,14 @@
       <div class="sec" data-sec="page-intro-q1 page-intro-q2 page-intro-q3 page-intro-q4 page-intro-q5 page-intro-q6 page-intro-q7">
         <button class="sec-head" onclick="goTo('page-intro-q1')"><span class="num"><svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13" aria-hidden="true"><path d="M12 2l2.9 6.2 6.6.8-4.9 4.6 1.3 6.5L12 16.9 6.1 20l1.3-6.5L2.5 9l6.6-.8L12 2z"/></svg></span>Explore Your Assumption</button>
       </div>
-      <div class="sec" data-sec="page-overview page-overview-wage page-overview-home page-overview-unemp page-overview-flows page-overview-metro page-overview-mwage page-overview-mhome page-overview-munemp page-overview-compare page-overview-practice">
+      <div class="sec" data-sec="page-overview page-overview-scatter page-overview-flows page-overview-metro page-overview-mscatter page-overview-compare page-overview-practice">
         <button class="sec-head" onclick="goTo('page-overview')"><span class="num" aria-hidden="true"></span>Who are you?</button>
         <ul class="steps">
           <li data-step="page-overview"><span class="dot"></span><button onclick="goTo('page-overview')">Where Boston stands</button></li>
-          <li data-step="page-overview-wage"><span class="dot"></span><button onclick="goTo('page-overview-wage')">Wages</button></li>
-          <li data-step="page-overview-home"><span class="dot"></span><button onclick="goTo('page-overview-home')">Home values</button></li>
-          <li data-step="page-overview-unemp"><span class="dot"></span><button onclick="goTo('page-overview-unemp')">Unemployment</button></li>
+          <li data-step="page-overview-scatter"><span class="dot"></span><button onclick="goTo('page-overview-scatter')">Among all admins</button></li>
           <li data-step="page-overview-flows"><span class="dot"></span><button onclick="goTo('page-overview-flows')">Who works here</button></li>
           <li data-step="page-overview-metro"><span class="dot"></span><button onclick="goTo('page-overview-metro')">The metro</button></li>
-          <li data-step="page-overview-mwage"><span class="dot"></span><button onclick="goTo('page-overview-mwage')">Metro wages</button></li>
-          <li data-step="page-overview-mhome"><span class="dot"></span><button onclick="goTo('page-overview-mhome')">Metro home values</button></li>
-          <li data-step="page-overview-munemp"><span class="dot"></span><button onclick="goTo('page-overview-munemp')">Metro unemployment</button></li>
+          <li data-step="page-overview-mscatter"><span class="dot"></span><button onclick="goTo('page-overview-mscatter')">Among all metros</button></li>
           <li data-step="page-overview-compare"><span class="dot"></span><button onclick="goTo('page-overview-compare')">City and metro</button></li>
           <li data-step="check-overview"><span class="dot"></span><button onclick="goTo('check-overview')">Test your knowledge</button></li>
           <li data-step="apply-overview"><span class="dot"></span><button onclick="goTo('apply-overview')">Put your insights</button></li>
@@ -7254,35 +7398,44 @@
             <div class="who-ind" data-who="place"></div>
           </section>
 
-          <!-- the scatter beats (2026-10-14): one chart each, in this column,
-               every US admin by population across and the measure up, read
-               the way the table reads; the first lifts out of a population
-               strip as it arrives -->
-          <section class="ov-block" id="page-overview-wage">
+          <!-- one chart for the admin (v-6 2026-10-14, v-5 2026-10-15), every US admin by
+               population across and, up the side, the measure picked above
+               it; the measure's own reading under the chart, from the
+               template below -->
+          <section class="ov-block sc-beat" id="page-overview-scatter">
             <div class="page-head">
-              <h2><span class="city-short">Boston</span> pays well, a little under its peers</h2>
+              <h2>How does <span class="city-short">Boston</span> compare with admins of every size?</h2>
             </div>
-            <p class="lede">Pay does not rise with size among US admins: the highest salaries are in small
-              suburbs such as Los Altos and Saratoga in California.</p>
-            <div class="who-sc" data-measure="wage"></div>
-          </section>
-
-          <section class="ov-block" id="page-overview-home">
-            <div class="page-head">
-              <h2>A <span class="city-short">Boston</span> home costs more than twice the US average</h2>
+            <p class="lede">Each dot is a US admin of about 25,000 people or more, placed by its population and by the
+              measure you choose.<span class="r-map"> The colours split the admins into fifths, and the map shows where each one is.</span></p>
+            <div class="sc-say" aria-live="polite"></div>
+            <div class="ask-chart sc-ask" data-fig="sc" role="group" aria-labelledby="scAskLabA">
+              <p class="ask-lab" id="scAskLabA">Ask the chart</p>
+              <div class="ask-item">
+                <button type="button" class="ask-q" data-ask="a1" aria-expanded="false" aria-controls="scAsk-a1"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">How does Boston&rsquo;s pay compare with admins its size?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
+                <div class="ask-ans" id="scAsk-a1" hidden><p class="ask-a">Boston pays more than 37 of the 45 admins with half to twice its people. San Francisco pays the most, at $180K.</p></div>
+              </div>
+              <div class="ask-item">
+                <button type="button" class="ask-q" data-ask="a2" aria-expanded="false" aria-controls="scAsk-a2"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Do admins its size have more expensive homes?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
+                <div class="ask-ans" id="scAsk-a2" hidden><p class="ask-a">Only two of the 45: San Jose, at $1.4M, and San Francisco, at $1.3M. A Boston home is worth $973K.</p></div>
+              </div>
+              <div class="ask-item">
+                <button type="button" class="ask-q" data-ask="a3" aria-expanded="false" aria-controls="scAsk-a3"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Where in Massachusetts is a home hardest to afford?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
+                <div class="ask-ans" id="scAsk-a3" hidden><p class="ask-a">In Everett, where a home costs 10.3 years of pay. Boston, at 9.2, is not far behind. Newton has the state&rsquo;s most expensive homes, but its pay is high too: 5.7 years.</p></div>
+              </div>
             </div>
-            <p class="lede">The typical <span class="city-short">Boston</span> home is worth more than in 95 of every
-              100 US admins, and more than in each of its peers but Cambridge.</p>
-            <div class="who-sc" data-measure="home"></div>
-          </section>
-
-          <section class="ov-block" id="page-overview-unemp">
-            <div class="page-head">
-              <h2>Unemployment sits under the US average</h2>
-            </div>
-            <p class="lede">Size says little here: the highest rates are in small farming towns such as Calexico,
-              California, at 29.4%.</p>
-            <div class="who-sc" data-measure="unemp"></div>
+            <div class="who-sc" data-measure="wage" data-switch></div>
+            <template class="who-sc-says">
+              <p data-m="wage"><span class="city-short">Boston</span> pays well, a little under its peers. Pay does not
+                rise with size among US admins: the highest salaries are in small suburbs such as Los Altos and
+                Saratoga in California.</p>
+              <p data-m="home">A <span class="city-short">Boston</span> home costs more than twice the US average. It is
+                worth more than in 95 of every 100 US admins, and more than in each of its peers but Cambridge.</p>
+              <p data-m="unemp">Unemployment sits under the US average. Size says little here: the highest rates are in
+                small farming towns such as Calexico, California, at 29.4%.</p>
+              <p data-m="yp">A typical <span class="city-short">Boston</span> home costs 9.2 years of the average salary,
+                against 5.0 for the US average. Homes are hardest to afford in coastal California, such as Santa Barbara, at 19.5 years.</p>
+            </template>
           </section>
 
           <!-- set aside for now (Nil, 2026-10-14); to bring it back, uncomment and
@@ -7336,33 +7489,42 @@
             <div class="who-ind" data-who="metro"></div>
           </section>
 
-          <section class="ov-block" id="page-overview-mwage">
+          <section class="ov-block sc-beat" id="page-overview-mscatter">
             <div class="page-head">
-              <h2>The metro pays among the most in the country</h2>
+              <h2>How does the <span class="city-short">Boston</span> metro compare with metros of every size?</h2>
             </div>
-            <p class="lede">Pay rises with size across US metros, and the <span class="city-short">Boston</span>
-              metro pays about 30% more than a metro its size typically does. Only San Jose, San Francisco and
-              Seattle pay clearly more; Naples pays about the same.</p>
-            <div class="who-sc" data-set="metro" data-measure="wage"></div>
-          </section>
-
-          <section class="ov-block" id="page-overview-mhome">
-            <div class="page-head">
-              <h2>A metro home costs twice the average US metro&rsquo;s</h2>
+            <p class="lede">Each dot is a US metro, placed by its population and by the measure you choose.<span class="r-map"> The colours
+              split the metros into fifths, and the map shows each one at its most densely settled point.</span></p>
+            <div class="sc-say" aria-live="polite"></div>
+            <div class="ask-chart sc-ask" data-fig="sc" role="group" aria-labelledby="scAskLabM">
+              <p class="ask-lab" id="scAskLabM">Ask the chart</p>
+              <div class="ask-item">
+                <button type="button" class="ask-q" data-ask="m1" aria-expanded="false" aria-controls="scAsk-m1"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">How does the metro&rsquo;s pay compare with metros its size?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
+                <div class="ask-ans" id="scAsk-m1" hidden><p class="ask-a">Of the 23 metros with half to twice its people, only San Francisco, at $164K, and Seattle, at $127K, pay more.</p></div>
+              </div>
+              <div class="ask-item">
+                <button type="button" class="ask-q" data-ask="m2" aria-expanded="false" aria-controls="scAsk-m2"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Do metros its size have more expensive homes?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
+                <div class="ask-ans" id="scAsk-m2" hidden><p class="ask-a">Only three of the 23: San Francisco, at $1.2M, San Diego, at $946K, and Seattle, at $759K.</p></div>
+              </div>
+              <div class="ask-item">
+                <button type="button" class="ask-q" data-ask="m3" aria-expanded="false" aria-controls="scAsk-m3"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Where is a metro home hardest to afford?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
+                <div class="ask-ans" id="scAsk-m3" hidden><p class="ask-a">In Hawaii and coastal California: in Kahului a home costs 15.4 years of pay. High pay holds the San Francisco metro to 7.1, not far above the Boston metro&rsquo;s 6.2.</p></div>
+              </div>
             </div>
-            <p class="lede">Homes cost more in bigger metros too, but a typical home in the
-              <span class="city-short">Boston</span> metro, at $717K, is worth about 1.6 times what a metro its size
-              would suggest.</p>
-            <div class="who-sc" data-set="metro" data-measure="home"></div>
-          </section>
-
-          <section class="ov-block" id="page-overview-munemp">
-            <div class="page-head">
-              <h2>Unemployment sits a little under the US average</h2>
-            </div>
-            <p class="lede">Size says little about unemployment across metros: the highest rates are in farming
-              regions of California and Arizona, such as El Centro, at 18.4%.</p>
-            <div class="who-sc" data-set="metro" data-measure="unemp"></div>
+            <div class="who-sc" data-set="metro" data-measure="wage" data-switch></div>
+            <template class="who-sc-says">
+              <p data-m="wage">The metro pays among the most in the country. Pay rises with size across US metros, and the
+                <span class="city-short">Boston</span> metro pays about 30% more than a metro its size typically does.
+                Only San Jose, San Francisco and Seattle pay clearly more; Naples pays about the same.</p>
+              <p data-m="home">A metro home costs twice the average US metro&rsquo;s. Homes cost more in bigger metros
+                too, but a typical home in the <span class="city-short">Boston</span> metro, at $717K, is worth about 1.6
+                times what a metro its size would suggest.</p>
+              <p data-m="unemp">Unemployment sits a little under the US average. Size says little about unemployment
+                across metros: the highest rates are in farming regions of California and Arizona, such as El Centro,
+                at 18.4%.</p>
+              <p data-m="yp">A typical home in the metro costs 6.2 years of the average salary, against 4.9 for the average
+                US metro. Among its peer metros only San Diego, at 10.0 years, takes clearly longer.</p>
+            </template>
           </section>
 
           <!-- the city against its metro (2026-10-14): the last beat before
@@ -8604,6 +8766,7 @@
 <script src="who-2024.js"></script>
 <script src="who-scatter-2024.js"></script>
 <script src="who-metro-scatter-2024.js"></script>
+<script src="who-points-2024.js"></script>
 <script src="data/geo/who_commute_geo.js"></script>
 <script src="industries-2024.js"></script>
 <script src="industries-2014.js"></script>
@@ -8639,7 +8802,7 @@
     setTimeout(initCollapsible, 200);
   });
 
-  const pageIds = ["page-overview","page-overview-wage","page-overview-home","page-overview-unemp","page-overview-flows","page-overview-metro","page-overview-mwage","page-overview-mhome","page-overview-munemp","page-overview-compare","page-export-basket","page-admin-mix",
+  const pageIds = ["page-overview","page-overview-scatter","page-overview-flows","page-overview-metro","page-overview-mscatter","page-overview-compare","page-export-basket","page-admin-mix",
                    "page-constraints","page-city-in-metro","page-constraints-lorem","page-levers"];
 
   /* ---------- view switching ---------- */
@@ -8734,7 +8897,7 @@
 
   /* ---------- journey state ---------- */
   const sectionDefs=[
-    {name:"Who are you?", pages:["page-overview","page-overview-wage","page-overview-home","page-overview-unemp","page-overview-flows","page-overview-metro","page-overview-mwage","page-overview-mhome","page-overview-munemp","page-overview-compare","check-overview","apply-overview"], entry:"page-overview"},
+    {name:"Who are you?", pages:["page-overview","page-overview-scatter","page-overview-flows","page-overview-metro","page-overview-mscatter","page-overview-compare","check-overview","apply-overview"], entry:"page-overview"},
     {name:"Metro Industries",    pages:["page-export-basket","tierSection","specializedSection","check-export","apply-export"], entry:"page-export-basket"},
     {name:"Worker Flows", pages:["page-admin-mix","adminWhoFills","adminResidentsOut","adminBalance","adminJobsHere","adminResidents","adminSpecialized","adminExchange","adminGauge","am2Bars","am2Compare","check-adminmix","apply-adminmix"], entry:"page-admin-mix"},
     {name:"Constraints Diagnosis",pages:["page-constraints","page-city-in-metro","page-constraints-lorem","check-constraints","apply-constraints"],entry:"page-constraints"},
@@ -11027,6 +11190,7 @@
     whoOn = on;
     const mode = WHO_BEAT[on] || null;
     if (whoShow) whoShow(mode);
+    if (window.whoNationBeat) window.whoNationBeat(ovBeatBlocks[on] ? ovBeatBlocks[on].id : null);
     /* the metro's edge belongs to beats 2 and after, but not to the
        commuting maps, which are about the places, not the line */
     if (mode){ window.ovMetroHidden = true; ovMsaVis(false); }
@@ -11093,9 +11257,15 @@
      which framed correctly only at the width they were tuned against; it
      fits the two outlines and interpolates between those fits. */
   function ovCamTarget(){
+    const sz = ovLeaflet.getSize();
+    /* a third setting (2026-10-15): the lower 48, while the map shows every
+       admin or metro of a scatter beat (opt-1 of the right side) */
+    if (window.whoNationOn && window.whoNationOn()){
+      const b = L.latLngBounds([[24.4, -124.8], [49.4, -66.9]]);
+      return { p: 2, center: [b.getCenter().lat, b.getCenter().lng - (sz.x < 600 ? 0 : .6)], zoom: ovLeaflet.getBoundsZoom(b, false, L.point(sz.x < 600 ? 56 : 88, 24)) };
+    }
     /* the city's fit or the metro's, nothing between */
     const p = ovPastCity() ? 1 : 0;
-    const sz = ovLeaflet.getSize();
     const cb = L.latLngBounds(cityPoly), mb = L.latLngBounds(msaPoly);
     const pad = L.point(28, 28);
     /* one level out from the tight fit, so the city opens inside its
@@ -12492,41 +12662,68 @@
      (WHO_COMPARE_2024). As a beat arrives its dots move from where the beat
      before left them, the first from a population strip, so the three read
      as one chart whose y changes. */
+  /* the right side's study is read before the charts are built (see below);
+     opt-2, the chart without the map, is the default (Nil, 2026-10-15) */
+  window.whoRight = /[?&]right=map\b/.test(location.search) ? "map" : "chart";
+  if (document.getElementById("ovWrap")) document.getElementById("ovWrap").dataset.right = window.whoRight;
   (function(){
   function build(D, CMP, hosts, opts){
     if (!D || !CMP || !hosts.length) return;
     const NS = "http://www.w3.org/2000/svg";
     const C = {}; D.cols.forEach((c, i) => { C[c] = i; });
     const rows = D.rows, n = rows.length;
+    /* years of pay for a home: a typical home's value over the average
+       salary, worked out here for every row (opt-2's fourth measure) */
+    if (C.home != null && C.wage != null && C.yp == null){ C.yp = D.cols.length; D.cols.push("yp"); rows.forEach(r => r.push(r[C.home] / r[C.wage])); }
     const hereI = rows.findIndex(r => r[C.id] === D.here);
     const peerI = D.peers.map(id => rows.findIndex(r => r[C.id] === id)).filter(i => i >= 0);
     const slug = s => s.toLowerCase().replace(/\s+/g, "-");
     const mean = (is, k) => is.reduce((s, i) => s + rows[i][C[k]], 0) / is.length;
     const ALL = rows.map((r, i) => i);
     /* the references: the first table's figures, so the beats and the table agree */
-    const US = { pop: CMP.us.population, emp: null, wage: CMP.us.salary, home: CMP.us.home_value, unemp: CMP.us.unemployment };
+    const US = { pop: CMP.us.population, emp: null, wage: CMP.us.salary, home: CMP.us.home_value, unemp: CMP.us.unemployment, yp: CMP.us.home_value / CMP.us.salary };
     const RATE = C.emp != null ? mean(ALL, "emp") / mean(ALL, "pop") : 0;
     const pm = k => { const m = CMP.peers.reduce((s, p) => s + p[k], 0) / CMP.peers.length; return k === "unemployment" ? Math.round(m * 100) / 100 : m; };
-    const PAVG = { pop: pm("population"), emp: C.emp != null ? mean(peerI, "emp") : 0, wage: pm("salary"), home: pm("home_value"), unemp: pm("unemployment") };
+    const PAVG = { pop: pm("population"), emp: C.emp != null ? mean(peerI, "emp") : 0, wage: pm("salary"), home: pm("home_value"), unemp: pm("unemployment"),
+      yp: CMP.peers.reduce((s, p) => s + p.home_value / p.salary, 0) / CMP.peers.length };
     const M = {
       pop:   { name: "Population", log: true },
       emp:   { name: "Employed residents", log: true, src: "BLS LAUS" },
       wage:  { name: "Average salary", log: true, usd: true, src: "IRS SOI, carried" },
       home:  { name: "Home value", log: true, usd: true, src: "Zillow ZHVI" },
-      unemp: { name: "Unemployment", pct: true, max: 16, src: "BLS LAUS" }
+      unemp: { name: "Unemployment", pct: true, max: 16, src: "BLS LAUS" },
+      yp:    { name: "Years of pay", long: "Years of pay for a home", yrs: true, max: 20 }
     };
     M.unemp.max = Math.ceil(Math.max(...rows.map(r => r[C.unemp])) / 5) * 5;
+    M.yp.max = Math.ceil(Math.max(...rows.map(r => r[C.yp])) / 5) * 5;
     const ORDER = ["wage", "home", "unemp"];
-    const TKEY = { wage: "salary", home: "home_value", unemp: "unemployment" };
+    /* the switch's buttons: opt-2 adds years of pay (CSS hides it in opt-1) */
+    const BTN = ["wage", "home", "yp", "unemp"];
+    const opt2 = () => window.whoRight === "chart";
+    /* the right side's opt-1 (2026-10-15): the dots in five colours, the
+       fifths of the drawn set for the measure on, shared with the map. Cuts
+       at the 20th to 80th percentiles (interpolated), rounded to the
+       legend's precision, and each row classed against the rounded cuts,
+       so the legend's ranges are exactly true */
+    const FIFTH = {};
+    BTN.forEach(kk => { const vals = rows.map(r => r[C[kk]]).sort((a, b) => a - b);
+      const q = p => { const h = (vals.length - 1) * p, lo = Math.floor(h); return vals[lo] + (vals[Math.min(lo + 1, vals.length - 1)] - vals[lo]) * (h - lo); };
+      const round = v => (M[kk].pct || M[kk].yrs) ? Math.round(v * 10) / 10 : Math.round(v / 1000) * 1000;
+      const cuts = [.2, .4, .6, .8].map(p => round(q(p))), cls = new Uint8Array(n);
+      rows.forEach((r, i) => { let c = 0; cuts.forEach(t => { if (r[C[kk]] >= t) c++; }); cls[i] = c; });
+      FIFTH[kk] = { cuts, cls }; });
+    const tintOn = () => (window.whoRight || "map") === "map";
+    const TKEY = { wage: "salary", home: "home_value", unemp: "unemployment", yp: "yp" };
     const fmt = (v, k, full) => {
       const m = M[k];
       if (m.pct) return v.toFixed(1) + "%";
+      if (m.yrs) return v.toFixed(1) + " years";
       if (full) return (m.usd ? "$" : "") + Math.round(v).toLocaleString("en-US");
       const a = Math.abs(v), u = a >= 1e6 ? [1e6, "M"] : a >= 1e3 ? [1e3, "K"] : [1, ""];
       const x = v / u[0], t = x >= 100 || u[1] === "" ? Math.round(x) : x >= 10 ? Math.round(x) : x.toFixed(1).replace(/\.0$/, "");
       return (m.usd ? "$" : "") + t + u[1];
     };
-    const tickFmt = (v, k) => M[k].pct ? v + "%" : fmt(v, k);
+    const tickFmt = (v, k) => M[k].pct ? v + "%" : M[k].yrs ? String(v) : fmt(v, k);
     const listOf = a => a.length < 2 ? a.join("") : a.slice(0, -1).join(", ") + " and " + a[a.length - 1];
     /* a stable jitter for the strip's lane: the same admin, the same place */
     const jit = rows.map(r => { let h = 2166136261; const s = r[C.id];
@@ -12558,36 +12755,75 @@
     const pad = ([lo, hi], log) => log ? [lo / Math.pow(hi / lo, .03), hi * Math.pow(hi / lo, .03)] : [Math.max(0, lo - (hi - lo) * .03), hi];
     const pagesEl = document.getElementById("pages");
 
-    /* one chart per beat */
+    /* one chart per geography (v-6, then v-5 from 2026-10-15), its measure
+       switched over it (data-switch), the dots moving from one measure to
+       the next; a host without the switch keeps one measure */
     function Chart(host, k){
-      const prevK = ORDER.indexOf(k) > 0 ? ORDER[ORDER.indexOf(k) - 1] : "pop";
+      let prevK = ORDER.indexOf(k) > 0 ? ORDER[ORDER.indexOf(k) - 1] : "pop";
+      const SW = host.hasAttribute("data-switch");
+      const beat = host.closest(".ov-block"), uid = opts.set === "metro" ? "M" : "A", noun = opts.set === "metro" ? "metro" : "admin";
       /* the table's own header for the measure, the chart, and the table's peer switches */
       const T = window.whoTables && window.whoTables[opts.set];
-      host.innerHTML = '<div class="who-sc-cmp">' + (T ? T.head(TKEY[k]) : '') + '</div>' +
-        '<div class="who-sc-plot"><svg role="img"></svg><div class="who-sc-tip" hidden></div></div><p class="who-sc-note" hidden></p><div class="who-sc-peers"></div>';
+      /* opt-2: the found admin (by row), and a question's state while it stands */
+      let found = null, ask = null;
+      const ARRW = up => '<svg class="wt-arr" viewBox="0 0 10 10" aria-hidden="true"><path d="' + (up ? "M5 1 9.5 9H.5Z" : "M5 9 .5 1h9Z") + '" fill="currentColor"/></svg>';
+      /* years of pay has no row in the tables: its header is made here, the
+         differences taken from the rounded figures so that they add up */
+      const headYp = () => { const r1 = x => Math.round(x * 10) / 10, b = r1(rows[hereI][C.yp]);
+        const d = (ref, who) => { const g = Math.round((b - r1(ref)) * 10) / 10; if (Math.abs(g) < .05) return '<span class="wt-d">about the same as ' + who + '</span>';
+          return '<span class="wt-d ' + (g > 0 ? 'is-bad' : 'is-good') + '"><b>' + ARRW(g > 0) + Math.abs(g).toFixed(1) + ' years</b> ' + (g > 0 ? 'more' : 'fewer') + ' than ' + who + '</span>'; };
+        return '<div class="wt-head"><span class="wt-name">Years of pay for a home<span class="hint">fewer is easier to afford</span></span><span class="wt-val">' + b.toFixed(1) + ' years</span></div>' +
+          '<p class="wt-diff">' + d(US.yp, "the US average") + d(PAVG.yp, "its peers") + '</p>'; };
+      /* how many of the places half to twice the subject's size it beats, on the better side */
+      const band = () => { const p = rows[hereI][C.pop]; return [p / 2, p * 2]; };
+      const inBand = i => { const [a, b] = band(), q = rows[i][C.pop]; return i !== hereI && q >= a && q <= b; };
+      const bandCount = kk => { const v = rows[hereI][C[kk]]; let nn = 0, bb = 0;
+        rows.forEach((r, i) => { if (!inBand(i)) return; nn++; const x = r[C[kk]]; if (kk === "unemp" ? x > v : x < v) bb++; });
+        const word = kk === "unemp" ? "lower" : kk === "yp" ? "more" : "higher";
+        return '<p class="sc-bandn">' + word + ' than <b class="' + (kk === "yp" ? "is-bad" : "is-good") + '">' + bb + '</b> of the ' + nn + ' ' + noun + 's its size</p>'; };
+      const headFor = kk => (kk === "yp" ? headYp() : (T ? T.head(TKEY[kk]) : "")) + (opt2() ? bandCount(kk) : "");
+      /* opt-2's finder: one admin at a time, marked in the house's orange */
+      const finder = SW ? '<div class="sc-find"><label class="ctl-label" for="scFind' + uid + '">Find a' + (noun === "admin" ? "n admin" : " metro") + '</label>' +
+          '<div class="sc-find-box"><input type="text" id="scFind' + uid + '" role="combobox" aria-expanded="false" aria-controls="scFindList' + uid + '" aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder="Type a name">' +
+          '<button type="button" class="sc-find-clear" hidden>Clear</button><ul class="sc-find-list" id="scFindList' + uid + '" role="listbox" hidden></ul></div></div>' : '';
+      host.innerHTML = (SW ? '<div class="who-fl-ctl who-sc-ctl"><span class="ctl-label">' + (tintOn() ? "Chart and map show" : "Chart shows") + '</span><div class="seg" role="group" aria-label="The measure up the side of the chart">' +
+          BTN.map(m => '<button type="button" class="seg-btn' + (m === k ? ' is-active' : '') + '" data-m="' + m + '" aria-pressed="' + (m === k) + '">' + M[m].name + '</button>').join("") + '</div>' + finder + '</div>' : '') +
+        '<div class="who-sc-cmp">' + headFor(k) + '</div>' +
+        '<div class="who-sc-plot"><svg role="img"></svg><div class="who-sc-tip" hidden></div></div><p class="who-sc-note" hidden></p><div class="who-sc-peers"></div><span class="vh sc-live" aria-live="polite"></span>';
       const plot = host.querySelector(".who-sc-plot"), svg = plot.querySelector("svg"), tip = host.querySelector(".who-sc-tip"), note = host.querySelector(".who-sc-note"), peersHost = host.querySelector(".who-sc-peers");
+      const ctl = host.querySelector(".who-sc-ctl"), cmp = host.querySelector(".who-sc-cmp"), live = host.querySelector(".sc-live");
       const onSet = T ? T.on : new Set(), isOn = i => onSet.has(rows[i][C.name]);
       const drawPeers = () => { peersHost.innerHTML = T ? T.peersRow() : ""; };
       /* the grid under the cloud; the US average's line and name over it */
       const gStatic = el("g", "sc-static", svg), gCloud = el("g", "sc-cloud", svg), gRef = el("g", "sc-ref", svg), gMarks = el("g", "sc-marks", svg),
             gLabels = el("g", "sc-labels", svg), hover = el("circle", "sc-hover", svg);
       hover.setAttribute("r", 6); hover.style.display = "none";
-      const dots = rows.map((r, i) => (i === hereI || peerI.indexOf(i) >= 0) ? null : el("circle", "sc-dot", gCloud));
+      /* every admin but the subject is in the cloud; a peer's cloud dot
+         stands aside while its own coloured dot is on */
+      const dots = rows.map((r, i) => i === hereI ? null : el("circle", "sc-dot", gCloud));
       /* the peer average: a white disc under the peers (the cloud does not
          show through it) and its open ring over them (a peer on it still shows) */
       const pavgBg = el("circle", "sc-pavg-bg", gMarks);
       const peerDots = peerI.map(i => { const d = el("circle", "sc-peer", gMarks); d.style.fill = "var(--pc-" + slug(rows[i][C.name]) + ")"; return d; });
       const pavg = el("circle", "sc-pavg", gMarks);
       const hereDot = el("circle", "sc-here", gMarks);
-      let cur = null, geo = null, raf = 0, entered = false;
+      /* the found admin's and the questions' marks: a ring round each dot */
+      const gCall = el("g", "sc-calls", gMarks);
+      let cur = null, curPa = null, geo = null, raf = 0, entered = false;
       /* nothing is left on the edge: the unemployment axis reaches the highest rate */
-      svg.setAttribute("aria-label", M[k].name + " by population, 2024: Boston " + fmt(rows[hereI][C[k]], k, true) + ", peer average " + fmt(PAVG[k], k, true) +
+      const aria = () => svg.setAttribute("aria-label", M[k].name + " by population, 2024: Boston " + fmt(rows[hereI][C[k]], k, true) + ", peer average " + fmt(PAVG[k], k, true) +
         (k === "emp" ? ", US average " + Math.round(RATE * 100) + " employed per 100 residents" : ", US average " + fmt(US[k], k, true)) + ".");
+      aria();
+      /* the measure's reading, under the chart, from the beat's template */
+      const says = SW && host.closest(".ov-block") ? host.closest(".ov-block").querySelector("template.who-sc-says") : null;
+      const say = () => { if (!says) return; const t = says.content.querySelector('[data-m="' + k + '"]'); note.className = "who-sc-note who-sc-say"; note.innerHTML = t ? t.innerHTML : ""; note.hidden = !t; note.setAttribute("aria-live", "polite");
+        /* opt-2 reads it in the words beside the panel */
+        const slot = beat && beat.querySelector(".sc-say"); if (slot) slot.innerHTML = t ? '<p>' + t.innerHTML + '</p>' : ""; };
 
       function layout(kk){
-        const W = plot.clientWidth, H = phone() ? 280 : 360, fs = 13;
+        const W = plot.clientWidth, H = opt2() && SW ? Math.max(phone() ? 200 : 380, plot.clientHeight) : phone() ? 280 : 360, fs = 13;
         const yk = kk === "pop" ? null : kk;
-        const yd = yk ? (M[yk].pct ? [0, M[yk].max] : pad(ext(yk), true)) : null;
+        const yd = yk ? ((M[yk].pct || M[yk].yrs) ? [0, M[yk].max] : pad(ext(yk), true)) : null;
         const yt = yd ? (M[yk].log ? logTicks(yd[0], yd[1], H) : linTicks(yd[0], yd[1], H)) : [];
         const gut = yk ? Math.max(...yt.map(v => tickFmt(v, yk).length)) * fs * .58 + 10 : 6;
         const m = { l: Math.round(gut), r: 14, t: fs + 18, b: fs * 2 + 18 };
@@ -12613,11 +12849,25 @@
         const t = (cls, X, Y, s, anchor) => { const e = el("text", cls, gStatic); e.setAttribute("x", X); e.setAttribute("y", Y); if (anchor) e.setAttribute("text-anchor", anchor); e.textContent = s; return e; };
         const line = (cls, x1, y1, x2, y2) => { const e = el("line", cls, gStatic); e.setAttribute("x1", x1); e.setAttribute("y1", y1); e.setAttribute("x2", x2); e.setAttribute("y2", y2); return e; };
         const bottom = H - m.b;
+        /* opt-2: the admins of the subject's size, half to twice its people, as a band under the cloud */
+        const showBand = opt2() && SW && yd && !(ask && ask.dark === "MA");
+        let bandLab = null;
+        if (showBand){ const [a, b] = band(), r = el("rect", "sc-band", gStatic);
+          r.setAttribute("x", x(a)); r.setAttribute("y", m.t); r.setAttribute("width", Math.max(0, x(b) - x(a))); r.setAttribute("height", bottom - m.t); }
         logTicks(xd[0], xd[1], W - m.l - m.r).forEach(v => { const X = x(v); line("sc-grid", X, m.t, X, bottom); t("sc-tick", X, bottom + fs + 6, fmt(v, "pop"), "middle"); });
         t("sc-axt", W - m.r, H - 4, "Population", "end");
         yt.forEach(v => { const Y = y(v); line("sc-grid", m.l, Y, W - m.r, Y); t("sc-tick", m.l - 6, Y + fs * .35, tickFmt(v, k), "end"); });
-        t("sc-axt", 0, m.t - 10, M[k].name, "start");
-        t("sc-note", W - m.r, m.t - 10, "Each grey dot is " + opts.unit, "end");
+        const axt = t("sc-axt", 0, m.t - 10, opt2() && SW && k === "yp" ? M[k].long : M[k].name, "start");
+        if (showBand){ const [a, b] = band(), cx = (x(a) + x(b)) / 2, small = phone() || W < 520;
+          bandLab = t("sc-bandlab", cx, m.t - 10, small ? (noun === "metro" ? "Boston metro's size" : "Boston's size") : (noun === "metro" ? "Half to twice the Boston metro's size" : "Half to twice Boston's size"), "middle");
+          const bb = bandLab.getBBox(); if (bb.x + bb.width > W - 2) bandLab.setAttribute("x", W - 2 - bb.width / 2); }
+        /* the note: in opt-2 the lede's sentence; it shortens, then stands down, rather than meet the band's name */
+        if (opt2() && SW){ const meets = e => { const p = e.getBBox(), r2 = axt.getBBox(); if (p.x < r2.x + r2.width + 12) return true;
+            if (!bandLab) return false; const q = bandLab.getBBox(); return p.x < q.x + q.width + 8 && q.x < p.x + p.width + 8; };
+          if (ask && ask.dark === "MA"){ const e = t("sc-note", W - m.r, m.t - 10, "Dark dots: the " + rows.filter(r => r[C.st] === "MA").length + " admins in Massachusetts", "end"); if (meets(e)) e.remove(); }
+          else { let e = t("sc-note", W - m.r, m.t - 10, noun === "metro" ? "Each grey dot is a US metro" : "Each grey dot is a US admin of about 25,000 people or more", "end");
+            if (meets(e)){ e.remove(); e = t("sc-note", W - m.r, m.t - 10, "Each grey dot is a US " + noun, "end"); if (meets(e)) e.remove(); } } }
+        else t("sc-note", W - m.r, m.t - 10, (tintOn() ? "Each dot is " : "Each grey dot is ") + opts.unit, "end");
         if (k === "emp"){
           const p0 = Math.max(xd[0], yd[0] / RATE), p1 = Math.min(xd[1], yd[1] / RATE);
           line("sc-usavg", x(p0), y(p0 * RATE), x(p1), y(p1 * RATE));
@@ -12640,9 +12890,15 @@
         gLabels.textContent = "";
         const { pos, pa, m, W, H, fs } = L, boxes = [], segs = [];
         gRef.querySelectorAll(".sc-avglab").forEach(e => { const b = e.getBBox(); boxes.push([b.x - 2, b.y, b.x + b.width + 2, b.y + b.height, 60]); });
+        gStatic.querySelectorAll(".sc-axt, .sc-note, .sc-bandlab").forEach(e => { const b = e.getBBox(); boxes.push([b.x - 2, b.y, b.x + b.width + 2, b.y + b.height, 60]); });
         /* the US average's line: a name across it reads as struck through */
         if (L.y && L.k !== "emp" && US[L.k] != null){ const Y = L.y(US[L.k]); boxes.push([m.l, Y - 3, W - m.r, Y + 3, 60, "line"]); }
-        const marks = [[pos[2 * hereI], pos[2 * hereI + 1], 8]].concat(peerI.filter(isOn).map(i => [pos[2 * i], pos[2 * i + 1], 6]), [[pa[0], pa[1], 8]]);
+        const callI = calls();
+        /* the US average's name moves to the line's other end if a marked place sits on it */
+        const al = gRef.querySelector(".sc-avglab");
+        if (al && callI.length){ const hit = () => { const b = al.getBBox(); return callI.some(i => { const X = pos[2 * i], Y = pos[2 * i + 1]; return X + 10 > b.x && X - 10 < b.x + b.width && Y + 10 > b.y && Y - 10 < b.y + b.height; }); };
+          if (hit()){ const start = al.getAttribute("text-anchor") === "start"; al.setAttribute("x", start ? W - m.r : m.l + 4); al.setAttribute("text-anchor", start ? "end" : "start"); if (hit()){ al.setAttribute("x", start ? m.l + 4 : W - m.r); al.setAttribute("text-anchor", start ? "start" : "end"); } } }
+        const marks = [[pos[2 * hereI], pos[2 * hereI + 1], 8]].concat(peerI.filter(isOn).map(i => [pos[2 * i], pos[2 * i + 1], 6]), callI.map(i => [pos[2 * i], pos[2 * i + 1], 8]), [[pa[0], pa[1], 8]]);
         marks.forEach(([X, Y, r]) => boxes.push([X - r, Y - r, X + r, Y + r, 12]));
         const lim = [m.l - 4, 2, W - 2, H - m.b + 4];
         const cost = b => { let c = (b[0] < lim[0] || b[2] > lim[2] || b[1] < lim[1] || b[3] > lim[3]) ? 1e6 : 0;
@@ -12688,16 +12944,34 @@
             gLabels.insertBefore(ln, gLabels.firstChild);
           }
         };
-        place(pos[2 * hereI], pos[2 * hereI + 1], 8, "Boston", "sc-lab--here");
+        /* opt-2 names Boston with its figure where there is room (on a phone the figure is in the header under the band) */
+        place(pos[2 * hereI], pos[2 * hereI + 1], 8, opt2() && SW && !phone() ? (noun === "metro" ? "Boston metro " : "Boston ") + fmt(rows[hereI][C[L.k]], L.k) : "Boston", "sc-lab--here");
+        /* the found admin and the questions' places, each with its figure */
+        callI.forEach(i => place(pos[2 * i], pos[2 * i + 1], 8, rows[i][C.name] + (i === found && noun === "admin" ? ", " + rows[i][C.st] : "") + " " + fmt(rows[i][C[L.k]], L.k), "sc-lab--call"));
         place(pa[0], pa[1], 8, "Peer average", "sc-lab--avg");
         peerI.filter(isOn).sort((a, b) => pos[2 * a] - pos[2 * b]).forEach(i => place(pos[2 * i], pos[2 * i + 1], 6, rows[i][C.name], "", true));
       }
+      /* the dots in their fifths' colours (opt-1), or the plain grey */
+      function tint(){ const F = tintOn() && FIFTH[k]; host.classList.toggle("is-tinted", !!F);
+        dots.forEach((d, i) => { if (d) d.style.fill = F ? "var(--fifth-" + (F.cls[i] + 1) + ")" : ""; });
+        /* opt-2: the band's places stand out, or a question's set of them */
+        const two = opt2() && SW, dark = two ? (ask && ask.dark === "MA" ? i => rows[i][C.st] === "MA" : inBand) : null;
+        dots.forEach((d, i) => { if (d) d.classList.toggle("in-band", !!dark && dark(i)); });
+        svg.classList.toggle("is-faded", !!(two && ask && ask.fade)); }
+      /* the rows to name: the found admin, then the question's places */
+      function calls(){ if (!(opt2() && SW)) return []; const a = found != null ? [found] : [];
+        if (ask && ask.callouts) ask.callouts.forEach(id => { const i = rows.findIndex(r => r[C.id] === id); if (i >= 0 && a.indexOf(i) < 0 && i !== hereI) a.push(i); });
+        return a; }
       function paint(p, pa){
         for (let i = 0; i < n; i++){ const d = dots[i]; if (d){ d.setAttribute("cx", p[2 * i].toFixed(1)); d.setAttribute("cy", p[2 * i + 1].toFixed(1)); } }
         peerI.forEach((i, j) => { peerDots[j].setAttribute("cx", p[2 * i]); peerDots[j].setAttribute("cy", p[2 * i + 1]); });
         hereDot.setAttribute("cx", p[2 * hereI]); hereDot.setAttribute("cy", p[2 * hereI + 1]);
-        [pavgBg, pavg].forEach(c => { c.setAttribute("cx", pa[0]); c.setAttribute("cy", pa[1]); c.setAttribute("r", 5.5); });
-        peerI.forEach((i, j) => { peerDots[j].style.display = isOn(i) ? "" : "none"; });
+        [pavgBg, pavg].forEach(c => { c.setAttribute("cx", pa[0]); c.setAttribute("cy", pa[1]); c.setAttribute("r", 5.5); }); curPa = [pa[0], pa[1]];
+        gCall.textContent = "";
+        calls().forEach(i => { const f = i === found, c = el("circle", f ? "sc-found" : "sc-call", gCall);
+          c.setAttribute("cx", p[2 * i]); c.setAttribute("cy", p[2 * i + 1]); c.setAttribute("r", f ? 8 : 6.5);
+          const d = el("circle", "sc-calldot", gCall); d.setAttribute("cx", p[2 * i]); d.setAttribute("cy", p[2 * i + 1]); d.setAttribute("r", 3.6); });
+        peerI.forEach((i, j) => { peerDots[j].style.display = isOn(i) ? "" : "none"; if (dots[i]) dots[i].style.display = isOn(i) ? "none" : ""; });
       }
       /* drawn at its own positions, or, before the beat arrives, at the beat
          before's, from which it moves once seen */
@@ -12707,29 +12981,30 @@
         svg.setAttribute("width", L.W); svg.setAttribute("height", L.H); svg.setAttribute("viewBox", "0 0 " + L.W + " " + L.H);
         dots.forEach(d => { if (d) d.setAttribute("r", phone() ? 2.2 : 2.6); });
         peerDots.forEach(d => d.setAttribute("r", 5)); hereDot.setAttribute("r", 7);
+        tint();
         drawStatic(L);
         cancelAnimationFrame(raf);
         if (!entered && !reduce()){ const P = layout(prevK); cur = P.pos; paint(P.pos, P.pa); gLabels.classList.remove("is-in"); return; }
         if (!animate || !cur || reduce()){ cur = L.pos; paint(L.pos, L.pa); drawLabels(L); gLabels.classList.add("is-in"); return; }
-        const from = cur, P = layout(prevK), fromPa = P.pa, t0 = performance.now(), dur = 800, p = new Float32Array(n * 2);
+        const from = cur, fromPa = curPa || layout(prevK).pa, t0 = performance.now(), dur = 800, p = new Float32Array(n * 2);
         const ease = u => u < .5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
         const tick = now => {
           const u = Math.min(1, (now - t0) / dur), e = ease(u);
           for (let i = 0; i < n * 2; i++) p[i] = from[i] + (L.pos[i] - from[i]) * e;
-          paint(p, [fromPa[0] + (L.pa[0] - fromPa[0]) * e, fromPa[1] + (L.pa[1] - fromPa[1]) * e]);
+          paint(p, [fromPa[0] + (L.pa[0] - fromPa[0]) * e, fromPa[1] + (L.pa[1] - fromPa[1]) * e]); cur = p;
           if (u < 1) raf = requestAnimationFrame(tick);
           else { cur = L.pos; drawLabels(L); requestAnimationFrame(() => gLabels.classList.add("is-in")); }
         };
         raf = requestAnimationFrame(tick);
       }
       /* the card: the nearest admin under the pointer, or the peers' average */
-      const hideTip = () => { tip.hidden = true; hover.style.display = "none"; };
+      const said = i => document.dispatchEvent(new CustomEvent("who:hover", { detail: { set: opts.set, i, from: "chart" } }));
+      const hideTip = () => { if (!tip.hidden) said(null); tip.hidden = true; hover.style.display = "none"; };
       function near(ev){
         if (!geo || !cur) return null;
         const r = svg.getBoundingClientRect(), px = ev.clientX - r.left, py = ev.clientY - r.top;
         let best = -1, bd = 14 * 14;
         for (let i = 0; i < n; i++){ const dx = cur[2 * i] - px, dy = cur[2 * i + 1] - py, d = dx * dx + dy * dy;
-          if (peerI.indexOf(i) >= 0 && !isOn(i)) continue;
           if (d < bd || (d === bd && (i === hereI || peerI.indexOf(i) >= 0))){ bd = d; best = i; } }
         const dpx = geo.pa[0] - px, dpy = geo.pa[1] - py;
         if (dpx * dpx + dpy * dpy < bd) return { avg: true, x: geo.pa[0], y: geo.pa[1] };
@@ -12742,9 +13017,11 @@
         if (h.avg) lines.push("<b>Peer average</b>", "Population " + fmt(PAVG.pop, "pop"), M[k].name + " " + fmt(PAVG[k], k));
         else { const r = rows[h.i];
           lines.push("<b>" + r[C.name] + ", " + r[C.st] + "</b>" + (h.i === hereI ? " <span>" + opts.tag + "</span>" : peerI.indexOf(h.i) >= 0 ? " <span>peer</span>" : ""), "Population " + fmt(r[C.pop], "pop"));
-          lines.push(k === "emp" ? "Employed " + fmt(r[C.emp], "emp") + ", " + Math.round(r[C.emp] / r[C.pop] * 100) + " per 100" : M[k].name + " " + fmt(r[C[k]], k)); }
+          lines.push(k === "emp" ? "Employed " + fmt(r[C.emp], "emp") + ", " + Math.round(r[C.emp] / r[C.pop] * 100) + " per 100" :
+            k === "yp" ? fmt(r[C.yp], "yp") + " of pay for a home<br>Home value " + fmt(r[C.home], "home") + ", average salary " + fmt(r[C.wage], "wage") : M[k].name + " " + fmt(r[C[k]], k)); }
         tip.innerHTML = lines.join("<br>"); tip.hidden = false;
         hover.setAttribute("cx", h.x); hover.setAttribute("cy", h.y); hover.style.display = "";
+        said(h.avg ? null : h.i);
         const W = plot.clientWidth, tw = tip.offsetWidth, th = tip.offsetHeight;
         let lx = h.x + 12, ly = h.y - th - 10; if (lx + tw > W - 4) lx = h.x - tw - 12; if (ly < 0) ly = h.y + 12;
         tip.style.left = Math.max(0, lx) + "px"; tip.style.top = ly + "px";
@@ -12752,10 +13029,102 @@
       svg.addEventListener("pointermove", showTip); svg.addEventListener("pointerdown", showTip);
       svg.addEventListener("pointerleave", ev => { if (ev.pointerType === "mouse") hideTip(); });
       /* a peer switched on or off anywhere: its dot and name come and go here too */
-      document.addEventListener("who:peers", ev => { if (ev.detail && ev.detail.set && ev.detail.set !== opts.set) return; drawPeers(); if (!geo || !cur) return; paint(cur, entered || reduce() ? geo.pa : layout(prevK).pa); if (entered) drawLabels(geo); });
-      drawPeers();
+      document.addEventListener("who:peers", ev => { if (ev.detail && ev.detail.set && ev.detail.set !== opts.set) return; drawPeers(); if (!geo || !cur) return; paint(cur, curPa || geo.pa); if (entered) drawLabels(geo); });
+      drawPeers(); say();
       render(false);
-      if (window.ResizeObserver){ let lw = 0; new ResizeObserver(() => { if (plot.clientWidth === lw) return; lw = plot.clientWidth; render(false); }).observe(plot); }
+      if (window.ResizeObserver){ let lw = 0, lh = 0; new ResizeObserver(() => { if (plot.clientWidth === lw && (!opt2() || plot.clientHeight === lh)) return; lw = plot.clientWidth; lh = plot.clientHeight; render(false); }).observe(plot); }
+      /* the switch: the header, the reading and the axes change at once, the dots move */
+      function set(nk, keepAsk){
+        if (!SW || nk === k || BTN.indexOf(nk) < 0) return;
+        if (!keepAsk && ask) closeAsk(false);
+        prevK = k; k = nk;
+        beat.querySelectorAll(".who-sc-ctl .seg-btn").forEach(b => { const on = b.dataset.m === k; b.classList.toggle("is-active", on); b.setAttribute("aria-pressed", String(on)); });
+        cmp.innerHTML = headFor(k);
+        aria(); say(); hideTip(); gLabels.classList.remove("is-in");
+        entered = true;
+        render(true);
+        document.dispatchEvent(new CustomEvent("who:measure", { detail: { set: opts.set, k } }));
+      }
+      /* on the beat, not the panel: on a phone the controls stand in the column under the band */
+      if (SW) beat.addEventListener("click", ev => { const b = ev.target.closest(".who-sc-ctl .seg-btn"); if (b) set(b.dataset.m); });
+      /* ---- opt-2: Ask the chart. A question sets the chart (the measure,
+         the dark set, the fade, the places named) and its answer opens
+         under it; one at a time; the row again, or any change of measure,
+         puts the reader's own view back ---- */
+      const ASKS = {
+        a1: { m: "wage", dark: "band", fade: true, callouts: ["0667000"] },
+        a2: { m: "home", dark: "band", fade: true, callouts: ["0668000", "0667000"] },
+        a3: { m: "yp", dark: "MA", fade: true, callouts: ["2521990", "2545560"] },
+        m1: { m: "wage", dark: "band", fade: true, callouts: ["41860", "42660"] },
+        m2: { m: "home", dark: "band", fade: true, callouts: ["41860", "41740", "42660"] },
+        m3: { m: "yp", dark: "band", fade: false, callouts: ["27980", "41860"] } };
+      let askBack = null;
+      function closeAsk(restore){
+        beat.querySelectorAll(".ask-q[aria-expanded='true']").forEach(q => { q.setAttribute("aria-expanded", "false"); q.closest(".ask-item").classList.remove("is-on");
+          const a = document.getElementById(q.getAttribute("aria-controls")); if (a) a.hidden = true; });
+        const back = askBack; ask = null; askBack = null; host.classList.remove("is-asked");
+        if (restore && back && back !== k) set(back, true); else { tint(); render(false); }
+      }
+      beat.addEventListener("click", ev => { const q = ev.target.closest(".sc-ask .ask-q"); if (!q || !SW) return;
+        const on = q.getAttribute("aria-expanded") === "true"; if (on){ closeAsk(true); return; }
+        /* from one question to the next, the way back stays the reader's own view */
+        const back = ask ? askBack : k;
+        if (ask) closeAsk(false);
+        const st = ASKS[q.dataset.ask]; if (!st) return;
+        askBack = back; ask = st; host.classList.add("is-asked");
+        q.setAttribute("aria-expanded", "true"); q.closest(".ask-item").classList.add("is-on");
+        const a = document.getElementById(q.getAttribute("aria-controls")); if (a) a.hidden = false;
+        entered = true;
+        if (st.m !== k) set(st.m, true); else { tint(); render(false); } });
+      /* ---- opt-2: Find an admin ---- */
+      const fin = host.querySelector(".sc-find input"), list = host.querySelector(".sc-find-list"), clr = host.querySelector(".sc-find-clear");
+      if (fin){
+        const norm = t => String(t).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        const NAMES = rows.map(r => norm(r[C.name]));
+        let opts2 = [], hi = -1;
+        const fmtPop = v => v >= 1e6 ? (v / 1e6).toFixed(1).replace(/\.0$/, "") + "M" : Math.round(v / 1e3) + "K";
+        const close = () => { list.hidden = true; fin.setAttribute("aria-expanded", "false"); fin.removeAttribute("aria-activedescendant"); hi = -1; };
+        const show = () => { const q = norm(fin.value.trim()); if (!q){ close(); return; }
+          const sc = rows.map((r, i) => { const nm = NAMES[i]; const s = nm.startsWith(q) ? 0 : nm.split(/[\s-]+/).some(w => w.startsWith(q)) ? 1 : nm.includes(q) ? 2 : 9; return [s, -r[C.pop], i]; })
+            .filter(a => a[0] < 9).sort((a, b) => a[0] - b[0] || a[1] - b[1]).slice(0, 6);
+          opts2 = sc.map(a => a[2]); hi = opts2.length ? 0 : -1;
+          list.innerHTML = opts2.length ? opts2.map((i, j) => '<li role="option" id="scOpt' + uid + j + '" data-i="' + i + '"' + (j === hi ? ' aria-selected="true"' : '') + '><span>' + rows[i][C.name] + ', ' + rows[i][C.st] + '</span><span class="sc-opt-pop">' + fmtPop(rows[i][C.pop]) + ' people</span></li>').join("")
+            : '<li class="sc-opt-none">' + (noun === "admin" ? "No US admin of about 25,000 people or more by that name." : "No US metro by that name.") + '</li>';
+          list.hidden = false; fin.setAttribute("aria-expanded", "true"); if (hi >= 0) fin.setAttribute("aria-activedescendant", "scOpt" + uid + hi); };
+        const mark = j => { list.querySelectorAll("[role=option]").forEach((li, x) => li.setAttribute("aria-selected", String(x === j))); if (j >= 0) fin.setAttribute("aria-activedescendant", "scOpt" + uid + j); };
+        const pick = i => { close(); const r = rows[i];
+          if (i === hereI){ found = null; fin.value = ""; clr.hidden = true; live.textContent = (noun === "metro" ? "The Boston metro" : "Boston") + " is the teal dot."; }
+          else if (peerI.indexOf(i) >= 0){ found = null; fin.value = ""; clr.hidden = true; if (T && !T.on.has(r[C.name])){ T.on.add(r[C.name]); T.render(); document.dispatchEvent(new CustomEvent("who:peers", { detail: { set: opts.set } })); } live.textContent = r[C.name] + " is shown in its colour."; }
+          else { found = i; fin.value = r[C.name] + ", " + r[C.st]; clr.hidden = false; live.textContent = r[C.name] + ", " + r[C.st] + " is marked on the chart."; }
+          entered = true; render(false); };
+        fin.addEventListener("input", show);
+        fin.addEventListener("keydown", ev => {
+          if (ev.key === "ArrowDown" || ev.key === "ArrowUp"){ if (list.hidden) show(); if (!opts2.length) return; ev.preventDefault(); hi = (hi + (ev.key === "ArrowDown" ? 1 : -1) + opts2.length) % opts2.length; mark(hi); }
+          else if (ev.key === "Enter"){ if (!list.hidden && opts2.length){ ev.preventDefault(); pick(opts2[Math.max(0, hi)]); } }
+          else if (ev.key === "Escape"){ close(); } });
+        fin.addEventListener("blur", () => setTimeout(close, 150));
+        list.addEventListener("mousedown", ev => { const li = ev.target.closest("[role=option]"); if (li){ ev.preventDefault(); pick(+li.dataset.i); } });
+        clr.addEventListener("click", () => { found = null; fin.value = ""; clr.hidden = true; live.textContent = ""; render(false); fin.focus(); });
+      }
+      /* ---- opt-2 on a phone: the panel is the band, so the controls, the
+         header and the peers stand in the column under it ---- */
+      const slot = document.createElement("div"); slot.className = "sc-slot"; if (SW) host.after(slot);
+      function arrange(){
+        if (!SW) return;
+        const out = opt2() && matchMedia("(max-width:899px)").matches;
+        if (out && ctl.parentNode !== slot){ slot.append(ctl, cmp, peersHost); }
+        else if (!out && ctl.parentNode === slot){ host.insertBefore(ctl, host.firstChild); host.insertBefore(cmp, plot); host.insertBefore(peersHost, live); }
+      }
+      if (SW){ arrange(); matchMedia("(max-width:899px)").addEventListener("change", () => { arrange(); render(false); }); }
+      /* a dot pointed at on the map: ringed here, with no card */
+      document.addEventListener("who:hover", ev => { const d = ev.detail || {}; if (d.set !== opts.set || d.from !== "map") return;
+        if (d.i == null || !cur || !entered){ hover.style.display = "none"; return; }
+        hover.setAttribute("cx", cur[2 * d.i]); hover.setAttribute("cy", cur[2 * d.i + 1]); hover.style.display = ""; });
+      /* for the map beside it: the rows, the fifths, the measure on */
+      (window.WHO_SC = window.WHO_SC || {})[opts.set] = { rows, C, M, FIFTH, hereI, peerI, isOn, get k(){ return k; }, unit: opts.unit, tag: opts.tag,
+        refresh(){ const lab = ctl && ctl.querySelector(".ctl-label"); if (lab) lab.textContent = tintOn() ? "Chart and map show" : "Chart shows";
+          if (!opt2()){ if (ask) closeAsk(false); found = null; if (k === "yp") set("wage", true); }
+          arrange(); cmp.innerHTML = headFor(k); render(false); if (entered && cur) paint(cur, geo.pa); } };
       /* the beat arrives: the dots move into place once, from the beat before */
       if (window.IntersectionObserver){
         const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)){ io.disconnect(); if (!entered){ entered = true; render(true); } } },
@@ -12770,6 +13139,203 @@
     { set: "admin", unit: "a US admin", tag: "Admin" });
   build(window.WHO_METRO_SCATTER_2024, window.WHO_COMPARE_METRO_2024, [...document.querySelectorAll('.who-sc[data-set="metro"]')],
     { set: "metro", unit: "a US metro", tag: "Metro" });
+  })();
+
+  /* ---- Who are you?: the right side of the scatter beats (2026-10-15) ----
+     opt-1: the map pulls back from Boston to the lower 48 and shows every
+     admin of the chart (every metro on the metro beat, at its densest
+     point) in the colour of its fifth for the measure on, the same colours
+     as the chart's dots: the chart says where an admin stands, the map
+     where it is. Boston and the switched-on peers are named on the map.
+     Pointing at a dot in either view rings it in the other; the measure
+     switch and the peers drive both. */
+  (function(){
+    const P = window.WHO_POINTS_2024; if (!P || !window.L || !ovLeaflet) return;
+    const BEAT = { "page-overview-scatter": "admin", "page-overview-mscatter": "metro" };
+    const L48 = L.latLngBounds([[24.4, -124.8], [49.4, -66.9]]);
+    const STATE = { AK: "Alaska", HI: "Hawaii", PR: "Puerto Rico" };
+    const phone = () => matchMedia("(max-width:599px)").matches;
+    const wrapEl = document.getElementById("ovWrap"), cssv = n => getComputedStyle(wrapEl).getPropertyValue(n).trim();
+    const esc = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+    const slug = n => n.toLowerCase().replace(/\s+/g, "-");
+    const host = ovLeaflet.getContainer();
+    ovLeaflet.createPane("whoNation"); ovLeaflet.getPane("whoNation").style.zIndex = 450; ovLeaflet.getPane("whoNation").style.pointerEvents = "none";
+    const rDots = L.canvas({ pane: "whoNation", padding: .3 }), rMarks = L.svg({ pane: "whoNation", padding: .3 });
+    /* the names, their leaders and the card, over the map */
+    const lbl = document.createElement("div"); lbl.className = "nat-lbls"; lbl.setAttribute("aria-hidden", "true");
+    lbl.innerHTML = '<svg></svg>'; host.appendChild(lbl); const lsvg = lbl.querySelector("svg");
+    const card = document.createElement("div"); card.className = "nat-card"; card.hidden = true; host.appendChild(card);
+    const S = {}; let cur = null, raf = 0;
+    const fmtv = (W, kk, v) => W.M[kk].pct ? v.toFixed(1) + "%" : "$" + Math.round(v / 1000) + "K";
+    const fmtPop = v => v >= 1e6 ? (v / 1e6).toFixed(1).replace(/\.0$/, "") + "M" : Math.round(v / 1e3) + "K";
+    const FIFTHS = ["Bottom fifth", "Second fifth from the bottom", "Middle fifth", "Second fifth from the top", "Top fifth"];
+    function setup(set){
+      if (S[set]) return S[set];
+      const W = window.WHO_SC && window.WHO_SC[set]; if (!W) return null;
+      const pts = P[set], rows = W.rows, C = W.C, ink = cssv("--ink") || "#1a2226";
+      /* smallest first, so the cities stand on top where the dots crowd */
+      const order = rows.map((r, i) => i).filter(i => pts[rows[i][C.id]] && i !== W.hereI)
+        .sort((a, b) => rows[a][C.pop] - rows[b][C.pop]);
+      const group = L.layerGroup(), mk = [];
+      order.forEach(i => { mk[i] = L.circleMarker(pts[rows[i][C.id]], { renderer: rDots, radius: 2.6, stroke: false, fillOpacity: .95, interactive: false }).addTo(group); });
+      const peerMk = W.peerI.map(i => L.circleMarker(pts[rows[i][C.id]], { renderer: rMarks, radius: 5, color: "#fff", weight: 1.5, opacity: 1,
+        fillColor: cssv("--pc-" + slug(rows[i][C.name])), fillOpacity: 1, interactive: false }));
+      const here = L.circleMarker(pts[rows[W.hereI][C.id]], { renderer: rMarks, radius: 6.5, color: "#fff", weight: 2, opacity: 1,
+        fillColor: cssv("--geo-city"), fillOpacity: 1, interactive: false });
+      const ring = L.circleMarker(L48.getCenter(), { renderer: rMarks, radius: 7, color: ink, weight: 2, fill: false, interactive: false });
+      const legend = document.createElement("div"); legend.className = "who-legend who-legend--fifths"; legend.hidden = true; host.appendChild(legend);
+      const offRows = rows.filter(r => { const p = pts[r[C.id]]; return p && !L48.contains(p); });
+      const offStates = [...new Set(offRows.map(r => String(r[C.st]).split("-").map(t => STATE[t]).filter(Boolean)).flat())].sort();
+      return S[set] = { set, W, pts, rows, C, order, group, mk, peerMk, here, ring, legend, offN: offRows.length, offStates, proj: null };
+    }
+    /* the colours, the peers and the key for the measure on */
+    function paint(s){
+      const W = s.W, F = W.FIFTH[W.k], cols = [1, 2, 3, 4, 5].map(j => cssv("--fifth-" + j)), r = (s.set === "metro" ? 3.4 : 2.6) * (phone() ? .78 : 1);
+      s.order.forEach(i => s.mk[i].setStyle({ fillColor: cols[F.cls[i]], radius: r }));
+      /* a peer that is on: its coloured dot, and its cloud dot stands aside;
+         one that sits on Boston at this zoom rings Boston's dot instead */
+      const hp = ovLeaflet.latLngToContainerPoint(s.here.getLatLng());
+      W.peerI.forEach((i, j) => { const on = W.isOn(i), m = s.peerMk[j], has = s.group.hasLayer(m), cm = s.mk[i];
+        if (cm){ const inG = s.group.hasLayer(cm); if (on && inG) s.group.removeLayer(cm); if (!on && !inG) cm.addTo(s.group); }
+        if (on && !has) m.addTo(s.group); if (!on && has) s.group.removeLayer(m);
+        if (on){ const q = ovLeaflet.latLngToContainerPoint(s.pts[s.rows[i][s.C.id]]), close = Math.hypot(q.x - hp.x, q.y - hp.y) < 9;
+          m.setLatLng(close ? s.here.getLatLng() : s.pts[s.rows[i][s.C.id]]);
+          m.setStyle(close ? { radius: 10.5, fill: false, color: m.options.fillColor, weight: 2.5 } : { radius: 5, fill: true, color: "#fff", weight: 1.5 });
+          m._ring = close; } });
+      if (!s.group.hasLayer(s.here)) s.here.addTo(s.group); else s.here.bringToFront();
+      s.peerMk.forEach(m => { if (s.group.hasLayer(m)) m.bringToFront(); }); s.here.bringToFront();
+      const c = F.cuts, f = v => fmtv(W, W.k, v), who = s.set === "metro" ? "metros" : "admins", hc = F.cls[W.hereI];
+      const ranges = [f(c[3]) + " and over", f(c[2]) + " to " + f(c[3]), f(c[1]) + " to " + f(c[2]), f(c[0]) + " to " + f(c[1]), "Under " + f(c[0])];
+      const here = '<span class="wl-here"><i></i>' + (s.set === "metro" ? "Boston metro" : "Boston") + '</span>';
+      /* the row that holds Boston says so: the key tells where Boston stands */
+      s.legend.innerHTML = '<span class="wl-txt">' + W.M[W.k].name + ', by fifth of US ' + who + (W.k === "unemp" ? ' <span class="wl-hint">lower is better</span>' : '') + '</span>' +
+        '<span class="wl-rows">' + ranges.map((t, j) => '<span class="wl-row"><i style="background:' + cols[4 - j] + '"></i>' + t + (4 - j === hc ? here : '') + '</span>').join("") + '</span>' +
+        '<span class="wl-bar">' + cols.map((x, j) => '<i style="background:' + x + '"' + (j === hc ? ' class="is-here"' : '') + '></i>').join("") + '</span><span class="wl-ends"><span>Lower</span><span>Higher</span></span>';
+      host.setAttribute("aria-label", "Map of " + s.rows.length + " US " + who + ", coloured by fifth of " + W.M[W.k].name.toLowerCase());
+      s.proj = null; names();
+    }
+    /* Boston, then the peers that are on, largest first: each name takes the
+       first clear place of eight round its mark, then the same eight farther
+       out on a short line; none may cover another, a mark, the key or the
+       buttons, or leave the frame */
+    function names(){
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        lbl.querySelectorAll(".nat-lbl").forEach(e => e.remove()); lsvg.textContent = "";
+        const s = S[cur]; if (!s) return;
+        const W = s.W, sz = ovLeaflet.getSize(); lsvg.setAttribute("viewBox", "0 0 " + sz.x + " " + sz.y);
+        const box = host.getBoundingClientRect(), rel = r => [r.left - box.left, r.top - box.top, r.right - box.left, r.bottom - box.top];
+        const taken = [...host.querySelectorAll(".who-legend:not([hidden]), .map-ctls")].map(e => e.getBoundingClientRect()).filter(r => r.width).map(rel);
+        const items = [{ ll: s.here.getLatLng(), r: 6.5, t: s.set === "metro" ? "Boston metro" : "Boston", here: true }]
+          .concat(W.peerI.filter(W.isOn).sort((a, b) => s.rows[b][s.C.pop] - s.rows[a][s.C.pop]).map(i => { const m = s.peerMk[W.peerI.indexOf(i)];
+            return { ll: m._ring ? s.here.getLatLng() : s.pts[s.rows[i][s.C.id]], r: m._ring ? 10.5 : 5, t: s.rows[i][s.C.name] }; }));
+        const pt = items.map(it => ovLeaflet.latLngToContainerPoint(it.ll));
+        const marks = pt.map((p, j) => [p.x - items[j].r - 1, p.y - items[j].r - 1, p.x + items[j].r + 1, p.y + items[j].r + 1]);
+        items.forEach((it, j) => {
+          const p = pt[j], e = document.createElement("span"); e.className = "nat-lbl" + (it.here ? " nat-lbl--here" : ""); e.textContent = it.t; lbl.appendChild(e);
+          const w = e.offsetWidth, h = e.offsetHeight; let best = null;
+          for (const d of [0, 20, 40]){ const R = it.r + 5 + d, q = R * .72;
+            for (const [dx, dy, a] of [[R, 0, "l"], [-R, 0, "r"], [0, -R, "b"], [0, R, "t"], [q, -q, "l"], [-q, -q, "r"], [q, q, "l"], [-q, q, "r"]]){
+              const x = p.x + dx, y = p.y + dy, x0 = a === "l" ? x : a === "r" ? x - w : x - w / 2, y0 = a === "b" ? y - h : a === "t" ? y : y - h / 2, b = [x0, y0, x0 + w, y0 + h];
+              let v = (b[0] < 2 || b[1] < 2 || b[2] > sz.x - 2 || b[3] > sz.y - 2) ? 1e6 : d * 4;
+              taken.concat(marks.filter((m, k) => k !== j)).forEach(o => { const ow = Math.min(b[2], o[2] + 6) - Math.max(b[0], o[0] - 6), oh = Math.min(b[3], o[3] + 2) - Math.max(b[1], o[1] - 2); if (ow > 0 && oh > 0) v += 1e4 + ow * oh; });
+              if (!best || v < best.v) best = { v, b, d };
+            }
+            if (best.v === best.d * 4) break;
+          }
+          e.style.left = best.b[0] + "px"; e.style.top = best.b[1] + "px"; taken.push(best.b);
+          if (best.d){ const b = best.b, tx = Math.max(b[0], Math.min(p.x, b[2])), ty = Math.max(b[1], Math.min(p.y, b[3])), dx = tx - p.x, dy = ty - p.y, len = Math.hypot(dx, dy) || 1;
+            const ln = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            ln.setAttribute("x1", (p.x + dx / len * (it.r + 1)).toFixed(1)); ln.setAttribute("y1", (p.y + dy / len * (it.r + 1)).toFixed(1));
+            ln.setAttribute("x2", tx.toFixed(1)); ln.setAttribute("y2", ty.toFixed(1)); lsvg.appendChild(ln); }
+        });
+      });
+    }
+    /* the nearest dot under the pointer: its card here, its ring there */
+    const vis = s => s.order.filter(i => !s.W.isOn(i) || s.W.peerI.indexOf(i) < 0).concat(s.W.peerI.filter(s.W.isOn), [s.W.hereI]);
+    function nearest(s, x, y, reach){
+      if (!s.proj){ s.proj = new Map(); vis(s).forEach(i => { const q = ovLeaflet.latLngToContainerPoint(s.pts[s.rows[i][s.C.id]]); s.proj.set(i, q); }); }
+      let best = null, bd = reach * reach;
+      s.proj.forEach((q, i) => { const d = (q.x - x) * (q.x - x) + (q.y - y) * (q.y - y); if (d < bd || (d === bd && i === s.W.hereI)){ bd = d; best = i; } });
+      return best;
+    }
+    function ringAt(s, i){ if (i == null){ if (s.group.hasLayer(s.ring)) s.group.removeLayer(s.ring); return; }
+      s.ring.setLatLng(s.pts[s.rows[i][s.C.id]]).setRadius((i === s.W.hereI ? 6.5 : s.W.peerI.indexOf(i) >= 0 ? 5 : 2.6) + 4); if (!s.group.hasLayer(s.ring)) s.ring.addTo(s.group); s.ring.bringToFront(); }
+    function showCard(s, i, q){
+      const W = s.W, r = s.rows[i], C = s.C, F = W.FIFTH[W.k];
+      card.innerHTML = '<b>' + esc(r[C.name]) + ', ' + esc(r[C.st]) + '</b>Population ' + fmtPop(r[C.pop]) + '<br>' + W.M[W.k].name + ' ' + fmtv(W, W.k, r[C[W.k]]) +
+        '<span>' + FIFTHS[F.cls[i]] + ' for ' + W.M[W.k].name.toLowerCase() + (W.k === "unemp" ? '. Lower is better.' : '') + '</span>';
+      card.hidden = false; const sz = ovLeaflet.getSize(), cw = card.offsetWidth, ch = card.offsetHeight;
+      let x = q.x + 12, y = q.y - ch - 10; if (x + cw > sz.x - 4) x = q.x - cw - 12; if (y < 4) y = q.y + 12;
+      card.style.left = Math.max(4, x) + "px"; card.style.top = y + "px";
+    }
+    const tell = (s, i) => document.dispatchEvent(new CustomEvent("who:hover", { detail: { set: s.set, i, from: "map" } }));
+    host.addEventListener("pointermove", ev => { const s = S[cur]; if (!s) return;
+      const b = host.getBoundingClientRect(), x = ev.clientX - b.left, y = ev.clientY - b.top, i = nearest(s, x, y, ev.pointerType === "touch" ? 20 : 12);
+      if (i == null){ card.hidden = true; ringAt(s, null); tell(s, null); return; }
+      showCard(s, i, s.proj.get(i)); ringAt(s, i); tell(s, i); });
+    host.addEventListener("pointerleave", () => { const s = S[cur]; card.hidden = true; if (s){ ringAt(s, null); tell(s, null); } });
+    /* the chart's hover, ringed on the map */
+    document.addEventListener("who:hover", ev => { const d = ev.detail || {}, s = S[d.set]; if (!s || d.from !== "chart" || cur !== d.set) return; ringAt(s, d.i); });
+    document.addEventListener("who:measure", ev => { const s = S[ev.detail && ev.detail.set]; if (s && cur === s.set) paint(s); });
+    document.addEventListener("who:peers", ev => { const s = S[ev.detail && ev.detail.set]; if (s && cur === s.set) paint(s); });
+    ovLeaflet.on("move zoom resize", () => { const s = S[cur]; if (s){ s.proj = null; card.hidden = true; names(); } });
+    /* the beat in view: the map of its set, or none */
+    function show(id){
+      const set = (window.whoRight || "map") === "map" ? BEAT[id] || null : null;
+      if (set === cur) return;
+      const old = S[cur]; if (old){ ovLeaflet.removeLayer(old.group); old.legend.hidden = true; ringAt(old, null); }
+      card.hidden = true; cur = set;
+      const s = set && setup(set);
+      host.classList.toggle("ov-nation", !!s);
+      if (!s){ cur = null; names(); return; }
+      s.group.addTo(ovLeaflet); s.legend.hidden = false; paint(s);
+    }
+    window.whoNationBeat = show;
+    window.whoNationOn = () => !!cur;
+  })();
+
+  /* ---- the right side's study (2026-10-15): opt-1 the US map of every
+     admin, coloured as the chart (?right=map); opt-2, the default, no map,
+     the chart in a panel over the map card with more to do ---- */
+  (function(){
+    const wrap = document.getElementById("ovWrap"); if (!wrap) return;
+    window.whoRight = /[?&]right=map\b/.test(location.search) ? "map" : "chart";
+    wrap.dataset.right = window.whoRight;
+    /* the panel reaches from the words column's edge (336 + 43) to the map card's right edge; on a phone it is the band's height */
+    function size(){
+      const blk = wrap.querySelector(".sc-beat"), card = wrap.querySelector(".ov-map-inner"); if (!blk || !card) return;
+      const b = blk.getBoundingClientRect(), c = card.getBoundingClientRect();
+      if (c.width && b.width) wrap.style.setProperty("--sc-panel-w", Math.max(420, Math.round(c.right - b.left - 379)) + "px");
+      if (c.height) wrap.style.setProperty("--ov-band-h", Math.round(c.height) + "px");
+    }
+    window.whoPanelSize = size;
+    addEventListener("resize", () => requestAnimationFrame(size)); size(); setTimeout(size, 600);
+    function setRight(v){
+      window.whoRight = v === "chart" ? "chart" : "map"; wrap.dataset.right = window.whoRight;
+      const u = new URL(location.href); if (window.whoRight === "map") u.searchParams.set("right", "map"); else u.searchParams.delete("right");
+      history.replaceState(null, "", u.pathname + u.search + u.hash);
+      document.querySelectorAll(".sc-right-opt").forEach(sel => { sel.value = window.whoRight; });
+      size();
+      Object.values(window.WHO_SC || {}).forEach(W => W.refresh && W.refresh());
+      const on = wrap.querySelector(".ov-block.is-on");
+      if (window.whoNationBeat) window.whoNationBeat(on ? on.id : null);
+      if (typeof ovZoom === "function") ovZoom(true);
+    }
+    /* the "opt" word in each scatter beat's counter */
+    wrap.querySelectorAll(".sc-beat").forEach(beat => {
+      const eye = beat.querySelector(":scope > .ct-eyebrow"); if (!eye) return;
+      const st = document.createElement("div"); st.className = "mi-studies"; const pid = "scRight" + beat.id.replace(/\W/g, "");
+      st.innerHTML = '<button type="button" class="mi-studies-btn" aria-expanded="false" aria-controls="' + pid + '">opt</button>' +
+        '<div class="mi-studies-panel" id="' + pid + '" role="group" aria-label="Design studies" hidden><label class="mi-study"><span>Right side</span>' +
+        '<select class="sc-right-opt" aria-label="What the right side shows: the map of every admin, or the chart with more to do"><option value="map">opt-1</option><option value="chart">opt-2</option></select></label></div>';
+      eye.appendChild(st);
+      const btn = st.querySelector(".mi-studies-btn"), panel = st.querySelector(".mi-studies-panel"), sel = st.querySelector("select");
+      sel.value = window.whoRight;
+      btn.addEventListener("click", () => { const open = panel.hidden; panel.hidden = !open; btn.setAttribute("aria-expanded", String(open)); });
+      document.addEventListener("click", ev => { if (!st.contains(ev.target) && !panel.hidden){ panel.hidden = true; btn.setAttribute("aria-expanded", "false"); } });
+      sel.addEventListener("change", () => setRight(sel.value));
+    });
   })();
 
   /* the commuting figure's replay (2026-10-14): it plays each time it comes
@@ -15122,7 +15688,7 @@
   };
 
   /* rail-step ids -> scrolly steps, while built */
-  var OV_IDS = ["page-overview", "page-overview-wage", "page-overview-home", "page-overview-unemp", "page-overview-flows", "page-overview-metro", "page-overview-mwage", "page-overview-mhome", "page-overview-munemp", "page-overview-compare"];
+  var OV_IDS = ["page-overview", "page-overview-scatter", "page-overview-flows", "page-overview-metro", "page-overview-mscatter", "page-overview-compare"];
   window.ovStepFor = function(id){
     if (!built) return null;
     var k = OV_IDS.indexOf(id);
