@@ -1611,6 +1611,30 @@
   .wt-row--head + .wt-row{border-top:1px solid var(--border-strong);}
   .wt-colh{font-size:13px;font-weight:600;color:var(--ink-soft);}
   .wt[data-form="beside"] .wt-name .hint{display:block;margin-left:0;}
+  /* opt-2 of the tables (2026-10-15): the band, square, with Boston alone
+     on it and named above; the US average a dashed line through it, the
+     peer average an empty circle under it, the peers' dots round it */
+  .wt-bnd{position:relative;height:46px;margin:2px 0 0;}
+  .wt-bnd > span{position:absolute;display:block;}
+  .wb-rail{left:0;right:0;top:25px;height:2px;background:var(--border);}
+  .wb-band{top:20px;height:12px;background:var(--border);}
+  .wb-mid{top:20px;height:12px;background:var(--border-strong);}
+  .wb-ush{top:15px;height:22px;width:4px;margin-left:-2px;background:var(--white);opacity:.7;}
+  .wb-us{top:15px;height:22px;width:0;margin-left:-.75px;border-left:1.5px dashed var(--ink);}
+  .wb-pe{top:41px;width:9px;height:9px;margin:-4.5px 0 0 -4.5px;border-radius:50%;background:var(--pc);box-shadow:0 0 0 1.5px var(--white);}
+  .wb-pa{top:41px;width:11px;height:11px;margin:-5.5px 0 0 -5.5px;border-radius:50%;border:2px solid var(--ink);box-sizing:border-box;}
+  .wb-here{top:26px;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:var(--geo-city);box-shadow:0 0 0 2px var(--white);}
+  .wb-name{top:0;transform:translateX(-50%);font-size:13px;font-weight:600;line-height:1.2;color:var(--ink);white-space:nowrap;}
+  .wb-name.end{left:auto !important;right:0;transform:none;}
+  .wb-name.start{transform:translateX(-8px);}
+  .wt-key{display:flex;flex-wrap:wrap;align-items:center;gap:6px 18px;margin:14px 0 0;font-size:13px;line-height:1.4;color:var(--ink-soft);}
+  .wt-key > span{display:inline-flex;align-items:center;gap:7px;}
+  .wt-key i{display:inline-block;flex:none;}
+  .wt-key .k-here{width:12px;height:12px;border-radius:50%;background:var(--geo-city);}
+  .wt-key .k-us{width:0;height:14px;border-left:1.5px dashed var(--ink);}
+  .wt-key .k-pa{width:11px;height:11px;border-radius:50%;border:2px solid var(--ink);box-sizing:border-box;}
+  .wt-key .k-band{position:relative;width:44px;height:10px;background:var(--border);}
+  .wt-key .k-band i{position:absolute;left:14px;top:0;width:16px;height:10px;background:var(--border-strong);}
   .wt-ba{display:inline-flex;align-items:center;gap:5px;font-size:13px;line-height:1.3;color:var(--ink);white-space:nowrap;}
   .wt-ba b{font-weight:600;display:inline-flex;align-items:center;gap:3px;font-variant-numeric:tabular-nums;}
   .wt-ba .wt-arr{width:10px;height:10px;flex:none;}
@@ -12398,7 +12422,11 @@
     const mean = (rows, k) => { const m = rows.reduce((s, r) => s + r[k], 0) / rows.length; return k === "unemployment" ? Math.round(m * 100) / 100 : m; };
     /* bars or the line: one study for both tables */
     /* v-5 shows the bars; v-6 the line form */
-    let mode = "bars";
+    /* the tables' study (2026-10-15): opt-1 the bars with the comparisons
+       beside them; opt-2 (?table=band) the band of where US admins fall,
+       Boston alone on it, the US average a dashed line through it and the
+       peer average an empty circle under it (the sketches' option 5) */
+    let mode = /[?&]table=band\b/.test(location.search) ? "band" : "bars";
     /* the bars say each comparison at the end of its bar (Nil, 2026-10-15:
        the pick over the comparisons stacked in the text column), so the
        text column holds only the measure and Boston's figure */
@@ -12450,7 +12478,30 @@
             (line ? '<p class="wt-refs">' + refLine("US average", us) + refLine("Peer average", pa) +
                       onPeers.map(pr => '<span class="wt-ref wt-ref--pe"><i class="wt-sw pe" style="--pc:var(--pc-' + slug(pr.name) + ')" aria-hidden="true"></i><span class="wt-rn">' + esc(pr.name) + ' <span class="num">' + fmt(k, pr[k]) + '</span></span></span>').join("") + '</p>'
                   : side ? '' : '<p class="wt-diff">' + dChip(k, v, us, "US average") + dChip(k, v, pa, "Peers") + '</p>') + '</div><div class="wt-viz">';
-          if (mode === "bars"){
+          if (mode === "band"){
+            /* the band runs from the 5th to the 95th percentile of every US
+               admin (or metro) with the measure, the darker middle the
+               middle half, on the distribution's own scale (log for people
+               and dollars), widened to take any mark beyond it; the rows
+               share nothing but their left edge */
+            const r = D.ind.find(q => q.key === k), f = r.scale === "log" ? Math.log : (x => x);
+            const [p5, p25, , p75, p95] = r.q;
+            const all = [v, us, pa].concat(onPeers.map(pr => pr[k]));
+            const lo = Math.min(p5, ...all), hi = Math.max(p95, ...all);
+            const sxn = x => 1.5 + (f(x) - f(lo)) / ((f(hi) - f(lo)) || 1) * 96.5, sx = x => sxn(x).toFixed(2) + "%";
+            const wpx = Math.min((host.clientWidth || 360), 360), nw = 100 * (opts.here.length * 7.4 + 4) / wpx, bx = sxn(v);
+            const edge = bx > 100 - nw / 2 ? " end" : bx < nw / 2 ? " start" : "";
+            h += '<div class="wt-bnd" role="img" aria-label="' + NAME[k] + ': ' + opts.here + ' ' + fmt(k, v) + ', US average ' + fmt(k, us) + ', peer average ' + fmt(k, pa) +
+                '; 90 of every 100 ' + opts.unit + ' fall between ' + fmt(k, p5) + ' and ' + fmt(k, p95) + ', half of them between ' + fmt(k, p25) + ' and ' + fmt(k, p75) + '">' +
+              '<span class="wb-rail"></span>' +
+              '<span class="wb-band" style="left:' + sx(p5) + ';width:' + (sxn(p95) - sxn(p5)).toFixed(2) + '%"></span>' +
+              '<span class="wb-mid" style="left:' + sx(p25) + ';width:' + (sxn(p75) - sxn(p25)).toFixed(2) + '%"></span>' +
+              '<span class="wb-ush" style="left:' + sx(us) + '"></span><span class="wb-us" style="left:' + sx(us) + '"></span>' +
+              onPeers.map(pr => '<span class="wb-pe" style="left:' + sx(pr[k]) + ';--pc:var(--pc-' + slug(pr.name) + ')"></span>').join("") +
+              '<span class="wb-pa" style="left:' + sx(pa) + '"></span>' +
+              '<span class="wb-here" style="left:' + sx(v) + '"></span>' +
+              '<span class="wb-name' + edge + '" style="left:' + sx(v) + '">' + opts.here + '</span></div>';
+          } else if (mode === "bars"){
             const bar = (cls, lab, x, style) => '<span class="wt-bl ' + cls + '"' + (style || '') + '>' + lab + '</span><span class="wt-bt ' + cls + '"' + (style || '') + '><i style="width:' + pct(x) + '"></i></span><span class="wt-bv ' + cls + '">' + fmt(k, x) + '</span>' +
               (side ? (cls === "us" || cls === "pa" ? beside(k, v, x) : '<span class="wt-ba"></span>') : '');
             h += '<div class="wt-bars">' + bar("here", opts.here, v) + bar("us", "US average", us) + bar("pa", "Peer average", pa) +
@@ -12476,6 +12527,8 @@
           }
           h += '</div></div>';
         });
+        if (mode === "band") h += '<p class="wt-key wt-key--band"><span><i class="k-here"></i>' + opts.here + '</span><span><i class="k-us"></i>US average</span><span><i class="k-pa"></i>Peer average</span>' +
+          '<span><i class="k-band"><i></i></i>where 90 of every 100 ' + opts.unit + ' fall; the darker middle holds half of them</span></p>';
         h += peersRow() + '<p class="who-note">' + esc(D.peersNote) + '</p></div>';
         host.innerHTML = h;
       }
@@ -12492,7 +12545,7 @@
         return '<p class="wt-peers"><span>' + opts.peersWord + '</span>' + C.peers.map(pr => '<button type="button" class="wt-peer" data-set="' + id + '" data-p="' + esc(pr.name) + '" aria-pressed="' + on.has(pr.name) + '" style="--pc:var(--pc-' + slug(pr.name) + ')"><i aria-hidden="true"></i>' + esc(pr.name) + ' ' + pr.st + '</button>').join("") +
           '<span class="wt-how">Click a peer to show it on the chart.</span></p>';
       }
-      function mount(el, data){ host = el; D = data; render(); wire(); if (opts.study) study(); }
+      function mount(el, data){ host = el; D = data; render(); wire(); study(); setTimeout(study, 0); }
       return { id, C, on, mount, render, head, peersRow, get host(){ return host; } };
     }
     function showTip(el){
@@ -12515,20 +12568,22 @@
       sec.addEventListener("focusin", ev => { const t = ev.target.closest(".wt-val.tipv"); if (t) showTip(t); });
       sec.addEventListener("focusout", ev => { if (ev.target.closest(".wt-val.tipv") && tip) tip.hidden = true; });
     }
-    /* the study: the "opt" word in the first beat's counter, with the two forms */
+    /* the study: the "opt" word in each table beat's counter, one choice for both tables */
     function study(){
-      const beat = document.getElementById("page-overview"), eye = beat && beat.querySelector(":scope > .ct-eyebrow");
-      if (!eye || document.getElementById("whoTableOpt")) return;
-      const st = document.createElement("div"); st.className = "mi-studies"; st.id = "whoStudies";
-      st.innerHTML = '<button type="button" class="mi-studies-btn" aria-expanded="false" aria-controls="whoStudiesPanel">opt</button>' +
-        '<div class="mi-studies-panel" id="whoStudiesPanel" role="group" aria-label="Design studies" hidden><label class="mi-study"><span>Tables</span>' +
-        '<select id="whoTableOpt" aria-label="Where the tables say how Boston compares"><option value="stack">opt-1</option><option value="beside">opt-2</option></select></label></div>';
-      eye.appendChild(st);
-      const btn = st.querySelector(".mi-studies-btn"), panel = st.querySelector(".mi-studies-panel"), sel = st.querySelector("select");
-      sel.value = form;
-      btn.addEventListener("click", () => { const open = panel.hidden; panel.hidden = !open; btn.setAttribute("aria-expanded", String(open)); });
-      document.addEventListener("click", ev => { if (!st.contains(ev.target) && !panel.hidden){ panel.hidden = true; btn.setAttribute("aria-expanded", "false"); } });
-      sel.addEventListener("change", () => setForm(sel.value));
+      ["page-overview", "page-overview-metro"].forEach(id => {
+        const beat = document.getElementById(id), eye = beat && beat.querySelector(":scope > .ct-eyebrow");
+        if (!eye || eye.querySelector(".wt-table-opt")) return;
+        const st = document.createElement("div"); st.className = "mi-studies"; const pid = "whoTablesPanel" + (id === "page-overview" ? "" : "M");
+        st.innerHTML = '<button type="button" class="mi-studies-btn" aria-expanded="false" aria-controls="' + pid + '">opt</button>' +
+          '<div class="mi-studies-panel" id="' + pid + '" role="group" aria-label="Design studies" hidden><label class="mi-study"><span>Tables</span>' +
+          '<select class="wt-table-opt" aria-label="How the tables draw Boston against the US and its peers"><option value="bars">opt-1</option><option value="band">opt-2</option></select></label></div>';
+        eye.appendChild(st);
+        const btn = st.querySelector(".mi-studies-btn"), panel = st.querySelector(".mi-studies-panel"), sel = st.querySelector("select");
+        sel.value = mode;
+        btn.addEventListener("click", () => { const open = panel.hidden; panel.hidden = !open; btn.setAttribute("aria-expanded", String(open)); });
+        document.addEventListener("click", ev => { if (!st.contains(ev.target) && !panel.hidden){ panel.hidden = true; btn.setAttribute("aria-expanded", "false"); } });
+        sel.addEventListener("change", () => set(sel.value));
+      });
     }
     function setForm(f){
       form = f === "beside" ? "beside" : "stack";
@@ -12539,9 +12594,9 @@
       compare(document.getElementById("whoCompare"));
     }
     function set(m){
-      mode = m === "line" ? "line" : "bars";
-      const sel = document.getElementById("whoTableOpt"); if (sel) sel.value = mode;
-      const u = new URL(location.href); if (mode === "line") u.searchParams.set("table", "line"); else u.searchParams.delete("table");
+      mode = m === "band" ? "band" : "bars";
+      document.querySelectorAll(".wt-table-opt").forEach(sel => { sel.value = mode; });
+      const u = new URL(location.href); if (mode === "band") u.searchParams.set("table", "band"); else u.searchParams.delete("table");
       history.replaceState(null, "", u.pathname + u.search + u.hash);
       Object.values(tables).forEach(T => T.render());
     }
@@ -12581,6 +12636,7 @@
     if (window.WHO_COMPARE_2024) tables.admin = make("admin", window.WHO_COMPARE_2024, { here: "Boston", unit: "US admins", peersWord: "Closest peers:" });
     if (window.WHO_COMPARE_METRO_2024) tables.metro = make("metro", window.WHO_COMPARE_METRO_2024, { here: "Boston metro", unit: "US metros", peersWord: "Closest peer metros:" });
     window.whoTables = tables;
+    study();
     window.whoTable = tables.admin ? { mount: tables.admin.mount, head: tables.admin.head, peersRow: tables.admin.peersRow, set, get mode(){ return mode; } } : null;
   })();
 
