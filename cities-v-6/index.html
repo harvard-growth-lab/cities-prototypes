@@ -720,6 +720,8 @@
      the choices upward. It shows once the tool is open. */
   .sv{display:none;position:fixed;left:16px;bottom:16px;z-index:500;font-family:inherit;}
   body:has(#tool.active) .sv{display:block;}
+  /* put away (Nil, 2026-10-14): the layout still answers ?layout= in the address */
+  .sv[hidden]{display:none !important;}
   .sv-btn{
     display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px 0 13px;
     appearance:none;border:0;border-radius:16px;background:var(--ink);color:var(--white);cursor:pointer;
@@ -1602,15 +1604,21 @@
   .wt-bv.here{color:var(--ink);font-weight:600;}
   /* opt-2: one strip, one shape, three fills; Boston named above, the averages below */
   .wt-line{position:relative;height:24px;margin:18px 0 20px;}
-  .wt-line.two-rows{margin-bottom:34px;}
+  .wt-line.two-rows{margin-bottom:36px;}
   .wt-track{position:absolute;left:0;right:0;top:8px;height:8px;border-radius:2px;background:var(--border);}
+  /* the friendly box plot's band, in the Metro Industries dress: the range a soft pill, the middle half darker */
+  .wt-band{position:absolute;top:6px;height:12px;border-radius:6px;background:var(--border);}
+  .wt-bandm{position:absolute;top:6px;height:12px;background:var(--border-strong);}
+  .wt-key{display:flex;align-items:center;gap:8px;margin:14px 0 0;font-size:13px;line-height:1.4;color:var(--ink-soft);}
+  .wt-key-sw{position:relative;display:inline-block;width:44px;height:10px;border-radius:5px;background:var(--border);flex:none;}
+  .wt-key-sw i{position:absolute;left:14px;top:0;width:16px;height:10px;background:var(--border-strong);}
   .wt-mk{position:absolute;top:12px;transform:translate(-50%,-50%);display:block;border-radius:50%;box-sizing:border-box;}
   .wt-mk.here{width:16px;height:16px;background:var(--geo-city);z-index:1;}
   .wt-mk.pe{width:10px;height:10px;background:var(--pc);box-shadow:0 0 0 1.5px var(--white);z-index:2;}
   .wt-mk.us{width:10px;height:10px;background:var(--ink);box-shadow:0 0 0 1.5px var(--white);z-index:3;}
   .wt-mk.pa{width:10px;height:10px;background:transparent;border:2px solid var(--ink);box-shadow:0 0 0 1.5px var(--white);z-index:3;}
   .wt-pn{position:absolute;top:24px;transform:translateX(-50%);font-size:13px;line-height:1.2;color:var(--ink-soft);white-space:nowrap;}
-  .wt-pn.r1{top:38px;}
+  .wt-pn.r1{top:40px;}
   .wt-pn.top{top:-16px;color:var(--ink);font-weight:600;}
   .wt-pn.end{transform:translateX(-100%);}
   .wt-pn.start{transform:none;}
@@ -8536,7 +8544,7 @@
   </div>
 </div>
 
-<div class="sv" id="siteLayoutSwitch">
+<div class="sv" id="siteLayoutSwitch" hidden>
   <button type="button" class="sv-btn" id="svBtn" aria-expanded="false" aria-haspopup="menu" aria-controls="svPanel">
     <span class="sv-k">Site Layout</span><span class="sv-now" id="svNow">Two scrolls</span>
     <svg viewBox="0 0 10 6" width="10" height="6" aria-hidden="true"><path d="M1 5l4-4 4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -12238,19 +12246,29 @@
             h += '<div class="wt-bars">' + bar("here", opts.here, v) + bar("us", "US average", us) + bar("pa", "Peer average", pa) +
               onPeers.map(pr => bar("pe", '<i class="wt-pd" aria-hidden="true"></i>' + esc(pr.name), pr[k], ' style="--pc:var(--pc-' + slug(pr.name) + ')"')).join("") + '</div>';
           } else {
-            /* the strip spans the values on it (not zero), so the gaps fill
-               its length; the marks are one shape, told apart by fill. The
-               subject is named above its dot, the averages below theirs, the
-               second dropping a row when the two would meet; each hangs
-               inward at the ends */
-            const all = [v, us, pa].concat(onPeers.map(pr => pr[k])), lo = Math.min(...all), hi = Math.max(...all), pad = (hi - lo || 1) * .12;
-            const sxn = x => (x - lo + pad) / (hi - lo + 2 * pad) * 100, sx = x => sxn(x).toFixed(2) + "%";
+            /* the friendly box plot (2026-10-14), as Metro Industries draws
+               it: a soft band where every US admin (or metro) falls, the 5th
+               to the 95th percentile, and a darker middle holding half of
+               them. On it, the marks the line carried, one shape told apart
+               by fill: the subject named above its dot, the averages named
+               below theirs, the second dropping a row when the two would
+               meet, each hanging inward at the ends; the peers in their
+               colours. The scale is the distribution's, log for the counts
+               and dollars, widened to take any mark beyond its ends */
+            const r = D.ind.find(q => q.key === k), f = r.scale === "log" ? Math.log : (x => x);
+            const all = [v, us, pa].concat(onPeers.map(pr => pr[k]));
+            const lo = Math.min(r.axis[0], ...all), hi = Math.max(r.axis[1], ...all), pad = (f(hi) - f(lo) || 1) * .03, a = f(lo) - pad, b = f(hi) + pad;
+            const sxn = x => (f(x) - a) / (b - a) * 100, sx = x => sxn(x).toFixed(2) + "%";
+            const [p5, p25, , p75, p95] = r.q;
+            const band = '<span class="wt-band" style="left:' + sx(p5) + ';width:' + (sxn(p95) - sxn(p5)).toFixed(2) + '%"></span>' +
+              '<span class="wt-bandm" style="left:' + sx(p25) + ';width:' + (sxn(p75) - sxn(p25)).toFixed(2) + '%"></span>';
             const wpx = Math.min(host.clientWidth || 360, 360);
             const lab = (t, x, cls, row) => { const w = 100 * (t.length * 6.6 + 4) / wpx, edge = x > 100 - w / 2 ? " end" : x < w / 2 ? " start" : "";
               return '<span class="wt-pn ' + cls + (row ? ' r1' : '') + edge + '" style="left:' + x.toFixed(2) + '%">' + t + '</span>'; };
             const [a1, a2] = [{ t: "US average", x: sxn(us) }, { t: "Peer average", x: sxn(pa) }].sort((p, q) => p.x - q.x);
             const meet = (a2.x - a1.x) * wpx / 100 < (a1.t.length + a2.t.length) * 3.4 + 10;
-            h += '<div class="wt-line' + (meet ? ' two-rows' : '') + '" role="img" aria-label="' + NAME[k] + ': ' + opts.here + ' ' + fmt(k, v) + ', US average ' + fmt(k, us) + ', peer average ' + fmt(k, pa) + '"><span class="wt-track"></span>' +
+            h += '<div class="wt-line' + (meet ? ' two-rows' : '') + '" role="img" aria-label="' + NAME[k] + ': ' + opts.here + ' ' + fmt(k, v) + ', US average ' + fmt(k, us) + ', peer average ' + fmt(k, pa) +
+                '; ' + opts.unit + ' fall between ' + fmt(k, p5) + ' and ' + fmt(k, p95) + ', half of them between ' + fmt(k, p25) + ' and ' + fmt(k, p75) + '">' + band +
               '<span class="wt-mk here" style="left:' + sx(v) + '"></span>' +
               onPeers.map(pr => '<span class="wt-mk pe" style="left:' + sx(pr[k]) + ';--pc:var(--pc-' + slug(pr.name) + ')"></span>').join("") +
               '<span class="wt-mk us" style="left:' + sx(us) + '"></span><span class="wt-mk pa" style="left:' + sx(pa) + '"></span>' +
@@ -12258,6 +12276,7 @@
           }
           h += '</div></div>';
         });
+        if (mode === "line") h += '<p class="wt-key"><span class="wt-key-sw" aria-hidden="true"><i></i></span>The band is where ' + opts.unit + ' fall; its darker middle holds half of them.</p>';
         h += peersRow() + '<p class="who-note">' + esc(D.peersNote) + '</p></div>';
         host.innerHTML = h;
       }

@@ -720,6 +720,8 @@
      the choices upward. It shows once the tool is open. */
   .sv{display:none;position:fixed;left:16px;bottom:16px;z-index:500;font-family:inherit;}
   body:has(#tool.active) .sv{display:block;}
+  /* put away (Nil, 2026-10-14): the layout still answers ?layout= in the address */
+  .sv[hidden]{display:none !important;}
   .sv-btn{
     display:inline-flex;align-items:center;gap:8px;height:32px;padding:0 12px 0 13px;
     appearance:none;border:0;border-radius:16px;background:var(--ink);color:var(--white);cursor:pointer;
@@ -1600,9 +1602,24 @@
   .wt-bt.pe i{background:var(--pc);}
   .wt-bv{font-size:13px;text-align:right;color:var(--ink-soft);font-variant-numeric:tabular-nums;}
   .wt-bv.here{color:var(--ink);font-weight:600;}
+  /* opt-2 of the bars (2026-10-15): the text column holds the measure and
+     Boston's figure; each comparison sits at the end of its bar, under one
+     "Boston is" head over that column */
+  .wt[data-form="beside"] .wt-row{grid-template-columns:minmax(0,150px) minmax(0,486px);}
+  .wt[data-form="beside"] .wt-bars{grid-template-columns:92px minmax(0,1fr) 54px 132px;}
+  .wt-row.wt-row--head{padding:0 0 6px;border:0;gap:0 32px;}
+  .wt-row--head + .wt-row{border-top:1px solid var(--border-strong);}
+  .wt-colh{font-size:13px;font-weight:600;color:var(--ink-soft);}
+  .wt[data-form="beside"] .wt-name .hint{display:block;margin-left:0;}
+  .wt-ba{display:inline-flex;align-items:center;gap:5px;font-size:13px;line-height:1.3;color:var(--ink);white-space:nowrap;}
+  .wt-ba b{font-weight:600;display:inline-flex;align-items:center;gap:3px;font-variant-numeric:tabular-nums;}
+  .wt-ba .wt-arr{width:10px;height:10px;flex:none;}
+  .wt-ba.is-good b{color:var(--rise);} .wt-ba.is-bad b{color:var(--fall);}
+  .wt-shp{font-weight:400;color:var(--ink-soft);}
+  .vh{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
   /* opt-2: one strip, one shape, three fills; Boston named above, the averages below */
   .wt-line{position:relative;height:24px;margin:18px 0 20px;}
-  .wt-line.two-rows{margin-bottom:34px;}
+  .wt-line.two-rows{margin-bottom:36px;}
   .wt-track{position:absolute;left:0;right:0;top:8px;height:8px;border-radius:2px;background:var(--border);}
   .wt-mk{position:absolute;top:12px;transform:translate(-50%,-50%);display:block;border-radius:50%;box-sizing:border-box;}
   .wt-mk.here{width:16px;height:16px;background:var(--geo-city);z-index:1;}
@@ -1610,7 +1627,7 @@
   .wt-mk.us{width:10px;height:10px;background:var(--ink);box-shadow:0 0 0 1.5px var(--white);z-index:3;}
   .wt-mk.pa{width:10px;height:10px;background:transparent;border:2px solid var(--ink);box-shadow:0 0 0 1.5px var(--white);z-index:3;}
   .wt-pn{position:absolute;top:24px;transform:translateX(-50%);font-size:13px;line-height:1.2;color:var(--ink-soft);white-space:nowrap;}
-  .wt-pn.r1{top:38px;}
+  .wt-pn.r1{top:40px;}
   .wt-pn.top{top:-16px;color:var(--ink);font-weight:600;}
   .wt-pn.end{transform:translateX(-100%);}
   .wt-pn.start{transform:none;}
@@ -1637,7 +1654,9 @@
   .wt-shl .here{color:var(--ink);font-weight:600;}
   .wt-shl .num{font-variant-numeric:tabular-nums;}
   @media (max-width:599px){
-    .wt .wt-row{grid-template-columns:1fr;gap:10px 0;}
+    .wt .wt-row,.wt[data-form="beside"] .wt-row{grid-template-columns:1fr;gap:10px 0;}
+    .wt-row.wt-row--head{gap:0;}
+    .wt[data-form="beside"] .wt-bars{grid-template-columns:82px minmax(0,1fr) 46px 118px;gap:6px 6px;}
     .wt-viz{padding-right:4px;}
   }
   /* ---- Who are you?: the commuting beat (2026-10-14) ----
@@ -8551,7 +8570,7 @@
   </div>
 </div>
 
-<div class="sv" id="siteLayoutSwitch">
+<div class="sv" id="siteLayoutSwitch" hidden>
   <button type="button" class="sv-btn" id="svBtn" aria-expanded="false" aria-haspopup="menu" aria-controls="svPanel">
     <span class="sv-k">Site Layout</span><span class="sv-now" id="svNow">Two scrolls</span>
     <svg viewBox="0 0 10 6" width="10" height="6" aria-hidden="true"><path d="M1 5l4-4 4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -12210,6 +12229,18 @@
     /* bars or the line: one study for both tables */
     /* v-5 shows the bars; v-6 the line form */
     let mode = "bars";
+    /* the bars say each comparison at the end of its bar (Nil, 2026-10-15:
+       the pick over the comparisons stacked in the text column), so the
+       text column holds only the measure and Boston's figure */
+    let form = "beside";
+    const MORE = { population: ["larger", "smaller"] }, more = (k, up) => (MORE[k] || ["higher", "lower"])[up ? 0 : 1];
+    /* the comparison at the end of a reference bar, said from Boston's side
+       under the column's "Boston is" head (read in full by a screen reader) */
+    const beside = (k, v, ref) => { const d = diff(k, v, ref), better = k === "unemployment" ? !d.up : d.up;
+      if (d.same) return '<span class="wt-ba"><span class="vh">Boston is </span>about the same</span>';
+      const size = d.t.endsWith("\u00d7") ? d.t.slice(0, -1) + " times" : d.t;
+      return '<span class="wt-ba' + (better ? ' is-good' : ' is-bad') + '"><span class="vh">Boston is </span><b>' + ARR(d.up) + size + '</b> ' + more(k, d.up) + '</span>'; };
+    const colHead = () => '<div class="wt-row wt-row--head" aria-hidden="true"><div></div><div class="wt-viz"><div class="wt-bars"><span></span><span></span><span></span><span class="wt-colh">Boston is</span></div></div></div>';
     const tables = {};
     let tip = null, wired = false;
 
@@ -12233,7 +12264,8 @@
         const here = {}; D.ind.forEach(r => { here[r.key] = r.value; });
         const peers = C.peers, pavg = {}; KEYS.forEach(k => { pavg[k] = mean(peers, k); });
         const onPeers = peers.filter(pr => on.has(pr.name));
-        let h = '<div class="wt" data-mode="' + mode + '">';
+        const side = mode === "bars" && form === "beside";
+        let h = '<div class="wt" data-mode="' + mode + '"' + (side ? ' data-form="beside"' : '') + '>' + (side ? colHead() : '');
         KEYS.forEach(k => {
           const v = here[k], us = C.us[k], pa = pavg[k], lower = k === "unemployment";
           const max = Math.max(v, us, pa, ...onPeers.map(pr => pr[k])) * 1.04, pct = x => (x / max * 100).toFixed(2) + "%";
@@ -12247,9 +12279,10 @@
             (C.lead && C.lead[k] ? '<p class="wt-lead">' + esc(C.lead[k]) + '</p>' : '') +
             (line ? '<p class="wt-refs">' + refLine("US average", us) + refLine("Peer average", pa) +
                       onPeers.map(pr => '<span class="wt-ref wt-ref--pe"><i class="wt-sw pe" style="--pc:var(--pc-' + slug(pr.name) + ')" aria-hidden="true"></i><span class="wt-rn">' + esc(pr.name) + ' <span class="num">' + fmt(k, pr[k]) + '</span></span></span>').join("") + '</p>'
-                  : '<p class="wt-diff">' + dChip(k, v, us, "US average") + dChip(k, v, pa, "Peers") + '</p>') + '</div><div class="wt-viz">';
+                  : side ? '' : '<p class="wt-diff">' + dChip(k, v, us, "US average") + dChip(k, v, pa, "Peers") + '</p>') + '</div><div class="wt-viz">';
           if (mode === "bars"){
-            const bar = (cls, lab, x, style) => '<span class="wt-bl ' + cls + '"' + (style || '') + '>' + lab + '</span><span class="wt-bt ' + cls + '"' + (style || '') + '><i style="width:' + pct(x) + '"></i></span><span class="wt-bv ' + cls + '">' + fmt(k, x) + '</span>';
+            const bar = (cls, lab, x, style) => '<span class="wt-bl ' + cls + '"' + (style || '') + '>' + lab + '</span><span class="wt-bt ' + cls + '"' + (style || '') + '><i style="width:' + pct(x) + '"></i></span><span class="wt-bv ' + cls + '">' + fmt(k, x) + '</span>' +
+              (side ? (cls === "us" || cls === "pa" ? beside(k, v, x) : '<span class="wt-ba"></span>') : '');
             h += '<div class="wt-bars">' + bar("here", opts.here, v) + bar("us", "US average", us) + bar("pa", "Peer average", pa) +
               onPeers.map(pr => bar("pe", '<i class="wt-pd" aria-hidden="true"></i>' + esc(pr.name), pr[k], ' style="--pc:var(--pc-' + slug(pr.name) + ')"')).join("") + '</div>';
           } else {
@@ -12319,13 +12352,21 @@
       const st = document.createElement("div"); st.className = "mi-studies"; st.id = "whoStudies";
       st.innerHTML = '<button type="button" class="mi-studies-btn" aria-expanded="false" aria-controls="whoStudiesPanel">opt</button>' +
         '<div class="mi-studies-panel" id="whoStudiesPanel" role="group" aria-label="Design studies" hidden><label class="mi-study"><span>Tables</span>' +
-        '<select id="whoTableOpt" aria-label="The tables as bars or as a line"><option value="bars">opt-1</option><option value="line">opt-2</option></select></label></div>';
+        '<select id="whoTableOpt" aria-label="Where the tables say how Boston compares"><option value="stack">opt-1</option><option value="beside">opt-2</option></select></label></div>';
       eye.appendChild(st);
       const btn = st.querySelector(".mi-studies-btn"), panel = st.querySelector(".mi-studies-panel"), sel = st.querySelector("select");
-      sel.value = mode;
+      sel.value = form;
       btn.addEventListener("click", () => { const open = panel.hidden; panel.hidden = !open; btn.setAttribute("aria-expanded", String(open)); });
       document.addEventListener("click", ev => { if (!st.contains(ev.target) && !panel.hidden){ panel.hidden = true; btn.setAttribute("aria-expanded", "false"); } });
-      sel.addEventListener("change", () => set(sel.value));
+      sel.addEventListener("change", () => setForm(sel.value));
+    }
+    function setForm(f){
+      form = f === "beside" ? "beside" : "stack";
+      const sel = document.getElementById("whoTableOpt"); if (sel) sel.value = form;
+      const u = new URL(location.href); if (form === "beside") u.searchParams.set("bars", "beside"); else u.searchParams.delete("bars");
+      history.replaceState(null, "", u.pathname + u.search + u.hash);
+      Object.values(tables).forEach(T => T.render());
+      compare(document.getElementById("whoCompare"));
     }
     function set(m){
       mode = m === "line" ? "line" : "bars";
@@ -12340,23 +12381,26 @@
     function compare(el){
       const W = window.WHO_2024; if (!el || !W) return;
       const val = (g, k) => g.ind.find(r => r.key === k).value;
-      let h = '<div class="wt" data-mode="bars">';
+      const side = form === "beside";
+      let h = '<div class="wt" data-mode="bars"' + (side ? ' data-form="beside"' : '') + '>' + (side ? colHead() : '');
       KEYS.forEach(k => {
         const v = val(W.place, k), m = val(W.metro, k), lower = k === "unemployment";
         h += '<div class="wt-row' + (k === "population" ? " wt-row--lead" : "") + '"><div class="wt-text"><div class="wt-head"><span class="wt-name">' + NAME[k] + (lower ? '<span class="hint">lower is better</span>' : '') + '</span>' +
-          '<span class="wt-val">' + fmt(k, v) + '</span></div><p class="wt-diff">';
-        if (k === "population") h += '<span class="wt-d">' + Math.round(v / m * 100) + '% of the metro&rsquo;s ' + fmt(k, m) + ' people</span>';
+          '<span class="wt-val">' + fmt(k, v) + '</span></div>' + (side ? '' : '<p class="wt-diff">');
+        if (side){}
+        else if (k === "population") h += '<span class="wt-d">' + Math.round(v / m * 100) + '% of the metro&rsquo;s ' + fmt(k, m) + ' people</span>';
         else { const d = diff(k, v, m), better = lower ? !d.up : d.up;
           h += d.same ? '<span class="wt-d">about the same as the metro</span>'
             : '<span class="wt-d' + (better ? ' is-good' : ' is-bad') + '"><b>' + ARR(d.up) + (d.t.endsWith("\u00d7") ? d.t.slice(0, -1) + " times</b> the metro" : d.t + '</b>' + (d.up ? " above" : " below") + " the metro") + '</span>'; }
-        h += '</p></div><div class="wt-viz">';
+        h += (side ? '' : '</p>') + '</div><div class="wt-viz">';
         if (k === "population"){
           const sh = (v / m * 100).toFixed(2) + "%";
           h += '<div class="wt-sh" role="img" aria-label="Boston, ' + fmt(k, v) + ', is ' + Math.round(v / m * 100) + '% of the metro&rsquo;s ' + fmt(k, m) + ' people"><i class="here" style="width:' + sh + '"></i><i class="rest"></i></div>' +
-            '<p class="wt-shl"><span class="here">Boston <span class="num">' + fmt(k, v) + '</span></span><span>Rest of the metro <span class="num">' + fmt(k, m - v) + '</span></span></p>';
+            '<p class="wt-shl"><span class="here">Boston <span class="num">' + fmt(k, v) + '</span>' + (side ? '<span class="wt-shp">, ' + Math.round(v / m * 100) + '% of the metro</span>' : '') + '</span><span>Rest of the metro <span class="num">' + fmt(k, m - v) + '</span></span></p>';
         } else {
           const max = Math.max(v, m) * 1.04, pct = x => (x / max * 100).toFixed(2) + "%";
-          const bar = (cls, lab, x) => '<span class="wt-bl ' + cls + '">' + lab + '</span><span class="wt-bt ' + cls + '"><i style="width:' + pct(x) + '"></i></span><span class="wt-bv ' + cls + '">' + fmt(k, x) + '</span>';
+          const bar = (cls, lab, x) => '<span class="wt-bl ' + cls + '">' + lab + '</span><span class="wt-bt ' + cls + '"><i style="width:' + pct(x) + '"></i></span><span class="wt-bv ' + cls + '">' + fmt(k, x) + '</span>' +
+            (side ? (cls === "mt" ? beside(k, v, x) : '<span class="wt-ba"></span>') : '');
           h += '<div class="wt-bars">' + bar("here", "Boston", v) + bar("mt", "Boston metro", m) + '</div>';
         }
         h += '</div></div>';
