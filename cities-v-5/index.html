@@ -1246,6 +1246,14 @@
   .pages{
     flex:1;overflow-y:auto;scroll-behavior:smooth;min-width:0;
     background:var(--white);
+    /* the scroller is the containing block for anything absolutely placed
+       inside it with no positioned box of its own (2026-10-16): the tables'
+       visually hidden "Boston is" labels (.vh in .wt-ba) had the page as
+       theirs, escaped the scroller's clip and stretched the document to
+       about 5,200px, so the page itself could scroll; the tail of the wheel
+       gesture that plays the landing out then moved it ~10px, and the
+       strip under the tool showed white at the foot of the screen */
+    position:relative;
   }
   .page{
     min-height:100%;
