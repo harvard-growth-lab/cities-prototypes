@@ -1762,16 +1762,16 @@
      the thirteen, clear of Boston's teal and the peers') */
   #ovWrap{--fifth-1:#b9a9d9;--fifth-2:#9e83c5;--fifth-3:#865caf;--fifth-4:#6a3d8b;--fifth-5:#4e2165;}
   .who-sc.is-tinted .sc-dot{opacity:.9;}
-  #ovWrap[data-right="chart"] .r-map{display:none;}
+  #ovWrap:is([data-right="chart"],[data-right="small"]) .r-map{display:none;}
   /* ---- the right side's opt-2 (2026-10-15): no map in the scatter beats.
      The chart becomes a framed panel that lands on the map card (same top
      and height) and covers it; the beat's words narrow to Metro
      Industries' column beside it: the counter, the title, the measure's
      reading and Ask the chart. On a phone the panel is the band. ---- */
-  #ovWrap:not([data-right="chart"]) :is(.sc-say, .sc-ask, .sc-find, .sc-bandn){display:none;}
-  #ovWrap:not([data-right="chart"]) .who-sc-ctl .seg-btn[data-m="yp"]{display:none;}
-  #ovWrap[data-right="chart"] .sc-beat .who-sc-note{display:none;}
-  #ovWrap[data-right="chart"] .sc-beat > .lede{display:none;}
+  #ovWrap:not([data-right="chart"]):not([data-right="small"]) :is(.sc-say, .sc-ask, .sc-find, .sc-bandn){display:none;}
+  #ovWrap:not([data-right="chart"]):not([data-right="small"]) .who-sc-ctl .seg-btn[data-m="yp"]{display:none;}
+  #ovWrap:is([data-right="chart"],[data-right="small"]) .sc-beat .who-sc-note{display:none;}
+  #ovWrap:is([data-right="chart"],[data-right="small"]) .sc-beat > .lede{display:none;}
   .sc-say p{margin:0 0 18px;font-size:var(--t-note);line-height:1.55;color:var(--ink);}
   #ovWrap .sc-ask{margin:4px 0 0;}
   #ovWrap .sc-ask .ask-lab{margin:0 0 4px;font-size:13px;font-weight:600;color:var(--ink-soft);}
@@ -1794,7 +1794,7 @@
   #ovWrap .sc-ask .ask-ans[hidden]{display:none;}
   #ovWrap .sc-ask .ask-a{margin:0;font-size:var(--t-note);line-height:1.5;color:var(--ink);}
   /* the panel's parts: the controls, the header on one line, the plot, the peers */
-  #ovWrap[data-right="chart"] .who-sc-ctl{margin:0;flex-wrap:wrap;row-gap:8px;}
+  #ovWrap:is([data-right="chart"],[data-right="small"]) .who-sc-ctl{margin:0;flex-wrap:wrap;row-gap:8px;}
   .sc-find{display:inline-flex;align-items:center;gap:8px;margin-left:auto;}
   .sc-find-box{position:relative;}
   .sc-find input{width:220px;height:32px;box-sizing:border-box;padding:0 54px 0 10px;font:inherit;font-size:13px;color:var(--ink);background:var(--white);border:1px solid var(--control-edge);border-radius:4px;}
@@ -1807,15 +1807,15 @@
   .sc-find-list li[aria-selected="true"],.sc-find-list li:hover{background:var(--teal-tint);}
   .sc-find-list .sc-opt-pop{color:var(--ink-soft);white-space:nowrap;}
   .sc-find-list .sc-opt-none{color:var(--ink-soft);cursor:default;}
-  #ovWrap[data-right="chart"] .sc-beat .who-sc-cmp{max-width:none;margin:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 18px;}
-  #ovWrap[data-right="chart"] .sc-beat .who-sc-cmp .wt-head{flex-direction:row;align-items:baseline;gap:8px;}
-  #ovWrap[data-right="chart"] .sc-beat .who-sc-cmp .wt-diff{flex-direction:row;flex-wrap:wrap;gap:4px 16px;margin:0;}
+  #ovWrap:is([data-right="chart"],[data-right="small"]) .sc-beat .who-sc-cmp{max-width:none;margin:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 18px;}
+  #ovWrap:is([data-right="chart"],[data-right="small"]) .sc-beat .who-sc-cmp .wt-head{flex-direction:row;align-items:baseline;gap:8px;}
+  #ovWrap:is([data-right="chart"],[data-right="small"]) .sc-beat .who-sc-cmp .wt-diff{flex-direction:row;flex-wrap:wrap;gap:4px 16px;margin:0;}
   .sc-bandn{margin:0;font-size:var(--t-note);line-height:1.4;color:var(--ink);}
   .sc-bandn b{font-weight:600;font-variant-numeric:tabular-nums;}
   .sc-bandn b.is-good{color:var(--rise);} .sc-bandn b.is-bad{color:var(--fall);}
   .who-sc .sc-band{fill:var(--teal-tint);}
   .who-sc .sc-bandlab{font-weight:600;fill:var(--ink-soft);}
-  #ovWrap[data-right="chart"] .who-sc .sc-dot.in-band{fill:var(--control-edge);opacity:1;}
+  #ovWrap:is([data-right="chart"],[data-right="small"]) .who-sc .sc-dot.in-band{fill:var(--control-edge);opacity:1;}
   .who-sc svg.is-faded .sc-dot:not(.in-band){opacity:.3;}
   .who-sc .sc-call{fill:none;stroke:var(--ink);stroke-width:1.5;}
   .who-sc .sc-found{fill:none;stroke:var(--orange);stroke-width:2.5;}
@@ -1823,9 +1823,9 @@
   .who-sc .sc-lab--call{font-weight:600;}
   .who-sc.is-asked{border-color:var(--teal) !important;}
   @media (min-width:900px){
-    #ovWrap[data-right="chart"] .sc-beat{position:relative;z-index:7;justify-content:flex-start;min-height:calc(var(--ov-map-h, 700px) + 30vh);}
-    #ovWrap[data-right="chart"] .sc-beat > :not(.who-sc):not(template){max-width:336px;}
-    #ovWrap[data-right="chart"] .sc-beat > .who-sc{
+    #ovWrap:is([data-right="chart"],[data-right="small"]) .sc-beat{position:relative;z-index:7;justify-content:flex-start;min-height:calc(var(--ov-map-h, 700px) + 30vh);}
+    #ovWrap:is([data-right="chart"],[data-right="small"]) .sc-beat > :not(.who-sc):not(template){max-width:336px;}
+    #ovWrap:is([data-right="chart"],[data-right="small"]) .sc-beat > .who-sc{
       order:-1;position:sticky;top:var(--ov-map-top, calc(var(--chrome-h) + var(--stage-air)));
       height:var(--ov-map-h, calc(100vh - var(--chrome-h) - 2 * var(--stage-air)));
       width:var(--sc-panel-w, 900px);margin:0 0 0 379px;
@@ -1835,37 +1835,132 @@
     /* the words start at the panel's top: the panel keeps its height in the
        flow (so it can never hang past its own beat), and the words that
        follow it step back up beside it */
-    #ovWrap[data-right="chart"] .sc-beat > .ct-eyebrow{margin-top:calc(-1 * var(--ov-map-h, calc(100vh - var(--chrome-h) - 2 * var(--stage-air))));}
-    #ovWrap[data-right="chart"] .sc-beat .who-sc-plot{flex:1;min-height:0;position:relative;}
-    #ovWrap[data-right="chart"] .sc-beat .who-sc-plot svg{position:absolute;left:0;top:0;width:100%;height:100%;}
-    #ovWrap[data-right="chart"] .sc-beat .who-sc-peers .wt-peers{margin-top:0;}
-    /* the map steps back under the panel */
+    #ovWrap:is([data-right="chart"],[data-right="small"]) .sc-beat > .ct-eyebrow{margin-top:calc(-1 * var(--ov-map-h, calc(100vh - var(--chrome-h) - 2 * var(--stage-air))));}
+    #ovWrap:is([data-right="chart"],[data-right="small"]) .sc-beat .who-sc-plot{flex:1;min-height:0;position:relative;}
+    #ovWrap:is([data-right="chart"],[data-right="small"]) .sc-beat .who-sc-plot svg{position:absolute;left:0;top:0;width:100%;height:100%;}
+    #ovWrap:is([data-right="chart"],[data-right="small"]) .sc-beat .who-sc-peers .wt-peers{margin-top:0;}
+    /* the map steps back under the panel (opt-2 alone: in opt-3 it stays as the band) */
     #ovWrap[data-right="chart"]:has(.sc-beat.is-on) .ov-map-inner{opacity:0;transition:opacity .25s ease;}
   }
   @media (max-width:899px){
-    #ovWrap[data-right="chart"] .sc-beat > .who-sc{
+    #ovWrap:is([data-right="chart"],[data-right="small"]) .sc-beat > .who-sc{
       order:-1;position:sticky;top:var(--secbar-h, var(--chrome-h));z-index:7;
       height:var(--ov-band-h, 320px);width:100vw;margin:0 0 14px calc(50% - 50vw);
       box-sizing:border-box;padding:6px 8px 4px;display:flex;flex-direction:column;
       background:var(--white);border-bottom:1px solid var(--border);
     }
-    #ovWrap[data-right="chart"] .sc-beat .who-sc-plot{flex:1;min-height:0;position:relative;}
-    #ovWrap[data-right="chart"] .sc-beat .who-sc-plot svg{position:absolute;left:0;top:0;width:100%;height:100%;}
-    #ovWrap[data-right="chart"] .sc-slot{display:flex;flex-direction:column;gap:12px;margin:0 0 18px;}
+    #ovWrap:is([data-right="chart"],[data-right="small"]) .sc-beat .who-sc-plot{flex:1;min-height:0;position:relative;}
+    #ovWrap:is([data-right="chart"],[data-right="small"]) .sc-beat .who-sc-plot svg{position:absolute;left:0;top:0;width:100%;height:100%;}
+    #ovWrap:is([data-right="chart"],[data-right="small"]) .sc-slot{display:flex;flex-direction:column;gap:12px;margin:0 0 18px;}
     /* the controls come right after the title: the chart they set is in the band above */
-    #ovWrap[data-right="chart"] .sc-beat > .ct-eyebrow{order:1;}
-    #ovWrap[data-right="chart"] .sc-beat > .page-head{order:2;}
-    #ovWrap[data-right="chart"] .sc-beat > .sc-slot{order:3;}
-    #ovWrap[data-right="chart"] .sc-beat > .sc-say{order:4;}
-    #ovWrap[data-right="chart"] .sc-beat > .sc-ask{order:5;}
-    #ovWrap[data-right="chart"] .sc-slot .who-sc-ctl .seg{display:grid !important;grid-template-columns:1fr 1fr;width:100% !important;}
-    #ovWrap[data-right="chart"] .sc-slot .who-sc-ctl .seg-btn{border:0 !important;box-shadow:inset 0 0 0 .5px var(--control-edge);height:40px !important;justify-content:center;}
-    #ovWrap[data-right="chart"] .sc-slot .sc-find{margin-left:0;flex-direction:column;align-items:stretch;width:100%;}
-    #ovWrap[data-right="chart"] .sc-slot .sc-find input{width:100%;height:44px;}
-    #ovWrap[data-right="chart"] .sc-slot .sc-find-clear{top:10px;}
-    #ovWrap[data-right="chart"] .sc-slot .sc-find-list{top:48px;}
+    #ovWrap:is([data-right="chart"],[data-right="small"]) .sc-beat > .ct-eyebrow{order:1;}
+    #ovWrap:is([data-right="chart"],[data-right="small"]) .sc-beat > .page-head{order:2;}
+    #ovWrap:is([data-right="chart"],[data-right="small"]) .sc-beat > .sc-slot{order:3;}
+    #ovWrap:is([data-right="chart"],[data-right="small"]) .sc-beat > .sc-say{order:4;}
+    #ovWrap:is([data-right="chart"],[data-right="small"]) .sc-beat > .sc-ask{order:5;}
+    #ovWrap:is([data-right="chart"],[data-right="small"]) .sc-slot .who-sc-ctl .seg{display:grid !important;grid-template-columns:1fr 1fr;width:100% !important;}
+    #ovWrap:is([data-right="chart"],[data-right="small"]) .sc-slot .who-sc-ctl .seg-btn{border:0 !important;box-shadow:inset 0 0 0 .5px var(--control-edge);height:40px !important;justify-content:center;}
+    #ovWrap:is([data-right="chart"],[data-right="small"]) .sc-slot .sc-find{margin-left:0;flex-direction:column;align-items:stretch;width:100%;}
+    #ovWrap:is([data-right="chart"],[data-right="small"]) .sc-slot .sc-find input{width:100%;height:44px;}
+    #ovWrap:is([data-right="chart"],[data-right="small"]) .sc-slot .sc-find-clear{top:10px;}
+    #ovWrap:is([data-right="chart"],[data-right="small"]) .sc-slot .sc-find-list{top:48px;}
   }
-  #ovWrap:not([data-right="chart"]) .sc-slot{display:none;}
+  #ovWrap:not([data-right="chart"]):not([data-right="small"]) .sc-slot{display:none;}
+  /* ---- the right side's opt-3 (2026-10-16): the map shrinks to a band and
+     the chart takes the space. The panel is opt-2's (the rules above take
+     both values), set under the band; what follows is where the map goes
+     and how the two trade places. As the scatter beat becomes the
+     reader's, the card eases from its full height to a strip across the
+     top of the stage, as wide as the panel, the camera keeping the city
+     fitted at every step (the script refits on each size change), and the
+     chart fades in beneath once the room is made. As the beat leaves, the
+     chart fades first, and only then does the card grow back, so the map
+     never passes over the chart. The map's chrome stands down at the
+     strip's size. ---- */
+  @media (min-width:900px){
+    #ovWrap[data-right="small"] .ov-map{position:relative;z-index:9;}
+    #ovWrap[data-right="small"] .ov-map-inner{
+      opacity:1;width:100%;margin-left:0;
+      transition:height .5s ease .3s, width .5s ease .3s, margin-left .5s ease .3s;
+    }
+    #ovWrap[data-right="small"]:has(.sc-beat.is-on:not(.is-leaving)) .ov-map-inner{
+      height:var(--sm-band, 200px);width:var(--sc-panel-w, 100%);margin-left:calc(100% - var(--sc-panel-w, 100%));
+      transition:height .5s ease, width .5s ease, margin-left .5s ease;
+    }
+    #ovWrap[data-right="small"]:has(.sc-beat.is-on:not(.is-leaving)) .ov-map-inner .map-ctls,
+    #ovWrap[data-right="small"]:has(.sc-beat.is-on:not(.is-leaving)) .ov-map-inner .map-callouts{display:none;}
+    /* the beat runs 360px longer, so the panel stays pinned under the band
+       through the fade and the card's growth that follow */
+    #ovWrap[data-right="small"] .sc-beat{min-height:calc(var(--ov-map-h, 700px) + 30vh + 360px);}
+    #ovWrap[data-right="small"] .sc-beat > .who-sc{
+      margin-top:calc(var(--sm-band, 200px) + 14px);
+      top:calc(var(--ov-map-top, calc(var(--chrome-h) + var(--stage-air))) + var(--sm-band, 200px) + 14px);
+      height:calc(var(--ov-map-h, calc(100vh - var(--chrome-h) - 2 * var(--stage-air))) - var(--sm-band, 200px) - 14px);
+      opacity:0;visibility:hidden;transition:opacity .3s ease, visibility 0s linear .3s;
+    }
+    /* "leaving" (set by the script): the block after this beat has risen to
+       within reach of the viewport's foot, so the panel fades now, while it
+       is still pinned under the band, and the card grows after it; by the
+       time the panel would scroll up under the band it is gone */
+    #ovWrap[data-right="small"] .sc-beat.is-on:not(.is-leaving) > .who-sc{
+      opacity:1;visibility:visible;transition:opacity .35s ease .45s, visibility 0s linear .45s;
+    }
+  }
+  /* ---- beat 2's studies (2026-10-16) ---- */
+  /* the switches: on a wide screen at the foot of the words (the beat is a
+     flex column, and order 1 sets the box last, clear of the title and the
+     reading); on a phone under the counter, which is order 1 there too */
+  .sc-studies{display:flex;flex-wrap:wrap;gap:4px 14px;margin:8px 0 14px;padding:8px 10px;border:1px dashed var(--border-strong);border-radius:6px;font-size:13px;line-height:1.4;color:var(--ink-soft);}
+  #ovWrap .sc-beat > .sc-studies{order:1;}
+  .sc-study{display:inline-flex;align-items:center;gap:5px;cursor:pointer;}
+  .sc-study input{margin:0;accent-color:var(--teal);}
+  .sc-study-group{display:inline-flex;flex-direction:column;gap:4px;}
+  .sc-study--sub{margin-left:18px;}
+  .sc-study:has(input:disabled){color:var(--mark-grey);cursor:default;}
+  /* the sentence header: the numbers as chips, in the dress of Metro Industries' sentence row */
+  .sc-sentence{margin:0;font-size:15px;line-height:1.75;color:var(--ink);}
+  .sc-sentence .sc-hint{color:var(--ink-soft);}
+  .sc-chip{display:inline-block;padding:0 7px;border-radius:4px;background:var(--teal-tint);color:var(--teal);font-weight:700;font-variant-numeric:tabular-nums;line-height:1.5;white-space:nowrap;}
+  .sc-chip.is-good{color:var(--rise);background:#e9f3ea;}
+  .sc-chip.is-bad{color:var(--fall);background:#f9e9ed;}
+  .sc-chip .wt-arr{width:9px;height:9px;margin-right:3px;vertical-align:0;}
+  #ovWrap.st-sentence .sc-beat .who-sc-cmp,#ovWrap.st-menu .sc-beat .who-sc-cmp{display:block;}
+  /* the dropdown study: the select in the sentence's own size and weight */
+  .sc-sentence .mi-pick{margin:0 1px;}
+  .sc-sentence .mi-pick select{font-size:inherit;font-weight:700;line-height:1.3;padding:1px 18px 1px 7px;}
+  .sc-sentence .mi-pick .mi-measure{font-size:inherit;font-weight:700;}
+  /* the tabs and their label stand down; the sentence's select is the switch */
+  #ovWrap.st-menu .sc-beat .who-sc-ctl > .ctl-label,
+  #ovWrap.st-menu .sc-beat .who-sc-ctl > .seg{display:none;}
+  /* on a wide screen the controls row stands down altogether (the script
+     has moved the finder into the chart); the sentence has the panel's
+     whole width. The finder in the chart sits at its top right, in the
+     strip above the plot where the note was */
+  @media (min-width:900px){
+    #ovWrap.st-menu .sc-beat .who-sc-ctl{display:none;}
+  }
+  .who-sc-plot > .sc-find{position:absolute;top:0;right:0;z-index:3;margin:0;}
+  /* the legend off the chart: the band's swatch and the peer average's ring */
+  .sc-legend{display:flex;flex-wrap:wrap;gap:4px 18px;margin:0;font-size:13px;line-height:1.4;color:var(--ink-soft);}
+  .sc-legend[hidden]{display:none;}
+  .sc-legend span{display:inline-flex;align-items:center;gap:6px;}
+  .sc-legend i{display:inline-block;flex:none;}
+  .sc-legend .lg-dot{width:7px;height:7px;border-radius:50%;background:var(--mark-grey);}
+  .sc-legend .lg-dot.is-dark{background:var(--control-edge);}
+  .sc-legend .lg-dot.is-tinted{background:var(--fifth-3);}
+  .sc-legend .lg-band{width:18px;height:12px;border-radius:2px;background:var(--teal-tint);}
+  .sc-legend .lg-pavg{width:11px;height:11px;border-radius:50%;border:2px solid var(--ink);box-sizing:border-box;background:var(--white);}
+  /* the axes: a line at the plot's left and foot a step darker than the grid was, and the grid a step lighter */
+  .who-sc .sc-axis{stroke:var(--border-strong);stroke-width:1;}
+  #ovWrap.st-axes .who-sc .sc-grid{stroke:#eef1f2;}
+  /* the icons: a stroked mark before each measure's name */
+  .sc-ico{display:none;}
+  #ovWrap.st-icons .sc-ico{display:inline-flex;width:14px;height:14px;margin-right:6px;vertical-align:-2px;color:currentColor;}
+  .sc-ico svg,.sc-axico{fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;}
+  .sc-ico svg{width:100%;height:100%;}
+  .who-sc .sc-axico{stroke:var(--ink-soft);}
+  #ovWrap.st-icons .who-sc-ctl .seg-btn{display:inline-flex;align-items:center;}
+  #ovWrap.st-icons .wt-name{display:inline-flex;align-items:center;}
   .ov-nation .leaflet-overlay-pane > svg{opacity:0;transition:opacity .3s;}
   .ov-nation .map-callouts{display:none;}
   /* at a fractional zoom Chrome leaves 1px seams between the scaled tiles,
@@ -4974,6 +5069,17 @@
      stands above the stage, which on a phone is a sticky band the panel's
      lower rows were disappearing under */
   .ct-eyebrow .mi-studies-panel{left:0;right:auto;z-index:13;}
+  /* beat 2's opts as a list of links in its counter, "Who are you? 2/6
+     opt-1 · opt-2": the opt word's dress, the one in force in ink with no
+     underline (2026-10-16) */
+  .ct-eyebrow .sc-opts{display:inline-flex;align-items:baseline;gap:7px;margin-left:12px;font-size:13px;vertical-align:baseline;}
+  .sc-opt{
+    color:var(--ink-soft);text-decoration:underline;text-underline-offset:3px;text-decoration-color:var(--mark-grey);
+  }
+  .sc-opt:hover{color:var(--ink);}
+  .sc-opt:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+  .sc-opt.is-on{color:var(--ink);font-weight:600;text-decoration:none;cursor:default;}
+  .sc-opt-sep{color:var(--mark-grey);}
   /* the quietest thing in the head, but still a control and still words:
      #9aa3a6 read at 2.6 to 1, which is under the floor for either */
   .mi-studies-btn{
@@ -11254,6 +11360,10 @@
       ovZoomSize = ovLeaflet.getSize();
       resized = true;
     }
+    /* opt-3 (2026-10-16): the card grows back as the commuting beat arrives,
+       while the camera is flying to the metro; a refit now would cut the
+       flight short, so it waits for the flight's end (the study's code) */
+    if (resized && window.whoMapFlying && force !== true){ window.whoMapRefitLater = true; return; }
     /* two camera settings and no others: the city's fit through the
        first beats, the metro's from the commuting beat on. The camera moves
        only when the reader crosses from one to the other (a short flight),
@@ -12720,7 +12830,39 @@
      as one chart whose y changes. */
   /* the right side's study is read before the charts are built (see below);
      opt-2, the chart without the map, is the default (Nil, 2026-10-15) */
-  window.whoRight = /[?&]right=map\b/.test(location.search) ? "map" : "chart";
+  /* the right side's opts, in one place (2026-10-16): the value each sets
+     on #ovWrap[data-right], its name in beat 2's links and the opt menus,
+     and the ?right= value that deep-links it (none for the default). A new
+     opt is one more row here plus its own [data-right="..."] rules; note
+     the opt-2 rules key on data-right="chart" and the opt-1 ones on
+     :not([data-right="chart"]), so a new value starts from opt-1's ground */
+  window.WHO_RIGHT_OPTS = [
+    { v: "map",   label: "opt-1", q: "map", title: "the map of every admin, coloured as the chart" },
+    { v: "chart", label: "opt-2", q: null,  title: "no map: the chart in a panel with more to do (the default)" },
+    { v: "small", label: "opt-3", q: "small", title: "the map shrinks to a band over the chart, which takes the space" }
+  ];
+  /* beat 2's studies (2026-10-16): each change a switch of its own on top of
+     the opt in force, deep-linked as ?sc=sentence,legend,... . Each switch is
+     a class on #ovWrap (st-<name>) for the CSS and a flag here for the
+     chart's code */
+  window.WHO_SC_FLAG_LIST = [
+    { k: "sentence", label: "Sentence header" },
+    { k: "menu",     label: "Measure as a dropdown", sub: "sentence" },
+    { k: "legend",   label: "Legend off the chart" },
+    { k: "axes",     label: "Axes drawn" },
+    { k: "anim",     label: "Always animate" },
+    { k: "icons",    label: "Icons" },
+    { k: "pop",      label: "Dots sized by population" }
+  ];
+  window.WHO_SC_FLAGS = {};
+  (function(){ const q = (location.search.match(/[?&]sc=([^&]*)/) || [])[1], on = q ? decodeURIComponent(q).split(",") : [];
+    window.WHO_SC_FLAG_LIST.forEach(f => { window.WHO_SC_FLAGS[f.k] = on.indexOf(f.k) >= 0; });
+    const w = document.getElementById("ovWrap"); if (!w) return;
+    window.WHO_SC_FLAG_LIST.forEach(f => w.classList.toggle("st-" + f.k, window.WHO_SC_FLAGS[f.k]));
+    /* a sub-option counts only with its parent on */
+    window.WHO_SC_FLAG_LIST.filter(f => f.sub).forEach(f => w.classList.toggle("st-" + f.k, !!(window.WHO_SC_FLAGS[f.sub] && window.WHO_SC_FLAGS[f.k]))); })();
+  window.whoRightFromURL = () => (window.WHO_RIGHT_OPTS.find(o => o.q && new RegExp("[?&]right=" + o.q + "\\b").test(location.search)) || window.WHO_RIGHT_OPTS.find(o => !o.q)).v;
+  window.whoRight = window.whoRightFromURL();
   if (document.getElementById("ovWrap")) document.getElementById("ovWrap").dataset.right = window.whoRight;
   (function(){
   function build(D, CMP, hosts, opts){
@@ -12755,7 +12897,17 @@
     const ORDER = ["wage", "home", "unemp"];
     /* the switch's buttons: opt-2 adds years of pay (CSS hides it in opt-1) */
     const BTN = ["wage", "home", "yp", "unemp"];
-    const opt2 = () => window.whoRight === "chart";
+    const opt2 = () => window.whoRight === "chart" || window.whoRight === "small";
+    const FL = () => window.WHO_SC_FLAGS || {};
+    /* the icons study: one stroked mark per measure, 16 on a side, drawn in
+       the house's line (currentColor, round caps); shown by #ovWrap.sc-icons */
+    const ICON = {
+      wage:  '<svg viewBox="0 0 16 16"><rect x="1.5" y="4" width="13" height="8" rx="1.5"/><circle cx="8" cy="8" r="2"/></svg>',
+      home:  '<svg viewBox="0 0 16 16"><path d="M2.5 8.2 8 3l5.5 5.2V13.5H2.5Z"/><path d="M6.5 13.5V9.5h3v4"/></svg>',
+      yp:    '<svg viewBox="0 0 16 16"><rect x="2" y="3.5" width="12" height="10.5" rx="1.5"/><path d="M2 7.2h12M5.5 2v3M10.5 2v3"/></svg>',
+      unemp: '<svg viewBox="0 0 16 16"><rect x="2" y="5" width="12" height="9" rx="1.5"/><path d="M6 5V3.3h4V5M2 9.2h12"/></svg>'
+    };
+    const ICO = m => ICON[m] ? '<i class="sc-ico" aria-hidden="true">' + ICON[m] + '</i>' : '';
     /* the right side's opt-1 (2026-10-15): the dots in five colours, the
        fifths of the drawn set for the measure on, shared with the map. Cuts
        at the 20th to 80th percentiles (interpolated), rounded to the
@@ -12833,23 +12985,58 @@
       /* how many of the places half to twice the subject's size it beats, on the better side */
       const band = () => { const p = rows[hereI][C.pop]; return [p / 2, p * 2]; };
       const inBand = i => { const [a, b] = band(), q = rows[i][C.pop]; return i !== hereI && q >= a && q <= b; };
-      const bandCount = kk => { const v = rows[hereI][C[kk]]; let nn = 0, bb = 0;
+      const bandN = kk => { const v = rows[hereI][C[kk]]; let nn = 0, bb = 0;
         rows.forEach((r, i) => { if (!inBand(i)) return; nn++; const x = r[C[kk]]; if (kk === "unemp" ? x > v : x < v) bb++; });
-        const word = kk === "unemp" ? "lower" : kk === "yp" ? "more" : "higher";
-        return '<p class="sc-bandn">' + word + ' than <b class="' + (kk === "yp" ? "is-bad" : "is-good") + '">' + bb + '</b> of the ' + nn + ' ' + noun + 's its size</p>'; };
-      const headFor = kk => (kk === "yp" ? headYp() : (T ? T.head(TKEY[kk]) : "")) + (opt2() ? bandCount(kk) : "");
+        return { nn, bb, word: kk === "unemp" ? "lower" : kk === "yp" ? "more" : "higher", cls: kk === "yp" ? "is-bad" : "is-good" }; };
+      const bandCount = kk => { const b = bandN(kk);
+        return '<p class="sc-bandn">' + b.word + ' than <b class="' + b.cls + '">' + b.bb + '</b> of the ' + b.nn + ' ' + noun + 's its size</p>'; };
+      /* the sentence header (study): the figure and its two comparisons said
+         as one sentence, each number a chip in the dress of Metro Industries'
+         sentence row, so the numbers are found at a glance */
+      const chip = (t, cls) => '<span class="sc-chip' + (cls ? ' ' + cls : '') + '">' + t + '</span>';
+      const cmpOf = (kk, ref) => { const v = rows[hereI][C[kk]];
+        if (M[kk].pct || M[kk].yrs){ const d = Math.round((v - ref) * 10) / 10; return { same: Math.abs(d) < .05, up: d > 0, t: Math.abs(d).toFixed(1) + (M[kk].pct ? " pts" : " years") }; }
+        const r = v / ref; return { same: Math.abs(r - 1) < .01, up: r > 1, t: r >= 2 ? (r >= 10 ? Math.round(r) : r.toFixed(1)) + " times" : Math.round(Math.abs(r - 1) * 100) + "%" }; };
+      const cmpChip = (kk, ref, who) => { const d = cmpOf(kk, ref); if (d.same) return 'about the same as ' + who;
+        const good = (kk === "unemp" || kk === "yp") ? !d.up : d.up, c = chip(ARRW(d.up) + d.t, good ? "is-good" : "is-bad");
+        if (M[kk].yrs) return c + (d.up ? " more than " : " fewer than ") + who;
+        return c + (d.t.endsWith("times") ? " " : d.up ? " above " : " below ") + who; };
+      /* the dropdown study: the measure's name in the sentence is a select cut
+         to its word, in Metro Industries' sentence row's dress; the tabs stand
+         down and the finder moves to the panel's top right (CSS) */
+      const PICKN = { wage: "average salary", home: "home value", yp: "years of pay for a home", unemp: "unemployment" };
+      const pick = kk => '<span class="mi-pick sc-pick"><span class="mi-measure" aria-hidden="true"></span><select class="sc-pick-sel" aria-label="The measure the chart shows">' +
+        BTN.filter(m => m !== "yp" || opt2()).map(m => '<option value="' + m + '"' + (m === kk ? ' selected' : '') + '>' + PICKN[m] + '</option>').join("") + '</select></span>';
+      const sentence = kk => { const v = rows[hereI][C[kk]], here = noun === "metro" ? "the Boston metro" : "Boston", Here = noun === "metro" ? "The Boston metro" : "Boston";
+        const lead = FL().menu ? Here + "&rsquo;s " + pick(kk) + " is " + chip(fmt(v, kk)) + (kk === "unemp" ? ' <span class="sc-hint">(lower is better)</span>' : "") :
+          kk === "wage" ? Here + "&rsquo;s average salary is " + chip(fmt(v, kk)) :
+          kk === "home" ? "A typical " + here.replace(/^the /, "") + " home is worth " + chip(fmt(v, kk)) :
+          kk === "unemp" ? Here + "&rsquo;s unemployment is " + chip(fmt(v, kk)) + ' <span class="sc-hint">(lower is better)</span>' :
+          "A typical " + here.replace(/^the /, "") + " home costs " + chip(fmt(v, kk)) + " of the average salary";
+        let b = ""; if (opt2()){ const x = bandN(kk); b = ", " + x.word + " than " + chip(x.bb + " of the " + x.nn, x.cls) + " " + noun + "s its size"; }
+        /* no icon before the sentence (Nil, 2026-10-16): the tabs and the axis carry it */
+        return '<p class="sc-sentence">' + lead + ", " + cmpChip(kk, US[kk], "the US average") + " and " + cmpChip(kk, PAVG[kk], "its peers") + b + ".</p>"; };
+      const headFor = kk => FL().sentence ? sentence(kk)
+        : (kk === "yp" ? headYp() : (T ? T.head(TKEY[kk]) : "")).replace('<span class="wt-name">', '<span class="wt-name">' + ICO(kk)) + (opt2() ? bandCount(kk) : "");
       /* opt-2's finder: one admin at a time, marked in the house's orange */
       const finder = SW ? '<div class="sc-find"><label class="ctl-label" for="scFind' + uid + '">Find a' + (noun === "admin" ? "n admin" : " metro") + '</label>' +
           '<div class="sc-find-box"><input type="text" id="scFind' + uid + '" role="combobox" aria-expanded="false" aria-controls="scFindList' + uid + '" aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder="Type a name">' +
           '<button type="button" class="sc-find-clear" hidden>Clear</button><ul class="sc-find-list" id="scFindList' + uid + '" role="listbox" hidden></ul></div></div>' : '';
       host.innerHTML = (SW ? '<div class="who-fl-ctl who-sc-ctl"><span class="ctl-label">' + (tintOn() ? "Chart and map show" : "Chart shows") + '</span><div class="seg" role="group" aria-label="The measure up the side of the chart">' +
-          BTN.map(m => '<button type="button" class="seg-btn' + (m === k ? ' is-active' : '') + '" data-m="' + m + '" aria-pressed="' + (m === k) + '">' + M[m].name + '</button>').join("") + '</div>' + finder + '</div>' : '') +
+          BTN.map(m => '<button type="button" class="seg-btn' + (m === k ? ' is-active' : '') + '" data-m="' + m + '" aria-pressed="' + (m === k) + '">' + ICO(m) + M[m].name + '</button>').join("") + '</div>' + finder + '</div>' : '') +
         '<div class="who-sc-cmp">' + headFor(k) + '</div>' +
-        '<div class="who-sc-plot"><svg role="img"></svg><div class="who-sc-tip" hidden></div></div><p class="who-sc-note" hidden></p><div class="who-sc-peers"></div><span class="vh sc-live" aria-live="polite"></span>';
+        '<div class="who-sc-plot"><svg role="img"></svg><div class="who-sc-tip" hidden></div></div><div class="sc-legend" hidden></div><p class="who-sc-note" hidden></p><div class="who-sc-peers"></div><span class="vh sc-live" aria-live="polite"></span>';
       const plot = host.querySelector(".who-sc-plot"), svg = plot.querySelector("svg"), tip = host.querySelector(".who-sc-tip"), note = host.querySelector(".who-sc-note"), peersHost = host.querySelector(".who-sc-peers");
       const ctl = host.querySelector(".who-sc-ctl"), cmp = host.querySelector(".who-sc-cmp"), live = host.querySelector(".sc-live");
+      /* the sentence's select is cut to the width of its chosen word, measured on a hidden twin */
+      const fitPick = () => { const pk = cmp.querySelector(".sc-pick"); if (!pk) return; const sel = pk.querySelector("select"), tw = pk.querySelector(".mi-measure");
+        tw.textContent = sel.options[sel.selectedIndex].text; sel.style.width = (tw.offsetWidth + 26) + "px"; };
+      fitPick();
       const onSet = T ? T.on : new Set(), isOn = i => onSet.has(rows[i][C.name]);
-      const drawPeers = () => { peersHost.innerHTML = T ? T.peersRow() : ""; };
+      /* the peers' row; under the legend study its label asks rather than names ("Show a peer:") */
+      const drawPeers = () => { peersHost.innerHTML = T ? T.peersRow() : "";
+        if (FL().legend){ const lab = peersHost.querySelector(".wt-peers > span"); if (lab) lab.textContent = noun === "metro" ? "Show a peer metro:" : "Show a peer:";
+          const how = peersHost.querySelector(".wt-how"); if (how) how.remove(); } };
       /* the grid under the cloud; the US average's line and name over it */
       const gStatic = el("g", "sc-static", svg), gCloud = el("g", "sc-cloud", svg), gRef = el("g", "sc-ref", svg), gMarks = el("g", "sc-marks", svg),
             gLabels = el("g", "sc-labels", svg), hover = el("circle", "sc-hover", svg);
@@ -12865,7 +13052,10 @@
       const hereDot = el("circle", "sc-here", gMarks);
       /* the found admin's and the questions' marks: a ring round each dot */
       const gCall = el("g", "sc-calls", gMarks);
-      let cur = null, curPa = null, geo = null, raf = 0, entered = false;
+      let cur = null, curPa = null, geo = null, raf = 0, entered = false, animating = false;
+      /* the population study: each dot's radius from its people, 1.6 to 9px
+         across the drawn range on a square-root scale, quick rather than exact */
+      const popR = () => { if (!FL().pop) return null; const [lo, hi] = ext("pop"), sc = phone() ? .8 : 1; return i => sc * (1.6 + 7.4 * Math.sqrt((rows[i][C.pop] - lo) / (hi - lo))); };
       /* nothing is left on the edge: the unemployment axis reaches the highest rate */
       const aria = () => svg.setAttribute("aria-label", M[k].name + " by population, 2024: Boston " + fmt(rows[hereI][C[k]], k, true) + ", peer average " + fmt(PAVG[k], k, true) +
         (k === "emp" ? ", US average " + Math.round(RATE * 100) + " employed per 100 residents" : ", US average " + fmt(US[k], k, true)) + ".");
@@ -12881,7 +13071,10 @@
         const yk = kk === "pop" ? null : kk;
         const yd = yk ? ((M[yk].pct || M[yk].yrs) ? [0, M[yk].max] : pad(ext(yk), true)) : null;
         const yt = yd ? (M[yk].log ? logTicks(yd[0], yd[1], H) : linTicks(yd[0], yd[1], H)) : [];
-        const gut = yk ? Math.max(...yt.map(v => tickFmt(v, yk).length)) * fs * .58 + 10 : 6;
+        /* the axes study holds the gutter at the widest of any measure's ticks, so the axes stand still from one measure to the next */
+        const gutOf = kk2 => { const d2 = (M[kk2].pct || M[kk2].yrs) ? [0, M[kk2].max] : pad(ext(kk2), true), t2 = M[kk2].log ? logTicks(d2[0], d2[1], H) : linTicks(d2[0], d2[1], H);
+          return Math.max(...t2.map(v => tickFmt(v, kk2).length)) * fs * .58 + 10; };
+        const gut = yk ? (FL().axes && SW ? Math.max(...BTN.map(gutOf)) : Math.max(...yt.map(v => tickFmt(v, yk).length)) * fs * .58 + 10) : 6;
         const m = { l: Math.round(gut), r: 14, t: fs + 18, b: fs * 2 + 18 };
         const xd = pad(ext("pop"), true);
         const x = scale(xd[0], xd[1], m.l, W - m.r, true);
@@ -12905,6 +13098,8 @@
         const t = (cls, X, Y, s, anchor) => { const e = el("text", cls, gStatic); e.setAttribute("x", X); e.setAttribute("y", Y); if (anchor) e.setAttribute("text-anchor", anchor); e.textContent = s; return e; };
         const line = (cls, x1, y1, x2, y2) => { const e = el("line", cls, gStatic); e.setAttribute("x1", x1); e.setAttribute("y1", y1); e.setAttribute("x2", x2); e.setAttribute("y2", y2); return e; };
         const bottom = H - m.b;
+        /* the finder, when it stands inside the chart: the note and the band's name keep clear of it */
+        const finBox = plot.querySelector(":scope > .sc-find"), finW = finBox ? finBox.offsetWidth + 14 : 0;
         /* opt-2: the admins of the subject's size, half to twice its people, as a band under the cloud */
         const showBand = opt2() && SW && yd && !(ask && ask.dark === "MA");
         let bandLab = null;
@@ -12913,16 +13108,22 @@
         logTicks(xd[0], xd[1], W - m.l - m.r).forEach(v => { const X = x(v); line("sc-grid", X, m.t, X, bottom); t("sc-tick", X, bottom + fs + 6, fmt(v, "pop"), "middle"); });
         t("sc-axt", W - m.r, H - 4, "Population", "end");
         yt.forEach(v => { const Y = y(v); line("sc-grid", m.l, Y, W - m.r, Y); t("sc-tick", m.l - 6, Y + fs * .35, tickFmt(v, k), "end"); });
-        const axt = t("sc-axt", 0, m.t - 10, opt2() && SW && k === "yp" ? M[k].long : M[k].name, "start");
-        if (showBand){ const [a, b] = band(), cx = (x(a) + x(b)) / 2, small = phone() || W < 520;
+        /* the axes study: the two axis lines over the grid, always at the plot's left and foot */
+        if (FL().axes){ line("sc-axis", m.l, bottom, W - m.r, bottom); if (y) line("sc-axis", m.l, m.t, m.l, bottom); }
+        /* the icons study: the measure's mark before the axis title */
+        let ax0 = 0; if (FL().icons && ICON[k]){ const g = el("g", "sc-axico", gStatic); g.setAttribute("transform", "translate(0," + (m.t - 23) + ") scale(.95)"); g.innerHTML = ICON[k].replace(/^<svg[^>]*>|<\/svg>$/g, ""); ax0 = 20; }
+        const axt = t("sc-axt", ax0, m.t - 10, opt2() && SW && k === "yp" ? M[k].long : M[k].name, "start");
+        if (showBand && !FL().legend){ const [a, b] = band(), cx = (x(a) + x(b)) / 2, small = phone() || W < 520;
           bandLab = t("sc-bandlab", cx, m.t - 10, small ? (noun === "metro" ? "Boston metro's size" : "Boston's size") : (noun === "metro" ? "Half to twice the Boston metro's size" : "Half to twice Boston's size"), "middle");
-          const bb = bandLab.getBBox(); if (bb.x + bb.width > W - 2) bandLab.setAttribute("x", W - 2 - bb.width / 2); }
+          const bb = bandLab.getBBox(), lim = W - 2 - finW; if (bb.x + bb.width > lim) bandLab.setAttribute("x", lim - bb.width / 2); }
         /* the note: in opt-2 the lede's sentence; it shortens, then stands down, rather than meet the band's name */
-        if (opt2() && SW){ const meets = e => { const p = e.getBBox(), r2 = axt.getBBox(); if (p.x < r2.x + r2.width + 12) return true;
+        if (FL().legend){ /* the legend study names the dots off the chart */ }
+        else if (opt2() && SW){ const meets = e => { const p = e.getBBox(), r2 = axt.getBBox(); if (p.x < r2.x + r2.width + 12) return true;
             if (!bandLab) return false; const q = bandLab.getBBox(); return p.x < q.x + q.width + 8 && q.x < p.x + p.width + 8; };
-          if (ask && ask.dark === "MA"){ const e = t("sc-note", W - m.r, m.t - 10, "Dark dots: the " + rows.filter(r => r[C.st] === "MA").length + " admins in Massachusetts", "end"); if (meets(e)) e.remove(); }
-          else { let e = t("sc-note", W - m.r, m.t - 10, noun === "metro" ? "Each grey dot is a US metro" : "Each grey dot is a US admin of about 25,000 people or more", "end");
-            if (meets(e)){ e.remove(); e = t("sc-note", W - m.r, m.t - 10, "Each grey dot is a US " + noun, "end"); if (meets(e)) e.remove(); } } }
+          const nx = W - m.r - finW;
+          if (ask && ask.dark === "MA"){ const e = t("sc-note", nx, m.t - 10, "Dark dots: the " + rows.filter(r => r[C.st] === "MA").length + " admins in Massachusetts", "end"); if (meets(e)) e.remove(); }
+          else { let e = t("sc-note", nx, m.t - 10, noun === "metro" ? "Each grey dot is a US metro" : "Each grey dot is a US admin of about 25,000 people or more", "end");
+            if (meets(e)){ e.remove(); e = t("sc-note", nx, m.t - 10, "Each grey dot is a US " + noun, "end"); if (meets(e)) e.remove(); } } }
         else t("sc-note", W - m.r, m.t - 10, (tintOn() ? "Each dot is " : "Each grey dot is ") + opts.unit, "end");
         if (k === "emp"){
           const p0 = Math.max(xd[0], yd[0] / RATE), p1 = Math.min(xd[1], yd[1] / RATE);
@@ -13004,7 +13205,7 @@
         place(pos[2 * hereI], pos[2 * hereI + 1], 8, opt2() && SW && !phone() ? (noun === "metro" ? "Boston metro " : "Boston ") + fmt(rows[hereI][C[L.k]], L.k) : "Boston", "sc-lab--here");
         /* the found admin and the questions' places, each with its figure */
         callI.forEach(i => place(pos[2 * i], pos[2 * i + 1], 8, rows[i][C.name] + (i === found && noun === "admin" ? ", " + rows[i][C.st] : "") + " " + fmt(rows[i][C[L.k]], L.k), "sc-lab--call"));
-        place(pa[0], pa[1], 8, "Peer average", "sc-lab--avg");
+        if (!FL().legend) place(pa[0], pa[1], 8, "Peer average", "sc-lab--avg");
         peerI.filter(isOn).sort((a, b) => pos[2 * a] - pos[2 * b]).forEach(i => place(pos[2 * i], pos[2 * i + 1], 6, rows[i][C.name], "", true));
       }
       /* the dots in their fifths' colours (opt-1), or the plain grey */
@@ -13033,10 +13234,21 @@
          before's, from which it moves once seen */
       function render(animate){
         if (!plot.clientWidth) return;
+        fitPick();
         const L = layout(k); geo = L;
         svg.setAttribute("width", L.W); svg.setAttribute("height", L.H); svg.setAttribute("viewBox", "0 0 " + L.W + " " + L.H);
-        dots.forEach(d => { if (d) d.setAttribute("r", phone() ? 2.2 : 2.6); });
-        peerDots.forEach(d => d.setAttribute("r", 5)); hereDot.setAttribute("r", 7);
+        const rp = popR();
+        dots.forEach((d, i) => { if (d) d.setAttribute("r", rp ? rp(i).toFixed(1) : phone() ? 2.2 : 2.6); });
+        peerDots.forEach((d, j) => d.setAttribute("r", rp ? Math.max(5, rp(peerI[j])).toFixed(1) : 5)); hereDot.setAttribute("r", rp ? Math.max(7, rp(hereI)).toFixed(1) : 7);
+        /* the legend study: the band and the peer average named here, off the chart */
+        const lg = host.querySelector(".sc-legend");
+        if (lg){ lg.hidden = !FL().legend; if (FL().legend){ const bandOn = opt2() && SW && !(ask && ask.dark === "MA"), ma = opt2() && SW && ask && ask.dark === "MA";
+          const dotTxt = ma ? "Dark dots: the " + rows.filter(r => r[C.st] === "MA").length + " admins in Massachusetts"
+            : opt2() && SW ? (noun === "metro" ? "Each grey dot is a US metro" : "Each grey dot is a US admin of about 25,000 people or more")
+            : (tintOn() ? "Each dot is " : "Each grey dot is ") + opts.unit;
+          lg.innerHTML = '<span><i class="lg-dot' + (ma ? ' is-dark' : tintOn() ? ' is-tinted' : '') + '"></i>' + dotTxt + '</span>' +
+            (bandOn ? '<span><i class="lg-band"></i>' + (noun === "metro" ? "Metros half to twice the Boston metro&rsquo;s size" : "Admins half to twice Boston&rsquo;s size") + '</span>' : '') +
+            '<span><i class="lg-pavg"></i>Peer average</span>'; } }
         tint();
         drawStatic(L);
         cancelAnimationFrame(raf);
@@ -13049,8 +13261,9 @@
           for (let i = 0; i < n * 2; i++) p[i] = from[i] + (L.pos[i] - from[i]) * e;
           paint(p, [fromPa[0] + (L.pa[0] - fromPa[0]) * e, fromPa[1] + (L.pa[1] - fromPa[1]) * e]); cur = p;
           if (u < 1) raf = requestAnimationFrame(tick);
-          else { cur = L.pos; drawLabels(L); requestAnimationFrame(() => gLabels.classList.add("is-in")); }
+          else { animating = false; cur = L.pos; drawLabels(L); requestAnimationFrame(() => gLabels.classList.add("is-in")); }
         };
+        animating = true;
         raf = requestAnimationFrame(tick);
       }
       /* the card: the nearest admin under the pointer, or the peers' average */
@@ -13088,14 +13301,18 @@
       document.addEventListener("who:peers", ev => { if (ev.detail && ev.detail.set && ev.detail.set !== opts.set) return; drawPeers(); if (!geo || !cur) return; paint(cur, curPa || geo.pa); if (entered) drawLabels(geo); });
       drawPeers(); say();
       render(false);
-      if (window.ResizeObserver){ let lw = 0, lh = 0; new ResizeObserver(() => { if (plot.clientWidth === lw && (!opt2() || plot.clientHeight === lh)) return; lw = plot.clientWidth; lh = plot.clientHeight; render(false); }).observe(plot); }
+      /* the plot's size changes with the header's height when the measure
+         switches (a hint or a longer name wraps), and the redraw used to
+         land the dots at once, mid-flight; the animate study carries the
+         move on from where the dots are */
+      if (window.ResizeObserver){ let lw = 0, lh = 0; new ResizeObserver(() => { if (plot.clientWidth === lw && (!opt2() || plot.clientHeight === lh)) return; lw = plot.clientWidth; lh = plot.clientHeight; render(!!(FL().anim && animating)); }).observe(plot); }
       /* the switch: the header, the reading and the axes change at once, the dots move */
       function set(nk, keepAsk){
         if (!SW || nk === k || BTN.indexOf(nk) < 0) return;
         if (!keepAsk && ask) closeAsk(false);
         prevK = k; k = nk;
         beat.querySelectorAll(".who-sc-ctl .seg-btn").forEach(b => { const on = b.dataset.m === k; b.classList.toggle("is-active", on); b.setAttribute("aria-pressed", String(on)); });
-        cmp.innerHTML = headFor(k);
+        cmp.innerHTML = headFor(k); fitPick();
         aria(); say(); hideTip(); gLabels.classList.remove("is-in");
         entered = true;
         render(true);
@@ -13103,6 +13320,9 @@
       }
       /* on the beat, not the panel: on a phone the controls stand in the column under the band */
       if (SW) beat.addEventListener("click", ev => { const b = ev.target.closest(".who-sc-ctl .seg-btn"); if (b) set(b.dataset.m); });
+      /* the sentence's dropdown sets the measure too; the header is rebuilt, so the focus is handed to the new select */
+      if (SW) beat.addEventListener("change", ev => { const sl = ev.target.closest(".sc-pick-sel"); if (!sl) return; const foc = document.activeElement === sl; set(sl.value);
+        if (foc){ const n = cmp.querySelector(".sc-pick-sel"); if (n) n.focus(); } });
       /* ---- opt-2: Ask the chart. A question sets the chart (the measure,
          the dark set, the fade, the places named) and its answer opens
          under it; one at a time; the row again, or any change of measure,
@@ -13170,6 +13390,13 @@
         const out = opt2() && matchMedia("(max-width:899px)").matches;
         if (out && ctl.parentNode !== slot){ slot.append(ctl, cmp, peersHost); }
         else if (!out && ctl.parentNode === slot){ host.insertBefore(ctl, host.firstChild); host.insertBefore(cmp, plot); host.insertBefore(peersHost, live); }
+        /* the dropdown study: the finder stands inside the chart, at its top
+           right, so the sentence has the whole width (not on a phone, where
+           the band is small and the controls are in the column) */
+        const finBox = host.querySelector(".sc-find") || slot.querySelector(".sc-find");
+        if (finBox){ const inPlot = opt2() && FL().sentence && FL().menu && !out;
+          if (inPlot && finBox.parentNode !== plot) plot.appendChild(finBox);
+          else if (!inPlot && finBox.parentNode === plot) ctl.appendChild(finBox); }
       }
       if (SW){ arrange(); matchMedia("(max-width:899px)").addEventListener("change", () => { arrange(); render(false); }); }
       /* a dot pointed at on the map: ringed here, with no card */
@@ -13180,7 +13407,7 @@
       (window.WHO_SC = window.WHO_SC || {})[opts.set] = { rows, C, M, FIFTH, hereI, peerI, isOn, get k(){ return k; }, unit: opts.unit, tag: opts.tag,
         refresh(){ const lab = ctl && ctl.querySelector(".ctl-label"); if (lab) lab.textContent = tintOn() ? "Chart and map show" : "Chart shows";
           if (!opt2()){ if (ask) closeAsk(false); found = null; if (k === "yp") set("wage", true); }
-          arrange(); cmp.innerHTML = headFor(k); render(false); if (entered && cur) paint(cur, geo.pa); } };
+          arrange(); cmp.innerHTML = headFor(k); fitPick(); drawPeers(); render(false); if (entered && cur) paint(cur, geo.pa); } };
       /* the beat arrives: the dots move into place once, from the beat before */
       if (window.IntersectionObserver){
         const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)){ io.disconnect(); if (!entered){ entered = true; render(true); } } },
@@ -13247,7 +13474,12 @@
     /* the colours, the peers and the key for the measure on */
     function paint(s){
       const W = s.W, F = W.FIFTH[W.k], cols = [1, 2, 3, 4, 5].map(j => cssv("--fifth-" + j)), r = (s.set === "metro" ? 3.4 : 2.6) * (phone() ? .78 : 1);
-      s.order.forEach(i => s.mk[i].setStyle({ fillColor: cols[F.cls[i]], radius: r }));
+      /* the population study: the radius from the people, as the chart's dots */
+      const byPop = !!(window.WHO_SC_FLAGS || {}).pop; let lo = Infinity, hi = -Infinity;
+      if (byPop) s.rows.forEach(rr => { const v = rr[s.C.pop]; if (v < lo) lo = v; if (v > hi) hi = v; });
+      const rOf = i => byPop ? (phone() ? .8 : 1) * (1.8 + 8.2 * Math.sqrt((s.rows[i][s.C.pop] - lo) / (hi - lo))) : r;
+      s.order.forEach(i => s.mk[i].setStyle({ fillColor: cols[F.cls[i]], radius: rOf(i) }));
+      s.here.setRadius(byPop ? Math.max(6.5, rOf(W.hereI)) : 6.5);
       /* a peer that is on: its coloured dot, and its cloud dot stands aside;
          one that sits on Boston at this zoom rings Boston's dot instead */
       const hp = ovLeaflet.latLngToContainerPoint(s.here.getLatLng());
@@ -13256,7 +13488,7 @@
         if (on && !has) m.addTo(s.group); if (!on && has) s.group.removeLayer(m);
         if (on){ const q = ovLeaflet.latLngToContainerPoint(s.pts[s.rows[i][s.C.id]]), close = Math.hypot(q.x - hp.x, q.y - hp.y) < 9;
           m.setLatLng(close ? s.here.getLatLng() : s.pts[s.rows[i][s.C.id]]);
-          m.setStyle(close ? { radius: 10.5, fill: false, color: m.options.fillColor, weight: 2.5 } : { radius: 5, fill: true, color: "#fff", weight: 1.5 });
+          m.setStyle(close ? { radius: 10.5, fill: false, color: m.options.fillColor, weight: 2.5 } : { radius: byPop ? Math.max(5, rOf(i)) : 5, fill: true, color: "#fff", weight: 1.5 });
           m._ring = close; } });
       if (!s.group.hasLayer(s.here)) s.here.addTo(s.group); else s.here.bringToFront();
       s.peerMk.forEach(m => { if (s.group.hasLayer(m)) m.bringToFront(); }); s.here.bringToFront();
@@ -13349,6 +13581,7 @@
     }
     window.whoNationBeat = show;
     window.whoNationOn = () => !!cur;
+    window.whoNationRepaint = () => { const s = S[cur]; if (s) paint(s); };
   })();
 
   /* ---- the right side's study (2026-10-15): opt-1 the US map of every
@@ -13356,35 +13589,116 @@
      the chart in a panel over the map card with more to do ---- */
   (function(){
     const wrap = document.getElementById("ovWrap"); if (!wrap) return;
-    window.whoRight = /[?&]right=map\b/.test(location.search) ? "map" : "chart";
+    const OPTS = window.WHO_RIGHT_OPTS;
+    window.whoRight = window.whoRightFromURL();
     wrap.dataset.right = window.whoRight;
     /* the panel reaches from the words column's edge (336 + 43) to the map card's right edge; on a phone it is the band's height */
     function size(){
-      const blk = wrap.querySelector(".sc-beat"), card = wrap.querySelector(".ov-map-inner"); if (!blk || !card) return;
-      const b = blk.getBoundingClientRect(), c = card.getBoundingClientRect();
-      if (c.width && b.width) wrap.style.setProperty("--sc-panel-w", Math.max(420, Math.round(c.right - b.left - 379)) + "px");
+      const blk = wrap.querySelector(".sc-beat"), col = wrap.querySelector(".ov-map"), card = wrap.querySelector(".ov-map-inner"); if (!blk || !col || !card) return;
+      const b = blk.getBoundingClientRect(), k = col.getBoundingClientRect(), c = card.getBoundingClientRect();
+      /* the column's edge, not the card's: in opt-3 the card is a strip or a thumbnail inside it */
+      if (k.width && b.width) wrap.style.setProperty("--sc-panel-w", Math.max(420, Math.round(k.right - b.left - 379)) + "px");
       if (c.height) wrap.style.setProperty("--ov-band-h", Math.round(c.height) + "px");
     }
     window.whoPanelSize = size;
     addEventListener("resize", () => requestAnimationFrame(size)); size(); setTimeout(size, 600);
     function setRight(v){
-      window.whoRight = v === "chart" ? "chart" : "map"; wrap.dataset.right = window.whoRight;
-      const u = new URL(location.href); if (window.whoRight === "map") u.searchParams.set("right", "map"); else u.searchParams.delete("right");
-      history.replaceState(null, "", u.pathname + u.search + u.hash);
+      const o = OPTS.find(x => x.v === v) || OPTS.find(x => x.v === "map");
+      window.whoRight = o.v; wrap.dataset.right = window.whoRight;
+      history.replaceState(null, "", linkFor(o));
       document.querySelectorAll(".sc-right-opt").forEach(sel => { sel.value = window.whoRight; });
+      markLinks();
+      wrap.querySelectorAll(".sc-opt").forEach(a => { const x = OPTS.find(y => y.v === a.dataset.right); if (x) a.href = linkFor(x); });
       size();
       Object.values(window.WHO_SC || {}).forEach(W => W.refresh && W.refresh());
       const on = wrap.querySelector(".ov-block.is-on");
       if (window.whoNationBeat) window.whoNationBeat(on ? on.id : null);
+      if (typeof ovLeaflet !== "undefined" && ovLeaflet) ovLeaflet.invalidateSize({ animate: false });
       if (typeof ovZoom === "function") ovZoom(true);
     }
-    /* the "opt" word in each scatter beat's counter */
+    const markLinks = () => wrap.querySelectorAll(".sc-opt").forEach(a => {
+      const on = a.dataset.right === window.whoRight;
+      a.classList.toggle("is-on", on);
+      if (on) a.setAttribute("aria-current", "true"); else a.removeAttribute("aria-current");
+    });
+    const linkFor = o => { const u = new URL(location.href); if (o.q) u.searchParams.set("right", o.q); else u.searchParams.delete("right"); return u.pathname + u.search + u.hash; };
+    /* beat 2 (the admin's scatter): the opts as a list of links beside the
+       counter, "opt-1 · opt-2", the one in force set in ink; a click
+       switches in place, and the href is the deep link for the same */
+    const b2 = document.getElementById("page-overview-scatter"), eye2 = b2 && b2.querySelector(":scope > .ct-eyebrow");
+    if (eye2){
+      const list = document.createElement("span"); list.className = "sc-opts"; list.setAttribute("role", "group"); list.setAttribute("aria-label", "Design studies: what the right side shows");
+      OPTS.forEach((o, i) => {
+        if (i) { const sep = document.createElement("span"); sep.className = "sc-opt-sep"; sep.setAttribute("aria-hidden", "true"); sep.textContent = "\u00b7"; list.appendChild(sep); }
+        const a = document.createElement("a"); a.className = "sc-opt"; a.dataset.right = o.v; a.href = linkFor(o); a.title = o.title; a.textContent = o.label;
+        a.addEventListener("click", ev => { ev.preventDefault(); setRight(o.v); });
+        list.appendChild(a);
+      });
+      eye2.appendChild(list);
+      markLinks();
+    }
+    /* the beat's studies (2026-10-16): each change a switch of its own, on top
+       of the opt in force */
+    const FLAGS = window.WHO_SC_FLAGS || {}, LIST = window.WHO_SC_FLAG_LIST || [];
+    function syncURL(){ const u = new URL(location.href), on = LIST.filter(f => FLAGS[f.k]).map(f => f.k);
+      if (on.length) u.searchParams.set("sc", on.join(",")); else u.searchParams.delete("sc");
+      history.replaceState(null, "", u.pathname + u.search + u.hash);
+      wrap.querySelectorAll(".sc-opt[data-right]").forEach(a => { const x = OPTS.find(y => y.v === a.dataset.right); if (x) a.href = linkFor(x); }); }
+    /* a flight is a zoomstart with its zoomend still to come (a plain setView
+       fires both at once; invalidateSize fires neither) */
+    let flying = false;
+    const refitNow = () => { if (typeof ovCamTarget === "function"){ const t = ovCamTarget(); if (t){ ovLeaflet.flyTo(t.center, t.zoom, { duration: .35 }); return; } } if (typeof ovZoom === "function") ovZoom(true); };
+    if (typeof ovLeaflet !== "undefined" && ovLeaflet){
+      ovLeaflet.on("zoomstart", () => { flying = true; window.whoMapFlying = true; });
+      /* a refit put off during a flight is made good as it lands, with a short flight of its own */
+      ovLeaflet.on("zoomend", () => { flying = false; window.whoMapFlying = false; if (window.whoMapRefitLater){ window.whoMapRefitLater = false; setTimeout(refitNow, 0); } });
+    }
+    const refit = () => { size(); if (typeof ovLeaflet === "undefined" || !ovLeaflet) return; ovLeaflet.invalidateSize({ animate: false }); if (flying){ window.whoMapRefitLater = true; return; } if (typeof ovZoom === "function") ovZoom(true); };
+    const redraw = () => { Object.values(window.WHO_SC || {}).forEach(W => W.refresh && W.refresh()); if (window.whoNationRepaint) window.whoNationRepaint(); };
+    function setFlag(k, on){ if (!(k in FLAGS)) return; FLAGS[k] = !!on; wrap.classList.toggle("st-" + k, !!on);
+      wrap.querySelectorAll('.sc-studies input[data-flag="' + k + '"]').forEach(c => { c.checked = !!on; });
+      /* a sub-option counts only with its parent on, and can only be set then */
+      LIST.filter(x => x.sub).forEach(x => { wrap.classList.toggle("st-" + x.k, !!(FLAGS[x.sub] && FLAGS[x.k]));
+        wrap.querySelectorAll('.sc-studies input[data-flag="' + x.k + '"]').forEach(c => { c.disabled = !FLAGS[x.sub]; }); });
+      syncURL(); redraw(); }
+    window.whoSetFlag = setFlag;
+    if (eye2){
+      const box = document.createElement("div"); box.className = "sc-studies"; box.setAttribute("role", "group"); box.setAttribute("aria-label", "Design studies for this beat");
+      /* a sub-option stands under its parent, indented, and is greyed until the parent is on */
+      const item = f => '<label class="sc-study' + (f.sub ? ' sc-study--sub' : '') + '"><input type="checkbox" data-flag="' + f.k + '"' + (FLAGS[f.k] ? ' checked' : '') + (f.sub && !FLAGS[f.sub] ? ' disabled' : '') + '>' + f.label + '</label>';
+      box.innerHTML = LIST.filter(f => !f.sub).map(f => { const subs = LIST.filter(x => x.sub === f.k);
+        return subs.length ? '<span class="sc-study-group">' + item(f) + subs.map(item).join("") + '</span>' : item(f); }).join("");
+      eye2.after(box);
+      box.addEventListener("change", ev => { const c = ev.target.closest("input[data-flag]"); if (c) setFlag(c.dataset.flag, c.checked); });
+    }
+    /* the map card changes size as opt-3's scatter beat comes and goes, by
+       a transition: each step of it Leaflet is told, and the camera refits,
+       so the city stays fitted as the card shrinks and grows. Not while the
+       camera is flying (city to metro as the commuting beat arrives): a
+       refit mid-flight would cut the flight short, so the map is only told
+       its size then */
+    if (window.ResizeObserver){ const card = wrap.querySelector(".ov-map-inner"); if (card) new ResizeObserver(() => refit()).observe(card); }
+    /* opt-3's exit, scrolling on: a scatter beat is "leaving" once the block
+       after it has risen to within 300px of the viewport's foot. The beat's
+       360px of padding keep its panel pinned under the band past that
+       point, so the panel fades where it stands and the card grows after
+       it, before the panel would scroll up under the band. Coming back up,
+       the same line brings the band and the panel back in the entry's
+       order */
+    const pagesEl = document.getElementById("pages");
+    if (pagesEl){
+      const leaving = () => { const pr = pagesEl.getBoundingClientRect(), foot = pr.top + pagesEl.clientHeight + 300;
+        wrap.querySelectorAll(".sc-beat").forEach(b => { const n = b.nextElementSibling; b.classList.toggle("is-leaving", !!(n && n.getBoundingClientRect().top < foot)); }); };
+      pagesEl.addEventListener("scroll", leaving, { passive: true }); addEventListener("resize", leaving); leaving();
+    }
+    /* the "opt" word in the other scatter beats' counters */
     wrap.querySelectorAll(".sc-beat").forEach(beat => {
+      if (beat === b2) return;
       const eye = beat.querySelector(":scope > .ct-eyebrow"); if (!eye) return;
       const st = document.createElement("div"); st.className = "mi-studies"; const pid = "scRight" + beat.id.replace(/\W/g, "");
       st.innerHTML = '<button type="button" class="mi-studies-btn" aria-expanded="false" aria-controls="' + pid + '">opt</button>' +
         '<div class="mi-studies-panel" id="' + pid + '" role="group" aria-label="Design studies" hidden><label class="mi-study"><span>Right side</span>' +
-        '<select class="sc-right-opt" aria-label="What the right side shows: the map of every admin, or the chart with more to do"><option value="map">opt-1</option><option value="chart">opt-2</option></select></label></div>';
+        '<select class="sc-right-opt" aria-label="What the right side shows: the map of every admin, or the chart with more to do">' + OPTS.map(o => '<option value="' + o.v + '">' + o.label + '</option>').join("") + '</select></label></div>';
       eye.appendChild(st);
       const btn = st.querySelector(".mi-studies-btn"), panel = st.querySelector(".mi-studies-panel"), sel = st.querySelector("select");
       sel.value = window.whoRight;
