@@ -1910,11 +1910,11 @@
   /* the switches: on a wide screen at the foot of the words (the beat is a
      flex column, and order 1 sets the box last, clear of the title and the
      reading); on a phone under the counter, which is order 1 there too */
-  .sc-studies{display:flex;flex-wrap:wrap;gap:4px 14px;margin:8px 0 14px;padding:8px 10px;border:1px dashed var(--border-strong);border-radius:6px;font-size:13px;line-height:1.4;color:var(--ink-soft);}
+  .sc-studies{display:flex;flex-direction:column;align-items:flex-start;gap:5px;margin:8px 0 14px;padding:9px 12px;border:1px dashed var(--border-strong);border-radius:6px;font-size:13px;line-height:1.4;color:var(--ink-soft);}
   #ovWrap .sc-beat > .sc-studies{order:1;}
   .sc-study{display:inline-flex;align-items:center;gap:5px;cursor:pointer;}
   .sc-study input{margin:0;accent-color:var(--teal);}
-  .sc-study-group{display:inline-flex;flex-direction:column;gap:4px;}
+  .sc-study-group{display:flex;flex-direction:column;align-items:flex-start;gap:5px;}
   .sc-study--sub{margin-left:18px;}
   .sc-study:has(input:disabled){color:var(--mark-grey);cursor:default;}
   /* the sentence header: the numbers as chips, in the dress of Metro Industries' sentence row */
@@ -1930,16 +1930,22 @@
   .sc-sentence .mi-pick select{font-size:inherit;font-weight:700;line-height:1.3;padding:1px 18px 1px 7px;}
   .sc-sentence .mi-pick .mi-measure{font-size:inherit;font-weight:700;}
   /* the tabs and their label stand down; the sentence's select is the switch */
-  #ovWrap.st-menu .sc-beat .who-sc-ctl > .ctl-label,
-  #ovWrap.st-menu .sc-beat .who-sc-ctl > .seg{display:none;}
+  #ovWrap.st-menu:not(.st-above) .sc-beat .who-sc-ctl > .ctl-label,
+  #ovWrap.st-menu:not(.st-above) .sc-beat .who-sc-ctl > .seg{display:none;}
   /* on a wide screen the controls row stands down altogether (the script
      has moved the finder into the chart); the sentence has the panel's
-     whole width. The finder in the chart sits at its top right, in the
-     strip above the plot where the note was */
+     whole width. In the chart the finder is small and stands over the
+     grid, in the empty top right corner above the biggest places, its
+     label as its placeholder */
   @media (min-width:900px){
-    #ovWrap.st-menu .sc-beat .who-sc-ctl{display:none;}
+    #ovWrap.st-menu:not(.st-above) .sc-beat .who-sc-ctl{display:none;}
   }
-  .who-sc-plot > .sc-find{position:absolute;top:0;right:0;z-index:3;margin:0;}
+  .who-sc-plot > .sc-find{position:absolute;top:38px;right:20px;z-index:3;margin:0;gap:0;}
+  .who-sc-plot > .sc-find .ctl-label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
+  .who-sc-plot > .sc-find input{width:150px;height:26px;padding:0 42px 0 8px;font-size:12px;box-shadow:0 1px 3px rgba(26,34,38,.12);}
+  .who-sc-plot > .sc-find input::placeholder{color:var(--ink-soft);}
+  .who-sc-plot > .sc-find .sc-find-clear{top:2px;height:22px;font-size:12px;}
+  .who-sc-plot > .sc-find .sc-find-list{top:30px;left:auto;right:0;min-width:230px;}
   /* the legend off the chart: the band's swatch and the peer average's ring */
   .sc-legend{display:flex;flex-wrap:wrap;gap:4px 18px;margin:0;font-size:13px;line-height:1.4;color:var(--ink-soft);}
   .sc-legend[hidden]{display:none;}
@@ -12847,10 +12853,10 @@
      chart's code */
   window.WHO_SC_FLAG_LIST = [
     { k: "sentence", label: "Sentence header" },
-    { k: "menu",     label: "Measure as a dropdown", sub: "sentence" },
+    { k: "menu",     label: "Measure as a dropdown", sub: "sentence", not: "above" },
+    { k: "above",    label: "Header above the tabs", sub: "sentence", not: "menu" },
     { k: "legend",   label: "Legend off the chart" },
     { k: "axes",     label: "Axes drawn" },
-    { k: "anim",     label: "Always animate" },
     { k: "icons",    label: "Icons" },
     { k: "pop",      label: "Dots sized by population" }
   ];
@@ -12859,8 +12865,10 @@
     window.WHO_SC_FLAG_LIST.forEach(f => { window.WHO_SC_FLAGS[f.k] = on.indexOf(f.k) >= 0; });
     const w = document.getElementById("ovWrap"); if (!w) return;
     window.WHO_SC_FLAG_LIST.forEach(f => w.classList.toggle("st-" + f.k, window.WHO_SC_FLAGS[f.k]));
-    /* a sub-option counts only with its parent on */
-    window.WHO_SC_FLAG_LIST.filter(f => f.sub).forEach(f => w.classList.toggle("st-" + f.k, !!(window.WHO_SC_FLAGS[f.sub] && window.WHO_SC_FLAGS[f.k]))); })();
+    /* a sub-option counts only with its parent on, and not with its rival on (the two under the sentence exclude each other) */
+    window.WHO_SC_FLAG_LIST.forEach(f => { if (f.not && window.WHO_SC_FLAGS[f.k] && window.WHO_SC_FLAGS[f.not]) window.WHO_SC_FLAGS[f.not] = false; });
+    window.whoSubOn = f => !!(window.WHO_SC_FLAGS[f.sub] && window.WHO_SC_FLAGS[f.k] && !(f.not && window.WHO_SC_FLAGS[f.not]));
+    window.WHO_SC_FLAG_LIST.filter(f => f.sub).forEach(f => w.classList.toggle("st-" + f.k, window.whoSubOn(f))); })();
   window.whoRightFromURL = () => (window.WHO_RIGHT_OPTS.find(o => o.q && new RegExp("[?&]right=" + o.q + "\\b").test(location.search)) || window.WHO_RIGHT_OPTS.find(o => !o.q)).v;
   window.whoRight = window.whoRightFromURL();
   if (document.getElementById("ovWrap")) document.getElementById("ovWrap").dataset.right = window.whoRight;
@@ -13008,7 +13016,7 @@
       const pick = kk => '<span class="mi-pick sc-pick"><span class="mi-measure" aria-hidden="true"></span><select class="sc-pick-sel" aria-label="The measure the chart shows">' +
         BTN.filter(m => m !== "yp" || opt2()).map(m => '<option value="' + m + '"' + (m === kk ? ' selected' : '') + '>' + PICKN[m] + '</option>').join("") + '</select></span>';
       const sentence = kk => { const v = rows[hereI][C[kk]], here = noun === "metro" ? "the Boston metro" : "Boston", Here = noun === "metro" ? "The Boston metro" : "Boston";
-        const lead = FL().menu ? Here + "&rsquo;s " + pick(kk) + " is " + chip(fmt(v, kk)) + (kk === "unemp" ? ' <span class="sc-hint">(lower is better)</span>' : "") :
+        const lead = FL().menu && !FL().above ? Here + "&rsquo;s " + pick(kk) + " is " + chip(fmt(v, kk)) + (kk === "unemp" ? ' <span class="sc-hint">(lower is better)</span>' : "") :
           kk === "wage" ? Here + "&rsquo;s average salary is " + chip(fmt(v, kk)) :
           kk === "home" ? "A typical " + here.replace(/^the /, "") + " home is worth " + chip(fmt(v, kk)) :
           kk === "unemp" ? Here + "&rsquo;s unemployment is " + chip(fmt(v, kk)) + ' <span class="sc-hint">(lower is better)</span>' :
@@ -13098,8 +13106,6 @@
         const t = (cls, X, Y, s, anchor) => { const e = el("text", cls, gStatic); e.setAttribute("x", X); e.setAttribute("y", Y); if (anchor) e.setAttribute("text-anchor", anchor); e.textContent = s; return e; };
         const line = (cls, x1, y1, x2, y2) => { const e = el("line", cls, gStatic); e.setAttribute("x1", x1); e.setAttribute("y1", y1); e.setAttribute("x2", x2); e.setAttribute("y2", y2); return e; };
         const bottom = H - m.b;
-        /* the finder, when it stands inside the chart: the note and the band's name keep clear of it */
-        const finBox = plot.querySelector(":scope > .sc-find"), finW = finBox ? finBox.offsetWidth + 14 : 0;
         /* opt-2: the admins of the subject's size, half to twice its people, as a band under the cloud */
         const showBand = opt2() && SW && yd && !(ask && ask.dark === "MA");
         let bandLab = null;
@@ -13115,12 +13121,12 @@
         const axt = t("sc-axt", ax0, m.t - 10, opt2() && SW && k === "yp" ? M[k].long : M[k].name, "start");
         if (showBand && !FL().legend){ const [a, b] = band(), cx = (x(a) + x(b)) / 2, small = phone() || W < 520;
           bandLab = t("sc-bandlab", cx, m.t - 10, small ? (noun === "metro" ? "Boston metro's size" : "Boston's size") : (noun === "metro" ? "Half to twice the Boston metro's size" : "Half to twice Boston's size"), "middle");
-          const bb = bandLab.getBBox(), lim = W - 2 - finW; if (bb.x + bb.width > lim) bandLab.setAttribute("x", lim - bb.width / 2); }
+          const bb = bandLab.getBBox(); if (bb.x + bb.width > W - 2) bandLab.setAttribute("x", W - 2 - bb.width / 2); }
         /* the note: in opt-2 the lede's sentence; it shortens, then stands down, rather than meet the band's name */
         if (FL().legend){ /* the legend study names the dots off the chart */ }
         else if (opt2() && SW){ const meets = e => { const p = e.getBBox(), r2 = axt.getBBox(); if (p.x < r2.x + r2.width + 12) return true;
             if (!bandLab) return false; const q = bandLab.getBBox(); return p.x < q.x + q.width + 8 && q.x < p.x + p.width + 8; };
-          const nx = W - m.r - finW;
+          const nx = W - m.r;
           if (ask && ask.dark === "MA"){ const e = t("sc-note", nx, m.t - 10, "Dark dots: the " + rows.filter(r => r[C.st] === "MA").length + " admins in Massachusetts", "end"); if (meets(e)) e.remove(); }
           else { let e = t("sc-note", nx, m.t - 10, noun === "metro" ? "Each grey dot is a US metro" : "Each grey dot is a US admin of about 25,000 people or more", "end");
             if (meets(e)){ e.remove(); e = t("sc-note", nx, m.t - 10, "Each grey dot is a US " + noun, "end"); if (meets(e)) e.remove(); } } }
@@ -13303,9 +13309,9 @@
       render(false);
       /* the plot's size changes with the header's height when the measure
          switches (a hint or a longer name wraps), and the redraw used to
-         land the dots at once, mid-flight; the animate study carries the
-         move on from where the dots are */
-      if (window.ResizeObserver){ let lw = 0, lh = 0; new ResizeObserver(() => { if (plot.clientWidth === lw && (!opt2() || plot.clientHeight === lh)) return; lw = plot.clientWidth; lh = plot.clientHeight; render(!!(FL().anim && animating)); }).observe(plot); }
+         land the dots at once, mid-flight; now it carries the move on from
+         where the dots are (a study made the default, Nil, 2026-10-16) */
+      if (window.ResizeObserver){ let lw = 0, lh = 0; new ResizeObserver(() => { if (plot.clientWidth === lw && (!opt2() || plot.clientHeight === lh)) return; lw = plot.clientWidth; lh = plot.clientHeight; render(animating); }).observe(plot); }
       /* the switch: the header, the reading and the axes change at once, the dots move */
       function set(nk, keepAsk){
         if (!SW || nk === k || BTN.indexOf(nk) < 0) return;
@@ -13394,9 +13400,14 @@
            right, so the sentence has the whole width (not on a phone, where
            the band is small and the controls are in the column) */
         const finBox = host.querySelector(".sc-find") || slot.querySelector(".sc-find");
-        if (finBox){ const inPlot = opt2() && FL().sentence && FL().menu && !out;
+        /* the "header above the tabs" study: the sentence before the controls row, wherever the two stand */
+        if (ctl.parentNode){ const above = FL().sentence && FL().above && !FL().menu, first = ctl.parentNode.children[0] === cmp;
+          if (above && !first) ctl.parentNode.insertBefore(cmp, ctl); else if (!above && first) ctl.parentNode.insertBefore(ctl, cmp); }
+        if (finBox){ const inPlot = opt2() && FL().sentence && FL().menu && !FL().above && !out;
           if (inPlot && finBox.parentNode !== plot) plot.appendChild(finBox);
-          else if (!inPlot && finBox.parentNode === plot) ctl.appendChild(finBox); }
+          else if (!inPlot && finBox.parentNode === plot) ctl.appendChild(finBox);
+          /* small in the chart: the label becomes the placeholder (it stays for screen readers) */
+          if (fin) fin.placeholder = inPlot ? (noun === "admin" ? "Find an admin" : "Find a metro") : "Type a name"; }
       }
       if (SW){ arrange(); matchMedia("(max-width:899px)").addEventListener("change", () => { arrange(); render(false); }); }
       /* a dot pointed at on the map: ringed here, with no card */
@@ -13657,15 +13668,18 @@
     const redraw = () => { Object.values(window.WHO_SC || {}).forEach(W => W.refresh && W.refresh()); if (window.whoNationRepaint) window.whoNationRepaint(); };
     function setFlag(k, on){ if (!(k in FLAGS)) return; FLAGS[k] = !!on; wrap.classList.toggle("st-" + k, !!on);
       wrap.querySelectorAll('.sc-studies input[data-flag="' + k + '"]').forEach(c => { c.checked = !!on; });
-      /* a sub-option counts only with its parent on, and can only be set then */
-      LIST.filter(x => x.sub).forEach(x => { wrap.classList.toggle("st-" + x.k, !!(FLAGS[x.sub] && FLAGS[x.k]));
-        wrap.querySelectorAll('.sc-studies input[data-flag="' + x.k + '"]').forEach(c => { c.disabled = !FLAGS[x.sub]; }); });
+      /* the two under the sentence exclude each other: the one switched on puts the other off */
+      const me = LIST.find(x => x.k === k); if (on && me && me.not && FLAGS[me.not]){ FLAGS[me.not] = false; wrap.classList.remove("st-" + me.not);
+        wrap.querySelectorAll('.sc-studies input[data-flag="' + me.not + '"]').forEach(c => { c.checked = false; }); }
+      /* a sub-option counts only with its parent on and its rival off, and can only be set then */
+      LIST.filter(x => x.sub).forEach(x => { wrap.classList.toggle("st-" + x.k, window.whoSubOn(x));
+        wrap.querySelectorAll('.sc-studies input[data-flag="' + x.k + '"]').forEach(c => { c.disabled = !FLAGS[x.sub] || !!(x.not && FLAGS[x.not]); }); });
       syncURL(); redraw(); }
     window.whoSetFlag = setFlag;
     if (eye2){
       const box = document.createElement("div"); box.className = "sc-studies"; box.setAttribute("role", "group"); box.setAttribute("aria-label", "Design studies for this beat");
       /* a sub-option stands under its parent, indented, and is greyed until the parent is on */
-      const item = f => '<label class="sc-study' + (f.sub ? ' sc-study--sub' : '') + '"><input type="checkbox" data-flag="' + f.k + '"' + (FLAGS[f.k] ? ' checked' : '') + (f.sub && !FLAGS[f.sub] ? ' disabled' : '') + '>' + f.label + '</label>';
+      const item = f => '<label class="sc-study' + (f.sub ? ' sc-study--sub' : '') + '"><input type="checkbox" data-flag="' + f.k + '"' + (FLAGS[f.k] ? ' checked' : '') + (f.sub && (!FLAGS[f.sub] || (f.not && FLAGS[f.not])) ? ' disabled' : '') + '>' + f.label + '</label>';
       box.innerHTML = LIST.filter(f => !f.sub).map(f => { const subs = LIST.filter(x => x.sub === f.k);
         return subs.length ? '<span class="sc-study-group">' + item(f) + subs.map(item).join("") + '</span>' : item(f); }).join("");
       eye2.after(box);
