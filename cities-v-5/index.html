@@ -1713,6 +1713,15 @@
   .wt-row.wt-row--head{padding:0 0 6px;border:0;gap:0 32px;}
   .wt-row--head + .wt-row{border-top:1px solid var(--border-strong);}
   .wt-colh{font-size:13px;font-weight:600;color:var(--ink-soft);}
+  /* the compare beat's third column: the admin's rank among the metro's admins on each measure */
+  .who-cmp .wt-row{grid-template-columns:minmax(0,200px) minmax(0,300px) minmax(0,190px);gap:8px 24px;}
+  .who-cmp .wt[data-form="beside"] .wt-row{grid-template-columns:minmax(0,150px) minmax(0,386px) minmax(0,170px);}
+  .wt-rank{font-size:13px;line-height:1.35;color:var(--ink-soft);padding-top:2px;}
+  .wt-row--head .wt-rank{padding-top:0;align-self:end;}
+  .wt-rank b{display:block;font-size:var(--t-note);font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;}
+  .wt-rank .wt-rkl{display:block;margin-top:2px;}
+  .wt-rknote{margin:10px 0 0;font-size:13px;line-height:1.4;color:var(--ink-soft);}
+  @media (max-width:899px){ .who-cmp .wt-row,.who-cmp .wt[data-form="beside"] .wt-row{grid-template-columns:1fr;gap:10px 0;} .wt-rank{padding-top:0;} }
   .wt[data-form="beside"] .wt-name .hint{display:block;margin-left:0;}
   /* opt-2 of the tables (2026-10-17, the sketches' A2 revised): three
      columns, the measure and Boston's figure; the band, square, Boston
@@ -4726,8 +4735,9 @@
   /* each bar: its strips on one scale, then a row of names under them. A name starts where its strip does, unless the
      name before it needs the room (the commuters' strip leads and can be narrow); the last runs on to the row's end */
   .fd-sb{position:relative;display:block;height:14px;}
-  /* the track under the strips, as long as the bar's total (--t) */
-  .fd-sb::before{content:"";position:absolute;left:0;top:0;height:100%;width:var(--t, 100%);background:var(--border);}
+  /* under the strips, an outline as long as the bar's total (--t): a light solid border, nothing filled (2026-10-22, Nil:
+     "maybe just have the border first, like light borders") */
+  .fd-sb::before{content:"";position:absolute;left:0;top:0;height:100%;width:var(--t, 100%);box-sizing:border-box;border:1px solid var(--border-strong);border-radius:2px;}
   .fd-fill{position:relative;display:flex;height:100%;}
   .fd-sb i{display:block;flex:none;box-sizing:border-box;width:var(--w);height:100%;}
   .fd-sb i + i{border-left:1px solid var(--white);}
@@ -13886,7 +13896,21 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       const W = window.WHO_2024; if (!el || !W) return;
       const val = (g, k) => g.ind.find(r => r.key === k).value;
       const side = form === "beside";
-      let h = '<div class="wt" data-mode="bars"' + (side ? ' data-form="beside"' : '') + '>' + (side ? colHead() : '');
+      /* a third column (2026-10-22, Nil: "also a column to show how Boston Admin is ranking among all admins in the
+         metro"): the admin's rank on each measure among the metro's admins the scatter has (admins of about 25,000
+         people and up, placed inside the metro by the commuting outlines), lowest first for unemployment, and who leads */
+      const S = window.WHO_SCATTER_2024, G = window.WHO_COMMUTE_GEO, COLK = { population: "pop", salary: "wage", home_value: "home", unemployment: "unemp" };
+      const ordinal = n => { const m = n % 100, d = n % 10; return n + (m >= 11 && m <= 13 ? "th" : d === 1 ? "st" : d === 2 ? "nd" : d === 3 ? "rd" : "th"); };
+      let RK = null;
+      if (S && G){ const C = Object.fromEntries(S.cols.map((c, i) => [c, i])), inM = new Set(G.places.features.filter(f => f.properties.inMsa).map(f => f.properties.place_id));
+        const rows = S.rows.filter(r => r[C.id] === S.here || inM.has(r[C.id])); RK = { n: rows.length, of: {} };
+        KEYS.forEach(k => { const c = C[COLK[k]], asc = k === "unemployment", srt = rows.slice().sort((a, b) => asc ? a[c] - b[c] : b[c] - a[c]);
+          RK.of[k] = { rank: srt.findIndex(r => r[C.id] === S.here) + 1, lead: srt[0][C.id] === S.here ? null : { name: srt[0][C.name], v: srt[0][c] } }; }); }
+      const rankCell = k => { if (!RK || !RK.of[k].rank) return '<div class="wt-rank"></div>'; const r = RK.of[k], lower = k === "unemployment";
+        return '<div class="wt-rank"><b>' + ordinal(r.rank) + '</b> of ' + RK.n + ' metro admins' + (lower ? ', lowest first' : '') +
+          '<span class="wt-rkl">' + (r.lead ? r.lead.name + ' leads at ' + fmt(k, r.lead.v) : 'the most of any') + '</span></div>'; };
+      /* the head names the third column too */
+      let h = '<div class="wt" data-mode="bars"' + (side ? ' data-form="beside"' : '') + '>' + (side ? colHead().replace(/<\/div><\/div>$/, '</div><div class="wt-rank wt-colh">Rank among metro admins</div></div>') : '');
       KEYS.forEach(k => {
         const v = val(W.place, k), m = val(W.metro, k), lower = k === "unemployment";
         h += '<div class="wt-row' + (k === "population" ? " wt-row--lead" : "") + '"><div class="wt-text"><div class="wt-head"><span class="wt-name">' + NAME[k] + (lower ? '<span class="hint">lower is better</span>' : '') + '</span>' +
@@ -13907,9 +13931,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
             (side ? (cls === "mt" ? beside(k, v, x) : '<span class="wt-ba"></span>') : '');
           h += '<div class="wt-bars">' + bar("here", "Boston Admin", v) + bar("mt", "Boston Metro", m) + '</div>';
         }
-        h += '</div></div>';
+        h += '</div>' + rankCell(k) + '</div>';
       });
-      el.innerHTML = h + '</div>';
+      el.innerHTML = h + (RK ? '<p class="wt-rknote">Ranks are among the ' + RK.n + ' Boston Metro admins of about 25,000 people or more, 2024.</p>' : '') + '</div>';
     }
     compare(document.getElementById("whoCompare"));
     /* the band key's info mark: its card opens under the key and its band builds up a step at a time, round and round;
