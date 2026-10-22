@@ -884,8 +884,10 @@
   /* the two drawn takeaways that close Who are you? */
   .seal-keys{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:8px 0 0;}
   /* the drawn takeaways carry the close (2026-10-18, Nil: "more visual and less text"): the drawing large, the words beside it short */
-  .seal-key{display:grid;grid-template-columns:auto minmax(0,1fr);gap:0 24px;align-items:center;padding:22px 24px;border:1px solid var(--on-dark-line);border-radius:10px;background:var(--on-dark-fill);}
-  .sk-viz{display:flex;align-items:center;justify-content:center;}
+  /* the drawing on top and the words under it at the card's full width (2026-10-22: the anchor's ranking left the words
+     a single-word column beside it) */
+  .seal-key{display:grid;grid-template-columns:minmax(0,1fr);gap:18px 0;align-content:start;padding:22px 24px;border:1px solid var(--on-dark-line);border-radius:10px;background:var(--on-dark-fill);}
+  .sk-viz{display:flex;align-items:center;justify-content:flex-start;}
   .sk-ring{width:150px;height:150px;display:block;}
   .sk-track{fill:none;stroke:var(--on-dark-line);stroke-width:5;}
   .sk-share{fill:none;stroke:var(--white);stroke-width:5;transform:rotate(-90deg);transform-origin:50% 50%;transform-box:view-box;stroke-dasharray:0 100;transition:stroke-dasharray .9s cubic-bezier(.32,.72,.24,1);}
@@ -897,6 +899,25 @@
   .sec-seal.is-in .sk-bar i{width:var(--w);}
   .sk-bar--out i{background:var(--on-dark-soft);}
   .sk-bar b{display:block;margin-top:5px;font-size:15px;font-weight:600;line-height:1.3;color:var(--white);white-space:nowrap;}
+  /* the needle on the close's teal: the zone Boston lands in white, the others faint; the needle swings in from the
+     residential end as the close arrives. Drawn 320 units into 210px: its type is 20 units to land at 13px */
+  .sk-viz--dial{width:210px;}
+  .skd{display:block;width:210px;height:auto;overflow:visible;}
+  .skd-zone{fill:var(--on-dark-line);stroke:var(--teal-dark);stroke-width:3;} .skd-zone.is-on{fill:var(--white);}
+  .skd-lab{font-size:20px;font-weight:600;fill:var(--on-dark-soft);} .skd-lab.is-on{fill:var(--white);font-weight:700;}
+  .skd-needle{stroke:var(--white);stroke-width:4;stroke-linecap:round;transform-box:view-box;transform-origin:160px 168px;transform:rotate(-180deg);transition:transform 1.1s cubic-bezier(.32,.72,.24,1) .2s;}
+  .sec-seal.is-in .skd-needle{transform:rotate(var(--a));}
+  .skd-pivot{fill:var(--white);}
+  .skd-big{font-size:44px;font-weight:700;fill:var(--white);font-variant-numeric:tabular-nums;}
+  /* the anchor: the five most populous admins as bars on one scale, the admin's own white and named in bold */
+  .sk-viz--rank{display:grid;grid-template-columns:max-content minmax(0,1fr) max-content;align-items:center;gap:8px 10px;width:min(100%, 340px);}
+  .skr-row{display:contents;}
+  .skr-n,.skr-row > b{font-size:13px;line-height:1.2;color:var(--on-dark-soft);white-space:nowrap;}
+  .skr-row > b{font-weight:600;font-variant-numeric:tabular-nums;text-align:right;}
+  .skr-t i{display:block;height:12px;width:0;border-radius:2px;background:var(--on-dark-line);transition:width .9s cubic-bezier(.32,.72,.24,1);}
+  .sec-seal.is-in .skr-t i{width:var(--w);}
+  .skr-row.is-here .skr-n,.skr-row.is-here > b{color:var(--white);font-weight:700;}
+  .skr-row.is-here .skr-t i{background:var(--white);}
   .sk-body{min-width:0;}
   .sk-eyebrow{display:flex;align-items:center;gap:8px;margin:0;font-size:13px;font-weight:700;letter-spacing:.2px;color:var(--on-dark-soft);}
   .sk-ico{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--white);color:var(--teal-dark);flex:none;}
@@ -904,9 +925,9 @@
   .sk-head{margin:8px 0 0;font-size:20px;font-weight:700;line-height:1.25;color:var(--white);}
   .sk-fig{margin:6px 0 0;font-size:16px;line-height:1.4;color:var(--on-dark);}
   .sk-sub{margin:6px 0 0;font-size:13px;line-height:1.45;color:var(--on-dark-soft);}
-  @media (prefers-reduced-motion: reduce){ .sk-share,.sk-bar i{transition:none;} }
+  @media (prefers-reduced-motion: reduce){ .sk-share,.sk-bar i,.skd-needle,.skr-t i{transition:none;} }
   @media (max-width:760px){ .seal-keys{grid-template-columns:1fr;} }
-  @media (max-width:420px){ .seal-key{grid-template-columns:1fr;gap:14px 0;} .sk-viz{justify-content:flex-start;} }
+  @media (max-width:420px){ .seal-key{gap:14px 0;} }
   .seal-actions{display:flex;align-items:center;flex-wrap:wrap;gap:16px 28px;margin-top:22px;}
   .seal-quiz{
     display:inline-flex;align-items:center;gap:11px;appearance:none;border:1px solid var(--white);border-radius:8px;
@@ -1598,11 +1619,20 @@
   .who-lbl.leaflet-tooltip span{display:block;font-weight:500;font-size:13px;color:var(--ink);}
   .who-lbl--city.leaflet-tooltip{font-size:var(--t-note);}
   .who-tip.leaflet-tooltip{
-    padding:7px 9px;font-family:inherit;font-size:var(--t-note);line-height:1.4;color:var(--ink);white-space:normal;width:max-content;max-width:240px;
+    padding:8px 10px;font-family:inherit;font-size:var(--t-note);line-height:1.4;color:var(--ink);white-space:normal;width:max-content;max-width:270px;
     background:var(--white);border:1px solid var(--border-strong);border-radius:4px;box-shadow:var(--shadow-md);
   }
   .who-tip.leaflet-tooltip b{display:block;font-weight:600;}
   .who-tip.leaflet-tooltip span{display:block;color:var(--ink-soft);}
+  /* the town cards: the town and its rank; the balance as a headline in its colour; each way on a line behind its arrow mark */
+  .who-tip.leaflet-tooltip .tc-head{display:block;margin-top:1px;font-weight:700;color:var(--ink);}
+  .who-tip.leaflet-tooltip .tc-head--in{color:var(--flow-in);} .who-tip.leaflet-tooltip .tc-head--out{color:var(--flow-out-text);}
+  .who-tip.leaflet-tooltip .tc-row{display:flex;align-items:center;gap:7px;margin-top:5px;color:var(--ink);}
+  .who-tip.leaflet-tooltip .tc-row > span{display:block;color:var(--ink);}
+  .who-tip.leaflet-tooltip .tc-row b{display:inline;font-weight:700;font-variant-numeric:tabular-nums;}
+  .who-tip.leaflet-tooltip .tc-row--in b{color:var(--flow-in);} .who-tip.leaflet-tooltip .tc-row--out b{color:var(--flow-out-text);}
+  .who-tip.leaflet-tooltip .vn-ico{width:30px;height:21px;}
+  .who-tip.leaflet-tooltip .tc-sub{display:block;margin:1px 0 0 37px;}
   @media (max-width:599px){
     /* at 13px the source and the rank need a little more than they had: the strip gives it */
     .who-tbl--ind th:first-child{width:38%;}
@@ -1918,6 +1948,10 @@
   .ft-head h3{margin:0 0 6px;font-size:17px;font-weight:700;line-height:1.25;color:var(--ink);}
   .ft-head p{margin:0 0 8px;font-size:var(--t-note);line-height:1.45;color:var(--ink);max-width:720px;}
   .ft-totals{display:flex;flex-wrap:wrap;gap:4px 22px;font-size:13px;color:var(--ink-soft);}
+  .ft-totals > span{display:inline-flex;align-items:center;gap:6px;}
+  /* the arrow marks, the Venn's, in the heads and totals: a little smaller than in the figure */
+  .who-tbl--flows .vn-ico,.ft-totals .vn-ico{width:26px;height:18px;}
+  .ft-io .vn-ico{width:30px;height:21px;}
   .ft-totals b{font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;}
   .ft-totals .in b{color:var(--flow-in);} .ft-totals .out b{color:var(--flow-out-text);}
   .who-tbl--flows{margin-top:10px;table-layout:auto;}
@@ -1933,6 +1967,12 @@
   .ft-head .ft-more{margin:2px 0 6px;}
   .ft-io .in{color:var(--flow-in);} .ft-io .out{color:var(--flow-out-text);}
   .who-tbl--flows th .short{display:none;}
+  /* the headers are sort buttons: a small pair of arrows, the live one filled */
+  .ft-sort{appearance:none;display:inline-flex;align-items:center;gap:4px;padding:0;border:0;background:none;font:inherit;color:inherit;text-align:inherit;cursor:pointer;}
+  .ft-sort:hover{color:var(--teal);} .ft-sort:focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:2px;}
+  .ft-si{flex:none;width:10px;height:14px;}
+  .ft-si path{fill:var(--border-strong);} .ft-sort.is-asc .ft-si-up,.ft-sort.is-desc .ft-si-dn{fill:currentColor;}
+  .who-tbl--flows th.num .ft-sort{justify-content:flex-end;}
   .who-tbl--flows th.num,.who-tbl--flows td.num{padding-left:10px;}
   .who-tbl--flows tbody th{white-space:normal;}
   .who-tbl--flows th:last-child,.who-tbl--flows td:last-child{padding-right:0;}
@@ -2025,6 +2065,85 @@
   /* a cluster's label steps back once its dots have gone to the map */
   .who-fl-lab{transition:opacity .6s ease;}
   .who-fl.both-gone .who-fl-lab--both,.who-fl.in-gone .who-fl-lab--in{opacity:.45;}
+  /* ---- the commuting beat's rectangle Venn: opt-2's first beat, the
+     "Groups" study's opt-2 (2026-10-20). Two framed sets of dots; the live
+     rectangle is the taller, so the frames cross as a Venn's do and its name
+     sits over its own top edge. A bracket in each part's colour carries its
+     name once the colours are on; where a part is too narrow for its name
+     the three names stand in a list under the figure. ---- */
+  .who-fl.is-venn{position:relative;display:flex;flex-direction:column;}
+  /* "One dot is about 2,000 people" and Play again over the figure, where the panel has the room (2026-10-20, Nil) */
+  .who-fl.is-venn > .who-fl-note{order:-1;margin:0 0 4px;}
+  .who-fl.is-venn > .who-fl-head,.who-fl.is-venn .who-fl-arrows,.who-fl.is-venn .who-fl-city{display:none;}
+  .who-fl:not(.is-venn) .vn,.who-fl:not(.is-venn) > .vn-labs,.who-fl:not(.is-venn) > svg .vn-twin{display:none;}
+  .who-fl > svg .vn-twin{transition:fill .8s ease, opacity .3s ease;}
+  .who-fl:is([data-vn="met"],[data-vn="named"]) > svg .vn-twin{opacity:0;}
+  .vn-brk{opacity:0;transition:opacity .6s ease;}
+  .vn-brk--in{fill:var(--flow-in);} .vn-brk--both{fill:var(--flow-both);} .vn-brk--out{fill:var(--flow-out);}
+  .who-fl[data-vn="named"] .vn-brk{opacity:1;transition-delay:.35s;}
+  .vn-frame{fill:none;stroke:var(--border-strong);stroke-width:1.25;}
+  .who-fl.vn-round .vn-frame--rect,.who-fl:not(.vn-round) .vn-frame--circ{display:none;}
+  /* the circles' names as a Venn is labelled: in to the left (right-aligned to the circle), out to the right, both
+     centred under the lens on a leader; no brackets then. The live set's name starts at its circle's middle */
+  .who-fl.vn-side .vn-brk,.who-fl:not(.vn-side):not(.vn-stag) .vn-ldr{display:none;}
+  .vn-ldr{stroke:var(--flow-both);stroke-width:1.5;opacity:0;transition:opacity .6s ease;}
+  .who-fl[data-vn="named"] .vn-ldr{opacity:1;transition-delay:.35s;}
+  .who-fl.vn-side .vn-reg--in{text-align:right;}
+  .who-fl.vn-side .vn-reg--in .vn-n{margin-left:auto;}
+  .who-fl.vn-side .vn-reg--both{text-align:center;}
+  .who-fl.vn-side .vn-reg--both .vn-n{margin:0 auto;}
+  .who-fl.vn-stag .vn-reg--both{text-align:center;}
+  .who-fl.vn-stag .vn-reg--both .vn-n{margin:0 auto;}
+  .who-fl.vn-round .vn-set--live{text-align:left;}
+  .who-fl.vn-round .vn-set--work{text-align:right;}
+  .who-fl.no-fade .vn-ldr{transition:none;}
+  .vn-labs{position:absolute;left:0;top:0;width:100%;height:0;pointer-events:none;}
+  .vn-set,.vn-reg{position:absolute;left:0;top:0;width:max-content;color:var(--ink);line-height:1.3;}
+  /* each set's name, and its count on a second line (2026-10-20, Nil) */
+  .vn-set b{display:block;font-size:var(--t-note);font-weight:600;}
+  .vn-set > .vn-c{display:block;margin-top:1px;font-size:13px;color:var(--ink-soft);font-variant-numeric:tabular-nums;}
+  .who-fl.vn-tight .vn-u{display:none;}
+  .vn-set--live{text-align:right;}
+  .who-fl.vn-brief .vn-nm-l,.who-fl:not(.vn-brief) .vn-nm-s{display:none;}
+  /* compact: each part's name one line with no second sentence */
+  .who-fl.vn-compact .vn-reg:not(.vn-reg--both) .vn-w{display:none;}
+  /* one line a part on a phone: the shared part's two shares stand beside its icon, in place of its name */
+  .who-fl.vn-compact .vn-reg--both{display:flex;align-items:center;gap:7px;}
+  .who-fl.vn-compact .vn-reg--both .vn-n em{display:none;}
+  .who-fl.vn-compact .vn-reg--both .vn-w{margin-top:0;}
+  .vn-reg{opacity:0;transition:opacity .6s ease;}
+  .who-fl[data-vn="named"] .vn-reg{opacity:1;transition-delay:.5s;}
+  .vn-n{display:flex;flex-wrap:wrap;align-items:center;gap:2px 7px;line-height:1.2;width:max-content;max-width:100%;}
+  .vn-n b{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums;}
+  .vn-n em{font-size:var(--t-note);font-weight:600;font-style:normal;}
+  .vn-w{display:block;font-size:var(--t-note);margin-top:3px;}
+  /* the shared part's two shares break between them, not inside one */
+  .vn-sh{display:inline-block;}
+  /* the frames: two small squares close together, the current one filled */
+  .vn-frames{display:inline-flex;align-items:center;}
+  .who-fl:not(.is-venn) .vn-frames{display:none;}
+  .vn-fr{appearance:none;display:inline-flex;align-items:center;justify-content:center;width:14px;height:24px;padding:0;border:0;background:none;cursor:pointer;}
+  .vn-fr::before{content:"";width:10px;height:10px;box-sizing:border-box;border-radius:2px;border:1.5px solid var(--control-edge);background:var(--white);}
+  .vn-fr:hover::before{border-color:var(--teal);}
+  .vn-fr.is-on::before{background:var(--teal);border-color:var(--teal);}
+  .vn-fr:focus-visible{outline:2px solid var(--teal);outline-offset:-2px;border-radius:4px;}
+  .vn-reg--both .vn-w b{font-weight:700;color:var(--flow-both-text);font-variant-numeric:tabular-nums;}
+  .vn-k{font-variant-numeric:tabular-nums;}
+  /* the names answer a pointer (the card with the counts) once the parts are named */
+  .who-fl[data-vn="named"] .vn-set,.who-fl[data-vn="named"] .vn-reg{pointer-events:auto;cursor:default;}
+  .vn-tip{position:absolute;z-index:6;left:0;top:0;width:max-content;max-width:250px;padding:7px 9px;font-size:var(--t-note);line-height:1.4;color:var(--ink);
+    background:var(--white);border:1px solid var(--border-strong);border-radius:4px;box-shadow:var(--shadow-md);pointer-events:none;}
+  .vn-tip[hidden]{display:none;}
+  .vn-tip b{display:block;font-weight:600;font-variant-numeric:tabular-nums;}
+  .vn-tip span{display:block;color:var(--ink-soft);font-variant-numeric:tabular-nums;}
+  .who-fl:not(.is-venn) > .vn-tip{display:none;}
+  /* each part as a share of the set it belongs to: the jobs (work), the working residents (live), or both */
+    .vn-reg--in .vn-n{color:var(--flow-in);} .vn-reg--both .vn-n{color:var(--flow-both-text);} .vn-reg--out .vn-n{color:var(--flow-out-text);}
+  .vn-ico{flex:none;display:block;width:36px;height:26px;overflow:visible;}
+  .vn-ico--both{width:21px;}
+  .vn-bld{stroke:var(--ink);} .vn-arr--in{stroke:var(--flow-in);} .vn-arr--out{stroke:var(--flow-out);}
+  .who-fl.no-fade .vn-brk,.who-fl.no-fade .vn-reg{transition:none;}
+  @media (prefers-reduced-motion: reduce){ .who-fl > svg .vn-twin,.vn-brk,.vn-reg{transition:none !important;} }
   .who-home-fig > svg{display:block;width:100%;height:auto;overflow:visible;}
   .who-home-fig > svg circle{transition:opacity .3s ease;}
   .who-home-note{margin-top:8px;}
@@ -2042,14 +2161,14 @@
      opt-2 adds its shelves, a dot grid each with its count beside it. In
      the frame's top right under the Show as control from 1200 up, in the
      bottom right below that ---- */
-  .who-legend--flow{left:auto;right:10px;gap:3px;width:max-content;max-width:min(300px, calc(100% - 20px));padding:7px 10px 6px;}
+  .who-legend--flow{left:auto;right:10px;gap:6px;width:max-content;max-width:min(300px, calc(100% - 20px));padding:10px 12px 11px;}
   .who-legend--flow .wk-t{color:var(--ink);}
-  .who-legend--flow .wk-steps{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:1px;width:200px;height:10px;margin-top:2px;}
+  .who-legend--flow .wk-steps{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:1px;width:200px;height:10px;margin-top:4px;}
   .who-legend--flow .wk-steps i{display:block;opacity:.85;}
   .who-legend--flow .wk-steps i:first-child{border-radius:2px 0 0 2px;} .who-legend--flow .wk-steps i:last-child{border-radius:0 2px 2px 0;}
-  .who-legend--flow .wk-labs{position:relative;display:block;width:200px;height:17px;color:var(--ink-soft);font-variant-numeric:tabular-nums;}
+  .who-legend--flow .wk-labs{position:relative;display:block;width:200px;height:18px;margin-top:1px;color:var(--ink-soft);font-variant-numeric:tabular-nums;}
   .who-legend--flow .wk-labs span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap;line-height:17px;}
-  .who-legend--flow .wk-ends{display:flex;justify-content:space-between;width:200px;}
+  .who-legend--flow .wk-ends{display:flex;justify-content:space-between;width:200px;margin-top:2px;}
   .who-legend--flow .wk-ends .out{color:var(--flow-out-text);} .who-legend--flow .wk-ends .in{color:var(--flow-in);}
   .who-legend--flow .wk-shelves{display:flex;flex-direction:column;gap:4px;margin-top:3px;padding-top:6px;border-top:1px solid var(--border);}
   .who-legend--flow .wl-shelf{display:grid;grid-template-columns:var(--ws-w, 80px) auto;align-items:center;gap:8px;color:var(--ink-soft);white-space:nowrap;}
@@ -2065,7 +2184,7 @@
     .who-legend--flow .wl-cap{display:none;}
   }
   @media (max-width:599px){
-    .who-legend--flow{left:auto;right:6px;max-width:calc(100% - 12px);padding:5px 8px;}
+    .who-legend--flow{left:auto;right:6px;max-width:calc(100% - 12px);padding:8px 10px 9px;}
     .who-legend--flow .wk-steps,.who-legend--flow .wk-labs,.who-legend--flow .wk-ends{width:170px;}
   }
   /* ---- the Show as control on the map's frame (2026-10-18, Nil: "should be
@@ -2093,6 +2212,8 @@
   .who-fl-ctl .seg-btn:focus-visible{outline:2px solid var(--teal);outline-offset:-2px;}
   .who-fl-ctl .seg-btn{display:inline-flex;align-items:center;gap:7px;}
   .fl-sw{width:10px;height:10px;border-radius:50%;flex:none;}
+  /* where the three long names would be cut (a narrow desk column), the first two take their short names */
+  .fl-s{display:none;} #whoFlowCtl.is-tight .fl-l{display:none;} #whoFlowCtl.is-tight .fl-s{display:inline;}
   .fl-sw--in{background:var(--flow-in);} .fl-sw--out{background:var(--flow-out);}
   .fl-sw--net{background:linear-gradient(90deg,var(--flow-in) 50%,var(--flow-out) 50%);}
   /* the three names are long: on a narrow column they stack */
@@ -4557,35 +4678,77 @@
   /* the panel's details: how far each group travels; the city's two totals made of the three groups */
   .who-fl-panel > .who-fl{flex:none;}
   @media (min-width:900px){ #ovWrap .who-fl-panel{justify-content:safe center;} }
-  .fl-detail{display:grid;grid-template-columns:minmax(0,1fr);gap:12px 40px;padding-top:14px;border-top:1px solid var(--border);font-size:13px;line-height:1.35;color:var(--ink);}
+  /* the rectangle Venn sits in the panel as the other figure frames do (2026-10-20, Nil: "follow the same spacing"):
+     from the top, at their padding, the figure taking the height the bars leave, not centred in white */
+  @media (min-width:900px){ #ovWrap .who-fl-panel:has(> .who-fl.is-venn){justify-content:flex-start;padding-top:28px;padding-bottom:24px;}
+    /* the bars follow the figure; where the panel has height to spare the Venn's script widens the gap (spread) */
+    #ovWrap .who-fl-panel:has(> .who-fl.is-venn) > .fl-detail{margin-top:24px;} }
+  .fl-detail{display:grid;grid-template-columns:minmax(0,1fr);gap:12px 40px;font-size:13px;line-height:1.35;color:var(--ink);}
   .fl-detail--col{display:none;}
   .fd-t{margin:0 0 4px;font-size:var(--t-note);font-weight:600;color:var(--ink);}
   .fd-key{display:flex;gap:16px;margin:0 0 4px;font-weight:600;} .fd-key .in{color:var(--flow-in);} .fd-key .out{color:var(--flow-out-text);}
   .fd-l{color:var(--ink-soft);white-space:nowrap;}
   /* the two totals, one above the other, on one scale; under each segment its count in its colour and what it is */
   .fd-st{display:grid;grid-template-columns:minmax(0,1fr);gap:4px 0;margin:0 0 10px;}
+  /* the two totals read apart (2026-10-20, Nil: "more space between the two bars") */
+  .fd-st + .fd-st{margin-top:28px;}
   .fd-st .fd-l{color:var(--ink);white-space:normal;}
   .fd-st .fd-l b{font-size:var(--t-note);font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink);}
-  .fd-sb{display:flex;align-items:flex-start;height:auto;}
-  /* each segment: its strip, then its count and words under it, in the segment's own width */
-  .fd-sb i{display:block;box-sizing:border-box;width:var(--w);min-width:0;font-style:normal;}
-  .fd-sb i::before{content:"";display:block;height:14px;box-sizing:border-box;}
-  .fd-sb i + i::before{border-left:1px solid var(--white);}
-  .fd-sb i.both::before{background:var(--flow-both);} .fd-sb i.in::before{background:var(--flow-in);} .fd-sb i.out::before{background:var(--flow-out);}
-  .fd-sb i > b,.fd-sb i > span{display:block;padding:0 6px 0 0;white-space:normal;line-height:1.3;}
-  .fd-sb i > b{margin-top:5px;font-size:var(--t-note);font-weight:700;font-variant-numeric:tabular-nums;}
-  .fd-sb i > span{font-size:13px;color:var(--ink-soft);}
-  .fd-sb i.both > b{color:var(--flow-both-text);} .fd-sb i.in > b{color:var(--flow-in);} .fd-sb i.out > b{color:var(--flow-out-text);}
-  .fd-sb i:last-child > b,.fd-sb i:last-child > span{padding-right:0;}
+  /* each bar: its strips on one scale, then a row of names under them. A name starts where its strip does, unless the
+     name before it needs the room (the commuters' strip leads and can be narrow); the last runs on to the row's end */
+  .fd-sb{display:flex;height:14px;}
+  .fd-sb i{display:block;flex:none;box-sizing:border-box;width:var(--w);height:100%;}
+  .fd-sb i + i{border-left:1px solid var(--white);}
+  .fd-sb i.both{background:var(--flow-both);} .fd-sb i.in{background:var(--flow-in);} .fd-sb i.out{background:var(--flow-out);}
+  .fd-lb{display:flex;align-items:flex-start;}
+  .fd-lab{flex:none;box-sizing:border-box;min-width:var(--w);width:max-content;max-width:60%;padding-right:16px;}
+  .fd-lab:last-child{flex:1 1 auto;min-width:0;width:auto;max-width:none;padding-right:0;}
+  /* the whole name in its share's dress, bold and in the segment's colour (2026-10-21, Nil: "make commute in Boston also
+     the same style of 74") */
+  .fd-lab{margin-top:5px;font-size:var(--t-note);line-height:1.3;font-weight:700;}
+  .fd-lab > b{font-weight:inherit;font-variant-numeric:tabular-nums;}
+  .fd-lab.both{color:var(--flow-both-text);} .fd-lab.in{color:var(--flow-in);} .fd-lab.out{color:var(--flow-out-text);}
   #ovWrap.is-presenting .ov-map-inner{margin-left:0 !important;}
   /* the graph stands whole from the moment the dots start, with no growing in of its own */
   .wide-beat .fl-detail .fd{visibility:hidden;} .wide-beat.fl-shown .fl-detail .fd{visibility:visible;}
+  /* the Venn's first frame: the bars as dashed outlines with their totals; the colours and the names fade in with the
+     last frame, the names a little after the colours, as the figure's own do */
+  .fl-detail .fd-sb i{transition:opacity .6s ease;}
+  .fl-detail .fd-lb{transition:opacity .6s ease .5s;}
+  .fl-bare .fl-detail .fd-sb{outline:1.5px dashed var(--control-edge);outline-offset:-1.5px;border-radius:2px;}
+  .fl-bare .fl-detail .fd-sb i,.fl-bare .fl-detail .fd-lb{opacity:0;transition:none;}
+  @media (prefers-reduced-motion: reduce){ .fl-detail .fd-sb i,.fl-detail .fd-lb{transition:none;} }
   /* a narrow column (the details under the words below 1200): the words under the segments give way to the counts */
-  @media (max-width:1199px){ .fl-detail--col .fd-sb i > span{display:none;} .fl-detail--col .fd-sb i > b{font-size:13px;} }
+  /* a narrow column has no room for two names side by side: under the bar they stand one per line, each led by its share in its colour */
+  @media (max-width:1199px){ .fl-detail--col .fd-lb{display:block;} .fl-detail--col .fd-lab{display:block;width:auto;min-width:0;max-width:none;padding-right:0;font-size:13px;} }
   /* under 1200 the panel is too short for both (a narrow column at 1024, a band on a phone): the details stand in the column */
-  @media (max-width:1199px){ .who-fl-panel .fl-detail{display:none;} .fl-detail--col{display:grid;grid-template-columns:minmax(0,1fr);margin-top:4px;} }
+  @media (max-width:1199px){ .who-fl-panel .fl-detail{display:none;} .fl-detail--col{display:grid;grid-template-columns:minmax(0,1fr);margin-top:12px;} .fl-detail--col .fd-st + .fd-st{margin-top:20px;} }
   /* beat 2's bars: the towns that send Boston more than they take, and the three that take more, on one scale */
   .who-net{font-size:13px;line-height:1.3;color:var(--ink);}
+  /* the needle (the Balance study's opt-2): the Worker Flows dial in this section's colours and words */
+  .who-gauge{margin-top:14px;font-size:13px;line-height:1.35;color:var(--ink);}
+  .who-gauge[hidden]{display:none;}
+  /* drawn 320 units wide into 250px (2026-10-22, Nil: "the needle is way too big"): its type is set at 17 units to land at 13px */
+  .wg-svg{display:block;width:100%;max-width:250px;height:auto;margin:0 auto;overflow:visible;}
+  .wg-zone{stroke:var(--white);stroke-width:2;}
+  /* the balanced zone runs from the one colour to the other: not grey, which looked like Boston's (2026-10-22, Nil) */
+  .wg-zone--res{fill:var(--flow-out);} .wg-zone--bal{fill:url(#wgBal);} .wg-zone--bus{fill:var(--flow-in);}
+  .wg-stop--res{stop-color:var(--flow-out);} .wg-stop--bus{stop-color:var(--flow-in);}
+  .wg-zlab{font-size:17px;font-weight:600;fill:var(--ink);}
+  .wg-tick{stroke:var(--ink);stroke-width:1;}
+  .wg-tlab{font-size:17px;fill:var(--ink-soft);font-variant-numeric:tabular-nums;}
+  .wg-ghost{stroke:var(--control-edge);stroke-width:2;stroke-dasharray:3 3;opacity:0;transition:opacity .3s ease;}
+  .wg-ghost.is-on{opacity:1;}
+  .wg-needle{stroke:var(--ink);stroke-width:2.5;stroke-linecap:round;transform-origin:160px 168px;transition:transform .9s cubic-bezier(.25,.8,.25,1);}
+  .wg-pivot{fill:var(--ink);}
+  .wg-big{font-size:30px;font-weight:700;fill:var(--ink);letter-spacing:-.01em;font-variant-numeric:tabular-nums;}
+  .wg-big--bus{fill:var(--flow-in);} .wg-big--res{fill:var(--flow-out-text);} .wg-big--bal{fill:var(--flow-both-text);}
+  .wg-who{margin:10px 0 2px;font-size:var(--t-note);font-weight:700;line-height:1.3;}
+  .wg-who--bus{color:var(--flow-in);} .wg-who--res{color:var(--flow-out-text);} .wg-who--bal{color:var(--flow-both-text);}
+  .wg-verdict{margin:0 0 6px;font-size:var(--t-note);color:var(--ink);line-height:1.3;}
+  .wg-sentence{margin:0;color:var(--ink);font-variant-numeric:tabular-nums;}
+  .wg-ghostlab{margin:6px 0 0;color:var(--ink-soft);min-height:1.35em;}
+  @media (prefers-reduced-motion: reduce){ .wg-needle,.wg-ghost{transition:none;} }
   /* the narrow column stacks the switch, as a phone does */
   @media (min-width:900px){
     #ovWrap .wide-text .who-fl-ctl .seg{flex-direction:column;width:100%;}
@@ -4600,11 +4763,8 @@
   .ov-block.is-on .who-net .nb-t i{width:var(--w);}
   .nb-row--in .nb-t i{background:var(--flow-in);} .nb-row--out .nb-t i{background:var(--flow-out);}
   .nb-row b{text-align:right;font-weight:600;font-variant-numeric:tabular-nums;} .nb-row--in b{color:var(--flow-in);} .nb-row--out b{color:var(--flow-out-text);}
-  .who-net .who-fl-note{margin-top:10px;}
   @media (prefers-reduced-motion: reduce){ .nb-t i{transition:none;} }
   .who-legend--flow .wk-note{display:block;max-width:220px;color:var(--ink-soft);white-space:normal;}
-  .who-legend--flow .wk-off{display:block;margin-top:2px;color:var(--ink-soft);white-space:normal;}
-  .who-legend--flow .wk-off b{font-weight:600;} .who-legend--flow .wk-off b.in{color:var(--flow-in);} .who-legend--flow .wk-off b.out{color:var(--flow-out-text);}
   /* opt-2's map takes the wide panel's frame for its two commuting beats: its right edge stays, its left comes to the panel's;
      the second beat's words take the narrow column (2026-10-18) */
   @media (min-width:900px){
@@ -7782,13 +7942,13 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       <div class="sec" data-sec="page-overview page-overview-scatter page-overview-flows page-overview-flows-out page-overview-metro page-overview-mscatter page-overview-compare page-overview-practice">
         <button class="sec-head" onclick="goTo('page-overview')"><span class="num" aria-hidden="true"></span>Who am I?</button>
         <ul class="steps">
-          <li data-step="page-overview"><span class="dot"></span><button onclick="goTo('page-overview')">Where Boston stands</button></li>
+          <li data-step="page-overview"><span class="dot"></span><button onclick="goTo('page-overview')">Where Boston Admin stands</button></li>
           <li data-step="page-overview-scatter"><span class="dot"></span><button onclick="goTo('page-overview-scatter')">Among all admins</button></li>
           <li data-step="page-overview-flows"><span class="dot"></span><button onclick="goTo('page-overview-flows')">Who works here</button></li>
           <li data-step="page-overview-flows-out"><span class="dot"></span><button onclick="goTo('page-overview-flows-out')">Who comes in, who goes out</button></li>
-          <li data-step="page-overview-metro"><span class="dot"></span><button onclick="goTo('page-overview-metro')">The metro</button></li>
+          <li data-step="page-overview-metro"><span class="dot"></span><button onclick="goTo('page-overview-metro')">Boston Metro</button></li>
           <li data-step="page-overview-mscatter"><span class="dot"></span><button onclick="goTo('page-overview-mscatter')">Among all metros</button></li>
-          <li data-step="page-overview-compare"><span class="dot"></span><button onclick="goTo('page-overview-compare')">City and metro</button></li>
+          <li data-step="page-overview-compare"><span class="dot"></span><button onclick="goTo('page-overview-compare')">Boston Admin and Boston Metro</button></li>
           <li data-step="check-overview"><span class="dot"></span><button onclick="goTo('check-overview')">Test your knowledge</button></li>
           <li data-step="apply-overview"><span class="dot"></span><button onclick="goTo('apply-overview')">Put your insights</button></li>
           <li data-step="page-overview-practice"><span class="dot"></span><button onclick="goTo('page-overview-practice')">Put in Practice</button></li>
@@ -8059,9 +8219,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
 
           <section class="ov-block" id="page-overview">
             <div class="page-head">
-              <h2>Where does <span class="city-short">Boston</span> stand?</h2>
+              <h2>Where does <span class="city-short">Boston</span> Admin stand?</h2>
             </div>
-            <p class="lede"><span class="city-short">Boston</span> is a city in Massachusetts. Each of its
+            <p class="lede"><span class="city-short">Boston</span> Admin is a city in Massachusetts. Each of its
               measures is set here against the US average, and beside the places most like it.</p>
             <div class="who-ind" data-who="place"></div>
           </section>
@@ -8072,7 +8232,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
                template below -->
           <section class="ov-block sc-beat" id="page-overview-scatter">
             <div class="page-head">
-              <h2>How does <span class="city-short">Boston</span> compare with admins of every size?</h2>
+              <h2>How does <span class="city-short">Boston</span> Admin compare with admins of every size?</h2>
             </div>
             <p class="lede"><span class="r-each">Each dot is a US admin of about 25,000 people or more, placed by its population across and by
               the measure you choose up the side.</span><span class="r-map"> The colours split the admins into fifths, and the map shows where each one is.</span></p>
@@ -8080,28 +8240,28 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
             <div class="ask-chart sc-ask" data-fig="sc" role="group" aria-labelledby="scAskLabA">
               <p class="ask-lab" id="scAskLabA">Ask the chart</p>
               <div class="ask-item">
-                <button type="button" class="ask-q" data-ask="a1" aria-expanded="false" aria-controls="scAsk-a1"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Is Boston&rsquo;s pay high for a big city?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
-                <div class="ask-ans" id="scAsk-a1" hidden><p class="ask-a">Of the 36 admins of 500,000 people or more, only six pay more than Boston, San Francisco the most at $180K. Detroit pays the least, at $40K.</p></div>
+                <button type="button" class="ask-q" data-ask="a1" aria-expanded="false" aria-controls="scAsk-a1"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Is Boston&nbsp;Admin&rsquo;s pay high for a big city?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
+                <div class="ask-ans" id="scAsk-a1" hidden><p class="ask-a">Of the 36 admins of 500,000 people or more, only six pay more than Boston Admin, San Francisco the most at $180K. Detroit pays the least, at $40K.</p></div>
               </div>
               <div class="ask-item">
-                <button type="button" class="ask-q" data-ask="a2" aria-expanded="false" aria-controls="scAsk-a2"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Where is a home worth more than in Boston?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
+                <button type="button" class="ask-q" data-ask="a2" aria-expanded="false" aria-controls="scAsk-a2"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Where is a home worth more than in Boston&nbsp;Admin?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
                 <div class="ask-ans" id="scAsk-a2" hidden><p class="ask-a">In 119 admins, 98 of them in California and most of them under 100,000 people; Los Altos leads at $4.5M. Of the 36 admins of 500,000 or more, only San Jose, at $1.4M, San Francisco, Los Angeles and San Diego.</p></div>
               </div>
               <div class="ask-item">
                 <button type="button" class="ask-q" data-ask="a3" aria-expanded="false" aria-controls="scAsk-a3"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Where in Massachusetts is a home hardest to afford?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
-                <div class="ask-ans" id="scAsk-a3" hidden><p class="ask-a">In Everett, where a home costs 10.3 years of pay; Boston, at 9.2, is seventh of the 53. Newton has the state&rsquo;s most expensive homes, $1.4M, but its pay is high too, so a home there costs 5.7 years.</p></div>
+                <div class="ask-ans" id="scAsk-a3" hidden><p class="ask-a">In Everett, where a home costs 10.3 years of pay; Boston Admin, at 9.2, is seventh of the 53. Newton has the state&rsquo;s most expensive homes, $1.4M, but its pay is high too, so a home there costs 5.7 years.</p></div>
               </div>
             </div>
             <div class="who-sc" data-measure="wage" data-switch></div>
             <template class="who-sc-says">
-              <p data-m="wage"><span class="city-short">Boston</span> pays well, a little under its peers. Pay does not
+              <p data-m="wage"><span class="city-short">Boston</span> Admin pays well, a little under its peers. Pay does not
                 rise with size among US admins: the highest salaries are in small suburbs such as Los Altos and
                 Saratoga in California.</p>
-              <p data-m="home">A <span class="city-short">Boston</span> home costs more than twice the US average. It is
+              <p data-m="home">A <span class="city-short">Boston</span> Admin home costs more than twice the US average. It is
                 worth more than in 92 of every 100 admins on the chart, and more than in each of its peers but Cambridge.</p>
               <p data-m="unemp">Unemployment sits under the US average. Size says little here: the highest rates are in
                 small farming towns such as Calexico, California, at 29.4%.</p>
-              <p data-m="yp">A typical <span class="city-short">Boston</span> home costs 9.2 years of the average salary,
+              <p data-m="yp">A typical <span class="city-short">Boston</span> Admin home costs 9.2 years of the average salary,
                 against 5.0 for the US average. Homes are hardest to afford in coastal California, such as Santa Barbara, at 19.5 years.</p>
             </template>
           </section>
@@ -8142,9 +8302,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
             <div class="who-fl-ctl" id="whoFlowCtl">
               <span class="ctl-label">Map shows</span>
               <div class="seg" role="group" aria-label="Which commuters the map shows">
-                <button type="button" class="seg-btn is-active" data-flow="in" aria-pressed="true"><i class="fl-sw fl-sw--in" aria-hidden="true"></i>Live elsewhere, work in Boston</button>
-                <button type="button" class="seg-btn" data-flow="out" aria-pressed="false"><i class="fl-sw fl-sw--out" aria-hidden="true"></i>Live in Boston, work elsewhere</button>
-                <button type="button" class="seg-btn" data-flow="net" aria-pressed="false"><i class="fl-sw fl-sw--net" aria-hidden="true"></i>Which way more go</button>
+                <button type="button" class="seg-btn is-active" data-flow="in" aria-pressed="true"><i class="fl-sw fl-sw--in" aria-hidden="true"></i><span class="fl-l">Live elsewhere, work in Boston</span><span class="fl-s">Commute in</span></button>
+                <button type="button" class="seg-btn" data-flow="out" aria-pressed="false"><i class="fl-sw fl-sw--out" aria-hidden="true"></i><span class="fl-l">Live in Boston, work elsewhere</span><span class="fl-s">Commute out</span></button>
+                <button type="button" class="seg-btn" data-flow="net" aria-pressed="false"><i class="fl-sw fl-sw--net" aria-hidden="true"></i><span class="fl-l">Where Boston gains or loses workers</span><span class="fl-s">Gains or loses</span></button>
               </div>
             </div>
           </section>
@@ -8167,9 +8327,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
                way the admin's are, against every US metro and its peer metros -->
           <section class="ov-block" id="page-overview-metro">
             <div class="page-head">
-              <h2>Where does the <span class="city-short">Boston</span> metro stand?</h2>
+              <h2>Where does <span class="city-short">Boston</span> Metro stand?</h2>
             </div>
-            <p class="lede">The metro is the labor market around the city: 5.0 million people across seven counties
+            <p class="lede"><span class="city-short">Boston</span> Metro is the labor market around <span class="city-short">Boston</span> Admin: 5.0 million people across seven counties
               in Massachusetts and New Hampshire. Its measures are set here against the average US metro, and beside
               the metros most like it.</p>
             <div class="who-ind" data-who="metro"></div>
@@ -8177,7 +8337,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
 
           <section class="ov-block sc-beat" id="page-overview-mscatter">
             <div class="page-head">
-              <h2>How does the <span class="city-short">Boston</span> metro compare with metros of every size?</h2>
+              <h2>How does <span class="city-short">Boston</span> Metro compare with metros of every size?</h2>
             </div>
             <p class="lede"><span class="r-each">Each dot is a US metro, placed by its population across and by the measure you choose up the side.</span><span class="r-map"> The colours
               split the metros into fifths, and the map shows each one at its most densely settled point.</span></p>
@@ -8185,30 +8345,30 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
             <div class="ask-chart sc-ask" data-fig="sc" role="group" aria-labelledby="scAskLabM">
               <p class="ask-lab" id="scAskLabM">Ask the chart</p>
               <div class="ask-item">
-                <button type="button" class="ask-q" data-ask="m1" aria-expanded="false" aria-controls="scAsk-m1"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Which metros pay more than the Boston metro?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
-                <div class="ask-ans" id="scAsk-m1" hidden><p class="ask-a">Only four of the 376: San Jose, at $203K, San Francisco, at $164K, Seattle, at $127K, and Naples, Florida, a metro of 416,000 people, at about the same, $115K. New York, four times the Boston metro&rsquo;s size, pays $104K.</p></div>
+                <button type="button" class="ask-q" data-ask="m1" aria-expanded="false" aria-controls="scAsk-m1"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Which metros pay more than Boston&nbsp;Metro?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
+                <div class="ask-ans" id="scAsk-m1" hidden><p class="ask-a">Only four of the 376: San Jose, at $203K, San Francisco, at $164K, Seattle, at $127K, and Naples, Florida, a metro of 416,000 people, at about the same, $115K. New York, four times Boston Metro&rsquo;s size, pays $104K.</p></div>
               </div>
               <div class="ask-item">
-                <button type="button" class="ask-q" data-ask="m2" aria-expanded="false" aria-controls="scAsk-m2"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Where is a home worth more than in the Boston metro?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
+                <button type="button" class="ask-q" data-ask="m2" aria-expanded="false" aria-controls="scAsk-m2"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Where is a home worth more than in Boston&nbsp;Metro?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
                 <div class="ask-ans" id="scAsk-m2" hidden><p class="ask-a">In 16 metros, 13 of them in California or Hawaii; San Jose leads at $1.6M. Among the 54 metros of a million people or more, only five: San Jose, San Francisco, Los Angeles, San Diego and Seattle.</p></div>
               </div>
               <div class="ask-item">
                 <button type="button" class="ask-q" data-ask="m3" aria-expanded="false" aria-controls="scAsk-m3"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Is a home harder to afford in other big metros?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
-                <div class="ask-ans" id="scAsk-m3" hidden><p class="ask-a">In 12 of the 54 metros of a million people or more: Los Angeles takes 10.7 years of pay, San Diego 10.0 and New York 6.5, against the Boston metro&rsquo;s 6.2. Pittsburgh, at 2.8 years, is the easiest.</p></div>
+                <div class="ask-ans" id="scAsk-m3" hidden><p class="ask-a">In 12 of the 54 metros of a million people or more: Los Angeles takes 10.7 years of pay, San Diego 10.0 and New York 6.5, against Boston Metro&rsquo;s 6.2. Pittsburgh, at 2.8 years, is the easiest.</p></div>
               </div>
             </div>
             <div class="who-sc" data-set="metro" data-measure="wage" data-switch></div>
             <template class="who-sc-says">
-              <p data-m="wage">The metro pays among the most in the country. Pay rises with size across US metros, and the
-                <span class="city-short">Boston</span> metro pays about 30% more than a metro its size typically does.
+              <p data-m="wage"><span class="city-short">Boston</span> Metro pays among the most in the country. Pay rises with size across US metros, and
+                <span class="city-short">Boston</span> Metro pays about 30% more than a metro its size typically does.
                 Only San Jose, San Francisco and Seattle pay clearly more; Naples pays about the same.</p>
-              <p data-m="home">A metro home costs twice the average US metro&rsquo;s. Homes cost more in bigger metros
-                too, but a typical home in the <span class="city-short">Boston</span> metro, at $717K, is worth about 1.6
+              <p data-m="home">A <span class="city-short">Boston</span> Metro home costs twice the average US metro&rsquo;s. Homes cost more in bigger metros
+                too, but a typical home in <span class="city-short">Boston</span> Metro, at $717K, is worth about 1.6
                 times what a metro its size would suggest.</p>
               <p data-m="unemp">Unemployment sits a little under the US average. Size says little about unemployment
                 across metros: the highest rates are in farming regions of California and Arizona, such as El Centro,
                 at 18.4%.</p>
-              <p data-m="yp">A typical home in the metro costs 6.2 years of the average salary, against 4.9 for the average
+              <p data-m="yp">A typical home in <span class="city-short">Boston</span> Metro costs 6.2 years of the average salary, against 4.9 for the average
                 US metro. Among its peer metros only San Diego, at 10.0 years, takes clearly longer.</p>
             </template>
           </section>
@@ -8218,10 +8378,10 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
                the way the first table sets them against the US average -->
           <section class="ov-block" id="page-overview-compare">
             <div class="page-head">
-              <h2>How does <span class="city-short">Boston</span> compare with its metro?</h2>
+              <h2>How does <span class="city-short">Boston</span> Admin compare with <span class="city-short">Boston</span> Metro?</h2>
             </div>
-            <p class="lede"><span class="city-short">Boston</span> is the metro&rsquo;s largest city, yet only 13 of every
-              100 people in the metro live there. Homes in the city cost more than across the metro, pay is a little
+            <p class="lede"><span class="city-short">Boston</span> Admin is <span class="city-short">Boston</span> Metro&rsquo;s largest city, yet only 13 of every
+              100 people in <span class="city-short">Boston</span> Metro live there. Homes in <span class="city-short">Boston</span> Admin cost more than across <span class="city-short">Boston</span> Metro, pay is a little
               lower, and unemployment is a little higher.</p>
             <div class="who-cmp" id="whoCompare"></div>
           </section>
@@ -9493,10 +9653,15 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
      adds a second beat. The choice is read here, before anything counts
      the beats, and the second beat is taken out of the page when it is off,
      so every list below (pages, sections, the rail, the counter) stays true */
-  /* each version shows its own option first (2026-10-18, Nil: "v-5 commuter flow opt-1, v-6 opt-2");
-     ?flows=home or ?flows=dots, or the opt switch, shows the other */
-  const FLOWS_DEFAULT = "dots";
-  const FLOWS_HOME = (location.search.match(/[?&]flows=(home|dots)\b/) || [, FLOWS_DEFAULT])[1] === "home";
+  /* opt-2's first commuting beat: the three groups as a rectangle Venn ("venn", the default since 2026-10-20, Nil:
+     "v-6 by default, use the rectangle venn diagram"), as circles ("circles") or as a classic circle Venn ("classic") */
+  const GROUPS_DEFAULT = "venn";
+  /* opt-2's second commuting beat: the admins as bars ("bars") or Boston's reading on a needle ("needle"), 2026-10-22 */
+  const BALANCE_DEFAULT = "bars";
+  /* v-6 goes with opt-2, the two beats (2026-10-22, Nil: "we will go with the two pages one, so remove the one that shows
+     only one page from the options"): opt-1 is no longer offered, and ?flows=dots no longer reaches it. Its code stays,
+     unreached, for v-5, whose default it still is */
+  const FLOWS_HOME = true;
   window.whoFlowsHome = FLOWS_HOME;
   /* the commuting maps' shade (2026-10-18, Nil: "use other scale to make
      the colors more varied"): five classes instead of a smooth ramp. On the
@@ -9511,11 +9676,20 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
      the takeaway (Nil, 2026-10-18: "use a city icon for Boston ... use the
      same one in the Takeaway") */
   window.CITY_ICON = '<path d="M2 26h20"/><path d="M4 26V15h6v11"/><path d="M12 26V8h7v18"/><path d="M14.6 12h1.8M14.6 16h1.8M14.6 20h1.8"/>';
+  /* the city's icon with an arrow going into it, or out of it: the Venn's part marks, and the town cards' (2026-10-22) */
+  window.FLOW_ICO = (() => {
+    const BLD = '<g class="vn-bld" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + window.CITY_ICON + '</g>';
+    const ARR = (x, k) => '<path class="vn-arr vn-arr--' + k + '" d="M' + x + ' 18h12M' + (x + 7.5) + ' 13.5l4.5 4.5-4.5 4.5" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>';
+    return {
+      in: '<svg class="vn-ico" viewBox="0 0 42 30" aria-hidden="true">' + ARR(1, "in") + '<g transform="translate(17 0)">' + BLD + '</g></svg>',
+      both: '<svg class="vn-ico vn-ico--both" viewBox="0 0 24 30" aria-hidden="true">' + BLD + '</svg>',
+      out: '<svg class="vn-ico" viewBox="0 0 42 30" aria-hidden="true">' + BLD + ARR(27, "out") + '</svg>' };
+  })();
   const WHO_SHADE = (() => {
     const S = {
       in:  { breaks: [.08, .12, .20, .30], cols: ["#d4eff2", "#9fd3df", "#5faec6", "#1f7fa2", "#114f73"], title: "Share of residents who work in Boston" },
-      out: { breaks: [.03, .05, .07, .10], cols: ["#f8e4cd", "#f0c39a", "#ec9c63", "#d56927", "#9b411a"], title: "Share of jobs held by Boston residents" },
-      net: { breaks: [-1000, 0, 500, 2000, 5000], cols: ["#c0571e", "#e8b181", "#d2eef1", "#86c6d9", "#3792b5", "#16587f"], title: "Which way more go" }
+      out: { breaks: [.03, .05, .07, .10], cols: ["#f8e4cd", "#f0c39a", "#ec9c63", "#d56927", "#9b411a"], title: "Share of jobs held by people living in Boston" },
+      net: { breaks: [-1000, 0, 500, 2000, 5000], cols: ["#c0571e", "#e8b181", "#d2eef1", "#86c6d9", "#3792b5", "#16587f"], title: "Boston\u2019s net workers from each admin" }
     };
     const col = (k, v) => { const b = S[k].breaks; let i = 0; while (i < b.length && v >= b[i]) i++; return S[k].cols[i]; };
     const lab = (k, v) => k !== "net" ? Math.round(v * 100) + "%" : v === 0 ? "0" : Math.abs(v) >= 1000 ? Math.abs(v) / 1000 + "K" : String(Math.abs(v));
@@ -9523,7 +9697,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       return '<span class="wk-t">' + q.title + '</span>' +
         '<span class="wk-steps">' + q.cols.map(c => '<i style="background:' + c + '"></i>').join("") + '</span>' +
         '<span class="wk-labs">' + q.breaks.map((b, i) => '<span style="left:' + ((i + 1) / n * 100).toFixed(2) + '%">' + lab(k, b) + '</span>').join("") + '</span>' +
-        (k === "net" ? '<span class="wk-ends"><span class="out">Takes more</span><span class="in">Sends more</span></span>' : ''); };
+        (k === "net" ? '<span class="wk-ends"><span class="out">Boston loses</span><span class="in">Boston gains</span></span>' : ''); };
     return { col, key, op: .85 };
   })();
   if (!FLOWS_HOME){ const s = document.getElementById("page-overview-flows-out"); if (s) s.remove();
@@ -10014,10 +10188,10 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     const ov = document.getElementById("geoMapOverlay");
     const city = document.querySelector(".city-short")?.textContent || "Boston";
     document.getElementById("geoMapTitle").textContent =
-      "Viewing: " + city + (view === "metro" ? " metro" : " admin");
+      "Viewing: " + city + (view === "metro" ? " Metro" : " Admin");
     document.getElementById("geoMapSub").textContent = view === "metro"
       ? "The whole labor market: 130 places inside the dashed edge."
-      : "The city itself, one of the metro\u2019s 130 places.";
+      : city + " Admin itself, one of " + city + " Metro\u2019s 130 places.";
     loadXchGeo(() => {
       const host = document.getElementById("geoMapHost");
       host.innerHTML = "";
@@ -10041,7 +10215,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       const c = proj(d3.geoCentroid(XCH_GEO.boston));
       svg.append("text").attr("x", c[0]).attr("y", c[1] + 4)
         .attr("text-anchor", "middle").attr("class", "xch-name xch-name--home")
-        .text(city);
+        .text(city + " Admin");
     });
     ov.classList.add("open");
     document.addEventListener("keydown", geoEsc);
@@ -11070,6 +11244,27 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       const rgba = (hex, a) => { const h = hex.replace("#", ""); const n = parseInt(h.length === 3 ? h.replace(/./g, "$&$&") : h, 16);
         return "rgba(" + (n >> 16 & 255) + "," + (n >> 8 & 255) + "," + (n & 255) + "," + a + ")"; };
       const layers = {};
+      /* the town cards: the town and its rank, then each way of commuting on its own line behind the Venn's arrow
+         mark, the count in its colour (2026-10-22, Nil: "bring back some arrows", "rank the admins"). Ranks run over
+         the metro's towns with that count: 120 for commuters in, 80 for commuters out and for the balance */
+      const ICO = window.FLOW_ICO, metroPl = WHO_GEO.places.features.filter(f => f.properties.inMsa);
+      const rankBy = (list, v) => { const m = new Map(); list.slice().sort((a, b) => v(b) - v(a)).forEach((f, i) => m.set(f.properties, i + 1)); return m; };
+      const inList = metroPl.filter(f => f.properties.inWorkers != null), outList = metroPl.filter(f => f.properties.outWorkers != null);
+      const netV = q => (q.inWorkers || 0) - (q.outWorkers || 0), bothList = metroPl.filter(f => f.properties.inWorkers != null && f.properties.outWorkers != null);
+      const gainList = bothList.filter(f => netV(f.properties) > 0), lossList = bothList.filter(f => netV(f.properties) < 0);
+      const RANK = { in: rankBy(inList, f => f.properties.inWorkers), out: rankBy(outList, f => f.properties.outWorkers),
+                     gain: rankBy(gainList, f => netV(f.properties)), loss: rankBy(lossList, f => -netV(f.properties)) };
+      const ord = n => n + (n % 100 >= 11 && n % 100 <= 13 ? "th" : ["th", "st", "nd", "rd"][n % 10] || "th");
+      const tipName = q => '<b class="tc-name">' + esc(q.name.replace(/ (Town|city)$/, "")) + (q.state && q.state !== "MA" ? ", " + esc(q.state) : "") + '</b>';
+      const tipRank = (k, q, of, words) => RANK[k].has(q) ? '<span class="tc-rank">' + ord(RANK[k].get(q)) + ' of ' + of + ' admins' + (words ? ' ' + words : '') + '</span>' : '';
+      const tipRow = (k, n, words) => '<span class="tc-row tc-row--' + k + '">' + ICO[k] + '<span><b>' + fmtN(n) + '</b> ' + words + '</span></span>';
+      const tipSub = t => '<span class="tc-sub">' + t + '</span>';
+      /* a town's card opens above the pointer or finger; where that would run off the map's top (the short band
+         on a phone) it opens below instead */
+      const emitTown = q => document.dispatchEvent(new CustomEvent("who-town", { detail: q }));
+      const keepIn = e => { emitTown(e.layer && e.layer.feature ? e.layer.feature.properties : null); const t = e.tooltip, top = ovLeaflet.getContainer().getBoundingClientRect().top;
+        t.options.direction = "top"; t.options.offset = [0, -10]; t.update();
+        const el = t.getElement(); if (el && el.getBoundingClientRect().top < top + 2){ t.options.direction = "bottom"; t.options.offset = [0, 10]; t.update(); } };
       ["out", "in"].forEach(mode => {
         const D = WHO[mode], col = mode === "out" ? OUTC : INC, dark = DARK[mode];
         const key = mode + "Share", wkey = mode + "Workers", nkey = mode + "Named";
@@ -11081,18 +11276,19 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
             return { color: EDGE, weight: named ? 1.75 : 1, opacity: 1,
                      fillColor: WHO_SHADE.col(mode, q[key]), fillOpacity: WHO_SHADE.op }; },
           onEachFeature: (f, l) => { const q = f.properties;
-            l.bindTooltip('<b>' + esc(q.name) + (q.state && q.state !== "MA" ? ", " + esc(q.state) : "") + '</b>' + pct(q[key]) +
-              (mode === "out" ? " of its jobs are held by Boston residents" : " of its working residents work in Boston") +
-              '<span>' + fmtN(q[wkey]) + (mode === "out" ? " Boston residents work here" : " of them") + '</span>',
+            l.bindTooltip(tipName(q) + tipRank(mode, q, mode === "out" ? outList.length : inList.length) +
+              (mode === "out" ? tipRow("out", q.outWorkers, "commute out of Boston to work here") + tipSub(pct(q.outShare) + " of its jobs")
+                              : tipRow("in", q.inWorkers, "commute into Boston") + tipSub(pct(q.inShare) + " of its working residents")),
               { sticky: true, className: "who-tip", direction: "top", offset: [0, -10], opacity: 1 }); }
         });
+        fill.on("tooltipopen", keepIn); fill.on("tooltipclose", () => emitTown(null));
         /* Boston first, then the partners, largest flow first: the order
            the names are placed in (declutter). Each carries its map's mode,
            and the last map's are put out of sight as it goes (whoShow) */
         const name = (ll, html, cls, dir, off) => L.circleMarker(ll, { radius: 0, opacity: 0, fillOpacity: 0, interactive: false })
           .bindTooltip(html, { permanent: true, direction: dir, offset: off, className: "map-lbl who-lbl who-lbl--" + mode + cls });
-        const names = [name(WHO.boston.centroid, "Boston", " who-lbl--city", "center", [0, 0])]
-          .concat(D.top.map(t => name(t.centroid, "<b>" + esc(t.name) + "</b><span>" + fmtN(t.workers) + "</span>", "", "top", [0, -4])));
+        /* only the city is named on the map (2026-10-22, Nil: "remove the direct labels"): the bars rank the towns, the cards name them */
+        const names = [name(WHO.boston.centroid, "Boston", " who-lbl--city", "center", [0, 0])];
         const labels = L.layerGroup(names);
         const legend = document.createElement("div");
         legend.className = "who-legend who-legend--flow who-legend--" + mode; legend.hidden = true;
@@ -11114,19 +11310,21 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
           style: f => { const v = net(f.properties), col = v >= 0 ? INC : OUTC;
             return { color: EDGE, weight: 1, opacity: 1, fillColor: WHO_SHADE.col("net", v), fillOpacity: WHO_SHADE.op }; },
           onEachFeature: (f, l) => { const q = f.properties, v = net(q);
-            l.bindTooltip('<b>' + esc(q.name) + (q.state && q.state !== "MA" ? ", " + esc(q.state) : "") + '</b>' +
-              fmtN(q.inWorkers || 0) + ' of its residents work in Boston; ' + fmtN(q.outWorkers || 0) + ' Boston residents work here' +
-              '<span>Net ' + signed(v) + (v >= 0 ? ' sent to Boston' : ' taken from Boston') + '</span>',
+            l.bindTooltip(tipName(q) +
+              '<span class="tc-head tc-head--' + (v > 0 ? "in" : v < 0 ? "out" : "even") + '">' + (v > 0 ? 'Boston gains ' + fmtN(v) + ' workers' : v < 0 ? 'Boston loses ' + fmtN(-v) + ' workers' : 'Boston neither gains nor loses workers') + '</span>' +
+              (v > 0 ? tipRank("gain", q, gainList.length, "where Boston gains") : v < 0 ? tipRank("loss", q, lossList.length, "where Boston loses") : '') +
+              tipRow("in", q.inWorkers || 0, "commute into Boston") +
+              (q.outWorkers != null ? tipRow("out", q.outWorkers, "commute out of Boston to work here") : tipSub("Commuters out of Boston: not known for this admin")),
               { sticky: true, className: "who-tip", direction: "top", offset: [0, -10], opacity: 1 }); }
         });
+        fill.on("tooltipopen", keepIn); fill.on("tooltipclose", () => emitTown(null));
         const name = (ll, html, cls, dir, off) => L.circleMarker(ll, { radius: 0, opacity: 0, fillOpacity: 0, interactive: false })
           .bindTooltip(html, { permanent: true, direction: dir, offset: off, className: "map-lbl who-lbl who-lbl--net" + cls });
         const allNet = fill.getLayers().map(l => ({ l, q: l.feature.properties, v: net(l.feature.properties) }));
         const top = allNet.slice().sort((a, b) => Math.abs(b.v) - Math.abs(a.v)).slice(0, 5);
         /* opt-2's net map names the one large town that takes more, right after Boston */
         if (window.whoFlowsHome){ const cam = allNet.find(t => t.q.name === "Cambridge"); if (cam && top.indexOf(cam) < 0) top.unshift(cam); }
-        const names = [name(WHO.boston.centroid, "Boston", " who-lbl--city", "center", [0, 0])]
-          .concat(top.map(t => name(t.l.getBounds().getCenter(), "<b>" + esc(t.q.name) + "</b><span>" + signed(t.v) + "</span>", "", "top", [0, -4])));
+        const names = [name(WHO.boston.centroid, "Boston", " who-lbl--city", "center", [0, 0])];
         const legend = document.createElement("div");
         legend.className = "who-legend who-legend--flow who-legend--net"; legend.hidden = true;
         legend.innerHTML = WHO_SHADE.key("net");
@@ -11294,9 +11492,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         '<line class="mc-line mc-line--metro"/><circle class="mc-dot mc-dot--metro" r="2.6"/>' +
       '</svg>' +
       '<button type="button" class="mc-chip mc-chip--city" onclick="openGeoMap(\'city\')" ' +
-        'title="See this geography on the map"><span class="city-short">Boston</span></button>' +
+        'title="See this geography on the map"><span class="city-short">Boston</span> Admin</button>' +
       '<button type="button" class="mc-chip mc-chip--metro" onclick="openGeoMap(\'metro\')" ' +
-        'title="See this geography on the map"><span class="city-short">Boston</span> MSA</button>';
+        'title="See this geography on the map"><span class="city-short">Boston</span> Metro</button>';
     ovLeaflet.getContainer().appendChild(co);
 
     /* zoom in / out / reset — reset refits whatever the story is showing */
@@ -11759,12 +11957,12 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         slug: "overview",
         qs: [
           { q: "Which geography does most of the diagnosis read at?",
-            opts: [["The city on its own",0],["The metro, the whole labor market",1],["The state",0]],
-            fb: "The metro. People live in one town and work in another, and firms hire across the region, so that wider labor market is the scale most measures read at." },
-          { q: "Of the jobs Boston’s residents hold, how many are in Boston itself?",
+            opts: [["Boston Admin on its own",0],["Boston Metro, the whole labor market",1],["The state",0]],
+            fb: "Boston Metro. People live in one town and work in another, and firms hire across the region, so that wider labor market is the scale most measures read at." },
+          { q: "Of the jobs Boston Admin’s residents hold, how many are in Boston Admin itself?",
             opts: [["About a quarter",0],["Just over half",1],["Nearly all of them",0]],
             fb: "55% in 2023 (54% in 2014). The other 157,434 are elsewhere, mostly in Cambridge, Newton, Waltham and Quincy." },
-          { q: "How many jobs are there in Boston for every 100 its residents hold?",
+          { q: "How many jobs are there in Boston Admin for every 100 its residents hold?",
             opts: [["About 50",0],["About 100",0],["About 207",1]],
             fb: "207. Of its 718,571 jobs, residents hold 26%, and commuters fill the other 528,488." }
         ],
@@ -12959,39 +13157,60 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   };
   const SEAL_ARROW = '<svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3v10M3.5 8.5 8 13l4.5-4.5"/></svg>';
   /* Who are you? closes on two verdicts, each drawn (2026-10-14): is the
-     admin its metro's population anchor (a ring: its share of the metro's
-     people; an anchor holds a third or more), and is it a sender or a
-     receiver of workers (two bars: those who commute in against those who
-     commute out; more than 110 jobs per 100 working residents makes a
-     business hub, fewer than 90 a bedroom). From who-2024.js. */
+     admin its metro's population anchor (2026-10-22, Nil: "Boston is the population anchor, number 1 admin with most
+     population": the metro's most populous admin, drawn as its five largest), and is it a business or a
+     residential admin (a needle: commuters in for every one out; above 1.25
+     business, below 0.8 residential, between balanced). From who-2024.js. */
   const SEAL_KEYS = {
     "Who am I?": () => {
       const W = window.WHO_2024; if (!W || !W.place || !W.metro || !W.in || !W.out) return "";
       const v = (D, k) => (D.ind.find(r => r.key === k) || {}).value;
       const admin = v(W.place, "population"), metro = v(W.metro, "population");
-      const share = admin / metro, per100 = Math.round(share * 100), places = 130;
+      const places = 130;
       const jobs = W.in.jobsHere, res = W.out.residentWorkers, inn = W.in.filledByCommuters, out = W.out.workElsewhere;
-      const jobsPer = Math.round(jobs / res * 100), ratio = inn / out;
+      const ratio = inn / out;
       const n = x => x.toLocaleString("en-US"), M = x => (x / 1e6).toFixed(1) + " million", K = x => Math.round(x / 1e3) + "K";
-      const anchor = share >= 1 / 3;
-      const hub = jobsPer > 110 ? "hub" : jobsPer < 90 ? "bedroom" : "balanced";
+      /* the metro's admins by population: the scatter's rows (admins of about 25,000 people and up, 2024) that the
+         commuting outlines place inside the metro, with the admin itself */
+      const S = window.WHO_SCATTER_2024, G = window.WHO_COMMUTE_GEO;
+      let top = [];
+      if (S && G){ const C = Object.fromEntries(S.cols.map((c, i) => [c, i])), inM = new Set(G.places.features.filter(f => f.properties.inMsa).map(f => f.properties.place_id));
+        top = S.rows.filter(r => r[C.id] === S.here || inM.has(r[C.id])).sort((a, b) => b[C.pop] - a[C.pop]).slice(0, 5).map(r => ({ here: r[C.id] === S.here, name: r[C.name], pop: r[C.pop] })); }
+      const rank = top.findIndex(t => t.here) + 1, anchor = rank === 1, next = top[1];
+      /* business or residential (2026-10-22, Nil: "replace Sender or receiver? with Business or Residential admin
+         questions and show the needle graph"): the commuting beat's needle, commuters in for every one out on a log
+         half ring from a quarter to four times, small and white on the close's teal; it swings in as the close arrives */
+      const zone = ratio < .8 ? "res" : ratio <= 1.25 ? "bal" : "bus", ZW = { res: "residential", bal: "balanced", bus: "business" };
+      const dial = (() => {
+        const G = { cx: 160, cy: 168, r: 150, rIn: 122, min: .25, max: 4 };
+        const ang = v => Math.PI - (Math.log(v) - Math.log(G.min)) / (Math.log(G.max) - Math.log(G.min)) * Math.PI;
+        const pt = (a, r) => [G.cx + Math.cos(a) * r, G.cy - Math.sin(a) * r], f = x => x.toFixed(1);
+        const arc = (v0, v1) => { const a0 = ang(v0), a1 = ang(v1), p0 = pt(a0, G.r), p1 = pt(a1, G.r), p2 = pt(a1, G.rIn), p3 = pt(a0, G.rIn);
+          return "M" + f(p0[0]) + "," + f(p0[1]) + " A" + G.r + "," + G.r + " 0 0 1 " + f(p1[0]) + "," + f(p1[1]) + " L" + f(p2[0]) + "," + f(p2[1]) + " A" + G.rIn + "," + G.rIn + " 0 0 0 " + f(p3[0]) + "," + f(p3[1]) + "Z"; };
+        const Z = [{ v0: .25, v1: .8, k: "res", t: "Residential" }, { v0: .8, v1: 1.25, k: "bal", t: "Balanced" }, { v0: 1.25, v1: 4, k: "bus", t: "Business" }];
+        const r = Math.max(G.min, Math.min(G.max, ratio)), deg = -(ang(r) * 180 / Math.PI);
+        return '<svg class="skd" viewBox="0 0 320 200" role="img" aria-label="Boston Admin: ' + ratio.toFixed(1) + ' commute in for every one who commutes out, a ' + ZW[zone] + ' admin">' +
+          Z.map(z => '<path class="skd-zone' + (z.k === zone ? ' is-on' : '') + '" d="' + arc(z.v0, z.v1) + '"/>').join("") +
+          Z.map(z => { const mid = Math.exp((Math.log(z.v0) + Math.log(z.v1)) / 2), a = ang(mid), q = pt(a, G.r + 16), d = -(a * 180 / Math.PI - 90);
+            return '<text class="skd-lab' + (z.k === zone ? ' is-on' : '') + '" x="' + f(q[0]) + '" y="' + f(q[1]) + '" text-anchor="middle" transform="rotate(' + d.toFixed(1) + ' ' + f(q[0]) + ' ' + f(q[1]) + ')">' + z.t + '</text>'; }).join("") +
+          '<line class="skd-needle" x1="' + G.cx + '" y1="' + G.cy + '" x2="' + (G.cx + G.rIn - 14) + '" y2="' + G.cy + '" style="--a:' + deg.toFixed(2) + 'deg"/>' +
+          '<circle class="skd-pivot" cx="' + G.cx + '" cy="' + G.cy + '" r="6"/>' +
+          '<text class="skd-big" x="' + G.cx + '" y="' + (G.cy - 30) + '" text-anchor="middle">' + ratio.toFixed(1) + '\u00d7</text></svg>'; })();
       const ICO_ANCHOR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="5" r="2.2"/><path d="M12 7.2V21M7 11h10M4 15a8 8 0 0 0 16 0"/></svg>';
       /* the city icon, as Boston wears it in the commuting figure */
-      const ICO_HUB = '<svg viewBox="0 0 24 30" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + window.CITY_ICON + '</svg>';
-      const pct = (share * 100).toFixed(1), rest = (100 - share * 100).toFixed(1);
+      const ICO_CITY = '<svg viewBox="0 0 24 30" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + window.CITY_ICON + '</svg>';
       return '<div class="seal-keys">' +
-        '<div class="seal-key"><div class="sk-viz"><svg class="sk-ring" viewBox="0 0 40 40" role="img" aria-label="' + per100 + ' of every 100 metro residents live in Boston">' +
-          '<circle class="sk-track" cx="20" cy="20" r="15.9155"/><circle class="sk-share" cx="20" cy="20" r="15.9155" style="--share:' + pct + ';--rest:' + rest + '"/>' +
-          '<text class="sk-pct" x="20" y="23.8" text-anchor="middle">' + per100 + '%</text></svg></div>' +
+        /* the five most populous admins, Boston Admin's bar white and the others faint */
+        '<div class="seal-key"><div class="sk-viz sk-viz--rank" role="img" aria-label="The most populous admins in Boston Metro: ' + top.map(t => (t.here ? "Boston Admin" : t.name) + " " + K(t.pop)).join(", ") + '">' +
+          top.map(t => '<span class="skr-row' + (t.here ? ' is-here' : '') + '"><span class="skr-n">' + (t.here ? "Boston Admin" : t.name) + '</span><span class="skr-t"><i style="--w:' + (t.pop / top[0].pop * 100).toFixed(1) + '%"></i></span><b>' + K(t.pop) + '</b></span>').join("") + '</div>' +
           '<div class="sk-body"><p class="sk-eyebrow"><span class="sk-ico">' + ICO_ANCHOR + '</span>Population anchor?</p>' +
-          '<p class="sk-head">' + (anchor ? "Boston anchors its metro" : "Boston is not its metro\u2019s anchor") + '</p>' +
-          '<p class="sk-fig">' + per100 + ' of every 100 metro residents live in Boston</p></div></div>' +
-        '<div class="seal-key"><div class="sk-viz sk-viz--flow" role="img" aria-label="' + n(inn) + ' commute in, ' + n(out) + ' commute out">' +
-          '<span class="sk-bar sk-bar--in" style="--w:100%"><i></i><b>' + K(inn) + ' commute in</b></span>' +
-          '<span class="sk-bar sk-bar--out" style="--w:' + Math.round(out / inn * 100) + '%"><i></i><b>' + K(out) + ' commute out</b></span></div>' +
-          '<div class="sk-body"><p class="sk-eyebrow"><span class="sk-ico">' + ICO_HUB + '</span>Sender or receiver?</p>' +
-          '<p class="sk-head">' + (hub === "hub" ? "A business hub: Boston receives workers" : hub === "bedroom" ? "A bedroom: Boston sends workers out" : "Boston sends and receives in step") + '</p>' +
-          '<p class="sk-fig">' + jobsPer + ' jobs for every 100 working residents</p></div></div>' +
+          '<p class="sk-head">' + (anchor ? "Boston Admin is Boston Metro\u2019s population anchor" : "Boston Admin is not Boston Metro\u2019s population anchor") + '</p>' +
+          '<p class="sk-fig">' + (anchor && next ? "The most populous of its " + places + " admins: " + K(top[0].pop) + " people, " + (top[0].pop / next.pop).toFixed(1) + " times " + next.name + ", the next largest"
+            : rank ? "The " + ["", "", "second", "third", "fourth", "fifth"][rank] + " most populous of Boston Metro\u2019s " + places + " admins" : "") + '</p></div></div>' +
+        '<div class="seal-key"><div class="sk-viz sk-viz--dial">' + dial + '</div>' +
+          '<div class="sk-body"><p class="sk-eyebrow"><span class="sk-ico">' + ICO_CITY + '</span>Business or residential admin?</p>' +
+          '<p class="sk-head">' + (zone === "bal" ? "Boston Admin is balanced: as many commute in as out" : "Boston Admin is a " + ZW[zone] + " admin") + '</p>' +
+          '<p class="sk-fig">' + ratio.toFixed(1) + ' commute in for every one who commutes out</p></div></div>' +
         '</div>';
     }
   };
@@ -13068,7 +13287,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
        5.3% for pay) */
     const growthRow = (label, v, med, top) => svRow(label, "+" + v.toFixed(1) + "%/yr") +
       '<span class="sv-track"><i class="sv-grow" style="width:' + pctW(v / top * 100) + '"></i><i class="sv-tick" style="left:' + pctW(med / top * 100) + '"></i></span>';
-    const vizProfile = rows("Boston’s metro population and pay growth against the median metro",
+    const vizProfile = rows("Boston Metro’s population and pay growth against the median metro",
       growthRow("population", G.pop, G.popMed, 10 / 3) + growthRow("pay", G.pay, G.payMed, 16 / 3) +
       '<span class="sv-note">tick: the median metro</span>');
     /* metro industries: the four biggest sectors' share of the metro's jobs */
@@ -13264,7 +13483,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
        for its name) */
     /* each version shows its own option first (2026-10-18, Nil: "v-5 box plots for all stats, v-6 the bars");
        ?table=band or ?table=bars, or the opt switch, shows the other */
-    const TABLE_DEFAULT = "band";
+    const TABLE_DEFAULT = "bars";
     let mode = (location.search.match(/[?&]table=(band|bars)\b/) || [, TABLE_DEFAULT])[1];
     /* the bars say each comparison at the end of its bar (Nil, 2026-10-15:
        the pick over the comparisons stacked in the text column), so the
@@ -13273,11 +13492,11 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     const MORE = { population: ["larger", "smaller"] }, more = (k, up) => (MORE[k] || ["higher", "lower"])[up ? 0 : 1];
     /* the comparison at the end of a reference bar, said from Boston's side
        under the column's "Boston is" head (read in full by a screen reader) */
-    const beside = (k, v, ref, who) => { const d = diff(k, v, ref), better = k === "unemployment" ? !d.up : d.up, vh = '<span class="vh">' + (who || "Boston") + ' is </span>';
+    const beside = (k, v, ref, who) => { const d = diff(k, v, ref), better = k === "unemployment" ? !d.up : d.up, vh = '<span class="vh">' + (who || "Boston Admin") + ' is </span>';
       if (d.same) return '<span class="wt-ba">' + vh + 'about the same</span>';
       const size = d.t.endsWith("\u00d7") ? d.t.slice(0, -1) + " times" : d.t;
       return '<span class="wt-ba' + (better ? ' is-good' : ' is-bad') + '">' + vh + '<b>' + ARR(d.up) + size + '</b> ' + more(k, d.up) + '</span>'; };
-    const colHead = who => '<div class="wt-row wt-row--head" aria-hidden="true"><div></div><div class="wt-viz"><div class="wt-bars"><span></span><span></span><span></span><span class="wt-colh">' + (who || "Boston") + ' is</span></div></div></div>';
+    const colHead = who => '<div class="wt-row wt-row--head" aria-hidden="true"><div></div><div class="wt-viz"><div class="wt-bars"><span></span><span></span><span></span><span class="wt-colh">' + (who || "Boston Admin") + ' is</span></div></div></div>';
     const tables = {};
     let tip = null, wired = false;
 
@@ -13581,7 +13800,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         const st = document.createElement("div"); st.className = "mi-studies"; const pid = "whoTablesPanel" + (id === "page-overview" ? "" : "M");
         st.innerHTML = '<button type="button" class="mi-studies-btn" aria-expanded="false" aria-controls="' + pid + '">opt</button>' +
           '<div class="mi-studies-panel" id="' + pid + '" role="group" aria-label="Design studies" hidden><label class="mi-study"><span>Tables</span>' +
-          '<select class="wt-table-opt" aria-label="How the tables draw Boston against the US and its peers"><option value="bars">opt-1</option><option value="band">opt-2</option></select></label></div>';
+          '<select class="wt-table-opt" aria-label="How the tables draw Boston Admin and Boston Metro against the US and their peers"><option value="bars">opt-1</option><option value="band">opt-2</option></select></label></div>';
         eye.appendChild(st);
         const btn = st.querySelector(".mi-studies-btn"), panel = st.querySelector(".mi-studies-panel"), sel = st.querySelector("select");
         sel.value = mode;
@@ -13618,28 +13837,28 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         h += '<div class="wt-row' + (k === "population" ? " wt-row--lead" : "") + '"><div class="wt-text"><div class="wt-head"><span class="wt-name">' + NAME[k] + (lower ? '<span class="hint">lower is better</span>' : '') + '</span>' +
           '<span class="wt-val">' + fmt(k, v) + '</span></div>' + (side ? '' : '<p class="wt-diff">');
         if (side){}
-        else if (k === "population") h += '<span class="wt-d">' + Math.round(v / m * 100) + '% of the metro&rsquo;s ' + fmt(k, m) + ' people</span>';
+        else if (k === "population") h += '<span class="wt-d">' + Math.round(v / m * 100) + '% of Boston Metro&rsquo;s ' + fmt(k, m) + ' people</span>';
         else { const d = diff(k, v, m), better = lower ? !d.up : d.up;
-          h += d.same ? '<span class="wt-d">about the same as the metro</span>'
-            : '<span class="wt-d' + (better ? ' is-good' : ' is-bad') + '"><b>' + ARR(d.up) + (d.t.endsWith("\u00d7") ? d.t.slice(0, -1) + " times</b> the metro" : d.t + '</b>' + (d.up ? " above" : " below") + " the metro") + '</span>'; }
+          h += d.same ? '<span class="wt-d">about the same as Boston Metro</span>'
+            : '<span class="wt-d' + (better ? ' is-good' : ' is-bad') + '"><b>' + ARR(d.up) + (d.t.endsWith("\u00d7") ? d.t.slice(0, -1) + " times</b> Boston Metro" : d.t + '</b>' + (d.up ? " above" : " below") + " Boston Metro") + '</span>'; }
         h += (side ? '' : '</p>') + '</div><div class="wt-viz">';
         if (k === "population"){
           const sh = (v / m * 100).toFixed(2) + "%";
-          h += '<div class="wt-sh" role="img" aria-label="Boston, ' + fmt(k, v) + ', is ' + Math.round(v / m * 100) + '% of the metro&rsquo;s ' + fmt(k, m) + ' people"><i class="here" style="width:' + sh + '"></i><i class="rest"></i></div>' +
-            '<p class="wt-shl"><span class="here">Boston <span class="num">' + fmt(k, v) + '</span>' + (side ? '<span class="wt-shp">, ' + Math.round(v / m * 100) + '% of the metro</span>' : '') + '</span><span>Rest of the metro <span class="num">' + fmt(k, m - v) + '</span></span></p>';
+          h += '<div class="wt-sh" role="img" aria-label="Boston Admin, ' + fmt(k, v) + ', is ' + Math.round(v / m * 100) + '% of Boston Metro&rsquo;s ' + fmt(k, m) + ' people"><i class="here" style="width:' + sh + '"></i><i class="rest"></i></div>' +
+            '<p class="wt-shl"><span class="here">Boston Admin <span class="num">' + fmt(k, v) + '</span>' + (side ? '<span class="wt-shp">, ' + Math.round(v / m * 100) + '% of Boston&nbsp;Metro</span>' : '') + '</span><span>Rest of Boston&nbsp;Metro <span class="num">' + fmt(k, m - v) + '</span></span></p>';
         } else {
           const max = Math.max(v, m) * 1.04, pct = x => (x / max * 100).toFixed(2) + "%";
           const bar = (cls, lab, x) => '<span class="wt-bl ' + cls + '">' + lab + '</span><span class="wt-bt ' + cls + '"><i style="width:' + pct(x) + '"></i></span><span class="wt-bv ' + cls + '">' + fmt(k, x) + '</span>' +
             (side ? (cls === "mt" ? beside(k, v, x) : '<span class="wt-ba"></span>') : '');
-          h += '<div class="wt-bars">' + bar("here", "Boston", v) + bar("mt", "Boston metro", m) + '</div>';
+          h += '<div class="wt-bars">' + bar("here", "Boston Admin", v) + bar("mt", "Boston Metro", m) + '</div>';
         }
         h += '</div></div>';
       });
       el.innerHTML = h + '</div>';
     }
     compare(document.getElementById("whoCompare"));
-    if (window.WHO_COMPARE_2024) tables.admin = make("admin", window.WHO_COMPARE_2024, { here: "Boston", unit: "US admins", peersWord: "Closest peers:" });
-    if (window.WHO_COMPARE_METRO_2024) tables.metro = make("metro", window.WHO_COMPARE_METRO_2024, { here: "Boston metro", unit: "US metros", peersWord: "Closest peer metros:" });
+    if (window.WHO_COMPARE_2024) tables.admin = make("admin", window.WHO_COMPARE_2024, { here: "Boston Admin", unit: "US admins", peersWord: "Closest peers:" });
+    if (window.WHO_COMPARE_METRO_2024) tables.metro = make("metro", window.WHO_COMPARE_METRO_2024, { here: "Boston Metro", unit: "US metros", peersWord: "Closest peer metros:" });
     window.whoTables = tables;
     /* measured again once the web font has come, as the names' widths change with it */
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => Object.values(tables).forEach(T => T.fit && T.fit()));
@@ -13894,7 +14113,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       const gCall = el("g", "sc-calls", gMarks);
       let cur = null, curPa = null, geo = null, raf = 0, entered = false;
       /* nothing is left on the edge: the unemployment axis reaches the highest rate */
-      const aria = () => svg.setAttribute("aria-label", M[k].name + " by population, 2024: Boston " + fmt(rows[hereI][C[k]], k, true) + ", peer average " + fmt(PAVG[k], k, true) +
+      const aria = () => svg.setAttribute("aria-label", M[k].name + " by population, 2024: " + (noun === "metro" ? "Boston Metro " : "Boston Admin ") + fmt(rows[hereI][C[k]], k, true) + ", peer average " + fmt(PAVG[k], k, true) +
         (k === "emp" ? ", US average " + Math.round(RATE * 100) + " employed per 100 residents" : ", US average " + fmt(US[k], k, true)) + ".");
       aria();
       /* the measure's reading, under the chart, from the beat's template */
@@ -14032,7 +14251,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
           }
         };
         /* opt-2 names Boston with its figure where there is room (on a phone the figure is in the header under the band) */
-        place(pos[2 * hereI], pos[2 * hereI + 1], 8, SW && !phone() ? (noun === "metro" ? "Boston metro " : "Boston ") + fmt(rows[hereI][C[L.k]], L.k) : "Boston", "sc-lab--here");
+        place(pos[2 * hereI], pos[2 * hereI + 1], 8, SW && !phone() ? (noun === "metro" ? "Boston Metro " : "Boston Admin ") + fmt(rows[hereI][C[L.k]], L.k) : (noun === "metro" ? "Boston Metro" : "Boston Admin"), "sc-lab--here");
         /* the found admin and the questions' places, each with its figure */
         callI.forEach(i => place(pos[2 * i], pos[2 * i + 1], 8, rows[i][C.name] + (i === found && noun === "admin" ? ", " + rows[i][C.st] : "") + " " + fmt(rows[i][C[L.k]], L.k), "sc-lab--call"));
         place(pa[0], pa[1], 8, "Peer average", "sc-lab--avg");
@@ -14102,7 +14321,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         const lines = [];
         if (h.avg) lines.push("<b>Peer average</b>", "Population " + fmt(PAVG.pop, "pop"), M[k].name + " " + fmt(PAVG[k], k));
         else { const r = rows[h.i];
-          lines.push("<b>" + r[C.name] + ", " + r[C.st] + "</b>" + (h.i === hereI ? " <span>" + opts.tag + "</span>" : peerI.indexOf(h.i) >= 0 ? " <span>peer</span>" : ""), "Population " + fmt(r[C.pop], "pop"));
+          lines.push("<b>" + r[C.name] + (h.i === hereI ? " " + opts.tag : "") + ", " + r[C.st] + "</b>" + (h.i === hereI ? "" : peerI.indexOf(h.i) >= 0 ? " <span>peer</span>" : ""), "Population " + fmt(r[C.pop], "pop"));
           lines.push(k === "emp" ? "Employed " + fmt(r[C.emp], "emp") + ", " + Math.round(r[C.emp] / r[C.pop] * 100) + " per 100" :
             k === "yp" ? fmt(r[C.yp], "yp") + " of pay for a home<br>Home value " + fmt(r[C.home], "home") + ", average salary " + fmt(r[C.wage], "wage") : M[k].name + " " + fmt(r[C[k]], k)); }
         tip.innerHTML = lines.join("<br>"); tip.hidden = false;
@@ -14196,14 +14415,15 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       const fin = host.querySelector(".sc-find input"), list = host.querySelector(".sc-find-list"), clr = host.querySelector(".sc-find-clear");
       if (fin){
         const norm = t => String(t).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-        const NAMES = rows.map(r => norm(r[C.name]));
+        /* matched by the name the list shows (the subject's carries its tag, "Boston Admin") */
+        const NAMES = rows.map((r, i) => norm(r[C.name] + (i === hereI ? " " + opts.tag : "")));
         let opts2 = [], hi = -1;
         const fmtPop = v => v >= 1e6 ? (v / 1e6).toFixed(1).replace(/\.0$/, "") + "M" : Math.round(v / 1e3) + "K";
         const close = () => { list.hidden = true; fin.setAttribute("aria-expanded", "false"); fin.removeAttribute("aria-activedescendant"); hi = -1; };
         /* a click on the box shows the whole list, largest first, to scroll or to narrow by typing
            (2026-10-18, Nil: "when click show the list of admins and give ability to type") */
         const BYPOP = rows.map((r, i) => i).sort((a, b) => rows[b][C.pop] - rows[a][C.pop]);
-        const label = i => rows[i][C.name] + ", " + rows[i][C.st];
+        const label = i => rows[i][C.name] + (i === hereI ? " " + opts.tag : "") + ", " + rows[i][C.st];
         const item = (i, j) => '<li role="option" id="scOpt' + uid + j + '" data-i="' + i + '"' + (j === hi ? ' aria-selected="true"' : '') + '><span>' + label(i) + '</span><span class="sc-opt-pop">' + fmtPop(rows[i][C.pop]) + ' people</span></li>';
         const show = () => { const raw = fin.value.trim(), q = norm(raw);
           /* empty, or still the place picked: the whole list (the picked place lit) */
@@ -14226,7 +14446,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
           if (li.offsetTop - top < list.scrollTop) list.scrollTop = li.offsetTop - top; else if (li.offsetTop + li.offsetHeight > list.scrollTop + list.clientHeight) list.scrollTop = li.offsetTop + li.offsetHeight - list.clientHeight; };
         const mark = j => { list.querySelectorAll("[role=option]").forEach((li, x) => li.setAttribute("aria-selected", String(x === j))); if (j >= 0){ fin.setAttribute("aria-activedescendant", "scOpt" + uid + j); into(j); } };
         const pick = i => { close(); const r = rows[i];
-          if (i === hereI){ found = null; fin.value = ""; clr.hidden = true; live.textContent = (noun === "metro" ? "The Boston metro" : "Boston") + " is the teal dot."; }
+          if (i === hereI){ found = null; fin.value = ""; clr.hidden = true; live.textContent = (noun === "metro" ? "Boston Metro" : "Boston Admin") + " is the teal dot."; }
           else if (peerI.indexOf(i) >= 0){ found = null; fin.value = ""; clr.hidden = true; if (T && !T.on.has(r[C.name])){ T.on.add(r[C.name]); T.render(); document.dispatchEvent(new CustomEvent("who:peers", { detail: { set: opts.set } })); } live.textContent = r[C.name] + " is shown in its colour."; }
           else { found = i; fin.value = r[C.name] + ", " + r[C.st]; clr.hidden = false; live.textContent = r[C.name] + ", " + r[C.st] + (tintOn() ? " is marked on the chart and the map." : " is marked on the chart."); }
           entered = true; render(false); marked(); };
@@ -14364,7 +14584,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       s.peerMk.forEach(m => { if (s.group.hasLayer(m)) m.bringToFront(); }); s.here.bringToFront();
       const c = F.cuts, f = v => fmtv(W, W.k, v), lo = v => W.M[W.k].yrs ? v.toFixed(1) : f(v), who = s.set === "metro" ? "metros" : "admins", hc = F.cls[W.hereI];
       const ranges = [f(c[3]) + " and over", lo(c[2]) + " to " + f(c[3]), lo(c[1]) + " to " + f(c[2]), lo(c[0]) + " to " + f(c[1]), "Under " + f(c[0])];
-      const here = '<span class="wl-here"><i></i>' + (s.set === "metro" ? "Boston metro" : "Boston") + '</span>';
+      const here = '<span class="wl-here"><i></i>' + (s.set === "metro" ? "Boston Metro" : "Boston Admin") + '</span>';
       /* the row that holds Boston says so: the key tells where Boston stands */
       const hint = W.k === "unemp" ? "lower is better" : W.k === "yp" ? "fewer is easier to afford" : "";
       /* the marks the chart names or darkens that stand off the lower 48 (Alaska, Hawaii): named in the key */
@@ -14389,7 +14609,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         const W = s.W, sz = ovLeaflet.getSize(); lsvg.setAttribute("viewBox", "0 0 " + sz.x + " " + sz.y);
         const box = host.getBoundingClientRect(), rel = r => [r.left - box.left, r.top - box.top, r.right - box.left, r.bottom - box.top];
         const taken = [...host.querySelectorAll(".who-legend:not([hidden]), .map-ctls")].map(e => e.getBoundingClientRect()).filter(r => r.width).map(rel);
-        const items = [{ ll: s.here.getLatLng(), r: 6.5, t: s.set === "metro" ? "Boston metro" : "Boston", here: true }]
+        const items = [{ ll: s.here.getLatLng(), r: 6.5, t: s.set === "metro" ? "Boston Metro" : "Boston Admin", here: true }]
           .concat(W.peerI.filter(W.isOn).sort((a, b) => s.rows[b][s.C.pop] - s.rows[a][s.C.pop]).map(i => { const m = s.peerMk[W.peerI.indexOf(i)];
             return { ll: m._ring ? s.here.getLatLng() : s.pts[s.rows[i][s.C.id]], r: m._ring ? 10.5 : 5, t: s.rows[i][s.C.name] }; }))
           .concat((W.calls ? W.calls() : []).filter(i => s.pts[s.rows[i][s.C.id]] && L48.contains(s.pts[s.rows[i][s.C.id]])).map(i => ({ ll: s.pts[s.rows[i][s.C.id]], r: i === W.found ? 8 : 6.5, t: s.rows[i][s.C.name] })));
@@ -14427,7 +14647,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       s.ring.setLatLng(s.pts[s.rows[i][s.C.id]]).setRadius((i === s.W.hereI ? 6.5 : s.W.peerI.indexOf(i) >= 0 ? 5 : 2.6) + 4); if (!s.group.hasLayer(s.ring)) s.ring.addTo(s.group); s.ring.bringToFront(); }
     function showCard(s, i, q){
       const W = s.W, r = s.rows[i], C = s.C, F = W.FIFTH[W.k];
-      card.innerHTML = '<b>' + esc(r[C.name]) + ', ' + esc(r[C.st]) + '</b>Population ' + fmtPop(r[C.pop]) + '<br>' + (W.k === "yp" ? fmtv(W, W.k, r[C[W.k]]) + ' of pay for a home' : W.M[W.k].name + ' ' + fmtv(W, W.k, r[C[W.k]])) +
+      card.innerHTML = '<b>' + esc(r[C.name]) + (i === W.hereI ? ' ' + W.tag : '') + ', ' + esc(r[C.st]) + '</b>Population ' + fmtPop(r[C.pop]) + '<br>' + (W.k === "yp" ? fmtv(W, W.k, r[C[W.k]]) + ' of pay for a home' : W.M[W.k].name + ' ' + fmtv(W, W.k, r[C[W.k]])) +
         (W.asking && W.asking() ? '' : '<span>' + FIFTHS[F.cls[i]] + ' for ' + W.M[W.k].name.toLowerCase() + (W.k === "unemp" ? '. Lower is better.' : W.k === "yp" ? '. Fewer is easier to afford.' : '') + '</span>');
       card.hidden = false; const sz = ovLeaflet.getSize(), cw = card.offsetWidth, ch = card.offsetHeight;
       let x = q.x + 12, y = q.y - ch - 10; if (x + cw > sz.x - 4) x = q.x - cw - 12; if (y < 4) y = q.y + 12;
@@ -14559,7 +14779,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     ];
     host.innerHTML = '<div class="who-fl-head"><div class="who-fl-all"><b>' + K(TOTAL) + '</b><span>workers who live in Boston, work in Boston, or both</span></div>' +
       '<div class="who-fl-labs">' + GROUPS.map(g => '<div class="who-fl-lab who-fl-lab--' + g.k + '"><b>' + K(g.n) + (g.dir ? ' <em class="who-fl-dir"><i class="who-fl-c">commute </i>' + g.dir.replace("commute ", "") + '</em>' : '') + '</b><span>' + g.name + '</span><small>' + g.share + '</small></div>').join("") + '</div></div>' +
-      '<svg role="img" aria-label="' + TOTAL.toLocaleString("en-US") + ' workers: ' + GROUPS.map(g => g.n.toLocaleString("en-US") + " " + g.name.toLowerCase()).join(", ") + '"></svg>' +
+      '<svg role="img" aria-label="' + TOTAL.toLocaleString("en-US") + ' workers: ' + GROUPS.map(g => g.n.toLocaleString("en-US") + " " + g.name.charAt(0).toLowerCase() + g.name.slice(1)).join(", ") + '"></svg>' +
       '<p class="who-fl-note">One dot is about ' + PER.toLocaleString("en-US") + ' people. <button type="button" class="who-fl-replay">' +
         '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M2.5 8a5.5 5.5 0 1 0 1.8-4.1M2.5 2.5v3h3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Play again</button></p>';
     const svg = host.querySelector("svg");
@@ -14586,6 +14806,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       for (let i = 0; i < n; i++){ const t = (i + .5) / n, rad = r * Math.sqrt(t) * .94, a = i * gold + seed; pts.push([cx + rad * Math.cos(a), cy + rad * Math.sin(a)]); }
       return pts; };
     const phone = () => matchMedia("(max-width:599px)").matches, reduce = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+    /* opt-2's first beat may draw the groups as a rectangle Venn instead (2026-10-20): when it is on, it plays the stages */
+    const alt = () => { const a = window.whoFlowsAlt; return a && a.on() ? a : null; };
     let stage = "all", raf = 0, timers = [], stale = false;
     function layout(){
       /* data-k: a size step a roomier frame can ask for (opt-2's wide panel); 1 by default */
@@ -14628,6 +14850,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
        three groups draw apart, and only then are they named */
     function play(){
       timers.forEach(clearTimeout); timers = []; cancelAnimationFrame(raf);
+      if (alt()){ raf = 0; return alt().play(); }
       const L = layout(); if (!L.Wd) return; size(L); host.dataset.played = "1";
       if (reduce()){ paint(L.to, L.rd); colour(true); setStage("sorted"); return; }
       /* back to the start at once, with no fade, before the slow part */
@@ -14651,6 +14874,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     }
     /* before the beat arrives, and on a resize: the stage as it stands */
     function still(){
+      if (alt()) return alt().still();
       const L = layout(); if (!L.Wd) return; size(L);
       if (stage === "sorted"){ paint(L.to, L.rd); colour(true); } else { paint(L.from, L.rd); colour(stage === "colour"); }
     }
@@ -14662,6 +14886,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
        play again (a small scroll back and forth does not restart it) */
     function reset(){
       timers.forEach(clearTimeout); timers = []; cancelAnimationFrame(raf); raf = 0; stale = false; delete host.dataset.played;
+      if (alt()) alt().stop();
       if (reduce()) return;
       host.classList.add("no-fade"); setStage("all"); still(); void host.offsetWidth; host.classList.remove("no-fade");
     }
@@ -14686,6 +14911,474 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     }
     ctl.addEventListener("click", ev => { const b = ev.target.closest(".seg-btn"); if (b) setFlow(b.dataset.flow); });
     setFlow("in");
+    const seg = ctl.querySelector(".seg");
+    const fitCtl = () => { ctl.classList.remove("is-tight"); if (seg && seg.offsetParent && seg.scrollWidth > seg.clientWidth + 1) ctl.classList.add("is-tight"); };
+    if (window.ResizeObserver) new ResizeObserver(fitCtl).observe(ctl);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitCtl);
+    fitCtl();
+  })();
+
+  /* ---- Who are you?: opt-2's first commuting beat as a rectangle Venn
+     (2026-10-20, Nil). The "Groups" study in beat A's counter: opt-1 the
+     three circles, opt-2 (?groups=venn) two rectangles of the same dots.
+     First the two sets apart and named: everyone who works in Boston Admin
+     (its jobs) and everyone who lives there and has a job. Then they slide
+     together until the 190,083 who do both are one block, and the three
+     parts take their colours and are named, those who commute in and out
+     each with the city's icon and an arrow. It moves the figure's own dots,
+     so the hand-off to the map flies them from where they stand; the live
+     rectangle's copy of the shared block is 95 extra dots that go once the
+     two meet. Each part fills from its inner edge outwards, bottom row
+     first, so a column left part-full is an outer one, short at the top. ---- */
+  (function(){
+    const fig = window.whoFlowsFig, W = window.WHO_2024;
+    if (!fig || !W || !window.whoFlowsHome) return;
+    const host = fig.host, svg = fig.svg, circles = fig.circles, dots = fig.dots, COL = fig.COL, GREY = fig.GREY, NS = "http://www.w3.org/2000/svg";
+    const JOBS = W.in.jobsHere, RES = W.out.residentWorkers, IN = W.in.filledByCommuters, BOTH = W.in.heldByResidents, OUT = W.out.workElsewhere;
+    const fmtN = n => n.toLocaleString("en-US"), PCT = (a, b) => Math.round(a / b * 100) + "%";
+    let mode = (location.search.match(/[?&]groups=(venn|classic|circles)\b/) || [, GROUPS_DEFAULT])[1];
+    /* opt-2 the rectangle Venn, opt-3 (2026-10-20, Nil: "instead of rectangle use circles, like a more traditional one") the same
+       story in two overlapping circles; both run through the code below, which knows the circles as fractional columns */
+    const isVenn = () => mode === "venn" || mode === "classic", round = () => mode === "classic";
+    const phone = () => matchMedia("(max-width:599px)").matches, reduce = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const ease = u => u < .5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
+    const idx = { in: [], both: [], out: [] }; dots.forEach((d, i) => idx[d.k].push(i));
+    /* the grid, for a row count: 12 rows on a roomy panel (the 264 in-commuters fill 22 columns exactly, the 95
+       who do both 8, one short, the 79 out 7); 16 on a narrow one, where the two rectangles apart are 38 columns
+       wide instead of 49 and the dots can be larger; 8 on a wide, short one (33 columns exactly, 12 and 10, each
+       one short), where height is what runs out; 6 and 5 for the flattest figure, when the bars share the panel and
+       there is the width for the two rectangles side by side. In (column, row) cells: in and both in the work rectangle's
+       columns, out in the live rectangle's. The shared block is one dot short of full: in the work rectangle its
+       gap is that rectangle's top-right corner; the live rectangle's copy fills the other way, so its gap is its
+       own top-left corner. Neither shows a gap mid-edge while they stand apart; when they meet the copy fades and
+       the work rectangle's corner gap is what stays */
+    const GAPC = 4, K3 = ["in", "both", "out"], ROW_OPTS = [12, 8, 6, 5, 16], GEO = {};
+    const fill = (R, n, c0, cols, dir) => { const out = [];
+      for (let j = 0; j < n; j++){ const ci = Math.floor(j / R); out.push([dir > 0 ? c0 + ci : c0 + cols - 1 - ci, R - 1 - j % R]); }
+      return out; };
+    function geo(R){ if (GEO[R]) return GEO[R];
+      const nIn = idx.in.length, nB = idx.both.length, nOut = idx.out.length, cIn = Math.ceil(nIn / R), cB = Math.ceil(nB / R), cOut = Math.ceil(nOut / R);
+      const g = { R, cIn, cB, cOut, colsA: cIn + cB, colsB: cB + cOut, colsT: cIn + cB + cOut };
+      g.colsApart = g.colsA + GAPC + g.colsB;
+      g.CIN = fill(R, nIn, 0, cIn, -1); g.CB = fill(R, nB, cIn, cB, 1); g.CBT = fill(R, nB, cIn, cB, -1); g.COUT = fill(R, nOut, cB, cOut, 1);
+      return (GEO[R] = g); }
+
+    /* the two circles, area true: the work circle holds the 359 dots of those who work in Boston Admin, the live circle
+       the 174 who live there, and the lens where they overlap exactly the 95 who do both. Each circle is a clean disc on
+       the dots' square grid (centred on the work circle's middle), so neither shows a seam while they stand apart; the
+       distance between the centres is searched until the lens holds exactly 95, and the work-only and live-only parts
+       are trimmed to 264 and 79 from their outer rims. Expressed in the rectangles' terms so the same layout serves
+       both: cIn the work-only part's width, cB the lens's, cOut the live-only part's, R the height, all in dot pitches */
+    let GEOC = null;
+    function geoC(){
+      if (GEOC) return GEOC;
+      const nIn = idx.in.length, nB = idx.both.length, nOut = idx.out.length, nA = nIn + nB, nL = nB + nOut, M = .5;
+      const disc = (r, cx) => { const out = [], R0 = Math.ceil(r) + 1;
+        for (let y = -R0; y <= R0; y++) for (let x = Math.floor(cx - R0); x <= Math.ceil(cx + R0); x++) if (Math.hypot(x - cx, y) <= r - M) out.push([x, y]);
+        return out; };
+      /* the smallest circle that holds n dots on the grid, about a given centre */
+      const fitR = (n, cx) => { let r = Math.sqrt(n / Math.PI) + M - .5; while (disc(r, cx).length < n) r += .01; return r; };
+      const RA = fitR(nA, 0), A = disc(RA, 0);
+      /* counts only while searching (the sets are built once, for the answer) */
+      const discN = (r, cx) => { let n = 0; const R0 = Math.ceil(r) + 1;
+        for (let y = -R0; y <= R0; y++) for (let x = Math.floor(cx - R0); x <= Math.ceil(cx + R0); x++) if (Math.hypot(x - cx, y) <= r - M) n++;
+        return n; };
+      const lensN = (r, cx) => { let n = 0; for (const q of A) if (Math.hypot(q[0] - cx, q[1]) <= r - M) n++; return n; };
+      let best = null;
+      for (let RB = Math.sqrt(nL / Math.PI) + M - .5; RB < Math.sqrt(nL / Math.PI) + 3 && !best; RB += .01){
+        /* the lens only grows as the circles close in: a coarse pass finds the stretch where it reaches 95, a fine one the spot */
+        let D = RA + RB; while (D > Math.abs(RA - RB) && lensN(RB, D) < nB) D -= .05;
+        for (let d = D + .05; d >= D - 1e-9; d -= .005){
+          const n = lensN(RB, d);
+          if (n > nB) break;
+          if (n === nB && discN(RB, d) >= nL){ best = { RB, D: d }; break; }
+        }
+      }
+      const { RB, D } = best, Bd = disc(RB, D), inB = new Set(Bd.map(q => q[0] + "," + q[1])), lens = A.filter(q => inB.has(q[0] + "," + q[1]));
+      const inA = new Set(A.map(q => q[0] + "," + q[1]));
+      /* trimmed from the outer rim: farthest from their own centre first */
+      const workOnly = A.filter(q => !inB.has(q[0] + "," + q[1])).sort((a, b) => Math.hypot(a[0], a[1]) - Math.hypot(b[0], b[1])).slice(0, nIn);
+      const liveOnly = Bd.filter(q => !inA.has(q[0] + "," + q[1])).sort((a, b) => Math.hypot(a[0] - D, a[1]) - Math.hypot(b[0] - D, b[1])).slice(0, nOut);
+      /* to the cells the drawing expects (it adds half a pitch): the work circle's points from its left edge, the
+         live circle's from its own, both from the figure's top; the live copy of the lens in the work circle's terms */
+      const toA = q => [q[0] + RA - .5, q[1] + RA - .5], toB = q => [q[0] - (D - RB) - .5, q[1] + RA - .5];
+      const lensOrd = lens.sort((a, b) => a[1] - b[1] || a[0] - b[0]);
+      GEOC = { round: true, RA, RB, D, R: 2 * RA, cIn: RA + D - RB, cB: RA + RB - D, cOut: D + RB - RA, colsA: 2 * RA, colsB: 2 * RB, colsT: RA + D + RB,
+        CIN: workOnly.map(toA), CB: lensOrd.map(toA), CBT: lensOrd.map(toA), COUT: liveOnly.map(toB) };
+      GEOC.colsApart = GEOC.colsA + GAPC + GEOC.colsB;
+      return GEOC;
+    }
+
+    /* the city's icon with an arrow going into it, or out of it (shared with the map's town cards) */
+    const ICO = window.FLOW_ICO;
+    const ariaCircles = svg.getAttribute("aria-label");
+    const ariaVenn = () => (round() ? "Two overlapping circles of dots," : "Two rectangles of dots,") + " one dot for about 2,000 people: people working in Boston, " + fmtN(JOBS) + " jobs, and people living in Boston, " + fmtN(RES) +
+      " working residents. They overlap in the " + fmtN(BOTH) + " living and working in Boston. " + fmtN(IN) +
+      " work there but do not live there and commute in; " + fmtN(OUT) + " live there but do not work there and commute out.";
+
+
+    let built = false, twins = [], fA, fB, cA, cB, ldr, labs, setA, setB, cur = null, tip = null, frames = null, pinned = null;
+    const FRAMES = [["Apart", "First frame: the two groups apart", 0], ["Together", "Last frame: the two groups together, the three parts named", 2]];
+    const hideTip = () => { if (tip){ tip.hidden = true; delete tip.dataset.k; } };
+    const brk = {}, reg = {};
+    function build(){
+      if (built) return; built = true;
+      const first = circles[0];
+      const el = (tag, cls, parent, before) => { const e = document.createElementNS(NS, tag); e.setAttribute("class", cls); parent.insertBefore(e, before || null); return e; };
+      /* under the dots: the two sets' frames, light (2026-10-20, Nil: the black ones went; "keep a light color
+         framing"), the brackets, then the live rectangle's copy of the shared block */
+      const g = el("g", "vn", svg, first);
+      fB = el("rect", "vn-frame vn-frame--rect vn-frame--live", g); fA = el("rect", "vn-frame vn-frame--rect vn-frame--work", g);
+      cB = el("circle", "vn-frame vn-frame--circ vn-frame--live", g); cA = el("circle", "vn-frame vn-frame--circ vn-frame--work", g);
+      K3.forEach(k => { brk[k] = el("rect", "vn-brk vn-brk--" + k, g); });
+      ldr = el("line", "vn-ldr", g);
+      twins = idx.both.map(() => { const c = el("circle", "vn-twin", svg, first); c.style.fill = COL.out; return c; });
+      labs = document.createElement("div"); labs.className = "vn-labs"; labs.setAttribute("aria-hidden", "true");
+      labs.innerHTML =
+        /* each set named with its count (2026-10-21, Nil: "write the numbers for venn clusters"); each part by its share
+           of its set, the counts in the card a pointer or a tap brings up (showTip) (Nil: "use the percentages, have
+           the absolute numbers in tooltip") */
+        '<div class="vn-set vn-set--work" data-tip="work"><b><span class="vn-nm-l">People working in Boston</span><span class="vn-nm-s">Working in Boston</span></b><span class="vn-c">' + fmtN(JOBS) + '<span class="vn-u"> jobs</span></span></div>' +
+        '<div class="vn-set vn-set--live" data-tip="live"><b><span class="vn-nm-l">People living in Boston</span><span class="vn-nm-s">Living in Boston</span></b><span class="vn-c">' + fmtN(RES) + '<span class="vn-u"> working residents</span></span></div>' +
+        /* the parts' counts too, in the line under the share (2026-10-22, Nil: "also put the actual absolute number") */
+        '<div class="vn-reg vn-reg--in" data-tip="in"><span class="vn-n">' + ICO.in + '<b>' + PCT(IN, JOBS) + '</b><em>commute in</em></span><span class="vn-w"><span class="vn-k">' + fmtN(IN) + '</span> of the people working in Boston</span></div>' +
+        '<div class="vn-reg vn-reg--both" data-tip="both"><span class="vn-n">' + ICO.both + '<em>Living and working in Boston</em></span><span class="vn-w"><span class="vn-sh"><span class="vn-k">' + fmtN(BOTH) + '</span> people,</span> <span class="vn-sh"><b>' + PCT(BOTH, JOBS) + '</b> of those working there</span> <span class="vn-sh">and <b>' + PCT(BOTH, RES) + '</b> of those living there</span></span></div>' +
+        '<div class="vn-reg vn-reg--out" data-tip="out"><span class="vn-n">' + ICO.out + '<b>' + PCT(OUT, RES) + '</b><em>commute out</em></span><span class="vn-w"><span class="vn-k">' + fmtN(OUT) + '</span> of the people living in Boston</span></div>';
+      host.appendChild(labs);
+      setA = labs.querySelector(".vn-set--work"); setB = labs.querySelector(".vn-set--live");
+      K3.forEach(k => { reg[k] = labs.querySelector(".vn-reg--" + k); });
+      framesUi();
+    }
+    /* the animation's first and last frames beside Play again, two small squares close together, the current one
+       filled: one shows its frame and holds it there (pinned); playing moves from one to the other (2026-10-21, Nil:
+       "the user can just see the first frame", "only two ... the initial state and the final state"; squares, not dots,
+       which "could be confused with the dots in data encoding", and "just put squares without turning them into icons").
+       Their names are their tooltips */
+    function framesUi(){ if (frames) return; const note = host.querySelector(".who-fl-note"); if (!note) return;
+      frames = document.createElement("span"); frames.className = "vn-frames"; frames.setAttribute("role", "group"); frames.setAttribute("aria-label", "The animation's first and last frames");
+      frames.innerHTML = FRAMES.map(f => '<button type="button" class="vn-fr" data-fr="' + f[2] + '" aria-pressed="false" aria-label="' + f[1] + '" title="' + f[0] + '"></button>').join("");
+      note.appendChild(frames);
+      frames.addEventListener("click", ev => { const b = ev.target.closest(".vn-fr"); if (b) show(+b.dataset.fr); });
+      mark(host.dataset.vn === "named" ? 2 : 0); }
+    /* the first frame stands marked until the last is reached */
+    function mark(i){ if (!frames) return;
+      frames.querySelectorAll(".vn-fr").forEach(b => { const on = +b.dataset.fr === (i === 2 ? 2 : 0); b.classList.toggle("is-on", on); b.setAttribute("aria-pressed", String(on)); }); }
+
+    /* how tall the figure may be: the panel's height (fixed on a desk, in the phone band and in the presenter) less
+       everything else it holds, and the least room kept between it and the bars. Without a panel there is no limit */
+    const GAP = [24, 56];  /* the bars' top margin: at least the first; of the height left over, up to the second more */
+    function budget(){
+      const panel = host.closest(".who-fl-panel"); if (!panel || !panel.clientHeight) return Infinity;
+      const cs = getComputedStyle(panel), gap = parseFloat(cs.rowGap) || 0;
+      let used = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0), n = 0;
+      for (const c of panel.children){ const q = getComputedStyle(c); if (q.display === "none" || q.position === "absolute" || q.position === "fixed") continue;
+        /* the bars' top margin is set after the layout (spread), so only its least is counted */
+        used += c.offsetHeight + (c.classList.contains("fl-detail") ? GAP[0] : (parseFloat(q.marginTop) || 0)) + (parseFloat(q.marginBottom) || 0); n++; }
+      used += gap * Math.max(0, n - 1);
+      return svg.getBoundingClientRect().height + panel.clientHeight - used - 2;
+    }
+    /* the bars follow the figure at GAP[0]; where the panel is taller than the two need, half the rest (to GAP[1])
+       widens that gap and the other half stays under the bars (2026-10-20, Nil: "more space between the two bars") */
+    const detail = () => { const panel = host.closest(".who-fl-panel"); return panel && panel.querySelector(":scope > .fl-detail"); };
+    function spread(B, H){ const det = detail(); if (!det || B === Infinity) return;
+      det.style.marginTop = (GAP[0] + Math.max(0, Math.min(GAP[1], (B - H) / 2))) + "px"; }
+    /* the panel's height can change while its width does not (a taller window): fit again then */
+    let ro = null, lastPH = 0;
+    function watchPanel(){ const panel = host.closest(".who-fl-panel"); if (ro || !panel || !window.ResizeObserver) return;
+      ro = new ResizeObserver(() => { const h = panel.clientHeight; if (!isVenn() || Math.abs(h - lastPH) < 1) return; lastPH = h; still(); }); ro.observe(panel); }
+    const LABS = () => [setA, setB].concat(K3.map(k => reg[k]));
+    /* one layout at a given pitch and density. The two sets stand in one row (2026-10-20, Nil: "the two clusters
+       are in the same row"): apart, they span the panel's width between them; then they slide together. "full"
+       names each part beside its part: for the rectangles under a bracket that spans it; for the circles as a
+       Venn is labelled, those who commute in left of the work circle, those who commute out right of the live
+       one, those who do both under the lens with a leader up to it. "list" stacks the three names under the
+       figure, "compact" stacks them one line each. Labels are measured at the left edge at their natural width,
+       so where they last stood cannot change their size. null: the parts' names do not fit at this size */
+    function fit(Wd, p, dens, g){
+      const { R, cIn, cB, colsA, colsT, colsApart } = g;
+      host.classList.toggle("vn-list", dens === "list"); host.classList.toggle("vn-compact", dens === "compact");
+      host.classList.toggle("vn-side", !!g.round && dens === "full"); host.classList.toggle("vn-stag", !g.round && dens === "full");
+      LABS().forEach(el => { el.style.left = "0px"; el.style.top = "0px"; el.style.maxWidth = "none"; });
+      /* e: how much taller the live set's frame stands than the work set's, so the two frames cross (circles cross anyway) */
+      const e = g.round ? 3 : Math.max(4, p * .42), span = colsT * p, row = k => reg[k].querySelector(".vn-n").offsetWidth;
+      const ax0 = Math.max(0, (Wd - colsApart * p) / 2), bx0 = ax0 + (colsA + GAPC) * p;
+      /* joined: centred, unless the rectangles' out name needs the room on its right */
+      let ax1 = Math.max(0, (Wd - span) / 2);
+      /* (its whole name on one line where moving left can give it that, else its count) */
+      if (!g.round && dens === "full"){ const roomOut = Wd - (cIn + cB) * p - 2;
+        const wOut = reg.out.getBoundingClientRect().width + 2;
+        ax1 = Math.max(0, Math.min(ax1, roomOut - (wOut <= roomOut ? wOut : row("out")))); }
+      const bx1 = ax1 + cIn * p, rx = { in: ax1, both: bx1, out: ax1 + (cIn + cB) * p };
+      if (!g.round && dens === "full" && (row("in") > cIn * p - 12 || row("out") > Wd - rx.out - 2)) return null;
+      if (g.round && dens === "full" && (row("in") > ax1 - 18 || row("out") > Wd - (ax1 + span) - 18)) return null;
+
+      /* the sets' names. Rectangles: over the joined pair, side by side in the long form, else the short; else (a
+         phone) the short ones wrapped to half the width each, their counts without the unit word, if that takes
+         three lines at most; else each on its own row, the live set's above. Circles: each over its own circle's
+         outer half, the work set's ending at its circle's middle and the live set's starting at its own (the
+         centres are always apart, so they never meet), long form, else short, else wrapped to the room */
+      let stack = false, gy, topA, topB;
+      host.classList.remove("vn-brief", "vn-tight");
+      if (g.round){
+        const rA = g.RA * p, rB = g.RB * p;
+        const roomA = Math.min(ax0, ax1) + rA - 4, roomB = Wd - (Math.max(bx0, bx1) + rB) - 4;
+        const namesFit = () => setA.offsetWidth <= roomA && setB.offsetWidth <= roomB;
+        if (!namesFit()){ host.classList.add("vn-brief");
+          if (!namesFit()){ host.classList.add("vn-tight"); setA.style.maxWidth = Math.max(60, roomA) + "px"; setB.style.maxWidth = Math.max(60, roomB) + "px"; } }
+        const hA = setA.offsetHeight, hB = setB.offsetHeight;
+        /* the live circle is the smaller: its name sits just over its own top, lower than the work set's */
+        gy = Math.ceil(Math.max(hA + 8, hB + 6 - (rA - rB))) + 2;
+        topA = gy - 8 - hA; topB = gy + (rA - rB) - 6 - hB;
+      } else {
+        const sideBy = () => setA.offsetWidth + setB.offsetWidth + 16 <= span;
+        if (!sideBy()){ host.classList.add("vn-brief");
+          if (!sideBy()){ host.classList.add("vn-tight"); setA.style.maxWidth = setB.style.maxWidth = Math.max(60, (span - 16) / 2) + "px";
+            const lh = parseFloat(getComputedStyle(setA.querySelector("b")).lineHeight) || 19;
+            if (!sideBy() || Math.max(setA.offsetHeight, setB.offsetHeight) > 3 * lh + 6){
+              host.classList.remove("vn-tight"); setA.style.maxWidth = setB.style.maxWidth = "none"; stack = true; } } }
+        if (stack){ setA.style.maxWidth = Math.max(80, Wd - ax1 - 4) + "px"; setB.style.maxWidth = Math.max(80, ax1 + span - 4) + "px"; }
+        const hA = setA.offsetHeight, hB = setB.offsetHeight;
+        gy = Math.ceil(stack ? hB + 6 + hA + 8 : Math.max(hA + 8, hB + e + 8)) + 2;
+        topA = gy - 8 - hA; topB = stack ? topA - 6 - hB : gy - e - 8 - hB;
+      }
+      const wA = setA.offsetWidth, wB = setB.offsetWidth;
+      const by = gy + R * p + e + 7, ry = by + 13;
+      const lines = (k, n) => { const w = reg[k].querySelector(".vn-w"), lh = parseFloat(getComputedStyle(w).lineHeight) || 19; return w.offsetHeight <= lh * n + 2; };
+      let H, ldr = null;
+      if (dens === "full" && g.round){
+        const roomL = ax1 - 18, roomR = Wd - (ax1 + span) - 18;
+        reg.in.style.maxWidth = Math.min(280, roomL) + "px"; reg.out.style.maxWidth = Math.min(280, roomR) + "px"; reg.both.style.maxWidth = Math.min(300, Wd) + "px";
+        if (!K3.every(k => lines(k, 3))) return null;
+        const wIn = reg.in.offsetWidth, hIn = reg.in.offsetHeight, hOut = reg.out.offsetHeight, wBoth = reg.both.offsetWidth, hBoth = reg.both.offsetHeight;
+        /* the lens's lowest point, where the two circles cross */
+        const xi = (g.D * g.D - g.RB * g.RB + g.RA * g.RA) / (2 * g.D), yi = Math.sqrt(Math.max(0, g.RA * g.RA - xi * xi));
+        const cy = gy + g.RA * p, lx = ax1 + (g.RA + xi) * p, ly = cy + yi * p, bTop = gy + R * p + 14;
+        /* level with the circles' middle, unless that would reach up into a set's name, which hangs past its circle
+           into the same column (the work set's leftwards, the live set's rightwards) */
+        const hA = setA.offsetHeight, hB = setB.offsetHeight;
+        reg.in.dataset.x = ax1 - 14 - wIn; reg.in.dataset.y = Math.max(cy - hIn / 2, topA + hA + 8);
+        reg.out.dataset.x = ax1 + span + 14; reg.out.dataset.y = Math.max(cy - hOut / 2, topB + hB + 8);
+        reg.both.dataset.x = Math.max(0, Math.min(Wd - wBoth, lx - wBoth / 2)); reg.both.dataset.y = bTop;
+        ldr = [lx, ly + 3, bTop - 4];
+        H = Math.max(bTop + hBoth, +reg.in.dataset.y + hIn, +reg.out.dataset.y + hOut) + 4;
+      } else if (dens === "full"){
+        /* the commuters' names under their own brackets; the shared part's, whose column is narrow, one row lower,
+           centred under its bracket on a leader, so its two shares read in a line or two */
+        const mw = { in: cIn * p - 12, out: Wd - rx.out - 2 };
+        ["in", "out"].forEach(k => { reg[k].style.maxWidth = mw[k] + "px"; reg[k].dataset.x = rx[k]; reg[k].dataset.y = ry; });
+        /* a part's sentence in two lines at most: past that the names read as one run, so list them instead */
+        if (!lines("in", 2) || !lines("out", 2)) return null;
+        /* the leader runs down between the two names: the commute-in name must end short of it */
+        const lx = bx1 + cB * p / 2; if (rx.in + reg.in.offsetWidth > lx - 10) return null;
+        reg.both.style.maxWidth = Math.min(300, Wd) + "px";
+        const wBoth = reg.both.offsetWidth, y2 = ry + Math.max(reg.in.offsetHeight, reg.out.offsetHeight) + 14;
+        reg.both.dataset.x = Math.max(0, Math.min(Wd - wBoth, lx - wBoth / 2)); reg.both.dataset.y = y2;
+        if (!lines("both", 2)) return null;
+        ldr = [lx, by + 6, y2 - 4];
+        H = y2 + reg.both.offsetHeight + 4;
+      } else {
+        /* where the figure starts, moved left only as far as the widest name needs to stay on one line */
+        const x = Math.max(0, Math.min(ax1, Wd - 4 - Math.max(...K3.map(k => reg[k].offsetWidth)))); let y = ry;
+        K3.forEach(k => { reg[k].style.maxWidth = (Wd - x - 4) + "px"; reg[k].dataset.x = x; reg[k].dataset.y = y; y += reg[k].offsetHeight + (dens === "list" ? 10 : 6); });
+        H = y;
+      }
+      return { Wd, H: Math.ceil(H), p, r: p * .34, e, gy, by, ax0, bx0, ax1, bx1, topA, topB, wA, wB, dens, g, ldr };
+    }
+    /* the largest pitch that fits the panel, in the roomiest density that can name the parts at that size */
+    const PMIN = { full: 10, list: 9, compact: 0 }, RANK = { full: 0, list: 1, compact: 2 };
+    function best(Wd, B, g){
+      /* the dots are capped near opt-1's size (2026-10-20, Nil: "the dots don't need to be that big"); a short panel
+         shrinks them, a phone keeps its own cap */
+      const pW = Math.min(phone() ? 9 : 14, (Wd - 2) / g.colsApart);
+      /* the out part's name stands right of its part: in "full" the pitch leaves it room */
+      reg.out.style.maxWidth = reg.in.style.maxWidth = "none"; const outW = reg.out.querySelector(".vn-n").offsetWidth;
+      let L = null;
+      /* the circles weigh their three ways of naming by the dots each leaves: names beside the circles count in
+         full, a list under them at three quarters, the one-line list at six tenths (a narrow panel squeezes the
+         circles between side names; a list under them can give them the width) */
+      if (g.round){
+        const tried = [], WT = { full: 1, list: .75, compact: .6 }, MINR = { full: 4, list: PMIN.list, compact: 0 };
+        for (const dens of ["full", "list", "compact"]){
+          const sideW = Math.max(reg.in.querySelector(".vn-n").offsetWidth, outW) + 18;
+          let p = dens === "full" ? Math.min(pW, (Wd - 2 * sideW) / g.colsT) : pW, T = null;
+          for (let pass = 0; pass < 4; pass++){ T = fit(Wd, p, dens, g); if (!T || T.H <= B + .5) break; p = Math.max(3, p - (T.H - B) / g.R); }
+          if (T && T.H <= B + .5 && T.p >= MINR[dens]) tried.push(T);
+        }
+        if (tried.length) return Object.assign(tried.reduce((a, c) => c.p * WT[c.dens] > a.p * WT[a.dens] ? c : a), { fits: true });
+        return Object.assign(fit(Wd, 3, "compact", g) || {}, { fits: false });
+      }
+      for (const dens of ["full", "list", "compact"]){
+        const sideW = g.round ? Math.max(reg.in.querySelector(".vn-n").offsetWidth, outW) + 18 : 0;
+        let p = dens !== "full" ? pW : g.round ? Math.min(pW, (Wd - 2 * sideW) / g.colsT) : Math.min(pW, (Wd - 4 - outW) / (g.cIn + g.cB));
+        for (let pass = 0; pass < 4; pass++){
+          L = fit(Wd, p, dens, g); if (!L || L.H <= B + .5) break;
+          p = Math.max(3, p - (L.H - B) / g.R);
+        }
+        if (L && L.H <= B + .5 && L.p >= PMIN[dens]) return Object.assign(L, { fits: true });
+      }
+      return Object.assign(L || fit(Wd, pW, "compact", g), { fits: false });
+    }
+    /* which grid: the roomiest density, then the largest dots that fit the panel's height (12 rows unless another
+       is clearly larger). The dots are capped (best: pW), so a tall panel is not filled: the room left over goes
+       between the figure and the bars, then under them (spread) */
+    function layout(){
+      const Wd = host.clientWidth; if (!Wd) return null;
+      watchPanel();
+      const B = budget(), cands = round() ? [best(Wd, B, geoC())] : ROW_OPTS.map(R => best(Wd, B, geo(R)));
+      const better = (b, a) => (b.fits && !a.fits) || (b.fits === a.fits && (RANK[b.dens] < RANK[a.dens] || (RANK[b.dens] === RANK[a.dens] && b.p > a.p * 1.12)));
+      const pick = cands.slice(1).reduce((a, b) => better(b, a) ? b : a, cands[0]);
+      /* lay the chosen one out again, so the labels hold its sizes */
+      const L = fit(Wd, pick.p, pick.dens, pick.g); if (L) spread(B, L.H); return L;
+    }
+    function size(L){
+      cur = L; hideTip();
+      svg.setAttribute("width", L.Wd); svg.setAttribute("height", L.H); svg.setAttribute("viewBox", "0 0 " + L.Wd + " " + L.H);
+      /* the names' layer starts where the figure does (an svg has no offsetTop; the note may stand above it) */
+      labs.style.top = (svg.getBoundingClientRect().top - host.getBoundingClientRect().top).toFixed(1) + "px";
+      const p = L.p, { cIn, cB, cOut } = L.g, at = { in: [L.ax1, cIn], both: [L.bx1, cB], out: [L.ax1 + (cIn + cB) * p, cOut] };
+      if (L.ldr){ ldr.setAttribute("x1", L.ldr[0].toFixed(1)); ldr.setAttribute("x2", L.ldr[0].toFixed(1)); ldr.setAttribute("y1", L.ldr[1].toFixed(1)); ldr.setAttribute("y2", L.ldr[2].toFixed(1)); }
+      K3.forEach(k => { const b = brk[k], x = at[k][0], n = at[k][1];
+        b.setAttribute("x", (x + 1).toFixed(1)); b.setAttribute("y", L.by.toFixed(1)); b.setAttribute("width", Math.max(0, n * p - 2).toFixed(1)); b.setAttribute("height", 3);
+        reg[k].style.left = (+reg[k].dataset.x).toFixed(1) + "px"; reg[k].style.top = (+reg[k].dataset.y).toFixed(1) + "px"; });
+    }
+    /* t: 0 apart, 1 together. The two rectangles slide towards each other along their row; every dot and
+       each set's name ride with their rectangle */
+    function draw(L, t){
+      const p = L.p, r = L.r.toFixed(2), gy = L.gy, ax = L.ax0 + (L.ax1 - L.ax0) * t, bx = L.bx0 + (L.bx1 - L.bx0) * t;
+      const { R, cIn, colsA, colsB, CIN, CB, CBT, COUT } = L.g;
+      const put = (c, x0, cell) => { c.setAttribute("cx", (x0 + (cell[0] + .5) * p).toFixed(1)); c.setAttribute("cy", (gy + (cell[1] + .5) * p).toFixed(1)); c.setAttribute("r", r); };
+      idx.in.forEach((i, j) => put(circles[i], ax, CIN[j]));
+      idx.both.forEach((i, j) => { put(circles[i], ax, CB[j]); put(twins[j], bx - cIn * p, CBT[j]); });
+      idx.out.forEach((i, j) => put(circles[i], bx, COUT[j]));
+      if (L.g.round){
+        const cy = (gy + L.g.RA * p).toFixed(1);
+        cA.setAttribute("cx", (ax + L.g.RA * p).toFixed(1)); cA.setAttribute("cy", cy); cA.setAttribute("r", (L.g.RA * p).toFixed(1));
+        cB.setAttribute("cx", (bx + L.g.RB * p).toFixed(1)); cB.setAttribute("cy", cy); cB.setAttribute("r", (L.g.RB * p).toFixed(1));
+      } else {
+        fA.setAttribute("x", ax.toFixed(1)); fA.setAttribute("y", gy.toFixed(1)); fA.setAttribute("width", (colsA * p).toFixed(1)); fA.setAttribute("height", (R * p).toFixed(1));
+        fB.setAttribute("x", bx.toFixed(1)); fB.setAttribute("y", (gy - L.e).toFixed(1)); fB.setAttribute("width", (colsB * p).toFixed(1)); fB.setAttribute("height", (R * p + 2 * L.e).toFixed(1));
+      }
+      if (L.g.round){
+        setA.style.left = (ax + L.g.RA * p - L.wA).toFixed(1) + "px"; setB.style.left = (bx + L.g.RB * p).toFixed(1) + "px";
+      } else {
+        setA.style.left = ax.toFixed(1) + "px"; setB.style.left = (bx + colsB * p - L.wB).toFixed(1) + "px";
+      }
+      setA.style.top = L.topA.toFixed(1) + "px"; setB.style.top = L.topB.toFixed(1) + "px";
+    }
+    /* apart, each set wears one colour, the work rectangle all blue and the live one all orange, shared block and
+       all; joined, the shared block turns grey (2026-10-20, Nil: "first start with blue and orange clusters and then
+       they come together and grey area get its color") */
+    const colour = joined => { circles.forEach((c, i) => { const k = dots[i].k; c.style.fill = joined ? COL[k] : (k === "out" ? COL.out : COL.in); }); };
+    const setVn = v => { host.dataset.vn = v; mark(v === "apart" ? 0 : v === "named" ? 2 : 1); };
+    /* one frame as it stands at the end of its step: apart in the sets' colours; together, still in them; the shared
+       block grey and the parts named */
+    function frame(L, i){
+      if (i === 0){ draw(L, 0); colour(false); setVn("apart"); host.dataset.stage = "all"; }
+      else if (i === 1){ draw(L, 1); colour(false); setVn("met"); host.dataset.stage = "colour"; }
+      else { draw(L, 1); colour(true); setVn("named"); host.dataset.stage = "sorted"; } }
+    function show(i){
+      stop(); build(); const L = layout(); if (!L) return; size(L); pinned = i; host.dataset.played = "1";
+      host.classList.add("no-fade"); frame(L, i); void host.offsetWidth; host.classList.remove("no-fade"); }
+    let raf = 0, timers = [], stale = false;
+    function stop(){ timers.forEach(clearTimeout); timers = []; cancelAnimationFrame(raf); raf = 0; stale = false; hideTip(); }
+    /* apart and grey, the two sets named; together; the three parts coloured and named */
+    function play(){
+      stop(); pinned = null; build(); const L = layout(); if (!L) return; size(L); host.dataset.played = "1";
+      if (reduce()){ draw(L, 1); colour(true); setVn("named"); host.dataset.stage = "sorted"; return; }
+      host.classList.add("no-fade"); draw(L, 0); colour(false); setVn("apart"); host.dataset.stage = "all";
+      void host.offsetWidth; host.classList.remove("no-fade");
+      timers.push(setTimeout(() => {
+        /* laid out afresh: the width may have changed since the start */
+        const L = layout(); if (!L) return; size(L); setVn("moving"); host.dataset.stage = "colour";
+        const t0 = performance.now(), dur = 1500;
+        const tick = now => { const u = Math.min(1, (now - t0) / dur); draw(L, ease(u));
+          if (u < 1){ raf = requestAnimationFrame(tick); return; }
+          raf = 0; setVn("met");
+          timers.push(setTimeout(() => { colour(true); setVn("named"); host.dataset.stage = "sorted"; if (stale){ stale = false; still(); } }, 250)); };
+        raf = requestAnimationFrame(tick);
+      }, +host.dataset.hold || 900));
+    }
+    /* before the beat arrives, and on a resize: the stage as it stands */
+    function still(){
+      if (raf){ stale = true; return; }
+      /* the sets' colours at once, even before there is a width to lay them out in, so the dots never show the
+         circles' grey and then fade into blue and orange as the tool opens */
+      build(); if (host.dataset.stage !== "sorted" && host.dataset.vn !== "met") colour(false);
+      const L = layout(); if (!L) return; size(L);
+      /* a redraw, not a step of the animation: nothing fades */
+      host.classList.add("no-fade");
+      /* a frame a dot holds stays; joined but not yet grey only while the grey is still on its way; stopped there, it
+         goes back apart */
+      if (pinned != null) frame(L, pinned);
+      else if (host.dataset.stage === "sorted"){ draw(L, 1); colour(true); setVn("named"); }
+      else if (host.dataset.vn === "met" && timers.length){ draw(L, 1); }
+      else { draw(L, 0); colour(false); setVn("apart"); }
+      void host.offsetWidth; host.classList.remove("no-fade");
+    }
+    function apply(){
+      const on = isVenn(); if (on) build();
+      host.classList.toggle("is-venn", on); host.classList.toggle("vn-round", round()); svg.setAttribute("aria-label", on ? ariaVenn() : ariaCircles);
+      if (!on){ delete host.dataset.vn; host.classList.remove("vn-list", "vn-compact", "vn-brief", "vn-tight", "vn-round", "vn-side", "vn-stag"); hideTip(); const det = detail(); if (det) det.style.marginTop = ""; }
+    }
+    /* the study's switch: the figure starts again in its new dress, unless its dots are out on the map (beat 2) */
+    function set(m){
+      const next = m === "venn" || m === "classic" ? m : "circles"; if (next === mode) return;
+      stop(); const played = host.dataset.played === "1", wrap = document.getElementById("ovWrap"), handing = !!(wrap && wrap.classList.contains("who-hand"));
+      mode = next; pinned = null; document.querySelectorAll(".wt-groups-opt").forEach(sel => { sel.value = mode; });
+      const u = new URL(location.href); if (mode === GROUPS_DEFAULT) u.searchParams.delete("groups"); else u.searchParams.set("groups", mode);
+      history.replaceState(null, "", u.pathname + u.search + u.hash);
+      apply(); fig.reset();
+      if (played && !handing) fig.play(); else fig.still();
+    }
+    /* the counts behind the shares: a card under the pointer over a part, a set's name or a part's name, or where a
+       finger taps (a second tap on the same part puts it away). Only once the parts are named */
+    const TIPS = {
+      in:   [fmtN(IN) + " commute in", PCT(IN, JOBS) + " of the " + fmtN(JOBS) + " people working in Boston"],
+      both: [fmtN(BOTH) + " live and work in Boston", PCT(BOTH, JOBS) + " of the " + fmtN(JOBS) + " working there, " + PCT(BOTH, RES) + " of the " + fmtN(RES) + " living there"],
+      out:  [fmtN(OUT) + " commute out", PCT(OUT, RES) + " of the " + fmtN(RES) + " people living in Boston"],
+      work: ["People working in Boston", fmtN(JOBS) + " jobs: " + fmtN(IN) + " held by people commuting in, " + fmtN(BOTH) + " by its residents"],
+      live: ["People living in Boston", fmtN(RES) + " working residents: " + fmtN(BOTH) + " work there, " + fmtN(OUT) + " commute out"]
+    };
+    /* which part a point of the figure falls in, the sets standing joined (svg units): the part of the dot under it
+       (a dot by a circle's edge can sit a hair inside the other circle), else of the shape around it */
+    function region(x, y){ const L = cur; if (!L) return null; const p = L.p, g = L.g;
+      let near = null, nd = (p * .75) * (p * .75);
+      circles.forEach((c, i) => { const dx = +c.getAttribute("cx") - x, dy = +c.getAttribute("cy") - y, d = dx * dx + dy * dy; if (d < nd){ nd = d; near = dots[i].k; } });
+      if (near) return near;
+      if (g.round){ const cy = L.gy + g.RA * p, a = Math.hypot(x - (L.ax1 + g.RA * p), y - cy) <= g.RA * p, b = Math.hypot(x - (L.bx1 + g.RB * p), y - cy) <= g.RB * p;
+        return a && b ? "both" : a ? "in" : b ? "out" : null; }
+      const x1 = L.ax1 + g.cIn * p, x2 = x1 + g.cB * p, x3 = x2 + g.cOut * p;
+      if (x >= L.ax1 && x < x1 && y >= L.gy && y <= L.gy + g.R * p) return "in";
+      if (y < L.gy - L.e || y > L.gy + g.R * p + L.e) return null;
+      return x >= x1 && x < x2 ? "both" : x >= x2 && x <= x3 ? "out" : null; }
+    function hit(ev){ const wrap = document.getElementById("ovWrap");
+      if (!isVenn() || host.dataset.vn !== "named" || (wrap && wrap.classList.contains("who-hand"))) return null;
+      const lab = ev.target.closest && ev.target.closest("[data-tip]"); if (lab && host.contains(lab)) return lab.dataset.tip;
+      const r = svg.getBoundingClientRect(); if (ev.clientX < r.left || ev.clientX > r.right || ev.clientY < r.top || ev.clientY > r.bottom) return null;
+      const vb = svg.viewBox.baseVal, k = vb && vb.width ? vb.width / r.width : 1;
+      return region((ev.clientX - r.left) * k, (ev.clientY - r.top) * k); }
+    function showTip(k, cx, cy){
+      if (!k){ hideTip(); return; }
+      if (!tip){ tip = document.createElement("div"); tip.className = "vn-tip"; tip.setAttribute("aria-hidden", "true"); host.appendChild(tip); }
+      if (tip.dataset.k !== k){ tip.innerHTML = '<b>' + TIPS[k][0] + '</b><span>' + TIPS[k][1] + '</span>'; tip.dataset.k = k; }
+      tip.hidden = false;
+      /* above and right of the point, kept inside the figure */
+      const hr = host.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight;
+      let x = cx - hr.left + 14, y = cy - hr.top - h - 12;
+      if (x + w > hr.width) x = cx - hr.left - w - 14;
+      if (y < 0) y = cy - hr.top + 20;
+      tip.style.left = Math.max(0, Math.min(hr.width - w, x)).toFixed(1) + "px"; tip.style.top = y.toFixed(1) + "px";
+    }
+    host.addEventListener("pointermove", ev => { if (ev.pointerType !== "touch") showTip(hit(ev), ev.clientX, ev.clientY); });
+    host.addEventListener("pointerleave", ev => { if (ev.pointerType !== "touch") hideTip(); });
+    host.addEventListener("pointerdown", ev => { if (ev.pointerType !== "touch") return; const k = hit(ev);
+      if (k && tip && !tip.hidden && tip.dataset.k === k) hideTip(); else showTip(k, ev.clientX, ev.clientY); });
+    { const pages = document.getElementById("pages"); if (pages) pages.addEventListener("scroll", hideTip, { passive: true }); }
+    window.whoFlowsAlt = { on: isVenn, mode: () => mode, set, play, still, stop };
+    /* the labels are measured: lay out again once the web fonts are in (still() waits for a slide under way) */
+    if (document.fonts){ const refit = () => { if (isVenn() && built) still(); };
+      document.fonts.ready.then(refit); if (document.fonts.addEventListener) document.fonts.addEventListener("loadingdone", refit); }
+    if (isVenn()){ apply(); fig.still(); }
   })();
 
 
@@ -14710,21 +15403,29 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     /* the study's menu in beat A's counter: opt-1 the dots beside the shaded
        map, opt-2 the dots go home. The second adds a beat, so the choice
        reloads the page on the section */
-    function study(){
-      const eye = secA && secA.querySelector(":scope > .ct-eyebrow"); if (!eye || eye.querySelector(".wt-flows-opt")) return;
+    /* each commuting beat's counter carries its own "opt" menu (2026-10-22, Nil: "make sure the options are reachable
+       through the opt feature next to the chapter feature"): Groups in the first beat, where the figure is; Balance in
+       the second, where the bars or the needle are (the Flows study is settled on opt-2, so it is no longer offered) */
+    function study(sec, rows, suffix){
+      const eye = sec && sec.querySelector(":scope > .ct-eyebrow"); if (!eye || eye.querySelector(".mi-studies")) return;
       const st = document.createElement("div"); st.className = "mi-studies";
-      st.innerHTML = '<button type="button" class="mi-studies-btn" aria-expanded="false" aria-controls="whoFlowsPanel">opt</button>' +
-        '<div class="mi-studies-panel" id="whoFlowsPanel" role="group" aria-label="Design studies" hidden><label class="mi-study"><span>Flows</span>' +
-        '<select class="wt-flows-opt" aria-label="How the commuters are shown"><option value="dots">opt-1</option><option value="home">opt-2</option></select></label></div>';
+      const ROW = {
+        /* opt-2's first beat: the three groups as circles, or as a rectangle Venn (2026-10-20) */
+        groups: '<label class="mi-study"><span>Groups</span><select class="wt-groups-opt" aria-label="How the three groups are drawn"><option value="circles">opt-1</option><option value="venn">opt-2</option><option value="classic">opt-3</option></select></label>',
+        balance: '<label class="mi-study"><span>Balance</span><select class="wt-balance-opt" aria-label="How the balance is read"><option value="bars">opt-1</option><option value="needle">opt-2</option></select></label>' };
+      st.innerHTML = '<button type="button" class="mi-studies-btn" aria-expanded="false" aria-controls="whoFlowsPanel' + suffix + '">opt</button>' +
+        '<div class="mi-studies-panel" id="whoFlowsPanel' + suffix + '" role="group" aria-label="Design studies" hidden>' + rows.map(k => ROW[k]).join("") + '</div>';
       eye.appendChild(st);
-      const btn = st.querySelector(".mi-studies-btn"), panel = st.querySelector(".mi-studies-panel"), sel = st.querySelector("select");
-      sel.value = HOME ? "home" : "dots";
+      const btn = st.querySelector(".mi-studies-btn"), panel = st.querySelector(".mi-studies-panel");
+      const gs = st.querySelector(".wt-groups-opt");
+      if (gs){ if (window.whoFlowsAlt) gs.value = window.whoFlowsAlt.mode(); gs.addEventListener("change", () => { if (window.whoFlowsAlt) window.whoFlowsAlt.set(gs.value); }); }
+      const bs = st.querySelector(".wt-balance-opt");
+      if (bs){ if (window.whoNetAlt) bs.value = window.whoNetAlt.mode(); bs.addEventListener("change", () => { if (window.whoNetAlt) window.whoNetAlt.set(bs.value); }); }
       btn.addEventListener("click", () => { const open = panel.hidden; panel.hidden = !open; btn.setAttribute("aria-expanded", String(open)); });
       document.addEventListener("click", ev => { if (!st.contains(ev.target) && !panel.hidden){ panel.hidden = true; btn.setAttribute("aria-expanded", "false"); } });
-      sel.addEventListener("change", () => { const u = new URL(location.href); if (sel.value === FLOWS_DEFAULT) u.searchParams.delete("flows"); else u.searchParams.set("flows", sel.value);
-        u.hash = "#who-am-i"; location.replace(u.pathname + u.search + u.hash); });
     }
-    study(); setTimeout(study, 0);
+    const studies = () => { study(secA, ["groups"], ""); study(secB, ["balance"], "B"); };
+    studies(); setTimeout(studies, 0);
     /* the flow graphic, the day's totals in and out of Boston: in opt-2 it
        closes beat A once the dots have landed (showEnd); in opt-1 (Nil,
        2026-10-18) it comes in under the figure as the three groups draw
@@ -14758,6 +15459,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     secA.classList.add("wide-beat");
     secA.querySelector(".page-head h2").innerHTML = 'Who works here, who lives here';
     const lede1 = secA.querySelector(":scope > .lede");
+    /* this beat says "Boston", not "Boston Admin", in its words, figure and bars (2026-10-21, Nil: "Who works here, who
+       lives here: instead of saying Boston Admin, just write Boston"); the shared map and the other beats keep the long names */
     lede1.innerHTML = 'A city&rsquo;s jobs and its workers are not the same people. <span class="city-short">Boston</span> has ' + fmtN(JOBS) + ' jobs and ' + fmtN(RES) +
       ' working residents, and ' + fmtN(BOTH) + ' people are both: they live and work in <span class="city-short">Boston</span>.';
     const lede2 = document.createElement("p"); lede2.className = "lede";
@@ -14771,13 +15474,22 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     /* the detail (2026-10-18, Nil: "extend Jobs and working residents and more labeling"): the city's two
        totals built from the three groups, each segment on one scale, counted and named under it */
     const pctW = (a, b) => (a / b * 100).toFixed(2) + "%";
-    const seg = (cls, v, words) => '<i class="' + cls + '" style="--w:' + pctW(v, JOBS) + '"><b>' + fmtN(v) + '</b><span>' + words + '</span></i>';
+    /* (2026-10-20, Nil: "remove the title", "say 718,571 jobs in Boston Admin as a title", "update the labels so they
+       match with the venn diagram ... use percentages as well"): each total heads its own bar, each segment is named
+       as the Venn names its part, and its share of that total stands after its count */
+    /* the commuters first and the grey, those who live and work there, at the end of each bar (2026-10-21, Nil: "make the
+       grey at the right side"). Each segment named by its share of the bar's total in one line, the count in its tooltip
+       (Nil: "use the percentage. 74% commute in Boston. 26% live and work in Boston ... 45% Boston residents commute out").
+       A bar: [cls, count, total, words, the count's own words] for each segment, strips then their names */
+    const bar = segs => '<span class="fd-sb">' + segs.map(([cls, v, , , tip]) => '<i class="' + cls + '" style="--w:' + pctW(v, JOBS) + '" title="' + fmtN(v) + ' ' + tip + '"></i>').join("") + '</span>' +
+      '<span class="fd-lb">' + segs.map(([cls, v, of, words, tip]) => '<span class="fd-lab ' + cls + '" style="--w:' + pctW(v, JOBS) + '" title="' + fmtN(v) + ' ' + tip + '"><b>' +
+        Math.round(v / of * 100) + '%</b> ' + words + '</span>').join("") + '</span>';
     const detailHtml = col => '<div class="fl-detail' + (col ? ' fl-detail--col' : '') + '">' +
-      '<div class="fd fd-jobs"><p class="fd-t">Jobs and working residents</p>' +
-        '<div class="fd-st"><span class="fd-l"><b>' + fmtN(JOBS) + '</b> jobs in <span class="city-short">Boston</span></span>' +
-          '<span class="fd-sb">' + seg("both", BOTH, "held by people who live in Boston") + seg("in", IN, "held by commuters who live elsewhere") + '</span></div>' +
-        '<div class="fd-st"><span class="fd-l"><b>' + fmtN(RES) + '</b> working residents of <span class="city-short">Boston</span></span>' +
-          '<span class="fd-sb">' + seg("both", BOTH, "work in Boston") + seg("out", OUT, "commute out to work") + '</span></div></div></div>';
+      '<div class="fd fd-jobs">' +
+        '<div class="fd-st"><p class="fd-t">' + fmtN(JOBS) + ' jobs in <span class="city-short">Boston</span></p>' +
+          bar([["in", IN, JOBS, "commute in Boston", "commute in"], ["both", BOTH, JOBS, "live and work in Boston", "live and work in Boston"]]) + '</div>' +
+        '<div class="fd-st"><p class="fd-t">' + fmtN(RES) + ' working residents of <span class="city-short">Boston</span></p>' +
+          bar([["out", OUT, RES, "Boston residents commute out", "Boston residents commute out"], ["both", BOTH, RES, "live and work in Boston", "live and work in Boston"]]) + '</div></div></div>';
     const panel = document.createElement("div"); panel.className = "wide-vis who-fl-panel";
     panel.appendChild(fig.host);
     panel.insertAdjacentHTML("beforeend", detailHtml(false));
@@ -14792,8 +15504,12 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       if (Math.abs(k - old) > .02){ if (k === 1) delete fig.host.dataset.k; else fig.host.dataset.k = k.toFixed(2); fig.still(); } };
     if (window.ResizeObserver) new ResizeObserver(() => requestAnimationFrame(fitK)).observe(panel); fitK();
     /* the details show whole, at once, as the dots start (2026-10-18, Nil: "just show it at once") */
-    const shownNow = () => secA.classList.toggle("fl-shown", fig.host.dataset.played === "1" || fig.host.dataset.stage === "sorted");
-    new MutationObserver(shownNow).observe(fig.host, { attributes: true, attributeFilter: ["data-stage", "data-played"] }); shownNow();
+    const shownNow = () => { secA.classList.toggle("fl-shown", fig.host.dataset.played === "1" || fig.host.dataset.stage === "sorted");
+      /* with the Venn's first frame the bars stand bare, dashed outlines with their totals; their colours and names come
+         with the last frame (2026-10-22, Nil: "in the first frame, let's have a dashed bar ... in the second frame, also
+         apply colors to the bar and show labels") */
+      const vn = fig.host.dataset.vn; secA.classList.toggle("fl-bare", !!vn && vn !== "named"); };
+    new MutationObserver(shownNow).observe(fig.host, { attributes: true, attributeFilter: ["data-stage", "data-played", "data-vn"] }); shownNow();
 
     /* ==== beat 2: from the dots to the map ==== */
     secB.querySelector(".page-head h2").textContent = "Who comes in, who goes out";
@@ -14802,7 +15518,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     const senders = known.filter(f => netOf(f) > 0).sort((a, b) => netOf(b) - netOf(a)), takers = known.filter(f => netOf(f) < 0).sort((a, b) => netOf(a) - netOf(b));
     const nm = f => esc(f.properties.name.replace(/ (Town|city)$/, ""));
     secB.classList.add("wide-text");
-    secB.querySelector(":scope > .lede").innerHTML = 'Each dot flies to the town where its people live or work, and adds its colour there. The map can show the balance between the two ways, or either way on its own.';
+    secB.querySelector(":scope > .lede").innerHTML = 'Each dot flies to the admin where its people live or work, and adds its colour there. The map can show who commutes into Boston, who commutes out of it, or where Boston gains or loses workers.';
     /* no note under the map's words (2026-10-18, Nil) */
     const note = secB.querySelector(".who-home-note"); if (note) note.remove();
     /* the three views (2026-10-18, Nil: "still give the user the option to see commuting out and in"):
@@ -14817,22 +15533,81 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       '<span class="nb-t"><i style="--w:' + (Math.abs(v) / mx * 100).toFixed(1) + '%"></i></span><b>' + (views.cur === "net" ? signed(v) : fmtN(Math.abs(v))) + '</b></div>';
     const views = { cur: "net",
       net(){ const mx = Math.max(...top3.map(netOf), ...takers.map(f => -netOf(f)));
-        return '<p class="nb-h nb-h--in">Send <span class="city-short">Boston</span> more workers than they take</p>' + top3.map(f => nbRow(f, "in", netOf(f), mx)).join("") +
-          '<p class="nb-h nb-h--out">Take more from <span class="city-short">Boston</span> than they send</p>' + takers.map(f => nbRow(f, "out", netOf(f), mx)).join(""); },
+        return '<p class="nb-h nb-h--in"><span class="city-short">Boston</span> gains the most workers from</p>' + top3.map(f => nbRow(f, "in", netOf(f), mx)).join("") +
+          '<p class="nb-h nb-h--out"><span class="city-short">Boston</span> loses the most workers to</p>' + takers.map(f => nbRow(f, "out", netOf(f), mx)).join(""); },
       in(){ const mx = in5[0].properties.inWorkers;
-        return '<p class="nb-h nb-h--in">Send the most workers to <span class="city-short">Boston</span></p>' + in5.map(f => nbRow(f, "in", f.properties.inWorkers, mx)).join(""); },
+        return '<p class="nb-h nb-h--in">Most commuters into <span class="city-short">Boston</span></p>' + in5.map(f => nbRow(f, "in", f.properties.inWorkers, mx)).join(""); },
       out(){ const mx = out5[0].properties.outWorkers;
-        return '<p class="nb-h nb-h--out">Take the most <span class="city-short">Boston</span> residents</p>' + out5.map(f => nbRow(f, "out", f.properties.outWorkers, mx)).join(""); } };
+        return '<p class="nb-h nb-h--out">Most commuters out of <span class="city-short">Boston</span></p>' + out5.map(f => nbRow(f, "out", f.properties.outWorkers, mx)).join(""); } };
     const ctlN = document.createElement("div"); ctlN.className = "who-fl-ctl who-net-ctl"; ctlN.id = "whoNetCtl";
     ctlN.innerHTML = '<span class="ctl-label">Map shows</span><div class="seg" role="group" aria-label="What the map shows">' +
-      '<button type="button" class="seg-btn is-active" data-v="net" aria-pressed="true"><i class="fl-sw fl-sw--net" aria-hidden="true"></i>Which way more go</button>' +
-      '<button type="button" class="seg-btn" data-v="in" aria-pressed="false"><i class="fl-sw fl-sw--in" aria-hidden="true"></i>Commute in</button>' +
-      '<button type="button" class="seg-btn" data-v="out" aria-pressed="false"><i class="fl-sw fl-sw--out" aria-hidden="true"></i>Commute out</button></div>';
+      '<button type="button" class="seg-btn is-active" data-v="net" aria-pressed="true"><i class="fl-sw fl-sw--net" aria-hidden="true"></i>Where Boston gains or loses workers</button>' +
+      '<button type="button" class="seg-btn" data-v="in" aria-pressed="false"><i class="fl-sw fl-sw--in" aria-hidden="true"></i>Commute into Boston</button>' +
+      '<button type="button" class="seg-btn" data-v="out" aria-pressed="false"><i class="fl-sw fl-sw--out" aria-hidden="true"></i>Commute out of Boston</button></div>';
     const bars = document.createElement("div"); bars.className = "who-net"; bars.id = "whoNetBars";
     const barsBody = document.createElement("div"); barsBody.className = "nb-body"; barsBody.setAttribute("aria-live", "polite");
     bars.appendChild(barsBody);
-    bars.insertAdjacentHTML("beforeend", '<p class="who-fl-note">One dot is about ' + fmtN(PER) + ' people. <button type="button" class="who-fl-replay who-net-replay">' + REPLAY + 'Play again</button></p>');
     const lede2b = secB.querySelector(":scope > .lede"); lede2b.after(ctlN); ctlN.after(bars);
+    /* opt-2 of the Balance study (2026-10-22, Nil: "instead of showing the bars, show the needle visualization, the one we
+       use in the Worker Flows"): Boston's commuters in for every one out, on a half ring from a quarter to four times
+       (log), three zones in this section's words, residential, balanced, business; the needle swings to the admin whose
+       card is open on the map, and a dashed ghost keeps Boston's own reading */
+    const gauge = document.createElement("div"); gauge.className = "who-gauge"; gauge.id = "whoGauge"; gauge.hidden = true; bars.after(gauge);
+    const GG = { cx: 160, cy: 168, r: 150, rIn: 122, min: .25, max: 4 }, GNS = "http://www.w3.org/2000/svg";
+    const gAng = v => Math.PI - (Math.log(v) - Math.log(GG.min)) / (Math.log(GG.max) - Math.log(GG.min)) * Math.PI;
+    const gPt = (a, r) => [GG.cx + Math.cos(a) * r, GG.cy - Math.sin(a) * r];
+    const gArc = (v0, v1, r0, r1) => { const a0 = gAng(v0), a1 = gAng(v1), p0 = gPt(a0, r1), p1 = gPt(a1, r1), p2 = gPt(a1, r0), p3 = gPt(a0, r0);
+      return "M" + p0[0] + "," + p0[1] + " A" + r1 + "," + r1 + " 0 0 1 " + p1[0] + "," + p1[1] + " L" + p2[0] + "," + p2[1] + " A" + r0 + "," + r0 + " 0 0 0 " + p3[0] + "," + p3[1] + "Z"; };
+    const gEl = (n, a, txt) => { const e = document.createElementNS(GNS, n); Object.entries(a).forEach(([k, v]) => e.setAttribute(k, v)); if (txt != null) e.textContent = txt; return e; };
+    const ZONES = [{ v0: .25, v1: .8, k: "res", label: "Residential" }, { v0: .8, v1: 1.25, k: "bal", label: "Balanced" }, { v0: 1.25, v1: 4, k: "bus", label: "Business" }];
+    const zoneOf = r => r < .8 ? "res" : r <= 1.25 ? "bal" : "bus";
+    const gsvg = gEl("svg", { class: "wg-svg", viewBox: "0 0 320 200", role: "img" });
+    /* the balanced zone runs from the one colour to the other (2026-10-22, Nil: "don't use white, maybe do gradient") */
+    { const defs = gEl("defs", {}), x0 = gPt(gAng(.8), GG.r)[0], x1 = gPt(gAng(1.25), GG.r)[0];
+      const grad = gEl("linearGradient", { id: "wgBal", gradientUnits: "userSpaceOnUse", x1: x0.toFixed(1), y1: 0, x2: x1.toFixed(1), y2: 0 });
+      grad.appendChild(gEl("stop", { offset: "0", class: "wg-stop--res" })); grad.appendChild(gEl("stop", { offset: "1", class: "wg-stop--bus" }));
+      defs.appendChild(grad); gsvg.appendChild(defs); }
+    ZONES.forEach(z => gsvg.appendChild(gEl("path", { d: gArc(z.v0, z.v1, GG.rIn, GG.r), class: "wg-zone wg-zone--" + z.k })));
+    ZONES.forEach(z => { const mid = Math.exp((Math.log(z.v0) + Math.log(z.v1)) / 2), a = gAng(mid), q = gPt(a, GG.r + 13), deg = -(a * 180 / Math.PI - 90);
+      gsvg.appendChild(gEl("text", { x: q[0], y: q[1], class: "wg-zlab", "text-anchor": "middle", transform: "rotate(" + deg.toFixed(1) + " " + q[0] + " " + q[1] + ")" }, z.label)); });
+    [.5, 1, 2].forEach(v => { const a = gAng(v), q0 = gPt(a, GG.rIn - 2), q1 = gPt(a, GG.rIn - 8), qt = gPt(a, GG.rIn - 24);
+      gsvg.appendChild(gEl("line", { x1: q0[0], y1: q0[1], x2: q1[0], y2: q1[1], class: "wg-tick" }));
+      gsvg.appendChild(gEl("text", { x: qt[0], y: qt[1] + 4, class: "wg-tlab", "text-anchor": "middle" }, v + "\u00d7")); });
+    const R_ALL = IN / OUT, ga = gAng(R_ALL), g0 = gPt(ga, GG.rIn - 4), g1 = gPt(ga, GG.r + 4);
+    const ghost = gEl("line", { x1: g0[0], y1: g0[1], x2: g1[0], y2: g1[1], class: "wg-ghost" }); gsvg.appendChild(ghost);
+    const needle = gEl("line", { x1: GG.cx, y1: GG.cy, x2: GG.cx + GG.rIn - 12, y2: GG.cy, class: "wg-needle" }); gsvg.appendChild(needle);
+    gsvg.appendChild(gEl("circle", { cx: GG.cx, cy: GG.cy, r: 4, class: "wg-pivot" }));
+    const gBig = gEl("text", { x: GG.cx, y: GG.cy - 22, class: "wg-big", "text-anchor": "middle" }, ""); gsvg.appendChild(gBig);
+    gauge.appendChild(gsvg);
+    gauge.insertAdjacentHTML("beforeend", '<p class="wg-who"></p><p class="wg-verdict"></p><p class="wg-sentence"></p><p class="wg-ghostlab"></p>');
+    const gWho = gauge.querySelector(".wg-who"), gVerdict = gauge.querySelector(".wg-verdict"), gSentence = gauge.querySelector(".wg-sentence"), gGhost = gauge.querySelector(".wg-ghostlab");
+    const rx = r => (r >= 10 ? Math.round(r) : r.toFixed(1)) + "\u00d7";
+    function gaugeDraw(q){
+      const own = !q, i = own ? IN : (q.inWorkers || 0), o = own ? OUT : q.outWorkers, r = Math.max(GG.min, Math.min(GG.max, i / o)), z = zoneOf(i / o);
+      needle.style.transform = "rotate(" + (-(gAng(r) * 180 / Math.PI)).toFixed(2) + "deg)"; needle.setAttribute("class", "wg-needle wg-needle--" + z);
+      gBig.textContent = rx(i / o); gBig.setAttribute("class", "wg-big wg-big--" + z);
+      ghost.classList.toggle("is-on", !own); gGhost.textContent = own ? "" : "Dashed line: Boston with every admin, " + rx(R_ALL);
+      const nm = own ? "" : q.name.replace(/ (Town|city)$/, "");
+      /* the title says what Boston is (2026-10-22, Nil: "the title should be Boston is a business admin"); with an admin's
+         card open, what it is to that admin */
+      gWho.className = "wg-who wg-who--" + z;
+      gWho.textContent = own ? "Boston is a " + (z === "bus" ? "business" : z === "res" ? "residential" : "balanced") + " admin"
+        : z === "bus" ? "With " + nm + ", Boston is the business admin" : z === "res" ? "With " + nm + ", Boston is the residential admin" : "With " + nm + ", the two are balanced";
+      gVerdict.textContent = rx(i / o).replace("\u00d7", "") + " commute in for every one who commutes out";
+      gSentence.textContent = fmtN(i) + " commute into Boston" + (own ? "" : " from " + nm) + " and " + fmtN(o) + " commute out of it" + (own ? "" : " to " + nm) + ": " +
+        (i > o ? "Boston gains " + fmtN(i - o) + " workers." : i < o ? "Boston loses " + fmtN(o - i) + " workers." : "Boston neither gains nor loses workers.");
+      gsvg.setAttribute("aria-label", gWho.textContent + ". " + gVerdict.textContent + ". " + gSentence.textContent);
+    }
+    gaugeDraw(null);
+    /* the needle follows the admin whose card is open on the map (a pointer over it, or a tap), when its out count is known */
+    document.addEventListener("who-town", ev => { if (gauge.hidden) return; const q = ev.detail; gaugeDraw(q && q.outWorkers != null ? q : null); });
+    let balance = (location.search.match(/[?&]balance=(bars|needle)\b/) || [, BALANCE_DEFAULT])[1];
+    function setBalance(m){ balance = m === "needle" ? "needle" : "bars"; bars.hidden = balance === "needle"; gauge.hidden = balance !== "needle";
+      document.querySelectorAll(".wt-balance-opt").forEach(sel => { sel.value = balance; });
+      const u = new URL(location.href); if (balance === BALANCE_DEFAULT) u.searchParams.delete("balance"); else u.searchParams.set("balance", balance);
+      history.replaceState(null, "", u.pathname + u.search + u.hash); }
+    setBalance(balance);
+    window.whoNetAlt = { mode: () => balance, set: setBalance };
     const drawView = () => { barsBody.innerHTML = views[views.cur](); };
     drawView();
     ["whoHomeCtl", "whoHomeFig", "whoHomeFg", "whoHomeTwo"].forEach(id => { const e = document.getElementById(id); if (e) e.remove(); });
@@ -14870,9 +15645,10 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     /* the key: the net shade, and the commuters with no town on the map (their dots fly into this line) */
     function legendHtml(){
       const K = n => Math.round(n / 1e3) + "K";
-      return WHO_SHADE.key("net") + '<span class="wk-off"><span>No town on the map:</span> <b class="in">' + K(A_IN.beyondW + A_IN.unmappedW) + ' in</b>, <b class="out">' + K(A_OUT.beyondW + A_OUT.unmappedW) + ' out</b></span>';
+      return WHO_SHADE.key("net");
     }
-    const offPos = () => { const e = H().legendEl.querySelector(".wk-off"); if (!e || !e.getClientRects().length) { const r = H().rect(); return [r.right - 30, r.top + 30]; } const r = e.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; };
+    /* where a dot with no town on the map goes: into the key, and is gone (the key's "No town on the map" line went on 2026-10-22, Nil) */
+    const offPos = () => { const e = H().legendEl, r = e && e.getClientRects().length ? e.getBoundingClientRect() : H().rect(); return [r.right - 28, r.top + 28]; };
     let landed = false;
 
     /* the flight overlay: dots in page pixels, over the page */
@@ -15027,8 +15803,6 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       if (wrap.classList.contains("who-flows-on") && window.whoShowMode) window.whoShowMode(views.cur === "net" ? "homeN" : views.cur);
     }
     ctlN.addEventListener("click", ev => { const b = ev.target.closest(".seg-btn"); if (b) setView(b.dataset.v); });
-    /* Play again plays the balance: the dots build that view */
-    bars.querySelector(".who-net-replay").addEventListener("click", () => { setView("net"); fromBoston(false); });
     H().legend(legendHtml());
     soon(); setTimeout(soon, 700);
 
@@ -15068,32 +15842,60 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     const km = (lat, lon) => { const R = 6371, dLat = (lat - B[0]) * Math.PI / 180, dLon = (lon - B[1]) * Math.PI / 180, a = Math.sin(dLat / 2) ** 2 + Math.cos(B[0] * Math.PI / 180) * Math.cos(lat * Math.PI / 180) * Math.sin(dLon / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(a)); };
     /* the towns with an exchange, inside the metro, largest exchange first */
     const rows = G.places.features.filter(f => f.properties.inMsa && (f.properties.inWorkers || f.properties.outWorkers)).map(f => { const q = f.properties, c = d3.geoCentroid(f);
-      return { name: q.name, st: q.state, inW: q.inWorkers || 0, inS: q.inShare, outW: q.outWorkers || 0, outS: q.outShare, d: km(c[1], c[0]) }; }).sort((a, b) => (b.inW + b.outW) - (a.inW + a.outW));
+      return { name: q.name.replace(/ (Town|city)$/, ""), st: q.state, inW: q.inWorkers || 0, inS: q.inShare, outW: q.outWorkers || 0, outS: q.outShare, d: km(c[1], c[0]) }; }).sort((a, b) => (b.inW + b.outW) - (a.inW + a.outW));
     const metroIn = rows.reduce((a, r) => a + r.inW, 0), metroOut = rows.reduce((a, r) => a + r.outW, 0);
     const beyond = G.places.features.filter(f => !f.properties.inMsa), beyondIn = beyond.reduce((a, f) => a + (f.properties.inWorkers || 0), 0), beyondOut = beyond.reduce((a, f) => a + (f.properties.outWorkers || 0), 0);
     const MAX = Math.max(...rows.map(r => Math.max(r.inW, r.outW)));
     const TOP = 15;
     let all = false;
+    /* which way the map is showing (2026-10-22, Nil: "table in the map should reflect whatever the map is showing, so do not
+       show commute out when showing commute in"): the beat's own control says; the balance shows both ways */
+    const mode = () => { const m = window.whoFlowsHome ? window.whoNetMode : window.whoFlowMode; return m === "in" || m === "out" ? m : "net"; };
+    /* the columns sort (2026-10-22, Nil: "put sort icon on the columns wherever appropriate"): a header sorts by its column,
+       a second click turns the order round; each view starts on its own column, largest first (the balance view on the
+       balance, so Boston's gains lead and its losses close the list), and a change of view starts afresh */
+    const BY = { in: r => r.inW, out: r => r.outW, net: r => r.inW + r.outW, bal: r => r.inW - r.outW, d: r => r.d, name: r => r.name };
+    const DEF = { in: "in", out: "out", net: "bal" }, ASC0 = { name: true, d: true }, KEYS = { in: ["name", "in", "d"], out: ["name", "out", "d"], net: ["name", "in", "out", "bal", "d"] };
+    let sort = { key: null, asc: false };
+    const sortOf = m => { const k = sort.key && KEYS[m].includes(sort.key) ? sort.key : DEF[m]; return { key: k, asc: sort.key === k ? sort.asc : !!ASC0[k] }; };
+    const list = m => { const { key, asc } = sortOf(m), v = BY[key], base = m === "out" ? rows.filter(r => r.outS != null) : rows;
+      return base.slice().sort((a, b) => { const x = v(a), y = v(b); const c = typeof x === "string" ? x.localeCompare(y) : x - y; return asc ? c : -c; }); };
+    const SORT_ICO = '<svg class="ft-si" viewBox="0 0 10 14" aria-hidden="true"><path class="ft-si-up" d="M5 2.5l3 3.5H2z"/><path class="ft-si-dn" d="M5 11.5L2 8h6z"/></svg>';
+    const th = (key, m, cls, label) => { const s0 = sortOf(m), on = s0.key === key;
+      return '<th scope="col" class="' + cls + (on ? ' is-sorted' : '') + '"' + (on ? ' aria-sort="' + (s0.asc ? 'ascending' : 'descending') + '"' : '') + '>' +
+        '<button type="button" class="ft-sort' + (on ? (s0.asc ? ' is-asc' : ' is-desc') : '') + '" data-key="' + key + '" aria-label="Sort by ' + (key === "name" ? "admin" : key === "d" ? "distance" : key === "bal" ? "net flow" : key === "in" ? "commuters into Boston" : "commuters out of Boston") + '">' + label + SORT_ICO + '</button></th>'; };
     const bar = r => '<span class="ft-bar" aria-hidden="true"><i class="ft-in" style="width:' + (r.inW / MAX * 100).toFixed(1) + '%"></i><i class="ft-out" style="width:' + (r.outW / MAX * 100).toFixed(1) + '%"></i></span>';
     const bal = r => { const v = r.inW - r.outW; return '<span class="ft-bal ' + (v > 0 ? "to" : v < 0 ? "from" : "") + '">' + (v > 0 ? "+" : v < 0 ? "−" : "") + fmtN(Math.abs(v)) + '</span>'; };
-    const row = r => '<tr><th scope="row">' + esc(r.name) + (r.st && r.st !== "MA" ? ', ' + esc(r.st) : '') + '</th>' +
-      '<td class="num"><b>' + fmtN(r.inW) + '</b><small>' + (r.inS != null ? pc(r.inS) + ' of its workers' : '—') + '</small></td>' +
-      '<td class="ft-cell">' + bar(r) + '</td>' +
-      '<td class="num"><b>' + fmtN(r.outW) + '</b><small>' + (r.outS != null ? pc(r.outS) + ' of its jobs' : 'not known') + '</small></td>' +
-      '<td class="num">' + bal(r) + '</td><td class="num">' + Math.round(r.d) + ' km</td></tr>';
+    const cellIn = r => '<td class="num"><b>' + fmtN(r.inW) + '</b><small>' + (r.inS != null ? pc(r.inS) + ' of its workers' : '—') + '</small></td>';
+    const cellOut = r => '<td class="num"><b>' + fmtN(r.outW) + '</b><small>' + (r.outS != null ? pc(r.outS) + ' of its jobs' : 'not known') + '</small></td>';
+    const rowName = r => '<th scope="row">' + esc(r.name) + (r.st && r.st !== "MA" ? ', ' + esc(r.st) : '') + '</th>';
+    const dist = r => '<td class="num">' + Math.round(r.d) + ' km</td>';
+    const row = (r, m) => '<tr>' + rowName(r) + (m === "in" ? cellIn(r) : m === "out" ? cellOut(r) : cellIn(r) + '<td class="ft-cell">' + bar(r) + '</td>' + cellOut(r) + '<td class="num">' + bal(r) + '</td>') + dist(r) + '</tr>';
+    /* a foot row: the in count, the out count, or both with their balance; the distance cell empty */
+    const foot = (label, i, o, m) => '<tr class="' + (label === "All" ? "ft-all" : "ft-rest") + '"><th scope="row">' + label + '</th>' +
+      (m === "in" ? '<td class="num"><b>' + fmtN(i) + '</b></td>' : m === "out" ? '<td class="num"><b>' + fmtN(o) + '</b></td>' :
+       '<td class="num"><b>' + fmtN(i) + '</b></td><td></td><td class="num"><b>' + fmtN(o) + '</b></td><td class="num">' + bal({ inW: i, outW: o }) + '</td>') + '<td></td></tr>';
+    const HEAD = { in: 'Who commutes into Boston, by admin', out: 'Who commutes out of Boston, by admin', net: 'Who commutes between Boston and each admin' };
+    const ICO = window.FLOW_ICO;
+    const TH = { in: m => th("in", m, "num in", ICO.in + '<span class="long">Commute into Boston</span><span class="short">Into Boston</span>'),
+                 out: m => th("out", m, "num out", ICO.out + '<span class="long">Commute out of Boston</span><span class="short">Out of Boston</span>') };
     function html(){
-      const shown = all ? rows : rows.slice(0, TOP);
-      return '<div class="ft-head"><h3>Who commutes between Boston and each town</h3>' +
-        '<p>Each metro town’s exchange with Boston in 2023: its residents who work in Boston, and Boston residents who work there, on one scale. The balance is what the town sends less what it takes.<span class="long"> Distance is from Boston’s centre to the town’s.</span></p>' +
-        (all ? '<button type="button" class="who-fl-replay ft-more">Show the ' + TOP + ' largest</button>' : '') +
-        '<p class="ft-totals"><span class="in"><b>' + fmtN(IN) + '</b> commute in, ' + Math.round(IN / JOBS * 100) + '% of Boston’s jobs</span><span class="out"><b>' + fmtN(OUT) + '</b> commute out, ' + Math.round(OUT / RES * 100) + '% of its working residents</span><span><b>+' + fmtN(IN - OUT) + '</b> on a working day</span></p></div>' +
-        '<table class="who-tbl who-tbl--flows"><thead><tr><th scope="col">Town</th><th scope="col" class="num in"><span class="long">Live there, work in Boston</span><span class="short">Work in Boston</span></th><th scope="col" class="ft-cell"><span class="ft-io"><span class="in">in</span><span class="out">out</span></span></th><th scope="col" class="num out"><span class="long">Live in Boston, work there</span><span class="short">Bostonians work there</span></th><th scope="col" class="num">Balance</th><th scope="col" class="num">Distance</th></tr></thead>' +
-        '<tbody>' + shown.map(row).join("") + '</tbody>' +
-        '<tfoot><tr class="ft-rest"><th scope="row">' + (all ? 'All ' + rows.length + ' metro towns' : 'The other ' + (rows.length - TOP) + ' metro towns') + '</th><td class="num"><b>' + fmtN(all ? metroIn : metroIn - shown.reduce((a, r) => a + r.inW, 0)) + '</b></td><td></td><td class="num"><b>' + fmtN(all ? metroOut : metroOut - shown.reduce((a, r) => a + r.outW, 0)) + '</b></td><td class="num">' + bal({ inW: all ? metroIn : metroIn - shown.reduce((a, r) => a + r.inW, 0), outW: all ? metroOut : metroOut - shown.reduce((a, r) => a + r.outW, 0) }) + '</td><td></td></tr>' +
-        '<tr class="ft-rest"><th scope="row">Beyond the metro</th><td class="num"><b>' + fmtN(beyondIn) + '</b></td><td></td><td class="num"><b>' + fmtN(beyondOut) + '</b></td><td class="num">' + bal({ inW: beyondIn, outW: beyondOut }) + '</td><td></td></tr>' +
-        '<tr class="ft-rest"><th scope="row">Towns with no outline on the map<small>and places the data does not name</small></th><td class="num"><b>' + fmtN(IN - metroIn - beyondIn) + '</b></td><td></td><td class="num"><b>' + fmtN(OUT - metroOut - beyondOut) + '</b></td><td class="num">' + bal({ inW: IN - metroIn - beyondIn, outW: OUT - metroOut - beyondOut }) + '</td><td></td></tr>' +
-        '<tr class="ft-all"><th scope="row">All</th><td class="num"><b>' + fmtN(IN) + '</b></td><td></td><td class="num"><b>' + fmtN(OUT) + '</b></td><td class="num">' + bal({ inW: IN, outW: OUT }) + '</td><td></td></tr></tfoot></table>' +
-        '<p class="ft-foot"><button type="button" class="who-fl-replay ft-more">' + (all ? 'Show the ' + TOP + ' largest' : 'Show all ' + rows.length + ' towns') + '</button><span>LODES 2023. Counts jobs, not people. Out-flows are known for the 80 towns where Boston is among the largest sources of workers.</span></p>';
+      const m = mode(), L = list(m), shown = all ? L : L.slice(0, TOP);
+      const sIn = shown.reduce((a, r) => a + r.inW, 0), sOut = shown.reduce((a, r) => a + r.outW, 0);
+      return '<div class="ft-head"><h3>' + HEAD[m] + '</h3>' +
+        (all ? '<button type="button" class="who-fl-replay ft-more">Show the ' + TOP + (ASC0[sortOf(m).key] ? ' first' : ' largest') + '</button>' : '') +
+        '<p class="ft-totals">' + (m !== "out" ? '<span class="in">' + ICO.in + '<span><b>' + fmtN(IN) + '</b> commute in, ' + Math.round(IN / JOBS * 100) + '% of Boston’s jobs</span></span>' : '') +
+          (m !== "in" ? '<span class="out">' + ICO.out + '<span><b>' + fmtN(OUT) + '</b> commute out, ' + Math.round(OUT / RES * 100) + '% of its working residents</span></span>' : '') +
+          (m === "net" ? '<span><b>+' + fmtN(IN - OUT) + '</b> on a working day</span>' : '') + '</p></div>' +
+        '<table class="who-tbl who-tbl--flows who-tbl--' + m + '"><thead><tr>' + th("name", m, "", "Admin") +
+          (m === "net" ? TH.in(m) + '<th scope="col" class="ft-cell"><span class="ft-io">' + ICO.in + ICO.out + '</span></th>' + TH.out(m) + th("bal", m, "num", "Net flow") : TH[m](m)) +
+          th("d", m, "num", "Distance") + '</tr></thead>' +
+        '<tbody>' + shown.map(r => row(r, m)).join("") + '</tbody>' +
+        '<tfoot>' + foot(all ? 'All ' + L.length + ' metro admins' : 'The other ' + (L.length - shown.length) + ' metro admins', all ? metroIn : metroIn - sIn, all ? metroOut : metroOut - sOut, m) +
+          foot('Beyond Boston Metro', beyondIn, beyondOut, m) +
+          foot('Admins with no outline on the map<small>and places the data does not name</small>', IN - metroIn - beyondIn, OUT - metroOut - beyondOut, m) +
+          foot('All', IN, OUT, m) + '</tfoot></table>' +
+        '<p class="ft-foot"><button type="button" class="who-fl-replay ft-more">' + (all ? 'Show the ' + TOP + (ASC0[sortOf(m).key] ? ' first' : ' largest') : 'Show all ' + L.length + ' admins') + '</button><span>LODES 2023. Counts jobs, not people. Out-flows are known for the 80 admins where Boston is among the largest sources of workers.</span></p>';
     }
     /* one table in the map's frame for a desk, and one under each commuting
        beat's control for a phone (nothing moves while the reader scrolls);
@@ -15122,6 +15924,12 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       tbls.forEach(t => { t.hidden = view !== "table"; });
     }
     document.addEventListener("click", ev => { const b = ev.target.closest(".who-view-ctl .seg-btn"); if (b) setView(b.dataset.view); });
+    /* a header sorts its column; the same one again turns the order round */
+    document.addEventListener("click", ev => { const b = ev.target.closest(".ft-sort"); if (!b) return; const k = b.dataset.key, m = mode(), cur = sortOf(m);
+      sort = { key: k, asc: cur.key === k ? !cur.asc : !!ASC0[k] }; render();
+      const t = b.closest(".who-table"), nb = t && t.querySelector('.ft-sort[data-key="' + k + '"]'); if (nb) nb.focus({ preventScroll: true }); });
+    /* the map's view changed (the beat's control, or the presenter's copy of it): the table follows */
+    document.addEventListener("click", ev => { if (ev.target.closest("#whoNetCtl .seg-btn, #whoFlowCtl .seg-btn")){ sort = { key: null, asc: false }; setTimeout(render, 0); } });
   })();
 
   /* ---- Who are you?: the commuting beat, opt-2 (2026-10-14) ----
@@ -15157,7 +15965,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     const LEFT = side("in", IN), RIGHT = side("out", OUT);
     const GROUPS = [
       { k: "in",   n: IN,   name: "Live elsewhere, work in Boston", share: pct(IN, JOBS) + " of Boston’s jobs" },
-      { k: "both", n: BOTH, name: "Live and work in Boston",        share: pct(BOTH, JOBS) + " of Boston’s jobs" },
+      { k: "both", n: BOTH, name: "Live and work in Boston",  share: pct(BOTH, JOBS) + " of Boston’s jobs" },
       { k: "out",  n: OUT,  name: "Live in Boston, work elsewhere", share: pct(OUT, RES) + " of Boston’s working residents" }
     ];
     host.innerHTML = '<div class="who-fl-head"><div class="who-fl-all"><b>' + K(TOTAL) + '</b><span>workers who live in Boston, work in Boston, or both</span></div>' +
