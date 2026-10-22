@@ -1794,12 +1794,41 @@
   .wt-peer.wt-peer--avg[aria-pressed="true"]{border-color:var(--ink);}
   .wt-peer.wt-peer--avg[aria-pressed="true"] i{background:var(--white);border:2px solid var(--ink);}
   .wt-key > span[hidden]{display:none;}
-  /* opt-2's key: one quiet line, a small band (its whole, then its darker tone alone) */
-  .wt-key.wt-key--band{gap:4px 16px;}
-  .wt-key > .bk2{gap:7px;white-space:nowrap;}
-  .wt-key .bk2-all{position:relative;width:44px;height:8px;background:var(--band-out);}
-  .wt-key .bk2-all i{position:absolute;left:30%;width:38%;top:0;bottom:0;background:var(--band-mid);}
-  .wt-key .bk2-mid{width:16px;height:8px;background:var(--band-mid);}
+  /* opt-2's key, drawn (2026-10-22): a small band, a bracket over the whole of it named "lighter", one under its
+     darker middle named "darker"; the info mark beside it, and its card under the key */
+  .wt-key.wt-key--band{position:relative;gap:4px 10px;align-items:flex-end;}
+  .wt-key > .bk{position:relative;display:block;width:290px;height:58px;}
+  .bk > *{position:absolute;}
+  .bk-lab{top:0;left:0;font-size:13px;line-height:1.2;color:var(--ink-soft);white-space:nowrap;}
+  .bk-lab--mid{top:auto;bottom:0;left:60px;}
+  .bk-brk{box-sizing:border-box;border:1px solid var(--control-edge);}
+  .bk-brk--all{left:0;width:200px;top:18px;height:5px;border-bottom:0;}
+  .bk-brk--mid{left:60px;width:76px;top:35px;height:5px;border-top:0;}
+  .bk-all{left:0;width:200px;top:24px;height:10px;background:var(--band-out);}
+  .bk-mid{left:60px;width:76px;top:24px;height:10px;background:var(--band-mid);}
+  /* the info mark is kept but not shown (2026-10-22, Nil: "hide the information icon that demos the box plot creation") */
+  .wt-key .bk-i{display:none;align-self:flex-end;margin:0 0 20px;cursor:pointer;line-height:1;}
+  .wt-key .bk-i::after{--s:15px;margin:0;vertical-align:0;}
+  .wt-key > span.bk-pop{position:absolute;left:0;top:calc(100% + 8px);z-index:30;display:block;width:330px;max-width:100%;padding:12px 14px 10px;
+    background:var(--white);border:1px solid var(--border-strong);border-radius:8px;box-shadow:var(--shadow-md);font-size:var(--t-note);line-height:1.45;color:var(--ink);}
+  .wt-key > span.bk-pop[hidden]{display:none;}
+  .bk-anim{display:block;width:100%;height:auto;overflow:visible;}
+  .ba-rail{stroke:var(--border);stroke-width:2;}
+  .ba-dot{fill:var(--ink-soft);opacity:0;transition:opacity .45s ease;}
+  .ba-all{fill:var(--band-out);opacity:0;transition:opacity .5s ease;} .ba-mid{fill:var(--band-mid);opacity:0;transition:opacity .5s ease;}
+  .ba-us{stroke:var(--ink);stroke-width:1.5;stroke-dasharray:3 3;opacity:0;transition:opacity .5s ease;}
+  .ba-here{fill:var(--geo-city);stroke:var(--white);stroke-width:2;opacity:0;transform:translateY(-22px);transition:opacity .4s ease,transform .5s cubic-bezier(.32,.72,.24,1);}
+  .bk-pop.s1 .ba-dot{opacity:.85;} .bk-pop.s2 .ba-all{opacity:1;} .bk-pop.s2 .ba-dot.out{opacity:.25;} .bk-pop.s3 .ba-mid{opacity:1;}
+  .bk-pop.s4 .ba-us{opacity:1;} .bk-pop.s5 .ba-here{opacity:1;transform:none;}
+  .bk-pop .bk-caps{position:relative;display:block;height:2.9em;margin-top:6px;}
+  .bk-pop .bk-cap{position:absolute;left:0;top:0;display:flex;align-items:flex-start;gap:8px;opacity:0;transition:opacity .4s ease;}
+  .bk-cap b{flex:none;display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--teal-tint);color:var(--teal);font-size:13px;font-weight:700;}
+  .bk-pop[data-step="1"] .bk-cap--1,.bk-pop[data-step="2"] .bk-cap--2,.bk-pop[data-step="3"] .bk-cap--3,.bk-pop[data-step="4"] .bk-cap--4,.bk-pop[data-step="5"] .bk-cap--5{opacity:1;}
+  /* reduced motion: the finished band and the five steps listed */
+  .bk-pop.is-static .bk-caps{position:static;height:auto;display:flex;flex-direction:column;gap:5px;}
+  .bk-pop.is-static .bk-cap{position:static;opacity:1;}
+  @media (prefers-reduced-motion: reduce){ .ba-dot,.ba-all,.ba-mid,.ba-us,.ba-here,.bk-cap{transition:none;} }
+  @media (max-width:599px){ .wt-key > .bk{width:min(290px, 100%);} }
   /* opt-2's peers' row: the average's switch first, a rule, then the peers */
   .wt-sep{flex:none;width:1px;height:20px;margin:0 2px;background:var(--border-strong);}
   .wt-pk .term{font-weight:inherit;}
@@ -4696,7 +4725,10 @@
   .fd-st .fd-l b{font-size:var(--t-note);font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink);}
   /* each bar: its strips on one scale, then a row of names under them. A name starts where its strip does, unless the
      name before it needs the room (the commuters' strip leads and can be narrow); the last runs on to the row's end */
-  .fd-sb{display:flex;height:14px;}
+  .fd-sb{position:relative;display:block;height:14px;}
+  /* the track under the strips, as long as the bar's total (--t) */
+  .fd-sb::before{content:"";position:absolute;left:0;top:0;height:100%;width:var(--t, 100%);background:var(--border);}
+  .fd-fill{position:relative;display:flex;height:100%;}
   .fd-sb i{display:block;flex:none;box-sizing:border-box;width:var(--w);height:100%;}
   .fd-sb i + i{border-left:1px solid var(--white);}
   .fd-sb i.both{background:var(--flow-both);} .fd-sb i.in{background:var(--flow-in);} .fd-sb i.out{background:var(--flow-out);}
@@ -4711,13 +4743,13 @@
   #ovWrap.is-presenting .ov-map-inner{margin-left:0 !important;}
   /* the graph stands whole from the moment the dots start, with no growing in of its own */
   .wide-beat .fl-detail .fd{visibility:hidden;} .wide-beat.fl-shown .fl-detail .fd{visibility:visible;}
-  /* the Venn's first frame: the bars as dashed outlines with their totals; the colours and the names fade in with the
-     last frame, the names a little after the colours, as the figure's own do */
-  .fl-detail .fd-sb i{transition:opacity .6s ease;}
-  .fl-detail .fd-lb{transition:opacity .6s ease .5s;}
-  .fl-bare .fl-detail .fd-sb{outline:1.5px dashed var(--control-edge);outline-offset:-1.5px;border-radius:2px;}
-  .fl-bare .fl-detail .fd-sb i,.fl-bare .fl-detail .fd-lb{opacity:0;transition:none;}
-  @media (prefers-reduced-motion: reduce){ .fl-detail .fd-sb i,.fl-detail .fd-lb{transition:none;} }
+  /* the Venn's first frame: the bars as plain tracks with their totals; with the last frame the colours sweep in from
+     the left and the names fade in after them */
+  .fl-detail .fd-fill{clip-path:inset(0 0 0 0);transition:clip-path .9s cubic-bezier(.32,.72,.24,1);}
+  .fl-detail .fd-lb{transition:opacity .5s ease .7s;}
+  .fl-bare .fl-detail .fd-fill{clip-path:inset(0 100% 0 0);transition:none;}
+  .fl-bare .fl-detail .fd-lb{opacity:0;transition:none;}
+  @media (prefers-reduced-motion: reduce){ .fl-detail .fd-fill,.fl-detail .fd-lb{transition:none;} }
   /* a narrow column (the details under the words below 1200): the words under the segments give way to the counts */
   /* a narrow column has no room for two names side by side: under the bar they stand one per line, each led by its share in its colour */
   @media (max-width:1199px){ .fl-detail--col .fd-lb{display:block;} .fl-detail--col .fd-lab{display:block;width:auto;min-width:0;max-width:none;padding-right:0;font-size:13px;} }
@@ -9656,8 +9688,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   /* opt-2's first commuting beat: the three groups as a rectangle Venn ("venn", the default since 2026-10-20, Nil:
      "v-6 by default, use the rectangle venn diagram"), as circles ("circles") or as a classic circle Venn ("classic") */
   const GROUPS_DEFAULT = "venn";
-  /* opt-2's second commuting beat: the admins as bars ("bars") or Boston's reading on a needle ("needle"), 2026-10-22 */
-  const BALANCE_DEFAULT = "bars";
+  /* opt-2's second commuting beat: the admins as bars ("bars") or Boston's reading on a needle ("needle"), 2026-10-22;
+     v-5 opens on the needle, the bars still opt-1 (2026-10-22, Nil: "make the needle default, keep the bar option") */
+  const BALANCE_DEFAULT = "needle";
   /* v-6 goes with opt-2, the two beats (2026-10-22, Nil: "we will go with the two pages one, so remove the one that shows
      only one page from the options"): opt-1 is no longer offered, and ?flows=dots no longer reaches it. Its code stays,
      unreached, for v-5, whose default it still is */
@@ -13481,9 +13514,10 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
        (2026-10-17, the sketches' A2 revised). The peer average is off until
        its switch, beside the peers', is on (Nil: it frees the line's foot
        for its name) */
-    /* each version shows its own option first (2026-10-18, Nil: "v-5 box plots for all stats, v-6 the bars");
-       ?table=band or ?table=bars, or the opt switch, shows the other */
-    const TABLE_DEFAULT = "bars";
+    /* each version shows its own option first (2026-10-18, Nil: "v-5 box plots for all stats, v-6 the bars"; again on
+       2026-10-22: "stats: make the box plot option default, keep the bar option"); ?table=band or ?table=bars, or the
+       opt switch, shows the other */
+    const TABLE_DEFAULT = "band";
     let mode = (location.search.match(/[?&]table=(band|bars)\b/) || [, TABLE_DEFAULT])[1];
     /* the bars say each comparison at the end of its bar (Nil, 2026-10-15:
        the pick over the comparisons stacked in the text column), so the
@@ -13528,10 +13562,31 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
            whole of it where 90 of every 100 fall, then its darker tone
            alone, the middle half (2026-10-17, Nil: the bracketed key took
            too much room) */
+        /* the key as a drawing (2026-10-22, Nil: "an extremely easy to understand legend diagram for the box, what is
+           darker area, what is lighter area"): a small band with a bracket over its whole and one under its darker
+           middle, each named; then an info mark that opens a card whose band builds itself up in five steps */
         const bandHead = () => '<div class="wt-row wt-row--head"><div class="wt-key wt-key--band">' +
-          '<span class="bk2" aria-hidden="true"><i class="bk2-all"><i></i></i>90 of every 100 ' + opts.unit + '</span><span class="bk2" aria-hidden="true"><i class="bk2-mid"></i>the middle half</span>' +
+          '<span class="bk" aria-hidden="true"><span class="bk-lab bk-lab--all">Lighter: where 90 of every 100 ' + opts.unit + ' fall</span>' +
+            '<i class="bk-brk bk-brk--all"></i><i class="bk-all"></i><i class="bk-mid"></i><i class="bk-brk bk-brk--mid"></i>' +
+            '<span class="bk-lab bk-lab--mid">Darker: the middle half of them</span></span>' +
+          '<button type="button" class="term bk-i" aria-expanded="false" aria-label="How to read the band"></button>' +
           '<span class="vh">The band spans where 90 of every 100 ' + opts.unit + ' fall; its darker middle holds the middle half of them.</span>' +
-          '</div><span class="wt-colh" aria-hidden="true">' + opts.here + ' is</span></div>';
+          bandPop() + '</div><span class="wt-colh" aria-hidden="true">' + opts.here + ' is</span></div>';
+        /* the card: sixty admins along a line, the lighter band over 90 of every 100 of them, the darker middle, the US
+           average, then the subject's dot; a caption a step. Built in order, the steps come in one by one (bandSteps) */
+        const bandPop = () => { const N = 60, X = p => 20 + 260 * Math.pow(p, 1.5), xs = []; for (let i = 0; i < N; i++) xs.push(X((i + .5) / N));
+          const lo = X(.05), hi = X(.95), q1 = X(.25), q3 = X(.75), mean = xs.reduce((a, b) => a + b, 0) / N, here = X(.9);
+          const dots = xs.map((x, i) => '<circle class="ba-dot' + (x < lo || x > hi ? ' out' : '') + '" cx="' + x.toFixed(1) + '" cy="' + (55 + Math.sin(i * 2.4) * 9).toFixed(1) + '" r="3"/>').join("");
+          const caps = ["Every one of the " + opts.unit + ", placed along the line by this measure.", "The lighter band covers where 90 of every 100 of them fall.",
+            "The darker middle holds the middle half of them.", "The dashed line is the US average.", "The teal dot is " + opts.here + "."];
+          return '<span class="bk-pop" role="dialog" aria-label="How to read the band" hidden>' +
+            '<svg class="bk-anim" viewBox="0 0 300 110" aria-hidden="true"><line class="ba-rail" x1="0" x2="300" y1="55" y2="55"/>' +
+              '<rect class="ba-all" x="' + lo.toFixed(1) + '" y="48" width="' + (hi - lo).toFixed(1) + '" height="14"/>' +
+              '<rect class="ba-mid" x="' + q1.toFixed(1) + '" y="48" width="' + (q3 - q1).toFixed(1) + '" height="14"/>' +
+              '<g class="ba-dots">' + dots + '</g>' +
+              '<line class="ba-us" x1="' + mean.toFixed(1) + '" x2="' + mean.toFixed(1) + '" y1="40" y2="70"/>' +
+              '<circle class="ba-here" cx="' + here.toFixed(1) + '" cy="55" r="7"/></svg>' +
+            '<span class="bk-caps">' + caps.map((c, i) => '<span class="bk-cap bk-cap--' + (i + 1) + '"><b>' + (i + 1) + '</b>' + c + '</span>').join("") + '</span></span>'; };
         if (band) tipData = {};
         let h = '<div class="wt" data-mode="' + mode + '"' + (side ? ' data-form="beside"' : '') + (band && sayW ? ' style="--say-w:' + sayW + 'px"' : '') + '>' + (side ? colHead(opts.here) : band ? bandHead() : '');
         KEYS.forEach(k => {
@@ -13857,6 +13912,20 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       el.innerHTML = h + '</div>';
     }
     compare(document.getElementById("whoCompare"));
+    /* the band key's info mark: its card opens under the key and its band builds up a step at a time, round and round;
+       with reduced motion the five steps stand at once. Escape, a click elsewhere or the mark again closes it */
+    const bandSteps = { open: null, t: 0 };
+    function bandStep(pop, n){ pop.dataset.step = n; pop.className = "bk-pop" + [1, 2, 3, 4, 5].filter(i => i <= n).map(i => " s" + i).join(""); }
+    function bandClose(){ const o = bandSteps.open; if (!o) return; clearInterval(bandSteps.t); o.pop.hidden = true; o.btn.setAttribute("aria-expanded", "false"); bandSteps.open = null; }
+    function bandOpen(btn){ bandClose(); const pop = btn.parentNode.querySelector(".bk-pop"); if (!pop) return;
+      pop.hidden = false; btn.setAttribute("aria-expanded", "true"); bandSteps.open = { btn, pop };
+      if (matchMedia("(prefers-reduced-motion: reduce)").matches){ bandStep(pop, 5); pop.classList.add("is-static"); return; }
+      pop.classList.remove("is-static"); let n = 1; bandStep(pop, n);
+      bandSteps.t = setInterval(() => { n = n % 5 + 1; if (n === 1){ bandStep(pop, 0); setTimeout(() => bandStep(pop, 1), 350); } else bandStep(pop, n); }, 1700); }
+    document.addEventListener("click", ev => { const b = ev.target.closest(".bk-i");
+      if (b){ if (bandSteps.open && bandSteps.open.btn === b) bandClose(); else bandOpen(b); return; }
+      if (bandSteps.open && !bandSteps.open.pop.contains(ev.target)) bandClose(); });
+    document.addEventListener("keydown", ev => { if (ev.key === "Escape" && bandSteps.open){ const b = bandSteps.open.btn; bandClose(); b.focus(); } });
     if (window.WHO_COMPARE_2024) tables.admin = make("admin", window.WHO_COMPARE_2024, { here: "Boston Admin", unit: "US admins", peersWord: "Closest peers:" });
     if (window.WHO_COMPARE_METRO_2024) tables.metro = make("metro", window.WHO_COMPARE_METRO_2024, { here: "Boston Metro", unit: "US metros", peersWord: "Closest peer metros:" });
     window.whoTables = tables;
@@ -15481,7 +15550,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
        grey at the right side"). Each segment named by its share of the bar's total in one line, the count in its tooltip
        (Nil: "use the percentage. 74% commute in Boston. 26% live and work in Boston ... 45% Boston residents commute out").
        A bar: [cls, count, total, words, the count's own words] for each segment, strips then their names */
-    const bar = segs => '<span class="fd-sb">' + segs.map(([cls, v, , , tip]) => '<i class="' + cls + '" style="--w:' + pctW(v, JOBS) + '" title="' + fmtN(v) + ' ' + tip + '"></i>').join("") + '</span>' +
+    /* the strips sit on a track as long as the bar's total (2026-10-22, Nil: "make the initial bars not dashed, and make the
+       colour coming animated"): with the Venn's first frame only the track shows; with its last the colours sweep in */
+    const bar = segs => '<span class="fd-sb" style="--t:' + pctW(segs.reduce((a, g) => a + g[1], 0), JOBS) + '"><span class="fd-fill">' + segs.map(([cls, v, , , tip]) => '<i class="' + cls + '" style="--w:' + pctW(v, JOBS) + '" title="' + fmtN(v) + ' ' + tip + '"></i>').join("") + '</span></span>' +
       '<span class="fd-lb">' + segs.map(([cls, v, of, words, tip]) => '<span class="fd-lab ' + cls + '" style="--w:' + pctW(v, JOBS) + '" title="' + fmtN(v) + ' ' + tip + '"><b>' +
         Math.round(v / of * 100) + '%</b> ' + words + '</span>').join("") + '</span>';
     const detailHtml = col => '<div class="fl-detail' + (col ? ' fl-detail--col' : '') + '">' +
