@@ -1721,6 +1721,21 @@
   .wt-rank b{display:block;font-size:var(--t-note);font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;}
   .wt-rank .wt-rkl{display:block;margin-top:2px;}
   .wt-rknote{margin:10px 0 0;font-size:13px;line-height:1.4;color:var(--ink-soft);}
+  /* the compare beat's cards (opt-2): a card a measure, the difference from the metro as the head, two plain bars, and
+     the admin's rank among the metro's admins in a line under them */
+  .wc-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px;}
+  /* the bars' colours, as the tables define them (the cards stand outside a .wt) */
+  .wc-cards{--bar-here:color-mix(in srgb,var(--teal) 85%,var(--white));--bar-pa:color-mix(in srgb,var(--teal) 60%,var(--white));--bar-us:color-mix(in srgb,var(--teal) 40%,var(--white));}
+  @supports not (color:color-mix(in srgb,red,blue)){ .wc-cards{--bar-here:var(--teal);--bar-pa:var(--control-edge);--bar-us:var(--border-strong);} }
+  .wc-card{padding:14px 16px 12px;border:1px solid var(--border);border-radius:4px;}
+  .wc-k{margin:0 0 4px;font-size:13px;font-weight:600;color:var(--ink-soft);} .wc-k .hint{margin-left:6px;font-weight:400;}
+  .wc-head{margin:0 0 10px;font-size:17px;font-weight:600;line-height:1.25;color:var(--ink);}
+  .wc-head b{font-weight:700;} .wc-head.is-good b{color:var(--rise);} .wc-head.is-bad b{color:var(--fall);}
+  .wc-head .wt-arr{width:11px;height:11px;margin-right:3px;vertical-align:-.5px;}
+  /* the rank line: the ordinal in ink, the rest quiet, with a hairline over it */
+  .wc-rank{margin:10px 0 0;padding-top:8px;border-top:1px solid var(--border);font-size:13px;line-height:1.35;color:var(--ink-soft);}
+  .wc-rank b{font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;}
+  @media (max-width:599px){ .wc-cards{grid-template-columns:1fr;} }
   @media (max-width:899px){ .who-cmp .wt-row,.who-cmp .wt[data-form="beside"] .wt-row{grid-template-columns:1fr;gap:10px 0;} .wt-rank{padding-top:0;} }
   .wt[data-form="beside"] .wt-name .hint{display:block;margin-left:0;}
   /* opt-2 of the tables (2026-10-17, the sketches' A2 revised): three
@@ -9701,6 +9716,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   /* opt-2's second commuting beat: the admins as bars ("bars") or Boston's reading on a needle ("needle"), 2026-10-22;
      v-5 opens on the needle, the bars still opt-1 (2026-10-22, Nil: "make the needle default, keep the bar option") */
   const BALANCE_DEFAULT = "needle";
+  /* the compare beat: the admin's four measures against the metro's as bars with a rank column ("bars"), or a card a
+     measure with the difference, two bars and the rank on a track ("cards"), 2026-10-22 */
+  const COMPARE_DEFAULT = "cards";
   /* v-6 goes with opt-2, the two beats (2026-10-22, Nil: "we will go with the two pages one, so remove the one that shows
      only one page from the options"): opt-1 is no longer offered, and ?flows=dots no longer reaches it. Its code stays,
      unreached, for v-5, whose default it still is */
@@ -13892,20 +13910,53 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     /* the city against its metro: each measure's figure for the admin, its
        gap to the metro's said as the tables say it, and two named bars;
        population instead as the admin's slice of the metro's whole */
+    /* the metro's admins on the four measures: the scatter's rows (admins of about 25,000 people and up) that the
+       commuting outlines place inside the metro, with the admin itself; the admin's rank on each, lowest first for
+       unemployment, and who leads where it does not (2026-10-22) */
+    const COLK = { population: "pop", salary: "wage", home_value: "home", unemployment: "unemp" };
+    const ordinal = n => { const m = n % 100, d = n % 10; return n + (m >= 11 && m <= 13 ? "th" : d === 1 ? "st" : d === 2 ? "nd" : d === 3 ? "rd" : "th"); };
+    function metroRanks(){
+      const S = window.WHO_SCATTER_2024, G = window.WHO_COMMUTE_GEO; if (!S || !G) return null;
+      const C = Object.fromEntries(S.cols.map((c, i) => [c, i])), inM = new Set(G.places.features.filter(f => f.properties.inMsa).map(f => f.properties.place_id));
+      const rows = S.rows.filter(r => r[C.id] === S.here || inM.has(r[C.id])), RK = { n: rows.length, rows, C, here: S.here, of: {} };
+      KEYS.forEach(k => { const c = C[COLK[k]], asc = k === "unemployment", srt = rows.slice().sort((a, b) => asc ? a[c] - b[c] : b[c] - a[c]);
+        RK.of[k] = { rank: srt.findIndex(r => r[C.id] === S.here) + 1, lead: srt[0][C.id] === S.here ? null : { name: srt[0][C.name], v: srt[0][c] } }; });
+      return RK;
+    }
+    /* opt-2 of the Compare study (2026-10-22, Nil: "this section [is] supposed to be summarizing, easy to understand,
+       just get to the point through basic graphs"; then "remove [the block against] the metro's other admins and just
+       include a rank together with admin vs metro"): a card a measure, no figure repeated as a headline; the difference
+       from the metro as its head, two plain bars, and under them one line with the admin's rank among the metro's admins */
+    function compareCards(){
+      const W = window.WHO_2024, RK = metroRanks(); if (!W || !RK) return '';
+      const val = (g, k) => g.ind.find(r => r.key === k).value, esc = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+      const kHead = k => '<p class="wc-k">' + NAME[k] + (k === "unemployment" ? '<span class="hint">lower is better</span>' : '') + '</p>';
+      let a = '';
+      KEYS.forEach(k => {
+        const v = val(W.place, k), m = val(W.metro, k), lower = k === "unemployment", r = RK.of[k], withM = k !== "population";
+        /* against the metro */
+        const d = withM ? diff(k, v, m) : null, better = d ? (lower ? !d.up : d.up) : null;
+        const head = !withM ? '<b>' + Math.round(v / m * 100) + '%</b> of Boston Metro\u2019s people live in Boston Admin'
+          : d.same ? 'About the same as Boston Metro'
+          : '<b>' + ARR(d.up) + (d.t.endsWith("\u00d7") ? d.t.slice(0, -1) + ' times</b> Boston Metro' : d.t + '</b>' + (d.up ? ' above' : ' below') + ' Boston Metro');
+        const max = Math.max(v, m) * 1.04, pct = x => (x / max * 100).toFixed(2) + '%';
+        const bar = (cls, lab, x) => '<span class="wt-bl ' + cls + '">' + lab + '</span><span class="wt-bt ' + cls + '"><i style="width:' + pct(x) + '"></i></span><span class="wt-bv ' + cls + '">' + fmt(k, x) + '</span>';
+        a += '<div class="wc-card">' + kHead(k) + '<p class="wc-head' + (better === null ? '' : better ? ' is-good' : ' is-bad') + '">' + head + '</p>' +
+          '<div class="wt-bars" role="img" aria-label="Boston Admin ' + fmt(k, v) + ', Boston Metro ' + fmt(k, m) + '">' + bar("here", "Boston Admin", v) + bar("mt", "Boston Metro", m) + '</div>' +
+          '<p class="wc-rank"><b>' + ordinal(r.rank) + '</b> of ' + RK.n + ' metro admins' + (lower ? ', lowest first' : '') + (r.lead ? ', ' + esc(r.lead.name) + ' leads at ' + fmt(k, r.lead.v) : ', the most of any') + '</p></div>';
+      });
+      return '<div class="wc-cards">' + a + '</div>' +
+        '<p class="wt-rknote">Ranks are among the ' + RK.n + ' Boston Metro admins of about 25,000 people or more, 2024.</p>';
+    }
+    let cmpMode = (location.search.match(/[?&]compare=(cards|bars)\b/) || [, COMPARE_DEFAULT])[1];
     function compare(el){
       const W = window.WHO_2024; if (!el || !W) return;
+      if (cmpMode === "cards"){ el.innerHTML = compareCards(); return; }
       const val = (g, k) => g.ind.find(r => r.key === k).value;
       const side = form === "beside";
-      /* a third column (2026-10-22, Nil: "also a column to show how Boston Admin is ranking among all admins in the
-         metro"): the admin's rank on each measure among the metro's admins the scatter has (admins of about 25,000
-         people and up, placed inside the metro by the commuting outlines), lowest first for unemployment, and who leads */
-      const S = window.WHO_SCATTER_2024, G = window.WHO_COMMUTE_GEO, COLK = { population: "pop", salary: "wage", home_value: "home", unemployment: "unemp" };
-      const ordinal = n => { const m = n % 100, d = n % 10; return n + (m >= 11 && m <= 13 ? "th" : d === 1 ? "st" : d === 2 ? "nd" : d === 3 ? "rd" : "th"); };
-      let RK = null;
-      if (S && G){ const C = Object.fromEntries(S.cols.map((c, i) => [c, i])), inM = new Set(G.places.features.filter(f => f.properties.inMsa).map(f => f.properties.place_id));
-        const rows = S.rows.filter(r => r[C.id] === S.here || inM.has(r[C.id])); RK = { n: rows.length, of: {} };
-        KEYS.forEach(k => { const c = C[COLK[k]], asc = k === "unemployment", srt = rows.slice().sort((a, b) => asc ? a[c] - b[c] : b[c] - a[c]);
-          RK.of[k] = { rank: srt.findIndex(r => r[C.id] === S.here) + 1, lead: srt[0][C.id] === S.here ? null : { name: srt[0][C.name], v: srt[0][c] } }; }); }
+      /* opt-1: the bars, and a third column, the admin's rank among the metro's admins (2026-10-22, Nil: "also a column
+         to show how Boston Admin is ranking among all admins in the metro") */
+      const RK = metroRanks();
       const rankCell = k => { if (!RK || !RK.of[k].rank) return '<div class="wt-rank"></div>'; const r = RK.of[k], lower = k === "unemployment";
         return '<div class="wt-rank"><b>' + ordinal(r.rank) + '</b> of ' + RK.n + ' metro admins' + (lower ? ', lowest first' : '') +
           '<span class="wt-rkl">' + (r.lead ? r.lead.name + ' leads at ' + fmt(k, r.lead.v) : 'the most of any') + '</span></div>'; };
@@ -13936,6 +13987,10 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       el.innerHTML = h + (RK ? '<p class="wt-rknote">Ranks are among the ' + RK.n + ' Boston Metro admins of about 25,000 people or more, 2024.</p>' : '') + '</div>';
     }
     compare(document.getElementById("whoCompare"));
+    window.whoCompareAlt = { mode: () => cmpMode, set(m){ cmpMode = m === "bars" ? "bars" : "cards";
+      document.querySelectorAll(".wt-compare-opt").forEach(sel => { sel.value = cmpMode; });
+      const u = new URL(location.href); if (cmpMode === COMPARE_DEFAULT) u.searchParams.delete("compare"); else u.searchParams.set("compare", cmpMode);
+      history.replaceState(null, "", u.pathname + u.search + u.hash); compare(document.getElementById("whoCompare")); } };
     /* the band key's info mark: its card opens under the key and its band builds up a step at a time, round and round;
        with reduced motion the five steps stand at once. Escape, a click elsewhere or the mark again closes it */
     const bandSteps = { open: null, t: 0 };
@@ -15492,7 +15547,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
      or lights its shelf cell. Reduced motion: the end states at once. ---- */
   (function(){
     const HOME = !!window.whoFlowsHome;
-    const secA = document.getElementById("page-overview-flows"), secB = document.getElementById("page-overview-flows-out");
+    const secA = document.getElementById("page-overview-flows"), secB = document.getElementById("page-overview-flows-out"), secC = document.getElementById("page-overview-compare");
     /* the study's menu in beat A's counter: opt-1 the dots beside the shaded
        map, opt-2 the dots go home. The second adds a beat, so the choice
        reloads the page on the section */
@@ -15505,7 +15560,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       const ROW = {
         /* opt-2's first beat: the three groups as circles, or as a rectangle Venn (2026-10-20) */
         groups: '<label class="mi-study"><span>Groups</span><select class="wt-groups-opt" aria-label="How the three groups are drawn"><option value="circles">opt-1</option><option value="venn">opt-2</option><option value="classic">opt-3</option></select></label>',
-        balance: '<label class="mi-study"><span>Balance</span><select class="wt-balance-opt" aria-label="How the balance is read"><option value="bars">opt-1</option><option value="needle">opt-2</option></select></label>' };
+        balance: '<label class="mi-study"><span>Balance</span><select class="wt-balance-opt" aria-label="How the balance is read"><option value="bars">opt-1</option><option value="needle">opt-2</option></select></label>',
+        compare: '<label class="mi-study"><span>Compare</span><select class="wt-compare-opt" aria-label="How the admin is set against its metro"><option value="bars">opt-1</option><option value="cards">opt-2</option></select></label>' };
       st.innerHTML = '<button type="button" class="mi-studies-btn" aria-expanded="false" aria-controls="whoFlowsPanel' + suffix + '">opt</button>' +
         '<div class="mi-studies-panel" id="whoFlowsPanel' + suffix + '" role="group" aria-label="Design studies" hidden>' + rows.map(k => ROW[k]).join("") + '</div>';
       eye.appendChild(st);
@@ -15514,10 +15570,12 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       if (gs){ if (window.whoFlowsAlt) gs.value = window.whoFlowsAlt.mode(); gs.addEventListener("change", () => { if (window.whoFlowsAlt) window.whoFlowsAlt.set(gs.value); }); }
       const bs = st.querySelector(".wt-balance-opt");
       if (bs){ if (window.whoNetAlt) bs.value = window.whoNetAlt.mode(); bs.addEventListener("change", () => { if (window.whoNetAlt) window.whoNetAlt.set(bs.value); }); }
+      const cs = st.querySelector(".wt-compare-opt");
+      if (cs){ if (window.whoCompareAlt) cs.value = window.whoCompareAlt.mode(); cs.addEventListener("change", () => { if (window.whoCompareAlt) window.whoCompareAlt.set(cs.value); }); }
       btn.addEventListener("click", () => { const open = panel.hidden; panel.hidden = !open; btn.setAttribute("aria-expanded", String(open)); });
       document.addEventListener("click", ev => { if (!st.contains(ev.target) && !panel.hidden){ panel.hidden = true; btn.setAttribute("aria-expanded", "false"); } });
     }
-    const studies = () => { study(secA, ["groups"], ""); study(secB, ["balance"], "B"); };
+    const studies = () => { study(secA, ["groups"], ""); study(secB, ["balance"], "B"); study(secC, ["compare"], "C"); };
     studies(); setTimeout(studies, 0);
     /* the flow graphic, the day's totals in and out of Boston: in opt-2 it
        closes beat A once the dots have landed (showEnd); in opt-1 (Nil,
