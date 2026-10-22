@@ -2061,6 +2061,8 @@
   .vn-set,.vn-reg{position:absolute;left:0;top:0;width:max-content;color:var(--ink);line-height:1.3;}
   /* each set's name, and its count on a second line (2026-10-20, Nil) */
   .vn-set b{display:block;font-size:var(--t-note);font-weight:600;}
+  .vn-set > .vn-c{display:block;margin-top:1px;font-size:13px;color:var(--ink-soft);font-variant-numeric:tabular-nums;}
+  .who-fl.vn-tight .vn-u{display:none;}
   .vn-set--live{text-align:right;}
   .who-fl.vn-brief .vn-nm-l,.who-fl:not(.vn-brief) .vn-nm-s{display:none;}
   /* compact: each part's name one line with no second sentence */
@@ -2077,6 +2079,14 @@
   .vn-w{display:block;font-size:var(--t-note);margin-top:3px;}
   /* the shared part's two shares break between them, not inside one */
   .vn-sh{display:inline-block;}
+  /* the frames: two small squares close together, the current one filled */
+  .vn-frames{display:inline-flex;align-items:center;}
+  .who-fl:not(.is-venn) .vn-frames{display:none;}
+  .vn-fr{appearance:none;display:inline-flex;align-items:center;justify-content:center;width:14px;height:24px;padding:0;border:0;background:none;cursor:pointer;}
+  .vn-fr::before{content:"";width:10px;height:10px;box-sizing:border-box;border-radius:2px;border:1.5px solid var(--control-edge);background:var(--white);}
+  .vn-fr:hover::before{border-color:var(--teal);}
+  .vn-fr.is-on::before{background:var(--teal);border-color:var(--teal);}
+  .vn-fr:focus-visible{outline:2px solid var(--teal);outline-offset:-2px;border-radius:4px;}
   .vn-reg--both .vn-w b{font-weight:700;color:var(--flow-both-text);font-variant-numeric:tabular-nums;}
   /* the names answer a pointer (the card with the counts) once the parts are named */
   .who-fl[data-vn="named"] .vn-set,.who-fl[data-vn="named"] .vn-reg{pointer-events:auto;cursor:default;}
@@ -4643,27 +4653,26 @@
   .fd-st + .fd-st{margin-top:28px;}
   .fd-st .fd-l{color:var(--ink);white-space:normal;}
   .fd-st .fd-l b{font-size:var(--t-note);font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink);}
-  .fd-sb{display:flex;align-items:flex-start;height:auto;}
-  /* each segment: its strip, then its count and words under it, in the segment's own width */
-  .fd-sb i{display:block;box-sizing:border-box;width:var(--w);min-width:0;font-style:normal;}
-  .fd-sb i::before{content:"";display:block;height:14px;box-sizing:border-box;}
-  .fd-sb i + i::before{border-left:1px solid var(--white);}
-  .fd-sb i.both::before{background:var(--flow-both);} .fd-sb i.in::before{background:var(--flow-in);} .fd-sb i.out::before{background:var(--flow-out);}
-  .fd-sb i > b,.fd-sb i > span{display:block;padding:0 6px 0 0;white-space:normal;line-height:1.3;}
-  .fd-sb i > b{margin-top:5px;font-size:var(--t-note);font-weight:700;font-variant-numeric:tabular-nums;}
-  .fd-sb i > span{font-size:13px;color:var(--ink-soft);}
-  .fd-sb i.both > b{color:var(--flow-both-text);} .fd-sb i.in > b{color:var(--flow-in);} .fd-sb i.out > b{color:var(--flow-out-text);}
-  .fd-sb i:last-child > b,.fd-sb i:last-child > span{padding-right:0;}
-  /* the last segment's words may run on to the row's end (--r: that room over the segment's own width) */
-  .fd-sb i:last-child > b,.fd-sb i:last-child > span{width:calc(100% * var(--r, 1));}
-  /* the share of the row's total: lighter than the count, and kept whole when a narrow segment wraps */
-  .fd-sb .fd-v{font-style:normal;font-weight:400;}
-  .fd-sb .fd-pc{display:inline-block;margin-left:4px;font-style:normal;font-weight:600;color:var(--ink);}
+  /* each bar: its strips on one scale, then a row of names under them. A name starts where its strip does, unless the
+     name before it needs the room (the commuters' strip leads and can be narrow); the last runs on to the row's end */
+  .fd-sb{display:flex;height:14px;}
+  .fd-sb i{display:block;flex:none;box-sizing:border-box;width:var(--w);height:100%;}
+  .fd-sb i + i{border-left:1px solid var(--white);}
+  .fd-sb i.both{background:var(--flow-both);} .fd-sb i.in{background:var(--flow-in);} .fd-sb i.out{background:var(--flow-out);}
+  .fd-lb{display:flex;align-items:flex-start;}
+  .fd-lab{flex:none;box-sizing:border-box;min-width:var(--w);width:max-content;max-width:60%;padding-right:16px;}
+  .fd-lab:last-child{flex:1 1 auto;min-width:0;width:auto;max-width:none;padding-right:0;}
+  /* the whole name in its share's dress, bold and in the segment's colour (2026-10-21, Nil: "make commute in Boston also
+     the same style of 74") */
+  .fd-lab{margin-top:5px;font-size:var(--t-note);line-height:1.3;font-weight:700;}
+  .fd-lab > b{font-weight:inherit;font-variant-numeric:tabular-nums;}
+  .fd-lab.both{color:var(--flow-both-text);} .fd-lab.in{color:var(--flow-in);} .fd-lab.out{color:var(--flow-out-text);}
   #ovWrap.is-presenting .ov-map-inner{margin-left:0 !important;}
   /* the graph stands whole from the moment the dots start, with no growing in of its own */
   .wide-beat .fl-detail .fd{visibility:hidden;} .wide-beat.fl-shown .fl-detail .fd{visibility:visible;}
   /* a narrow column (the details under the words below 1200): the words under the segments give way to the counts */
-  @media (max-width:1199px){ .fl-detail--col .fd-sb i > span{display:none;} .fl-detail--col .fd-sb i > b{font-size:13px;} }
+  /* a narrow column has no room for two names side by side: under the bar they stand one per line, each led by its share in its colour */
+  @media (max-width:1199px){ .fl-detail--col .fd-lb{display:block;} .fl-detail--col .fd-lab{display:block;width:auto;min-width:0;max-width:none;padding-right:0;font-size:13px;} }
   /* under 1200 the panel is too short for both (a narrow column at 1024, a band on a phone): the details stand in the column */
   @media (max-width:1199px){ .who-fl-panel .fl-detail{display:none;} .fl-detail--col{display:grid;grid-template-columns:minmax(0,1fr);margin-top:12px;} .fl-detail--col .fd-st + .fd-st{margin-top:20px;} }
   /* beat 2's bars: the towns that send Boston more than they take, and the three that take more, on one scale */
@@ -8211,8 +8220,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
             <div class="page-head">
               <h2>Who works here, who lives here, who commutes out</h2>
             </div>
-            <p class="lede"><span class="city-short">Boston</span> Admin has 718,571 jobs and 347,517 working residents.
-              190,083 people do both: they live and work in <span class="city-short">Boston</span> Admin. Commuters fill
+            <p class="lede"><span class="city-short">Boston</span> has 718,571 jobs and 347,517 working residents.
+              190,083 people do both: they live and work in <span class="city-short">Boston</span>. Commuters fill
               the other 528,488 jobs, and 157,434 residents commute out to work elsewhere.</p>
             <div class="who-fl" id="whoFlows"></div>
             <!-- the Flows study's opt-2 (2026-10-18, "the dots go home"): after the
@@ -8224,8 +8233,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
             <div class="who-fl-ctl" id="whoFlowCtl">
               <span class="ctl-label">Map shows</span>
               <div class="seg" role="group" aria-label="Which commuters the map shows">
-                <button type="button" class="seg-btn is-active" data-flow="in" aria-pressed="true"><i class="fl-sw fl-sw--in" aria-hidden="true"></i><span class="fl-l">Live elsewhere, work in Boston Admin</span><span class="fl-s">Commute in</span></button>
-                <button type="button" class="seg-btn" data-flow="out" aria-pressed="false"><i class="fl-sw fl-sw--out" aria-hidden="true"></i><span class="fl-l">Live in Boston Admin, work elsewhere</span><span class="fl-s">Commute out</span></button>
+                <button type="button" class="seg-btn is-active" data-flow="in" aria-pressed="true"><i class="fl-sw fl-sw--in" aria-hidden="true"></i><span class="fl-l">Live elsewhere, work in Boston</span><span class="fl-s">Commute in</span></button>
+                <button type="button" class="seg-btn" data-flow="out" aria-pressed="false"><i class="fl-sw fl-sw--out" aria-hidden="true"></i><span class="fl-l">Live in Boston, work elsewhere</span><span class="fl-s">Commute out</span></button>
                 <button type="button" class="seg-btn" data-flow="net" aria-pressed="false"><i class="fl-sw fl-sw--net" aria-hidden="true"></i>Which way more go</button>
               </div>
             </div>
@@ -14646,11 +14655,11 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     /* named the way anyone would say it: where they live, where they work */
     const TOTAL = IN + BOTH + OUT;
     const GROUPS = [
-      { k: "in",   n: IN,   name: "Live elsewhere, work in Boston\u00a0Admin", share: pct(IN, JOBS) + " of Boston\u00a0Admin\u2019s jobs", dir: "commute in" },
-      { k: "both", n: BOTH, name: "Live and work in Boston\u00a0Admin",        share: pct(BOTH, JOBS) + " of Boston\u00a0Admin\u2019s jobs" },
-      { k: "out",  n: OUT,  name: "Live in Boston\u00a0Admin, work elsewhere", share: pct(OUT, RES) + " of Boston\u00a0Admin\u2019s working residents", dir: "commute out" }
+      { k: "in",   n: IN,   name: "Live elsewhere, work in Boston", share: pct(IN, JOBS) + " of Boston\u2019s jobs", dir: "commute in" },
+      { k: "both", n: BOTH, name: "Live and work in Boston",        share: pct(BOTH, JOBS) + " of Boston\u2019s jobs" },
+      { k: "out",  n: OUT,  name: "Live in Boston, work elsewhere", share: pct(OUT, RES) + " of Boston\u2019s working residents", dir: "commute out" }
     ];
-    host.innerHTML = '<div class="who-fl-head"><div class="who-fl-all"><b>' + K(TOTAL) + '</b><span>workers who live in Boston Admin, work in Boston Admin, or both</span></div>' +
+    host.innerHTML = '<div class="who-fl-head"><div class="who-fl-all"><b>' + K(TOTAL) + '</b><span>workers who live in Boston, work in Boston, or both</span></div>' +
       '<div class="who-fl-labs">' + GROUPS.map(g => '<div class="who-fl-lab who-fl-lab--' + g.k + '"><b>' + K(g.n) + (g.dir ? ' <em class="who-fl-dir"><i class="who-fl-c">commute </i>' + g.dir.replace("commute ", "") + '</em>' : '') + '</b><span>' + g.name + '</span><small>' + g.share + '</small></div>').join("") + '</div></div>' +
       '<svg role="img" aria-label="' + TOTAL.toLocaleString("en-US") + ' workers: ' + GROUPS.map(g => g.n.toLocaleString("en-US") + " " + g.name.charAt(0).toLowerCase() + g.name.slice(1)).join(", ") + '"></svg>' +
       '<p class="who-fl-note">One dot is about ' + PER.toLocaleString("en-US") + ' people. <button type="button" class="who-fl-replay">' +
@@ -14672,7 +14681,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     svg.insertBefore(arrG, svg.firstChild);
     /* Boston, named under its own circle with the city icon: the arrows go into it and out of it */
     const cityG = document.createElementNS(NS, "g"); cityG.setAttribute("class", "who-fl-city"); cityG.setAttribute("aria-hidden", "true");
-    cityG.innerHTML = '<g class="who-fl-city-ico" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + window.CITY_ICON + '</g><text class="who-fl-city-t">Boston Admin</text>';
+    cityG.innerHTML = '<g class="who-fl-city-ico" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + window.CITY_ICON + '</g><text class="who-fl-city-t">Boston</text>';
     svg.appendChild(cityG);
     /* a spiral fill, so a cloud looks scattered yet lands the same way every time */
     const pack = (cx, cy, r, n, seed) => { const pts = [], gold = Math.PI * (3 - Math.sqrt(5));
@@ -14890,12 +14899,13 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       both: '<svg class="vn-ico vn-ico--both" viewBox="0 0 24 30" aria-hidden="true">' + BLD + '</svg>',
       out: '<svg class="vn-ico" viewBox="0 0 42 30" aria-hidden="true">' + BLD + ARR(27, "out") + '</svg>' };
     const ariaCircles = svg.getAttribute("aria-label");
-    const ariaVenn = () => (round() ? "Two overlapping circles of dots," : "Two rectangles of dots,") + " one dot for about 2,000 people: people working in Boston Admin, " + fmtN(JOBS) + " jobs, and people living in Boston Admin, " + fmtN(RES) +
-      " working residents. They overlap in the " + fmtN(BOTH) + " living and working in Boston Admin. " + fmtN(IN) +
+    const ariaVenn = () => (round() ? "Two overlapping circles of dots," : "Two rectangles of dots,") + " one dot for about 2,000 people: people working in Boston, " + fmtN(JOBS) + " jobs, and people living in Boston, " + fmtN(RES) +
+      " working residents. They overlap in the " + fmtN(BOTH) + " living and working in Boston. " + fmtN(IN) +
       " work there but do not live there and commute in; " + fmtN(OUT) + " live there but do not work there and commute out.";
 
 
-    let built = false, twins = [], fA, fB, cA, cB, ldr, labs, setA, setB, cur = null, tip = null;
+    let built = false, twins = [], fA, fB, cA, cB, ldr, labs, setA, setB, cur = null, tip = null, frames = null, pinned = null;
+    const FRAMES = [["Apart", "First frame: the two groups apart", 0], ["Together", "Last frame: the two groups together, the three parts named", 2]];
     const hideTip = () => { if (tip){ tip.hidden = true; delete tip.dataset.k; } };
     const brk = {}, reg = {};
     function build(){
@@ -14912,17 +14922,33 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       twins = idx.both.map(() => { const c = el("circle", "vn-twin", svg, first); c.style.fill = COL.out; return c; });
       labs = document.createElement("div"); labs.className = "vn-labs"; labs.setAttribute("aria-hidden", "true");
       labs.innerHTML =
-        /* each part named by its share of its set; the counts are in the card a pointer or a tap brings up (showTip)
-           (2026-10-21, Nil: "use the percentages, have the absolute numbers in tooltip") */
-        '<div class="vn-set vn-set--work" data-tip="work"><b><span class="vn-nm-l">People working in Boston&nbsp;Admin</span><span class="vn-nm-s">Working in Boston&nbsp;Admin</span></b></div>' +
-        '<div class="vn-set vn-set--live" data-tip="live"><b><span class="vn-nm-l">People living in Boston&nbsp;Admin</span><span class="vn-nm-s">Living in Boston&nbsp;Admin</span></b></div>' +
-        '<div class="vn-reg vn-reg--in" data-tip="in"><span class="vn-n">' + ICO.in + '<b>' + PCT(IN, JOBS) + '</b><em>commute in</em></span><span class="vn-w">of the people working in Boston&nbsp;Admin</span></div>' +
-        '<div class="vn-reg vn-reg--both" data-tip="both"><span class="vn-n">' + ICO.both + '<em>Living and working in Boston&nbsp;Admin</em></span><span class="vn-w"><span class="vn-sh"><b>' + PCT(BOTH, JOBS) + '</b> of those working there,</span> <span class="vn-sh"><b>' + PCT(BOTH, RES) + '</b> of those living there</span></span></div>' +
-        '<div class="vn-reg vn-reg--out" data-tip="out"><span class="vn-n">' + ICO.out + '<b>' + PCT(OUT, RES) + '</b><em>commute out</em></span><span class="vn-w">of the people living in Boston&nbsp;Admin</span></div>';
+        /* each set named with its count (2026-10-21, Nil: "write the numbers for venn clusters"); each part by its share
+           of its set, the counts in the card a pointer or a tap brings up (showTip) (Nil: "use the percentages, have
+           the absolute numbers in tooltip") */
+        '<div class="vn-set vn-set--work" data-tip="work"><b><span class="vn-nm-l">People working in Boston</span><span class="vn-nm-s">Working in Boston</span></b><span class="vn-c">' + fmtN(JOBS) + '<span class="vn-u"> jobs</span></span></div>' +
+        '<div class="vn-set vn-set--live" data-tip="live"><b><span class="vn-nm-l">People living in Boston</span><span class="vn-nm-s">Living in Boston</span></b><span class="vn-c">' + fmtN(RES) + '<span class="vn-u"> working residents</span></span></div>' +
+        '<div class="vn-reg vn-reg--in" data-tip="in"><span class="vn-n">' + ICO.in + '<b>' + PCT(IN, JOBS) + '</b><em>commute in</em></span><span class="vn-w">of the people working in Boston</span></div>' +
+        '<div class="vn-reg vn-reg--both" data-tip="both"><span class="vn-n">' + ICO.both + '<em>Living and working in Boston</em></span><span class="vn-w"><span class="vn-sh"><b>' + PCT(BOTH, JOBS) + '</b> of those working there,</span> <span class="vn-sh"><b>' + PCT(BOTH, RES) + '</b> of those living there</span></span></div>' +
+        '<div class="vn-reg vn-reg--out" data-tip="out"><span class="vn-n">' + ICO.out + '<b>' + PCT(OUT, RES) + '</b><em>commute out</em></span><span class="vn-w">of the people living in Boston</span></div>';
       host.appendChild(labs);
       setA = labs.querySelector(".vn-set--work"); setB = labs.querySelector(".vn-set--live");
       K3.forEach(k => { reg[k] = labs.querySelector(".vn-reg--" + k); });
+      framesUi();
     }
+    /* the animation's first and last frames beside Play again, two small squares close together, the current one
+       filled: one shows its frame and holds it there (pinned); playing moves from one to the other (2026-10-21, Nil:
+       "the user can just see the first frame", "only two ... the initial state and the final state"; squares, not dots,
+       which "could be confused with the dots in data encoding", and "just put squares without turning them into icons").
+       Their names are their tooltips */
+    function framesUi(){ if (frames) return; const note = host.querySelector(".who-fl-note"); if (!note) return;
+      frames = document.createElement("span"); frames.className = "vn-frames"; frames.setAttribute("role", "group"); frames.setAttribute("aria-label", "The animation's first and last frames");
+      frames.innerHTML = FRAMES.map(f => '<button type="button" class="vn-fr" data-fr="' + f[2] + '" aria-pressed="false" aria-label="' + f[1] + '" title="' + f[0] + '"></button>').join("");
+      note.appendChild(frames);
+      frames.addEventListener("click", ev => { const b = ev.target.closest(".vn-fr"); if (b) show(+b.dataset.fr); });
+      mark(host.dataset.vn === "named" ? 2 : 0); }
+    /* the first frame stands marked until the last is reached */
+    function mark(i){ if (!frames) return;
+      frames.querySelectorAll(".vn-fr").forEach(b => { const on = +b.dataset.fr === (i === 2 ? 2 : 0); b.classList.toggle("is-on", on); b.setAttribute("aria-pressed", String(on)); }); }
 
     /* how tall the figure may be: the panel's height (fixed on a desk, in the phone band and in the presenter) less
        everything else it holds, and the least room kept between it and the bars. Without a panel there is no limit */
@@ -15129,12 +15155,21 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
        all; joined, the shared block turns grey (2026-10-20, Nil: "first start with blue and orange clusters and then
        they come together and grey area get its color") */
     const colour = joined => { circles.forEach((c, i) => { const k = dots[i].k; c.style.fill = joined ? COL[k] : (k === "out" ? COL.out : COL.in); }); };
-    const setVn = v => { host.dataset.vn = v; };
+    const setVn = v => { host.dataset.vn = v; mark(v === "apart" ? 0 : v === "named" ? 2 : 1); };
+    /* one frame as it stands at the end of its step: apart in the sets' colours; together, still in them; the shared
+       block grey and the parts named */
+    function frame(L, i){
+      if (i === 0){ draw(L, 0); colour(false); setVn("apart"); host.dataset.stage = "all"; }
+      else if (i === 1){ draw(L, 1); colour(false); setVn("met"); host.dataset.stage = "colour"; }
+      else { draw(L, 1); colour(true); setVn("named"); host.dataset.stage = "sorted"; } }
+    function show(i){
+      stop(); build(); const L = layout(); if (!L) return; size(L); pinned = i; host.dataset.played = "1";
+      host.classList.add("no-fade"); frame(L, i); void host.offsetWidth; host.classList.remove("no-fade"); }
     let raf = 0, timers = [], stale = false;
     function stop(){ timers.forEach(clearTimeout); timers = []; cancelAnimationFrame(raf); raf = 0; stale = false; hideTip(); }
     /* apart and grey, the two sets named; together; the three parts coloured and named */
     function play(){
-      stop(); build(); const L = layout(); if (!L) return; size(L); host.dataset.played = "1";
+      stop(); pinned = null; build(); const L = layout(); if (!L) return; size(L); host.dataset.played = "1";
       if (reduce()){ draw(L, 1); colour(true); setVn("named"); host.dataset.stage = "sorted"; return; }
       host.classList.add("no-fade"); draw(L, 0); colour(false); setVn("apart"); host.dataset.stage = "all";
       void host.offsetWidth; host.classList.remove("no-fade");
@@ -15158,8 +15193,10 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       const L = layout(); if (!L) return; size(L);
       /* a redraw, not a step of the animation: nothing fades */
       host.classList.add("no-fade");
-      /* joined but not yet grey only while the grey is still on its way; stopped there, it goes back apart */
-      if (host.dataset.stage === "sorted"){ draw(L, 1); colour(true); setVn("named"); }
+      /* a frame a dot holds stays; joined but not yet grey only while the grey is still on its way; stopped there, it
+         goes back apart */
+      if (pinned != null) frame(L, pinned);
+      else if (host.dataset.stage === "sorted"){ draw(L, 1); colour(true); setVn("named"); }
       else if (host.dataset.vn === "met" && timers.length){ draw(L, 1); }
       else { draw(L, 0); colour(false); setVn("apart"); }
       void host.offsetWidth; host.classList.remove("no-fade");
@@ -15173,7 +15210,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     function set(m){
       const next = m === "venn" || m === "classic" ? m : "circles"; if (next === mode) return;
       stop(); const played = host.dataset.played === "1", wrap = document.getElementById("ovWrap"), handing = !!(wrap && wrap.classList.contains("who-hand"));
-      mode = next; document.querySelectorAll(".wt-groups-opt").forEach(sel => { sel.value = mode; });
+      mode = next; pinned = null; document.querySelectorAll(".wt-groups-opt").forEach(sel => { sel.value = mode; });
       const u = new URL(location.href); if (mode === GROUPS_DEFAULT) u.searchParams.delete("groups"); else u.searchParams.set("groups", mode);
       history.replaceState(null, "", u.pathname + u.search + u.hash);
       apply(); fig.reset();
@@ -15182,11 +15219,11 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     /* the counts behind the shares: a card under the pointer over a part, a set's name or a part's name, or where a
        finger taps (a second tap on the same part puts it away). Only once the parts are named */
     const TIPS = {
-      in:   [fmtN(IN) + " commute in", PCT(IN, JOBS) + " of the " + fmtN(JOBS) + " people working in Boston\u00a0Admin"],
-      both: [fmtN(BOTH) + " live and work in Boston\u00a0Admin", PCT(BOTH, JOBS) + " of the " + fmtN(JOBS) + " working there, " + PCT(BOTH, RES) + " of the " + fmtN(RES) + " living there"],
-      out:  [fmtN(OUT) + " commute out", PCT(OUT, RES) + " of the " + fmtN(RES) + " people living in Boston\u00a0Admin"],
-      work: ["People working in Boston\u00a0Admin", fmtN(JOBS) + " jobs: " + fmtN(IN) + " held by people commuting in, " + fmtN(BOTH) + " by its residents"],
-      live: ["People living in Boston\u00a0Admin", fmtN(RES) + " working residents: " + fmtN(BOTH) + " work there, " + fmtN(OUT) + " commute out"]
+      in:   [fmtN(IN) + " commute in", PCT(IN, JOBS) + " of the " + fmtN(JOBS) + " people working in Boston"],
+      both: [fmtN(BOTH) + " live and work in Boston", PCT(BOTH, JOBS) + " of the " + fmtN(JOBS) + " working there, " + PCT(BOTH, RES) + " of the " + fmtN(RES) + " living there"],
+      out:  [fmtN(OUT) + " commute out", PCT(OUT, RES) + " of the " + fmtN(RES) + " people living in Boston"],
+      work: ["People working in Boston", fmtN(JOBS) + " jobs: " + fmtN(IN) + " held by people commuting in, " + fmtN(BOTH) + " by its residents"],
+      live: ["People living in Boston", fmtN(RES) + " working residents: " + fmtN(BOTH) + " work there, " + fmtN(OUT) + " commute out"]
     };
     /* which part a point of the figure falls in, the sets standing joined (svg units): the part of the dot under it
        (a dot by a circle's edge can sit a hair inside the other circle), else of the shape around it */
@@ -15304,8 +15341,10 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     secA.classList.add("wide-beat");
     secA.querySelector(".page-head h2").innerHTML = 'Who works here, who lives here';
     const lede1 = secA.querySelector(":scope > .lede");
-    lede1.innerHTML = 'A city&rsquo;s jobs and its workers are not the same people. <span class="city-short">Boston</span> Admin has ' + fmtN(JOBS) + ' jobs and ' + fmtN(RES) +
-      ' working residents, and ' + fmtN(BOTH) + ' people are both: they live and work in <span class="city-short">Boston</span> Admin.';
+    /* this beat says "Boston", not "Boston Admin", in its words, figure and bars (2026-10-21, Nil: "Who works here, who
+       lives here: instead of saying Boston Admin, just write Boston"); the shared map and the other beats keep the long names */
+    lede1.innerHTML = 'A city&rsquo;s jobs and its workers are not the same people. <span class="city-short">Boston</span> has ' + fmtN(JOBS) + ' jobs and ' + fmtN(RES) +
+      ' working residents, and ' + fmtN(BOTH) + ' people are both: they live and work in <span class="city-short">Boston</span>.';
     const lede2 = document.createElement("p"); lede2.className = "lede";
     lede2.innerHTML = 'Commuters fill the other jobs, three in four: ' + fmtN(IN) + ' come in on a working day, and ' + fmtN(OUT) + ' residents commute out. For every one who leaves, ' + (IN / OUT).toFixed(1) + ' arrive.';
     lede1.after(lede2);
@@ -15320,14 +15359,19 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     /* (2026-10-20, Nil: "remove the title", "say 718,571 jobs in Boston Admin as a title", "update the labels so they
        match with the venn diagram ... use percentages as well"): each total heads its own bar, each segment is named
        as the Venn names its part, and its share of that total stands after its count */
-    const seg = (cls, v, of, verb, words) => '<i class="' + cls + '" style="--w:' + pctW(v, JOBS) + (cls === "both" ? '' : ';--r:' + ((JOBS - BOTH) / v).toFixed(4)) + '"><b>' + fmtN(v) + (verb ? ' <em class="fd-v">' + verb + '</em>' : '') +
-      ' <em class="fd-pc">' + Math.round(v / of * 100) + '%</em></b><span>' + words + '</span></i>';
+    /* the commuters first and the grey, those who live and work there, at the end of each bar (2026-10-21, Nil: "make the
+       grey at the right side"). Each segment named by its share of the bar's total in one line, the count in its tooltip
+       (Nil: "use the percentage. 74% commute in Boston. 26% live and work in Boston ... 45% Boston residents commute out").
+       A bar: [cls, count, total, words, the count's own words] for each segment, strips then their names */
+    const bar = segs => '<span class="fd-sb">' + segs.map(([cls, v, , , tip]) => '<i class="' + cls + '" style="--w:' + pctW(v, JOBS) + '" title="' + fmtN(v) + ' ' + tip + '"></i>').join("") + '</span>' +
+      '<span class="fd-lb">' + segs.map(([cls, v, of, words, tip]) => '<span class="fd-lab ' + cls + '" style="--w:' + pctW(v, JOBS) + '" title="' + fmtN(v) + ' ' + tip + '"><b>' +
+        Math.round(v / of * 100) + '%</b> ' + words + '</span>').join("") + '</span>';
     const detailHtml = col => '<div class="fl-detail' + (col ? ' fl-detail--col' : '') + '">' +
       '<div class="fd fd-jobs">' +
-        '<div class="fd-st"><p class="fd-t">' + fmtN(JOBS) + ' jobs in <span class="city-short">Boston</span>&nbsp;Admin</p>' +
-          '<span class="fd-sb">' + seg("both", BOTH, JOBS, "", "Living and working in Boston&nbsp;Admin") + seg("in", IN, JOBS, "commute in", "Working in Boston&nbsp;Admin, not living there") + '</span></div>' +
-        '<div class="fd-st"><p class="fd-t">' + fmtN(RES) + ' working residents of <span class="city-short">Boston</span>&nbsp;Admin</p>' +
-          '<span class="fd-sb">' + seg("both", BOTH, RES, "", "Living and working in Boston&nbsp;Admin") + seg("out", OUT, RES, "commute out", "Living in Boston&nbsp;Admin, not working there") + '</span></div></div></div>';
+        '<div class="fd-st"><p class="fd-t">' + fmtN(JOBS) + ' jobs in <span class="city-short">Boston</span></p>' +
+          bar([["in", IN, JOBS, "commute in Boston", "commute in"], ["both", BOTH, JOBS, "live and work in Boston", "live and work in Boston"]]) + '</div>' +
+        '<div class="fd-st"><p class="fd-t">' + fmtN(RES) + ' working residents of <span class="city-short">Boston</span></p>' +
+          bar([["out", OUT, RES, "Boston residents commute out", "Boston residents commute out"], ["both", BOTH, RES, "live and work in Boston", "live and work in Boston"]]) + '</div></div></div>';
     const panel = document.createElement("div"); panel.className = "wide-vis who-fl-panel";
     panel.appendChild(fig.host);
     panel.insertAdjacentHTML("beforeend", detailHtml(false));
@@ -15706,14 +15750,14 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     };
     const LEFT = side("in", IN), RIGHT = side("out", OUT);
     const GROUPS = [
-      { k: "in",   n: IN,   name: "Live elsewhere, work in Boston\u00a0Admin", share: pct(IN, JOBS) + " of Boston\u00a0Admin’s jobs" },
-      { k: "both", n: BOTH, name: "Live and work in Boston\u00a0Admin",  share: pct(BOTH, JOBS) + " of Boston\u00a0Admin’s jobs" },
-      { k: "out",  n: OUT,  name: "Live in Boston\u00a0Admin, work elsewhere", share: pct(OUT, RES) + " of Boston\u00a0Admin’s working residents" }
+      { k: "in",   n: IN,   name: "Live elsewhere, work in Boston", share: pct(IN, JOBS) + " of Boston’s jobs" },
+      { k: "both", n: BOTH, name: "Live and work in Boston",  share: pct(BOTH, JOBS) + " of Boston’s jobs" },
+      { k: "out",  n: OUT,  name: "Live in Boston, work elsewhere", share: pct(OUT, RES) + " of Boston’s working residents" }
     ];
-    host.innerHTML = '<div class="who-fl-head"><div class="who-fl-all"><b>' + K(TOTAL) + '</b><span>workers who live in Boston Admin, work in Boston Admin, or both</span></div>' +
+    host.innerHTML = '<div class="who-fl-head"><div class="who-fl-all"><b>' + K(TOTAL) + '</b><span>workers who live in Boston, work in Boston, or both</span></div>' +
       '<div class="who-fl-labs">' + GROUPS.map(g => '<div class="who-fl-lab who-fl-lab--' + g.k + '"><b>' + K(g.n) + '</b><span>' + g.name + '</span><small>' + g.share + '</small></div>').join("") + '</div></div>' +
-      '<svg role="img" aria-label="' + TOTAL.toLocaleString("en-US") + ' workers. ' + IN.toLocaleString("en-US") + ' live elsewhere and work in Boston Admin, most from ' + LEFT.slice(0, 3).map(t => t.name).join(", ") +
-        '; ' + BOTH.toLocaleString("en-US") + ' live and work in Boston Admin; ' + OUT.toLocaleString("en-US") + ' live in Boston Admin and work elsewhere, most in ' + RIGHT.slice(0, 3).map(t => t.name).join(", ") + '."></svg>' +
+      '<svg role="img" aria-label="' + TOTAL.toLocaleString("en-US") + ' workers. ' + IN.toLocaleString("en-US") + ' live elsewhere and work in Boston, most from ' + LEFT.slice(0, 3).map(t => t.name).join(", ") +
+        '; ' + BOTH.toLocaleString("en-US") + ' live and work in Boston; ' + OUT.toLocaleString("en-US") + ' live in Boston and work elsewhere, most in ' + RIGHT.slice(0, 3).map(t => t.name).join(", ") + '."></svg>' +
       '<p class="who-fl-note">Each band’s width is its number of workers. <button type="button" class="who-fl-replay">' +
         '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M2.5 8a5.5 5.5 0 1 0 1.8-4.1M2.5 2.5v3h3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Play again</button></p>';
     const svg = host.querySelector(".who-fl-head + svg");
@@ -15758,14 +15802,14 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       const nl = stack(LEFT, top, colH, k, oneL.map(o => o ? lh + 3 : 2 * lh + 3)); let ya = seg.in[0];
       nl.forEach(({ t, y0, y1, cy }, i) => { const hh = t.n * k;
         const p = el("path", { class: "sk-band sk-band--in" + (t.rest ? " is-rest" : ""), d: band(xl + nw, y0, y1, cx - bw / 2, ya, ya + hh) }, gL); ya += hh;
-        el("title", {}, p).textContent = t.name + ": " + t.n.toLocaleString("en-US") + " live here and work in Boston Admin";
+        el("title", {}, p).textContent = t.name + ": " + t.n.toLocaleString("en-US") + " live here and work in Boston";
         el("rect", { class: "sk-node sk-node--in" + (t.rest ? " is-rest" : ""), x: xl, y: y0, width: nw, height: Math.max(1.5, y1 - y0) }, gL);
         name(gL, t, xl - 6, cy, "end", oneL[i]); });
       /* the right: ribbons out to where the residents work, from the orange segment */
       const nr = stack(RIGHT, top, colH, k, oneR.map(o => o ? lh + 3 : 2 * lh + 3)); let yb = seg.out[0];
       nr.forEach(({ t, y0, y1, cy }, i) => { const hh = t.n * k;
         const p = el("path", { class: "sk-band sk-band--out" + (t.rest ? " is-rest" : ""), d: band(cx + bw / 2, yb, yb + hh, xr, y0, y1) }, gR); yb += hh;
-        el("title", {}, p).textContent = t.name + ": " + t.n.toLocaleString("en-US") + " Boston Admin residents work here";
+        el("title", {}, p).textContent = t.name + ": " + t.n.toLocaleString("en-US") + " Boston residents work here";
         el("rect", { class: "sk-node sk-node--out" + (t.rest ? " is-rest" : ""), x: xr, y: y0, width: nw, height: Math.max(1.5, y1 - y0) }, gR);
         name(gR, t, xr + nw + 6, cy, "start", oneR[i]); });
       return { Wd, H, cx, bw, clipL, clipR, cols };
