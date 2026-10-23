@@ -2,7 +2,13 @@
  *  the DOM. See src/legacy/README.md for what lives here and why. */
 
 import "leaflet/dist/leaflet.css";
+/* the data scripts, in main's order (DATA_SCRIPTS in scripts/v3/port.mjs) */
 import "./xch_geo.js"; // sets window.XCH_GEO_RAW, which the maps read
+import "./who-2024.js"; // sets window.WHO_2024 (+ the compare tables), Who am I?'s four measures
+import "./who-scatter-2024.js"; // …window.WHO_SCATTER_2024, every US admin for its scatter
+import "./who-metro-scatter-2024.js"; // …window.WHO_METRO_SCATTER_2024, every US metro for its scatter
+import "./who-points-2024.js"; // …window.WHO_POINTS_2024, where those dots sit on its map
+import "./who_commute_geo.js"; // …window.WHO_COMMUTE_GEO, the outlines its commuting maps draw
 import "./industries-2024.js"; // sets window.BOSTON_INDUSTRIES_2024, which Metro Industries reads
 import "./industries-2014.js"; // …and window.BOSTON_INDUSTRIES_2014, for its change over time
 import landingBg from "./assets/landing-page.webp";

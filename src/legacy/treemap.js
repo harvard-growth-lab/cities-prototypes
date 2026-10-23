@@ -20,7 +20,7 @@ export function loadTreemaps(){
 
   const WIDTH  = 880;    /* the figure measure: just proud of the 760 text measure, fonts 1:1 */
   const HEIGHT = 450;    /* wide-and-short (2:1) so the full map fits one view */
-  const GREY   = "#9ca3af";
+  const GREY   = token("--control-edge", "#7f8f95");   /* read once: ?colours=9 sets it to the soft ink */
 
   /* "Color by" modes. Complexity and change are dummy values for the prototype,
      but held stable per industry so a cell keeps its shade across replays. */
@@ -83,9 +83,13 @@ export function loadTreemaps(){
     "Other": 0.19, "Professional & Business": 0.34,
     "Trade & Transportation": 0.16
   };
-  function tradabilityOf(name){ return tradByName.has(name) ? tradByName.get(name) : 0; }
-  /* the tier the source assigns, 0 traded, 1 partly traded, 2 local */
-  function tierOf(name){ return tierByName.has(name) ? tierByName.get(name) : 2; }
+  /* the score for drawing and ordering; an industry the source leaves
+     unrated (Private Households) draws as 0 and prints as "None" */
+  function tradabilityOf(name){ const v = tradByName.get(name); return v == null ? 0 : v; }
+  /* the tier the source assigns, 0 traded, 1 partly traded, 2 local, or
+     null where it gives none (Private Households): such an industry is in
+     the whole map but in no tier, as the reference has it */
+  function tierOf(name){ return tierByName.has(name) ? tierByName.get(name) : null; }
 
   const colorMode  = { exportTreemapSvg:SECTOR, tradableAnimatedSvg:SECTOR,
                        complexityTreemapSvg:COMPLEXITY };
@@ -94,15 +98,17 @@ export function loadTreemaps(){
      later "Color by" change can recolour without losing the split. */
   const splitState = { exportTreemapSvg:null, tradableAnimatedSvg:null };
 
-  /* the five bins are the metro's own quintiles of PCI in 2024; the one
-     industry with no PCI in the source sits in the middle bin */
+  /* the five bins are the reference build's own fixed cuts (Lowest, Low,
+     Middle, High, Highest; a value on a cut goes up); the one industry
+     with no PCI in the source, Private Households, is "Not rated", in grey */
   const PCI_CUTS = [-0.72, -0.4, 0.08, 0.65];
+  const PCI_NONE = token("--border-strong", "#c3ccce");
   function complexityColor(name){
     if(!complexityByName.has(name)){
       const v = pciByName.get(name);
-      let bin = 2;
-      if (v != null){ bin = 0; while (bin < PCI_CUTS.length && v >= PCI_CUTS[bin]) bin++; }
-      complexityByName.set(name, complexityPalette[bin]);
+      let fill = PCI_NONE;
+      if (v != null){ let bin = 0; while (bin < PCI_CUTS.length && v >= PCI_CUTS[bin]) bin++; fill = complexityPalette[bin]; }
+      complexityByName.set(name, fill);
     }
     return complexityByName.get(name);
   }
@@ -202,7 +208,9 @@ export function loadTreemaps(){
      them; nothing here is generated any more */
   const tradByName = new Map(rawData.map(r => [r.name, r.trad]));
   const tierByName = new Map(rawData.map(r => [r.name, r.tier]));
-  const rcaReal    = new Map(rawData.map(r => [r.name, Math.round(r.rca * 100) / 100]));
+  /* unrounded: rounding to two places tied plumbing fittings (5.472) with
+     seafood processing (5.468) and put them in the wrong order */
+  const rcaReal    = new Map(rawData.map(r => [r.name, r.rca]));
   const pciByName  = new Map(rawData.map(r => [r.name, r.pci]));
   const tradableByName = new Map(rawData.map(r => [r.name, r.tradable]));
 
@@ -393,7 +401,7 @@ export function loadTreemaps(){
     cells.append("text")
       .attr("class", "industry-text")
       .attr("x", d => d.x0 + 4).attr("y", d => d.y0 + 11)
-      .style("font-size", "8px")
+      .style("font-size", "13px")
       .text(d => fitLabel(d.data.name, { width: d.x1 - d.x0, height: d.y1 - d.y0 }));
 
     return { svg, root, sectorLayer, cells };
@@ -775,6 +783,8 @@ export function loadTreemaps(){
     for (let t = 2; t <= hi; t++) {
       svg.append("line").attr("class", "rca-grid")
         .attr("x1", x(t)).attr("y1", MT - 12).attr("x2", x(t)).attr("y2", gridBottom);
+      /* a tick that would sit under the "RCA = 1" marker keeps its line, not its label */
+      if (x(t) - 10 < x(1) + 7 + 52 + 6) continue;
       svg.append("text").attr("class", "rca-tick")
         .attr("x", x(t)).attr("y", MT - 20).attr("text-anchor", "middle").text(t + "×");
     }
@@ -1043,6 +1053,8 @@ export function loadTreemaps(){
     for (let t = 2; t <= hi; t++) {
       svg.append("line").attr("class", "rca-grid")
         .attr("x1", x(t)).attr("y1", MT - 12).attr("x2", x(t)).attr("y2", gridBottom);
+      /* a tick that would sit under the "RCA = 1" marker keeps its line, not its label */
+      if (x(t) - 10 < x(1) + 7 + 52 + 6) continue;
       svg.append("text").attr("class", "rca-tick")
         .attr("x", x(t)).attr("y", MT - 20).attr("text-anchor", "middle").text(t + "×");
     }
@@ -1530,8 +1542,11 @@ export function loadTreemaps(){
 
     const S = 300, PAD = 26, MID = S / 2;
     const svg = d3.select(svgEl);
-    // Flat pastels, butted edge to edge with no separator. Selection is shown
-    // by dimming the other three rather than by deepening this one.
+    // Flat pastels, butted edge to edge with no separator: the four
+    // diagnoses, so a data palette and outside the twelve interface colours
+    // (merging them left two quarters white on the white card and two
+    // diagnoses in one fill). Selection dims the other three and gives the
+    // picked one a teal edge.
     const fills = { tl:"#f6f2e9", tr:"#e8ecf2",
                     bl:"#f9edec", br:"#e9efeb" };
     const box = { tl:[PAD, PAD], tr:[MID, PAD], bl:[PAD, MID], br:[MID, MID] };
@@ -1571,7 +1586,11 @@ export function loadTreemaps(){
       const q = (state.pop && state.pay)
         ? (state.pay === "up" ? "t" : "b") + (state.pop === "up" ? "r" : "l")
         : null;
-      if (q) svg.select(".dx-q--" + q).classed("is-on", true);
+      if (q){
+        // the picked quarter on top so its edge is whole, then the cross, labels and dot back over it
+        svg.select(".dx-q--" + q).classed("is-on", true).raise();
+        svg.selectAll(".dx-cross, .dx-axis, .dx-dot-g").raise();
+      }
       svg.classed("has-sel", !!q);
 
       document.querySelectorAll(".dx-opt").forEach(b => {
@@ -1692,9 +1711,13 @@ export function loadTreemaps(){
 
     // Reference lines get named in place — "typical" is what the dashed
     // crosshair actually means, and saying so beats a legend.
+    /* on a phone the label holds the 11px floor, about twice its drawn size:
+       it shortens to "Typical" and stands left of the line, clear of its mark */
+    const PHONE_S = !!(window.matchMedia && matchMedia("(max-width: 599px)").matches);
     svg.append("text").attr("class", "ms-typical")
-      .attr("x", x(METRO_X_MED)).attr("y", M.top - 10).attr("text-anchor", "middle")
-      .text("Typical population growth");
+      .attr("x", PHONE_S ? x(METRO_X_MED) - 8 : x(METRO_X_MED)).attr("y", PHONE_S ? M.top - 4 : M.top - 10)
+      .attr("text-anchor", PHONE_S ? "end" : "middle")
+      .text(PHONE_S ? "Typical" : "Typical population growth");
     svg.append("path").attr("class", "ms-typical-mark")
       .attr("d", "M" + (x(METRO_X_MED) - 4) + " " + (M.top - 6) +
                  "L" + (x(METRO_X_MED) + 4) + " " + (M.top - 6) +
@@ -1850,8 +1873,12 @@ export function loadTreemaps(){
     const ring = svg.append("g").attr("class", "cim-ring").style("opacity", 0);
     ring.append("circle").attr("class", "cim-ring-c")
       .attr("cx", mx).attr("cy", my).attr("r", mr + 7);
+    /* on a phone the label is about twice its drawn size and would cross the
+       dashed median to its right: it goes to the ring's left there */
+    const PHONE_R = !!(window.matchMedia && matchMedia("(max-width: 599px)").matches);
     ring.append("text").attr("class", "cim-ring-label")
-      .attr("x", mx + mr + 14).attr("y", my + 4)
+      .attr("x", PHONE_R ? mx - mr - 14 : mx + mr + 14).attr("y", my + 4)
+      .attr("text-anchor", PHONE_R ? "end" : "start")
       .text("Boston metro");
 
     const places = svg.append("g").attr("class", "cim-places")
@@ -2119,7 +2146,7 @@ export function loadTreemaps(){
           d => x(Math.max(1, d.value)) - R, d => band(d.parent.data.name) + jit(d) - R,
           R * 2, R * 2, R);
         sectors.forEach(s => {
-          ov.append("text").attr("x", 4).attr("y", band(s) + 4).attr("font-size", 10)
+          ov.append("text").attr("x", 4).attr("y", band(s) + 4).attr("font-size", 13)
             .text(s.length > 16 ? s.slice(0, 15) + "…" : s);
         });
         ov.append("line").attr("x1", 110).attr("x2", W2 - 16).attr("y1", H2 - 48).attr("y2", H2 - 48);
@@ -2235,7 +2262,10 @@ export function loadTreemaps(){
     }
     let top = y - th - 10;
     if (top < 0) top = y + 14;
-    tip.style.left = Math.max(0, Math.min(left, Math.max(0, w.width - tw))) + "px";
+    /* the card is laid out inside the frame, so where the frame has been
+       panned sideways the card's place moves by as much */
+    const sx = wrap.scrollLeft || 0;
+    tip.style.left = (sx + Math.max(0, Math.min(left, Math.max(0, w.width - tw)))) + "px";
     tip.style.top  = Math.max(0, Math.min(top, Math.max(0, w.height - th))) + "px";
   }
 
@@ -2417,7 +2447,7 @@ export function loadTreemaps(){
       furn.append("line")
         .attr("x1", BASE).attr("x2", BASE)
         .attr("y1", MT - 12).attr("y2", MT + cur.rows.length * ROW + 8)
-        .attr("stroke", "#8a989d").attr("stroke-width", 1.5);
+        .attr("stroke", token("--control-edge", "#7f8f95")).attr("stroke-width", 1.5);
       cur.rows.forEach((d, i) => {
         const g0 = cur.geo.get(d.data.name);
         furn.append("text")
@@ -2437,12 +2467,12 @@ export function loadTreemaps(){
       furn.append("text")
         .attr("x", BASE).attr("y", MT + cur.rows.length * ROW + 26)
         .attr("text-anchor", "middle")
-        .style("fill", "#5b686d").style("stroke", "none").attr("font-size", 12)
+        .style("fill", "#526066").style("stroke", "none").attr("font-size", 13)
         .text("same as the metro");
       furn.append("text")
         .attr("x", BASE).attr("y", MT + cur.rows.length * ROW + 46)
         .attr("text-anchor", "middle")
-        .style("fill", "#5b686d").style("stroke", "none").attr("font-size", 12)
+        .style("fill", "#526066").style("stroke", "none").attr("font-size", 13)
         .text(lens === "work"
           ? "share of " + cityName + " ÷ share of the metro"
           : "share of residents’ work ÷ share of the metro");
@@ -2879,35 +2909,46 @@ export function loadTreemaps(){
      into an "Other ..." cell of the group - or, where the group is one big
      industry and a few tiny ones, into a single cell that carries the
      group's own name. The map is tiled in screen pixels so the gaps are a
-     pixel and the type is 12px at any width, and read back into the
+     pixel and the type is 13px at any width (12.5 where that is what
+     fits; nothing on this figure is set smaller), and read back into the
      figure's units to be drawn.
      ========================================================================= */
-  const MAP = { padding: 1, minSide: 4, inset: 3, first: 1.1, step: 0.9, shareGap: 0.3,
-                descent: 0.25, size: 12, min: 10, weight: 500, shareWeight: 400,
+  const MAP = { padding: 1, minSide: 4, inset: 2, first: 1.1, step: 0.9, shareGap: 0.3,
+                descent: 0.25, size: 13, min: 13, weight: 500, shareWeight: 400,
                 /* at the sector level the nine blocks are the cells, and a
-                   12px label is lost in them: the fit starts higher there */
+                   13px label is lost in them: the fit starts higher there */
                 sectorSize: 18 };
+  /* the sizes a label is tried at: whole pixels from its ceiling down,
+     ending on the floor itself, which is not a whole pixel */
+  const mapSizes = (max, min) => { const lo = min || MAP.min, out = []; for (let v = max; v > lo; v--) out.push(v); out.push(lo); return out; };
   const MAP_FONT = '"Source Sans 3", "Source Sans Pro", sans-serif';
   /* the sector-names study: "off", or the sectors named on the map -
-     "band", a 16px strip in a deeper shade of the sector's colour with a
+     "band", an 18px strip in a deeper shade of the sector's colour with a
      hairline round its block, or "gutter", the name in ink on the page's
      white above the block, the block's cells inset from it. The strip is
      screen pixels, like the labels, and the tiling makes the room for it. */
   let SEC_NAMES = "off";
-  const SEC_STRIP = 16, SEC_INSET = 3, SEC_NAME_SIZE = 11;
+  const SEC_STRIP = 18, SEC_INSET = 3, SEC_NAME_SIZE = 13;
   /* the grain of the map: the level its cells are tiled at - 6 the
      industries (877 in 2024), 4 the industry groups (292), 2 the sectors
      (9); 3, the subsectors (85), is tiled the same way but not offered. A
      coarser grain folds every industry into its group or sector as a
      whole before the tiling; the bars and the ranking stay industries. */
-  let MAP_GRAIN = 6;
-  const GRAIN_WORDS = { 6: ["industry", "industries"], 4: ["industry group", "industry groups"], 3: ["subsector", "subsectors"], 2: ["sector", "sectors"] };
+  /* The grains: 6, 4 and 3 are the NAICS digits; 2 is the NAICS 2-digit
+     sector (19 of them in the metro: 31-33, 44-45 and 48-49 count as one
+     each), and 1 is the reference build's nine sectors, the ones the map is
+     coloured by. A 2-digit sector sits inside one of the nine, so it keeps
+     its sector's colour. The map opens at the 2-digit sectors (Nil,
+     2026-10-09); REST_GRAIN is the level the reader chose, which the map
+     goes back to after the tradable beat has held it at the industries. */
+  const DEFAULT_GRAIN = 2;
+  let MAP_GRAIN = DEFAULT_GRAIN, REST_GRAIN = DEFAULT_GRAIN;
+  const GRAIN_WORDS = { 6: ["industry", "industries"], 4: ["industry group", "industry groups"], 3: ["subsector", "subsectors"], 2: ["2-digit sector", "2-digit sectors"], 1: ["sector", "sectors"] };
   const grainWordAt = (grain, n) => (GRAIN_WORDS[grain] || GRAIN_WORDS[6])[n === 1 ? 0 : 1];
   /* the level is where the map rests; the zoom walks down from there as it
      always has, sector, then group, then the industries - so what is
      tiled is the finer of the level chosen and the depth zoomed to */
-  const GRAIN_STEPS = [2, 4, 6];
-  const effectiveGrain = (grain, depth) => GRAIN_STEPS[Math.max(GRAIN_STEPS.indexOf(grain) < 0 ? 2 : GRAIN_STEPS.indexOf(grain), depth)];
+  const effectiveGrain = (grain, depth) => depth <= 0 ? grain : depth === 1 ? Math.max(grain, 4) : 6;
   /* the sector blocks' dressing (the "Sector blocks" study), for the map
      resting at the sector grain: "plain" the name and share; "card" the
      block as a card - name, share and jobs, its three largest groups, the
@@ -2930,7 +2971,7 @@ export function loadTreemaps(){
   /* the band's shade: the sector's colour taken down a little, and further
      where a little leaves neither white nor ink reading 4.5 to 1 on it */
   const secDeeper = sec => {
-    const c = d3.color(sectorColors[sec] || "#ccc"); if (!c) return "#888";
+    const c = d3.color(sectorColors[sec] || "#c3ccce"); if (!c) return "#7f8f95";
     for (let k = 0.55; k <= 1.6; k += 0.15){
       const d = c.darker(k), L = relLum(d.rgb());
       if (Math.max(1.05 / (L + 0.05), (L + 0.05) / (LUM_INK + 0.05)) >= 4.5) return d.formatHex();
@@ -2940,7 +2981,7 @@ export function loadTreemaps(){
   /* the name on white: the sector's colour taken down until it reads 4.5 to
      1, and ink where no shade of it does */
   const gutterInk = sec => {
-    const c = d3.color(sectorColors[sec] || "#888"); if (!c) return CELL_INK;
+    const c = d3.color(sectorColors[sec] || "#7f8f95"); if (!c) return CELL_INK;
     for (let k = 0.9; k <= 2.6; k += 0.25){
       const d = c.darker(k), r = 1.05 / (relLum(d.rgb()) + 0.05);
       if (r >= 4.5) return d.formatHex();
@@ -2949,27 +2990,55 @@ export function loadTreemaps(){
   };
   const SECTOR_RANK = new Map(SECTOR_KEYS.map((s, i) => [s.label, i]));
   /* white or ink on a sector's fill, whichever reads better on it */
-  const sectorInk = sec => cellInk(sectorColors[sec] || "#ccc");
+  const sectorInk = sec => cellInk(sectorColors[sec] || "#c3ccce");
   const TIER_WORDS = ["Traded", "Partly traded", "Local"];
-  const CX_NAMES = ["Lowest", "Low", "Middle", "High", "Highest"];
   const cxBinOf = pci => {
     if (pci == null) return null;
     let b = 0; while (b < PCI_CUTS.length && pci >= PCI_CUTS[b]) b++;
     return b;
   };
-  const cxText = pci => { const b = cxBinOf(pci); return b == null ? "Not rated" : CX_NAMES[b] + " (PCI " + pci.toFixed(2) + ")"; };
-  const cxFillOf = pci => { const b = cxBinOf(pci); return b == null ? "#c3ccce" : complexityPalette[b]; };
-  const rcaText = v => v == null ? null : v.toFixed(v < 10 ? 2 : 1) + "×";
+  const cxFillOf = pci => { const b = cxBinOf(pci); return b == null ? PCI_NONE : complexityPalette[b]; };
   /* shares as the reference prints them: 26%, 5.4%, 0.55% */
   const fmtShare = v => { const t = v * 100; return t.toFixed(t >= 10 ? 0 : t >= 1 ? 1 : 2) + "%"; };
   const fmtJobsFull = v => Math.round(v).toLocaleString("en-US");
   const escHtml = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
+  /* the NAICS 2-digit sectors: a short name for the map, the full title for
+     the card; 31-33, 44-45 and 48-49 are one sector each */
+  const NAICS2 = {
+    "11": ["Agriculture & forestry", "Agriculture, Forestry, Fishing and Hunting"],
+    "21": ["Mining, oil & gas", "Mining, Quarrying, and Oil and Gas Extraction"],
+    "22": ["Utilities", "Utilities"],
+    "23": ["Construction", "Construction"],
+    "31-33": ["Manufacturing", "Manufacturing"],
+    "42": ["Wholesale trade", "Wholesale Trade"],
+    "44-45": ["Retail trade", "Retail Trade"],
+    "48-49": ["Transportation & warehousing", "Transportation and Warehousing"],
+    "51": ["Information", "Information"],
+    "52": ["Finance & insurance", "Finance and Insurance"],
+    "53": ["Real estate & rental", "Real Estate and Rental and Leasing"],
+    "54": ["Professional & technical services", "Professional, Scientific, and Technical Services"],
+    "55": ["Management of companies", "Management of Companies and Enterprises"],
+    "56": ["Administrative & support", "Administrative and Support and Waste Management and Remediation Services"],
+    "61": ["Education", "Educational Services"],
+    "62": ["Health care & social assistance", "Health Care and Social Assistance"],
+    "71": ["Arts & recreation", "Arts, Entertainment, and Recreation"],
+    "72": ["Accommodation & food", "Accommodation and Food Services"],
+    "81": ["Other services", "Other Services (except Public Administration)"],
+    "92": ["Public administration", "Public Administration"]
+  };
+  const naics2Of = code => {
+    const p = String(code).slice(0, 2);
+    return p === "31" || p === "32" || p === "33" ? "31-33" : p === "44" || p === "45" ? "44-45" : p === "48" || p === "49" ? "48-49" : p;
+  };
+  const naics2Name = k => (NAICS2[k] || [k])[0];
+  const naics2Title = k => { const n = NAICS2[k]; return n && n[1] !== n[0] ? n[1] : undefined; };
   /* a cell for one industry: named by its short name, with the full NAICS
      name kept for the card */
   function cellOfRow(r, total){
-    const name = r.short || r.name;
+    const name = r.short || r.name, n2 = naics2Of(r.code);
     return { id: r.code, name: name, title: r.name !== name ? r.name : undefined,
+      naics2: n2, naics2Name: naics2Name(n2), naics2Title: naics2Title(n2),
       group: r.group, groupName: r.groupShort || r.groupName, groupTitle: r.groupName,
       subsector: r.sub, subsectorName: r.subShort || r.sub, subsectorTitle: undefined,
       sector: r.sector, tier: r.tier, pci: r.pci, rca: r.rca, jobs: r.employ,
@@ -2992,6 +3061,7 @@ export function loadTreemaps(){
       group: meta.group ?? d.group ?? id, groupName: meta.groupName ?? d.groupName ?? name, groupTitle: groupTitle,
       subsector: meta.subsector ?? d.subsector ?? id, subsectorName: meta.subsectorName ?? d.subsectorName ?? name,
       subsectorTitle: subTitle, sector: d.sector || "Other",
+      naics2: meta.naics2 ?? d.naics2, naics2Name: meta.naics2Name ?? d.naics2Name, naics2Title: meta.naics2 ? meta.naics2Title : d.naics2Title,
       tier: tiers.size === 1 ? (d.tier ?? null) : null,
       pci: pciJobs > 0 ? withPci.reduce((a, c) => a + (c.pci || 0) * c.jobs, 0) / pciJobs : null,
       rca: denom > 0 ? withRca.reduce((a, c) => a + c.share, 0) / denom : null,
@@ -3009,6 +3079,7 @@ export function loadTreemaps(){
   const LEVELS = {
     group:     { id: "group",     key: c => c.group,     name: c => c.groupName,     title: c => c.groupTitle },
     subsector: { id: "subsector", key: c => c.subsector, name: c => c.subsectorName, title: c => c.subsectorTitle },
+    naics2:    { id: "naics2",    key: c => c.naics2,    name: c => c.naics2Name,    title: c => c.naics2Title },
     sector:    { id: "sector",    key: c => c.sector,    name: c => c.sector,        title: () => undefined }
   };
   /* what a folded cell is grouped under, so it tiles as its own group */
@@ -3016,19 +3087,10 @@ export function loadTreemaps(){
     if (level.id === "group") return { group: key, groupName: name, groupTitle: title };
     if (level.id === "subsector") return { group: "subsector:" + key, groupName: name, groupTitle: title,
                                            subsector: key, subsectorName: name, subsectorTitle: title };
+    if (level.id === "naics2") return { group: "naics2:" + key, groupName: name, groupTitle: title,
+                                        subsector: "naics2:" + key, subsectorName: name, subsectorTitle: title,
+                                        naics2: key, naics2Name: name, naics2Title: title };
     return { group: "sector:" + key, groupName: name, subsector: "sector:" + key, subsectorName: name };
-  }
-  /* the items of a band rolled up one level: one item per group, carrying
-     its industries as members; a group of one stays as it is */
-  function groupUp(bandKey, items){
-    const buckets = new Map();
-    items.forEach(it => { if (!buckets.has(it.group)) buckets.set(it.group, []); buckets.get(it.group).push(it); });
-    return [...buckets].flatMap(([k, list]) => {
-      if (list.length === 1) return list;
-      const first = list[0];
-      const c = aggCell("group:" + bandKey + ":" + k, first.cell.groupName, list.map(e => e.cell), {}, first.cell.groupTitle);
-      return [{ id: c.id, sector: c.sector, group: c.group, value: list.reduce((a, e) => a + e.value, 0), cell: c }];
-    });
   }
   /* the items of a band rolled up to a level as wholes - one item per
      group, subsector or sector, its industries as members - for the map
@@ -3042,19 +3104,28 @@ export function loadTreemaps(){
       return { id: c.id, sector: c.sector, group: c.group, value: list.reduce((a, e) => a + e.value, 0), cell: c };
     });
   }
-  /* one band tiled: sector, group, industry, each level padded by a pixel
-     and rounded to whole pixels; the sectors in the reference's fixed
-     order, the rest by size with the folded "Other" cells last */
-  function tileBand(items, box, bandKey){
-    const out = { blocks: [], groups: [], cells: [] };
+  /* one band tiled, each level padded by a pixel and rounded to whole
+     pixels; the sectors in the reference's fixed order, the rest by size
+     with the folded "Other" cells last. Flat, a sector holds its cells
+     directly - the industry map, clustered by sector and no further.
+     Otherwise a group layer stands between them, which at the coarser
+     grains is each cell's own box and the zoom's target. */
+  function tileBand(items, box, bandKey, flat, mid){
+    const out = { blocks: [], groups: [], cells: [], mids: [] };
     if (!items.length || box.w <= 0 || box.h <= 0) return out;
     const bySector = new Map();
     items.forEach(it => { if (!bySector.has(it.sector)) bySector.set(it.sector, []); bySector.get(it.sector).push(it); });
     const tree = { kind: "root", children: [...bySector].map(([sector, list]) => {
-      const byGroup = new Map();
-      list.forEach(it => { const g = it.group ?? it.id; if (!byGroup.has(g)) byGroup.set(g, []); byGroup.get(g).push(it); });
-      return { kind: "sector", sector: sector, children: [...byGroup].map(([group, l]) =>
-        ({ kind: "group", group: group, children: l.map(it => ({ kind: "item", item: it })) })) };
+      if (flat) return { kind: "sector", sector: sector, children: list.map(it => ({ kind: "item", item: it })) };
+      const grouped = ls => { const byGroup = new Map();
+        ls.forEach(it => { const g = it.group ?? it.id; if (!byGroup.has(g)) byGroup.set(g, []); byGroup.get(g).push(it); });
+        return [...byGroup].map(([group, l]) => ({ kind: "group", group: group, children: l.map(it => ({ kind: "item", item: it })) })); };
+      /* zoomed into a sector, its groups are clustered by their 2-digit
+         sector first, so the tile a reader clicked stays one region */
+      if (mid){ const byN2 = new Map();
+        list.forEach(it => { const k = (it.cell && it.cell.naics2) || "?"; if (!byN2.has(k)) byN2.set(k, []); byN2.get(k).push(it); });
+        return { kind: "sector", sector: sector, children: [...byN2].map(([n2, l]) => ({ kind: "mid", n2: n2, children: grouped(l) })) }; }
+      return { kind: "sector", sector: sector, children: grouped(list) };
     }) };
     const isRest = n => n.data.kind === "item" ? n.data.item.rest === true
       : n.data.kind === "group" && (n.children || []).every(isRest);
@@ -3067,7 +3138,7 @@ export function loadTreemaps(){
         return ra === rb ? (b.value || 0) - (a.value || 0) : ra ? 1 : -1;
       });
     const named = SEC_NAMES !== "off", gutter = SEC_NAMES === "gutter";
-    d3.treemap().size([box.w, box.h]).paddingInner(MAP.padding)
+    d3.treemap().size([box.w, box.h]).paddingInner(n => mid && n.data.kind === "sector" ? 3 : MAP.padding)
       .paddingOuter(n => n.depth === 1 && gutter ? SEC_INSET : MAP.padding)
       .paddingTop(n => n.depth === 1 ? (named ? SEC_STRIP + (gutter ? 1 : 0) : MAP.padding) : MAP.padding)
       .round(true)(root);
@@ -3077,6 +3148,7 @@ export function loadTreemaps(){
       else if (n.data.kind === "group") out.groups.push({ ...r, key: bandKey + ":" + n.data.group, group: n.data.group,
         items: n.leaves().map(l => l.data.item) });
       else if (n.data.kind === "item") out.cells.push({ ...r, item: n.data.item });
+      else if (n.data.kind === "mid") out.mids.push({ ...r, n2: n.data.n2 });
     });
     return out;
   }
@@ -3126,43 +3198,42 @@ export function loadTreemaps(){
   }
   /* tile, fold whatever came out under four pixels a side, tile again,
      until every cell can be seen or nothing more will fold */
-  function mergeLoop(levels, bands){
+  function mergeLoop(levels, bands, flat, mid){
     let cur = bands;
     for (let guard = 0; guard < 60; guard++){
-      const layouts = cur.map(b => tileBand(b.items, b.box, b.key));
+      const layouts = cur.map(b => tileBand(b.items, b.box, b.key, flat, mid));
       const tiny = new Set(layouts.flatMap(L => L.cells.filter(c => Math.min(c.w, c.h) < MAP.minSide).map(c => c.item.id)));
       if (!tiny.size) return { bands: cur, layouts: layouts };
       const next = mergeOnce(levels, cur, tiny);
       if (!next) return { bands: cur, layouts: layouts };
       cur = next;
     }
-    return { bands: cur, layouts: cur.map(b => tileBand(b.items, b.box, b.key)) };
+    return { bands: cur, layouts: cur.map(b => tileBand(b.items, b.box, b.key, flat, mid)) };
   }
-  /* the bands laid out at the industry grain: first the groups are folded
-     as wholes into their subsectors and sectors, then, each group opened
-     back up, its own small industries are folded inside it */
-  function layoutBands(bands, grain){
+  /* the bands laid out. At the industry grain the map is clustered by
+     sector and no further: each sector holds its industries directly, and
+     the industries too small to see fold into one "Other" cell for their
+     sector. (Until 2026-10-01 a 4-digit group layer stood between the two,
+     with its own gutters, its own "Other" cells and a zoom of its own.) */
+  function layoutBands(bands, grain, mid){
     /* at a coarser grain the industries are rolled up as wholes first, and
        only what is still too small folds further up */
     if (grain && grain !== 6){
-      const level = grain === 4 ? LEVELS.group : grain === 3 ? LEVELS.subsector : LEVELS.sector;
+      const level = grain === 4 ? LEVELS.group : grain === 3 ? LEVELS.subsector : grain === 2 ? LEVELS.naics2 : LEVELS.sector;
       const coarse = bands.map(b => ({ ...b, items: levelUp(b.key, b.items, level) }));
-      const above = grain === 4 ? [LEVELS.subsector, LEVELS.sector] : grain === 3 ? [LEVELS.sector] : [];
-      return mergeLoop(above, coarse);
+      const above = grain === 4 ? [LEVELS.subsector, LEVELS.sector] : grain === 3 || grain === 2 ? [LEVELS.sector] : [];
+      return mergeLoop(above, coarse, false, mid);
     }
-    const members = new Map();
-    const grouped = bands.map(b => {
-      const items = groupUp(b.key, b.items);
-      items.forEach(it => { if (it.cell.members) members.set(it.id, b.items.filter(e => e.group === it.group)); });
-      return { ...b, items: items };
-    });
-    const pass1 = mergeLoop([LEVELS.subsector, LEVELS.sector], grouped).bands
-      .map(b => ({ ...b, items: b.items.flatMap(it => members.get(it.id) || [it]) }));
-    return mergeLoop([LEVELS.group], pass1);
+    /* a map that holds one group alone - a zoom into a group, made from
+       a coarser level and carried here - folds within that group, so the
+       cell is "Other <group>", named for where the reader stands, and a
+       pair in which one is too small to see becomes the group's own cell */
+    const oneGroup = new Set(bands.flatMap(b => b.items.map(it => it.group))).size === 1;
+    return mergeLoop([oneGroup ? LEVELS.group : LEVELS.sector], bands, true);
   }
 
-  /* ---- the cell labels: the name whole, wrapped by words, at 12px down to
-     10, and the share under it where that still fits; a name that cannot
+  /* ---- the cell labels: the name whole, wrapped by words, at 13px or at
+     12.5, and the share under it where that still fits; a name that cannot
      be set whole leaves the cell bare ---- */
   const _mapCtx = (function(){ try { return document.createElement("canvas").getContext("2d"); } catch (e){ return null; } })();
   const _mapW = new Map();
@@ -3186,9 +3257,9 @@ export function loadTreemaps(){
     if (cur) out.push(cur);
     return out;
   }
-  function fitLines(name, shareText, box, maxSize){
+  function fitLines(name, shareText, box, maxSize, minSize){
     const words = name.split(/\s+/);
-    for (let size = maxSize || MAP.size; size >= MAP.min; size--){
+    for (const size of mapSizes(maxSize || MAP.size, minSize)){
       const lines = wrapFit(words, size, MAP.weight, box.w);
       if (!lines || blockH(lines.length, size, false) > box.h) continue;
       const share = mapTextW(shareText, size, MAP.shareWeight) <= box.w && blockH(lines.length, size, true) <= box.h;
@@ -3199,8 +3270,8 @@ export function loadTreemaps(){
   /* the fit depends only on the words and the cell's size, so it is cached
      on those; the cell's own corner is added on the way out */
   const _mapLab = new Map();
-  function fitCellLabel(name, shareText, cell, maxSize){
-    const key = name + "|" + shareText + "|" + Math.round(cell.w) + "|" + Math.round(cell.h) + "|" + (maxSize || 0);
+  function fitCellLabel(name, shareText, cell, maxSize, minSize){
+    const key = name + "|" + shareText + "|" + Math.round(cell.w) + "|" + Math.round(cell.h) + "|" + (maxSize || 0) + "|" + (minSize || 0);
     let fit = _mapLab.get(key);
     if (fit === undefined){
       fit = null;
@@ -3208,7 +3279,7 @@ export function loadTreemaps(){
       if (box.w > 0 && box.h > 0){
         const bare = name.replace(/\s*\([^)]*\)/g, "").trim();
         for (const n of (bare && bare !== name ? [name, bare] : [name])){
-          fit = fitLines(n, shareText, box, maxSize);
+          fit = fitLines(n, shareText, box, maxSize, minSize);
           if (fit) break;
         }
       }
@@ -3249,15 +3320,61 @@ export function loadTreemaps(){
        own tiers, scores and shares */
     const tierByName = new Map(rows.map(r => [r.name, r.tier]));
     const tradByName = new Map(rows.map(r => [r.name, r.trad]));
-    const rcaReal = new Map(rows.map(r => [r.name, Math.round((r.rca || 0) * 100) / 100]));
+    const rcaReal = new Map(rows.map(r => [r.name, r.rca || 0]));
     const pciByName = new Map(rows.map(r => [r.name, r.pci]));
     const tradableByName = new Map(rows.map(r => [r.name, r.tradable]));
-    const tierOf = name => tierByName.has(name) ? tierByName.get(name) : 2;
-    const tradabilityOf = name => tradByName.has(name) ? tradByName.get(name) : 0;
+    /* null where the source gives no tier (Private Households): in the
+       whole map, in no tier, and out of the ranking's pool */
+    const tierOf = name => tierByName.has(name) ? tierByName.get(name) : null;
+    const tradabilityOf = name => { const v = tradByName.get(name); return v == null ? 0 : v; };
     const rcaOf = name => rcaReal.has(name) ? rcaReal.get(name) : 0;
     const isTradable = name => tradableByName.get(name) === true;
 
     const svg = d3.select(el);
+    /* "Show all" (2026-10-06, Nil: the three bar charts show the top ones;
+       "when clicked on show all, we'll need to see all industries"). A chart
+       run on past its frame keeps the frame: the drawing grows taller and
+       the frame scrolls it, so the figure pinned beside the text keeps its
+       size. The frame is a box round the drawing, given a height only while
+       a chart runs long (syncFrame). */
+    let vbox = el.parentNode && el.parentNode.classList.contains("mi-vscroll") ? el.parentNode : null;
+    if (!vbox && el.parentNode){
+      vbox = document.createElement("div"); vbox.className = "mi-vscroll";
+      /* the drawing's usual proportions, for the presenter's fit, which
+         would otherwise read the long drawing's */
+      vbox.dataset.ratio = String(MI_W / MI_H);
+      el.parentNode.insertBefore(vbox, el); vbox.appendChild(el);
+    }
+    /* the frame the figure is drawn in, whichever box holds the drawing: the
+       pan, the filter's menu and the measures are taken from it */
+    const vizWrap = vbox ? vbox.parentNode : el.parentNode;
+    /* the head held at the top of a scrolled list is a small drawing of its
+       own, stuck to the frame's top (syncPin): drawn into the big one, it
+       made every frame of a scroll repaint every row */
+    let pinBox = vbox ? vbox.querySelector(".mi-pinbox") : null;
+    if (vbox && !pinBox){
+      pinBox = document.createElement("div"); pinBox.className = "mi-pinbox";
+      pinBox.setAttribute("aria-hidden", "true"); vbox.insertBefore(pinBox, el);
+    }
+    const pinSvg = pinBox ? d3.select(pinBox).selectAll("svg").data([0]).join("svg").attr("class", "mi-pinsvg")
+      .attr("xmlns", "http://www.w3.org/2000/svg") : null;
+    /* whether the chart on screen shows all its rows; each beat opens on
+       its top rows (setStep, setView put it back) */
+    let more = false, moreBars = false, moreTrad = false, rankAll = false;
+    /* where the bars' Show button stands: under the last bar, or over the
+       names (the "Show all" study; the ranking keeps its over the names) */
+    const moreAtEl = document.getElementById(p + "MoreAt");
+    let moreAt = moreAtEl && moreAtEl.value === "head" ? "head" : "foot";
+    /* the box's look: a teal outline, or the sentence's tinted blank */
+    const moreLookEl = document.getElementById(p + "MoreLook");
+    const setMoreLook = v => { fig.dataset.morelook = v === "tint" ? "tint" : "outline"; };
+    setMoreLook(moreLookEl ? moreLookEl.value : "outline");
+    if (moreLookEl) on(moreLookEl, "change", () => setMoreLook(moreLookEl.value));
+    /* whether the screen shows the drawing's foot (syncFootRoom) */
+    let footRoom = true;
+    /* the beat on screen (declared up here: the charts drawn below ask it
+       which of them is showing) */
+    let step = -1, painted = -1, arriving = false;
     const TEAL = token("--teal", "#255862");
     const MUTED = "#a9c2c7";
     const ORANGE = token("--orange", "#e76565");
@@ -3297,19 +3414,33 @@ export function loadTreemaps(){
     /* what the map beats colour their cells by: the sector, or how much
        know-how each industry takes */
     let colorBy = "sector";
-    const jobsTotal = d3.sum(industryData, d => d.employ) || 1;
+    /* shares are of the total the source quotes (2,318,249 in 2024), as the
+       reference divides by; its rows sum to 24 fewer */
+    const yearSrc = YEARS[fig.dataset.year || "2024"];
+    const jobsTotal = (yearSrc && yearSrc.total) || d3.sum(industryData, d => d.employ) || 1;
     const fillBy = d => colorBy === "complexity" ? complexityColor(d.name) : sectorColors[d.sector];
     const TIER_NAMES = ["Traded", "Partly traded", "Local"];
 
     /* ---- the industry map, in screen pixels ----
        S is the scale from the figure's 880 units to the pixels it is drawn
        at. The map is tiled in pixels, so its gaps are a pixel and its type
-       12px on any screen, and read back into units to be drawn. It is
+       13px on any screen, and read back into units to be drawn. It is
        measured once the figure is on screen and laid out again whenever
        the width changes; until then it is tiled at the width the reference
-       column gives it. */
+       column gives it.
+       The charts' own type - names, values, ticks, heads - is set by class
+       in the stylesheet, and that is in units too: the stylesheet is told
+       the scale (--mi-s on the figure) and divides by it, so that type is
+       a fixed size on screen as well, whatever width the figure is drawn
+       at. */
     let S = 0;
-    const DEFAULT_S = 686 / MI_W;
+    const DEFAULT_S = 880 / MI_W;
+    /* the type's size on screen, as a multiple: 1, or larger in the
+       presenter view (--mi-type on the figure). Geometry sized to the type
+       - the tier bands, the badges, the crosses, the map's labels, where
+       the charts begin to pan - is multiplied by it too. */
+    let TYPE_K = 1;
+    const readTypeK = () => parseFloat(getComputedStyle(fig).getPropertyValue("--mi-type")) || 1;
     /* the drawing keeps its proportions inside the element, so when the
        element is held shorter than that the drawing is narrower than it */
     const measureS = () => {
@@ -3317,6 +3448,8 @@ export function loadTreemaps(){
       return r.width > 0 && r.height > 0 ? Math.min(r.width / MI_W, r.height / MI_H) : 0;
     };
     const scaleNow = () => S || DEFAULT_S;
+    const tellScale = () => { if (fig) fig.style.setProperty("--mi-s", String(+scaleNow().toFixed(4))); };
+    tellScale();
     const cellOf = new Map();                       /* row name -> its cell */
     industryData.forEach(r => cellOf.set(r.name, cellOfRow(r, jobsTotal)));
     const itemOf = r => { const c = cellOf.get(r.name); return { id: c.id, sector: c.sector, group: c.group, value: r.employ, cell: c }; };
@@ -3333,7 +3466,7 @@ export function loadTreemaps(){
     let tierOn = [true, true, true];
     const clusterOf = d => tierOf(d.name);
     const tierShown = d => tierOn[clusterOf(d)];
-    let focus = null, focusGroup = null;
+    let focus = null, focusGroup = null, zoomFrom = null;
     const inFocus = d => !focus || (d.sector === focus && (!focusGroup || d.group === focusGroup));
     /* what the map is tiled at now: the level chosen, or finer where the
        zoom has gone further down */
@@ -3350,13 +3483,14 @@ export function loadTreemaps(){
     function bandsLayout(key, bands){
       const s = scaleNow();
       const grain = effGrain();
-      const k = key + "|" + s.toFixed(4) + "|" + SEC_NAMES + "|" + grain;
+      const mid = !!focus && !focusGroup && grain === 4;
+      const k = key + "|" + s.toFixed(4) + "|" + SEC_NAMES + "|" + grain + "|" + mid;
       if (laid.has(k)) return laid.get(k);
       const px = b => ({ x: b.x * s, y: b.y * s, w: b.w * s, h: b.h * s });
       const un = b => ({ x: b.x / s, y: b.y / s, w: b.w / s, h: b.h / s });
       const live = bands.filter(b => b.rows.length);
-      const res = layoutBands(live.map(b => ({ key: b.key, items: b.rows.map(itemOf), box: px(b.box) })), grain);
-      const out = { cells: [], blocks: [], groups: [], spot: new Map(), rows: [], byId: new Map(), s: s, grain: grain };
+      const res = layoutBands(live.map(b => ({ key: b.key, items: b.rows.map(itemOf), box: px(b.box) })), grain, mid);
+      const out = { mids: [], cells: [], blocks: [], groups: [], spot: new Map(), rows: [], byId: new Map(), s: s, grain: grain };
       res.layouts.forEach((L, i) => {
         const band = live[i].key;
         L.cells.forEach(c => {
@@ -3367,6 +3501,7 @@ export function loadTreemaps(){
         });
         L.blocks.forEach(bl => out.blocks.push({ key: band + ":" + bl.sector, band: band, sector: bl.sector, box: un(bl), value: bl.value }));
         L.groups.forEach(g => out.groups.push({ key: band + ":" + g.group, band: band, group: g.group, box: un(g), items: g.items }));
+        (L.mids || []).forEach(m => out.mids.push({ band: band, n2: m.n2, box: un(m) }));
       });
       laid.set(k, out);
       return out;
@@ -3399,27 +3534,52 @@ export function loadTreemaps(){
        card the reader cancels takes its width with it and the rest spread
        into the room. ---- */
     const CL_HI = 0.8, CL_LO = 0.2;
+    /* How the tiers' grounds are drawn (the "Tier grounds" study): a frame
+       (opt-1), a grey field (opt-2), or - the default since 2026-10-07, Nil:
+       "remove the padding in the frame. it adds clutterness. make the clean
+       tree cluster and labeling" - nothing round the cells at all (opt-3):
+       each tier's cells run edge to edge under a plain line with its name
+       and share, and the white between the tiers parts them. The frame and
+       the field keep their 9 units of padding round the cells. */
+    const groundEl0 = document.getElementById(p + "Ground");
+    let groundMode = groundEl0 && /^(frame|grey|clean)$/.test(groundEl0.value) ? groundEl0.value : "clean";
+    const isClean = () => groundMode === "clean";
     const CGAP = 8, CW = MI_W - 2 * CGAP;
-    const CARD_PAD = 9, CARD_HEAD = 44, CARD_BOT = 9, CARD_TXT = CARD_PAD + 7;
-    const BAND_H = 30;
-    const CARD_Y = CARD_HEAD, CARD_H = MI_H - CARD_HEAD - CARD_BOT;
+    const cgap = () => isClean() ? 16 : CGAP;
+    /* the clean ground's label sits on a tinted band of its own, the
+       cluster's width, the words 8 in from its edge (Nil, the same day:
+       "Frame the labels so that they are not overflowing in the space") */
+    const cardPad = () => isClean() ? 0 : 9, cardBot = () => isClean() ? 0 : 9, cardTxt = () => isClean() ? 8 : 16;
+    /* the band is 30 units where the figure is drawn near its own size; its
+       name is a fixed size on screen, so where the figure is drawn smaller
+       the band is taller in units - never less than 26px on screen - and
+       the cells start 14 units under it */
+    /* The band also says the tier's share of the metro's jobs, after its
+       name. Where a ground is too narrow for the two side by side, with
+       the cross beside them (a phone, where "Partly traded" alone nearly
+       fills its ground), every band takes a second line for the share. */
+    let bandStacked = false, fitBandRef = null;
+    const bandH = () => { const s = scaleNow() / TYPE_K, one = Math.max(30, Math.ceil(26 / s)); return bandStacked ? one + Math.ceil(17 / s) : one; };
+    const cardHead = () => bandH() + (isClean() ? 3 : 14);
+    const cardH = () => MI_H - cardHead() - cardBot();
     let cardBox = [];
     function layoutClusters(){
       cardBox = [];
       const live = [0, 1, 2].filter(k => tierOn[k]);
       const shareSum = live.reduce((a, k) => a + clusterShare[k], 0) || 1;
-      const room = MI_W - CGAP * Math.max(0, live.length - 1);
+      const room = MI_W - cgap() * Math.max(0, live.length - 1);
       let x0 = 0;
       live.forEach(k => {
         const w = Math.max(36, room * clusterShare[k] / shareSum);
         cardBox.push({ x: x0, w: w, k: k });
-        x0 += w + CGAP;
+        x0 += w + cgap();
       });
+      if (fitBandRef) fitBandRef();
     }
     layoutClusters();
     const mapTiers = () => bandsLayout("tiers|" + tierOn.map(Number).join("") + "|" + secKey() + "|" + (focus || "") + "|" + (focusGroup || ""),
       cardBox.map(c => ({ key: TIER_NAMES[c.k], rows: clusterRows[c.k].filter(d => secShown(d) && inFocus(d)),
-        box: { x: c.x + CARD_PAD, y: CARD_Y, w: Math.max(20, c.w - CARD_PAD * 2), h: CARD_H } })));
+        box: { x: c.x + cardPad(), y: cardHead(), w: Math.max(20, c.w - cardPad() * 2), h: cardH() } })));
     const clusterSpot = d => mapTiers().spot.get(d.name) || allSpot(d);
     const clusterFill = fillBy;
     let resetSec = null;              /* the key fills this in: applySec(null) */
@@ -3437,7 +3597,89 @@ export function loadTreemaps(){
        place to stand: ordered by jobs answers "what is biggest", and the
        column beside it answers "and does it sell outward", which is the
        question this beat is actually asking */
-    const NB = 25, BML = 292, BMT = 62, BRH = 17.2, BBAR = 12, BPR = 740;
+    /* The bars show their top 15, 27 units apart, in bars 14 thick
+       (2026-10-07, Nil: "right now, bar design looks too dense and
+       overwhelming. Revise the spacing in bar graph design, so it looks
+       cleaner"; it was 25 rows 17.2 apart in bars 12 thick, then 16.2 to
+       make room for the Show box). 15 rows end at 467, which leaves the
+       foot of the drawing for the "Show all" box under the last bar. */
+    const NB = 15, BMT = 62, BRH = 27, BBAR = 14, BPR = 740;
+    /* ---- the names' gutter ----
+       The bars and the ranking set their names in a gutter on the left,
+       right-aligned against the plot. It was a fixed 292 units: the width
+       the phone needs, where the names are set at 18 units and the longest
+       fills it. At the desktop's 13 the longest name needs about 200, and
+       the rest stood empty at the figure's left edge, so the chart read
+       narrower than the map it replaces. The gutter is now as wide as the
+       widest name it holds, at the size the names are set at where the
+       figure stands - measured on a canvas, which reads true while the
+       page is still hidden, where getComputedTextLength reads nought. The
+       old width stays as the ceiling; a name past it is trimmed on paint. */
+    const GUT_MAX = 292, GUT_MIN = 60, TOP_LAB = "Most specialized tradable industries";
+    const gutCtx = document.createElement("canvas").getContext("2d");
+    /* a measure for one class of text in this figure: off the page's own
+       text when the figure is on screen - the measure refitNames tests the
+       names against - and off a canvas in the same type while the page is
+       still hidden, where the page's measure reads nought. The probe is
+       gone again before anything else looks at the svg. */
+    const measureFor = cls => {
+      const t = svg.append("text").attr("class", cls).style("visibility", "hidden").text("M");
+      const node = t.node(), cs = getComputedStyle(node);
+      const font = (cs.fontWeight || "400") + " " + (parseFloat(cs.fontSize) || 13) + "px " + (cs.fontFamily || "sans-serif");
+      const live = !!node.getComputedTextLength && node.getComputedTextLength() > 0;
+      return { live, font, done: () => t.remove(),
+        w: str => {
+          if (live){ node.textContent = str; return node.getComputedTextLength(); }
+          gutCtx.font = font; return gutCtx.measureText(str).width;
+        } };
+    };
+    const widest = (cls, strs) => {
+      const m = measureFor(cls);
+      /* every row of a long list read off the page would lay the drawing
+         out once a name; past the top rows the canvas, in the same type,
+         stands in */
+      const w = strs.length > 60 ? (gutCtx.font = m.font, strs.reduce((a, str) => Math.max(a, gutCtx.measureText(str).width), 0))
+        : strs.reduce((a, str) => Math.max(a, m.w(str)), 0);
+      m.done();
+      return w;
+    };
+    /* the tier grounds' bands: how wide each one's name and share are, and
+       whether any ground is too narrow to set them on one line */
+    const sharePct = k => Math.round(clusterShare[k] * 100) + "%";
+    const bandNameW = [0, 0, 0], bandGap = () => 7 * TYPE_K / scaleNow();
+    /* the name a band carries: the tier's, or where even that alone is too
+       wide for its ground (the drawing letterboxed under the open table on
+       a narrow screen) the first word of it, "Partly" */
+    const bandName = [TIER_NAMES[0], TIER_NAMES[1], TIER_NAMES[2]];
+    fitBandRef = () => {
+      const u = TYPE_K / scaleNow();
+      const mn = measureFor("mi-card-lab"), mp = measureFor("mi-card-pct");
+      [0, 1, 2].forEach(k => { bandName[k] = TIER_NAMES[k]; bandNameW[k] = mn.w(bandName[k]); });
+      const pw = [0, 1, 2].map(k => mp.w(sharePct(k)));
+      /* the cross, where there is one, keeps the band's last 22px on screen */
+      const crosses = cardBox.length > 1, right = crosses ? 22 * u : cardTxt();
+      bandStacked = cardBox.some(c => cardTxt() + bandNameW[c.k] + bandGap() + pw[c.k] > c.w - right);
+      if (bandStacked) cardBox.forEach(c => {
+        if (cardTxt() + bandNameW[c.k] <= c.w - 4 * u || !/\s/.test(TIER_NAMES[c.k])) return;
+        bandName[c.k] = TIER_NAMES[c.k].split(/\s+/)[0];
+        bandNameW[c.k] = mn.w(bandName[c.k]);
+      });
+      mn.done(); mp.done();
+      /* stacked, a ground whose words do not clear the cross goes without
+         one (a phone, or the drawing letterboxed small under the open
+         table); the tier can still be taken off from a wider frame, and
+         brought back from the chips above the chart */
+      cardBox.forEach(c => { c.noX = crosses && bandStacked && cardTxt() + Math.max(bandNameW[c.k], pw[c.k]) > c.w - right; });
+    };
+    fitBandRef();
+    /* what the gutters were last fitted to - the type, and whether it could
+       be measured on the page - so a resize that changes neither costs a
+       comparison and no more */
+    const typeSig = () => ["mi-name", "mi-name is-top", "mi-toplab", "mi-colhead"]
+      .map(c => { const m = measureFor(c); m.done(); return m.font + (m.live ? "/live" : "/blind"); }).join("|");
+    /* the bars' gutter: the widest name, the 10 between it and the plot,
+       and 2 to spare */
+    const barGutter = names => Math.max(GUT_MIN, Math.min(GUT_MAX, Math.ceil(widest("mi-name", names)) + 12));
     /* the bars' head is the ranking's head, line for line: the column names
        on one baseline, a rule under each column, the tick row below that */
     const BHEAD_Y = BMT - 46, BRULE_Y = BMT - 36, BTICK_Y = BMT - 14, BGRID_TOP = BMT - 8;
@@ -3447,7 +3689,7 @@ export function loadTreemaps(){
     /* the five complexity steps, the same cuts the map's ramp is built on */
     const cxBin = name => {
       const v = pciByName.get(name);
-      if (v == null) return 2;
+      if (v == null) return null;
       let b = 0; while (b < PCI_CUTS.length && v >= PCI_CUTS[b]) b++;
       return b;
     };
@@ -3456,40 +3698,55 @@ export function loadTreemaps(){
        Either way the bar is the jobs, as the ranking's bar stays the
        concentration whichever order its rows take */
     let barSort = "jobs";
+    /* the tiers beat's bars have an order of their own (2026-10-07, Nil:
+       "when view is rank, provide sort by options"): by jobs, or by
+       tradability, the column beside them, most tradable first */
+    let tierSort = "jobs";
     const cxVal = name => { const v = pciByName.get(name); return v == null ? -99 : v; };
     /* the set is the metro's biggest industries either way; the order is
        what the control changes */
-    const barOrder = list => {
-      const rows = list.slice(0, NB);
-      return barSort === "cx" && barMode !== "tier"
-        ? rows.slice().sort((a, b) => cxVal(b.name) - cxVal(a.name) || b.employ - a.employ)
-        : rows;
+    const barOrder = (list, all, G) => {
+      const rows = all ? list.slice() : list.slice(0, NB);
+      /* the traded bars (beats this section does not show) keep jobs */
+      const key = G === gBarsTrad ? "jobs" : barMode === "tier" ? tierSort : barSort;
+      if (key === "cx") return rows.slice().sort((a, b) => cxVal(b.name) - cxVal(a.name) || b.employ - a.employ);
+      if (key === "trad") return rows.slice().sort((a, b) => tradabilityOf(b.name) - tradabilityOf(a.name) || b.employ - a.employ);
+      return rows;
     };
     const byJobsAll = industryData.slice().sort((a, b) => b.employ - a.employ);
-    const barScale = d3.scaleLinear()
-      .domain([0, (byJobsAll[0] ? byJobsAll[0].employ : 1) * 1.04]).range([BML + 12, BPR]);
-    let closeMenuRef = null;
+    /* each set of bars keeps its own gutter and scale - the whole mix's
+       and the tradable cluster's hold different names - fitted whenever
+       the set is drawn, and read by the cells that become its bars */
+    const mkBarGeo = () => ({ ml: GUT_MAX, scale: d3.scaleLinear()
+      .domain([0, (byJobsAll[0] ? byJobsAll[0].employ : 1) * 1.04]).range([GUT_MAX + 12, BPR]) });
+    const barGeoAll = mkBarGeo(), barGeoTrad = mkBarGeo();
+    let closeMenuRef = null, keepMenuRef = null;
     /* the bars answer to both filters, so either one has to ask what the
        other leaves before it takes anything away */
     const tierListWith = (tOn, sOn) =>
       byJobsAll.filter(d => tOn[clusterOf(d)] && (!sOn || sOn.has(d.sector)) && inFocus(d));
-    const tierList = () => tierListWith(tierOn, secOn);
+    /* the tier filter belongs to the tiers beat's bars; the first beat's
+       are every industry the sector filter and the zoom leave */
+    const tierList = () => barMode === "tier" ? tierListWith(tierOn, secOn)
+      : byJobsAll.filter(d => (!secOn || secOn.has(d.sector)) && inFocus(d));
     /* the bars, ranked again over what the filter and the zoom leave */
     const reBars = () => { barListAll = tierList(); reBarRank(); drawBars(barListAll, gBarsAll); };
     let barRankAll = null;                 /* set once barOrder exists */
     const byJobsTrad = tradRows.slice().sort((a, b) => b.employ - a.employ);
-    const barRankTrad = new Map(byJobsTrad.slice(0, NB).map((d, i) => [d.name, i]));
+    let barRankTrad = new Map(byJobsTrad.slice(0, NB).map((d, i) => [d.name, i]));
+    const reBarRankTrad = () => { barRankTrad = new Map((moreTrad ? byJobsTrad : byJobsTrad.slice(0, NB)).map((d, i) => [d.name, i])); };
     const barY = i => BMT + i * BRH + BRH / 2;
     const asBars = (d, rankMap, fill, fallback) => {
       const r = rankMap.get(d.name);
+      const barScale = (rankMap === barRankTrad ? barGeoTrad : barGeoAll).scale;
       return r == null
         ? { box: fallback, fill, op: 0, rx: 0 }
         : { box: { x: barScale(0), y: barY(r) - BBAR / 2,
                    w: Math.max(2, barScale(d.employ) - barScale(0)), h: BBAR }, fill, op: 1, rx: 0 };
     };
-    window[ctlName + "_CLUSTERS"] = { share: clusterShare, gap: CGAP, width: MI_W };
+    window[ctlName + "_CLUSTERS"] = { share: clusterShare, gap: cgap(), width: MI_W };
 
-    const ML = 292, MT = 62, RH = 34, BAR_H = 17, PLOT_R = 712;
+    const MT = 62, RH = 34, BAR_H = 17, PLOT_R = 712;
     /* the three heads share a baseline, and the rules sit under them - the tick
        row keeps its own line below, so the labels of the columns and the
        readings of the scale never sit on the same line. The tick row sits
@@ -3506,21 +3763,32 @@ export function loadTreemaps(){
        subtree, which silently passed every name through untrimmed. So the
        names are trimmed on paint, when the figure is on screen, and the
        character rule stands in until then. */
-    const NAME_MAX = ML - 10 - 30;
     const charFit = n => n.length > 34 ? n.slice(0, 33).replace(/\s+\S*$/, "") + "\u2026" : n;
     function refitNames(){
+      /* every name is written in full first and read after, in one pass
+         each: a write and a read in turn lays the drawing out once a name,
+         which a list of all 877 cannot afford */
+      const names = [];
       svg.selectAll("text.mi-name").each(function(){
         const full = this.getAttribute("data-full");
         if (!full || !this.getComputedTextLength) return;
-        this.textContent = full;
-        const w0 = this.getComputedTextLength();
-        if (w0 === 0){ this.textContent = charFit(full); return; }
-        if (w0 <= NAME_MAX) return;
-        let cut = full;
+        if (this.textContent !== full) this.textContent = full;
+        names.push([this, full]);
+      });
+      const w0s = names.map(([n]) => n.getComputedTextLength());
+      names.forEach(([n, full], j) => {
+        const w0 = w0s[j];
+        if (w0 === 0){ n.textContent = charFit(full); return; }
+        /* each name knows the room its own gutter gives it */
+        const max = +n.getAttribute("data-max") || (GUT_MAX - 40);
+        if (w0 <= max) return;
+        /* the cut starts a little longer than the share of the name that
+           fits, and shortens from there */
+        let cut = full.slice(0, Math.min(full.length - 1, Math.ceil(full.length * max / w0) + 3)).replace(/\s+$/, "");
         while (cut.length > 4){
+          n.textContent = cut + "\u2026";
+          if (n.getComputedTextLength() <= max) return;
           cut = cut.slice(0, -1).replace(/\s+$/, "");
-          this.textContent = cut + "\u2026";
-          if (this.getComputedTextLength() <= NAME_MAX) return;
         }
       });
     }
@@ -3530,7 +3798,40 @@ export function loadTreemaps(){
        edge: the ranking is read left to right as size then role, and the
        bars' own head reads the same way */
     const TC_R = MI_W - 6, TC_W = 56;
-    const rowY = i => MT + i * RH + RH / 2;
+    /* a ranking's rows: 34 apart with bars 17 thick, or, where the third
+       beat shows the ten furthest ahead of the peers and the ten furthest
+       behind (R.split), 19 apart with bars 11 thick, so the twenty fit the
+       drawing; the second ten stand half a row below the first */
+    const rhOf = R => (R && R.rh) || RH, bhOf = R => (R && R.bh) || BAR_H;
+    const spanOf = R => R.ranked.length + (R.split ? 0.5 : 0);
+    const rowY = (i, R) => MT + i * rhOf(R) + rhOf(R) / 2;
+    /* the peers order shows its two ends (2026-10-07, Nil: "When sorted
+       against peer, show top 10 and bottom 10") */
+    const SPLIT_N = 10;
+    /* The third beat's ranking holds 25 rows, as the bars of the first two
+       do, in bars as thick as theirs, spread over the whole height the
+       beat has (2026-10-07, Nil: "beat 3 visualization does not use the
+       full height, make sure its style and use of space aligns with other
+       visualization. If it needs to show more bar, it can do that"), now
+       15 as the bars are (Nil, later the same day: "too dense"). That
+       height is the drawing's, and the strip under it that the other beats
+       keep for their key: beat 3's key is in its own head row, so the
+       drawing takes the strip (rank6H, measured in syncRankRoom). */
+    /* 14 since the bottom read squished at 15 (Nil, 2026-10-07: "maybe have
+       1 less bar, have space between Show All and y axis names"); the rows
+       end half a row above the Show box (RANK_FOOT), and the national
+       rate's name sits on the box's line */
+    const RANK_N = 14, RANK_FOOT = 0.5;
+    /* the type's size on screen, in the drawing's units */
+    const fsUnits = () => 13 * TYPE_K / scaleNow();
+    /* the footer under the third beat's rows: the half row, then the box's
+       line, where the national rate's name stands too */
+    const footBase = R => MT + spanOf(R) * rhOf(R) + (R === R2 ? RANK_FOOT * rhOf(R) : 0);
+    const footLine = R => footBase(R) + 1.45 * fsUnits();
+    let rank6H = MI_H, rank6Area = null;
+    /* never closer than the bars of the peers order's twenty need (16.2),
+       nor further apart than the old ranking's 34 */
+    const rankPitch = span => Math.max(16.2, Math.min(40, (rank6Area != null ? rank6Area : MI_H - MT - 26) / span));
     /* A ranking over a set of industries: the top twelve by concentration,
        with the scale they need. Two are kept. One is over the whole mix, for
        the narrative that reads sector first; the other is over the tradable
@@ -3549,39 +3850,25 @@ export function loadTreemaps(){
        stands, and one not yet drawn comes from a generator seeded on the
        industry's own name, with the same formula, touching neither the shared
        sequence nor its caches. */
-    const nameRand = key => {
-      let h = 2166136261;
-      for (const c of key){ h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); }
-      let st = (h >>> 0) || 1;
-      return () => (st = (st * 1664525 + 1013904223) >>> 0) / 4294967296;
-    };
-    /* the RCA as the source gives it; the peer values below are still
-       generated, since the source carries no peer metros */
-    const rcaQuiet = name => rcaOf(name);
-    const peersQuiet = (name, cityRca) => {
-      if (peerByName.has(name)) return peerByName.get(name);
-      /* the peers' average is the source's own where it carries one; the
-         values around it are still drawn, since the source has no per-peer figure */
-      const real = peerRcaByName.get(name);
-      const r = nameRand(name + "|peers");
-      const target = real != null ? real : Math.max(1.15, cityRca * (0.4 + r() * 0.85));
-      const jitter = PEERS.map(() => 0.62 + r() * 0.76);
-      const mean = jitter.reduce((a, j) => a + j, 0) / jitter.length;
-      const values = jitter.map(j => Math.round(target * (j / mean) * 10) / 10);
-      const avg = real != null ? Math.round(real * 10) / 10
-        : Math.round((values.reduce((a, v) => a + v, 0) / values.length) * 10) / 10;
-      return { values: values, avg: avg };
+    /* The peers. The source carries one figure per industry, peerRca: the
+       metro's concentration measured against its five peer metros
+       (Washington, Seattle, San Diego, Denver, Baltimore) instead of the
+       nation, so 1x is the same share as the peers and 4.5x four and a half
+       times theirs. The peers' own rate against the nation follows from it,
+       rca / peerRca, and that is the tick drawn on the national axis. The
+       values once drawn here at random around a guessed average are gone. */
+    const withPeers = d => {
+      const pq = peerRcaByName.get(d.name);
+      return Object.assign(d, { peerRca: pq == null ? null : pq, peerRate: pq ? d.rca / pq : null, ahead: pq != null && pq >= 1 });
     };
     function specializedAmong(rows){
-      const total = d3.sum(industryData, d => d.employ) || 1;
-      const shown = v => Math.round(v * 10) / 10;
-      return rows.filter(d => rcaQuiet(d.name) > 1).map(d => {
-        const rca = rcaQuiet(d.name), localPct = d.employ / total * 100, pr = peersQuiet(d.name, rca);
-        return { name: d.name, sector: d.sector, employ: d.employ, rca: rca,
+      const total = jobsTotal;
+      return rows.filter(d => rcaOf(d.name) > 1).map(d => {
+        const rca = rcaOf(d.name), localPct = d.employ / total * 100;
+        return withPeers({ name: d.name, sector: d.sector, employ: d.employ, rca: rca,
           localPct: localPct, worldPct: localPct / rca,
           label: shortLabel(d.name) ||
-                 (d.name.length > 40 ? d.name.slice(0, 37) + "\u2026" : d.name),
-          peerAvg: pr.avg, peerValues: pr.values, ahead: shown(rca) >= shown(pr.avg) };
+                 (d.name.length > 40 ? d.name.slice(0, 37) + "\u2026" : d.name) });
       });
     }
     /* The ranking ships as its second option: the tradability column names
@@ -3599,10 +3886,14 @@ export function loadTreemaps(){
     let tierOn6 = TIER_DEFAULT6();
     /* the industries the third beat ranks over: whatever the filter has
        checked under opt-2, the two tradable tiers under opt-1 */
-    const rankPool = () => rankMode === "tier"
+    /* industries the third beat leaves out of its ranking, at Nil's ask
+       (2026-10-04): fabric coating mills, 12 times the national rate on a
+       single plant's 599 jobs. They stay in the maps of the first two beats. */
+    const RANK_LEAVE_OUT = new Set(["313320"]);
+    const rankPool = () => (rankMode === "tier"
       ? clusterRows.filter((_, k) => tierOn6[k]).flat()
-      : clusterRows[0].concat(clusterRows[1]);
-    const tierLabel = d => TIER_NAMES[clusterOf(d)];
+      : clusterRows[0].concat(clusterRows[1])).filter(d => !RANK_LEAVE_OUT.has(d.code));
+    const tierLabel = d => { const k = clusterOf(d); return k == null ? "None" : TIER_NAMES[k]; };
     /* A word is wider than a number, so the plot gives up room to the column
        while the words are showing - 54 units, not more. At 82 the value
        labels sat 70.8 from the words where opt-1's scores sit 44.6; the widest
@@ -3619,43 +3910,114 @@ export function loadTreemaps(){
        round the block, "mute" turns the rest grey, "dim" fades it */
     const hlOptEl0 = document.getElementById(p + "HlOpt");
     let hlMode = hlOptEl0 && /^(dim|mute|frame)$/.test(hlOptEl0.value) ? hlOptEl0.value : "frame";
+    /* the ranking's gutter: the badge's room, the widest name - the
+       leading three are set bold - and its clearance; and never narrower
+       than the label over the leading rows, which the plot starts clear of */
+    const rankGutter = ranked => {
+      const names = ranked.map(d => charFit(d.label));
+      const w = Math.max(widest("mi-name is-top", names.slice(0, 3)), widest("mi-name", names.slice(3)));
+      const lab = 4 + widest("mi-toplab", [TOP_LAB]);
+      return Math.max(GUT_MIN, Math.min(GUT_MAX, Math.max(30 + Math.ceil(w) + 12, Math.ceil(lab))));
+    };
     function ranking(rows, among){
-      const base = among ? specializedAmong(rows) : specializedWithPeers(rows);
-      const ranked = base.sort((a, b) => b.rca - a.rca).slice(0, MI_TOP_N);
+      /* the whole mix's ranking (step 3, not shown in this section) still
+         asks the module's generator, so the other sections' drawn values do
+         not shift; its peers are then taken from the source like the rest */
+      const base = among ? specializedAmong(rows) : specializedWithPeers(rows).map(d => withPeers(Object.assign({}, d, { rca: rcaOf(d.name) })));
+      /* the third beat's ranking runs to every specialised industry in its
+         pool when the reader asks for all of them */
+      const total = base.length;
+      const byRca = base.sort((a, b) => b.rca - a.rca);
+      /* under the peers order the third beat shows the two ends of the
+         whole pool, the ten furthest ahead and the ten furthest behind
+         (those with no peer figure stand out of it); every other order, the
+         top twelve by specialization. All of them, when the reader asks. */
+      let ranked, split = 0;
+      if (among && sortKey === "gap" && !rankAll){
+        const withGap = byRca.filter(d => gapOf(d) != null).sort(SORTS.gap);
+        if (withGap.length > 2 * SPLIT_N){ ranked = withGap.slice(0, SPLIT_N).concat(withGap.slice(-SPLIT_N)); split = SPLIT_N; }
+        else ranked = withGap;
+      } else ranked = byRca.slice(0, among && rankAll ? total : among ? RANK_N : MI_TOP_N);
+      const rankOfAll = new Map(byRca.map((d, i) => [d.name, i]));
+      const ml = rankGutter(ranked);
       /* only the ranking among the clusters - the third beat's - ever
          shows the tier words */
       const right = plotR(among && rankMode === "tier");
-      return { ranked,
-        rankIdx: new Map(ranked.map((d, i) => [d.name, i])),   /* by concentration: the badges' order */
+      const R = { ranked, ml, total, split, all: !!(among && rankAll),
+        rh: !among ? RH : rankPitch((split ? 2 * SPLIT_N + 0.5 : RANK_N) + RANK_FOOT), bh: among ? BBAR : BAR_H,
+        /* by specialization over the whole pool: the badges' order */
+        rankIdx: new Map(ranked.map(d => [d.name, rankOfAll.get(d.name)])),
         pos: new Map(ranked.map((d, i) => [d.name, i])),       /* the order on screen, which sorting changes */
         rankRow: new Map(ranked.map(d => [d.name, d])),
+        /* the axis and the bars start at 0 (2026-10-04, from
+           peer-mark-sketches.html, option 1), so a peer rate under the
+           national one - most of them, for these industries - falls inside
+           the plot; 1x, the national rate, is a line of its own */
         xr: d3.scaleLinear()
-          .domain([1, (d3.max(ranked, d => Math.max(d.rca, d.peerAvg)) || 2) * 1.06])
-          .range([ML + 12, right]),
-        /* the gap against the peer average, symmetric so the average sits
-           mid-chart: ahead to the right, behind to the left */
-        xg: (function(){
-          const g = Math.max(0.5, (d3.max(ranked, d => Math.abs(d.rca - d.peerAvg)) || 0.5) * 1.15);
-          return d3.scaleLinear().domain([-g, g]).range([ML + 12, right]);
-        })() };
+          .domain([0, (d3.max(ranked, d => Math.max(d.rca, d.peerRate || 0)) || 2) * 1.06])
+          .range([ml + 12, right]),
+        /* against the peers: how far the metro's rate is ahead of theirs,
+           in the concentration view's own unit and on its own linear axis
+           (2026-10-05, Nil: "keep the x-axis as how it's in other format"),
+           from 0, the same rate as the peers - ahead to the right, behind
+           to the left. With nothing behind, the domain is the concentration
+           view's, so the ticks stay put when the order changes; a lead
+           below 0 opens room on the left for its bar and its label (fitGap) */
+        xg: d3.scaleLinear().range([ml + 12, right]) };
+      fitGap(R);
+      return R;
     }
-    const gapOf = d => d.rca - d.peerAvg;
+    /* the metro's rate less the peers' own, both against the nation, from
+       the figures as printed (10.8 and 2.4 make 8.4), so the lead on the
+       bar is the difference of the two numbers a reader can see */
+    function gapOf(d){
+      return d.peerRate == null ? null : Math.round((+d.rca.toFixed(1) - +d.peerRate.toFixed(1)) * 10) / 10;
+    }
     const gapBox = (R, d, pos) => {
-      const g = gapOf(d), x0 = Math.min(R.xg(0), R.xg(g));
-      return { x: x0, y: rowY(pos) - BAR_H / 2, w: Math.max(2, Math.abs(R.xg(g) - R.xg(0))), h: BAR_H };
+      const g = gapOf(d), base = R.xg(0);
+      const bh = bhOf(R), y = rowY(pos, R) - bh / 2;
+      if (g == null) return { x: base, y, w: 0, h: bh };
+      return { x: Math.min(base, R.xg(g)), y, w: Math.max(2, Math.abs(R.xg(g) - base)), h: bh };
     };
+    /* a lead's bar takes the colour of the lead it prints: ahead teal,
+       behind orange, level (0.0x) the grey of the rest */
+    const leadFill = d => { const g = gapOf(d); return g == null || g === 0 ? MUTED : g > 0 ? TEAL : ORANGE; };
+    /* "71x", "4.5x": a decimal under 10, none above, as the reference prints a multiple */
+    const fmtX = v => v.toFixed(v < 10 ? 1 : 0) + "\u00d7";
+    /* a lead, signed: "+8.4x", "\u22120.6x" */
+    const fmtLead = v => (v > 0 ? "+" : v < 0 ? "\u2212" : "") + Math.abs(v).toFixed(1) + "\u00d7";
+    /* the peers order's domain: the concentration view's while every lead is
+       ahead; with one behind, it reaches far enough left that the longest
+       bar there still has its label's width, and 14 more, before the plot's
+       edge. Measured, so it is fitted again whenever the gutters are, since
+       the label is a fixed size on screen and the units are not. */
+    function fitGap(R){
+      /* the two ends of the peers order are not the specialization view's
+         rows, so their axis follows their own leads (a peer rate of 31.9
+         among them ran the other view's domain to 34x) */
+      const hi = R.split ? Math.max(1, d3.max(R.ranked, d => gapOf(d) || 0) || 0) * 1.06 : R.xr.domain()[1];
+      const min = Math.min(0, d3.min(R.ranked, gapOf) || 0);
+      if (min >= 0){ R.xg.domain([0, hi]); return; }
+      const [a, b] = R.xg.range();
+      const k = Math.min(0.5, (widest("mi-val is-top", [fmtLead(min)]) + 14) / (b - a));
+      R.xg.domain([(min - k * hi) / (1 - k), hi]);
+    }
     /* the three orders a reader can ask for: how concentrated, how big, and
        how far ahead of or behind the peers */
     const SORTS = {
       rca:  (a, b) => b.rca - a.rca,
       jobs: (a, b) => b.employ - a.employ,
-      gap:  (a, b) => (b.rca - b.peerAvg) - (a.rca - a.peerAvg),
+      /* by the printed lead, and where two print the same, by the real
+         one, so the two ends of the peers order are the furthest ahead and
+         behind, not the first by specialization among a tie */
+      gap:  (a, b) => (gapOf(b) == null ? -Infinity : gapOf(b)) - (gapOf(a) == null ? -Infinity : gapOf(a)) ||
+                      ((b.peerRate == null ? 0 : b.rca - b.peerRate) - (a.peerRate == null ? 0 : a.rca - a.peerRate)) || b.rca - a.rca,
       trad: (a, b) => tradabilityOf(b.name) - tradabilityOf(a.name)
     };
     let sortKey = "rca";
     function reorder(R){
       const order = R.ranked.slice().sort(SORTS[sortKey] || SORTS.rca);
-      R.pos = new Map(order.map((d, i) => [d.name, i]));
+      R.pos = new Map(order.map((d, i) => [d.name, i + (R.split && i >= R.split ? 0.5 : 0)]));
     }
     /* the ranking the third beat shows is over the clusters the filter has
        checked - the two tradable ones as shipped, so its bars rise only from
@@ -3687,9 +4049,9 @@ export function loadTreemaps(){
       3: d => d.rank < 0
         ? { box: posSplit.get(d.name) || allSpot(d), fill: GREY, op: 0, rx: 0 }
         : sortKey === "gap"
-          ? { box: gapBox(R1, d.row, R1.pos.get(d.name)), fill: gapOf(d.row) >= 0 ? TEAL : ORANGE, op: 1, rx: 0 }
-          : { box: { x: xr(1), y: rowY(R1.pos.get(d.name)) - BAR_H / 2,
-                     w: Math.max(2, xr(d.row.rca) - xr(1)), h: BAR_H },
+          ? { box: gapBox(R1, d.row, R1.pos.get(d.name)), fill: leadFill(d.row), op: 1, rx: 0 }
+          : { box: { x: xr(0), y: rowY(R1.pos.get(d.name), R1) - BAR_H / 2,
+                     w: Math.max(2, xr(d.row.rca) - xr(0)), h: BAR_H },
               fill: d.rank < 3 ? TEAL : MUTED, op: 1, rx: 0 },
       /* the three clusters by tradability, the most tradable on the left */
       4: d => !secShown(d) || !inFocus(d) || !tierShown(d) ? { box: clusterSpot(d), fill: clusterFill(d), op: 0, rx: 0 }
@@ -3725,10 +4087,10 @@ export function loadTreemaps(){
       6: d => d.rank2 < 0
         ? { box: clusterSpot(d), fill: fillBy(d), op: 0, rx: 0 }
         : sortKey === "gap"
-          ? { box: gapBox(R2, d.row2, R2.pos.get(d.name)), fill: gapOf(d.row2) >= 0 ? TEAL : ORANGE,
+          ? { box: gapBox(R2, d.row2, R2.pos.get(d.name)), fill: leadFill(d.row2),
               op: 1, rx: 0, delay: arriving ? 300 : 0 }
-          : { box: { x: R2.xr(1), y: rowY(R2.pos.get(d.name)) - BAR_H / 2,
-                     w: Math.max(2, R2.xr(d.row2.rca) - R2.xr(1)), h: BAR_H },
+          : { box: { x: R2.xr(0), y: rowY(R2.pos.get(d.name), R2) - bhOf(R2) / 2,
+                     w: Math.max(2, R2.xr(d.row2.rca) - R2.xr(0)), h: bhOf(R2) },
               fill: d.rank2 < 3 ? TEAL : MUTED, op: 1, rx: 0, delay: arriving ? 300 : 0 }
     };
 
@@ -3753,12 +4115,12 @@ export function loadTreemaps(){
         .join(enter => {
           const g = enter.append("g").attr("class", "mi-card-g");
           g.append("rect").attr("class", "mi-card").attr("y", 0).attr("height", MI_H).attr("rx", 0);
-          g.append("rect").attr("class", "mi-card-band").attr("y", 0).attr("height", BAND_H);
+          g.append("rect").attr("class", "mi-card-band").attr("y", 0);
           g.append("text").attr("class", "mi-card-lab");
           g.append("text").attr("class", "mi-card-pct");
           g.append("text").attr("class", "mi-card-none");
           const x = g.append("g").attr("class", "mi-card-x");
-          x.append("rect").attr("class", "mi-card-x-hit").attr("y", 5).attr("width", 20).attr("height", 20)
+          x.append("rect").attr("class", "mi-card-x-hit")
             .attr("role", "button").attr("tabindex", -1).attr("focusable", "true");
           x.append("path").attr("class", "mi-card-x-mark");
           x.append("title");
@@ -3768,20 +4130,31 @@ export function loadTreemaps(){
       /* the words are set at once and only the geometry travels: text put on
          a transition arrives with it, and a ground coming back would carry a
          blank band the whole way */
-      sel.select("text.mi-card-lab").attr("y", 20).text(c => TIER_NAMES[c.k]);
-      sel.select("text.mi-card-pct").attr("y", 20).attr("text-anchor", "end")
-        .text(c => Math.round(clusterShare[c.k] * 100) + "%");
-      sel.select("text.mi-card-none").attr("y", CARD_HEAD + 26);
+      /* the band's words sit on its middle line, whatever its height: the
+         name, then the share after it - or under it, on a second line,
+         where the grounds are too narrow for both */
+      const bh = bandH(), half = 8.5 * TYPE_K / scaleNow();
+      const mid = bandStacked ? bh / 2 - half : bh / 2, mid2 = bandStacked ? bh / 2 + half : mid;
+      sel.select("rect.mi-card-band").attr("height", bh);
+      sel.select("text.mi-card-lab").attr("y", mid).attr("dy", "0.35em").text(c => bandName[c.k]);
+      sel.select("text.mi-card-pct").attr("y", mid2).attr("dy", "0.35em").attr("text-anchor", "start")
+        .text(c => sharePct(c.k));
+      sel.select("text.mi-card-none").attr("y", cardHead() + 26);
       go(sel.select("rect.mi-card")).attr("x", c => c.x).attr("width", c => c.w);
       go(sel.select("rect.mi-card-band")).attr("x", c => c.x).attr("width", c => c.w);
-      go(sel.select("text.mi-card-lab")).attr("x", c => c.x + CARD_TXT);
-      go(sel.select("text.mi-card-pct")).attr("x", c => c.x + c.w - CARD_TXT - 22);
-      go(sel.select("text.mi-card-none")).attr("x", c => c.x + CARD_TXT);
-      /* the cross only where there is another ground to fall back on */
-      sel.select("g.mi-card-x").style("display", cardBox.length > 1 ? null : "none");
-      go(sel.select("rect.mi-card-x-hit")).attr("x", c => c.x + c.w - CARD_TXT - 16);
+      go(sel.select("text.mi-card-lab")).attr("x", c => c.x + cardTxt());
+      go(sel.select("text.mi-card-pct")).attr("x", c => c.x + cardTxt() + (bandStacked ? 0 : bandNameW[c.k] + bandGap()));
+      go(sel.select("text.mi-card-none")).attr("x", c => c.x + cardTxt());
+      /* the cross only where there is another ground to fall back on, and
+         a fixed size on screen like the words beside it: an 8px mark 13px
+         in from the band's right edge, on a 20px target */
+      sel.select("g.mi-card-x").style("display", c => cardBox.length > 1 && !c.noX ? null : "none");
+      const u = TYPE_K / scaleNow(), hit = Math.min(20 * u, bh);
+      sel.select("rect.mi-card-x-hit").attr("y", mid - hit / 2).attr("width", hit).attr("height", hit);
+      const xIn = 13 * u;
+      go(sel.select("rect.mi-card-x-hit")).attr("x", c => c.x + c.w - xIn - hit / 2);
       go(sel.select("path.mi-card-x-mark")).attr("d", c => {
-        const x = c.x + c.w - CARD_TXT - 10, y = 15, r = 4;
+        const x = c.x + c.w - xIn, y = mid, r = 4 * u;
         return "M" + (x - r) + "," + (y - r) + "L" + (x + r) + "," + (y + r) +
                "M" + (x + r) + "," + (y - r) + "L" + (x - r) + "," + (y + r);
       });
@@ -3863,15 +4236,15 @@ export function loadTreemaps(){
       /* the sector's own colour, once pale and once full: the pale ground is
          the whole of that work across the metro, and the full band standing
          on the foot of the block is the part of it inside the city */
-      const pale = sec => d3.interpolateRgb(sectorColors[sec] || "#ccc", "#ffffff")(0.66);
+      const pale = sec => d3.interpolateRgb(sectorColors[sec] || "#c3ccce", "#ffffff")(0.66);
 
       const gCoarse = svg.insert("g", ".mi-cells").attr("class", "mi-coarse");
       coarseCell = gCoarse.selectAll("g.mi-cell").data(coarse, d => d.name)
         .join("g").attr("class", "mi-cell");
       coarseCell.append("rect").attr("class", "mi-rect")
-        .attr("fill", d => sectorColors[d.sector] || "#ccc");
+        .attr("fill", d => sectorColors[d.sector] || "#c3ccce");
       coarseCell.append("rect").attr("class", "mi-share")
-        .attr("fill", d => sectorColors[d.sector] || "#ccc")
+        .attr("fill", d => sectorColors[d.sector] || "#c3ccce")
         .attr("height", 0);
       coarseCell.append("text").attr("class", "mi-lab");
       /* one figure per sector, on its largest block */
@@ -3895,21 +4268,38 @@ export function loadTreemaps(){
        its state: the axis and its name, the leading three braced, and each
        row's name, value, peer tick and badge */
     function drawGapAxis(R, AG){
-      const ticks = R.xg.ticks(5);
+      /* the concentration view's steps, signed, and 0 - the peers' own rate -
+         as the line the bars leave from, named under the rows as the
+         national rate is in that view */
+      const yEnd = MT + spanOf(R) * rhOf(R);
+      /* the steps are the concentration view's own (2x as shipped), carried
+         below 0 when a lead is negative */
+      const [lo, hi] = R.xg.domain();
+      /* the steps are the specialization view's own (2x as shipped) while
+         the two views share a domain; across a wider span, as many as the
+         plot's width holds a label apart */
+      const plotPx = Math.abs(R.xg.range()[1] - R.xg.range()[0]) * scaleNow();
+      const room = Math.max(3, Math.floor(plotPx / 52));
+      let step = d3.tickStep(0, R.xr.domain()[1], 5);
+      if (R.split || (hi - lo) / step > room) step = d3.tickStep(lo, hi, room);
+      const ticks = d3.range(Math.ceil(lo / step) * step, hi + 1e-9, step).map(t => Math.round(t * 1e6) / 1e6);
       AG.selectAll("g.mi-tick").data(ticks).join("g").attr("class", "mi-tick")
         .call(g => g.append("line").attr("class", d => "mi-grid" + (d === 0 ? " is-base" : ""))
           .attr("x1", d => R.xg(d)).attr("x2", d => R.xg(d))
-          .attr("y1", GRID_TOP).attr("y2", MT + R.ranked.length * RH))
-        .call(g => g.append("text").attr("class", "mi-ticklab")
+          .attr("y1", GRID_TOP).attr("y2", d => d === 0 ? yEnd + 4 : yEnd))
+        .call(g => g.append("text").attr("class", d => "mi-ticklab" + (d === 0 ? " mi-nation-tick" : ""))
           .attr("x", d => R.xg(d)).attr("y", TICK_Y).attr("text-anchor", "middle")
-          .text(d => (d > 0 ? "+" : "") + d + "\u00d7"));
+          .text(d => d === 0 ? "0" : fmtLead(d).replace(".0", "")));
+      AG.append("text").attr("class", "mi-nation-lab")
+        .attr("x", R.xg(0) + 5).attr("y", R === R2 ? footLine(R) : yEnd + 18).text("Same as the peers");
       AG.append("text").attr("class", "mi-axname")
-        .attr("x", ML + 12).attr("y", HEAD_Y)
-        .text("Against the peer average");
+        .attr("x", R.ml + 12).attr("y", HEAD_Y)
+        .text("Ahead of the peer metros, in times the national rate");
       AG.append("text").attr("class", "mi-colhead")
         .attr("x", JOBS_R).attr("y", HEAD_Y).attr("text-anchor", "end").text("Jobs");
+      if (R === R2 && (!moreAtFoot() || rankAll)) moreBtn(AG, R.ml - 10, HEAD_Y, R.total, rankTop(), "specialised industries", false, rankAll, rankFold());
       tradHead(AG, R);
-      headRules(AG, ML + 12, plotR(inTier(R)), inTier(R));
+      headRules(AG, R.ml + 12, plotR(inTier(R)), inTier(R));
     }
     /* the tradability column's head, its range on the same line, and the rules
        that make the three columns read as a table head */
@@ -3955,58 +4345,90 @@ export function loadTreemaps(){
       /* the rows carry the mode, so the score's track stands down under
          the words without touching the first ranking's rows */
       G.classed("is-tier", tierMode);
-      A.selectAll("g.mi-tick").data(R.xr.ticks(5).filter(t => t >= 1)).join("g")
+      /* 0, where the bars start, and the even steps above it */
+      const yEnd = MT + spanOf(R) * rhOf(R), rh = rhOf(R), bh = bhOf(R);
+      A.selectAll("g.mi-tick").data([0].concat(R.xr.ticks(5).filter(t => t >= 2))).join("g")
         .attr("class", "mi-tick")
-        .call(g => g.append("line").attr("class", d => "mi-grid" + (d === 1 ? " is-base" : ""))
+        .call(g => g.append("line").attr("class", "mi-grid")
           .attr("x1", d => R.xr(d)).attr("x2", d => R.xr(d))
-          .attr("y1", GRID_TOP).attr("y2", MT + R.ranked.length * RH))
+          .attr("y1", GRID_TOP).attr("y2", yEnd))
         .call(g => g.append("text").attr("class", "mi-ticklab")
           .attr("x", d => R.xr(d)).attr("y", TICK_Y).attr("text-anchor", "middle")
-          .text(d => d + "\u00d7"));
+          .text(d => d === 0 ? "0" : d + "\u00d7"));
+      /* 1x, the national rate: every industry here stands beyond it, and the
+         peers' marks fall either side of it, so it is the line the chart is
+         read against - darker than the grid, carried past the rows, named */
+      const nx = R.xr(1);
+      /* drawn in the rows' layer, over the bars, on a white edge, so it
+         reads across the dark ones too */
+      [["mi-nation-halo"], ["mi-nation"]].forEach(([cls]) => G.append("line").attr("class", cls)
+        .attr("x1", nx).attr("x2", nx).attr("y1", GRID_TOP - 6).attr("y2", yEnd + 4));
+      /* the rows' layer stays up under the peers order, so the line is put away there by hand */
+      R.nation = G.selectAll(".mi-nation, .mi-nation-halo");
+      A.append("text").attr("class", "mi-ticklab mi-nation-tick")
+        .attr("x", nx).attr("y", TICK_Y).attr("text-anchor", "middle").text("1\u00d7");
+      A.append("text").attr("class", "mi-nation-lab")
+        .attr("x", nx + 5).attr("y", R === R2 ? footLine(R) : yEnd + 18).text("National rate");
       A.append("text").attr("class", "mi-axname")
-        .attr("x", ML + 12).attr("y", HEAD_Y)
-        .text("Times more concentrated");
+        .attr("x", R.ml + 12).attr("y", HEAD_Y)
+        .text("Times more specialized");
       /* the jobs column: its head, and each row's count at the right edge */
       A.append("text").attr("class", "mi-colhead")
         .attr("x", JOBS_R).attr("y", HEAD_Y).attr("text-anchor", "end").text("Jobs");
+      /* the Show button before the filter, so the keyboard meets them in
+         the order they read, as on the bars */
+      if (R === R2 && (!moreAtFoot() || rankAll)) moreBtn(A, R.ml - 10, HEAD_Y, R.total, rankTop(), "specialised industries", false, rankAll, rankFold());
       tradHead(A, R);
-      headRules(A, ML + 12, plotR(tierMode), tierMode);
+      headRules(A, R.ml + 12, plotR(tierMode), tierMode);
       /* the leading three by concentration, braced only while that is the order */
       const topN = Math.min(3, R.ranked.length);
       R.brace = A.append("g").attr("class", "mi-bracewrap");
       if (topN){
-        const y0 = rowY(0) - BAR_H / 2 - 5, y1 = rowY(topN - 1) + BAR_H / 2 + 5;
+        const y0 = rowY(0, R) - bh / 2 - 5, y1 = rowY(topN - 1, R) + bh / 2 + 5;
         R.brace.append("path").attr("class", "mi-brace").attr("d", "M4," + y0 + "V" + y1);
         R.brace.append("text").attr("class", "mi-toplab")
           .attr("x", 4).attr("y", y0 - 9)
-          .text("Most specialized tradable industries");
+          .text(TOP_LAB);
       }
       const row = G.selectAll("g.mi-row").data(R.ranked, d => d.name)
         .join("g").attr("class", "mi-row")
-        .attr("transform", d => "translate(0," + rowY(R.pos.get(d.name)) + ")");
+        .attr("transform", d => "translate(0," + rowY(R.pos.get(d.name), R) + ")");
       /* the band the cursor actually hits: full width, so the name at one end
          and the jobs count at the other belong to the same target */
       row.append("rect").attr("class", "mi-rowbg")
-        .attr("x", 0).attr("y", -RH / 2).attr("width", MI_W).attr("height", RH);
+        .attr("x", 0).attr("y", -rh / 2).attr("width", MI_W).attr("height", rh);
       const top = d => R.rankIdx.get(d.name) < 3;
       row.append("text").attr("class", d => "mi-name" + (top(d) ? " is-top" : ""))
-        .attr("x", ML - 10).attr("y", 4).attr("text-anchor", "end")
+        .attr("x", R.ml - 10).attr("y", 4).attr("text-anchor", "end")
+        .attr("data-max", R.ml - 40)
         .attr("data-full", d => d.label).text(d => charFit(d.label));
       row.append("text").attr("class", d => "mi-val" + (top(d) ? " is-top" : ""))
-        .attr("x", d => Math.max(R.xr(d.rca), R.xr(d.peerAvg)) + 9).attr("y", 4)
+        .attr("x", d => Math.max(R.xr(d.rca), R.xr(d.peerRate || 0)) + 9).attr("y", 4)
         .text(d => d.rca.toFixed(1) + "\u00d7");
+      /* the peer metros together, against the nation; none where the
+         source gives no peer figure */
+      const pk = bh / 2 + (R.split ? 2 : 4);
+      row.append("line").attr("class", "mi-peer-halo")
+        .attr("x1", d => R.xr(d.peerRate || 0)).attr("x2", d => R.xr(d.peerRate || 0))
+        .attr("y1", -pk).attr("y2", pk)
+        .style("display", d => d.peerRate == null ? "none" : null);
       row.append("line").attr("class", "mi-peer")
-        .attr("x1", d => R.xr(d.peerAvg)).attr("x2", d => R.xr(d.peerAvg))
-        .attr("y1", -BAR_H / 2 - 4).attr("y2", BAR_H / 2 + 4);
+        .attr("x1", d => R.xr(d.peerRate || 0)).attr("x2", d => R.xr(d.peerRate || 0))
+        .attr("y1", -pk).attr("y2", pk)
+        .style("display", d => d.peerRate == null ? "none" : null);
       /* the jobs column: the count, and a short bar beneath it so size reads
          as a second small chart in every order the rows can take. Beside the
          tier word the count sits on the row's common baseline, as the word
          and the value do, and the bar drops a step to stay clear of it */
       const jb = d3.scaleLinear().domain([0, d3.max(R.ranked, d => d.employ) || 1]).range([0, 58]);
+      /* a row as close as the bars' rows holds one line, as theirs do: the
+         count and the word (or score) without the small bars beneath, which
+         would sit nearer the next row's count than their own */
+      const twoLines = rh >= 26;
       row.append("text").attr("class", "mi-jobs")
-        .attr("x", JOBS_R).attr("y", tierMode ? 4 : 1).attr("text-anchor", "end")
+        .attr("x", JOBS_R).attr("y", tierMode || !twoLines ? 4 : 1).attr("text-anchor", "end")
         .text(d => d.employ >= 1000 ? Math.round(d.employ / 1000) + "K" : Math.round(d.employ));
-      row.append("rect").attr("class", "mi-jobsbar")
+      if (twoLines) row.append("rect").attr("class", "mi-jobsbar")
         .attr("x", d => JOBS_R - Math.max(4, jb(d.employ))).attr("y", tierMode ? 7 : 5)
         .attr("width", d => Math.max(4, jb(d.employ))).attr("height", 4).attr("rx", 0);
       /* the tradability column, built the way the jobs column is: the score,
@@ -4014,29 +4436,130 @@ export function loadTreemaps(){
          reaches, with a tick where the traded tier begins */
       const tw = d3.scaleLinear().domain([0, 1]).range([0, TC_W]);
       row.append("text").attr("class", "mi-trad" + (tierMode ? " is-tier" : ""))
-        .attr("x", TC_R).attr("y", tierMode ? 4 : 1).attr("text-anchor", "end")
-        .text(d => tierMode ? tierLabel(d) : tradabilityOf(d.name).toFixed(2));
-      row.append("rect").attr("class", "mi-tradtrack")
-        .attr("x", TC_R - TC_W).attr("y", 5).attr("width", TC_W).attr("height", 4).attr("rx", 0);
-      row.append("rect").attr("class", "mi-tradbar")
-        .attr("x", TC_R - TC_W).attr("y", 5).attr("height", 4).attr("rx", 0)
-        .attr("width", d => Math.max(1, tw(tradabilityOf(d.name))));
-      row.append("line").attr("class", "mi-tradtick")
-        .attr("x1", TC_R - TC_W + tw(CL_HI)).attr("x2", TC_R - TC_W + tw(CL_HI))
-        .attr("y1", 10).attr("y2", 13.5);
-      row.filter(top).call(g => {
-        g.append("circle").attr("class", "mi-badge-bg").attr("cx", 14).attr("cy", 0).attr("r", 9);
-        g.append("text").attr("class", "mi-badge").attr("x", 14).attr("y", 3.5)
+        .attr("x", TC_R).attr("y", tierMode || !twoLines ? 4 : 1).attr("text-anchor", "end")
+        .text(d => tierMode ? tierLabel(d) : (tradByName.get(d.name) == null ? "None" : tradabilityOf(d.name).toFixed(2)));
+      if (twoLines){
+        row.append("rect").attr("class", "mi-tradtrack")
+          .attr("x", TC_R - TC_W).attr("y", 5).attr("width", TC_W).attr("height", 4).attr("rx", 0);
+        row.append("rect").attr("class", "mi-tradbar")
+          .attr("x", TC_R - TC_W).attr("y", 5).attr("height", 4).attr("rx", 0)
+          .attr("width", d => Math.max(1, tw(tradabilityOf(d.name))));
+        row.append("line").attr("class", "mi-tradtick")
+          .attr("x1", TC_R - TC_W + tw(CL_HI)).attr("x2", TC_R - TC_W + tw(CL_HI))
+          .attr("y1", 10).attr("y2", 13.5);
+      }
+      /* the discs need a row of about 18px on screen; where the rows
+         stand closer (a phone) the three keep their bold names, their dark
+         bars and the brace, without the numbers */
+      const roomy = rh * scaleNow() >= 17.5;
+      row.filter(d => roomy && top(d)).call(g => {
+        /* the number is a fixed size on screen, so its disc is too: 9
+           units where the figure is drawn at its own size, more where it
+           is drawn smaller, inside the 30 the gutter keeps for it */
+        const br = Math.min(13 * TYPE_K, Math.max(9, 9.5 * TYPE_K / scaleNow()), rh * 0.46);
+        g.append("circle").attr("class", "mi-badge-bg").attr("cx", br + 3).attr("cy", 0).attr("r", br);
+        g.append("text").attr("class", "mi-badge").attr("x", br + 3).attr("y", 0).attr("dy", "0.35em")
           .attr("text-anchor", "middle").text(d => R.rankIdx.get(d.name) + 1);
       });
       R.row = row;
+      /* between the two ends of the peers order, a faint dashed rule
+         across the gap: the rows between them are not shown */
+      if (R.split) G.append("line").attr("class", "mi-split")
+        .attr("x1", 4).attr("x2", plotR(tierMode)).attr("y1", MT + (R.split + 0.25) * rh).attr("y2", MT + (R.split + 0.25) * rh);
+      /* under the last row (Nil, 2026-10-07: "show all should also be on
+         the bottom on the 3rd beat"), beside the national rate's name */
+      if (R === R2 && (moreAtFoot() || rankAll)) moreBtn(G, R.ml - 10, footBase(R), R.total, rankTop(), "specialised industries", true, rankAll, rankFold());
+    }
+    /* "Show all N" over the names, or "Show the top N" once they all show
+       (and again at the foot of the long list): set as the tradability
+       head is, a word and a caret with a hit area round them, a button for
+       the keyboard. Nothing is drawn where the top rows are all there are. */
+    /* The button is a box (2026-10-07, Nil: "it's hard to see it, make it a
+       box"): the word and its caret inside a box with the house's corner,
+       sized from the type it holds - a teal outline, or (the "Show all
+       box" study's opt-2) the sentence's own tinted blank. At the foot it
+       hangs a short gap under the rows (yRef, where they end); at the head
+       it is centred on the head's line (yRef, its baseline). */
+    function moreBtn(G, xRight, yRef, total, top, what, foot, all, foldWords){
+      if (total <= top) return;
+      const shown = shownLayers().some(L => L.node() === G.node());
+      const g = G.append("g").attr("class", "mi-more" + (foot ? " mi-more--foot" : ""))
+        .attr("role", "button").attr("tabindex", shown ? 0 : -1).attr("aria-hidden", shown ? null : "true")
+        .attr("aria-label", all ? (foldWords || "Show the top " + top) + " " + what : "Show all " + total + " " + what);
+      const label = all ? (foldWords || "Show the top " + top) : "Show all " + total;
+      g.append("rect").attr("class", "mi-more-box");
+      g.append("text").attr("class", "mi-colhead mi-more-txt");
+      g.append("path").attr("class", "mi-tradmenu-caret mi-more-caret");
+      g.attr("data-xr", xRight).attr("data-yref", yRef);
+      layoutMore(g, label, all, foot);
+      /* a button on a chart that has faded out does nothing */
+      const press = () => { if (shownLayers().some(L => L.node() === G.node())) toggleMore(foot); };
+      /* a pointer's press does not take the focus: on a stacked page a
+         focused control brings the band forward under the bar (.ct-stage
+         :focus-within), which moved the button out from under the pointer
+         between the press and the release, and the click never came */
+      g.on("mousedown", ev => ev.preventDefault())
+       .on("click", press)
+       .on("keydown", ev => { if (ev.key === "Enter" || ev.key === " "){ ev.preventDefault(); press(); } });
+    }
+    /* the box round its words: sized from the type it holds, right-aligned
+       at the names' edge, under the rows or on the head's line; the corner
+       is the house's 4px on screen at any scale */
+    function layoutMore(g, label, all, foot){
+      const xRight = +g.attr("data-xr"), yRef = +g.attr("data-yref");
+      const t = g.select("text.mi-more-txt").text(label), box = g.select("rect.mi-more-box");
+      const fs = parseFloat(getComputedStyle(t.node()).fontSize) || 13;
+      const m = measureFor("mi-colhead mi-more-txt"), tw = m.w(label); m.done();
+      const padX = 0.7 * fs, gapC = 0.45 * fs, CW = 7, h = 1.6 * fs, w = padX + tw + gapC + CW + padX;
+      const x0 = Math.max(2, xRight - w);
+      const yTop = foot ? yRef + 0.3 * fs : Math.max(1, yRef - 0.35 * fs - h / 2);
+      const yc = yTop + h / 2;
+      box.attr("x", x0).attr("y", yTop).attr("width", w).attr("height", h).attr("rx", 4 / scaleNow());
+      t.attr("x", x0 + padX).attr("y", yc + 0.35 * fs).attr("text-anchor", "start");
+      const cx = x0 + padX + tw + gapC;
+      g.select("path.mi-more-caret")
+        .attr("d", all ? `M${cx},${yc + 1.75} l3.5,-3.5 l3.5,3.5` : `M${cx},${yc - 1.75} l3.5,3.5 l3.5,-3.5`);
+    }
+    /* the ranking's fold, once every row shows, names the order's own top
+       rows; a change into or out of the peers order says so in place */
+    function relabelRankMore(){
+      if (!rankAll) return;
+      const label = rankFold() || "Show the top " + RANK_N;
+      [gAxis2, gAxisGap2, gRows2].forEach(L => L.selectAll("g.mi-more").each(function(){
+        const g = d3.select(this);
+        layoutMore(g, label, true, g.classed("mi-more--foot"));
+        g.attr("aria-label", label + " specialised industries");
+      }));
+    }
+    /* the third beat's top rows: twelve, or under the peers order its two
+       ends of ten, which the fold names */
+    const rankTop = () => sortKey === "gap" ? 2 * SPLIT_N : RANK_N;
+    const rankFold = () => sortKey === "gap" ? "Show the top and bottom " + SPLIT_N : null;
+    /* where the Show button stands, the study's choice and the screen's
+       room together */
+    const moreAtFoot = () => moreAt === "foot" && footRoom;
+    /* the third beat's ranking drawn again where it stands, without a
+       paint: its Show button has moved */
+    function redrawR2(){
+      const lit = new Set();
+      gRows2.selectAll("g.mi-row.is-lit").each(d => lit.add(d.name));
+      gAxis2.selectAll("*").remove(); gAxisGap2.selectAll("*").remove(); gRows2.selectAll("*").remove();
+      drawGapAxis(R2, gAxisGap2);
+      drawRanking(R2, gAxis2, gRows2);
+      placeRanking(R2, false);
+      if (wireRowsRef) wireRowsRef(R2);
+      if (lit.size && R2.row) R2.row.classed("is-lit", d => lit.has(d.name));
     }
     /* The ranking over a different pool. R2 is mutated in place rather than
        replaced, because every state closure holds it; the cells relearn
        their place in it; and its three groups are cleared and drawn again,
        since the axis furniture is appended rather than joined. */
+    /* the key's "less" shows only while some bar in the ranking is behind its peers */
+    const syncPeerBehind = () => { fig.dataset.peerbehind = R2.ranked.some(d => (gapOf(d) || 0) < 0) ? "1" : ""; };
+    syncPeerBehind();
     function rebuildR2(animate){
       Object.assign(R2, ranking(rankPool(), true));
+      syncPeerBehind();
       cells.forEach(c => {
         c.rank2 = R2.rankIdx.has(c.name) ? R2.rankIdx.get(c.name) : -1;
         c.row2 = R2.rankRow.get(c.name) || null;
@@ -4055,19 +4578,21 @@ export function loadTreemaps(){
       if (!R.row) return;
       const dur = animate ? 800 : 0;
       const t = sel => dur ? sel.transition().duration(dur).ease(d3.easeCubicInOut) : sel;
-      t(R.row).attr("transform", d => "translate(0," + rowY(R.pos.get(d.name)) + ")");
+      t(R.row).attr("transform", d => "translate(0," + rowY(R.pos.get(d.name), R) + ")");
       (dur ? R.brace.transition().duration(dur / 2) : R.brace)
         .style("opacity", sortKey === "rca" ? 1 : 0);
-      /* under the peers order the value is the gap, printed at the bar's
-         far end; the peer tick stands down, since the average is the line */
+      /* under the peers order the value is the metro's lead over the peers,
+         signed, printed at the bar's far end; the peer tick stands down,
+         since the peers are the 0 line */
       const gap = sortKey === "gap";
       const val = R.row.select(".mi-val");
-      val.text(d => gap ? ((gapOf(d) >= 0 ? "+" : "\u2212") + Math.abs(gapOf(d)).toFixed(1) + "\u00d7")
-                        : d.rca.toFixed(1) + "\u00d7");
-      t(val).attr("x", d => gap ? (gapOf(d) >= 0 ? R.xg(gapOf(d)) + 8 : R.xg(gapOf(d)) - 8)
-                                : Math.max(R.xr(d.rca), R.xr(d.peerAvg)) + 9)
-        .attr("text-anchor", d => gap && gapOf(d) < 0 ? "end" : "start");
+      val.text(d => gap ? (gapOf(d) == null ? "No value" : fmtLead(gapOf(d))) : d.rca.toFixed(1) + "\u00d7");
+      t(val).attr("x", d => gap ? (gapOf(d) == null ? R.xg(0) + 8 : gapOf(d) >= 0 ? R.xg(gapOf(d)) + 8 : R.xg(gapOf(d)) - 8)
+                                : Math.max(R.xr(d.rca), R.xr(d.peerRate || 0)) + 9)
+        .attr("text-anchor", d => gap && gapOf(d) != null && gapOf(d) < 0 ? "end" : "start");
       t(R.row.select(".mi-peer")).style("opacity", gap ? 0 : 1);
+      t(R.row.select(".mi-peer-halo")).style("opacity", gap ? 0 : 1);
+      if (R.nation) t(R.nation).style("opacity", gap ? 0 : 1);
     }
     drawRanking(R1, gAxis, gRows);
     drawRanking(R2, gAxis2, gRows2);
@@ -4083,8 +4608,17 @@ export function loadTreemaps(){
          order can change under the reader, and the beats ask for different
          columns, so there is nothing here worth updating in place */
       G.selectAll("*").remove();
-      const rows = barOrder(list);
+      const allHere = G === gBarsTrad ? moreTrad : moreBars;
+      const rows = barOrder(list, allHere, G);
       const tierMode = barMode === "tier";
+      /* the bars name their industries as the map does, by the short name;
+         the gutter is fitted to the names this set holds, and the plot
+         takes the room from there to its right edge */
+      const barName = d => d.label || shortLabel(d.name) || d.name;
+      const geo = G === gBarsTrad ? barGeoTrad : barGeoAll;
+      geo.ml = barGutter(rows.map(d => charFit(barName(d))));
+      geo.scale.range([geo.ml + 12, BPR]);
+      const BML = geo.ml, barScale = geo.scale;
       G.selectAll("g.mi-tick").data(barScale.ticks(4)).join("g").attr("class", "mi-tick")
         .call(g => g.append("line").attr("class", d => "mi-grid" + (d === 0 ? " is-base" : ""))
           .attr("x1", d => barScale(d)).attr("x2", d => barScale(d))
@@ -4094,6 +4628,15 @@ export function loadTreemaps(){
           .text(d => fmtJobs(d)));
       G.append("text").attr("class", "mi-axname")
         .attr("x", BML + 12).attr("y", BHEAD_Y).text("Jobs in the metro");
+      /* "Show all" under the last bar (2026-10-07, Nil: "try putting show
+         all on the bottom"), or over the names (the study's opt-1). Once
+         every row shows, "Show the top 25" stands at both ends, the head's
+         held in view by the pinned head while the list scrolls. */
+      const atFoot = moreAtFoot();
+      if (!atFoot || allHere) moreBtn(G, BML - 10, BHEAD_Y, list.length, NB, "industries", false, allHere);
+      /* the foot's button after the rows, so the keyboard meets the head's
+         filter before it and not after a trip to the bottom of the list */
+      const foot = () => { if (atFoot || allHere) moreBtn(G, BML - 10, BMT + rows.length * BRH, list.length, NB, "industries", true, allHere); };
       /* one column beside the plot, at the edge the ranking keeps its last
          column on. The tiers beat carries tradability, and its head is the
          filter; the opening beat carries complexity, as five steps rather
@@ -4118,10 +4661,9 @@ export function loadTreemaps(){
           .attr("x1", seg[0]).attr("x2", seg[1]).attr("y1", BRULE_Y).attr("y2", BRULE_Y);
       });
       const row = G.selectAll("g.mi-row").data(rows, d => d.name).join("g").attr("class", "mi-row");
-      /* the bars name their industries as the map does, by the short name */
-      const barName = d => d.label || shortLabel(d.name) || d.name;
       row.append("text").attr("class", "mi-name")
         .attr("x", BML - 10).attr("y", (d, i) => barY(i) + 4).attr("text-anchor", "end")
+        .attr("data-max", BML - 10)
         .attr("data-full", barName).text(d => charFit(barName(d)));
       /* the reading sits at the end of the bar it belongs to, as the
          ranking's does */
@@ -4132,6 +4674,7 @@ export function loadTreemaps(){
         row.append("text").attr("class", "mi-trad is-tier")
           .attr("x", COL_R).attr("y", (d, i) => barY(i) + 4).attr("text-anchor", "end")
           .text(d => tierLabel(d));
+        foot();
         return;
       }
       /* five steps, filled as far as the industry reaches. The count is the
@@ -4143,17 +4686,52 @@ export function loadTreemaps(){
         const g = d3.select(this), on = cxBin(d.name), y = barY(i);
         for (let k = 0; k < 5; k++){
           const x = CX_L + CX_D + k * CX_GAP;
-          g.append("path").attr("class", "mi-cxdot" + (k <= on ? " is-on" : ""))
+          g.append("path").attr("class", "mi-cxdot" + (on != null && k <= on ? " is-on" : ""))
             .attr("d", "M" + x + "," + (y - CX_D) + "L" + (x + CX_D) + "," + y +
                        "L" + x + "," + (y + CX_D) + "L" + (x - CX_D) + "," + y + "Z");
         }
       });
+      foot();
     }
     let barListAll = byJobsAll;
-    const reBarRank = () => { barRankAll = new Map(barOrder(barListAll).map((d, i) => [d.name, i])); };
+    const reBarRank = () => { barRankAll = new Map(barOrder(barListAll, moreBars, gBarsAll).map((d, i) => [d.name, i])); };
     reBarRank();
     drawBars(byJobsAll, gBarsAll);
-    { const keep = barMode; barMode = "tier"; drawBars(byJobsTrad, gBarsTrad); barMode = keep; }
+    const drawBarsTrad = () => { const keep = barMode; barMode = "tier"; drawBars(byJobsTrad, gBarsTrad); barMode = keep; };
+    drawBarsTrad();
+    /* the names' size follows the page's breakpoints, and its face arrives
+       after the figure is built: when either changes what a name measures,
+       every gutter is fitted again and its chart drawn again. Says whether
+       anything changed, so the caller knows to repaint. */
+    let gutSig = typeSig();
+    function refitGutters(force){
+      const sig = typeSig();
+      if (!force && sig === gutSig) return false;
+      gutSig = sig;
+      /* the heads are drawn again; a tier menu standing open stays open and
+         is hung from the new head, and the focus, if it was on a head,
+         goes to that head's successor rather than to the page */
+      const keepMenu = keepMenuRef ? keepMenuRef.save() : null, keepMore = moreKind();
+      [[R1, gAxis, gAxisGap, gRows], [R2, gAxis2, gAxisGap2, gRows2]].forEach(([R, A, AG, G]) => {
+        const right = R.xr.range()[1];
+        /* a row a phrase in the text has lit stays lit across the redraw */
+        const lit = new Set();
+        G.selectAll("g.mi-row.is-lit").each(d => lit.add(d.name));
+        R.ml = rankGutter(R.ranked);
+        R.xr.range([R.ml + 12, right]); R.xg.range([R.ml + 12, right]); fitGap(R);
+        A.selectAll("*").remove(); AG.selectAll("*").remove(); G.selectAll("*").remove();
+        drawGapAxis(R, AG);
+        drawRanking(R, A, G);
+        placeRanking(R, false);
+        if (wireRowsRef) wireRowsRef(R);
+        if (lit.size && R.row) R.row.classed("is-lit", d => lit.has(d.name));
+      });
+      drawBars(barListAll, gBarsAll);
+      drawBarsTrad();
+      if (keepMenu) keepMenuRef.restore(keepMenu);
+      if (keepMore) landMore(keepMore);
+      return true;
+    }
 
     /* the labels are fitted when a beat paints; when the window crosses one
        of the widths that change the unit scale, the beat on screen is
@@ -4165,14 +4743,28 @@ export function loadTreemaps(){
         timer = setTimeout(() => {
           if (dead) return;
           const u = labUnit();
-          if (lastUnit !== null && u !== lastUnit && step >= 0) paint(step, false);
+          /* the same widths change the names' size, and with it the
+             gutters of the bars and the rankings */
+          const refit = refitGutters();
+          if ((refit || (lastUnit !== null && u !== lastUnit)) && step >= 0) paint(step, false);
           lastUnit = u;
         }, 150);
       });
       lastUnit = labUnit();
     }
 
-    let step = -1, painted = -1, arriving = false;
+    /* a view or a beat whose chart pans draws wider than the map does, so
+       the scale can move without the window moving: it is settled, and
+       the gutters fitted to it, before the move is painted, or the next
+       measure would cut the animation short (set where the scale is
+       measured, below) */
+    let settleScaleRef = null;
+    const settleForPaint = () => { if (settleScaleRef && settleScaleRef()){ refitGutters(); fitPicks(fig); } };
+    /* a named view sets several things at once and paints once: while the
+       hold is up a paint is only noted (see setNamed). And the question
+       the chart is answering, if any, with the hooks the beat change and
+       the paint reach it through (see "Ask the chart") */
+    let holdPaint = 0, heldPaint = false, asked = null, checkAskRef = null, leaveAskRef = null, afterStepRef = null;
     /* set once the tooltips are wired; the beat change calls it so a phrase
        left lit cannot dim the next beat */
     let clearHighlight = null;
@@ -4205,18 +4797,377 @@ export function loadTreemaps(){
     /* the trad menu's heads are drawn in every beat's axis group and faded
        with it; a faded head must not be a stop for the keyboard */
     let menuHeadT = null;
-    function syncMenuHeads(){
-      el.querySelectorAll("g.mi-tradmenu").forEach(g => {
-        let vis = true;
-        for (let n = g; n && n !== el; n = n.parentNode){
-          if (n.nodeType === 1 && +getComputedStyle(n).opacity < 0.05){ vis = false; break; }
-        }
-        g.setAttribute("tabindex", vis ? 0 : -1);
-        if (vis) g.removeAttribute("aria-hidden"); else g.setAttribute("aria-hidden", "true");
+    function syncMenuHeads(){ syncMoreTabs(); }
+    /* the heads that are buttons - the Show buttons and the filter heads -
+       go by the state, which knows the chart it shows, and at once from
+       paint: waiting for the fade (a second) left a faded head one Tab away */
+    function syncMoreTabs(){
+      const live = shownLayers().map(L => L.node());
+      el.querySelectorAll("g.mi-more, g.mi-tradmenu").forEach(g => {
+        const vis = live.includes(g.parentNode);
+        if (g.getAttribute("tabindex") !== (vis ? "0" : "-1")) g.setAttribute("tabindex", vis ? 0 : -1);
+        if (vis) g.removeAttribute("aria-hidden"); else if (g.getAttribute("aria-hidden") !== "true") g.setAttribute("aria-hidden", "true");
       });
     }
 
+    /* the chart on screen, every row or its top ones. The rows are drawn
+       again (the bars over the whole mix and over the traded tier, or the
+       third beat's ranking), the frame takes the drawing's new height, and
+       the cells travel to their bars. Folding back starts the frame at its
+       top. The keyboard stays on the button. */
+    function setMore(on, animate){
+      if (on === more) return;
+      const was = [moreBars, moreTrad, rankAll];
+      /* only the chart on screen runs long: the ranking on the third beat,
+         the bars over the whole mix on the first two, the traded bars on
+         the beats that show them */
+      more = on;
+      rankAll = on && step === 6;
+      moreBars = on && (step === 0 || step === 1 || step === 4);
+      moreTrad = on && (step === 5 || step === 7);
+      if (!on) setVScroll(0);
+      if (was[0] !== moreBars){ reBarRank(); drawBars(barListAll, gBarsAll); }
+      if (was[1] !== moreTrad){ drawBarsTrad(); reBarRankTrad(); }
+      const rebuilt = was[2] !== rankAll && rebuildR2Ref;
+      if (rebuilt) rebuildR2Ref(animate);              /* it paints the third beat itself */
+      if (!(rebuilt && step === 6) && step >= 0) paint(step, animate);
+    }
+    /* back to the top rows without painting, for a change of beat or of
+       view, which paints next; the ranking is rebuilt by the caller once
+       the beat has changed, or it would be painted on the way out */
+    function foldMore(rebuild){
+      if (!more) return;
+      const had = moreKind(), was = [moreBars, moreTrad, rankAll];
+      more = false; moreBars = false; moreTrad = false; rankAll = false;
+      setVScroll(0);
+      if (was[0]){ reBarRank(); drawBars(barListAll, gBarsAll); }
+      if (was[1]){ drawBarsTrad(); reBarRankTrad(); }
+      if (was[2] && rebuild && rebuildR2Ref) rebuildR2Ref(false);
+      if (had) requestAnimationFrame(() => landMore(had));
+    }
+    function toggleMore(fromFoot){
+      /* the keyboard stays on the button it pressed, which the redraw
+         replaces; a pointer's press leaves the focus where it was */
+      const had = moreKind();
+      setMore(!more, !reduced());
+      requestAnimationFrame(() => {
+        if (fromFoot) setVScroll(0);
+        if (!had) return;
+        const b = moreHead() || moreFoot();
+        if (b) b.focus({ preventScroll: true });
+      });
+    }
+    /* the layers that draw the chart the state shows (as paint shows them),
+       its Show button, and where the keyboard goes when a redraw takes the
+       button it was on */
+    function shownLayers(){
+      if (step === 6) return [sortKey === "gap" ? gAxisGap2 : gAxis2, gRows2];
+      if (step === 3) return [sortKey === "gap" ? gAxisGap : gAxis, gRows];
+      if (view !== "alt") return [];
+      if (step === 5 || step === 7) return [gBarsTrad];
+      if (step === 0 || step === 1 || step === 4) return [gBarsAll];
+      return [];
+    }
+    const moreHead = () => {
+      for (const L of shownLayers()){ const b = L.node().querySelector(".mi-more:not(.mi-more--foot)"); if (b) return b; }
+      return null;
+    };
+    const moreFoot = () => {
+      for (const L of shownLayers()){ const b = L.node().querySelector(".mi-more--foot"); if (b) return b; }
+      return null;
+    };
+    /* which of the Show buttons has the focus - the head's or the foot's -
+       and whether it shows (a keyboard's), or none */
+    const moreKind = () => {
+      const a = document.activeElement, g = a && a.closest && el.contains(a) ? a.closest(".mi-more") : null;
+      if (!g) return null;
+      let kb = false; try { kb = g.matches(":focus-visible"); } catch (e) {}
+      return { end: g.classList.contains("mi-more--foot") ? "foot" : "head", kb };
+    };
+    /* the keyboard back on a Show button, after a redraw took the one it
+       was on (unless it has gone somewhere else meanwhile) or, forced,
+       after the chart it was on faded: the same end of the chart now
+       showing, else its head, with the frame at its top, else the figure */
+    const landMore = (kind, force) => {
+      const a = document.activeElement;
+      if (!force && a && a !== document.body && a !== document.documentElement) return;
+      syncMoreTabs();
+      const foot = kind.end === "foot" ? moreFoot() : null, b = foot || moreHead() || moreFoot();
+      if (!b){ if (el.focus) el.focus({ preventScroll: true }); return; }
+      if (b === a) return;
+      /* a keyboard has to see where it is; a pointer's reader keeps their place */
+      if (b !== foot && b === moreHead() && kind.kb && vbox && vbox.scrollTop) setVScroll(0);
+      b.focus({ preventScroll: true });
+      if (b !== moreHead() && kind.kb && vbox){
+        const r = b.getBoundingClientRect(), q = vbox.getBoundingClientRect();
+        if (vbox.classList.contains("is-tall") && (r.bottom > q.bottom || r.top < q.top)) setVScroll(Math.max(0, Math.round(vbox.scrollTop + r.bottom - q.bottom + 16)));
+      }
+    };
+    /* On a desk window too short for the whole figure (about 600px and
+       under) the drawing's foot is below the screen while the stage is
+       held, and a button there could not be pressed: the bars' button
+       stands over the names instead until the window has the room. The
+       stacked page holds the figure at the screen's head and keeps it. */
+    function syncFootRoom(){
+      const stg = fig.closest(".ct-stage"), box = vbox || el;
+      let fits = true;
+      /* the presenter fits the figure to its own panel */
+      if (stg && box && !fig.closest(".ct-panel.is-presenting") && window.matchMedia("(min-width: 900px)").matches && getComputedStyle(stg).position === "sticky"){
+        const sr = stg.getBoundingClientRect(), br = box.getBoundingClientRect();
+        if (sr.height > 0) fits = (parseFloat(getComputedStyle(stg).top) || 0) + (br.bottom - sr.top) <= window.innerHeight - 2;
+      }
+      if (fits === footRoom) return false;
+      const kind = moreKind();
+      footRoom = fits;
+      drawBars(barListAll, gBarsAll); drawBarsTrad(); redrawR2();
+      if (kind) landMore(kind);
+      return true;
+    }
+    /* the rows the chart on screen holds, and the drawing's height for them */
+    function shownRows(i){
+      if (i === 6) return R2.all ? R2.ranked.length : 0;
+      if (view !== "alt") return 0;
+      if (i === 5 || i === 7) return barRankTrad.size;
+      if (i === 0 || i === 1 || i === 4) return barRankAll ? barRankAll.size : 0;
+      return 0;
+    }
+    /* taller than usual only when there are more rows than the top ones: a
+       filter can leave no more than those with "all" still asked */
+    const frameBase = i => i === 6 ? rank6H : MI_H;
+    /* the other beats' figure at the width it was last drawn at */
+    let figRef = null, leaveSixT = null;
+    disposers.push(() => clearTimeout(leaveSixT));
+    function figHeight(i){
+      const base = frameBase(i);
+      if (!more) return base;
+      const n = shownRows(i);
+      if (!n || n <= (i === 6 ? RANK_N : NB)) return base;
+      /* the long list keeps the foot's box well clear of the drawing's end */
+      return Math.max(base, Math.ceil(i === 6 ? MT + (n + RANK_FOOT) * rhOf(R2) + 1.9 * fsUnits() + 34 : BMT + n * BRH + 46));
+    }
+    /* On the third beat the strip under the drawing that the other beats
+       keep for their key is folded away (data-capfold) and given to the
+       drawing, measured as the figure's height with the strip less its
+       height without; the ranking's rows are spread over what that leaves
+       above the national rate's name and the Show box. Says whether the
+       rows' spacing moved, so the caller paints them again. */
+    function syncRankRoom(i){
+      if (i !== 6){ if (fig.dataset.capfold) delete fig.dataset.capfold; return false; }
+      const k = el.getBoundingClientRect().width / MI_W;
+      if (!(k > 0)) return false;
+      if (fig.dataset.capfold) delete fig.dataset.capfold;
+      const h0 = fig.getBoundingClientRect().height;
+      fig.dataset.capfold = "1";
+      const h1 = fig.getBoundingClientRect().height;
+      /* where the other beats have been drawn at this width, as tall as
+         their figure (their head row is taller than this one's, so the
+         strip alone left the frame 7px short); else the strip's height */
+      const w = el.getBoundingClientRect().width, tallNow = vbox && vbox.classList.contains("is-tall");
+      const drawnPx = (tallNow ? vbox : el).getBoundingClientRect().height;
+      const at500 = h1 - drawnPx + MI_H * k;
+      const slot = figRef && Math.abs(figRef.w - w) < 1 ? Math.max(0, figRef.h - at500) : Math.max(0, h0 - h1);
+      rank6H = MI_H + slot / k;
+      const fsU = 13 * TYPE_K / scaleNow();
+      /* under the rows: the national rate's name, and the Show box where it stands at the foot */
+      /* under the rows and their half row: the box's line, and a margin
+         to the drawing's foot */
+      rank6Area = rank6H - MT - (1.9 * fsU + 8);
+      const want = rankPitch((R2.split ? 2 * SPLIT_N + 0.5 : RANK_N) + RANK_FOOT);
+      if (Math.abs(want - R2.rh) < 0.05) return false;
+      R2.rh = want;
+      redrawR2();
+      return true;
+    }
+    /* a scroll the figure makes itself, which is not the reader moving on */
+    let quietScroll = false;
+    const setVScroll = v => { if (!vbox || vbox.scrollTop === v) return; quietScroll = true; vbox.scrollTop = v; };
+    function syncFrame(i, holdSix){
+      if (!vbox) return false;
+      /* leaving the third beat with a fade, its taller drawing and its
+         folded strip hold until the ranking has gone, or its last rows
+         were cut off while they faded; the beat's own frame follows */
+      const moved = holdSix ? false : syncRankRoom(i);
+      const base = holdSix ? Math.max(frameBase(i), rank6H) : frameBase(i);
+      const H = holdSix ? Math.max(figHeight(i), base) : figHeight(i), tall = H > base + 0.5, was = vbox.classList.contains("is-tall");
+      vbox.dataset.ratio = String(MI_W / base);
+      svg.attr("viewBox", "0 0 " + MI_W + " " + H).attr("height", H);
+      if (tall !== was){
+        /* the sideways pan moves to the box that scrolls: the wrapper's
+           while the chart has its usual height, the frame's own while it
+           runs long, so one box scrolls both ways and its bars stay inside
+           what can be seen */
+        const sl = (tall ? vizWrap : vbox).scrollLeft;
+        vbox.classList.toggle("is-tall", tall);
+        if (tall){ vbox.scrollLeft = sl; vizWrap.scrollLeft = 0; } else { vizWrap.scrollLeft = sl; }
+      }
+      if (tall){
+        /* the drawing's own margin goes outside the frame, where it collapses
+           as it always has; the frame is as tall as the drawing is at its
+           usual height, and as wide as the wrapper gives it - never as wide
+           as the drawing measures, which a scrollbar narrows */
+        el.style.marginTop = "";
+        const mt = getComputedStyle(el).marginTop;
+        el.style.marginTop = "0px"; vbox.style.marginTop = mt;
+        const w = Math.max(el.getBoundingClientRect().width, vbox.getBoundingClientRect().width);
+        const hsb = vbox.offsetHeight - vbox.clientHeight, vsb = vbox.offsetWidth - vbox.clientWidth;
+        vbox.style.height = (w * base / MI_W + Math.max(0, hsb)).toFixed(1) + "px";
+        vbox.style.setProperty("--mi-sbw", Math.max(0, vsb) + "px");
+      } else {
+        vbox.style.height = ""; vbox.style.marginTop = ""; el.style.marginTop = "";
+        vbox.style.removeProperty("--mi-sbw");
+        if (vbox.scrollTop) setVScroll(0);
+      }
+      vbox.classList.toggle("is-scrolled", tall && vbox.scrollTop > 2);
+      syncPin();
+      return moved;
+    }
+    if (window.ResizeObserver && vbox){
+      /* a frame later, so the frame's new height is not a change the same
+         round of observing has to see again */
+      let roRaf = 0;
+      const ro = new ResizeObserver(() => { if ((more || step === 6) && !roRaf) roRaf = requestAnimationFrame(() => { roRaf = 0; if ((more || step === 6) && syncFrame(step)) paint(step, false); }); });
+      ro.observe(vizWrap); disposers.push(() => { ro.disconnect(); if (roRaf) cancelAnimationFrame(roRaf); });
+    }
+    /* While the frame is scrolled, the head of the chart on screen - its
+       column names, the axis's steps, the rules under them and the button -
+       shows again over the rows at the frame's top, on the panel's white, so
+       a row far down the list still has its columns named. It is a small
+       drawing of its own, stuck to the frame's top by the stylesheet and
+       shown past the first few pixels of scroll, made again only when the
+       head changes; a scroll moves nothing in it. The copy is a picture:
+       the keyboard and a screen reader have the head itself. A press on its
+       button folds the list; a press on its filter takes the frame back to
+       its top, where the head is, and opens the filter from there. */
+    const PIN_SEL = ".mi-ticklab, .mi-axname, .mi-colhead, .mi-tradmenu, .mi-headrule, .mi-more:not(.mi-more--foot)";
+    const PIN_H = MT - 8;                      /* the head's band, to just over the first row */
+    const PIN_LOOK = ["fill", "stroke", "stroke-width", "stroke-dasharray", "stroke-linecap", "stroke-linejoin", "opacity",
+      "font-family", "font-size", "font-weight", "font-style", "letter-spacing", "text-anchor", "dominant-baseline"];
+    /* the copy is outside the drawing the stylesheet dresses, so it carries
+       its look with it */
+    const wearLook = (src, dst) => {
+      const cs = getComputedStyle(src);
+      PIN_LOOK.forEach(k => dst.style.setProperty(k, cs.getPropertyValue(k)));
+      for (let a = src.firstElementChild, b = dst.firstElementChild; a && b; a = a.nextElementSibling, b = b.nextElementSibling) wearLook(a, b);
+    };
+    let pinSrc = [];
+    function syncPin(){
+      if (!pinSvg) return;
+      pinSvg.selectAll("*").remove(); pinSrc = [];
+      if (!more || !vbox.classList.contains("is-tall")) return;
+      const w = el.getBoundingClientRect().width, k = w / MI_W;
+      if (!(k > 0)) return;
+      const h = PIN_H * k;
+      pinBox.style.width = w.toFixed(2) + "px";
+      pinBox.style.height = h.toFixed(2) + "px";
+      pinBox.style.marginBottom = (-h).toFixed(2) + "px";
+      pinSvg.attr("viewBox", "0 0 " + MI_W + " " + PIN_H).attr("width", w.toFixed(2)).attr("height", h.toFixed(2))
+        .style("font-family", el.style.fontFamily || null);
+      pinSvg.append("rect").attr("class", "mi-pin-ground").attr("x", 0).attr("y", 0).attr("width", MI_W).attr("height", PIN_H);
+      pinSvg.append("line").attr("class", "mi-pin-edge").attr("x1", 0).attr("x2", MI_W).attr("y1", PIN_H - 0.5).attr("y2", PIN_H - 0.5);
+      const pg = pinSvg.node();
+      shownLayers().forEach(L => {
+        L.node().querySelectorAll(PIN_SEL).forEach(x => {
+          if (x.parentNode.closest(".mi-tradmenu, .mi-more")) return;
+          const c = x.cloneNode(true);
+          ["tabindex", "role", "aria-pressed", "aria-label", "aria-haspopup", "aria-expanded", "aria-hidden"].forEach(a => c.removeAttribute(a));
+          c.classList.remove("is-open");
+          wearLook(x, c);
+          const kind = c.classList.contains("mi-more") ? "more" : c.classList.contains("mi-tradmenu") ? "menu" : null;
+          if (kind){
+            /* the two controls take their colours from the stylesheet, not
+               from the head as it was when copied, which may have been
+               under the pointer or the keyboard's focus */
+            c.querySelectorAll("*").forEach(n => ["fill", "stroke", "stroke-width"].forEach(k => n.style.removeProperty(k)));
+            c.classList.replace(kind === "more" ? "mi-more" : "mi-tradmenu", kind === "more" ? "mi-more-pin" : "mi-tradmenu-pin");
+            c.setAttribute("data-pin", pinSrc.length); pinSrc.push({ kind, node: x });
+          }
+          pg.appendChild(c);
+        });
+      });
+    }
+    /* Stacked (899px and under), the band holds the figure at the screen's
+       head. A control inside it taking the keyboard's focus had the
+       browser scroll the page toward where the band sits in the flow, far
+       above, which put the page back a beat under the reader (and with it
+       hid the beat's own controls, the tiers beat's order among them). So
+       while the band is held, a Tab whose next stop is inside it moves the
+       focus there itself, without the scroll; the page stays put. Stops
+       outside the band are left to the browser. */
+    {
+      const TABBABLE = 'a[href], button:not([disabled]), select:not([disabled]), input:not([disabled]):not([type="hidden"]), textarea:not([disabled]), [tabindex]';
+      const canStop = n => n.tabIndex >= 0 && !n.closest("[inert]") && n.getClientRects().length > 0 && getComputedStyle(n).visibility !== "hidden";
+      const heldBand = () => {
+        const stg = fig.closest(".ct-stage");
+        if (!stg || !window.matchMedia("(max-width: 899px)").matches || getComputedStyle(stg).position !== "sticky") return null;
+        const r = stg.getBoundingClientRect();
+        return r.height > 0 && r.top < window.innerHeight * 0.25 ? stg : null;
+      };
+      on(document, "keydown", ev => {
+        if (ev.key !== "Tab" || ev.altKey || ev.ctrlKey || ev.metaKey || ev.defaultPrevented) return;
+        const a = document.activeElement;
+        if (!a || a === document.body || a === document.documentElement) return;
+        /* only from inside this section's own story, never out of a dialog,
+           the glossary or the presenter's view laid over it */
+        const scope = fig.closest(".ct-scrolly");
+        if (!scope || !scope.contains(a) || document.documentElement.classList.contains("is-presenting") ||
+            document.querySelector(".journey-overlay.open, dialog[open], #glossaryOverlay.open")) return;
+        const stg = heldBand(); if (!stg) return;
+        const list = [].filter.call(document.querySelectorAll(TABBABLE), canStop);
+        let next = null, i = list.indexOf(a);
+        if (i >= 0) next = list[ev.shiftKey ? i - 1 : i + 1] || null;
+        else if (ev.shiftKey){ for (let k = list.length - 1; k >= 0; k--) if (a.compareDocumentPosition(list[k]) & Node.DOCUMENT_POSITION_PRECEDING){ next = list[k]; break; } }
+        else next = list.find(x => a.compareDocumentPosition(x) & Node.DOCUMENT_POSITION_FOLLOWING) || null;
+        if (!next || !stg.contains(next)) return;
+        ev.preventDefault();
+        next.focus({ preventScroll: true });
+        /* the page holds still, but a control at the far end of a long
+           list is brought into the list's own frame */
+        if (vbox && vbox.classList.contains("is-tall") && vbox.contains(next)){
+          const r = next.getBoundingClientRect(), q = vbox.getBoundingClientRect();
+          if (r.bottom > q.bottom - 4) setVScroll(Math.round(vbox.scrollTop + r.bottom - q.bottom + 16));
+          else if (r.top < q.top) setVScroll(Math.max(0, Math.round(vbox.scrollTop - (q.top - r.top) - 16)));
+        }
+      }, true);
+    }
+    if (vbox) on(vbox, "scroll", () => {
+      const sc = vbox.scrollTop > 2;
+      if (sc !== vbox.classList.contains("is-scrolled")) vbox.classList.toggle("is-scrolled", sc);
+      if (quietScroll){ quietScroll = false; return; }
+      /* a menu hung from the head does not ride along with the rows */
+      const tm = document.getElementById(p + "TradMenu");
+      if (tm && !tm.hidden && closeMenuRef) closeMenuRef(tm.contains(document.activeElement));
+    }, { passive: true });
+    if (pinSvg) on(pinSvg.node(), "mousedown", ev => { if (ev.target.closest && ev.target.closest("[data-pin]")) ev.preventDefault(); });
+    if (pinSvg) on(pinSvg.node(), "click", ev => {
+      const t = ev.target.closest && ev.target.closest("[data-pin]");
+      const src = t && pinSrc[+t.getAttribute("data-pin")];
+      if (!src) return;
+      /* the copy's own click goes no further: the page would take it for a
+         press outside an open menu */
+      ev.stopPropagation();
+      if (src.kind === "more"){ toggleMore(false); return; }
+      setVScroll(0); vbox.classList.remove("is-scrolled");
+      src.node.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
+    });
     function paint(i, animate){
+      if (holdPaint){ heldPaint = true; return; }
+      /* the bars' mode (the tiers beat's, or the first beat's) follows the
+         beat before anything reads their order - the cells' targets below,
+         the frame's height - or the cells went to the last beat's order
+         while the names were set in this one's */
+      if (view === "alt" && (i === 0 || i === 1 || i === 4)){
+        const wantBar = i === 4 ? "tier" : "cx";
+        if (barMode !== wantBar){ barMode = wantBar; barListAll = tierList(); reBarRank(); drawBars(barListAll, gBarsAll); }
+      }
+      syncFootRoom();
+      const holdSix = !!animate && painted === 6 && i !== 6;
+      syncFrame(i, holdSix);
+      clearTimeout(leaveSixT);
+      if (holdSix) leaveSixT = setTimeout(() => { if (!dead && step === i && syncFrame(i)) paint(i, false); }, 520);
+      syncMoreTabs();
+      /* every change to what the chart shows ends in a paint: an answer
+         in the text stands only while the chart still shows it */
+      if (checkAskRef) checkAskRef();
       /* the zoom targets belong to the map beats and the map view: anywhere
          else they are drawn away, or a keyboard would still find them */
       if (!((i === 0 || i === 4 || i === 7) && view === "map")) drawHits({ blocks: [], groups: [] });
@@ -4233,8 +5184,11 @@ export function loadTreemaps(){
       const mapOn = view === "map" && (i === 0 || i === 4 || i === 5 || i === 7);
       const opOf = d => mapOn ? 0 : at(d).op;
       const rects = cell.select(".mi-rect");
+      /* a paint without animation also ends one still running on the
+         cells: its targets were fixed when it began, and a gutter fitted
+         since would be overwritten by them */
       const sel = dur ? rects.transition().delay(d => at(d).delay || 0)
-        .duration(dur).ease(d3.easeCubicInOut) : rects;
+        .duration(dur).ease(d3.easeCubicInOut) : rects.interrupt();
       sel.attr("x", d => at(d).box.x).attr("y", d => at(d).box.y)
          .attr("width", d => at(d).box.w).attr("height", d => at(d).box.h)
          .attr("fill", d => at(d).fill).attr("rx", d => at(d).rx)
@@ -4292,10 +5246,6 @@ export function loadTreemaps(){
       show(gAxis2, i === 6 && !gapMode, late);
       show(gAxisGap2, i === 6 && gapMode, late);
       show(gRows2, i === 6, late);
-      if (barsOn && i !== 5 && i !== 7){
-        const wantBar = i === 4 ? "tier" : "cx";
-        if (barMode !== wantBar){ barMode = wantBar; reBarRank(); drawBars(barListAll, gBarsAll); }
-      }
       show(gBarsAll, barsOn && i !== 5 && i !== 7);
       show(gBarsTrad, barsOn && (i === 5 || i === 7));
       /* the names belong to the sector-coloured map: under the ranked view
@@ -4307,7 +5257,7 @@ export function loadTreemaps(){
       const cardsOn = i === 4 && view === "map";
       gCards.classed("is-on", cardsOn);
       /* the crosses are for the keyboard only while the grounds are up */
-      gCards.selectAll("rect.mi-card-x-hit").attr("tabindex", cardsOn && cardBox.length > 1 ? 0 : -1);
+      gCards.selectAll("rect.mi-card-x-hit").attr("tabindex", c => cardsOn && cardBox.length > 1 && !c.noX ? 0 : -1);
       show(gCards, cardsOn);
       /* a ground the filter empties keeps its width - the tiers' shares are
          the metro's, not the filter's - and says why it is bare */
@@ -4320,13 +5270,18 @@ export function loadTreemaps(){
         const tn = g.select(".mi-card-none");
         tn.text(!bare ? "" : zoomed ? "Nothing here from " + zoomed : "None of the sectors shown");
         /* the line must fit its ground, or it prints across the next one */
+        const node = tn.node(), room = c.w - 2 * Math.max(0, (+tn.attr("x") || c.x) - c.x);
         if (bare && zoomed){
-          const node = tn.node(), room = c.w - 2 * Math.max(0, (+tn.attr("x") || c.x) - c.x);
           let nm = zoomed;
           while (nm.length > 3 && node.getComputedTextLength() > room){
             nm = nm.slice(0, -1).replace(/[\s&,-]+$/, ""); tn.text("Nothing here from " + nm + "\u2026");
           }
           if (node.getComputedTextLength() > room) tn.text("Nothing here");
+        }
+        /* it is a fixed size on screen, so a narrow ground takes a shorter line */
+        if (bare && !zoomed) for (const t of ["None of these sectors", "None shown", "None"]){
+          if (node.getComputedTextLength() <= room) break;
+          tn.text(t);
         }
         /* a ground with nothing to show steps back, but its name and share
            still read (0.4 left them at 2.4 to 1) */
@@ -4368,10 +5323,20 @@ export function loadTreemaps(){
         labs.style("opacity", onZero ? 0 : null);
       }
       painted = i;
+      syncPin();
+      /* not while the figure still holds the third beat's taller drawing
+         on the way out (holdSix): stored then, the extra went into the
+         next visit's height, and the frame grew 7px a visit */
+      if ((i === 0 || i === 4) && !more && !holdPaint && !fig.dataset.capfold){
+        const r = fig.getBoundingClientRect();
+        if (r.height > 0) figRef = { w: el.getBoundingClientRect().width, h: r.height };
+      }
     }
 
     function setView(v){
       if (v === view) return;
+      /* the map has no rows to show all of; the bars come back on their top */
+      foldMore(true);
       view = v;
       fig.dataset.view = view;
       syncViewCtl();
@@ -4425,15 +5390,21 @@ export function loadTreemaps(){
       };
       const openMenu = byKey => {
         const g = headG(); if (!g) return;
+        /* a head scrolled up out of a long chart's frame comes back into
+           it first, or the menu would open where it cannot be seen */
+        if (vbox && vbox.classList.contains("is-tall") && g.getBoundingClientRect().top < vbox.getBoundingClientRect().top){
+          setVScroll(0); vbox.classList.remove("is-scrolled");
+        }
         syncItems();
-        const host = el.parentNode;                       /* the viz wrapper */
+        const host = vizWrap;                             /* the viz wrapper */
         const hb = g.getBoundingClientRect(), pb = host.getBoundingClientRect();
         menuEl.hidden = false;
         /* under the head, right edges together, and never off the wrapper */
         const mw = menuEl.offsetWidth;
         let left = hb.right - pb.left - mw;
         left = Math.max(4, Math.min(left, pb.width - mw - 4));
-        menuEl.style.left = left + "px";
+        /* the menu sits inside the wrapper: where that has been panned, its place moves with it */
+        menuEl.style.left = (left + (host.scrollLeft || 0)) + "px";
         menuEl.style.top = (hb.bottom - pb.top + 6) + "px";
         g.classList.add("is-open");
         g.setAttribute("aria-expanded", "true");
@@ -4497,6 +5468,25 @@ export function loadTreemaps(){
       });
       escLayers.push({ p: 2, open: isOpen, close: () => closeMenu(true) });
       closeMenuRef = closeMenu;
+      keepMenuRef = {
+        save: () => {
+          const a = document.activeElement, head = a && el.contains(a) && a.closest ? a.closest("g.mi-tradmenu") : null;
+          return { open: isOpen(), ctx: menuCtx, head: head ? ctxOf(head) : null };
+        },
+        restore: st => {
+          if (st.open){
+            /* re-anchored without moving the focus, which is still on the menu's item if it was */
+            el.querySelectorAll("g.mi-tradmenu").forEach(g => { g.classList.remove("is-open"); g.setAttribute("aria-expanded", "false"); });
+            menuCtx = st.ctx; openMenu(false);
+          }
+          /* the head that had the focus, found again in its own chart */
+          if (st.head){
+            const keep = menuCtx; menuCtx = st.head;
+            const g = headG(); if (g && g.focus) g.focus({ preventScroll: true });
+            if (!st.open) menuCtx = keep;
+          }
+        }
+      };
     }
 
     /* the ranking's own study: tier word (shipped) or score in the
@@ -4513,7 +5503,8 @@ export function loadTreemaps(){
     });
 
     const colorEl = document.getElementById(p + "Color");
-    /* the complexity rank and the complexity explainer in the first beat's text */
+    /* the complexity rank in the first beat's text (and, where a section
+       still has one, its complexity explainer) */
     const complexityBits = [p + "RankCard", p + "ComplexityInfo"]
       .map(id => document.getElementById(id)).filter(Boolean);
     function setColorBy(c){
@@ -4561,14 +5552,24 @@ export function loadTreemaps(){
       if (i === step) return;
       /* a phrase left lit must not dim the beat that follows it */
       if (clearHighlight) clearHighlight();
+      /* nor does a question's view travel: the beat being left goes back
+         to its own view first */
+      if (leaveAskRef) leaveAskRef();
       const first = step < 0;
+      /* every beat opens on its chart's top rows; a keyboard on its Show
+         button goes on to the next chart's */
+      const handKind = moreKind();
+      foldMore(false);
       step = i;
+      if (R2.all && rebuildR2Ref) rebuildR2Ref(false);
       fig.dataset.step = String(i);
       /* the tradable beat reads at the industry level whatever the map
          rested at: the grain goes back to 6 before the beat is painted,
          and the level control follows the beat (set, or set and held) */
       const forced = i === 4 && MAP_GRAIN !== 6;
       if (forced){ MAP_GRAIN = 6; invalidateMaps(); }
+      /* and leaving it, the map goes back to the level the reader chose */
+      else if (i !== 4 && MAP_GRAIN !== REST_GRAIN){ MAP_GRAIN = REST_GRAIN; invalidateMaps(); }
       /* a card pinned on one beat does not ride into the next; every other
          retile lets it go, and so does the beat change */
       hideMapTip(true);
@@ -4597,8 +5598,11 @@ export function loadTreemaps(){
       /* the reveal section opens on the metro's own mix and only then shows
          the city's part of it, so its first beat is played, not painted */
       if (first && i === 0 && opts.adminReveal){ paintMetroFirst(); return; }
+      settleForPaint();
       paint(i, !first && !reduced());
+      if (handKind) requestAnimationFrame(() => landMore(handKind, true));
       if (forced) syncLive(", set back to the industry level, which this beat holds");
+      if (afterStepRef) afterStepRef(i);
     } };
 
     /* the clusters' furniture: the header's columns and the captions share
@@ -4628,140 +5632,16 @@ export function loadTreemaps(){
            row at 880px against a 620px figure, so the arrow ran off the panel
            and took "Less tradable" with it. */
         const w = el.getBoundingClientRect().width || MI_W, sc = w / MI_W;
-        colsEl.style.gap = (CGAP * sc) + "px";
+        colsEl.style.gap = (cgap() * sc) + "px";
         [].forEach.call(colsEl.children, (c, k) => {
           c.style.flexBasis = (Math.max(36, CW * clusterShare[k]) * sc) + "px";
         });
       }
       sizeClusterHead();
       on(window, "resize", sizeClusterHead);
-      /* the second beat's scale: the score runs from 1 on the left to 0 on
-         the right, as the map does, each band drawn as wide as its stretch of
-         the score, and each named with two of the metro's largest industries
-         in it, so 0 and 1 arrive with things the reader already knows */
-      const scaleHost = document.getElementById(p + "TradScale");
-      if (scaleHost){
-        /* only a generic tail is cut ("Restaurants and Other Eating Places"
-           reads as "Restaurants"); a name that would lose its meaning in the
-           cutting is passed over for the next largest industry instead */
-        /* a single word left before the generic tail stands on its own
-           ("Restaurants"); a longer one would be left hanging ("Executive
-           Legislative"), so that name is kept whole and, being long, gives
-           way to the next industry */
-        const shortOf = n => {
-          const t = n.replace(/ \(.*\)$/, "").trim(), m = t.match(/^(\S+) and Other /);
-          return m ? m[1] : t;
-        };
-        /* each tier's two largest industries, by name */
-        const examples = k => clusterRows[k].slice().sort((a, b) => b.employ - a.employ)
-          .map(d => shortOf(d.name)).filter(t => t.length <= 30).slice(0, 2).join(", ");
-        const bands = [
-          { k: 0, name: TIER_NAMES[0], tone: "#255862" },
-          { k: 1, name: TIER_NAMES[1], tone: "#59838c" },
-          { k: 2, name: TIER_NAMES[2], tone: "#b9ccd0" }
-        ];
-        /* the score is not shown anywhere any more, so the key says only
-           what the chart cannot: the three tiers by name, each with two of
-           the metro's own industries from inside it */
-        scaleHost.innerHTML =
-          '<span class="ts-rows">' + bands.map(b =>
-            '<span class="ts-row"><i style="background:' + b.tone + '"></i><span>' +
-            '<span class="ts-name">' + b.name + '</span>' +
-            '<span class="ts-eg">e.g. ' + examples(b.k) + '</span></span></span>').join("") + '</span>';
-        scaleHost.hidden = false;
-
-        /* The tier study's second option, which ships. The shares leave the
-           grounds for a donut beside the lede, so the chart carries the
-           tier's name alone; each tier, hovered or focused, names its three
-           largest industries with their jobs. opt-1 keeps the earlier beat:
-           the share on each ground, and the key of names and examples. */
-        const donutHost = document.getElementById(p + "TierDonut");
-        const tierOptEl = document.getElementById(p + "TierOpt");
-        let clearTierHot = () => {};
-        if (donutHost){
-          /* a small ring: the list beside it carries the reading, so the ring
-             only has to show the three parts and their order */
-          const R = 34, RI = 23, SZ = R * 2 + 2;
-          const jobsOf = n => Math.round(n).toLocaleString();
-          const tierJobs = k => d3.sum(clusterRows[k], d => d.employ);
-          const labelOf = d => shortLabel(d.name) || shortOf(d.name);
-          const largest = k => clusterRows[k].slice().sort((a, b) => b.employ - a.employ).slice(0, 3);
-          donutHost.innerHTML =
-            '<svg class="tdn-ring" width="' + SZ + '" height="' + SZ + '" viewBox="0 0 ' + SZ + ' ' + SZ +
-              '" role="img" aria-label="Share of metro jobs in each tradability tier"></svg>' +
-            '<div class="tdn-rows">' + bands.map(b =>
-              '<button type="button" class="tdn-row" data-tier="' + b.k + '" aria-describedby="' + p + 'TierTip">' +
-              '<i style="background:' + b.tone + '"></i><b>' + b.name + '</b>' +
-              '<span class="tdn-pct">' + pct(clusterShare[b.k]) + '</span></button>').join("") + '</div>' +
-            /* the rows describe themselves by the card, so a reader who
-               cannot see it still gets the tier's largest industries */
-            '<div class="tdn-tip" id="' + p + 'TierTip" hidden></div>';
-          const ring = d3.select(donutHost).select("svg.tdn-ring").append("g")
-            .attr("transform", "translate(" + SZ / 2 + "," + SZ / 2 + ")");
-          /* a thin ring, in the order the grounds take, with a hairline of
-             ground between the segments */
-          const arcs = d3.pie().sort(null).value(d => clusterShare[d.k]).padAngle(0.014)(bands);
-          const arc = d3.arc().innerRadius(RI).outerRadius(R);
-          ring.selectAll("path.tdn-arc").data(arcs).join("path")
-            .attr("class", "tdn-arc").attr("data-tier", d => d.data.k)
-            .attr("d", arc).attr("fill", d => d.data.tone);
-          const tipEl = donutHost.querySelector(".tdn-tip");
-          /* the pointer, the keyboard and a press each hold their own tier,
-             the pointer's first; the card is rebuilt only when the shown
-             tier changes, so crossing a row's parts does not rebuild it */
-          let hoverK = null, focusK = null, pinK = null, shownK = null;
-          const hot = k => {
-            if (k === shownK) return;
-            shownK = k;
-            donutHost.classList.toggle("is-hot", k != null);
-            donutHost.querySelectorAll("[data-tier]").forEach(n =>
-              n.classList.toggle("is-hot", k != null && +n.getAttribute("data-tier") === k));
-            if (k == null){ tipEl.hidden = true; return; }
-            const b = bands[k], n = clusterRows[k].length;
-            tipEl.innerHTML =
-              '<div class="tdn-head"><b>' + b.name + '</b><span>' + pct(clusterShare[k]) +
-                ' of metro jobs \u00b7 ' + jobsOf(tierJobs(k)) + ' jobs</span></div>' +
-              '<ul class="tdn-list">' + largest(k).map(d =>
-                '<li><span>' + labelOf(d) + '</span><span>' + jobsOf(d.employ) + '</span></li>').join("") + '</ul>' +
-              '<p class="tdn-note">The three largest of the ' + n + ' industries in the tier</p>';
-            tipEl.hidden = false;
-          };
-          const apply = () => hot(hoverK != null ? hoverK : focusK != null ? focusK : pinK);
-          const putAway = () => { hoverK = focusK = pinK = null; apply(); };
-          const tierAt = ev => { const t = ev.target.closest && ev.target.closest("[data-tier]"); return t ? +t.getAttribute("data-tier") : null; };
-          on(donutHost, "mouseover", ev => { const k = tierAt(ev); if (k != null){ hoverK = k; apply(); } });
-          on(donutHost, "mouseleave", () => { hoverK = null; apply(); });
-          on(donutHost, "focusin", ev => { const k = tierAt(ev); if (k != null){ focusK = k; apply(); } });
-          on(donutHost, "focusout", ev => { if (!donutHost.contains(ev.relatedTarget)){ focusK = null; apply(); } });
-          /* a press on a row opens its card and holds it, and a second press
-             puts it away - the path a touch has, since touch sends no
-             mouseleave, and a keyboard's way to dismiss without leaving */
-          on(donutHost, "click", ev => {
-            const k = tierAt(ev); if (k == null) return;
-            if (shownK === k) putAway(); else { pinK = k; apply(); }
-          });
-          /* a tap elsewhere, or Escape, puts the card away */
-          on(document, "pointerdown", ev => {
-            if (shownK != null && !donutHost.contains(ev.target)) putAway();
-          });
-          escLayers.push({ p: 3, open: () => shownK != null, close: putAway });
-          clearTierHot = putAway;
-        }
-        /* the switch between the two: the share on the grounds and the key,
-           or the name alone on the grounds and the donut */
-        const setTierOpt = mode => {
-          const donut = mode === "donut";
-          fig.dataset.tier = donut ? "donut" : "cards";
-          scaleHost.hidden = donut;
-          if (donutHost) donutHost.hidden = !donut;
-          clearTierHot();
-          /* the name keeps its place on the band either way now; only the
-             share stands down when the donut carries the shares */
-          if (tierOptEl) tierOptEl.value = donut ? "donut" : "cards";
-        };
-        setTierOpt(tierOptEl && tierOptEl.value === "cards" ? "cards" : "donut");
-        if (tierOptEl) on(tierOptEl, "change", () => setTierOpt(tierOptEl.value));
-      }
+      /* each tier's share of the metro's jobs is printed on its own ground,
+         beside its name (2026-10-02; it stood in a donut beside the text,
+         with the grounds carrying the name alone) */
     })();
 
     /* the coarse map, laid out for whichever arrangement is chosen. `split`
@@ -4769,14 +5649,14 @@ export function loadTreemaps(){
     function placeCoarse(animate, split){
       if (!coarseCell) return;
       const at = d => (view === "alt" ? posCoarseFlat : posCoarse).get(d.name);
-      const pale = sec => d3.interpolateRgb(sectorColors[sec] || "#ccc", "#ffffff")(0.66);
+      const pale = sec => d3.interpolateRgb(sectorColors[sec] || "#c3ccce", "#ffffff")(0.66);
       const dur = animate ? 900 : 0;
 
       const r = coarseCell.select(".mi-rect");
       (dur ? r.transition().duration(dur).ease(d3.easeCubicInOut) : r)
         .attr("x", d => at(d).x).attr("y", d => at(d).y)
         .attr("width", d => at(d).w).attr("height", d => at(d).h)
-        .attr("fill", d => split ? pale(d.sector) : (sectorColors[d.sector] || "#ccc"));
+        .attr("fill", d => split ? pale(d.sector) : (sectorColors[d.sector] || "#c3ccce"));
 
       /* the city's band grows up from the foot of its own block */
       const band = coarseCell.select(".mi-share")
@@ -4829,6 +5709,31 @@ export function loadTreemaps(){
        line over the map and the table under it ---- */
     let mapLayout = null;                 /* the tiling on screen */
     const mapTip = document.getElementById(p + "Tip");
+    /* What a click on the map does (Nil, 2026-10-09 and 10-13): where there
+       is somewhere to zoom, it zooms, and the card leads with what it opens;
+       nothing pins the card to the map any more (10-13, "remove the feature
+       when you pin the tooltip"). A touch screen has no hover, so there the
+       first tap shows the card, held until the next tap, with a Zoom button
+       where there is a zoom; a second tap in the same block zooms. */
+    /* the kind of pointer that pressed last (Safari's click is not a
+       PointerEvent, so it is read on pointerdown) */
+    let lastPtr = "mouse";
+    const mapSvgEl = gMapCells.node().ownerSVGElement;
+    if (mapSvgEl) mapSvgEl.addEventListener("pointerdown", ev => { lastPtr = ev.pointerType || "mouse"; }, true);
+    /* after a zoom by pointer: a click during the retile is not a second
+       zoom, and no card opens under a pointer that has not moved */
+    let zoomBusyUntil = 0, holdAt = null;
+    const zoomBusy = () => performance.now() < zoomBusyUntil;
+    /* the hold ends once the pointer has really moved (pointermove comes
+       before the mouse events, so the tile under it can open its card) */
+    if (mapSvgEl) mapSvgEl.addEventListener("pointermove", ev => {
+      if (!holdAt || ev.pointerType === "touch") return;
+      if (Math.hypot(ev.clientX - holdAt[0], ev.clientY - holdAt[1]) <= 4) return;
+      holdAt = null;
+      const g = !pinned && ev.target && ev.target.closest ? ev.target.closest("g.mi-mcell") : null;
+      if (g && mapTip && mapTip.hidden){ const c = d3.select(g).datum(); if (c) showMapTip(c, ev); }
+    }, true);
+    let pinnedCell = null;
     const mapWrap = el.closest(".tradable-viz-wrapper");
     const svgEl = document.getElementById(p + "TreemapSvg");
     let pinned = null, syncKeyRef = null, hlSwatchRef = null;
@@ -4836,12 +5741,15 @@ export function loadTreemaps(){
     const mapInkOf = c => colorBy === "complexity" ? cellInk(cxFillOf(c.cell.pci)) : sectorInk(c.cell.sector);
     function layoutFor(i){ return i === 4 ? mapTiers() : (i === 5 || i === 7) ? mapTrad() : mapFull(); }
     /* what a click on a cell does: at the top of the map it zooms into the
-       cell's sector, inside a sector into the cell's group, and inside a
-       group there is nowhere further to go, so it pins the card */
+       cell's sector; inside a sector whose cells are groups - a map
+       resting at a coarser level - into the cell's group; and where the
+       cells are industries there is nowhere further to go, so it pins
+       the card */
     const zoomTarget = c => {
       if ((step !== 0 && step !== 4 && step !== 7) || view !== "map") return null;
       if (!focus) return { sector: c.cell.sector, group: null, label: c.cell.sector };
-      if (!focusGroup && /^\d{4}$/.test(c.cell.group)) return { sector: focus, group: c.cell.group, label: c.cell.groupName };
+      if (!focusGroup && mapLayout && mapLayout.grain === 4 && /^\d{4}$/.test(c.cell.group))
+        return { sector: focus, group: c.cell.group, label: c.cell.groupName };
       return null;
     };
     function paintMap(L, animate){
@@ -4868,12 +5776,13 @@ export function loadTreemaps(){
         t.selectAll("tspan").remove();
         if (c.rest) return;
         /* under a card the block's name and share are the card's first lines */
-        if (L.grain === 2 && SEC_BLOCK !== "plain" && SEC_BLOCK !== "ghost") return;
+        if (L.grain === 1 && SEC_BLOCK !== "plain" && SEC_BLOCK !== "ghost") return;
         const share = fmtShare(c.cell.share);
         /* at the sector grain with the band naming the block, the cell keeps its share alone */
-        const shareOnly = L.grain === 2 && SEC_NAMES !== "off";
-        const ceil = L.grain === 2 ? MAP.sectorSize : MAP.size;
-        const spec = shareOnly ? fitCellLabel(share, "", c.px, ceil) : fitCellLabel(c.cell.name, share, c.px, ceil);
+        const shareOnly = L.grain === 1 && SEC_NAMES !== "off";
+        /* the presenter view sets the type a size up, the floor with it */
+        const ceil = Math.round((L.grain === 1 ? MAP.sectorSize : MAP.size) * TYPE_K * 2) / 2, floor = Math.max(MAP.min, Math.round((MAP.min - 0.5) * TYPE_K * 2) / 2);   /* the presenter keeps its one shrink step, never under 13 */
+        const spec = shareOnly ? fitCellLabel(share, "", c.px, ceil, floor) : fitCellLabel(c.cell.name, share, c.px, ceil, floor);
         if (!spec) return;
         const ink = mapInkOf(c);
         t.attr("font-size", spec.size / s).attr("fill", ink).attr("data-ink", ink).attr("font-weight", MAP.weight);
@@ -4887,20 +5796,56 @@ export function loadTreemaps(){
       if (dur) lab.style("opacity", 0).transition().delay(dur * 0.55).duration(dur * 0.45).style("opacity", 1);
       else lab.interrupt().style("opacity", 1);
       paintCards(all, L, dur);
-      all.on("mouseenter", (ev, c) => { if (!pinned) showMapTip(c, ev); })
+      all.on("mouseenter", (ev, c) => { if (!pinned && !holdAt && lastPtr !== "touch") showMapTip(c, ev); })
          .on("mousemove", ev => { if (!pinned && mapTip && !mapTip.hidden) cursorTipPos(ev, mapWrap, mapTip); })
          .on("mouseleave", () => { if (!pinned) hideMapTip(false); })
          .on("click", (ev, c) => {
            ev.stopPropagation();
-           const t = zoomTarget(c);
-           if (t){ setFocus(t.sector, t.group); return; }
+           if (zoomBusy()) return;
+           const t = zoomTarget(c), top = !!t && !focus, touch = lastPtr === "touch";
+           /* a click zooms where there is a zoom; on touch the first tap at
+              the top level shows the card and the second, in the same
+              block, zooms */
+           if (t && !(top && touch && !(pinnedCell && sameBlock(pinnedCell, c)))){
+             zoomFrom = top ? fromOf(c) : null;
+             zoomBusyUntil = performance.now() + 950;
+             if (!touch) holdAt = [ev.clientX, ev.clientY];
+             setFocus(t.sector, t.group); return;
+           }
+           /* no pinning: with a mouse a click with nothing to zoom does
+              nothing; on touch a tap shows the card, the next one closes it */
+           if (!touch) return;
            if (pinned === c.id){ hideMapTip(true); return; }
-           pinned = c.id; showMapTip(c, ev);
+           pinned = c.id; pinnedCell = c; showMapTip(c, ev);
          });
+      /* the pointer says what a click does: zoom where it zooms, nothing else */
+      all.style("cursor", c => zoomTarget(c) ? "zoom-in" : "default");
       paintFrames(L, dur);
       drawHits(L);
       clearOutline();
+      markFrom(L, dur);
       syncNote(); syncTable();
+    }
+    /* the tile a reader clicked, marked where it now stands inside the
+       zoomed sector: its 2-digit cluster, or its group */
+    function fromOf(c){
+      const g = mapLayout && mapLayout.grain;
+      if (!g || g === 1) return null;
+      return { n2: c.cell.naics2 || null, group: g >= 4 && /^\d{4}$/.test(c.cell.group) ? c.cell.group : null };
+    }
+    function sameBlock(a, b){ return a.cell.sector === b.cell.sector && (step !== 4 || a.band === b.band); }
+    function markFrom(L, dur){
+      let box = null;
+      if (zoomFrom && focus && !focusGroup && L.grain === 4){
+        if (zoomFrom.group){ const g = L.groups.find(g => g.group === zoomFrom.group); box = g ? g.box : null; }
+        else if (zoomFrom.n2 && L.mids.length > 1){ const m = L.mids.find(m => m.n2 === zoomFrom.n2); box = m ? m.box : null; }
+      }
+      const s = L.s || scaleNow();
+      const fm = gMapOutline.selectAll("rect.mi-mfrom").data(box ? [box] : []).join("rect").attr("class", "mi-mfrom")
+        .attr("x", b => b.x - 1 / s).attr("y", b => b.y - 1 / s).attr("width", b => b.w + 2 / s).attr("height", b => b.h + 2 / s)
+        .attr("stroke-width", 2.5 / s);
+      if (dur && box) fm.style("opacity", 0).transition().delay(dur).duration(300).style("opacity", 1);
+      else fm.interrupt().style("opacity", 1);
     }
     /* the sector blocks' dressing, at the sector grain: a faint tiling of
        the block's groups, a card of its facts, or both. The card fits what
@@ -4915,7 +5860,7 @@ export function loadTreemaps(){
         .sort((a, b) => b.jobs - a.jobs);
     };
     function paintCards(all, L, dur){
-      const s = L.s, mode = L.grain === 2 ? SEC_BLOCK : "plain";
+      const s = L.s, mode = L.grain === 1 ? SEC_BLOCK : "plain";
       const ghostOn = mode === "ghost" || mode === "cardghost" || mode === "change";
       const cardOn = mode === "card" || mode === "cardghost" || mode === "change";
       all.each(function(c){
@@ -4935,7 +5880,7 @@ export function loadTreemaps(){
             .attr("fill", "none").attr("stroke", "#fff").attr("stroke-opacity", 0.3).attr("stroke-width", 1 / s));
         }
         if (!cardOn) return;
-        const ink = mapInkOf(c), soft = /^#f/i.test(ink) ? "rgba(255,255,255,.82)" : "rgba(26,34,38,.78)";
+        const ink = mapInkOf(c), soft = /^#f/i.test(ink) ? "rgba(255,255,255,.92)" : "#1a2226";
         const pad = 7, room = px.w - 2 * pad, bottom = px.y + px.h - 4;
         let y = px.y + pad;
         const line = (txt, size, weight, fill) => {
@@ -4946,26 +5891,26 @@ export function loadTreemaps(){
           y += size * 0.28; return true;
         };
         /* the band names the block already when the sector-names study is on */
-        if (SEC_NAMES === "off" && !line(sec, 14, 700, ink) && !line(SECTOR_SHORT[sec] || sec, 12, 700, ink)) return;
-        if (!line(fmtShare(c.cell.share) + " of metro jobs \u00b7 " + fmtJobsK(c.cell.jobs), 12.5, 400, ink)) return;
+        if (SEC_NAMES === "off" && !line(sec, 13, 700, ink) && !line(SECTOR_SHORT[sec] || sec, 13, 700, ink)) return;
+        if (!line(fmtShare(c.cell.share) + " of metro jobs \u00b7 " + fmtJobsK(c.cell.jobs), 13, 400, ink)) return;
         if (mode === "change"){
           const j14 = sectorJobs(2014)[sec], j24 = sectorJobs(2024)[sec];
           if (j14 > 0 && j24 > 0){
             const r = Math.pow(j24 / j14, 1 / 10) - 1;
-            line((r >= 0 ? "+" : "\u2212") + Math.abs(r * 100).toFixed(1) + "% a year, 2014 to 2024", 12.5, 400, soft);
+            line((r >= 0 ? "+" : "\u2212") + Math.abs(r * 100).toFixed(1) + "% a year, 2014 to 2024", 13, 400, soft);
           }
         }
-        const gl = groups.slice(0, 3).map(gr => gr.name + " " + fmtShare(gr.jobs / jobsTotal)).filter(t => mapTextW(t, 12, 500) <= room);
-        if (gl.length && y + 6 + 11 * 1.3 + 12 * 1.3 <= bottom){
-          y += 6; line("Largest groups", 11, 700, soft);
-          for (const t of gl) if (!line(t, 12, 500, ink)) break;
+        const gl = groups.slice(0, 3).map(gr => gr.name + " " + fmtShare(gr.jobs / jobsTotal)).filter(t => mapTextW(t, 13, 500) <= room);
+        if (gl.length && y + 6 + 13 * 1.3 + 13 * 1.3 <= bottom){
+          y += 6; line("Largest groups", 13, 700, soft);
+          for (const t of gl) if (!line(t, 13, 500, ink)) break;
         }
         const bin = cxBinOf(c.cell.pci);
-        if (bin != null && y + 16 <= bottom && room >= 62 + mapTextW("complexity", 11.5, 400)){
+        if (bin != null && y + 16 <= bottom && room >= 62 + mapTextW("complexity", 13, 400)){
           y += 8;
           for (let k = 0; k < 5; k++) card.append("circle").attr("cx", (px.x + pad + 4 + k * 11) / s).attr("cy", (y + 4) / s).attr("r", 3.2 / s)
             .attr("fill", k <= bin ? ink : "none").attr("stroke", ink).attr("stroke-opacity", k <= bin ? 1 : 0.55).attr("stroke-width", 1 / s);
-          card.append("text").attr("x", (px.x + pad + 62) / s).attr("y", (y + 8) / s).attr("font-size", 11.5 / s).attr("fill", soft).text("complexity");
+          card.append("text").attr("x", (px.x + pad + 62) / s).attr("y", (y + 8) / s).attr("font-size", 13 / s).attr("fill", soft).text("complexity");
         }
       });
       const dress = all.selectAll("g.mi-mghost, g.mi-mcard");
@@ -5009,15 +5954,16 @@ export function loadTreemaps(){
           for (const n of [b.sector, SECTOR_SHORT[b.sector] || b.sector]) if (mapTextW(n, SEC_NAME_SIZE, 700) <= room){ name = n; break; }
         const ink = mode === "band" ? cellInk(secDeeper(b.sector)) : gutterInk(b.sector);
         t.text(name).attr("font-size", SEC_NAME_SIZE / s).attr("font-weight", 700).attr("fill", ink).attr("data-ink", ink);
-        go(t).attr("x", b.box.x + 5 / s).attr("y", b.box.y + 11.5 / s);
+        go(t).attr("x", b.box.x + 5 / s).attr("y", b.box.y + 13 / s);
       });
       (dur ? all.transition().delay(dur * 0.4).duration(dur * 0.6) : all.interrupt()).style("opacity", 1);
       all.on("mouseenter", (ev, b) => { if (!pinned) showOutline([b.box], 1.5); })
          .on("mouseleave", () => { if (!pinned) clearOutline(); })
-         .on("click", (ev, b) => { ev.stopPropagation(); if (!focus && hitsLive()) setFocus(b.sector, null); });
+         .on("click", (ev, b) => { ev.stopPropagation(); if (zoomBusy()) return; if (!focus && hitsLive()){ zoomFrom = null; setFocus(b.sector, null); } });
     }
     /* the zoom's targets, under the cells for the keyboard: the sector
-       blocks at the top of the map, the groups inside a sector */
+       blocks at the top of the map, and inside a sector the groups, where
+       the cells are groups (the industry map has no group layer) */
     function hitsLive(){ return (step === 0 || step === 4 || step === 7) && view === "map"; }
     function drawHits(L){
       let targets = [];
@@ -5026,7 +5972,7 @@ export function loadTreemaps(){
       const where = b => step === 4 && b.band ? " (" + b.band + ")" : "";
       if ((step === 0 || step === 4 || step === 7) && view === "map"){
         if (!focus) targets = L.blocks.map(b => ({ key: (b.band || "") + ":" + b.key, box: b.box, sector: b.sector, group: null, label: "Zoom into " + b.sector + where(b) }));
-        else if (!focusGroup) targets = L.groups.filter(g => /^\d{4}$/.test(g.group))
+        else if (!focusGroup && L.grain === 4) targets = L.groups.filter(g => /^\d{4}$/.test(g.group))
           .map(g => ({ key: g.key, box: g.box, sector: focus, group: g.group,
                        label: "Zoom into " + ((g.items[0] && g.items[0].cell.groupName) || g.group) + where(g) }));
       }
@@ -5037,14 +5983,14 @@ export function loadTreemaps(){
         .merge(h)
         .attr("x", t => t.box.x).attr("y", t => t.box.y).attr("width", t => t.box.w).attr("height", t => t.box.h)
         .attr("aria-label", t => t.label)
-        .on("click", (ev, t) => { ev.stopPropagation(); if (hitsLive()) setFocus(t.sector, t.group, ev.detail === 0); })
-        .on("keydown", (ev, t) => { if (ev.key === "Enter" || ev.key === " "){ ev.preventDefault(); if (hitsLive()) setFocus(t.sector, t.group, true); } })
+        .on("click", (ev, t) => { ev.stopPropagation(); if (zoomBusy()) return; if (hitsLive()){ zoomFrom = null; setFocus(t.sector, t.group, ev.detail === 0); } })
+        .on("keydown", (ev, t) => { if (ev.key === "Enter" || ev.key === " "){ ev.preventDefault(); if (hitsLive()){ zoomFrom = null; setFocus(t.sector, t.group, true); } } })
         .on("focus", (ev, t) => { if (ev.target.matches(":focus-visible")) showRing(t.box); })
         .on("blur", () => showRing(null));
     }
     /* what the pointer's outline goes round: the cell's sector block at the
-       top of the map (in its own tier on the tiers beat), its group inside
-       a sector, the cell itself inside a group */
+       top of the map (in its own tier on the tiers beat); inside a sector
+       the cell itself, which where the cells are groups is its group's box */
     const outlineBoxes = c => {
       const L = mapLayout; if (!L) return [c.box];
       if (!focus) return L.blocks.filter(b => b.sector === c.cell.sector && (step !== 4 || b.band === c.band)).map(b => b.box);
@@ -5084,6 +6030,12 @@ export function loadTreemaps(){
       } else if (r.kind === "hit"){
         const hits = [].slice.call(el.querySelectorAll("rect.mi-mhit"));
         node = hits.find(h => { const t = d3.select(h).datum(); return r.group ? t.group === r.group : (t.sector === r.sector && !t.group); }) || hits[0];
+        /* inside a sector whose cells are industries there are no blocks
+           to land on: the zoom's own trail takes the keyboard instead */
+        if (!node && focus){
+          const note = document.getElementById(p + (step === 4 ? "Note4" : "Note"));
+          node = note && note.querySelector('.mi-crumb[data-zoom="all"]');
+        }
       } else if (r.kind === "chip"){
         node = tierBack && tierBack.querySelector('.mcl-chip[data-tier="' + r.k + '"]');
       } else if (r.kind === "close"){
@@ -5096,6 +6048,8 @@ export function loadTreemaps(){
     function setFocus(sec, grp, byKey){
       grp = grp || null;
       if (sec === focus && grp === focusGroup) return;
+      /* the "came from" mark lives only for the zoom a tile click made */
+      if (!(sec && !grp && !focus)) zoomFrom = null;
       if (byKey){
         const od = focusGroup ? 2 : focus ? 1 : 0, nd = sec ? (grp ? 2 : 1) : 0;
         refocus = nd > od ? { kind: "crumb" } : od === 2 ? { kind: "hit", group: focusGroup } : { kind: "hit", sector: focus };
@@ -5122,66 +6076,134 @@ export function loadTreemaps(){
        jobs, Complexity as the column's five diamonds with the score, and
        Tradability - with a last line, beside the hand that taps, for what
        a click does. A folded cell adds how many it stands for. ---- */
+    /* a tile's NAICS level for its card title, where the tile is one whole code */
+    const tileCode = c => {
+      const g = mapLayout && mapLayout.grain, cell = c.cell;
+      if (c.rest || !g) return null;
+      if (g === 6 && !cell.members) return "6-digit";
+      if (g === 4 && cell.members && /^\d{4}$/.test(cell.group)) return "4-digit";
+      if (g === 2 && cell.members && /^naics2:/.test(String(cell.id))) return "2-digit";
+      return null;
+    };
+    const MAG = '<svg class="tip-mag" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="7" cy="7" r="4.6"/><path d="M10.4 10.4 14 14M5 7h4M7 5v4"/></svg>';
+    /* The line that leads every card, at every level and zoom (Nil,
+       2026-10-13: "apply same styling for all digit level and zoom
+       levels"): what a click acts on, and the verb. On the top-level map at
+       a grain finer than the sectors, a click opens the tile's whole
+       sector, so the line names the sector and the tile's own name follows
+       as the title. Everywhere else the click acts on the tile itself (the
+       sector at the sector grain, a group inside a sector, an industry
+       inside a group, which a click leaves as it is), so the line is the
+       title. On touch, where the first tap holds the card up, the verb is a
+       Zoom button. */
+    const tileIsTarget = c => !(zoomTarget(c) && !focus && mapLayout && mapLayout.grain !== 1);
+    const targetLine = (c, pinnedNow) => {
+      const t = zoomTarget(c);
+      const touch = lastPtr === "touch";
+      const name = tileIsTarget(c) ? escHtml(c.cell.name) + (tileCode(c) ? ' <span class="tip-code">(' + escHtml(tileCode(c)) + ')</span>' : '') : escHtml(c.cell.sector);
+      let verb;
+      if (t && pinnedNow) verb = '<button type="button" class="tip-act" data-act="zoom">' + MAG + '<span>Zoom in</span></button>';
+      else if (t) verb = '<span class="tip-target-act">' + MAG + '<span>' + (touch ? "Tap again to zoom in" : "Click to zoom in") + '</span></span>';
+      else verb = pinnedNow ? '<span class="tip-target-act">Tap again to close</span>' : '';
+      return '<div class="tip-target' + (tileIsTarget(c) ? ' is-title' : '') + '"><i style="background:' + (sectorColors[c.cell.sector] || "#c3ccce") + '"></i><b>' + name + '</b>' + verb + '</div>';
+    };
     function mapTipHtml(c, hint){
       const cell = c.cell;
+      const lead = targetLine(c, pinned === c.id);
       const row = (k, v) => '<dt>' + k + '</dt><dd>' + v + '</dd>';
       const b = cxBinOf(cell.pci);
       let cx;
-      if (b == null) cx = '<dd class="tip-cx-cell"><em>not measured</em></dd>';
+      if (b == null) cx = '<dd class="tip-cx-cell"><em>Not rated</em></dd>';
       else {
         let dots = '<span class="tip-cx" aria-hidden="true">';
         for (let k = 0; k < 5; k++) dots += '<i' + (k <= b ? ' class="is-on"' : '') + '></i>';
         cx = '<dd class="tip-cx-cell">' + dots + '</span><span class="tip-cx-val">' + cell.pci.toFixed(2) + '</span>' +
           '<span class="tip-sr">step ' + (b + 1) + ' of 5, ' + CX_WORDS[b] + '</span></dd>';
       }
-      const head = '<div class="tip-head"><strong>' + escHtml(cell.name) + '</strong>' +
-        '<span class="tip-sector"><i style="background:' + (sectorColors[cell.sector] || "#ccc") + '"></i>' +
-        escHtml(cell.sector) + '</span></div>';
+      const code = tileCode(c);
+      /* the tile's own title only where the lead line names something larger */
+      const head = lead + (tileIsTarget(c) ? '' : '<div class="tip-head"><strong>' + escHtml(cell.name) + (code ? ' <span class="tip-code">(' + escHtml(code) + ')</span>' : '') + '</strong></div>');
       const body = '<dl class="tip-grid">' +
         (cell.members ? row("Industries", cell.members.length + (c.rest ? " smaller" : "")) : "") +
         row("Jobs", fmtJobsFull(cell.jobs)) +
-        row("Share of metro jobs", (cell.share * 100).toFixed(2) + "%") +
+        row("Share of metro jobs", fmtShare(cell.share)) +
         '<dt>Complexity</dt>' + cx +
         /* tradability is the second beat's reading: the whole-map beat has
            not introduced it yet, so its card does not carry it */
         (cell.tier != null && step !== 0 ? row("Tradability", TIER_WORDS[cell.tier]) : "") +
         '</dl>';
-      return head + body + (hint ? '<p class="tip-hint">' + HAND + '<span>' + escHtml(hint) + '</span></p>' : '');
+      /* the foot line goes where the lead line says it already */
+      return head + body + (hint && !lead ? '<p class="tip-hint">' + HAND + '<span>' + escHtml(hint) + '</span></p>' : '');
     }
     const hintFor = c => {
       const t = zoomTarget(c);
-      if (t) return "Click to zoom into " + t.label;
-      return pinned === c.id ? "Click again or press Esc to unpin" : "Click to pin";
+      if (t) return (lastPtr === "touch" ? "Tap to zoom into " : "Click to zoom into ") + t.label;
+      return "";
     };
     function showMapTip(c, ev){
       if (!mapTip || !mapWrap) return;
-      mapTip.className = "rca-tip is-map";
+      mapTip.className = "rca-tip is-map" + (pinned === c.id ? " is-pinned" : "");
       mapTip.innerHTML = mapTipHtml(c, hintFor(c));
       mapTip.hidden = false;
       if (ev) cursorTipPos(ev, mapWrap, mapTip);
-      showOutline(outlineBoxes(c), pinned === c.id ? 2.5 : 1.5);
+      /* at every level and zoom: what a click acts on is drawn, the rest of
+         the map steps back, and the tile under the pointer keeps a ring of
+         its own where it is smaller than that (the card study keeps its
+         own, quieter dressing on the top-level map) */
+      const styled = true;
+      const boxes = outlineBoxes(c);
+      showOutline(boxes, pinned === c.id ? 2.5 : styled ? 2 : 1.5);
+      const inBoxes = d => { const x = d.box.x + d.box.w / 2, y = d.box.y + d.box.h / 2;
+        return boxes.some(b => x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h); };
+      gMapCells.selectAll("g.mi-mcell").classed("is-aside", styled ? d => d !== c && !inBoxes(d) : false);
+      /* a group's box and its one cell differ by the tiling's padding: the same box, for the ring */
+      const tol = 3 / scaleNow();
+      const sameAs = (a, b) => Math.abs(a.x - b.x) < tol && Math.abs(a.y - b.y) < tol && Math.abs(a.w - b.w) < 2 * tol && Math.abs(a.h - b.h) < 2 * tol;
+      const ring = styled && !boxes.some(b => sameAs(b, c.box));
+      const s = scaleNow();
+      gMapOutline.selectAll("rect.mi-mtile").data(ring ? [c.box] : []).join("rect").attr("class", "mi-mtile")
+        .attr("x", b => b.x + 1 / s).attr("y", b => b.y + 1 / s)
+        .attr("width", b => Math.max(0, b.w - 2 / s)).attr("height", b => Math.max(0, b.h - 2 / s)).attr("stroke-width", 1.5 / s);
     }
     function hideMapTip(force){
       if (pinned && !force) return;
-      pinned = null;
-      if (mapTip && mapTip.classList.contains("is-map")){ mapTip.hidden = true; mapTip.classList.remove("is-map"); }
+      pinned = null; pinnedCell = null;
+      if (mapTip && mapTip.classList.contains("is-map")){ mapTip.hidden = true; mapTip.classList.remove("is-map", "is-pinned"); }
       clearOutline();
+      gMapCells.selectAll("g.mi-mcell.is-aside").classed("is-aside", false);
+      gMapOutline.selectAll("rect.mi-mtile").remove();
     }
+    /* the pinned card's Zoom button */
+    if (mapTip) mapTip.addEventListener("click", ev => {
+      const b = ev.target.closest('[data-act="zoom"]');
+      if (!b || !pinnedCell) return;
+      const c = pinnedCell, t = zoomTarget(c);
+      if (!t) return;
+      zoomFrom = !focus ? fromOf(c) : null;
+      zoomBusyUntil = performance.now() + 950;
+      if (lastPtr !== "touch") holdAt = [ev.clientX, ev.clientY];
+      setFocus(t.sector, t.group, ev.detail === 0);
+    });
 
     /* ---- the line over the map: where the reader has zoomed to, while
        they are zoomed in, and nothing otherwise ---- */
     const notes = [p + "Note", p + "Note4"].map(id => document.getElementById(id)).filter(Boolean);
+    /* each crumb names its NAICS level, lighter, after its name (Nil,
+       2026-10-09: "just digits"): a sector "(2-digit)", an industry group
+       "(4-digit)" */
+    const crumbCode = level => ' <span class="mi-crumb-code">(' + level + ')</span>';
     function syncNote(){
       let txt;
       if (focus){
         const gRow = focusGroup ? industryData.find(d => d.group === focusGroup) : null;
         const gName = gRow ? (gRow.groupShort || gRow.groupName) : focusGroup;
+        const sName = escHtml(focus) + crumbCode("2-digit");
         txt = '<span class="mi-crumbs" role="navigation" aria-label="Zoom"><button type="button" class="mi-crumb" data-zoom="all">All sectors</button>' +
           '<span class="mi-crumb-sep" aria-hidden="true">›</span>' +
           (focusGroup
-            ? '<button type="button" class="mi-crumb" data-zoom="sector">' + escHtml(focus) + '</button>' +
-              '<span class="mi-crumb-sep" aria-hidden="true">›</span><span class="mi-crumb-here" aria-current="location">' + escHtml(gName) + '</span>'
-            : '<span class="mi-crumb-here" aria-current="location">' + escHtml(focus) + '</span>') +
+            ? '<button type="button" class="mi-crumb" data-zoom="sector">' + sName + '</button>' +
+              '<span class="mi-crumb-sep" aria-hidden="true">›</span><span class="mi-crumb-here" aria-current="location">' + escHtml(gName) + crumbCode("4-digit") + '</span>'
+            : '<span class="mi-crumb-here" aria-current="location">' + sName + '</span>') +
           '<button type="button" class="mi-crumb-x" aria-keyshortcuts="Escape" aria-label="Zoom out to ' +
           (focusGroup ? escHtml(focus) : "all sectors") + ' (Esc)">×</button></span>';
       } else txt = "";
@@ -5202,19 +6224,23 @@ export function loadTreemaps(){
       let said;
       if (step === 6 || step === 3){
         said = "A ranking of the most specialized tradable industries";
+        if (step === 6 && R2.split) said += ", the " + SPLIT_N + " furthest ahead of the peer metros and the " + SPLIT_N + " furthest behind, of " + R2.total;
+        else if (step === 6 && R2.total > RANK_N) said += rankAll ? ", all " + R2.total : ", the top " + RANK_N + " of " + R2.total;
       } else if (view === "alt"){
-        said = barListAll.length + " industries as bars, ordered by " + (barSort === "jobs" ? "jobs" : "complexity");
+        const n = (step === 5 || step === 7) ? byJobsTrad.length : barListAll.length, all = (step === 5 || step === 7) ? moreTrad : moreBars;
+        const ord = (step === 5 || step === 7) ? "jobs" : barMode === "tier" ? (tierSort === "trad" ? "tradability" : "jobs") : (barSort === "jobs" ? "jobs" : "complexity");
+        said = (n > NB ? (all ? "All " + n : "The top " + NB + " of " + n) : String(n)) + " industries as bars, ordered by " + ord;
       } else {
         /* counted at the map's grain: the industries, or the groups,
            subsectors or sectors they are rolled up into */
         const rows = mapLayout ? mapLayout.rows : rowsAll(), grain = effGrain();
         const n = grain === 6 ? rows.length
-          : new Set(rows.map(r => grain === 4 ? r.group : grain === 3 ? r.sub : r.sector)).size;
+          : new Set(rows.map(r => grain === 4 ? r.group : grain === 3 ? r.sub : grain === 2 ? naics2Of(r.code) : r.sector)).size;
         said = n + " " + grainWordAt(grain, n) + " shown in the map" + (step === 4 ? ", in three tiers by tradability" : "");
       }
       if (zoomed) said += ", zoomed into " + zoomed;
       if (secOn) said += ", " + secOn.size + " of " + sectorCount + " sectors";
-      if (tierOn && !tierOn.every(Boolean)) said += ", " + tierOn.map((on, k) => on ? TIER_NAMES[k] : null).filter(Boolean).join(" and ") + " only";
+      if (step === 4 && tierOn && !tierOn.every(Boolean)) said += ", " + tierOn.map((on, k) => on ? TIER_NAMES[k] : null).filter(Boolean).join(" and ") + " only";
       if (colorBy === "complexity") said += ", coloured by complexity";
       if (note) said += note;
       if (liveEl.textContent !== said) liveEl.textContent = said;
@@ -5229,13 +6255,14 @@ export function loadTreemaps(){
       else setFocus(focus, null, byKey);
     }));
 
-    /* ---- the same industries as a table, under the key: whatever the map
-       is showing, largest first, with the readings the card carries ---- */
+    /* ---- what the map shows, as a table, over the map: its cells at the
+       level it is tiled at, largest first, with the readings the card
+       carries and nothing the page does not show ---- */
     const tableHost = document.getElementById(p + "Table");
     /* the word that opens the table stands at the map's top right corner, on
        the line the crumbs take when the reader has zoomed - the note of the
        beat showing - and travels between the two map beats' notes. The
-       table itself opens where it did, under the key. */
+       table itself opens over the map, which gives up height to it. */
     const tableBtn = document.getElementById(p + "TableBtn") || (tableHost && tableHost.querySelector(".mi-table-btn"));
     const seatTableBtn = i => {
       const note = document.getElementById(p + (i === 4 ? "Note4" : "Note"));
@@ -5251,18 +6278,56 @@ export function loadTreemaps(){
       btn.querySelector(".mi-table-btn-txt").textContent = on ? "Hide table" : "Show as table";
       fig.classList.toggle("has-table", on);
       if (!on){ wrapT.innerHTML = ""; return; }
-      const rows = mapLayout.rows.slice().sort((a, b) => b.employ - a.employ);
       const td = (v, cls) => '<td' + (cls ? ' class="' + cls + '"' : '') + '>' + v + '</td>';
-      wrapT.innerHTML = '<table class="mi-tbl"><caption class="mi-sr">' + rows.length +
-        ' industries shown in the map, largest first</caption>' +
-        '<thead><tr><th scope="col">Industry</th><th scope="col">Industry group</th><th scope="col">Sector</th>' +
-        '<th scope="col">Tier</th><th scope="col" class="num">Jobs</th><th scope="col" class="num">Share of metro jobs</th>' +
-        '<th scope="col">Complexity</th><th scope="col" class="num">Location quotient</th></tr></thead><tbody>' +
-        rows.map(r => '<tr><th scope="row">' + escHtml(r.short || r.name) + '</th>' +
-          td(escHtml(r.groupShort || r.groupName)) + td(escHtml(r.sector)) + td(TIER_WORDS[r.tier]) +
+      const th = (t, cls) => '<th scope="col"' + (cls ? ' class="' + cls + '"' : '') + '>' + t + '</th>';
+      /* complexity as the card draws it: the five diamonds and the score,
+         with the step said in words for a screen reader */
+      const cx = pci => {
+        const b = cxBinOf(pci);
+        if (b == null) return td('<span class="mi-tbl-none">Not rated</span>', "nw");
+        let d = '<span class="mi-tbl-dia" aria-hidden="true">';
+        for (let k = 0; k < 5; k++) d += '<i' + (k <= b ? ' class="is-on"' : '') + '></i>';
+        return td('<span class="mi-tbl-cx">' + d + '</span><span class="mi-tbl-cxval">' + pci.toFixed(2) +
+          '</span><span class="mi-sr">step ' + (b + 1) + ' of 5, ' + CX_WORDS[b] + '</span></span>', "nw");
+      };
+      const grain = mapLayout.grain || 6;
+      let n, head, body;
+      if (grain === 6){
+        /* the industries, with what the card says of each; tradability is
+           the second beat's reading, so the first beat's table leaves it out */
+        const showTier = step !== 0;
+        const rows = mapLayout.rows.slice().sort((a, b) => b.employ - a.employ);
+        n = rows.length;
+        head = th("Industry") + th("Sector") + (showTier ? th("Tradability") : "") +
+          th("Jobs", "num") + th("Share of metro jobs", "num") + th("Complexity");
+        body = rows.map(r => '<tr><th scope="row">' + escHtml(r.short || r.name) + '</th>' +
+          td(escHtml(r.sector)) + (showTier ? td(TIER_WORDS[r.tier], "nw") : "") +
           td(fmtJobsFull(r.employ), "num") + td(fmtShare(r.employ / jobsTotal), "num") +
-          td(cxText(r.pci)) + td(rcaText(r.rca) || "No value", "num") + '</tr>').join("") +
-        '</tbody></table>';
+          cx(r.pci) + '</tr>').join("");
+      } else {
+        /* a coarser map is listed at its own level - the groups, or the
+           sectors - each row what its block's card says: how many
+           industries it holds, its jobs and share, and its complexity,
+           the industries' weighted by their jobs */
+        const byGroup = grain === 4, byN2 = grain === 2, by = new Map();
+        mapLayout.rows.forEach(r => {
+          const k = byGroup ? r.group : byN2 ? naics2Of(r.code) : r.sector;
+          let a = by.get(k);
+          if (!a){ a = { name: byGroup ? (r.groupShort || r.groupName) : byN2 ? naics2Name(k) : r.sector, sector: r.sector, jobs: 0, n: 0, pci: 0, pciJobs: 0 }; by.set(k, a); }
+          a.jobs += r.employ; a.n++;
+          if (r.pci != null && r.employ > 0){ a.pci += r.pci * r.employ; a.pciJobs += r.employ; }
+        });
+        const rows = Array.from(by.values()).sort((a, b) => b.jobs - a.jobs);
+        n = rows.length;
+        head = th(byGroup ? "Industry group" : byN2 ? "2-digit sector" : "Sector") + (byGroup || byN2 ? th("Sector") : "") + th("Industries", "num") +
+          th("Jobs", "num") + th("Share of metro jobs", "num") + th("Complexity");
+        body = rows.map(a => '<tr><th scope="row">' + escHtml(a.name) + '</th>' +
+          (byGroup || byN2 ? td(escHtml(a.sector)) : "") + td(String(a.n), "num") +
+          td(fmtJobsFull(a.jobs), "num") + td(fmtShare(a.jobs / jobsTotal), "num") +
+          cx(a.pciJobs > 0 ? a.pci / a.pciJobs : null) + '</tr>').join("");
+      }
+      wrapT.innerHTML = '<table class="mi-tbl"><caption class="mi-sr">' + n + ' ' + grainWordAt(grain, n) +
+        ' shown in the map, largest first</caption><thead><tr>' + head + '</tr></thead><tbody>' + body + '</tbody></table>';
     }
     if (tableHost && tableBtn) on(tableBtn, "click", () => {
       tableOpen = !tableOpen; syncTable();
@@ -5272,19 +6337,60 @@ export function loadTreemaps(){
     /* the map is tiled at the width it is drawn at: measured when the
        figure comes on screen and again whenever that width changes, and
        its labels fitted again once the page's face has loaded */
-    const remeasure = () => {
-      const s2 = measureS();
-      if (!s2 || Math.abs(s2 - S) < 1e-4) return;
-      S = s2; invalidateMaps();
-      fitPicks(fig);                                    /* the blanks, once the figure has a width to measure in */
-      if (step >= 0 && view === "map") paint(step, false);
+    /* a chart's rows cannot hold the type under about 700px of drawing (the
+       names' gutter, the plot and the columns beside it), so in a frame
+       narrower than that the bars and the ranking keep that width and pan
+       inside the frame: the stylesheet does it, off this flag */
+    const PAN_MIN = 704;
+    const syncPan = () => {
+      const w = vizWrap ? vizWrap.clientWidth : 0, v = w && w < PAN_MIN * TYPE_K ? "1" : "";
+      if ((fig.dataset.pan || "") !== v) fig.dataset.pan = v;
     };
-    if (window.ResizeObserver){ const ro = new ResizeObserver(remeasure); ro.observe(el); disposers.push(() => ro.disconnect()); }
+    /* the scale, settled without painting. The scale first: the stylesheet
+       sizes the charts' type from it, the bands and the tilings follow it,
+       and the gutters are fitted to that type. Says whether it moved. */
+    settleScaleRef = () => {
+      const k2 = readTypeK(), kMoved = Math.abs(k2 - TYPE_K) > 1e-4;
+      TYPE_K = k2;
+      syncPan();
+      const s2 = measureS();
+      if (!s2 || (Math.abs(s2 - S) < 1e-4 && !kMoved)) return false;
+      S = s2; tellScale(); fitBandRef(); invalidateMaps(); drawCards(false);
+      return true;
+    };
+    /* the gutters follow a change of scale once it has stopped moving:
+       refitting them redraws all four charts, which every step of a
+       dragged window edge cannot afford; meanwhile the type itself has
+       already taken its size from the stylesheet */
+    let refitT = null;
+    const scheduleRefit = () => {
+      clearTimeout(refitT);
+      refitT = setTimeout(() => { if (!dead && refitGutters() && step >= 0) paint(step, false); }, 150);
+    };
+    disposers.push(() => clearTimeout(refitT));
+    const remeasure = () => {
+      if (syncFootRoom() && step >= 0) paint(step, false);
+      /* the third beat's rows follow the room the new width gives them */
+      if (step === 6) requestAnimationFrame(() => { if (!dead && step === 6 && syncFrame(6)) paint(6, false); });
+      const moved = settleScaleRef();
+      /* gutters fitted while the page was still hidden were fitted blind,
+         on a canvas: the first tick with the figure on screen fits them
+         to the page's own measure, at once */
+      const blind = /blind/.test(gutSig);
+      const refit = blind && refitGutters();
+      if (moved && !blind) scheduleRefit();
+      if (!moved){ if (refit && step >= 0) paint(step, false); return; }
+      fitPicks(fig);                                    /* the blanks, once the figure has a width to measure in */
+      if (step >= 0 && (view === "map" || refit)) paint(step, false);
+    };
+    if (window.ResizeObserver){ const ro = new ResizeObserver(remeasure); ro.observe(el); if (vizWrap) ro.observe(vizWrap); disposers.push(() => ro.disconnect()); }
     on(window, "resize", remeasure);
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => {
       if (dead) return;
       clearMapMeasure();
-      if (step >= 0 && view === "map") paint(step, false);
+      /* the names were measured in whatever face stood in for the page's */
+      refitGutters(true);
+      if (step >= 0) paint(step, false);
     });
 
 
@@ -5301,7 +6407,7 @@ export function loadTreemaps(){
       const order = SECTOR_KEYS.map(s => s.label).filter(l => industryData.some(d => d.sector === l));
       key.innerHTML = order.map((sec, i) =>
         '<li class="sk-item"><button type="button" class="sk-sec" data-si="' + i + '" aria-pressed="true" style="--sw:' +
-        (sectorColors[sec] || "#ccc") + '"><i class="sk-sw"></i><span class="sk-name">' + escHtml(sec) + '</span></button>' +
+        (sectorColors[sec] || "#c3ccce") + '"><i class="sk-sw"></i><span class="sk-name">' + escHtml(sec) + '</span></button>' +
         '<span class="sk-verbs"><button type="button" class="sk-hide" data-si="' + i + '">Hide</button>' +
         '<span class="sk-dot" aria-hidden="true">&middot;</span>' +
         '<button type="button" class="sk-only" data-si="' + i + '" aria-label="Show only ' + escHtml(sec) + '">Only</button></span></li>').join("") +
@@ -5453,7 +6559,7 @@ export function loadTreemaps(){
         const was = tipEl.contains(document.activeElement) ? document.activeElement.dataset.act : null;
         tipEl.dataset.si = i;
         tipEl.innerHTML =
-          '<span class="skt-name"><i class="skt-sw" style="--sw:' + (sectorColors[sec] || "#ccc") + '"></i><b>' + escHtml(sec) + '</b></span>' +
+          '<span class="skt-name"><i class="skt-sw" style="--sw:' + (sectorColors[sec] || "#c3ccce") + '"></i><b>' + escHtml(sec) + '</b></span>' +
           /* the same rows, in the same order and dress, as the cell's card */
           '<dl class="skt-grid" id="' + p + 'KeyHint">' +
             '<dt>Industries</dt><dd>' + f.n + '</dd>' +
@@ -5556,16 +6662,16 @@ export function loadTreemaps(){
     const tip = document.getElementById(p + "Tip");
     if (wrap && tip){
       const cellOf = (k, v) => '<dt>' + k + '</dt><dd>' + v + '</dd>';
-      const pct = v => v.toFixed(2) + "%";
-      /* the number the ranking is ordered by, given the size it is ordered by */
+      /* the number the ranking is ordered by: the industry's share of the
+         metro's jobs over its share of the nation's */
       const tipLead = r => '<div class="tip-lead"><b>' + r.rca.toFixed(1) +
-        '\u00d7</b><span>more concentrated here than in<br>a typical US metro</span></div>';
+        '\u00d7</b><span>the national share</span></div>';
       /* complexity reads the same here as it does in the chart's own column -
          the five steps - with the score beside them, since a card has room
          for the number the column has no space to carry */
       const cxCell = name => {
         if (pciByName.get(name) == null)
-          return '<dd class="tip-cx-cell"><em>not measured</em></dd>';
+          return '<dd class="tip-cx-cell"><em>Not rated</em></dd>';
         const on = cxBin(name);
         let dots = '<span class="tip-cx" aria-hidden="true">';
         for (let k = 0; k < 5; k++) dots += '<i' + (k <= on ? ' class="is-on"' : '') + '></i>';
@@ -5596,10 +6702,11 @@ export function loadTreemaps(){
         const body = (onRank ? tipLead(rrow) : "") +
           '<dl class="tip-grid">' +
           cellOf("Jobs", Math.round(d.employ).toLocaleString()) +
-          cellOf("Share of metro jobs", pct(d.employ / jobsTotal * 100)) +
+          cellOf("Share of metro jobs", fmtShare(d.employ / jobsTotal)) +
           '<dt>Complexity</dt>' + cxCell(d.name) +
-          cellOf("Tradability", tierLabel(d)) +
-          (onRank ? cellOf("Peer metros average", rrow.peerAvg.toFixed(1) + "\u00d7") : "") +
+          (clusterOf(d) == null ? "" : cellOf("Tradability", tierLabel(d))) +
+          (onRank ? cellOf("The peer metros", rrow.peerRate == null ? "No value" : rrow.peerRate.toFixed(1) + "\u00d7") +
+                    cellOf("Against the peer metros", rrow.peerRca == null ? "No value" : fmtX(rrow.peerRca) + " their share") : "") +
           '</dl>';
         const labRow = rrow;
         const rank = (step === 6 && R2.rankIdx.has(d.name) && R2.rankIdx.get(d.name) < 3)
@@ -5623,7 +6730,7 @@ export function loadTreemaps(){
           const g = R && R.row && R.row.filter(x => x.name === d.name).node();
           if (g){
             hotRow = g; g.classList.add("is-hot");
-            hiRect.attr("y", rowY(R.pos.get(d.name)) - RH / 2).style("opacity", 1);
+            hiRect.attr("y", rowY(R.pos.get(d.name), R) - rhOf(R) / 2).attr("height", rhOf(R)).style("opacity", 1);
           }
         }
       })
@@ -5669,10 +6776,10 @@ export function loadTreemaps(){
         cell.classed("is-mute", off);
         /* still grey, still plainly not the sector being named, but dark
            enough on that grey to be read: at #9aa3a6 it was 2.1 to 1 */
-        cell.filter(off).selectAll(".mi-lab,.mi-pct").style("fill", "#60686b");
+        cell.filter(off).selectAll(".mi-lab,.mi-pct").style("fill", token("--ink-soft", "#526066"));
         const offM = c => want.indexOf(c.cell.sector) < 0;
         gMapCells.selectAll("g.mi-mcell").classed("is-mute", offM)
-          .filter(offM).select("text.mi-mlab").attr("fill", "#60686b");
+          .filter(offM).select("text.mi-mlab").attr("fill", token("--ink-soft", "#526066"));
         gMapFrames.selectAll("g.mi-secg").classed("is-mute", b => want.indexOf(b.sector) < 0);
       };
       const hlStep = span => span.dataset.on || "0";
@@ -5687,7 +6794,7 @@ export function loadTreemaps(){
           if (m) ys.push(+m[1]);
         });
         gLit.selectAll("rect").data(ys).join("rect")
-          .attr("x", 0).attr("width", MI_W).attr("height", RH).attr("y", y => y - RH / 2);
+          .attr("x", 0).attr("width", MI_W).attr("height", rhOf(R)).attr("y", y => y - rhOf(R) / 2);
       };
       const litHl = span => {
         const ds = span.dataset;
@@ -5745,7 +6852,7 @@ export function loadTreemaps(){
       const hlSwatch = () => hlSpans.forEach(span => {
         if (!span.dataset.sector) return;
         span.classList.add("mi-hl-sec");
-        span.style.setProperty("--sw", sectorColors[span.dataset.sector.split("|")[0]] || "#ccc");
+        span.style.setProperty("--sw", sectorColors[span.dataset.sector.split("|")[0]] || "#c3ccce");
       });
       hlSwatch();
       hlSwatchRef = hlSwatch;
@@ -5762,12 +6869,12 @@ export function loadTreemaps(){
                after it has run, not before — and it lights a row of its own,
                which this one replaces */
             const cellG = cell.filter(c => c.name === d.name).node();
-            if (cellG) cellG.dispatchEvent(new MouseEvent("mouseenter"));
+            if (cellG) cellG.dispatchEvent(new MouseEvent("mouseenter", { clientX: ev.clientX, clientY: ev.clientY }));
             else cool();
             if (hotRow) hotRow.classList.remove("is-hot");
             hotRow = this;
             this.classList.add("is-hot");
-            hiRect.attr("y", rowY(R.pos.get(d.name)) - RH / 2).style("opacity", 1);
+            hiRect.attr("y", rowY(R.pos.get(d.name), R) - rhOf(R) / 2).attr("height", rhOf(R)).style("opacity", 1);
           })
           .on("mousemove.mirow", function(ev){ cursorTipPos(ev, wrap, tip); })
           .on("mouseleave.mirow", cool);
@@ -5804,7 +6911,7 @@ export function loadTreemaps(){
       fig.dataset.pal = v;
       if (key) key.querySelectorAll(".sk-sec").forEach(b => {
         const nm = b.querySelector(".sk-name"); if (!nm) return;
-        b.style.setProperty("--sw", sectorColors[nm.textContent] || "#ccc");
+        b.style.setProperty("--sw", sectorColors[nm.textContent] || "#c3ccce");
       });
       hideMapTip(true);
       if (hlSwatchRef) hlSwatchRef();
@@ -5842,8 +6949,17 @@ export function loadTreemaps(){
     setSecBlock(secBlockEl ? secBlockEl.value : SEC_BLOCK, true);
     if (secBlockEl) on(secBlockEl, "change", () => setSecBlock(secBlockEl.value));
     const groundEl = document.getElementById(p + "Ground");
-    const setGround = v => { fig.dataset.ground = v === "grey" ? "grey" : "frame"; };
-    setGround(groundEl ? groundEl.value : "frame");
+    /* the frame and the field differ only in paint; the clean ground has no
+       padding round its cells, so going to it or from it tiles the tiers
+       again */
+    const setGround = v => {
+      const next = /^(frame|grey|clean)$/.test(v) ? v : "clean", moved = (next === "clean") !== isClean();
+      groundMode = next; fig.dataset.ground = next;
+      if (!moved) return;
+      layoutClusters(); invalidateMaps(); drawCards(false);
+      if (step >= 0) paint(step, false);
+    };
+    fig.dataset.ground = groundMode;
     if (groundEl) on(groundEl, "change", () => setGround(groundEl.value));
 
     /* a study control: the head's row as labelled pairs in a paper tray, or
@@ -5859,7 +6975,7 @@ export function loadTreemaps(){
        sector's figures and the two actions as buttons */
     const keyOptEl = document.getElementById(p + "KeyOpt");
     const setKeyMode = v => { fig.dataset.key = v === "card" ? "card" : "inline"; if (hideKeyTip) hideKeyTip(); };
-    setKeyMode(keyOptEl ? keyOptEl.value : "inline");
+    setKeyMode(keyOptEl ? keyOptEl.value : "card");
     if (keyOptEl) on(keyOptEl, "change", () => setKeyMode(keyOptEl.value));
 
     /* one word in the head carries every study: it opens a panel of plain
@@ -5904,6 +7020,41 @@ export function loadTreemaps(){
       paint(step, !reduced());
     };
     if (sSortEl) on(sSortEl, "change", () => { fitPick(sSortEl); applyBarSort(sSortEl.value); });
+    const tierSortEl = document.getElementById(p + "TierSort"), sSortTierEl = document.getElementById(p + "SSortTier");
+    const syncTierSort = () => {
+      if (tierSortEl) tierSortEl.querySelectorAll(".seg-btn[data-tiersort]").forEach(x => {
+        const on = x.dataset.tiersort === tierSort;
+        x.classList.toggle("is-active", on);
+        x.setAttribute("aria-pressed", String(on));
+      });
+      if (sSortTierEl && sSortTierEl.value !== tierSort){ sSortTierEl.value = tierSort; fitPick(sSortTierEl); }
+    };
+    syncTierSort();
+    const applyTierSort = v => {
+      if (v === tierSort) return;
+      tierSort = v;
+      syncTierSort();
+      reBarRank();
+      drawBars(barListAll, gBarsAll);
+      paint(step, !reduced());
+    };
+    if (sSortTierEl) on(sSortTierEl, "change", () => { fitPick(sSortTierEl); applyTierSort(sSortTierEl.value); });
+    if (tierSortEl) on(tierSortEl, "click", ev => {
+      const b = ev.target.closest(".seg-btn[data-tiersort]");
+      if (!b) return;
+      applyTierSort(b.dataset.tiersort);
+    });
+    /* a study control: the bars' Show button under the last bar or over
+       the names; the bars are drawn again where they stand */
+    if (moreAtEl) on(moreAtEl, "change", () => {
+      const v = moreAtEl.value === "head" ? "head" : "foot";
+      if (v === moreAt) return;
+      const kind = moreKind();
+      moreAt = v;
+      drawBars(barListAll, gBarsAll); drawBarsTrad(); redrawR2();
+      if (step >= 0) paint(step, false);
+      if (kind) landMore(kind);
+    });
     if (barSortEl) on(barSortEl, "click", ev => {
       const b = ev.target.closest(".seg-btn[data-barsort]");
       if (!b) return;
@@ -5915,11 +7066,16 @@ export function loadTreemaps(){
     const viewEl = document.getElementById(p + "View");
     const applyView = v => {
       if (v === view) return;
+      /* the map has no rows to show all of; the bars come back on their top */
+      const handKind = moreKind();
+      foldMore(true);
       view = v;
       fig.dataset.view = view;
       syncViewCtl();
       if (opts.adminReveal && step === 0){ placeCoarse(!reduced(), true); return; }
+      settleForPaint();
       if (step === 0 || step === 1 || step === 4 || step === 5 || step === 7) paint(step, !reduced());
+      if (handKind) requestAnimationFrame(() => landMore(handKind, true));
     };
     if (viewEl) on(viewEl, "click", ev => {
       const b = ev.target.closest(".seg-btn[data-view]");
@@ -5990,9 +7146,9 @@ export function loadTreemaps(){
     };
     const applyLevel = g => {
       if (levelLocked()){ syncLevel(); return; }
-      g = [6, 4, 2].indexOf(+g) >= 0 ? +g : 6;   /* the 3-digit subsectors are tiled too, but not offered */
+      g = [6, 4, 2, 1].indexOf(+g) >= 0 ? +g : 6;   /* the 3-digit subsectors are tiled too, but not offered */
       if (g === MAP_GRAIN) return;
-      MAP_GRAIN = g;
+      MAP_GRAIN = REST_GRAIN = g;
       invalidateMaps(); hideMapTip(true);
       syncLevel();
       /* the level is where the map starts, so choosing one goes back to
@@ -6018,6 +7174,234 @@ export function loadTreemaps(){
     setLevelCtl(levelOptEl ? levelOptEl.value : "toggle", true);
     if (levelOptEl) on(levelOptEl, "change", () => setLevelCtl(levelOptEl.value));
 
+    /* ---- "Ask the chart": questions in a beat's text that set the figure ----
+       Each beat's chart answers more than its paragraph says, under some
+       setting of the controls most readers never try. A question row in
+       the text sets that view and opens a short answer under itself. The
+       rules that keep it from confusing anyone: one question at a time; a
+       question is the beat's own view plus its settings, never stacked on
+       what the reader had; it moves the real controls, and the ones it
+       moved are marked; the answer stands only while the chart shows it;
+       one way back - the row itself, pressed again; and leaving the beat
+       puts the beat back. */
+    const ASKS = {
+      /* the first beat's two questions read the industries, so they set that
+         level; the beat's own view is the map at its default level */
+      b1q1: { step: 0, set: { view: "alt", barSort: "cx", level: 6 }, marks: "view barsort" },
+      b1q2: { step: 0, set: { colorBy: "complexity", level: 6 }, marks: "color" },
+      b2q1: { step: 4, set: { colorBy: "complexity" }, marks: "color" },
+      b2q2: { step: 4, set: { tiers: [true, false, false] }, marks: "" },
+      /* the third beat's two other orders (Nil, 2026-10-05): against the
+         peer metros, and by jobs */
+      b3q1: { step: 6, set: { sortKey: "gap" }, marks: "sort" },
+      b3q2: { step: 6, set: { sortKey: "jobs" }, marks: "sort" }
+    };
+    const askRows = [].slice.call(document.querySelectorAll('.ask-chart[data-fig="' + p + '"] .ask-q[data-ask]'));
+    /* the beat's own view with a question's settings over it, through the
+       same doors the controls use, held to one paint */
+    const setNamed = (set, noPaint) => {
+      holdPaint++;
+      try {
+        /* an answer reads the chart's top rows; folding draws the rows
+           again, so the paint after the settings has to run */
+        if (more){ foldMore(true); heldPaint = true; }
+        if (step === 0 || step === 4){
+          if (focus) setFocus(null, null);
+          if (secFiltered() && resetSec) resetSec();
+          const tiers = set.tiers || [true, true, true];
+          tiers.forEach((on, k) => { if (on) setTier(k, true); });
+          tiers.forEach((on, k) => { if (!on) setTier(k, false); });
+          if (step === 0) applyLevel(set.level || DEFAULT_GRAIN);
+          applyView(set.view || "map");
+          applyColor(set.colorBy || "sector");
+          if (step === 0) applyBarSort(set.barSort || "jobs");
+          if (step === 4) applyTierSort(set.tierSort || "jobs");
+        } else if (step === 6){
+          applySort(set.sortKey || "rca");
+          const want = set.rankTiers || TIER_DEFAULT6();
+          if (rankMode === "tier" && want.some((v, k) => v !== tierOn6[k])){
+            tierOn6 = want.slice();
+            if (closeMenuRef) closeMenuRef();
+            if (rebuildR2Ref) rebuildR2Ref(!reduced());
+          }
+        }
+      } finally { holdPaint--; }
+      const dirty = heldPaint; heldPaint = false;
+      if (dirty && !noPaint && !holdPaint && step >= 0) paint(step, !reduced());
+    };
+    /* everything a reader's hand can change that an answer depends on */
+    const askSig = () => [step, view, colorBy, barSort, tierSort, sortKey, MAP_GRAIN, focus || "", focusGroup || "", more ? "all" : "",
+      secOn ? Array.from(secOn).sort().join(",") : "", tierOn.map(Number).join(""), tierOn6.map(Number).join("")].join("|");
+    /* the tab on the frame while an answer stands (the "Answer shown"
+       study's opt-2, shipped): what the figure is showing, and the way
+       back, named for the view the beat goes back to */
+    const BACK_TO = { b1q1: "Back to the treemap", b1q2: "Back to sector colours", b2q1: "Back to sector colours",
+                      b2q2: "Back to all three tiers", b3q1: "Back to most specialized", b3q2: "Back to most specialized" };
+    const askTab = document.createElement("div");
+    askTab.className = "mi-asktab"; askTab.hidden = true;
+    askTab.innerHTML = '<span class="mi-asktab-dot" aria-hidden="true"></span><span class="mi-asktab-txt">Showing an answer</span>' +
+      '<span class="mi-asktab-sep" aria-hidden="true"></span><button type="button" class="mi-asktab-back">' +
+      '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 6.5h6a3.5 3.5 0 0 1 0 7H7"/><path d="M6 3.5 3 6.5l3 3"/></svg>' +
+      '<span class="mi-asktab-lab"></span></button>';
+    /* a rebuild (the year switch) makes its own tab: this one goes with its build */
+    disposers.push(() => { askTab.remove(); const h = fig.closest(".ct-panel"); if (h) h.classList.remove("is-asked"); });
+    const askCueEl = document.getElementById(p + "AskCue");
+    let askCue = askCueEl && askCueEl.value === "marks" ? "marks" : "tab";
+    /* the frame is the scrolly's panel, built round the figure after it;
+       the tab is hung on it the first time it is needed */
+    const askHost = () => fig.closest(".ct-panel") || fig;
+    function syncAsk(){
+      const key = asked ? asked.key : "";
+      fig.dataset.asked = key;
+      fig.dataset.askmarks = key ? ASKS[key].marks : "";
+      const host = askHost(), cue = askCue === "tab" && !!key;
+      if (cue && askTab.parentNode !== host) host.appendChild(askTab);
+      if (cue) askTab.querySelector(".mi-asktab-lab").textContent = BACK_TO[key] || "Back to the starting view";
+      /* a press on the tab's own button leaves the focus on the figure, not the page */
+      if (!cue && askTab.contains(document.activeElement)) fig.focus({ preventScroll: true });
+      askTab.hidden = !cue;
+      if (host.classList) host.classList.toggle("is-asked", cue);
+      askRows.forEach(b => {
+        const on = b.dataset.ask === key;
+        b.setAttribute("aria-expanded", String(on));
+        const item = b.closest(".ask-item"); if (item) item.classList.toggle("is-on", on);
+        const ans = document.getElementById(b.getAttribute("aria-controls"));
+        if (!ans) return;
+        /* a term's card open inside an answer goes with the answer */
+        if (!on && !ans.hidden && window.closeTermCard && ans.querySelector(".term-card")) window.closeTermCard(false);
+        ans.hidden = !on;
+      });
+    }
+    /* the beat's text is centred in its step, so an answer opening under a
+       row would move the row out from under the pointer that pressed it -
+       and the row is the way back. The step is pinned where it stands from
+       the first question on, and three things keep the page still after:
+       the pressed row is held where it is when an answer above it closes
+       (the pin's padding takes up the difference); a beat that is left
+       keeps its box, its height frozen before its answer closes, so
+       nothing collapses above the reader; and only a real change of
+       width, which re-flows the text anyway, lets the steps go. */
+    const pinStep = st => {
+      if (!st || st.dataset.pinned) return;
+      const first = st.firstElementChild; if (!first) return;
+      const off = Math.max(0, first.getBoundingClientRect().top - st.getBoundingClientRect().top);
+      st.style.justifyContent = "flex-start";
+      st.style.paddingTop = off + "px";
+      st.dataset.pinned = "1"; st.dataset.pad0 = String(off);
+    };
+    const pinnedSteps = () => [].slice.call(document.querySelectorAll(".ct-step[data-pinned]"));
+    const unpinSteps = () => pinnedSteps().forEach(st => {
+      st.style.justifyContent = ""; st.style.paddingTop = ""; st.style.minHeight = "";
+      delete st.dataset.pinned; delete st.dataset.pad0;
+    });
+    const freezeSteps = () => pinnedSteps().forEach(st => { st.style.minHeight = st.offsetHeight + "px"; });
+    /* behind the reader, a step's text goes back to where it began, inside the box it kept */
+    const settleSteps = active => pinnedSteps().forEach(st => { if (st !== active) st.style.paddingTop = (st.dataset.pad0 || "0") + "px"; });
+    const rowOf = key => askRows.find(b => b.dataset.ask === key) || null;
+    function ask(key){
+      const q = key ? ASKS[key] : null;
+      if (key && (!q || q.step !== step)) return;
+      /* the answers are written for 2024 */
+      if (key && (fig.dataset.year || "2024") !== "2024") return;
+      const was = asked;
+      const row = key ? rowOf(key) : null, st = row && row.closest(".ct-step");
+      /* on a stack the figure is held above the text, in the flow: a
+         question that changes its height moves the text under it */
+      const stage = fig.closest(".ct-stage"), pagesEl = document.getElementById("pages");
+      const stacked = !!(stage && pagesEl && window.matchMedia("(max-width:899px)").matches && getComputedStyle(stage).position === "sticky");
+      if (q && !stacked) pinStep(st);
+      const y0 = row ? row.getBoundingClientRect().top : 0;
+      asked = null;                         /* the paint that follows must not judge the old question */
+      setNamed(q ? q.set : {});
+      asked = q ? { key: key, sig: askSig() } : null;
+      syncAsk();
+      if (stacked && row){
+        /* so the pressed row is held where it was, by the scroll, and kept
+           clear of the band's foot if the band has grown over it */
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          const want = Math.max(y0, stage.getBoundingClientRect().bottom + 8);
+          const dy = row.getBoundingClientRect().top - want;
+          if (Math.abs(dy) > 0.5) pagesEl.scrollTo({ top: pagesEl.scrollTop + dy, behavior: "instant" });
+        }));
+      } else
+      /* the other question's answer, closing above this row, would have
+         drawn the row up from under the pointer */
+      if (row && st && st.dataset.pinned){
+        const dy = y0 - row.getBoundingClientRect().top;
+        if (Math.abs(dy) > 0.5) st.style.paddingTop = ((parseFloat(st.style.paddingTop) || 0) + dy) + "px";
+      }
+      if (q || was) syncLive(q ? ", changed to answer the question" : ", back to the starting view");
+    }
+    if (askRows.length){
+      checkAskRef = () => { if (asked && askSig() !== asked.sig){ asked = null; syncAsk(); } };
+      leaveAskRef = () => { if (!asked) return; freezeSteps(); asked = null; setNamed({}, true); syncAsk(); };
+      /* a question pressed in a beat the reader is not on brings that beat
+         in first, and is asked once the figure has arrived there */
+      let pending = null;
+      afterStepRef = i => {
+        freezeSteps();
+        settleSteps((fig.closest(".ct-scrolly") || document).querySelector(".ct-step.is-on"));
+        if (!pending) return;
+        const k = pending.key, fresh = Date.now() - pending.at < 4000;
+        if (!fresh){ pending = null; return; }
+        if (ASKS[k].step === i){ pending = null; ask(k); }
+      };
+      /* the way back. The answer closes first, so the text is laid out
+         as it will stay; then a beat taken by a press is given back, and
+         the scroll decides again - where that is another beat, the figure
+         goes there */
+      const backToStart = row => {
+        if (asked) ask(null);
+        if (row) row.dispatchEvent(new CustomEvent("ct:release", { bubbles: true }));
+      };
+      /* the tab's way back is the row's */
+      on(askTab.querySelector(".mi-asktab-back"), "click", () => {
+        if (!asked) return;
+        const row = rowOf(asked.key), kb = askTab.contains(document.activeElement);
+        backToStart(row);
+        /* from the keyboard, the focus goes back to the question that was asked */
+        if (kb && row) row.focus({ preventScroll: true });
+      });
+      if (askCueEl) on(askCueEl, "change", () => { askCue = askCueEl.value === "marks" ? "marks" : "tab"; syncAsk(); });
+      askRows.forEach(b => on(b, "click", () => {
+        const key = b.dataset.ask, q = ASKS[key];
+        if (!q) return;
+        if (q.step !== step){
+          /* the beat is taken where it stands, with no scroll: the scrolly
+             makes it the active one, the figure follows, and the question
+             is asked on arrival */
+          pending = { key: key, at: Date.now() };
+          b.dispatchEvent(new CustomEvent("ct:take", { bubbles: true }));
+          if (step !== q.step && window[ctlName]) window[ctlName].setStep(q.step);
+          return;
+        }
+        if (asked && asked.key === key) backToStart(b); else ask(key);
+      }));
+      /* a width that re-flows the text re-centres it; an open answer's
+         step is pinned again where it then stands. The page also sends
+         "resize" to its figures when a beat changes, with the width as it
+         was: those are not this. What is watched is the text column's own
+         width: it follows the window's width, and on a short window its
+         height too, since the column takes the room the figure cannot use
+         - while a phone's address bar coming and going moves neither */
+      const railW = () => { const st = fig.closest(".ct-scrolly"), c = st && st.querySelector(".ct-steps"); return (c ? c.offsetWidth : 0) + "|" + window.innerWidth; };
+      let pinW = railW();
+      on(window, "resize", () => {
+        const w = railW();
+        if (w === pinW) return;
+        pinW = w;
+        unpinSteps();
+        if (asked){ const row = rowOf(asked.key); pinStep(row && row.closest(".ct-step")); }
+      });
+      /* Escape, once nothing else is open, is the same way back */
+      escLayers.push({ p: 7, scoped: true, open: () => !!asked, close: () => {
+        const row = rowOf(asked.key);
+        backToStart(row);
+        if (row && document.activeElement && row.closest(".ask-chart").contains(document.activeElement)) row.focus({ preventScroll: true });
+      } });
+      syncAsk();
+    }
+
     /* sort: the same rows in another order, bars and names travelling together */
     const sortEl = document.getElementById(p + "Sort");
     /* the ranking's order as a blank in the row's sentence (opt-2 of the
@@ -6025,6 +7409,7 @@ export function loadTreemaps(){
     const sSortRankEl = document.getElementById(p + "SSortRank");
     function applySort(key){
       if (!key || key === sortKey) return;
+      const was = sortKey;
       sortKey = key;
       fig.dataset.sort = sortKey;
       if (sortEl) sortEl.querySelectorAll(".seg-btn").forEach(x => {
@@ -6033,9 +7418,15 @@ export function loadTreemaps(){
         x.setAttribute("aria-pressed", String(on));
       });
       if (sSortRankEl && sSortRankEl.value !== sortKey){ sSortRankEl.value = sortKey; fitPick(sSortRankEl); }
-      reorder(R1); reorder(R2);
+      reorder(R1);
       const anim = !reduced();
-      placeRanking(R1, anim); placeRanking(R2, anim);
+      placeRanking(R1, anim);
+      /* the peers order shows another set on the third beat (its two
+         ends), so going into it or out of it builds the ranking again */
+      const crosses = (key === "gap") !== (was === "gap");
+      if (crosses && !R2.all && rebuildR2Ref){ rebuildR2Ref(anim); if (step === 3) paint(step, anim); return; }
+      if (crosses) relabelRankMore();
+      reorder(R2); placeRanking(R2, anim);
       if (step === 3 || step === 6) paint(step, anim);
     }
     if (sortEl) on(sortEl, "click", ev => {
@@ -6052,7 +7443,7 @@ export function loadTreemaps(){
        on state 0, or the first beat shows a state its controls do not drive */
     /* a rebuild starts from the engine's own state, so the segmented
        controls are set to it rather than left as the last build left them */
-    [[p + "View", "view", view], [p + "BarSort", "barsort", barSort], [p + "Sort", "sort", sortKey]].forEach(([id, attr, val]) => {
+    [[p + "View", "view", view], [p + "BarSort", "barsort", barSort], [p + "TierSort", "tiersort", tierSort], [p + "Sort", "sort", sortKey]].forEach(([id, attr, val]) => {
       const host = document.getElementById(id);
       if (host) host.querySelectorAll(".seg-btn[data-" + attr + "]").forEach(x => {
         const onIt = x.dataset[attr] === val;
@@ -6061,6 +7452,8 @@ export function loadTreemaps(){
       });
     });
     if (sSortRankEl){ sSortRankEl.value = sortKey; fitPick(sSortRankEl); }
+    /* a year's rebuild starts on the specialization order: the keys follow it */
+    fig.dataset.sort = sortKey;
     window[ctlName].setStep(fig.dataset.wantStep != null ? +fig.dataset.wantStep : 0);
   }
 

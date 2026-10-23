@@ -17,13 +17,6 @@ html[data-v3-instant] #landing{transition:none !important;}
   height:calc(100dvh - var(--chrome-h) - 24px);
 }
 
-/* Main's v-5 has a layout study of its own (a "Site Layout" pill, a one
-   scroll with a teal close under each section), modelled on this branch's.
-   The port holds it on its "pages" layout (scripts/v3/port.mjs), and its
-   pill stands down: the one on screen is this branch's (src/site/), which
-   offers the layouts studied here. */
-#siteLayoutSwitch{display:none !important;}
-
 /* Levers for Change is a placeholder chapter: main's dashed frame under its
    heading (the markup is a port swap). The frame is flex:1 inside a .page,
    which is the whole screen on main but nothing at all in the one-scroll
@@ -36,80 +29,8 @@ html[data-v3-instant] #landing{transition:none !important;}
    strip, the landing, the pager, the scrollies, the dialogs), because
    main's stylesheet had none. Main's v-1 now carries its own — 1199 / 899 /
    599, with --chrome-h restated at each — so the shell is main's at every
-   width, with the one exception below. The React section keeps its own two
-   breakpoints (920 / 640: src/styles/figures.css, walkFit.tsx). */
-
-/* ====================================================================
-   The section menu on phones (2026-09-17; a candidate for main).
-
-   Main's bar keeps its tab strip at every width and lets it scroll as "the
-   backstop for a very narrow phone". On a 390px phone the strip is left
-   165px beside the location chip: the section you are on is the only tab
-   in view, the others are cut at both edges, and nothing says the strip
-   moves. So at main's mobile tier the strip stands down and the sections
-   collapse into one control in the family of the location chip beside
-   it: a button naming the section you are on, and a menu of the five —
-   a check behind you, the current one on the tint, numbers ahead — the
-   same state language as the tabs and the pager's stops. The script
-   builds and drives it (v3-page.js, marked [port]).
-   ==================================================================== */
-.secmenu{display:none;}
-
-/* Main's bug, fixed here because the menu cannot work over it: the chip's
-   button is 300px wide at every width (a desk rule), while its wrapper
-   narrows to 184px at 1199 and 158px at 599. The overhang lies under the
-   tabs — on main its chevron peeks out between the second and third tab
-   from 1199 down — and on a phone it sat under the section button and
-   took its taps. The button takes its wrapper's width. */
-@media (max-width:1199px){
-  .secbar .citypick--bar .citypick-btn{width:100%;}
-}
-
-@media (max-width:599px){
-  .secnav{display:none;}
-  /* the chip yields a little on a phone so the section's name can fit
-     beside it; the strip it held still for is gone at this width */
-  .secbar .citypick--bar{width:auto;flex:0 1 158px;min-width:110px;}
-
-  /* static, not relative: the open list hangs from the BAR (sticky, so a
-     containing block), spanning its width — from a 150px button the list
-     ran past the phone's edge */
-  .secmenu{display:block;position:static;flex:1 1 150px;min-width:0;align-self:center;margin-left:8px;}
-  .secmenu-btn{
-    display:flex;align-items:center;gap:7px;width:100%;height:30px;min-width:0;
-    padding:0 24px 0 8px;border:1px solid var(--border-strong);border-radius:4px;
-    background:#fff;color:var(--ink);cursor:pointer;text-align:left;
-    font:inherit;font-size:12.5px;font-weight:700;line-height:1;
-    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%23255862' stroke-width='1.5' stroke-linecap='round'/></svg>");
-    background-repeat:no-repeat;background-position:right 8px center;
-  }
-  .secmenu-btn:hover,.secmenu-btn:focus-visible,.secmenu-btn[aria-expanded="true"]{
-    border-color:var(--teal);box-shadow:0 0 0 3px rgba(37,88,98,.10);outline:none;
-  }
-  .secmenu-btn .num,.secmenu-opt .num{
-    width:18px;height:18px;flex:0 0 18px;border-radius:50%;
-    border:1.5px solid currentColor;font-size:10px;font-weight:700;
-    display:inline-flex;align-items:center;justify-content:center;
-  }
-  .secmenu-btn .num{background:var(--teal);border-color:var(--teal);color:#fff;}
-  .secmenu-btn .num svg,.secmenu-opt .num svg{display:block;}
-  .secmenu-lbl{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-
-  .secmenu-list{
-    position:absolute;top:calc(100% + 6px);left:var(--frame-pad);right:var(--frame-pad);z-index:60;
-    background:#fff;border:1px solid var(--border-strong);border-radius:6px;
-    box-shadow:var(--shadow-md);padding:5px;
-  }
-  .secmenu-list[hidden]{display:none;}
-  .secmenu-opt{
-    display:flex;align-items:center;gap:10px;width:100%;
-    padding:10px 10px;border:0;border-radius:4px;background:none;cursor:pointer;
-    font:inherit;font-size:14px;font-weight:600;color:var(--ink-soft);text-align:left;
-  }
-  .secmenu-opt .num{width:22px;height:22px;flex-basis:22px;font-size:11px;}
-  .secmenu-opt:hover{background:var(--teal-tint);color:var(--ink);}
-  .secmenu-opt.is-done{color:var(--teal);}
-  .secmenu-opt.is-done .num{background:#e2ebec;border-color:transparent;}
-  .secmenu-opt.is-on{background:var(--teal-tint);color:var(--ink);font-weight:700;}
-  .secmenu-opt.is-on .num{background:var(--teal);border-color:var(--teal);color:#fff;}
-}
+   width. (The last two exceptions, a section menu on phones and a fix for
+   the city chip overhanging the tabs, went on 2026-10-23: main's section
+   bar now folds into its own menu, and its chip keeps to its box.) The
+   React section keeps its own two breakpoints (920 / 640:
+   src/styles/figures.css, walkFit.tsx). */

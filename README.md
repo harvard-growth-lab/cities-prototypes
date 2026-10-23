@@ -19,26 +19,16 @@ npm run build    # tsc -b + vite build
 node scripts/shots.mjs ./shots --widths 390,768,1440   # screenshot every view; flags sideways overflow
 ```
 
-## Site layout variants (a study)
+## Site layout
 
-The five sections fall into two halves of different kinds — **Who are you?, Metro
-Industries, Worker Flows** describe the city (an overview, read); **Constraints Diagnosis,
-Levers for Change** diagnose it and act (interactive, built on the first three). On main they
-run as one linear flow. `?site=` tries other ways of organising the two halves and marking the
-crossing between them; the dark **Site layout** pill at the bottom-left switches between them
-(a navigation: the same place in the tool, under another layout).
-
-| `?site=` | what it tries |
-| --- | --- |
-| *(none)* | **Current** — main's page (`cities-v-5`, its own "pages" layout), untouched: five tabs under their part's name, one section per page, Previous / Next cards |
-| `scroll` | **One scroll** — every section on one page; the tabs follow the scroll; a full-screen **threshold band** marks part two (what you bring → what you do with it); each section closes (quiz + insight) where it ends |
-| `halves` | **Two scrolls** — each half is one scroll on a page of its own; the break under each section is **main's teal close** from v-5's own one-scroll layout ("What to take with you", three points, the quiz in main's dialog — placeholders for sections 4–5, which are this branch's); the first half's last close carries the way on (**Next · Part 2: Diagnose & Act**, in place of main's "Keep scrolling" cue), and the second opens on the same board as its first screen; the second's pager leads back (Previous) and out (Extras); the tabs follow the scroll |
-
-Copy is placeholder throughout. The part names ("City profile", "Diagnose & act") are working
-labels, written once in `src/site/variants.ts`. How it is built: `src/site/` (the variants, what
-they answer v-3's section switch with, what they draw), `src/styles/site.css`, and one patch
-group in `scripts/v3/port.mjs` ("site variants") — every question the switch asks falls back to
-main's behaviour, so with no variant chosen the page is main's.
+The site's layout is main's own. The five sections fall into two parts — **Who am I?, Metro
+Industries, Worker Flows** profile the city; **Constraints Diagnosis, Levers for Change**
+diagnose it and act — and main's default since 2026-10-05 is **Two scrolls**: each part one
+scroll, a teal close ("What to take with you") under each section, a Next from part one's last
+close into part two, which opens on a band introducing it. Main's `?layout=pages` (one section
+per page) and `?layout=scroll` (everything in one scroll) still reach the other two. This branch
+ran that study itself from 2026-09-21 (`?site=`, `src/site/`); main took it in whole, so the
+branch's copy was retired on 2026-10-23.
 
 ## Constraints Diagnosis variants (a study)
 
@@ -46,8 +36,8 @@ The section as built walks one tree to one ending, and the ending decides which 
 the analysis reads. `?constraints=` swaps the whole section for an open-ended take: several
 **tests** (population vs wages, metro population growth, home value growth, local share of job
 growth, and economic complexity as a placeholder) each point to modules; the modules most
-tests point to are suggested, and any module can still be read. A second dark pill, **Constraints
-Diagnosis**, beside the Site Layout one while the section is on screen, switches between them.
+tests point to are suggested, and any module can still be read. A dark pill, **Constraints
+Diagnosis**, at the bottom-left while the section is on screen, switches between them.
 
 | `?constraints=` | what it tries |
 | --- | --- |
@@ -85,9 +75,6 @@ src/
     LegacyShell.tsx         mounts v-3's body; index.ts boots its scripts once
     bridge.ts               the seam: what v-3 tells React, what React drives
   styles/figures.css        the constraints section; styles/explainers.css the gallery
-  site/                     the site-level layout variants (?site=): variants.ts the study,
-                            runtime.ts what v-3's section switch is answered with, SiteLayer.tsx
-                            what they draw; styles/site.css
   components/
     ConstraintsSection.tsx  City Constraints: the zoomed walk + branch analysis
     ExplainersContent.tsx   the Explainers view: v-3's masthead, the gallery, one explainer

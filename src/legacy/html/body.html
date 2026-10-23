@@ -2,7 +2,7 @@
    re-run the script to re-sync (see src/legacy/README.md). -->
 
 <!-- ==================== LANDING (fixed, no scroll) ==================== -->
-<div id="landing">
+<div id="landing" class="is-placeholder">
   <div class="map-bg"></div>
 
   <header class="landing-header">
@@ -11,9 +11,9 @@
     </button>
     <div class="spacer"></div>
     <nav class="toolbar-links">
-      <a href="#" class="current-page" onclick="toggleExplainers(false);return false;">City Diagnosis</a>
+      <a href="#" class="current-page" aria-current="page" onclick="toggleExplainers(false);return false;">City Diagnosis</a>
       <a href="#">About</a>
-      <a href="#">Glossary</a>
+      <a href="#" onclick="openGlossary(null, this);return false;">Glossary</a>
     </nav>
     <button class="btn-journey">
       <svg width="19" height="19" viewBox="0 0 83 83.01" fill="currentColor" aria-hidden="true"><path d="M82.92,7.06s-.01-.05-.02-.07c-.05-.13-.12-.26-.2-.37-.02-.02-.03-.04-.05-.06-.09-.11-.2-.21-.32-.3-.01,0-.01-.01-.02-.01-.12-.08-.26-.14-.41-.18-.01,0-.02-.01-.04-.02L57.86.04c-.24-.06-.49-.06-.73,0l-24,6c-.67.17-1.14.77-1.14,1.46s.47,1.29,1.14,1.46l9.86,2.47v14.07c0,.22.14.42.36.48l14,4s.09.02.14.02.09-.01.14-.02l14-4c.21-.06.36-.26.36-.48v-14.08l8-2v10.08c0,.83.67,1.5,1.5,1.5s1.5-.67,1.5-1.5V7.5c.01-.16-.02-.31-.07-.45h0ZM57.5,11.95l-17.82-4.45,17.82-4.45,17.82,4.45-17.82,4.45ZM68.5,42.01h-35.71c-.66-2.3-2.77-4-5.29-4s-4.63,1.7-5.29,4h-7.71c-6.34,0-11.5-5.16-11.5-11.5s5.16-11.5,11.5-11.5h21c.83,0,1.5-.67,1.5-1.5s-.67-1.5-1.5-1.5H14.5C6.5,16.01,0,22.51,0,30.51s6.5,14.5,14.5,14.5h7.71c.66,2.3,2.77,4,5.29,4s4.63-1.7,5.29-4h35.71c6.34,0,11.5,5.16,11.5,11.5s-5.16,11.5-11.5,11.5h-7.71c-.66-2.3-2.77-4-5.29-4s-4.63,1.7-5.29,4H18l-15.6-11.7c-.46-.34-1.06-.4-1.57-.14-.51.25-.83.77-.83,1.34v24c0,.57.32,1.09.83,1.34.21.11.44.16.67.16.32,0,.64-.1.9-.3l15.6-11.7h32.21c.66,2.3,2.77,4,5.29,4s4.63-1.7,5.29-4h7.71c8,0,14.5-6.5,14.5-14.5s-6.5-14.5-14.5-14.5h0ZM27.5,46.01c-1.38,0-2.5-1.12-2.5-2.5s1.12-2.5,2.5-2.5,2.5,1.12,2.5,2.5-1.12,2.5-2.5,2.5ZM55.5,72.01c-1.38,0-2.5-1.12-2.5-2.5s1.12-2.5,2.5-2.5,2.5,1.12,2.5,2.5-1.12,2.5-2.5,2.5Z"/></svg>
@@ -22,6 +22,25 @@
   </header>
 
   <div class="landing-hero">
+    <!-- the landing as a placeholder (2026-10-18): shown while #landing
+         carries is-placeholder; the real hero below it is kept, hidden -->
+    <div class="lp-wire">
+      <span class="lp-tag">Work in progress</span>
+      <h1 class="lp-title">Cities Tool Landing <span>Page - placeholder</span></h1>
+      <div class="lp-lines" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="lp-jump">
+        <span class="lp-label">Jump to a section:</span>
+        <button type="button" onclick="enterTool('page-overview')">Who am I?</button>
+        <button type="button" onclick="enterTool('page-export-basket')">Metro Industries</button>
+        <button type="button" onclick="enterTool('page-admin-mix')">Worker Flows</button>
+        <button type="button" onclick="enterTool('page-constraints')">Constraints Diagnosis</button>
+        <button type="button" onclick="enterTool('page-levers')">Levers for Change</button>
+      </div>
+      <div class="lp-go">
+        <button type="button" class="lp-start" onclick="enterTool('page-overview')">Start</button>
+        <span class="lp-scroll">or scroll down<svg viewBox="0 0 16 9" fill="none" aria-hidden="true"><path d="M1.5 1.5 8 7.5l6.5-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      </div>
+    </div>
     <div class="hero-grid">
       <div class="hero-copy">
         <p class="landing-kicker">Growth Lab Cities Tool</p>
@@ -30,7 +49,7 @@
         <p class="intro">Curabitur euismod magna sit amet velit fermentum, at porta risus dictum. Integer tristique ligula nec urna varius, in aliquet sapien pulvinar. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Donec fringilla nunc vitae augue convallis, sed volutpat justo ornare.</p>
         <div class="jump-quiet">
           <span class="jump-quiet-label">Jump to a section:</span>
-          <button type="button" onclick="enterTool('page-overview')">Who are you?</button>
+          <button type="button" onclick="enterTool('page-overview')">Who am I?</button>
           <button type="button" onclick="enterTool('page-export-basket')">Metro Industries</button>
           <button type="button" onclick="enterTool('page-admin-mix')">Worker Flows</button>
           <button type="button" onclick="enterTool('page-constraints')">Constraints Diagnosis</button>
@@ -104,19 +123,23 @@
       <div class="sec" data-sec="page-intro-q1 page-intro-q2 page-intro-q3 page-intro-q4 page-intro-q5 page-intro-q6 page-intro-q7">
         <button class="sec-head" onclick="goTo('page-intro-q1')"><span class="num"><svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13" aria-hidden="true"><path d="M12 2l2.9 6.2 6.6.8-4.9 4.6 1.3 6.5L12 16.9 6.1 20l1.3-6.5L2.5 9l6.6-.8L12 2z"/></svg></span>Explore Your Assumption</button>
       </div>
-      <div class="sec" data-sec="page-overview page-overview-msa page-overview-places page-overview-practice">
-        <button class="sec-head" onclick="goTo('page-overview')"><span class="num">1</span>Who are you?</button>
+      <div class="sec" data-sec="page-overview page-overview-scatter page-overview-flows page-overview-flows-out page-overview-metro page-overview-mscatter page-overview-compare page-overview-practice">
+        <button class="sec-head" onclick="goTo('page-overview')"><span class="num" aria-hidden="true"></span>Who am I?</button>
         <ul class="steps">
-          <li data-step="page-overview"><span class="dot"></span><button onclick="goTo('page-overview')">Your Admin</button></li>
-          <li data-step="page-overview-msa"><span class="dot"></span><button onclick="goTo('page-overview-msa')">Your Metro</button></li>
-          <li data-step="page-overview-places"><span class="dot"></span><button onclick="goTo('page-overview-places')">Admins in your metro</button></li>
+          <li data-step="page-overview"><span class="dot"></span><button onclick="goTo('page-overview')">Where Boston Admin stands</button></li>
+          <li data-step="page-overview-scatter"><span class="dot"></span><button onclick="goTo('page-overview-scatter')">Among all admins</button></li>
+          <li data-step="page-overview-flows"><span class="dot"></span><button onclick="goTo('page-overview-flows')">Who works here</button></li>
+          <li data-step="page-overview-flows-out"><span class="dot"></span><button onclick="goTo('page-overview-flows-out')">Who comes in, who goes out</button></li>
+          <li data-step="page-overview-metro"><span class="dot"></span><button onclick="goTo('page-overview-metro')">Boston Metro</button></li>
+          <li data-step="page-overview-mscatter"><span class="dot"></span><button onclick="goTo('page-overview-mscatter')">Among all metros</button></li>
+          <li data-step="page-overview-compare"><span class="dot"></span><button onclick="goTo('page-overview-compare')">Boston Admin and Boston Metro</button></li>
           <li data-step="check-overview"><span class="dot"></span><button onclick="goTo('check-overview')">Test your knowledge</button></li>
           <li data-step="apply-overview"><span class="dot"></span><button onclick="goTo('apply-overview')">Put your insights</button></li>
           <li data-step="page-overview-practice"><span class="dot"></span><button onclick="goTo('page-overview-practice')">Put in Practice</button></li>
         </ul>
       </div>
       <div class="sec" data-sec="page-export-basket">
-        <button class="sec-head" onclick="goTo('page-export-basket')"><span class="num">2</span>Metro Industries</button>
+        <button class="sec-head" onclick="goTo('page-export-basket')"><span class="num" aria-hidden="true"></span>Metro Industries</button>
         <ul class="steps">
           <li data-step="page-export-basket"><span class="dot"></span><button onclick="goTo('page-export-basket')">What does the metro do for a living?</button></li>
           <li data-step="tierSection"><span class="dot"></span><button onclick="goTo('tierSection')">How tradable is the metro&rsquo;s work?</button></li>
@@ -126,7 +149,7 @@
         </ul>
       </div>
       <div class="sec" data-sec="page-admin-mix">
-        <button class="sec-head" onclick="goTo('page-admin-mix')"><span class="num">3</span>Worker Flows</button>
+        <button class="sec-head" onclick="goTo('page-admin-mix')"><span class="num" aria-hidden="true"></span>Worker Flows</button>
         <ul class="steps">
           <li data-step="page-admin-mix"><span class="dot"></span><button onclick="goTo('page-admin-mix')">One city, two workforces</button></li>
           <li data-step="adminWhoFills" class="mi-rail-default"><span class="dot"></span><button onclick="goTo('adminWhoFills')">Who fills those jobs</button></li>
@@ -145,7 +168,7 @@
         </ul>
       </div>
       <div class="sec" data-sec="page-constraints page-constraints-diagnose page-branch-analysis">
-        <button class="sec-head" onclick="goTo('page-constraints')"><span class="num">4</span>Constraints Diagnosis</button>
+        <button class="sec-head" onclick="goTo('page-constraints')"><span class="num" aria-hidden="true"></span>Constraints Diagnosis</button>
         <ul class="steps">
           <li data-step="page-constraints"><span class="dot"></span><button onclick="goTo('page-constraints')">Where is your constraint?</button></li>
           <li data-step="page-constraints-diagnose"><span class="dot"></span><button onclick="goTo('page-constraints-diagnose')">How we diagnose the constraint</button></li>
@@ -153,12 +176,12 @@
         </ul>
       </div>
       <div class="sec" data-sec="page-levers">
-        <button class="sec-head" onclick="goTo('page-levers')"><span class="num">5</span>Levers for Change</button>
+        <button class="sec-head" onclick="goTo('page-levers')"><span class="num" aria-hidden="true"></span>Levers for Change</button>
         <ul class="steps">
         </ul>
       </div>
       <div class="sec" data-sec="page-extras">
-        <button class="sec-head" onclick="goTo('page-extras')"><span class="num">6</span>Extras</button>
+        <button class="sec-head" onclick="goTo('page-extras')"><span class="num" aria-hidden="true"></span>Extras</button>
         <ul class="steps">
           <li data-step="specializationSection"><span class="dot"></span><button onclick="goTo('specializationSection')">Your City’s Most Specialized Industries</button></li>
         </ul>
@@ -176,9 +199,9 @@
         <div class="spacer"></div>
         <button class="explainers-btn" id="explainersBtn" onclick="toggleExplainers()"><svg viewBox="0 0 95.1 79.5" fill="currentColor" aria-hidden="true"><path d="M93,23h-8.4v-5.2c0-1.1-.9-2-2-2-12.1,0-24,2.4-35.2,7-11.2-4.7-23-7-35.2-7-1.1,0-2,.9-2,2v5.2H2c-1.1,0-2,.9-2,2v52.5c0,1.1.9,2,2,2h91.1c1.1,0,2-.9,2-2V25c-.1-1.1-1-2-2.1-2ZM3.9,75.5V26.9h6.5v43.3c0,1.1.9,2,2,2,8,0,15.8,1.2,23.4,3.3H3.9ZM45.5,74.6c-10-3.9-20.5-6.1-31.3-6.3V19.8c10.9.2,21.3,2.4,31.3,6.5v48.3ZM49.5,26.3c10-4.1,20.5-6.3,31.3-6.6v48.6c-10.9.3-21.3,2.4-31.3,6.3V26.3ZM91.1,75.5h-31.9c7.6-2.1,15.4-3.3,23.4-3.3,1.1,0,2-.9,2-2V26.9h6.5v48.6Z"/></svg>Explainers</button>
         <nav class="toolbar-links">
-          <a href="#" class="current-page" onclick="toggleExplainers(false);return false;">City Diagnosis</a>
+          <a href="#" class="current-page" aria-current="page" onclick="toggleExplainers(false);return false;">City Diagnosis</a>
           <a href="#">About</a>
-          <a href="#">Glossary</a>
+          <a href="#" onclick="openGlossary(null, this);return false;">Glossary</a>
         </nav>
         <button class="btn-journey">
           <svg width="19" height="19" viewBox="0 0 83 83.01" fill="currentColor" aria-hidden="true"><path d="M82.92,7.06s-.01-.05-.02-.07c-.05-.13-.12-.26-.2-.37-.02-.02-.03-.04-.05-.06-.09-.11-.2-.21-.32-.3-.01,0-.01-.01-.02-.01-.12-.08-.26-.14-.41-.18-.01,0-.02-.01-.04-.02L57.86.04c-.24-.06-.49-.06-.73,0l-24,6c-.67.17-1.14.77-1.14,1.46s.47,1.29,1.14,1.46l9.86,2.47v14.07c0,.22.14.42.36.48l14,4s.09.02.14.02.09-.01.14-.02l14-4c.21-.06.36-.26.36-.48v-14.08l8-2v10.08c0,.83.67,1.5,1.5,1.5s1.5-.67,1.5-1.5V7.5c.01-.16-.02-.31-.07-.45h0ZM57.5,11.95l-17.82-4.45,17.82-4.45,17.82,4.45-17.82,4.45ZM68.5,42.01h-35.71c-.66-2.3-2.77-4-5.29-4s-4.63,1.7-5.29,4h-7.71c-6.34,0-11.5-5.16-11.5-11.5s5.16-11.5,11.5-11.5h21c.83,0,1.5-.67,1.5-1.5s-.67-1.5-1.5-1.5H14.5C6.5,16.01,0,22.51,0,30.51s6.5,14.5,14.5,14.5h7.71c.66,2.3,2.77,4,5.29,4s4.63-1.7,5.29-4h35.71c6.34,0,11.5,5.16,11.5,11.5s-5.16,11.5-11.5,11.5h-7.71c-.66-2.3-2.77-4-5.29-4s-4.63,1.7-5.29,4H18l-15.6-11.7c-.46-.34-1.06-.4-1.57-.14-.51.25-.83.77-.83,1.34v24c0,.57.32,1.09.83,1.34.21.11.44.16.67.16.32,0,.64-.1.9-.3l15.6-11.7h32.21c.66,2.3,2.77,4,5.29,4s4.63-1.7,5.29-4h7.71c8,0,14.5-6.5,14.5-14.5s-6.5-14.5-14.5-14.5h0ZM27.5,46.01c-1.38,0-2.5-1.12-2.5-2.5s1.12-2.5,2.5-2.5,2.5,1.12,2.5,2.5-1.12,2.5-2.5,2.5ZM55.5,72.01c-1.38,0-2.5-1.12-2.5-2.5s1.12-2.5,2.5-2.5,2.5,1.12,2.5,2.5-1.12,2.5-2.5,2.5Z"/></svg>
@@ -194,6 +217,9 @@
           <option>City C, United States of America</option>
         </select>
         <nav class="secnav" id="secnav" aria-label="Sections"></nav>
+        <!-- the presenter view's door in the bar (opt-3 of its study): only
+             while a section with a framed figure is showing -->
+        <button type="button" class="pv-open pv-open--bar" data-present title="Present the figure full screen (P)"><svg class="pv-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1.75" y="2.5" width="12.5" height="8.5" rx="1"/><path d="M8 11v2.5M5.5 13.5h5"/></svg><span>Present</span></button>
       </div>
 
       <!-- 0 Introduction to your City (gapminder-style intro quiz, horizontal carousel) -->
@@ -364,112 +390,180 @@
 
       <!-- 1 City Overview -->
       <div class="ov-wrap" id="ovWrap">
+        <!-- Who are you? (2026-10-05): the first four screens of the reference
+             place page, as four beats. The reading on the left, the map on the
+             right (its share of the width as before), each beat setting the map:
+             the city, the metro, where residents work, where workers live.
+             Numbers from who-2024.js; outlines from data/geo/who_commute_geo.js. -->
         <div class="ov-left">
 
           <section class="ov-block" id="page-overview">
             <div class="page-head">
-              <h2>Your Admin</h2>
+              <h2>Where does <span class="city-short">Boston</span> Admin stand?</h2>
             </div>
-            <p class="lede">This is <span class="city-short">Boston</span> &mdash; a city in Massachusetts. Here is
-              where it stands today: each measure&rsquo;s level, its rank among US places, and the places most
-              like it.</p>
-            <p class="lede"><span class="city-short">Boston</span> is home to <strong>673,458</strong> people, the
-              25th largest of 9,593 US places, and its residents earn an average salary of
-              <strong>$106,267</strong>. The typical home is worth <strong>$972,529</strong>, and
-              <strong>3.8%</strong> of its labor force is out of work. The places most like it &mdash; the closest
-              on population, density, wage, home value and share of metro &mdash; are Washington DC, Oakland,
-              Long Beach and Cambridge. <strong>Switch the view to comparison</strong> to set each figure beside
-              the metro&rsquo;s, the peers&rsquo; and the national average.</p>
-            <!-- nothing on this side but the four measures, a tile each: the
-                 level and the rank among US places, and on request the same
-                 measure for the metro, the peer average and the national
-                 average as bars. Built by wyBuild from the WY data below. -->
-            <div class="wy-block" data-wy="admin"></div>
-
+            <p class="lede"><span class="city-short">Boston</span> Admin is a city in Massachusetts. Each of its
+              measures is set here against the US average, and beside the places most like it.</p>
+            <div class="who-ind" data-who="place"></div>
           </section>
 
+          <!-- one chart for the admin (v-6 2026-10-14, v-5 2026-10-15), every US admin by
+               population across and, up the side, the measure picked above
+               it; the measure's own reading under the chart, from the
+               template below -->
+          <section class="ov-block sc-beat" id="page-overview-scatter">
+            <div class="page-head">
+              <h2>How does <span class="city-short">Boston</span> Admin compare with admins of every size?</h2>
+            </div>
+            <p class="lede"><span class="r-each">Each dot is a US admin of about 25,000 people or more, placed by its population across and by
+              the measure you choose up the side.</span><span class="r-map"> The colours split the admins into fifths, and the map shows where each one is.</span></p>
+            <div class="sc-say" aria-live="polite"></div>
+            <div class="ask-chart sc-ask" data-fig="sc" role="group" aria-labelledby="scAskLabA">
+              <p class="ask-lab" id="scAskLabA">Ask the chart</p>
+              <div class="ask-item">
+                <button type="button" class="ask-q" data-ask="a1" aria-expanded="false" aria-controls="scAsk-a1"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Is Boston&nbsp;Admin&rsquo;s pay high for a big city?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
+                <div class="ask-ans" id="scAsk-a1" hidden><p class="ask-a">Of the 36 admins of 500,000 people or more, only six pay more than Boston Admin, San Francisco the most at $180K. Detroit pays the least, at $40K.</p></div>
+              </div>
+              <div class="ask-item">
+                <button type="button" class="ask-q" data-ask="a2" aria-expanded="false" aria-controls="scAsk-a2"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Where is a home worth more than in Boston&nbsp;Admin?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
+                <div class="ask-ans" id="scAsk-a2" hidden><p class="ask-a">In 119 admins, 98 of them in California and most of them under 100,000 people; Los Altos leads at $4.5M. Of the 36 admins of 500,000 or more, only San Jose, at $1.4M, San Francisco, Los Angeles and San Diego.</p></div>
+              </div>
+              <div class="ask-item">
+                <button type="button" class="ask-q" data-ask="a3" aria-expanded="false" aria-controls="scAsk-a3"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Where in Massachusetts is a home hardest to afford?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
+                <div class="ask-ans" id="scAsk-a3" hidden><p class="ask-a">In Everett, where a home costs 10.3 years of pay; Boston Admin, at 9.2, is seventh of the 53. Newton has the state&rsquo;s most expensive homes, $1.4M, but its pay is high too, so a home there costs 5.7 years.</p></div>
+              </div>
+            </div>
+            <div class="who-sc" data-measure="wage" data-switch></div>
+            <template class="who-sc-says">
+              <p data-m="wage"><span class="city-short">Boston</span> Admin pays well, a little under its peers. Pay does not
+                rise with size among US admins: the highest salaries are in small suburbs such as Los Altos and
+                Saratoga in California.</p>
+              <p data-m="home">A <span class="city-short">Boston</span> Admin home costs more than twice the US average. It is
+                worth more than in 92 of every 100 admins on the chart, and more than in each of its peers but Cambridge.</p>
+              <p data-m="unemp">Unemployment sits under the US average. Size says little here: the highest rates are in
+                small farming towns such as Calexico, California, at 29.4%.</p>
+              <p data-m="yp">A typical <span class="city-short">Boston</span> Admin home costs 9.2 years of the average salary,
+                against 5.0 for the US average. Homes are hardest to afford in coastal California, such as Santa Barbara, at 19.5 years.</p>
+            </template>
+          </section>
+
+          <!-- set aside for now (Nil, 2026-10-14); to bring it back, uncomment and
+               restore page-overview-msa in the rail, pageIds and sectionDefs
           <section class="ov-block" id="page-overview-msa">
             <div class="page-head">
-              <h2>Your Metro</h2>
+              <h2>Your city is not an island</h2>
             </div>
-            <p class="lede">The administrative city is one piece of a larger machine. People commute, firms hire,
-              and housing supply responds across a region far wider than the city line &mdash; the labor market.
-              We approximate it with the Metropolitan Statistical Area. <span class="city-short">Boston</span> sits
-              inside the <span class="city-short">Boston</span> MSA, and most of what follows is read at that
-              scale.</p>
-            <p class="lede">The <span class="city-short">Boston</span> MSA holds <strong>5,025,517</strong> people,
-              the 11th largest of 387 US metros, and pays an average salary of <strong>$114,779</strong>, the 5th
-              highest. The typical home is worth <strong>$717,120</strong>, and <strong>3.7%</strong> of its labor
-              force is out of work. Its closest peer metros, by population, density, wage and home value, are
-              Washington, Seattle, San Diego and Denver; the comparison view sets each figure beside theirs and
-              beside the national average.</p>
-            <!-- the same four measures for the metro: ranked among US metros,
-                 and on request set against the peer metros and the national
-                 average -->
-            <div class="wy-block" data-wy="metro"></div>
-            <div class="collapsible-info">
-              <button class="collapsible-header">
-                <span class="ci-mark" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 2.75a6.25 6.25 0 0 0-3.75 11.25c.53.4.87 1 .96 1.66l.09.59h5.4l.09-.59c.09-.66.43-1.26.96-1.66A6.25 6.25 0 0 0 12 2.75Z"/>
-                    <path d="M9.6 18.6h4.8"/>
-                    <path d="M10.5 21h3"/>
-                  </svg>
-                </span>
-                <span class="ci-title">What is a metro area (MSA)?</span>
-                <svg class="collapsible-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M6 9l6 6 6-6"/>
-                </svg>
-              </button>
-              <div class="collapsible-content">
-                <p>A <strong>metropolitan statistical area</strong> is how the US Census draws the functional city: a dense core plus every surrounding county tied to it by commuting. It is the closest official shape to the real labor market — the area within which people can change jobs or homes without changing lives.</p>
-                <p><span class="city-short">Boston</span>’s metro spans 197 cities and towns and about 4.9M people; the administrative city is one of them, home to roughly 13% of the metro’s residents. That is why most of what follows is read at the metro scale.</p>
+            <p class="lede">People live in one town and work in another, and firms hire from all over the
+              region. The economy that matters is that wider labor market, read here at the scale of the
+              <button type="button" class="term" data-term="msa" aria-expanded="false">metro area</button>: for
+              <span class="city-short">Boston</span>, the <span class="city-short">Boston</span> MSA. Much of what
+              follows is read at that scale.</p>
+            <div class="who-ind" data-who="metro"></div>
+          </section>
+          -->
+
+          <!-- the commuting beat (2026-10-14): the three groups Boston's
+               jobs and working residents fall into, as dots that sort
+               themselves out of one cloud; the map beside it shades the
+               places round Boston by what they send, receive or net -->
+          <section class="ov-block" id="page-overview-flows">
+            <div class="page-head">
+              <h2>Who works here, who lives here, who commutes out</h2>
+            </div>
+            <p class="lede"><span class="city-short">Boston</span> has 719K jobs and 348K working residents.
+              190K people do both: they live and work in <span class="city-short">Boston</span>. Commuters fill
+              the other 528K jobs, and 157K residents commute out to work elsewhere.</p>
+            <div class="who-fl" id="whoFlows"></div>
+            <!-- the Flows study's opt-2 (2026-10-18, "the dots go home"): after the
+                 clusters, the balance in a line and as a flow graphic -->
+            <div class="who-fg" id="whoFlowFg" hidden></div>
+            <div class="who-fl who-sk" id="whoSankey" hidden></div>
+            <!-- the map, or the flows as a table (2026-10-18): one choice for the commuting beats -->
+            <div class="who-fl-ctl who-view-ctl"><span class="ctl-label">Show as</span><div class="seg" role="group" aria-label="The map, or the same flows as a table"><button type="button" class="seg-btn is-active" data-view="map" aria-pressed="true">Map</button><button type="button" class="seg-btn" data-view="table" aria-pressed="false">Table</button></div></div>
+            <div class="who-fl-ctl" id="whoFlowCtl">
+              <span class="ctl-label">Map shows</span>
+              <div class="seg" role="group" aria-label="Which commuters the map shows">
+                <button type="button" class="seg-btn is-active" data-flow="in" aria-pressed="true"><i class="fl-sw fl-sw--in" aria-hidden="true"></i><span class="fl-l">Live elsewhere, work in Boston</span><span class="fl-s">Commute in</span></button>
+                <button type="button" class="seg-btn" data-flow="out" aria-pressed="false"><i class="fl-sw fl-sw--out" aria-hidden="true"></i><span class="fl-l">Live in Boston, work elsewhere</span><span class="fl-s">Commute out</span></button>
+                <button type="button" class="seg-btn" data-flow="net" aria-pressed="false"><i class="fl-sw fl-sw--net" aria-hidden="true"></i><span class="fl-l">Where Boston gains or loses workers</span><span class="fl-s">Gains or loses</span></button>
               </div>
             </div>
           </section>
 
-          <!-- 1d Places in your metro — experimental. The map on the right is
-               the picker: while this block is on screen it grows a cell for
-               every place in the MSA; clicking one adds it to the table here.
-               The table carries the numbers, each with its rank in the MSA. -->
-          <section class="ov-block" id="page-overview-places">
-            <div class="page-head page-head--geo">
-              <!-- no geography badge here: the beat is about every place in
-                   the metro rather than about one of them -->
-              <h2>Admins in your metro</h2>
+          <!-- the Flows study's opt-2 adds a second beat (2026-10-18): the out
+               side, on the same map. Present only with ?flows=home; otherwise
+               taken out of the page before anything counts the beats -->
+          <section class="ov-block who-home-b" id="page-overview-flows-out">
+            <div class="page-head">
+              <h2>Who commutes out, and which way more go</h2>
             </div>
-            <p class="lede"><span class="city-short">Boston</span> is one of many places inside the
-              <span class="city-short">Boston</span> MSA. How much of the metro is it &mdash; its share of the
-              region&rsquo;s people and its wage bill &mdash; and how does it rank against the metro&rsquo;s other
-              places? It holds <strong>24.8%</strong> of the metro&rsquo;s people and <strong>19.9%</strong> of its
-              wage bill, the largest shares of any place in the region, on an average salary a little under the
-              metro&rsquo;s own.</p>
-            <p class="lede">The table sets the admin beside the metro as a whole and beside its peers, each figure
-              with its rank among the metro&rsquo;s places. <strong>Add any place from the menu, or click it on the
-              map</strong>, and it joins them.</p>
+            <p class="lede">348K Bostonians have jobs. 190K work in <span class="city-short">Boston</span>; 157K, almost half,
+              work somewhere else, mostly west, where the jobs are. Cambridge alone takes 25K, one in six, and is the
+              only one of the five largest partners that takes more than it sends.</p>
+            <div class="who-fl-ctl who-view-ctl"><span class="ctl-label">Show as</span><div class="seg" role="group" aria-label="The map, or the same flows as a table"><button type="button" class="seg-btn is-active" data-view="map" aria-pressed="true">Map</button><button type="button" class="seg-btn" data-view="table" aria-pressed="false">Table</button></div></div>
+            <p class="who-note who-home-note">Out-flows are known for 80 metro towns, those where <span class="city-short">Boston</span> is among the largest sources of workers.</p>
+          </section>
 
-            <div class="ctl plc-ctl">
-              <span class="ctl-label">Add a place</span>
-              <select id="placesPickSel" aria-label="Add a place to the table">
-                <option value="" selected>Choose a place&hellip;</option>
-              </select>
-              <!-- the colour-by control is set aside for now; the wrapper
-                   keeps it and its script intact for when it returns -->
-              <span class="plc-fill" hidden>
-                <span class="ctl-label">Color map by</span>
-                <select id="placesFillSel" aria-label="Color the map by a measure">
-                  <option value="none" selected>None</option>
-                </select>
-                <span class="plc-legend" id="placesLegend" hidden>
-                  <span class="lo"></span><i class="plc-ramp"></i><span class="hi"></span>
-                </span>
-              </span>
+          <!-- the metro (2026-10-14): its table and its three charts, read the
+               way the admin's are, against every US metro and its peer metros -->
+          <section class="ov-block" id="page-overview-metro">
+            <div class="page-head">
+              <h2>Where does <span class="city-short">Boston</span> Metro stand?</h2>
             </div>
-            <!-- the table stands from the start: the admin, the metro and the
-                 peers, with the reader's picks added beside them -->
-            <div class="plc-wrap">
-              <table class="plc-table" id="placesTable" aria-live="polite"></table>
+            <p class="lede"><span class="city-short">Boston</span> Metro is the labor market around <span class="city-short">Boston</span> Admin: 5.0 million people across seven counties
+              in Massachusetts and New Hampshire. Its measures are set here against the average US metro, and beside
+              the metros most like it.</p>
+            <div class="who-ind" data-who="metro"></div>
+          </section>
+
+          <section class="ov-block sc-beat" id="page-overview-mscatter">
+            <div class="page-head">
+              <h2>How does <span class="city-short">Boston</span> Metro compare with metros of every size?</h2>
             </div>
+            <p class="lede"><span class="r-each">Each dot is a US metro, placed by its population across and by the measure you choose up the side.</span><span class="r-map"> The colours
+              split the metros into fifths, and the map shows each one at its most densely settled point.</span></p>
+            <div class="sc-say" aria-live="polite"></div>
+            <div class="ask-chart sc-ask" data-fig="sc" role="group" aria-labelledby="scAskLabM">
+              <p class="ask-lab" id="scAskLabM">Ask the chart</p>
+              <div class="ask-item">
+                <button type="button" class="ask-q" data-ask="m1" aria-expanded="false" aria-controls="scAsk-m1"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Which metros pay more than Boston&nbsp;Metro?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
+                <div class="ask-ans" id="scAsk-m1" hidden><p class="ask-a">Only four of the 376: San Jose, at $203K, San Francisco, at $164K, Seattle, at $127K, and Naples, Florida, a metro of 416,000 people, at about the same, $115K. New York, four times Boston Metro&rsquo;s size, pays $104K.</p></div>
+              </div>
+              <div class="ask-item">
+                <button type="button" class="ask-q" data-ask="m2" aria-expanded="false" aria-controls="scAsk-m2"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Where is a home worth more than in Boston&nbsp;Metro?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
+                <div class="ask-ans" id="scAsk-m2" hidden><p class="ask-a">In 16 metros, 13 of them in California or Hawaii; San Jose leads at $1.6M. Among the 54 metros of a million people or more, only five: San Jose, San Francisco, Los Angeles, San Diego and Seattle.</p></div>
+              </div>
+              <div class="ask-item">
+                <button type="button" class="ask-q" data-ask="m3" aria-expanded="false" aria-controls="scAsk-m3"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Is a home harder to afford in other big metros?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
+                <div class="ask-ans" id="scAsk-m3" hidden><p class="ask-a">In 12 of the 54 metros of a million people or more: Los Angeles takes 10.7 years of pay, San Diego 10.0 and New York 6.5, against Boston Metro&rsquo;s 6.2. Pittsburgh, at 2.8 years, is the easiest.</p></div>
+              </div>
+            </div>
+            <div class="who-sc" data-set="metro" data-measure="wage" data-switch></div>
+            <template class="who-sc-says">
+              <p data-m="wage"><span class="city-short">Boston</span> Metro pays among the most in the country. Pay rises with size across US metros, and
+                <span class="city-short">Boston</span> Metro pays about 30% more than a metro its size typically does.
+                Only San Jose, San Francisco and Seattle pay clearly more; Naples pays about the same.</p>
+              <p data-m="home">A <span class="city-short">Boston</span> Metro home costs twice the average US metro&rsquo;s. Homes cost more in bigger metros
+                too, but a typical home in <span class="city-short">Boston</span> Metro, at $717K, is worth about 1.6
+                times what a metro its size would suggest.</p>
+              <p data-m="unemp">Unemployment sits a little under the US average. Size says little about unemployment
+                across metros: the highest rates are in farming regions of California and Arizona, such as El Centro,
+                at 18.4%.</p>
+              <p data-m="yp">A typical home in <span class="city-short">Boston</span> Metro costs 6.2 years of the average salary, against 4.9 for the average
+                US metro. Among its peer metros only San Diego, at 10.0 years, takes clearly longer.</p>
+            </template>
+          </section>
+
+          <!-- the city against its metro (2026-10-14): the last beat before
+               the summary, the admin's four measures set against the metro's,
+               the way the first table sets them against the US average -->
+          <section class="ov-block" id="page-overview-compare">
+            <div class="page-head">
+              <h2>How does <span class="city-short">Boston</span> Admin compare with <span class="city-short">Boston</span> Metro?</h2>
+            </div>
+            <p class="lede"><span class="city-short">Boston</span> Admin is <span class="city-short">Boston</span> Metro&rsquo;s largest city, yet only 13 of every
+              100 people in <span class="city-short">Boston</span> Metro live there. Homes in <span class="city-short">Boston</span> Admin cost more than across <span class="city-short">Boston</span> Metro, pay is a little
+              lower, and unemployment is a little higher.</p>
+            <div class="who-cmp" id="whoCompare"></div>
           </section>
 
         </div>
@@ -489,7 +583,7 @@
         <div class="practice-card">
           <div class="practice-head">
             <span class="practice-badge">
-              <svg viewBox="0 0 32 26" fill="none" stroke="#255862" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="6" r="3.6"/><circle cx="22" cy="6" r="3.6"/><path d="M3 24v-4.5a5.5 5.5 0 0 1 5.5-5.5h3a5.5 5.5 0 0 1 5.5 5.5V24"/><path d="M17.5 14.6a5.5 5.5 0 0 1 3-0.6h3A5.5 5.5 0 0 1 29 19.5V24"/></svg>
+              <svg viewBox="0 0 32 26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="6" r="3.6"/><circle cx="22" cy="6" r="3.6"/><path d="M3 24v-4.5a5.5 5.5 0 0 1 5.5-5.5h3a5.5 5.5 0 0 1 5.5 5.5V24"/><path d="M17.5 14.6a5.5 5.5 0 0 1 3-0.6h3A5.5 5.5 0 0 1 29 19.5V24"/></svg>
             </span>
             <h3>Put insights into action</h3>
           </div>
@@ -498,7 +592,7 @@
           <div class="practice-actions">
             <button class="btn-save" onclick="submitPracticeOverview()">Save my Response</button>
             <span class="practice-confirm" id="practiceOverviewConfirm">
-              <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="#255862" stroke-width="1.5"/><path d="M5 8.2 7.2 10.4 11 6" stroke="#255862" stroke-width="1.5" stroke-linecap="round"/></svg>
+              <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M5 8.2 7.2 10.4 11 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
               Saved to your Learning Journey.
             </span>
           </div>
@@ -507,21 +601,44 @@
 
       <!-- 2 Metro Industries · What the metro does for a living -->
       <section class="page" id="page-export-basket">
-        <div class="page-head page-head--geo">
+        <!-- no "Viewing" tag here: the section is named for the metro, in the
+             bar and in each beat's counter, and its title says the scale -->
+        <div class="page-head">
           <h2>What does the metro do for a living?</h2>
-          <button type="button" class="geo-badge geo-badge--metro" onclick="openGeoMap('metro')" title="See this geography on the map"><svg viewBox="0 0 30 22" width="25" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="15" cy="11" rx="13" ry="8.6" stroke-dasharray="2.6 3"/><path d="M10.5 15.5h9"/><path d="M12.2 15.5V10h3v5.5"/><path d="M16.6 15.5V7h3v8.5"/></svg><span class="gb-view">Viewing:</span><span class="gb-name"><span class="city-short">Boston</span> Metro</span></button>
         </div>
         <!-- beat 1: every industry, sized by its jobs and grouped into
              sectors; the complexity pieces sit here, since this is the beat
              whose map the reader colours -->
         <div class="lede-stat-row">
-          <p class="lede"><strong>2.3 million</strong> jobs across 877 industries. <span class="mi-hl"
+          <p class="lede">2.3 million jobs across 877 industries. <span class="mi-hl"
             data-sector="Professional &amp; Business" tabindex="0">Professional &amp; business services</span> and
             <span class="mi-hl" data-sector="Education &amp; Health" tabindex="0">education &amp; health</span> are
             the two largest sectors, each about a quarter of the jobs, and <span class="mi-hl"
             data-sector="Trade &amp; Transportation" tabindex="0">trade &amp; transportation</span> holds another
-            sixth. The single largest industry is general hospitals, at <strong>5.4%</strong> of all jobs, then
+            sixth. The single largest industry is general hospitals, at 5.4% of all jobs, then
             full-service restaurants at 4.6% and colleges and universities at 3.7%.</p>
+        </div>
+        <!-- "Ask the chart": questions the figure answers under settings most
+             readers never try. A row sets that view (the beat's own view plus
+             the question's settings, treemap.js ASKS) and opens its answer
+             here, in plain words; the row, reading "Showing", is the way
+             back. One at a time, and the answer stands only while the chart
+             shows it -->
+        <div class="ask-chart" data-fig="mi" role="group" aria-labelledby="miAskLab1">
+          <p class="ask-lab" id="miAskLab1">Ask the chart</p>
+          <span class="mi-sr" id="miAskHint">Changes the chart to answer this question. Press again to go back to the starting view.</span>
+          <div class="ask-item">
+            <button type="button" class="ask-q" data-ask="b1q1" aria-expanded="false" aria-controls="miAsk-b1q1" aria-describedby="miAskHint"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Are the metro&rsquo;s biggest industries also its most complex?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
+            <div class="ask-ans" id="miAsk-b1q1" hidden>
+              <p class="ask-a">No. General hospitals, the largest, is 10th of these 15 by <button type="button" class="term" data-term="complexity" aria-expanded="false">complexity</button>. Software publishers leads.</p>
+            </div>
+          </div>
+          <div class="ask-item">
+            <button type="button" class="ask-q" data-ask="b1q2" aria-expanded="false" aria-controls="miAsk-b1q2" aria-describedby="miAskHint"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Which of the two largest sectors holds the metro&rsquo;s complex work?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
+            <div class="ask-ans" id="miAsk-b1q2" hidden>
+              <p class="ask-a">Professional &amp; business. About 45% of its jobs are in the teal cells, of higher <button type="button" class="term" data-term="complexity" aria-expanded="false">complexity</button>. In education &amp; health, about 4%.</p>
+            </div>
+          </div>
         </div>
         <!-- the complexity rank is the complexity colouring's takeaway: it comes
              forward when the reader colours the map by complexity -->
@@ -532,28 +649,7 @@
             </div>
             <div class="ac-body">
               <p class="ac-head"><span class="ac-anchor" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18"/><path d="M8.5 20v-8h7v8"/><path d="M3 20v-4.5h5.5"/><path d="M15.5 14H21v6"/><path d="m12 3.2 1.1 2.2 2.4.4-1.7 1.7.4 2.4L12 8.8l-2.2 1.1.4-2.4-1.7-1.7 2.4-.4z"/></svg></span><span>of 382 US metros</span></p>
-              <p class="rc-sub">Complexity rank, 2024</p>
-            </div>
-          </div>
-        <!-- the complexity explainer, like the rank above it, comes forward only
-             when the reader colours the map by complexity -->
-        <div class="collapsible-info is-off" id="miComplexityInfo" aria-hidden="true" inert>
-            <button class="collapsible-header">
-              <span class="ci-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.75a6.25 6.25 0 0 0-3.75 11.25c.53.4.87 1 .96 1.66l.09.59h5.4l.09-.59c.09-.66.43-1.26.96-1.66A6.25 6.25 0 0 0 12 2.75Z"/><path d="M9.6 18.6h4.8"/><path d="M10.5 21h3"/></svg></span>
-              <span class="ci-title">What is economic complexity?</span>
-              <svg class="collapsible-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M6 9l6 6 6-6"/>
-              </svg>
-            </button>
-            <div class="collapsible-content">
-              <p><strong>Complexity</strong> measures the knowledge an industry takes to run. Work that needs many people
-                holding many different specialized skills &mdash; medical devices, financial engineering, research
-                instruments &mdash; is complex. Work that almost anywhere can do &mdash; food service, retail, basic
-                construction &mdash; is not.</p>
-              <p>It matters because complex work is hard to copy. Places that hold it tend to pay more, to weather
-                downturns better, and to find it easier to move into the next complex thing, because the know-how
-                is already in the room. A metro&rsquo;s complexity is the mix of its industries weighted by how much
-                of each it does.</p>
+              <p class="rc-sub"><button type="button" class="term" data-term="complexity" aria-expanded="false">Complexity</button> rank, 2024</p>
             </div>
           </div>
         <!-- One figure serves all three beats. The engine lifts it into the
@@ -576,8 +672,9 @@
                 <span class="mi-s-lead mi-s-spec">The most specialized industries,</span>
                 <span class="mi-s-first">shown</span> as a
                 <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="miSView" aria-label="The mix as a treemap or as a ranking"><option value="map">treemap</option><option value="alt">ranking</option></select></span><span class="mi-s-level"> at the
-                <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="miSLevel" aria-label="The level the map is tiled at"><option value="6" selected>6-digit</option><option value="4">4-digit</option><option value="2">sector</option></select></span> level</span><span class="mi-s-sort"> sorted by
-                <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="miSSort" aria-label="Order of the bars"><option value="jobs">jobs</option><option value="cx">complexity</option></select></span></span>, coloured by
+                <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="miSLevel" aria-label="The level the map is tiled at"><option value="6">6-digit</option><option value="4">4-digit</option><option value="2" selected>2-digit</option><option value="1">sector</option></select></span> level</span><span class="mi-s-sort"> sorted by
+                <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="miSSort" aria-label="Order of the bars"><option value="jobs">jobs</option><option value="cx">complexity</option></select></span></span><span class="mi-s-sort4"> sorted by
+                <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="miSSortTier" aria-label="Order of the bars"><option value="jobs">jobs</option><option value="trad">tradability</option></select></span></span>, coloured by
                 <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="miSColor" aria-label="What the cells are coloured by"><option value="sector">sector</option><option value="complexity">complexity</option></select></span>, in
                 <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="miSYear" aria-label="Year"><option value="2024" selected>2024</option><option value="2014">2014</option></select></span>
               </p>
@@ -616,16 +713,18 @@
                    at. The bars stay industries, so it shows with the map only -->
               <span class="mi-ctlpair" id="miLevelPair">
                 <span class="ctl-label">Level</span>
-                <!-- opt-1 of the level-control study: a toggle, sector or industry -->
+                <!-- opt-1 of the level-control study: a toggle, sector, 2-digit or industry -->
                 <div class="seg" id="miLevel" role="group" aria-label="The level the map is tiled at">
-                  <button type="button" class="seg-btn" data-level="2" aria-pressed="false">Sector</button>
-                  <button type="button" class="seg-btn is-active" data-level="6" aria-pressed="true" aria-label="Industry, 6-digit">Industry</button>
+                  <button type="button" class="seg-btn" data-level="1" aria-pressed="false">Sector</button>
+                  <button type="button" class="seg-btn is-active" data-level="2" aria-pressed="true" aria-label="2-digit sector">2-digit</button>
+                  <button type="button" class="seg-btn" data-level="6" aria-pressed="false" aria-label="Industry, 6-digit">Industry</button>
                 </div>
                 <!-- opt-2: a menu of the three grains -->
                 <select id="miLevelSel" aria-label="The level the map is tiled at">
-                  <option value="6" selected>6-digit</option>
+                  <option value="6">6-digit</option>
                   <option value="4">4-digit</option>
-                  <option value="2">Sector</option>
+                  <option value="2" selected>2-digit</option>
+                  <option value="1">Sector</option>
                 </select>
               </span>
               <!-- the bars' own order, offered only while the bars are up:
@@ -637,13 +736,24 @@
                   <button type="button" class="seg-btn" data-barsort="cx" aria-pressed="false">Complexity</button>
                 </div>
               </span>
+              <!-- the tiers beat's bars: the length of the bar, or the
+                   tradability beside it -->
+              <span class="mi-ctlpair" id="miTierSortPair">
+                <span class="ctl-label">Sort by</span>
+                <div class="seg" id="miTierSort" role="group" aria-label="Order of the bars">
+                  <button type="button" class="seg-btn is-active" data-tiersort="jobs" aria-pressed="true">Jobs</button>
+                  <button type="button" class="seg-btn" data-tiersort="trad" aria-pressed="false">Tradability</button>
+                </div>
+              </span>
             </div>
-            <!-- the ranking's order: by concentration, by size, or by the gap
+            <!-- the ranking's order (its words "specialization" since 2026-10-07,
+                 Nil: "in the third beat, change all concentration to
+                 Specialization"): by specialization, by size, or by the gap
                  against the peers; the rows and their bars travel together -->
             <div class="mi-view mi-sort" id="miSort">
               <span class="ctl-label">Sort by</span>
               <div class="seg" role="group" aria-label="Order of the ranking">
-                <button type="button" class="seg-btn is-active" data-sort="rca" aria-pressed="true">Concentration</button>
+                <button type="button" class="seg-btn is-active" data-sort="rca" aria-pressed="true">Specialization</button>
                 <button type="button" class="seg-btn" data-sort="jobs" aria-pressed="false">Jobs</button>
                 <button type="button" class="seg-btn" data-sort="gap" aria-pressed="false">Against peers</button>
               </div>
@@ -651,7 +761,20 @@
                    ranking's own sentence, kept in step with the buttons -->
               <p class="mi-sentence mi-sentence--rank" id="miSRank">
                 <span class="mi-s-rank-lead">The most specialized tradable industries,</span> sorted by
-                <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="miSSortRank" aria-label="Order of the ranking"><option value="rca">concentration</option><option value="jobs">jobs</option><option value="gap">gap against peers</option></select></span>
+                <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="miSSortRank" aria-label="Order of the ranking"><option value="rca">specialization</option><option value="jobs">jobs</option><option value="gap">specialization against peers</option></select></span>
+              </p>
+              <!-- the ranking's key, at the right of its own row (2026-10-04,
+                   moved up from under the chart): the peers' mark, named as a
+                   term, so a press or a pointer opens a card on the five peer
+                   metros; under the peers order, the line the bars leave from
+                   (its two bar swatches, "more specialized here" and "less",
+                   were taken out on 2026-10-07 at Nil's ask: the signed
+                   values and the axis say which way a bar runs) -->
+              <p class="spec-key" id="miSpecKey">
+                <span class="sk-item"><i class="sk-peer" aria-hidden="true"></i><button type="button" class="term" data-term="peers" aria-expanded="false">The five peer metros together</button></span>
+              </p>
+              <p class="spec-key spec-key--gap" id="miSpecKeyGap">
+                <span class="sk-item"><i class="sk-base" aria-hidden="true"></i><span>the same share as the <button type="button" class="term" data-term="peers" aria-expanded="false">peers</button></span></span>
               </p>
             </div>
             <!-- The studies are not controls the reader is meant to use: they
@@ -661,11 +784,19 @@
             <div class="mi-studies" id="miStudies">
               <button type="button" class="mi-studies-btn" aria-expanded="false" aria-controls="miStudiesPanel">opt</button>
               <div class="mi-studies-panel" id="miStudiesPanel" role="group" aria-label="Design studies" hidden>
+                <label class="mi-study" id="miPresentPair">
+                  <span>Present button</span>
+                  <select id="miPresentAt" aria-label="Where the presenter view's button sits">
+                    <option value="frame" selected>opt-1</option>
+                    <option value="eyebrow">opt-2</option>
+                    <option value="bar">opt-3</option>
+                  </select>
+                </label>
                 <label class="mi-study" id="miRowPair">
                   <span>Control row</span>
                   <select id="miRowOpt" aria-label="How the head's controls are set">
-                    <option value="tray" selected>opt-1</option>
-                    <option value="sentence">opt-2</option>
+                    <option value="tray">opt-1</option>
+                    <option value="sentence" selected>opt-2</option>
                   </select>
                 </label>
                 <label class="mi-study" id="miLevelOptPair">
@@ -678,8 +809,8 @@
                 <label class="mi-study" id="miKeyPair">
                   <span>Key actions</span>
                   <select id="miKeyOpt" aria-label="What the key's entries do">
-                    <option value="inline" selected>opt-1</option>
-                    <option value="card">opt-2</option>
+                    <option value="inline">opt-1</option>
+                    <option value="card" selected>opt-2</option>
                   </select>
                 </label>
                 <label class="mi-study" id="miPalPair">
@@ -710,15 +841,30 @@
                 <label class="mi-study" id="miGroundPair">
                   <span>Tier grounds</span>
                   <select id="miGround" aria-label="How the tiers' grounds are drawn">
-                    <option value="frame" selected>opt-1</option>
+                    <option value="frame">opt-1</option>
                     <option value="grey">opt-2</option>
+                    <option value="clean" selected>opt-3</option>
                   </select>
                 </label>
-                <label class="mi-study" id="miTierPair">
-                  <span>Tier shares</span>
-                  <select id="miTierOpt" aria-label="Where the tiers' shares are shown">
-                    <option value="cards">opt-1</option>
-                    <option value="donut" selected>opt-2</option>
+                <label class="mi-study" id="miAskCuePair">
+                  <span>Answer shown</span>
+                  <select id="miAskCue" aria-label="How the figure says it is showing a question's answer">
+                    <option value="marks">opt-1</option>
+                    <option value="tab" selected>opt-2</option>
+                  </select>
+                </label>
+                <label class="mi-study" id="miMoreAtPair">
+                  <span>Show all</span>
+                  <select id="miMoreAt" aria-label="Where the Show all button stands: over the names, or under the last row">
+                    <option value="head">opt-1</option>
+                    <option value="foot" selected>opt-2</option>
+                  </select>
+                </label>
+                <label class="mi-study" id="miMoreLookPair">
+                  <span>Show all box</span>
+                  <select id="miMoreLook" aria-label="How the Show all box is drawn: a teal outline, or a tinted box">
+                    <option value="outline" selected>opt-1</option>
+                    <option value="tint">opt-2</option>
                   </select>
                 </label>
                 <label class="mi-study" id="miRankOptPair">
@@ -759,6 +905,13 @@
           <!-- what the map is showing, for a reader who cannot see it: said
                again, politely, whenever it changes -->
           <p class="mi-sr" id="miLive" aria-live="polite"></p>
+          <!-- what the map shows, as a table, over the map: its cells at the
+               level it is tiled at, largest first, with the readings the
+               card carries and nothing the page does not show -->
+          <div class="mi-table" id="miTable">
+            <button type="button" class="mi-table-btn" id="miTableBtn" aria-expanded="false" aria-controls="miTableWrap"><span class="mi-table-btn-txt">Show as table</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+            <div class="mi-table-wrap" id="miTableWrap" hidden tabindex="0" role="region" aria-label="The map, as a table"></div>
+          </div>
           <div class="tradable-viz-wrapper">
             <svg class="viz-big" id="miTreemapSvg" role="group" aria-label="All industries" tabindex="-1" width="880" height="500" viewBox="0 0 880 500" xmlns="http://www.w3.org/2000/svg" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;"></svg>
             <div class="rca-tip" id="miTip" role="tooltip" hidden></div>
@@ -780,63 +933,42 @@
                 <span class="cl-gradient"></span>
                 <span class="cl-label">More complex</span>
               </div>
+              <span class="cl-none"><i aria-hidden="true"></i>Not rated</span>
             </div>
-            <p class="spec-key" id="miSpecKey">
-              <span class="sk-item"><i class="sk-peer"></i>Peer metro average</span>
-            </p>
-            <!-- the key for the peers order, where the bar is the gap itself -->
-            <p class="spec-key spec-key--gap" id="miSpecKeyGap">
-              <span class="sk-item"><i class="sk-ahead"></i>more concentrated here than in the peer metros</span>
-              <span class="sk-item"><i class="sk-behind"></i>less than in the peer metros</span>
-              <span class="sk-item"><i class="sk-base"></i>the peer average</span>
-            </p>
-          </div>
-          <!-- the same industries as a table: whatever the map is showing,
-               largest first, with the readings the card carries -->
-          <div class="mi-table" id="miTable">
-            <button type="button" class="mi-table-btn" id="miTableBtn" aria-expanded="false" aria-controls="miTableWrap"><span class="mi-table-btn-txt">Show as table</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
-            <div class="mi-table-wrap" id="miTableWrap" hidden tabindex="0" role="region" aria-label="The industries on the map, as a table"></div>
           </div>
         </div>
 
         <!-- beat 2: the same industries travel into their three tiers by
-             tradability, the shares in the donut beside this text -->
+             tradability; each tier's share of the jobs is printed on its
+             own ground in the chart, after its name -->
         <div class="export-subsection" id="tierSection">
           <div class="subsection-header">
             <h3>How tradable is the metro&rsquo;s work?</h3>
           </div>
           <div class="lede-stat-row">
-            <p class="lede">The same blocks, now sorted into three tiers by how much of what they make can be sold
-              outside the metro. Most of the metro&rsquo;s work does not sell outward. Local work &mdash; restaurants,
-              grocers, family services &mdash; is 49% of jobs, and another 28% is partly traded. Only 23% is
+            <p class="lede">The same blocks sorted into three tiers by <button type="button" class="term" data-term="tradability" aria-expanded="false">tradability</button>: how much of their output sells outside the metro. Much of the metro&rsquo;s work does not sell outward. Local work, such as restaurants
+              and grocers, is 49% of jobs, and another 28% is partly traded. Only 23% is
               traded, and that is the part bringing new income in.</p>
-            <!-- the three tiers by name, each with two of the metro's own
-                 industries; the score itself is shown nowhere -->
-            <div class="tscale" id="miTradScale" hidden></div>
-            <!-- opt-2 of the tier study: the shares as a donut, with the
-                 chart carrying the tier names alone; hovering a tier names
-                 its largest industries and their jobs -->
-            <div class="tier-donut" id="miTierDonut" hidden></div>
           </div>
-          <div class="collapsible-info">
-            <button class="collapsible-header">
-              <span class="ci-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.75a6.25 6.25 0 0 0-3.75 11.25c.53.4.87 1 .96 1.66l.09.59h5.4l.09-.59c.09-.66.43-1.26.96-1.66A6.25 6.25 0 0 0 12 2.75Z"/><path d="M9.6 18.6h4.8"/><path d="M10.5 21h3"/></svg></span>
-              <span class="ci-title">How do we measure tradability?</span>
-              <svg class="collapsible-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M6 9l6 6 6-6"/>
-              </svg>
-            </button>
-            <div class="collapsible-content">
-              <p>Each industry is placed in a tier by how much of what it makes can be sold to someone outside
-                the metro.</p>
-              <!-- the three terms the page speaks in, each defined in a line beside
-                   its colour, in the order the grounds take -->
-              <dl class="tier-gloss">
-                <div><i style="background:#255862"></i><dt>Traded</dt><dd>sells most of its output outside the metro, so its earnings are new income arriving here</dd></div>
-                <div><i style="background:#59838c"></i><dt>Partly traded</dt><dd>sells some outside and some to the people already here</dd></div>
-                <div><i style="background:#b9ccd0"></i><dt>Local</dt><dd>serves the people already here; the customer has to be standing there</dd></div>
-              </dl>
-              <p class="ci-foot">The tiers are cuts on a continuous measure, so an industry near a cut could fall the other way.</p>
+          <!-- "Ask the chart": questions the figure answers under settings most
+               readers never try. A row sets that view (the beat's own view plus
+               the question's settings, treemap.js ASKS) and opens its answer
+               here, in plain words; the row, reading "Showing", is the way
+               back. One at a time, and the answer stands only while the chart
+               shows it -->
+          <div class="ask-chart" data-fig="mi" role="group" aria-labelledby="miAskLab2">
+            <p class="ask-lab" id="miAskLab2">Ask the chart</p>
+            <div class="ask-item">
+              <button type="button" class="ask-q" data-ask="b2q1" aria-expanded="false" aria-controls="miAsk-b2q1" aria-describedby="miAskHint"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Is the work the metro sells outside also its most complex work?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
+              <div class="ask-ans" id="miAsk-b2q1" hidden>
+                <p class="ask-a">Largely, yes. 63% of traded jobs are in the teal cells, of higher <button type="button" class="term" data-term="complexity" aria-expanded="false">complexity</button>, against 6% of local jobs.</p>
+              </div>
+            </div>
+            <div class="ask-item">
+              <button type="button" class="ask-q" data-ask="b2q2" aria-expanded="false" aria-controls="miAsk-b2q2" aria-describedby="miAskHint"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">What does the metro actually sell outside its borders?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
+              <div class="ask-ans" id="miAsk-b2q2" hidden>
+                <p class="ask-a">Mostly knowledge services. Professional &amp; business is 61% of traded jobs; manufacturing, 21%.</p>
+              </div>
             </div>
           </div>
         </div>
@@ -849,33 +981,37 @@
           </div>
           
           <div class="lede-stat-row">
-            <p class="lede">The metro is most concentrated in <span class="mi-hl" data-on="6"
-              data-ind="Fabric Coating Mills" tabindex="0">fabric coating mills</span>, 12 times the national rate,
-              then <span class="mi-hl" data-on="6"
+            <p class="lede">The list opens with <span class="mi-hl" data-on="6"
               data-ind="Research and Development in Biotechnology (except Nanobiotechnology)" tabindex="0">R&amp;D in
-              biotechnology</span> at 10.8 and <span class="mi-hl" data-on="6"
+              biotechnology</span>, 10.8 times the national rate, then <span class="mi-hl" data-on="6"
               data-ind="Other Guided Missile and Space Vehicle Parts and Auxiliary Equipment Manufacturing"
-              tabindex="0">guided missile and space vehicle parts</span> at 10.3. Concentration is not size: fabric
-              coating mills reach 12 times on <strong>600 jobs</strong>, while biotechnology R&amp;D employs
-              <strong>62,000</strong> at 10.8 &mdash; the one industry that is both.</p>
+              tabindex="0">guided missile and space vehicle parts</span> at 10.3 and <span class="mi-hl" data-on="6"
+              data-ind="Analytical Laboratory Instrument Manufacturing" tabindex="0">laboratory instruments</span> at 9.0.
+              <button type="button" class="term" data-term="specialization" aria-expanded="false">Specialization</button> is not size:
+              marine fishing reaches 8.5 times on 74 jobs, while biotechnology R&amp;D employs
+              61,687 at 10.8; only colleges and universities, at 4.3, employ more.</p>
           </div>
-          <div class="collapsible-info">
-            <button class="collapsible-header">
-              <span class="ci-mark" aria-hidden="true"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.75a6.25 6.25 0 0 0-3.75 11.25c.53.4.87 1 .96 1.66l.09.59h5.4l.09-.59c.09-.66.43-1.26.96-1.66A6.25 6.25 0 0 0 12 2.75Z"/><path d="M9.6 18.6h4.8"/><path d="M10.5 21h3"/></svg></span>
-              <span class="ci-title">What is specialization?</span>
-              <svg class="collapsible-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
-            </button>
-            <div class="collapsible-content">
-              <p>An industry counts as a <strong>specialization</strong> when the metro does more of it than the
-                country does. The measure divides the industry&rsquo;s share of jobs here by its share of jobs
-                nationally: <strong>1.0&times;</strong> is exactly the national rate, <strong>2.0&times;</strong> is
-                twice as concentrated here as anywhere else.</p>
-              <p>It says nothing about size. A small industry can be a powerful specialization and a large one can be
-                entirely ordinary &mdash; this measures what is <em>distinctive</em> about the metro, not what
-                employs the most people.</p>
+          <!-- "Ask the chart": questions the figure answers under settings most
+               readers never try. A row sets that view (the beat's own view plus
+               the question's settings, treemap.js ASKS) and opens its answer
+               here, in plain words; the row, reading "Showing", is the way
+               back. One at a time, and the answer stands only while the chart
+               shows it -->
+          <div class="ask-chart" data-fig="mi" role="group" aria-labelledby="miAskLab3">
+            <p class="ask-lab" id="miAskLab3">Ask the chart</p>
+            <div class="ask-item">
+              <button type="button" class="ask-q" data-ask="b3q1" aria-expanded="false" aria-controls="miAsk-b3q1" aria-describedby="miAskHint"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">How do these specialties compare with the peer metros?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
+              <div class="ask-ans" id="miAsk-b3q1" hidden>
+                <p class="ask-a">The chart shows the ten furthest ahead of the five <button type="button" class="term" data-term="peers" aria-expanded="false">peer metros</button> together and the ten furthest behind. Of all 200, 157 are more specialized here, 14 match the peers and 29 trail them. Guided missile and space vehicle parts lead, at 10.3 times the national rate against the peers&rsquo; 0.2, then biotechnology R&amp;D, at 10.8 against 2.4. The two furthest behind, IT systems design and emergency relief, trail by 1.1; IT systems design is also one of the largest, with 28,225 jobs.</p>
+              </div>
+            </div>
+            <div class="ask-item">
+              <button type="button" class="ask-q" data-ask="b3q2" aria-expanded="false" aria-controls="miAsk-b3q2" aria-describedby="miAskHint"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Which of these specialties employ the most people?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
+              <div class="ask-ans" id="miAsk-b3q2" hidden>
+                <p class="ask-a">Colleges and universities, with 85,523 of the 14&rsquo;s 172,438 jobs, then biotechnology R&amp;D, with 61,687: the two hold more than four jobs in five. Laboratory instruments and savings institutions follow, at about 7,000 each; two of the 14 have fewer than 100.</p>
+              </div>
             </div>
           </div>
-
         </div>
 
       </section>
@@ -889,8 +1025,8 @@
         <p class="lede mi-default">Two counts sit behind every city. The jobs inside the boundary, whoever fills them, and the
           jobs its residents hold, wherever those jobs are. In most places the two are close. In
           <span class="city-short">Boston</span> they are not.</p>
-        <p class="lede mi-default">Start with the jobs. <strong>687,736</strong> sit inside the city line. Each dot is about
-          2,000 of them.</p>
+        <p class="lede mi-default">Start with the jobs. <strong>688K</strong> sit inside the city line. Each dot is about
+          2K of them.</p>
         <!-- opt-2 opens on the map, and carries the four commuting beats
              as one summary beside it: the numbers, and the dots in miniature -->
         <div class="lede-stat-row mi-alt" hidden>
@@ -899,8 +1035,8 @@
             apart. The map shows where the difference goes: teal arrows bring workers in, orange arrows carry
             residents out to their jobs.</p>
           <div class="am2-stats">
-            <span class="v"><i style="background:var(--geo-city)"></i>687,736</span><span class="l">jobs located in <span class="city-short">Boston</span> &middot; 74% of them filled by people who commute in</span>
-            <span class="v"><i style="background:var(--orange)"></i>334,026</span><span class="l">jobs held by residents &middot; 46% of them outside the city</span>
+            <span class="v"><i style="background:var(--geo-city)"></i>688K</span><span class="l">jobs located in <span class="city-short">Boston</span> &middot; 74% of them filled by people who commute in</span>
+            <span class="v"><i style="background:var(--orange)"></i>334K</span><span class="l">jobs held by residents &middot; 46% of them outside the city</span>
             <span class="v">2.06&times;</span><span class="l">jobs here for every job a resident holds</span>
           </div>
         </div>
@@ -911,7 +1047,7 @@
         <div class="mi-figure" id="amFigure" data-step="0">
           <div class="mi-head">
             <p class="am-key" id="amKey" data-step="0">
-              <span class="sk-item ak-all"><i class="ak-dot ak-dot--grey"></i>jobs located in <span class="city-short">Boston</span> &middot; one dot is about 2,000 jobs</span>
+              <span class="sk-item ak-all"><i class="ak-dot ak-dot--grey"></i>jobs located in <span class="city-short">Boston</span> &middot; one dot is about 2K jobs</span>
               <span class="sk-item ak-in"><i class="ak-dot ak-dot--in"></i>commutes in &middot; 74% of the jobs here</span>
               <span class="sk-item ak-both"><i class="ak-dot ak-dot--grey"></i>lives and works in <span class="city-short">Boston</span> &middot; 26%</span>
               <span class="sk-item ak-out"><i class="ak-dot ak-dot--out"></i>commutes out &middot; 46% of residents&rsquo; jobs</span>
@@ -925,7 +1061,7 @@
               <span class="sk-item ak-res-count"><i class="ak-sw" style="background:var(--orange)"></i>jobs held by <span class="city-short">Boston</span> residents</span>
               <span class="sk-item ak-div-hi-j"><i class="ak-sw" style="background:var(--geo-city)"></i>a larger share of the jobs here than of the metro&rsquo;s</span>
               <span class="sk-item ak-div-hi-r"><i class="ak-sw" style="background:var(--orange)"></i>a larger share of residents&rsquo; jobs than of the metro&rsquo;s</span>
-              <span class="sk-item ak-div-lo"><i class="ak-sw" style="background:#6f9aa3"></i>a smaller share</span>
+              <span class="sk-item ak-div-lo"><i class="ak-sw" style="background:var(--control-edge)"></i>a smaller share</span>
             </p>
             <!-- opt-2's one control: which count the bars show. The site puts
                  this switch, and nothing else, on this part of its page -->
@@ -974,8 +1110,8 @@
           <div class="subsection-header">
             <h3>Only one in four of those workers lives here</h3>
           </div>
-          <p class="lede"><strong>179,122</strong> of the jobs are held by <span class="city-short">Boston</span>
-            residents, and those dots stay put. The other <strong>508,614</strong> move out to where their holders
+          <p class="lede"><strong>179K</strong> of the jobs are held by <span class="city-short">Boston</span>
+            residents, and those dots stay put. The other <strong>509K</strong> move out to where their holders
             live, elsewhere in the metro.</p>
         </div>
 
@@ -984,7 +1120,7 @@
           <div class="subsection-header">
             <h3>Its residents commute out too</h3>
           </div>
-          <p class="lede">Residents hold <strong>334,026</strong> jobs. <strong>154,904</strong> of them are outside
+          <p class="lede">Residents hold <strong>334K</strong> jobs. <strong>155K</strong> of them are outside
             the city, and those dots now leave in orange.</p>
           <p class="lede">The two colours side by side are the exchange: for every resident who commutes out, more
             than three people commute in.</p>
@@ -996,8 +1132,8 @@
             <h3>Two workforces</h3>
           </div>
           <p class="lede">Sorted into rows, the same dots give the two counts. Jobs located here are the grey and teal
-            rows together: <strong>687,736</strong>. Jobs held by residents are the grey and orange rows:
-            <strong>334,026</strong>.</p>
+            rows together: <strong>688K</strong>. Jobs held by residents are the grey and orange rows:
+            <strong>334K</strong>.</p>
           <p class="lede">That is <strong>206 jobs for every 100</strong> its residents hold. The city is a net
             importer of workers, and the beats that follow ask which work the two groups do.</p>
         </div>
@@ -1061,9 +1197,9 @@
           </div>
           <p class="lede">Both directions on one map. Teal arrows bring workers in; orange arrows carry residents out
             to their jobs. Width is the number of jobs.</p>
-          <p class="lede"><strong>Cambridge</strong> is the one near-even exchange: 24,509 residents work there and
-            20,085 Cantabrigians work here. Everywhere else the teal arrow wins. <strong>Quincy</strong> sends 20,328
-            in and takes 6,015 back.</p>
+          <p class="lede"><strong>Cambridge</strong> is the one near-even exchange: 25K residents work there and
+            20K Cantabrigians work here. Everywhere else the teal arrow wins. <strong>Quincy</strong> sends 20K
+            in and takes 6K back.</p>
         </div>
 
         <!-- 9 · the reader picks a sector -->
@@ -1215,8 +1351,8 @@
 
           <div class="rca-footnote" id="rcaFootnote" data-rcaview="self">
             <div class="rca-legend" id="rcaLegend"></div>
-            <span class="rca-key" id="rcaBarKey"><svg width="26" height="14" aria-hidden="true"><rect x="1" y="3" width="24" height="8" fill="#5b686d"/></svg>Bar length is how far past the benchmark — hover a row for employment</span>
-            <span class="rca-key" id="rcaDotKey" hidden><svg width="46" height="16" aria-hidden="true"><circle cx="6" cy="8" r="3.5" fill="#5b686d"/><circle cx="22" cy="8" r="6" fill="#5b686d"/><circle cx="40" cy="8" r="8.5" fill="#5b686d"/></svg>Dot size shows employment — hover a row for exact figures</span>
+            <span class="rca-key" id="rcaBarKey"><svg width="26" height="14" aria-hidden="true"><rect x="1" y="3" width="24" height="8" fill="#526066"/></svg>Bar length is how far past the benchmark — hover a row for employment</span>
+            <span class="rca-key" id="rcaDotKey" hidden><svg width="46" height="16" aria-hidden="true"><circle cx="6" cy="8" r="3.5" fill="#526066"/><circle cx="22" cy="8" r="6" fill="#526066"/><circle cx="40" cy="8" r="8.5" fill="#526066"/></svg>Dot size shows employment — hover a row for exact figures</span>
           </div>
 
           <div class="rca-wrap" data-rcaview="peers">
@@ -1225,10 +1361,10 @@
           </div>
 
           <div class="rca-footnote" data-rcaview="peers">
-            <span class="rca-key" id="peerCityKey"><svg width="46" height="16" aria-hidden="true"><circle cx="6" cy="8" r="3.5" fill="#5b686d"/><circle cx="22" cy="8" r="6" fill="#5b686d"/><circle cx="40" cy="8" r="8.5" fill="#5b686d"/></svg>Dot is the city, sized by employment</span>
-            <span class="rca-key" id="peerCityKeyBar" hidden><svg width="26" height="14" aria-hidden="true"><rect x="1" y="3" width="24" height="8" fill="#5b686d"/></svg>Bar is the city</span>
+            <span class="rca-key" id="peerCityKey"><svg width="46" height="16" aria-hidden="true"><circle cx="6" cy="8" r="3.5" fill="#526066"/><circle cx="22" cy="8" r="6" fill="#526066"/><circle cx="40" cy="8" r="8.5" fill="#526066"/></svg>Dot is the city, sized by employment</span>
+            <span class="rca-key" id="peerCityKeyBar" hidden><svg width="26" height="14" aria-hidden="true"><rect x="1" y="3" width="24" height="8" fill="#526066"/></svg>Bar is the city</span>
             <span class="rca-key"><svg width="12" height="20" aria-hidden="true"><line x1="6" y1="2" x2="6" y2="18" stroke="#1a2226" stroke-width="2.5"/></svg>Peer average</span>
-            <span class="rca-key" id="peerAboveKey"><svg width="26" height="10" aria-hidden="true"><line x1="1" y1="5" x2="25" y2="5" stroke="#5b686d" stroke-width="2.5" opacity="0.55"/></svg>Above the peer average</span>
+            <span class="rca-key" id="peerAboveKey"><svg width="26" height="10" aria-hidden="true"><line x1="1" y1="5" x2="25" y2="5" stroke="#526066" stroke-width="2.5" opacity="0.55"/></svg>Above the peer average</span>
             <span class="rca-key"><svg width="26" height="10" aria-hidden="true"><line x1="1" y1="5" x2="25" y2="5" stroke="#1a2226" stroke-width="2.5" stroke-dasharray="3 3" stroke-linecap="butt"/></svg>Below the peer average</span>
           </div>
 
@@ -1237,7 +1373,7 @@
                The query string pins its opening state; its own seg controls stay
                live inside the frame. -->
           <div class="rca-dist-wrap" data-rcaview="dist">
-            <iframe id="rcaDistFrame" src="legacy/rca-distributions.html?dots=peers&amp;design=band" title="Boston metro specialization across all US metros"></iframe>
+            <iframe id="rcaDistFrame" src="legacy/rca-distributions.html?dots=peers&amp;design=band&amp;v=layout13" title="Boston metro specialization across all US metros"></iframe>
           </div>
         </div>
       </section>
@@ -1262,6 +1398,81 @@
       </button>
     </div>
     <div class="geo-map-body"><div id="geoMapHost"></div></div>
+  </div>
+</div>
+
+<!-- the glossary: the terms the tool uses in its own sense, each with the
+     fuller account the beats' explainer panels used to carry. A term in
+     the text opens a short definition with a button to its entry here -->
+<div class="journey-overlay" id="glossaryOverlay">
+  <div class="journey-window gl-window" role="dialog" aria-modal="true" aria-labelledby="glossaryTitle">
+    <div class="journey-head">
+      <div class="jh-titles">
+        <h2 id="glossaryTitle">Glossary</h2>
+        <p class="jh-sub">The terms this tool uses, and how each is measured.</p>
+      </div>
+      <button class="journey-close" onclick="closeGlossary()" aria-label="Close the glossary">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 2l12 12M14 2 2 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="journey-body gl-body" tabindex="0" role="region" aria-label="Glossary entries">
+      <section class="gl-entry" id="gl-complexity" tabindex="-1" aria-labelledby="gl-complexity-h">
+        <h3 id="gl-complexity-h">Complexity</h3>
+        <p><strong>Complexity</strong> measures the knowledge an industry takes to run. Work that needs many people
+        holding many different specialized skills, such as medical devices, financial engineering and research
+        instruments, is complex. Work that almost anywhere can do, such as food service, retail and basic
+        construction, is not.</p>
+        <p>It matters because complex work is hard to copy. Places that hold it tend to pay more, to weather
+        downturns better, and to find it easier to move into the next complex thing, because the know-how
+        is already in the room. A metro&rsquo;s complexity is the mix of its industries weighted by how much
+        of each it does.</p>
+      </section>
+      <section class="gl-entry" id="gl-tradability" tabindex="-1" aria-labelledby="gl-tradability-h">
+        <h3 id="gl-tradability-h">Tradability</h3>
+        <p>Each industry is placed in a tier by how much of what it makes can be sold to someone outside
+        the metro.</p>
+        <!-- the three terms the page speaks in, each defined in a line beside
+        its colour, in the order the grounds take -->
+        <dl class="tier-gloss">
+        <div><i style="background:#255862"></i><dt>Traded</dt><dd>sells most of its output outside the metro, so its earnings are new income arriving here</dd></div>
+        <div><i style="background:#59838c"></i><dt>Partly traded</dt><dd>sells some outside and some to the people already here</dd></div>
+        <div><i style="background:#b9ccd0"></i><dt>Local</dt><dd>serves the people already here; the customer has to be standing there</dd></div>
+        </dl>
+        <p class="ci-foot">The tiers are cuts on a continuous measure, so an industry near a cut could fall the other way.</p>
+      </section>
+      <section class="gl-entry" id="gl-specialization" tabindex="-1" aria-labelledby="gl-specialization-h">
+        <h3 id="gl-specialization-h">Specialization</h3>
+        <p>An industry counts as a <strong>specialization</strong> when the metro does more of it than the
+        country does. The measure divides the industry&rsquo;s share of jobs here by its share of jobs
+        nationally: <strong>1.0&times;</strong> is exactly the national rate, <strong>2.0&times;</strong> is
+        twice the national share.</p>
+        <p>It says nothing about size. A small industry can be a powerful specialization and a large one can be
+        entirely ordinary. This measures what is <em>distinctive</em> about the metro, not what
+        employs the most people.</p>
+      </section>
+      <section class="gl-entry" id="gl-msa" tabindex="-1" aria-labelledby="gl-msa-h">
+        <h3 id="gl-msa-h">Metro area</h3>
+        <p>A <strong>metropolitan statistical area</strong> (MSA) is how the US Census draws the functional city: a
+        dense core and every county tied to it by commuting. It is the closest official shape to a labor market,
+        the area within which people can change jobs or homes without changing lives.</p>
+        <p>The Boston MSA, Boston-Cambridge-Newton, has 130 places and 5,025,517 people (2024). Boston itself
+        holds 13.4% of them. That is why most of what follows is read at the metro scale.</p>
+      </section>
+      <section class="gl-entry" id="gl-peers" tabindex="-1" aria-labelledby="gl-peers-h">
+        <h3 id="gl-peers-h">Peer metros</h3>
+        <p>The reference build compares Boston with five <strong>peer metros</strong>: Washington, Seattle,
+        San Diego, Denver and Baltimore. The figure for each industry is the metro&rsquo;s share of its jobs
+        measured against the five peers&rsquo; share taken together, instead of against the nation&rsquo;s:
+        <strong>1.0&times;</strong> is the same share as the peers, <strong>4.5&times;</strong> four and a half
+        times theirs.</p>
+        <p>The ranking&rsquo;s black mark is the peers&rsquo; own rate against the nation, which follows from
+        the two: where it falls short of the metro&rsquo;s bar, the metro is the more specialized of the six.
+        The &ldquo;Against peers&rdquo; order ranks the industries by that lead, the metro&rsquo;s rate less
+        the peers&rsquo;, and draws it as the bar from 0: to the right where the metro is ahead, to the left
+        where it is behind.</p>
+        <div class="gl-peers" id="glPeers"></div>
+      </section>
+    </div>
   </div>
 </div>
 
@@ -1350,15 +1561,26 @@
   </div>
 </div>
 
-<div class="sv" id="siteLayoutSwitch">
+<div class="sv" id="siteLayoutSwitch" hidden>
   <button type="button" class="sv-btn" id="svBtn" aria-expanded="false" aria-haspopup="menu" aria-controls="svPanel">
-    <span class="sv-k">Site Layout</span><span class="sv-now" id="svNow">Current</span>
+    <span class="sv-k">Site Layout</span><span class="sv-now" id="svNow">Two scrolls</span>
     <svg viewBox="0 0 10 6" width="10" height="6" aria-hidden="true"><path d="M1 5l4-4 4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
   </button>
   <div class="sv-panel" id="svPanel" role="menu" aria-label="Site layout variants" hidden>
     <div role="group" aria-label="Layout">
-      <button type="button" role="menuitemradio" aria-checked="true" class="sv-opt is-on" data-layout="pages"><b>Current</b><span>five sections, one linear flow</span></button>
+      <button type="button" role="menuitemradio" aria-checked="false" class="sv-opt" data-layout="pages"><b>Current</b><span>five sections, one linear flow</span></button>
       <button type="button" role="menuitemradio" aria-checked="false" class="sv-opt" data-layout="scroll"><b>One scroll</b><span>a summary closes each section, a band opens part two</span></button>
+      <button type="button" role="menuitemradio" aria-checked="false" class="sv-opt" data-layout="halves"><b>Two scrolls</b><span>each part one scroll, a Next between</span></button>
+    </div>
+    <p class="sv-head" aria-hidden="true">Section bar</p>
+    <div role="group" aria-label="Section bar">
+      <button type="button" role="menuitemradio" aria-checked="false" class="sv-opt" data-secbar="parts"><b>By part</b><span>the part you are in, the other a door</span></button>
+      <button type="button" role="menuitemradio" aria-checked="false" class="sv-opt" data-secbar="chips"><b>All five</b><span>the numbered chips, as before</span></button>
+    </div>
+    <p class="sv-head" aria-hidden="true">Top bar</p>
+    <div role="group" aria-label="Top bar">
+      <button type="button" role="menuitemradio" aria-checked="false" class="sv-opt" data-masthead="full"><b>Full bar</b><span>the logo and the links stay over the tool</span></button>
+      <button type="button" role="menuitemradio" aria-checked="false" class="sv-opt" data-masthead="menu"><b>In a menu</b><span>folds into a button before the location</span></button>
     </div>
     <p class="sv-head" aria-hidden="true">Navigation bar</p>
     <div role="group" aria-label="Navigation bar">

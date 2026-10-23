@@ -1055,7 +1055,7 @@ export function ConstraintNarrative({
       /* the line is the STAGE's, and the stage travels with the track — so
          "the line is inside the track" holds wherever the track is, on screen
          or not. While the walk was the whole page that made no difference; in
-         a layout that stacks the sections in one scroll (src/site/) it had
+         a layout that stacks the sections in one scroll (main's two scrolls) it had
          the walk claiming the page from three sections away. The line has to
          be on screen as well. */
       if (r.top <= mid && r.bottom >= mid && mid >= sTop && mid <= sTop + sH)

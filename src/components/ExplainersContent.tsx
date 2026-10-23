@@ -16,6 +16,8 @@ interface ExplainersContentProps {
   /** the logo: back to the landing */
   onHome: () => void;
   onJourney: () => void;
+  /** main's glossary, opened from this masthead's link */
+  onGlossary: (opener: HTMLElement) => void;
 }
 
 /** The Explainers tab's content, drawn into v-3's explainers view: the same
@@ -28,6 +30,7 @@ export function ExplainersContent({
   onClose,
   onHome,
   onJourney,
+  onGlossary,
 }: ExplainersContentProps) {
   const explainer = explainerById(openId);
 
@@ -58,9 +61,17 @@ export function ExplainersContent({
           >
             City Diagnosis
           </a>
-          {/* placeholder links, as in v-3's masthead */}
+          {/* a placeholder link, as in v-3's masthead */}
           <a href="#" onClick={(e) => e.preventDefault()}>About</a>
-          <a href="#" onClick={(e) => e.preventDefault()}>Glossary</a>
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              onGlossary(e.currentTarget);
+            }}
+          >
+            Glossary
+          </a>
         </nav>
         <button className="btn-journey" onClick={onJourney}>
           <JourneyIcon />

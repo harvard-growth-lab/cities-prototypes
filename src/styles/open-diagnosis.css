@@ -8,32 +8,124 @@
    between a head and what follows it.
    ==================================================================== */
 
-/* ---------- the pill: the site study's, beside it ---------- */
-.cd-sv .site-sv-panel {
-  width: 300px;
+/* ---------- the pill ----------
+   Bottom-left, dark, off the tool's chrome: it belongs to the study, not
+   the tool. (It was dressed after this branch's own "Site Layout" pill,
+   which stood beside it until the site took main's layout, 2026-10-23.) */
+.cd-sv {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  z-index: 500;
+  font-family: 'Source Sans 3', 'Source Sans Pro', sans-serif;
 }
-/* the options are buttons here (the site's are links: a navigation) */
-.cd-sv .site-sv-opt {
-  width: 100%;
+.cd-sv-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 12px 0 13px;
   border: 0;
+  border-radius: 16px;
+  background: var(--ink);
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12.5px;
+  line-height: 1;
+  box-shadow: 0 6px 20px rgba(26, 34, 38, 0.28);
+  transition: background 0.15s ease;
+}
+.cd-sv-btn:hover,
+.cd-sv-btn.open {
+  background: #000;
+}
+.cd-sv-k {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  opacity: 0.62;
+}
+.cd-sv-now {
+  font-weight: 700;
+}
+.cd-sv-btn svg {
+  opacity: 0.7;
+  transition: transform 0.2s ease;
+}
+.cd-sv-btn.open svg {
+  transform: rotate(180deg);
+}
+.cd-sv-panel {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 8px);
+  width: 300px;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: #fff;
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  box-shadow: var(--shadow-md);
+}
+.cd-sv-opt {
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr);
+  column-gap: 8px;
+  row-gap: 1px;
+  width: 100%;
+  padding: 9px 10px 10px;
+  border: 0;
+  border-radius: 7px;
   background: none;
+  color: var(--ink);
   font: inherit;
   text-align: left;
   cursor: pointer;
 }
-.cd-sv .site-sv-opt:hover {
+.cd-sv-opt::before {
+  content: "";
+  grid-row: 1 / span 2;
+  width: 12px;
+  height: 12px;
+  margin-top: 3px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-strong);
+  background: #fff;
+  box-sizing: border-box;
+}
+.cd-sv-opt b {
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+.cd-sv-opt span {
+  grid-column: 2;
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--ink-soft);
+}
+.cd-sv-opt:hover {
   background: #f4f6f5;
 }
-.cd-sv .site-sv-opt.is-on {
+.cd-sv-opt.is-on {
   background: var(--teal-tint);
 }
+.cd-sv-opt.is-on::before {
+  border: 4px solid var(--teal);
+}
+/* on a phone the control shrinks to its value */
 @media (max-width: 640px) {
-  /* the pill sits right of the site's, so its menu would run off the
-     screen: it opens from the screen's edge instead */
-  .cd-sv .site-sv-panel {
-    position: fixed;
+  .cd-sv {
     left: 10px;
-    bottom: 52px;
+    bottom: 10px;
+  }
+  .cd-sv-k {
+    display: none;
+  }
+  .cd-sv-panel {
     width: min(300px, calc(100vw - 20px));
   }
 }

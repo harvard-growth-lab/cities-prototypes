@@ -21,8 +21,7 @@
      src/legacy/html/body.html             main's <body>, with the slots and a few swaps (below)
      src/legacy/v3.css                     main's stylesheet, verbatim but for the landing image
      src/legacy/treemap.js                 treemap.js as a module: a function that returns its init()
-     src/legacy/xch_geo.js                 the boundary data, verbatim
-     src/legacy/industries-2024.js, -2014.js   the metro's industry rows, verbatim
+     src/legacy/<data>.js                  every data script the page loads (DATA_SCRIPTS), verbatim
      src/legacy/v3-page.js                 the two inline scripts, wrapped as one module and patched
      src/legacy/assets/landing-page.webp   the landing image (bundled through an import)
      public/legacy/assets/gl_logo.png      the logo the markup references
@@ -209,6 +208,17 @@ body = body.replace(CITY_OPTIONS, (m, indent) => [
   "City C, United States of America",
 ].map((c) => `${indent}<option${c.startsWith("Boston") ? " selected" : ""}>${c}</option>`).join("\n") + "\n");
 
+/* main runs two one-line flag scripts outside its two page scripts: one in
+   the head (?colours=) and one straight after the landing's markup
+   (?landing=full, which lifts the landing's placeholder). Markup set
+   through innerHTML never runs a script, so both are lifted out and run
+   first thing in initPage (section 4), in the order main ran them. */
+const FLAG_SCRIPTS = [...html.matchAll(/<script>(\/\*[^\n]*\*\/\n[^\n]*)<\/script>\n/g)];
+if (FLAG_SCRIPTS.length !== 2) throw new Error(`flag scripts: expected 2, found ${FLAG_SCRIPTS.length}`);
+const inBody = FLAG_SCRIPTS.filter(([tag]) => body.includes(tag));
+if (inBody.length !== 1) throw new Error(`flag scripts: expected 1 in the body, found ${inBody.length}`);
+body = subOnce(body, inBody[0][0], "", "flag script out of the body");
+
 /* assets and the framed page moved under public/legacy */
 body = subAll(body, 'src="assets/gl_logo.png"', 'src="legacy/assets/gl_logo.png"', 2, "logo paths");
 body = subOnce(body, 'src="rca-distributions.html?', 'src="legacy/rca-distributions.html?', "extras iframe src");
@@ -248,11 +258,29 @@ tm = subOnce(tm,
   "treemap.js dist frame url");
 write("src/legacy/treemap.js", tm);
 
-write("src/legacy/xch_geo.js", `/* ${GEN("data/geo/xch_geo.js")} */\n` + read("data/geo/xch_geo.js"));
-/* the metro's industry rows (2024, and 2014 at the same grain): each file
-   assigns one window global, which treemap.js and the page read */
-for (const f of ["industries-2024.js", "industries-2014.js"])
-  write(`src/legacy/${f}`, `/* ${GEN(f)} */\n` + read(f));
+/* the scripts main's page loads, in its order. The two libraries are npm
+   imports here, treemap.js is the module above, and the rest are data:
+   each assigns window globals (the boundaries, Who am I?'s measures,
+   scatters, points and commuting outlines, the metro's industry rows) that
+   treemap.js and the page read. src/legacy/index.ts imports the data in
+   this order. A script main adds fails here: add it to the list and to
+   index.ts. */
+const SCRIPT_SRCS = [...html.matchAll(/<script src="([^"?]+)(?:\?[^"]*)?"><\/script>/g)].map((m) => m[1]);
+const LIBS = ["https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js", "https://d3js.org/d3.v7.min.js"];
+const DATA_SCRIPTS = [
+  "data/geo/xch_geo.js",
+  "who-2024.js",
+  "who-scatter-2024.js",
+  "who-metro-scatter-2024.js",
+  "who-points-2024.js",
+  "data/geo/who_commute_geo.js",
+  "industries-2024.js",
+  "industries-2014.js",
+];
+if (SCRIPT_SRCS.join("\n") !== [...LIBS, ...DATA_SCRIPTS, "treemap.js"].join("\n"))
+  throw new Error(`the page's scripts changed:\n${SCRIPT_SRCS.join("\n")}`);
+for (const f of DATA_SCRIPTS)
+  write(`src/legacy/${path.basename(f)}`, `/* ${GEN(f)} */\n` + read(f));
 write("public/legacy/rca-distributions.html", read("rca-distributions.html"));
 copy("assets/gl_logo.png", "public/legacy/assets/gl_logo.png");
 copy("assets/landing-page.webp", "src/legacy/assets/landing-page.webp");
@@ -319,7 +347,7 @@ const PAGE_PATCHES = [
           '      \'<button type="button" class="pgr-stop\' + (k < i ? " is-past" : k === i ? " is-cur" : "") +',
           '      \'" data-go="\' + k + \'" title="\' + sec.name + \'" aria-label="\' + sec.name + \'"\' +',
           "      (k === i ? ' aria-current=\"step\"' : '') + '>' +",
-          "      (k < i ? CHECK : '<span>' + (k + 1) + '</span>') + '</button>').join(\"\");"),
+          "      (k < i ? CHECK : '') + '</button>').join(\"\");"),
     lines("    /* [port] the storyline is the five; Extras is not a stop on it */",
           '    const STORY = SECTIONS.filter(sec => sec.name !== "Extras");   /* [port] */',
           "    const iCur = STORY.indexOf(SECTIONS[i]);   /* [port] -1 on Extras */",
@@ -328,7 +356,7 @@ const PAGE_PATCHES = [
           '      \'<button type="button" class="pgr-stop\' + (iCur >= 0 && k < iCur ? " is-past" : k === iCur ? " is-cur" : "") +',
           '      \'" data-go="\' + SECTIONS.indexOf(sec) + \'" title="\' + sec.name + \'" aria-label="\' + sec.name + \'"\' +',
           "      (k === iCur ? ' aria-current=\"step\"' : '') + '>' +",
-          "      (iCur >= 0 && k < iCur ? CHECK : '<span>' + (k + 1) + '</span>') + '</button>').join(\"\");")],
+          "      (iCur >= 0 && k < iCur ? CHECK : '') + '</button>').join(\"\");")],
 
   /* the last two sections no longer close on a quiz + insight (Sept 2026,
      the user's call). Upstream's data is left whole — a re-sync still picks
@@ -355,6 +383,26 @@ const PAGE_PATCHES = [
   ["sub", "inview observer guard",
     "  pageIds.forEach(id=>observer.observe(document.getElementById(id)));",
     "  pageIds.forEach(id=>{ const el=document.getElementById(id); if(el) observer.observe(el); });   /* [port] */"],
+
+  /* the band that opens part two is no page, so with it filling the screen
+     (a phone, or a deep link to Constraints Diagnosis, which main opens at
+     the band) the spy found nothing and this branch's hash went stale or
+     blank. Main counts the band as part two's first section — its section
+     tracker does, and its own hash would read #constraints-diagnosis — so
+     the spy does the same. */
+  ["sub", "spy: part two's band counts as the constraints page",
+    lines("      if(visible>bestVisible){ bestVisible=visible; bestId=id; }",
+          "    });",
+          "    if(!bestId) return;"),
+    lines("      if(visible>bestVisible){ bestVisible=visible; bestId=id; }",
+          "    });",
+          "    /* [port] part two's band counts as its first section, as main's tracker has it */",
+          '    const seamEl=document.getElementById("seam");',
+          "    if(seamEl && seamEl.getClientRects().length){",
+          "      const r=seamEl.getBoundingClientRect();",
+          '      if(Math.min(r.bottom, rootRect.bottom)-Math.max(r.top, rootRect.top)>bestVisible) bestId="page-constraints";',
+          "    }",
+          "    if(!bestId) return;")],
 
   /* what React needs to hear: the page in view (for the URL hash), the
      Explainers tab, and the city */
@@ -418,164 +466,24 @@ const PAGE_PATCHES = [
      population chart), with the CSS side in src/legacy/port.css. Main's
      v-1 has since taken all of that on in its own way (breakpoints at
      1199 / 899 / 599, .secnav-lbl, .cp-rest, landingAtEnd(), its own tab
-     centring in showSection), so the port carries none of it now — with
-     one exception, the section menu on phones, below. */
+     centring in showSection), so the port carries none of it now. The last
+     exception, a section menu on phones (2026-09-17), went on 2026-10-23:
+     main's section bar now folds into a menu of its own wherever its row
+     does not fit. */
 
-  /* ---- the section menu on phones (2026-09-17; a candidate for main) ----
-     Main keeps its tab strip at every width and lets it scroll on a phone,
-     where it has ~165px beside the location chip: only the current tab is
-     in view, the rest are cut, and nothing says the strip moves. At main's
-     mobile tier (≤599px, src/legacy/port.css) the strip stands down and the
-     sections collapse into one control in the chip's family: a button
-     naming the section you are on, and a menu of the five in the tabs' own
-     state language (a check behind you, the current one on the tint,
-     numbers ahead). Built beside the tabs; rendered by showSection. */
-  ["sub", "section menu built beside the tabs",
-    lines("    b.addEventListener(\"click\", () => showSection(i));",
-          "    secNavEl.appendChild(b);",
-          "  });"),
-    lines("    b.addEventListener(\"click\", () => showSection(i));",
-          "    secNavEl.appendChild(b);",
-          "  });",
-          "  /* [port] on phones the tab strip stands down (src/legacy/port.css) and the",
-          "     sections collapse into one control beside the location chip: a button",
-          "     naming the section you are on, and a menu of the five in the tabs' own",
-          "     state language. showSection renders both. */",
-          "  var secMenuWrap = document.createElement(\"div\");",
-          "  secMenuWrap.className = \"secmenu\";",
-          "  secMenuWrap.innerHTML =",
-          "    '<button type=\"button\" class=\"secmenu-btn\" aria-haspopup=\"menu\" aria-expanded=\"false\">' +",
-          "    '<span class=\"num\"></span><span class=\"secmenu-lbl\"></span></button>' +",
-          "    '<div class=\"secmenu-list\" role=\"menu\" aria-label=\"Sections\" hidden></div>';",
-          "  secNavEl.insertAdjacentElement(\"afterend\", secMenuWrap);",
-          "  var secMenuBtn = secMenuWrap.querySelector(\".secmenu-btn\");",
-          "  var secMenuList = secMenuWrap.querySelector(\".secmenu-list\");",
-          "  function closeSecMenu(){ secMenuList.hidden = true; secMenuBtn.setAttribute(\"aria-expanded\", \"false\"); }",
-          "  secMenuBtn.addEventListener(\"click\", () => {",
-          "    var open = secMenuList.hidden;",
-          "    secMenuList.hidden = !open;",
-          "    secMenuBtn.setAttribute(\"aria-expanded\", String(open));",
-          "  });",
-          "  secMenuList.addEventListener(\"click\", e => {",
-          "    var b = e.target.closest(\"[data-go]\");",
-          "    if(!b) return;",
-          "    closeSecMenu();",
-          "    showSection(+b.dataset.go);",
-          "  });",
-          "  document.addEventListener(\"click\", e => { if(!secMenuWrap.contains(e.target)) closeSecMenu(); });",
-          "  document.addEventListener(\"keydown\", e => {",
-          "    if(e.key === \"Escape\" && !secMenuList.hidden){ closeSecMenu(); secMenuBtn.focus(); }",
-          "  });",
-          "  function renderSecMenu(i){",
-          "    if(!secMenuList) return;",
-          "    var CHECK = '<svg viewBox=\"0 0 10 8\" width=\"9\" height=\"7\" aria-hidden=\"true\"><path d=\"M1 4.2 3.7 6.8 9 1.2\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"/></svg>';",
-          "    secMenuBtn.querySelector(\".num\").textContent = String(i + 1);",
-          "    secMenuBtn.querySelector(\".secmenu-lbl\").textContent = SECTIONS[i].name;",
-          "    secMenuList.innerHTML = SECTIONS.map((sec, k) =>",
-          "      /* the extras sit outside the storyline: listed only while the reader",
-          "         is there, as on the tabs */",
-          "      (sec.name === \"Extras\" && k !== i) ? \"\" :",
-          "      '<button type=\"button\" class=\"secmenu-opt' + (k < i ? \" is-done\" : k === i ? \" is-on\" : \"\") +",
-          "      '\" role=\"menuitem\" data-go=\"' + k + '\"' + (k === i ? ' aria-current=\"page\"' : \"\") + '>' +",
-          "      '<span class=\"num\">' + (k < i ? CHECK : String(k + 1)) + '</span><span>' + sec.name + '</span></button>'",
-          "    ).join(\"\");",
-          "    closeSecMenu();",
-          "  }")],
-  ["sub", "section switch renders the menu",
-    lines("      if(k === i) b.setAttribute(\"aria-current\", \"page\");",
-          "      else b.removeAttribute(\"aria-current\");",
-          "    });",
-          "    fitSecNav();"),
-    lines("      if(k === i) b.setAttribute(\"aria-current\", \"page\");",
-          "      else b.removeAttribute(\"aria-current\");",
-          "    });",
-          "    renderSecMenu(i);   /* [port] the phone's section menu, beside the tabs */",
-          "    fitSecNav();")],
-
-  /* ---- site-level layout variants (2026-09-21; src/site/) ----
-     A study of how the tool's two halves — the three sections that describe
-     the city, and the two that diagnose it and act — are organised and how
-     the reader crosses from one to the other. Main's switch shows one
-     section at a time and scrolls to its top; the variants need it to be
-     able to keep several sections up at once (one scroll), to aim at a
-     section's start instead of the page's, and to say which section it is
-     on. Each of those is a question the switch asks of window.__cities, and
-     every one falls back to main's behaviour when nothing answers — so with
-     no variant chosen the page is main's "pages" layout, exactly.
-
-     Since 2026-09-30 main's v-5 carries a layout study of its own, modelled
-     on this one (a pill, ?layout=scroll, a teal close under each section, a
-     band before part two). It stays in the page, dormant: the layout is
-     held at "pages" below and its pill is hidden (src/legacy/port.css), so
-     the study the reader sees is this branch's and the two never run at
-     once. Main's part names over the tabs are NOT part of that — they show
-     in every layout, and replace the ones src/styles/site.css used to print. */
-  ["sub", "site variants: main's own layout study stays on \"pages\"",
-    '  setSiteLayout(new URLSearchParams(location.search).get("layout") === "scroll" ? "scroll" : "pages", true);',
-    '  setSiteLayout("pages", true);   /* [port] this branch\'s study (?site=) decides the layout */'],
-  ["sub", "site variants: what the switch asks of React",
-    "  function showSection(i, toTop){",
-    lines("  /* [port] the site-level layout variants (src/site/): which sections stay up",
-          "     with section i, and where a switch scrolls to. Unanswered, each is main's",
-          "     own behaviour. */",
-          "  const siteHook = name => window.__cities && window.__cities[name];",
-          "  const secHidden = (k, i) => siteHook(\"sectionHidden\") ? window.__cities.sectionHidden(k, i) : k !== i;",
-          "  function showSection(i, toTop){")],
-  ["sub", "site variants: which sections stay up",
-    "      sec.els.forEach(el => el.classList.toggle(\"sec-off\", scrollL && k < EXTRAS && i < EXTRAS ? false : k !== i)));",
-    "      sec.els.forEach(el => el.classList.toggle(\"sec-off\", secHidden(k, i))));   /* [port] */"],
-  ["sub", "site variants: where a switch scrolls to",
-    "    if(toTop !== false){",
-    lines("    /* [port] a variant that keeps several sections up aims at this one's start */",
-          "    if(toTop !== false && siteHook(\"sectionScroll\") && window.__cities.sectionScroll(i)) toTop = false;",
-          "    if(toTop !== false){")],
-  ["sub", "site variants: the section the switch landed on",
-    "    if (!scrollL || i === EXTRAS || prevSec === EXTRAS || prevSec < 0) window.dispatchEvent(new Event(\"resize\"));",
-    lines("    if (!scrollL || i === EXTRAS || prevSec === EXTRAS || prevSec < 0) window.dispatchEvent(new Event(\"resize\"));",
-          "    if(siteHook(\"onSection\")) window.__cities.onSection(i);   /* [port] */")],
-  /* main folds a section's quiz into a dialog its pager opens, and sends a
-     rail or journey step for a check there too. Where this branch's
-     layouts close each section in the page, the step's own element exists
-     and goTo scrolls to it — a second copy in a dialog would share its ids. */
-  ["sub", "site variants: a check step scrolls to the inline close where there is one",
-    "    if (/^(check|apply)-/.test(id) && window.openSecCheck) window.openSecCheck(true);",
-    "    if (/^(check|apply)-/.test(id) && window.openSecCheck && !(window.__cities && window.__cities.closesInline)) window.openSecCheck(true);   /* [port] */"],
-  /* main finds "the" close with a class lookup, which holds while the pager
-     carries the only one; with a close under every section each is found
-     through the id it already carries (check-<slug>) */
-  ["sub", "site variants: a close is found by its own id",
-    "  function wireSecClose(name){",
-    lines("  /* [port] one close per section in the one-scroll layouts: found by the id it carries */",
-          "  function secCloseRoot(c){",
-          "    const t = c && document.getElementById(\"check-\" + c.slug);",
-          "    return t ? t.closest(\".sec-close\") : null;",
-          "  }",
-          "  function wireSecClose(name){")],
-  ["sub", "site variants: wiring reads that close",
-    "    const root = document.querySelector(\".sec-close\");",
-    "    const root = secCloseRoot(c);   /* [port] */"],
-  ["sub", "site variants: a re-render replaces that close",
-    "      const cur = document.querySelector(\".sec-close\");",
-    "      const cur = secCloseRoot(c);   /* [port] */"],
-  /* …and so does the focus main puts back after each re-render */
-  ["sub", "site variants: focus returns to that close (the control)",
-    "        let n = document.querySelector(\".sec-close \" + again);",
-    "        let n = (secCloseRoot(c) || document).querySelector(again);   /* [port] */"],
-  ["sub", "site variants: focus returns to that close (the dot)",
-    "        if (!n || n.disabled) n = document.querySelector(\".sec-close .kc-dot.on\");",
-    "        if (!n || n.disabled) n = (secCloseRoot(c) || document).querySelector(\".kc-dot.on\");   /* [port] */"],
-  ["sub", "site variants: focus follows to the next question in that close",
-    lines("            const cur = document.querySelector(\".sec-close\"), wasIn = !!(cur && cur.contains(document.activeElement));",
-          "            st.qIdx = next; rerender();",
-          "            if (wasIn){ const qEl = document.querySelector(\".sec-close .kc-slide:not([inert]) .ktest-q\"); if (qEl) qEl.focus({ preventScroll: true }); }"),
-    lines("            const cur = secCloseRoot(c), wasIn = !!(cur && cur.contains(document.activeElement));   /* [port] */",
-          "            st.qIdx = next; rerender();",
-          "            if (wasIn){ const qEl = (secCloseRoot(c) || document).querySelector(\".kc-slide:not([inert]) .ktest-q\"); if (qEl) qEl.focus({ preventScroll: true }); }   /* [port] */")],
+  /* ---- the site's layout is main's (since 2026-10-23) ----
+     From 2026-09-21 this branch ran a study of its own (?site=: one scroll,
+     two scrolls) through hooks patched into main's section switch, with
+     main's copy of that study (?layout=) held dormant. Main's v-5 has since
+     taken the study in whole — Two scrolls is its default, with the closes,
+     the band that opens part two and the Next between the parts — and put
+     its pill away, so the page now runs main's layout as main has it and
+     the hooks are gone. ?layout=pages and ?layout=scroll still reach the
+     other two, as on main. */
 
   /* main's teal closes ("What to take with you") are the breaks between
-     sections in this branch's two-scroll layout (src/styles/site.css shows
-     them there). Three of them close main's own sections and come across
-     as written. The other two would close Constraints Diagnosis and Levers
+     sections in its two-scroll layout. Three of them close main's own
+     sections and come across as written. The other two would close Constraints Diagnosis and Levers
      for Change with take-aways drafted for MAIN's versions of those
      sections ("housing as the wall", zoning and permitting) — this
      branch's diagnosis lands elsewhere and its levers are not written — so
@@ -656,6 +564,10 @@ const pageModule = lines(
   "/* [port] both inline scripts, in order, in one function scope: they shared the",
   "   page's global scope on main, and the second reads the first's declarations */",
   "export function initPage(){",
+  "  /* [port] main's two flag scripts, which it ran as the head and then the",
+  "     landing were parsed (see FLAG_SCRIPTS in the port script) */",
+  ...FLAG_SCRIPTS.map(([, s]) => s.split("\n").map((l) => "  " + l).join("\n")),
+  "",
   page,
   "",
   "  /* [port] the React constraints scrolly tracks a sticky stage that no outside",
@@ -667,7 +579,7 @@ const pageModule = lines(
   "    if(window.__cities) window.__cities.onPage(id);",
   "  }",
   "",
-  "  /* ===== [port] cities-v-1's second inline script starts here ===== */",
+  "  /* ===== [port] cities-v-5's second inline script starts here ===== */",
   page2,
   "",
   "  /* [port] what the markup's inline handlers reach for (the rerouted goTo and",
@@ -676,9 +588,7 @@ const pageModule = lines(
   "    lockSlider, lockDot, twPick, twBack, twReset, openGeoMap, closeGeoMap, closeJourney,",
   "    journeyGoTo, downloadInsights, sendChat, closeChat, downloadChatCsv,",
   "    submitPracticeOverview, submitPractice, shareViz });",
-  "  return { syncCity, goTo, enterTool, backToLanding, toggleExplainers, openJourney, markPage, sectionDefs,",
-  "    /* the site-level layout variants (src/site/) drive the switch and place the closes */",
-  "    showSection, renderSecClose, wireSecClose };",
+  "  return { syncCity, goTo, enterTool, backToLanding, toggleExplainers, openJourney, openGlossary, markPage, sectionDefs };",
   "}",
   "",
 );

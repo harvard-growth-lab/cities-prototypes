@@ -5,7 +5,8 @@
    carries them. Taken from that page's embedded data (usa/industries.json,
    usa/metros/14460/industries.json and its short-name table), joined on
    the NAICS code. 877 industries, 2,318,249 jobs. Private Households has
-   no tier or tradability there and is held local, at 0.
+   no tier or tradability there, and none here either (null): it is in
+   the whole map but in no tier.
 
    Each row: code, name, short name, industry-group code (4-digit), group
    name, group short name, subsector code (3-digit), subsector short name,
@@ -17,6 +18,19 @@ window.BOSTON_INDUSTRIES_2024 = {
   total: 2318249,
   complexity: {"year": 2024, "rank": 8, "of": 382},
   peers: ["Washington", "Seattle", "San Diego", "Denver", "Baltimore"],
+  /* the metro and its five peers, as the reference page's profile.json
+     gives them: people (2024), jobs (2023), average salary (2024) */
+  peerStats: {
+    years: {"population": 2024, "employment": 2023, "wage": 2024},
+    metro: {"name": "Boston", "population": 5025517, "employment": 2811395, "wage": 114779},
+    peers: [
+      {"name": "Washington", "population": 6436489, "employment": 3140158, "wage": 108532},
+      {"name": "Seattle", "population": 4145494, "employment": 2129194, "wage": 126678},
+      {"name": "San Diego", "population": 3298799, "employment": 1516991, "wage": 94592},
+      {"name": "Denver", "population": 3052498, "employment": 1626132, "wage": 96324},
+      {"name": "Baltimore", "population": 2859024, "employment": 1345787, "wage": 90122}
+    ]
+  },
   sectors: [{"key": "professional", "label": "Professional & Business"}, {"key": "education-health", "label": "Education & Health"}, {"key": "trade-transport", "label": "Trade & Transportation"}, {"key": "leisure", "label": "Leisure & Hospitality"}, {"key": "financial", "label": "Financial Activities"}, {"key": "manufacturing", "label": "Manufacturing"}, {"key": "construction", "label": "Construction"}, {"key": "other", "label": "Other"}, {"key": "natural-resources", "label": "Natural Resources"}],
   fields: ["code","name","short","group","groupName","groupShort","sub","subShort","sectorKey","employ","rca","peerRca","pci","tier","trad","nationalShare"],
   rows: [
@@ -110,7 +124,7 @@ window.BOSTON_INDUSTRIES_2024 = {
     ["457110","Gasoline Stations with Convenience Stores","Gas & convenience","4571","Gasoline Stations","Gas stations","457","Gas stations & fuel","trade-transport",5179,0.486,0.771,-1.576,2,0,0.004596957],
     ["624310","Vocational Rehabilitation Services","Vocational rehabilitation","6243","Vocational Rehabilitation Services","Vocational rehabilitation","624","Social assistance","education-health",5067,1.198,0.916,-0.985,2,0.01,0.001824134],
     ["722320","Caterers","Caterers","7223","Special Food Services","Catering & food service","722","Restaurants & bars","leisure",5060,1.482,1.19,0.125,2,0,0.001472869],
-    ["814110","Private Households","Private households","8141","Private Households","Private households","814","Private households","other",5017,1.224,0.765,null,2,0,0.001767478],
+    ["814110","Private Households","Private households","8141","Private Households","Private households","814","Private households","other",5017,1.224,0.765,null,null,null,0.001767478],
     ["459110","Sporting Goods Retailers","Sporting goods stores","4591","Sporting Goods, Hobby, and Musical Instrument Retailers","Sporting & hobby stores","459","Hobby, sport & book stores","trade-transport",4955,0.816,0.84,-0.791,2,0,0.002618384],
     ["519290","Web Search Portals and All Other Information Services","Web search portals","5192","Web Search Portals, Libraries, Archives, and Other Information Services","Information services","519","Information services","professional",4839,2.349,1.113,0.722,0,1,0.000888628],
     ["621330","Offices of Mental Health Practitioners (except Physicians)","Mental health counselors","6213","Offices of Other Health Practitioners","Other health practitioners","621","Ambulatory care","education-health",4813,0.957,0.782,-0.443,2,0,0.002168942],
