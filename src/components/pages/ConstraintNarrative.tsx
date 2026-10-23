@@ -441,7 +441,7 @@ const INTRO_PARTS = [
 
 /** the geography a step reads, hung on its title the way the tool's own
  *  scrolly rails do (v3's .geo-badge) — a note on the title, not a control */
-function GeoBadge({
+export function GeoBadge({
   geo,
   cityShort,
 }: {

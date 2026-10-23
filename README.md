@@ -40,6 +40,25 @@ they answer v-3's section switch with, what they draw), `src/styles/site.css`, a
 group in `scripts/v3/port.mjs` ("site variants") — every question the switch asks falls back to
 main's behaviour, so with no variant chosen the page is main's.
 
+## Constraints Diagnosis variants (a study)
+
+The section as built walks one tree to one ending, and the ending decides which data modules
+the analysis reads. `?constraints=` swaps the whole section for an open-ended take: several
+**tests** (population vs wages, metro population growth, home value growth, local share of job
+growth, and economic complexity as a placeholder) each point to modules; the modules most
+tests point to are suggested, and any module can still be read. A second dark pill, **Constraints
+Diagnosis**, beside the Site Layout one while the section is on screen, switches between them.
+
+| `?constraints=` | what it tries |
+| --- | --- |
+| *(none)* | **Diagnostic Pathway** — the section as it is: the walk, the analysis, the sandbox |
+| `guided` | **Guided Tests** — a scrolly, one test a stop; the nine modules gather a pip per test, then rank; then the board and the reading list |
+| `bench` | **Test Bench** — every test at once as cards, then the module board (suggested first, any can be added), then the reading list |
+| `explorer` | **Module Explorer** — the tests as a strip of chips, the modules as a ranked list beside the one open module |
+
+The tests and the ranking are in `src/data/diagTests.ts`. Where a test's pointer is a reading of
+the tree rather than something the team has specified, its comment says so.
+
 ## Small screens
 
 Two breakpoints, shared by `src/legacy/port.css` (the shell), `src/styles/figures.css`

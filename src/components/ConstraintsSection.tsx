@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { cityCountryName, cityShortName } from "../data/content";
 import { convertPath, suggestedPath, type TreeVariant } from "../data/figures";
 import { DEFAULT_WALK_SHAPE, walkShape } from "./pages/walkShapes";
@@ -10,6 +10,9 @@ import {
   type BaLayout,
 } from "./pages/BranchAnalysisPage";
 import { TreeSandboxPage } from "./pages/TreeSandboxPage";
+import { OpenDiagnosis } from "./pages/OpenDiagnosis";
+import { SectionVariantSwitch } from "./SectionVariantSwitch";
+import { readCdVariant, writeCdVariant, type CdVariant } from "./constraintsVariants";
 
 interface ConstraintsSectionProps {
   city: string;
@@ -30,7 +33,12 @@ interface ConstraintsSectionProps {
  *  The section tells ONE walk (Sept 2026): the zoomed walk over the
  *  four-quadrant forked tree. The user-flow switch and the tellings it chose
  *  between — the initial draft, the guided walk, the shortened guided walk —
- *  came off with that decision; see git history. */
+ *  came off with that decision; see git history.
+ *
+ *  Since Oct 2026 the WHOLE section is also the subject of a study: the
+ *  pathway against an open-ended approach — several tests suggesting
+ *  modules, any module open to the reader — told three ways
+ *  (constraintsVariants.ts, ?constraints=). The pathway stays the default. */
 export function ConstraintsSection({
   city,
   treeVariant,
@@ -76,8 +84,38 @@ export function ConstraintsSection({
   const [layout, setLayout] = useState<BaLayout>(DEFAULT_BA_LAYOUT);
   const [full, setFull] = useState(DEFAULT_BA_FULL);
 
+  /* the section study: which telling is up. A switch opens the new one at
+     its top — the old one's scroll position means nothing in it */
+  const [cdVariant, setCdVariant] = useState<CdVariant>(readCdVariant);
+  const switched = useRef(false);
+  useEffect(() => {
+    if (!switched.current) return;
+    switched.current = false;
+    document
+      .getElementById("page-constraints")
+      ?.scrollIntoView({ behavior: "instant", block: "start" });
+  }, [cdVariant]);
+  const switchVariant = (v: CdVariant) => {
+    switched.current = true;
+    writeCdVariant(v);
+    setCdVariant(v);
+  };
+  /* first in both tellings, so a switch keeps the pill mounted */
+  const studySwitch = (
+    <SectionVariantSwitch variant={cdVariant} onChange={switchVariant} />
+  );
+
+  if (cdVariant !== "pathway")
+    return (
+      <>
+        {studySwitch}
+        <OpenDiagnosis variant={cdVariant} cityShort={cityShort} country={country} />
+      </>
+    );
+
   return (
     <>
+      {studySwitch}
       <ConstraintNarrative
         cityShort={cityShort}
         country={country}

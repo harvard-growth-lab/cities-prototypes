@@ -9,6 +9,7 @@ import "./styles/figures.css";
 import "./styles/explainers.css";
 import "./legacy/port.css";
 import "./styles/site.css";
+import "./styles/open-diagnosis.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

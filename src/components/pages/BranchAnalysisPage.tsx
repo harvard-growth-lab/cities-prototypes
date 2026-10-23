@@ -459,7 +459,7 @@ function ModuleQuestion({ def }: { def: ModuleDef }) {
   );
 }
 
-function ModuleBlock({
+export function ModuleBlock({
   def,
   color,
   cityShort,

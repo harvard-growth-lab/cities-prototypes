@@ -1,0 +1,939 @@
+/* ====================================================================
+   The section study (Oct 2026): Constraints Diagnosis told the open-ended
+   way — tests suggesting modules, any module open — in three tellings
+   (src/components/pages/OpenDiagnosis.tsx), and the pill that switches the
+   whole section (src/components/SectionVariantSwitch.tsx). Dressed like
+   the rest of City Constraints: the faint tint on the page, the text bare
+   on it, every figure in a white card with a 10px radius, a hairline
+   between a head and what follows it.
+   ==================================================================== */
+
+/* ---------- the pill: the site study's, beside it ---------- */
+.cd-sv .site-sv-panel {
+  width: 300px;
+}
+/* the options are buttons here (the site's are links: a navigation) */
+.cd-sv .site-sv-opt {
+  width: 100%;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.cd-sv .site-sv-opt:hover {
+  background: #f4f6f5;
+}
+.cd-sv .site-sv-opt.is-on {
+  background: var(--teal-tint);
+}
+@media (max-width: 640px) {
+  /* the pill sits right of the site's, so its menu would run off the
+     screen: it opens from the screen's edge instead */
+  .cd-sv .site-sv-panel {
+    position: fixed;
+    left: 10px;
+    bottom: 52px;
+    width: min(300px, calc(100vw - 20px));
+  }
+}
+
+/* ---------- the pages ---------- */
+/* the figure sections' measure, as the analysis and the sandbox take it */
+.tool-body .page.od-page {
+  max-width: min(
+    var(--grid-max, 1360px),
+    calc(100vw - 2 * var(--frame-pad, 40px))
+  );
+  padding-top: 28px;
+  padding-bottom: 28px;
+}
+/* a jump (the tabs, a switch of variant) lands under the tab bar, not
+   behind it */
+.od .od-page,
+.od .od-scrolly {
+  scroll-margin-top: var(--chrome-h, 67px);
+}
+.tool-body .od > .page.od-page:first-child {
+  padding-top: 52px;
+}
+.tool-body .od > .page.od-page:last-child {
+  padding-bottom: 88px;
+}
+/* the section's title: the analysis's own heavy cut */
+.od-head h2 {
+  font-size: clamp(28px, 1.45rem + 1vw, 36px);
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+.od-block-head {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: 24px 0 16px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+.od-page:not(:first-child) > .od-block-head:first-child {
+  margin-top: 0;
+}
+.od-block-head h3 {
+  margin: 0;
+  font-size: 24px;
+  line-height: 30px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  color: var(--ink);
+}
+.od-count {
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+.od-sub {
+  margin: -4px 0 18px;
+}
+
+/* ---------- a test's card ----------
+   The analysis cards' frame (.ba-step): what follows is only what a test
+   adds — its result's mark, the modules it points at, and the hover that
+   ties it to them. */
+/* two to a row, as the analysis cards are: a 560 × 320 chart needs the
+   width to keep its labels legible */
+.od-tests {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 520px), 1fr));
+  gap: 18px;
+}
+.od-test {
+  transition: opacity 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.od-test.is-dim {
+  opacity: 0.5;
+}
+.od-test.is-hot {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-md);
+}
+.od-outcome .qmark {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+  margin-right: 0.3em;
+}
+.od-points {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 8px;
+}
+.od-points-k {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+/* a test to come: what it WOULD point at, in the placeholder's voice */
+.od-points.pending .mod-chip > span {
+  border-style: dashed;
+  opacity: 0.7;
+}
+
+/* ---------- a module's evidence: one pip per test ---------- */
+.od-pips {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.od-pips i {
+  width: 9px;
+  height: 9px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-strong);
+  background: #fff;
+  transition: background 0.3s ease, border-color 0.3s ease, opacity 0.3s ease;
+}
+.od-pips i.pend {
+  border-style: dotted;
+  border-color: var(--ink-soft);
+}
+.od-pips i.later {
+  opacity: 0.35;
+}
+
+/* ---------- the board: every module, the suggested first ---------- */
+.od-board {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.od-board-k {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.od-board-k span {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+.od-mods {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  gap: 12px;
+}
+.od-mods > li {
+  display: flex;
+  transition: opacity 0.2s ease;
+}
+.od-mods > li.is-dim,
+.od-xlist li.is-dim {
+  opacity: 0.45;
+}
+.od-mod {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) 22px;
+  align-items: center;
+  column-gap: 12px;
+  row-gap: 10px;
+  padding: 14px 14px 12px;
+  font: inherit;
+  text-align: left;
+  color: var(--ink);
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+.od-mod:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-sm);
+}
+.od-mod.picked {
+  border-color: #1d4b54;
+  background: color-mix(in srgb, #1d4b54 5%, #fff);
+}
+.is-hot > .od-mod {
+  box-shadow: 0 0 0 2px color-mix(in srgb, #1d4b54 30%, transparent);
+}
+.od-mod-ico {
+  display: block;
+  color: #1d4b54;
+}
+.od-mod-ico svg {
+  display: block;
+  width: 26px;
+  height: 26px;
+  overflow: visible;
+}
+.od-mod:not(.sugg):not(.picked) .od-mod-ico,
+.od-xrow:not(.sugg) .od-mod-ico {
+  color: var(--ink-soft);
+}
+.od-mod-txt {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.od-mod-txt b {
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 700;
+}
+.od-mod-lvl {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ink-soft);
+}
+.od-check {
+  width: 22px;
+  height: 22px;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  background: #fff;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 6px;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.od-check svg {
+  width: 12px;
+  height: 10px;
+  fill: none;
+  stroke: #fff;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0;
+}
+.od-mod.picked .od-check {
+  background: #1d4b54;
+  border-color: #1d4b54;
+}
+.od-mod.picked .od-check svg {
+  opacity: 1;
+}
+.od-mod-why {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  font-size: 12.5px;
+  line-height: 17px;
+  color: var(--ink-soft);
+}
+.od-board-foot {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+.od-board-foot b {
+  color: var(--ink);
+}
+.od-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--teal);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+/* ---------- the reading list ---------- */
+/* the picked modules as a bar that stays under the tab bar while they are
+   read — one click to any of them */
+.od-jump {
+  position: sticky;
+  top: var(--chrome-h, 67px);
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 20px;
+  padding: 10px 0;
+  background: #f9fafb;
+  border-bottom: 1px solid var(--border);
+}
+.od-jump-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 11px 5px 8px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 18px;
+  color: #1d4b54;
+  background: color-mix(in srgb, #1d4b54 8%, #fff);
+  border: 1px solid #1d4b54;
+  border-radius: 9px;
+  cursor: pointer;
+}
+.od-jump-btn:hover {
+  background: color-mix(in srgb, #1d4b54 14%, #fff);
+}
+.od-jump-ico svg {
+  display: block;
+  width: 15px;
+  height: 15px;
+  overflow: visible;
+}
+.od-reading .ba-module {
+  scroll-margin-top: calc(var(--chrome-h, 67px) + 72px);
+}
+.od-empty {
+  margin: 0;
+  padding: 28px;
+  text-align: center;
+  border: 1px dashed var(--border-strong);
+  border-radius: 10px;
+}
+
+/* ---------- guided: the scrolly ----------
+   The walk's grammar: a 392px column of v3's .ct-step blocks on the left,
+   the stage pinned on the right in one white card — the test's instrument
+   over the nine modules. */
+.od-scrolly {
+  --od-view: calc(100dvh - var(--chrome-h, 67px));
+  display: grid;
+  grid-template-columns: 392px minmax(0, 1fr);
+  gap: 56px;
+  align-items: start;
+  width: min(
+    var(--grid-max, 1360px),
+    calc(100vw - 2 * var(--frame-pad, 40px))
+  );
+  margin-inline: auto;
+}
+.od-steps {
+  min-width: 0;
+  padding-top: calc(var(--od-view) * 0.08);
+  padding-bottom: calc(var(--od-view) * 0.35);
+}
+.od-step h2 {
+  margin: 0 0 12px;
+  font-size: 24px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+}
+.od-step h2.od-part {
+  margin: 0 0 14px;
+  font-size: clamp(28px, 1.45rem + 1vw, 36px);
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+.od-step > .geo-badge + * {
+  align-self: stretch;
+  border-top: 1px solid var(--border);
+  padding-top: 18px;
+}
+.od-step .geo-badge {
+  cursor: default;
+}
+.od-step .mod-chips {
+  margin-top: 4px;
+}
+.od-next {
+  margin-top: 20px;
+  padding: 10px 16px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--teal);
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.od-next:hover {
+  background: var(--teal-dark);
+}
+.od-stagewrap {
+  position: sticky;
+  top: var(--chrome-h, 67px);
+  height: var(--od-view);
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 20px 0;
+}
+.od-stage {
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  padding: 18px 22px 20px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.od-stage-inst {
+  position: relative;
+  flex: 1.3 1 0;
+  min-height: 0;
+  transition: flex-grow 0.6s cubic-bezier(0.3, 0.7, 0.2, 1), opacity 0.35s ease;
+}
+/* the last stop hands the stage to the ranked modules */
+.od-stage-inst.gone {
+  flex-grow: 0;
+  opacity: 0;
+}
+.od-inst,
+.od-lineup {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.45s ease;
+}
+.od-inst.on,
+.od-lineup.on {
+  opacity: 1;
+  pointer-events: auto;
+}
+.od-inst .dc-svg {
+  width: 100%;
+  height: 100%;
+}
+.od-inst .ba-step-tag {
+  top: 0;
+  right: 0;
+}
+/* the intro's line-up of the tests, before any is read */
+.od-lineup {
+  list-style: none;
+  margin: 0;
+  padding: 0 4%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+}
+.od-lineup li {
+  display: grid;
+  grid-template-columns: 10px auto minmax(0, 1fr);
+  align-items: baseline;
+  column-gap: 12px;
+  padding: 12px 16px;
+  background: #fcfdfd;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.od-lineup i {
+  align-self: center;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--border-strong);
+}
+.od-lineup b {
+  font-size: 16px;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.od-lineup span {
+  font-size: 13.5px;
+  color: var(--ink-soft);
+}
+.od-tally-k {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 14px 0 10px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.od-stage-inst.gone + .od-tally-k {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+.od-tally-k span {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+/* the nine modules, three by three; each tile is placed by its rank, so a
+   re-sort moves the tiles rather than swapping them */
+.od-tally {
+  --g: 10px;
+  position: relative;
+  flex: 1 1 0;
+  min-height: 0;
+}
+.od-tile {
+  --ease: cubic-bezier(0.3, 0.7, 0.2, 1);
+  position: absolute;
+  box-sizing: border-box;
+  width: calc((100% - 2 * var(--g)) / 3);
+  height: calc((100% - 2 * var(--g)) / 3);
+  left: calc(var(--col) * (100% + var(--g)) / 3);
+  top: calc(var(--row) * (100% + var(--g)) / 3);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  transition: left 0.7s var(--ease), top 0.7s var(--ease), opacity 0.4s ease,
+    border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+}
+.od-tile-ico {
+  flex: none;
+  color: var(--ink-soft);
+  transition: color 0.3s ease;
+}
+.od-tile-ico svg {
+  display: block;
+  width: 22px;
+  height: 22px;
+  overflow: visible;
+}
+.od-tile-txt {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.od-tile b {
+  overflow: hidden;
+  font-size: 14px;
+  line-height: 17px;
+  font-weight: 700;
+  color: var(--ink);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.od-tile-why,
+.od-tile-q {
+  display: none;
+  font-size: 12.5px;
+  line-height: 16px;
+  color: var(--ink-soft);
+}
+/* the current test points here */
+.od-tile.lit {
+  border-color: var(--c);
+  background: color-mix(in srgb, var(--c) 7%, #fff);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+.od-tile.lit .od-tile-ico {
+  color: var(--c);
+}
+/* a test to come: what it would point at, dashed */
+.od-tile.would {
+  border-style: dashed;
+  border-color: var(--ink-soft);
+}
+/* the last stop: ranked, the suggestions lit, the rest back */
+.od-tally.final .od-tile {
+  align-items: flex-start;
+  padding: 14px 16px;
+}
+.od-tally.final .od-tile b {
+  font-size: 16px;
+  line-height: 20px;
+  white-space: normal;
+}
+.od-tally.final .od-tile-why {
+  display: block;
+}
+.od-tally.final .od-tile-q {
+  display: block;
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--ink);
+}
+.od-tile.sugg {
+  border-color: #1d4b54;
+  background: color-mix(in srgb, #1d4b54 6%, #fff);
+}
+.od-tile.sugg .od-tile-ico {
+  color: #1d4b54;
+}
+.od-tile.rest {
+  opacity: 0.55;
+}
+
+/* ---------- explorer: the modules first ---------- */
+.od-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+.od-strip-k {
+  margin-right: 6px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.od-tchip {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 12px 7px 10px;
+  font: inherit;
+  text-align: left;
+  color: var(--ink);
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease;
+}
+.od-tchip:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-sm);
+}
+.od-tchip.open {
+  border-color: var(--teal);
+  box-shadow: var(--shadow-sm);
+}
+.od-tchip.is-dim {
+  opacity: 0.5;
+}
+.od-tchip i {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--border-strong);
+}
+.od-tchip-txt {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+.od-tchip-txt b {
+  font-size: 14px;
+  font-weight: 700;
+}
+.od-tchip-txt span {
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+.od-tchip.quiet .od-tchip-txt span {
+  font-style: italic;
+}
+.od-tchip svg {
+  flex: none;
+  width: 10px;
+  height: 6px;
+  fill: none;
+  stroke: var(--ink-soft);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  transition: transform 0.2s ease;
+}
+.od-tchip.open svg {
+  transform: rotate(180deg);
+}
+.od-drawer {
+  max-width: 640px;
+  margin-top: 14px;
+  animation: od-in 0.25s ease;
+}
+@keyframes od-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+.od-xbody {
+  display: grid;
+  grid-template-columns: 330px minmax(0, 1fr);
+  gap: 56px;
+  align-items: start;
+}
+.od-xlist {
+  position: sticky;
+  top: calc(var(--chrome-h, 67px) + 20px);
+  max-height: calc(100dvh - var(--chrome-h, 67px) - 40px);
+  overflow: auto;
+}
+.od-xlist ul {
+  list-style: none;
+  margin: 0 0 22px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.od-xlist li {
+  transition: opacity 0.2s ease;
+}
+.od-xrow {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 11px;
+  padding: 9px 10px;
+  font: inherit;
+  text-align: left;
+  color: var(--ink);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.od-xrow:hover,
+.is-hot > .od-xrow {
+  background: #fff;
+  border-color: var(--border);
+}
+.od-xrow.on {
+  background: #fff;
+  border-color: #1d4b54;
+  box-shadow: var(--shadow-sm);
+}
+.od-xrow .od-mod-ico svg {
+  width: 22px;
+  height: 22px;
+}
+.od-xrow-txt {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.od-xrow-txt b {
+  font-size: 15.5px;
+  line-height: 20px;
+  font-weight: 700;
+}
+.od-xrow-txt span {
+  overflow: hidden;
+  font-size: 12.5px;
+  line-height: 16px;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.od-xmain {
+  min-width: 0;
+  scroll-margin-top: calc(var(--chrome-h, 67px) + 20px);
+}
+.od-xwhy {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 0 14px;
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+.od-xwhy b {
+  color: var(--ink);
+}
+.od-xnav {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 28px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+.od-xnav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 10px 14px;
+  font: inherit;
+  color: var(--ink);
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+}
+.od-xnav-btn.next {
+  align-items: flex-end;
+  margin-left: auto;
+}
+.od-xnav-btn:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-sm);
+}
+.od-xnav-btn span {
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+.od-xnav-btn b {
+  font-size: 15px;
+}
+
+/* ---------- stacked (≤920px): the figure on top, as the walk does ---------- */
+@media (max-width: 920px) {
+  .od-scrolly {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    width: auto;
+    margin-inline: 0;
+  }
+  .od-stagewrap {
+    order: -1;
+    z-index: 3;
+    height: 58vh;
+    padding: 10px 16px;
+    background: #f9fafb;
+  }
+  .od-steps {
+    padding: 2vh 24px 32vh;
+  }
+  /* top-aligned: the reading line sits just under the stage, and a step
+     arrives title first */
+  .od-steps .od-step {
+    min-height: 64vh;
+    justify-content: flex-start;
+    padding-top: 22px;
+  }
+  .od-stage {
+    padding: 12px 14px 14px;
+  }
+  .od-tally {
+    --g: 7px;
+  }
+  .od-tile,
+  .od-tally.final .od-tile {
+    gap: 7px;
+    padding: 6px 8px;
+  }
+  .od-tile b,
+  .od-tally.final .od-tile b {
+    font-size: 12.5px;
+    line-height: 15px;
+  }
+  .od-tally.final .od-tile-why,
+  .od-tally.final .od-tile-q {
+    display: none;
+  }
+  .od-tile-ico svg {
+    width: 18px;
+    height: 18px;
+  }
+  .od-lineup li {
+    padding: 8px 12px;
+  }
+  .od-lineup span {
+    display: none;
+  }
+  .od-xbody {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+  .od-xlist {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+}
+@media (max-width: 640px) {
+  .od-steps {
+    padding-inline: 16px;
+  }
+  .od-stagewrap {
+    padding-inline: 10px;
+  }
+  .od-tile .od-pips {
+    display: none;
+  }
+  .od-tile-ico {
+    display: none;
+  }
+}
