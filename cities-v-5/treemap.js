@@ -2908,13 +2908,27 @@
      figure's units to be drawn.
      ========================================================================= */
   const MAP = { padding: 1, minSide: 4, inset: 2, first: 1.1, step: 0.9, shareGap: 0.3,
-                descent: 0.25, size: 13, min: 13, weight: 500, shareWeight: 400,
+                descent: 0.25, size: 13, min: 12, weight: 400, shareWeight: 400,   /* the treemaps' own floor is 12 (2026-10-26, Nil: "make the min size 12px only in tree maps"); the site's elsewhere stays 13. The names at the regular weight (2026-10-26, Nil: "make font weight regular"; they were 500) */
                 /* at the sector level the nine blocks are the cells, and a
                    13px label is lost in them: the fit starts higher there */
                 sectorSize: 18 };
   /* the sizes a label is tried at: whole pixels from its ceiling down,
      ending on the floor itself, which is not a whole pixel */
   const mapSizes = (max, min) => { const lo = min || MAP.min, out = []; for (let v = max; v > lo; v--) out.push(v); out.push(lo); return out; };
+  /* the label-size study (2026-10-26, Nil: "when the cell is big the font size should get bigger and when the cell is
+     small the font size should get smaller; determine max and min font sizes to try"): the size a cell's label is tried
+     from follows the cell's size on screen, 0.12 of the square root of its area in px (a 100 by 100 cell starts at 13, a
+     185 by 187 one at 22, the sector blocks at the cap), held between the floor and a cap; the fit still walks a long
+     name down to the floor, so no cell carries less than it did. "fixed" is the old way, 13 for every cell (18 for the
+     nine sector blocks). The presenter's TYPE_K scales the floor and the cap, as it did the fixed sizes */
+  const LAB_SIZES = { fixed: null, s18: 18, s22: 22, s28: 28 };
+  let LAB_MODE = "s18";   /* the default since 2026-10-26 (Nil: "make label size 12-18 the default") */
+  const labelCeil = (px, grain, k) => {
+    const cap = LAB_SIZES[LAB_MODE];
+    if (!cap) return Math.round((grain === 1 ? MAP.sectorSize : MAP.size) * k * 2) / 2;
+    const want = 0.12 * Math.sqrt(Math.max(0, px.w * px.h));
+    return Math.round(Math.max(MAP.min * k, Math.min(cap * k, want)) * 2) / 2;
+  };
   const MAP_FONT = '"Source Sans 3", "Source Sans Pro", sans-serif';
   /* the sector-names study: "off", or the sectors named on the map -
      "band", an 18px strip in a deeper shade of the sector's colour with a
@@ -3226,9 +3240,11 @@
     return mergeLoop([oneGroup ? LEVELS.group : LEVELS.sector], bands, true);
   }
 
-  /* ---- the cell labels: the name whole, wrapped by words, at 13px or at
-     12.5, and the share under it where that still fits; a name that cannot
-     be set whole leaves the cell bare ---- */
+  /* ---- the cell labels: the name whole, wrapped by words, from the cell's
+     ceiling down to 12px, and the share under it where that still fits; a
+     name that cannot be set whole at 12 is cut with an ellipsis where the
+     cell holds a line and five of its characters (2026-10-26, Nil: "if a
+     text can't fit do ..."); a smaller cell stays bare ---- */
   const _mapCtx = (function(){ try { return document.createElement("canvas").getContext("2d"); } catch (e){ return null; } })();
   const _mapW = new Map();
   function mapTextW(str, size, weight){
@@ -3251,15 +3267,43 @@
     if (cur) out.push(cur);
     return out;
   }
+  /* the share under the name is set smaller than the name once the name grows (2026-10-26, as the Atlas, Metroverse and
+     d3plus set it): 0.85 of the name's size, never under the floor, so at 13 it is 13 as before */
+  const shareSize = (size, minSize) => Math.max(minSize || MAP.min, Math.round(size * 0.85 * 2) / 2);
   function fitLines(name, shareText, box, maxSize, minSize){
     const words = name.split(/\s+/);
     for (const size of mapSizes(maxSize || MAP.size, minSize)){
       const lines = wrapFit(words, size, MAP.weight, box.w);
       if (!lines || blockH(lines.length, size, false) > box.h) continue;
-      const share = mapTextW(shareText, size, MAP.shareWeight) <= box.w && blockH(lines.length, size, true) <= box.h;
-      return { x: box.x, y: box.y, lines: lines, size: size, share: share };
+      const ss = shareSize(size, minSize);
+      const share = mapTextW(shareText, ss, MAP.shareWeight) <= box.w && blockH(lines.length, size, true) <= box.h;
+      return { x: box.x, y: box.y, lines: lines, size: size, share: share, shareSize: ss };
     }
     return null;
+  }
+  /* at the floor, the name cut to the cell: as many whole words as the lines that fit will hold, the last of them
+     ending in an ellipsis; a first word wider than the cell is cut inside the word. Only where the cell holds a line
+     and the first five characters with the ellipsis, so the small cells stay clean */
+  const ELL = "\u2026";
+  function cutFit(name, shareText, box, size){
+    if (blockH(1, size, false) > box.h) return null;
+    const fitsW = t => mapTextW(t, size, MAP.weight) <= box.w;
+    if (!fitsW(name.slice(0, 5) + ELL)) return null;
+    let maxLines = 1; while (blockH(maxLines + 1, size, false) <= box.h) maxLines++;
+    const words = name.split(/\s+/), lines = []; let i = 0;
+    const cut = t => { let u = t; while (u.length > 1 && !fitsW(u + ELL)) u = u.slice(0, -1).replace(/\s+$/, ""); return u + ELL; };
+    while (i < words.length && lines.length < maxLines){
+      let cur = "";
+      while (i < words.length){ const next = cur ? cur + " " + words[i] : words[i]; if (fitsW(next)){ cur = next; i++; } else break; }
+      const lastLine = lines.length === maxLines - 1;
+      if (!cur){ lines.push(cut(words[i])); i = words.length; break; }          /* a word wider than the cell */
+      if (i < words.length && lastLine){ lines.push(cut(cur + " " + words[i])); break; }   /* more words, no more lines: the next one cut into the line */
+      lines.push(cur);
+    }
+    if (i < words.length && !lines[lines.length - 1].endsWith(ELL)) lines[lines.length - 1] = cut(lines[lines.length - 1]);
+    const ss = shareSize(size, size);
+    const share = mapTextW(shareText, ss, MAP.shareWeight) <= box.w && blockH(lines.length, size, true) <= box.h;
+    return { x: box.x, y: box.y, lines: lines, size: size, share: share, shareSize: ss, cut: true };
   }
   /* the fit depends only on the words and the cell's size, so it is cached
      on those; the cell's own corner is added on the way out */
@@ -3276,10 +3320,11 @@
           fit = fitLines(n, shareText, box, maxSize, minSize);
           if (fit) break;
         }
+        if (!fit) fit = cutFit(bare || name, shareText, box, minSize || MAP.min);
       }
       _mapLab.set(key, fit);
     }
-    return fit ? { x: cell.x + MAP.inset, y: cell.y, lines: fit.lines, size: fit.size, share: fit.share } : null;
+    return fit ? { x: cell.x + MAP.inset, y: cell.y, lines: fit.lines, size: fit.size, share: fit.share, shareSize: fit.shareSize, cut: !!fit.cut } : null;
   }
   const clearMapMeasure = () => { _mapW.clear(); _mapLab.clear(); };
   /* The sentence's blanks are native selects, each cut to the width of the
@@ -5775,7 +5820,7 @@
         /* at the sector grain with the band naming the block, the cell keeps its share alone */
         const shareOnly = L.grain === 1 && SEC_NAMES !== "off";
         /* the presenter view sets the type a size up, the floor with it */
-        const ceil = Math.round((L.grain === 1 ? MAP.sectorSize : MAP.size) * TYPE_K * 2) / 2, floor = Math.max(MAP.min, Math.round((MAP.min - 0.5) * TYPE_K * 2) / 2);   /* the presenter keeps its one shrink step, never under 13 */
+        const ceil = labelCeil(c.px, L.grain, TYPE_K), floor = Math.max(MAP.min, Math.round((MAP.min - 0.5) * TYPE_K * 2) / 2);   /* the presenter keeps its one shrink step, never under 13 */
         const spec = shareOnly ? fitCellLabel(share, "", c.px, ceil, floor) : fitCellLabel(c.cell.name, share, c.px, ceil, floor);
         if (!spec) return;
         const ink = mapInkOf(c);
@@ -5784,7 +5829,7 @@
           .attr("x", spec.x / s).attr("y", lineY(spec.y, spec.size, n) / s).text(ln));
         if (spec.share && !shareOnly) t.append("tspan").attr("class", "mi-mshare")
           .attr("x", spec.x / s).attr("y", lineY(spec.y, spec.size, spec.lines.length, true) / s)
-          .attr("font-weight", MAP.shareWeight).text(share);
+          .attr("font-size", (spec.shareSize || spec.size) / s).attr("font-weight", MAP.shareWeight).text(share);
       });
       const lab = all.select("text.mi-mlab");
       if (dur) lab.style("opacity", 0).transition().delay(dur * 0.55).duration(dur * 0.45).style("opacity", 1);
@@ -6942,6 +6987,20 @@
     };
     setSecBlock(secBlockEl ? secBlockEl.value : SEC_BLOCK, true);
     if (secBlockEl) on(secBlockEl, "change", () => setSecBlock(secBlockEl.value));
+    /* a study control: how the cells' labels take their size (LAB_SIZES); ?labsize=s22 opens on an option. The labels
+       are fitted at paint, so a repaint is enough */
+    const labSizeEl = document.getElementById(p + "LabSize");
+    const setLabSize = (v, first) => {
+      const mode = Object.prototype.hasOwnProperty.call(LAB_SIZES, v) ? v : "s18";
+      if (!first && mode === LAB_MODE) return;
+      LAB_MODE = mode; fig.dataset.labsize = mode;
+      if (first) return;
+      hideMapTip(true);
+      if (step >= 0) paint(step, false);
+    };
+    { const m = location.search.match(/[?&]labsize=(fixed|s18|s22|s28)\b/); if (labSizeEl && m) labSizeEl.value = m[1]; }
+    setLabSize(labSizeEl ? labSizeEl.value : LAB_MODE, true);
+    if (labSizeEl) on(labSizeEl, "change", () => setLabSize(labSizeEl.value));
     const groundEl = document.getElementById(p + "Ground");
     /* the frame and the field differ only in paint; the clean ground has no
        padding round its cells, so going to it or from it tiles the tiers
