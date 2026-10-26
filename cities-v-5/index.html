@@ -8011,7 +8011,7 @@
       <div class="lp-jump">
         <span class="lp-label">Jump to a section:</span>
         <button type="button" onclick="enterTool('page-overview')">Who am I?</button>
-        <button type="button" onclick="enterTool('page-export-basket')">Metro Industries</button>
+        <button type="button" onclick="enterTool('page-export-basket')">What do my metro and I produce?</button>
         <button type="button" onclick="enterTool('page-admin-mix')">Worker Flows</button>
         <button type="button" onclick="enterTool('page-constraints')">Constraints Diagnosis</button>
         <button type="button" onclick="enterTool('page-levers')">Levers for Change</button>
@@ -8030,7 +8030,7 @@
         <div class="jump-quiet">
           <span class="jump-quiet-label">Jump to a section:</span>
           <button type="button" onclick="enterTool('page-overview')">Who am I?</button>
-          <button type="button" onclick="enterTool('page-export-basket')">Metro Industries</button>
+          <button type="button" onclick="enterTool('page-export-basket')">What do my metro and I produce?</button>
           <button type="button" onclick="enterTool('page-admin-mix')">Worker Flows</button>
           <button type="button" onclick="enterTool('page-constraints')">Constraints Diagnosis</button>
           <button type="button" onclick="enterTool('page-levers')">Levers for Change</button>
@@ -8122,7 +8122,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         </ul>
       </div>
       <div class="sec" data-sec="page-export-basket">
-        <button class="sec-head" onclick="goTo('page-export-basket')"><span class="num" aria-hidden="true"></span>Metro Industries</button>
+        <button class="sec-head" onclick="goTo('page-export-basket')"><span class="num" aria-hidden="true"></span>What do my metro and I produce?</button>
         <ul class="steps">
           <li data-step="page-export-basket"><span class="dot"></span><button onclick="goTo('page-export-basket')">What does the metro do for a living?</button></li>
           <li data-step="tierSection"><span class="dot"></span><button onclick="goTo('tierSection')">How tradable is the metro&rsquo;s work?</button></li>
@@ -9987,7 +9987,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   /* ---------- journey state ---------- */
   const sectionDefs=[
     {name:"Who am I?", pages:["page-overview","page-overview-scatter","page-overview-flows"].concat(FLOWS_HOME ? ["page-overview-flows-out"] : []).concat(["page-overview-metro","page-overview-mscatter","page-overview-compare","check-overview","apply-overview"]), entry:"page-overview"},
-    {name:"Metro Industries",    pages:["page-export-basket","tierSection","specializedSection","check-export","apply-export"], entry:"page-export-basket"},
+    {name:"What do my metro and I produce?", pages:["page-export-basket","tierSection","specializedSection","check-export","apply-export"], entry:"page-export-basket"},
     {name:"Worker Flows", pages:["page-admin-mix","adminWhoFills","adminResidentsOut","adminBalance","adminJobsHere","adminResidents","adminSpecialized","adminExchange","adminGauge","am2Bars","am2Compare","check-adminmix","apply-adminmix"], entry:"page-admin-mix"},
     {name:"Constraints Diagnosis",pages:["page-constraints","page-city-in-metro","page-constraints-lorem","check-constraints","apply-constraints"],entry:"page-constraints"},
     {name:"Levers for Change",pages:["page-levers","check-levers","apply-levers"], entry:"page-levers"},
@@ -10008,7 +10008,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   ["page-overview",
    "page-export-basket"].forEach(p=>visitedPages.add(p));
   savedInsights.push({
-    section:"Metro Industries · Put in Practice",
+    section:"What do my metro and I produce? · Put in Practice",
     city:"Boston, United States of America",
     span:"10 years",
     text:"Boston's export basket leans heavily on knowledge services — scientific research, software, and higher education dominate the treemap. The opportunity seems to be in translating that research strength into advanced manufacturing; the constraint is likely housing costs, which the scatter plot hints at through fast wage growth but slow population growth."
@@ -10618,7 +10618,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
 
     const LINE_C = {
       "Who am I?": "#255862",
-      "Metro Industries": "#b97f4e",
+      "What do my metro and I produce?": "#b97f4e",
       "Constraints Diagnosis":      "#2f7d6a",
       "Levers for Change":     "#7f451e",
       "Extras":                "#7f8f95"
@@ -12156,7 +12156,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         prompt: "What single fact about your city would you flag for a colleague, and what would you want to check next?",
         ph: "The commuting numbers surprised me because…"
       },
-      "Metro Industries": {
+      "What do my metro and I produce?": {
         slug: "export",
         qs: [
           { q: "Which sector’s metro jobs sit most disproportionately inside Boston proper?",
@@ -13321,7 +13321,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
      the section's own text and the facts its quiz turns on */
   const SEAL_POINTS = {
     "Who am I?": [],
-    "Metro Industries": [
+    "What do my metro and I produce?": [
       "2.3 million jobs across 877 industries, read three ways: by size, by the complexity of the work, and by how much of it can be sold outside the metro.",
       "Sorted by tradability the mix falls into three tiers \u2014 traded, partly traded and local \u2014 and it is the traded tier that brings income in.",
       "The metro\u2019s specializations are the traded industries it does far more of than a typical US metro, biotechnology R&amp;D among them: a matter of concentration, not size."
@@ -13511,7 +13511,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       '<text class="seam-viz-t" x="125" y="100" text-anchor="middle">population growth →</text>', "seam-viz--wide");
     const vizLevers = svg("0 0 230 62", "Levers",
       [[12, 77.2], [32, 157], [52, 115]].map(([y, x]) => '<g><line x1="10" x2="220" y1="' + y + '" y2="' + y + '" stroke="var(--mark-grey)" stroke-width="3" stroke-linecap="round"/><line x1="10" x2="' + x + '" y1="' + y + '" y2="' + y + '" stroke="#255862" stroke-width="3" stroke-linecap="round"/><circle cx="' + x + '" cy="' + y + '" r="6" fill="#255862"/></g>').join(""));
-    const done = [[0, "Who am I?", vizProfile], [1, "Metro Industries", vizSectors], [2, "Worker Flows", vizFlows]];
+    const done = [[0, "Who am I?", vizProfile], [1, "What do my metro and I produce?", vizSectors], [2, "Worker Flows", vizFlows]];
     const wall = '<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="qmark" aria-hidden="true"><path d="M6 10h28v24H6z"/><path d="M6 18h28M6 26h28M16 10v8M26 10v8M11 18v8M21 18v8M31 18v8M16 26v8M26 26v8"/></svg>';
     const seam = document.createElement("section");
     seam.className = "seam"; seam.id = "seam"; seam.setAttribute("aria-labelledby", "seam-title");
@@ -16545,8 +16545,10 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   }
   /* links written before a section was renamed still land on it, and the
      address bar then shows its current name */
-  /* the first section was "Who are you?" until 2026-10-18 (Nil): its old links still land on it */
-  const SECTION_ALIASES = { "admin-industries": "worker-flows", "economic-fundamentals": "who-am-i", "who-are-you": "who-am-i" };
+  /* the first section was "Who are you?" until 2026-10-18 (Nil), the second "Metro Industries" until
+     2026-10-26 (Nil: "What do my metro and I produce?"): their old links still land on them */
+  const SECTION_ALIASES = { "admin-industries": "worker-flows", "economic-fundamentals": "who-am-i", "who-are-you": "who-am-i",
+    "metro-industries": "what-do-my-metro-and-i-produce" };
   function sectionFromHash(){
     let h = decodeURIComponent(location.hash.replace(/^#\/?/, "")).toLowerCase();
     if (SECTION_ALIASES[h]) h = SECTION_ALIASES[h];
@@ -17158,7 +17160,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     const t=document.getElementById("practiceInput");
     if(!t.value.trim()){ t.focus(); return; }
     savedInsights.push({
-      section:"Metro Industries · Put in Practice",
+      section:"What do my metro and I produce? · Put in Practice",
       city:cityT.value,
       text:t.value.trim()
     });
