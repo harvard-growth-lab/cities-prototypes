@@ -13,6 +13,9 @@ export interface CitiesBridge {
   onPage(id: string): void;
   /** the Explainers tab opened or closed */
   onExplainers(open: boolean): void;
+  /** one of this branch's drawings stands in for Who am I?'s commuting dots
+   *  (src/commuters/), so the hand-off to the map fills it without a flight */
+  whoFigureStandIn?(): boolean;
 }
 
 export interface LegacySectionDef {

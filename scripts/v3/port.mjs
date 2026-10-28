@@ -495,6 +495,17 @@ const PAGE_PATCHES = [
           '  SEAL_POINTS["Levers for Change"] = ["[placeholder: what to take from the levers]"];',
           "  const SEAL_ARROW = ")],
 
+  /* Who am I?'s commuting figure has three more drawings here
+     (src/commuters/), in main's own "Groups" menu. While one is up, main's
+     figure is off screen, so the hand-off to the map on the next beat has
+     no dots to fly from: it fills the map at once, as it does for reduced
+     motion or a jump past the panel. */
+  ["sub", "commuting: a stand-in figure hands off without a flight",
+    '      if (reduce() || !seen || tableUp() || fig.host.dataset.stage !== "sorted"){ settle(); return; }',
+    lines('      /* [port] one of this branch\'s drawings (src/commuters/) may stand in for the dots */',
+          '      const standIn = !!(window.__cities && window.__cities.whoFigureStandIn && window.__cities.whoFigureStandIn());',
+          '      if (reduce() || !seen || tableUp() || standIn || fig.host.dataset.stage !== "sorted"){ settle(); return; }')],
+
   /* ---- the address bar is this branch's (src/App.tsx) ----
      Main's v-5 writes the current section into the hash (#metro-industries)
      and routes from it. This branch already keeps a hash of its own, finer

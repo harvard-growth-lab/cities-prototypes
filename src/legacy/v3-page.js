@@ -6441,7 +6441,9 @@ export function initPage(){
       hand = true; const my = ++run2; laid = ""; wrap.classList.add("who-hand");
       const r = panel.getBoundingClientRect(), seen = r.bottom > 140 && r.top < innerHeight - 80;
       prepMap();
-      if (reduce() || !seen || tableUp() || fig.host.dataset.stage !== "sorted"){ settle(); return; }
+      /* [port] one of this branch's drawings (src/commuters/) may stand in for the dots */
+      const standIn = !!(window.__cities && window.__cities.whoFigureStandIn && window.__cities.whoFigureStandIn());
+      if (reduce() || !seen || tableUp() || standIn || fig.host.dataset.stage !== "sorted"){ settle(); return; }
       const svg = fig.svg, sr = svg.getBoundingClientRect(), vb = svg.viewBox.baseVal, k = vb && vb.width ? sr.width / vb.width : 1;
       const r0 = (+(fig.circles[0].getAttribute("r")) || 3.6) * k;
       const pts = fig.circles.map(c => pos(svg, c));

@@ -70,6 +70,10 @@ React pieces into their slots, then runs `initLegacy()` once.
   `enterTool`, `backToLanding`, `toggleExplainers`, `openJourney`,
   `openGlossary` (the Explainers masthead's Glossary link), and reads
   `sectionDefs` for the routable ids.
+- one question main's page asks back: `whoFigureStandIn()` — is one of this
+  branch's commuting drawings (`src/commuters/`) standing in for Who am I?'s
+  dots? Then the hand-off to the map fills it without a flight (a `[port]`
+  patch in `handOff`).
 - Hash routing (deep links, the Back button) is this branch's, layered over
   main's navigation. Main's v-5 has section links of its own, coarser (one
   per section, always replaced); they are unwired here so the two do not

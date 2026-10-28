@@ -49,6 +49,30 @@ Diagnosis**, at the bottom-left while the section is on screen, switches between
 The tests and the ranking are in `src/data/diagTests.ts`. Where a test's pointer is a reading of
 the tree rather than something the team has specified, its comment says so.
 
+## Commuter diagram variants (a study)
+
+Who am I?'s third beat ("Who works here, who lives here") draws Boston's commuters three ways
+in main's own **opt** menu beside the beat's counter (Groups: opt-1 clusters, opt-2 a rectangle
+Venn, opt-3 a round one). The designers and researchers lean to opt-2, so this branch adds five
+more to the same menu that each keep its grammar — the two sets as rectangles, the overlap as
+the shared block, the light frames, main's icons and naming, the slide-together arrival — and
+change one thing. Carried by `?groups=` as main's are:
+
+| `?groups=` | menu | what it tries |
+| --- | --- | --- |
+| `blocks` | opt-4 | **Blocks** — opt-2 without the dots: each part a flat block with its count set inside; a control lights the set that is Boston right now (by day the people working there, by night the people living there) |
+| `bars` | opt-5 | **Two bars, one overlap** — the Venn flattened: the two sets as two rows offset so the shared 190K stand in one column, each part's share printed in its segment |
+| `stacked` | opt-6 | **Stacked** — the Venn upright: one column of dots in three bands, the two sets as brackets on the left, the parts named on the right; the arrival slides vertically; the shape that fits a phone |
+| `per100` | opt-7 | **Per 100** — the Venn in units: 100 squares for everyone at work in Boston (74 blue, 26 grey) with the live rectangle hung off the grey (48 squares); switched to residents, the work rectangle grows to 207 squares — main's own "207 jobs per 100 residents" |
+| `figures` | opt-8 | **Figures** — the rectangle Venn as people, one figure for 10K, in rows that fill the room |
+
+They are drawn by `src/commuters/` (`study.ts` puts them in main's menu and hands the panel back
+when one of main's is picked; `shared.tsx` opt-2's choreography, labels and frames; a file per
+drawing) with `src/styles/commuters.css`. While one is up, the hand-off to the map on the next
+beat fills the map without flying dots. (Two earlier rounds — a dot box by night and day, 100
+people, ribbons; a mosaic, a polar Venn, the city's day, rush-hour traffic, a waterfall — were
+replaced by this set on 2026-10-23.)
+
 ## Small screens
 
 Two breakpoints, shared by `src/legacy/port.css` (the shell), `src/styles/figures.css`

@@ -13,6 +13,8 @@ import { initLegacy } from "./legacy";
 import type { LegacyApi } from "./legacy/bridge";
 import { ConstraintsSection } from "./components/ConstraintsSection";
 import { ExplainersContent } from "./components/ExplainersContent";
+import { CommuterVariants } from "./commuters/CommuterVariants";
+import { commuterStandsIn, mountCommuters } from "./commuters/study";
 
 /* ---------- URL hash routing ----------
    v-3's page owns navigation (landing <-> tool, the section switch, the
@@ -85,6 +87,9 @@ export default function App() {
   const [currentPageId, setCurrentPageId] = useState<string | null>(null);
   /* the hash effects wait for v-3 to be booted */
   const [ready, setReady] = useState(false);
+  /* where Who am I?'s extra commuting drawings go, beside main's figure
+     (src/commuters/study.ts) */
+  const [commutersSlot, setCommutersSlot] = useState<HTMLElement | null>(null);
 
   /* The scroll spy rewrites the hash on every section that drifts past, so
      the hash effect REPLACES by default — pushing there would bury the real
@@ -132,8 +137,10 @@ export default function App() {
            which otherwise stays mounted and reappears the next time */
         if (!open) setOpenExplainer(null);
       },
+      whoFigureStandIn: commuterStandsIn,
     });
     legacy.current = api;
+    setCommutersSlot(mountCommuters());
     /* the landing's state is a class v-3 toggles; watch it rather than ask */
     const landing = document.getElementById("landing");
     const watch = landing
@@ -247,6 +254,8 @@ export default function App() {
           />,
           slots.explainers,
         )}
+
+      {commutersSlot && createPortal(<CommuterVariants />, commutersSlot)}
     </>
   );
 }
