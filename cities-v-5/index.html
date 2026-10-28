@@ -912,6 +912,17 @@
   .sec-seal.is-in .skr-t i{width:var(--w);}
   .skr-row.is-here .skr-n,.skr-row.is-here > b{color:var(--white);font-weight:700;}
   .skr-row.is-here .skr-t i{background:var(--white);}
+  /* What do my metro and I produce?'s two cards (2026-10-28, Nil: "for the numbers in both cards label the column so
+     that we know what they are"): the numbers' column named over it, right-aligned on the values; the metro's mark at
+     the size it is drawn in its icon circle */
+  .seal-key .sk-viz--rank > .skr-hd{grid-column:2 / -1;justify-self:end;margin-bottom:-2px;font-size:13px;line-height:16px;font-weight:600;color:var(--on-dark-soft);white-space:nowrap;}
+  .seal-key .sk-ico svg.sk-ico-metro{width:19px;height:14px;}
+  /* side by side, its two drawings take the taller one's height, so each card's question, head and line start level
+     (as option A draws them); the shorter list keeps its rows at the top. One column on a phone needs none of it */
+  @media (min-width:761px){
+    .seal-keys--level > .seal-key{grid-row:span 2;grid-template-rows:subgrid;}
+    .seal-keys--level > .seal-key > .sk-viz{align-self:start;}
+  }
   .sk-body{min-width:0;}
   .sk-eyebrow{display:flex;align-items:center;gap:8px;margin:0;font-size:13px;font-weight:700;letter-spacing:.2px;color:var(--on-dark-soft);}
   .sk-ico{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--white);color:var(--teal-dark);flex:none;}
@@ -13371,11 +13382,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
      the section's own text and the facts its quiz turns on */
   const SEAL_POINTS = {
     "Who am I?": [],
-    "What do my metro and I produce?": [
-      "The metro: 2.3 million jobs across 877 industries, mostly knowledge work, read by size, by complexity and by tradability. Only 23% of the work is traded, and that is the part bringing income in; its specialties, biotechnology R&amp;D among them, are a matter of concentration, not size.",
-      "Boston\u2019s living is health care, professional services and education, 334K of its 719K jobs, and it runs on commuters: in 16 of 20 sectors the city hosts more jobs than its residents hold, 371K more in all, and health care alone draws 81K.",
-      "Finance &amp; insurance is what Boston does for the metro: 49% of the metro\u2019s finance jobs are inside the city against 26% of its jobs overall, while only 16% of its finance workers live there. Manufacturing, construction, wholesale and retail are the metro\u2019s work outside the city."
-    ],
+    /* drawn instead, as Who am I?'s are: two cards in SEAL_KEYS (2026-10-28) */
+    "What do my metro and I produce?": [],
     "Constraints Diagnosis": [
       "Every diagnosis starts with two questions, each read against the typical city: are people arriving or leaving, and is pay rising or falling?",
       "Boston\u2019s metro pairs fast pay growth with slow population growth \u2014 the mark of a supply constraint: people are being priced out.",
@@ -13443,6 +13451,49 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
           '<div class="sk-body"><p class="sk-eyebrow"><span class="sk-ico">' + ICO_CITY + '</span>Business or residential admin?</p>' +
           '<p class="sk-head">' + (zone === "bal" ? "Boston Admin is balanced: as many commute in as out" : "Boston Admin is a " + ZW[zone] + " admin") + '</p>' +
           '<p class="sk-fig">' + ratio.toFixed(1) + ' commute in for every one who commutes out</p></div></div>' +
+        '</div>';
+    },
+    /* What do my metro and I produce? closes on its two halves, each drawn as the anchor's ranked bars above (2026-10-28,
+       Nil: "do option A. For the first card; write Top traded industries in Metro Area, and for the numbers in both cards
+       label the column so that we know what they are"): Boston Metro's three largest traded industries by jobs
+       (industries-2024.js, the traded tier), and the sectors where Boston Admin gains the most workers, the jobs in Boston
+       less the jobs its residents hold (admin-sectors-2023.js). The sectors that lose are too small to draw beside the
+       gains and sit in one row of words. Each card keeps to its own source: the 2024 industries' total and LODES 2023's
+       never meet */
+    "What do my metro and I produce?": () => {
+      const D = window.BOSTON_INDUSTRIES_2024, A = window.ADMIN_SECTORS_2023, fc = window.fmtCount;
+      if (!D || !D.rows || !D.fields || !A || !A.sectors || !fc) return "";
+      const F = Object.fromEntries(D.fields.map((f, i) => [f, i]));
+      const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+      /* the metro's largest traded industries, named as the treemap names them */
+      const traded = D.rows.filter(r => r[F.tier] === 0).sort((a, b) => b[F.employ] - a[F.employ]).slice(0, 3);
+      /* each sector's gain or loss; the flow diagram's two shorter names (SK_SHORT) */
+      const SHORT = { "62": "Health care", "54": "Professional services" }, nm = s => SHORT[s.code] || s.short;
+      const net = A.sectors.map(s => ({ name: nm(s), d: s.jobs - s.residents }));
+      const gain = net.filter(x => x.d > 0).sort((a, b) => b.d - a.d), lose = net.filter(x => x.d < 0).sort((a, b) => a.d - b.d);
+      const top = gain.slice(0, 3), lost = -lose.reduce((t, x) => t + x.d, 0);
+      if (!traded.length || !top.length) return "";
+      const more = lose.length ? lose[0].name + (lose.length > 1 ? " and " + (lose.length - 1) + " more" : "") : "";
+      /* the anchor's rows, the first white and the others faint, the numbers' column named over them */
+      const rows = (hd, list, max) => '<span class="skr-hd">' + hd + '</span>' + list.map((t, i) => '<span class="skr-row' + (i ? '' : ' is-here') + '">' +
+        '<span class="skr-n">' + esc(t.name) + '</span><span class="skr-t">' + (t.w == null ? '' : '<i style="--w:' + (t.w / max * 100).toFixed(1) + '%"></i>') + '</span><b>' + t.v + '</b></span>').join("");
+      const ICO_METRO = '<svg class="sk-ico-metro" viewBox="0 0 30 22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="15" cy="11" rx="13" ry="8.6" stroke-dasharray="2.6 3"/><path d="M10.5 15.5h9"/><path d="M12.2 15.5V10h3v5.5"/><path d="M16.6 15.5V7h3v8.5"/></svg>';
+      const ICO_CITY = '<svg viewBox="0 0 24 30" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + window.CITY_ICON + '</svg>';
+      const lead = traded[0];
+      return '<div class="seal-keys seal-keys--level">' +
+        '<div class="seal-key"><div class="sk-viz sk-viz--rank" role="img" aria-label="' + esc("Boston Metro’s largest traded industries by jobs, " + D.year + ": " +
+          traded.map(r => r[F.short] + " " + fc(r[F.employ])).join(", ")) + '">' +
+          rows("Jobs", traded.map(r => ({ name: r[F.short], w: r[F.employ], v: fc(r[F.employ]) })), lead[F.employ]) + '</div>' +
+          '<div class="sk-body"><p class="sk-eyebrow"><span class="sk-ico">' + ICO_METRO + '</span>Top traded industries in Metro Area</p>' +
+          '<p class="sk-head">Boston Metro sells research and software</p>' +
+          '<p class="sk-fig">' + esc(lead[F.short]) + ' leads with ' + fc(lead[F.employ]) + ' jobs, at ' + lead[F.rca].toFixed(1) + ' times the national rate</p></div></div>' +
+        '<div class="seal-key"><div class="sk-viz sk-viz--rank" role="img" aria-label="' + esc("Workers Boston Admin gains or loses by sector, " + A.year + ": " +
+          top.map((t, i) => t.name + (i ? " " : " gains ") + fc(t.d)).join(", ") + (lose.length ? "; " + more + (lose.length > 1 ? " sectors lose " + fc(lost) + " together" : " loses " + fc(lost)) : "")) + '">' +
+          rows("Workers gained or lost", top.map(t => ({ name: t.name, w: t.d, v: "+" + fc(t.d) })).concat(lose.length ? [{ name: more, w: null, v: fc(-lost) }] : []), top[0].d) + '</div>' +
+          '<div class="sk-body"><p class="sk-eyebrow"><span class="sk-ico">' + ICO_CITY + '</span>Gaining or losing workers?</p>' +
+          '<p class="sk-head">Boston Admin gains in ' + gain.length + ' of ' + A.sectors.length + ' sectors</p>' +
+          '<p class="sk-fig">' + esc(top[0].name) + ' gains the most' + (lose.length > 1 ? '; the ' + lose.length + ' that lose come to ' + fc(lost) + ' together'
+            : lose.length ? '; ' + esc(lose[0].name.toLowerCase()) + ' loses ' + fc(lost) : '') + '</p></div></div>' +
         '</div>';
     }
   };
