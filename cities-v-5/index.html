@@ -4494,7 +4494,7 @@
        view does, and their key stands down as that view's does (2026-10-28): with it under the drawing the band ran to
        556px and its sentence, the blanks with it, slid under the section bar. The drawing names what the key said: the
        column heads carry the two counts' marks, the gain says "loses" and "gains" under its rows, the mix names its
-       tick there and opt-3's ranking its groups; opt-2's blanks are its groups' swatches. The treemap and the flow keep
+       tick there, and the rankings' column heads their groups (2026-10-28). The treemap and the flow keep
        the slot the hidden sector key holds, as before, so the band changes little between views and the Present button
        stays clear of the key's last line */
     #miFigure.is-admin:has(.wf-pan[data-pan="1"]) .mi-caption{display:none;}
@@ -4999,6 +4999,10 @@
   #miAdminSvg .ad-dash-halo{stroke:var(--white);stroke-opacity:.5;stroke-width:4;pointer-events:none;}
   #miAdminSvg .ad-dash-lab{font-weight:600;} #miAdminSvg .ad-dash-lab--in{fill:var(--flow-in);} #miAdminSvg .ad-dash-lab--out{fill:var(--flow-out-text);}
   #miAdminSvg .ad-foot-lab{font-weight:600;fill:var(--ink-soft);}
+  /* the gain's two ways, its foot words and its values in their bars' colours (2026-10-28); a row given up to a phrase
+     gives up its value's colour with its bar's */
+  #miAdminSvg :is(.ad-foot-lab--in,.ad-end--in){fill:var(--flow-in);} #miAdminSvg :is(.ad-foot-lab--out,.ad-end--out){fill:var(--flow-out-text);}
+  #miAdminSvg .ad-row.is-dim :is(.ad-end--in,.ad-end--out){fill:var(--ink);}
   #miAdminSvg .ad-bar--in{fill:var(--flow-in);} #miAdminSvg .ad-bar--out{fill:var(--flow-out);}
   #miAdminSvg .ad-bar{transition:fill .18s ease;}
   /* the mix's metro marks take beat 3's peer mark */
@@ -5014,9 +5018,12 @@
   #miAdminSvg .ad-hl{fill:none;stroke:none;pointer-events:none;}
   #miAdminSvg .ad-row.is-hot .ad-hl{stroke:var(--ink);stroke-width:2.5;vector-effect:non-scaling-stroke;}
   #miAdminSvg .ad-row.is-hot .ad-name{fill:var(--teal-dark);}
+  /* beat 6: the row the needle reads is marked as the row under the pointer is, while no other row is (2026-10-28): its
+     tint alone was too faint to find the needle's row by. Under the pointer another row takes the line, and the needle */
+  #miFigure[data-step="10"] #miAdminSvg:not(:has(.ad-row.is-hot)) .ad-row.is-pinned .ad-hl{stroke:var(--ink);stroke-width:2.5;vector-effect:non-scaling-stroke;}
+  #miFigure[data-step="10"] #miAdminSvg:not(:has(.ad-row.is-hot)) .ad-row.is-pinned .ad-name{fill:var(--teal-dark);}
   #miAdminSvg .ad-row:focus{outline:none;}
   #miAdminSvg .ad-row:focus-visible .ad-hot{fill:var(--teal-tint);stroke:var(--teal);stroke-width:1.5;}
-  #miAdminSvg .ad-call{fill:var(--ink-soft);}
   /* a frame narrower than the rows need keeps a 704px drawing and pans across it, as beats 1 to 3's ranking does
      (wf-pan's data-pan, set by the script); the treemap is tiled to the frame and never pans */
   #miFigure .wf-pan{position:relative;}
@@ -5025,14 +5032,17 @@
   /* the drawing's foot words sit a few units under its last row and may reach past its box */
   #miAdminSvg{overflow:visible;}
   #miAdminSvg .vn-bld{stroke:var(--ink);} #miAdminSvg .vn-arr--in{stroke:var(--flow-in);} #miAdminSvg .vn-arr--out{stroke:var(--flow-out);}
-  /* the row's card, as the ranking's */
-  .wf-tip .skt-name{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:var(--t-note);}
-  .wf-tip .skt-name .ad-naics{font-size:13px;font-weight:400;color:var(--ink-soft);}
-  .wf-tip .skt-sw{display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--sw);flex:none;}
-  .wf-tip .skt-grid{display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 12px;margin:0;font-size:13px;line-height:1.35;}
-  .wf-tip .skt-grid dt{display:inline-flex;align-items:center;gap:5px;color:var(--ink-soft);white-space:nowrap;}
-  .wf-tip .skt-grid dt .vn-ico{width:22px;height:15px;}
-  .wf-tip .skt-grid dd{margin:0;color:var(--ink);font-variant-numeric:tabular-nums;}
+  /* the card is beats 1 to 3's .rca-tip, part for part (2026-10-28, Nil: "make sure everything else are the same, size,
+     color etc."). Its one addition: a group's row, and a group's head, carry the key's mark under the chart, the swatch
+     and the flow icon (the bars' rows the icon alone, as their key has it) */
+  #wfTip .tip-grid dt{display:flex;align-items:center;gap:5px;}
+  #wfTip :is(.tip-grid dt,.tip-sector) > i.tip-sw{width:10px;height:10px;flex:none;}
+  #wfTip .tip-sw--non{background:var(--flow-in);} #wfTip .tip-sw--res{background:var(--flow-both);} #wfTip .tip-sw--out{background:var(--flow-out);}
+  #wfTip :is(.tip-grid dt,.tip-sector) .vn-ico{width:22px;height:15px;flex:none;}
+  #wfTip :is(.tip-grid dt,.tip-sector) .vn-ico--both{width:12px;}
+  /* a card a tap holds up has nothing to press here (beat 1's holds a Zoom button), so a tap goes through it to the mark
+     under it: the same mark's tap lets it go, another's moves it, where it covers its own mark on a phone too */
+  #wfTip.is-pinned{pointer-events:none;}
   /* ---- beat 4's opt-2 (2026-10-27, Nil: "we will show all jobs as tree map (2-digit) in Boston admin. In the
      sentence format give options to show Boston residents and Boston non-residents ... you can show both options
      (since there are only 2) but still stay in the same format"): the bars give way to one treemap of the jobs in
@@ -5042,12 +5052,17 @@
      group always stays shown. ---- */
   #miFigure.is-admin:not(.is-b4tree):not(.is-b4sk) .wf-sentence--tree{display:none;}
   #miFigure.is-admin:is(.is-b4tree,.is-b4sk) #wfSentence{display:none;}
-  /* beats 4 to 6 under opt-3 (2026-10-27): the Sankeys; 4 and 5 keep the treemaps' sentences, 6 has its own. Each
-     option's sentence says "shown as a" with its own pair: treemap or ranking, Sankey or ranking */
+  /* beats 4 and 5 under opt-3 (2026-10-27): the Sankeys, in the treemaps' sentences. Each option's sentence says
+     "shown as a" with its own pair: treemap or ranking, Sankey or ranking. Beat 6 has its own sentence, the gain bars'
+     reading and the year (2026-10-28) */
   #miFigure[data-b4="sankey"] .wf-tview-pick,#miFigure:not([data-b4="sankey"]) .wf-skview-pick{display:none;}
+  /* opt-3's ranking asks its order (2026-10-28): "sorted by [...]" stands in the ranking's sentence alone (data-skview),
+     the flow's keeps "shown as a [flow diagram], in [year]", and opt-2's sorts by what its toggles show */
+  #miFigure:not([data-b4="sankey"]) .wf-s-sort,#miFigure:not([data-skview="rank"]) .wf-s-sort{display:none;}
   /* opt-3's sentence keeps the chart and the year (2026-10-27, Nil: "for the control area, you do not need to say boston
      resident etc. They should be displayed as legends"): the groups stand in the key under the flow and its ranking alike;
      a group an answer leaves out goes hollow there and its words strike through, as beats 1 to 3's key does for a hidden sector.
+     Since 2026-10-28 the flow names them on its nodes and the ranking in its column heads, which go hollow the same way.
      The toggles' screen-reader hints go with them (2026-10-28): read under opt-3, they spoke of buttons not there */
   #miFigure[data-b4="sankey"] :is(.wf-s-who,#wfWhoHint,#wfWho3Hint){display:none;}
   .wf-key > span.is-off .wf-k-sw{background:transparent;}
@@ -5055,6 +5070,13 @@
   .wf-key > span.is-off > span:last-child b{color:inherit;}
   /* opt-3's legend, under the flow and its ranking, a step larger (2026-10-28, Nil: "sankey: make the legend font size 14px") */
   #miFigure.is-admin .wf-key.wf-key--sk{font-size:14px;}
+  /* beats 4 and 5's flow names its groups on their nodes (2026-10-28, Nil: "You don't need the legends since we're doing
+     direct labeling. Revise the use of vertical space"): the key's strip folds away, as beat 3's does, and the drawing
+     takes its room (skRoom). "strip": the ranking keeps the strip at this width, so the margin over it goes too; "key":
+     the ranking folds it as well (a phone's, which pans), and the margin stays under the drawing as under the ranking.
+     The ranking's column heads name the groups (2026-10-28), so its key stands down too; beat 6 keeps its own */
+  #miFigure.is-admin.is-b4sk[data-skfold] .mi-caption{display:none;}
+  #miFigure.is-admin.is-b4sk[data-skfold="strip"] .tradable-viz-wrapper{margin-bottom:0;}
   #miFigure.is-admin[data-step="10"] :is(#wfSentenceTree,#wfSentenceTree3){display:none;}
   #miFigure.is-admin:not([data-b4="sankey"]) #wfSentenceSk6,#miFigure.is-admin:not([data-step="10"]) #wfSentenceSk6{display:none;}
   #miFigure.is-admin[data-b4="sankey"][data-step="10"] #wfSentence{display:none;}
@@ -5190,7 +5212,21 @@
   #wfTreeSvg .wf-rk-seg{stroke:none;transition:fill .18s ease;}
   #wfTreeSvg .wf-rk-seg--non{fill:var(--flow-in);} #wfTreeSvg .wf-rk-seg--res{fill:var(--flow-both);} #wfTreeSvg .wf-rk-seg--out{fill:var(--flow-out);}
   #wfTreeSvg .wf-rk-val{font-weight:600;}
-  #wfTreeSvg .wf-rk text.wf-rk-foot{font-weight:600;fill:var(--ink-soft);}
+  /* the columns (2026-10-28, Nil: "change the design of the bars so it looks like the previous bars like there are
+     columns showing the data"): opt-1's heads and values, each head with its group's swatch and icon, as the key had
+     them. A group the toggles or an answer leave out goes hollow and struck in its head, as in the key, and its values
+     go quieter, as its parts leave the bars */
+  #wfTreeSvg .wf-rk text.wf-rk-head{font-weight:600;fill:var(--ink-soft);}
+  #wfTreeSvg .wf-rk text.wf-rk-col{font-weight:500;fill:var(--ink-soft);font-variant-numeric:tabular-nums;}
+  #wfTreeSvg .wf-rk-sw{stroke-width:2;fill:var(--sw);stroke:var(--sw);}
+  #wfTreeSvg .wf-rk-sw--non{--sw:var(--flow-in);} #wfTreeSvg .wf-rk-sw--res{--sw:var(--flow-both);} #wfTreeSvg .wf-rk-sw--out{--sw:var(--flow-out);}
+  #wfTreeSvg .wf-rk-colh.is-off .wf-rk-sw{fill:transparent;}
+  #wfTreeSvg .wf-rk-colh.is-off :is(.vn-bld,.vn-arr){stroke:var(--control-edge);}
+  #wfTreeSvg .wf-rk-colh.is-off text.wf-rk-head{text-decoration:line-through;text-decoration-thickness:1px;}
+  #wfTreeSvg .wf-rk text.wf-rk-col.is-off{fill:var(--control-edge);}
+  /* the column heads name the groups, so the legend under the ranking stands down, as under the flow (2026-10-28):
+     its box stays, so the frame is as tall as the flow's and the treemap's at the same width */
+  #miFigure.is-admin.is-b4tree:has(#wfTreeSvg[data-view="rank"]) #wfKey{visibility:hidden;}
   #wfTreeSvg .wf-rk-row{outline:none;}
   #wfTreeSvg .wf-rk-row.is-dim .wf-rk-seg{fill:var(--border);}
   #wfTreeSvg .wf-rk:has(.wf-rk-row.is-dim) .wf-rk-row:not(.is-dim) .wf-rk-name{font-weight:700;}
@@ -5204,8 +5240,6 @@
   /* the swatches and the words as beats 1 to 3's sector key has them (2026-10-27, Nil: "make the legend color same as 1,2,3 beats") */
   .wf-key .wf-k-sw{width:13px;height:13px;border-radius:3px;box-sizing:border-box;border:2px solid var(--sw);background:var(--sw);}
   .wf-key .wf-k-sw--res{--sw:var(--flow-both);} .wf-key .wf-k-sw--non{--sw:var(--flow-in);} .wf-key .wf-k-sw--out{--sw:var(--flow-out);}
-  /* the block's card: what is estimated, said under the figures */
-  .wf-tip .wf-tip-foot{margin:8px 0 0;font-size:13px;line-height:1.35;color:var(--ink-soft);}
   #wfTableWrap .wf-tbl-cap{caption-side:top;text-align:left;padding:0 8px 6px;font-size:13px;line-height:1.35;color:var(--ink-soft);}
   #wfTableWrap tfoot tr{border-top:1px solid var(--border-strong);}
   #wfTableWrap tfoot th{font-weight:600;}
@@ -5213,7 +5247,6 @@
     :is(#wfWho,#wfWho3)[data-look="pair"] .wf-who-l{display:none;}
     .wf-key .wf-k-long{display:none;}
     #wfWho3 .wf-who-l{display:none;}
-    #wfTip.is-tree{width:calc(100% - 16px);}
   }
   @media (prefers-reduced-motion: reduce){ #wfTreeSvg *{transition:none !important;} .wf-who-btn{transition:none;} }
   /* the needle in the text column of the gain-and-loss beat: section 1's component in the beat's note */
@@ -5996,14 +6029,15 @@
      the sentence's own tinted blank. The outline is a pixel at any scale;
      the keyboard's ring is the ink, two pixels. And the frame that scrolls
      a long chart. */
-  #miTreemapSvg .mi-more{cursor:pointer;outline:none;}
-  :is(#miTreemapSvg .mi-more, #miFigure .mi-pinsvg .mi-more-pin) .mi-more-txt{fill:var(--teal);font-weight:600;}
-  :is(#miTreemapSvg .mi-more, #miFigure .mi-pinsvg .mi-more-pin) .mi-more-caret{stroke:var(--teal);stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round;}
-  :is(#miTreemapSvg .mi-more, #miFigure .mi-pinsvg .mi-more-pin) .mi-more-box{fill:var(--white);stroke:var(--teal);stroke-width:1;vector-effect:non-scaling-stroke;}
-  :is(#miTreemapSvg .mi-more, #miFigure .mi-pinsvg .mi-more-pin):hover .mi-more-box{fill:var(--teal-tint);}
-  #miFigure[data-morelook="tint"] :is(#miTreemapSvg .mi-more, .mi-pinsvg .mi-more-pin) .mi-more-box{fill:var(--teal-tint);stroke:var(--control-edge);}
-  #miFigure[data-morelook="tint"] :is(#miTreemapSvg .mi-more, .mi-pinsvg .mi-more-pin):hover .mi-more-box{stroke:var(--teal);}
-  #miFigure #miTreemapSvg .mi-more:focus-visible .mi-more-box{stroke:var(--ink);stroke-width:2;}
+  /* (and beats 4 and 5's flow's, 2026-10-28) */
+  :is(#miTreemapSvg, #wfSankeySvg) .mi-more{cursor:pointer;outline:none;}
+  :is(#miTreemapSvg .mi-more, #wfSankeySvg .mi-more, #miFigure .mi-pinsvg .mi-more-pin) .mi-more-txt{fill:var(--teal);font-weight:600;}
+  :is(#miTreemapSvg .mi-more, #wfSankeySvg .mi-more, #miFigure .mi-pinsvg .mi-more-pin) .mi-more-caret{stroke:var(--teal);stroke-width:1.5;fill:none;stroke-linecap:round;stroke-linejoin:round;}
+  :is(#miTreemapSvg .mi-more, #wfSankeySvg .mi-more, #miFigure .mi-pinsvg .mi-more-pin) .mi-more-box{fill:var(--white);stroke:var(--teal);stroke-width:1;vector-effect:non-scaling-stroke;}
+  :is(#miTreemapSvg .mi-more, #wfSankeySvg .mi-more, #miFigure .mi-pinsvg .mi-more-pin):hover .mi-more-box{fill:var(--teal-tint);}
+  #miFigure[data-morelook="tint"] :is(#miTreemapSvg .mi-more, #wfSankeySvg .mi-more, .mi-pinsvg .mi-more-pin) .mi-more-box{fill:var(--teal-tint);stroke:var(--control-edge);}
+  #miFigure[data-morelook="tint"] :is(#miTreemapSvg .mi-more, #wfSankeySvg .mi-more, .mi-pinsvg .mi-more-pin):hover .mi-more-box{stroke:var(--teal);}
+  #miFigure :is(#miTreemapSvg, #wfSankeySvg) .mi-more:focus-visible .mi-more-box{stroke:var(--ink);stroke-width:2;}
   /* the peers order's two ends: the rows between them are not drawn, and a
      faint dashed rule says so */
   #miTreemapSvg .mi-split{stroke:var(--border-strong);stroke-width:1;stroke-dasharray:3 3;vector-effect:non-scaling-stroke;}
@@ -6169,8 +6203,7 @@
   #page-export-basket:not([data-b4="tree"]) .wf-b4-tree:not(.wf-b4-sk),
   #page-export-basket:not([data-b4="sankey"]) .wf-b4-sk:not(.wf-b4-tree),
   #page-export-basket:not([data-b4="tree"]):not([data-b4="sankey"]) .wf-b4-tree.wf-b4-sk,
-  #page-export-basket:is([data-b4="tree"],[data-b4="sankey"]) .wf-b4-bars,
-  #page-export-basket[data-b4="sankey"] .wf-b6-bars{display:none;}
+  #page-export-basket:is([data-b4="tree"],[data-b4="sankey"]) .wf-b4-bars{display:none;}
   .wf-study-none{margin:0;font-size:13px;color:var(--ink-soft);white-space:nowrap;}
   /* the word alone in the head, and the studies as plain dropdowns behind it */
   .mi-head > .mi-studies{left:auto;right:0;width:auto;z-index:4;}
@@ -8182,7 +8215,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
           <li data-step="specializedSection"><span class="dot"></span><button onclick="goTo('specializedSection')">Which tradable industries is the metro most specialized in?</button></li>
           <li data-step="adminCountsSection"><span class="dot"></span><button onclick="goTo('adminCountsSection')">Which work happens in Boston, and which do its residents do?</button></li>
           <li data-step="adminSharesSection"><span class="dot"></span><button onclick="goTo('adminSharesSection')">Which work does Boston host for the metro?</button></li>
-          <li data-step="adminNetSection"><span class="dot"></span><button onclick="goTo('adminNetSection')">Where does Boston gain workers, and where does it lose them?</button></li>
+          <li data-step="adminNetSection"><span class="dot"></span><button onclick="goTo('adminNetSection')">Where does Boston gain and lose workers?</button></li>
           <li data-step="adminSummarySection"><span class="dot"></span><button onclick="goTo('adminSummarySection')">Extra page to show every reading</button></li>
           <li data-step="check-export"><span class="dot"></span><button onclick="goTo('check-export')">Test your knowledge</button></li>
           <li data-step="apply-export"><span class="dot"></span><button onclick="goTo('apply-export')">Put your insights</button></li>
@@ -8934,15 +8967,20 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
               <p class="mi-sentence wf-sentence" id="wfSentence"><span class="city-short">Boston</span>&rsquo;s work by sector, shown as
                 <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="wfSRead" aria-label="What the bars show"><option value="counts">jobs in Boston and its residents&rsquo; jobs</option><option value="jobs">jobs in Boston alone</option><option value="residents">its residents&rsquo; jobs alone</option><option value="mix">each count&rsquo;s share of its own total</option><option value="shares">shares of the metro&rsquo;s</option><option value="gain">Boston&rsquo;s gain or loss of workers</option><option value="report">every reading</option></select></span>, sorted by
                 <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="wfSSort" aria-label="Order of the rows"><option value="jobs">jobs in Boston</option><option value="residents">residents&rsquo; jobs</option><option value="shareJobs">share of the metro&rsquo;s jobs</option><option value="shareResidents">share of its working residents</option><option value="gain">Boston&rsquo;s gain</option></select></span>, <span class="wf-s-year">in&nbsp;<span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select class="wf-year" id="wfSYear" aria-label="Year"><option value="2023" selected>2023</option><option value="2013">2013</option></select></span></span></p>
-              <!-- beat 4's opt-2 (2026-10-27): the two groups as two blanks pressed on and off; the words never change -->
+              <!-- beat 4's opt-2 (2026-10-27): the two groups as two blanks pressed on and off; the words never change.
+                   opt-3's ranking asks its order as a blank too (2026-10-28, Nil: "When viewing as bar, give options option to
+                   sort by, similar to previous beats, put them in the question format"): the total or one group's jobs -->
               <p class="mi-sentence wf-sentence wf-sentence--tree" id="wfSentenceTree">All <span class="wf-n" data-n="jobs">719K</span> jobs in <span class="city-short">Boston</span><span class="wf-s-view">, shown as a
-                <span class="mi-pick wf-tview-pick"><select class="wf-tview" id="wfTView" aria-label="The jobs as a treemap or as a ranking"><option value="map">treemap</option><option value="rank">ranking</option></select></span><span class="mi-pick wf-skview-pick"><select class="wf-skview" id="wfSkView" aria-label="The jobs as a flow diagram or as a ranking"><option value="sankey">flow diagram</option><option value="rank">ranking</option></select></span></span><span class="wf-s-who">, held by
+                <span class="mi-pick wf-tview-pick"><span class="mi-measure" aria-hidden="true"></span><select class="wf-tview" id="wfTView" aria-label="The jobs as a treemap or as a ranking"><option value="map">treemap</option><option value="rank">ranking</option></select></span><span class="mi-pick wf-skview-pick"><span class="mi-measure" aria-hidden="true"></span><select class="wf-skview" id="wfSkView" aria-label="The jobs as a flow diagram or as a ranking"><option value="sankey">flow diagram</option><option value="rank">ranking</option></select></span></span><span class="wf-s-sort">, sorted by
+                <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select class="wf-rksort" id="wfRkSort" aria-label="Order of the rows"><option value="all">jobs in Boston</option><option value="non">non-residents&rsquo; jobs</option><option value="res">residents&rsquo; jobs</option></select></span></span><span class="wf-s-who">, held by
                 <span class="wf-who" id="wfWho" role="group" aria-label="Which groups the treemap shows" data-look="swatch"><button type="button" class="wf-who-btn wf-who-btn--non" data-who="non" aria-pressed="true" aria-describedby="wfWhoHint"><i class="wf-who-sw" aria-hidden="true"><svg class="wf-who-tick" viewBox="0 0 10 8" aria-hidden="true"><path d="M1 4.2 3.7 6.8 9 1.2"/></svg></i><span class="wf-who-ico" aria-hidden="true"></span><span class="wf-who-w"><span class="wf-who-l"><span class="city-short">Boston</span> </span>non-residents</span></button><span class="wf-who-and"> and </span><button type="button" class="wf-who-btn wf-who-btn--res" data-who="res" aria-pressed="true" aria-describedby="wfWhoHint"><i class="wf-who-sw" aria-hidden="true"><svg class="wf-who-tick" viewBox="0 0 10 8" aria-hidden="true"><path d="M1 4.2 3.7 6.8 9 1.2"/></svg></i><span class="wf-who-ico" aria-hidden="true"></span><span class="wf-who-w"><span class="wf-who-l"><span class="city-short">Boston</span> </span>residents</span></button></span></span>, <span class="wf-s-year">in&nbsp;<span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select class="wf-year" id="wfSYearT" aria-label="Year"><option value="2023" selected>2023</option><option value="2013">2013</option></select></span></span><span class="mi-sr" id="wfWhoHint">Shows or hides this group in every sector&rsquo;s block. One group always stays shown. Each sector&rsquo;s split is estimated.</span></p>
               <p class="mi-sentence wf-sentence wf-sentence--tree" id="wfSentenceTree3">All <span class="wf-n" data-n="all">876K</span> jobs in <span class="city-short">Boston</span> or held by its residents<span class="wf-s-view">, shown as a
-                <span class="mi-pick wf-tview-pick"><select class="wf-tview" id="wfTView3" aria-label="The jobs as a treemap or as a ranking"><option value="map">treemap</option><option value="rank">ranking</option></select></span><span class="mi-pick wf-skview-pick"><select class="wf-skview" id="wfSkView3" aria-label="The jobs as a flow diagram or as a ranking"><option value="sankey">flow diagram</option><option value="rank">ranking</option></select></span></span><span class="wf-s-who">:
+                <span class="mi-pick wf-tview-pick"><span class="mi-measure" aria-hidden="true"></span><select class="wf-tview" id="wfTView3" aria-label="The jobs as a treemap or as a ranking"><option value="map">treemap</option><option value="rank">ranking</option></select></span><span class="mi-pick wf-skview-pick"><span class="mi-measure" aria-hidden="true"></span><select class="wf-skview" id="wfSkView3" aria-label="The jobs as a flow diagram or as a ranking"><option value="sankey">flow diagram</option><option value="rank">ranking</option></select></span></span><span class="wf-s-sort">, sorted by
+                <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select class="wf-rksort" id="wfRkSort3" aria-label="Order of the rows"><option value="all">total jobs</option><option value="non">non-residents&rsquo; jobs</option><option value="res">residents&rsquo; jobs in Boston</option><option value="out">residents&rsquo; jobs elsewhere</option></select></span></span><span class="wf-s-who">:
                 <span class="wf-who" id="wfWho3" role="group" aria-label="Which groups the treemap shows" data-look="swatch"><button type="button" class="wf-who-btn wf-who-btn--non" data-who="non" aria-pressed="true" aria-describedby="wfWho3Hint"><i class="wf-who-sw" aria-hidden="true"><svg class="wf-who-tick" viewBox="0 0 10 8" aria-hidden="true"><path d="M1 4.2 3.7 6.8 9 1.2"/></svg></i><span class="wf-who-ico" aria-hidden="true"></span><span class="wf-who-w"><span class="wf-who-l"><span class="city-short">Boston</span> </span>non-residents</span></button><span class="wf-who-and">, </span><button type="button" class="wf-who-btn wf-who-btn--res" data-who="res" aria-pressed="true" aria-describedby="wfWho3Hint"><i class="wf-who-sw" aria-hidden="true"><svg class="wf-who-tick" viewBox="0 0 10 8" aria-hidden="true"><path d="M1 4.2 3.7 6.8 9 1.2"/></svg></i><span class="wf-who-ico" aria-hidden="true"></span><span class="wf-who-w"><span class="wf-who-l"><span class="city-short">Boston</span> </span>residents</span></button><span class="wf-who-and"> and </span><button type="button" class="wf-who-btn wf-who-btn--out" data-who="out" aria-pressed="true" aria-describedby="wfWho3Hint"><i class="wf-who-sw" aria-hidden="true"><svg class="wf-who-tick" viewBox="0 0 10 8" aria-hidden="true"><path d="M1 4.2 3.7 6.8 9 1.2"/></svg></i><span class="wf-who-ico" aria-hidden="true"></span><span class="wf-who-w"><span class="wf-who-l"><span class="city-short">Boston</span> </span>residents working elsewhere</span></button></span></span>, <span class="wf-s-year">in&nbsp;<span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select class="wf-year" id="wfSYearT3" aria-label="Year"><option value="2023" selected>2023</option><option value="2013">2013</option></select></span></span><span class="mi-sr" id="wfWho3Hint">Shows or hides this group in every sector&rsquo;s block. One group always stays shown. Each sector&rsquo;s split is estimated.</span></p>
-              <p class="mi-sentence wf-sentence wf-sentence--sk6" id="wfSentenceSk6">Who commutes in and out of <span class="city-short">Boston</span>, by sector, shown as a
-                <span class="mi-pick wf-skview-pick"><select class="wf-skview" id="wfSkView6" aria-label="The jobs as a flow diagram or as a ranking"><option value="sankey">flow diagram</option><option value="rank">ranking</option></select></span>, <span class="wf-s-year">in&nbsp;<span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select class="wf-year" id="wfSYear6" aria-label="Year"><option value="2023" selected>2023</option><option value="2013">2013</option></select></span></span></p>
+              <!-- beat 6 under opt-3 draws the gain bars, not a flow (2026-10-28, Nil: "6/7 make sure you focus on net sending
+                   and receiving with the needle, nothing else"): its sentence names the reading and keeps the year -->
+              <p class="mi-sentence wf-sentence wf-sentence--sk6" id="wfSentenceSk6"><span class="city-short">Boston</span>&rsquo;s gain or loss of workers, by sector, <span class="wf-s-year">in&nbsp;<span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select class="wf-year" id="wfSYear6" aria-label="Year"><option value="2023" selected>2023</option><option value="2013">2013</option></select></span></span></p>
               <div class="mi-table wf-table"><button type="button" class="mi-table-btn" id="wfTableBtn" aria-expanded="false" aria-controls="wfTableWrap"><span class="mi-table-btn-txt">Show as table</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button></div>
             </div>
             <div class="tradable-split-header" id="miSplitHead">
@@ -8998,7 +9036,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
                 <svg class="viz-big wf-tree" id="wfTreeSvg" role="group" aria-label="All 719K jobs in Boston by sector, as a treemap" tabindex="-1" xmlns="http://www.w3.org/2000/svg"></svg>
                 <svg class="viz-big" id="miAdminSvg" role="group" aria-label="Boston's work by sector" tabindex="-1" width="880" height="500" viewBox="0 0 880 500" xmlns="http://www.w3.org/2000/svg" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;"></svg>
               </div>
-              <div class="rca-tip wf-tip" id="wfTip" role="tooltip" hidden></div>
+              <div class="rca-tip" id="wfTip" role="tooltip" hidden></div>
               <div class="wf-foot">
                 <div class="mi-table-wrap" id="wfTableWrap" hidden tabindex="0" role="region" aria-label="The chart, as a table"></div>
               </div>
@@ -9206,15 +9244,13 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         <!-- beat 6: the gap between the two counts, and the needle beside the words -->
         <div class="export-subsection" id="adminNetSection">
           <div class="subsection-header">
-            <h3>Where does <span class="city-short">Boston</span> gain workers, and where does it lose them?</h3>
+            <h3>Where does <span class="city-short">Boston</span> gain and lose workers?</h3>
           </div>
+          <!-- one lede under every chart option (2026-10-28): opt-3's beat 6 draws the gain bars too, so it reads the bars' words -->
           <div class="lede-stat-row">
-            <p class="lede wf-b6-bars">Each bar is how many more jobs <span class="city-short">Boston</span> hosts in a sector than its
+            <p class="lede">Each bar is how many more jobs <span class="city-short">Boston</span> hosts in a sector than its
               residents hold. <span class="mi-hl" data-row="62" tabindex="0">Health care</span> gains the most, 81K; only
               <span class="mi-hl" data-row="31-33" tabindex="0">manufacturing</span> and three small sectors lose workers.</p>
-            <p class="lede wf-b4-sk"><span class="city-short">Boston</span> gains 371K workers: 528K commute in, 157K commute out.
-              <span class="mi-hl" data-row="62" tabindex="0">Health care</span> gains the most, 81K; only <span class="mi-hl" data-row="31-33" tabindex="0">manufacturing</span>
-              and three small sectors lose workers.</p>
           </div>
           <div class="lean-note who-gauge mi-gauge" id="miGauge"></div>
         </div>
@@ -9792,7 +9828,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
 <script src="data/geo/who_commute_geo.js"></script>
 <script src="industries-2024.js"></script>
 <script src="industries-2014.js"></script>
-<script src="treemap.js?v=2026-10-28-adminlive"></script>
+<script src="treemap.js?v=2026-10-28-tip"></script>
 <script>
   /* every commuting count is rounded (2026-10-23, Nil: "round all commuting numbers, instead of 708101 say 708K"): under a
      thousand as it is, then thousands with one decimal to 10K (6K, 1.2K), whole thousands to a million (528K), then
@@ -18808,8 +18844,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
    so each keeps its width and measures itself the same. */
 (function(){
   /* the year (2026-10-27, Nil chose 2023 and 2013 for the year in the beats' sentences): both years are read once, each
-     with its own split, and the select swaps one for the other in place. The words of the beats (ledes, answers,
-     callouts) are 2023's, WORDS_YEAR; the other year's chart stands without them */
+     with its own split, and the select swaps one for the other in place. The words of the beats (ledes, answers) are
+     2023's, WORDS_YEAR; the other year's chart stands without them */
   const WF_YEARS = { "2023": window.ADMIN_SECTORS_2023, "2013": window.ADMIN_SECTORS_2013 }, WORDS_YEAR = "2023";
   const fig = document.getElementById("miFigure"), svgEl = document.getElementById("miAdminSvg");
   if (!WF_YEARS[WORDS_YEAR] || !fig || !svgEl || typeof d3 === "undefined") return;
@@ -18914,21 +18950,19 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   const ASKS = {
     b4q1: { state: 0, set: { sort: "residents" }, back: "Back to jobs in Boston" },
     b4q2: { state: 0, set: { reading: "mix" }, back: "Back to the two counts" },
-    /* opt-2's (the treemap): one group alone, three blocks lit */
-    b4t1: { state: 0, tree: true, set: { who: "non", lit: ["62", "54", "52"] }, back: "Back to both groups" },
-    b4t2: { state: 0, tree: true, set: { who: "res", lit: ["62", "54", "61"] }, back: "Back to both groups" },
+    /* opt-2's (the treemap): one group alone, three blocks lit. Under opt-3 the ranking's order follows the answer
+       (rkSort, 2026-10-28): its blank says what the rows are sorted by, and the Back tab gives the reader's own back */
+    b4t1: { state: 0, tree: true, set: { who: "non", rkSort: "non", lit: ["62", "54", "52"] }, back: "Back to both groups" },
+    b4t2: { state: 0, tree: true, set: { who: "res", rkSort: "res", lit: ["62", "54", "61"] }, back: "Back to both groups" },
     /* beat 5's under opt-2: residents' jobs (grey and orange, a count), then those outside the city alone */
-    b5u1: { state: 1, tree: true, set: { on3: ["res", "out"], lit: ["62", "54", "61"] }, back: "Back to all three groups" },
-    b5u2: { state: 1, tree: true, set: { on3: ["out"], lit: ["62", "54", "61"] }, back: "Back to all three groups" },
+    b5u1: { state: 1, tree: true, set: { on3: ["res", "out"], rkSort: "all", lit: ["62", "54", "61"] }, back: "Back to all three groups" },
+    b5u2: { state: 1, tree: true, set: { on3: ["out"], rkSort: "out", lit: ["62", "54", "61"] }, back: "Back to all three groups" },
     b5q1: { state: 1, set: { sort: "jobs" }, back: "Back to shares of the metro’s" },
     b5q2: { state: 1, set: { sort: "shareResidents", fore: "out" }, back: "Back to both shares" },
     /* the needle's beat has no questions (2026-10-26, Nil): its rows and its select are the way in */
     b7q1: { state: 3, set: { lit: ["61"] }, back: "Back to every row" },
     b7q2: { state: 3, set: { lit: ["31-33", "23", "42", "44-45"] }, back: "Back to every row" }
   };
-  /* the callouts are 2023's words and numbers (81K, "barely"): drawn in 2023 alone */
-  const CALLOUTS = { "62": "at least 81K commute in for this work", "31-33": "Bostonians out-work the city only here, and barely" };
-  const callOf = c => year === WORDS_YEAR ? CALLOUTS[c] || "" : "";
 
   /* ---- geometry (2026-10-27, Nil: "The bar design and styling is different in 4,5,6 beats comparing to 1,2,3 beat. 1,2,3
      beats are the right ones. Make all bar design instances in 4,5,6 same with 1,2,3"): beats 1 to 3's bars line for line
@@ -18966,15 +19000,17 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     if (pan && (pan.dataset.pan || "") !== v) pan.dataset.pan = v; return v === "1"; };
   /* the drawing's scale, px a unit: read off the svg once it stands, else the width it will take */
   const drawK = (el, panned) => { const w = el.getBoundingClientRect().width || (panned ? PAN_MIN * typeK() : (wrap && wrap.clientWidth) || W); return w / W; };
-  /* the last paint's plot, for the card */
-  let lay = { x1: 600 };
 
   /* ---- the view: the reading, the order, the rows lit, which count stands forward, the needle's row ---- */
   let state = -1, view = null, asked = null, hot = null, pinned = null, hlTemp = null, away = false;
   /* who: the groups beat 4's treemap shows, "both", "res" or "non" (never neither) */
   /* on3: the parts opt-3's treemap shows, in their order in the block, never none */
   const ALL3 = ["non", "res", "out"];
-  const beatView = s => Object.assign({ lit: null, fore: null, needle: null, who: "both", on3: ALL3.slice() }, BEATS[s] || BEATS[0]);
+  /* rkSort: what opt-3's ranking is sorted by, "all" (the total shown) or one group, "non", "res" or "out"; the reader's
+     choice is kept for each beat (rkSorts) through the year, the view and the beats around it. ?b4sort= opens on one */
+  const qRkSort = location.search.match(/[?&]b4sort=(all|non|res|out)\b/);
+  const rkSorts = [qRkSort && qRkSort[1] !== "out" ? qRkSort[1] : "all", qRkSort ? qRkSort[1] : "all"];
+  const beatView = s => Object.assign({ lit: null, fore: null, needle: null, who: "both", on3: ALL3.slice(), rkSort: rkSorts[s] || "all" }, BEATS[s] || BEATS[0]);
   /* beat 4's chart study (2026-10-27): opt-1 the two counts as bars (?b4=bars), opt-2 the jobs in Boston as a treemap (?b4=tree),
      opt-3 the flow diagrams, the default since 2026-10-28 (Nil: "make sankeys the default option");
      its toggles' look, a second study shown while opt-2 is on (?b4look=box|pair). Read once, before the first paint */
@@ -19013,12 +19049,17 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
 
   function paint(animate){
     if (!view) return;
+    /* a card never rides into another drawing, as beats 1 to 3's (hideMapTip(true) on every paint) */
+    tipHide(true);
     /* beat 4 under opt-2: the treemap stands in for the bars; the build plays only when it was not already showing */
-    /* beats 4 to 6 under opt-3: the Sankeys */
-    const skOn = state <= 2 && b4 === "sankey" && skView === "sankey", wasSk = isSk();
+    /* beats 4 and 5 under opt-3: the Sankeys. Beat 6 draws the gain bars under every option (2026-10-28, Nil: "6/7 make
+       sure you focus on net sending and receiving with the needle, nothing else") */
+    const skOn = state <= 1 && b4 === "sankey" && skView === "sankey", wasSk = isSk();
     fig.classList.toggle("is-b4sk", skOn);
+    /* the key's strip folds under the flow (skRoom folds it as it lays the flow out) */
+    if (!skOn) delete fig.dataset.skfold;
     if (skOn){ fig.classList.remove("is-b4tree"); panSync(false); skDraw(animate, wasSk); return; }
-    if (wasSk){ skPin = null; skHot = null; if (sRead) fitPick(sRead); if (sSort) fitPick(sSort); }
+    if (wasSk){ skHot = null; if (sRead) fitPick(sRead); if (sSort) fitPick(sSort); }
     viewEff();
     const tree = (state === 0 || state === 1) && (b4 === "tree" || (b4 === "sankey" && skView === "rank")), was = isTree();
     fig.classList.toggle("is-b4tree", tree);
@@ -19050,15 +19091,19 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     if (cols.length && cols[0].left - 40 - g.x0 < .4 * (COL_R - g.x0)) cols = colsAt(1);
     if (cols.length) g.x1 = cols[0].left - 40;
     else if (onNet){
-      /* the gain: room left of zero for the losses' values, and right of the plot for the largest gain's value and its note.
-         Measured over every year, the note's room too though only 2023 draws it (2026-10-28): the plot then ends in the
-         same place in both, so the axis holds still and a bar's length is the same number of workers in either year */
-      const neg = Math.max.apply(null, allRows.filter(r => r.net < 0).map(r => textPx(endTxt(r), 600)).concat([0]));
+      /* the gain: right of the plot, room for the largest gain's value, and no notes beside the rows (2026-10-28, Nil: "6/7
+         make sure you focus on net sending and receiving with the needle, nothing else"), so the plot runs to the edge.
+         Left of zero, room for each loss's bar and its value 8 before it (2026-10-28): the room was the widest value
+         alone, and a loss with a bar of its own (2013's manufacturing, -1.7K) stood its value past the plot's edge,
+         toward its name, the further the longer the plot. A value v wide on a bar w long (n workers, 2 units at least)
+         needs zero - w - 8 - v >= x0 + 4, w = (x1 - zero) n / GAIN_MAX, so zero is the largest of those bounds.
+         Measured over every year: the plot stands in the same place in both, so the axis holds still and a bar's
+         length is the same number of workers in either year */
       const pos = Math.max.apply(null, allRows.filter(r => r.net >= 0).map(r => textPx(endTxt(r), 600)).concat([0]));
-      const call = Math.max.apply(null, allRows.filter(r => r.net >= 0 && CALLOUTS[r.code]).map(r => textPx(CALLOUTS[r.code])).concat([0]));
-      g.zero = g.x0 + Math.ceil(px(neg)) + 12; g.x1 = COL_R - 8 - px(pos) - (call ? 16 + px(call) : 0);
+      g.x1 = COL_R - 8 - px(pos);
+      g.zero = Math.ceil(Math.max.apply(null, allRows.filter(r => r.net < 0).map(r => { const v = px(textPx(endTxt(r), 600)), f = -r.net / GAIN_MAX;
+        return Math.max(g.x0 + 14 + v, (g.x0 + 12 + v + f * g.x1) / (1 + f)); }).concat([g.x0 + 12])));
     } else g.x1 = COL_R - 8 - px(Math.max.apply(null, allRows.map(r => textPx(endTxt(r), 600))));
-    lay = g;
     const sx = scaleX(g, R.scale), yEnd = BMT + PITCH * n, lit = litSet();
     /* the head: the axis title over the plot, a rule under it and under each column, the ticks, the grid from 54 */
     gHead.selectAll("*").remove(); gGrid.selectAll("*").remove(); gDash.selectAll("*").remove(); gFoot.selectAll("*").remove();
@@ -19069,9 +19114,10 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     tks.filter((v, i) => i % every === 0).forEach(v => { const x = sx(v), base = v === 0;
       gGrid.append("line").attr("class", "ad-grid" + (base ? " is-base" : "")).attr("x1", x).attr("x2", x).attr("y1", GRID_TOP).attr("y2", base && onNet ? yEnd + 4 : yEnd);
       gHead.append("text").attr("class", "ad-tick" + (base && onNet ? " is-zero" : "")).attr("x", x).attr("y", TICK_Y).attr("text-anchor", "middle").text(tickLab(R.scale, v)); });
+    /* the two ways from zero, each word in its bars' colour (2026-10-28), as section 1's "Boston loses" and "Boston gains" */
     if (onNet){
-      gFoot.append("text").attr("class", "ad-foot-lab").attr("x", g.zero - 6).attr("y", yEnd + 18).attr("text-anchor", "end").text("loses");
-      gFoot.append("text").attr("class", "ad-foot-lab").attr("x", g.zero + 6).attr("y", yEnd + 18).text("gains");
+      gFoot.append("text").attr("class", "ad-foot-lab ad-foot-lab--out").attr("x", g.zero - 6).attr("y", yEnd + 18).attr("text-anchor", "end").text("loses");
+      gFoot.append("text").attr("class", "ad-foot-lab ad-foot-lab--in").attr("x", g.zero + 6).attr("y", yEnd + 18).text("gains");
     }
     /* panned, the key stands down (2026-10-28): the mix names its metro mark under the rows, as the shares name their
        lines, from the drawing's left edge so it reads before the drawing is panned */
@@ -19101,9 +19147,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     ["in", "out"].forEach(kk => { ent.append("line").attr("class", "ad-mhalo ad-mhalo--" + kk).style("opacity", 0); ent.append("line").attr("class", "ad-mtick ad-mtick--" + kk).style("opacity", 0); });
     ent.append("text").attr("class", "ad-val ad-end");
     [0, 1, 2, 3].forEach(i => ent.append("text").attr("class", "ad-col ad-col" + i).attr("text-anchor", "end"));
-    ent.append("text").attr("class", "ad-call");
     sel.exit().interrupt().transition().duration(dur / 2).style("opacity", 0).remove();
     const all = sel.merge(ent);
+    tipBind(all, BARS);
     all.classed("is-dim", d => !!lit && !lit.has(d.code)).classed("is-pinned", d => d.code === pinned)
       .attr("aria-label", d => d.short + ": " + fmt(d.jobs) + " jobs in Boston, " + fmt(d.residents) + " held by its residents, Boston " + (d.net >= 0 ? "gains " + fmt(d.net) : "loses " + fmt(-d.net)) + "; " + pc(d.shJ) + " of the metro’s jobs in the sector");
     all.transition().duration(dur).ease(ease).delay(delay).attr("transform", d => "translate(0," + (BMT + PITCH * idx[d.code]) + ")").style("opacity", 1);
@@ -19138,64 +19184,171 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       return "M" + x + "," + y + "H" + (x + wa) + "V" + (y + h / 2) + "H" + (x + wb) + "V" + (y + h) + "H" + x + "Z"; };
     ent.select(".ad-hl").attr("d", hlD);
     all.select(".ad-hl").transition().duration(dur).ease(ease).delay(delay).attr("d", hlD);
-    /* one bar's value at its end, 8 past it (a loss's 8 before its left end); two bars' in the columns */
+    /* one bar's value at its end, 8 past it (a loss's 8 before its left end); two bars' in the columns. The gain's values
+       take their bars' colour (2026-10-28): a loss's bar is a sliver at this scale (371 workers of 90K), and its value in
+       the losses' colour is how the four are found */
     const endX = d => onNet ? (d.net >= 0 ? g.zero + wNet(d) + 8 : g.zero - wNet(d) - 8) : g.x0 + (onIn ? wIn(d) : wOut(d)) + 8;
     all.select(".ad-end").attr("y", txtY).attr("text-anchor", d => onNet && d.net < 0 ? "end" : "start").text(endTxt)
+      .classed("ad-end--in", d => onNet && d.net >= 0).classed("ad-end--out", d => onNet && d.net < 0)
       .transition().duration(dur).ease(ease).delay(delay).attr("x", d => endTxt(d) ? endX(d) : g.x0);
     /* the number columns at the right */
     [0, 1, 2, 3].forEach(i => { const c = cols[i];
       all.select(".ad-col" + i).attr("x", c ? c.right : COL_R).attr("y", txtY)
         .text(d => c ? c.c.v(d) : "").style("opacity", 0).transition().duration(dur ? dur * .7 : 0).delay(dur ? dur * .3 : 0).style("opacity", c ? 1 : 0); });
-    /* the note stands at its place at once, so it comes in once its bar and value have arrived (2026-10-28): before, the
-       value slid in over it */
-    const calls = all.select(".ad-call").attr("y", txtY).attr("x", d => d.net >= 0 ? endX(d) + px(textPx(endTxt(d), 600)) + 16 : g.zero + 12).text(d => onNet ? callOf(d.code) : "")
-      .interrupt().style("opacity", dur ? 0 : 1);
-    if (dur) calls.transition().delay((d, i) => dur + delay(d, i)).duration(250).style("opacity", 1);
     rowsSync(); captionSync(); tableSync();
     fig.dataset.adminReading = view.reading; fig.dataset.adminSort = view.sort;
     /* what the figure shows, for a reader who cannot see it */
     const live = document.getElementById("miLive"); if (live) live.textContent = "Boston’s work by sector, " + (document.querySelector("#wfSRead option[value='" + view.reading + "']") || {}).textContent + ", sorted by " + SORT_WORDS[view.sort] + ", " + year + ".";
   }
 
-  /* ---- the rows as the reader's hand finds them: a card, a lit row, the needle ---- */
+  /* ---- the card (2026-10-28, Nil: "Revise the tooltips. Analyze the tooltips in 1,2,3 beats. They have sector name,
+     industry name with paranthesis (4,5,6,7 beats are 2-digit), make sure everything else are the same, size, color
+     etc."): beat 1's card for a 2-digit sector, part for part (treemap.js targetLine and mapTipHtml), in the one
+     .rca-tip, whichever chart raised it. The line it leads with names the sector the work belongs to, in its colour,
+     over a rule; the 2-digit sector's name is the title, "(2-digit)" after it; then its readings, one value a row, the
+     soft part of a value in em. A card that is not one sector's (the other ten together, a group, the total) keeps the
+     box and the parts, its title alone at the head. Beat 6's gain leads its card, as beat 3's ratio leads its own ---- */
   const tip = document.getElementById("wfTip"), wrap = document.getElementById("wfFig");
-  function card(d){
-    if (!tip) return;
-    if (isSk()){ const n = sk && sk.nodes.find(m => m.col === 1 && m.codes && m.codes.indexOf(d.code) >= 0); if (n) skCard(n); return; }
-    if (isTree()){ treeCard(d); return; }
-    tip.classList.remove("is-tree");
-    const z = d.ratio < .8 ? "residential" : d.ratio <= 1.25 ? "balanced" : "business";
-    tip.innerHTML = '<span class="skt-name"><i class="skt-sw" style="--sw:' + colourOf(d.sector) + '"></i><b>' + esc(d.short) + '</b> <span class="ad-naics">NAICS ' + esc(d.code) + '</span></span>' +
-      '<dl class="skt-grid">' +
-        '<dt>' + (window.FLOW_ICO ? window.FLOW_ICO.in : "") + 'Jobs in Boston</dt><dd>' + fmt(d.jobs) + ' · ' + pc(d.jobs / A.jobs) + ' of the city’s jobs</dd>' +
-        '<dt>' + (window.FLOW_ICO ? window.FLOW_ICO.out : "") + 'Held by its residents</dt><dd>' + fmt(d.residents) + ' · ' + pc(d.residents / A.residents) + ' of their jobs</dd>' +
-        '<dt>Boston ' + (d.net >= 0 ? "gains" : "loses") + '</dt><dd>' + fmt(Math.abs(d.net)) + ' · ' + rx(d.ratio).replace("×", "") + ' jobs here for every resident who works in it: ' + z + '</dd>' +
-        '<dt>Of the metro’s</dt><dd>' + pc(d.shJ) + ' of its ' + fmt(d.msaJobs) + ' ' + esc(d.short.toLowerCase()) + ' jobs, ' + pc(d.shR) + ' of its ' + fmt(d.msaResidents) + ' workers</dd>' +
-      '</dl>';
-    tip.hidden = false;
-    const fb = wrap.getBoundingClientRect(), node = gRows.selectAll("g.ad-row").filter(r => r.code === d.code).node(), rb = node ? node.getBoundingClientRect() : fb;
-    /* beside the plot, read off the drawing itself: it may be wider than the frame and panned */
-    const sb = svgEl.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight, k = (sb.width || fb.width) / W;
-    let left = (phone() ? 8 : sb.left - fb.left + (lay.x1 + 10) * k), top = rb.bottom - fb.top + 4;
-    if (left + w > fb.width) left = Math.max(0, fb.width - w);
-    if (top + h > fb.height) top = Math.max(0, rb.top - fb.top - h - 4);
-    tip.style.left = left + "px"; tip.style.top = top + "px";
+  const CT = window.CityTreemaps || {}, tipPos = CT.cursorTipPos, FI = window.FLOW_ICO || {};
+  /* a share as beats 1 to 3's card writes it (whole from 10%, a place from 1%, two under it); a share of none is "0%"
+     and one too small for two places says so, never "0.00%" (2013's agriculture, mining's 13 jobs of Boston's 719K) */
+  const share = v => !(v > 0) ? "0%" : v < 5e-5 ? "under 0.01%" : CT.fmtShare ? CT.fmtShare(v) : pc(v);
+  const signed = n => n >= 0 ? "+" + fmt(n) : "−" + fmt(-n);
+  const zoneWord = r => r < .8 ? "residential" : r <= 1.25 ? "balanced" : "business";
+  /* the head: a sector's, as beat 1's 2-digit tile has it (nothing zooms here, so the line has no verb; a card a tap holds
+     up says how it closes), or a title alone, with a line under it where there is something to say of it */
+  const tSecHead = (d, held) => '<div class="tip-target"><i style="background:' + colourOf(d.sector) + '"></i><b>' + esc(d.sector) + '</b>' +
+      (held ? '<span class="tip-target-act">Tap again to close</span>' : '') + '</div>' +
+    '<div class="tip-head"><strong>' + esc(d.short) + ' <span class="tip-code">(2-digit)</span></strong></div>';
+  const tHead = (title, line) => '<div class="tip-head"><strong>' + title + '</strong>' + (line ? '<span class="tip-sector">' + line + '</span>' : '') + '</div>';
+  /* a group's mark, the key's under the chart: its swatch and flow icon on the treemaps' and the flow's cards */
+  const KEY_ICO = { non: "in", res: "both", out: "out" };
+  const tMark = k => '<i class="tip-sw tip-sw--' + k + '"></i>' + (FI[KEY_ICO[k]] || "");
+  const tRow = (k, v, mark) => '<dt>' + (mark || "") + k + '</dt><dd>' + v + '</dd>';
+  const tEm = t => '<em>' + t + '</em>';
+  const tGrid = list => '<dl class="tip-grid">' + list.join("") + '</dl>';
+  /* the bars' card, beats 4 to 7, whatever the reading: the two counts, each as a share of its whole, what Boston gains,
+     the jobs a resident worker, and the metro's shares; the rows' marks are the bars' key's, the icon alone. On the gain
+     beat the gain leads, and its row goes */
+  function barsHtml(d, held){
+    const gain = !!view && view.reading === "gain";
+    return tSecHead(d, held) +
+      (gain ? '<div class="tip-lead"><b>' + signed(d.net) + '</b><span>Boston’s ' + (d.net >= 0 ? "gain" : "loss") + ' of workers</span></div>' : '') +
+      tGrid([tRow("Jobs in Boston", fmt(d.jobs), FI.in), tRow("Of Boston’s jobs", share(d.jobs / A.jobs)),
+        tRow("Held by residents", fmt(d.residents), FI.out), tRow("Of residents’ jobs", share(d.residents / A.residents)),
+        gain ? "" : d.net >= 0 ? tRow("Boston gains", signed(d.net)) : tRow("Boston loses", fmt(-d.net)),
+        tRow("Jobs per resident worker", rx(d.ratio) + " " + tEm(zoneWord(d.ratio))),
+        tRow("Of the metro’s jobs", share(d.shJ) + " " + tEm("of " + fmt(d.msaJobs))),
+        tRow("Of its working residents", share(d.shR) + " " + tEm("of " + fmt(d.msaResidents)))]);
   }
+  /* the split's card, beats 4 and 5: one card for a sector whether the treemap, its ranking or the flow shows it, the
+     union of what each gave (2026-10-28). A group's part of the sector reads as a share of the sector's jobs. The folded
+     ten take it too. The split stands in plain numbers, as the chart draws it: no floor row and no foot on the estimate
+     (2026-10-28, Nil: "Remove all uncertain, estimate etc. language from the tooltips. Remove "the split..."") */
+  function splitHtml(d){
+    const t3 = T3();
+    const list = [tRow("Jobs in Boston", fmt(d.jobs)), tRow("Of Boston’s jobs", share(d.jobs / A.jobs))];
+    if (t3) list.push(tRow("Held by residents", fmt(d.residents) + " " + tEm("anywhere")));
+    if (splitOk){
+      list.push(tRow("Boston non-residents", fmt(d.estNon) + " " + tEm(share(d.estNon / d.jobs)), tMark("non")),
+        tRow("Boston residents", fmt(d.estRes) + " " + tEm(share(d.estRes / d.jobs)), tMark("res")));
+      if (t3) list.push(tRow("Working elsewhere", fmt(d.estOut), tMark("out")));
+    }
+    return tGrid(list);
+  }
+  const treeHtml = (d, held) => tSecHead(d, held) + splitHtml(d);
+
+  /* ---- the card's hands, beats 1 to 3's (treemap.js paintMap): it opens on the mark under the mouse, follows the
+     pointer (cursorTipPos) and closes as the pointer leaves; a click with a mouse never holds it (treemap.js's
+     "nopin"). On touch, which has no hover, a tap holds it up, the same mark's next tap lets it go, a tap on another mark
+     moves it there, and a tap anywhere else or Escape closes it. The marks are tab stops and the card their only reading,
+     so the keyboard's focus opens it beside its mark. A card never rides into another drawing ---- */
+  let tipHeld = null, tipBy = null, lastPtr = "mouse";
+  /* the kind of pointer that pressed last (as treemap.js: Safari's click is not a PointerEvent, so it is read on pointerdown) */
+  if (wrap) wrap.addEventListener("pointerdown", ev => { lastPtr = ev.pointerType || "mouse"; }, true);
+  /* by: "ptr" (hover), "tap" (held) or "key" (focus); at: the pointer, or the point a keyboard's card stands at */
+  function tipShow(key, html, map, at, by){
+    if (!tip || !wrap || !tipPos || !at) return;
+    tip.className = "rca-tip" + (map ? " is-map" : "") + (tipHeld === key ? " is-pinned" : "");
+    tip.innerHTML = html; tip.hidden = false; tipBy = by;
+    tipPos(at, wrap, tip);
+  }
+  const tipMove = ev => { if (!tipHeld && tipBy === "ptr" && tip && !tip.hidden) tipPos(ev, wrap, tip); };
+  /* force: a held card goes too, and its mark with it */
+  function tipHide(force){
+    if (tipHeld && !force) return;
+    const held = tipHeld; tipHeld = null; tipBy = null;
+    if (tip){ tip.hidden = true; tip.className = "rca-tip"; }
+    if (held) markOff();
+  }
+  /* the mark in hand: the row or block lit and the needle on it; let go, the needle goes back to its pin */
+  function markOn(code){ hot = code; rowsSync(); needleDraw(byCode[code]); }
+  function markOff(){
+    const k = tipHeld;
+    if (isSk()){ skHot = k && k.indexOf("sk:") === 0 ? k.slice(3) : null; skFill(); return; }
+    hot = k && byCode[k] ? k : null; rowsSync();
+    needleDraw(hot ? byCode[hot] : pinned ? byCode[pinned] : (view && view.needle ? byCode[view.needle] : null));
+  }
+  /* a mark's point for the keyboard's card: a bar's end at its middle, a block's or a node's middle */
+  const atEnd = el => { const r = el && el.getBoundingClientRect(); return r && r.height ? { clientX: r.right, clientY: r.top + r.height / 2 } : null; };
+  const atMid = el => { const r = el && el.getBoundingClientRect(); return r && r.height ? { clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 } : null; };
+  /* one kind of mark's hands, bound on its joined selection after every join (treemap.js binds paintMap's on "all"): key
+     names the mark (the card held is the mark's), html(d, held) writes its card, map says it leads with the sector's
+     line, on lights the mark, at is the keyboard's point, act what a click or Enter does besides, esc Escape's besides;
+     ok, where given, says the mark still stands (a band on its way out of a morph does not). A mark that is no tab stop
+     (the flow's bands) takes the pointer's hands alone: Chrome makes an svg element with focus listeners a stop */
+  function tipBind(sel, o, pointerOnly){
+    const ok = d => !o.ok || o.ok(d);
+    sel.on("mouseenter.tip", function(ev, d){ if (tipHeld || lastPtr === "touch" || !ok(d)) return; o.on(d); tipShow(o.key(d), o.html(d, false), o.map(d), ev, "ptr"); })
+      .on("mousemove.tip", tipMove)
+      .on("mouseleave.tip", () => { if (tipHeld || tipBy === "key") return; markOff(); tipHide(false); })
+      .on("click.tip", function(ev, d){
+        if (!ok(d)) return;
+        if (ev.detail !== 0 && lastPtr === "touch"){
+          const k = o.key(d);
+          if (tipHeld === k) tipHide(true);
+          else { tipHeld = k; o.on(d); tipShow(k, o.html(d, true), o.map(d), ev, "tap"); }
+        }
+        if (o.act) o.act(d);
+      });
+    if (pointerOnly) return;
+    /* a mouse's press focuses the mark too: only a keyboard's focus opens the card */
+    sel.on("focus.tip", function(ev, d){ if (tipHeld || !ok(d) || !this.matches(":focus-visible")) return; o.on(d); tipShow(o.key(d), o.html(d, false), o.map(d), o.at(this, d) || atMid(this), "key"); })
+      .on("blur.tip", () => { if (tipHeld || tipBy === "ptr") return; markOff(); tipHide(false); })
+      .on("keydown.tip", function(ev, d){
+        /* Enter and Space press the mark (a click whose detail is 0, which never holds the card) */
+        if (ev.key === "Enter" || ev.key === " "){ ev.preventDefault(); this.dispatchEvent(new MouseEvent("click", { bubbles: true })); return; }
+        if (ev.key !== "Escape") return;
+        let did = false;
+        if (tip && !tip.hidden){ tipHide(true); did = true; }
+        if (o.esc && o.esc()) did = true;
+        if (did) ev.preventDefault();
+      });
+  }
+  /* Escape closes a held card where the reader is: focus in the figure's scrolly, or the pointer over the figure (as
+     treemap.js's escLayers) */
+  document.addEventListener("keydown", ev => {
+    if (ev.key !== "Escape" || ev.defaultPrevented || !tipHeld) return;
+    const t = ev.target, scope = fig.closest(".ct-scrolly") || fig;
+    if (!((t && t.nodeType === 1 && scope.contains(t)) || ((t === document.body || t === document.documentElement) && fig.matches(":hover")))) return;
+    tipHide(true); ev.preventDefault();
+  });
+  /* a tap anywhere but a mark lets a held card go; so does panning the drawing, which would leave it standing off its
+     mark (the card stands in the frame, not in the pan) */
+  document.addEventListener("pointerdown", ev => { if (!tipHeld) return;
+    if (ev.target.closest && ev.target.closest("#wfFig :is(g.ad-row, g.wf-tr-cell, g.wf-rk-row, .sk-hit, .sk-lk)")) return;
+    tipHide(true); }, true);
+  ["wfPan", "wfSkPan"].forEach(id => { const p = document.getElementById(id); if (p) p.addEventListener("scroll", () => { if (tipHeld) tipHide(true); }, { passive: true }); });
+  /* the bars' rows: on the gain beat a click (or a tap, or Enter) pins the row and the needle to it, the next one lets go,
+     and Escape puts it back on the beat's own row; elsewhere a click does nothing more (2026-10-28) */
+  const BARS = { key: d => d.code, html: barsHtml, map: () => true, on: d => markOn(d.code), at: el => atEnd(el.querySelector(".ad-hl")),
+    act: d => { if (state !== 2) return; pinned = pinned === d.code ? null : d.code; rowsSync(); needleDraw(pinned ? byCode[pinned] : null); },
+    esc: () => { if (state !== 2 || !pinned) return false; pinned = homePin(); rowsSync(); needleDraw(pinned ? byCode[pinned] : null); return true; } };
   function rowsSync(){
     gRows.selectAll("g.ad-row").classed("is-hot", d => d.code === hot).classed("is-pinned", d => d.code === pinned).attr("aria-pressed", d => d.code === pinned ? "true" : null);
     svgT.selectAll("g.wf-rk-row").classed("is-hot", d => d.code === hot).attr("aria-pressed", d => d.code === pinned ? "true" : null);
     gTree.selectAll("g.wf-tr-cell").classed("is-hot", d => d.code === hot).attr("aria-pressed", d => d.code === pinned ? "true" : null);
   }
-  /* on the treemap a pinned block keeps its card when the pointer leaves */
-  function hover(code){ hot = code; rowsSync(); if (code){ card(byCode[code]); needleDraw(byCode[code]); } else { if (tip){ if (isTree() && pinned) card(byCode[pinned]); else tip.hidden = true; } needleDraw(pinned ? byCode[pinned] : (view && view.needle ? byCode[view.needle] : null)); } }
-  gRows.on("pointerover", ev => { const g = ev.target.closest("g.ad-row"); if (g) hover(g.dataset.row); });
-  gRows.on("pointerleave", () => hover(null));
-  gRows.on("focusin", ev => { const g = ev.target.closest("g.ad-row"); if (g) hover(g.dataset.row); });
-  gRows.on("focusout", () => hover(null));
-  gRows.on("click", ev => { const g = ev.target.closest("g.ad-row"); if (!g) return; pinned = pinned === g.dataset.row ? null : g.dataset.row; rowsSync(); needleDraw(pinned ? byCode[pinned] : null); });
-  gRows.on("keydown", ev => { const g = ev.target.closest("g.ad-row"); if (!g) return;
-    if (ev.key === "Enter" || ev.key === " "){ ev.preventDefault(); g.dispatchEvent(new MouseEvent("click", { bubbles: true })); }
-    else if (ev.key === "Escape" && pinned){ pinned = homePin(); rowsSync(); needleDraw(pinned ? byCode[pinned] : null); } });
 
   /* ---- beat 4's opt-2: the treemap. Drawn in screen px at the frame's width, as tall as beat 4's bars and the ranking
      stand at that width (500 of 880 at a desk, the bars' drawing; on a phone 756, the bars' 400px panned drawing less
@@ -19326,6 +19479,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     ent.append("line").attr("class", "wf-tr-split"); ent.append("line").attr("class", "wf-tr-split wf-tr-split2"); ent.append("rect").attr("class", "wf-tr-ring");
     ent.append("text").attr("class", "wf-tr-lab"); ent.append("text").attr("class", "wf-tr-floor"); ent.append("text").attr("class", "wf-tr-words is-on-in");
     const all = ent.merge(sel).order();
+    tipBind(all, TREE);
     /* the morph: each block moves and re-sizes to the other tiling over 0.9s, its parts re-cut, its words after */
     const MT = morph && !reduced() ? 900 : 0, T = x => MT ? x.transition().duration(MT).ease(ease) : x;
     ent.attr("transform", d => "translate(" + B(d).x + "," + B(d).y + ")");
@@ -19406,13 +19560,16 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   const WHO3 = k => ({ non: "Boston non-residents, " + fmt(A.in), res: "Boston residents in the city, " + fmt(A.liveWork), out: "Boston residents working elsewhere, " + fmt(A.out) })[k];
   /* the drawing's name says the beat's jobs, the view and the year (2026-10-28): beat 5's are those in Boston or held by
      its residents */
-  function treeName(){ if (!treeEl) return; const as = tView === "rank" ? "as a ranking" : "as a treemap";
+  /* opt-3's ranking says its order with its view (2026-10-28), in its blank's words */
+  const rankAs = () => { if (tView !== "rank") return "as a treemap"; const s = b4 === "sankey" && document.getElementById(T3() ? "wfRkSort3" : "wfRkSort");
+    return "as a ranking" + (s && s.selectedIndex >= 0 ? " sorted by " + s.options[s.selectedIndex].text : ""); };
+  function treeName(){ if (!treeEl) return; const as = rankAs();
     treeEl.setAttribute("aria-label", T3() ? "All " + fmt(A.jobs + A.out) + " jobs in Boston or held by its residents, by sector, " + as + ", " + year
       : "All " + fmt(A.jobs) + " jobs in Boston by sector, " + as + ", " + year); }
   function treeLive(){
     treeName();
     const live = document.getElementById("miLive"); if (!live || !view) return;
-    const as = tView === "rank" ? "as a ranking" : "as a treemap";
+    const as = rankAs();
     if (T3()){ live.textContent = "All " + fmt(A.jobs + A.out) + " jobs in Boston or held by its residents, by sector, " + as + ", " + year + ". Showing " +
       (view.on3 || ALL3).map(WHO3).join("; ") + ". Each sector’s split is estimated."; return; }
     const w = view.who || "both";
@@ -19435,68 +19592,16 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     rowsSync(); captionSync(); tableSync(); treeLive();
     fig.dataset.adminReading = view.reading; fig.dataset.adminSort = view.sort;
   }
-  /* the block's card: the full record whatever the toggles show; what is estimated says so */
-  function treeCard(d){
-    const I = window.FLOW_ICO ? window.FLOW_ICO.in : "", Bo = window.FLOW_ICO ? window.FLOW_ICO.both : "", sure = d.nonFloor > 0;
-    tip.classList.add("is-tree");
-    const Ou = window.FLOW_ICO ? window.FLOW_ICO.out : "";
-    if (T3()) tip.innerHTML = '<span class="skt-name"><i class="skt-sw" style="--sw:' + colourOf(d.sector) + '"></i><b>' + esc(d.short) + '</b> <span class="ad-naics">NAICS ' + esc(d.code) + '</span></span>' +
-      '<dl class="skt-grid">' +
-        '<dt>Jobs in Boston</dt><dd>' + fmt(d.jobs) + ' · ' + pc(d.jobs / A.jobs) + ' of the city’s jobs</dd>' +
-        '<dt>Held by its residents</dt><dd>' + fmt(d.residents) + ', wherever those are</dd>' +
-        (splitOk ? '<dt>' + I + 'Boston non-residents</dt><dd>' + fmt(d.estNon) + ', in Boston</dd>' +
-        '<dt>' + Bo + 'Boston residents</dt><dd>' + fmt(d.estRes) + ', in Boston</dd>' +
-        '<dt>' + Ou + 'Working elsewhere</dt><dd>' + fmt(d.estOut) + ', Boston residents outside the city</dd>' : '') +
-      '</dl>' +
-      (splitOk ? '<p class="wf-tip-foot">' + (sure ? 'The split within each sector is an estimate.'
-        : 'The split within each sector is an estimate, least certain here: Boston’s residents hold more of this work anywhere than the city has jobs in it.') + '</p>' : '');
-    else tip.innerHTML = '<span class="skt-name"><i class="skt-sw" style="--sw:' + colourOf(d.sector) + '"></i><b>' + esc(d.short) + '</b> <span class="ad-naics">NAICS ' + esc(d.code) + '</span></span>' +
-      '<dl class="skt-grid">' +
-        '<dt>Jobs in Boston</dt><dd>' + fmt(d.jobs) + ' · ' + pc(d.jobs / A.jobs) + ' of the city’s jobs</dd>' +
-        (splitOk ? '<dt>' + I + 'Boston non-residents</dt><dd>' + fmt(d.estNon) + ' · ' + pc(d.estNon / d.jobs) + (sure ? ', at least ' + floorFmt(d.nonFloor) + ' for certain' : '') + '</dd>' +
-        '<dt>' + Bo + 'Boston residents</dt><dd>' + fmt(d.estRes) + ' · ' + pc(d.pRes) + ' of its jobs</dd>' : '') +
-      '</dl>' +
-      (splitOk ? '<p class="wf-tip-foot">' + (sure ? 'The split within each sector is an estimate.'
-        : 'The split within each sector is an estimate, least certain here: Boston’s residents hold more of this work anywhere than the city has jobs in it.') + '</p>' : '');
-    tip.hidden = false;
-    const rank = tView === "rank", node = svgT.select((rank ? "g.wf-rk-row" : "g.wf-tr-cell") + '[data-row="' + d.code + '"]').node();
-    if (!node || !wrap) return;
-    const fb = wrap.getBoundingClientRect(), nb = (node.querySelector(rank ? ".wf-rk-hot" : ".wf-tr-bg") || node).getBoundingClientRect();
-    /* a ranking's row is as wide as the frame: the card stands off the end of its bar */
-    const vb = rank ? (node.querySelector(".wf-rk-val") || node).getBoundingClientRect() : nb;
-    const x0 = nb.left - fb.left, y0 = nb.top - fb.top, x1 = (rank ? vb.right : nb.right) - fb.left, y1 = nb.bottom - fb.top;
-    const w = tip.offsetWidth, h = tip.offsetHeight, FW = wrap.clientWidth, FH = wrap.clientHeight;
-    let left, top;
-    /* a phone: the frame's width, under the block if it fits there, else over it; elsewhere beside it, at its top. A
-       ranking's card stands off its bar's end; where the bar runs too near the frame's edge for that, it goes under the
-       row or over it, as opt-1's does (2026-10-28): at the edge, at the row's own top, it covered the bar and its value */
-    if (phone()){ left = 8; top = y1 + 4 + h <= FH ? y1 + 4 : y0 - h - 4; }
-    else if (rank){ const side = x1 + 12 + w <= FW; left = side ? x1 + 12 : FW - w;
-      top = side ? (y1 + 4 + h <= FH ? y0 : y1 - h) : (y1 + 4 + h <= FH ? y1 + 4 : y0 - h - 4); }
-    else { left = x1 + 8 + w <= FW ? x1 + 8 : x0 - 8 - w; top = y0; }
-    left = Math.max(0, Math.min(FW - w, left)); top = Math.max(0, Math.min(Math.max(0, FH - h), top));
-    tip.style.left = left + "px"; tip.style.top = top + "px";
-  }
-  gTree.on("pointerover", ev => { const g = ev.target.closest("g.wf-tr-cell"); if (g) hover(g.dataset.row); });
-  gTree.on("pointerleave", () => hover(null));
-  gTree.on("focusin", ev => { const g = ev.target.closest("g.wf-tr-cell"); if (g) hover(g.dataset.row); });
-  gTree.on("focusout", () => hover(null));
-  gTree.on("click", ev => { const g = ev.target.closest("g.wf-tr-cell"); if (!g) return;
-    pinned = pinned === g.dataset.row ? null : g.dataset.row; rowsSync();
-    if (pinned) card(byCode[pinned]); else if (tip) tip.hidden = true; });
-  gTree.on("keydown", ev => { const g = ev.target.closest("g.wf-tr-cell"); if (!g) return;
-    if (ev.key === "Enter" || ev.key === " "){ ev.preventDefault(); g.dispatchEvent(new MouseEvent("click", { bubbles: true })); }
-    else if (ev.key === "Escape" && pinned){ pinned = null; rowsSync(); if (tip) tip.hidden = true; } });
-  /* a tap anywhere else closes a pinned block's card */
-  document.addEventListener("pointerdown", ev => { if (!pinned || state > 1 || !isTree()) return;
-    if (ev.target.closest && ev.target.closest("#wfTreeSvg g.wf-tr-cell, #wfTreeSvg g.wf-rk-row")) return;
-    pinned = null; rowsSync(); if (tip) tip.hidden = true; }, true);
+  /* the blocks' and the ranking's rows' hands: the split's card under beat 1's head */
+  const TREE = { key: d => d.code, html: treeHtml, map: () => true, on: d => markOn(d.code), at: el => atMid(el.querySelector(".wf-tr-bg")) };
+  const RANK = { key: d => d.code, html: treeHtml, map: () => true, on: d => markOn(d.code), at: el => atEnd(el.querySelector(".wf-rk-hl")) };
 
   /* ---- the treemaps' ranking (2026-10-27, Nil: "in both treemaps, provide an option to view as bars (similar to first two
      beats of this section). make sure color and icons are always follow the same logic"): "shown as a [ranking]", beat 1's
      bars in the same svg, in screen px and the treemap's height (a phone runs longer and folds at ten). Each bar stacks
      the parts shown, in the blocks' order and colours (non-residents, Boston residents, those working elsewhere), from
-     zero; the rows sort by what is shown and the axis follows it, so a toggle re-ranks the work. ---- */
+     zero; the rows sort by what is shown and the axis follows it, so a toggle re-ranks the work. Opt-3's sentence asks
+     the order, the total or one group's jobs, and columns at the right give each group's jobs (2026-10-28). ---- */
   const qView = location.search.match(/[?&]b4view=(map|rank)\b/), qSkView = location.search.match(/[?&]b4skview=(sankey|rank)\b/);
   /* tView is the view the treemap engine draws: opt-2's own choice, or the ranking when opt-3 asks for its bars */
   let tViewTree = qView ? qView[1] : "map", skView = qSkView ? qSkView[1] : "sankey", tView = tViewTree;
@@ -19504,7 +19609,17 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   const gRank = svgT.append("g").attr("class", "wf-rk").style("display", "none");
   const gRankAx = gRank.append("g"), gRankRows = gRank.append("g").attr("class", "wf-rk-rows").attr("tabindex", -1);
   const vSels = [document.getElementById("wfTView"), document.getElementById("wfTView3")].filter(Boolean);
-  const rankOrder = on => rows.slice().sort((a, b) => sumOn(b, on) - sumOn(a, on) || b.jobs - a.jobs);
+  /* the order (2026-10-28): the total shown, or under opt-3 one group's jobs, its blank's choice (rkSort); opt-2 sorts by
+     what its toggles show. The group the rows are sorted by stands first in each bar, at the zero line, so the lengths
+     the order compares start together */
+  const rankBy = on => b4 === "sankey" && view.rkSort && view.rkSort !== "all" && on.indexOf(view.rkSort) >= 0 ? view.rkSort : null;
+  const rankOrder = (on, by) => { const v = by ? d => partVal(d, by) : d => sumOn(d, on); return rows.slice().sort((a, b) => v(b) - v(a) || b.jobs - a.jobs); };
+  /* the columns' heads (2026-10-28): the longer words where the plot keeps two fifths of the room right of the names, else
+     the shorter, as opt-1's; the group's swatch and icon in front, as the key had them. Where the shorter words still leave
+     the plot under a quarter of that room (beat 5's three columns in a frame under about 1300px: a phone's bars were 37px
+     long), the icon stands down and the swatch and the words stay: every column and its name are kept */
+  const RK_HEAD = { non: ["Non-residents"], res: ["Residents"], out: ["Working elsewhere", "Elsewhere"] }, RK_ICO = { non: "in", res: "both", out: "out" };
+  const RK_NAME = { non: "Boston non-residents", res: "Boston residents in the city", out: "Boston residents working elsewhere" };
   function viewSync(){
     const rank = tView === "rank";
     gTree.style("display", rank ? "none" : null); gRank.style("display", rank ? null : "none");
@@ -19513,30 +19628,57 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   }
   function rankDraw(animate){
     const TW = wrap ? wrap.clientWidth : 0; if (!TW || !view) return;
-    const on = partsOn(), lit = litSet(), dur = animate && !reduced() ? 700 : 0, ease = d3.easeCubicInOut;
-    const all = rankOrder(on), n = all.length, idx = {}; all.forEach((d, i) => { idx[d.code] = i; });
+    /* a new order moves the rows as opt-1's sort does (2026-10-28): 950ms, each row 18ms after the one over it */
+    const on = partsOn(), by = rankBy(on), lit = litSet(), dur = animate && !reduced() ? 950 : 0, ease = d3.easeCubicInOut;
+    const all = rankOrder(on, by), n = all.length, idx = {}; all.forEach((d, i) => { idx[d.code] = i; });
+    const delay = d => dur ? idx[d.code] * 18 : 0, tr = (sel, d) => dur ? sel.transition().duration(dur).ease(ease).delay(delay(d)) : sel;
     /* beats 1 to 3's bars in px (2026-10-27): the frame's width, or 704px panned across in a narrower frame, with u the
        drawing's unit (880 across); every row, 21u apart from 62u, a bar 14u thick, the head and the gutter as opt-1's */
     const panned = panSync(true), RW = panned ? Math.round(PAN_MIN * typeK()) : TW, u = RW / W, H = Math.round(H0 * u), yEnd = (BMT + PITCH * n) * u;
     const gut = Math.max(GUT_MIN * u, Math.min(GUT_MAX * u, Math.ceil(Math.max.apply(null, all.map(d => textPx(d.short, 700)))) + 12 * u));
-    const X0 = gut + 12 * u, X1 = COL_R * u - 8 * u - Math.max.apply(null, all.map(d => textPx(sumLab(d, on), 600)));
-    /* the axis's end is the largest of what is shown in any year (2026-10-27), so it holds still when the year changes */
-    const x = d3.scaleLinear().domain([0, (d3.max(allYears, Y => d3.max(Y.rows, d => sumOn(d, on))) || 1) * 1.04]).range([X0, X1]);
+    const X0 = gut + 12 * u, K = typeK();
+    /* the columns (2026-10-28, Nil: "change the design of the bars so it looks like the previous bars like there are
+       columns showing the data"): one for each of the beat's groups, laid from 874u leftwards 16u apart as opt-1's, each
+       as wide as its head or its widest value; a group the toggles or an answer leave out keeps its column */
+    const parts = T3() ? ALL3 : ["non", "res"], SW = 13 * K, GAP = 5, ICO_H = 18 * K, icoW = k => (k === "res" ? 15 : 26) * K;
+    const colsAt = (vi, bare) => { let right = COL_R * u; const out = [];
+      for (let i = parts.length - 1; i >= 0; i--){ const k = parts[i], hs = RK_HEAD[k], head = hs[Math.min(vi, hs.length - 1)];
+        const w = Math.max(SW + GAP + (bare ? 0 : icoW(k) + GAP) + textPx(head, 600), Math.max.apply(null, all.map(d => textPx(fmt(partVal(d, k)), 500))));
+        out.unshift({ k, head, bare, right, left: right - w }); right -= w + 16 * u; }
+      return out; };
+    const plotShare = cs => (cs[0].left - 40 * u - X0) / (COL_R * u - X0);
+    let cols = colsAt(0);
+    if (plotShare(cols) < .4) cols = colsAt(1);
+    if (plotShare(cols) < .25) cols = colsAt(1, true);
+    /* the plot ends 40u before them, or sooner where a total, 8u past its bar's end, would come within 16u of them. The
+       axis's end is the largest of what is shown in any year (2026-10-27), and the room is measured over every year, so
+       the axis holds still when the year changes */
+    const dom = (d3.max(allYears, Y => d3.max(Y.rows, d => sumOn(d, on))) || 1) * 1.04, C = cols[0].left - 16 * u;
+    let X1 = cols[0].left - 40 * u;
+    allYears.forEach(Y => Y.rows.forEach(d => { const f = sumOn(d, on) / dom; if (f > 0) X1 = Math.min(X1, X0 + (C - 8 * u - textPx(sumLab(d, on), 600) - X0) / f); }));
+    const x = d3.scaleLinear().domain([0, dom]).range([X0, X1]);
     svgT.attr("viewBox", "0 0 " + RW + " " + H).attr("width", RW).attr("height", H);
-    /* the head: its words on 16u, a rule on 26u, the ticks on 48u, the grid from 54u with the zero line dashed */
+    /* the head: its words on 16u, a rule on 26u under the plot and under each column, the ticks on 48u (every other one
+       where the plot is narrow, as opt-1's), the grid from 54u with the zero line dashed. The axis's title in full where
+       it ends short of the first column, else as opt-1's counts have it */
     gRankAx.selectAll("*").remove();
-    gRankAx.append("text").attr("class", "wf-rk-axt").attr("x", X0).attr("y", HEAD_Y * u).text((T3() ? "Jobs in Boston or held by its residents, " : "Jobs in Boston, ") + year);
-    gRankAx.append("line").attr("class", "wf-rk-rule").attr("x1", X0).attr("x2", X1).attr("y1", RULE_Y * u).attr("y2", RULE_Y * u);
-    x.ticks(4).forEach(v => { const xx = x(v);
+    const axt = (T3() ? "Jobs in Boston or held by its residents, " : "Jobs in Boston, ") + year;
+    gRankAx.append("text").attr("class", "wf-rk-axt").attr("x", X0).attr("y", HEAD_Y * u).text(textPx(axt, 600) <= C - X0 ? axt : "Jobs, " + year);
+    [[X0, X1]].concat(cols.map(c => [c.left, c.right])).forEach(([a, b]) => gRankAx.append("line").attr("class", "wf-rk-rule").attr("x1", a).attr("x2", b).attr("y1", RULE_Y * u).attr("y2", RULE_Y * u));
+    const tks = x.ticks(4), every = tks.length > 1 ? Math.max(1, Math.ceil(52 / (x(tks[1]) - x(tks[0])))) : 1;
+    tks.filter((v, i) => i % every === 0).forEach(v => { const xx = x(v);
       gRankAx.append("line").attr("class", v ? "wf-rk-grid" : "wf-rk-base").attr("x1", xx).attr("x2", xx).attr("y1", GRID_TOP * u).attr("y2", yEnd);
       gRankAx.append("text").attr("class", "wf-rk-tick").attr("x", xx).attr("y", TICK_Y * u).attr("text-anchor", "middle").text(fmt(v)); });
-    /* panned, the key stands down (2026-10-28): opt-3's sentence names no groups, so its ranking names the parts shown
-       under its rows, in the key's own words, short enough to read before the drawing is panned */
-    if (panned && b4 === "sankey"){ const z = 11 * typeK(), fy = yEnd + 18 * u; let fx = 0;
-      on.forEach(k => { const t = { non: "commute in", res: "live and work here", out: "commute out" }[k];
-        gRankAx.append("rect").attr("class", "wf-rk-key wf-rk-seg--" + k).attr("x", fx).attr("y", fy - z).attr("width", z).attr("height", z).attr("rx", 2);
-        gRankAx.append("text").attr("class", "wf-rk-foot").attr("x", fx + z + 4).attr("y", fy).text(t);
-        fx += z + 4 + textPx(t, 600) + 12; }); }
+    /* each column's head: its words at its right edge, the icon 5px before them and the swatch 5px before that, on the
+       words' middle. With them the legend under the chart, and a phone's foot words under the rows, stand down */
+    cols.forEach(c => { const g = gRankAx.append("g").attr("class", "wf-rk-colh" + (on.indexOf(c.k) < 0 ? " is-off" : ""));
+      const iw = c.bare ? -GAP : icoW(c.k), ix = c.right - textPx(c.head, 600) - GAP - iw, cy = HEAD_Y * u - 13 * K * .35;
+      g.append("text").attr("class", "wf-rk-head").attr("x", c.right).attr("y", HEAD_Y * u).attr("text-anchor", "end").text(c.head);
+      const s = c.bare ? null : ico(RK_ICO[c.k]); if (s){ s.setAttribute("width", iw); s.setAttribute("height", ICO_H); s.style.width = iw + "px"; s.style.height = ICO_H + "px";
+        s.setAttribute("x", ix); s.setAttribute("y", cy - ICO_H / 2); g.node().appendChild(s); }
+      /* the key's swatch: 13px with a 2px edge in its colour, filled while its group is shown */
+      g.append("rect").attr("class", "wf-rk-sw wf-rk-sw--" + c.k).attr("x", ix - GAP - SW + 1).attr("y", cy - SW / 2 + 1).attr("width", SW - 2).attr("height", SW - 2).attr("rx", 2); });
+    const colOf = {}; cols.forEach(c => { colOf[c.k] = c; });
     const sel = gRankRows.selectAll("g.wf-rk-row").data(all, d => d.code);
     sel.exit().remove();
     const ent = sel.enter().append("g").attr("class", "wf-rk-row").attr("tabindex", 0).attr("role", "img").attr("data-row", d => d.code)
@@ -19546,56 +19688,53 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     ALL3.forEach(k => ent.append("rect").attr("class", "wf-rk-seg wf-rk-seg--" + k).attr("x", X0).attr("width", 0));
     ent.append("rect").attr("class", "wf-rk-hl").attr("x", X0).attr("width", 0);
     ent.append("text").attr("class", "wf-rk-val");
+    ALL3.forEach(k => ent.append("text").attr("class", "wf-rk-col wf-rk-col--" + k).attr("text-anchor", "end"));
     const rowsG = ent.merge(sel).order();
-    (dur ? rowsG.transition().duration(dur).ease(ease) : rowsG).attr("transform", d => "translate(0," + (BMT + PITCH * idx[d.code]) * u + ")");
+    tipBind(rowsG, RANK);
+    rowsG.each(function(d){ tr(d3.select(this), d).attr("transform", "translate(0," + (BMT + PITCH * idx[d.code]) * u + ")"); });
     rowsG.classed("is-dim", d => !!lit && !lit.has(d.code))
-      .attr("aria-label", d => d.short + ": " + (sumEst(on) ? "about " : "") + sumLab(d, on) + " jobs, " + on.map(k => ({ non: "Boston non-residents", res: "Boston residents in the city", out: "Boston residents working elsewhere" })[k]).join(" and ") + (sumEst(on) ? ", estimated" : ""));
+      .attr("aria-label", d => d.short + ": " + (sumEst(on) ? "about " : "") + sumLab(d, on) + " jobs, " + on.map(k => RK_NAME[k]).join(" and ") + (sumEst(on) ? ", estimated" : "") +
+        "; by estimate, " + parts.map(k => RK_NAME[k] + " " + fmt(partVal(d, k))).join(", "));
     rowsG.select(".wf-rk-hot").attr("x", 0).attr("y", 0).attr("width", RW).attr("height", PITCH * u);
     const nameY = (PITCH / 2 + 4) * u, barY = (PITCH / 2 - BBAR / 2) * u, barH = BBAR * u;
     rowsG.select(".wf-rk-name").attr("x", gut - 10 * u).attr("y", nameY).attr("text-anchor", "end").text(d => fitText(d.short, gut - 10 * u));
+    /* the parts stack from zero a unit apart, no edge drawn, so the bar keeps its thickness; 2u at least in all. In the
+       blocks' order, or with the group sorted by first */
+    const stack = by ? [by].concat(ALL3.filter(k => k !== by)) : ALL3;
     rowsG.each(function(d){
-      /* the parts stack from zero a unit apart, no edge drawn, so the bar keeps its thickness; 2u at least in all */
       const g = d3.select(this), tot = sumOn(d, on), L = tot > 0 ? Math.max(2 * u, x(tot) - X0) : 0, at = c => X0 + (tot > 0 ? c / tot * L : 0);
       /* (no gap in a bar too short to hold one: it keeps its 2u) */
-      const last = ALL3.filter(k => on.indexOf(k) >= 0 && partVal(d, k) > 0).pop(), gap = L >= 6 * u ? u : 0;
+      const last = stack.filter(k => on.indexOf(k) >= 0 && partVal(d, k) > 0).pop(), gap = L >= 6 * u ? u : 0;
       let cum = 0;
-      ALL3.forEach(k => { const v = on.indexOf(k) >= 0 ? partVal(d, k) : 0, x0 = at(cum), x1 = at(cum + v); cum += v;
-        (dur ? g.select(".wf-rk-seg--" + k).transition().duration(dur).ease(ease) : g.select(".wf-rk-seg--" + k))
-          .attr("y", barY).attr("height", barH).attr("x", x0).attr("width", Math.max(0, x1 - x0 - (k === last ? 0 : gap))); });
-      (dur ? g.select(".wf-rk-hl").transition().duration(dur).ease(ease) : g.select(".wf-rk-hl")).attr("y", barY).attr("height", barH).attr("x", X0).attr("width", L);
-      const t = g.select(".wf-rk-val").text(sumLab(d, on)).attr("y", nameY).attr("text-anchor", "start");
-      (dur ? t.transition().duration(dur).ease(ease) : t).attr("x", X0 + L + 8 * u);
+      stack.forEach(k => { const v = on.indexOf(k) >= 0 ? partVal(d, k) : 0, x0 = at(cum), x1 = at(cum + v); cum += v;
+        tr(g.select(".wf-rk-seg--" + k), d).attr("y", barY).attr("height", barH).attr("x", x0).attr("width", Math.max(0, x1 - x0 - (k === last ? 0 : gap))); });
+      tr(g.select(".wf-rk-hl"), d).attr("y", barY).attr("height", barH).attr("x", X0).attr("width", L);
+      tr(g.select(".wf-rk-val").text(sumLab(d, on)).attr("y", nameY).attr("text-anchor", "start"), d).attr("x", X0 + L + 8 * u);
+      /* the columns' values: each group's jobs in the sector, estimated; a group left out keeps its values, quieter */
+      ALL3.forEach(k => { const c = colOf[k];
+        g.select(".wf-rk-col--" + k).attr("x", c ? c.right : 0).attr("y", nameY).classed("is-off", on.indexOf(k) < 0).text(c ? fmt(partVal(d, k)) : ""); });
     });
   }
-  gRankRows.on("pointerover", ev => { const g = ev.target.closest("g.wf-rk-row"); if (g) hover(g.dataset.row); });
-  gRankRows.on("pointerleave", () => hover(null));
-  gRankRows.on("focusin", ev => { const g = ev.target.closest("g.wf-rk-row"); if (g) hover(g.dataset.row); });
-  gRankRows.on("focusout", () => hover(null));
-  gRankRows.on("click", ev => { const g = ev.target.closest("g.wf-rk-row"); if (!g) return;
-    pinned = pinned === g.dataset.row ? null : g.dataset.row; rowsSync();
-    if (pinned) card(byCode[pinned]); else if (tip) tip.hidden = true; });
-  gRankRows.on("keydown", ev => { const g = ev.target.closest("g.wf-rk-row"); if (!g) return;
-    if (ev.key === "Enter" || ev.key === " "){ ev.preventDefault(); g.dispatchEvent(new MouseEvent("click", { bubbles: true })); }
-    else if (ev.key === "Escape" && pinned){ pinned = null; rowsSync(); if (tip) tip.hidden = true; } });
   /* the two sentences' blanks are one choice: a treemap plays its build as it comes back */
   vSels.forEach(v => v.addEventListener("change", () => {
-    tViewTree = v.value === "rank" ? "rank" : "map"; viewEff(); pinned = null; hot = null; if (tip) tip.hidden = true;
+    tViewTree = v.value === "rank" ? "rank" : "map"; viewEff(); fitHead(); tipHide(true); pinned = null; hot = null;
     if (!isTree()) return;
     if (tView === "map"){ viewSync(); treePaint(true); treeFill(false); rowsSync(); captionSync(); tableSync(); treeLive(); }
     else paint(true);
   }));
 
 
-  /* ---- beats 4 to 6 under opt-3 (2026-10-27, Nil: "work on sankey option; do the E but follow the same logic for the 4th,
-     5th and 6th beat, as turn them into sankey. Remove all ~ and data resources. Think what information to display and what
-     information can be in a tooltip"): the sketches' option E in the figure (Boston's jobs, then its ten largest sectors
-     and the other ten together, each split by estimate into the groups that hold them), in screen px, in the treemaps'
-     colours and order. Beat 4: the 719K jobs in Boston, through its ten largest sectors and the other ten, to
-     the two groups that hold them; beat 5: the 876K jobs in Boston or held by its residents, to the three groups; beat 6:
-     the people who commute in for each kind of work against the residents who leave the city for it, each sector named
-     with what Boston gains. The chart carries names, counts and the groups' shares; the split within a sector, the lists
-     behind the folded nodes and the needle's reading are the card's. No approximate signs and no source line: the card
-     says once that a sector's split is an estimate. A phone keeps a 620px drawing and pans across it. ---- */
+  /* ---- beats 4 and 5 under opt-3 (2026-10-27, Nil: "work on sankey option; do the E but follow the same logic for the
+     4th, 5th and 6th beat, as turn them into sankey. Remove all ~ and data resources. Think what information to display and
+     what information can be in a tooltip"): the sketches' option E in the figure (Boston's jobs, then its ten largest
+     sectors and the other ten together, each split by estimate into the groups that hold them), in screen px, in the
+     treemaps' colours and order. Beat 4: the 719K jobs in Boston, through its ten largest sectors and the other ten, to
+     the two groups that hold them; beat 5: the 876K jobs in Boston or held by its residents, to the three groups. Beat 6's
+     flow, the people who commute in for each kind of work against the residents who leave the city for it, gave way to
+     the gain bars (2026-10-28, Nil: "6/7 make sure you focus on net sending and receiving with the needle, nothing
+     else"). The chart carries names, counts and the groups' shares; the split within a sector and the lists behind the
+     folded node are the card's. No approximate signs and no source line, and no word in the card that hedges a number
+     (2026-10-28). A phone keeps a 620px drawing and pans across it. ---- */
   const skPan = document.getElementById("wfSkPan"), svgK = d3.select("#wfSankeySvg");
   const isSk = () => fig.classList.contains("is-b4sk");
   const SK_SHORT = { "62": "Health care", "54": "Professional services" };
@@ -19603,7 +19742,12 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   const SK_GROUP = { non: ["Boston non-residents"], res: ["Boston residents"], out: ["Boston residents", "working elsewhere"] };
   const SK_ICO = { non: "in", res: "both", out: "out" };
   const SK_NW = 14;
-  let sk = null, skW = 0, skS = 1, skMode = -1, skHot = null, skPin = null;
+  /* beats 4 and 5's list (2026-10-28): a sector's line is 16px from the next at least, and the button's line under the
+     column takes 29 (an 8px gap and its 21px box) */
+  const SK_LINE = 16, SK_BTN = 29;
+  let sk = null, skW = 0, skS = 1, skMode = -1, skHot = null;
+  /* every sector, or the ten largest and the rest together: one state for beats 4 and 5 */
+  let skAll = false;
   /* the presenter's scale for the flow (2026-10-28): --pv-sk, which its fit() sets on the frame, 1 on the page. The
      drawing is laid out at the frame's width over it and shown that much larger, its type with it */
   const skScale = () => parseFloat(getComputedStyle(fig).getPropertyValue("--pv-sk")) || 1;
@@ -19614,57 +19758,99 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   /* the layout of a beat's Sankey: nodes and bands in px, keyed so one beat's drawing can turn into the next */
   function skLayout(mode, TW){
     /* a phone's drawing stands no taller than the treemap's, so the band holds still when the reader picks it mid-beat;
-       125 tall at most (2026-10-28, was 110), as the treemap grew to the bars' band: beat 6's flow then stands as tall
-       as the bars and the ranking, and beats 4 and 5's within 50px of them */
+       F, the folded drawing's columns in the presenter, 125 tall at most (2026-10-28, was 110), as the treemap grew to
+       the bars' band */
     const ph = phone(), W = Math.max(TW, 620), BOT = ph ? 10 : 14, F = ph ? 125 : 380, P1 = ph ? 11 : 10;
     const nodes = [], links = [], byId = {}, node = o => { byId[o.id] = o; nodes.push(o); return o; };
-    let cols, title = null;
-    if (mode <= 1){
-      const t3 = mode === 1, parts = t3 ? ALL3 : ["non", "res"], val = d => t3 ? d.U : d.jobs, total = t3 ? A.jobs + A.out : A.jobs;
-      const order = rows.slice().sort((a, b) => val(b) - val(a)), top = order.slice(0, 10), R = skAgg(order.slice(10), (order.length - 10) + " other sectors");
-      cols = [{ x: 24, pad: 0 }, { x: Math.round(W * .46), pad: P1 }, { x: W - 212, pad: ph ? (t3 ? 40 : 30) : t3 ? 30 : 34 }];
-      node({ id: "total", col: 0, kind: "total", value: total, lab: "above", lines: [t3 ? (ph ? "jobs in all" : "jobs in Boston or held by its residents") : "jobs in Boston"] });
-      top.concat([R]).forEach(d => node({ id: "s" + (d.code || "other"), col: 1, kind: d.code ? "sec" : "other", value: val(d), d, codes: d.code ? [d.code] : d.codes,
-        lab: "line", side: "left", name: d.code ? skName(d) : d.short }));
-      parts.forEach(k => { const n = k === "non" ? A.in : k === "res" ? A.liveWork : A.out;
-        node({ id: k, col: 2, kind: k, part: k, value: n, lab: "big", lines: SK_GROUP[k], share: n / total, suffix: t3 ? " of the " + fmt(total) : " of the jobs" }); });
-      nodes.filter(n => n.col === 1).forEach(n => { links.push({ key: "total>" + n.id, s: "total", t: n.id, value: n.value, cls: "sec", sec: n });
-        parts.forEach(k => links.push({ key: n.id + ">" + k, s: n.id, t: k, value: partVal(n.d, k), cls: k, part: k, sec: n })); });
-    } else {
-      /* beat 6: in on the left, out on the right; a sector stands as tall as the larger of its two flows */
-      const order = rows.slice().sort((a, b) => b.net - a.net), gain = order.filter(r => r.net > 0), lose = order.filter(r => r.net < 0);
-      /* the losers folded under the largest of them, named from the data (manufacturing in both years); a fold of one is
-         that sector itself, and an empty one is not drawn */
-      const fold = (list, words) => list.length > 1 ? [skAgg(list, words)] : list;
-      const list = gain.slice(0, 10).concat(fold(gain.slice(10), gain.slice(10).length + " more sectors that gain"),
-        fold(lose, lose.length ? skName(lose[lose.length - 1]) + " and " + (lose.length - 1) + " more" : ""));
-      cols = [{ x: 24, pad: 0 }, { x: Math.round(W * .5) - SK_NW, pad: P1 }, { x: W - 24 - SK_NW, pad: 0 }];
-      node({ id: "in6", col: 0, kind: "non", part: "non", value: A.in, lab: "above", lines: ["Boston non-residents commute in"] });
-      list.forEach((d, i) => { const nd = node({ id: "g" + (d.code || i), col: 1, kind: d.code ? "sec" : "other", value: Math.max(d.estNon, d.estOut), d, codes: d.code ? [d.code] : d.codes,
-        lab: "line", side: "right", name: d.code ? skName(d) : d.short, net: d.net });
-        links.push({ key: "in6>" + nd.id, s: "in6", t: nd.id, value: d.estNon, cls: "non", part: "non", sec: nd }); links.push({ key: nd.id + ">out6", s: nd.id, t: "out6", value: d.estOut, cls: "out", part: "out", sec: nd }); });
-      node({ id: "out6", col: 2, kind: "out", part: "out", value: A.out, lab: "aboveEnd", lines: ["Boston residents work elsewhere"] });
-      title = { big: "+" + fmt(A.jobs - A.residents), line: "Boston gains, net" };
-    }
-    /* the scale: the tallest column fills F */
-    const colSum = cols.map((c, ci) => d3.sum(nodes.filter(n => n.col === ci), n => n.value));
-    const K = F / Math.max(...colSum);
-    const colH = cols.map((c, ci) => { const ns = nodes.filter(n => n.col === ci); return d3.sum(ns, n => Math.max(1.5, n.value * K)) + (ns.length - 1) * c.pad; });
-    /* the top margin is what the words over a column need: 46px over the column's own top, which sits lower the shorter it is */
-    const maxH = Math.max(...colH);
-    let TOP = 10; cols.forEach((c, ci) => { if (nodes.some(n => n.col === ci && /^above/.test(n.lab)) || (title && ci === 1)) TOP = Math.max(TOP, 46 - (maxH - colH[ci]) / 2); });
-    const H = TOP + maxH + BOT;
-    cols.forEach((c, ci) => { let y = TOP + (maxH - colH[ci]) / 2;
-      nodes.filter(n => n.col === ci).forEach(n => { n.x = c.x; n.y = y; n.h = Math.max(1.5, n.value * K); n.out = 0; n.inn = 0; y += n.h + c.pad; }); });
+    const t3 = mode === 1, parts = t3 ? ALL3 : ["non", "res"], val = d => t3 ? d.U : d.jobs, total = t3 ? A.jobs + A.out : A.jobs;
+    const order = rows.slice().sort((a, b) => val(b) - val(a)), top = order.slice(0, 10), R = skAgg(order.slice(10), (order.length - 10) + " other sectors");
+    /* opened, the rest stand as sectors of their own, in size order, their lines closer together */
+    const cols = [{ x: 24, pad: 0 }, { x: Math.round(W * .46), pad: skAll ? (ph ? 4 : 6) : P1 }, { x: W - 212, pad: ph ? (t3 ? 40 : 30) : t3 ? 30 : 34 }];
+    node({ id: "total", col: 0, kind: "total", value: total, lab: "above", lines: [t3 ? (ph ? "jobs in all" : "jobs in Boston or held by its residents") : "jobs in Boston"] });
+    (skAll ? order : top.concat([R])).forEach(d => node({ id: "s" + (d.code || "other"), col: 1, kind: d.code ? "sec" : "other", value: val(d), d, codes: d.code ? [d.code] : d.codes,
+      lab: "line", name: d.code ? skName(d) : d.short }));
+    const more = { all: skAll, n: order.length, top: top.length, xr: cols[1].x - 8 };
+    parts.forEach(k => { const n = k === "non" ? A.in : k === "res" ? A.liveWork : A.out;
+      node({ id: k, col: 2, kind: k, part: k, value: n, lab: "big", lines: SK_GROUP[k], share: n / total, suffix: t3 ? " of the " + fmt(total) : " of the jobs" }); });
+    nodes.filter(n => n.col === 1).forEach(n => { links.push({ key: "total>" + n.id, s: "total", t: n.id, value: n.value, cls: "sec", sec: n });
+      parts.forEach(k => links.push({ key: n.id + ">" + k, s: n.id, t: k, value: partVal(n.d, k), cls: k, part: k, sec: n })); });
+    /* beats 4 and 5 (2026-10-28, Nil: "Sankey: 4th and 5th beats: You don't need the legends since we're doing direct
+       labeling. Revise the use of vertical space. Also add "Show All" button which will show all the industries"): the
+       drawing fills the room it stands in (skRoom), the button's line under the sector column with it. Every node keeps
+       a slot at least as tall as its words (a sector's line, 16px from the next; a group's block of number, words and
+       share), so twenty names at 13px never meet, agriculture's 101 jobs and mining's 13 among them; the bands keep their
+       true widths, and the scale is the largest that fits the slots and the button in the room. The top is 7px, so the
+       drawing stands as far under the sentence as beats 1 to 3's do */
+    const TOP0 = 7;
+    let lift = false;
+    const slot = n => n.col === 1 ? SK_LINE - cols[1].pad : n.lab === "big" ? 40 + 16 * n.lines.length : 0;
+    const at = K => { const colH = cols.map((c, ci) => { const ns = nodes.filter(n => n.col === ci); return d3.sum(ns, n => Math.max(1.5, n.value * K, slot(n))) + (ns.length - 1) * c.pad; });
+      /* the top margin is what the words over a column need: 46px over the column's own top, which sits lower the shorter
+         it is; a lifted total stands at the top, its words in the 40px over the columns */
+      const maxH = Math.max(...colH); let TOP = TOP0;
+      if (lift) TOP = TOP0 + 40;
+      else cols.forEach((c, ci) => { if (nodes.some(n => n.col === ci && n.lab === "above")) TOP = Math.max(TOP, 46 - (maxH - colH[ci]) / 2); });
+      const foot = TOP + (maxH + colH[1]) / 2;
+      return { K, colH, maxH, TOP, foot, H: Math.max(TOP + maxH, foot + SK_BTN) + BOT }; };
+    /* a node stands at the middle of its slot */
+    const place = P => cols.forEach((c, ci) => { let y = lift && ci === 0 ? P.TOP : P.TOP + (P.maxH - P.colH[ci]) / 2;
+      nodes.filter(n => n.col === ci).forEach(n => { const h = Math.max(1.5, n.value * P.K), s = Math.max(h, slot(n));
+        n.x = c.x; n.y = y + (s - h) / 2; n.h = h; n.slot = s; n.out = 0; n.inn = 0; y += s + c.pad; }); });
+    /* in the presenter, which fits the frame to the screen, the room is the folded drawing's at F, or what the open
+       list's lines need with as much again for its bands, whichever is more: the same for both states */
+    const room = skRoom() || Math.max(TOP0 + F + 10 * P1, TOP0 + 1.3 * more.n * SK_LINE) + SK_BTN + BOT;
+    const solve = () => { let lo = 0, hi = room / total;
+      if (at(hi).H <= room) lo = hi;
+      else for (let i = 0; i < 40; i++){ const m = (lo + hi) / 2; if (at(m).H <= room) lo = m; else hi = m; }
+      const p = at(lo); p.H = Math.max(p.H, room); place(p); return p; };
+    let P = solve();
+    /* where the drawing is narrow, beat 5's words under its total ("jobs in Boston or held by its residents") reach the
+       sector names beside them: the total then stands at the top, its words over the sector column's first line */
+    if (skMeets(nodes)){ lift = true; P = solve(); }
+    const { K, H } = P;
+    more.y = P.foot + SK_BTN - 21;
     links.forEach(l => { l.S = byId[l.s]; l.T = byId[l.t]; l.h = l.value * K; });
     links.slice().sort((a, b) => a.S.col - b.S.col || a.T.y - b.T.y).forEach(l => { l.sy = l.S.y + l.S.out; l.S.out += l.h; });
     links.slice().sort((a, b) => a.T.col - b.T.col || a.S.y - b.S.y).forEach(l => { l.ty = l.T.y + l.T.inn; l.T.inn += l.h; });
     links.forEach(l => { l.g = { x0: l.S.x + SK_NW, x1: l.T.x, sy: l.sy, ty: l.ty, h: l.h }; });
     /* each label's anchor: totals over their node, groups beside theirs, sectors on the node's line */
     nodes.forEach(n => { const cy = n.y + n.h / 2;
-      n.ax = n.lab === "aboveEnd" ? n.x + SK_NW : n.lab === "above" ? n.x : n.lab === "big" ? n.x + SK_NW + 8 : n.side === "left" ? n.x - 8 : n.x + SK_NW + 8;
-      n.ay = /^above/.test(n.lab) ? n.y : cy; });
-    return { mode, TW, W, H, cols, nodes, links, byId, title };
+      n.ax = n.lab === "above" ? n.x : n.lab === "big" ? n.x + SK_NW + 8 : n.x - 8;
+      n.ay = n.lab === "above" ? n.y : cy; });
+    return { mode, TW, W, H, cols, nodes, links, byId, more, all: more.all };
+  }
+  /* the type's measure in the flow's own face and px (13, or the counts' 22) */
+  const skTextW = (t, wt, z) => { t = String(t); if (!mCtx) return t.length * (z || 13) * .55;
+    mCtx.font = (wt || 400) + " " + (z || 13) + "px " + (getComputedStyle(svgK.node()).fontFamily || "sans-serif"); return mCtx.measureText(t).width; };
+  /* whether the words over the total (its count, 42px over its node, and what it counts) meet a sector's line beside them */
+  const skMeets = nodes => { const t = nodes.find(n => n.col === 0 && n.lab === "above"); if (!t) return false;
+    const x1 = t.x + Math.max(skTextW(fmt(t.value), 700, 22), skTextW(t.lines.join(" "))) + 6;
+    return nodes.some(n => { if (n.col !== 1) return false; const cy = n.y + n.h / 2;
+      return cy + 8 > t.y - 42 && cy - 6 < t.y - 4 && n.x - 8 - skTextW(n.name + " ") - skTextW(fmt(n.value), 700) < x1; }); };
+  /* the room the flow stands in on beats 4 and 5, on the page (2026-10-28): the ranking's frame, so the frame holds still
+     between the two views and when the list opens. The ranking is rankDraw's height, with its drawing's margin and the
+     12px a panned one keeps for its scrollbar (wf-pan[data-pan]). The key's strip under it is folded here (data-skfold)
+     and given to the drawing, measured as the figure's height with the strip less its height without, as treemap.js
+     syncRankRoom measures beat 3's; a phone's ranking pans and folds the strip itself (the max-width:899px rule over a
+     panned admin chart), so there it folds alone and the margin under the drawing stays, as under the ranking. 0 in the
+     presenter, which fits the frame to the screen */
+  function skRoom(){
+    if (fig.closest(".is-presenting")){ fig.dataset.skfold = "strip"; return 0; }
+    const fw = wrap ? wrap.clientWidth : 0; if (!fw) return 0;
+    const k = typeK(), panned = fw < PAN_MIN * k, rk = Math.round(H0 * (panned ? Math.round(PAN_MIN * k) : fw) / W);
+    const hd = fig.querySelector(".mi-head"), mt = treeEl ? parseFloat(getComputedStyle(treeEl).marginTop) || 0 : 0, hb = hd ? parseFloat(getComputedStyle(hd).marginBottom) || 0 : 0;
+    let strip = 0, head = 0;
+    if (panned && matchMedia("(max-width:899px)").matches) fig.dataset.skfold = "key";
+    else { delete fig.dataset.skfold; const h0 = fig.getBoundingClientRect().height; fig.dataset.skfold = "strip"; strip = Math.max(0, h0 - fig.getBoundingClientRect().height); }
+    /* and the sentence: "ranking" is a shorter word than "flow diagram", so where the sentence wraps the ranking's
+       stands a line shorter (beat 4 at 900px); measured with the blank set to it and back */
+    /* (2026-10-28) the ranking's sentence also asks its order, "sorted by [...]", which can take the sentence a line further */
+    const pick = skSels.find(s => s.offsetWidth);
+    if (pick && pick.value !== "rank"){ const h1 = fig.getBoundingClientRect().height, v = pick.value;
+      pick.value = "rank"; fig.dataset.skview = "rank"; fitPick(pick); rkSels.forEach(s => { if (s && s.offsetWidth) fitPick(s); });
+      head = fig.getBoundingClientRect().height - h1; pick.value = v; fig.dataset.skview = skView; fitPick(pick); }
+    /* panned, the drawing's margin is inside the frame; else it meets the head's and the larger stands */
+    return rk + (panned ? mt + 12 : Math.max(0, mt - hb)) + strip + head;
   }
   const skBand = g => { const xm = (g.x0 + g.x1) / 2, a = g.sy, b = g.ty, h = g.h;
     return "M" + g.x0 + "," + a + "C" + xm + "," + a + " " + xm + "," + b + " " + g.x1 + "," + b + "L" + g.x1 + "," + (b + h) + "C" + xm + "," + (b + h) + " " + xm + "," + (a + h) + " " + g.x0 + "," + (a + h) + "Z"; };
@@ -19675,19 +19861,18 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   /* a label's words, drawn about its anchor */
   function skLabel(g, n){
     g.selectAll("*").remove();
-    if (/^above/.test(n.lab)){ const an = n.lab === "aboveEnd" ? "end" : "start";
-      g.append("text").attr("class", "sk-big sk-halo").attr("y", -26).attr("text-anchor", an).append("tspan").attr("class", "sk-v").property("__v", n.value).text(fmt(n.value));
-      g.append("text").attr("class", "sk-halo sk-cap").attr("y", -9).attr("text-anchor", an).text(n.lines.join(" "));
+    if (n.lab === "above"){
+      g.append("text").attr("class", "sk-big sk-halo").attr("y", -26).attr("text-anchor", "start").append("tspan").attr("class", "sk-v").property("__v", n.value).text(fmt(n.value));
+      g.append("text").attr("class", "sk-halo sk-cap").attr("y", -9).attr("text-anchor", "start").text(n.lines.join(" "));
     } else if (n.lab === "big"){ const L = n.lines.length + 1, y0 = -2 - (L - 1) * 8, ic = ico(SK_ICO[n.kind]);
       if (ic){ ic.setAttribute("x", 0); ic.setAttribute("y", y0 - 16); g.node().appendChild(ic); }
       g.append("text").attr("class", "sk-big sk-halo").attr("x", ic ? 32 : 0).attr("y", y0).append("tspan").attr("class", "sk-v").property("__v", n.value).text(fmt(n.value));
       n.lines.forEach((t, i) => g.append("text").attr("class", "sk-halo").attr("y", y0 + 18 + i * 16).text(t));
       const sh = g.append("text").attr("class", "sk-soft sk-halo sk-sh").attr("y", y0 + 18 + n.lines.length * 16);
       sh.append("tspan").attr("class", "sk-p").property("__v", skShare(n)).text(skShare(n) + "%"); sh.append("tspan").attr("class", "sk-suf").text(n.suffix);
-    } else { const t = g.append("text").attr("class", "sk-halo").attr("y", 4.5).attr("text-anchor", n.side === "left" ? "end" : "start");
+    } else { const t = g.append("text").attr("class", "sk-halo").attr("y", 4.5).attr("text-anchor", "end");
       t.append("tspan").text(n.name + " ");
-      if (n.net != null) t.append("tspan").attr("class", "sk-num").text((n.net >= 0 ? "+" : "−") + fmt(Math.abs(n.net)));
-      else t.append("tspan").attr("class", "sk-num sk-v").property("__v", n.value).text(fmt(n.value)); }
+      t.append("tspan").attr("class", "sk-num sk-v").property("__v", n.value).text(fmt(n.value)); }
   }
   /* the drawing: "build" draws the bands out from the left; "morph" turns one beat's drawing into the next (beat 4 to 5:
      the whole makes room, each sector grows by the jobs its residents hold elsewhere and the counts run up, then the
@@ -19706,16 +19891,15 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     if (!svgK.select("g.sk-l").node()){
       svgK.append("defs").append("clipPath").attr("id", "wfSkClip").append("rect");
       svgK.append("g").attr("class", "sk-l").attr("clip-path", "url(#wfSkClip)"); svgK.append("g").attr("class", "sk-n"); svgK.append("g").attr("class", "sk-t");
-      svgK.append("g").attr("class", "sk-x"); svgK.append("g").attr("class", "sk-h"); }
-    const gL = svgK.select("g.sk-l"), gN = svgK.select("g.sk-n"), gT = svgK.select("g.sk-t"), gX = svgK.select("g.sk-x"), gH = svgK.select("g.sk-h"), clip = svgK.select("#wfSkClip rect");
+      svgK.append("g").attr("class", "sk-h"); }
+    const gL = svgK.select("g.sk-l"), gN = svgK.select("g.sk-n"), gT = svgK.select("g.sk-t"), gH = svgK.select("g.sk-h"), clip = svgK.select("#wfSkClip rect");
     /* the svg's own pending height too (2026-10-28): left to run, a cut morph's settle later gave the next drawing the
        height it was leaving */
     svgK.interrupt(); svgK.selectAll("*").interrupt();
     if (!morph){ gL.selectAll("*").remove(); gN.selectAll("*").remove(); gT.selectAll("*").remove(); }
-    gX.selectAll("*").remove();
     const H = morph ? Math.max(prev.H, L.H) : L.H;
     svgK.attr("viewBox", "0 0 " + L.W + " " + H).attr("width", L.W * s).attr("height", H * s).style("width", L.W * s + "px")
-      .attr("aria-label", L.mode === 2 ? "People commuting into and out of Boston, by sector, " + year : L.mode === 1 ? "The " + fmt(A.jobs + A.out) + " jobs in Boston or held by its residents, by sector and by who holds them, " + year : "The " + fmt(A.jobs) + " jobs in Boston, by sector and by who holds them, " + year);
+      .attr("aria-label", L.mode === 1 ? "The " + fmt(A.jobs + A.out) + " jobs in Boston or held by its residents, by sector and by who holds them, " + year : "The " + fmt(A.jobs) + " jobs in Boston, by sector and by who holds them, " + year);
     clip.attr("x", -10).attr("y", -10).attr("width", L.W + 20).attr("height", H + 20);
     const ease = d3.easeCubicInOut, oldKeys = new Set(morph ? gL.selectAll("path.sk-lk").data().map(l => l.key) : []);
     const exits = morph && gL.selectAll("path.sk-lk").data().some(l => !L.links.some(m => m.key === l.key));
@@ -19724,11 +19908,11 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     const secIdx = {}; L.nodes.filter(n => n.col === 1).forEach((n, i) => { secIdx[n.id] = i; });
     /* bands */
     const lk = gL.selectAll("path.sk-lk").data(L.links, l => l.key);
-    if (morph) lk.exit().each(function(l){ const n = this.__g || l.g; d3.select(this).transition().duration(EX).delay((secIdx[l.s] != null ? 10 - secIdx[l.s] : 0) * 18).ease(ease)
+    if (morph) lk.exit().each(function(l){ const n = this.__g || l.g; d3.select(this).transition().duration(EX).delay((secIdx[l.s] != null ? Math.max(0, 10 - secIdx[l.s]) : 0) * 18).ease(ease)
       .attrTween("d", () => { const f = skLerp(n, skFold(n)); return t => skBand(f(t)); }).remove(); });
     else lk.exit().remove();
-    const lkE = lk.enter().append("path").on("pointerenter", (ev, l) => skHover(sk.byId[l.sec.id])).on("pointerleave", () => skHover(null));
-    lkE.merge(lk).attr("class", l => "sk-lk sk-lk--" + l.cls);
+    const lkE = lk.enter().append("path");
+    lkE.merge(lk).attr("class", l => "sk-lk sk-lk--" + l.cls).call(tipBind, SKH, true);
     if (morph){
       lk.transition().delay(UD).duration(UP).ease(ease).attrTween("d", function(l){ const f = skLerp(this.__g || l.g, l.g), el = this; return t => { el.__g = f(t); return skBand(el.__g); }; });
       lkE.attr("d", l => skBand(skFold(l.g))).transition().delay(l => EN + (secIdx[l.s] || 0) * STAG).duration(ENDUR).ease(ease)
@@ -19761,32 +19945,62 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       /* the drawing settles to its own height once the old one has gone */
       if (prev.H !== L.H) svgK.transition().delay(EN + ENDUR + 11 * STAG).duration(0).attr("height", L.H * s).attr("viewBox", "0 0 " + L.W + " " + L.H);
     }
-    if (L.title){ const c = L.cols[1], top1 = d3.min(L.nodes.filter(n => n.col === 1), n => n.y);
-      gX.append("text").attr("class", "sk-big sk-halo").attr("x", c.x).attr("y", top1 - 26).text(L.title.big);
-      gX.append("text").attr("class", "sk-halo").attr("x", c.x).attr("y", top1 - 9).text(L.title.line); }
-    /* the hands' targets: a node with its words, wide enough to find */
+    /* the hands' targets: a node with its words, wide enough to find; a sector's no taller than its line's pitch, so
+       twenty lines' targets never overlap */
+    const hitH = n => Math.max(n.h, n.col === 1 ? Math.min(18, n.slot + L.cols[1].pad) : 18);
     gH.selectAll("*").remove();
     gH.selectAll("rect").data(L.nodes, n => n.id).join("rect").attr("class", "sk-hit").attr("tabindex", 0).attr("role", "img")
-      .attr("x", n => n.lab === "line" ? (n.side === "left" ? n.x - 230 : n.x) : n.lab === "aboveEnd" ? n.x - 220 : n.x)
-      .attr("y", n => /^above/.test(n.lab) ? n.y - 46 : n.y - Math.max(0, (18 - n.h) / 2))
-      .attr("width", n => n.lab === "line" ? 230 + SK_NW : n.lab === "big" ? 200 : n.lab === "aboveEnd" ? 220 + SK_NW : 240)
-      .attr("height", n => (/^above/.test(n.lab) ? 46 : 0) + Math.max(18, n.h))
+      .attr("x", n => n.lab === "line" ? n.x - 230 : n.x)
+      .attr("y", n => n.lab === "above" ? n.y - 46 : n.y + n.h / 2 - hitH(n) / 2)
+      .attr("width", n => n.lab === "line" ? 230 + SK_NW : n.lab === "big" ? 200 : 240)
+      .attr("height", n => (n.lab === "above" ? 46 : 0) + hitH(n))
       .attr("aria-label", n => skSay(n))
-      .on("pointerenter focus", (ev, n) => skHover(n)).on("pointerleave blur", () => skHover(null))
-      .on("click", (ev, n) => { skPin = skPin === n.id ? null : n.id; skHover(n); })
-      .on("keydown", (ev, n) => { if (ev.key === "Enter" || ev.key === " "){ ev.preventDefault(); skPin = skPin === n.id ? null : n.id; skHover(n); } else if (ev.key === "Escape"){ skPin = null; skHover(null); } });
-    /* the build: the bands run out from the left, each column's nodes and words as the bands reach them */
+      .call(tipBind, SKH);
+    /* the build: the bands run out from the left, each column's nodes and words as the bands reach them, the button
+       with its column */
+    const colAt = (ci, dur) => dur * (L.cols[ci].x - L.cols[0].x) / (L.W - L.cols[0].x) * .9;
     if (anim && !morph){ const dur = 1300, cols = L.cols;
       clip.attr("width", cols[0].x + SK_NW + 10).transition().duration(dur).ease(ease).attr("width", L.W + 20);
       [gN.selectAll("rect.sk-nd"), gT.selectAll("g.sk-lab")].forEach(sel => sel.filter(n => n.col > 0).style("opacity", 0)
-        .transition().delay(n => dur * (cols[n.col].x - cols[0].x) / (L.W - cols[0].x) * .9).duration(260).style("opacity", null));
-      gX.selectAll("text").style("opacity", 0).transition().delay(dur * .45).duration(260).style("opacity", null);
+        .transition().delay(n => colAt(n.col, dur)).duration(260).style("opacity", null));
     }
+    skMore(L, anim && !morph ? colAt(1, 1300) : null, morph ? { delay: UD, dur: UP } : null);
+  }
+  /* "Show all 20" under the sector column on beats 4 and 5 (2026-10-28, Nil: "Also add "Show All" button which will show
+     all the industries"): beats 1 to 3's box (treemap.js moreBtn and layoutMore), its words, caret and corner, in the
+     flow's px, its right edge on the names'. Opened, it reads "Show the top 10" and its caret turns up. It is kept from
+     one drawing to the next, so the keyboard stays on it */
+  function skMore(L, fade, move){
+    let g = svgK.select("g.mi-more");
+    if (!g.node()){
+      g = svgK.append("g").attr("class", "mi-more mi-more--foot").attr("role", "button").attr("tabindex", 0);
+      g.append("rect").attr("class", "mi-more-box"); g.append("text").attr("class", "mi-colhead mi-more-txt"); g.append("path").attr("class", "mi-tradmenu-caret mi-more-caret");
+      /* a pointer's press does not take the focus, as beat 1's: on a phone a focused control brings the band forward */
+      g.on("mousedown", ev => ev.preventDefault()).on("click", skToggle)
+        .on("keydown", ev => { if (ev.key === "Enter" || ev.key === " "){ ev.preventDefault(); skToggle(); } });
+    }
+    const m = L.more, label = m.all ? "Show the top " + m.top : "Show all " + m.n;
+    g.attr("aria-label", label + " sectors");
+    /* the box sized from the type it holds (13px in the drawing), the house's 4px corner on screen at the presenter's scale */
+    const fs = 13, t = g.select("text.mi-more-txt").text(label), tw = t.node().getComputedTextLength() || label.length * 6.6;
+    const padX = .7 * fs, gapC = .45 * fs, h = 1.6 * fs, w = padX + tw + gapC + 7 + padX, yc = h / 2, cx = -w + padX + tw + gapC;
+    g.select("rect.mi-more-box").attr("x", -w).attr("y", 0).attr("width", w).attr("height", h).attr("rx", 4 / (L.s || 1));
+    t.attr("x", -w + padX).attr("y", yc + .35 * fs);
+    g.select("path.mi-more-caret").attr("d", m.all ? "M" + cx + "," + (yc + 1.75) + " l3.5,-3.5 l3.5,3.5" : "M" + cx + "," + (yc - 1.75) + " l3.5,3.5 l3.5,-3.5");
+    const to = "translate(" + m.xr + "," + m.y + ")";
+    if (move) g.transition().delay(move.delay).duration(move.dur).ease(d3.easeCubicInOut).attr("transform", to); else g.attr("transform", to);
+    if (fade != null) g.style("opacity", 0).transition().delay(fade).duration(260).style("opacity", null); else g.style("opacity", null);
+  }
+  /* the button: the list opens or folds, the drawing turning into the other as beat 4 turns into beat 5 */
+  function skToggle(){
+    if (!sk || !isSk()) return;
+    skAll = !skAll; tipHide(true); skHot = null;
+    const L = skLayout(sk.mode, sk.TW); L.s = skS; skRender(L, "morph"); skFill();
   }
   /* the state over the drawing: the groups the sentence turns off, the sectors named or asked about, the one in hand */
   function skFill(){
     if (!sk) return;
-    const on = sk.mode <= 1 ? partsOn() : ["non", "out"], lit = litSet(), hotN = skHot ? sk.byId[skHot] : null;
+    const on = partsOn(), lit = litSet(), hotN = skHot ? sk.byId[skHot] : null;
     const litN = n => !lit || !n.codes || n.codes.some(c => lit.has(c));
     svgK.selectAll(".sk-lk").classed("is-off", l => !!l.part && on.indexOf(l.part) < 0)
       .classed("is-dim", l => (!!lit && !litN(l.sec)) || (!!hotN && l.S !== hotN && l.T !== hotN && l.sec !== hotN))
@@ -19795,79 +20009,72 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     svgK.selectAll(".sk-nd").classed("is-off", n => !!n.part && on.indexOf(n.part) < 0).classed("is-dim", nodeDim);
     svgK.selectAll(".sk-lab").classed("is-off", n => !!n.part && on.indexOf(n.part) < 0).classed("is-dim", nodeDim);
   }
-  const skList = (list, k, f) => list.slice().sort((a, b) => f(b) - f(a)).slice(0, k).map(r => esc(skName(r).charAt(0).toLowerCase() + skName(r).slice(1)) + " " + fmt(f(r)));
+  /* a list of sectors and their counts, in words: the first word capitalised by its place, the rest lower case */
+  const skList = (list, k, f) => list.slice().sort((a, b) => f(b) - f(a)).slice(0, k).map(r => esc(r.short.charAt(0).toLowerCase() + r.short.slice(1)) + " " + fmt(f(r)));
   function skSay(n){
     const d = n.d;
     if (n.kind === "total") return fmt(n.value) + " " + n.lines[0] + ".";
     if (n.col !== 1) return fmt(n.value) + " " + SK_GROUP[n.kind].join(" ") + ".";
-    return sk.mode === 2 ? n.name + ": Boston " + (d.net >= 0 ? "gains " : "loses ") + fmt(Math.abs(d.net)) + " workers; " + fmt(d.estNon) + " commute in, " + fmt(d.estOut) + " commute out."
-      : n.name + ": " + fmt(n.value) + " jobs; " + fmt(d.estNon) + " held by Boston non-residents, " + fmt(d.estRes) + " by Boston residents" + (sk.mode === 1 ? ", " + fmt(d.estOut) + " by Boston residents working elsewhere." : ".");
+    return n.name + ": " + fmt(n.value) + " jobs; " + fmt(d.estNon) + " held by Boston non-residents, " + fmt(d.estRes) + " by Boston residents" + (sk.mode === 1 ? ", " + fmt(d.estOut) + " by Boston residents working elsewhere." : ".");
   }
-  /* the card: what the chart leaves out */
-  function skCardHTML(n){
-    const F = window.FLOW_ICO || {}, d = n.d, foot = t => '<p class="wf-tip-foot">' + t + '</p>', row = (ic, k, v) => '<dt>' + (ic || "") + k + '</dt><dd>' + v + '</dd>';
-    const head = t => '<span class="skt-name">' + (d && d.code ? '<i class="skt-sw" style="--sw:' + colourOf(d.sector) + '"></i>' : '') + '<b>' + esc(t) + '</b>' + (d && d.code ? ' <span class="ad-naics">NAICS ' + esc(d.code) + '</span>' : '') + '</span>';
-    const rest = d && d.rest ? '<p class="wf-tip-foot">' + skList(d.rest, 10, r => sk.mode === 2 ? r.net : sk.mode === 1 ? r.U : r.jobs).map(t => sk.mode === 2 ? t.replace(/ (\S+)$/, (m, v) => " " + (v.charAt(0) === "−" ? v : "+" + v)) : t).join(", ") + '</p>' : '';
-    if (n.kind === "total") return head(fmt(n.value) + " " + n.lines[0]) + '<dl class="skt-grid">' + row(F.in, "Boston non-residents", fmt(A.in) + " · " + pc(A.in / n.value)) + row(F.both, "Boston residents", fmt(A.liveWork) + " · " + pc(A.liveWork / n.value)) +
-      (sk.mode === 1 ? row(F.out, "Working elsewhere", fmt(A.out) + " · " + pc(A.out / n.value)) : "") + '</dl>';
-    if (n.col !== 1){ const k = n.kind, f = r => partVal(r, k), name = SK_GROUP[k].join(" ");
-      const whole = sk.mode === 2 ? (k === "non" ? "people commute into Boston to work" : "Boston residents work outside the city") : (sk.mode === 1 ? "of the " + fmt(A.jobs + A.out) : "of the jobs in Boston");
-      return head(name) + '<dl class="skt-grid">' + row(F[SK_ICO[k]], sk.mode === 2 ? fmt(n.value) : "Jobs", sk.mode === 2 ? whole : fmt(n.value) + " · " + pc(n.value / (sk.mode === 1 ? A.jobs + A.out : A.jobs)) + " " + whole) +
-        row("", "Most in", skList(rows, 3, f).join(", ")) + '</dl>' + foot("The split within each sector is an estimate.");
+  /* the flow's cards (2026-10-28): a sector's node and its bands take the split's card under beat 1's head, its full name
+     as every other view gives it; the other ten together are titled by the node's words, what they are made of under
+     the title; a group by the key's name, its swatch, icon and words under it; the total by its words */
+  const GROUP_NAME = { non: "Boston non-residents", res: "Boston residents", out: "Boston residents working elsewhere" };
+  const GROUP_VERB = { non: "Commute in", res: "Live and work here", out: "Commute out" };
+  function skCardHTML(n, held){
+    const d = n.d, t3 = sk.mode === 1, whole = t3 ? A.jobs + A.out : A.jobs;
+    if (n.kind === "total") return tHead(t3 ? "Jobs in Boston or held by its residents" : "Jobs in Boston") +
+      tGrid([tRow("Jobs", fmt(n.value)),
+        tRow("Boston non-residents", fmt(A.in) + " " + tEm(share(A.in / n.value)), tMark("non")),
+        tRow("Boston residents", fmt(A.liveWork) + " " + tEm(share(A.liveWork / n.value)), tMark("res")),
+        t3 ? tRow("Working elsewhere", fmt(A.out) + " " + tEm(share(A.out / n.value)), tMark("out")) : ""]);
+    /* a group's three largest sectors, a row each under "Most in": the sector's name the label, its count the value, so
+       the long names keep to one line */
+    if (n.col !== 1){ const k = n.kind, f = r => partVal(r, k);
+      return tHead(GROUP_NAME[k], tMark(k) + GROUP_VERB[k]) +
+        tGrid([tRow("Jobs", fmt(n.value)), tRow(t3 ? "Of all " + fmt(whole) : "Of the jobs in Boston", share(n.value / whole)), tRow("Most in", "")]
+          .concat(rows.slice().sort((a, b) => f(b) - f(a)).slice(0, 3).map(r => tRow(esc(r.short), fmt(f(r))))));
     }
-    if (sk.mode === 2) return head(n.name) + '<dl class="skt-grid">' + row("", "Boston " + (d.net >= 0 ? "gains" : "loses"), fmt(Math.abs(d.net)) + " workers") +
-      row(F.in, "Commute in", fmt(d.estNon)) + row(F.out, "Commute out", fmt(d.estOut)) +
-      row("", "Jobs per resident", rx(d.ratio).replace("×", "") + " jobs in Boston for every resident who works in it") + '</dl>' + rest + foot("The gain is counted; in and out within a sector are estimates.");
-    return head(n.name) + '<dl class="skt-grid">' + row("", "Jobs in Boston", fmt(d.jobs) + " · " + pc(d.jobs / A.jobs) + " of the city’s jobs") +
-      (sk.mode === 1 ? row("", "Held by its residents", fmt(d.residents) + ", wherever those are") : "") +
-      row(F.in, "Boston non-residents", fmt(d.estNon) + " · " + pc(d.estNon / d.jobs)) + row(F.both, "Boston residents", fmt(d.estRes) + " · " + pc(d.estRes / d.jobs)) +
-      (sk.mode === 1 ? row(F.out, "Working elsewhere", fmt(d.estOut)) : "") + '</dl>' + rest + foot("The split within each sector is an estimate.");
+    if (!d.code){ const list = skList(d.rest, d.rest.length, r => t3 ? r.U : r.jobs).join(", ");
+      return tHead(esc(d.short), list.charAt(0).toUpperCase() + list.slice(1)) + splitHtml(d); }
+    return treeHtml(d, held);
   }
-  function skCard(n){
-    if (!tip || !n) return;
-    tip.classList.add("is-tree"); tip.innerHTML = skCardHTML(n); tip.hidden = false;
-    const el = svgK.selectAll(".sk-hit").filter(m => m.id === n.id).node(); if (!el || !wrap) return;
-    const fb = wrap.getBoundingClientRect(), nb = el.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight, FW = wrap.clientWidth, FH = wrap.clientHeight;
-    let left, top;
-    if (phone()){ left = 8; top = nb.bottom - fb.top + 4 + h <= FH ? nb.bottom - fb.top + 4 : nb.top - fb.top - h - 4; }
-    else { left = nb.right - fb.left + 10 + w <= FW ? nb.right - fb.left + 10 : nb.left - fb.left - 10 - w; top = nb.top - fb.top; }
-    tip.style.left = Math.max(0, Math.min(FW - w, left)) + "px"; tip.style.top = Math.max(0, Math.min(Math.max(0, FH - h), top)) + "px";
-  }
-  function skHover(n){
-    if (!n && skPin && sk) n = sk.byId[skPin];
-    skHot = n ? n.id : null; skFill();
-    if (n){ skCard(n); if (sk.mode === 2) needleDraw(n.col === 1 ? n.d : null); }
-    else { if (tip) tip.hidden = true; if (sk && sk.mode === 2) needleDraw(pinned ? byCode[pinned] : null); }
-  }
+  /* a node's hands, and its bands', the node's: the key is the node's, its card is the node's, it lights the node and
+     its bands */
+  const skNodeOf = x => x && x.sec ? sk && sk.byId[x.sec.id] : x;
+  const SKH = { ok: x => !!skNodeOf(x), key: x => "sk:" + skNodeOf(x).id, html: (x, held) => skCardHTML(skNodeOf(x), held), map: x => { const n = skNodeOf(x); return n.col === 1 && !!n.d.code; },
+    on: x => { skHot = skNodeOf(x).id; skFill(); }, at: (el, x) => atMid(svgK.selectAll("rect.sk-nd").filter(m => m.id === skNodeOf(x).id).node()) };
   function skLive(){
     const live = document.getElementById("miLive"); if (!live || !sk) return;
-    live.textContent = sk.mode === 2 ? "Boston’s gain and loss of workers by sector, as a flow diagram, " + year + ": " + fmt(A.in) + " Boston non-residents commute in, " + fmt(A.out) + " Boston residents work elsewhere; Boston gains " + fmt(A.jobs - A.residents) + "."
-      : sk.mode === 1 ? "The " + fmt(A.jobs + A.out) + " jobs in Boston or held by its residents, by sector, as a flow diagram, " + year + ": Boston non-residents " + fmt(A.in) + ", Boston residents " + fmt(A.liveWork) + ", working elsewhere " + fmt(A.out) + "."
+    live.textContent = sk.mode === 1 ? "The " + fmt(A.jobs + A.out) + " jobs in Boston or held by its residents, by sector, as a flow diagram, " + year + ": Boston non-residents " + fmt(A.in) + ", Boston residents " + fmt(A.liveWork) + ", working elsewhere " + fmt(A.out) + "."
       : "The " + fmt(A.jobs) + " jobs in Boston by sector, as a flow diagram, " + year + ": Boston non-residents hold " + fmt(A.in) + ", Boston residents " + fmt(A.liveWork) + ".";
   }
   function skDraw(animate, was){
     const s = skScale(), TW = skPan ? Math.floor(skPan.clientWidth / s) : 0;
     if (!was || skMode !== state || skW !== TW || skS !== s || !sk){
-      /* between beats 4 and 5 the drawing turns into the other; beat 6, and an arrival, draw it anew */
-      const how = !animate ? "static" : was && sk && skW === TW && skS === s && sk.mode <= 1 && state <= 1 && skMode !== state ? "morph" : "build";
-      skPin = null; skHot = null; if (TW){ const L = skLayout(state, TW); L.s = s; skRender(L, how); }
+      /* between beats 4 and 5 the drawing turns into the other; an arrival draws it anew */
+      const how = !animate ? "static" : was && sk && skW === TW && skS === s && skMode !== state ? "morph" : "build";
+      skHot = null; if (TW){ const L = skLayout(state, TW); L.s = s; skRender(L, how); }
     }
     skFill();
     rowsSync(); captionSync(); tableSync(); skLive();
     fig.dataset.adminReading = view.reading; fig.dataset.adminSort = view.sort;
   }
-  document.addEventListener("pointerdown", ev => { if (!skPin || !isSk()) return;
-    if (ev.target.closest && ev.target.closest("#wfSankeySvg .sk-hit")) return; skPin = null; skHover(null); }, true);
 
-  const skSels = ["wfSkView", "wfSkView3", "wfSkView6"].map(id => document.getElementById(id)).filter(Boolean);
-  const skViewSync = () => skSels.forEach(v => { v.value = skView; });
+  /* beats 4 and 5's blanks: beat 6's sentence has none since its flow gave way to the gain bars (2026-10-28) */
+  const skSels = ["wfSkView", "wfSkView3"].map(id => document.getElementById(id)).filter(Boolean);
+  /* data-skview: the ranking's sentence asks its order, the flow's does not (2026-10-28) */
+  const skViewSync = () => { skSels.forEach(v => { v.value = skView; }); fig.dataset.skview = skView; };
   skViewSync();
   skSels.forEach(v => v.addEventListener("change", () => {
-    skView = v.value === "rank" ? "rank" : "sankey"; skViewSync(); pinned = state === 2 ? homePin() : null; hot = null; if (tip) tip.hidden = true;
+    skView = v.value === "rank" ? "rank" : "sankey"; skViewSync(); tipHide(true); pinned = null; hot = null;
+    /* an answer closed here gives its order back with its chart */
     if (asked) askOff(false);
+    headSync();
     /* the treemap engine's ranking, or the Sankey, drawn as on arrival */
-    if (state <= 1 && skView === "rank"){ fig.classList.remove("is-b4sk"); viewEff(); }
-    paint(true); needleDraw(pinned ? byCode[pinned] : null);
+    if (skView === "rank"){ fig.classList.remove("is-b4sk"); viewEff(); }
+    paint(true);
   }));
 
   /* ---- the caption under the chart ---- */
@@ -19876,11 +20083,13 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     if (!keyEl || !view) return;
     const I = window.FLOW_ICO ? window.FLOW_ICO.in : "", O = window.FLOW_ICO ? window.FLOW_ICO.out : "", src = "";   /* no source line under the chart (2026-10-27, Nil) */
     /* opt-2's key states the totals, counted; the sentence shows the state, so the key never changes with it. opt-3's
-       sentence names no groups, so its key is the legend for the flow and the ranking both, and says which are shown */
+       sentence names no groups, so its key is the legend for the flow and the ranking both, and says which are shown.
+       Both now stand it down (2026-10-28), the flow for its nodes' words and the rankings for their column heads; opt-2's
+       treemap keeps it */
     keyEl.classList.toggle("wf-key--sk", b4 === "sankey" && (isSk() || isTree()));
     if (isSk() || isTree()){
       const Bo = window.FLOW_ICO ? window.FLOW_ICO.both : "";
-      const on = b4 !== "sankey" || state === 2 ? null : T3() ? (view.on3 || ALL3) : (!view.who || view.who === "both") ? ["non", "res"] : [view.who];
+      const on = b4 !== "sankey" ? null : T3() ? (view.on3 || ALL3) : (!view.who || view.who === "both") ? ["non", "res"] : [view.who];
       /* opt-3's legend names the groups without their counts (2026-10-28, Nil: "sankey: remove numbers from the below
          legend"): the flow writes them on its nodes and the ledes give them; opt-2's key keeps them */
       const num = n => b4 === "sankey" ? "" : '<b>' + fmt(n) + '</b> ';
@@ -19888,8 +20097,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       const NON = item("non", I, A.in, '<span class="city-short">Boston</span> non-residents', "who commute in"),
         RES = item("res", Bo, A.liveWork, '<span class="city-short">Boston</span> residents', "who live and work here"),
         OUT = item("out", O, A.out, '<span class="city-short">Boston</span> residents working elsewhere', "who commute out");
-      /* beat 6's flow runs from the ones who come in to the ones who go out */
-      keyEl.innerHTML = isSk() && state === 2 ? NON + OUT : T3() ? NON + RES + OUT : NON + RES;
+      keyEl.innerHTML = T3() ? NON + RES + OUT : NON + RES;
       return;
     }
     const r = view.reading;
@@ -19906,7 +20114,22 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   /* in ems, as Who am I?'s blank is (2026-10-28): the presenter's larger type then widens it too, where a width in px left
      its caret over the year's last digit */
   function fitPick(sel){ const m = sel.parentNode && sel.parentNode.querySelector(".mi-measure"), o = sel.options[sel.selectedIndex]; if (!m || !o) return; m.textContent = o.text; if (m.offsetWidth) sel.style.width = "calc(" + (m.offsetWidth / parseFloat(getComputedStyle(m).fontSize)).toFixed(3) + "em + 24px)"; }
-  function headSync(){ if (sRead){ sRead.value = view.reading; fitPick(sRead); } if (sSort){ sSort.value = view.sort; fitPick(sSort); } whoSync(); }
+  /* every blank the shown sentence holds, cut to its word (2026-10-28): a sentence that shows only once the section has
+     set the beat (beat 7's, after beat 6's flow) was measured hidden, and its reading kept the last width it was cut to,
+     "every reading" in a blank as wide as "jobs in Boston and its residents' jobs". A hidden blank keeps its width */
+  function fitHead(){ document.querySelectorAll("#wfHead .mi-pick select").forEach(fitPick); }
+  function headSync(){ if (sRead) sRead.value = view.reading; if (sSort) sSort.value = view.sort; rkSync(); fitHead(); whoSync(); }
+  /* opt-3's ranking's order (2026-10-28): one blank in each beat's sentence, the beat's own choice or its answer's. A
+     choice closes an open answer, as the bars' order does, and the rows move to it */
+  const rkSels = ["wfRkSort", "wfRkSort3"].map(id => document.getElementById(id));
+  function rkSync(){ rkSels.forEach((s, i) => { if (s) s.value = view && state === i ? view.rkSort : rkSorts[i]; }); }
+  rkSels.forEach((s, i) => s && s.addEventListener("change", () => {
+    if (state !== i) return;
+    const v = s.value;
+    if (asked){ askOff(false); headSync(); }
+    rkSorts[i] = view.rkSort = s.value = v; fitPick(s); tipHide(true); pinned = null; hot = null;
+    paint(true);
+  }));
   /* opt-2's two blanks: each says whether its group is shown; the one still shown alone is held */
   const WHO_WORDS = { res: "Boston residents", non: "Boston non-residents" };
   function whoSync(){
@@ -19951,8 +20174,10 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   if (b4Sel) b4Sel.addEventListener("change", () => {
     b4 = b4Sel.value === "tree" || b4Sel.value === "sankey" ? b4Sel.value : "bars"; fig.dataset.b4 = b4; if (page) page.dataset.b4 = b4; railSync();
     if (asked) askOff(false);
-    if (state <= 2){ view = beatView(state); hlTemp = null; previewWho = null; pinned = null; hot = null; if (tip) tip.hidden = true;
-      whoUnlit(); paint(true); headSync(); }
+    /* beat 6 keeps its pin and the needle on it (2026-10-28): its bars stand under every option, and the needle stayed
+       on the row the pin had left */
+    if (state <= 2){ tipHide(true); view = beatView(state); hlTemp = null; previewWho = null; pinned = homePin(); hot = null;
+      whoUnlit(); paint(true); headSync(); needleDraw(pinned ? byCode[pinned] : null); }
   });
   if (lookSel) lookSel.addEventListener("change", lookSync);
   const rail5 = [].slice.call(document.querySelectorAll('li[data-step="adminSharesSection"] button')), rail5Words = rail5.map(b => b.textContent);
@@ -19973,7 +20198,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     const cell = (v, cls) => '<td class="' + (cls || "num") + '">' + v + '</td>';
     /* under the flow diagram, beats 4 and 5 take their ranking's table (2026-10-28): the groups the flow shows, where
        the bars' table it gave had none of them */
-    const groups = isTree() || (isSk() && state <= 1);
+    const groups = isTree() || isSk();
     /* opt-3's: the two counts, then the three parts, estimated */
     if (groups && T3()){
       const E = "";
@@ -20131,17 +20356,17 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     /* the sentences' totals, and the treemap's name */
     document.querySelectorAll("#wfHead .wf-n[data-n]").forEach(e => { e.textContent = fmt(e.dataset.n === "all" ? A.jobs + A.out : A.jobs); });
     treeName();
-    /* the blank that shows is fitted to its year, the others take its width */
-    const on = ySels.find(s => s.offsetWidth);
-    if (on){ fitPick(on); ySels.forEach(s => { if (s !== on) s.style.width = on.style.width; }); }
+    /* the blanks that show are fitted to their words, and the hidden sentences' years take the shown year's width */
+    fitHead(); const on = ySels.find(s => s.offsetWidth);
+    if (on) ySels.forEach(s => { if (s !== on) s.style.width = on.style.width; });
   }
   function setYear(y){
     if (!YD[y] || y === year){ yearSync(); return; }
     /* an answer closed by the year takes its blanks and toggles back with the chart (2026-10-28) */
     if (asked){ askOff(false); headSync(); }
     year = y; loadData(y);
-    tLay = null; sk = null; skMode = -1; skPin = null; skHot = null;
-    hlTemp = null; previewWho = null; whoUnlit(); hot = null; if (tip) tip.hidden = true;
+    tipHide(true); tLay = null; sk = null; skMode = -1; skHot = null;
+    hlTemp = null; previewWho = null; whoUnlit(); hot = null;
     pinned = homePin(); ghostSync(); yearSync();
     if (view){ paint(true); needleDraw(pinned ? byCode[pinned] : null); }
     const u = new URL(location.href); if (y === WORDS_YEAR) u.searchParams.delete("wfyear"); else u.searchParams.set("wfyear", y);
@@ -20161,17 +20386,17 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       const back = away && s === state && !first; away = false;
       if (s === state && !first && !back) return;
       gTree.selectAll("*").interrupt();
-      state = s; view = beatView(s); hlTemp = null; previewWho = null; whoUnlit(); hot = null; if (tip) tip.hidden = true;
+      tipHide(true); state = s; view = beatView(s); hlTemp = null; previewWho = null; whoUnlit(); hot = null;
       pinned = homePin();
       /* the first arrival builds opt-2's treemap (the bars come in still, as they did) */
-      headSync(); paint(back ? b4 === "sankey" && skView === "sankey" && s <= 2 : !first || (b4 !== "bars" && s <= 1) || (b4 === "sankey" && skView === "sankey" && s === 2)); needleDraw(pinned ? byCode[pinned] : null);
-      /* the section's control sets data-step after this returns, so the sentence that will show is measured a frame on */
+      headSync(); paint(back ? b4 === "sankey" && skView === "sankey" && s <= 1 : !first || (b4 !== "bars" && s <= 1)); needleDraw(pinned ? byCode[pinned] : null);
+      /* the sentence that shows is measured again a frame on, once it stands */
       requestAnimationFrame(yearSync);
     },
-    stand(){ if (asked) askOff(false); if (tip) tip.hidden = true; hot = null; skPin = null; skHot = null; away = true;
+    stand(){ if (asked) askOff(false); tipHide(true); hot = null; skHot = null; away = true;
       /* the flow is put away with the admin beats (2026-10-28): the figure no longer says it shows one on beats 1 to 3,
          and the way back draws it anew */
-      fig.classList.remove("is-b4sk");
+      fig.classList.remove("is-b4sk"); delete fig.dataset.skfold;
       /* leaving for the treemap's beats: opt-2's treemap is left whole and at its beat's view, for the way back */
       gTree.selectAll("*").interrupt();
       if (isTree()){ hlTemp = null; previewWho = null; whoUnlit(); headSync(); treePaint(false); treeFill(false); } },
@@ -20199,8 +20424,11 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         const vb = fig.querySelector(".tradable-viz-wrapper"); if (vb) vb.style.height = "";
         /* beat 3 folds the caption strip (treemap.js) and only the treemap's own steps unfold it: the key is under it */
         if (fig.dataset.capfold) delete fig.dataset.capfold;
-        if (window.WF) window.WF.setState(i - FIRST);
+        /* the beat's step before its drawing (2026-10-28): the admin figure's rules read it, and set after, the flow
+           measured its room and the sentence its blanks in the last beat's layout (beat 1's drawing margin, beat 6's
+           hidden sentence, so beat 7's reading kept beat 4's width) */
         fig.dataset.step = String(i);
+        if (window.WF) window.WF.setState(i - FIRST);
       } else {
         if (window.WF) window.WF.stand();
         if (window.MI) window.MI.setStep(i);

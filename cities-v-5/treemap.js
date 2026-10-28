@@ -7625,7 +7625,9 @@
     initDxExplainer();
   }
 
-  window.CityTreemaps = { setColorBy };
+  /* the card's placing and its shares, for the admin beats' card in index.html (2026-10-28, Nil: "make sure 4,5,6
+     tooltips use the same logic, styling and design") */
+  window.CityTreemaps = { setColorBy, cursorTipPos, fmtShare };
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
