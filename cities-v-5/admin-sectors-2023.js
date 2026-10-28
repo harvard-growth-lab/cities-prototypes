@@ -22,7 +22,9 @@
 
    name is the reference's sector title, short the name section 2's
    treemap gives the 2-digit sector (treemap.js NAICS2), sector the house
-   palette group it is coloured by (treemap.js sectorColors). Sorted by
+   palette group it is coloured by (treemap.js sectorColors); Information
+   is in Professional & Business and Utilities in Construction, as beat 1's
+   industries put them and its card names them (2026-10-28). Sorted by
    jobs located in Boston. Every count is written on screen through
    window.fmtCount; shares as whole percent; ratios with one decimal.
 
@@ -61,7 +63,7 @@ window.ADMIN_SECTORS_2023 = {
       jobs: 34901, residents: 21156, msaJobs: 151294, msaResidents: 135797 },
     { code: "44-45", name: "Retail Trade", short: "Retail trade", sector: "Trade & Transportation",
       jobs: 31066, residents: 23630, msaJobs: 245784, msaResidents: 226009 },
-    { code: "51", name: "Information", short: "Information", sector: "Other",
+    { code: "51", name: "Information", short: "Information", sector: "Professional & Business",
       jobs: 28212, residents: 13110, msaJobs: 96795, msaResidents: 86129 },
     { code: "48-49", name: "Transportation and Warehousing", short: "Transportation & warehousing", sector: "Trade & Transportation",
       jobs: 26552, residents: 9194, msaJobs: 75085, msaResidents: 66252 },
@@ -79,7 +81,7 @@ window.ADMIN_SECTORS_2023 = {
       jobs: 8302, residents: 8673, msaJobs: 171589, msaResidents: 151965 },
     { code: "55", name: "Management of Companies and Enterprises", short: "Management of companies", sector: "Professional & Business",
       jobs: 6838, residents: 7191, msaJobs: 63836, msaResidents: 54584 },
-    { code: "22", name: "Utilities", short: "Utilities", sector: "Trade & Transportation",
+    { code: "22", name: "Utilities", short: "Utilities", sector: "Construction",
       jobs: 2461, residents: 1138, msaJobs: 9274, msaResidents: 9515 },
     { code: "11", name: "Agriculture, Forestry, Fishing and Hunting", short: "Agriculture & forestry", sector: "Natural Resources",
       jobs: 101, residents: 368, msaJobs: 6639, msaResidents: 5801 },
