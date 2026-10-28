@@ -6282,7 +6282,9 @@
       if (step === 4 && tierOn && !tierOn.every(Boolean)) said += ", " + tierOn.map((on, k) => on ? TIER_NAMES[k] : null).filter(Boolean).join(" and ") + " only";
       if (colorBy === "complexity") said += ", coloured by complexity";
       if (note) said += note;
-      if (liveEl.textContent !== said) liveEl.textContent = said;
+      /* not while the figure shows the admin beats (2026-10-28): a repaint for a resize said the map there, over what
+         the admin chart had just said */
+      if (liveEl.textContent !== said && !fig.classList.contains("is-admin")) liveEl.textContent = said;
       if (svgEl) svgEl.setAttribute("aria-label", mapTitleOf());
       fig.setAttribute("aria-label", mapTitleOf());
     }

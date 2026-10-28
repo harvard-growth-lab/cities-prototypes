@@ -24,12 +24,26 @@
    treemap gives the 2-digit sector (treemap.js NAICS2), sector the house
    palette group it is coloured by (treemap.js sectorColors). Sorted by
    jobs located in Boston. Every count is written on screen through
-   window.fmtCount; shares as whole percent; ratios with one decimal. */
+   window.fmtCount; shares as whole percent; ratios with one decimal.
+
+   od (2026-10-27, for the year select, which reads both years the same
+   way): LODES8 origin-destination 2023, JT00 (all jobs), main and aux files
+   for Massachusetts (the aux file adds the jobs in Boston held by people who
+   live out of state); jobs whose workplace block is in Boston (blocks whose
+   place, stplc, is 2507000), by whether the home block is in Boston
+   (residents) or not (nonResidents), in the three LODES industry groups
+   SI01 goods producing (NAICS 11, 21, 23, 31-33), SI02 trade,
+   transportation and utilities (22, 42, 44-45, 48-49) and SI03 all other
+   services. residents sum to liveWork and nonResidents to in exactly. These
+   were the numbers the page held in its own code until now; any split of
+   one sector's jobs into residents and non-residents is the page's
+   estimate, never a count. */
 window.ADMIN_SECTORS_2023 = {
   year: 2023,
   source: "LODES 2023 (workplace and residence area characteristics)",
   admin: { name: "Boston", jobs: 718571, residents: 347517, liveWork: 190083, in: 528488, out: 157434 },
   metro: { name: "Boston metro", jobs: 2811395, residents: 2547848 },
+  od: { residents: { SI01: 4801, SI02: 16314, SI03: 168968 }, nonResidents: { SI01: 18541, SI02: 53131, SI03: 456816 } },
   sectors: [
     { code: "62", name: "Health Care and Social Assistance", short: "Health care & social assistance", sector: "Education & Health",
       jobs: 146805, residents: 65445, msaJobs: 453229, msaResidents: 421338 },
