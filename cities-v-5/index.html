@@ -866,7 +866,8 @@
     max-width:976px;margin-inline:auto;padding:64px 48px 56px;min-height:440px;box-sizing:border-box;
     display:flex;flex-direction:column;justify-content:center;gap:18px;
   }
-  .seal-eyebrow{display:flex;align-items:center;gap:9px;margin:0;font-size:13px;font-weight:700;letter-spacing:.2px;color:var(--on-dark-soft);}
+  /* the closes' type starts at 14px (2026-10-28, Nil: "in the take away summary section, make min font size 14px") */
+  .seal-eyebrow{display:flex;align-items:center;gap:9px;margin:0;font-size:14px;font-weight:700;letter-spacing:.2px;color:var(--on-dark-soft);}
   .seal-num{
     display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;
     border:1.5px solid var(--on-dark-soft);font-size:13px;font-weight:700;font-style:normal;color:var(--white);
@@ -898,7 +899,7 @@
   .sk-viz--dial{width:210px;}
   .skd{display:block;width:210px;height:auto;overflow:visible;}
   .skd-zone{fill:var(--on-dark-line);stroke:var(--teal-dark);stroke-width:3;} .skd-zone.is-on{fill:var(--white);}
-  .skd-lab{font-size:20px;font-weight:600;fill:var(--on-dark-soft);} .skd-lab.is-on{fill:var(--white);font-weight:700;}
+  .skd-lab{font-size:21.5px;font-weight:600;fill:var(--on-dark-soft);} .skd-lab.is-on{fill:var(--white);font-weight:700;}
   .skd-needle{stroke:var(--white);stroke-width:4;stroke-linecap:round;transform-box:view-box;transform-origin:160px 168px;transform:rotate(-180deg);transition:transform 1.1s cubic-bezier(.32,.72,.24,1) .2s;}
   .sec-seal.is-in .skd-needle{transform:rotate(var(--a));}
   .skd-pivot{fill:var(--white);}
@@ -906,7 +907,7 @@
   /* the anchor: the five most populous admins as bars on one scale, the admin's own white and named in bold */
   .sk-viz--rank{display:grid;grid-template-columns:max-content minmax(0,1fr) max-content;align-items:center;gap:8px 10px;width:min(100%, 340px);}
   .skr-row{display:contents;}
-  .skr-n,.skr-row > b{font-size:13px;line-height:1.2;color:var(--on-dark-soft);white-space:nowrap;}
+  .skr-n,.skr-row > b{font-size:14px;line-height:1.2;color:var(--on-dark-soft);white-space:nowrap;}
   .skr-row > b{font-weight:600;font-variant-numeric:tabular-nums;text-align:right;}
   .skr-t i{display:block;height:12px;width:0;border-radius:2px;background:var(--on-dark-line);transition:width .9s cubic-bezier(.32,.72,.24,1);}
   .sec-seal.is-in .skr-t i{width:var(--w);}
@@ -915,7 +916,7 @@
   /* What do my metro and I produce?'s two cards (2026-10-28, Nil: "for the numbers in both cards label the column so
      that we know what they are"): the numbers' column named over it, right-aligned on the values; the metro's mark at
      the size it is drawn in its icon circle */
-  .seal-key .sk-viz--rank > .skr-hd{grid-column:2 / -1;justify-self:end;margin-bottom:-2px;font-size:13px;line-height:16px;font-weight:600;color:var(--on-dark-soft);white-space:nowrap;}
+  .seal-key .sk-viz--rank > .skr-hd{grid-column:2 / -1;justify-self:end;margin-bottom:-2px;font-size:14px;line-height:17px;font-weight:600;color:var(--on-dark-soft);white-space:nowrap;}
   .seal-key .sk-ico svg.sk-ico-metro{width:19px;height:14px;}
   /* side by side, its two drawings take the taller one's height, so each card's question, head and line start level
      (as option A draws them); the shorter list keeps its rows at the top. One column on a phone needs none of it */
@@ -924,7 +925,7 @@
     .seal-keys--level > .seal-key > .sk-viz{align-self:start;}
   }
   .sk-body{min-width:0;}
-  .sk-eyebrow{display:flex;align-items:center;gap:8px;margin:0;font-size:13px;font-weight:700;letter-spacing:.2px;color:var(--on-dark-soft);}
+  .sk-eyebrow{display:flex;align-items:center;gap:8px;margin:0;font-size:14px;font-weight:700;letter-spacing:.2px;color:var(--on-dark-soft);}
   .sk-ico{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--white);color:var(--teal-dark);flex:none;}
   .sk-ico svg{width:15px;height:15px;}
   .sk-head{margin:8px 0 0;font-size:20px;font-weight:700;line-height:1.25;color:var(--white);}
@@ -941,8 +942,8 @@
   }
   .seal-quiz:hover{background:var(--teal-tint);}
   .seal-quiz:focus-visible{outline:2px solid var(--white);outline-offset:3px;}
-  .seal-quiz-sub{font-size:13px;font-weight:400;color:var(--ink-soft);}
-  .seal-cue{display:inline-flex;align-items:center;gap:9px;margin:0;font-size:13px;font-weight:700;letter-spacing:.2px;color:var(--on-dark-soft);}
+  .seal-quiz-sub{font-size:14px;font-weight:400;color:var(--ink-soft);}
+  .seal-cue{display:inline-flex;align-items:center;gap:9px;margin:0;font-size:14px;font-weight:700;letter-spacing:.2px;color:var(--on-dark-soft);}
   .seal-cue b{color:var(--white);}
   .seal-cue svg{display:block;animation:seal-bob 1.8s ease-in-out infinite;}
   .seal-cue button{appearance:none;border:0;background:none;padding:0;margin:0;font:inherit;color:var(--white);text-decoration:underline;text-underline-offset:3px;cursor:pointer;}
@@ -959,7 +960,7 @@
     appearance:none;border:0;border-radius:4px;background:none;color:var(--white);font:inherit;text-align:left;cursor:pointer;
     transition:background .15s ease;
   }
-  .seal-next-k{grid-column:1;font-size:13px;font-weight:700;letter-spacing:.2px;line-height:1;color:var(--on-dark-soft);}
+  .seal-next-k{grid-column:1;font-size:14px;font-weight:700;letter-spacing:.2px;line-height:1;color:var(--on-dark-soft);}
   .seal-next-name{grid-column:1;font-size:26px;font-weight:700;letter-spacing:-.3px;line-height:1.12;}
   .seal-next-go{
     grid-area:1 / 2 / span 2;display:inline-flex;align-items:center;justify-content:center;width:46px;height:46px;
@@ -5089,7 +5090,8 @@
      direct labeling. Revise the use of vertical space"): the key's strip folds away, as beat 3's does, and the drawing
      takes its room (skRoom). "strip": the ranking keeps the strip at this width, so the margin over it goes too; "key":
      the ranking folds it as well (a phone's, which pans), and the margin stays under the drawing as under the ranking.
-     The ranking's column heads name the groups (2026-10-28), so its key stands down too; beat 6 keeps its own */
+     Opt-2's ranking's column heads name the groups (2026-10-28), so its key stands down too; opt-3's ranking, without
+     columns, keeps its key (2026-10-28, later); beat 6 keeps its own */
   #miFigure.is-admin.is-b4sk[data-skfold] .mi-caption{display:none;}
   #miFigure.is-admin.is-b4sk[data-skfold="strip"] .tradable-viz-wrapper{margin-bottom:0;}
   #miFigure.is-admin[data-step="10"] :is(#wfSentenceTree,#wfSentenceTree3){display:none;}
@@ -5106,9 +5108,10 @@
   @media (min-width:600px){ #miFigure.is-admin:is(.is-b4tree,.is-b4sk) .mi-head > .wf-head{position:relative;bottom:auto;} }
   /* opt-1's head, and beats 6 and 7's (2026-10-28): a sentence that wraps grows the head, its one line still at the head's
      foot; pinned there, a second line rose over the frame's top, and at 1024 the bars' frame stood 9px shorter than the
-     flow's and the ranking's on the same beat */
+     flow's and the ranking's on the same beat. Beat 6's flow takes the bars' head (2026-10-28), so the frame holds still
+     between its two views */
   @media (min-width:600px){
-    #miFigure.is-admin:not(.is-b4tree):not(.is-b4sk) .mi-head{display:flex;flex-direction:column;justify-content:flex-end;}
+    #miFigure.is-admin:is(:not(.is-b4tree):not(.is-b4sk),.is-b4sk[data-step="10"]) .mi-head{display:flex;flex-direction:column;justify-content:flex-end;}
     #miFigure.is-admin:not(.is-b4tree):not(.is-b4sk) .mi-head > .wf-head{position:relative;bottom:auto;}
   }
   /* the head's "Show as table" stands under opt-2 beside the frame: the treemap leaves agriculture and mining out, and
@@ -5117,6 +5120,8 @@
   @media (min-width:600px){
     #miFigure.is-admin:is(.is-b4tree,.is-b4sk) .wf-head > .wf-table{display:block;}
     #miFigure.is-admin:is(.is-b4tree,.is-b4sk) .wf-head > .wf-table > .mi-table-btn{display:inline-flex;}
+    /* not beat 6's flow (2026-10-28): its head is its bars', so the frame holds still between the two views */
+    #miFigure.is-admin.is-b4sk[data-step="10"] .wf-head > .wf-table{display:none;}
   }
   .wf-who-btn{appearance:none;-webkit-appearance:none;position:relative;display:inline-block;vertical-align:baseline;margin:0 2px;
     padding:0 6px 0 5px;border:1px solid transparent;border-radius:4px;background:var(--teal-tint);
@@ -5197,6 +5202,21 @@
   #wfSankeySvg .sk-hit:focus-visible{stroke:var(--teal);stroke-width:2;}
   #wfSankeySvg .vn-bld{stroke:var(--ink);} #wfSankeySvg .vn-arr--in{stroke:var(--flow-in);} #wfSankeySvg .vn-arr--out{stroke:var(--flow-out);}
   @media (prefers-reduced-motion: reduce){ #wfSankeySvg *{transition:none !important;} }
+  /* beat 6's flow (2026-10-28): the sector the needle reads carries the bars' ink outline on its node, or the node under
+     the pointer while there is one, as the bars mark their row */
+  #wfSankeySvg .sk-nd.is-ring{stroke:var(--ink);stroke-width:2.5;}
+  /* beat 6's moves between its flow and its bars (2026-10-28, Nil: "apply B Keep what stays"): a layer over the frame,
+     drawn frame by frame while a move runs; the two drawings and the key under it stand hidden, and take no pointer.
+     It clips the flow a phone pans, as its frame does; a copy of the key may stand under it */
+  #miFigure .wf-mv{display:none;position:absolute;left:0;top:0;width:100%;pointer-events:none;overflow-x:clip;z-index:1;}
+  #miFigure:is(.is-wfmv,.is-wfxf) .wf-mv{display:block;}
+  #miFigure.is-wfmv :is(#wfSkPan,#wfPan),#miFigure.is-wfmv .mi-caption{visibility:hidden;}
+  #wfMoveSvg{display:block;overflow:hidden;}
+  #wfMoveSvg text{paint-order:stroke;stroke:var(--white);stroke-linejoin:round;white-space:pre;}
+  /* the two drawings' faces: the flow's, and the bars' (the svg's own) */
+  #wfMoveSvg .mv-f{font-family:"Source Sans 3","Source Sans Pro",sans-serif;}
+  #wfMoveSvg .mv-b{font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;}
+  #miFigure .wf-mv > .wf-key{position:absolute;margin:0;}
   #wfTreeSvg .wf-tr-bg{fill:var(--border);}
   #wfTreeSvg .wf-tr-non{fill:var(--flow-in);} #wfTreeSvg .wf-tr-res{fill:var(--flow-both);} #wfTreeSvg .wf-tr-out{fill:var(--flow-out);}
   /* opt-3: each part shown or put to track on its own (data-on lists the parts shown) */
@@ -5246,9 +5266,11 @@
   #wfTreeSvg .wf-rk-colh.is-off :is(.vn-bld,.vn-arr){stroke:var(--control-edge);}
   #wfTreeSvg .wf-rk-colh.is-off text.wf-rk-head{text-decoration:line-through;text-decoration-thickness:1px;}
   #wfTreeSvg .wf-rk text.wf-rk-col.is-off{fill:var(--control-edge);}
-  /* the column heads name the groups, so the legend under the ranking stands down, as under the flow (2026-10-28):
-     its box stays, so the frame is as tall as the flow's and the treemap's at the same width */
-  #miFigure.is-admin.is-b4tree:has(#wfTreeSvg[data-view="rank"]) #wfKey{visibility:hidden;}
+  /* opt-2's column heads name the groups, so the legend under its ranking stands down, as under the flow (2026-10-28):
+     its box stays, so the frame is as tall as the flow's and the treemap's at the same width. Opt-3's ranking has no
+     columns since 2026-10-28 (Nil: "in sankey options: change the bar design so that we won't see the column"), so its
+     key, the 14px one without counts, stands under it again and names the stack's colours */
+  #miFigure.is-admin.is-b4tree[data-b4="tree"]:has(#wfTreeSvg[data-view="rank"]) #wfKey{visibility:hidden;}
   #wfTreeSvg .wf-rk-row{outline:none;}
   #wfTreeSvg .wf-rk-row.is-dim .wf-rk-seg{fill:var(--border);}
   #wfTreeSvg .wf-rk:has(.wf-rk-row.is-dim) .wf-rk-row:not(.is-dim) .wf-rk-name{font-weight:700;}
@@ -9003,8 +9025,11 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
                 <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select class="wf-rksort" id="wfRkSort3" aria-label="Order of the rows"><option value="all">total jobs</option><option value="non">non-residents&rsquo; jobs</option><option value="res">residents&rsquo; jobs in Boston</option><option value="out">residents&rsquo; jobs elsewhere</option></select></span></span><span class="wf-s-who">:
                 <span class="wf-who" id="wfWho3" role="group" aria-label="Which groups the treemap shows" data-look="swatch"><button type="button" class="wf-who-btn wf-who-btn--non" data-who="non" aria-pressed="true" aria-describedby="wfWho3Hint"><i class="wf-who-sw" aria-hidden="true"><svg class="wf-who-tick" viewBox="0 0 10 8" aria-hidden="true"><path d="M1 4.2 3.7 6.8 9 1.2"/></svg></i><span class="wf-who-ico" aria-hidden="true"></span><span class="wf-who-w"><span class="wf-who-l"><span class="city-short">Boston</span> </span>non-residents</span></button><span class="wf-who-and">, </span><button type="button" class="wf-who-btn wf-who-btn--res" data-who="res" aria-pressed="true" aria-describedby="wfWho3Hint"><i class="wf-who-sw" aria-hidden="true"><svg class="wf-who-tick" viewBox="0 0 10 8" aria-hidden="true"><path d="M1 4.2 3.7 6.8 9 1.2"/></svg></i><span class="wf-who-ico" aria-hidden="true"></span><span class="wf-who-w"><span class="wf-who-l"><span class="city-short">Boston</span> </span>residents</span></button><span class="wf-who-and"> and </span><button type="button" class="wf-who-btn wf-who-btn--out" data-who="out" aria-pressed="true" aria-describedby="wfWho3Hint"><i class="wf-who-sw" aria-hidden="true"><svg class="wf-who-tick" viewBox="0 0 10 8" aria-hidden="true"><path d="M1 4.2 3.7 6.8 9 1.2"/></svg></i><span class="wf-who-ico" aria-hidden="true"></span><span class="wf-who-w"><span class="wf-who-l"><span class="city-short">Boston</span> </span>residents working elsewhere</span></button></span></span>, <span class="wf-s-year">in&nbsp;<span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select class="wf-year" id="wfSYearT3" aria-label="Year"><option value="2023" selected>2023</option><option value="2013">2013</option></select></span></span><span class="mi-sr" id="wfWho3Hint">Shows or hides this group in every sector&rsquo;s block. One group always stays shown. Each sector&rsquo;s split is estimated.</span></p>
               <!-- beat 6 under opt-3 draws the gain bars, not a flow (2026-10-28, Nil: "6/7 make sure you focus on net sending
-                   and receiving with the needle, nothing else"): its sentence names the reading and keeps the year -->
-              <p class="mi-sentence wf-sentence wf-sentence--sk6" id="wfSentenceSk6"><span class="city-short">Boston</span>&rsquo;s gain or loss of workers, by sector, <span class="wf-s-year">in&nbsp;<span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select class="wf-year" id="wfSYear6" aria-label="Year"><option value="2023" selected>2023</option><option value="2013">2013</option></select></span></span></p>
+                   and receiving with the needle, nothing else"): its sentence names the reading and keeps the year. The bars
+                   or the flow as a blank (2026-10-28, Nil: "6/7: also give options to sankey and bar like the other ones.
+                   But this time, default to bar"), in beats 4 and 5's words -->
+              <p class="mi-sentence wf-sentence wf-sentence--sk6" id="wfSentenceSk6"><span class="city-short">Boston</span>&rsquo;s gain or loss of workers, by sector, shown as a
+                <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select class="wf-b6view" id="wfSkView6" aria-label="The gain or loss as a ranking or as a flow diagram"><option value="rank">ranking</option><option value="sankey">flow diagram</option></select></span>, <span class="wf-s-year">in&nbsp;<span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select class="wf-year" id="wfSYear6" aria-label="Year"><option value="2023" selected>2023</option><option value="2013">2013</option></select></span></span></p>
               <div class="mi-table wf-table"><button type="button" class="mi-table-btn" id="wfTableBtn" aria-expanded="false" aria-controls="wfTableWrap"><span class="mi-table-btn-txt">Show as table</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button></div>
             </div>
             <div class="tradable-split-header" id="miSplitHead">
@@ -9060,6 +9085,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
                 <svg class="viz-big wf-tree" id="wfTreeSvg" role="group" aria-label="All 719K jobs in Boston by sector, as a treemap" tabindex="-1" xmlns="http://www.w3.org/2000/svg"></svg>
                 <svg class="viz-big" id="miAdminSvg" role="group" aria-label="Boston's work by sector" tabindex="-1" width="880" height="500" viewBox="0 0 880 500" xmlns="http://www.w3.org/2000/svg" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;"></svg>
               </div>
+              <!-- beat 6's moves between the flow and the bars (2026-10-28): a layer over the frame, drawn while one runs -->
+              <div class="wf-mv" id="wfMove" aria-hidden="true"></div>
               <div class="rca-tip" id="wfTip" role="tooltip" hidden></div>
               <div class="wf-foot">
                 <div class="mi-table-wrap" id="wfTableWrap" hidden tabindex="0" role="region" aria-label="The chart, as a table"></div>
@@ -9281,25 +9308,10 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
 
         <!-- beat 7: the section's question, answered -->
         <div class="export-subsection" id="adminSummarySection">
-          <!-- beat 7 is the reading every reader can look up, with no lede (2026-10-28, Nil: "7/7: title is 'Extra page to
-               show every reading'. No narrative text") -->
+          <!-- beat 7 is the reading every reader can look up, with no lede and no questions (2026-10-28, Nil: "7/7: title is
+               'Extra page to show every reading'. No narrative text"; "remove ask the chart") -->
           <div class="subsection-header">
             <h3>Extra page to show every reading</h3>
-          </div>
-          <div class="ask-chart" data-fig="wf" role="group" aria-labelledby="wfAskLab7">
-            <p class="ask-lab" id="wfAskLab7">Ask the chart</p>
-            <div class="ask-item">
-              <button type="button" class="ask-q" data-ask="b7q1" aria-expanded="false" aria-controls="wfAsk-b7q1" aria-describedby="miAskHint"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Which of Boston&rsquo;s large sectors is average for the metro, not special?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
-              <div class="ask-ans" id="wfAsk-b7q1" hidden>
-                <p class="ask-a">Education. It is <span class="city-short">Boston</span>&rsquo;s third largest work, 79K jobs, yet the city hosts 27% of the metro&rsquo;s education jobs, about its 26% share of all jobs: much of the metro&rsquo;s campus work is outside the city, Cambridge&rsquo;s for one. Its residents lean toward it, 16% of the metro&rsquo;s education workers.</p>
-              </div>
-            </div>
-            <div class="ask-item">
-              <button type="button" class="ask-q" data-ask="b7q2" aria-expanded="false" aria-controls="wfAsk-b7q2" aria-describedby="miAskHint"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Which of the metro&rsquo;s work is not Boston&rsquo;s?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
-              <div class="ask-ans" id="wfAsk-b7q2" hidden>
-                <p class="ask-a">Goods. The metro has 172K manufacturing jobs and <span class="city-short">Boston</span> hosts 8.3K of them, 5%, while 8.7K Bostonians work in manufacturing; construction (11%), wholesale (10%) and retail (13%) are the other large sectors well under <span class="city-short">Boston</span>&rsquo;s 26% of the metro&rsquo;s jobs. Making, moving and selling goods is the metro&rsquo;s work outside the city.</p>
-              </div>
-            </div>
           </div>
         </div>
       </section>
@@ -19028,10 +19040,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     b5u1: { state: 1, tree: true, set: { on3: ["res", "out"], rkSort: "all", lit: ["62", "54", "61"] }, back: "Back to all three groups" },
     b5u2: { state: 1, tree: true, set: { on3: ["out"], rkSort: "out", lit: ["62", "54", "61"] }, back: "Back to all three groups" },
     b5q1: { state: 1, set: { sort: "jobs" }, back: "Back to shares of the metro’s" },
-    b5q2: { state: 1, set: { sort: "shareResidents", fore: "out" }, back: "Back to both shares" },
-    /* the needle's beat has no questions (2026-10-26, Nil): its rows and its select are the way in */
-    b7q1: { state: 3, set: { lit: ["61"] }, back: "Back to every row" },
-    b7q2: { state: 3, set: { lit: ["31-33", "23", "42", "44-45"] }, back: "Back to every row" }
+    b5q2: { state: 1, set: { sort: "shareResidents", fore: "out" }, back: "Back to both shares" }
+    /* the needle's beat has no questions (2026-10-26, Nil): its rows and its select are the way in; nor has beat 7
+       (2026-10-28, Nil: "remove ask the chart from 'Extra page to show every reading'") */
   };
 
   /* ---- geometry (2026-10-27, Nil: "The bar design and styling is different in 4,5,6 beats comparing to 1,2,3 beat. 1,2,3
@@ -19074,6 +19085,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
 
   /* ---- the view: the reading, the order, the rows lit, which count stands forward, the needle's row ---- */
   let state = -1, view = null, asked = null, hot = null, pinned = null, hlTemp = null, away = false;
+  /* beat 6's moves (2026-10-28): the one running, if any; mvOwn while a move draws the drawing it goes to; the gain bars'
+     frame as last drawn (lastGain), which the moves end on */
+  let mv = null, mvOwn = false, lastGain = null;
   /* who: the groups beat 4's treemap shows, "both", "res" or "non" (never neither) */
   /* on3: the parts opt-3's treemap shows, in their order in the block, never none */
   const ALL3 = ["non", "res", "out"];
@@ -19118,14 +19132,38 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   function shownRows(){ return order(); }
   const litSet = () => hlTemp || (view.lit ? new Set(view.lit) : null);
 
+  /* the names' gutter at a drawing VW units wide, px(v) the units v px on screen take: the widest name and 12, fitted to a
+     narrow frame two fifths of it at most (paint()'s, 2026-10-28, shared with beat 6's flow) */
+  const gutterAt = (VW, px, fitW) => Math.min(fitW ? Math.round(VW * .4) : GUT_MAX, Math.max(GUT_MIN, Math.min(GUT_MAX, Math.ceil(px(Math.max.apply(null, rows.map(r => textPx(r.short, 700))))) + 12)));
+  const gainTxt = d => d.net >= 0 ? "+" + fmt(d.net) : "−" + fmt(-d.net);
+  /* the gain's plot from x0 to the drawing's right edge RE: its end, room right of it for the largest gain's value, and its
+     zero, room left of it for each loss's bar and its value 8 before it (see paint()) */
+  function gainEnds(x0, RE, px){
+    const pos = Math.max.apply(null, allRows.filter(r => r.net >= 0).map(r => textPx(gainTxt(r), 600)).concat([0])), x1 = RE - 8 - px(pos);
+    const zero = Math.ceil(Math.max.apply(null, allRows.filter(r => r.net < 0).map(r => { const v = px(textPx(gainTxt(r), 600)), f = -r.net / GAIN_MAX;
+      return Math.max(x0 + 14 + v, (x0 + 12 + v + f * x1) / (1 + f)); }).concat([x0 + 12])));
+    return { x1, zero };
+  }
+  /* the gain bars' frame as paint() lays it out, without drawing them (2026-10-28): fitted to a frame under 704px (fitW),
+     VW units wide at k px a unit. Beat 6's flow stands its middle column on its zero in such a frame */
+  function gainFrame(){
+    const fw = wrap ? wrap.clientWidth : 0, fitW = !!pan && !!fw && fw < PAN_MIN * typeK();
+    const VW = fitW ? +(W * wrap.getBoundingClientRect().width / (PAN_MIN * typeK())).toFixed(3) : W, RE = VW - (W - COL_R);
+    const k = Math.round(drawK(svgEl, false, VW) * 1000) / 1000, px = v => v / k, gut = gutterAt(VW, px, fitW);
+    return Object.assign({ fitW, VW, k, gut, x0: gut + 12 }, gainEnds(gut + 12, RE, px));
+  }
+
   function paint(animate){
     if (!view) return;
     /* a card never rides into another drawing, as beats 1 to 3's (hideMapTip(true) on every paint) */
     tipHide(true);
     /* beat 4 under opt-2: the treemap stands in for the bars; the build plays only when it was not already showing */
     /* beats 4 and 5 under opt-3: the Sankeys. Beat 6 draws the gain bars under every option (2026-10-28, Nil: "6/7 make
-       sure you focus on net sending and receiving with the needle, nothing else") */
-    const skOn = state <= 1 && b4 === "sankey" && skView === "sankey", wasSk = isSk();
+       sure you focus on net sending and receiving with the needle, nothing else"), and under opt-3 its flow when the
+       reader picks it (2026-10-28, b6View) */
+    /* a repaint that is not a move's own cuts a running move to the drawing it was going to (2026-10-28) */
+    if (mv && !mvOwn) mvCut();
+    const skOn = b4 === "sankey" && (state <= 1 ? skView === "sankey" : state === 2 && b6View === "sankey"), wasSk = isSk();
     fig.classList.toggle("is-b4sk", skOn);
     /* the key's strip folds under the flow (skRoom folds it as it lays the flow out) */
     if (!skOn) delete fig.dataset.skfold;
@@ -19152,7 +19190,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
        name takes (as beat 3 measures its bold top three), since a phrase can light any row without a repaint. Fitted to
        a narrow frame, the gutter is two fifths of it at most and a longer name is cut with an ellipsis, so the bars keep
        the room to be compared */
-    const gut = Math.min(fitW ? Math.round(VW * .4) : GUT_MAX, Math.max(GUT_MIN, Math.min(GUT_MAX, Math.ceil(px(Math.max.apply(null, rows.map(r => textPx(r.short, 700))))) + 12)));
+    const gut = gutterAt(VW, px, fitW);
     const g = { x0: gut + 12, x1: 740, zero: gut + 12 };
     const onIn = R.bars.indexOf("in") >= 0, onOut = R.bars.indexOf("out") >= 0, onNet = R.scale === "gain", two = R.bars.length === 2;
     const endTxt = d => onNet ? (d.net >= 0 ? "+" + fmt(d.net) : "−" + fmt(-d.net)) : R.ends ? fmt(onIn ? d.jobs : d.residents) : "";
@@ -19177,12 +19215,12 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
          needs zero - w - 8 - v >= x0 + 4, w = (x1 - zero) n / GAIN_MAX, so zero is the largest of those bounds.
          Measured over every year: the plot stands in the same place in both, so the axis holds still and a bar's
          length is the same number of workers in either year */
-      const pos = Math.max.apply(null, allRows.filter(r => r.net >= 0).map(r => textPx(endTxt(r), 600)).concat([0]));
-      g.x1 = RE - 8 - px(pos);
-      g.zero = Math.ceil(Math.max.apply(null, allRows.filter(r => r.net < 0).map(r => { const v = px(textPx(endTxt(r), 600)), f = -r.net / GAIN_MAX;
-        return Math.max(g.x0 + 14 + v, (g.x0 + 12 + v + f * g.x1) / (1 + f)); }).concat([g.x0 + 12])));
+      Object.assign(g, gainEnds(g.x0, RE, px));
     } else g.x1 = COL_R - 8 - px(Math.max.apply(null, allRows.map(r => textPx(endTxt(r), 600))));
     const sx = scaleX(g, R.scale), yEnd = BMT + PITCH * n, lit = litSet();
+    /* the gain's frame as drawn, for beat 6's moves to end on (2026-10-28): its rows' places and names as written */
+    if (onNet){ lastGain = { VW, k, gut, x0: g.x0, x1: g.x1, zero: g.zero, n, idx: Object.assign({}, idx), names: {} };
+      shown.forEach(d => { lastGain.names[d.code] = fitText(d.short, (gut - 10) * k); }); }
     /* the head: the axis title over the plot, a rule under it and under each column, the ticks, the grid from 54 */
     gHead.selectAll("*").remove(); gGrid.selectAll("*").remove(); gDash.selectAll("*").remove(); gFoot.selectAll("*").remove();
     /* fitted to a narrow frame, a title longer than its plot ends at the drawing's right edge, its rule from its start */
@@ -19329,16 +19367,19 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
      ten take it too. The split stands in plain numbers, as the chart draws it: no floor row and no foot on the estimate
      (2026-10-28, Nil: "Remove all uncertain, estimate etc. language from the tooltips. Remove "the split..."").
      On beat 5 the card leads with the mark's own count, its three parts' sum, as the total's and the groups' cards lead
-     with theirs: the node, the block and the bar read 174K for health care, and no row of the card said it */
+     with theirs: the node, the block and the bar read 174K for health care, and no row of the card said it.
+     The groups' rows carry what opt-3's ranking's columns gave (2026-10-28, Nil: "in sankey options: change the bar
+     design so that we won't see the column. instead of columns, put that info with the same graphic to the tooltip"):
+     one for each group of the beat, in the stack's order (the ranking stands the group it is sorted by first), the
+     key's swatch and icon in front, the group's jobs in the sector and its share of the sector's total on the beat,
+     beat 5's the three parts' sum, so a card's shares add to the whole its bar draws */
+  const GROUP_ROW = { non: "Boston non-residents", res: "Boston residents", out: "Working elsewhere" };
+  const stackOrder = () => { const by = isTree() && tView === "rank" ? rankBy(partsOn()) : null; return by ? [by].concat(ALL3.filter(k => k !== by)) : ALL3; };
   function splitHtml(d){
-    const t3 = T3();
+    const t3 = T3(), tot = t3 ? d.U : d.jobs;
     const list = (t3 ? [tRow("Total jobs", fmt(d.U))] : []).concat([tRow("Jobs in Boston", fmt(d.jobs)), tRow("Of Boston’s jobs", share(d.jobs / A.jobs))]);
     if (t3) list.push(tRow("Held by residents", fmt(d.residents) + " " + tEm("anywhere")));
-    if (splitOk){
-      list.push(tRow("Boston non-residents", fmt(d.estNon) + " " + tEm(share(d.estNon / d.jobs)), tMark("non")),
-        tRow("Boston residents", fmt(d.estRes) + " " + tEm(share(d.estRes / d.jobs)), tMark("res")));
-      if (t3) list.push(tRow("Working elsewhere", fmt(d.estOut), tMark("out")));
-    }
+    if (splitOk) stackOrder().filter(k => t3 || k !== "out").forEach(k => list.push(tRow(GROUP_ROW[k], fmt(partVal(d, k)) + " " + tEm(share(partVal(d, k) / tot)), tMark(k))));
     return tGrid(list);
   }
   const treeHtml = (d, held) => tSecHead(d, held) + splitHtml(d);
@@ -19370,7 +19411,10 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   function markOn(code){ hot = code; rowsSync(); needleDraw(byCode[code]); }
   function markOff(){
     const k = tipHeld;
-    if (isSk()){ skHot = k && k.indexOf("sk:") === 0 ? k.slice(3) : null; skFill(); return; }
+    if (isSk()){ skHot = k && k.indexOf("sk:") === 0 ? k.slice(3) : null; skFill();
+      /* beat 6's flow: the needle goes back to its pin, or stays on the node a tap holds (2026-10-28) */
+      if (sk && sk.mode === 2){ const n = skHot ? sk.byId[skHot] : null; needleDraw(n ? skNeedleOf(n) : pinned ? byCode[pinned] : null); }
+      return; }
     hot = k && byCode[k] ? k : null; rowsSync();
     needleDraw(hot ? byCode[hot] : pinned ? byCode[pinned] : (view && view.needle ? byCode[view.needle] : null));
   }
@@ -19687,10 +19731,18 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
      bars in the same svg, in screen px and the treemap's height (a phone runs longer and folds at ten). Each bar stacks
      the parts shown, in the blocks' order and colours (non-residents, Boston residents, those working elsewhere), from
      zero; the rows sort by what is shown and the axis follows it, so a toggle re-ranks the work. Opt-3's sentence asks
-     the order, the total or one group's jobs, and columns at the right give each group's jobs (2026-10-28). ---- */
+     the order, the total or one group's jobs (2026-10-28); opt-2's ranking gives each group's jobs in columns at the
+     right, opt-3's in the card, under the key's marks, its plot running to the edge as beats 1 to 3's (2026-10-28,
+     Nil: "in sankey options: change the bar design so that we won't see the column. instead of columns, put that info
+     with the same graphic to the tooltip"). ---- */
   const qView = location.search.match(/[?&]b4view=(map|rank)\b/), qSkView = location.search.match(/[?&]b4skview=(sankey|rank)\b/);
   /* tView is the view the treemap engine draws: opt-2's own choice, or the ranking when opt-3 asks for its bars */
   let tViewTree = qView ? qView[1] : "map", skView = qSkView ? qSkView[1] : "sankey", tView = tViewTree;
+  /* beat 6's view under opt-3 (2026-10-28, Nil: "6/7: also give options to sankey and bar like the other ones. But this
+     time, default to bar"): its gain bars, the "ranking", or its flow, the "flow diagram"; ?b6view=flow opens on the flow.
+     The reader's choice is kept through the year, the beats around it and back */
+  const qB6 = location.search.match(/[?&]b6view=(flow|sankey|rank|bars)\b/);
+  let b6View = qB6 && (qB6[1] === "flow" || qB6[1] === "sankey") ? "sankey" : "rank";
   const viewEff = () => { tView = b4 === "sankey" ? "rank" : tViewTree; };
   const gRank = svgT.append("g").attr("class", "wf-rk").style("display", "none");
   const gRankAx = gRank.append("g"), gRankRows = gRank.append("g").attr("class", "wf-rk-rows").attr("tabindex", -1);
@@ -19725,8 +19777,11 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     const X0 = gut + 12 * u, K = typeK();
     /* the columns (2026-10-28, Nil: "change the design of the bars so it looks like the previous bars like there are
        columns showing the data"): one for each of the beat's groups, laid from 874u leftwards 16u apart as opt-1's, each
-       as wide as its head or its widest value; a group the toggles or an answer leave out keeps its column */
-    const parts = T3() ? ALL3 : ["non", "res"], SW = 13 * K, GAP = 5, ICO_H = 18 * K, icoW = k => (k === "res" ? 15 : 26) * K;
+       as wide as its head or its widest value; a group the toggles or an answer leave out keeps its column. Opt-2's
+       ranking alone has them (2026-10-28, Nil: "in sankey options: change the bar design so that we won't see the
+       column"): under opt-3 the groups' jobs are the card's rows, the key names the colours, and the plot ends 8u and
+       the widest total short of the right edge, as beats 1 to 3's bars without columns do */
+    const parts = T3() ? ALL3 : ["non", "res"], SW = 13 * K, GAP = 5, ICO_H = 18 * K, icoW = k => (k === "res" ? 15 : 26) * K, withCols = b4 !== "sankey";
     const colsAt = (vi, bare) => { let right = COL_R * u; const out = [];
       for (let i = parts.length - 1; i >= 0; i--){ const k = parts[i], hs = RK_HEAD[k], head = hs[Math.min(vi, hs.length - 1)];
         const w = Math.max(SW + GAP + (bare ? 0 : icoW(k) + GAP) + textPx(head, 600), Math.max.apply(null, all.map(d => textPx(fmt(partVal(d, k)), 500))));
@@ -19736,14 +19791,14 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     /* the shorter words first, then the heads without their icons (the swatch and the words stay): where the plot would
        be under a quarter of the room, and on a panned drawing under two fifths (2026-10-28), where beat 4's two heads,
        which have no shorter words, left its plot 36% */
-    let cols = colsAt(0);
-    if (plotShare(cols) < .4) cols = colsAt(1);
-    if (plotShare(cols) < (panned ? .4 : .25)) cols = colsAt(1, true);
+    let cols = withCols ? colsAt(0) : [];
+    if (cols.length && plotShare(cols) < .4) cols = colsAt(1);
+    if (cols.length && plotShare(cols) < (panned ? .4 : .25)) cols = colsAt(1, true);
     /* the plot ends 40u before them, or sooner where a total, 8u past its bar's end, would come within 16u of them. The
        axis's end is the largest of what is shown in any year (2026-10-27), and the room is measured over every year, so
-       the axis holds still when the year changes */
-    const dom = (d3.max(allYears, Y => d3.max(Y.rows, d => sumOn(d, on))) || 1) * 1.04, C = cols[0].left - 16 * u;
-    let X1 = cols[0].left - 40 * u;
+       the axis holds still when the year changes. Without columns (2026-10-28) the totals end 8u short of the edge */
+    const dom = (d3.max(allYears, Y => d3.max(Y.rows, d => sumOn(d, on))) || 1) * 1.04, C = cols.length ? cols[0].left - 16 * u : COL_R * u;
+    let X1 = cols.length ? cols[0].left - 40 * u : C - 8 * u - Math.max.apply(null, allYears.map(Y => d3.max(Y.rows, d => textPx(sumLab(d, on), 600))));
     allYears.forEach(Y => Y.rows.forEach(d => { const f = sumOn(d, on) / dom; if (f > 0) X1 = Math.min(X1, X0 + (C - 8 * u - textPx(sumLab(d, on), 600) - X0) / f); }));
     const x = d3.scaleLinear().domain([0, dom]).range([X0, X1]);
     svgT.attr("viewBox", "0 0 " + RW + " " + H).attr("width", RW).attr("height", H);
@@ -19846,8 +19901,66 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   const skBusy = () => [svgK.node()].concat(svgK.selectAll("*").nodes()).some(n => !!n.__transition);
   const skAgg = (list, label) => { const o = { code: null, short: label, codes: list.map(r => r.code), rest: list };
     ["jobs", "residents", "estNon", "estRes", "estOut", "net"].forEach(k => { o[k] = d3.sum(list, r => r[k]); }); o.U = o.jobs + o.estOut; o.ratio = o.jobs / o.residents; return o; };
+  /* ---- beat 6's flow (2026-10-28, Nil: "6/7: also give options to sankey and bar like the other ones. But this time,
+     default to bar"): c01545c's, brought back, the people who commute in for each kind of work against the residents who
+     leave the city for it. In on the left, the sectors in the bars' order in the middle (the ten largest gains, the other
+     gains folded, the losses folded under the largest of them, named from the data), out on the right; a sector stands as
+     tall as the larger of its two flows, so its in less its out is what Boston gains, its node keeping a 16px line as
+     beats 4 and 5's do. Its name stands 8px left of its node and its gain 8px right of it, as the sketch's option B has
+     them (beat6-flow-bar-transition-sketches.html). It is laid out in the gain bars' room (skRoom), so the frame holds
+     still between the two views; in a frame narrower than the drawing (a phone's, which pans) its middle column stands on
+     the bars' zero line, so the move to the bars plays in the first view, and a name longer than its room is cut there as
+     the bars cut theirs. No legend: its groups are named over their nodes ---- */
+  const skFit = (t, room) => { if (skTextW(t) <= room) return t; let c = t;
+    while (c.length > 4 && skTextW(c + "…") > room) c = c.slice(0, -1).replace(/[\s,&]+$/, ""); return c + "…"; };
+  /* the needle's reading for a node of beat 6's flow: a sector's or a fold's, else Boston's own */
+  const skNeedleOf = n => n && n.col === 1 ? n.d : null;
+  function sk6Layout(TW){
+    const nar = TW < 620, W2 = Math.max(TW, 620), BOT = nar ? 10 : 14, pad = nar ? 11 : 10, slot = SK_LINE - pad;
+    const ord = rows.slice().sort((a, b) => SORTS.gain(a) - SORTS.gain(b) || b.jobs - a.jobs), gain = ord.filter(r => r.net >= 0), lose = ord.filter(r => r.net < 0);
+    /* a fold of one is that sector itself, and an empty one is not drawn */
+    const fold = (list, words) => list.length > 1 ? [skAgg(list, words)] : list;
+    const list = gain.slice(0, 10).concat(fold(gain.slice(10), gain.slice(10).length + " more sectors that gain"),
+      lose.length ? fold(lose, skName(lose[lose.length - 1]) + " and " + (lose.length - 1) + " more") : []);
+    const gf = nar ? gainFrame() : null, cx = [24, nar ? Math.round(gf.zero * gf.k) : Math.round(W2 * .5) - SK_NW, W2 - 24 - SK_NW];
+    const cols = cx.map((x, i) => ({ x, pad: i === 1 ? pad : 0 }));
+    const nodes = [], links = [], byId = {}, node = o => { byId[o.id] = o; nodes.push(o); return o; };
+    const nameRoom = cx[1] - 8 - (cx[0] + SK_NW + 6), maxName = Math.max.apply(null, list.map(d => Math.min(nameRoom, skTextW(d.code ? skName(d) : d.short))));
+    /* the in group's words over its node, in two lines where one would run into the title over the middle column */
+    const inW = "Boston non-residents commute in", inLines = cx[0] + Math.max(skTextW(inW), skTextW(fmt(A.in), 700, 22)) + 12 > cx[1] ? ["Boston non-residents", "commute in"] : [inW];
+    node({ id: "in6", col: 0, kind: "non", part: "non", value: A.in, lab: "above6", lines: inLines });
+    list.forEach(d => { const id = "g" + (d.code || (d.net >= 0 ? "foldG" : "foldL"));
+      const nd = node({ id, col: 1, kind: d.code ? "sec" : "other", value: Math.max(d.estNon, d.estOut), d, codes: d.code ? [d.code] : d.codes,
+        lab: "line6", name: skFit(d.code ? skName(d) : d.short, nameRoom), net: d.net });
+      links.push({ key: "in6>" + id, s: "in6", t: id, value: d.estNon, cls: "non", part: "non", sec: nd });
+      links.push({ key: id + ">out6", s: id, t: "out6", value: d.estOut, cls: "out", part: "out", sec: nd }); });
+    node({ id: "out6", col: 2, kind: "out", part: "out", value: A.out, lab: "aboveEnd6", lines: ["Boston residents work elsewhere"] });
+    /* the scale: the largest that fits the middle column's lines in the room, the words over the columns 46px (62 for two
+       lines) over the top. The room is the bars' on the page, the bars' ratio at the drawing's width in the presenter */
+    const mids = nodes.filter(n => n.col === 1), TOP = inLines.length > 1 ? 62 : 46;
+    const colH = K => d3.sum(mids, n => Math.max(1.5, n.value * K, slot)) + (mids.length - 1) * pad;
+    const minH = TOP + colH(0) + BOT, want = Math.round(H0 * Math.max(TW, nar ? PAN_MIN * typeK() : 0) / W), pv = skPvRoom();
+    const H = Math.max(minH, skRoom(true) || (pv && pv < want ? pv : want));
+    let lo = 0, hi = (H - TOP - BOT) / A.in;
+    for (let i = 0; i < 40; i++){ const m = (lo + hi) / 2; if (TOP + colH(m) + BOT <= H) lo = m; else hi = m; }
+    const K = lo, ch = colH(K);
+    let y = TOP;
+    mids.forEach(n => { const h = Math.max(1.5, n.value * K), sl = Math.max(h, slot); n.x = cx[1]; n.y = y + (sl - h) / 2; n.h = h; n.slot = sl; n.out = 0; n.inn = 0; y += sl + pad; });
+    /* in and out stand at the middle column's middle; in at its top where its words would meet the names beside them */
+    const inTop = nar || cx[0] + skTextW(inW) + 8 > cx[1] - 8 - maxName;
+    [byId.in6, byId.out6].forEach((n, i) => { n.x = cx[i * 2]; n.h = n.value * K; n.y = TOP + (i === 0 && inTop ? 0 : (ch - n.h) / 2); n.out = 0; n.inn = 0; });
+    links.forEach(l => { l.S = byId[l.s]; l.T = byId[l.t]; l.h = l.value * K; });
+    links.slice().sort((a, b) => a.S.col - b.S.col || a.T.y - b.T.y).forEach(l => { l.sy = l.S.y + l.S.out; l.S.out += l.h; });
+    links.slice().sort((a, b) => a.T.col - b.T.col || a.S.y - b.S.y).forEach(l => { l.ty = l.T.y + l.T.inn; l.T.inn += l.h; });
+    links.forEach(l => { l.g = { x0: l.S.x + SK_NW, x1: l.T.x, sy: l.sy, ty: l.ty, h: l.h }; });
+    nodes.forEach(n => { n.ax = n.lab === "line6" ? n.x - 8 : n.lab === "aboveEnd6" ? n.x + SK_NW : n.x; n.ay = n.lab === "line6" ? n.y + n.h / 2 : n.y; });
+    const net = A.jobs - A.residents;
+    return { mode: 2, TW, W: W2, H, cols, nodes, links, byId, K, TOP, more: null, all: false,
+      title: { x: cx[1], y: TOP, big: signed(net), line: net >= 0 ? "Boston gains, net" : "Boston loses, net" } };
+  }
   /* the layout of a beat's Sankey: nodes and bands in px, keyed so one beat's drawing can turn into the next */
   function skLayout(mode, TW){
+    if (mode === 2) return sk6Layout(TW);
     /* a phone's drawing stands no taller than the treemap's, so the band holds still when the reader picks it mid-beat;
        F, the folded drawing's columns in the presenter, 125 tall at most (2026-10-28, was 110), as the treemap grew to
        the bars' band */
@@ -19929,8 +20042,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
      and given to the drawing, measured as the figure's height with the strip less its height without, as treemap.js
      syncRankRoom measures beat 3's; a phone's ranking pans and folds the strip itself (the max-width:899px rule over a
      panned admin chart), so there it folds alone and the margin under the drawing stays, as under the ranking. 0 in the
-     presenter, which fits the frame to the screen */
-  function skRoom(){
+     presenter, which fits the frame to the screen. Beat 6's flow (six) takes the gain bars' room the same way (2026-10-28),
+     their sentence's blank set to "ranking", and keeps it in a short band too, as the bars do */
+  function skRoom(six){
     if (fig.closest(".is-presenting")){ fig.dataset.skfold = "strip"; return 0; }
     const fw = wrap ? wrap.clientWidth : 0; if (!fw) return 0;
     const k = typeK(), panned = fw < PAN_MIN * k, rk = Math.round(H0 * (panned ? Math.round(PAN_MIN * k) : fw) / W);
@@ -19941,12 +20055,13 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     /* and the sentence: "ranking" is a shorter word than "flow diagram", so where the sentence wraps the ranking's
        stands a line shorter (beat 4 at 900px); measured with the blank set to it and back */
     /* (2026-10-28) the ranking's sentence also asks its order, "sorted by [...]", which can take the sentence a line further */
-    const pick = skSels.find(s => s.offsetWidth);
+    const pick = skSels.concat(sk6Sel ? [sk6Sel] : []).find(s => s.offsetWidth);
     if (pick && pick.value !== "rank"){ const h1 = fig.getBoundingClientRect().height, v = pick.value;
       pick.value = "rank"; fig.dataset.skview = "rank"; fitPick(pick); rkSels.forEach(s => { if (s && s.offsetWidth) fitPick(s); });
       head = fig.getBoundingClientRect().height - h1; pick.value = v; fig.dataset.skview = skView; fitPick(pick); }
     /* panned, the drawing's margin is inside the frame; else it meets the head's and the larger stands */
-    return Math.min(rk + (panned ? mt + 12 : Math.max(0, mt - hb)) + strip + head, skStackRoom());
+    const r = rk + (panned ? mt + 12 : Math.max(0, mt - hb)) + strip + head;
+    return six ? r : Math.min(r, skStackRoom());
   }
   /* stacked (2026-10-28), the band is held with its foot two thirds down the screen (the .ct-stage rule, max(66svh,
      100svh - 260px)), and a band taller than the room over that line slides its top under the section bar. On a short
@@ -19974,6 +20089,18 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   /* a label's words, drawn about its anchor */
   function skLabel(g, n){
     g.selectAll("*").remove();
+    /* beat 6's flow (2026-10-28): a sector's name 8px left of its node and its gain 8px right of it; in's and out's count
+       and words over their nodes, out's ending at its node's right edge */
+    if (n.lab === "line6"){
+      g.append("text").attr("class", "sk-halo").attr("y", 4.5).attr("text-anchor", "end").text(n.name);
+      g.append("text").attr("class", "sk-halo sk-num").attr("x", 8 + SK_NW + 8).attr("y", 4.5).text(signed(n.net));
+      return;
+    }
+    if (n.lab === "above6" || n.lab === "aboveEnd6"){ const an = n.lab === "above6" ? "start" : "end", L = n.lines.length;
+      g.append("text").attr("class", "sk-big sk-halo").attr("y", -26 - (L - 1) * 16).attr("text-anchor", an).text(fmt(n.value));
+      n.lines.forEach((t, i) => g.append("text").attr("class", "sk-halo").attr("y", -9 - (L - 1 - i) * 16).attr("text-anchor", an).text(t));
+      return;
+    }
     if (n.lab === "above"){
       g.append("text").attr("class", "sk-big sk-halo").attr("y", -26).attr("text-anchor", "start").append("tspan").attr("class", "sk-v").property("__v", n.value).text(fmt(n.value));
       g.append("text").attr("class", "sk-halo sk-cap").attr("y", -9).attr("text-anchor", "start").text(n.lines.join(" "));
@@ -20005,14 +20132,16 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       svgK.append("defs").append("clipPath").attr("id", "wfSkClip").append("rect");
       svgK.append("g").attr("class", "sk-l").attr("clip-path", "url(#wfSkClip)"); svgK.append("g").attr("class", "sk-n"); svgK.append("g").attr("class", "sk-t");
       svgK.append("g").attr("class", "sk-h"); }
-    const gL = svgK.select("g.sk-l"), gN = svgK.select("g.sk-n"), gT = svgK.select("g.sk-t"), gH = svgK.select("g.sk-h"), clip = svgK.select("#wfSkClip rect");
+    /* beat 6's title over its middle column (2026-10-28) */
+    if (!svgK.select("g.sk-x").node()) svgK.insert("g", "g.sk-h").attr("class", "sk-x");
+    const gL = svgK.select("g.sk-l"), gN = svgK.select("g.sk-n"), gT = svgK.select("g.sk-t"), gH = svgK.select("g.sk-h"), gX = svgK.select("g.sk-x"), clip = svgK.select("#wfSkClip rect");
     /* the svg's own pending height too (2026-10-28): left to run, a cut morph's settle later gave the next drawing the
        height it was leaving */
     svgK.interrupt(); svgK.selectAll("*").interrupt();
     if (!morph){ gL.selectAll("*").remove(); gN.selectAll("*").remove(); gT.selectAll("*").remove(); }
     const H = morph ? Math.max(prev.H, L.H) : L.H;
     svgK.attr("viewBox", "0 0 " + L.W + " " + H).attr("width", L.W * s).attr("height", H * s).style("width", L.W * s + "px")
-      .attr("aria-label", L.mode === 1 ? "The " + fmt(A.jobs + A.out) + " jobs in Boston or held by its residents, by sector and by who holds them, " + year : "The " + fmt(A.jobs) + " jobs in Boston, by sector and by who holds them, " + year);
+      .attr("aria-label", L.mode === 2 ? "Boston’s gain or loss of workers by sector, as a flow diagram, " + year : L.mode === 1 ? "The " + fmt(A.jobs + A.out) + " jobs in Boston or held by its residents, by sector and by who holds them, " + year : "The " + fmt(A.jobs) + " jobs in Boston, by sector and by who holds them, " + year);
     clip.attr("x", -10).attr("y", -10).attr("width", L.W + 20).attr("height", H + 20);
     const ease = d3.easeCubicInOut, oldKeys = new Set(morph ? gL.selectAll("path.sk-lk").data().map(l => l.key) : []);
     const exits = morph && gL.selectAll("path.sk-lk").data().some(l => !L.links.some(m => m.key === l.key));
@@ -20058,17 +20187,24 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       /* the drawing settles to its own height once the old one has gone */
       if (prev.H !== L.H) svgK.transition().delay(EN + ENDUR + 11 * STAG).duration(0).attr("height", L.H * s).attr("viewBox", "0 0 " + L.W + " " + L.H);
     }
+    gX.selectAll("*").remove();
+    if (L.title){ gX.append("text").attr("class", "sk-big sk-halo").attr("x", L.title.x).attr("y", L.title.y - 26).text(L.title.big);
+      gX.append("text").attr("class", "sk-halo").attr("x", L.title.x).attr("y", L.title.y - 9).text(L.title.line); }
     /* the hands' targets: a node with its words, wide enough to find; a sector's no taller than its line's pitch, so
-       twenty lines' targets never overlap */
-    const hitH = n => Math.max(n.h, n.col === 1 ? Math.min(18, n.slot + L.cols[1].pad) : 18);
+       twenty lines' targets never overlap. Beat 6's (2026-10-28): a sector's from its name to its gain; in's and out's
+       their words and their node's top, and their node's length for the pointer alone */
+    const six = L.mode === 2, hitH = n => Math.max(n.h, n.col === 1 ? Math.min(18, n.slot + L.cols[1].pad) : 18), wordsH = n => 46 + ((n.lines || []).length - 1) * 16;
     gH.selectAll("*").remove();
     gH.selectAll("rect").data(L.nodes, n => n.id).join("rect").attr("class", "sk-hit").attr("tabindex", 0).attr("role", "img")
-      .attr("x", n => n.lab === "line" ? n.x - 230 : n.x)
-      .attr("y", n => n.lab === "above" ? n.y - 46 : n.y + n.h / 2 - hitH(n) / 2)
-      .attr("width", n => n.lab === "line" ? 230 + SK_NW : n.lab === "big" ? 200 : 240)
-      .attr("height", n => (n.lab === "above" ? 46 : 0) + hitH(n))
+      .attr("x", n => six ? (n.col === 1 ? n.x - 230 : n.col === 2 ? n.x + SK_NW - 220 : n.x) : n.lab === "line" ? n.x - 230 : n.x)
+      .attr("y", n => six ? (n.col === 1 ? n.y + n.h / 2 - hitH(n) / 2 : n.y - wordsH(n)) : n.lab === "above" ? n.y - 46 : n.y + n.h / 2 - hitH(n) / 2)
+      .attr("width", n => six ? (n.col === 1 ? 230 + SK_NW + 8 + 60 : 220) : n.lab === "line" ? 230 + SK_NW : n.lab === "big" ? 200 : 240)
+      .attr("height", n => six ? (n.col === 1 ? hitH(n) : wordsH(n) + 14) : (n.lab === "above" ? 46 : 0) + hitH(n))
       .attr("aria-label", n => skSay(n))
       .call(tipBind, SKH);
+    if (six) gH.selectAll("rect.sk-hit--node").data(L.nodes.filter(n => n.col !== 1).map(n => ({ sec: n, id: n.id + ":node" })), x => x.id).join("rect")
+      .attr("class", "sk-hit sk-hit--node").attr("aria-hidden", "true").attr("x", x => x.sec.x - 4).attr("y", x => x.sec.y + 14).attr("width", SK_NW + 8).attr("height", x => Math.max(0, x.sec.h - 14))
+      .call(tipBind, SKH, true);
     /* the build: the bands run out from the left, each column's nodes and words as the bands reach them, the button
        with its column */
     const colAt = (ci, dur) => dur * (L.cols[ci].x - L.cols[0].x) / (L.W - L.cols[0].x) * .9;
@@ -20076,6 +20212,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       clip.attr("width", cols[0].x + SK_NW + 10).transition().duration(dur).ease(ease).attr("width", L.W + 20);
       [gN.selectAll("rect.sk-nd"), gT.selectAll("g.sk-lab")].forEach(sel => sel.filter(n => n.col > 0).style("opacity", 0)
         .transition().delay(n => colAt(n.col, dur)).duration(260).style("opacity", null));
+      gX.selectAll("text").style("opacity", 0).transition().delay(colAt(1, dur)).duration(260).style("opacity", null);
     }
     skMore(L, anim && !morph ? colAt(1, 1300) : null, morph ? { delay: UD, dur: UP } : null);
   }
@@ -20085,6 +20222,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
      one drawing to the next, so the keyboard stays on it */
   function skMore(L, fade, move){
     let g = svgK.select("g.mi-more");
+    /* beat 6's flow has no button (2026-10-28): its folds stand for the rest */
+    if (!L.more){ if (g.node()) g.style("display", "none"); return; }
+    if (g.node()) g.style("display", null);
     if (!g.node()){
       g = svgK.append("g").attr("class", "mi-more mi-more--foot").attr("role", "button").attr("tabindex", 0);
       g.append("rect").attr("class", "mi-more-box"); g.append("text").attr("class", "mi-colhead mi-more-txt"); g.append("path").attr("class", "mi-tradmenu-caret mi-more-caret");
@@ -20113,7 +20253,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   /* the state over the drawing: the groups the sentence turns off, the sectors named or asked about, the one in hand */
   function skFill(){
     if (!sk) return;
-    const on = partsOn(), lit = litSet(), hotN = skHot ? sk.byId[skHot] : null;
+    const six = sk.mode === 2, on = six ? ALL3 : partsOn(), lit = litSet(), hotN = skHot ? sk.byId[skHot] : null;
     const litN = n => !lit || !n.codes || n.codes.some(c => lit.has(c));
     svgK.selectAll(".sk-lk").classed("is-off", l => !!l.part && on.indexOf(l.part) < 0)
       .classed("is-dim", l => (!!lit && !litN(l.sec)) || (!!hotN && l.S !== hotN && l.T !== hotN && l.sec !== hotN))
@@ -20121,11 +20261,17 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     const nodeDim = n => (!!lit && n.col === 1 && !litN(n)) || (!!hotN && n !== hotN && n.col === 1 && hotN.col === 1);
     svgK.selectAll(".sk-nd").classed("is-off", n => !!n.part && on.indexOf(n.part) < 0).classed("is-dim", nodeDim);
     svgK.selectAll(".sk-lab").classed("is-off", n => !!n.part && on.indexOf(n.part) < 0).classed("is-dim", nodeDim);
+    /* beat 6's flow (2026-10-28): the node of the sector the needle reads takes the bars' ink outline, the node under the
+       pointer while there is one, else the pinned sector's (its fold's, where it is folded) */
+    const ring = !six ? null : hotN && hotN.col === 1 ? hotN : pinned ? sk.nodes.find(n => n.col === 1 && n.codes.indexOf(pinned) >= 0) : null;
+    svgK.selectAll(".sk-nd").classed("is-ring", n => n === ring);
   }
   /* a list of sectors and their counts, in words: the first word capitalised by its place, the rest lower case */
   const skList = (list, k, f) => list.slice().sort((a, b) => f(b) - f(a)).slice(0, k).map(r => esc(r.short.charAt(0).toLowerCase() + r.short.slice(1)) + " " + fmt(f(r)));
   function skSay(n){
     const d = n.d;
+    if (sk.mode === 2) return n.col === 0 ? fmt(A.in) + " Boston non-residents commute in." : n.col === 2 ? fmt(A.out) + " Boston residents work elsewhere." :
+      n.name + ": Boston " + (d.net >= 0 ? "gains " + fmt(d.net) : "loses " + fmt(-d.net)) + " workers; " + fmt(d.estNon) + " commute in, " + fmt(d.estOut) + " commute out.";
     if (n.kind === "total") return fmt(n.value) + " " + n.lines[0] + ".";
     if (n.col !== 1) return fmt(n.value) + " " + SK_GROUP[n.kind].join(" ") + ".";
     return n.name + ": " + fmt(n.value) + " jobs; " + fmt(d.estNon) + " held by Boston non-residents, " + fmt(d.estRes) + " by Boston residents" + (sk.mode === 1 ? ", " + fmt(d.estOut) + " by Boston residents working elsewhere." : ".");
@@ -20136,6 +20282,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   const GROUP_NAME = { non: "Boston non-residents", res: "Boston residents", out: "Boston residents working elsewhere" };
   const GROUP_VERB = { non: "Commute in", res: "Live and work here", out: "Commute out" };
   function skCardHTML(n, held){
+    if (sk.mode === 2) return sk6Card(n, held);
     const d = n.d, t3 = sk.mode === 1, whole = t3 ? A.jobs + A.out : A.jobs;
     if (n.kind === "total") return tHead(t3 ? "Jobs in Boston or held by its residents" : "Jobs in Boston") +
       tGrid([tRow("Jobs", fmt(n.value)),
@@ -20153,21 +20300,50 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       return tHead(esc(d.short), list.charAt(0).toUpperCase() + list.slice(1)) + splitHtml(d); }
     return treeHtml(d, held);
   }
+  /* beat 6's flow's cards (2026-10-28): beats 1 to 3's card, the gain leading it as on the bars' card. A sector's is the
+     bars' card with its two flows over the counts; a fold's is titled by its words, its sectors and their gains under
+     the title; in's and out's by the group's name, its mark and verb under it, and the sectors most of it works in */
+  const tLead = d => '<div class="tip-lead"><b>' + signed(d.net) + '</b><span>Boston’s ' + (d.net >= 0 ? "gain" : "loss") + ' of workers</span></div>';
+  function sk6Card(n, held){
+    const d = n.d;
+    if (n.col !== 1){ const k = n.kind, f = r => partVal(r, k), out = k === "out";
+      return tHead(GROUP_NAME[k], tMark(k) + GROUP_VERB[k]) +
+        tGrid([tRow("Jobs", fmt(n.value)), out ? tRow("Of residents’ jobs", share(n.value / A.residents)) : tRow("Of Boston’s jobs", share(n.value / A.jobs)), tRow("Most in", "")]
+          .concat(rows.slice().sort((a, b) => f(b) - f(a)).slice(0, 3).map(r => tRow(esc(r.short), fmt(f(r))))));
+    }
+    const flows = [tRow("Boston non-residents", fmt(d.estNon), tMark("non")), tRow("Working elsewhere", fmt(d.estOut), tMark("out"))];
+    if (!d.code){ const list = d.rest.map(r => esc(r.short.charAt(0).toLowerCase() + r.short.slice(1)) + " " + signed(r.net)).join(", ");
+      return tHead(esc(d.short), list.charAt(0).toUpperCase() + list.slice(1)) + tLead(d) +
+        tGrid(flows.concat([tRow("Jobs in Boston", fmt(d.jobs), FI.in), tRow("Held by residents", fmt(d.residents), FI.out)])); }
+    return tSecHead(d, held) + tLead(d) +
+      tGrid(flows.concat([tRow("Jobs in Boston", fmt(d.jobs), FI.in), tRow("Of Boston’s jobs", share(d.jobs / A.jobs)),
+        tRow("Held by residents", fmt(d.residents), FI.out), tRow("Of residents’ jobs", share(d.residents / A.residents)),
+        tRow("Jobs per resident worker", rx(d.ratio) + " " + tEm(zoneWord(d.ratio)))]));
+  }
   /* a node's hands, and its bands', the node's: the key is the node's, its card is the node's, it lights the node and
-     its bands */
+     its bands. On beat 6's flow (2026-10-28) the needle follows them, a press pins a sector's node and the needle with it
+     as a press pins the bars' row, and Escape puts the pin back on the beat's own sector */
   const skNodeOf = x => x && x.sec ? sk && sk.byId[x.sec.id] : x;
   const SKH = { ok: x => !!skNodeOf(x), key: x => "sk:" + skNodeOf(x).id, html: (x, held) => skCardHTML(skNodeOf(x), held), map: x => { const n = skNodeOf(x); return n.col === 1 && !!n.d.code; },
-    on: x => { skHot = skNodeOf(x).id; skFill(); }, at: (el, x) => atMid(svgK.selectAll("rect.sk-nd").filter(m => m.id === skNodeOf(x).id).node()) };
+    on: x => { const n = skNodeOf(x); skHot = n.id; skFill(); if (sk.mode === 2) needleDraw(skNeedleOf(n)); },
+    at: (el, x) => atMid(svgK.selectAll("rect.sk-nd").filter(m => m.id === skNodeOf(x).id).node()),
+    act: x => { const n = skNodeOf(x); if (!sk || sk.mode !== 2 || state !== 2 || !n || n.col !== 1 || !n.d.code) return;
+      pinned = pinned === n.d.code ? null : n.d.code; skFill(); needleDraw(pinned ? byCode[pinned] : null); },
+    esc: () => { if (!sk || sk.mode !== 2 || state !== 2 || !pinned) return false; skHot = null; pinned = homePin(); skFill(); needleDraw(pinned ? byCode[pinned] : null); return true; } };
   function skLive(){
     const live = document.getElementById("miLive"); if (!live || !sk) return;
-    live.textContent = sk.mode === 1 ? "The " + fmt(A.jobs + A.out) + " jobs in Boston or held by its residents, by sector, as a flow diagram, " + year + ": Boston non-residents " + fmt(A.in) + ", Boston residents " + fmt(A.liveWork) + ", working elsewhere " + fmt(A.out) + "."
+    live.textContent = sk.mode === 2 ? "Boston’s gain or loss of workers by sector, as a flow diagram, " + year + ": " + fmt(A.in) + " Boston non-residents commute in, " + fmt(A.out) + " Boston residents work elsewhere; Boston " + (A.jobs >= A.residents ? "gains " + fmt(A.jobs - A.residents) : "loses " + fmt(A.residents - A.jobs)) + "."
+      : sk.mode === 1 ? "The " + fmt(A.jobs + A.out) + " jobs in Boston or held by its residents, by sector, as a flow diagram, " + year + ": Boston non-residents " + fmt(A.in) + ", Boston residents " + fmt(A.liveWork) + ", working elsewhere " + fmt(A.out) + "."
       : "The " + fmt(A.jobs) + " jobs in Boston by sector, as a flow diagram, " + year + ": Boston non-residents hold " + fmt(A.in) + ", Boston residents " + fmt(A.liveWork) + ".";
   }
   function skDraw(animate, was){
     const s = skScale(), TW = skPan ? Math.floor(skPan.clientWidth / s) : 0;
+    /* beat 6's key is its bars' (2026-10-28): its room is measured with it standing, as the bars have it */
+    if (state === 2) captionSync();
     if (!was || skMode !== state || skW !== TW || skS !== s || skR !== skPvRoom() || !sk){
-      /* between beats 4 and 5 the drawing turns into the other; an arrival draws it anew */
-      const how = !animate ? "static" : was && sk && skW === TW && skS === s && skMode !== state ? "morph" : "build";
+      /* between beats 4 and 5 the drawing turns into the other; an arrival draws it anew, and beat 6's flow always does
+         (2026-10-28: it shares no marks with beats 4 and 5's) */
+      const how = !animate ? "static" : was && sk && skW === TW && skS === s && skMode !== state && state <= 1 && skMode <= 1 ? "morph" : "build";
       skHot = null; if (TW){ const L = skLayout(state, TW); L.s = s; skRender(L, how); }
     }
     skFill();
@@ -20175,7 +20351,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     fig.dataset.adminReading = view.reading; fig.dataset.adminSort = view.sort;
   }
 
-  /* beats 4 and 5's blanks: beat 6's sentence has none since its flow gave way to the gain bars (2026-10-28) */
+  /* beats 4 and 5's blanks; beat 6's has its own (sk6Sel, below), since its flow came back as a choice (2026-10-28) */
   const skSels = ["wfSkView", "wfSkView3"].map(id => document.getElementById(id)).filter(Boolean);
   /* data-skview: the ranking's sentence asks its order, the flow's does not (2026-10-28) */
   const skViewSync = () => { skSels.forEach(v => { v.value = skView; }); fig.dataset.skview = skView; };
@@ -20190,6 +20366,377 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     paint(true);
   }));
 
+  /* beat 6's blank (2026-10-28): the gain bars, "ranking", the default, or the flow, "flow diagram", under opt-3. A pick
+     plays B's move between the two (below); picked again mid-move, the move runs back from where it stands */
+  const sk6Sel = document.getElementById("wfSkView6");
+  if (sk6Sel){ sk6Sel.value = b6View;
+    sk6Sel.addEventListener("change", () => {
+      const v = sk6Sel.value === "sankey" ? "sankey" : "rank"; fitPick(sk6Sel);
+      if (v === b6View) return;
+      b6View = v;
+      if (state === 2 && b4 === "sankey" && view) mvSwitch();
+    }); }
+
+  /* ---- beat 6's moves (2026-10-28, Nil: "1. transition all the industry bars with their labels to their appropriate
+     location like where they are going to be. 2. draw the length"): two stages. First, to place: the bands and the
+     groups' words go, and every sector glides at once, with its name and its gain where the flow writes one, straight
+     from where it stands in the flow to where it will be in the bars, its node to a stub at the zero line (a loss's to
+     the left of it), turning to its colour on the way; a fold splits into its members at the start, each to its own row;
+     the axis comes in under them as they land. Then the length: each stub grows from the zero to its gain, top row first,
+     and the foot words, the key, the values' colours and the pin's tint come last. Back, the same the other way: the
+     bars shrink to stubs, everything glides back, the bands come in. Two moves on this clock: beat 6's blank, the flow
+     to the ranking (1.6s) and back, and beat 5's flow to beat 6's bars on the scroll (about 2s) and back. Each is drawn
+     frame by frame in a layer over the frame (wfMove) from the two drawings as the page lays them out: the drawing a
+     move goes to is drawn at once under the layer, hidden, and stands when the layer goes. Words are only moved, never
+     scaled, and in the bars' face from the first frame; what keeps its place (the groups' words, the axis, the foot
+     words, the key) is the drawing's own, copied into the layer and faded. A move takes no pointer and shows no card;
+     the needle holds its pin. Any other repaint (a beat, the year, a new width) cuts it to the drawing it was going to.
+     Reduced motion, and the presenter, which fits its frame to each drawing, cross-fade the two drawings in 200ms ---- */
+  const mvHost = document.getElementById("wfMove");
+  const mvStaggerCache = {};
+  let mvSvg = null;
+  const mvLerp = (a, b, t) => a + (b - a) * t, mvC01 = v => v < 0 ? 0 : v > 1 ? 1 : v;
+  const mvLin = (t, a, b) => mvC01((t - a) / (b - a)), mvCio = (t, a, b) => d3.easeCubicInOut(mvLin(t, a, b)), mvCout = (t, a, b) => d3.easeCubicOut(mvLin(t, a, b));
+  /* the tokens' values, read as a move starts, for the colours a mark passes through */
+  function mvTok(){ const cs = getComputedStyle(document.documentElement), v = n => cs.getPropertyValue(n).trim();
+    return { ink: v("--ink"), inkSoft: v("--ink-soft"), white: v("--white"), edge: v("--control-edge"), tealDark: v("--teal-dark"),
+      flowIn: v("--flow-in"), flowOut: v("--flow-out"), flowOutText: v("--flow-out-text"), flowBoth: v("--flow-both"), borderStrong: v("--border-strong") }; }
+  const mvRgb = c => { c = String(c).trim(); if (c[0] === "#"){ if (c.length === 4) c = "#" + c[1] + c[1] + c[2] + c[2] + c[3] + c[3]; return [1, 3, 5].map(i => parseInt(c.slice(i, i + 2), 16)); }
+    const m = c.match(/[\d.]+/g); return m ? m.slice(0, 3).map(Number) : [0, 0, 0]; };
+  const mvMix = (a, b, t) => { if (t <= 0) return a; if (t >= 1) return b; const A1 = mvRgb(a), B1 = mvRgb(b); return "rgb(" + A1.map((v, i) => Math.round(v + (B1[i] - v) * t)).join(",") + ")"; };
+  /* a drawing's part copied with its look written on it, so it reads the same in the layer as in its own svg */
+  const MV_CSS = ["fill", "fill-opacity", "stroke", "stroke-width", "stroke-opacity", "stroke-dasharray", "stroke-linecap", "stroke-linejoin", "paint-order",
+    "font-family", "font-size", "font-weight", "font-variant-numeric", "text-decoration", "opacity", "visibility"];
+  function mvCopy(el){
+    const c = el.cloneNode(true), a = [el].concat([].slice.call(el.querySelectorAll("*"))), b = [c].concat([].slice.call(c.querySelectorAll("*")));
+    a.forEach((o, i) => { const cs = getComputedStyle(o), n = b[i];
+      ["id", "tabindex", "role", "aria-label"].forEach(at => n.removeAttribute(at));
+      MV_CSS.forEach(p => { if (!(i === 0 && p === "opacity")) n.style.setProperty(p, cs.getPropertyValue(p)); }); });
+    c.style.opacity = ""; c.style.transition = "none";
+    return c;
+  }
+  /* the words a flow keeps in place: beat 6's in and out and their title, its folds' words; beat 5's total, groups and
+     button */
+  function mvFlowCopies(L){
+    const out = {}, add = (name, el) => { (out[name] = out[name] || []).push(mvCopy(el)); };
+    svgK.selectAll("g.sk-t g.sk-lab").each(function(n){
+      if (L.mode === 2){ if (n.col !== 1) add("groups", this); }
+      else if (n.col !== 1) add("words", this); });
+    if (L.mode === 2){ const x = svgK.select("g.sk-x").node(); if (x) add("title", x); }
+    else { const b = svgK.select("g.mi-more").node(); if (b && b.style.display !== "none") add("words", b); }
+    return out;
+  }
+  /* what the frame shows, taken for a move: its drawing's layout and place in the frame, and copies of what keeps its
+     place. A flow's place is taken as if it were read from its start; its pan, pan0 */
+  function mvTake(){
+    if (!wrap || !view) return null;
+    if (skHot || hot){ skHot = null; hot = null; if (isSk()) skFill(); else rowsSync(); }
+    const fr = wrap.getBoundingClientRect();
+    /* a flow still building or turning (beat 4 to 5) is put in place whole first, so its words are copied as they end */
+    if (isSk() && sk && skBusy()) skRender(sk, "static");
+    if (isSk() && sk){ const r = svgK.node().getBoundingClientRect(); if (!r.width) return null;
+      const pan0 = skPan ? skPan.scrollLeft : 0;
+      return { flow: true, L: sk, ox: r.left - fr.left + pan0, oy: r.top - fr.top, pan0, copies: mvFlowCopies(sk) };
+    }
+    if (isTree() || !lastGain || view.reading !== "gain") return null;
+    const r = svgEl.getBoundingClientRect(); if (!r.width) return null;
+    const G = lastGain, k = r.width / G.VW, ox = r.left - fr.left, oy = r.top - fr.top, X = u => ox + u * k, Y = u => oy + u * k;
+    const copies = { axis: [], foot: [] };
+    gGrid.selectAll("line:not(.is-base)").each(function(){ copies.axis.push(mvCopy(this)); });
+    gHead.selectAll(":scope > *").each(function(){ copies.axis.push(mvCopy(this)); });
+    gFoot.selectAll(":scope > *").each(function(){ copies.foot.push(mvCopy(this)); });
+    const nm = gRows.select(".ad-name").node(), zU = nm ? parseFloat(getComputedStyle(nm).fontSize) : 0;
+    let key = null;
+    if (keyEl && keyEl.offsetHeight){ const kr = keyEl.getBoundingClientRect(); key = keyEl.cloneNode(true); key.removeAttribute("id");
+      key.style.left = (kr.left - fr.left) + "px"; key.style.top = (kr.top - fr.top) + "px"; key.style.width = kr.width + "px"; }
+    return { bars: true, G, k, ox, oy, X, Y, copies, key, z: 13 * typeK(), zU, Z: X(G.zero), nameX: X(G.gut - 10), off8: 8 * k,
+      rowTop: i => Y(BMT + PITCH * i), barTop: i => Y(BMT + PITCH * i + PITCH / 2 - BBAR / 2), base: i => Y(BMT + PITCH * i + PITCH / 2 + 4),
+      barH: BBAR * k, rowH: PITCH * k, rowW: G.VW * k, gridTop: Y(GRID_TOP), yEnd: Y(BMT + PITCH * G.n), idx: G.idx, names: G.names,
+      barW: d => barLen(Math.abs(d.net) / GAIN_MAX * (G.x1 - G.zero)) * k, H: H0 * k };
+  }
+  /* ---- what a move reads off the flow (2026-10-28): each sector as the flow stands it, its node, its name's right end
+     and its net where the flow writes one (beat 6's), and the row it goes to in the bars; a fold's members start as
+     slices of its node, tiling it by their gains, each going to its own row; the folds' own words; the bands and the
+     group nodes, which only fade; beat 5's counts, which fade with its words ---- */
+  const MV_FILL = { total: "ink", non: "flowIn", res: "flowBoth", out: "flowOut", sec: "borderStrong" };
+  const MV_BAND = { sec: ["borderStrong", .55], non: ["flowIn", .3], res: ["flowBoth", .5], out: ["flowOut", .38] };
+  function mvItems(F, B){
+    const L = F.L, six = L.mode === 2, items = [], folds = [];
+    L.nodes.filter(n => n.col === 1).forEach(n => {
+      const d = n.d, fold = !d.code, list = fold ? d.rest.slice().sort((a, b) => B.idx[a.code] - B.idx[b.code]) : [d], ly = n.y + n.h / 2 + 4.5;
+      /* the name's right end: beat 6's 8px left of the node, beat 5's before its count */
+      const count = six ? null : fmt(n.value), nx = six ? n.x - 8 : n.ax - skTextW(count, 700) - skTextW(" ");
+      if (fold) folds.push({ id: n.id, nx, vx: n.x + SK_NW + 8, cx: n.ax, ly, name: n.name, net: six ? d.net : null, count });
+      const tot = d3.sum(list, r => Math.abs(r.net)) || 1; let acc = 0;
+      list.forEach(r => { const sh = fold ? Math.abs(r.net) / tot : 1, sy = n.y + n.h * acc, h = n.h * sh; acc += sh;
+        items.push({ code: r.code, r, fold, sx: n.x, sy, sh: h, nx, cx: n.ax, ny: fold ? sy + h / 2 + 4.5 : ly, name0: fold ? skName(r) : n.name,
+          hasV: six && (!fold || r.net >= 0), count: fold ? null : count, i: B.idx[r.code], d: 0 }); });
+    });
+    const bands = L.links.map(l => ({ k: l.key, g: l.g, fill: MV_BAND[l.cls][0], fo: MV_BAND[l.cls][1] }));
+    const gnodes = L.nodes.filter(n => n.col !== 1).map(n => ({ k: n.id, x: n.x, y: n.y, h: n.h, fill: MV_FILL[n.kind] || "inkSoft" }));
+    return { items, folds, bands, gnodes };
+  }
+  /* the starts (2026-10-28): every sector glides at once, GD ms from G0, on a straight line. Where two names would
+     overlap on the way (beat 5's size order into the gain order: a name passing another in the one column), one of the
+     two starts later, by the least that keeps them apart in every frame, up to MAXD; the shorter where it can be, since
+     the later one's width is what the earlier must have cleared. Checked as the scan checks it, the names' boxes, 16px
+     tall, meeting by more than 2px, every 20ms; the pairs whose paths never come within a line of each other are not
+     looked at. A fold's member is in the check from its name's fade-in, late in its glide */
+  function mvStagger(items, B, F, G0, GD, MAXD){
+    items.forEach(it => { it.d = 0; });
+    if (!MAXD) return 0;
+    /* found once for a drawing (the year, the list's state, the frame's width) and kept */
+    const key = [year, F.L.mode, F.L.all, F.L.W, B.VW, B.k, items.map(it => it.code).join()].join("|"), had = mvStaggerCache[key];
+    if (had){ items.forEach((it, i) => { it.d = had.d[i]; }); return had.maxd; }
+    const STEP = 25, ox = F.ox, oy = F.oy;
+    items.forEach(it => { it.w = Math.max(textPx(it.name0, 400), textPx(B.names[it.code] || it.r.short, 400)); it.x0 = ox + it.nx; it.y0 = oy + it.ny; it.x1 = B.nameX; it.y1 = B.base(it.i); });
+    const pairs = [];
+    for (let a = 0; a < items.length; a++) for (let b = a + 1; b < items.length; b++){ const A = items[a], Bi = items[b];
+      if (Math.min(A.y0, A.y1) > Math.max(Bi.y0, Bi.y1) + 15 || Math.min(Bi.y0, Bi.y1) > Math.max(A.y0, A.y1) + 15) continue; pairs.push([A, Bi]); }
+    const at = (it, t) => { const s0 = G0 + it.d, g = t <= s0 ? 0 : t >= s0 + GD ? 1 : d3.easeCubicInOut((t - s0) / GD);
+      return { x: mvLerp(it.x0, it.x1, g), y: mvLerp(it.y0, it.y1, g), on: !it.fold || g >= .8 }; };
+    const hits = () => { const by = new Map(); let total = 0; const T1 = G0 + GD + MAXD;
+      for (let t = G0; t <= T1; t += 20) pairs.forEach(([A, Bi], k) => { const a = at(A, t), b = at(Bi, t); if (!a.on || !b.on) return;
+        const iw = Math.min(a.x, b.x) - Math.max(a.x - A.w, b.x - Bi.w), ih = 16 - Math.abs(a.y - b.y);
+        if (iw > 1 && ih > 2){ by.set(k, (by.get(k) || 0) + 1); total++; } });
+      return { by, total }; };
+    /* from every name at once, the step that leaves the fewest meetings in all: either name of the four pairs that meet
+       most, later by 25, 50 or 100; a step that leaves no fewer is not taken, so the starts are never worse than all
+       together, and when none helps the search ends */
+    for (let n = 0; n < 40; n++){
+      const h = hits(); if (!h.total) break;
+      const top = [...h.by.entries()].sort((a, b) => b[1] - a[1]).slice(0, 4).map(e => pairs[e[0]]);
+      let best = null;
+      top.forEach(pr => pr.forEach(it => [STEP, 2 * STEP, 4 * STEP].forEach(st => { if (it.d + st > MAXD) return; it.d += st; const v = hits().total; it.d -= st;
+        if (v < h.total && (!best || v < best.v || (v === best.v && st < best.st))) best = { it, st, v }; })));
+      if (!best) break;
+      best.it.d += best.st;
+    }
+    const maxd = Math.max.apply(null, items.map(it => it.d).concat([0]));
+    mvStaggerCache[key] = { d: items.map(it => it.d), maxd };
+    return maxd;
+  }
+
+  /* ---- the marks: a scene is a list of plain marks, drawn by one keyed join a layer; the copies stand in their own
+     layers, under the marks (the axis) and over them (the words) ---- */
+  const MV_LAYERS = [["under", "g"], ["grid", "line"], ["tint", "rect"], ["band", "path"], ["node", "rect"], ["outline", "rect"], ["over", "g"], ["text", "text"]];
+  const mvMark = (S, m) => { if (m.op > .002) S.push(m); };
+  const mvBand = (S, k, g, fill, fo, op) => { if (Math.abs(g.x1 - g.x0) < .01 || g.h < .01) return; mvMark(S, { L: "band", k: "b:" + k, g, fill, fo, op: op == null ? 1 : op }); };
+  const mvRect = (S, k, x, y, w, h, o) => mvMark(S, Object.assign({ L: "node", k: "r:" + k, x, y, w, h, op: 1 }, o));
+  const mvOutline = (S, x, y, w, h, op, rx) => mvMark(S, { L: "outline", k: "r:pin", x, y, w, h, stroke: "var(--ink)", sw: 2.5, rx: rx || 0, op });
+  const mvText = (S, k, x, y, t, o) => mvMark(S, Object.assign({ L: "text", k: "t:" + k, x, y, t, anchor: "start", face: "f", wt: 400, z: 13, fill: "var(--ink)", op: 1, halo: 0 }, o));
+  function mvApply(el, d){
+    const s = el.style;
+    s.opacity = d.op < .999 ? d.op.toFixed(3) : "";
+    if (d.L === "band"){ el.setAttribute("d", skBand(d.g)); s.fill = d.fill; s.fillOpacity = d.fo; return; }
+    if (d.L === "grid"){ el.setAttribute("x1", d.x1); el.setAttribute("y1", d.y1); el.setAttribute("x2", d.x2); el.setAttribute("y2", d.y2);
+      s.stroke = d.stroke; s.strokeWidth = d.sw; s.strokeDasharray = d.dash || ""; return; }
+    if (d.L === "text"){
+      /* the bars' words are drawn as the bars draw them, their 13px in units at the bars' own scale, which never changes
+         during a move, so their letters fall where the bars' fall */
+      const B = mv && mv.B, bk = d.face === "b" && B && B.zU ? B.k : 0;
+      if (bk){ el.setAttribute("x", 0); el.setAttribute("y", 0); el.setAttribute("transform", "translate(" + d.x + "," + d.y + ") scale(" + bk + ")"); s.fontSize = B.zU + "px"; }
+      else { el.setAttribute("x", d.x); el.setAttribute("y", d.y); el.removeAttribute("transform"); s.fontSize = d.z + "px"; }
+      el.setAttribute("text-anchor", d.anchor);
+      const cls = d.face === "b" ? "mv-b" : "mv-f"; if (el.getAttribute("class") !== cls) el.setAttribute("class", cls);
+      s.fontWeight = d.wt; s.fontVariantNumeric = d.num ? "tabular-nums" : ""; s.fill = d.fill;
+      s.strokeWidth = d.halo > .001 ? (4 * d.halo / (bk || 1)).toFixed(2) + "px" : "0";
+      if (el.textContent !== d.t) el.textContent = d.t;
+      return;
+    }
+    el.setAttribute("x", d.x); el.setAttribute("y", d.y); el.setAttribute("width", Math.max(0, d.w)); el.setAttribute("height", Math.max(0, d.h)); el.setAttribute("rx", d.rx || 0);
+    s.fill = d.fill || "none"; s.stroke = d.stroke || "none"; s.strokeWidth = d.sw || 0; s.strokeOpacity = d.so == null ? "" : d.so;
+  }
+  function mvRender(S){
+    if (!mvSvg) return;
+    MV_LAYERS.forEach(([L, tag]) => { if (tag === "g") return;
+      d3.select(mvSvg.querySelector("g.mv-" + L)).selectChildren(tag).data(S.filter(m => m.L === L), d => d.k).join(tag).each(function(d){ mvApply(this, d); }); });
+    const ops = S.ops || {};
+    Object.keys(mv.cp).forEach(k => { const o = ops[k] || 0; mv.cp[k].forEach(g => { g.style.opacity = o < .999 ? o.toFixed(3) : ""; g.style.display = o > .002 ? "" : "none"; }); });
+    /* the flow's copies ride its pan home */
+    if (S.fo) mv.cpF.forEach(g => g.setAttribute("transform", "translate(" + S.fo[0] + "," + S.fo[1] + ")"));
+    if (mv.key){ const o = ops.key || 0; mv.key.style.opacity = o < .999 ? o.toFixed(3) : ""; mv.key.style.visibility = o > .002 ? "" : "hidden"; }
+  }
+
+  /* ---- the words that move: a row's name and its value. Never two copies of a word at once (2026-10-28, the review of
+     the sketch's cross-fade, where the two faces overprinted, "HHealth care"): they stand in the flow's face only as the
+     still flow has them, at a move's flow end, and in the bars' face from the move's first frame on, at the same right
+     end. A name the flow writes one way and the bars another ("Health care", "Health care & social assistance") keeps the
+     words both share solid and anchored at its right end; only the words between them change, the flow's going
+     (tOld) before the bars' come in (tNew), as the shared start makes room. At either end it is one text, as the
+     drawings have it ---- */
+  /* the words two names share at their start and at their end, and each one's middle */
+  const mvSplit = (a, b) => { const A1 = a.split(" "), B1 = b.split(" "); let i = 0, j = 0;
+    while (i < A1.length && i < B1.length && A1[i] === B1[i]) i++;
+    while (j < A1.length - i && j < B1.length - i && A1[A1.length - 1 - j] === B1[B1.length - 1 - j]) j++;
+    const pre = A1.slice(0, i).join(" "), suf = j ? (i ? " " : "") + A1.slice(A1.length - j).join(" ") : "";
+    return { pre, fm: a.slice(pre.length, a.length - suf.length), bm: b.slice(pre.length, b.length - suf.length), suf }; };
+  function mvNames(S, r, fn, x, y, o){
+    if (o.op <= .002) return;
+    const C = mv.C, B = mv.B, bn = B.names[r.code] || r.short, c = r.code, fill = mvMix(C.ink, C.tealDark, c === pinned ? o.pin || 0 : 0);
+    const T = (k, xx, t, face, fl, op, anchor) => mvText(S, k + ":" + c, xx, y, t, { face, z: face === "b" ? B.z : 13, fill: fl, op, halo: o.halo, anchor });
+    if (o.ff){ T("nf", x, fn, "f", C.ink, o.op, "end"); return; }
+    const tOld = fn === bn ? 1 : o.tOld, tNew = fn === bn ? 1 : o.tNew;
+    if (tOld <= 0 && tNew <= 0){ T("nb", x, fn, "b", fill, o.op, "end"); return; }
+    if (tOld >= 1 && tNew >= 1){ T("nb", x, bn, "b", fill, o.op, "end"); return; }
+    const sp = mvSplit(fn, bn), Wd = t => t ? textPx(t, 400) : 0, e = d3.easeCubicInOut((tOld + tNew) / 2), mw = mvLerp(Wd(sp.fm), Wd(sp.bm), e);
+    const left = x - Wd(sp.pre) - mw - Wd(sp.suf), xm = left + Wd(sp.pre);
+    if (sp.pre) T("np", left, sp.pre, "b", fill, o.op, "start");
+    if (sp.fm) T("nm", xm, sp.fm, "b", fill, o.op * (1 - tOld), "start");
+    if (sp.bm) T("nn", xm, sp.bm, "b", fill, o.op * tNew, "start");
+    if (sp.suf) T("ns", xm + mw, sp.suf, "b", fill, o.op, "start");
+  }
+  /* a row's value: the flow's gain (700, ink) as the still flow has it, the bars' (600, turning to its bar's colour) on
+     every frame of a move */
+  function mvValue(S, r, x, y, o){
+    if (o.op <= .002) return;
+    const C = mv.C, sg = signed(r.net), kc = r.net >= 0 ? C.flowIn : C.flowOutText, id = r.code + (o.end ? ":e" : ""), an = o.end ? "end" : "start";
+    if (o.ff) mvText(S, "vf:" + id, x, y, sg, { anchor: an, face: "f", wt: 700, num: true, op: o.op, halo: o.halo });
+    else mvText(S, "vb:" + id, x, y, sg, { anchor: an, face: "b", wt: 600, z: mv.B.z, fill: mvMix(C.ink, kc, o.col), op: o.op, halo: o.halo });
+  }
+  /* the bars' frame: the dashed zero line drawing down, and the pinned row's tint */
+  function mvFrame(S, p){
+    const B = mv.B, C = mv.C;
+    mvMark(S, { L: "grid", k: "l:zero", x1: B.Z, y1: B.gridTop, x2: B.Z, y2: mvLerp(B.gridTop, B.yEnd + 4 * B.k, p.zDraw), stroke: C.edge, sw: B.k, dash: 3 * B.k + " " + 3 * B.k, op: p.oAxis });
+    const pi = pinned != null ? B.idx[pinned] : null;
+    if (pi != null) mvMark(S, { L: "tint", k: "r:tint", x: B.ox, y: B.rowTop(pi), w: B.rowW, h: B.rowH, fill: "var(--teal-tint)", op: p.oPin });
+  }
+  const mvShift = (g, ox, oy) => ({ x0: g.x0 + ox, x1: g.x1 + ox, sy: g.sy + oy, ty: g.ty + oy, h: g.h });
+
+  /* ---- the scene at t ms of the move's clock: 0 the flow, D the bars (the reverse runs the clock back) ---- */
+  function mvScene(p){
+    const S = [], C = mv.C, F = mv.F, B = mv.B, ox = F.ox - F.pan0 * (1 - p.pan), oy = F.oy, t = p.t, G1 = mv.T.G1;
+    mvFrame(S, p);
+    S.ops = { words: p.oBands, groups: p.oBands, title: p.oBands, axis: p.oAxis, foot: p.oFoot, key: p.oFoot }; S.fo = [ox, oy];
+    /* the bands and the group nodes only fade, first */
+    if (p.oBands > .002){
+      mv.bands.forEach(b => mvBand(S, b.k, mvShift(b.g, ox, oy), C[b.fill], b.fo, p.oBands));
+      mv.gnodes.forEach(n => mvRect(S, "g:" + n.k, ox + n.x, oy + n.y, SK_NW, n.h, { fill: C[n.fill], rx: 1, op: p.oBands }));
+    }
+    /* the folds' own words go as the glide starts, before their members' come in */
+    mv.folds.forEach(f => { const y = oy + f.ly;
+      mvText(S, "fname:" + f.id, ox + f.nx, y, f.name, p.ff ? { anchor: "end", halo: 1, op: p.oFoldLab } : { anchor: "end", face: "b", z: B.z, halo: 1, op: p.oFoldLab });
+      if (f.net != null) mvText(S, "fnet:" + f.id, ox + f.vx, y, signed(f.net), p.ff ? { wt: 700, num: true, halo: 1, op: p.oFoldLab } : { face: "b", wt: 600, z: B.z, halo: 1, op: p.oFoldLab });
+      if (f.count) mvText(S, "fcnt:" + f.id, ox + f.cx, y, f.count, { anchor: "end", wt: 700, num: true, halo: 1, op: p.oBands }); });
+    mv.items.forEach(it => {
+      const r = it.r, i = it.i, g = p.g(it), L = p.len(i), own = r.net >= 0 ? C.flowIn : C.flowOut;
+      /* the node: from where it stands to a stub at the zero, 14 wide, the bar's thickness, in its colour; then its length */
+      const wd = mvLerp(SK_NW, B.barW(r), L), tx = r.net >= 0 ? B.Z : B.Z - wd;
+      const x = mvLerp(ox + it.sx, tx, g), y = mvLerp(oy + it.sy, B.barTop(i), g), h = mvLerp(it.sh, B.barH, g), rx = mvLerp(1, 0, g);
+      mvRect(S, "nd:" + it.code, x, y, wd, h, it.fold ? { fill: mvMix(C.white, own, g), stroke: C.inkSoft, sw: 1.5, so: 1 - g, rx } : { fill: mvMix(C.inkSoft, own, g), rx });
+      if (it.code === pinned) mvOutline(S, x, y, wd, h, 1, rx);
+      /* beat 5's count goes with its words, where it stood */
+      if (it.count) mvText(S, "cnt:" + it.code, ox + it.cx, oy + it.ny, it.count, { anchor: "end", wt: 700, num: true, halo: 1, op: p.oBands });
+      /* the name glides with its node, its right end from the flow's column to the bars' gutter; a member's comes in over
+         the last fifth of its way, once the members have spread to a line apart (2026-10-28: earlier, they overlapped
+         each other, bunched at the fold) */
+      const mem = it.fold ? mvLin(g, .8, .95) : 1, nx = mvLerp(ox + it.nx, B.nameX, g), ny = mvLerp(oy + it.ny, B.base(i), g);
+      mvNames(S, r, it.name0, nx, ny, { op: mem, ff: p.ff, tOld: mvLin(g, .15, .4), tNew: mvLin(g, .4, .7), halo: 1 - g, pin: p.oPin });
+      /* the value: beat 6's rides its node's right end the whole way; a loss's, and beat 5's, come in on the bar's end as
+         it grows (a loss's stands left of its bar, where a name stood in the flow) */
+      if (it.hasV && r.net >= 0) mvValue(S, r, x + wd + mvLerp(8, B.off8, g), ny, { op: mem, ff: p.ff, col: p.valCol, halo: 1 - g });
+      else if (it.hasV && t < G1) mvValue(S, r, x + wd + mvLerp(8, B.off8, g), ny, { op: 1, ff: p.ff, col: 0, halo: 1 - g });
+      else if (r.net >= 0) mvValue(S, r, x + wd + B.off8, ny, { op: p.oVal, col: p.valCol, halo: 0 });
+      else mvValue(S, r, x - B.off8, ny, { op: it.hasV ? 1 : p.oVal, col: p.valCol, halo: 0, end: true });
+    });
+    return S;
+  }
+  /* the clock (ms): 0-250 the bands, the groups and their words; G0 the glide, GD long, a sector's own start later by
+     its d (mvStagger), the folds' words going as it starts and their members' names coming in late in their glides;
+     the axis in over the last 300 before G1, where every stub stands on the zero; from G1 the lengths, ST a row from the
+     top, LD each, the values coming in on them; the foot words, the key, the values' colours and the pin's tint over the
+     last of it, to D. ff: the still flow's own frame */
+  function mvParams(t){
+    const T = mv.T, lin = mvLin, cio = mvCio, cout = mvCout, G1 = T.G1, D = mv.D;
+    return { t, ff: t <= 0, pan: cio(t, 0, 250), oBands: 1 - lin(t, 0, 250), oFoldLab: 1 - lin(t, T.G0, T.G0 + 150),
+      g: it => cio(t, T.G0 + it.d, T.G0 + it.d + T.GD),
+      oAxis: lin(t, G1 - 300, G1), zDraw: 1, len: i => cout(t, G1 + T.ST * i, G1 + T.LD + T.ST * i), oVal: lin(t, G1 + 40, G1 + 220),
+      oFoot: lin(t, G1 + T.LD - 50, D), valCol: lin(t, G1 + T.LD - 50, D), oPin: lin(t, G1 + T.LD - 50, D) };
+  }
+
+  /* ---- the clock ---- */
+  function mvLayer(F, B){
+    mvHost.innerHTML = "";
+    const w = wrap.clientWidth, h = Math.ceil(Math.max(F.oy + F.L.H * (F.L.s || 1), B.oy + B.H)) + 4;
+    mvSvg = document.createElementNS(NS, "svg"); mvSvg.setAttribute("id", "wfMoveSvg"); mvSvg.setAttribute("aria-hidden", "true");
+    mvSvg.setAttribute("width", w); mvSvg.setAttribute("height", h); mvSvg.setAttribute("viewBox", "0 0 " + w + " " + h);
+    MV_LAYERS.forEach(([L]) => { const g = document.createElementNS(NS, "g"); g.setAttribute("class", "mv-" + L); mvSvg.appendChild(g); });
+    mvHost.style.height = h + "px"; mvHost.appendChild(mvSvg);
+    return w;
+  }
+  function mvStart(kind, F, B, vel){
+    if (!F || !B || !mvHost) return;
+    mv = { kind, vel, F, B, C: mvTok(), cp: {}, cpF: [], key: B.key, timer: null };
+    mv.w = mvLayer(F, B);
+    Object.assign(mv, mvItems(F, B));
+    /* the switch glides 850ms, its order the same in both drawings; beat 5 to 6 glides 750ms, its names staggered up to
+       250 where they would meet, and takes 750 for its lengths and foot, so the whole is about 2s */
+    const six = kind === "b6", G0 = 150, GD = six ? 850 : 750, maxd = mvStagger(mv.items, B, F, G0, GD, six ? 0 : 250), G1 = G0 + GD + maxd;
+    mv.T = { G0, GD, G1, ST: six ? 9 : 8, LD: six ? 400 : 350 }; mv.D = G1 + (six ? 600 : 750);
+    mv.t = vel > 0 ? 0 : mv.D;
+    /* the copies: the flow's words at its place (moved with its pan), the bars' axis and foot words at their scale */
+    const put = (name, list, layer, tf, flow) => { if (!list || !list.length) return; const g = document.createElementNS(NS, "g"); g.setAttribute("transform", tf);
+      list.forEach(c => g.appendChild(c)); mvSvg.querySelector("g.mv-" + layer).appendChild(g); (mv.cp[name] = mv.cp[name] || []).push(g); if (flow) mv.cpF.push(g); };
+    Object.keys(F.copies).forEach(name => put(name, F.copies[name], "over", "translate(" + F.ox + "," + F.oy + ")", true));
+    const bt = "translate(" + B.ox + "," + B.oy + ") scale(" + B.k + ")";
+    put("axis", B.copies.axis, "under", bt); put("foot", B.copies.foot, "over", bt);
+    if (mv.key) mvHost.appendChild(mv.key);
+    fig.classList.add("is-wfmv");
+    mvDraw(); mvRun();
+  }
+  function mvDraw(){ if (!mv || mv.kind === "fade") return; mvRender(mvScene(mvParams(mv.t))); }
+  function mvRun(){
+    if (!mv || mv.kind === "fade") return;
+    if (mv.timer) mv.timer.stop();
+    let last = null;
+    mv.timer = d3.timer(el => { if (!mv) return; const dt = last == null ? 0 : el - last; last = el;
+      mv.t = Math.max(0, Math.min(mv.D, mv.t + mv.vel * dt)); mvDraw();
+      if ((mv.vel > 0 && mv.t >= mv.D) || (mv.vel < 0 && mv.t <= 0)) mvEnd(); });
+  }
+  /* the end, or a cut: the layer goes and the drawing under it stands. A move run back to a flow the reader had panned
+     gives it its pan back */
+  function mvEnd(){
+    if (!mv) return;
+    const m = mv; mv = null; if (m.timer) m.timer.stop();
+    fig.classList.remove("is-wfmv", "is-wfxf");
+    if (mvHost){ mvHost.innerHTML = ""; mvHost.style.height = ""; } mvSvg = null;
+    [pan, skPan].forEach(p => { if (p) p.style.opacity = ""; });
+    const atFlow = m.t <= 0;
+    if (atFlow && m.F && m.F.pan0 && skPan && isSk()) skPan.scrollLeft = m.F.pan0;
+  }
+  const mvCut = () => mvEnd();
+  /* the cross-fade: the drawing going out copied over the frame, then the one coming in drawn under it, the one going as
+     the other comes */
+  function mvFadeTake(){
+    if (!wrap || !mvHost) return null;
+    const el = isSk() ? svgK.node() : isTree() ? treeEl : svgEl, r = el.getBoundingClientRect(), fr = wrap.getBoundingClientRect(); if (!r.width) return null;
+    const c = mvCopy(el); c.style.position = "absolute"; c.style.left = (r.left - fr.left) + "px"; c.style.top = (r.top - fr.top) + "px";
+    c.style.width = r.width + "px"; c.style.height = r.height + "px"; c.style.margin = "0"; c.style.overflow = "visible";
+    return { c, h: r.top - fr.top + r.height };
+  }
+  function mvFadeRun(src){
+    if (!src) return;
+    mvHost.innerHTML = ""; mvHost.style.height = Math.ceil(src.h) + "px"; mvHost.appendChild(src.c);
+    const paneIn = isSk() ? skPan : pan; fig.classList.add("is-wfxf");
+    if (paneIn) paneIn.style.opacity = 0;
+    mv = { kind: "fade", timer: null };
+    mv.timer = d3.timer(el => { const e = Math.min(1, el / 200); src.c.style.opacity = 1 - e; if (paneIn) paneIn.style.opacity = e; if (e >= 1) mvEnd(); });
+  }
+  /* beat 6's switch: the move to the bars, or the clock run back to the flow; mid-move, it turns back from where it
+     stands, the drawing it now goes to drawn under the layer */
+  function mvSwitch(){
+    tipHide(true);
+    const toBars = b6View === "rank";
+    if (mv && mv.kind === "b6"){ mvOwn = true; paint(false); mvOwn = false; mv.vel = toBars ? 1 : -1; if (!mv.timer) mvRun(); return; }
+    if (mv) mvCut();
+    const soft = reduced() || !!fig.closest(".is-presenting"), src = soft ? mvFadeTake() : mvTake();
+    mvOwn = true; paint(false); mvOwn = false;
+    if (soft){ mvFadeRun(src); if (fig.closest(".is-presenting")) window.dispatchEvent(new Event("resize")); return; }
+    if (!toBars && skPan) skPan.scrollLeft = 0;
+    const dst = mvTake();
+    if (src && dst) mvStart("b6", toBars ? src : dst, toBars ? dst : src, toBars ? 1 : -1);
+  }
+
   /* ---- the caption under the chart ---- */
   const keyEl = document.getElementById("wfKey");
   function captionSync(){
@@ -20197,10 +20744,11 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     const I = window.FLOW_ICO ? window.FLOW_ICO.in : "", O = window.FLOW_ICO ? window.FLOW_ICO.out : "", src = "";   /* no source line under the chart (2026-10-27, Nil) */
     /* opt-2's key states the totals, counted; the sentence shows the state, so the key never changes with it. opt-3's
        sentence names no groups, so its key is the legend for the flow and the ranking both, and says which are shown.
-       Both now stand it down (2026-10-28), the flow for its nodes' words and the rankings for their column heads; opt-2's
-       treemap keeps it */
-    keyEl.classList.toggle("wf-key--sk", b4 === "sankey" && (isSk() || isTree()));
-    if (isSk() || isTree()){
+       The flow stands it down for its nodes' words and opt-2's ranking for its column heads (2026-10-28); opt-2's
+       treemap keeps it, and opt-3's ranking, which lost its columns (2026-10-28, later), keeps it too */
+    /* beat 6's flow keeps its bars' key, folded under it (2026-10-28): the gain's words, measured for its room */
+    keyEl.classList.toggle("wf-key--sk", b4 === "sankey" && (isSk() || isTree()) && state !== 2);
+    if ((isSk() || isTree()) && state !== 2){
       const Bo = window.FLOW_ICO ? window.FLOW_ICO.both : "";
       const on = b4 !== "sankey" ? null : T3() ? (view.on3 || ALL3) : (!view.who || view.who === "both") ? ["non", "res"] : [view.who];
       /* opt-3's legend names the groups without their counts (2026-10-28, Nil: "sankey: remove numbers from the below
@@ -20313,7 +20861,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     const cell = (v, cls) => '<td class="' + (cls || "num") + '">' + v + '</td>';
     /* under the flow diagram, beats 4 and 5 take their ranking's table (2026-10-28): the groups the flow shows, where
        the bars' table it gave had none of them */
-    const groups = isTree() || isSk();
+    /* beat 6's flow takes its bars' table (2026-10-28) */
+    const groups = (isTree() || isSk()) && state !== 2;
     /* opt-3's: the two counts, then the three parts, estimated */
     if (groups && T3()){
       const E = "";
@@ -20493,29 +21042,48 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   window.WF = {
     setState(s){
       s = Math.max(0, Math.min(BEATS.length - 1, s | 0));
-      const first = state < 0;
+      const first = state < 0, from = state, hadAsk = !!asked;
       if (asked && ASKS[asked].state !== s) askOff(false);
       /* back from beats 1 to 3 to the beat it left (2026-10-28): stand() closed an answer and put the flow away on the
          way out, and the beat came back with the answer's chart under a closed answer. It is drawn again at its own
          view: the flow builds, as on any arrival; the rest is put in place */
       const back = away && s === state && !first; away = false;
       if (s === state && !first && !back) return;
+      /* beat 5's flow to beat 6's bars under opt-3 (2026-10-28, Nil: "Did you work on a transition from sankey to bar,
+         particularly from 5/7 to 6/7?"): the move in B's language as the reader scrolls on, and back as they scroll up;
+         a scroll back mid-move runs it back from where it stands. Beat 6 on its flow builds its flow as before; any other
+         beat cuts a move to its end. Under reduced motion, and in the presenter, the two drawings cross-fade */
+      const flip = !!mv && mv.kind === "56" && !first && !back && ((from === 2 && s === 1) || (from === 1 && s === 2));
+      const go = !mv && !first && !back && !hadAsk && b4 === "sankey" && skView === "sankey" && b6View === "rank" &&
+        ((from === 1 && s === 2 && isSk() && !!sk && sk.mode === 1) || (from === 2 && s === 1 && !isSk() && !!lastGain));
+      if (mv && !flip) mvCut();
+      const soft = go && (reduced() || !!fig.closest(".is-presenting")), src = go ? (soft ? mvFadeTake() : mvTake()) : null;
       gTree.selectAll("*").interrupt();
       tipHide(true); state = s; view = beatView(s); hlTemp = null; previewWho = null; whoUnlit(); hot = null;
       pinned = homePin();
       /* the first arrival builds opt-2's treemap (the bars come in still, as they did) */
-      headSync(); paint(back ? b4 === "sankey" && skView === "sankey" && s <= 1 : !first || (b4 !== "bars" && s <= 1)); needleDraw(pinned ? byCode[pinned] : null);
+      headSync();
+      if (flip || src){ mvOwn = true; paint(false); mvOwn = false; }
+      else paint(back ? b4 === "sankey" && skView === "sankey" && s <= 1 : !first || (b4 !== "bars" && s <= 1));
+      needleDraw(pinned ? byCode[pinned] : null);
+      if (flip) mv.vel = s === 2 ? 1 : -1;
+      else if (src && soft) mvFadeRun(src);
+      else if (src){ if (s === 1 && skPan) skPan.scrollLeft = 0; const dst = mvTake(); if (dst) mvStart("56", s === 2 ? src : dst, s === 2 ? dst : src, s === 2 ? 1 : -1); }
       /* the sentence that shows is measured again a frame on, once it stands */
       requestAnimationFrame(yearSync);
     },
-    stand(){ if (asked) askOff(false); tipHide(true); hot = null; skHot = null; away = true;
+    stand(){ if (mv) mvCut(); if (asked) askOff(false); tipHide(true); hot = null; skHot = null; away = true;
       /* the flow is put away with the admin beats (2026-10-28): the figure no longer says it shows one on beats 1 to 3,
          and the way back draws it anew */
       fig.classList.remove("is-b4sk"); delete fig.dataset.skfold;
       /* leaving for the treemap's beats: opt-2's treemap is left whole and at its beat's view, for the way back */
       gTree.selectAll("*").interrupt();
       if (isTree()){ hlTemp = null; previewWho = null; whoUnlit(); headSync(); treePaint(false); treeFill(false); } },
-    get state(){ return state; }
+    get state(){ return state; },
+    /* for the checks (2026-10-28): the move running, and a hold of it at t ms of its own clock (resume lets it run on) */
+    get move(){ return mv && mv.kind !== "fade" ? { kind: mv.kind, dir: mv.vel > 0 ? "fwd" : "rev", t: mv.t, vel: mv.vel, D: mv.D, T: mv.T, delays: mv.items.filter(it => it.d).map(it => it.code + " " + it.d) } : null; },
+    seek(t){ if (!mv || mv.kind === "fade") return false; if (mv.timer){ mv.timer.stop(); mv.timer = null; } mv.t = Math.max(0, Math.min(mv.D, t)); mvDraw(); return true; },
+    resume(){ if (mv && mv.kind !== "fade" && !mv.timer) mvRun(); }
   };
   gaugeBuild(); yearSync();
   let lastPhone = phone(), lw = 0;
