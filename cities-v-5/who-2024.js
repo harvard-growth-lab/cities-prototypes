@@ -405,13 +405,17 @@ window.WHO_2024 = {
    stands among US admins, for the figure's tooltip. From the reference's
    parquet (place_panel, place_housing); Boston's own values are the rows
    above. */
+/* employed (2026-11-03, Nil: "we are adding employed residents from the reference, both admin and metro; the numbers
+   can be fake"): the admin's own and its peers' are BLS LAUS 2024 as in who-scatter-2024.js; the US average is
+   estimated, the US average population times the employed share of the admins on the scatter (49.5 per 100). */
 window.WHO_COMPARE_2024 = {
-  "us": { "population": 20207, "salary": 81669, "home_value": 411273, "unemployment": 4.17 },
+  "here": { "employed": 390264 },
+  "us": { "population": 20207, "salary": 81669, "home_value": 411273, "unemployment": 4.17, "employed": 10010 },
   "peers": [
-    { "name": "Washington", "st": "DC", "population": 702250, "salary": 112737, "home_value": 654897, "unemployment": 5.3 },
-    { "name": "Oakland", "st": "CA", "population": 443554, "salary": 119963, "home_value": 967539, "unemployment": 4.7 },
-    { "name": "Long Beach", "st": "CA", "population": 450901, "salary": 77926, "home_value": 857031, "unemployment": 5.6 },
-    { "name": "Cambridge", "st": "MA", "population": 121186, "salary": 129048, "home_value": 1072890, "unemployment": 3.1 }
+    { "name": "Washington", "st": "DC", "population": 702250, "salary": 112737, "home_value": 654897, "unemployment": 5.3, "employed": 391492 },
+    { "name": "Oakland", "st": "CA", "population": 443554, "salary": 119963, "home_value": 967539, "unemployment": 4.7, "employed": 227629 },
+    { "name": "Long Beach", "st": "CA", "population": 450901, "salary": 77926, "home_value": 857031, "unemployment": 5.6, "employed": 231393 },
+    { "name": "Cambridge", "st": "MA", "population": 121186, "salary": 129048, "home_value": 1072890, "unemployment": 3.1, "employed": 71786 }
   ],
   "lead": {},
   "bucket": {
@@ -429,13 +433,16 @@ window.WHO_COMPARE_2024 = {
    mean, taken by the page. bucket = where the metro stands among US metros,
    for the figure's tooltip. From the reference's parquet (city_panel,
    city_housing); Boston's own values are the metro rows above. */
+/* employed (2026-11-03): placeholders, not data. Each metro's population times a share near the admins' (49 to 55
+   per 100); to be replaced with the reference's figures. */
 window.WHO_COMPARE_METRO_2024 = {
-  "us": { "population": 759392, "salary": 70060, "home_value": 342210, "unemployment": 4.03 },
+  "here": { "employed": 2688700 },
+  "us": { "population": 759392, "salary": 70060, "home_value": 342210, "unemployment": 4.03, "employed": 372100 },
   "peers": [
-    { "name": "Washington", "st": "DC", "population": 6436489, "salary": 108532, "home_value": 575568, "unemployment": 3.1 },
-    { "name": "Seattle", "st": "WA", "population": 4145494, "salary": 126678, "home_value": 758554, "unemployment": 4.3 },
-    { "name": "San Diego", "st": "CA", "population": 3298799, "salary": 94592, "home_value": 946327, "unemployment": 4.3 },
-    { "name": "Denver", "st": "CO", "population": 3052498, "salary": 96324, "home_value": 603323, "unemployment": 4.1 }
+    { "name": "Washington", "st": "DC", "population": 6436489, "salary": 108532, "home_value": 575568, "unemployment": 3.1, "employed": 3411300 },
+    { "name": "Seattle", "st": "WA", "population": 4145494, "salary": 126678, "home_value": 758554, "unemployment": 4.3, "employed": 2238600 },
+    { "name": "San Diego", "st": "CA", "population": 3298799, "salary": 94592, "home_value": 946327, "unemployment": 4.3, "employed": 1616400 },
+    { "name": "Denver", "st": "CO", "population": 3052498, "salary": 96324, "home_value": 603323, "unemployment": 4.1, "employed": 1678900 }
   ],
   "lead": {},
   "bucket": {

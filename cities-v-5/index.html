@@ -1795,20 +1795,25 @@
   /* the stand beats, a step larger and roomier (2026-11-03, Nil: "the overall text size can get slightly larger.
      re-organize the sizing and spacing in this beat"): figures 22, takeaways 17, names, labels, key and peers 14,
      bars 8 and 10 tall; rows 16px apart from their rules, the table 24px under the words and the peers 24px under it */
-  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp){margin-top:24px;}
-  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ln{grid-template-columns:minmax(0,170px) minmax(0,1fr) 260px;gap:0 24px;padding:16px 0;}
+  /* no colour key: every bar is named before it (2026-11-03, Nil: "you don't need legend to show the colors"), so the
+     table's first rule sits one paragraph gap under the text */
+  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp){margin-top:0;}
+  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) > .wt-mkey{display:none;}
+  /* a step smaller with the fifth row, employed residents, so the five fit (2026-11-03, Nil) */
+  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ln{grid-template-columns:minmax(0,170px) minmax(0,1fr) 260px;gap:0 24px;padding:13px 0;}
   :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ln-a{gap:3px;}
-  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-name{font-size:14px;}
+  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-name{font-size:13.5px;}
   /* "lower is better" on its own line under the name, rather than breaking beside it */
   :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ln-a .wt-name .hint{display:block;margin:1px 0 0;font-size:13px;}
-  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ln-a .wt-val{font-size:22px;line-height:1.15;}
-  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-tk{font-size:17px;gap:5px;font-weight:400;}
+  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ln-a .wt-val{font-size:20px;line-height:1.15;}
+  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-tk{font-size:16px;gap:4px;font-weight:400;}
   /* the takeaway in regular weight, its figure too (2026-11-03, Nil: "2.4 times the US average" regular) */
-  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-tk .wt-d,
-  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-tk .wt-d b{font-weight:400;}
-  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-tk .wt-d + .wt-d{font-size:14px;}
-  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-mini{gap:7px 10px;}
-  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ml{font-size:14px;}
+  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-tk .wt-d{font-weight:400;}
+  /* the figure itself bold, "33 times", the words after it regular (2026-11-03, Nil) */
+  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-tk .wt-d b{font-weight:700;}
+  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-tk .wt-d + .wt-d{font-size:13.5px;}
+  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-mini{gap:5px 10px;}
+  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ml{font-size:13.5px;}
   :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-mkey{font-size:14px;gap:4px 18px;margin-bottom:10px;}
   :is(#page-overview, #page-overview-metro) .wt-peers{margin-top:24px;gap:8px 6px;}
   :is(#page-overview, #page-overview-metro) .wt-peers > .wt-pk,:is(#page-overview, #page-overview-metro) .wt-peers > span:first-child{min-height:28px;}
@@ -2783,6 +2788,7 @@
   .who-sc-tip.is-new .tt-u{font-size:calc(13px * var(--pv-k,1));font-weight:400;color:var(--ink-soft);}
   .who-sc-tip.is-new .tt-r{color:var(--ink);}
   .who-sc-tip.is-new .tt-r b{font-variant-numeric:tabular-nums;}
+  .who-sc-tip .tt-r .tt-w{font-weight:700;color:var(--ink);}
   .who-sc-tip.is-new .tt-line{margin:3px 0 0;line-height:1.35;color:var(--ink);}
   .who-sc-tip.is-new .tt-line b{font-weight:700;font-variant-numeric:tabular-nums;}
   .who-sc-tip.is-new .tt-soft{margin:3px 0 0;line-height:1.35;color:var(--ink-soft);}
@@ -5077,7 +5083,10 @@
   .fl-detail .fd-lb{transition:opacity .5s ease 1.2s;}
   .fl-bare .fl-detail .fd-fill{clip-path:inset(0 100% 0 0);transition:none;}
   .fl-bare .fl-detail .fd-lb{opacity:0;transition:none;}
-  @media (prefers-reduced-motion: reduce){ .fl-detail .fd-fill,.fl-detail .fd-lb{transition:none;} }
+  /* before the move nothing of the bars shows, no empty track and no totals (2026-11-03, Nil); they come in as it starts */
+  .fl-detail .fd{transition:opacity .4s ease;}
+  .fl-bare .fl-detail .fd{opacity:0;transition:none;}
+  @media (prefers-reduced-motion: reduce){ .fl-detail .fd-fill,.fl-detail .fd-lb,.fl-detail .fd{transition:none;} }
   /* a narrow column (the details under the words below 1200): the words under the segments give way to the counts */
   /* a narrow column has no room for two names side by side: under the bar they stand one per line, each led by its share in its colour */
   @media (max-width:1199px){ .fl-detail--col .fd-lb{display:block;} .fl-detail--col .fd-lab{display:block;width:auto;min-width:0;max-width:none;padding-right:0;font-size:13px;} }
@@ -8746,7 +8755,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
               <h2>Where does <span class="city-short">Boston</span> Admin stand?</h2>
             </div>
             <p class="lede"><span class="city-short">Boston</span> Admin is a city in Massachusetts. Each of its
-              measures is set here against the US average, and beside the places most like it.</p>
+              measures is set here against the US average, and beside the places most like it. Its homes cost 2.4 times
+              the US average, while its salaries are only 30% above it.</p>
             <div class="who-ind" data-who="place"></div>
           </section>
 
@@ -8783,6 +8793,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
                 small farming towns such as Calexico, California, at 29.4%.</p>
               <p data-m="yp">A typical <span class="city-short">Boston</span> Admin home costs 9.2 years of the average salary,
                 against 5.0 for the US average. Homes are hardest to afford in coastal California, such as Santa Barbara, at 19.5 years.</p>
+              <p data-m="emp"><span class="city-short">Boston</span> Admin has 390K employed residents, 58 of every 100 people
+                who live there. Among the 36 admins of 500,000 or more, only Austin, Seattle, Denver and San Francisco
+                have a larger share at work.</p>
             </template>
           </section>
 
@@ -8886,6 +8899,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
                 at 18.4%.</p>
               <p data-m="yp">A typical home in <span class="city-short">Boston</span> Metro costs 6.2 years of the average salary, against 4.9 for the average
                 US metro. Among its peer metros only San Diego, at 10.0 years, takes clearly longer.</p>
+              <p data-m="emp"><span class="city-short">Boston</span> Metro has 2.69M employed residents, about 53 of every 100
+                people who live there. Bigger metros have more people at work, close to in step with their size.</p>
             </template>
           </section>
 
@@ -14168,7 +14183,10 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
      admin stands among US admins in a tooltip. Population leads, set larger. */
   (function(){
     const KEYS = ["population", "salary", "home_value", "unemployment"];
-    const NAME = { population: "Population", salary: "Average salary", home_value: "Home value", unemployment: "Unemployment" };
+    const NAME = { population: "Population", employed: "Employed residents", salary: "Average salary", home_value: "Home value", unemployment: "Unemployment" };
+    /* the lines and cards add employed residents under population, as the reference does (2026-11-03, Nil); the
+       bars, band and axis forms keep the four, the band having no distribution for it */
+    const SKEYS = ["population", "employed", "salary", "home_value", "unemployment"];
     const esc = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
     const slug = n => n.toLowerCase().replace(/\s+/g, "-");
     const ARR = up => '<svg class="wt-arr" viewBox="0 0 10 10" aria-hidden="true"><path d="' + (up ? "M5 1 9.5 9H.5Z" : "M5 9 .5 1h9Z") + '" fill="currentColor"/></svg>';
@@ -14248,7 +14266,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         const key = '<p class="wt-mkey" aria-hidden="true"><span><i class="here"></i>' + opts.here + '</span><span><i class="us"></i>US average</span>' + (avg ? '<span><i class="pa"></i>Peer average</span>' : '') +
           onPeers.map(pr => '<span><i class="pe" style="--pc:var(--pc-' + slug(pr.name) + ')"></i>' + esc(pr.name) + '</span>').join("") + '</p>';
         let h = '<div class="wt wt--' + mode + '" data-mode="' + mode + '">' + (cards ? '<div class="wt-cards">' : key);
-        KEYS.forEach(k => {
+        SKEYS.filter(k => here[k] != null && C.us[k] != null).forEach(k => {
           const v = here[k], us = C.us[k], pa = pavg[k], lower = k === "unemployment";
           const max = Math.max(v, us, avg ? pa : 0, ...onPeers.map(pr => pr[k])) * 1.04;
           const name = '<span class="wt-name">' + NAME[k] + (lower ? '<span class="hint">lower is better</span>' : '') + '</span>';
@@ -14340,8 +14358,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       function render(){
         if (!host) return;
         requestAnimationFrame(peersFit);
-        const here = {}; D.ind.forEach(r => { here[r.key] = r.value; });
-        const peers = C.peers, pavg = {}; KEYS.forEach(k => { pavg[k] = mean(peers, k); });
+        const here = {}; D.ind.forEach(r => { here[r.key] = r.value; }); Object.assign(here, C.here || {});
+        const peers = C.peers, pavg = {}; SKEYS.forEach(k => { if (peers.every(pr => pr[k] != null)) pavg[k] = mean(peers, k); });
         const onPeers = peers.filter(pr => on.has(pr.name));
         if (mode === "cards" || mode === "lines"){ host.innerHTML = simple(here, pavg, onPeers); return; }
         if (mode === "axis"){ host.innerHTML = lined(here, pavg, onPeers); settle(); return; }
@@ -14524,7 +14542,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
          table draws them, for the charts below it */
       function head(k){
         if (!D) return "";
-        const v = D.ind.find(r => r.key === k).value;
+        const r0 = D.ind.find(r => r.key === k), v = r0 ? r0.value : (C.here || {})[k];
+        if (v == null) return "";
         return '<div class="wt-head"><span class="wt-name">' + NAME[k] + (k === "unemployment" ? '<span class="hint">lower is better</span>' : '') + '</span>' +
           figure(k, v) + '</div>' +
           '<p class="wt-diff">' + dChip(k, v, C.us[k], "US average") + dChip(k, v, mean(C.peers, k), "Peers") + '</p>';
@@ -14934,9 +14953,17 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     const C = {}; D.cols.forEach((c, i) => { C[c] = i; });
     /* the chart's own copy: the year switch rewrites its values, and the 2024 file is read elsewhere too (the compare ranks, the close) */
     const rows = D.rows.map(r => r.slice()), n = rows.length;
+    /* employed residents for a set without them (the metros): placeholders, not data (2026-11-03, Nil: "the numbers can
+       be fake"). Each row's population times a share fixed by its id, 44 to 58 per 100; Boston and its peers take the
+       stand table's figures, so the two agree. 2014 uses the same shares */
+    const EMPX = C.emp == null && opts.fakeEmp ? new Float32Array(n) : null;
+    if (EMPX){ C.emp = rows[0].length; const fix = {}; D.peers.forEach((id, j) => { if (CMP.peers[j]) fix[id] = CMP.peers[j].employed; });
+      rows.forEach((r, i) => { let h = 0; String(r[C.id]).split("").forEach(ch => { h = (h * 31 + ch.charCodeAt(0)) % 9973; });
+        const f = r[C.id] === D.here && CMP.here ? CMP.here.employed : fix[r[C.id]];
+        EMPX[i] = f ? f / r[C.pop] : .44 + (h / 9973) * .14; r[C.emp] = Math.round(r[C.pop] * EMPX[i]); }); }
     /* years of pay for a home: a typical home's value over the average
        salary, worked out here for every row (opt-2's fourth measure) */
-    if (C.home != null && C.wage != null && C.yp == null){ C.yp = D.cols.length; rows.forEach(r => r.push(r[C.home] / r[C.wage])); }
+    if (C.home != null && C.wage != null && C.yp == null){ C.yp = rows[0].length; rows.forEach(r => r.push(r[C.home] / r[C.wage])); }
     const hereI = rows.findIndex(r => r[C.id] === D.here);
     const peerI = D.peers.map(id => rows.findIndex(r => r[C.id] === id)).filter(i => i >= 0);
     const slug = s => s.toLowerCase().replace(/\s+/g, "-");
@@ -14969,7 +14996,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     maxes();
     const ORDER = ["wage", "home", "unemp"];
     /* the switch's buttons: opt-2 adds years of pay (CSS hides it in opt-1) */
-    const BTN = ["wage", "home", "yp", "unemp"];
+    const BTN = ["wage", "home", "yp", "unemp"].concat(C.emp != null ? ["emp"] : []);  /* employed residents, 2026-11-03 */
     const opt2 = () => window.whoRight === "chart";
     /* the right side's opt-1 (2026-10-15): the dots in five colours, the
        fifths of the drawn set for the measure on, shared with the map. Cuts
@@ -14990,7 +15017,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       if (y === year || (y !== 2024 && !THEN)) return;
       year = y; const then = y !== 2024, at = THEN ? THEN.cols.reduce((o, c, j) => (o[c] = j, o), {}) : {};
       rows.forEach((r, i) => { const t = then ? THEN.rows[r[C.id]] : null; gone[i] = then && !t ? 1 : 0;
-        VCOLS.forEach((c, j) => { r[C[c]] = t ? t[at[c]] : NOW.v[i][j]; });
+        VCOLS.forEach((c, j) => { r[C[c]] = t ? (c === "emp" && EMPX ? Math.round(r[C.pop] * EMPX[i]) : t[at[c]]) : NOW.v[i][j]; });
         if (C.yp != null) r[C.yp] = r[C.home] / r[C.wage]; });
       if (then){ const u = THEN.us;
         Object.assign(US, { pop: u.population, wage: u.salary, home: u.home_value, unemp: u.unemployment, yp: u.home_value / u.salary });
@@ -15002,7 +15029,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       yearFns.forEach(f => f());
     }
     const tintOn = () => (window.whoRight || "map") === "map";
-    const TKEY = { wage: "salary", home: "home_value", unemp: "unemployment", yp: "yp" };
+    const TKEY = { wage: "salary", home: "home_value", unemp: "unemployment", yp: "yp", emp: "employed" };
     const fmt = (v, k, full) => {
       const m = M[k];
       if (m.pct) return v.toFixed(1) + "%";
@@ -15081,6 +15108,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       /* the tables are 2024's: another year's header is made here, as years of pay's is, from the rows */
       const headThen = kk => { const b = rows[hereI][C[kk]], low = kk === "unemp";
         const d = (ref, who) => { let up, size, words;
+          if (ref == null || !ref) return '';
           if (M[kk].pct){ const g = Math.round((b - ref) * 10) / 10; if (Math.abs(g) < .05) return '<span class="wt-d">about the same as ' + who + '</span>'; up = g > 0; size = Math.abs(g).toFixed(1) + " pts"; words = (up ? "above " : "below ") + who; }
           else { const q = b / ref; if (Math.abs(q - 1) < .01) return '<span class="wt-d">about the same as ' + who + '</span>'; up = q > 1;
             if (q >= 2){ size = (q >= 10 ? Math.round(q) : q.toFixed(1)) + " times"; words = who; } else { size = Math.round(Math.abs(q - 1) * 100) + "%"; words = (up ? "above " : "below ") + who; } }
@@ -15160,6 +15188,10 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         const yt = yd ? (M[yk].log ? logTicks(yd[0], yd[1], H) : linTicks(yd[0], yd[1], H)) : [];
         const gut = yk ? Math.max(...yt.map(v => tickFmt(v, yk).length)) * fs * .62 + 10 : 6;
         const m = { l: Math.round(gut), r: 14, t: fs + 18, b: fs * 2 + 18 };
+        /* the search ends where the plot does, at its last gridline (2026-11-03, Nil: "find admin right aligned with the graph") */
+        const fb = (beat || host).querySelector(".sc-find");
+        if (fb && PR.width){ const cr = fb.parentElement.getBoundingClientRect().right;
+          fb.style.marginRight = Math.max(0, Math.round(cr - (PR.left + W - m.r))) + "px"; }
         const xd = pad(ext("pop"), true);
         const x = scale(xd[0], xd[1], m.l, W - m.r, true);
         const pos = new Float32Array(n * 2);
@@ -15385,6 +15417,25 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         return '<span class="tt-r' + (plain ? "" : (lowBetter(k) ? !up : up) ? " is-good" : " is-bad") + '"><b>' + ARRW(up) + size + '</b>' + escT(words) + '</span>';
       };
       const WHAT = { wage: "average salary", home: "home value", unemp: "unemployment", yp: "years of pay for a home", emp: "employed residents" };
+      /* the card's comparisons (2026-11-03, Nil: "compare 2 data points against Boston admin, don't need to mention
+         US average"): each names its measure, "18% higher average salary than Boston Admin", population in ink */
+      const MORE = { pop: ["larger", "smaller"], emp: ["more", "fewer"], wage: ["higher", "lower"], home: ["higher", "lower"] };
+      /* the measure's name bold in ink; up and down in the page's green and red, population too, larger read as up as the
+         stand table reads it (2026-11-03, Nil) */
+      const cmpRow = (kk, v, ref, who) => {
+        const what = '\u0001' + (kk === "pop" ? "population" : kk === "yp" ? "years of pay" : WHAT[kk]) + '\u0002';
+        let up, same, size, words;
+        if (M[kk].pct || M[kk].yrs){ v = Math.round(v * 10) / 10; ref = Math.round(ref * 10) / 10; }
+        if (M[kk].pct){ const d = v - ref; up = d > 0; same = Math.abs(d) < .05; size = Math.abs(d).toFixed(1) + " pts"; words = (up ? " higher " : " lower ") + what + " than " + who; }
+        else if (M[kk].yrs){ const d = Math.round((v - ref) * 10) / 10; up = d > 0; same = Math.abs(d) < .05; size = Math.abs(d).toFixed(1); words = (up ? " more " : " fewer ") + what + " than " + who; }
+        else { const q = v / ref; up = q > 1; same = Math.abs(q - 1) < .01;
+          if (q >= 2){ size = (q >= 10 ? Math.round(q) : q.toFixed(1)) + " times"; words = " " + who + "'s " + what; }
+          else { size = Math.round(Math.abs(q - 1) * 100) + "%"; words = " " + MORE[kk][up ? 0 : 1] + " " + what + " than " + who; } }
+        const strong = s => escT(s).replace("\u0001", '<strong class="tt-w">').replace("\u0002", "</strong>");
+        if (same) return '<span class="tt-r">' + strong('About the same ' + what + ' as ' + who) + '</span>';
+        const tone = (lowBetter(kk) ? !up : up) ? " is-good" : " is-bad";
+        return '<span class="tt-r' + tone + '"><b>' + ARRW(up) + size + '</b>' + strong(words) + '</span>';
+      };
       /* counted from the nearer end: "19th lowest", not "1,566th highest" */
       const rankNote = i => { const v = rows[i][C[k]], low = lowBetter(k); let a = 1, b = 1;
         let on = 0; for (let j = 0; j < n; j++){ if (gone[j]) continue; on++; const w = rows[j][C[k]]; if (low ? w < v : w > v) a++; if (low ? w > v : w < v) b++; }
@@ -15393,27 +15444,32 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
           (k === "unemp" ? " Lower is better." : k === "yp" ? " Fewer is easier to afford." : ""); };
       /* the card's parts: the mark it is about, as drawn, and the references it is set against */
       function tipFacts(h){
-        if (h.us) return { g: "us", plain: true, name: "US average", short: "US average", v: US[k], refs: [[rows[hereI][C[k]], subj, "here"]],
+        const hr = rows[hereI], atHere = [subj, hr[C[k]], hr[C.pop]];
+        if (h.us) return { g: "us", plain: true, name: "US average", short: "US average", v: US[k], refs: [[rows[hereI][C[k]], subj, "here"]], vs: [subj, hr[C[k]], null],
           note: k === "yp" ? "The US average home value over the US average salary." : "The average of all US " + noun + "s, not only those on the chart." };
-        if (h.avg) return { g: "pa", plain: true, name: "Peer average", short: "Peer average", v: PAVG[k], refs: [[US[k], "the US average", "us"], [rows[hereI][C[k]], subj, "here"]], yp: [PAVG.home, PAVG.wage],
+        if (h.avg) return { g: "pa", plain: true, name: "Peer average", short: "Peer average", v: PAVG[k], pop: PAVG.pop, refs: [[rows[hereI][C[k]], subj, "here"]], vs: atHere, yp: [PAVG.home, PAVG.wage],
           note: "The average of " + listOf(CMP.peers.map(p => p.name + " " + p.st)) + "." };
         const i = h.i, r = rows[i], here = i === hereI, peer = peerI.indexOf(i) >= 0;
         return { g: here ? "here" : "pe", pc: here ? null : peer && isOn(i) ? "var(--pc-" + slug(r[C.name]) + ")" : dark(i) ? "var(--control-edge)" : "var(--mark-grey)",
           name: (here ? subj : clean(r[C.name])) + ", " + r[C.st], short: here ? subj : clean(r[C.name]), v: r[C[k]], pop: r[C.pop], yp: [r[C.home], r[C.wage]],
-          refs: here ? [[US[k], "the US average", "us"], [PAVG[k], "the peer average", "pa"]] : [[US[k], "the US average", "us"], [rows[hereI][C[k]], subj, "here"]],
+          refs: here ? [[PAVG[k], "the peer average", "pa"]] : [[rows[hereI][C[k]], subj, "here"]],
+          vs: here ? ["the peer average", PAVG[k], PAVG.pop] : atHere,
           note: (peer ? "One of the closest peers. " : "") + rankNote(i) };
       }
       const unitW = () => k === "yp" ? " of pay for a home" : " " + WHAT[k];
       function cardHtml(d){
         /* the name alone, no mark beside it (2026-11-03, Nil) */
         const m = tipMode(), head = '<div class="tt-h"><span>' + escT(d.name) + '</span></div>';
-        const rowsH = list => list.length ? '<div class="tt-rows">' + list.map(([v, who]) => gapRow(d.v, v, who, d.plain)).join("") + '</div>' : '';
+        /* the measure, then population, each against Boston (Boston itself against the peer average) */
+        const rowsH = () => { const [who, v, pop] = d.vs, r = [cmpRow(k, d.v, v, who)];
+          if (pop != null && d.pop != null) r.push(cmpRow("pop", d.pop, pop, who));
+          return '<div class="tt-rows">' + r.join("") + '</div>'; };
         /* a phone's plot is shorter than the card: the note goes, the chart stays in sight */
         /* no note under a rule (2026-11-03, Nil: "remove the horizontal line and the text below it from the tooltips") */
         const noteH = '';
         const kv = (k === "yp" && d.yp ? [["Home value", fmt(d.yp[0], "home")], ["Average salary", fmt(d.yp[1], "wage")]] : []).concat(d.pop != null ? [["Population", popF(d.pop)]] : []);
         const kvH = kv.length ? '<dl class="tt-kv">' + kv.map(([a, b]) => '<dt>' + a + '</dt><dd>' + b + '</dd>').join("") + '</dl>' : '';
-        if (m === "compact") return head + '<p class="tt-line"><b>' + fmt(d.v, k) + '</b>' + unitW() + '</p>' + rowsH(d.refs.slice(0, 1).filter(r => r[2] === "us")) +
+        if (m === "compact") return head + '<p class="tt-line"><b>' + fmt(d.v, k) + '</b>' + unitW() + '</p>' + rowsH() +
           (d.pop != null ? '<p class="tt-soft">' + popF(d.pop) + ' people</p>' : '');
         if (m === "bars"){
           /* the figure beside its references, each named before its bar, from zero */
@@ -15428,9 +15484,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
            "show salary and population with the same standard styling and show the comparison after") */
         if (m === "card"){
           const facts = [[k === "yp" ? M.yp.long : M[k].name, fmt(d.v, k)]].concat(kv);
-          return head + '<dl class="tt-kv tt-kv--lead">' + facts.map(([a, b]) => '<dt>' + a + '</dt><dd>' + b + '</dd>').join("") + '</dl>' + rowsH(d.refs) + noteH;
+          return head + '<dl class="tt-kv tt-kv--lead">' + facts.map(([a, b]) => '<dt>' + a + '</dt><dd>' + b + '</dd>').join("") + '</dl>' + rowsH() + noteH;
         }
-        return head + '<div class="tt-fig">' + fmt(d.v, k) + '<span class="tt-u">' + unitW() + '</span></div>' + rowsH(d.refs) + kvH + noteH;
+        return head + '<div class="tt-fig">' + fmt(d.v, k) + '<span class="tt-u">' + unitW() + '</span></div>' + rowsH() + kvH + noteH;
       }
       /* centred over the mark, under it where the top has no room, inside the plot either way */
       function placeCard(h){
@@ -15704,7 +15760,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   build(window.WHO_SCATTER_2024, window.WHO_COMPARE_2024, [...document.querySelectorAll('.who-sc[data-measure]:not([data-set="metro"])')],
     { set: "admin", unit: "a US admin", tag: "Admin", then: window.WHO_SCATTER_2014 });
   build(window.WHO_METRO_SCATTER_2024, window.WHO_COMPARE_METRO_2024, [...document.querySelectorAll('.who-sc[data-set="metro"]')],
-    { set: "metro", unit: "a US metro", tag: "Metro", then: window.WHO_METRO_SCATTER_2014 });
+    { set: "metro", unit: "a US metro", tag: "Metro", then: window.WHO_METRO_SCATTER_2014, fakeEmp: true });
   })();
 
   /* ---- Who are you?: the right side of the scatter beats (2026-10-15) ----
