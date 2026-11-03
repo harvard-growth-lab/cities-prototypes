@@ -853,9 +853,11 @@
   html:is([data-layout="scroll"],[data-layout="halves"]) .pages:has(#page-export-basket){background:var(--white);}
   /* the two grey-ground sections keep their ground under the white pages,
      bled to the edges from their 976 measure */
-  html:is([data-layout="scroll"],[data-layout="halves"]) #page-export-basket{
+  html:is([data-layout="scroll"],[data-layout="halves"]) :is(#page-export-basket,#page-doing,#page-doing-metro){
     background:var(--ground);box-shadow:0 0 0 100vmax var(--ground);clip-path:inset(0 -100vmax);
   }
+  /* How am I doing? (2026-11-02) is Part 1's too: on the ground, as its two neighbours are */
+  .pages:has(:is(#page-doing,#page-doing-metro):not(.sec-off)){background:var(--ground);}
   /* the close of a section: the house's dark teal, edge to edge, the
      content on the sections' own 976 measure */
   .sec-seal{display:none;}
@@ -1002,7 +1004,7 @@
   .seam-diag{margin:6px 0 0;font-size:16px;line-height:1.5;color:var(--on-dark);}
   .seam-diag b{color:var(--white);white-space:nowrap;}
   .seam-diag .qmark{width:1.05em;height:1.05em;margin-right:.2em;vertical-align:-.15em;}
-  .seam-board{display:grid;grid-template-columns:minmax(0,3fr) auto minmax(0,2.3fr);align-items:stretch;gap:22px;}
+  .seam-board{display:grid;grid-template-columns:minmax(0,4.5fr) auto minmax(0,2.3fr);align-items:stretch;gap:22px;}
   .seam-group{display:flex;flex-direction:column;gap:12px;min-width:0;}
   .seam-tag{margin:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;}
   .seam-tag b{font-size:13px;font-weight:700;letter-spacing:.2px;color:var(--white);}
@@ -1383,6 +1385,8 @@
     position:sticky;top:var(--chrome-h);height:calc(100vh - var(--chrome-h));overflow:hidden;
   }
   #ovMap{width:100%;height:100%;font-family:inherit;font-size:13px;background:var(--border);}
+  /* under the paper basemap the ground is the paper's (--ov-paper, set with the basemap) */
+  #ovMap[data-basemap="landing"], #ovMap[data-basemap="section"]{background:var(--ov-paper, var(--border));}
   /* ── option 1: two dedicated columns, reading side the wider ──────────
      The reference this is modelled on floats its prose over a full-bleed
      map, so text and map share the same ground and collide. Here each gets
@@ -1670,14 +1674,23 @@
      peer average one deep amber, bar, ring or diamond; "hues" gives the peers four colours retuned to stay apart in all
      pairs (8.1 under protan and deutan simulation, 15.4 in normal vision, OKLab, by the dataviz validator, Boston, the grey and the amber included), "amber" gives all four the peers' amber,
      their names telling them apart. Every value measured against the ground, Boston's teal and the status green and red */
-  #ovWrap[data-marks="hues"]{--mk-pa:#7d4e00;--pc-washington:#ce7325;--pc-oakland:#2963d0;--pc-long-beach:#a970dd;--pc-cambridge:#782c93;
+  /* Washington left orange for olive (2026-11-02, Nil: "apply all fixes"): its #ce7325 sat 3.0 from the commuters-out
+     orange, so one orange meant a peer in beats 1 and 2 and those commuting out in beats 3 and 4. #8f8f1f stands 13 or
+     more from every flow colour, the status green and the grey, and the set validates as before */
+  #ovWrap[data-marks="hues"]{--mk-pa:#7d4e00;--pc-washington:#8f8f1f;--pc-oakland:#2963d0;--pc-long-beach:#a970dd;--pc-cambridge:#782c93;
     --pc-seattle:#2963d0;--pc-san-diego:#a970dd;--pc-denver:#782c93;}
   #ovWrap[data-marks="amber"]{--mk-pa:#7d4e00;--pc-washington:#c27c10;--pc-oakland:#c27c10;--pc-long-beach:#c27c10;--pc-cambridge:#c27c10;
     --pc-seattle:#c27c10;--pc-san-diego:#c27c10;--pc-denver:#c27c10;}
   #ovWrap[data-marks="hues"] .wt,#ovWrap[data-marks="amber"] .wt{--bar-here:var(--teal);--bar-us:var(--control-edge);--bar-pa:var(--mk-pa);}
+  /* opt-4 Lighter (2026-11-03, Nil: the map's outline and fill and the grey average too dominant): the peers as in opt-2,
+     Boston's bar a lighter teal to match the lighter map, the US average a pale teal tint instead of the grey */
+  #ovWrap[data-marks="soft"]{--mk-pa:#7d4e00;--pc-washington:#8f8f1f;--pc-oakland:#2963d0;--pc-long-beach:#a970dd;--pc-cambridge:#782c93;
+    --pc-seattle:#2963d0;--pc-san-diego:#a970dd;--pc-denver:#782c93;}
+  #ovWrap[data-marks="soft"] .wt{--bar-here:#467e89;--bar-us:#9db4b9;--bar-pa:#b8801f;}
+  /* the peer average's bar a lighter amber so it no longer outweighs Boston; its rings and diamonds keep the dark --mk-pa */
   /* the compare beat is not part of the study: its bars stay as they were */
   #ovWrap[data-marks] .wt.wt--cmp,#ovWrap[data-marks] .who-cmp .wt{--bar-here:color-mix(in srgb,var(--teal) 85%,var(--white));--bar-us:color-mix(in srgb,var(--teal) 40%,var(--white));--bar-pa:color-mix(in srgb,var(--teal) 60%,var(--white));}
-  #ovWrap[data-marks="hues"] .wt-trk--axis::before,#ovWrap[data-marks="amber"] .wt-trk--axis::before{border-left-color:var(--ink);}
+  #ovWrap[data-marks="hues"] .wt-trk--axis::before,#ovWrap[data-marks="amber"] .wt-trk--axis::before,#ovWrap[data-marks="soft"] .wt-trk--axis::before{border-left-color:var(--ink);}
   .wt{color:var(--ink);}
   .wt-sw{display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--geo-city);flex:none;box-sizing:border-box;vertical-align:-1px;}
   .wt-sw.pe{width:10px;height:10px;background:var(--pc);}
@@ -1779,6 +1792,28 @@
   .wt-mkey span{display:inline-flex;align-items:center;gap:6px;} .wt-mkey i{display:inline-block;width:14px;height:8px;border-radius:0 2px 2px 0;background:var(--bar-us);}
   .wt-mkey i.here{background:var(--bar-here);} .wt-mkey i.pa{background:var(--bar-pa);} .wt-mkey i.pe{background:var(--pc);}
   @media (max-width:599px){ .wt--cards .wt-cards{grid-template-columns:1fr;} .wt--lines .wt-ln{grid-template-columns:1fr;gap:6px 0;} }
+  /* the stand beats, a step larger and roomier (2026-11-03, Nil: "the overall text size can get slightly larger.
+     re-organize the sizing and spacing in this beat"): figures 22, takeaways 17, names, labels, key and peers 14,
+     bars 8 and 10 tall; rows 16px apart from their rules, the table 24px under the words and the peers 24px under it */
+  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp){margin-top:24px;}
+  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ln{grid-template-columns:minmax(0,170px) minmax(0,1fr) 260px;gap:0 24px;padding:16px 0;}
+  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ln-a{gap:3px;}
+  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-name{font-size:14px;}
+  /* "lower is better" on its own line under the name, rather than breaking beside it */
+  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ln-a .wt-name .hint{display:block;margin:1px 0 0;font-size:13px;}
+  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ln-a .wt-val{font-size:22px;line-height:1.15;}
+  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-tk{font-size:17px;gap:5px;font-weight:400;}
+  /* the takeaway in regular weight, its figure too (2026-11-03, Nil: "2.4 times the US average" regular) */
+  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-tk .wt-d,
+  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-tk .wt-d b{font-weight:400;}
+  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-tk .wt-d + .wt-d{font-size:14px;}
+  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-mini{gap:7px 10px;}
+  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ml{font-size:14px;}
+  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-mkey{font-size:14px;gap:4px 18px;margin-bottom:10px;}
+  :is(#page-overview, #page-overview-metro) .wt-peers{margin-top:24px;gap:8px 6px;}
+  :is(#page-overview, #page-overview-metro) .wt-peers > .wt-pk,:is(#page-overview, #page-overview-metro) .wt-peers > span:first-child{min-height:28px;}
+  :is(#page-overview, #page-overview-metro) .wt-peer{padding:4px 9px 4px 7px;}
+  @media (max-width:599px){ :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ln{grid-template-columns:1fr;gap:8px 0;padding:14px 0;} }
   /* the compare beat's lines (opt-3): the metro's bar in the lightest tone, the rank under the takeaway, the ordinal in
      ink; population as a hundred squares, four rows of twenty-five, the admin's share of them filled */
   .wt-mb.mt,.wt-mkey i.mt{background:var(--bar-mt);}
@@ -2019,6 +2054,8 @@
   .tt-kv{display:grid;grid-template-columns:auto auto;gap:4px 16px;margin:8px 0 0;font-size:13px;line-height:1.35;}
   .tt-kv dt{color:var(--ink-soft);}
   .tt-kv dd{margin:0;text-align:right;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;}
+  /* the scatter card's facts first, the comparisons under a little air */
+  .tt-kv.tt-kv--lead{margin:6px 0 0;} .tt-kv--lead + .tt-rows{margin-top:8px;}
   .tt-note{margin:9px 0 0;padding:8px 0 0;border-top:1px solid var(--border);font-size:13px;line-height:1.4;color:var(--ink-soft);}
   /* the city and its metro: population as the city's slice of the metro's
      bar, the rest as the first table's bars, the metro the grey reference */
@@ -2263,23 +2300,41 @@
   .who-fl.no-fade .vn-ldr{transition:none;}
   .vn-labs{position:absolute;left:0;top:0;width:100%;height:0;pointer-events:none;}
   .vn-set,.vn-reg{position:absolute;left:0;top:0;width:max-content;color:var(--ink);line-height:1.3;}
-  /* each set's name, and its count on a second line (2026-10-20, Nil) */
-  .vn-set b{display:block;font-size:var(--t-note);font-weight:600;}
-  .vn-set > .vn-c{display:block;margin-top:1px;font-size:13px;color:var(--ink-soft);font-variant-numeric:tabular-nums;}
-  .who-fl.vn-tight .vn-u{display:none;}
-  .vn-set--live{text-align:right;}
+  /* each set's count and then its name, as opt-4 writes them (2026-11-02, Nil: "number work in Boston format"): the
+     count 18px bold, the words 13px semibold, on the set's bracket */
+  .vn-set{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:5px;line-height:1.2;}
+  .vn-set b{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums;}
+  .vn-set > span{font-size:13px;font-weight:600;}
+  .who-fl.vn-round .vn-set--work{justify-content:flex-end;}
   .who-fl.vn-brief .vn-nm-l,.who-fl:not(.vn-brief) .vn-nm-s{display:none;}
-  /* compact: each part one line, its count and its name, the shares left to the card (2026-10-23, now that the counts
-     lead; the shared part's two shares stood beside its icon before) */
-  .who-fl.vn-compact .vn-reg .vn-w{display:none;}
+  .vn-sbrk{fill:none;stroke:var(--ink);stroke-width:1;}
+  .who-fl.vn-round .vn-sbrk{display:none;}
   .vn-reg{opacity:0;transition:opacity .6s ease;}
   .who-fl[data-vn="named"] .vn-reg{opacity:1;transition-delay:.5s;}
   .vn-n{display:flex;flex-wrap:wrap;align-items:center;gap:2px 7px;line-height:1.2;width:max-content;max-width:100%;}
   .vn-n b{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums;}
-  .vn-n em{font-size:var(--t-note);font-weight:600;font-style:normal;}
-  .vn-w{display:block;font-size:var(--t-note);margin-top:3px;}
-  /* the shared part's two shares break between them, not inside one */
-  .vn-sh{display:inline-block;}
+  .vn-n em{font-size:13px;font-weight:600;font-style:normal;}
+  /* the parts' icons, small (2026-11-02, Nil: "try to add existing icons small"), and opt-4's 5px between count and name */
+  .vn-reg .vn-n{column-gap:5px;}
+  .vn-reg .vn-ico{width:24px;height:17px;margin-right:1px;} .vn-reg .vn-ico--both{width:14px;}
+  /* "live elsewhere" under the commute-in count, lined up with it (past the icon) */
+  .vn-x{display:block;margin:1px 0 0 30px;font-size:13px;font-weight:600;line-height:1.2;}
+  .vn-reg--in .vn-x{color:var(--flow-in);}
+  .who-fl.vn-side .vn-reg--in .vn-x{margin-left:0;}
+  /* listed under the figure (a phone, a narrow panel), "live elsewhere" follows on the count's line, after a comma */
+  .vn-xc{display:none;}
+  .who-fl:is(.vn-compact,.vn-list) .vn-reg--in{display:flex;flex-wrap:wrap;align-items:center;column-gap:5px;}
+  .who-fl:is(.vn-compact,.vn-list) .vn-reg--in .vn-x{margin:0;}
+  .who-fl:is(.vn-compact,.vn-list) .vn-xc{display:inline;}
+  /* the dot key (the Dot key study, 2026-11-02): a dot as large as the figure's, in the shared part's grey, then its
+     words; at the right end of the Play again row ("row"), under the figure ("foot") or before Play again ("note") */
+  .who-fl-key{display:inline-flex;align-items:center;gap:6px;}
+  .vk-dot{display:block;flex:none;overflow:visible;} .vk-dot circle{fill:var(--flow-both);}
+  .who-fl:not(.is-venn) .vk-dot{display:none;}
+  .who-fl.is-venn.vk-row .who-fl-key{order:5;margin-left:auto;}
+  .who-fl.is-venn.vk-foot > .who-fl-note .who-fl-key{display:none;}
+  .vn-key{position:absolute;left:0;top:0;display:none;align-items:center;gap:6px;width:max-content;font-size:13px;line-height:1.4;color:var(--ink-soft);}
+  .who-fl.is-venn.vk-foot .vn-key{display:inline-flex;}
   /* the frames: two small squares close together, the current one filled */
   .vn-frames{display:inline-flex;align-items:center;}
   .who-fl:not(.is-venn) .vn-frames{display:none;}
@@ -2288,8 +2343,6 @@
   .vn-fr:hover::before{border-color:var(--teal);}
   .vn-fr.is-on::before{background:var(--teal);border-color:var(--teal);}
   .vn-fr:focus-visible{outline:2px solid var(--teal);outline-offset:-2px;border-radius:4px;}
-  .vn-reg--both .vn-w b{font-weight:700;color:var(--flow-both-text);font-variant-numeric:tabular-nums;}
-  .vn-k{font-variant-numeric:tabular-nums;}
   /* the names answer a pointer (the card with the counts) once the parts are named */
   .who-fl[data-vn="named"] .vn-set,.who-fl[data-vn="named"] .vn-reg{pointer-events:auto;cursor:default;}
   .vn-tip{position:absolute;z-index:6;left:0;top:0;width:max-content;max-width:250px;padding:7px 9px;font-size:var(--t-note);line-height:1.4;color:var(--ink);
@@ -2298,6 +2351,66 @@
   .vn-tip b{display:block;font-weight:600;font-variant-numeric:tabular-nums;}
   .vn-tip span{display:block;color:var(--ink-soft);font-variant-numeric:tabular-nums;}
   .who-fl:not(.is-venn) > .vn-tip{display:none;}
+  /* ---- the Groups study's opt-4 (2026-11-02): the reference site's commute Venn and, under it, its histogram of
+     jobs per working resident, in its colours (cities.taimur.sh: the Venn's two tints at .42, the live one
+     multiplied over the work one; the histogram's light orange and light blue, a data palette like the flows';
+     ink, ink-soft and teal for the rest). Drawn 1:1, so its 13px words are 13px on screen ---- */
+  #ovWrap{--flow-in-soft:#9fd3df;--flow-out-soft:#f0c39a;}
+  .who-fl.is-ref{position:relative;display:flex;flex-direction:column;}
+  .who-fl.is-ref > :not(.who-ref){display:none !important;}
+  .who-fl:not(.is-ref) > .who-ref{display:none;}
+  .who-fl-panel > .who-fl.is-ref{flex:1 1 auto;min-height:0;}
+  .who-ref{position:relative;flex:1 1 auto;min-height:0;display:flex;flex-direction:column;}
+  .who-ref-venn{position:relative;flex:1 1 0;min-height:200px;}
+  .who-ref-dist{flex:1.1 1 0;min-height:230px;display:flex;flex-direction:column;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);}
+  .who-ref-head{margin:0;font-size:var(--t-sm);font-weight:700;line-height:1.5;color:var(--ink);}
+  .who-ref-hist{position:relative;flex:1 1 auto;min-height:0;}
+  .who-ref-venn > svg,.who-ref-hist > svg{position:absolute;left:0;top:0;display:block;overflow:visible;}
+  .rv-work{fill:var(--flow-in);fill-opacity:.42;stroke:var(--flow-in);stroke-width:1.5;pointer-events:none;}
+  .rv-live{fill:var(--flow-out);fill-opacity:.42;stroke:var(--flow-out);stroke-width:1.5;mix-blend-mode:multiply;pointer-events:none;}
+  .rv-hit{fill:transparent;stroke:none;} .rv-hit.is-on{stroke:var(--ink);stroke-width:1.5;}
+  .rv-labs,.rv-cap{pointer-events:none;}
+  .rv-brk{fill:none;stroke:var(--ink);stroke-width:1;}
+  .rv-t{fill:var(--ink);font-variant-numeric:tabular-nums;} .rv-t--both{fill:var(--white);}
+  .rv-n{font-size:18px;font-weight:700;} .rv-w{font-size:13px;font-weight:600;}
+  .rv-u--in{fill:var(--flow-in);} .rv-u--both{fill:var(--flow-both-text);} .rv-u--out{fill:var(--flow-out-text);}
+  .rv-ldr{stroke-width:1;} .rv-ldr--in{stroke:var(--flow-in);} .rv-ldr--both{stroke:var(--flow-both-text);} .rv-ldr--out{stroke:var(--flow-out);}
+  .rv-cap{font-size:13px;fill:var(--ink-soft);font-variant-numeric:tabular-nums;}
+  .rh-bar--lo{fill:var(--flow-out-soft);} .rh-bar--hi{fill:var(--flow-in-soft);} .rh-bar.is-on{stroke:var(--ink);stroke-width:1;}
+  .rh-hit{fill:transparent;}
+  .rh-grid{stroke:var(--border);} .rh-base{stroke:var(--control-edge);} .rh-one{stroke:var(--ink);stroke-width:1;}
+  .rh-tick,.rh-cap{font-size:13px;fill:var(--ink-soft);}
+  .rh-arr{font-size:13px;font-weight:600;} .rh-arr--lo{fill:var(--flow-out-text);} .rh-arr--hi{fill:var(--flow-in);}
+  .rh-peer{stroke:var(--ink);stroke-width:2;}
+  .rh-pa-halo{stroke:var(--white);stroke-width:4;stroke-opacity:.6;} .rh-pa{stroke:var(--ink);stroke-width:1.5;stroke-dasharray:3 3;}
+  .rh-pa-t{font-size:13px;fill:var(--ink);stroke:var(--white);stroke-width:3px;paint-order:stroke;} .rh-b{font-weight:700;}
+  .rh-me-halo{stroke:var(--white);stroke-width:5;stroke-opacity:.7;} .rh-me{stroke:var(--teal);stroke-width:3;}
+  .rh-me-t{font-size:22px;font-weight:700;fill:var(--teal);stroke:var(--white);stroke-width:4;paint-order:stroke;}
+  .rh-arr,.rh-tick,.rh-cap,.rh-mk,.rh-grid,.rh-base,.rh-one,.rh-bar,.rh-peer{pointer-events:none;}
+  .who-ref-tip{position:absolute;z-index:6;left:0;top:0;white-space:nowrap;padding:12px 16px;font-size:13px;line-height:1.4;color:var(--ink);
+    background:var(--white);border:1px solid var(--border-strong);border-radius:4px;box-shadow:var(--shadow-md);pointer-events:none;}
+  .who-ref-tip[hidden]{display:none;}
+  .who-ref-tip b{display:block;margin-bottom:.3rem;font-weight:600;line-height:1.25;}
+  .who-ref-tip dl{display:grid;grid-template-columns:auto auto;column-gap:.85rem;row-gap:.15rem;margin:0;}
+  .who-ref-tip dt{color:var(--ink-soft);} .who-ref-tip dd{margin:0;font-weight:600;text-align:right;font-variant-numeric:tabular-nums;}
+  /* the bars under the dots give way. Where the panel cannot hold both charts (a phone's band, a short or narrow
+     desk panel; the script decides, ref-split) the histogram stands in the column; in a phone's band the Venn's
+     source line goes there too, over the histogram (ref-band) */
+  .who-ref-dist{position:relative;}
+  /* in a phone's band the Venn takes the band's own height (its foot kept for the door by the script), no floor over it */
+  .who-fl.ref-band .who-ref-venn{min-height:0;}
+  .who-ref-col{display:none;position:relative;}
+  #ovWrap .wide-beat:has(#whoFlows.is-ref) .fl-detail{display:none !important;}
+  .who-fl.ref-split .who-ref-dist{display:none;}
+  #ovWrap .wide-beat:has(#whoFlows.is-ref.ref-split) > .who-ref-col{display:block;margin-top:16px;}
+  .who-ref-col .who-ref-dist{margin-top:0;padding-top:0;border-top:0;min-height:0;}
+  .who-ref-col .who-ref-hist{flex:none;height:300px;}
+  .who-ref-src{display:none;margin:0 0 14px;font-size:13px;line-height:1.35;color:var(--ink-soft);}
+  #ovWrap .wide-beat:has(#whoFlows.is-ref.ref-band) > .who-ref-col .who-ref-src{display:block;}
+  #ovWrap.is-presenting .who-fl.ref-split .who-ref-dist{display:flex;}
+  #ovWrap.is-presenting .who-ref-col{display:none !important;}
+  #ovWrap.is-presenting .who-ref-head{font-size:calc(14px * var(--pv-k, 1));}
+  #ovWrap.is-presenting .who-ref-tip{font-size:calc(13px * var(--pv-k, 1));padding:calc(12px * var(--pv-k, 1)) calc(16px * var(--pv-k, 1));}
   /* each part as a share of the set it belongs to: the jobs (work), the working residents (live), or both */
     .vn-reg--in .vn-n{color:var(--flow-in);} .vn-reg--both .vn-n{color:var(--flow-both-text);} .vn-reg--out .vn-n{color:var(--flow-out-text);}
   .vn-ico{flex:none;display:block;width:36px;height:26px;overflow:visible;}
@@ -2347,6 +2460,8 @@
   @media (max-width:599px){
     .who-legend--flow{left:auto;right:6px;max-width:calc(100% - 12px);padding:8px 10px 9px;}
     .who-legend--flow .wk-steps,.who-legend--flow .wk-labs,.who-legend--flow .wk-ends{width:170px;}
+    /* the two ends' words do not fit one 170px line: each on its own, the gains' at the right (2026-11-02) */
+    .who-legend--flow .wk-ends{flex-wrap:wrap;gap:0 8px;} .who-legend--flow .wk-ends .in{margin-left:auto;}
   }
   /* ---- the Show as control on the map's frame (2026-10-18, Nil: "should be
      on the map"): from 1200 up, where the table opens in the frame, the
@@ -2453,6 +2568,18 @@
   .sc-find-list li[aria-selected="true"],.sc-find-list li[role="option"]:hover{background:var(--teal-tint);}
   .sc-find-list .sc-opt-pop{color:var(--ink-soft);white-space:nowrap;}
   .sc-find-list .sc-opt-none{color:var(--ink-soft);cursor:default;}
+  /* the search redesigned (2026-11-03, Nil): the box names itself, a magnifier and "Find an admin" inside it,
+     quiet until used; it stands on the sentence's first line, at its right, the sentence wrapping beside it */
+  .sc-find-ic{position:absolute;left:10px;top:50%;width:14px;height:14px;margin-top:-7px;color:var(--ink-soft);pointer-events:none;}
+  .sc-find input{padding-left:32px;width:200px;height:30px;border-color:var(--border-strong);}
+  .sc-find input::placeholder{color:var(--ink-soft);opacity:1;}
+  .sc-find input:hover{border-color:var(--teal);}
+  .sc-find-box:focus-within .sc-find-ic{color:var(--teal);}
+  @media (min-width:900px){ .sc-find-list{top:34px;left:auto;right:0;} }
+  @media (min-width:900px){
+    #ovWrap[data-right] .who-sc .who-sc-ctl{flex-wrap:nowrap;align-items:flex-start;column-gap:24px;}
+    #ovWrap[data-right] .who-sc .who-sc-ctl .sc-find{flex:none;margin-left:auto;}
+  }
   #ovWrap[data-right="chart"] .sc-beat .who-sc-cmp{max-width:none;margin:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 18px;}
   #ovWrap[data-right="chart"] .sc-beat .who-sc-cmp .wt-head{flex-direction:row;align-items:baseline;gap:8px;}
   #ovWrap[data-right="chart"] .sc-beat .who-sc-cmp .wt-diff{flex-direction:row;flex-wrap:wrap;gap:4px 16px;margin:0;}
@@ -2477,7 +2604,8 @@
       order:-1;position:sticky;top:var(--ov-map-top, calc(var(--chrome-h) + var(--stage-air)));
       height:var(--ov-map-h, calc(100vh - var(--chrome-h) - 2 * var(--stage-air)));
       width:var(--sc-panel-w, 900px);margin:0 0 0 379px;
-      box-sizing:border-box;padding:18px 28px 14px;display:flex;flex-direction:column;gap:12px;
+      /* the produce beats' panel tokens (2026-11-03, Nil), tightening with them on short windows */
+      box-sizing:border-box;padding:var(--panel-pt) var(--panel-px) var(--panel-pb);display:flex;flex-direction:column;gap:12px;
       background:var(--white);border:1px solid var(--border);border-radius:10px;
     }
     /* the words start at the panel's top: the panel keeps its height in the
@@ -2606,7 +2734,7 @@
   .who-sc .sc-pavg{fill:none;stroke:var(--mk-pa);stroke-width:2;}
   .who-sc .sc-pavg-bg{fill:var(--white);}
   .who-sc .sc-usavg{fill:none;stroke:var(--ink);stroke-width:1.5;stroke-dasharray:4 3;}
-  .who-sc .sc-usavg-halo{fill:none;stroke:var(--white);stroke-opacity:.6;stroke-width:4;}
+  .who-sc .sc-usavg-halo{fill:none;stroke:var(--white);stroke-opacity:.5;stroke-width:4;}
   .who-sc .sc-avglab,.who-sc .sc-lab{paint-order:stroke;stroke:var(--white);stroke-width:3px;stroke-linejoin:round;}
   .who-sc .sc-avglab{font-weight:600;fill:var(--ink-soft);}
   .who-sc .sc-avglab .sc-avgval{font-weight:700;fill:var(--ink);}
@@ -2616,7 +2744,7 @@
   .who-sc .sc-hover{fill:none;stroke:var(--ink);stroke-width:1.5;pointer-events:none;}
   .who-sc .sc-leader{stroke:var(--ink-soft);stroke-width:1;}
   .who-sc .sc-labels{opacity:0;}
-  .who-sc .sc-labels.is-in{opacity:1;transition:opacity .25s ease;}
+  .who-sc .sc-labels.is-in{opacity:1;transition:opacity .43s ease;}
   .who-sc-tip{
     position:absolute;z-index:2;pointer-events:none;padding:7px 9px;
     background:var(--white);border:1px solid var(--border-strong);border-radius:4px;box-shadow:var(--shadow-md);
@@ -2628,6 +2756,17 @@
   /* the card's study, opt-2 to opt-4 (2026-11-02): the band card's parts (.tt-*), centred over the dot on its caret,
      never wider than the plot, the type at the presenter's size */
   .who-sc-tip.is-new{min-width:calc(180px * var(--pv-k,1));max-width:min(calc(280px * var(--pv-k,1)),calc(100% - 8px));padding:10px 12px 11px;white-space:normal;font-size:calc(13px * var(--pv-k,1));}
+  /* the default card in the treemap's card styling (2026-11-03, Nil: "make sure all styling match with tree map ... the
+     name is larger and bolder"): .rca-tip's 14/16 padding and width up to 330, its title at 15 semibold in ink with 10
+     under it, its facts list with 6 and 14 gaps, 13 soft names and 13 semibold values; the comparisons 10 under the list */
+  .who-sc-tip.is-card{width:min(calc(330px * var(--pv-k,1)),calc(100% - 8px));min-width:0;max-width:none;box-sizing:border-box;padding:calc(14px * var(--pv-k,1)) calc(16px * var(--pv-k,1));}
+  /* .rca-tip has no caret */
+  .who-sc-tip.is-new.is-card::after{content:none;}
+  .who-sc-tip.is-new.is-card .tt-h{gap:8px;margin:0 0 10px;font-size:calc(15px * var(--pv-k,1));font-weight:600;line-height:1.3;color:var(--ink);}
+  .who-sc-tip.is-card .tt-h .tt-g{width:11px;height:11px;}
+  .who-sc-tip.is-new.is-card .tt-kv{gap:6px 14px;margin:0;font-size:calc(13px * var(--pv-k,1));line-height:normal;}
+  .who-sc-tip.is-card .tt-kv--lead + .tt-rows{margin-top:10px;}
+  .who-sc-tip.is-card .tt-rows{gap:6px;}
   .who-sc-tip.is-compact{min-width:0;max-width:min(calc(240px * var(--pv-k,1)),calc(100% - 8px));padding:8px 10px 9px;}
   .who-sc-tip.is-bars{min-width:min(calc(230px * var(--pv-k,1)),calc(100% - 8px));}
   .who-sc-tip.is-new::after{content:"";position:absolute;left:var(--cx,50%);width:9px;height:9px;background:var(--white);border:1px solid var(--border-strong);transform:translateX(-50%) rotate(45deg);}
@@ -4190,6 +4329,13 @@
   }
   .placeholder-frame .ph-title{font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;}
   .placeholder-frame .ph-sub{font-size:14px;}
+  /* How am I doing?'s beats (2026-11-02): the chapter is not designed yet; the frame takes what a
+     beat's title and line leave of the screen, and never less than a short chart's height. A jump
+     to a beat (its chip, the journey, a landing link) stops under the sticky section bar, so the
+     beat's counter is not left behind it; the bar stands 3px short of --chrome-h, and the 3px
+     keep the close above from showing under it */
+  .beat-page{scroll-margin-top:calc(var(--secbar-h, var(--chrome-h)) - 3px);}
+  .beat-page .placeholder-frame{min-height:280px;padding:24px 16px;text-align:center;}
 
   /* ============ MY LEARNING JOURNEY (modal window) ============ */
   .journey-overlay{
@@ -4887,7 +5033,7 @@
   @media (min-width:900px){ #ovWrap .who-fl-panel{justify-content:safe center;} }
   /* the rectangle Venn sits in the panel as the other figure frames do (2026-10-20, Nil: "follow the same spacing"):
      from the top, at their padding, the figure taking the height the bars leave, not centred in white */
-  @media (min-width:900px){ #ovWrap .who-fl-panel:has(> .who-fl.is-venn){justify-content:flex-start;padding-top:28px;padding-bottom:24px;}
+  @media (min-width:900px){ #ovWrap .who-fl-panel:has(> .who-fl.is-venn),#ovWrap .who-fl-panel:has(> .who-fl.is-ref){justify-content:flex-start;padding-top:28px;padding-bottom:24px;}
     /* the bars follow the figure; where the panel has height to spare the Venn's script widens the gap (spread) */
     #ovWrap .who-fl-panel:has(> .who-fl.is-venn) > .fl-detail{margin-top:24px;} }
   .fl-detail{position:relative;display:grid;grid-template-columns:minmax(0,1fr);gap:12px 40px;font-size:13px;line-height:1.35;color:var(--ink);}
@@ -4926,8 +5072,9 @@
   .wide-beat .fl-detail .fd{visibility:hidden;} .wide-beat.fl-shown .fl-detail .fd{visibility:visible;}
   /* the Venn's first frame: the bars as plain tracks with their totals; with the last frame the colours sweep in from
      the left and the names fade in after them */
-  .fl-detail .fd-fill{clip-path:inset(0 0 0 0);transition:clip-path .9s cubic-bezier(.32,.72,.24,1);}
-  .fl-detail .fd-lb{transition:opacity .5s ease .7s;}
+  /* the sweep as long as the Venn's move (about 1.7s from "moving" to "named"), the names arriving as it lands */
+  .fl-detail .fd-fill{clip-path:inset(0 0 0 0);transition:clip-path 1.7s cubic-bezier(.65,0,.35,1);}
+  .fl-detail .fd-lb{transition:opacity .5s ease 1.2s;}
   .fl-bare .fl-detail .fd-fill{clip-path:inset(0 100% 0 0);transition:none;}
   .fl-bare .fl-detail .fd-lb{opacity:0;transition:none;}
   @media (prefers-reduced-motion: reduce){ .fl-detail .fd-fill,.fl-detail .fd-lb{transition:none;} }
@@ -6996,8 +7143,8 @@
      from that. A hairline and a wider gap do it without any chip changing,
      so nothing has to be learned. */
   .secnav-btn{position:relative;}
-  .secnav-btn:nth-child(3){margin-left:19px;}
-  .secnav-btn:nth-child(3)::before{
+  .secnav-btn:nth-child(4){margin-left:19px;}
+  .secnav-btn:nth-child(4)::before{
     content:"";position:absolute;left:-11px;top:50%;transform:translateY(-50%);
     width:1px;height:26px;background:var(--border-strong);
   }
@@ -7010,24 +7157,25 @@
      used to carry to the fifth chip is the fifth's ::before instead. */
   .secnav{padding-top:15px;}
   .secnav-btn:nth-child(1)::before,
-  .secnav-btn:nth-child(3)::after{
+  .secnav-btn:nth-child(4)::after{
     content:"Part 1 City Profile";position:absolute;left:9px;right:auto;top:auto;bottom:calc(100% + 1px);
     transform:none;width:auto;height:auto;background:none;
     font-size:13px;font-weight:700;line-height:1;letter-spacing:.1px;
     color:var(--ink-soft);opacity:1;white-space:nowrap;pointer-events:none;
     transition:color .15s ease;
   }
-  .secnav-btn:nth-child(3)::after{content:"Part 2 Diagnose & Act";}
+  .secnav-btn:nth-child(4)::after{content:"Part 2 Diagnose & Act";}
   html[data-part="1"] .secnav-btn:nth-child(1)::before,
-  html[data-part="2"] .secnav-btn:nth-child(3)::after{color:var(--teal);opacity:1;}
+  html[data-part="2"] .secnav-btn:nth-child(4)::after{color:var(--teal);opacity:1;}
   /* a rule between consecutive sections, so the row reads as one run rather
      than five loose chips - and deliberately not across the seam, where the
      point is that the two groups are not continuous */
-  .secnav-btn:nth-child(1)::after{
+  .secnav-btn:nth-child(1)::after,
+  .secnav-btn:nth-child(2)::after{
     content:"";position:absolute;right:-8px;top:50%;
     width:8px;height:1.5px;background:var(--border-strong);
   }
-  .secnav-btn:nth-child(4)::before{
+  .secnav-btn:nth-child(5)::before{
     content:"";position:absolute;left:-8px;top:50%;
     width:8px;height:1.5px;background:var(--border-strong);
   }
@@ -7046,8 +7194,8 @@
     .secnav{margin-left:32px;gap:8px;}
     .secnav-btn{padding:6px 8px;gap:7px;font-size:13px;}
     .secnav-btn .num{width:20px;height:20px;flex:0 0 20px;font-size:13px;}
-    .secnav-btn:nth-child(3){margin-left:18px;}
-    .secnav-btn:nth-child(1)::before,.secnav-btn:nth-child(3)::after{left:8px;}
+    .secnav-btn:nth-child(4){margin-left:18px;}
+    .secnav-btn:nth-child(1)::before,.secnav-btn:nth-child(4)::after{left:8px;}
   }
   /* the last 23px the names need at 1200: the location button gives up 24
      (Boston and its country still read whole) and the gap before the
@@ -7064,7 +7212,8 @@
   .secnav.is-compact .secnav-btn:not(.is-active) .secnav-lbl{display:none;}
   .secnav.is-compact .secnav-btn:not(.is-active){padding:6px;gap:0;}
   .secnav.is-compact .secnav-btn:nth-child(1)::after,
-  .secnav.is-compact .secnav-btn:nth-child(4)::before{display:none;}
+  .secnav.is-compact .secnav-btn:nth-child(2)::after,
+  .secnav.is-compact .secnav-btn:nth-child(5)::before{display:none;}
 
   /* ---- the section bar by part (2026-10-05; the JS has the why) ----
      One part at a time, like a book's running head: the part's name over
@@ -7264,10 +7413,10 @@
     .secnav{
       position:relative;margin-left:24px;justify-content:flex-start;
     }
-    .secnav-btn:nth-child(3){margin-left:20px;}
+    .secnav-btn:nth-child(4){margin-left:20px;}
     /* the part names in short, as the reference has them at this width */
     .secnav-btn:nth-child(1)::before{content:"Part 1";}
-    .secnav-btn:nth-child(3)::after{content:"Part 2";}
+    .secnav-btn:nth-child(4)::after{content:"Part 2";}
     .secnav-btn{padding:6px 8px;font-size:13px;gap:6px;}
     .secnav-btn .num{width:20px;height:20px;flex:0 0 20px;font-size:13px;}
     .secbar .citypick--bar .citypick-btn{height:32px;font-size:13px;}
@@ -8228,6 +8377,7 @@
         <span class="lp-label">Jump to a section:</span>
         <button type="button" onclick="enterTool('page-overview')">Who am I?</button>
         <button type="button" onclick="enterTool('page-export-basket')">What do my metro and I produce?</button>
+        <button type="button" onclick="enterTool('page-doing')">How am I doing?</button>
         <button type="button" onclick="enterTool('page-constraints')">Constraints Diagnosis</button>
         <button type="button" onclick="enterTool('page-levers')">Levers for Change</button>
       </div>
@@ -8246,6 +8396,7 @@
           <span class="jump-quiet-label">Jump to a section:</span>
           <button type="button" onclick="enterTool('page-overview')">Who am I?</button>
           <button type="button" onclick="enterTool('page-export-basket')">What do my metro and I produce?</button>
+          <button type="button" onclick="enterTool('page-doing')">How am I doing?</button>
           <button type="button" onclick="enterTool('page-constraints')">Constraints Diagnosis</button>
           <button type="button" onclick="enterTool('page-levers')">Levers for Change</button>
         </div>
@@ -8347,6 +8498,13 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
           <li data-step="adminSummarySection"><span class="dot"></span><button onclick="goTo('adminSummarySection')">Extra page to show every reading</button></li>
           <li data-step="check-export"><span class="dot"></span><button onclick="goTo('check-export')">Test your knowledge</button></li>
           <li data-step="apply-export"><span class="dot"></span><button onclick="goTo('apply-export')">Put your insights</button></li>
+        </ul>
+      </div>
+      <div class="sec" data-sec="page-doing page-doing-metro">
+        <button class="sec-head" onclick="goTo('page-doing')"><span class="num" aria-hidden="true"></span>How am I doing?</button>
+        <ul class="steps">
+          <li data-step="page-doing"><span class="dot"></span><button onclick="goTo('page-doing')">How am I doing?</button></li>
+          <li data-step="page-doing-metro"><span class="dot"></span><button onclick="goTo('page-doing-metro')">How is Boston Metro doing?</button></li>
         </ul>
       </div>
       <div class="sec" data-sec="page-constraints page-city-in-metro page-constraints-lorem">
@@ -8613,10 +8771,6 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
                 <button type="button" class="ask-q" data-ask="a2" aria-expanded="false" aria-controls="scAsk-a2"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Where is a home worth more than in Boston&nbsp;Admin?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
                 <div class="ask-ans" id="scAsk-a2" hidden><p class="ask-a">In 119 admins, 98 of them in California and most of them under 100,000 people; Los Altos leads at $4.5M. Of the 36 admins of 500,000 or more, only San Jose, at $1.4M, San Francisco, Los Angeles and San Diego.</p></div>
               </div>
-              <div class="ask-item">
-                <button type="button" class="ask-q" data-ask="a3" aria-expanded="false" aria-controls="scAsk-a3"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Where in Massachusetts is a home hardest to afford?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
-                <div class="ask-ans" id="scAsk-a3" hidden><p class="ask-a">In Everett, where a home costs 10.3 years of pay; Boston Admin, at 9.2, is seventh of the 53. Newton has the state&rsquo;s most expensive homes, $1.4M, but its pay is high too, so a home there costs 5.7 years.</p></div>
-              </div>
             </div>
             <div class="who-sc" data-measure="wage" data-switch></div>
             <template class="who-sc-says">
@@ -8717,10 +8871,6 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
               <div class="ask-item">
                 <button type="button" class="ask-q" data-ask="m2" aria-expanded="false" aria-controls="scAsk-m2"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Where is a home worth more than in Boston&nbsp;Metro?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
                 <div class="ask-ans" id="scAsk-m2" hidden><p class="ask-a">In 16 metros, 13 of them in California or Hawaii; San Jose leads at $1.6M. Among the 54 metros of a million people or more, only five: San Jose, San Francisco, Los Angeles, San Diego and Seattle.</p></div>
-              </div>
-              <div class="ask-item">
-                <button type="button" class="ask-q" data-ask="m3" aria-expanded="false" aria-controls="scAsk-m3"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Is a home harder to afford in other big metros?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
-                <div class="ask-ans" id="scAsk-m3" hidden><p class="ask-a">In 12 of the 54 metros of a million people or more: Los Angeles takes 10.7 years of pay, San Diego 10.0 and New York 6.5, against Boston Metro&rsquo;s 6.2. Pittsburgh, at 2.8 years, is the easiest.</p></div>
               </div>
             </div>
             <div class="who-sc" data-set="metro" data-measure="wage" data-switch></div>
@@ -9398,6 +9548,34 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         </div>
       </section>
 
+      <!-- 3 How am I doing? (2026-11-02, Nil: "under part 1: add How am I doing?"): Part 1's third
+           chapter, not designed yet. Two beats, each a screen: a title, a line, and a frame where the
+           chart will go. The counter over each title ("How am I doing? 1/2") is written by the script
+           from the beat-page class and sectionDefs, so it cannot go stale -->
+      <section class="page beat-page" id="page-doing">
+        <div class="page-head">
+          <h2>How am I doing?</h2>
+        </div>
+        <p class="lede">This chapter is still being drafted. Its readings and charts will go here, first for
+          <span class="city-short">Boston</span> Admin, then for <span class="city-short">Boston</span> Metro.</p>
+        <div class="placeholder-frame">
+          <span class="ph-title">Work in progress</span>
+          <span class="ph-sub">The chart for this beat will go here.</span>
+        </div>
+      </section>
+
+      <section class="page beat-page" id="page-doing-metro">
+        <div class="page-head">
+          <h2>How is <span class="city-short">Boston</span> Metro doing?</h2>
+        </div>
+        <p class="lede">The same question, asked of <span class="city-short">Boston</span> Metro. This beat is
+          still being drafted.</p>
+        <div class="placeholder-frame">
+          <span class="ph-title">Work in progress</span>
+          <span class="ph-sub">The chart for this beat will go here.</span>
+        </div>
+      </section>
+
             <!-- 4 Constraints Diagnosis (empty) -->
       <section class="page" id="page-constraints">
         <div class="page-head page-head--geo">
@@ -9944,6 +10122,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
 <script src="admin-sectors-2013.js"></script>
 <script src="who-scatter-2024.js"></script>
 <script src="who-metro-scatter-2024.js"></script>
+<script src="who-scatter-2014.js"></script>
+<script src="who-metro-scatter-2014.js"></script>
 <script src="who-points-2024.js"></script>
 <script src="data/geo/who_commute_geo.js"></script>
 <script src="industries-2024.js"></script>
@@ -9996,9 +10176,16 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   /* opt-2's first commuting beat: the three groups as a rectangle Venn ("venn", the default since 2026-10-20, Nil:
      "v-6 by default, use the rectangle venn diagram"), as circles ("circles") or as a classic circle Venn ("classic") */
   const GROUPS_DEFAULT = "venn";
+  /* the Venn's dot key, "One dot is about 2K people" with a dot drawn at the figure's size (2026-11-02, Nil: "try to
+     find a better plot for 'One dot is 2K people'. maybe try to show it visually as well"): "row" at the right end of
+     the Play again row, "foot" under the figure, "note" before Play again as it was (?dotkey=) */
+  const DOTKEY_DEFAULT = "row";
+  /* the commuting map's blue dots (2026-11-02, Nil: "apply all fixes"): "in", from the admins where they live into
+     Boston, so the colour that means coming in moves in; "home", from Boston out to those admins as before (?blue=) */
+  const BLUEWAY_DEFAULT = "in";
   /* the Mark colours study: "today", "hues" or "amber" (see the stylesheet); on the section's wrapper before anything draws */
-  const MARKS_DEFAULT = "hues";
-  { const w = document.getElementById("ovWrap"); if (w) w.dataset.marks = (location.search.match(/[?&]marks=(today|hues|amber)\b/) || [, MARKS_DEFAULT])[1]; }
+  const MARKS_DEFAULT = "soft";
+  { const w = document.getElementById("ovWrap"); if (w) w.dataset.marks = (location.search.match(/[?&]marks=(today|hues|amber|soft)\b/) || [, MARKS_DEFAULT])[1]; }
   /* opt-2's second commuting beat is the needle alone (2026-10-23, Nil: "remove design options here, we decided on the
      default one"); the bars of the admins, its opt-1 from 10-22, are gone with the Balance study */
   /* the compare beat: the admin's four measures against the metro's as bars with a rank column ("bars"), or a card a
@@ -10033,9 +10220,15 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   })();
   const WHO_SHADE = (() => {
     const S = {
-      in:  { breaks: [.08, .12, .20, .30], cols: ["#d4eff2", "#9fd3df", "#5faec6", "#1f7fa2", "#114f73"], title: "Share of residents who work in Boston" },
+      /* the darkest blue is a navy (2026-11-02, Nil: "apply all fixes"): #114f73 and #16587f sat 4.9 from Boston's teal,
+         so the towns that send Boston most wore Boston's own colour */
+      in:  { breaks: [.08, .12, .20, .30], cols: ["#d4eff2", "#9fd3df", "#5faec6", "#1f7fa2", "#123d7a"], title: "Share of residents who work in Boston" },
       out: { breaks: [.03, .05, .07, .10], cols: ["#f8e4cd", "#f0c39a", "#ec9c63", "#d56927", "#9b411a"], title: "Share of jobs held by people living in Boston" },
-      net: { breaks: [-1000, 0, 500, 2000, 5000], cols: ["#c0571e", "#e8b181", "#d2eef1", "#86c6d9", "#3792b5", "#16587f"], title: "Boston\u2019s net workers from each admin" }
+      /* the net in three steps each way from a grey middle, the same breaks on both sides: an admin within 100 of even is
+         neither, where before 0 to 500 read as a gain and the gains had twice the losses' steps */
+      /* the middle a warm grey (a review, 2026-11-02): the cool #d6dcdd sat 1.6 from the paper's parks, so an even
+         admin read as woodland; this one stands 6 or more from every paper tone and 11 from Boston's own grey */
+      net: { breaks: [-5000, -1000, -100, 100, 1000, 5000], cols: ["#9b411a", "#d56927", "#f0c39a", "#c9c7c0", "#9fd3df", "#3792b5", "#123d7a"], title: "Boston\u2019s net workers from each admin" }
     };
     const col = (k, v) => { const b = S[k].breaks; let i = 0; while (i < b.length && v >= b[i]) i++; return S[k].cols[i]; };
     const lab = (k, v) => k !== "net" ? Math.round(v * 100) + "%" : v === 0 ? "0" : Math.abs(v) >= 1000 ? Math.abs(v) / 1000 + "K" : String(Math.abs(v));
@@ -10043,14 +10236,16 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       return '<span class="wk-t">' + q.title + '</span>' +
         '<span class="wk-steps">' + q.cols.map(c => '<i style="background:' + c + '"></i>').join("") + '</span>' +
         '<span class="wk-labs">' + q.breaks.map((b, i) => '<span style="left:' + ((i + 1) / n * 100).toFixed(2) + '%">' + lab(k, b) + '</span>').join("") + '</span>' +
-        (k === "net" ? '<span class="wk-ends"><span class="out">Boston loses</span><span class="in">Boston gains</span></span>' : ''); };
+        /* the ends say what each admin does (2026-11-02): blue is an admin that sends Boston more workers than it takes,
+           not a business admin, as the needle's blue beside it might suggest */
+        (k === "net" ? '<span class="wk-ends"><span class="out">Takes from Boston</span><span class="in">Sends to Boston</span></span>' : ''); };
     return { col, key, op: .85 };
   })();
   if (!FLOWS_HOME){ const s = document.getElementById("page-overview-flows-out"); if (s) s.remove();
     document.querySelectorAll('.rail .steps li[data-step="page-overview-flows-out"]').forEach(li => li.remove()); }
   else document.documentElement.classList.add("flows-home");
   const pageIds = ["page-overview","page-overview-scatter","page-overview-flows","page-overview-metro","page-overview-mscatter","page-overview-compare","page-export-basket",
-                   "page-constraints","page-city-in-metro","page-constraints-lorem","page-levers"];
+                   "page-doing","page-doing-metro","page-constraints","page-city-in-metro","page-constraints-lorem","page-levers"];
   if (FLOWS_HOME) pageIds.splice(3, 0, "page-overview-flows-out");
 
   /* ---------- view switching ---------- */
@@ -10147,6 +10342,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   const sectionDefs=[
     {name:"Who am I?", pages:["page-overview","page-overview-scatter","page-overview-flows"].concat(FLOWS_HOME ? ["page-overview-flows-out"] : []).concat(["page-overview-metro","page-overview-mscatter","page-overview-compare","check-overview","apply-overview"]), entry:"page-overview"},
     {name:"What do my metro and I produce?", pages:["page-export-basket","tierSection","specializedSection","adminCountsSection","adminSharesSection","adminNetSection","adminSummarySection","check-export","apply-export"], entry:"page-export-basket"},
+    /* Part 1's third chapter (2026-11-02, Nil: "under part 1: add How am I doing?"): two placeholder beats until it is designed */
+    {name:"How am I doing?", pages:["page-doing","page-doing-metro"], entry:"page-doing"},
     {name:"Constraints Diagnosis",pages:["page-constraints","page-city-in-metro","page-constraints-lorem","check-constraints","apply-constraints"],entry:"page-constraints"},
     {name:"Levers for Change",pages:["page-levers","check-levers","apply-levers"], entry:"page-levers"},
     /* Well-built pieces outside the storyline; the anchor id is listed so
@@ -10452,7 +10649,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       }
     });
   },{root:pagesRoot, rootMargin:"-30% 0px -30% 0px", threshold:0});
-  pageIds.forEach(id=>observer.observe(document.getElementById(id)));
+  /* a page listed but not in the document is skipped, not thrown on (a throw here would stop the whole script) */
+  pageIds.forEach(id=>{ const el=document.getElementById(id); if(el) observer.observe(el); });
 
   // Rail highlight: pick whichever page fills the most of the viewport.
   // A ratio-of-element threshold can never be satisfied by a page taller than
@@ -10784,6 +10982,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     const LINE_C = {
       "Who am I?": "#255862",
       "What do my metro and I produce?": "#b97f4e",
+      /* the change scale's light teal, the one step the line did not use (2026-11-02) */
+      "How am I doing?":       "#67929f",
       "Constraints Diagnosis":      "#2f7d6a",
       "Levers for Change":     "#7f451e",
       "Extras":                "#7f8f95"
@@ -11557,14 +11757,16 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     }).setView([42.33,-71.06],11.4);
     /* the basemap is the reference site's (main.dkqbdkgipsx94.amplifyapp.com,
        2026-11-02): OpenFreeMap's vector tiles drawn as "paper", unlabeled and
-       without boundaries, in the palette its map takes when it flies from the
-       landing into a section (its grain and scrim fade out on the way, so none
-       here). Drawn by MapLibre under Leaflet, so every layer below is as it
-       was. The basemap study (opt, "Basemap"; ?basemap=) keeps the landing's
-       palette and the earlier CARTO tiles; CARTO is also the fallback when
-       WebGL or the scripts are missing. */
+       without boundaries, in its landing palette: the blue-grey water and the
+       greener paper of its --color-paper-* tokens (since 2026-11-02 pm, Nil:
+       "see how the water has a different color"). Its grain and scrim stay
+       out; the reference fades them on docking. Drawn by MapLibre under
+       Leaflet, so every layer below is as it was. The basemap study (opt,
+       "Basemap"; ?basemap=) keeps the palette the reference blends to once
+       docked (grey water, "section") and the earlier CARTO tiles; CARTO is
+       also the fallback when WebGL or the scripts are missing. */
     const BASEMAPS = { section:"section", landing:"landing", carto:"carto" };
-    const BASEMAP_DEFAULT = "section";
+    const BASEMAP_DEFAULT = "landing";
     const PAPER = {
       section:{ paper:"#f2f3f0", water:"#c2c8ca", waterway:"#c1ced2", green:"#e6e9e5", greenDeep:"#dce0dc", urban:"#eaeae6", quiet:"#eeefeb", building:"#eaeae5", roadInk:"#d5d5d5", road:"#ffffff", rail:"#dddddd" },
       landing:{ paper:"#f6f7f4", water:"#c7d3d5", waterway:"#bfd0d3", green:"#e3e8e1", greenDeep:"#d7ded3", urban:"#eceeea", quiet:"#eef0ec", building:"#e7e9e3", roadInk:"#d2d6d2", road:"#ffffff", rail:"#d8dbd7" } };
@@ -11622,8 +11824,10 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
               attribution:'<a href="https://openfreemap.org">OpenFreeMap</a> &copy; <a href="https://www.openmaptiles.org/">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>' });
         baseLayer.addTo(ovLeaflet);
       }
-      /* the container's ground is the paper's, so a pan's uncovered edge and the first frame match it */
-      const box = document.getElementById("ovMap"); box.dataset.basemap = kind; box.style.background = kind === "carto" ? "" : PAPER[kind].paper;
+      /* the container's ground is the paper's, so a pan's uncovered edge and the first frame match it;
+         a :root property, not an inline style, since the landing's run wipes #ovMap's style when it ends */
+      document.getElementById("ovMap").dataset.basemap = kind;
+      if (kind !== "carto") document.documentElement.style.setProperty("--ov-paper", PAPER[kind].paper);
       baseKind = kind;
       return baseKind;
     };
@@ -11642,6 +11846,11 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     ovMsaLayer = (WHO_GEO ? L.geoJSON(WHO_GEO.msa, { interactive:false, style: () => msaOpts })
                           : L.polygon(msaPoly, msaOpts)).addTo(ovLeaflet);
     const cityOpts = { interactive:false, color:GEO_CITY, weight:2, fillColor:GEO_CITY, fillOpacity:.45 };
+    /* Mark colours opt-4 Lighter: a thinner outline and a pale wash, so the streets and names read through */
+    const softMap = () => { const soft = document.getElementById("ovWrap").dataset.marks === "soft";
+      Object.assign(cityOpts, soft ? { weight:1.5, fillOpacity:.14 } : { weight:2, fillOpacity:.45 });
+      Object.assign(msaOpts, soft ? { weight:1.5, opacity:.6 } : { weight:2, opacity:1 }); };
+    softMap();
     ovCityLayer = (WHO_GEO ? L.geoJSON(WHO_GEO.boston, { interactive:false, style: () => cityOpts })
                            : L.polygon(cityPoly, cityOpts)).addTo(ovLeaflet);
 
@@ -11681,7 +11890,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
                      gain: rankBy(gainList, f => netV(f.properties)), loss: rankBy(lossList, f => -netV(f.properties)) };
       const ord = n => n + (n % 100 >= 11 && n % 100 <= 13 ? "th" : ["th", "st", "nd", "rd"][n % 10] || "th");
       const tipName = q => '<b class="tc-name">' + esc(q.name.replace(/ (Town|city)$/, "")) + (q.state && q.state !== "MA" ? ", " + esc(q.state) : "") + '</b>';
-      const tipRank = (k, q, of, words) => RANK[k].has(q) ? '<span class="tc-rank">' + ord(RANK[k].get(q)) + ' of ' + of + ' admins' + (words ? ' ' + words : '') + '</span>' : '';
+      /* no rank in the cards (2026-11-03, Nil: "remove ranking from tooltips - Who comes in, who goes out"); RANK and ord kept for a return */
+      const tipRank = () => '';
       const tipRow = (k, n, words) => '<span class="tc-row tc-row--' + k + '">' + ICO[k] + '<span><b>' + fmtN(n) + '</b> ' + words + '</span></span>';
       const tipSub = t => '<span class="tc-sub">' + t + '</span>';
       /* a town's card opens above the pointer or finger; where that would run off the map's top (the short band
@@ -11736,7 +11946,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
             return { color: EDGE, weight: 1, opacity: 1, fillColor: WHO_SHADE.col("net", v), fillOpacity: WHO_SHADE.op }; },
           onEachFeature: (f, l) => { const q = f.properties, v = net(q);
             l.bindTooltip(tipName(q) +
-              '<span class="tc-head tc-head--' + (v > 0 ? "in" : v < 0 ? "out" : "even") + '">' + (v > 0 ? 'Boston gains ' + fmtN(v) + ' workers' : v < 0 ? 'Boston loses ' + fmtN(-v) + ' workers' : 'Boston neither gains nor loses workers') + '</span>' +
+              /* within 100 of even the map paints the admin grey (2026-11-02): its card says so before the figure */
+              '<span class="tc-head tc-head--' + (Math.abs(v) < 100 ? "even" : v > 0 ? "in" : "out") + '">' + (Math.abs(v) < 100 ? 'About even: Boston ' + (v > 0 ? 'gains ' + fmtN(v) + ' workers' : v < 0 ? 'loses ' + fmtN(-v) + ' workers' : 'neither gains nor loses workers') : v > 0 ? 'Boston gains ' + fmtN(v) + ' workers' : 'Boston loses ' + fmtN(-v) + ' workers') + '</span>' +
               (v > 0 ? tipRank("gain", q, gainList.length, "where Boston gains") : v < 0 ? tipRank("loss", q, lossList.length, "where Boston loses") : '') +
               tipRow("in", q.inWorkers || 0, "commute into Boston") +
               (q.outWorkers != null ? tipRow("out", q.outWorkers, "commute out of Boston to work here") : tipSub("Commuters out of Boston: not known for this admin")),
@@ -11768,6 +11979,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
          hold the metro's zoom (2026-10-05), where the partners crowd round
          Boston, so most names stand off their place. */
       let whoMode = null, homeLead = "in";
+      document.addEventListener("who:marks", () => { softMap(); if (!whoMode) ovCityLayer.setStyle(cityOpts); if (!ovMsaHidden) ovMsaLayer.setStyle({ weight: msaOpts.weight, opacity: msaOpts.opacity }); });
       /* opt-2's modes draw the in side (beat A) or the leading side (beat B) */
       const baseOf = m => m === "homeA" ? "in" : m === "homeB" ? homeLead : m === "homeN" ? "net" : m;
       const declutter = () => {
@@ -12045,6 +12257,30 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       n.textContent = (i + 1) + "/" + blocks.length;
       c.appendChild(n);
       b.insertBefore(c, head);
+    });
+  })();
+
+  /* the same counter on a chapter written as plain pages (How am I doing?, 2026-11-02): a page
+     with the class beat-page takes it, named from sectionDefs and numbered from the chapter's own
+     beat pages, so adding or dropping one cannot leave the numbers stale */
+  (function(){
+    sectionDefs.forEach(sd => {
+      const beats = sd.pages.map(id => document.getElementById(id))
+        .filter(el => el && el.classList.contains("beat-page"));
+      beats.forEach((b, i) => {
+        if (b.querySelector(":scope > .ct-eyebrow")) return;
+        const c = document.createElement("span");
+        c.className = "ct-eyebrow";
+        c.textContent = sd.name + " ";
+        const n = document.createElement("b"); n.className = "ct-count";
+        n.textContent = (i + 1) + "/" + beats.length;
+        /* "1/2" is read literally; a screen reader is told the step instead */
+        n.setAttribute("aria-hidden", "true");
+        const sr = document.createElement("span"); sr.className = "mi-sr";
+        sr.textContent = " step " + (i + 1) + " of " + beats.length;
+        c.append(n, sr);
+        b.insertBefore(c, b.querySelector(":scope > .page-head") || b.firstChild);
+      });
     });
   })();
 
@@ -12895,7 +13131,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   /* the storyline's two parts, by section: 0 the city's profile (the first
      two), 1 the diagnosis and the levers (the next two); the extras, the
      last section, belong to neither */
-  const partOf = k => k < 0 || k >= SECTIONS.length - 1 ? -1 : k <= 1 ? 0 : 1;
+  /* (three since 2026-11-02: Who am I?, What do my metro and I produce?, How am I doing?; everything
+     that asks which part a section is in asks this) */
+  const partOf = k => k < 0 || k >= SECTIONS.length - 1 ? -1 : k <= 2 ? 0 : 1;
   const PART_NAMES = ["City Profile", "Diagnose & Act"];
 
   function showSection(i, toTop){
@@ -12905,7 +13143,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     /* which of the two parts the reader is in, for the bar's part names:
        the first two sections profile the city, the next two diagnose
        and act; the extras belong to neither */
-    document.documentElement.dataset.part = i <= 1 ? "1" : i <= 3 ? "2" : "";
+    /* (read from partOf since 2026-11-02, so the sections' count lives in one place) */
+    document.documentElement.dataset.part = partOf(i) < 0 ? "" : String(partOf(i) + 1);
     syncSectionHash();
     /* under the scroll layout the storyline's sections stand together in
        one scroll, under the two scrolls each part's do; the extras alone
@@ -13550,10 +13789,10 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
        too it counts as part two's first section (2026-10-05, so the bar by
        part shows part two there, as Two scrolls does) */
     const seam = lay === "scroll" && document.getElementById("seam");
-    if (seam && on <= 2 && seam.getBoundingClientRect().top <= line) on = ks.find(k => partOf(k) === 1);
+    if (seam && partOf(on) === 0 && seam.getBoundingClientRect().top <= line) on = ks.find(k => partOf(k) === 1);
     if (on !== activeSec) showSection(on, false);
     if (lay !== "scroll") return;
-    if (seam && on <= 2){
+    if (seam && partOf(on) === 0){
       const crossed = seam.getBoundingClientRect().top <= line;
       document.documentElement.dataset.part = crossed ? "2" : "1";
     }
@@ -13569,6 +13808,12 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     "Who am I?": [],
     /* drawn instead, as Who am I?'s are: two cards in SEAL_KEYS (2026-10-28) */
     "What do my metro and I produce?": [],
+    /* placeholder until the chapter is drawn (2026-11-02). Keep the key even if emptied: without it the
+       chapter has no close, and part one's last close carries the Next into part two and anchors the seam */
+    "How am I doing?": [
+      "Placeholder: the chapter's first takeaway, once its beats are drawn.",
+      "Placeholder: its second takeaway."
+    ],
     "Constraints Diagnosis": [
       "Every diagnosis starts with two questions, each read against the typical city: are people arriving or leaving, and is pay rising or falling?",
       "Boston\u2019s metro pairs fast pay growth with slow population growth \u2014 the mark of a supply constraint: people are being priced out.",
@@ -13734,7 +13979,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
      figures - the growth scatter's numbers, the sectors' jobs, the two
      workforces - not the reference's. */
   (function buildSeam(){
-    const anchor = document.getElementById("seal-1"), w = SECTIONS[1];
+    /* after the close of part one's last section, and hidden and shown with it (How am I doing? since 2026-11-02) */
+    const p1Last = partSecs(0).slice(-1)[0];
+    const anchor = document.getElementById("seal-" + p1Last), w = SECTIONS[p1Last];
     if (!anchor || !w) return;
     const CHECK = '<svg viewBox="0 0 10 8" width="9" height="7" aria-hidden="true"><path d="M1 4.2 3.7 6.8 9 1.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
     const ARROW = r => '<svg viewBox="0 0 16 10" width="16" height="10" aria-hidden="true" style="transform:rotate(' + r + 'deg)"><path d="M1 5h13M10 1l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -13786,7 +14033,10 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       '<text class="seam-viz-t" x="125" y="100" text-anchor="middle">population growth →</text>', "seam-viz--wide");
     const vizLevers = svg("0 0 230 62", "Levers",
       [[12, 77.2], [32, 157], [52, 115]].map(([y, x]) => '<g><line x1="10" x2="220" y1="' + y + '" y2="' + y + '" stroke="var(--mark-grey)" stroke-width="3" stroke-linecap="round"/><line x1="10" x2="' + x + '" y1="' + y + '" y2="' + y + '" stroke="#255862" stroke-width="3" stroke-linecap="round"/><circle cx="' + x + '" cy="' + y + '" r="6" fill="#255862"/></g>').join(""));
-    const done = [[0, "Who am I?", vizProfile], [1, "What do my metro and I produce?", vizSectors]];
+    /* part one's sections, each with its small chart; How am I doing? shows a note until its content is designed (2026-11-02) */
+    const vizDoing = rows("How am I doing?: its charts are still to come", '<span class="sv-note">Charts to come</span>');
+    const SEAM_VIZ = { "Who am I?": vizProfile, "What do my metro and I produce?": vizSectors, "How am I doing?": vizDoing };
+    const done = partSecs(0).map(k => [k, SECTIONS[k].name, SEAM_VIZ[SECTIONS[k].name] || ""]);
     const wall = '<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="qmark" aria-hidden="true"><path d="M6 10h28v24H6z"/><path d="M6 18h28M6 26h28M16 10v8M26 10v8M11 18v8M21 18v8M31 18v8M16 26v8M26 26v8"/></svg>';
     const seam = document.createElement("section");
     seam.className = "seam"; seam.id = "seam"; seam.setAttribute("aria-labelledby", "seam-title");
@@ -13983,7 +14233,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         const size = d.t.endsWith("\u00d7") ? d.t.slice(0, -1) + " times" : d.t;
         return '<span class="wt-d' + cls + '"><b>' + ARR(d.up) + size + '</b>' + (d.t.endsWith("\u00d7") ? " " + who : (d.up ? " above " : " below ") + who) + '</span>';
       }
-      const figure = (k, v) => '<span class="wt-val tipv" tabindex="0" data-unit="' + opts.unit + '" data-tip="' + esc(C.bucket[k]) + '">' + fmt(k, v) + '</span>';
+      /* the figure plain, no tooltip (2026-11-03, Nil: "Where does Boston Admin stand? - remove tooltip"); the
+         bucket's words stay in C.bucket, and the old "tipv" hover still answers should a figure carry the class again */
+      const figure = (k, v) => '<span class="wt-val">' + fmt(k, v) + '</span>';
       /* opt-3 and opt-4: the takeaway first. Cards: a card a measure, its name and figure, the takeaway as its head,
          then the bars (the subject's, the US average's, the peer average's when on, any peer on). Lines: a row a measure,
          the name and figure, the takeaway, and a few unlabelled bars (a key over them names the colours) */
@@ -14407,8 +14659,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         const st = document.createElement("div"); st.className = "mi-studies"; const pid = "whoTablesPanel" + (id === "page-overview" ? "" : "M");
         st.innerHTML = '<button type="button" class="mi-studies-btn" aria-expanded="false" aria-controls="' + pid + '">opt</button>' +
           '<div class="mi-studies-panel" id="' + pid + '" role="group" aria-label="Design studies" hidden><label class="mi-study"><span>Tables</span>' +
-          '<select class="wt-table-opt" aria-label="How the tables draw Boston Admin and Boston Metro against the US and their peers"><option value="bars">1 Named bars</option><option value="band">2 Box plots</option><option value="cards">3 Cards</option><option value="lines">4 Lines</option><option value="axis">5 One axis</option></select></label><label class="mi-study"><span>Mark colours</span><select class="wt-mark-opt" aria-label="The colours of the averages and the peers"><option value="today">1 Today</option><option value="hues">2 Four peer colours</option><option value="amber">3 Amber peers</option></select></label>' +
-          (window.ovBasemap ? '<label class="mi-study"><span>Basemap</span><select class="wt-basemap-opt" aria-label="The map under the outlines"><option value="section">1 Site paper, section</option><option value="landing">2 Site paper, landing</option><option value="carto">3 CARTO (before)</option></select></label>' : '') + '</div>';
+          '<select class="wt-table-opt" aria-label="How the tables draw Boston Admin and Boston Metro against the US and their peers"><option value="bars">1 Named bars</option><option value="band">2 Box plots</option><option value="cards">3 Cards</option><option value="lines">4 Lines</option><option value="axis">5 One axis</option></select></label><label class="mi-study"><span>Mark colours</span><select class="wt-mark-opt" aria-label="The colours of the averages and the peers"><option value="today">1 Today</option><option value="hues">2 Four peer colours</option><option value="amber">3 Amber peers</option><option value="soft">4 Lighter</option></select></label>' +
+          (window.ovBasemap ? '<label class="mi-study"><span>Basemap</span><select class="wt-basemap-opt" aria-label="The map under the outlines"><option value="landing">1 Site paper, blue water</option><option value="section">2 Site paper, docked grey</option><option value="carto">3 CARTO (before)</option></select></label>' : '') + '</div>';
         eye.appendChild(st);
         const btn = st.querySelector(".mi-studies-btn"), panel = st.querySelector(".mi-studies-panel"), sel = st.querySelector("select");
         sel.value = mode;
@@ -14417,7 +14669,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         sel.addEventListener("change", () => set(sel.value));
         const ms = st.querySelector(".wt-mark-opt"), w = document.getElementById("ovWrap");
         ms.value = w.dataset.marks; ms.addEventListener("change", () => setMarks(ms.value));
-        /* the basemap: the reference site's paper (2026-11-02), its landing palette, or the earlier CARTO tiles */
+        /* the basemap: the reference site's paper in its landing palette (2026-11-02), its docked grey, or the earlier CARTO tiles */
         const bs = st.querySelector(".wt-basemap-opt");
         if (bs){ bs.value = window.ovBasemap.mode(); if (!window.ovBasemap.gl){ bs.querySelectorAll('option:not([value="carto"])').forEach(o => { o.disabled = true; }); }
           bs.addEventListener("change", () => { const got = window.ovBasemap.set(bs.value); document.querySelectorAll(".wt-basemap-opt").forEach(s => { s.value = got; }); }); }
@@ -14680,21 +14932,29 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     if (!D || !CMP || !hosts.length) return;
     const NS = "http://www.w3.org/2000/svg";
     const C = {}; D.cols.forEach((c, i) => { C[c] = i; });
-    const rows = D.rows, n = rows.length;
+    /* the chart's own copy: the year switch rewrites its values, and the 2024 file is read elsewhere too (the compare ranks, the close) */
+    const rows = D.rows.map(r => r.slice()), n = rows.length;
     /* years of pay for a home: a typical home's value over the average
        salary, worked out here for every row (opt-2's fourth measure) */
-    if (C.home != null && C.wage != null && C.yp == null){ C.yp = D.cols.length; D.cols.push("yp"); rows.forEach(r => r.push(r[C.home] / r[C.wage])); }
+    if (C.home != null && C.wage != null && C.yp == null){ C.yp = D.cols.length; rows.forEach(r => r.push(r[C.home] / r[C.wage])); }
     const hereI = rows.findIndex(r => r[C.id] === D.here);
     const peerI = D.peers.map(id => rows.findIndex(r => r[C.id] === id)).filter(i => i >= 0);
     const slug = s => s.toLowerCase().replace(/\s+/g, "-");
     const mean = (is, k) => is.reduce((s, i) => s + rows[i][C[k]], 0) / is.length;
     const ALL = rows.map((r, i) => i);
+    /* the chart's year (2026-11-03, Nil: the sentence's 2024 a choice): 2024, or 2014 from who-scatter-2014.js,
+       the same rows keyed by id; a row with no 2014 values stands down that year (gone) */
+    const THEN = opts.then || null, gone = new Uint8Array(n);
+    let year = D.year || 2024;
+    const shown = () => ALL.filter(i => !gone[i]);
     /* the references: the first table's figures, so the beats and the table agree */
     const US = { pop: CMP.us.population, emp: null, wage: CMP.us.salary, home: CMP.us.home_value, unemp: CMP.us.unemployment, yp: CMP.us.home_value / CMP.us.salary };
-    const RATE = C.emp != null ? mean(ALL, "emp") / mean(ALL, "pop") : 0;
+    let RATE = C.emp != null ? mean(ALL, "emp") / mean(ALL, "pop") : 0;
     const pm = k => { const m = CMP.peers.reduce((s, p) => s + p[k], 0) / CMP.peers.length; return k === "unemployment" ? Math.round(m * 100) / 100 : m; };
     const PAVG = { pop: pm("population"), emp: C.emp != null ? mean(peerI, "emp") : 0, wage: pm("salary"), home: pm("home_value"), unemp: pm("unemployment"),
       yp: CMP.peers.reduce((s, p) => s + p.home_value / p.salary, 0) / CMP.peers.length };
+    const VCOLS = ["pop", "emp", "wage", "home", "unemp"].filter(c => C[c] != null);
+    const NOW = { v: rows.map(r => VCOLS.map(c => r[C[c]])), us: Object.assign({}, US), pa: Object.assign({}, PAVG), rate: RATE };
     const M = {
       pop:   { name: "Population", log: true },
       emp:   { name: "Employed residents", log: true, src: "BLS LAUS" },
@@ -14703,8 +14963,10 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       unemp: { name: "Unemployment", pct: true, max: 16, src: "BLS LAUS" },
       yp:    { name: "Years of pay", long: "Years of pay for a home", yrs: true, max: 20 }
     };
-    M.unemp.max = Math.ceil(Math.max(...rows.map(r => r[C.unemp])) / 5) * 5;
-    M.yp.max = Math.ceil(Math.max(...rows.map(r => r[C.yp])) / 5) * 5;
+    const maxes = () => { const is = shown();
+      M.unemp.max = Math.ceil(Math.max(...is.map(i => rows[i][C.unemp])) / 5) * 5;
+      M.yp.max = Math.ceil(Math.max(...is.map(i => rows[i][C.yp])) / 5) * 5; };
+    maxes();
     const ORDER = ["wage", "home", "unemp"];
     /* the switch's buttons: opt-2 adds years of pay (CSS hides it in opt-1) */
     const BTN = ["wage", "home", "yp", "unemp"];
@@ -14715,12 +14977,30 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
        legend's precision, and each row classed against the rounded cuts,
        so the legend's ranges are exactly true */
     const FIFTH = {};
-    BTN.forEach(kk => { const vals = rows.map(r => r[C[kk]]).sort((a, b) => a - b);
+    const fifths = () => BTN.forEach(kk => { const vals = shown().map(i => rows[i][C[kk]]).sort((a, b) => a - b);
       const q = p => { const h = (vals.length - 1) * p, lo = Math.floor(h); return vals[lo] + (vals[Math.min(lo + 1, vals.length - 1)] - vals[lo]) * (h - lo); };
       const round = v => (M[kk].pct || M[kk].yrs) ? Math.round(v * 10) / 10 : Math.round(v / 1000) * 1000;
       const cuts = [.2, .4, .6, .8].map(p => round(q(p))), cls = new Uint8Array(n);
       rows.forEach((r, i) => { let c = 0; cuts.forEach(t => { if (r[C[kk]] >= t) c++; }); cls[i] = c; });
       FIFTH[kk] = { cuts, cls }; });
+    fifths();
+    /* the year set: every row's values, the averages, the rate, the axes' tops and the fifths, then each chart redrawn */
+    const yearFns = [];
+    function setYear(y){
+      if (y === year || (y !== 2024 && !THEN)) return;
+      year = y; const then = y !== 2024, at = THEN ? THEN.cols.reduce((o, c, j) => (o[c] = j, o), {}) : {};
+      rows.forEach((r, i) => { const t = then ? THEN.rows[r[C.id]] : null; gone[i] = then && !t ? 1 : 0;
+        VCOLS.forEach((c, j) => { r[C[c]] = t ? t[at[c]] : NOW.v[i][j]; });
+        if (C.yp != null) r[C.yp] = r[C.home] / r[C.wage]; });
+      if (then){ const u = THEN.us;
+        Object.assign(US, { pop: u.population, wage: u.salary, home: u.home_value, unemp: u.unemployment, yp: u.home_value / u.salary });
+        const pi = peerI.filter(i => !gone[i]), pmn = kk => mean(pi, kk);
+        Object.assign(PAVG, { pop: pmn("pop"), emp: C.emp != null ? pmn("emp") : 0, wage: pmn("wage"), home: pmn("home"), unemp: Math.round(pmn("unemp") * 100) / 100, yp: pmn("yp") });
+        RATE = C.emp != null ? mean(shown(), "emp") / mean(shown(), "pop") : 0;
+      } else { Object.assign(US, NOW.us); Object.assign(PAVG, NOW.pa); RATE = NOW.rate; }
+      maxes(); fifths();
+      yearFns.forEach(f => f());
+    }
     const tintOn = () => (window.whoRight || "map") === "map";
     const TKEY = { wage: "salary", home: "home_value", unemp: "unemployment", yp: "yp" };
     const fmt = (v, k, full) => {
@@ -14760,7 +15040,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       const f = log ? Math.log : (v => v), fl = f(lo), fh = f(hi);
       return v => a + (f(v) - fl) / (fh - fl) * (b - a);
     }
-    const ext = k => { let lo = Infinity, hi = -Infinity; rows.forEach(r => { const v = r[C[k]]; if (v < lo) lo = v; if (v > hi) hi = v; }); return [lo, hi]; };
+    const ext = k => { let lo = Infinity, hi = -Infinity; rows.forEach((r, i) => { if (gone[i]) return; const v = r[C[k]]; if (v < lo) lo = v; if (v > hi) hi = v; }); return [lo, hi]; };
     const pad = ([lo, hi], log) => log ? [lo / Math.pow(hi / lo, .03), hi * Math.pow(hi / lo, .03)] : [Math.max(0, lo - (hi - lo) * .03), hi];
     const pagesEl = document.getElementById("pages");
 
@@ -14798,17 +15078,32 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       const dark = i => { const s = setOn(); return !!s && i !== hereI && s(i); };
       const setSize = () => { const s = setOn(); return s ? rows.reduce((c, r, i) => c + (s(i) ? 1 : 0), 0) : 0; };
       const setNote = () => ask && ask.note ? ask.note(few(setSize())) : "";
-      const headFor = kk => kk === "yp" ? headYp() : (T ? T.head(TKEY[kk]) : "");
+      /* the tables are 2024's: another year's header is made here, as years of pay's is, from the rows */
+      const headThen = kk => { const b = rows[hereI][C[kk]], low = kk === "unemp";
+        const d = (ref, who) => { let up, size, words;
+          if (M[kk].pct){ const g = Math.round((b - ref) * 10) / 10; if (Math.abs(g) < .05) return '<span class="wt-d">about the same as ' + who + '</span>'; up = g > 0; size = Math.abs(g).toFixed(1) + " pts"; words = (up ? "above " : "below ") + who; }
+          else { const q = b / ref; if (Math.abs(q - 1) < .01) return '<span class="wt-d">about the same as ' + who + '</span>'; up = q > 1;
+            if (q >= 2){ size = (q >= 10 ? Math.round(q) : q.toFixed(1)) + " times"; words = who; } else { size = Math.round(Math.abs(q - 1) * 100) + "%"; words = (up ? "above " : "below ") + who; } }
+          return '<span class="wt-d ' + ((low ? !up : up) ? 'is-good' : 'is-bad') + '"><b>' + ARRW(up) + size + '</b> ' + words + '</span>'; };
+        return '<div class="wt-head"><span class="wt-name">' + M[kk].name + ', ' + year + (low ? '<span class="hint">lower is better</span>' : '') + '</span><span class="wt-val">' + fmt(b, kk) + '</span></div>' +
+          '<p class="wt-diff">' + d(US[kk], "the US average") + d(PAVG[kk], "its peers") + '</p>'; };
+      const headFor = kk => kk === "yp" ? headYp() : year !== 2024 ? headThen(kk) : (T ? T.head(TKEY[kk]) : "");
       /* opt-2's finder: one admin at a time, marked in the house's orange */
-      const finder = SW ? '<div class="sc-find"><label class="ctl-label" for="scFind' + uid + '">Find a' + (noun === "admin" ? "n admin" : " metro") + '</label>' +
-          '<div class="sc-find-box"><input type="text" id="scFind' + uid + '" role="combobox" aria-expanded="false" aria-controls="scFindList' + uid + '" aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder="Type a name">' +
+      /* the box names itself (2026-11-03, Nil: the search redesigned): a magnifier and "Find an admin" inside it, no label beside */
+      const findWord = "Find a" + (noun === "admin" ? "n admin" : " metro");
+      const finder = SW ? '<div class="sc-find"><label class="vh" for="scFind' + uid + '">' + findWord + '</label>' +
+          '<div class="sc-find-box"><svg class="sc-find-ic" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.75" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10.5 10.5 14 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>' +
+          '<input type="text" id="scFind' + uid + '" role="combobox" aria-expanded="false" aria-controls="scFindList' + uid + '" aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder="' + findWord + '">' +
           '<button type="button" class="sc-find-clear" hidden>Clear</button><ul class="sc-find-list" id="scFindList' + uid + '" role="listbox" hidden></ul></div></div>' : '';
       /* opt-2 says what the chart shows as a sentence, Metro Industries'
          way (2026-10-17, Nil): the measure a blank in it, a native select
          dressed as Metro Industries' .mi-pick; opt-1 keeps the buttons */
       /* it says what the chart holds: the admins LAUS publishes, of about 25,000 people or more; every metro with the measures */
-      const sentence = SW ? '<p class="sc-sentence">' + (noun === "metro" ? "US metros" : "US admins of about 25,000 people or more") + ', by <span class="mi-pick sc-pick"><span class="mi-measure" aria-hidden="true"></span><select aria-label="The measure up the side of the chart">' +
-          BTN.map(m => '<option value="' + m + '"' + (m === k ? ' selected' : '') + '>' + M[m].name.toLowerCase() + '</option>').join("") + '</select></span> and population, in 2024</p>' : '';
+      const sentence = SW ? '<p class="sc-sentence">' + (noun === "metro" ? "US metros" : "US admins") + ', by <span class="mi-pick sc-pick"><span class="mi-measure" aria-hidden="true"></span><select aria-label="The measure up the side of the chart">' +
+          BTN.map(m => '<option value="' + m + '"' + (m === k ? ' selected' : '') + '>' + M[m].name.toLowerCase() + '</option>').join("") + '</select></span> and population, in ' +
+          /* the year a blank too, as the treemap beats have it (2026-11-03, Nil) */
+          (THEN ? '<span class="mi-pick sc-pick sc-year"><span class="mi-measure" aria-hidden="true"></span><select aria-label="Year">' +
+            [2024, 2014].map(y => '<option value="' + y + '"' + (y === year ? ' selected' : '') + '>' + y + '</option>').join("") + '</select></span>' : year) + '</p>' : '';
       host.innerHTML = (SW ? '<div class="who-fl-ctl who-sc-ctl">' + sentence + '<span class="ctl-label">' + (tintOn() ? "Chart and map show" : "Chart shows") + '</span><div class="seg" role="group" aria-label="The measure up the side of the chart">' +
           BTN.map(m => '<button type="button" class="seg-btn' + (m === k ? ' is-active' : '') + '" data-m="' + m + '" aria-pressed="' + (m === k) + '">' + M[m].name + '</button>').join("") + '</div>' + finder + '</div>' : '') +
         '<div class="who-sc-cmp">' + headFor(k) + '</div>' +
@@ -14816,8 +15111,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       const plot = host.querySelector(".who-sc-plot"), svg = plot.querySelector("svg"), tip = host.querySelector(".who-sc-tip"), note = host.querySelector(".who-sc-note"), peersHost = host.querySelector(".who-sc-peers");
       const ctl = host.querySelector(".who-sc-ctl"), cmp = host.querySelector(".who-sc-cmp"), live = host.querySelector(".sc-live");
       /* the sentence's blank as wide as its word (Metro Industries' fitPick) */
-      const pick = host.querySelector(".sc-pick select");
-      const fitPick = () => { if (!pick) return; const mm = pick.parentNode.querySelector(".mi-measure"), o = pick.options[pick.selectedIndex]; if (!mm || !o) return; mm.textContent = o.text; if (mm.offsetWidth) pick.style.width = "calc(" + (mm.offsetWidth / parseFloat(getComputedStyle(mm).fontSize)).toFixed(3) + "em + 24px)"; };
+      const pick = host.querySelector(".sc-pick:not(.sc-year) select"), yearPick = host.querySelector(".sc-year select");
+      const fitPick = () => [pick, yearPick].forEach(p => { if (!p) return; const mm = p.parentNode.querySelector(".mi-measure"), o = p.options[p.selectedIndex]; if (!mm || !o) return; mm.textContent = o.text; if (mm.offsetWidth) p.style.width = "calc(" + (mm.offsetWidth / parseFloat(getComputedStyle(mm).fontSize)).toFixed(3) + "em + 24px)"; });
       fitPick(); if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitPick);
       const onSet = T ? T.on : new Set(), isOn = i => onSet.has(rows[i][C.name]);
       const drawPeers = () => { peersHost.innerHTML = T ? T.peersRow() : "";
@@ -14840,13 +15135,20 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       const gCall = el("g", "sc-calls", gMarks);
       let cur = null, curPa = null, geo = null, raf = 0, entered = false;
       /* nothing is left on the edge: the unemployment axis reaches the highest rate */
-      const aria = () => svg.setAttribute("aria-label", M[k].name + " by population, 2024: " + (noun === "metro" ? "Boston Metro " : "Boston Admin ") + fmt(rows[hereI][C[k]], k, true) + ", peer average " + fmt(PAVG[k], k, true) +
+      const aria = () => svg.setAttribute("aria-label", M[k].name + " by population, " + year + ": " + (noun === "metro" ? "Boston Metro " : "Boston Admin ") + fmt(rows[hereI][C[k]], k, true) + ", peer average " + fmt(PAVG[k], k, true) +
         (k === "emp" ? ", US average " + Math.round(RATE * 100) + " employed per 100 residents" : ", US average " + fmt(US[k], k, true)) + "." +
         ((window.whoScTip || "card") !== "today" ? " The arrow keys go from " + noun + " to " + noun + ", Home back to " + rows[hereI][C.name] + " " + opts.tag + ", Escape closes the card." : ""));
       aria();
       /* the measure's reading, under the chart, from the beat's template */
       const says = SW && host.closest(".ov-block") ? host.closest(".ov-block").querySelector("template.who-sc-says") : null;
-      const say = () => { if (!says) return; const t = says.content.querySelector('[data-m="' + k + '"]'); note.className = "who-sc-note who-sc-say"; note.innerHTML = t ? t.innerHTML : ""; note.hidden = !t; note.setAttribute("aria-live", "polite");
+      /* the readings are written for 2024; another year says only its figures, in the tables' words */
+      const sayThen = () => { const b = rows[hereI][C[k]], who = (noun === "metro" ? "Boston Metro" : "Boston Admin");
+        const gap = (ref, w) => { if (M[k].pct || M[k].yrs){ const g = Math.round((b - ref) * 10) / 10, u = M[k].pct ? " points " : " years ";
+            return Math.abs(g) < .05 ? "about the same as " + w : Math.abs(g).toFixed(1) + u + (M[k].pct ? (g > 0 ? "above " : "below ") : (g > 0 ? "more than " : "fewer than ")) + w; }
+          const q = b / ref; return Math.abs(q - 1) < .01 ? "about the same as " + w : q >= 2 ? (q >= 10 ? Math.round(q) : q.toFixed(1)) + " times " + w : Math.round(Math.abs(q - 1) * 100) + "% " + (q > 1 ? "above " : "below ") + w; };
+        const what = k === "yp" ? "a typical " + who + " home cost " + fmt(b, k) + " of the average salary" : who + "’s " + WHAT[k] + " was " + fmt(b, k);
+        return "In " + year + " " + what + ", " + gap(US[k], "the US average") + " and " + gap(PAVG[k], "its peers") + "."; };
+      const say = () => { if (!says) return; const t = year !== 2024 ? { innerHTML: sayThen() } : says.content.querySelector('[data-m="' + k + '"]'); note.className = "who-sc-note who-sc-say"; note.innerHTML = t ? t.innerHTML : ""; note.hidden = !t; note.setAttribute("aria-live", "polite");
         /* opt-2 reads it in the words beside the panel */
         const slot = beat && beat.querySelector(".sc-say"); if (slot) slot.innerHTML = t ? '<p class="lede">' + t.innerHTML + '</p>' : ""; };
 
@@ -14894,13 +15196,10 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         /* opt-2: the two axes drawn, in the rule Metro Industries' bar charts set under their heads (2026-10-17, Nil) */
         if (axes){ line("sc-axis", m.l, bottom, W - m.r, bottom); line("sc-axis", m.l, m.t, m.l, bottom); }
         const axt = t("sc-axt", 0, m.t - 10, SW && k === "yp" ? M[k].long : M[k].name, "start");
-        /* the note: the question's set while one stands, else the lede's sentence; it shortens, then stands down, rather than meet the axis name */
+        /* the note: the question's set while one stands; it stands down rather than meet the axis name.
+           No "Each grey dot is a US admin" line otherwise (2026-11-03, Nil): the sentence above says what the dots are */
         if (SW){ const meets = e => { const p = e.getBBox(), r2 = axt.getBBox(); return p.x < r2.x + r2.width + 12; };
-          /* opt-1's dots are in their fifths' colours, so not "grey" */
-          const each = tintOn() ? "Each dot is a US " : "Each grey dot is a US ";
-          if (setOn()){ const e = t("sc-note", W - m.r, m.t - 10, setNote(), "end"); if (meets(e)) e.remove(); }
-          else { let e = t("sc-note", W - m.r, m.t - 10, each + (noun === "metro" ? "metro" : "admin of about 25,000 people or more"), "end");
-            if (meets(e)){ e.remove(); e = t("sc-note", W - m.r, m.t - 10, each + noun, "end"); if (meets(e)) e.remove(); } } }
+          if (setOn()){ const e = t("sc-note", W - m.r, m.t - 10, setNote(), "end"); if (meets(e)) e.remove(); } }
         else t("sc-note", W - m.r, m.t - 10, (tintOn() ? "Each dot is " : "Each grey dot is ") + opts.unit, "end");
         if (k === "emp"){
           const p0 = Math.max(xd[0], yd[0] / RATE), p1 = Math.min(xd[1], yd[1] / RATE);
@@ -14978,8 +15277,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
             gLabels.insertBefore(ln, gLabels.firstChild);
           }
         };
-        /* opt-2 names Boston with its figure where there is room (on a phone the figure is in the header under the band) */
-        place(pos[2 * hereI], pos[2 * hereI + 1], 8, SW && !phone() ? (noun === "metro" ? "Boston Metro " : "Boston Admin ") + fmt(rows[hereI][C[L.k]], L.k) : (noun === "metro" ? "Boston Metro" : "Boston Admin"), "sc-lab--here");
+        /* Boston by name alone, no figure after it (2026-11-03, Nil) */
+        place(pos[2 * hereI], pos[2 * hereI + 1], 8, noun === "metro" ? "Boston Metro" : "Boston Admin", "sc-lab--here");
         /* the found admin and the questions' places, each with its figure */
         callI.forEach(i => place(pos[2 * i], pos[2 * i + 1], 8, rows[i][C.name] + (i === found && noun === "admin" ? ", " + rows[i][C.st] : "") + " " + fmt(rows[i][C[L.k]], L.k), "sc-lab--call"));
         place(pa[0], pa[1], 8, "Peer average", "sc-lab--avg");
@@ -15005,6 +15304,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
           c.setAttribute("cx", p[2 * i]); c.setAttribute("cy", p[2 * i + 1]); c.setAttribute("r", f ? 8 : 6.5);
           const d = el("circle", "sc-calldot", gCall); d.setAttribute("cx", p[2 * i]); d.setAttribute("cy", p[2 * i + 1]); d.setAttribute("r", 3.6); });
         peerI.forEach((i, j) => { peerDots[j].style.display = isOn(i) ? "" : "none"; if (dots[i]) dots[i].style.display = isOn(i) ? "none" : ""; });
+        /* a row with no values in the year on stands down */
+        for (let i = 0; i < n; i++) if (dots[i] && peerI.indexOf(i) < 0) dots[i].style.display = gone[i] ? "none" : "";
       }
       /* drawn at its own positions, or, before the beat arrives, at the beat
          before's, from which it moves once seen */
@@ -15019,14 +15320,17 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         cancelAnimationFrame(raf);
         if (!entered && !reduce()){ const P = layout(prevK); cur = P.pos; paint(P.pos, P.pa); gLabels.classList.remove("is-in"); return; }
         if (!animate || !cur || reduce()){ cur = L.pos; paint(L.pos, L.pa); drawLabels(L); gLabels.classList.add("is-in"); return; }
-        const from = cur, fromPa = curPa || layout(prevK).pa, t0 = performance.now(), dur = 800, p = new Float32Array(n * 2);
+        /* the produce beats' tempo (2026-11-03, Nil): 950ms, the names fading back in from 55% of it */
+        const from = cur, fromPa = curPa || layout(prevK).pa, t0 = performance.now(), dur = 950, p = new Float32Array(n * 2);
+        let named = false;
         const ease = u => u < .5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
         const tick = now => {
           const u = Math.min(1, (now - t0) / dur), e = ease(u);
           for (let i = 0; i < n * 2; i++) p[i] = from[i] + (L.pos[i] - from[i]) * e;
           paint(p, [fromPa[0] + (L.pa[0] - fromPa[0]) * e, fromPa[1] + (L.pa[1] - fromPa[1]) * e]); cur = p;
+          if (!named && u >= .55) { named = true; drawLabels(L); requestAnimationFrame(() => gLabels.classList.add("is-in")); }
           if (u < 1) raf = requestAnimationFrame(tick);
-          else { cur = L.pos; drawLabels(L); requestAnimationFrame(() => gLabels.classList.add("is-in")); }
+          else cur = L.pos;
         };
         raf = requestAnimationFrame(tick);
       }
@@ -15051,7 +15355,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         /* a finger is wider than a pointer: the new cards reach 22px for it, as the map's dots do */
         const reach = fresh() && ev.pointerType && ev.pointerType !== "mouse" ? 22 : 14;
         let best = -1, bd = reach * reach;
-        for (let i = 0; i < n; i++){ const dx = cur[2 * i] - px, dy = cur[2 * i + 1] - py, d = dx * dx + dy * dy;
+        for (let i = 0; i < n; i++){ if (gone[i]) continue; const dx = cur[2 * i] - px, dy = cur[2 * i + 1] - py, d = dx * dx + dy * dy;
           if (d < bd || (d === bd && (i === hereI || peerI.indexOf(i) >= 0))){ bd = d; best = i; } }
         const dpx = geo.pa[0] - px, dpy = geo.pa[1] - py;
         if (dpx * dpx + dpy * dpy < bd) return { avg: true, x: geo.pa[0], y: geo.pa[1] };
@@ -15083,9 +15387,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       const WHAT = { wage: "average salary", home: "home value", unemp: "unemployment", yp: "years of pay for a home", emp: "employed residents" };
       /* counted from the nearer end: "19th lowest", not "1,566th highest" */
       const rankNote = i => { const v = rows[i][C[k]], low = lowBetter(k); let a = 1, b = 1;
-        for (let j = 0; j < n; j++){ const w = rows[j][C[k]]; if (low ? w < v : w > v) a++; if (low ? w > v : w < v) b++; }
+        let on = 0; for (let j = 0; j < n; j++){ if (gone[j]) continue; on++; const w = rows[j][C[k]]; if (low ? w < v : w > v) a++; if (low ? w > v : w < v) b++; }
         const top = a <= b, r = top ? a : b, dir = k === "yp" ? (top ? "fewest" : "most") : low === top ? "lowest" : "highest";
-        return (r === 1 ? "The " + dir : ord(r) + " " + dir) + " " + WHAT[k] + " of the " + n.toLocaleString("en-US") + " " + noun + "s on the chart." +
+        return (r === 1 ? "The " + dir : ord(r) + " " + dir) + " " + WHAT[k] + " of the " + on.toLocaleString("en-US") + " " + noun + "s on the chart" + (year !== 2024 ? " in " + year : "") + "." +
           (k === "unemp" ? " Lower is better." : k === "yp" ? " Fewer is easier to afford." : ""); };
       /* the card's parts: the mark it is about, as drawn, and the references it is set against */
       function tipFacts(h){
@@ -15101,10 +15405,12 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       }
       const unitW = () => k === "yp" ? " of pay for a home" : " " + WHAT[k];
       function cardHtml(d){
-        const m = tipMode(), head = '<div class="tt-h"><i class="tt-g tt-g--' + d.g + '"' + (d.pc ? ' style="--pc:' + d.pc + '"' : '') + ' aria-hidden="true"></i><span>' + escT(d.name) + '</span></div>';
+        /* the name alone, no mark beside it (2026-11-03, Nil) */
+        const m = tipMode(), head = '<div class="tt-h"><span>' + escT(d.name) + '</span></div>';
         const rowsH = list => list.length ? '<div class="tt-rows">' + list.map(([v, who]) => gapRow(d.v, v, who, d.plain)).join("") + '</div>' : '';
         /* a phone's plot is shorter than the card: the note goes, the chart stays in sight */
-        const noteH = d.note && plot.clientHeight >= 340 ? '<p class="tt-note">' + escT(d.note) + '</p>' : '';
+        /* no note under a rule (2026-11-03, Nil: "remove the horizontal line and the text below it from the tooltips") */
+        const noteH = '';
         const kv = (k === "yp" && d.yp ? [["Home value", fmt(d.yp[0], "home")], ["Average salary", fmt(d.yp[1], "wage")]] : []).concat(d.pop != null ? [["Population", popF(d.pop)]] : []);
         const kvH = kv.length ? '<dl class="tt-kv">' + kv.map(([a, b]) => '<dt>' + a + '</dt><dd>' + b + '</dd>').join("") + '</dl>' : '';
         if (m === "compact") return head + '<p class="tt-line"><b>' + fmt(d.v, k) + '</b>' + unitW() + '</p>' + rowsH(d.refs.slice(0, 1).filter(r => r[2] === "us")) +
@@ -15117,6 +15423,12 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
           return head + '<p class="tt-cap">' + (k === "yp" ? M.yp.long : M[k].name) + '</p><div class="tt-bars">' +
             all.map(([v, lab, col, me]) => '<span class="tt-bl' + (me ? ' is-me' : '') + '">' + escT(lab) + '</span><span class="tt-bt"><i style="width:' + (v / max * 100).toFixed(1) + '%;background:' + col + '"></i></span><span class="tt-bv' + (me ? ' is-me' : '') + '">' + fmt(v, k) + '</span>').join("") +
             '</div>' + kvH + noteH;
+        }
+        /* the measure and the population as one list, in the same style, then the comparisons (2026-11-03, Nil:
+           "show salary and population with the same standard styling and show the comparison after") */
+        if (m === "card"){
+          const facts = [[k === "yp" ? M.yp.long : M[k].name, fmt(d.v, k)]].concat(kv);
+          return head + '<dl class="tt-kv tt-kv--lead">' + facts.map(([a, b]) => '<dt>' + a + '</dt><dd>' + b + '</dd>').join("") + '</dl>' + rowsH(d.refs) + noteH;
         }
         return head + '<div class="tt-fig">' + fmt(d.v, k) + '<span class="tt-u">' + unitW() + '</span></div>' + rowsH(d.refs) + kvH + noteH;
       }
@@ -15183,16 +15495,16 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       document.addEventListener("keydown", ev => { if (ev.key === "Escape" && fresh() && !tip.hidden) hideTip(); });
       /* from the keyboard: the chart takes focus at Boston; left and right go to the next smaller or larger admin, up and
          down to the next higher or lower on the measure, Home back to Boston */
-      const byM = {}, orderM = () => byM[k] || (byM[k] = rows.map((r, i) => i).sort((p, q) => rows[p][C[k]] - rows[q][C[k]] || q - p));
+      const byM = {}, orderM = () => byM[k + year] || (byM[k + year] = shown().sort((p, q) => rows[p][C[k]] - rows[q][C[k]] || q - p));
       const at = i => ({ i, x: cur[2 * i], y: cur[2 * i + 1] });
       svg.addEventListener("focus", () => { if (!fresh() || !entered || !cur || !svg.matches(":focus-visible")) return; if (kbI == null) kbI = hereI; showCard(at(kbI), true); });
       svg.addEventListener("blur", () => { if (fresh()) hideTip(); });
       svg.addEventListener("keydown", ev => {
         if (!fresh() || !entered || !cur) return;
         let j = kbI == null ? hereI : kbI;
-        if (ev.key === "ArrowLeft") j = Math.min(n - 1, j + 1);
-        else if (ev.key === "ArrowRight") j = Math.max(0, j - 1);
-        else if (ev.key === "ArrowUp" || ev.key === "ArrowDown"){ const o = orderM(), p = o.indexOf(j); j = o[Math.max(0, Math.min(n - 1, p + (ev.key === "ArrowUp" ? 1 : -1)))]; }
+        if (ev.key === "ArrowLeft"){ let q = j + 1; while (q < n && gone[q]) q++; if (q < n) j = q; }
+        else if (ev.key === "ArrowRight"){ let q = j - 1; while (q >= 0 && gone[q]) q--; if (q >= 0) j = q; }
+        else if (ev.key === "ArrowUp" || ev.key === "ArrowDown"){ const o = orderM(), p = o.indexOf(j); j = o[Math.max(0, Math.min(o.length - 1, p + (ev.key === "ArrowUp" ? 1 : -1)))]; }
         else if (ev.key === "Home") j = hereI;
         else return;
         ev.preventDefault(); kbI = j; showCard(at(j), true);
@@ -15222,6 +15534,18 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       /* on the beat, not the panel: on a phone the controls stand in the column under the band */
       if (SW) beat.addEventListener("click", ev => { const b = ev.target.closest(".who-sc-ctl .seg-btn"); if (b) set(b.dataset.m); });
       if (pick) pick.addEventListener("change", () => { fitPick(); set(pick.value); });
+      /* the year: the dots move to the year's values, the rows with none stand down; a question (asked of 2024) closes */
+      if (yearPick) yearPick.addEventListener("change", () => { if (ask) closeAsk(false); setYear(+yearPick.value); });
+      yearFns.push(() => {
+        if (yearPick && +yearPick.value !== year){ yearPick.value = String(year); }
+        fitPick();
+        if (found != null && gone[found]){ found = null; const f = host.querySelector(".sc-find input"), c = host.querySelector(".sc-find-clear"); if (f) f.value = ""; if (c) c.hidden = true; }
+        if (kbI != null && gone[kbI]) kbI = null;
+        cmp.innerHTML = headFor(k); aria(); say(); hideTip(); gLabels.classList.remove("is-in");
+        if (live) live.textContent = "The chart shows " + year + ".";
+        render(entered);
+        /* the map beside (opt-1) repaints from the year's rows and fifths */
+        document.dispatchEvent(new CustomEvent("who:measure", { detail: { set: opts.set, k } })); });
       /* ---- opt-2: Ask the chart. A question sets the chart (the measure,
          the dark set, the fade, the places named) and its answer opens
          under it; one at a time; the row again, or any change of measure,
@@ -15231,10 +15555,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       const ASKS = {
         a1: { m: "wage", dark: "pop", at: 500e3, band: [500e3, Infinity], fade: true, callouts: ["0667000", "2622000"], note: n => "Dark dots: the " + n + " admins of 500,000 people or more" },
         a2: { m: "home", dark: "above", fade: true, callouts: ["0643280", "0668000", "0644000"], note: n => "Dark dots: the " + n + " admins where a home is worth more" },
-        a3: { m: "yp", dark: "state", st: "MA", fade: true, callouts: ["2521990", "2545560"], note: n => "Dark dots: the " + n + " admins in Massachusetts" },
         m1: { m: "wage", dark: "above", fade: true, callouts: ["41940", "34940", "35620"], note: n => "Dark dots: the " + n + " metros that pay more" },
-        m2: { m: "home", dark: "above", fade: true, callouts: ["41940", "27980", "31080"], note: n => "Dark dots: the " + n + " metros where a home is worth more" },
-        m3: { m: "yp", dark: "pop", at: 1e6, band: [1e6, Infinity], fade: true, callouts: ["31080", "35620", "38300"], note: n => "Dark dots: the " + n + " metros of a million people or more" } };
+        m2: { m: "home", dark: "above", fade: true, callouts: ["41940", "27980", "31080"], note: n => "Dark dots: the " + n + " metros where a home is worth more" } };
       let askBack = null;
       /* the tab on the panel while an answer stands, Metro Industries' own:
          what the chart is showing, and the way back, named for the measure
@@ -15263,6 +15585,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         const back = ask ? askBack : k;
         if (ask) closeAsk(false);
         const st = ASKS[q.dataset.ask]; if (!st) return;
+        /* the questions are asked of 2024 */
+        if (year !== 2024) setYear(2024);
         askBack = back; ask = st; host.classList.add("is-asked"); host.dataset.asked = q.dataset.ask; showTab(true);
         if (live) live.textContent = setNote();
         q.setAttribute("aria-expanded", "true"); q.closest(".ask-item").classList.add("is-on");
@@ -15296,10 +15620,12 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         const show = () => { const raw = fin.value.trim(), q = norm(raw);
           /* empty, or still the place picked: the whole list (the picked place lit) */
           if (!q || (found != null && raw === label(found))){
-            opts2 = BYPOP; hi = found != null ? BYPOP.indexOf(found) : -1;
-            list.innerHTML = '<li class="sc-opt-head" role="presentation">All ' + rows.length.toLocaleString("en-US") + ' US ' + noun + 's, largest first</li>' + opts2.map(item).join("");
+            /* the year's rows only: one with no values that year is not on the chart */
+            opts2 = BYPOP.filter(i => !gone[i]); hi = found != null ? opts2.indexOf(found) : -1;
+            /* no "All 1,584 US admins, largest first" head (2026-11-03, Nil) */
+            list.innerHTML = opts2.map(item).join("");
           } else {
-            const sc = rows.map((r, i) => { const nm = NAMES[i]; const s = nm.startsWith(q) ? 0 : nm.split(/[\s-]+/).some(w => w.startsWith(q)) ? 1 : nm.includes(q) ? 2 : 9; return [s, -r[C.pop], i]; })
+            const sc = rows.map((r, i) => { if (gone[i]) return [9, 0, i]; const nm = NAMES[i]; const s = nm.startsWith(q) ? 0 : nm.split(/[\s-]+/).some(w => w.startsWith(q)) ? 1 : nm.includes(q) ? 2 : 9; return [s, -r[C.pop], i]; })
               .filter(a => a[0] < 9).sort((a, b) => a[0] - b[0] || a[1] - b[1]).slice(0, 8);
             opts2 = sc.map(a => a[2]); hi = opts2.length ? 0 : -1;
             list.innerHTML = opts2.length ? opts2.map(item).join("")
@@ -15358,7 +15684,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       /* for the map beside it: the rows, the fifths, the measure on */
       (window.WHO_SC = window.WHO_SC || {})[opts.set] = { rows, C, M, FIFTH, hereI, peerI, isOn, get k(){ return k; }, unit: opts.unit, tag: opts.tag,
         /* a question's set and the places named, for the map to show the same */
-        asking: () => !!setOn(), dark, setNote, calls, get found(){ return found; },
+        asking: () => !!setOn(), dark, setNote, calls, get found(){ return found; }, gone, get year(){ return year; },
         refresh(){ const lab = ctl && ctl.querySelector(".ctl-label"); if (lab) lab.textContent = tintOn() ? "Chart and map show" : "Chart shows"; fitPick();
           arrange(); placeWords(); drawPeers(); cmp.innerHTML = headFor(k); render(false); if (entered && cur) paint(cur, geo.pa); },
         /* the presenter view: the beat arrives without a scroll, and the controls follow the panel */
@@ -15376,9 +15702,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     hosts.forEach(h => Chart(h, h.dataset.measure));
   }
   build(window.WHO_SCATTER_2024, window.WHO_COMPARE_2024, [...document.querySelectorAll('.who-sc[data-measure]:not([data-set="metro"])')],
-    { set: "admin", unit: "a US admin", tag: "Admin" });
+    { set: "admin", unit: "a US admin", tag: "Admin", then: window.WHO_SCATTER_2014 });
   build(window.WHO_METRO_SCATTER_2024, window.WHO_COMPARE_METRO_2024, [...document.querySelectorAll('.who-sc[data-set="metro"]')],
-    { set: "metro", unit: "a US metro", tag: "Metro" });
+    { set: "metro", unit: "a US metro", tag: "Metro", then: window.WHO_METRO_SCATTER_2014 });
   })();
 
   /* ---- Who are you?: the right side of the scatter beats (2026-10-15) ----
@@ -15434,7 +15760,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       const W = s.W, F = W.FIFTH[W.k], cols = [1, 2, 3, 4, 5].map(j => cssv("--fifth-" + j)), r = (s.set === "metro" ? 3.4 : 2.6) * (phone() ? .78 : 1);
       /* a question standing on the chart: its set dark and the rest faded, as the chart shows them */
       const Q = W.asking && W.asking(), grey = cssv("--mark-grey"), dk = cssv("--control-edge");
-      s.order.forEach(i => s.mk[i].setStyle(Q ? { fillColor: W.dark(i) ? dk : grey, fillOpacity: W.dark(i) ? 1 : .3, radius: r } : { fillColor: cols[F.cls[i]], fillOpacity: .95, radius: r }));
+      s.order.forEach(i => s.mk[i].setStyle(W.gone && W.gone[i] ? { fillOpacity: 0, opacity: 0, radius: r } : Q ? { fillColor: W.dark(i) ? dk : grey, fillOpacity: W.dark(i) ? 1 : .3, opacity: 1, radius: r } : { fillColor: cols[F.cls[i]], fillOpacity: .95, opacity: 1, radius: r }));
       /* a peer that is on: its coloured dot, and its cloud dot stands aside;
          one that sits on Boston at this zoom rings Boston's dot instead */
       const hp = ovLeaflet.latLngToContainerPoint(s.here.getLatLng());
@@ -15505,7 +15831,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       });
     }
     /* the nearest dot under the pointer: its card here, its ring there */
-    const vis = s => s.order.filter(i => !s.W.isOn(i) || s.W.peerI.indexOf(i) < 0).concat(s.W.peerI.filter(s.W.isOn), [s.W.hereI]);
+    const vis = s => s.order.filter(i => !(s.W.gone && s.W.gone[i]) && (!s.W.isOn(i) || s.W.peerI.indexOf(i) < 0)).concat(s.W.peerI.filter(s.W.isOn), [s.W.hereI]);
     function nearest(s, x, y, reach){
       if (!s.proj){ s.proj = new Map(); vis(s).forEach(i => { const q = ovLeaflet.latLngToContainerPoint(s.pts[s.rows[i][s.C.id]]); s.proj.set(i, q); }); }
       let best = null, bd = reach * reach;
@@ -15659,7 +15985,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     host.innerHTML = '<div class="who-fl-head"><div class="who-fl-all"><b>' + K(TOTAL) + '</b><span>workers who live in Boston, work in Boston, or both</span></div>' +
       '<div class="who-fl-labs">' + GROUPS.map(g => '<div class="who-fl-lab who-fl-lab--' + g.k + '"><b>' + K(g.n) + (g.dir ? ' <em class="who-fl-dir"><i class="who-fl-c">commute </i>' + g.dir.replace("commute ", "") + '</em>' : '') + '</b><span>' + g.name + '</span><small>' + g.share + '</small></div>').join("") + '</div></div>' +
       '<svg role="img" aria-label="' + K(TOTAL) + ' workers: ' + GROUPS.map(g => K(g.n) + " " + g.name.charAt(0).toLowerCase() + g.name.slice(1)).join(", ") + '"></svg>' +
-      '<p class="who-fl-note">One dot is about ' + K(PER) + ' people. <button type="button" class="who-fl-replay">' +
+      '<p class="who-fl-note"><span class="who-fl-key"><svg class="vk-dot" width="8" height="8" aria-hidden="true"><circle cx="4" cy="4" r="3"/></svg>One dot is about ' + K(PER) + ' people.</span> <button type="button" class="who-fl-replay">' +
         '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M2.5 8a5.5 5.5 0 1 0 1.8-4.1M2.5 2.5v3h3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Play again</button></p>';
     const svg = host.querySelector("svg");
     const dots = [];
@@ -15797,6 +16123,302 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     fitCtl();
   })();
 
+  /* ---- Who are you?: the Groups study's opt-4, the reference's two charts
+     (2026-11-02, Nil: "For the venn diagram beat add this as an option:
+     https://cities.taimur.sh/usa/place/boston-ma More people commute into
+     Boston than out of it section. Both its top and below diagrams together
+     with their color"). Drawn as the reference draws them, its layout rules,
+     colours and type read from its bundle: on top the jobs in Boston (blue)
+     and the jobs its working residents hold (orange, multiplied over the
+     blue, so the 190K who do both come out grey-green), two rectangles on
+     one scale with the two totals in brackets over them; under them every
+     US place with 1,000 or more working residents by its jobs per working
+     resident, 44 bins on a log scale, with Boston's line, its peers' ticks
+     and their average. The Venn grows from the left as the beat plays, as
+     the reference's does; the histogram stands at once. Where it departs:
+     the cards round their counts (the house rule for commuting counts), the
+     peers are the page's four (the reference averages five, adding Yonkers,
+     to 1.48), the peer average's name steps to the other side of its line
+     rather than lie under Boston's, the wrapped words under the axis, and on
+     a phone the band holds the Venn and the histogram stands in the column.
+     window.whoFlowsRef, switched by the Venn's whoFlowsAlt below. ---- */
+  (function(){
+    const fig = window.whoFlowsFig, W = window.WHO_2024;
+    if (!fig || !W || !W.in || !W.out) return;
+    const host = fig.host, K = window.fmtCount;
+    const JOBS = W.in.jobsHere, RES = W.out.residentWorkers, BOTH = W.in.heldByResidents, IN = Math.max(0, JOBS - BOTH), OUT = Math.max(0, RES - BOTH);
+    const PCT = (a, b) => Math.round(a / b * 100) + "%", FULL = n => n.toLocaleString("en-US"), q = v => +(+v).toFixed(2);
+    /* place_commute as the reference reads it: each place's latest LODES year to 2024, the 8,209 with 1,000 or more
+       working residents and any jobs; bins a 22nd of a decade wide from 0.1 to 10, the end bins holding all beyond;
+       Boston's rank counts the places above it */
+    const BAL = { n: 8209, rank: 603, me: JOBS / RES,
+      counts: [282, 69, 52, 84, 110, 113, 128, 124, 186, 189, 225, 248, 280, 310, 307, 340, 404, 402, 433, 412, 397, 389,
+               382, 416, 366, 339, 246, 198, 183, 147, 103, 80, 71, 47, 34, 27, 26, 15, 10, 6, 4, 1, 9, 15],
+      peers: [["Washington, DC", 2.086197815000031], ["Oakland, CA", 1.1109701071630005], ["Long Beach, CA", 0.8400687670301359], ["Cambridge, MA", 2.74537518187487]] };
+    BAL.max = Math.max(...BAL.counts); BAL.avg = BAL.peers.reduce((s, p) => s + p[1], 0) / BAL.peers.length;
+    const reduce = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const ease = u => u < .5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
+    /* the presenter's type step: each chart is laid out that much smaller in units and shown at its full size */
+    const scale = () => { const w = document.getElementById("ovWrap"); if (!w || !w.classList.contains("is-presenting")) return 1;
+      return Math.max(1, parseFloat(getComputedStyle(w).getPropertyValue("--pv-k")) || 1); };
+    let ctx;
+    const tw = (s, size, weight) => { if (ctx === undefined) ctx = document.createElement("canvas").getContext("2d");
+      if (!ctx) return s.length * size * .53; ctx.font = weight + " " + size + "px 'Source Sans 3','Source Sans Pro',sans-serif"; return ctx.measureText(s).width; };
+    const nw = s => tw(s, 18, 700), ww = s => tw(s, 13, 600);
+    /* words into lines no wider than max; null when a word alone is wider */
+    const lines = (s, max, size, weight) => { const out = []; let cur = "";
+      for (const w of s.split(" ")){ const t = cur ? cur + " " + w : w;
+        if (tw(t, size, weight) <= max) cur = t; else { if (!cur || tw(w, size, weight) > max) return null; out.push(cur); cur = w; } }
+      if (cur) out.push(cur); return out; };
+    const tipHtml = (title, rows) => '<b>' + title + '</b><dl>' + rows.map(r => '<dt>' + r[0] + '</dt><dd>' + r[1] + '</dd>').join("") + '</dl>';
+
+    /* ---- the Venn, on the reference's constants: its pad, gaps, bracket rows, label rows and block height bounds */
+    const PAD = 8, GAP = 3, IP = 10, BR = 22, TK = 6, BG = 8, ROW = 30, CLH = 17, HB0 = 72, HB1 = 200;
+    const SRC = ["LODES, 2023.", "Counts jobs, not people: someone with two jobs is counted twice."];
+    const NAMES = { in: "commute in", both: "live and work in Boston", out: "commute out" }, NUMS = { in: K(IN), both: K(BOTH), out: K(OUT) };
+    const VTIP = {
+      in:   ["Commute in", [["Jobs", K(IN)], ["of the jobs in Boston", PCT(IN, JOBS)]]],
+      both: ["Live and work in Boston", [["Jobs", K(BOTH)], ["of jobs here", PCT(BOTH, JOBS)], ["of working residents", PCT(BOTH, RES)]]],
+      out:  ["Commute out", [["Jobs", K(OUT)], ["of working residents", PCT(OUT, RES)]]] };
+    /* a part's label inside its block: the count with its name beside it, or the name under it on up to three lines;
+       null when it does not fit, and it stands under the block on a leader */
+    function inside(num, head, extra, segW, hb){
+      const o = segW - 2 * IP, a = nw(num); if (a > o) return null;
+      const same = a + 5 + ww(head) <= o, more = extra && ww(extra) <= o ? [extra] : [], fits = n => 24 + 17 * n + IP <= hb;
+      if (same && more.length && fits(1)) return { head, lines: more };
+      if (same && fits(0)) return { head, lines: [] };
+      const wr = lines(head, o, 13, 600);
+      return wr && wr.length <= 3 && fits(wr.length) ? { head: null, lines: wr } : null;
+    }
+    /* widths on one scale (the three parts end to end fill the width), heights from what the brackets, the labels
+       under and the source line leave, the whole stack centred. opt.cap: the source line in the figure (on a phone
+       it stands over the column's histogram instead); opt.floor: the blocks' least height (72, the reference's; in
+       the phone band, which cannot grow, as low as 24). need: the height the stack takes at that floor */
+    function vennLayout(Wd, Hd, opt){
+      const total = IN + BOTH + OUT, inner = Math.max(0, Wd - 2 * PAD); if (!(inner > 0) || !(Hd > 0) || !total) return null;
+      const k = inner / total, w = { in: IN * k, both: BOTH * k, out: OUT * k }, x = { in: PAD, both: PAD + w.in, out: PAD + w.in + w.both }, xEnd = PAD + inner;
+      /* the source line on one line, else at its sentence break, else wrapped to the width */
+      const one = SRC.join(" "), caps = !opt.cap ? [] : tw(one, 13, 400) <= inner ? [one] : SRC.every(s => tw(s, 13, 400) <= inner) ? SRC : (lines(one, inner, 13, 400) || SRC);
+      const HEAD = 2 * (BR + 4 + TK) + BG + 6, LO = opt.floor;
+      const stack = (rows, e) => HEAD + 2 * (GAP + e) + (rows ? 8 + rows * ROW : 0) + (caps.length ? 14 + caps.length * CLH : 0);
+      const blockH = rows => { let hb = HB1; for (let i = 0; i < 3; i++){ const e = Math.max(4, .04 * hb); hb = Math.max(LO, Math.min(HB1, Hd - stack(rows, e))); } return hb; };
+      const place = hb => { const lab = {}, under = [];
+        ["in", "both", "out"].forEach(s => { const f = inside(NUMS[s], NAMES[s], s === "in" ? "live elsewhere" : null, w[s], hb);
+          if (f) lab[s] = f; else under.push({ s, w: nw(NUMS[s]) + 5 + ww(NAMES[s]), cx: x[s] + w[s] / 2 }); });
+        const ends = []; let rows = 0;
+        under.forEach(u => { const xl = Math.min(Math.max(u.cx - u.w / 2, PAD), xEnd - u.w); let r = 0;
+          while (ends[r] !== undefined && ends[r] + 12 > xl) r++;
+          ends[r] = xl + u.w; rows = Math.max(rows, r + 1); lab[u.s] = { below: true, x: xl, row: r, lx: u.cx }; });
+        /* a lower row's leader must not run through a label above it: it moves over, past that label but inside its
+           own part and under its own label; else the label above steps left of it, keeping its own leader under it;
+           failing both, the two swap rows once and the pass runs again (a 320 phone: the shared part's leader and
+           the out label have no room either way, but swapped the shared part's label can step left) */
+        const steer = swap => under.forEach(u => { const lo = lab[u.s]; if (!lo.row) return;
+          under.forEach(v => { const up = lab[v.s]; if (up.row >= lo.row || lo.lx <= up.x - 6 || lo.lx >= up.x + v.w + 6) return;
+            const nx = up.x + v.w + 6;
+            if (nx <= x[u.s] + w[u.s] - 2 && nx >= lo.x && nx <= lo.x + u.w) lo.lx = nx;
+            else { const nl = Math.max(PAD, lo.lx - 6 - v.w);
+              if (up.lx >= nl && up.lx <= nl + v.w) up.x = nl;
+              else if (swap){ const r0 = up.row; up.row = lo.row; lo.row = r0; } } }); });
+        steer(true); steer(false);
+        return { lab, rows }; };
+      const need = stack(place(LO).rows, Math.max(4, .04 * LO)) + LO;
+      /* sized for the rows actually drawn: a lower block can drop another label under it, so again until the count holds */
+      let hb = blockH(0), P = place(hb);
+      for (let i = 0, r = 0; i < 4 && P.rows > r; i++){ r = P.rows; hb = blockH(r); P = place(hb); }
+      const e = Math.max(4, .04 * hb), top0 = Math.max(0, (Hd - (stack(P.rows, e) + hb)) / 2), blockTop = top0 + HEAD + GAP + e, blockBot = blockTop + hb;
+      const brk = (from, to, n, verb) => { const num = K(n), lw = s => nw(num) + 5 + ww(s); let words = verb + " in Boston";
+        if (lw(words) > inner) words = verb + " here"; const L = lw(words);
+        return { from, to, num, words, left: Math.min(Math.max((from + to) / 2 - L / 2, PAD), xEnd - L) }; };
+      const workY = top0 + BR + 4, liveY = workY + TK + BG + BR + 4, belowTop = blockBot + GAP + e + 8;
+      return { w, x, xEnd, hb, e, blockTop, blockBot, lab: P.lab, rows: P.rows, caps, need, workY, liveY, belowTop,
+        work: brk(x.in, x.both + w.both, JOBS, "work"), live: brk(x.both, xEnd, RES, "live"),
+        capTop: belowTop + (P.rows ? P.rows * ROW : 0) + 14 - (P.rows ? 0 : 8) };
+    }
+    /* p, 0 to 1: the blocks grow from the left keeping their proportions, the names fade in over the last two fifths */
+    function vennSvg(L, p){
+      const M = ease(p), a = Math.max(0, Math.min(1, (p - .6) / .4));
+      const cw = { in: L.w.in * M, both: L.w.both * M, out: L.w.out * M }, cx = { in: PAD, both: PAD + cw.in, out: PAD + cw.in + cw.both };
+      let h = '<rect class="rv-work" x="' + q(cx.in) + '" y="' + q(L.blockTop) + '" width="' + q(cw.in + cw.both) + '" height="' + q(L.hb) + '"/>' +
+        '<rect class="rv-live" x="' + q(cx.both) + '" y="' + q(L.blockTop - L.e) + '" width="' + q(cw.both + cw.out) + '" height="' + q(L.hb + 2 * L.e) + '"/>';
+      ["in", "both", "out"].forEach(s => { const o = s === "in" ? 0 : L.e;
+        h += '<rect class="rv-hit' + (vk === s ? ' is-on' : '') + '" data-k="' + s + '" x="' + q(cx[s]) + '" y="' + q(L.blockTop - o) + '" width="' + q(cw[s]) + '" height="' + q(L.hb + 2 * o) + '"/>'; });
+      h += '<g class="rv-labs" opacity="' + q(a) + '">';
+      [[L.work, L.workY], [L.live, L.liveY]].forEach(([b, y]) => {
+        h += '<path class="rv-brk" d="M' + q(b.from + .5) + ',' + q(y + TK) + 'V' + q(y) + 'H' + q(b.to - .5) + 'V' + q(y + TK) + '"/>' +
+          '<text class="rv-t" x="' + q(b.left) + '" y="' + q(y - 7) + '"><tspan class="rv-n">' + b.num + '</tspan><tspan class="rv-w" dx="5">' + b.words + '</tspan></text>'; });
+      ["in", "both", "out"].forEach(s => { const lb = L.lab[s];
+        if (!lb.below){ const x0 = L.x[s] + IP;
+          h += '<text class="rv-t rv-t--' + s + '" x="' + q(x0) + '" y="' + q(L.blockTop + IP + 16) + '"><tspan class="rv-n">' + NUMS[s] + '</tspan>' +
+            (lb.head ? '<tspan class="rv-w" dx="5">' + lb.head + '</tspan>' : '') +
+            lb.lines.map((t, i) => '<tspan class="rv-w" x="' + q(x0) + '" dy="' + (i ? 17 : 20) + '">' + t + '</tspan>').join("") + '</text>';
+          return; }
+        const c = lb.lx, R = L.belowTop + lb.row * ROW + 18;
+        h += '<line class="rv-ldr rv-ldr--' + s + '" x1="' + q(c) + '" x2="' + q(c) + '" y1="' + q(L.blockBot + 2) + '" y2="' + q(R - 15) + '"/>' +
+          '<text class="rv-t rv-u--' + s + '" x="' + q(lb.x) + '" y="' + q(R) + '"><tspan class="rv-n">' + NUMS[s] + '</tspan><tspan class="rv-w" dx="5">' + NAMES[s] + '</tspan></text>'; });
+      return h + '</g>' + (L.caps.length ? '<text class="rv-cap" x="' + PAD + '" y="' + q(L.capTop + 13) + '">' + L.caps.map((t, i) => '<tspan x="' + PAD + '" dy="' + (i ? CLH : 0) + '">' + t + '</tspan>').join("") + '</text>' : '');
+    }
+
+    /* ---- the histogram, on the reference's frame (margins 34 16 64 16, more below when its words wrap) */
+    const LOV = .1, HIV = 10, NB = BAL.counts.length, TICKS = [.1, .2, .5, 1, 2, 5, 10];
+    /* each arrow held to its word by a no-break space, so a wrapped label never leaves it alone on a line */
+    const NBSP = String.fromCharCode(160), T_LO = "←" + NBSP + "More working residents than jobs", T_HI = "More jobs than working residents" + NBSP + "→";
+    const CAP = "Jobs per working resident, log scale · " + FULL(BAL.n) + " places with 1,000 or more working residents";
+    const edge = i => Math.pow(10, -1 + i * 2 / NB), fx = v => v >= 10 ? v.toFixed(0) : v.toFixed(2);
+    function histLayout(Wd, Hd){
+      const plotW = Math.max(0, Wd - 32); if (!(plotW > 0) || !(Hd > 0)) return null;
+      const x = v => 16 + (Math.log10(Math.min(HIV, Math.max(LOV, v))) + 1) / 2 * plotW, one = x(1);
+      const lo = (ww(T_LO) <= one - 8 ? [T_LO] : lines(T_LO, one - 8, 13, 600)) || [T_LO];
+      const hi = (ww(T_HI) <= Wd - one - 8 ? [T_HI] : lines(T_HI, Wd - one - 8, 13, 600)) || [T_HI];
+      const cap = (tw(CAP, 13, 400) <= Wd - 32 ? [CAP] : lines(CAP, Wd - 32, 13, 400)) || [CAP];
+      const la = Math.max(lo.length, hi.length), plotH = Math.max(24, Hd - 34 - (64 + 17 * (la - 1 + cap.length - 1))), base = 34 + plotH;
+      return { Wd, plotW, plotH, base, x, one, lo, hi, la, cap, y: c => base - c / BAL.max * plotH };
+    }
+    function histSvg(L){
+      const x = L.x, base = L.base, ay = base + 37, right = 16 + L.plotW * .72;
+      const words = (cls, t, x0, anchor) => '<text class="rh-arr ' + cls + '" x="' + q(x0) + '" y="' + q(ay) + '" text-anchor="' + anchor + '">' +
+        t.map((s, i) => '<tspan x="' + q(x0) + '" dy="' + (i ? 17 : 0) + '">' + s + '</tspan>').join("") + '</text>';
+      let h = words("rh-arr--lo", L.lo, L.one - 8, "end") + words("rh-arr--hi", L.hi, L.one + 8, "start");
+      TICKS.forEach(t => { h += '<line class="rh-grid" x1="' + q(x(t)) + '" x2="' + q(x(t)) + '" y1="34" y2="' + q(base) + '"/>'; });
+      BAL.counts.forEach((c, i) => { const a = x(edge(i)), b = x(edge(i + 1)), y = L.y(c);
+        h += '<rect class="rh-bar rh-bar--' + (edge(i + 1) <= 1.0001 ? 'lo' : 'hi') + '" x="' + q(a + .5) + '" y="' + q(y) + '" width="' + q(Math.max(0, b - a - 1)) + '" height="' + q(base - y) + '"/>'; });
+      /* Boston's name on the reference's side of its line, or the other side where it would run off the chart */
+      const S = x(BAL.avg), B = x(BAL.me), meW = tw("Boston " + fx(BAL.me), 22, 700), meEnd = B > right || B + 8.4 + meW > L.Wd;
+      /* the peer average's name on the reference's side of its line, or the other side, clear of Boston's line and
+         of the line at 1; where neither side is clear it goes up beside Boston's name, over the bars, left of its
+         line, the dashed line reaching up to it; failing that, the side clear of Boston's line. Where the name must
+         stand over the line at 1, that line starts under the name rather than run through it (a review, 2026-11-02) */
+      const paW = tw("Peer average ", 13, 400) + tw(fx(BAL.avg), 13, 700);
+      const span = end => end ? [S - 6 - paW, S - 6] : [S + 6, S + 6 + paW], hits = (sp, v) => v > sp[0] - 4 && v < sp[1] + 4;
+      const fitsIn = sp => sp[0] >= 0 && sp[1] <= L.Wd, ok = (sp, strict) => fitsIn(sp) && !hits(sp, B) && (!strict || !hits(sp, L.one));
+      let paEnd = S > right, paY = 68;
+      if (!ok(span(paEnd), true)){
+        const up = span(true), meSp = meEnd ? [B - 8.4 - meW, B - 8.4] : [B + 8.4, B + 8.4 + meW];
+        if (ok(span(!paEnd), true)) paEnd = !paEnd;
+        else if (S < B && fitsIn(up) && (up[1] + 8 < meSp[0] || up[0] > meSp[1] + 8)){ paEnd = true; paY = 28; }
+        else if (!ok(span(paEnd)) && ok(span(!paEnd))) paEnd = !paEnd; }
+      const oneTop = hits(span(paEnd), L.one) ? paY + 6 : 34, paTop = paY === 28 ? 31 : 38;
+      h += '<line class="rh-base" x1="16" x2="' + q(16 + L.plotW) + '" y1="' + q(base) + '" y2="' + q(base) + '"/>' +
+        '<line class="rh-one" x1="' + q(L.one) + '" x2="' + q(L.one) + '" y1="' + oneTop + '" y2="' + q(base + 4) + '"/>';
+      TICKS.forEach(t => { h += '<text class="rh-tick" x="' + q(x(t)) + '" y="' + q(base + 17) + '" text-anchor="middle">' + (t === LOV ? '≤0.1' : t === HIV ? '≥10' : String(t)) + '</text>'; });
+      h += '<text class="rh-cap" x="16" y="' + q(ay + 17 * (L.la - 1) + 23) + '">' + L.cap.map((s, i) => '<tspan x="16" dy="' + (i ? 17 : 0) + '">' + s + '</tspan>').join("") + '</text>';
+      BAL.peers.forEach(p => { const px = q(x(p[1])); h += '<line class="rh-peer" x1="' + px + '" x2="' + px + '" y1="' + q(base - 9) + '" y2="' + q(base + 3) + '"/>'; });
+      h += '<g class="rh-mk"><line class="rh-pa-halo" x1="' + q(S) + '" x2="' + q(S) + '" y1="' + paTop + '" y2="' + q(base) + '"/><line class="rh-pa" x1="' + q(S) + '" x2="' + q(S) + '" y1="' + paTop + '" y2="' + q(base) + '"/>' +
+        '<text class="rh-pa-t" x="' + q(paEnd ? S - 6 : S + 6) + '" y="' + paY + '" text-anchor="' + (paEnd ? "end" : "start") + '">Peer average <tspan class="rh-b">' + fx(BAL.avg) + '</tspan></text></g>';
+      h += '<g class="rh-mk"><line class="rh-me-halo" x1="' + q(B) + '" x2="' + q(B) + '" y1="8" y2="' + q(base) + '"/><line class="rh-me" x1="' + q(B) + '" x2="' + q(B) + '" y1="8" y2="' + q(base) + '"/>' +
+        '<text class="rh-me-t" x="' + q(meEnd ? B - 8.4 : B + 8.4) + '" y="28" text-anchor="' + (meEnd ? "end" : "start") + '">Boston ' + fx(BAL.me) + '</text></g>';
+      /* what a pointer finds: a bin's whole column, a peer's tick */
+      BAL.counts.forEach((c, i) => { const a = x(edge(i)), b = x(edge(i + 1)); h += '<rect class="rh-hit" data-i="' + i + '" x="' + q(a) + '" y="34" width="' + q(b - a) + '" height="' + q(L.plotH) + '"/>'; });
+      BAL.peers.forEach((p, j) => { h += '<rect class="rh-hit" data-p="' + j + '" x="' + q(x(p[1]) - 5) + '" y="' + q(base - 14) + '" width="10" height="20"/>'; });
+      return h;
+    }
+
+    /* ---- the charts on the page: the Venn and a histogram in the figure; a second histogram in the column, for a phone */
+    const ARIA_V = "Jobs in Boston and jobs held by its residents, 2023: " + K(JOBS) + " work in Boston, " + K(RES) + " live there, " + K(BOTH) + " both; " + K(IN) + " commute in and " + K(OUT) + " commute out.";
+    const ARIA_H = "Jobs per working resident across " + FULL(BAL.n) + " places: Boston " + fx(BAL.me) + ", ranked " + BAL.rank + "; peer average " + fx(BAL.avg) +
+      "; peers " + BAL.peers.map(p => p[0] + " " + fx(p[1])).join(", ") + ".";
+    /* each histogram with its own card; the column's copy led by the Venn's source line, shown when the Venn is in a phone's band */
+    const TIP = '<div class="who-ref-tip" hidden aria-hidden="true"></div>';
+    const DIST = '<div class="who-ref-dist"><p class="who-ref-head">Jobs per working resident, every place</p><div class="who-ref-hist"><svg role="img" aria-label="' + ARIA_H + '"></svg></div>' + TIP + '</div>';
+    /* the room under the Venn the histogram needs: the rule and its gaps, the heading, a chart 190 tall */
+    const DIST_MIN = 12 + 230, DOOR = 16;  /* the block's margin and its CSS least height (border box) */
+    const presOn = () => { const w = document.getElementById("ovWrap"); return !!(w && w.classList.contains("is-presenting")); };
+    const band = () => !presOn() && matchMedia("(max-width:899px)").matches;
+    let on = false, root = null, vbox = null, vsvg = null, vtip = null, VL = null, vk = null, col = null, raf = 0, p = 0, ro = null;
+    const hists = [];
+    const size = (svg, Wp, Hp, s) => { svg.setAttribute("width", Wp); svg.setAttribute("height", Hp); svg.setAttribute("viewBox", "0 0 " + q(Wp / s) + " " + q(Hp / s)); };
+    const offset = (box, tip) => { const a = box.getBoundingClientRect(), b = tip.parentElement.getBoundingClientRect(); return [a.left - b.left, a.top - b.top]; };
+    const showTip = (t, html) => { if (t.dataset.h !== html){ t.innerHTML = html; t.dataset.h = html; } t.hidden = false; };
+    /* the Venn's box is at least as tall as its stack needs (the histogram gives way); where the panel cannot hold
+       both (a phone's band, a short or narrow desk panel) the histogram stands in the column instead (ref-split).
+       In the band, which cannot grow, the blocks may go lower than 72 and the source line goes to the column
+       (ref-band), and the foot is kept clear for the Present door */
+    function drawVenn(){
+      if (!vbox) return; const Wp = vbox.clientWidth; if (!Wp) return;
+      const s = scale(), bd = band(), opt = { cap: !bd, floor: bd ? 24 : HB0 }, L0 = vennLayout(Wp / s, 1, opt); if (!L0) return;
+      const need = Math.ceil(L0.need * s); let split = bd;
+      if (!bd && !presOn()){ const panel = host.closest(".who-fl-panel");
+        /* measured from the Venn's own top (the figure starts a few pixels into the panel) to the panel's content foot */
+        if (panel){ const cs = getComputedStyle(panel), pr = panel.getBoundingClientRect();
+          split = need + DIST_MIN > pr.bottom - (parseFloat(cs.borderBottomWidth) || 0) - (parseFloat(cs.paddingBottom) || 0) - vbox.getBoundingClientRect().top; } }
+      host.classList.toggle("ref-split", split); host.classList.toggle("ref-band", bd);
+      vbox.style.minHeight = bd ? "" : need + "px";
+      const Hp = vbox.clientHeight; if (!Hp) return;
+      const L = vennLayout(Wp / s, Hp / s - (bd ? DOOR : 0), opt); if (!L) return; VL = L; size(vsvg, Wp, Hp, s); vsvg.innerHTML = vennSvg(L, p);
+    }
+    function drawHist(H){
+      const Wp = H.box.clientWidth, Hp = H.box.clientHeight; if (!Wp || !Hp) return;
+      const s = scale(), L = histLayout(Wp / s, Hp / s); if (!L) return; H.L = L; size(H.svg, Wp, Hp, s); H.svg.innerHTML = histSvg(L); H.key = null; H.tip.hidden = true;
+    }
+    function draw(){ if (!on) return; ensure(); drawVenn(); hists.forEach(drawHist); }
+    /* a part of the Venn, once it is named: its outline and its card, over the part */
+    function vHover(k){
+      if (!vsvg) return; if (p < 1) k = null; vk = k;
+      vsvg.querySelectorAll(".rv-hit").forEach(r => r.classList.toggle("is-on", r.dataset.k === k));
+      if (!k || !VL){ vtip.hidden = true; return; }
+      const s = scale(), [ox, oy] = offset(vbox, vtip); showTip(vtip, tipHtml(VTIP[k][0], VTIP[k][1]));
+      /* centred on its part, the centre kept 110 from either edge as the reference keeps it, the card inside the chart */
+      const tw0 = vtip.offsetWidth, W0 = vbox.clientWidth, c = Math.max(110 * s, Math.min(W0 - 110 * s, (VL.x[k] + VL.w[k] / 2) * s));
+      vtip.style.left = q(ox + Math.max(0, Math.min(W0 - tw0, c - tw0 / 2))) + "px"; vtip.style.top = q(oy + (VL.blockTop + 12) * s) + "px";
+    }
+    /* a bin (its bar outlined, the places in it) or a peer's tick (its name and value) */
+    function hHover(H, el, toggle){
+      const hit = el && el.closest ? el.closest(".rh-hit") : null; let key = hit ? (hit.dataset.i != null ? "b" + hit.dataset.i : "p" + hit.dataset.p) : null;
+      if (toggle && key === H.key) key = null; H.key = key;
+      H.svg.querySelectorAll(".rh-bar.is-on").forEach(b => b.classList.remove("is-on"));
+      if (!key || !H.L){ H.tip.hidden = true; return; }
+      const L = H.L, s = scale(), [ox, oy] = offset(H.box, H.tip), n = +key.slice(1);
+      if (key[0] === "b"){ const a = edge(n), b = edge(n + 1), bar = H.svg.querySelectorAll(".rh-bar")[n]; if (bar) bar.classList.add("is-on");
+        showTip(H.tip, tipHtml((n === 0 ? "Up to " + b.toFixed(2) : n === NB - 1 ? a.toFixed(2) + " or more" : a.toFixed(2) + " to " + b.toFixed(2)) + " jobs per working resident", [["Places", FULL(BAL.counts[n])]]));
+        H.tip.style.left = q(ox + Math.max(0, Math.min(L.x(b) * s + 8, H.box.clientWidth - H.tip.offsetWidth))) + "px"; H.tip.style.top = q(oy + 34 * s) + "px"; return; }
+      const pr = BAL.peers[n]; showTip(H.tip, tipHtml(pr[0], [["Jobs per working resident", fx(pr[1])]]));
+      H.tip.style.left = q(ox + Math.max(0, Math.min(L.x(pr[1]) * s + 8, H.box.clientWidth - H.tip.offsetWidth))) + "px";
+      H.tip.style.top = q(oy + Math.max(0, L.base * s - H.tip.offsetHeight - 16)) + "px";
+    }
+    const watch = el => { if (!window.ResizeObserver) return; if (!ro) ro = new ResizeObserver(() => { if (!on) return; if (raf) hists.forEach(drawHist); else draw(); }); ro.observe(el); };
+    /* a pointer's card stays until the pointer leaves the chart, as the reference's does; a tap toggles it */
+    function addHist(scope){
+      const box = scope.querySelector(".who-ref-hist"), H = { box, svg: box.querySelector("svg"), tip: scope.querySelector(".who-ref-dist > .who-ref-tip"), L: null, key: null };
+      H.svg.addEventListener("pointermove", ev => { if (ev.pointerType !== "touch" && ev.target.closest && ev.target.closest(".rh-hit")) hHover(H, ev.target); });
+      box.addEventListener("pointerleave", ev => { if (ev.pointerType !== "touch") hHover(H, null); });
+      H.svg.addEventListener("pointerdown", ev => { if (ev.pointerType === "touch") hHover(H, ev.target, true); });
+      hists.push(H); watch(box);
+    }
+    /* built when first shown; the column's copy once the figure stands in its panel (the panel comes later) */
+    function ensure(){
+      if (!root){
+        root = document.createElement("div"); root.className = "who-ref";
+        root.innerHTML = '<div class="who-ref-venn"><svg role="img" aria-label="' + ARIA_V + '"></svg>' + TIP + '</div>' + DIST;
+        host.appendChild(root); vbox = root.querySelector(".who-ref-venn"); vsvg = vbox.querySelector("svg"); vtip = vbox.querySelector(".who-ref-tip");
+        const key = ev => { const h = ev.target.closest && ev.target.closest(".rv-hit"); return h ? h.dataset.k : null; };
+        vsvg.addEventListener("pointermove", ev => { if (ev.pointerType === "touch") return; const k = key(ev); if (k) vHover(k); });
+        vbox.addEventListener("pointerleave", ev => { if (ev.pointerType !== "touch") vHover(null); });
+        vsvg.addEventListener("pointerdown", ev => { if (ev.pointerType !== "touch") return; const k = key(ev); vHover(k && k !== vk ? k : null); });
+        watch(vbox); addHist(root);
+        const pages = document.getElementById("pages"); if (pages) pages.addEventListener("scroll", () => { if (vk) vHover(null); hists.forEach(H => { if (H.key) hHover(H, null); }); }, { passive: true });
+      }
+      const panel = host.closest(".who-fl-panel");
+      if (!col && panel){ col = document.createElement("div"); col.className = "who-ref-col";
+        col.innerHTML = '<p class="who-ref-src">' + SRC.join(" ") + '</p>' + DIST; panel.after(col); addHist(col); }
+    }
+    function stop(){ cancelAnimationFrame(raf); raf = 0; if (vk) vHover(null); hists.forEach(H => { if (H.key) hHover(H, null); }); }
+    function show(v){ on = !!v; if (on) ensure(); else stop(); }
+    /* as the beat plays: the Venn grows (at once with reduced motion); the stage ends "sorted" as the other figures' do */
+    function play(){
+      stop(); if (!on) return; ensure(); host.dataset.played = "1";
+      if (reduce()){ p = 1; draw(); host.dataset.stage = "sorted"; return; }
+      host.dataset.stage = "all"; p = 0; draw();
+      const t0 = performance.now(), step = now => { p = Math.max(0, Math.min(1, (now - t0) / 700)); drawVenn();
+        if (p < 1){ raf = requestAnimationFrame(step); return; } raf = 0; host.dataset.stage = "sorted"; };
+      raf = requestAnimationFrame(step);
+    }
+    /* before the beat arrives, after it, and on a resize: the Venn bare or whole */
+    function still(){ if (!on) return; ensure(); if (raf){ hists.forEach(drawHist); return; } p = reduce() || host.dataset.stage === "sorted" ? 1 : 0; draw(); }
+    /* the labels are measured: again once the web fonts are in */
+    if (document.fonts){ const refit = () => { if (on && !raf) draw(); };
+      document.fonts.ready.then(refit); if (document.fonts.addEventListener) document.fonts.addEventListener("loadingdone", refit); }
+    window.whoFlowsRef = { show, play, still, stop };
+  })();
   /* ---- Who are you?: opt-2's first commuting beat as a rectangle Venn
      (2026-10-20, Nil). The "Groups" study in beat A's counter: opt-1 the
      three circles, opt-2 (?groups=venn) two rectangles of the same dots.
@@ -15815,10 +16437,12 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     const host = fig.host, svg = fig.svg, circles = fig.circles, dots = fig.dots, COL = fig.COL, GREY = fig.GREY, NS = "http://www.w3.org/2000/svg";
     const JOBS = W.in.jobsHere, RES = W.out.residentWorkers, IN = W.in.filledByCommuters, BOTH = W.in.heldByResidents, OUT = W.out.workElsewhere;
     const fmtN = window.fmtCount, PCT = (a, b) => Math.round(a / b * 100) + "%";
-    let mode = (location.search.match(/[?&]groups=(venn|classic|circles)\b/) || [, GROUPS_DEFAULT])[1];
+    let mode = (location.search.match(/[?&]groups=(venn|classic|circles|ref)\b/) || [, GROUPS_DEFAULT])[1];
     /* opt-2 the rectangle Venn, opt-3 (2026-10-20, Nil: "instead of rectangle use circles, like a more traditional one") the same
        story in two overlapping circles; both run through the code below, which knows the circles as fractional columns */
     const isVenn = () => mode === "venn" || mode === "classic", round = () => mode === "classic";
+    /* opt-4 (2026-11-02): the reference's Venn and histogram, drawn by whoFlowsRef above; this switch hands over to it */
+    const REF = window.whoFlowsRef || null, isRef = () => !!REF && mode === "ref";
     const phone = () => matchMedia("(max-width:599px)").matches, reduce = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
     const ease = u => u < .5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
     const idx = { in: [], both: [], out: [] }; dots.forEach((d, i) => idx[d.k].push(i));
@@ -15896,7 +16520,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       " work there but do not live there and commute in; " + fmtN(OUT) + " live there but do not work there and commute out.";
 
 
-    let built = false, twins = [], fA, fB, cA, cB, ldr, labs, setA, setB, cur = null, tip = null, frames = null, pinned = null;
+    let built = false, twins = [], fA, fB, cA, cB, ldr, labs, setA, setB, sbA, sbB, vkey, cur = null, tip = null, frames = null, pinned = null;
+    /* a set's bracket: a line over its rectangle, with ticks down at both ends (opt-4's, 6 deep) */
+    const TK = 6, bpath = (a, b, y) => "M" + (a + .5).toFixed(1) + "," + (y + TK).toFixed(1) + "V" + y.toFixed(1) + "H" + (b - .5).toFixed(1) + "V" + (y + TK).toFixed(1);
     const FRAMES = [["Apart", "First frame: the two groups apart", 0], ["Together", "Last frame: the two groups together, the three parts named", 2]];
     const hideTip = () => { if (tip){ tip.hidden = true; delete tip.dataset.k; } };
     const brk = {}, reg = {};
@@ -15910,23 +16536,29 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       fB = el("rect", "vn-frame vn-frame--rect vn-frame--live", g); fA = el("rect", "vn-frame vn-frame--rect vn-frame--work", g);
       cB = el("circle", "vn-frame vn-frame--circ vn-frame--live", g); cA = el("circle", "vn-frame vn-frame--circ vn-frame--work", g);
       K3.forEach(k => { brk[k] = el("rect", "vn-brk vn-brk--" + k, g); });
+      /* over each rectangle, the line its count and name stand on (opt-4's brackets) */
+      sbA = el("path", "vn-sbrk vn-sbrk--work", g); sbB = el("path", "vn-sbrk vn-sbrk--live", g);
       ldr = el("line", "vn-ldr", g);
       twins = idx.both.map(() => { const c = el("circle", "vn-twin", svg, first); c.style.fill = COL.out; return c; });
       labs = document.createElement("div"); labs.className = "vn-labs"; labs.setAttribute("aria-hidden", "true");
       labs.innerHTML =
-        /* each set named with its count (2026-10-21, Nil: "write the numbers for venn clusters"); each part by its share
-           of its set, the counts in the card a pointer or a tap brings up (showTip) (Nil: "use the percentages, have
-           the absolute numbers in tooltip") */
-        '<div class="vn-set vn-set--work" data-tip="work"><b><span class="vn-nm-l">People working in Boston</span><span class="vn-nm-s">Working in Boston</span></b><span class="vn-c">' + fmtN(JOBS) + '<span class="vn-u"> jobs</span></span></div>' +
-        '<div class="vn-set vn-set--live" data-tip="live"><b><span class="vn-nm-l">People living in Boston</span><span class="vn-nm-s">Living in Boston</span></b><span class="vn-c">' + fmtN(RES) + '<span class="vn-u"> working residents</span></span></div>' +
-        /* the parts by their counts, the share in the line under (2026-10-23, Nil: "make the Venn show the numbers and the
-           bars the percentages"; the shares led from 10-21 to 10-23) */
-        '<div class="vn-reg vn-reg--in" data-tip="in"><span class="vn-n">' + ICO.in + '<b>' + fmtN(IN) + '</b><em>commute in</em></span><span class="vn-w"><b class="vn-k">' + PCT(IN, JOBS) + '</b> of the people working in Boston</span></div>' +
-        '<div class="vn-reg vn-reg--both" data-tip="both"><span class="vn-n">' + ICO.both + '<b>' + fmtN(BOTH) + '</b><em>live and work in Boston</em></span><span class="vn-w"><span class="vn-sh"><b class="vn-k">' + PCT(BOTH, JOBS) + '</b> of those working there</span> <span class="vn-sh">and <b class="vn-k">' + PCT(BOTH, RES) + '</b> of those living there</span></span></div>' +
-        '<div class="vn-reg vn-reg--out" data-tip="out"><span class="vn-n">' + ICO.out + '<b>' + fmtN(OUT) + '</b><em>commute out</em></span><span class="vn-w"><b class="vn-k">' + PCT(OUT, RES) + '</b> of the people living in Boston</span></div>';
+        /* written as the Groups study's opt-4 writes them, the count and then what it counts (2026-11-02, Nil: "revise
+           the venn diagram labels according to opt 4. See how it writes number work in Boston format", "show only the
+           numbers opt 4 top diagram is showing"): the two sets' totals and the three parts', each part with its
+           icon, small; the shares are left to the card a pointer or a tap brings up (showTip) and to the bars */
+        '<div class="vn-set vn-set--work" data-tip="work"><b>' + fmtN(JOBS) + '</b><span class="vn-nm-l">work in Boston</span><span class="vn-nm-s">work here</span></div>' +
+        '<div class="vn-set vn-set--live" data-tip="live"><b>' + fmtN(RES) + '</b><span class="vn-nm-l">live in Boston</span><span class="vn-nm-s">live here</span></div>' +
+        /* those who commute in "live elsewhere", on a line under their count, as opt-4 has it (2026-11-02, Nil: "Remember
+           to add live elsewhere, live work") */
+        '<div class="vn-reg vn-reg--in" data-tip="in"><span class="vn-n">' + ICO.in + '<b>' + fmtN(IN) + '</b><em>commute in<span class="vn-xc">,</span></em></span><span class="vn-x">live elsewhere</span></div>' +
+        '<div class="vn-reg vn-reg--both" data-tip="both"><span class="vn-n">' + ICO.both + '<b>' + fmtN(BOTH) + '</b><em>live and work in Boston</em></span></div>' +
+        '<div class="vn-reg vn-reg--out" data-tip="out"><span class="vn-n">' + ICO.out + '<b>' + fmtN(OUT) + '</b><em>commute out</em></span></div>';
       host.appendChild(labs);
       setA = labs.querySelector(".vn-set--work"); setB = labs.querySelector(".vn-set--live");
       K3.forEach(k => { reg[k] = labs.querySelector(".vn-reg--" + k); });
+      /* the dot key's place under the figure (the Dot key study's "foot"): the note row's key, moved */
+      vkey = document.createElement("div"); vkey.className = "vn-key";
+      const nk = host.querySelector(".who-fl-key"); if (nk) vkey.innerHTML = nk.innerHTML; labs.appendChild(vkey);
       framesUi();
     }
     /* the animation's first and last frames beside Play again, two small squares close together, the current one
@@ -15946,7 +16578,12 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
 
     /* how tall the figure may be: the panel's height (fixed on a desk, in the phone band and in the presenter) less
        everything else it holds, and the least room kept between it and the bars. Without a panel there is no limit */
-    const GAP = [24, 56];  /* the bars' top margin: at least the first; of the height left over, up to the second more */
+    const GAP = [24, 32];  /* the bars' top margin: at least the first; of the height left over, up to the second */
+    /* the least room between the Play again row and the figure: a phone's band is short */
+    const inBand = () => matchMedia("(max-width:899px)").matches && !(document.getElementById("ovWrap") || host).classList.contains("is-presenting");
+    const top0 = () => inBand() ? 6 : 16;
+    /* in a phone's band the Present door overhangs the foot: its strip is kept clear */
+    const DOOR = 14;
     function budget(){
       const panel = host.closest(".who-fl-panel"); if (!panel || !panel.clientHeight) return Infinity;
       const cs = getComputedStyle(panel), gap = parseFloat(cs.rowGap) || 0;
@@ -15955,13 +16592,22 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         /* the bars' top margin is set after the layout (spread), so only its least is counted */
         used += c.offsetHeight + (c.classList.contains("fl-detail") ? GAP[0] : (parseFloat(q.marginTop) || 0)) + (parseFloat(q.marginBottom) || 0); n++; }
       used += gap * Math.max(0, n - 1);
-      return svg.getBoundingClientRect().height + panel.clientHeight - used - 2;
+      /* the figure's own top margin (set by spread) is counted back in: it is room the layout may use */
+      return svg.getBoundingClientRect().height + (parseFloat(svg.style.marginTop) || 0) + panel.clientHeight - used - 2 - top0() - (inBand() ? DOOR : 0);
     }
-    /* the bars follow the figure at GAP[0]; where the panel is taller than the two need, half the rest (to GAP[1])
-       widens that gap and the other half stays under the bars (2026-10-20, Nil: "more space between the two bars") */
+    /* the figure and the bars as one block, centred in the room under the Play again row (2026-11-02, Nil: "re-organize
+       the vertical spacing. right now the venn diagram is too close to play button and far way from the bars"): the
+       bars follow the figure at GAP[0], to GAP[1] where there is room, and what is left goes half over the figure
+       (past its least, top0) and half under the bars. Without the bars in the panel (under 1200, a phone's band) the
+       figure is centred alone */
     const detail = () => { const panel = host.closest(".who-fl-panel"); return panel && panel.querySelector(":scope > .fl-detail"); };
-    function spread(B, H){ const det = detail(); if (!det || B === Infinity) return;
-      det.style.marginTop = (GAP[0] + Math.max(0, Math.min(GAP[1], (B - H) / 2))) + "px"; }
+    function spread(B, H){
+      if (B === Infinity){ svg.style.marginTop = ""; return; }
+      const det = detail(), shown = !!det && getComputedStyle(det).display !== "none";
+      const more = shown ? Math.max(0, Math.min(GAP[1] - GAP[0], B - H)) : 0, spare = Math.max(0, B - H - more);
+      svg.style.marginTop = (top0() + spare / 2).toFixed(1) + "px";
+      if (det) det.style.marginTop = (GAP[0] + more) + "px";
+    }
     /* the panel's height can change while its width does not (a taller window): fit again then */
     let ro = null, lastPH = 0;
     function watchPanel(){ const panel = host.closest(".who-fl-panel"); if (ro || !panel || !window.ResizeObserver) return;
@@ -15997,33 +16643,46 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
          three lines at most; else each on its own row, the live set's above. Circles: each over its own circle's
          outer half, the work set's ending at its circle's middle and the live set's starting at its own (the
          centres are always apart, so they never meet), long form, else short, else wrapped to the room */
-      let stack = false, gy, topA, topB;
+      let gy, topA, topB, yA = 0, yB = 0;
+      const ends = !g.round && inBand();
       host.classList.remove("vn-brief", "vn-tight");
       if (g.round){
         const rA = g.RA * p, rB = g.RB * p;
         const roomA = Math.min(ax0, ax1) + rA - 4, roomB = Wd - (Math.max(bx0, bx1) + rB) - 4;
         const namesFit = () => setA.offsetWidth <= roomA && setB.offsetWidth <= roomB;
-        if (!namesFit()){ host.classList.add("vn-brief");
-          if (!namesFit()){ host.classList.add("vn-tight"); setA.style.maxWidth = Math.max(60, roomA) + "px"; setB.style.maxWidth = Math.max(60, roomB) + "px"; } }
+        /* the long names wrapped before the short ones (2026-11-02, a review: "in Boston" went where it fitted on two lines) */
+        const wrapTo = () => { setA.style.maxWidth = Math.max(60, Math.floor(roomA)) + "px"; setB.style.maxWidth = Math.max(60, Math.floor(roomB)) + "px"; };
+        if (!namesFit()){ host.classList.add("vn-tight"); wrapTo();
+          if (!namesFit() || Math.max(setA.offsetHeight, setB.offsetHeight) > 48){
+            host.classList.remove("vn-tight"); setA.style.maxWidth = setB.style.maxWidth = "none"; host.classList.add("vn-brief");
+            if (!namesFit()){ host.classList.add("vn-tight"); wrapTo(); } } }
         const hA = setA.offsetHeight, hB = setB.offsetHeight;
         /* the live circle is the smaller: its name sits just over its own top, lower than the work set's */
         gy = Math.ceil(Math.max(hA + 8, hB + 6 - (rA - rB))) + 2;
         topA = gy - 8 - hA; topB = gy + (rA - rB) - 6 - hB;
       } else {
-        const sideBy = () => setA.offsetWidth + setB.offsetWidth + 16 <= span;
-        if (!sideBy()){ host.classList.add("vn-brief");
-          if (!sideBy()){ host.classList.add("vn-tight"); setA.style.maxWidth = setB.style.maxWidth = Math.max(60, (span - 16) / 2) + "px";
-            const lh = parseFloat(getComputedStyle(setA.querySelector("b")).lineHeight) || 19;
-            if (!sideBy() || Math.max(setA.offsetHeight, setB.offsetHeight) > 3 * lh + 6){
-              host.classList.remove("vn-tight"); setA.style.maxWidth = setB.style.maxWidth = "none"; stack = true; } } }
-        if (stack){ setA.style.maxWidth = Math.max(80, Wd - ax1 - 4) + "px"; setB.style.maxWidth = Math.max(80, ax1 + span - 4) + "px"; }
+        /* each set's count and name centred over its own rectangle on its bracket, as opt-4's Venn has them (2026-11-02,
+           Nil: "see the top part how the lines are showing the rectangles"): the work set's row first, the live set's
+           under it, so the two never meet as the rectangles join; "work here" where a name is wider than the figure */
+        if (Math.max(setA.offsetWidth, setB.offsetWidth) > Wd) host.classList.add("vn-brief");
+        /* in a phone's band, which has no height to spare, the two names stand on one level at the figure's two outer
+           ends, the live set's bracket 4 lower than the work set's where the two overlap; "work here" where the long
+           names would meet (2026-11-02, a review: the two rows left no grid that fit a 360 band) */
+        if (ends && setA.offsetWidth + setB.offsetWidth + 12 > colsT * p) host.classList.add("vn-brief");
         const hA = setA.offsetHeight, hB = setB.offsetHeight;
-        gy = Math.ceil(stack ? hB + 6 + hA + 8 : Math.max(hA + 8, hB + e + 8)) + 2;
-        topA = gy - 8 - hA; topB = stack ? topA - 6 - hB : gy - e - 8 - hB;
+        if (ends){ topA = topB = 2; yA = topA + Math.max(hA, hB) + 2; yB = yA + 4; }
+        else { topA = 2; yA = topA + hA + 2; topB = yA + TK + 6; yB = topB + hB + 2; }
+        gy = Math.ceil(yB + TK + 4 + e);
       }
       const wA = setA.offsetWidth, wB = setB.offsetWidth;
+      /* the rectangles' names may share one level while the two stand apart: only where they clear each other by 12 there,
+         and where the work set's bracket, rising, stays clear of the live set's name through the first half of the slide */
+      const atX = (c, w) => Math.max(0, Math.min(Wd - w, c - w / 2)), axm = (ax0 + ax1) / 2, bxm = (bx0 + bx1) / 2;
+      const level = !g.round && !ends && atX(ax0 + colsA * p / 2, wA) + wA + 12 <= atX(bx0 + g.colsB * p / 2, wB) &&
+        axm + colsA * p + 6 <= atX(bxm + g.colsB * p / 2, wB);
       const by = gy + R * p + e + 7, ry = by + 13;
-      const lines = (k, n) => { const w = reg[k].querySelector(".vn-w"), lh = parseFloat(getComputedStyle(w).lineHeight) || 19; return w.offsetHeight <= lh * n + 2; };
+      /* a part's label (its icon, count and name) on at most n lines */
+      const lines = (k, n) => { const w = reg[k].querySelector(".vn-n"), lh = parseFloat(getComputedStyle(w.querySelector("b")).lineHeight) || 22; return w.offsetHeight <= lh * n + 2 * (n - 1) + 2; };
       let H, ldr = null;
       if (dens === "full" && g.round){
         const roomL = ax1 - 18, roomR = Wd - (ax1 + span) - 18;
@@ -16062,7 +16721,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         K3.forEach(k => { reg[k].style.maxWidth = (Wd - x - 4) + "px"; reg[k].dataset.x = x; reg[k].dataset.y = y; y += reg[k].offsetHeight + (dens === "list" ? 10 : 6); });
         H = y;
       }
-      return { Wd, H: Math.ceil(H), p, r: p * .34, e, gy, by, ax0, bx0, ax1, bx1, topA, topB, wA, wB, dens, g, ldr };
+      /* the dot key under everything, from the joined figure's left edge ("foot") */
+      if (keyMode === "foot" && vkey.offsetHeight){ vkey.dataset.x = Math.max(0, Math.min(ax1, Wd - vkey.offsetWidth)); vkey.dataset.y = H + 8; H += 8 + vkey.offsetHeight; }
+      return { Wd, H: Math.ceil(H), p, r: p * .34, e, gy, by, ax0, bx0, ax1, bx1, topA, topB, yA, yB, wA, wB, level, ends, dens, g, ldr };
     }
     /* the largest pitch that fits the panel, in the roomiest density that can name the parts at that size */
     const PMIN = { full: 10, list: 9, compact: 0 }, RANK = { full: 0, list: 1, compact: 2 };
@@ -16098,15 +16759,32 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       }
       return Object.assign(L || fit(Wd, pW, "compact", g), { fits: false });
     }
-    /* which grid: the roomiest density, then the largest dots that fit the panel's height (12 rows unless another
-       is clearly larger). The dots are capped (best: pW), so a tall panel is not filled: the room left over goes
-       between the figure and the bars, then under them (spread) */
+    /* which grid: the roomiest density, then the widest joined figure whose dots are near the largest that fit (below).
+       The dots are capped (best: pW), so a tall panel is not filled: the room left over goes between the figure and
+       the bars, then under them (spread) */
     function layout(){
       const Wd = host.clientWidth; if (!Wd) return null;
       watchPanel();
       const B = budget(), cands = round() ? [best(Wd, B, geoC())] : ROW_OPTS.map(R => best(Wd, B, geo(R)));
+      /* on a desk the rectangles as wide as they can be (2026-11-02, Nil: "make it wider so that in the final frame
+         there are more space for text"): of the grids that fit, in the roomiest density, the one whose joined figure
+         is widest, 8 rows or more and its dots at least three quarters the size of the largest that fit and 10 or
+         over (at 1440 the 8-row grid, about 710 wide where the 12-row one was 520). On a phone, and where no grid
+         qualifies, the largest dots, 12 rows unless another is clearly larger */
       const better = (b, a) => (b.fits && !a.fits) || (b.fits === a.fits && (RANK[b.dens] < RANK[a.dens] || (RANK[b.dens] === RANK[a.dens] && b.p > a.p * 1.12)));
-      const pick = cands.slice(1).reduce((a, b) => better(b, a) ? b : a, cands[0]);
+      let pick = cands.slice(1).reduce((a, b) => better(b, a) ? b : a, cands[0]);
+      /* where no grid fits, the least tall (a review, 2026-11-02: the 12-row default was the tallest overflow) */
+      if (!pick.fits) pick = cands.reduce((a, b) => (b.H || Infinity) < (a.H || Infinity) ? b : a);
+      else if (!round()){
+        const pool = cands.filter(c => c.fits && RANK[c.dens] === RANK[pick.dens]), pMax = Math.max(...pool.map(c => c.p));
+        /* with dots of 10 or more on a desk, 8 rows or more and three quarters of the largest; with smaller dots (a
+           phone, a short panel), 6 rows or more and dots within a twentieth of the pick's, and only for a figure a
+           twentieth wider */
+        const big = !phone() && pick.p >= 10;
+        const wide = pool.filter(c => c.g.R >= (big ? 8 : 6) && c.p >= (big ? Math.max(10, .75 * pMax) : .95 * pick.p));
+        if (wide.length){ const w = wide.reduce((a, b) => b.g.colsT * b.p > a.g.colsT * a.p + .5 ? b : a);
+          if (big || w.g.colsT * w.p > pick.g.colsT * pick.p * 1.05) pick = w; }
+      }
       /* lay the chosen one out again, so the labels hold its sizes */
       const L = fit(Wd, pick.p, pick.dens, pick.g); if (L) spread(B, L.H); return L;
     }
@@ -16120,6 +16798,11 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       K3.forEach(k => { const b = brk[k], x = at[k][0], n = at[k][1];
         b.setAttribute("x", (x + 1).toFixed(1)); b.setAttribute("y", L.by.toFixed(1)); b.setAttribute("width", Math.max(0, n * p - 2).toFixed(1)); b.setAttribute("height", 3);
         reg[k].style.left = (+reg[k].dataset.x).toFixed(1) + "px"; reg[k].style.top = (+reg[k].dataset.y).toFixed(1) + "px"; });
+      /* the key's dot as large as the figure's, wherever the key stands */
+      const r = L.r, d = (2 * r + 1).toFixed(1);
+      host.querySelectorAll(".vk-dot").forEach(s => { s.setAttribute("width", d); s.setAttribute("height", d); const c = s.firstChild;
+        c.setAttribute("cx", (r + .5).toFixed(2)); c.setAttribute("cy", (r + .5).toFixed(2)); c.setAttribute("r", r.toFixed(2)); });
+      if (keyMode === "foot"){ vkey.style.left = (+vkey.dataset.x || 0).toFixed(1) + "px"; vkey.style.top = (+vkey.dataset.y || 0).toFixed(1) + "px"; }
     }
     /* t: 0 apart, 1 together. The two rectangles slide towards each other along their row; every dot and
        each set's name ride with their rectangle */
@@ -16138,12 +16821,21 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         fA.setAttribute("x", ax.toFixed(1)); fA.setAttribute("y", gy.toFixed(1)); fA.setAttribute("width", (colsA * p).toFixed(1)); fA.setAttribute("height", (R * p).toFixed(1));
         fB.setAttribute("x", bx.toFixed(1)); fB.setAttribute("y", (gy - L.e).toFixed(1)); fB.setAttribute("width", (colsB * p).toFixed(1)); fB.setAttribute("height", (R * p + 2 * L.e).toFixed(1));
       }
+      let topA = L.topA;
       if (L.g.round){
         setA.style.left = (ax + L.g.RA * p - L.wA).toFixed(1) + "px"; setB.style.left = (bx + L.g.RB * p).toFixed(1) + "px";
       } else {
-        setA.style.left = ax.toFixed(1) + "px"; setB.style.left = (bx + colsB * p - L.wB).toFixed(1) + "px";
+        /* each set's name rides centred over its rectangle on its bracket, kept inside the figure. Apart the two stand on
+           one level, the live set's; as the rectangles close in, the work set's name and bracket go up a row, there by
+           the middle of the slide (2026-11-02, Nil: "in the first frame, write labels on the same level, then move one up") */
+        const wa = colsA * p, wb = colsB * p, at = (c, w) => Math.max(0, Math.min(L.Wd - w, c - w / 2)), rise = L.level ? Math.min(1, t * 2) : 1;
+        /* in a phone's band: one level, each name at its rectangle's outer end */
+        const lA = L.ends ? Math.max(0, Math.min(L.Wd - L.wA, ax)) : at(ax + wa / 2, L.wA), lB = L.ends ? Math.max(0, Math.min(L.Wd - L.wB, bx + wb - L.wB)) : at(bx + wb / 2, L.wB);
+        setA.style.left = lA.toFixed(1) + "px"; setB.style.left = lB.toFixed(1) + "px";
+        topA = L.ends ? L.topA : L.topB + (L.topA - L.topB) * rise;
+        sbA.setAttribute("d", bpath(ax, ax + wa, L.ends ? L.yA : L.yB + (L.yA - L.yB) * rise)); sbB.setAttribute("d", bpath(bx, bx + wb, L.yB));
       }
-      setA.style.top = L.topA.toFixed(1) + "px"; setB.style.top = L.topB.toFixed(1) + "px";
+      setA.style.top = topA.toFixed(1) + "px"; setB.style.top = L.topB.toFixed(1) + "px";
     }
     /* apart, each set wears one colour, the work rectangle all blue and the live one all orange, shared block and
        all; joined, the shared block turns grey (2026-10-20, Nil: "first start with blue and orange clusters and then
@@ -16197,12 +16889,23 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     }
     function apply(){
       const on = isVenn(); if (on) build();
+      if (REF) REF.show(isRef()); host.classList.toggle("is-ref", isRef());
       host.classList.toggle("is-venn", on); host.classList.toggle("vn-round", round()); svg.setAttribute("aria-label", on ? ariaVenn() : ariaCircles);
-      if (!on){ delete host.dataset.vn; host.classList.remove("vn-list", "vn-compact", "vn-brief", "vn-tight", "vn-round", "vn-side", "vn-stag"); hideTip(); const det = detail(); if (det) det.style.marginTop = ""; }
+      if (!on){ delete host.dataset.vn; host.classList.remove("vn-list", "vn-compact", "vn-brief", "vn-tight", "vn-round", "vn-side", "vn-stag"); hideTip(); const det = detail(); if (det) det.style.marginTop = ""; svg.style.marginTop = ""; }
+      ["row", "foot", "note"].forEach(k => host.classList.toggle("vk-" + k, on && keyMode === k));
+    }
+    /* the Dot key study: where "One dot is about 2K people" stands, with its dot */
+    let keyMode = (location.search.match(/[?&]dotkey=(row|foot|note)\b/) || [, DOTKEY_DEFAULT])[1];
+    function setKey(k){
+      if (!/^(row|foot|note)$/.test(k) || k === keyMode) return;
+      keyMode = k; document.querySelectorAll(".wt-dotkey-opt").forEach(sel => { sel.value = keyMode; });
+      const u = new URL(location.href); if (keyMode === DOTKEY_DEFAULT) u.searchParams.delete("dotkey"); else u.searchParams.set("dotkey", keyMode);
+      history.replaceState(null, "", u.pathname + u.search + u.hash);
+      apply(); if (isVenn()) still();
     }
     /* the study's switch: the figure starts again in its new dress, unless its dots are out on the map (beat 2) */
     function set(m){
-      const next = m === "venn" || m === "classic" ? m : "circles"; if (next === mode) return;
+      const next = m === "venn" || m === "classic" || (m === "ref" && REF) ? m : "circles"; if (next === mode) return;
       stop(); const played = host.dataset.played === "1", wrap = document.getElementById("ovWrap"), handing = !!(wrap && wrap.classList.contains("who-hand"));
       mode = next; pinned = null; document.querySelectorAll(".wt-groups-opt").forEach(sel => { sel.value = mode; });
       const u = new URL(location.href); if (mode === GROUPS_DEFAULT) u.searchParams.delete("groups"); else u.searchParams.set("groups", mode);
@@ -16255,11 +16958,12 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     host.addEventListener("pointerdown", ev => { if (ev.pointerType !== "touch") return; const k = hit(ev);
       if (k && tip && !tip.hidden && tip.dataset.k === k) hideTip(); else showTip(k, ev.clientX, ev.clientY); });
     { const pages = document.getElementById("pages"); if (pages) pages.addEventListener("scroll", hideTip, { passive: true }); }
-    window.whoFlowsAlt = { on: isVenn, mode: () => mode, set, play, still, stop };
+    window.whoFlowsAlt = { on: () => isVenn() || isRef(), mode: () => mode, set, key: () => keyMode, setKey,
+      play: () => isRef() ? REF.play() : play(), still: () => isRef() ? REF.still() : still(), stop: () => { stop(); if (REF) REF.stop(); } };
     /* the labels are measured: lay out again once the web fonts are in (still() waits for a slide under way) */
     if (document.fonts){ const refit = () => { if (isVenn() && built) still(); };
       document.fonts.ready.then(refit); if (document.fonts.addEventListener) document.fonts.addEventListener("loadingdone", refit); }
-    if (isVenn()){ apply(); fig.still(); }
+    if (isVenn() || isRef()){ apply(); fig.still(); }
   })();
 
 
@@ -16280,6 +16984,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
      or lights its shelf cell. Reduced motion: the end states at once. ---- */
   (function(){
     const HOME = !!window.whoFlowsHome;
+    /* the Blue dots study (2026-11-02): "in" the commuters in fly from their admins into Boston, "home" from Boston to their admins as before */
+    let blueWay = (location.search.match(/[?&]blue=(in|home)\b/) || [, BLUEWAY_DEFAULT])[1];
     const secA = document.getElementById("page-overview-flows"), secB = document.getElementById("page-overview-flows-out"), secC = document.getElementById("page-overview-compare");
     /* the study's menu in beat A's counter: opt-1 the dots beside the shaded
        map, opt-2 the dots go home. The second adds a beat, so the choice
@@ -16291,8 +16997,12 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       const eye = sec && sec.querySelector(":scope > .ct-eyebrow"); if (!eye || eye.querySelector(".mi-studies")) return;
       const st = document.createElement("div"); st.className = "mi-studies";
       const ROW = {
+        /* the Venn's dot key (2026-11-02): where "One dot is about 2K people" stands, with its dot */
+        dotkey: '<label class="mi-study"><span>Dot key</span><select class="wt-dotkey-opt" aria-label="Where the dot key stands"><option value="row">1 Row, right end</option><option value="foot">2 Under the figure</option><option value="note">3 Before Play again</option></select></label>',
         /* opt-2's first beat: the three groups as circles, or as a rectangle Venn (2026-10-20) */
-        groups: '<label class="mi-study"><span>Groups</span><select class="wt-groups-opt" aria-label="How the three groups are drawn"><option value="circles">opt-1</option><option value="venn">opt-2</option><option value="classic">opt-3</option></select></label>',
+        groups:'<label class="mi-study"><span>Groups</span><select class="wt-groups-opt" aria-label="How the three groups are drawn"><option value="circles">opt-1</option><option value="venn">opt-2</option><option value="classic">opt-3</option><option value="ref">opt-4</option></select></label>',
+        /* beat 2's blue dots: into Boston from their admins, or home from Boston as before (2026-11-02) */
+        blue: '<label class="mi-study"><span>Blue dots</span><select class="wt-blue-opt" aria-label="Which way the commuters coming in fly"><option value="in">1 Into Boston</option><option value="home">2 Home, from Boston (before)</option></select></label>',
         compare: '<label class="mi-study"><span>Compare</span><select class="wt-compare-opt" aria-label="How the admin is set against its metro"><option value="bars">1 Bars and ranks</option><option value="cards">2 Cards</option><option value="lines">3 Lines</option></select></label>' };
       st.innerHTML = '<button type="button" class="mi-studies-btn" aria-expanded="false" aria-controls="whoFlowsPanel' + suffix + '">opt</button>' +
         '<div class="mi-studies-panel" id="whoFlowsPanel' + suffix + '" role="group" aria-label="Design studies" hidden>' + rows.map(k => ROW[k]).join("") + '</div>';
@@ -16300,12 +17010,16 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       const btn = st.querySelector(".mi-studies-btn"), panel = st.querySelector(".mi-studies-panel");
       const gs = st.querySelector(".wt-groups-opt");
       if (gs){ if (window.whoFlowsAlt) gs.value = window.whoFlowsAlt.mode(); gs.addEventListener("change", () => { if (window.whoFlowsAlt) window.whoFlowsAlt.set(gs.value); }); }
+      const bw = st.querySelector(".wt-blue-opt");
+      if (bw){ bw.value = blueWay; bw.addEventListener("change", () => setBlue(bw.value)); }
+      const ks = st.querySelector(".wt-dotkey-opt");
+      if (ks){ if (window.whoFlowsAlt && window.whoFlowsAlt.key) ks.value = window.whoFlowsAlt.key(); ks.addEventListener("change", () => { if (window.whoFlowsAlt && window.whoFlowsAlt.setKey) window.whoFlowsAlt.setKey(ks.value); }); }
       const cs = st.querySelector(".wt-compare-opt");
       if (cs){ if (window.whoCompareAlt) cs.value = window.whoCompareAlt.mode(); cs.addEventListener("change", () => { if (window.whoCompareAlt) window.whoCompareAlt.set(cs.value); }); }
       btn.addEventListener("click", () => { const open = panel.hidden; panel.hidden = !open; btn.setAttribute("aria-expanded", String(open)); });
       document.addEventListener("click", ev => { if (!st.contains(ev.target) && !panel.hidden){ panel.hidden = true; btn.setAttribute("aria-expanded", "false"); } });
     }
-    const studies = () => { study(secA, ["groups"], ""); study(secC, ["compare"], "C"); };
+    const studies = () => { study(secA, ["groups", "dotkey"], ""); study(secB, ["blue"], "B"); study(secC, ["compare"], "C"); };
     studies(); setTimeout(studies, 0);
     /* the flow graphic, the day's totals in and out of Boston: in opt-2 it
        closes beat A once the dots have landed (showEnd); in opt-1 (Nil,
@@ -16413,7 +17127,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       /* with the Venn's first frame the bars stand bare, dashed outlines with their totals; their colours and names come
          with the last frame (2026-10-22, Nil: "in the first frame, let's have a dashed bar ... in the second frame, also
          apply colors to the bar and show labels") */
-      const vn = fig.host.dataset.vn; secA.classList.toggle("fl-bare", !!vn && vn !== "named"); };
+      /* the colours now grow with the Venn's move, not after it (2026-11-03, Nil: "below bar should just appear together
+         with the animation"): bare only while the groups stand apart */
+      const vn = fig.host.dataset.vn; secA.classList.toggle("fl-bare", vn === "apart"); };
     new MutationObserver(shownNow).observe(fig.host, { attributes: true, attributeFilter: ["data-stage", "data-played", "data-vn"] }); shownNow();
 
     /* ==== beat 2: from the dots to the map ==== */
@@ -16423,7 +17139,20 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     const senders = known.filter(f => netOf(f) > 0).sort((a, b) => netOf(b) - netOf(a)), takers = known.filter(f => netOf(f) < 0).sort((a, b) => netOf(a) - netOf(b));
     const nm = f => esc(f.properties.name.replace(/ (Town|city)$/, ""));
     secB.classList.add("wide-text");
-    secB.querySelector(":scope > .lede").innerHTML = 'Each dot flies to the admin where its people live or work, and adds its colour there. The map can show who commutes into Boston, who commutes out of it, or where Boston gains or loses workers.';
+    /* the words follow the Blue dots study: the blue coming in from where they live, or every dot going out as before */
+    const ledeB = () => { secB.querySelector(":scope > .lede").innerHTML = (blueWay === "in"
+      ? 'Blue dots fly into Boston from the admins where they live, orange dots out to the admins where they work, and each admin takes its colour.'
+      : 'Each dot flies to the admin where its people live or work, and adds its colour there.') +
+      ' The map can show who commutes into Boston, who commutes out of it, or where Boston gains or loses workers.'; };
+    ledeB();
+    function setBlue(v){
+      if (!/^(in|home)$/.test(v) || v === blueWay) return;
+      blueWay = v; document.querySelectorAll(".wt-blue-opt").forEach(s => { s.value = blueWay; });
+      const u = new URL(location.href); if (blueWay === BLUEWAY_DEFAULT) u.searchParams.delete("blue"); else u.searchParams.set("blue", blueWay);
+      history.replaceState(null, "", u.pathname + u.search + u.hash); ledeB();
+      /* with the map up, it flies again the new way */
+      if (hand && secB.classList.contains("is-on")) fromBoston(false);
+    }
     /* no note under the map's words (2026-10-18, Nil) */
     const note = secB.querySelector(".who-home-note"); if (note) note.remove();
     /* the three views (2026-10-18, Nil: "still give the user the option to see commuting out and in"): the balance (the
@@ -16537,6 +17266,12 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     }
     /* where a dot with no town on the map goes: into the key, and is gone (the key's "No town on the map" line went on 2026-10-22, Nil) */
     const offPos = () => { const e = H().legendEl, r = e && e.getClientRects().length ? e.getBoundingClientRect() : H().rect(); return [r.right - 28, r.top + 28]; };
+    /* where a blue dot with no town on the map comes IN from (the Blue dots study's "in"): a point on the map's edge,
+       the dots spread round it by the golden angle, so those from beyond the metro arrive from beyond the frame rather
+       than stream out of the key (a review, 2026-11-02) */
+    const edgePos = j => { const r = H().rect(), cx = (r.left + r.right) / 2, cy = (r.top + r.bottom) / 2, a = j * 2.39996;
+      const k = Math.min(Math.abs(r.width / 2 / (Math.cos(a) || 1e-9)), Math.abs(r.height / 2 / (Math.sin(a) || 1e-9)));
+      return [cx + Math.cos(a) * k, cy + Math.sin(a) * k]; };
     let landed = false;
 
     /* the flight overlay: dots in page pixels, over the page */
@@ -16553,7 +17288,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       if (on){ if (lockedKs) return; lockedKs = ["dragging", "scrollWheelZoom", "touchZoom", "doubleClickZoom", "boxZoom", "keyboard"].filter(k => m[k] && m[k].enabled()); lockedKs.forEach(k => m[k].disable()); }
       else if (lockedKs){ lockedKs.forEach(k => m[k].enable()); lockedKs = null; } }
     function flight(items){
-      /* items: { from, to, col, delay, dur, hide (a dot to put out as it leaves), r0 (its radius as it leaves), land(x, y) } */
+      /* items: { from, to, col, delay, dur, hide (a dot to put out as it leaves), r0 (its radius as it leaves), land(x, y);
+         fromLL (a start on the map, kept to it as the camera moves) and start() (as it sets off), for the blue coming in } */
       const me = { cancelled: false }; run = me; flyClip(); lock(true);
       const rdd = rd(); let t0 = null;
       return new Promise(res => {
@@ -16561,8 +17297,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
           items.forEach(it => { if (it.done) return; const u = (now - t0 - it.delay) / it.dur;
             /* a dot bound for a place on the map aims at it afresh each frame, so a moving camera carries the target */
             if (it.ll){ const p = H().map.latLngToContainerPoint(it.ll); it.to = [p.x + mr.left, p.y + mr.top]; }
+            if (it.fromLL){ const p = H().map.latLngToContainerPoint(it.fromLL); it.from = [p.x + mr.left, p.y + mr.top]; }
             if (u < 0){ all = false; return; }
-            if (!it.el){ it.el = document.createElementNS(NS, "circle"); it.el.setAttribute("fill", it.col); fly.appendChild(it.el); if (it.hide) it.hide.style.opacity = 0; }
+            if (!it.el){ it.el = document.createElementNS(NS, "circle"); it.el.setAttribute("fill", it.col); fly.appendChild(it.el); if (it.hide) it.hide.style.opacity = 0; if (it.start) it.start(); }
             const e = ease(Math.min(1, u)), x = it.from[0] + (it.to[0] - it.from[0]) * e, y = it.from[1] + (it.to[1] - it.from[1]) * e;
             if (u >= 1){ it.done = true; it.el.remove(); it.el = null; it.land(it.to[0], it.to[1]); }
             else { all = false; it.el.setAttribute("cx", x.toFixed(1)); it.el.setAttribute("cy", y.toFixed(1));
@@ -16589,12 +17326,22 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     function finish(){ A_IN.allMetro.forEach(r => H().land(r.f)); A_OUT.allMetro.forEach(r => H().land(r.f)); H().city(CITY1); landed = true; H().named(true); }
     /* everything at once: for reduced motion, a table up, a jump past the panel */
     function settle(){ prepMap(); finish(); }
-    /* each figure dot's flight: the grey into Boston, the blue home and the orange out to where they work, largest town first; those with no town to the key's line */
-    function itemsFrom(pts, hides, r0){
-      const items = [], P = piles(A_IN, 0), Q = piles(A_OUT, 1);
+    /* each figure dot's flight: the grey into Boston, the blue home and the orange out to where they work, largest town first; those with no town to the key's line.
+       Blue "in" (the Blue dots study's default, 2026-11-02, Nil: "apply all fixes"): the blue dot moved away from Boston
+       while its colour meant coming in, so each now starts in the admin where it lives, which takes its colour as it
+       sets off, and flies into Boston; the figure's blue dots fade where they stand (atTowns: they already stand at
+       their admins, as the replay lays them) */
+    let BOS_IN = null;
+    function itemsFrom(pts, hides, r0, atTowns){
+      const items = [], P = piles(A_IN, 0), Q = piles(A_OUT, 1), inward = blueWay === "in";
       /* quick (Nil, 2026-10-18: "much faster"): the whole move in about 1.3 seconds */
       idx.both.forEach((i, j) => { const ll = BOS_LL[j]; if (ll && pts[i]) items.push({ from: pts[i], to: H().toPx(ll), ll, col: COL.both, delay: j, dur: 450, hide: hides[i], r0, land(){ arriveGrey(); } }); });
-      idx.in.forEach((i, j) => { if (!pts[i]) return;
+      if (inward){ if (!BOS_IN) BOS_IN = inBoston(idx.in.length, .37);
+        idx.in.forEach((i, j) => { if (!pts[i]) return; const q = j < P.length ? P[j] : null, ll = BOS_IN[j], st = hides[i];
+          if (st && !atTowns){ st.style.transition = "opacity .3s ease"; requestAnimationFrame(() => { st.style.opacity = 0; }); }
+          items.push({ from: q ? q.xy : edgePos(j), fromLL: q ? q.ll : null, to: H().toPx(ll), ll, col: COL.in, delay: 120 + (q ? q.rank * 6 : 330) + j, dur: 650,
+            hide: atTowns ? st : null, r0: null, start(){ if (q) arrive(q.f); }, land(){} }); });
+      } else idx.in.forEach((i, j) => { if (!pts[i]) return;
         if (j < P.length){ const q = P[j]; items.push({ from: pts[i], to: q.xy, ll: q.ll, col: COL.in, delay: 120 + q.rank * 6 + j, dur: 550, hide: hides[i], r0, land(){ arrive(q.f); } }); }
         else items.push({ from: pts[i], to: offPos(), col: COL.in, delay: 450 + (j - P.length) * 2, dur: 500, hide: hides[i], r0, land(){} }); });
       idx.out.forEach((i, j) => { if (!pts[i]) return;
@@ -16607,7 +17354,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       hand = true; const my = ++run2; laid = ""; wrap.classList.add("who-hand");
       const r = panel.getBoundingClientRect(), seen = r.bottom > 140 && r.top < innerHeight - 80;
       prepMap();
-      if (reduce() || !seen || tableUp() || fig.host.dataset.stage !== "sorted"){ settle(); return; }
+      /* opt-4 draws no dots (the reference's two charts): the map's piles are laid at once */
+      if (reduce() || !seen || tableUp() || fig.host.dataset.stage !== "sorted" || fig.host.classList.contains("is-ref")){ settle(); return; }
       const svg = fig.svg, sr = svg.getBoundingClientRect(), vb = svg.viewBox.baseVal, k = vb && vb.width ? sr.width / vb.width : 1;
       const r0 = (+(fig.circles[0].getAttribute("r")) || 3.6) * k;
       const pts = fig.circles.map(c => pos(svg, c));
@@ -16633,10 +17381,12 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       const bos = H().toPx(BC), rr = rd(), Rin = R(idx.in.length, rr), Rb = R(idx.both.length, rr), Ro = R(idx.out.length, rr), gap = 16 * pvR();
       const pIn = pack(bos[0] - Rb - gap - Rin, bos[1], Rin, idx.in.length, 0), pB = pack(bos[0], bos[1], Rb, idx.both.length, 1.3), pO = pack(bos[0] + Rb + gap + Ro, bos[1], Ro, idx.out.length, 2.6);
       const pts = []; idx.in.forEach((i, j) => { pts[i] = pIn[j]; }); idx.both.forEach((i, j) => { pts[i] = pB[j]; }); idx.out.forEach((i, j) => { pts[i] = pO[j]; });
-      cancelFlight(); flyClip(); const st = fig.dots.map((d, i) => staticDot(pts[i], COL[d.k], rr));
+      /* the blue coming in (the Blue dots study's "in") gather in the admins where they live, not over Boston */
+      const inward = blueWay === "in"; if (inward){ const P = piles(A_IN, 0); idx.in.forEach((i, j) => { pts[i] = j < P.length ? P[j].xy : edgePos(j); }); }
+      cancelFlight(); flyClip(); const st = fig.dots.map((d, i) => staticDot(pts[i], COL[d.k], inward && d.k === "in" ? rd() : rr));
       await wait(400); if (my !== run2) return;
       if (tableUp()){ settle(); laid = ""; return; }
-      if (!(await flight(itemsFrom(pts, st, rr))) || my !== run2) return;
+      if (!(await flight(itemsFrom(pts, st, rr, true))) || my !== run2) return;
       laid = ""; finish();
     }
 
