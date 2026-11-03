@@ -2730,7 +2730,7 @@
         x: barX,
         y: d => rowY(idx.get(d.name)) - BAR_H / 2,
         w: d => Math.max(2, x(d.rca) - barX),
-        fill: d => idx.get(d.name) < 3 ? TEAL : "#a9c2c7"
+        fill: d => idx.get(d.name) < 3 ? TEAL : token("--teal-soft", "#a9c2c7")
       };
 
       if (!run){
@@ -3415,7 +3415,8 @@
        which of them is showing) */
     let step = -1, painted = -1, arriving = false;
     const TEAL = token("--teal", "#255862");
-    const MUTED = "#a9c2c7";
+    /* one value with the stand tables' US average bar (2026-11-03) */
+    const MUTED = token("--teal-soft", "#a9c2c7");
     const ORANGE = token("--orange", "#e76565");
 
     const box = (n, dx, dy) => ({ x: n.x0 + (dx || 0), y: n.y0 + (dy || 0),

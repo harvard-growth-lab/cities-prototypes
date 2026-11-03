@@ -14,7 +14,7 @@
   @property --ink{syntax:"<color>";inherits:true;initial-value:#1a2226;}
   @property --ink-soft{syntax:"<color>";inherits:true;initial-value:#526066;}
   :root{
-    /* ---- The colour system: thirteen colours (HANDOFF §6c) ----
+    /* ---- The colour system: thirteen colours (HANDOFF §6c), and since 2026-11-03 the bars' two lighter teals ----
        A neutral ramp from the ink down to the white, one accent (the teal)
        with its tint, a warm accent in two steps, and the two directions. Every
        colour the interface draws is one of these; only the data palettes
@@ -35,6 +35,11 @@
     /* the accent */
     --teal:#255862;           /* links, the chosen, the city: 7.9 */
     --teal-tint:#eef3f4;      /* the one tint: a control's ground, a hover, a chosen row, a done step, a right or wrong answer */
+    /* the two lighter teals of the bars (2026-11-03, Nil, the hand-off's consolidation): soft is the quiet bar, the US
+       average in the stand tables and the muted bars of Metro Industries' third beat, one value for both; mid is
+       Boston's bar in the stand tables */
+    --teal-soft:#a9c2c7;
+    --teal-mid:#467e89;
     /* the warm accent: this place, you are here. As a word it takes
        --orange-text; --orange reads 3.3 to 1 and is for marks */
     --orange:#e76565;
@@ -1677,20 +1682,17 @@
   /* Washington left orange for olive (2026-11-02, Nil: "apply all fixes"): its #ce7325 sat 3.0 from the commuters-out
      orange, so one orange meant a peer in beats 1 and 2 and those commuting out in beats 3 and 4. #8f8f1f stands 13 or
      more from every flow colour, the status green and the grey, and the set validates as before */
-  #ovWrap[data-marks="hues"]{--mk-pa:#7d4e00;--pc-washington:#8f8f1f;--pc-oakland:#2963d0;--pc-long-beach:#a970dd;--pc-cambridge:#782c93;
-    --pc-seattle:#2963d0;--pc-san-diego:#a970dd;--pc-denver:#782c93;}
-  #ovWrap[data-marks="amber"]{--mk-pa:#7d4e00;--pc-washington:#c27c10;--pc-oakland:#c27c10;--pc-long-beach:#c27c10;--pc-cambridge:#c27c10;
-    --pc-seattle:#c27c10;--pc-san-diego:#c27c10;--pc-denver:#c27c10;}
-  #ovWrap[data-marks="hues"] .wt,#ovWrap[data-marks="amber"] .wt{--bar-here:var(--teal);--bar-us:var(--control-edge);--bar-pa:var(--mk-pa);}
+  /* Only opt-4 Lighter ships (2026-11-03, the hand-off: the study's other sets, Today, Four peer colours and Amber
+     peers, were stripped; data-marks is always "soft") */
   /* opt-4 Lighter (2026-11-03, Nil: the map's outline and fill and the grey average too dominant): the peers as in opt-2,
      Boston's bar a lighter teal to match the lighter map, the US average a pale teal tint instead of the grey */
   #ovWrap[data-marks="soft"]{--mk-pa:#7d4e00;--pc-washington:#8f8f1f;--pc-oakland:#2963d0;--pc-long-beach:#a970dd;--pc-cambridge:#782c93;
     --pc-seattle:#2963d0;--pc-san-diego:#a970dd;--pc-denver:#782c93;}
-  #ovWrap[data-marks="soft"] .wt{--bar-here:#467e89;--bar-us:#9db4b9;--bar-pa:#b8801f;}
+  #ovWrap[data-marks="soft"] .wt{--bar-here:var(--teal-mid);--bar-us:var(--teal-soft);--bar-pa:#b8801f;}
   /* the peer average's bar a lighter amber so it no longer outweighs Boston; its rings and diamonds keep the dark --mk-pa */
   /* the compare beat is not part of the study: its bars stay as they were */
   #ovWrap[data-marks] .wt.wt--cmp,#ovWrap[data-marks] .who-cmp .wt{--bar-here:color-mix(in srgb,var(--teal) 85%,var(--white));--bar-us:color-mix(in srgb,var(--teal) 40%,var(--white));--bar-pa:color-mix(in srgb,var(--teal) 60%,var(--white));}
-  #ovWrap[data-marks="hues"] .wt-trk--axis::before,#ovWrap[data-marks="amber"] .wt-trk--axis::before,#ovWrap[data-marks="soft"] .wt-trk--axis::before{border-left-color:var(--ink);}
+  #ovWrap[data-marks="soft"] .wt-trk--axis::before{border-left-color:var(--ink);}
   .wt{color:var(--ink);}
   .wt-sw{display:inline-block;width:12px;height:12px;border-radius:50%;background:var(--geo-city);flex:none;box-sizing:border-box;vertical-align:-1px;}
   .wt-sw.pe{width:10px;height:10px;background:var(--pc);}
@@ -1786,7 +1788,8 @@
   .wt--lines .wt-tk{margin:0;font-size:var(--t-note);font-weight:600;} .wt--lines .wt-tk .wt-d + .wt-d{font-size:13px;}
   .wt-mini{display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 8px;align-items:center;}
   .wt-ml{font-size:13px;line-height:1.2;color:var(--ink-soft);white-space:nowrap;} .wt-ml.here{color:var(--ink);font-weight:600;}
-  .wt-mb{display:block;height:6px;width:var(--w);border-radius:0 2px 2px 0;background:var(--bar-us);}
+  /* every bar square-ended (2026-11-03, Nil: "make sure both bar do not have rounded corners") */
+  .wt-mb{display:block;height:6px;width:var(--w);border-radius:0;background:var(--bar-us);}
   .wt-mb.here{height:8px;background:var(--bar-here);} .wt-mb.pa{background:var(--bar-pa);} .wt-mb.pe{background:var(--pc);}
   .wt-mkey{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:4px 14px;margin:0 0 6px;font-size:13px;color:var(--ink-soft);}
   .wt-mkey span{display:inline-flex;align-items:center;gap:6px;} .wt-mkey i{display:inline-block;width:14px;height:8px;border-radius:0 2px 2px 0;background:var(--bar-us);}
@@ -1802,7 +1805,6 @@
   /* a step smaller with the fifth row, employed residents, so the five fit (2026-11-03, Nil) */
   :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ln{grid-template-columns:minmax(0,170px) minmax(0,1fr) 260px;gap:0 24px;padding:13px 0;}
   :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ln-a{gap:3px;}
-  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-name{font-size:13.5px;}
   /* "lower is better" on its own line under the name, rather than breaking beside it */
   :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ln-a .wt-name .hint{display:block;margin:1px 0 0;font-size:13px;}
   :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ln-a .wt-val{font-size:20px;line-height:1.15;}
@@ -1811,11 +1813,12 @@
   :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-tk .wt-d{font-weight:400;}
   /* the figure itself bold, "33 times", the words after it regular (2026-11-03, Nil) */
   :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-tk .wt-d b{font-weight:700;}
-  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-tk .wt-d + .wt-d{font-size:13.5px;}
+  /* the small type one size, 13px, as in Metro Industries (the hand-off's consolidation, 2026-11-03): the names, the
+     peers' line and the bars' labels take the base rules' 13; Boston's label 700 as on the scatter; "Closest peers"
+     13 as on the scatters */
   :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-mini{gap:5px 10px;}
-  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ml{font-size:13.5px;}
-  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-mkey{font-size:14px;gap:4px 18px;margin-bottom:10px;}
-  :is(#page-overview, #page-overview-metro) .wt-peers{margin-top:24px;gap:8px 6px;}
+  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ml.here{font-weight:700;}
+  :is(#page-overview, #page-overview-metro) .wt-peers{margin-top:24px;gap:8px 6px;font-size:13px;}
   :is(#page-overview, #page-overview-metro) .wt-peers > .wt-pk,:is(#page-overview, #page-overview-metro) .wt-peers > span:first-child{min-height:28px;}
   :is(#page-overview, #page-overview-metro) .wt-peer{padding:4px 9px 4px 7px;}
   @media (max-width:599px){ :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ln{grid-template-columns:1fr;gap:8px 0;padding:14px 0;} }
@@ -2595,7 +2598,6 @@
   .who-sc .sc-call{fill:none;stroke:var(--ink);stroke-width:1.5;}
   .who-sc .sc-found{fill:none;stroke:var(--orange);stroke-width:2.5;}
   .who-sc .sc-calldot{fill:var(--ink-soft);stroke:var(--white);stroke-width:1;}
-  .who-sc .sc-lab--call{font-weight:600;}
   .who-sc.is-asked{border-color:var(--teal) !important;}
   /* opt-2: an answer standing marks the panel as Metro Industries marks its
      frame: the teal edge with its half-pixel halo, and the "Showing an
@@ -2772,8 +2774,6 @@
   .who-sc-tip.is-new.is-card .tt-kv{gap:6px 14px;margin:0;font-size:calc(13px * var(--pv-k,1));line-height:normal;}
   .who-sc-tip.is-card .tt-kv--lead + .tt-rows{margin-top:10px;}
   .who-sc-tip.is-card .tt-rows{gap:6px;}
-  .who-sc-tip.is-compact{min-width:0;max-width:min(calc(240px * var(--pv-k,1)),calc(100% - 8px));padding:8px 10px 9px;}
-  .who-sc-tip.is-bars{min-width:min(calc(230px * var(--pv-k,1)),calc(100% - 8px));}
   .who-sc-tip.is-new::after{content:"";position:absolute;left:var(--cx,50%);width:9px;height:9px;background:var(--white);border:1px solid var(--border-strong);transform:translateX(-50%) rotate(45deg);}
   .who-sc-tip.is-new.is-above::after{bottom:-6px;border-top:0;border-left:0;}
   .who-sc-tip.is-new.is-below::after{top:-6px;border-bottom:0;border-right:0;}
@@ -2783,22 +2783,10 @@
   .who-sc-tip.is-new span{color:inherit;}
   .who-sc-tip.is-new .tt-g--us{width:14px;height:0;margin:0 6px 0 0;border-left:0;border-top:1.5px dashed var(--ink);}
   .who-sc-tip.is-new .tt-h,.who-sc-tip.is-new .tt-r,.who-sc-tip.is-new .tt-kv,.who-sc-tip.is-new .tt-note{font-size:inherit;}
-  .who-sc-tip.is-compact .tt-h{color:var(--ink);}
-  .who-sc-tip.is-new .tt-fig{font-size:calc(20px * var(--pv-k,1));}
-  .who-sc-tip.is-new .tt-u{font-size:calc(13px * var(--pv-k,1));font-weight:400;color:var(--ink-soft);}
   .who-sc-tip.is-new .tt-r{color:var(--ink);}
-  .who-sc-tip.is-new .tt-r b{font-variant-numeric:tabular-nums;}
+  /* the comparison's figure 700, as the stand tables' (the hand-off's consolidation, 2026-11-03) */
+  .who-sc-tip.is-new .tt-r b{font-variant-numeric:tabular-nums;font-weight:700;}
   .who-sc-tip .tt-r .tt-w{font-weight:700;color:var(--ink);}
-  .who-sc-tip.is-new .tt-line{margin:3px 0 0;line-height:1.35;color:var(--ink);}
-  .who-sc-tip.is-new .tt-line b{font-weight:700;font-variant-numeric:tabular-nums;}
-  .who-sc-tip.is-new .tt-soft{margin:3px 0 0;line-height:1.35;color:var(--ink-soft);}
-  .who-sc-tip.is-new .tt-cap{margin:6px 0 5px;line-height:1.3;color:var(--ink-soft);}
-  .who-sc-tip.is-new .tt-bars{display:grid;grid-template-columns:auto minmax(48px,1fr) auto;gap:5px 8px;align-items:center;}
-  .who-sc-tip.is-new .tt-bl{max-width:calc(120px * var(--pv-k,1));overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.25;color:var(--ink-soft);}
-  .who-sc-tip.is-new .tt-bl.is-me,.who-sc-tip.is-new .tt-bv.is-me{font-weight:600;color:var(--ink);}
-  .who-sc-tip.is-new .tt-bt{display:block;height:8px;}
-  .who-sc-tip.is-new .tt-bt i{display:block;height:100%;min-width:2px;border-radius:0 2px 2px 0;}
-  .who-sc-tip.is-new .tt-bv{line-height:1.25;text-align:right;font-variant-numeric:tabular-nums;color:var(--ink);}
   .who-sc-plot > svg:focus{outline:none;}
   .who-sc-plot > svg:focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:4px;}
   @media (prefers-reduced-motion: reduce){ .who-sc .sc-labels.is-in{transition:none;} }
@@ -10200,7 +10188,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   const BLUEWAY_DEFAULT = "in";
   /* the Mark colours study: "today", "hues" or "amber" (see the stylesheet); on the section's wrapper before anything draws */
   const MARKS_DEFAULT = "soft";
-  { const w = document.getElementById("ovWrap"); if (w) w.dataset.marks = (location.search.match(/[?&]marks=(today|hues|amber|soft)\b/) || [, MARKS_DEFAULT])[1]; }
+  { const w = document.getElementById("ovWrap"); if (w) w.dataset.marks = MARKS_DEFAULT; }  /* the one set since the hand-off */
   /* opt-2's second commuting beat is the needle alone (2026-10-23, Nil: "remove design options here, we decided on the
      default one"); the bars of the admins, its opt-1 from 10-22, are gone with the Balance study */
   /* the compare beat: the admin's four measures against the metro's as bars with a rank column ("bars"), or a card a
@@ -11858,14 +11846,15 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     // interactive:false, or this fill (the whole metro) would swallow every
     // click and hover meant for the places under it
     const msaOpts = { interactive:false, color:GEO_METRO, weight:2, dashArray:"6 6", fillColor:GEO_CITY, fillOpacity:.04 };
+    const cityOpts = { interactive:false, color:GEO_CITY, weight:2, fillColor:GEO_CITY, fillOpacity:.45 };
+    /* Mark colours opt-4 Lighter, the one set since the hand-off: a thinner outline and a pale wash, so the streets and
+       names read through. The metro's dashed outline at .8, not .6 (2026-11-03): .6 of --geo-metro on the paper reads
+       about 2.6 to 1, under the 3 to 1 a mark needs; .8 holds about 3.5. Set before the metro layer is drawn, which
+       read the full-strength values until then */
+    const softMap = () => { Object.assign(cityOpts, { weight:1.5, fillOpacity:.14 }); Object.assign(msaOpts, { weight:1.5, opacity:.8 }); };
+    softMap();
     ovMsaLayer = (WHO_GEO ? L.geoJSON(WHO_GEO.msa, { interactive:false, style: () => msaOpts })
                           : L.polygon(msaPoly, msaOpts)).addTo(ovLeaflet);
-    const cityOpts = { interactive:false, color:GEO_CITY, weight:2, fillColor:GEO_CITY, fillOpacity:.45 };
-    /* Mark colours opt-4 Lighter: a thinner outline and a pale wash, so the streets and names read through */
-    const softMap = () => { const soft = document.getElementById("ovWrap").dataset.marks === "soft";
-      Object.assign(cityOpts, soft ? { weight:1.5, fillOpacity:.14 } : { weight:2, fillOpacity:.45 });
-      Object.assign(msaOpts, soft ? { weight:1.5, opacity:.6 } : { weight:2, opacity:1 }); };
-    softMap();
     ovCityLayer = (WHO_GEO ? L.geoJSON(WHO_GEO.boston, { interactive:false, style: () => cityOpts })
                            : L.polygon(cityPoly, cityOpts)).addTo(ovLeaflet);
 
@@ -13024,7 +13013,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       el.classList.add("msa-fade");
       el.classList.toggle("msa-off", !show);
     } else {
-      ovMsaLayer.setStyle(show ? { opacity: 1, fillOpacity: .04 }
+      ovMsaLayer.setStyle(show ? { opacity: .8, fillOpacity: .04 }
                                : { opacity: 0, fillOpacity: 0 });
     }
   };
@@ -14678,7 +14667,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         const st = document.createElement("div"); st.className = "mi-studies"; const pid = "whoTablesPanel" + (id === "page-overview" ? "" : "M");
         st.innerHTML = '<button type="button" class="mi-studies-btn" aria-expanded="false" aria-controls="' + pid + '">opt</button>' +
           '<div class="mi-studies-panel" id="' + pid + '" role="group" aria-label="Design studies" hidden><label class="mi-study"><span>Tables</span>' +
-          '<select class="wt-table-opt" aria-label="How the tables draw Boston Admin and Boston Metro against the US and their peers"><option value="bars">1 Named bars</option><option value="band">2 Box plots</option><option value="cards">3 Cards</option><option value="lines">4 Lines</option><option value="axis">5 One axis</option></select></label><label class="mi-study"><span>Mark colours</span><select class="wt-mark-opt" aria-label="The colours of the averages and the peers"><option value="today">1 Today</option><option value="hues">2 Four peer colours</option><option value="amber">3 Amber peers</option><option value="soft">4 Lighter</option></select></label>' +
+          '<select class="wt-table-opt" aria-label="How the tables draw Boston Admin and Boston Metro against the US and their peers"><option value="bars">1 Named bars</option><option value="band">2 Box plots</option><option value="cards">3 Cards</option><option value="lines">4 Lines</option><option value="axis">5 One axis</option></select></label>' +
           (window.ovBasemap ? '<label class="mi-study"><span>Basemap</span><select class="wt-basemap-opt" aria-label="The map under the outlines"><option value="landing">1 Site paper, blue water</option><option value="section">2 Site paper, docked grey</option><option value="carto">3 CARTO (before)</option></select></label>' : '') + '</div>';
         eye.appendChild(st);
         const btn = st.querySelector(".mi-studies-btn"), panel = st.querySelector(".mi-studies-panel"), sel = st.querySelector("select");
@@ -14686,23 +14675,11 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         btn.addEventListener("click", () => { const open = panel.hidden; panel.hidden = !open; btn.setAttribute("aria-expanded", String(open)); });
         document.addEventListener("click", ev => { if (!st.contains(ev.target) && !panel.hidden){ panel.hidden = true; btn.setAttribute("aria-expanded", "false"); } });
         sel.addEventListener("change", () => set(sel.value));
-        const ms = st.querySelector(".wt-mark-opt"), w = document.getElementById("ovWrap");
-        ms.value = w.dataset.marks; ms.addEventListener("change", () => setMarks(ms.value));
         /* the basemap: the reference site's paper in its landing palette (2026-11-02), its docked grey, or the earlier CARTO tiles */
         const bs = st.querySelector(".wt-basemap-opt");
         if (bs){ bs.value = window.ovBasemap.mode(); if (!window.ovBasemap.gl){ bs.querySelectorAll('option:not([value="carto"])').forEach(o => { o.disabled = true; }); }
           bs.addEventListener("change", () => { const got = window.ovBasemap.set(bs.value); document.querySelectorAll(".wt-basemap-opt").forEach(s => { s.value = got; }); }); }
       });
-    }
-    /* the marks' colours: the stylesheet follows the wrapper's attribute; the tooltips' swatches are redrawn with the tables
-       and the map's dots, which take their colours as values, are told */
-    function setMarks(m){
-      const w = document.getElementById("ovWrap"); w.dataset.marks = m;
-      document.querySelectorAll(".wt-mark-opt").forEach(sel => { sel.value = m; });
-      const u = new URL(location.href); if (m === MARKS_DEFAULT) u.searchParams.delete("marks"); else u.searchParams.set("marks", m);
-      history.replaceState(null, "", u.pathname + u.search + u.hash);
-      Object.values(tables).forEach(T => T.render());
-      document.dispatchEvent(new CustomEvent("who:marks"));
     }
     function setForm(f){
       form = f === "beside" ? "beside" : "stack";
@@ -14945,7 +14922,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   if (document.getElementById("ovWrap")) document.getElementById("ovWrap").dataset.right = window.whoRight;
   /* the scatter card's study (2026-11-02), read before the charts are built: opt-2, the band card, is the default */
   const SCTIP_DEFAULT = "card";
-  window.whoScTip = (location.search.match(/[?&]sctip=(today|card|bars|compact)\b/) || [, SCTIP_DEFAULT])[1];
+  window.whoScTip = SCTIP_DEFAULT;
   (function(){
   function build(D, CMP, hosts, opts){
     if (!D || !CMP || !hosts.length) return;
@@ -15375,7 +15352,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
          answers too, a tap holds the card until a tap elsewhere or a scroll, Escape closes it, the arrows step through
          the dots from the keyboard, and the type grows with the presenter's */
       const said = i => document.dispatchEvent(new CustomEvent("who:hover", { detail: { set: opts.set, i, from: "chart" } }));
-      const tipMode = () => window.whoScTip || "card", fresh = () => tipMode() !== "today";
+      /* one card form since the hand-off (2026-11-03); fresh() stays as the card's switch for the code that reads it */
+      const tipMode = () => "card", fresh = () => true;
       let kbI = null;
       const hideTip = () => { if (!tip.hidden) said(null); tip.hidden = true; hover.style.display = "none"; };
       /* the ring round the mark, clear of its edge */
@@ -15459,34 +15437,17 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       const unitW = () => k === "yp" ? " of pay for a home" : " " + WHAT[k];
       function cardHtml(d){
         /* the name alone, no mark beside it (2026-11-03, Nil) */
-        const m = tipMode(), head = '<div class="tt-h"><span>' + escT(d.name) + '</span></div>';
+        const head = '<div class="tt-h"><span>' + escT(d.name) + '</span></div>';
         /* the measure, then population, each against Boston (Boston itself against the peer average) */
         const rowsH = () => { const [who, v, pop] = d.vs, r = [cmpRow(k, d.v, v, who)];
           if (pop != null && d.pop != null) r.push(cmpRow("pop", d.pop, pop, who));
           return '<div class="tt-rows">' + r.join("") + '</div>'; };
-        /* a phone's plot is shorter than the card: the note goes, the chart stays in sight */
-        /* no note under a rule (2026-11-03, Nil: "remove the horizontal line and the text below it from the tooltips") */
-        const noteH = '';
         const kv = (k === "yp" && d.yp ? [["Home value", fmt(d.yp[0], "home")], ["Average salary", fmt(d.yp[1], "wage")]] : []).concat(d.pop != null ? [["Population", popF(d.pop)]] : []);
-        const kvH = kv.length ? '<dl class="tt-kv">' + kv.map(([a, b]) => '<dt>' + a + '</dt><dd>' + b + '</dd>').join("") + '</dl>' : '';
-        if (m === "compact") return head + '<p class="tt-line"><b>' + fmt(d.v, k) + '</b>' + unitW() + '</p>' + rowsH() +
-          (d.pop != null ? '<p class="tt-soft">' + popF(d.pop) + ' people</p>' : '');
-        if (m === "bars"){
-          /* the figure beside its references, each named before its bar, from zero */
-          const all = [[d.v, d.short, d.g === "pe" ? (d.pc === "var(--mark-grey)" ? "var(--ink-soft)" : d.pc) : d.g === "here" ? "var(--geo-city)" : d.g === "pa" ? "var(--mk-pa)" : "var(--control-edge)", true]]
-            .concat(d.refs.map(([v, who, g]) => [v, who === "the US average" ? "US average" : who === "the peer average" ? "Peer average" : who, g === "here" ? "var(--geo-city)" : g === "pa" ? "var(--mk-pa)" : "var(--control-edge)", false]));
-          const max = Math.max(...all.map(a => a[0])) * 1.02;
-          return head + '<p class="tt-cap">' + (k === "yp" ? M.yp.long : M[k].name) + '</p><div class="tt-bars">' +
-            all.map(([v, lab, col, me]) => '<span class="tt-bl' + (me ? ' is-me' : '') + '">' + escT(lab) + '</span><span class="tt-bt"><i style="width:' + (v / max * 100).toFixed(1) + '%;background:' + col + '"></i></span><span class="tt-bv' + (me ? ' is-me' : '') + '">' + fmt(v, k) + '</span>').join("") +
-            '</div>' + kvH + noteH;
-        }
         /* the measure and the population as one list, in the same style, then the comparisons (2026-11-03, Nil:
-           "show salary and population with the same standard styling and show the comparison after") */
-        if (m === "card"){
-          const facts = [[k === "yp" ? M.yp.long : M[k].name, fmt(d.v, k)]].concat(kv);
-          return head + '<dl class="tt-kv tt-kv--lead">' + facts.map(([a, b]) => '<dt>' + a + '</dt><dd>' + b + '</dd>').join("") + '</dl>' + rowsH() + noteH;
-        }
-        return head + '<div class="tt-fig">' + fmt(d.v, k) + '<span class="tt-u">' + unitW() + '</span></div>' + rowsH() + kvH + noteH;
+           "show salary and population with the same standard styling and show the comparison after"). The card is the
+           only form since the hand-off (2026-11-03: the Card study's other forms were stripped) */
+        const facts = [[k === "yp" ? M.yp.long : M[k].name, fmt(d.v, k)]].concat(kv);
+        return head + '<dl class="tt-kv tt-kv--lead">' + facts.map(([a, b]) => '<dt>' + a + '</dt><dd>' + b + '</dd>').join("") + '</dl>' + rowsH();
       }
       /* centred over the mark, under it where the top has no room, inside the plot either way */
       function placeCard(h){
@@ -15958,26 +15919,16 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       if (window.whoNationBeat) window.whoNationBeat(on ? on.id : null);
       if (typeof ovZoom === "function") ovZoom(true);
     }
-    /* the card's study: both charts at once, kept in the address */
-    function setTip(v){
-      window.whoScTip = ["today", "card", "bars", "compact"].indexOf(v) >= 0 ? v : SCTIP_DEFAULT;
-      const u = new URL(location.href); if (window.whoScTip === SCTIP_DEFAULT) u.searchParams.delete("sctip"); else u.searchParams.set("sctip", window.whoScTip);
-      history.replaceState(null, "", u.pathname + u.search + u.hash);
-      document.querySelectorAll(".sc-tip-opt").forEach(s => { s.value = window.whoScTip; });
-      document.dispatchEvent(new CustomEvent("who:sctip", { detail: { mode: window.whoScTip } }));
-    }
-    /* the "opt" word in each scatter beat's counter */
+    /* the "opt" word in each scatter beat's counter (the Card study was stripped for the hand-off, 2026-11-03) */
     wrap.querySelectorAll(".sc-beat").forEach(beat => {
       const eye = beat.querySelector(":scope > .ct-eyebrow"); if (!eye) return;
       const st = document.createElement("div"); st.className = "mi-studies"; const pid = "scRight" + beat.id.replace(/\W/g, "");
       st.innerHTML = '<button type="button" class="mi-studies-btn" aria-expanded="false" aria-controls="' + pid + '">opt</button>' +
         '<div class="mi-studies-panel" id="' + pid + '" role="group" aria-label="Design studies" hidden><label class="mi-study"><span>Right side</span>' +
-        '<select class="sc-right-opt" aria-label="What the right side shows: opt-1 the map of every admin beside the chart, opt-2 the chart alone"><option value="map">opt-1</option><option value="chart">opt-2</option></select></label>' +
-        '<label class="mi-study"><span>Card</span><select class="sc-tip-opt" aria-label="The card a dot shows"><option value="today">1 Today</option><option value="card">2 Card</option><option value="bars">3 Small bars</option><option value="compact">4 Compact</option></select></label></div>';
+        '<select class="sc-right-opt" aria-label="What the right side shows: opt-1 the map of every admin beside the chart, opt-2 the chart alone"><option value="map">opt-1</option><option value="chart">opt-2</option></select></label></div>';
       eye.appendChild(st);
-      const btn = st.querySelector(".mi-studies-btn"), panel = st.querySelector(".mi-studies-panel"), sel = st.querySelector(".sc-right-opt"), tsel = st.querySelector(".sc-tip-opt");
-      sel.value = window.whoRight; tsel.value = window.whoScTip;
-      tsel.addEventListener("change", () => setTip(tsel.value));
+      const btn = st.querySelector(".mi-studies-btn"), panel = st.querySelector(".mi-studies-panel"), sel = st.querySelector(".sc-right-opt");
+      sel.value = window.whoRight;
       btn.addEventListener("click", () => { const open = panel.hidden; panel.hidden = !open; btn.setAttribute("aria-expanded", String(open)); });
       document.addEventListener("click", ev => { if (!st.contains(ev.target) && !panel.hidden){ panel.hidden = true; btn.setAttribute("aria-expanded", "false"); } });
       sel.addEventListener("change", () => setRight(sel.value));
