@@ -1686,8 +1686,12 @@
      peers, were stripped; data-marks is always "soft") */
   /* opt-4 Lighter (2026-11-03, Nil: the map's outline and fill and the grey average too dominant): the peers as in opt-2,
      Boston's bar a lighter teal to match the lighter map, the US average a pale teal tint instead of the grey */
-  #ovWrap[data-marks="soft"]{--mk-pa:#7d4e00;--pc-washington:#8f8f1f;--pc-oakland:#2963d0;--pc-long-beach:#a970dd;--pc-cambridge:#782c93;
-    --pc-seattle:#2963d0;--pc-san-diego:#a970dd;--pc-denver:#782c93;}
+  /* the peers' four colours made easier to tell apart (2026-11-03, Nil: "make sure the colors are more differentiable",
+     chosen for normal vision only, at Nil's word): one each from green, blue, pink and deep purple, the closest pair 24.7
+     apart in OKLab (was 17.6, three of four sat between blue and lavender), each 19 or more from Boston's teals, both
+     ambers and the grey dots (Washington's olive sat 7.5 from the peer average's amber bar) */
+  #ovWrap[data-marks="soft"]{--mk-pa:#7d4e00;--pc-washington:#14a846;--pc-oakland:#588cff;--pc-long-beach:#d95497;--pc-cambridge:#701c8e;
+    --pc-seattle:#588cff;--pc-san-diego:#d95497;--pc-denver:#701c8e;}
   #ovWrap[data-marks="soft"] .wt{--bar-here:var(--teal-mid);--bar-us:var(--teal-soft);--bar-pa:#b8801f;}
   /* the peer average's bar a lighter amber so it no longer outweighs Boston; its rings and diamonds keep the dark --mk-pa */
   /* the compare beat is not part of the study: its bars stay as they were */
