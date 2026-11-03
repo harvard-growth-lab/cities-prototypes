@@ -3821,7 +3821,7 @@
   .mc-dot--city{fill:var(--geo-city);}
   .mc-dot--metro{fill:var(--geo-metro);}
   .mc-chip{
-    position:absolute;pointer-events:auto;cursor:pointer;border:none;
+    position:absolute;pointer-events:none;border:none;white-space:nowrap;
     font:inherit;font-size:13px;font-weight:600;color:var(--white);
     padding:3px 8px;border-radius:4px;box-shadow:var(--shadow-sm);
   }
@@ -12123,8 +12123,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
        the metro has not been introduced yet. */
     /* Callout chips instead of in-shape tooltips: pinned to the frame's
        corners so no map size can clip them, each with a leader line to its
-       geography, hidden whenever the target leaves the frame. Clicking one
-       opens the same boundary dialog the Viewing badges do. */
+       geography, hidden whenever the target leaves the frame. They are
+       labels only; clicking does nothing (2026-11-03). */
     const co = document.createElement("div");
     co.className = "map-callouts";
     co.innerHTML =
@@ -12132,10 +12132,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         '<line class="mc-line mc-line--city"/><circle class="mc-dot mc-dot--city" r="2.6"/>' +
         '<line class="mc-line mc-line--metro"/><circle class="mc-dot mc-dot--metro" r="2.6"/>' +
       '</svg>' +
-      '<button type="button" class="mc-chip mc-chip--city" onclick="openGeoMap(\'city\')" ' +
-        'title="See this geography on the map"><span class="city-short">Boston</span> Admin</button>' +
-      '<button type="button" class="mc-chip mc-chip--metro" onclick="openGeoMap(\'metro\')" ' +
-        'title="See this geography on the map"><span class="city-short">Boston</span> Metro</button>';
+      '<span class="mc-chip mc-chip--city"><span class="city-short">Boston</span> Admin</span>' +
+      '<span class="mc-chip mc-chip--metro"><span class="city-short">Boston</span> Metro</span>';
     ovLeaflet.getContainer().appendChild(co);
 
     /* zoom in / out / reset — reset refits whatever the story is showing */
