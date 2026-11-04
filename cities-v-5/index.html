@@ -20182,7 +20182,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     /* the split stands only if it adds up to the counts; if not, the blocks are drawn plain and the key says nothing of it */
     const splitOk = sum(r => r.jobs) === A.jobs && Math.abs(sum(r => r.estRes) - A.liveWork) < 1 && Math.abs(sum(r => r.estNon) - A.in) < 1 && Math.abs(sum(r => r.estOut) - A.out) < 1;
     if (!splitOk) console.warn("WF tree: the split does not match the LODES OD totals, " + D.year);
-    return { D, A, M, SH_J: A.jobs / M.jobs, SH_R: A.residents / M.residents, R_ALL: A.jobs / A.residents, rows, byCode, OD, splitOk };
+    /* the needle's ratio is section 1's (2026-11-04, Nil: one number for Boston on both needles): commuters in for every
+       one out, 528K over 157K, 3.4; per sector the estimated split's in over its out */
+    return { D, A, M, SH_J: A.jobs / M.jobs, SH_R: A.residents / M.residents, R_ALL: A.in / A.out, rows, byCode, OD, splitOk };
   }
   const YD = {}; Object.keys(WF_YEARS).forEach(y => { YD[y] = yearData(WF_YEARS[y]); });
   /* the year shown and its figures: everything below reads these, never a year's data directly. ?wfyear=2013 opens on 2013 */
@@ -22457,13 +22459,14 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   const gRow = (k, n, share, words) => (window.FLOW_ICO ? window.FLOW_ICO[k] : "") + '<b class="wg-n">' + fmt(n) + '</b><span class="wg-w">' + words + '</span><span class="wg-tr wg-tr--' + k + '"><i style="width:' + (share * 100).toFixed(1) + '%"></i></span>';
   /* the needle's words for a sector, or for Boston across every sector */
   function needleWords(d){
-    const own = !d, i = own ? A.jobs : d.jobs, o = own ? A.residents : d.residents, ratio = i / o, z = zoneOf(ratio);
+    const own = !d, i = own ? A.jobs : d.jobs, o = own ? A.residents : d.residents, ci = own ? A.in : d.estNon, co = own ? A.out : d.estOut;
+    /* commuters in for every one out, as section 1's needle reads (2026-11-04, Nil: "do that", one number for Boston on
+       both needles, 3.4); a sector's is the estimated split's, and says so. (It read jobs over residents, 2.1, before) */
+    const ratio = co > 0 ? ci / co : GG.max, z = zoneOf(ratio);
     const nm = own ? "" : d.short.charAt(0).toLowerCase() + d.short.slice(1);
     const kind = z === "bus" ? "a business admin" : z === "res" ? "a residential admin" : "balanced";
     const num = rx(ratio).replace("×", "");
-    /* "in the sector", not "in it": two rows under the sector's name, "it" read as Boston (2026-11-03 review); a flow's
-       fold is several sectors */
-    const per = own ? num + " jobs in Boston for every working resident" : (z === "bal" ? "about one job" : num + " jobs") + " in Boston for every resident who works in " + (d.code ? "the sector" : "these sectors");
+    const per = (z === "bal" ? "about one commutes in" : num + " commute in") + " for every one who commutes out" + (own ? "" : ", by estimate");
     const gain = i === o ? "Boston neither gains nor loses" : "Boston " + (i > o ? "gains " : "loses ") + fmt(Math.abs(i - o));
     return { own, ratio, z, nm, per, gain, who: own ? "Boston is " + kind : "For " + nm + ", Boston is " + kind, net: '<b>' + gain + '</b>, with ' + per };
   }
