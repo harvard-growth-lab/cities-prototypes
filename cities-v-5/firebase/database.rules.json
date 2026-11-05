@@ -1,0 +1,28 @@
+{
+  "rules": {
+    "editors": {
+      ".read": false,
+      ".write": false
+    },
+    "$root": {
+      ".read": "auth != null && auth.token.email_verified == true && (auth.token.email.matches(/.*@([a-z0-9-]+\\.)*harvard\\.edu$/) || root.child('editors').child(auth.token.email.toLowerCase().replace('.', ',')).val() === true)",
+      "text": {
+        "$key": {
+          ".write": "auth != null && auth.token.email_verified == true && (auth.token.email.matches(/.*@([a-z0-9-]+\\.)*harvard\\.edu$/) || root.child('editors').child(auth.token.email.toLowerCase().replace('.', ',')).val() === true)",
+          ".validate": "newData.hasChildren(['before', 'after', 'by', 'at']) && newData.child('by').val() === auth.uid && newData.child('before').isString() && newData.child('after').isString() && newData.child('after').val().length < 20000"
+        }
+      },
+      "history": {
+        "$id": {
+          ".write": "!data.exists() && auth != null && auth.token.email_verified == true && (auth.token.email.matches(/.*@([a-z0-9-]+\\.)*harvard\\.edu$/) || root.child('editors').child(auth.token.email.toLowerCase().replace('.', ',')).val() === true)",
+          ".validate": "newData.hasChildren(['key', 'before', 'after', 'by', 'at']) && newData.child('by').val() === auth.uid"
+        }
+      },
+      "presence": {
+        "$uid": {
+          ".write": "$uid === auth.uid && auth.token.email_verified == true && (auth.token.email.matches(/.*@([a-z0-9-]+\\.)*harvard\\.edu$/) || root.child('editors').child(auth.token.email.toLowerCase().replace('.', ',')).val() === true)"
+        }
+      }
+    }
+  }
+}
