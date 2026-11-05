@@ -2422,8 +2422,34 @@
   #ovWrap .wide-beat:has(#whoFlows.is-ref.ref-band) > .who-ref-col .who-ref-src{display:block;}
   #ovWrap.is-presenting .who-fl.ref-split .who-ref-dist{display:flex;}
   #ovWrap.is-presenting .who-ref-col{display:none !important;}
-  #ovWrap.is-presenting .who-ref-head{font-size:calc(14px * var(--pv-k, 1));}
   #ovWrap.is-presenting .who-ref-tip{font-size:calc(13px * var(--pv-k, 1));padding:calc(12px * var(--pv-k, 1)) calc(16px * var(--pv-k, 1));}
+  /* ---- the Under study (2026-11-04, Nil: "we'll use the default venn diagram but the bottom part will be the histogram
+     from the latest added option. make that histogram more in the proto style and make as user friendly as possible"):
+     opt-4's histogram stands under the dots in the bars' place (opt-2, the default; opt-1 ?under=bars the two bars as
+     before), in the panel from 1200 up and in the column under it, as the bars did. Restyled for the page, in both
+     places it is drawn: a takeaway sentence over it (Boston's reading and how many places have more), the count of
+     places on two quiet lines, Boston named at the beat's 15px, the peers as their dots on the baseline and named with
+     their numbers in a key under the chart, the peer average's dashed line in its amber, the words under the axis as
+     the reference's, the foot without "log scale" ---- */
+  .fl-detail[hidden]{display:none !important;}
+  .fl-detail--hist{display:block;}
+  .fl-detail--hist .who-ref-dist{margin-top:0;padding-top:0;border-top:0;min-height:0;flex:none;}
+  .fl-detail--hist .who-ref-hist{flex:none;height:220px;}
+  .fl-detail--hist.fl-detail--col .who-ref-hist{height:300px;}
+  .who-ref-head{font-size:15px;font-weight:600;color:var(--ink);}
+  .who-ref-head .num{font-variant-numeric:tabular-nums;}
+  .who-ref-key{display:flex;flex-wrap:wrap;align-items:center;gap:4px 16px;margin:6px 0 0;font-size:13px;line-height:1.4;color:var(--ink);font-variant-numeric:tabular-nums;}
+  .who-ref-key .wrk-l{color:var(--ink-soft);}
+  .who-ref-key > span{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
+  .who-ref-key i{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--pc);border:1.5px solid var(--white);box-shadow:0 0 0 1px var(--pc);}
+  .rh-pe{stroke:var(--white);stroke-width:1.5;}
+  .rh-cnt{stroke:var(--border);} .rh-cnt-t{font-size:13px;fill:var(--ink-soft);}
+  .rh-tick--one{fill:var(--ink);font-weight:600;}
+  .rh-me-t{font-size:15px;}
+  .rh-pa{stroke:var(--mk-pa);} .rh-pa-t{fill:var(--mk-pa);}
+  #ovWrap.is-presenting .fl-detail--hist .who-ref-hist{height:calc(220px * var(--pv-k, 1));}
+  #ovWrap.is-presenting .fl-detail--hist .who-ref-key{font-size:calc(13px * var(--pv-k, 1));}
+  #ovWrap.is-presenting .who-ref-head{font-size:calc(15px * var(--pv-k, 1));}
   /* each part as a share of the set it belongs to: the jobs (work), the working residents (live), or both */
     .vn-reg--in .vn-n{color:var(--flow-in);} .vn-reg--both .vn-n{color:var(--flow-both-text);} .vn-reg--out .vn-n{color:var(--flow-out-text);}
   .vn-ico{flex:none;display:block;width:36px;height:26px;overflow:visible;}
@@ -10289,6 +10315,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   /* opt-2's first commuting beat: the three groups as a rectangle Venn ("venn", the default since 2026-10-20, Nil:
      "v-6 by default, use the rectangle venn diagram"), as circles ("circles") or as a classic circle Venn ("classic") */
   const GROUPS_DEFAULT = "venn";
+  const UNDER_DEFAULT = "hist";  /* 2026-11-04, Nil: the histogram under the Venn; "bars" the two bars as before */
   /* the Venn's dot key, "One dot is about 2K people" with a dot drawn at the figure's size (2026-11-02, Nil: "try to
      find a better plot for 'One dot is 2K people'. maybe try to show it visually as well"): "row" at the right end of
      the Play again row, "foot" under the figure, "note" before Play again as it was (?dotkey=) */
@@ -16378,8 +16405,14 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     const LOV = .1, HIV = 10, NB = BAL.counts.length, TICKS = [.1, .2, .5, 1, 2, 5, 10];
     /* each arrow held to its word by a no-break space, so a wrapped label never leaves it alone on a line */
     const NBSP = String.fromCharCode(160), T_LO = "←" + NBSP + "More working residents than jobs", T_HI = "More jobs than working residents" + NBSP + "→";
-    const CAP = "Jobs per working resident, log scale · " + FULL(BAL.n) + " places with 1,000 or more working residents";
-    const edge = i => Math.pow(10, -1 + i * 2 / NB), fx = v => v >= 10 ? v.toFixed(0) : v.toFixed(2);
+    const CAP = FULL(BAL.n) + " US places with 1,000 or more working residents. LODES 2023.";
+    const edge = i => Math.pow(10, -1 + i * 2 / NB), fx = v => v >= 10 ? v.toFixed(0) : v.toFixed(2), fx1 = v => v.toFixed(1);
+    /* the takeaway over the chart: Boston's reading to one decimal, as the needle's, and the share of places above it */
+    const ABOVE = Math.round(BAL.rank / BAL.n * 100);
+    const HEAD = 'Boston has <span class="num">' + fx1(BAL.me) + '</span> jobs for every working resident. Only ' + ABOVE + '% of US places have more.';
+    const pslug = name => name.split(",")[0].trim().toLowerCase().replace(/\s+/g, "-");
+    const KEY = '<p class="who-ref-key"><span class="wrk-l">Peers</span>' + BAL.peers.slice().sort((a, b) => b[1] - a[1]).map(p =>
+      '<span><i style="--pc:var(--pc-' + pslug(p[0]) + ')" aria-hidden="true"></i>' + p[0] + ' ' + fx1(p[1]) + '</span>').join("") + '</p>';
     function histLayout(Wd, Hd){
       const plotW = Math.max(0, Wd - 32); if (!(plotW > 0) || !(Hd > 0)) return null;
       const x = v => 16 + (Math.log10(Math.min(HIV, Math.max(LOV, v))) + 1) / 2 * plotW, one = x(1);
@@ -16395,19 +16428,26 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         t.map((s, i) => '<tspan x="' + q(x0) + '" dy="' + (i ? 17 : 0) + '">' + s + '</tspan>').join("") + '</text>';
       let h = words("rh-arr--lo", L.lo, L.one - 8, "end") + words("rh-arr--hi", L.hi, L.one + 8, "start");
       TICKS.forEach(t => { h += '<line class="rh-grid" x1="' + q(x(t)) + '" x2="' + q(x(t)) + '" y1="34" y2="' + q(base) + '"/>'; });
+      /* how many places a bar stands for: a quiet line every 200, its count at the right end */
+      for (let c = 200; c < BAL.max; c += 200){ const y = L.y(c);
+        h += '<line class="rh-cnt" x1="16" x2="' + q(16 + L.plotW) + '" y1="' + q(y) + '" y2="' + q(y) + '"/>'; }
       BAL.counts.forEach((c, i) => { const a = x(edge(i)), b = x(edge(i + 1)), y = L.y(c);
         h += '<rect class="rh-bar rh-bar--' + (edge(i + 1) <= 1.0001 ? 'lo' : 'hi') + '" x="' + q(a + .5) + '" y="' + q(y) + '" width="' + q(Math.max(0, b - a - 1)) + '" height="' + q(base - y) + '"/>'; });
       /* Boston's name on the reference's side of its line, or the other side where it would run off the chart */
-      const S = x(BAL.avg), B = x(BAL.me), meW = tw("Boston " + fx(BAL.me), 22, 700), meEnd = B > right || B + 8.4 + meW > L.Wd;
+      const S = x(BAL.avg), B = x(BAL.me), meW = tw("Boston " + fx1(BAL.me), 15, 700), meEnd = B > right || B + 8.4 + meW > L.Wd;
       /* the peer average's name on the reference's side of its line, or the other side, clear of Boston's line and
          of the line at 1; where neither side is clear it goes up beside Boston's name, over the bars, left of its
          line, the dashed line reaching up to it; failing that, the side clear of Boston's line. Where the name must
          stand over the line at 1, that line starts under the name rather than run through it (a review, 2026-11-02) */
-      const paW = tw("Peer average ", 13, 400) + tw(fx(BAL.avg), 13, 700);
+      const paW = tw("Peer average ", 13, 400) + tw(fx1(BAL.avg), 13, 700);
       const span = end => end ? [S - 6 - paW, S - 6] : [S + 6, S + 6 + paW], hits = (sp, v) => v > sp[0] - 4 && v < sp[1] + 4;
       const fitsIn = sp => sp[0] >= 0 && sp[1] <= L.Wd, ok = (sp, strict) => fitsIn(sp) && !hits(sp, B) && (!strict || !hits(sp, L.one));
       let paEnd = S > right, paY = 68;
-      if (!ok(span(paEnd), true)){
+      /* first choice on the page (2026-11-04): up in Boston's row, left of its own line, where the two names read as
+         one row of marks and neither stands over the bars; else the reference's places */
+      { const up = span(true), meSp = meEnd ? [B - 8.4 - meW, B - 8.4] : [B + 8.4, B + 8.4 + meW];
+        if (S < B && fitsIn(up) && (up[1] + 8 < meSp[0] || up[0] > meSp[1] + 8)){ paEnd = true; paY = 28; } }
+      if (paY !== 28 && !ok(span(paEnd), true)){
         const up = span(true), meSp = meEnd ? [B - 8.4 - meW, B - 8.4] : [B + 8.4, B + 8.4 + meW];
         if (ok(span(!paEnd), true)) paEnd = !paEnd;
         else if (S < B && fitsIn(up) && (up[1] + 8 < meSp[0] || up[0] > meSp[1] + 8)){ paEnd = true; paY = 28; }
@@ -16415,13 +16455,17 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       const oneTop = hits(span(paEnd), L.one) ? paY + 6 : 34, paTop = paY === 28 ? 31 : 38;
       h += '<line class="rh-base" x1="16" x2="' + q(16 + L.plotW) + '" y1="' + q(base) + '" y2="' + q(base) + '"/>' +
         '<line class="rh-one" x1="' + q(L.one) + '" x2="' + q(L.one) + '" y1="' + oneTop + '" y2="' + q(base + 4) + '"/>';
-      TICKS.forEach(t => { h += '<text class="rh-tick" x="' + q(x(t)) + '" y="' + q(base + 17) + '" text-anchor="middle">' + (t === LOV ? '≤0.1' : t === HIV ? '≥10' : String(t)) + '</text>'; });
+      TICKS.forEach(t => { h += '<text class="rh-tick' + (t === 1 ? ' rh-tick--one' : '') + '" x="' + q(x(t)) + '" y="' + q(base + 17) + '" text-anchor="middle">' + (t === LOV ? '≤0.1' : t === HIV ? '≥10' : String(t)) + '</text>'; });
+      /* the counts' labels at the right end, over their lines, unless Boston's name stands there */
+      { const meSp = meEnd ? [B - 8.4 - meW, B - 8.4] : [B + 8.4, B + 8.4 + meW], cw = tw("400 places", 13, 400), x1 = 16 + L.plotW - 2;
+        if (x1 - cw > meSp[1] + 8 || x1 - cw > B + 8) for (let c = 200; c < BAL.max; c += 200){ const y = L.y(c);
+          if (y - 4 < 34) continue; h += '<text class="rh-cnt-t" x="' + q(x1) + '" y="' + q(y - 4) + '" text-anchor="end">' + c + ' places</text>'; } }
       h += '<text class="rh-cap" x="16" y="' + q(ay + 17 * (L.la - 1) + 23) + '">' + L.cap.map((s, i) => '<tspan x="16" dy="' + (i ? 17 : 0) + '">' + s + '</tspan>').join("") + '</text>';
-      BAL.peers.forEach(p => { const px = q(x(p[1])); h += '<line class="rh-peer" x1="' + px + '" x2="' + px + '" y1="' + q(base - 9) + '" y2="' + q(base + 3) + '"/>'; });
+      BAL.peers.forEach(p => { h += '<circle class="rh-pe" cx="' + q(x(p[1])) + '" cy="' + q(base) + '" r="4.5" style="fill:var(--pc-' + pslug(p[0]) + ')"/>'; });
       h += '<g class="rh-mk"><line class="rh-pa-halo" x1="' + q(S) + '" x2="' + q(S) + '" y1="' + paTop + '" y2="' + q(base) + '"/><line class="rh-pa" x1="' + q(S) + '" x2="' + q(S) + '" y1="' + paTop + '" y2="' + q(base) + '"/>' +
-        '<text class="rh-pa-t" x="' + q(paEnd ? S - 6 : S + 6) + '" y="' + paY + '" text-anchor="' + (paEnd ? "end" : "start") + '">Peer average <tspan class="rh-b">' + fx(BAL.avg) + '</tspan></text></g>';
+        '<text class="rh-pa-t" x="' + q(paEnd ? S - 6 : S + 6) + '" y="' + paY + '" text-anchor="' + (paEnd ? "end" : "start") + '">Peer average <tspan class="rh-b">' + fx1(BAL.avg) + '</tspan></text></g>';
       h += '<g class="rh-mk"><line class="rh-me-halo" x1="' + q(B) + '" x2="' + q(B) + '" y1="8" y2="' + q(base) + '"/><line class="rh-me" x1="' + q(B) + '" x2="' + q(B) + '" y1="8" y2="' + q(base) + '"/>' +
-        '<text class="rh-me-t" x="' + q(meEnd ? B - 8.4 : B + 8.4) + '" y="28" text-anchor="' + (meEnd ? "end" : "start") + '">Boston ' + fx(BAL.me) + '</text></g>';
+        '<text class="rh-me-t" x="' + q(meEnd ? B - 8.4 : B + 8.4) + '" y="28" text-anchor="' + (meEnd ? "end" : "start") + '">Boston ' + fx1(BAL.me) + '</text></g>';
       /* what a pointer finds: a bin's whole column, a peer's tick */
       BAL.counts.forEach((c, i) => { const a = x(edge(i)), b = x(edge(i + 1)); h += '<rect class="rh-hit" data-i="' + i + '" x="' + q(a) + '" y="34" width="' + q(b - a) + '" height="' + q(L.plotH) + '"/>'; });
       BAL.peers.forEach((p, j) => { h += '<rect class="rh-hit" data-p="' + j + '" x="' + q(x(p[1]) - 5) + '" y="' + q(base - 14) + '" width="10" height="20"/>'; });
@@ -16434,7 +16478,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       "; peers " + BAL.peers.map(p => p[0] + " " + fx(p[1])).join(", ") + ".";
     /* each histogram with its own card; the column's copy led by the Venn's source line, shown when the Venn is in a phone's band */
     const TIP = '<div class="who-ref-tip" hidden aria-hidden="true"></div>';
-    const DIST = '<div class="who-ref-dist"><p class="who-ref-head">Jobs per working resident, every place</p><div class="who-ref-hist"><svg role="img" aria-label="' + ARIA_H + '"></svg></div>' + TIP + '</div>';
+    const DIST = '<div class="who-ref-dist"><p class="who-ref-head">' + HEAD + '</p><div class="who-ref-hist"><svg role="img" aria-label="' + ARIA_H + '"></svg></div>' + TIP + KEY + '</div>';
     /* the room under the Venn the histogram needs: the rule and its gaps, the heading, a chart 190 tall */
     const DIST_MIN = 12 + 230, DOOR = 16;  /* the block's margin and its CSS least height (border box) */
     const presOn = () => { const w = document.getElementById("ovWrap"); return !!(w && w.classList.contains("is-presenting")); };
@@ -16484,21 +16528,24 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       if (!key || !H.L){ H.tip.hidden = true; return; }
       const L = H.L, s = scale(), [ox, oy] = offset(H.box, H.tip), n = +key.slice(1);
       if (key[0] === "b"){ const a = edge(n), b = edge(n + 1), bar = H.svg.querySelectorAll(".rh-bar")[n]; if (bar) bar.classList.add("is-on");
-        showTip(H.tip, tipHtml((n === 0 ? "Up to " + b.toFixed(2) : n === NB - 1 ? a.toFixed(2) + " or more" : a.toFixed(2) + " to " + b.toFixed(2)) + " jobs per working resident", [["Places", FULL(BAL.counts[n])]]));
+        showTip(H.tip, tipHtml(FULL(BAL.counts[n]) + (BAL.counts[n] === 1 ? " place" : " places"), [["Jobs per working resident", n === 0 ? "up to " + b.toFixed(2) : n === NB - 1 ? a.toFixed(2) + " or more" : a.toFixed(2) + " to " + b.toFixed(2)]]));
         H.tip.style.left = q(ox + Math.max(0, Math.min(L.x(b) * s + 8, H.box.clientWidth - H.tip.offsetWidth))) + "px"; H.tip.style.top = q(oy + 34 * s) + "px"; return; }
       const pr = BAL.peers[n]; showTip(H.tip, tipHtml(pr[0], [["Jobs per working resident", fx(pr[1])]]));
       H.tip.style.left = q(ox + Math.max(0, Math.min(L.x(pr[1]) * s + 8, H.box.clientWidth - H.tip.offsetWidth))) + "px";
       H.tip.style.top = q(oy + Math.max(0, L.base * s - H.tip.offsetHeight - 16)) + "px";
     }
-    const watch = el => { if (!window.ResizeObserver) return; if (!ro) ro = new ResizeObserver(() => { if (!on) return; if (raf) hists.forEach(drawHist); else draw(); }); ro.observe(el); };
+    const watch = el => { if (!window.ResizeObserver) return; if (!ro) ro = new ResizeObserver(() => { if (on && !raf){ ensure(); drawVenn(); } hists.forEach(drawHist); }); ro.observe(el); };
     /* a pointer's card stays until the pointer leaves the chart, as the reference's does; a tap toggles it */
     function addHist(scope){
       const box = scope.querySelector(".who-ref-hist"), H = { box, svg: box.querySelector("svg"), tip: scope.querySelector(".who-ref-dist > .who-ref-tip"), L: null, key: null };
       H.svg.addEventListener("pointermove", ev => { if (ev.pointerType !== "touch" && ev.target.closest && ev.target.closest(".rh-hit")) hHover(H, ev.target); });
       box.addEventListener("pointerleave", ev => { if (ev.pointerType !== "touch") hHover(H, null); });
       H.svg.addEventListener("pointerdown", ev => { if (ev.pointerType === "touch") hHover(H, ev.target, true); });
-      hists.push(H); watch(box);
+      hists.push(H); watch(box); scrollHides();
     }
+    let scrollHooked = false;
+    function scrollHides(){ if (scrollHooked) return; scrollHooked = true;
+      const pages = document.getElementById("pages"); if (pages) pages.addEventListener("scroll", () => { if (vk) vHover(null); hists.forEach(H => { if (H.key) hHover(H, null); }); }, { passive: true }); }
     /* built when first shown; the column's copy once the figure stands in its panel (the panel comes later) */
     function ensure(){
       if (!root){
@@ -16510,7 +16557,6 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         vbox.addEventListener("pointerleave", ev => { if (ev.pointerType !== "touch") vHover(null); });
         vsvg.addEventListener("pointerdown", ev => { if (ev.pointerType !== "touch") return; const k = key(ev); vHover(k && k !== vk ? k : null); });
         watch(vbox); addHist(root);
-        const pages = document.getElementById("pages"); if (pages) pages.addEventListener("scroll", () => { if (vk) vHover(null); hists.forEach(H => { if (H.key) hHover(H, null); }); }, { passive: true });
       }
       const panel = host.closest(".who-fl-panel");
       if (!col && panel){ col = document.createElement("div"); col.className = "who-ref-col";
@@ -16530,9 +16576,10 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     /* before the beat arrives, after it, and on a resize: the Venn bare or whole */
     function still(){ if (!on) return; ensure(); if (raf){ hists.forEach(drawHist); return; } p = reduce() || host.dataset.stage === "sorted" ? 1 : 0; draw(); }
     /* the labels are measured: again once the web fonts are in */
-    if (document.fonts){ const refit = () => { if (on && !raf) draw(); };
+    if (document.fonts){ const refit = () => { if (on && !raf) draw(); else hists.forEach(drawHist); };
       document.fonts.ready.then(refit); if (document.fonts.addEventListener) document.fonts.addEventListener("loadingdone", refit); }
-    window.whoFlowsRef = { show, play, still, stop };
+    /* the histogram on its own, for the Under study: its markup, and the drawing and cards once it is in the page */
+    window.whoFlowsRef = { show, play, still, stop, histHtml: () => DIST, addHist, drawHists: () => hists.forEach(drawHist) };
   })();
   /* ---- Who are you?: opt-2's first commuting beat as a rectangle Venn
      (2026-10-20, Nil). The "Groups" study in beat A's counter: opt-1 the
@@ -16715,7 +16762,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
        bars follow the figure at GAP[0], to GAP[1] where there is room, and what is left goes half over the figure
        (past its least, top0) and half under the bars. Without the bars in the panel (under 1200, a phone's band) the
        figure is centred alone */
-    const detail = () => { const panel = host.closest(".who-fl-panel"); return panel && panel.querySelector(":scope > .fl-detail"); };
+    const detail = () => { const panel = host.closest(".who-fl-panel"); return panel && panel.querySelector(":scope > .fl-detail:not([hidden])"); };
     function spread(B, H){
       if (B === Infinity){ svg.style.marginTop = ""; return; }
       const det = detail(), shown = !!det && getComputedStyle(det).display !== "none";
@@ -17118,6 +17165,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         groups:'<label class="mi-study"><span>Groups</span><select class="wt-groups-opt" aria-label="How the three groups are drawn"><option value="circles">opt-1</option><option value="venn">opt-2</option><option value="classic">opt-3</option><option value="ref">opt-4</option></select></label>',
         /* beat 2's blue dots: into Boston from their admins, or home from Boston as before (2026-11-02) */
         blue: '<label class="mi-study"><span>Blue dots</span><select class="wt-blue-opt" aria-label="Which way the commuters coming in fly"><option value="in">1 Into Boston</option><option value="home">2 Home, from Boston (before)</option></select></label>',
+        /* under the Venn (2026-11-04): opt-4's histogram, or the two bars as before */
+        under: '<label class="mi-study"><span>Under</span><select class="wt-under-opt" aria-label="What stands under the figure"><option value="bars">1 Two bars</option><option value="hist">2 Every place, a histogram</option></select></label>',
         compare: '<label class="mi-study"><span>Compare</span><select class="wt-compare-opt" aria-label="How the admin is set against its metro"><option value="bars">1 Bars and ranks</option><option value="cards">2 Cards</option><option value="lines">3 Lines</option></select></label>' };
       st.innerHTML = '<button type="button" class="mi-studies-btn" aria-expanded="false" aria-controls="whoFlowsPanel' + suffix + '">opt</button>' +
         '<div class="mi-studies-panel" id="whoFlowsPanel' + suffix + '" role="group" aria-label="Design studies" hidden>' + rows.map(k => ROW[k]).join("") + '</div>';
@@ -17129,12 +17178,14 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       if (bw){ bw.value = blueWay; bw.addEventListener("change", () => setBlue(bw.value)); }
       const ks = st.querySelector(".wt-dotkey-opt");
       if (ks){ if (window.whoFlowsAlt && window.whoFlowsAlt.key) ks.value = window.whoFlowsAlt.key(); ks.addEventListener("change", () => { if (window.whoFlowsAlt && window.whoFlowsAlt.setKey) window.whoFlowsAlt.setKey(ks.value); }); }
+      const us = st.querySelector(".wt-under-opt");
+      if (us){ if (window.whoUnderAlt) us.value = window.whoUnderAlt.mode(); us.addEventListener("change", () => { if (window.whoUnderAlt) window.whoUnderAlt.set(us.value); }); }
       const cs = st.querySelector(".wt-compare-opt");
       if (cs){ if (window.whoCompareAlt) cs.value = window.whoCompareAlt.mode(); cs.addEventListener("change", () => { if (window.whoCompareAlt) window.whoCompareAlt.set(cs.value); }); }
       btn.addEventListener("click", () => { const open = panel.hidden; panel.hidden = !open; btn.setAttribute("aria-expanded", String(open)); });
       document.addEventListener("click", ev => { if (!st.contains(ev.target) && !panel.hidden){ panel.hidden = true; btn.setAttribute("aria-expanded", "false"); } });
     }
-    const studies = () => { study(secA, ["groups", "dotkey"], ""); study(secB, ["blue"], "B"); study(secC, ["compare"], "C"); };
+    const studies = () => { study(secA, ["groups", "under", "dotkey"], ""); study(secB, ["blue"], "B"); study(secC, ["compare"], "C"); };
     studies(); setTimeout(studies, 0);
     /* the flow graphic, the day's totals in and out of Boston: in opt-2 it
        closes beat A once the dots have landed (showEnd); in opt-1 (Nil,
@@ -17226,12 +17277,34 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     const panel = document.createElement("div"); panel.className = "wide-vis who-fl-panel";
     panel.appendChild(fig.host);
     panel.insertAdjacentHTML("beforeend", detailHtml(false));
+    /* the Under study (2026-11-04): opt-4's histogram under the dots, in the panel and in the column as the bars stand */
+    const REFH = window.whoFlowsRef && window.whoFlowsRef.histHtml ? window.whoFlowsRef : null;
+    let under = REFH ? (location.search.match(/[?&]under=(bars|hist)\b/) || [, UNDER_DEFAULT])[1] : "bars";
+    const histHtml = col => '<div class="fl-detail fl-detail--hist' + (col ? ' fl-detail--col' : '') + '">' + REFH.histHtml() + '</div>';
+    if (REFH) panel.insertAdjacentHTML("beforeend", histHtml(false));
     const door = document.createElement("button"); door.type = "button"; door.className = "pv-open pv-open--frame"; door.setAttribute("data-present", "");
     door.title = "Present the figure full screen (P)"; door.innerHTML = ICON_PRES + "<span>Present</span>"; panel.appendChild(door);
     lede2.after(panel);
     /* on a phone the panel is the band and holds the dots alone: the details stand in the column */
     panel.insertAdjacentHTML("afterend", detailHtml(true));
+    if (REFH) panel.nextElementSibling.insertAdjacentHTML("afterend", histHtml(true));
     [panel.querySelector(".fl-detail"), panel.nextElementSibling].forEach(d => { if (d && d.classList.contains("fl-detail")) barTips(d); });
+    const underBlocks = () => ({ bars: [panel.querySelector(":scope > .fl-detail:not(.fl-detail--hist)"), panel.parentElement.querySelector(":scope > .fl-detail--col:not(.fl-detail--hist)")],
+      hist: [panel.querySelector(":scope > .fl-detail--hist"), panel.parentElement.querySelector(":scope > .fl-detail--hist.fl-detail--col")] });
+    function applyUnder(){ const b = underBlocks();
+      b.bars.forEach(el => { if (el) el.hidden = under === "hist"; }); b.hist.forEach(el => { if (el) el.hidden = under !== "hist"; });
+      if (under === "hist" && REFH) REFH.drawHists(); }
+    if (REFH){ const b = underBlocks(); b.hist.forEach(el => { if (el) REFH.addHist(el); }); }
+    applyUnder();
+    function setUnder(v){
+      if (!/^(bars|hist)$/.test(v) || v === under || !REFH) return;
+      under = v; document.querySelectorAll(".wt-under-opt").forEach(s => { s.value = under; });
+      const u = new URL(location.href); if (under === UNDER_DEFAULT) u.searchParams.delete("under"); else u.searchParams.set("under", under);
+      history.replaceState(null, "", u.pathname + u.search + u.hash);
+      applyUnder(); fig.still();
+    }
+    window.whoUnderAlt = { mode: () => under, set: setUnder };
+    document.querySelectorAll(".wt-under-opt").forEach(s => { s.value = under; });
     /* the panel is roomy on a desk (and in the presenter): the dots take a size up to fill it; the circles still compare by area */
     const fitK = () => { const stack = matchMedia("(max-width:899px)").matches && !wrap.classList.contains("is-presenting");
       const k = stack ? 1 : Math.max(1, Math.min(1.35, (panel.clientHeight - 400) / 240)), old = +fig.host.dataset.k || 1;
