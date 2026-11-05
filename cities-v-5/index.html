@@ -2316,7 +2316,8 @@
      count 18px bold, the words 13px semibold, on the set's bracket */
   .vn-set{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:5px;line-height:1.2;}
   .vn-set b{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums;}
-  .vn-set > span{font-size:13px;font-weight:600;}
+  /* the words a step larger, the counts as they were (2026-11-04, Nil: "for venn diagram label (not the number) make them slightly bigger") */
+  .vn-set > span{font-size:15px;font-weight:600;}
   .who-fl.vn-round .vn-set--work{justify-content:flex-end;}
   .who-fl.vn-brief .vn-nm-l,.who-fl:not(.vn-brief) .vn-nm-s{display:none;}
   .vn-sbrk{fill:none;stroke:var(--ink);stroke-width:1;}
@@ -2325,12 +2326,12 @@
   .who-fl[data-vn="named"] .vn-reg{opacity:1;transition-delay:.5s;}
   .vn-n{display:flex;flex-wrap:wrap;align-items:center;gap:2px 7px;line-height:1.2;width:max-content;max-width:100%;}
   .vn-n b{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums;}
-  .vn-n em{font-size:13px;font-weight:600;font-style:normal;}
+  .vn-n em{font-size:15px;font-weight:600;font-style:normal;}
   /* the parts' icons, small (2026-11-02, Nil: "try to add existing icons small"), and opt-4's 5px between count and name */
   .vn-reg .vn-n{column-gap:5px;}
   .vn-reg .vn-ico{width:24px;height:17px;margin-right:1px;} .vn-reg .vn-ico--both{width:14px;}
   /* "live elsewhere" under the commute-in count, lined up with it (past the icon) */
-  .vn-x{display:block;margin:1px 0 0 30px;font-size:13px;font-weight:600;line-height:1.2;}
+  .vn-x{display:block;margin:1px 0 0 30px;font-size:15px;font-weight:600;line-height:1.2;}
   .vn-reg--in .vn-x{color:var(--flow-in);}
   .who-fl.vn-side .vn-reg--in .vn-x{margin-left:0;}
   /* listed under the figure (a phone, a narrow panel), "live elsewhere" follows on the count's line, after a comma */
@@ -2504,6 +2505,8 @@
   .fl-s{display:none;} #whoFlowCtl.is-tight .fl-l{display:none;} #whoFlowCtl.is-tight .fl-s{display:inline;}
   .fl-sw--in{background:var(--flow-in);} .fl-sw--out{background:var(--flow-out);}
   .fl-sw--net{background:linear-gradient(90deg,var(--flow-in) 50%,var(--flow-out) 50%);}
+  /* the view's two words in their colours, the orange as the text tone */
+  .seg-btn .fl-gain{color:var(--flow-in);font-weight:600;} .seg-btn .fl-lose{color:var(--flow-out-text);font-weight:600;}
   /* the three names are long: on a narrow column they stack */
   @media (max-width:899px){
     .who-fl-ctl .seg{flex-direction:column;width:100%;}
@@ -5092,7 +5095,7 @@
   .wg-svg{display:block;width:100%;max-width:250px;height:auto;margin:0 auto;overflow:visible;}
   .wg-zone{stroke:var(--white);stroke-width:2;}
   /* the balanced zone runs from the one colour to the other: not grey, which looked like Boston's (2026-10-22, Nil) */
-  .wg-zone--res{fill:var(--flow-out);} .wg-zone--bal{fill:url(#wgBal);} .wg-zone--bus{fill:var(--flow-in);}
+  .wg-zone--res{fill:var(--dial-res);} .wg-zone--bal{fill:var(--dial-bal);} .wg-zone--bus{fill:var(--dial-bus);}
   .wg-stop--res{stop-color:var(--flow-out);} .wg-stop--bus{stop-color:var(--flow-in);}
   .wg-zlab{font-size:17px;font-weight:600;fill:var(--ink);}
   .wg-tick{stroke:var(--ink);stroke-width:1;}
@@ -5168,6 +5171,10 @@
      the gain-and-loss beat. The two charts share #miFigure: the one not on keeps its width (so it measures itself the
      same) but stands under the other, out of sight and out of the tab order. ---- */
   :root{--flow-in:#027694;--flow-out:#ce6627;--flow-both:#9aa6aa;--flow-out-text:#a8521f;--flow-both-text:#5b686d;}
+  /* the needle's ring (2026-11-04, Nil: "pale option is good but slightly too pale ... make sure the grey looks
+     different"): the two hues a step under the map's pale ends, a warm grey at balanced that is not Boston's cool
+     --flow-both; the ring is ground, so the solid tokens stay on the marks (the needle ink, the number and the bars) */
+  :root{--dial-res:#e7a472;--dial-bal:#cfc7ba;--dial-bus:#7bbcd0;}
   /* beat 5's fourth group, the metro's jobs with no tie to Boston (2026-11-03, Nil: a colour of its own, not the grey of
      "live and work"): a light violet, chosen over a mustard #d4b44a that read as a lighter shade of the orange beside
      it; light, so Boston's three stay forward, apart from the blue and the orange under every colour blindness
@@ -5187,13 +5194,14 @@
   #miFigure.is-admin .wf-table{flex:none;margin-top:4px;}
   #miFigure.is-admin .mi-caption > :not(.wf-key){visibility:hidden;}
   #miFigure .wf-key{display:none;}
-  #miFigure.is-admin .wf-key{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:center;margin:0;font-size:13px;line-height:1.35;color:var(--ink);}
+  /* a step larger and set off from the chart by a rule (2026-11-04, Nil: "make the legend bigger and more visible", beats 4 to 6) */
+  #miFigure.is-admin .wf-key{display:flex;flex-wrap:wrap;gap:6px 24px;align-items:center;margin:0;padding-top:10px;border-top:1px solid var(--border);font-size:15px;line-height:1.35;color:var(--ink);}
   /* each entry runs as text (2026-10-27): as an inline-flex box its nested city name was a flex item of its own,
      and "jobs in Boston, whoever" read with a gap either side of the name */
   .wf-key > span{display:inline-block;}
   .wf-key > span > :is(.vn-ico,.wf-k-sw){display:inline-block;vertical-align:middle;margin-right:7px;}
-  .wf-key .vn-ico{width:26px;height:18px;}
-  .wf-key .vn-ico--both{width:15px;}
+  .wf-key .vn-ico{width:30px;height:21px;}
+  .wf-key .vn-ico--both{width:17px;}
   .wf-key b{font-weight:600;color:var(--ink);}
   .wf-foot{display:flex;flex-direction:column;gap:8px;margin-top:4px;}
   .wf-foot .mi-table-wrap{margin:0;}
@@ -5309,7 +5317,7 @@
   .wf-key > span.is-off > span:last-child{color:var(--ink-soft);text-decoration:line-through;text-decoration-thickness:1px;}
   .wf-key > span.is-off > span:last-child b{color:inherit;}
   /* opt-3's legend, under the flow and its ranking, a step larger (2026-10-28, Nil: "sankey: make the legend font size 14px") */
-  #miFigure.is-admin .wf-key.wf-key--sk{font-size:14px;}
+  #miFigure.is-admin .wf-key.wf-key--sk{font-size:15px;}
   /* beats 4 and 5's flow names its groups on their nodes (2026-10-28, Nil: "You don't need the legends since we're doing
      direct labeling. Revise the use of vertical space"): the key's strip folds away, as beat 3's does, and the drawing
      takes its room (skRoom). "strip": the ranking keeps the strip at this width, so the margin over it goes too; "key":
@@ -5438,6 +5446,10 @@
      .vn-n); the rest of the metro, which the Venn has not, in the soft ink */
   #wfSankeySvg .sk-n18{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums;}
   #wfSankeySvg .sk-w13{font-weight:600;}
+  /* the groups' words a step larger (2026-11-04, Nil: "make the legend bigger and more visible"): on beats 4 and 5 the
+     flow's right-hand labels are its legend, the key under the chart being folded away */
+  #wfSankeySvg :is(text.sk-g--non,text.sk-g--res,text.sk-g--out,text.sk-g--rest) :is(.sk-w13,&.sk-w13){font-size:15px;}
+  #wfSankeySvg :is(text.sk-g--non,text.sk-g--res,text.sk-g--out,text.sk-g--rest).sk-w13{font-size:15px;}
   #wfSankeySvg text.sk-g--non{fill:var(--flow-in);} #wfSankeySvg text.sk-g--res{fill:var(--flow-both-text);}
   #wfSankeySvg text.sk-g--out{fill:var(--flow-out-text);} #wfSankeySvg text.sk-g--rest{fill:var(--flow-rest-text);}
   #wfSankeySvg .sk-soft{fill:var(--ink-soft);}
@@ -5544,7 +5556,7 @@
   #wfTreeSvg .wf-rk-row:focus-visible .wf-rk-hot{fill:var(--teal-tint);stroke:var(--teal);stroke-width:1.5;}
   /* the key's swatches, the treemap's two parts */
   /* the swatches and the words as beats 1 to 3's sector key has them (2026-10-27, Nil: "make the legend color same as 1,2,3 beats") */
-  .wf-key .wf-k-sw{width:13px;height:13px;border-radius:3px;box-sizing:border-box;border:2px solid var(--sw);background:var(--sw);}
+  .wf-key .wf-k-sw{width:15px;height:15px;border-radius:3px;box-sizing:border-box;border:2px solid var(--sw);background:var(--sw);}
   .wf-key .wf-k-sw--res{--sw:var(--flow-both);} .wf-key .wf-k-sw--non{--sw:var(--flow-in);} .wf-key .wf-k-sw--out{--sw:var(--flow-out);}
   .wf-key .wf-k-sw--rest{--sw:var(--flow-rest);}
   /* beat 7's key (2026-10-29): the metro's part of a bar, and the dashed line of Boston's share overall */
@@ -5574,7 +5586,7 @@
   .mi-gauge .wg-svg{margin-top:4px;}
   /* the two flow bars end square, as the chart's bars do (2026-10-27); section 1's needle keeps its own */
   #miGauge .wg-tr i{border-radius:0;}
-  .mi-gauge .wg-zone--bal{fill:url(#wfBal);}
+  .mi-gauge .wg-zone--bal{fill:var(--dial-bal);}
   /* the drawing's words at 13px or more (2026-11-03, Nil: "make sure min font size is 13px"): 17 units land at 13px in
      250px, and a narrower panel (220px at 1024) draws them larger by its scale, --gk, px a unit, set as it sizes */
   .mi-gauge .wg-zlab,.mi-gauge .wg-tlab{font-size:max(17px, calc(13.1px / var(--gk, 1)));}
@@ -5602,7 +5614,9 @@
   #miFigure .wf-hint-tap{display:none;}
   /* a phone has no hover, and its plot no room for the longer words */
   @media (max-width:599px), (hover:none){ #miFigure .wf-hint-ptr{display:none;} #miFigure .wf-hint-tap{display:inline;} #miFigure .wf-hint{right:8px;} }
-  #miFigure .wf-hint.is-on-mark{right:auto;bottom:auto;}
+  /* on a mark it stands as a chip (2026-11-04): a translucent white ground with an edge and a shadow, 14px semibold */
+  #miFigure .wf-hint.is-on-mark{right:auto;bottom:auto;padding:4px 9px 4px 6px;background:color-mix(in srgb, var(--white) 88%, transparent);border:1px solid var(--border-strong);box-shadow:0 1px 4px color-mix(in srgb, var(--ink) 14%, transparent);font-size:14px;font-weight:600;color:var(--ink);}
+  #miFigure .wf-hint.is-on-mark .xp-ico{width:24px;height:24px;}
   #miFigure .wf-hint.is-bare span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;}
   #miFigure:not([data-step="10"]) .wf-hint,#miFigure .wf-hint.is-busy,#miFigure .wf-hint:not(.is-set){opacity:0;visibility:hidden;transition:opacity .3s ease,visibility 0s linear .3s;}
   @media (prefers-reduced-motion: reduce){ #miFigure .wf-hint{transition:none;} }
@@ -8904,7 +8918,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
               <div class="seg" role="group" aria-label="Which commuters the map shows">
                 <button type="button" class="seg-btn is-active" data-flow="in" aria-pressed="true"><i class="fl-sw fl-sw--in" aria-hidden="true"></i><span class="fl-l">Live elsewhere, work in Boston</span><span class="fl-s">Commute in</span></button>
                 <button type="button" class="seg-btn" data-flow="out" aria-pressed="false"><i class="fl-sw fl-sw--out" aria-hidden="true"></i><span class="fl-l">Live in Boston, work elsewhere</span><span class="fl-s">Commute out</span></button>
-                <button type="button" class="seg-btn" data-flow="net" aria-pressed="false"><i class="fl-sw fl-sw--net" aria-hidden="true"></i><span class="fl-l">Where Boston gains or loses workers</span><span class="fl-s">Gains or loses</span></button>
+                <button type="button" class="seg-btn" data-flow="net" aria-pressed="false"><i class="fl-sw fl-sw--net" aria-hidden="true"></i><span class="fl-l">Where Boston <span class="fl-gain">gains</span> or <span class="fl-lose">loses</span> workers</span><span class="fl-s"><span class="fl-gain">Gains</span> or <span class="fl-lose">loses</span></span></button>
               </div>
             </div>
           </section>
@@ -10328,7 +10342,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
          neither, where before 0 to 500 read as a gain and the gains had twice the losses' steps */
       /* the middle a warm grey (a review, 2026-11-02): the cool #d6dcdd sat 1.6 from the paper's parks, so an even
          admin read as woodland; this one stands 6 or more from every paper tone and 11 from Boston's own grey */
-      net: { breaks: [-5000, -1000, -100, 100, 1000, 5000], cols: ["#9b411a", "#d56927", "#f0c39a", "#c9c7c0", "#9fd3df", "#3792b5", "#123d7a"], title: "Boston\u2019s net workers from each admin" }
+      net: { breaks: [-5000, -1000, -100, 100, 1000, 5000], cols: ["#9b411a", "#d56927", "#f0c39a", "#c9c7c0", "#9fd3df", "#3792b5", "#123d7a"], title: "Where Boston gains or loses workers" }
     };
     const col = (k, v) => { const b = S[k].breaks; let i = 0; while (i < b.length && v >= b[i]) i++; return S[k].cols[i]; };
     const lab = (k, v) => k !== "net" ? Math.round(v * 100) + "%" : v === 0 ? "0" : Math.abs(v) >= 1000 ? Math.abs(v) / 1000 + "K" : String(Math.abs(v));
@@ -10336,9 +10350,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       return '<span class="wk-t">' + q.title + '</span>' +
         '<span class="wk-steps">' + q.cols.map(c => '<i style="background:' + c + '"></i>').join("") + '</span>' +
         '<span class="wk-labs">' + q.breaks.map((b, i) => '<span style="left:' + ((i + 1) / n * 100).toFixed(2) + '%">' + lab(k, b) + '</span>').join("") + '</span>' +
-        /* the ends say what each admin does (2026-11-02): blue is an admin that sends Boston more workers than it takes,
-           not a business admin, as the needle's blue beside it might suggest */
-        (k === "net" ? '<span class="wk-ends"><span class="out">Takes from Boston</span><span class="in">Sends to Boston</span></span>' : ''); };
+        /* the ends in the view's own words (2026-11-04, Nil: "make sure that the legend has the same language"; they said
+           "Takes from Boston" and "Sends to Boston"): orange where Boston loses workers to the admin, blue where it gains */
+        (k === "net" ? '<span class="wk-ends"><span class="out">Boston loses</span><span class="in">Boston gains</span></span>' : ''); };
     return { col, key, op: .85 };
   })();
   if (!FLOWS_HOME){ const s = document.getElementById("page-overview-flows-out"); if (s) s.remove();
@@ -17262,7 +17276,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     const views = { cur: "net" };
     const ctlN = document.createElement("div"); ctlN.className = "who-fl-ctl who-net-ctl"; ctlN.id = "whoNetCtl";
     ctlN.innerHTML = '<span class="ctl-label">Map shows</span><div class="seg" role="group" aria-label="What the map shows">' +
-      '<button type="button" class="seg-btn is-active" data-v="net" aria-pressed="true"><i class="fl-sw fl-sw--net" aria-hidden="true"></i>Where Boston gains or loses workers</button>' +
+      /* the two words in the map's colours (2026-11-04, Nil: "color code gain and lose on that"); the legend says the same */
+      '<button type="button" class="seg-btn is-active" data-v="net" aria-pressed="true"><i class="fl-sw fl-sw--net" aria-hidden="true"></i><span>Where Boston <span class="fl-gain">gains</span> or <span class="fl-lose">loses</span> workers</span></button>' +
       '<button type="button" class="seg-btn" data-v="in" aria-pressed="false"><i class="fl-sw fl-sw--in" aria-hidden="true"></i>Commute into Boston</button>' +
       '<button type="button" class="seg-btn" data-v="out" aria-pressed="false"><i class="fl-sw fl-sw--out" aria-hidden="true"></i>Commute out of Boston</button></div>';
     const lede2b = secB.querySelector(":scope > .lede"); lede2b.after(ctlN);
@@ -20168,7 +20183,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     /* the split stands only if it adds up to the counts; if not, the blocks are drawn plain and the key says nothing of it */
     const splitOk = sum(r => r.jobs) === A.jobs && Math.abs(sum(r => r.estRes) - A.liveWork) < 1 && Math.abs(sum(r => r.estNon) - A.in) < 1 && Math.abs(sum(r => r.estOut) - A.out) < 1;
     if (!splitOk) console.warn("WF tree: the split does not match the LODES OD totals, " + D.year);
-    return { D, A, M, SH_J: A.jobs / M.jobs, SH_R: A.residents / M.residents, R_ALL: A.jobs / A.residents, rows, byCode, OD, splitOk };
+    /* the needle's ratio is section 1's (2026-11-04, Nil: one number for Boston on both needles): commuters in for every
+       one out, 528K over 157K, 3.4; per sector the estimated split's in over its out */
+    return { D, A, M, SH_J: A.jobs / M.jobs, SH_R: A.residents / M.residents, R_ALL: A.in / A.out, rows, byCode, OD, splitOk };
   }
   const YD = {}; Object.keys(WF_YEARS).forEach(y => { YD[y] = yearData(WF_YEARS[y]); });
   /* the year shown and its figures: everything below reads these, never a year's data directly. ?wfyear=2013 opens on 2013 */
@@ -21219,7 +21236,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
      label at Who works here, who lives here - do the same in sankey for the first and last parts"): the icon, the count
      and the words on one line, the count 18px and the words 13px semibold in the group's colour, what is left of the
      words on a line under the count, as the Venn's "live elsewhere"; SK_SAY, the same words read out in one */
-  const SK_GROUP = { non: ["commute in", "live elsewhere"], res: ["live and work in Boston"], out: ["commute out", "work elsewhere"], rest: ["neither live nor work", "in Boston"] };
+  /* the residents' words on two lines (2026-11-04): at 15px the one line ran past the drawing's edge */
+  const SK_GROUP = { non: ["commute in", "live elsewhere"], res: ["live and work", "in Boston"], out: ["commute out", "work elsewhere"], rest: ["neither live nor work", "in Boston"] };
   /* the read-outs say where in and out are from, which the icons tell the eye (2026-11-03 review) */
   const SK_SAY = { non: "commute into Boston and live elsewhere", res: "live and work in Boston", out: "live in Boston and commute out to work elsewhere", rest: "neither live nor work in Boston" };
   /* the Venn's icons: 24 by 17, the both icon 14 wide, the count 6px after it */
@@ -22351,7 +22369,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       const grad = gEl("linearGradient", { id: "wfBal", gradientUnits: "userSpaceOnUse", x1: x0.toFixed(1), y1: 0, x2: x1.toFixed(1), y2: 0 });
       grad.appendChild(gEl("stop", { offset: "0", class: "wg-stop--res" })); grad.appendChild(gEl("stop", { offset: "1", class: "wg-stop--bus" }));
       defs.appendChild(grad); gsvg.appendChild(defs); }
-    ZONES.forEach(z => gsvg.appendChild(gEl("path", { d: gArc(z.v0, z.v1, GG.rIn, GG.r), class: "wg-zone wg-zone--" + z.k, style: z.k === "bal" ? "fill:url(#wfBal)" : "" })));
+    ZONES.forEach(z => gsvg.appendChild(gEl("path", { d: gArc(z.v0, z.v1, GG.rIn, GG.r), class: "wg-zone wg-zone--" + z.k })));
     ZONES.forEach(z => { const mid = Math.exp((Math.log(z.v0) + Math.log(z.v1)) / 2), a = gAng(mid), q = gPt(a, GG.r + 13), deg = -(a * 180 / Math.PI - 90);
       gsvg.appendChild(gEl("text", { x: q[0], y: q[1], class: "wg-zlab", "text-anchor": "middle", transform: "rotate(" + deg.toFixed(1) + " " + q[0] + " " + q[1] + ")" }, z.label)); });
     [.5, 1, 2].forEach(v => { const a = gAng(v), q0 = gPt(a, GG.rIn - 2), q1 = gPt(a, GG.rIn - 8), qt = gPt(a, GG.rIn - 24);
@@ -22381,20 +22399,15 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   const hint = document.createElement("p"); hint.className = "wf-hint";
   hint.innerHTML = HAND + '<span class="wf-hint-ptr">Hover or tap a sector</span><span class="wf-hint-tap">Tap a sector</span>';
   if (wrap){ wrap.appendChild(hint);
-    let hintBack = 0, ptrIn = false;
     const onMark = ev => !!(ev.target && ev.target.closest && ev.target.closest("g.ad-row, .sk-hit, .sk-lk"));
-    /* the hand comes back only when neither hand is still on the chart: the mouse inside it, or the keyboard's focus on
-       a mark (a mouse's press focuses a row too, without the ring) */
-    const keyOn = () => { const a = document.activeElement; return !!(a && wrap.contains(a) && onMark({ target: a }) && a.matches(":focus-visible")); };
-    const hintBusy = ev => { if (ev.pointerType && ev.pointerType !== "touch") ptrIn = true; if (state !== 2 || !onMark(ev)) return; clearTimeout(hintBack); hint.classList.add("is-busy"); };
-    const hintFree = () => { clearTimeout(hintBack); hintBack = setTimeout(() => { if (!tipHeld && !ptrIn && !keyOn()) hint.classList.remove("is-busy"); }, 400); };
+    /* once a sector has been hovered, tapped or focused the hand stays away until the next arrival at the beat (2026-11-04,
+       Nil: "show it every time and lose it once user hovers"); it came back when the pointer left the chart */
+    const hintBusy = ev => { if (state !== 2 || !onMark(ev)) return; hint.classList.add("is-busy"); };
     /* pointermove, not pointerover: Chrome sends pointerover when the bars land under a pointer that never moved (a
        reader scrolling on with the mouse over the chart), and the hand went before anyone saw it */
     ["pointermove", "pointerdown", "focusin"].forEach(t => wrap.addEventListener(t, hintBusy));
-    wrap.addEventListener("pointerleave", ev => { if (ev.pointerType !== "touch"){ ptrIn = false; hintFree(); } });
     /* a finger that pans the flow or scrolls the page took no sector: the browser cancels its touch, and the hand stays */
-    wrap.addEventListener("pointercancel", ev => { if (ev.pointerType === "touch" && !tipHeld){ clearTimeout(hintBack); hint.classList.remove("is-busy"); } });
-    wrap.addEventListener("focusout", ev => { if (!wrap.contains(ev.relatedTarget)) hintFree(); }); }
+    wrap.addEventListener("pointercancel", ev => { if (ev.pointerType === "touch" && !tipHeld) hint.classList.remove("is-busy"); }); }
   /* the hand on the marks (2026-11-03, Nil: "put the animated hand on the chart"): under the ranking its tip at the
      first row with room, after that row's count and the next one's, for the hand and its words; under the flow on the
      top sector's band where it runs in. Placed once the drawing stands (a move running waits for it), and again at a new
@@ -22422,10 +22435,15 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         if (c[0] < 4 || c[0] + cw > box.width - 8 || busy.some(r => r[2] > c[0] - 8 && r[0] < c[0] + cw + 8 && r[3] > c[1] && r[1] < c[1] + hh)) return false;
         at = c; hint.classList.toggle("is-bare", cw !== hw); return true; }));
     } else if (!isSk()){
-      const rs = [].slice.call(wrap.querySelectorAll("#miAdminSvg g.ad-row")).map(g => { let x1 = -1; const h = g.querySelector(".ad-hot");
-        g.querySelectorAll(".ad-bar, .ad-val").forEach(e => { const r = e.getBoundingClientRect(); if (r.width && r.height && getComputedStyle(e).opacity !== "0") x1 = Math.max(x1, r.right - box.left); });
-        const hr = h ? h.getBoundingClientRect() : null; return hr ? { x1, y: (hr.top + hr.bottom) / 2 - box.top, r: Math.min(hr.right - box.left, box.width) } : null; })
+      /* on the longest bar itself (2026-11-04, Nil: "hover a sector should be on a bar ... make it visible ... and
+         prominent"): the chip, on its translucent ground, centred on the first row's bar 14px in from its start; where
+         the bar is too short for the chip, after the row's value as before */
+      const rs = [].slice.call(wrap.querySelectorAll("#miAdminSvg g.ad-row")).map(g => { let x0 = Infinity, x1 = -1; const h = g.querySelector(".ad-hot");
+        g.querySelectorAll(".ad-bar, .ad-val").forEach(e => { const r = e.getBoundingClientRect(); if (r.width && r.height && getComputedStyle(e).opacity !== "0"){ x1 = Math.max(x1, r.right - box.left); if (e.classList.contains("ad-bar")) x0 = Math.min(x0, r.left - box.left); } });
+        const hr = h ? h.getBoundingClientRect() : null; return hr ? { x0, x1, y: (hr.top + hr.bottom) / 2 - box.top, r: Math.min(hr.right - box.left, box.width) } : null; })
         .filter(o => o && o.x1 >= 0).sort((a, b) => a.y - b.y);
+      const t = rs[0];
+      if (t && isFinite(t.x0) && t.x0 + 14 + hw + 8 <= t.x1) at = [t.x0 + 14, t.y - hh / 2];
       for (let i = 0; i + 1 < rs.length && !at; i++){ const x = Math.max(rs[i].x1, rs[i + 1].x1) + 14; if (x + hw <= rs[i].r - 8) at = [x, rs[i].y - ft]; }
     }
     /* a flow panned off its top band shows no hand (the corner sits on its words on a phone) */
@@ -22433,7 +22451,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     hint.style.left = at ? at[0].toFixed(1) + "px" : ""; hint.style.top = at ? at[1].toFixed(1) + "px" : "";
     hint.classList.toggle("is-on-mark", !!at); hint.classList.add("is-set");
   }
-  if (wrap && window.ResizeObserver) new ResizeObserver(() => { const w = wrap.clientWidth; if (w === hintW) return; hintW = w; if (state === 2) hintSoon(250); }).observe(wrap);
+  if (wrap && window.ResizeObserver) new ResizeObserver(() => { const w = wrap.clientWidth; if (w === hintW) return; hintW = w; if (state === 2) hintSoon(250, true); }).observe(wrap);
   { const p = document.getElementById("wfSkPan"); if (p) p.addEventListener("scroll", () => { if (state === 2 && isSk()) hintSoon(200, true); }, { passive: true }); }
   /* the pin the gain-and-loss beat opens on: none, so the needle reads Boston across every sector until a sector is
      hovered or tapped (2026-11-03, Nil: "make the chart default to Boston"; it opened on the ranking's first row) */
@@ -22442,13 +22460,14 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   const gRow = (k, n, share, words) => (window.FLOW_ICO ? window.FLOW_ICO[k] : "") + '<b class="wg-n">' + fmt(n) + '</b><span class="wg-w">' + words + '</span><span class="wg-tr wg-tr--' + k + '"><i style="width:' + (share * 100).toFixed(1) + '%"></i></span>';
   /* the needle's words for a sector, or for Boston across every sector */
   function needleWords(d){
-    const own = !d, i = own ? A.jobs : d.jobs, o = own ? A.residents : d.residents, ratio = i / o, z = zoneOf(ratio);
+    const own = !d, i = own ? A.jobs : d.jobs, o = own ? A.residents : d.residents, ci = own ? A.in : d.estNon, co = own ? A.out : d.estOut;
+    /* commuters in for every one out, as section 1's needle reads (2026-11-04, Nil: "do that", one number for Boston on
+       both needles, 3.4); a sector's is the estimated split's, and says so. (It read jobs over residents, 2.1, before) */
+    const ratio = co > 0 ? ci / co : GG.max, z = zoneOf(ratio);
     const nm = own ? "" : d.short.charAt(0).toLowerCase() + d.short.slice(1);
     const kind = z === "bus" ? "a business admin" : z === "res" ? "a residential admin" : "balanced";
     const num = rx(ratio).replace("×", "");
-    /* "in the sector", not "in it": two rows under the sector's name, "it" read as Boston (2026-11-03 review); a flow's
-       fold is several sectors */
-    const per = own ? num + " jobs in Boston for every working resident" : (z === "bal" ? "about one job" : num + " jobs") + " in Boston for every resident who works in " + (d.code ? "the sector" : "these sectors");
+    const per = (z === "bal" ? "about one commutes in" : num + " commute in") + " for every one who commutes out" + (own ? "" : ", by estimate");
     const gain = i === o ? "Boston neither gains nor loses" : "Boston " + (i > o ? "gains " : "loses ") + fmt(Math.abs(i - o));
     return { own, ratio, z, nm, per, gain, who: own ? "Boston is " + kind : "For " + nm + ", Boston is " + kind, net: '<b>' + gain + '</b>, with ' + per };
   }
