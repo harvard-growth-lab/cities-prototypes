@@ -151,9 +151,12 @@
   }
 
   /* ---------- Which text, and its key ----------
-     A key is the id of the page or block plus the element's place among the
-     editable elements in it ("page-overview:2"). Template readings are keyed
-     by their measure ("page-overview-scatter:says:wage"). */
+     A key is the element's data-text-id in index.html ("overview-lede"), so
+     an edit follows its text wherever the design moves it; designers keep
+     the attribute when they move or restyle the element. Text without one
+     falls back to its place: the id of its page or block and its order there
+     ("page-overview:2"), or for a chart reading its measure
+     ("page-overview-scatter:says:wage"). */
   function rootOf(el) { var r = el.closest(ROOTS); while (r && !r.id) r = r.parentElement && r.parentElement.closest(ROOTS); return r; }
   function targets() {
     var out = [];
@@ -168,30 +171,45 @@
     var count = {}, list = [];
     targets().forEach(function (el) {
       var r = rootOf(el), n = count[r.id] = (count[r.id] || 0) + 1;
-      list.push({ el: el, key: r.id + ":" + n, where: r.id });
+      list.push({ el: el, key: el.getAttribute("data-text-id") || r.id + ":" + n, where: r.id });
     });
     document.querySelectorAll("template.who-sc-says").forEach(function (t) {
       var r = rootOf(t); if (!r) return;
       t.content.querySelectorAll("[data-m]").forEach(function (p) {
-        list.push({ el: p, key: r.id + ":says:" + p.dataset.m, where: r.id + " (reading: " + p.dataset.m + ")", tpl: true });
+        list.push({ el: p, key: p.getAttribute("data-text-id") || r.id + ":says:" + p.dataset.m, where: r.id + " (reading: " + p.dataset.m + ")", tpl: true });
       });
     });
     return list;
   }
 
   /* ---------- Apply saved edits ----------
-     An edit is applied only if the source still reads as it did when the
-     edit was made; otherwise it is kept but marked stale. */
+     An edit goes on its text only while that text still reads as it did when
+     the edit was made. An edit that has lost its place (its key is gone, or
+     the text under it changed) goes to wherever the text it was made on is
+     now. One that cannot be placed is kept, marked stale, and listed under
+     "not placed" for someone to place by hand or discard. */
   var items = keyed(), byKey = {};
-  items.forEach(function (it) {
-    byKey[it.key] = it;
-    orig[it.key] = clean(it.el.innerHTML);
-    var e = edits[it.key];
-    if (!e) return;
-    if (norm(it.el.innerHTML) === norm(e.before)) it.el.innerHTML = e.after;
-    else if (norm(it.el.innerHTML) !== norm(e.after)) stale[it.key] = true;
+  items.forEach(function (it) { byKey[it.key] = it; orig[it.key] = clean(it.el.innerHTML); });
+  function home(key, e) {
+    if (byKey[key] && norm(orig[key]) === norm(e.before)) return key;
+    var hit = null;
+    items.forEach(function (it) {
+      if (!hit && it.key !== key && norm(orig[it.key]) === norm(e.before) && (!edits[it.key] || edits[it.key] === e)) hit = it.key;
+    });
+    return hit;
+  }
+  /* the source already reads as the edit: it has been carried into index.html */
+  function inSource(key, e) { return byKey[key] && norm(orig[key]) === norm(e.after); }
+  var moved = false;
+  Object.keys(edits).forEach(function (k) {
+    var e = edits[k];
+    if (inSource(k, e)) return;
+    var to = home(k, e);
+    if (!to) { stale[k] = true; return; }
+    if (to !== k) { delete edits[k]; edits[to] = { before: orig[to], after: e.after }; moved = true; }
+    byKey[to].el.innerHTML = e.after;
   });
-  Object.keys(edits).forEach(function (k) { if (!byKey[k]) stale[k] = true; });
+  if (moved) store();
 
   /* ---------- Styles ---------- */
   var DYN = "#7b4fc4";
@@ -236,7 +254,14 @@
     "#teAsk p{margin:0;}#teAsk form{display:grid;gap:12px;}#teAsk .te-f{display:grid;gap:3px;}#teAsk .te-f>span, #teAsk .te-m{color:rgba(255,255,255,.72);font-size:12px;}" +
     "#teAsk input{font:inherit;color:#1a2226;background:#fff;border:0;border-radius:5px;padding:6px 8px;width:100%;box-sizing:border-box;}" +
     "#teAsk button.te-link{background:none;color:#fff;padding:0;text-decoration:underline;font-weight:600;}#teAsk button:disabled{opacity:.6;cursor:default;}" +
-    "#teSel[hidden], #teDyn[hidden], #teAsk[hidden], #teHist[hidden]{display:none;}" +
+    "#teSel[hidden], #teDyn[hidden], #teAsk[hidden], #teHist[hidden], #teLost[hidden]{display:none;}" +
+    "body.te-placing [data-te], body.te-placing .te-say{outline:2px dashed #e7a33e!important;cursor:copy;}" +
+    "#teBar button.te-warn{background:#e7a33e;color:#1a2226;}" +
+    "#teLost{position:fixed;left:16px;bottom:72px;z-index:10000;width:460px;max-width:calc(100vw - 32px);max-height:60vh;overflow:auto;padding:10px;display:grid;gap:8px;font:13px/1.35 'Source Sans 3','Source Sans Pro',sans-serif;color:#fff;background:#1a2226;border-radius:8px;box-shadow:0 8px 28px rgba(0,0,0,.25);}" +
+    "#teLost h3, #teLost p{margin:0;}#teLost h3{font-size:14px;}#teLost .te-m{color:rgba(255,255,255,.7);font-size:12px;}" +
+    "#teLost ol{list-style:none;margin:0;padding:0;display:grid;gap:8px;}#teLost li{display:grid;gap:4px;padding-top:8px;border-top:1px solid rgba(255,255,255,.15);}" +
+    "#teLost .te-acts{display:flex;gap:6px;}#teLost button{font:inherit;font-weight:600;color:#1a2226;background:#fff;border:0;border-radius:5px;padding:4px 8px;cursor:pointer;}" +
+    "#teLost button.te-q{background:transparent;color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.4);}" +
     "body.te-on .te-locked{outline:2px solid #e7a33e!important;position:relative;cursor:not-allowed;}" +
     "body.te-on .te-locked::before{content:attr(data-te-who);position:absolute;left:0;top:-1.7em;z-index:5;white-space:nowrap;padding:1px 6px;border-radius:4px;background:#e7a33e;color:#1a2226;font:600 11px/1.4 'Source Sans 3',sans-serif;}" +
     "#teBar .te-ppl{display:inline-flex;gap:3px;}#teBar .te-ppl i{font-style:normal;font-weight:700;font-size:11px;width:22px;height:22px;border-radius:50%;display:inline-grid;place-items:center;background:#e7a33e;color:#1a2226;}" +
@@ -348,11 +373,23 @@
     if (busy(key)) return;
     if (entry && typeof entry.after === "string") edits[key] = { before: String(entry.before || ""), after: inert(entry.after), name: entry.name, at: entry.at };
     else delete edits[key];
-    if (!byKey[key]) { if (edits[key]) stale[key] = true; else delete stale[key]; bar(); return; }
-    if (edits[key] && norm(edits[key].before) !== norm(orig[key])) { stale[key] = true; bar(); return; }
     delete stale[key];
-    applyDom(key, edits[key] ? edits[key].after : orig[key]);
+    if (!edits[key]) { if (byKey[key]) applyDom(key, orig[key]); bar(); renderLost(); return; }
+    if (inSource(key, edits[key])) { bar(); return; }
+    var to = home(key, edits[key]);
+    if (!to) { stale[key] = true; bar(); renderLost(); return; }
+    if (to !== key) { rehome(key, to); return; }
+    applyDom(key, edits[key].after);
     bar();
+  }
+  /* an edit found its text under another key: it moves there, for everyone */
+  function rehome(from, to) {
+    var e = edits[from];
+    delete edits[from]; delete stale[from];
+    edits[to] = { before: orig[to], after: e.after };
+    applyDom(to, e.after);
+    if (sync && canWrite) { sync.put(to, edits[to]); sync.put(from, null); }
+    store(); bar(); renderLost();
   }
   /* text someone else is in is closed to everyone else until they leave it */
   function paintLocks() {
@@ -812,8 +849,8 @@
   function initials(n) { return String(n || "?").split("@")[0].split(/[\s._-]+/).filter(Boolean).slice(0, 2).map(function (w) { return w[0].toUpperCase(); }).join(""); }
   function bar() {
     var keys = Object.keys(edits), nStale = keys.filter(function (k) { return stale[k]; }).length, nDyn = dynCount();
-    var counts = "<span class=\"te-n\">" + keys.length + " changed" + (nStale ? ", " + nStale + " no longer match the source" : "") +
-      " &middot; " + (nDyn ? nDyn + " dynamic" : "select words to make them dynamic") + "</span>";
+    var counts = "<span class=\"te-n\">" + keys.length + " changed &middot; " + (nDyn ? nDyn + " dynamic" : "select words to make them dynamic") + "</span>" +
+      (nStale ? '<button type="button" class="te-warn" data-te-act="lost" aria-expanded="' + !lostEl.hidden + '">' + nStale + " not placed</button>" : "");
     var tail = '<button type="button" class="te-q" data-te-act="clean" aria-pressed="' + document.body.classList.contains("te-clean") + '">Hide outlines</button>';
     if (!SHARED) {
       barEl.innerHTML = "<b>Editing text</b>" + counts +
@@ -842,6 +879,47 @@
       '<button type="button" class="te-q" data-te-act="signout" title="' + esc(me.email) + '">Sign out</button>' +
       '<button type="button" class="te-q" data-te-act="exit">Exit</button>';
   }
+
+  /* ---------- Edits not placed ----------
+     Each can be placed by hand (click the text it belongs to) or discarded. */
+  var lostEl = document.createElement("div");
+  lostEl.id = "teLost"; lostEl.hidden = true; lostEl.setAttribute("role", "dialog"); lostEl.setAttribute("aria-label", "Edits not placed");
+  var placing = null;
+  function cut(t) { return t.length > 180 ? t.slice(0, 178) + "\u2026" : t; }
+  function renderLost() {
+    if (lostEl.hidden) return;
+    var keys = Object.keys(edits).filter(function (k) { return stale[k]; });
+    lostEl.innerHTML = "<h3>Edits not placed</h3><p class=\"te-m\">The text these were made on has been reworded, moved without its tag, or removed. Place each on the text it belongs to, or discard it.</p>" +
+      (keys.length ? "<ol>" + keys.map(function (k) {
+        var e = edits[k];
+        return "<li><span class=\"te-m\">" + esc(k) + "</span><span><b>Was:</b> " + esc(cut(readable(e.before))) + "</span><span><b>Edit:</b> " + esc(cut(readable(e.after))) + "</span>" +
+          '<span class="te-acts"><button type="button" data-place="' + esc(k) + '">Place on&hellip;</button><button type="button" class="te-q" data-drop="' + esc(k) + '">Discard</button></span></li>';
+      }).join("") + "</ol>" : '<p class="te-m">Every edit is placed.</p>');
+  }
+  function drop(k) {
+    delete edits[k]; delete stale[k];
+    if (sync) sync.put(k, null);
+    store(); bar(); renderLost();
+  }
+  lostEl.addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.drop) { drop(b.dataset.drop); toast("Discarded."); }
+    else if (b.dataset.place) {
+      placing = b.dataset.place; lostEl.hidden = true; bar();
+      document.body.classList.add("te-placing");
+      toast("Click the text this edit belongs to. Esc cancels.");
+    }
+  });
+  function stopPlacing() { placing = null; document.body.classList.remove("te-placing"); }
+  document.addEventListener("click", function (e) {
+    if (!placing) return;
+    e.preventDefault(); e.stopPropagation();
+    var el = e.target.closest && e.target.closest(EDITABLE), from = placing;
+    if (!el) { toast("That is not editable text. Click an outlined one, or press Esc."); return; }
+    stopPlacing();
+    if (setEntry(keyOf(el), edits[from].after)) { drop(from); toast("Placed."); }
+  }, true);
+  document.addEventListener("keydown", function (e) { if (placing && e.key === "Escape") { stopPlacing(); toast("Placing cancelled."); } }, true);
 
   /* ---------- History: every settled change, newest first; any can be put back ---------- */
   var histEl = document.createElement("div");
@@ -874,7 +952,7 @@
     if (!keys.length) return "";
     return "Text changes for cities-v-5/index.html (" + keys.length + ")\nDynamic parts are in braces: {value: field, as format; now \"…\"} or {condition on fields: \"wording\" when …; \"wording\" otherwise}.\n\n" + keys.map(function (k) {
       var e = edits[k];
-      return "## " + (byKey[k] ? byKey[k].where : k) + "  [" + k + "]" + (stale[k] ? "  (source has changed since)" : "") + "\nBefore: " + readable(e.before) + "\nAfter:  " + readable(e.after);
+      return "## " + (byKey[k] ? byKey[k].where : k) + "  [" + k + "]" + (stale[k] ? "  (not placed: the text it was made on has changed or gone)" : "") + "\nBefore: " + readable(e.before) + "\nAfter:  " + readable(e.after);
     }).join("\n\n") + "\n";
   }
   function copy(text, done) {
@@ -901,14 +979,15 @@
     }
     else if (a === "signin") signInBox();
     else if (a === "signout") sync.signOut().then(function () { location.reload(); });
-    else if (a === "hist") { histEl.hidden = !histEl.hidden; renderHist(); bar(); }
+    else if (a === "lost") { lostEl.hidden = !lostEl.hidden; histEl.hidden = true; renderLost(); bar(); }
+    else if (a === "hist") { histEl.hidden = !histEl.hidden; lostEl.hidden = true; renderHist(); bar(); }
     else if (a === "link") { var l = new URL(location.href); l.searchParams.delete("te"); copy(l.toString(), "Link copied. Anyone with a Harvard email can open it, sign in and edit with you."); }
     else if (a === "exit") { var u = new URL(location.href); u.searchParams.delete("edit"); u.searchParams.delete("te"); location.href = u.toString(); }
   });
 
   function mount() {
     document.body.classList.add("te-on");
-    [barEl, toastEl, selBtn, dynEl, askEl, histEl, fileIn].forEach(function (n) { document.body.appendChild(n); });
+    [barEl, toastEl, selBtn, dynEl, askEl, histEl, lostEl, fileIn].forEach(function (n) { document.body.appendChild(n); });
     bar(); markSays();
     if (SHARED) { paintLocks(); connectShared(); }
     /* the manifest is only needed here, so only edit mode loads it */
@@ -924,7 +1003,7 @@
     if (shared) unpack(shared).then(function (o) { offer(parse(o, true), "link"); }, function () { dropParam(); toast("This share link could not be read; it may have been cut off."); });
   }
   function connectShared() {
-    import("./text-sync.js?v=2").then(function (mod) {
+    import("./text-sync.js?v=3").then(function (mod) {
       sync = mod.connect(CFG, {
         onUser: function (u) {
           me = u; canWrite = !!u;

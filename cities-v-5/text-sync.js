@@ -31,6 +31,9 @@ export function connect(cfg, h) {
   }
   const root = D.ref(db, cfg.root || "v5");
   let user = null, offs = [], presence = null, denied = false;
+  /* each key as it is stored, so a key written in another form is updated
+     and removed under the same name */
+  const stored = {};
 
   function fail(e) {
     if (denied) return;
@@ -39,10 +42,10 @@ export function connect(cfg, h) {
   }
   function listen() {
     const text = D.child(root, "text");
-    const got = (s) => h.onText(dec(s.key), s.val());
+    const got = (s) => { stored[dec(s.key)] = s.key; h.onText(dec(s.key), s.val()); };
     offs.push(D.onChildAdded(text, got, fail));
     offs.push(D.onChildChanged(text, got, fail));
-    offs.push(D.onChildRemoved(text, (s) => h.onText(dec(s.key), null), fail));
+    offs.push(D.onChildRemoved(text, (s) => { delete stored[dec(s.key)]; h.onText(dec(s.key), null); }, fail));
     offs.push(D.onValue(D.child(root, "presence"), (s) => {
       const others = {};
       s.forEach((c) => { if (c.key !== user.uid) others[c.key] = c.val(); });
@@ -102,7 +105,7 @@ export function connect(cfg, h) {
     /* entry null: the element goes back to its source */
     put(key, entry) {
       if (!user) return Promise.resolve();
-      const r = D.child(root, "text/" + enc(key));
+      const r = D.child(D.child(root, "text"), stored[key] || enc(key));
       return (entry ? D.set(r, Object.assign({ before: entry.before, after: entry.after }, stamp())) : D.remove(r)).catch((e) => h.onError("Could not save: " + (e.code || e.message)));
     },
     log(key, before, after) {

@@ -59,6 +59,21 @@ not arrive within a minute, look in junk or quarantine. Each link works once,
 expires after a while, and should be opened in the browser that asked for it.
 If it is opened elsewhere, the page asks for the email address again.
 
+## For designers: keep `data-text-id`
+
+Each editable text in `index.html` has a permanent tag, for example
+`<p data-text-id="overview-lede" class="lede">`. Edits are filed under that
+tag, so they follow the text wherever the layout moves it. When you move,
+restyle or reorder an element, keep the attribute. Give a new piece of text
+its own unique `data-text-id`; without one it still works, filed by its
+position in its section.
+
+If an edit can't find its text, because the text was reworded in
+`index.html` or moved without its tag, the editor first looks for the text
+the edit was made on anywhere on the page and reattaches it there. If that
+fails, the bar shows **N not placed**: open it to place each edit on the
+right text by clicking, or to discard it.
+
 ## Where the data is
 
 Everything is under `v5/` in the Realtime Database (console › Realtime
