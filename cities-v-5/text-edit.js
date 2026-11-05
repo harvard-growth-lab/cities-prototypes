@@ -34,6 +34,10 @@
    logic, so saved edits are in place before any chart reads its template. */
 (function () {
   "use strict";
+  /* ?spec is the read-only spec view for frontend developers (text-spec.js) */
+  if (/[?&]spec\b/.test(location.search)) {
+    var sp = document.createElement("script"); sp.src = "text-spec.js?v=3"; document.head.appendChild(sp);
+  }
   if (!/[?&]edit\b/.test(location.search)) return;
 
   var KEY = "cities-v5-text-edits";
