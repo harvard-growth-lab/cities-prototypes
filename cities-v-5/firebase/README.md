@@ -39,6 +39,28 @@ The page without `?edit` never loads any of this.
 6. Commit `text-edit-config.js`. It is safe to publish: a Firebase web config
    is not a secret, and the rules decide who gets in.
 
+## Publish this folder to Firebase Hosting
+
+The edit and spec views can be published from this branch on their own,
+without touching `main` or the GitHub Pages site, at
+<https://cities-dynamic-text.web.app>.
+[`firebase.json`](firebase.json) publishes the `cities-v-5` folder, minus
+`firebase/` and `tools/`.
+
+```bash
+cd cities-v-5/firebase
+npx firebase-tools login                    # once per computer, opens the browser
+npx firebase-tools deploy --only hosting    # publishes the folder as it is now
+```
+
+Run the deploy again after each change you want online. The published copy
+does not update itself.
+
+Sign-in emails: Firebase's free (Spark) plan sends only a few sign-in emails
+per day. Once the team signs in by email link, switch the project to the
+pay-as-you-go Blaze plan (console › ⚙️ › Usage and billing), which raises
+the limit. At this scale it costs nothing or close to it.
+
 ## Who can edit
 
 - **Any address ending in `harvard.edu`**, including subdomains such as
