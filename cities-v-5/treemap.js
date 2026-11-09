@@ -7628,7 +7628,9 @@
 
   /* the card's placing and its shares, for the admin beats' card in index.html (2026-10-28, Nil: "make sure 4,5,6
      tooltips use the same logic, styling and design") */
-  window.CityTreemaps = { setColorBy, cursorTipPos, fmtShare };
+  window.CityTreemaps = { setColorBy, cursorTipPos, fmtShare,
+    /* the map's own label fit and inks, for a treemap drawn elsewhere on the page to read as this one (storyline 3's beat 4) */
+    kit: { fitCellLabel, labelCeil, lineY, cellInk, padding: MAP.padding, sectorRank: s => SECTOR_RANK.has(s) ? SECTOR_RANK.get(s) : 99 } };
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);

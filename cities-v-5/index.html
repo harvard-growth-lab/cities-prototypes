@@ -6178,8 +6178,7 @@
   .mc-tlist{line-height:1.6;} .mc-tsw{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:-1px;}
   .mc-key b{font-weight:700;}
   .mc-cell.is-dim{opacity:.18;}
-  .mc-slab{font-size:13px;font-weight:600;pointer-events:none;}
-  .mc-slab .mc-slab-n{font-weight:400;}
+  .mc-slab{font-weight:400;pointer-events:none;}
   .mc-glab{pointer-events:none;}
   .mc-gname{font-size:13px;font-weight:600;}
   .mc-glab--rest .mc-gname{fill:var(--flow-rest-text);} .mc-glab--non .mc-gname{fill:var(--flow-in);}
@@ -9706,7 +9705,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
           </div>
           <div class="lede-stat-row">
             <p class="lede">Counted where people work, <span class="city-short">Boston</span> Metro has 2.8M jobs, here in its
-              20 sectors. Each sector&rsquo;s bar then splits by who holds its jobs.
+              20 sectors. Each sector then splits by who holds its jobs.
               <span class="mc-hl" data-mcwho="rest" tabindex="0" style="--sw:var(--flow-rest)">People who neither live nor work in <span class="city-short">Boston</span></span>
               hold 1.9M, about seven in ten. The 719K jobs in <span class="city-short">Boston</span> go to
               <span class="mc-hl" data-mcwho="non" tabindex="0" style="--sw:var(--flow-in)">non-residents who commute in</span>, 528K, and to
@@ -19396,13 +19395,14 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   if (compBtn) new MutationObserver(syncOptWrap)
     .observe(compBtn, { attributes: true, attributeFilter: ["class"] });
   syncOptWrap();
-  /* the storyline pill (2026-11-09): fixed at the bottom left while the section is the one on, two choices */
+  /* the storyline pill (2026-11-09): fixed at the bottom left while the section is the one on, three choices */
   if (cfg.storyPill && cfg.altNarrative){
     var pill = document.createElement("div");
     pill.className = "story-pill"; pill.setAttribute("role", "group"); pill.setAttribute("aria-label", "Storyline");
     pill.innerHTML = '<span class="sp-lab">Storyline</span>' +
       '<button type="button" class="sp-btn" data-ct="2" aria-pressed="true">1</button>' +
-      '<button type="button" class="sp-btn" data-ct="3" aria-pressed="false">2</button>';
+      '<button type="button" class="sp-btn" data-ct="3" aria-pressed="false">2</button>' +
+      '<button type="button" class="sp-btn" data-ct="4" aria-pressed="false">3</button>';
     document.body.appendChild(pill);
     var pillSync = function(){
       var on = compBtn && compBtn.classList.contains("is-active") && document.getElementById("tool") && document.getElementById("tool").classList.contains("active");
@@ -19454,8 +19454,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     if (v === ctLayout) return;
     ctLayout = v;
     if (built) restore();
-    applyNarrative(v === "3");
-    if (v === "2" || v === "3"){ build(); spy(); }
+    applyNarrative(v === "3" || v === "4");
+    if (v === "2" || v === "3" || v === "4"){ build(); spy(); }
     syncOptWrap();
     pagesEl.dispatchEvent(new Event("scroll"));   // re-arm ticks and charts
     optWrap.querySelectorAll(".jp-opt-btn").forEach(function(b){
@@ -19479,10 +19479,13 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
      beats, states 8 to 11 of the shared figure (window.MI2 routes them) */
   /* storyline 2 (2026-11-09, Nil: "put the storyline option as a black pill button on left bottom corner"): layout "3",
      the same first three beats, then the metro's jobs gathering into the four groups (state 12), Boston admin's two of
-     them grown to fill the frame (13; no flow diagram, Nil: "remove sankey or bars") and the net bars (10) */
+     them grown to fill the frame (13; no flow diagram, Nil: "remove sankey or bars") and the net bars (10).
+     Storyline 3 (2026-11-09, Nil: "try storyline 3, where you try tree maps ... maybe a mix of bar and tree map for the
+     4th and 5th beats so that we won't have 4 bars back to back"): layout "4", beat 4 a treemap that gathers into the
+     four groups (state 14), beat 5 Boston admin's stacked bars (15), the net bars (10) as they are */
   mount({ pageId: "page-export-basket", ctl: "MI2", seg: "ctLayoutSeg", noClassic: true, noToggle: true, noBadge: true,
           altNarrative: true, storyPill: true,
-          states: { "2": [0, 4, 6, 8, 9, 10], "3": [0, 4, 6, 12, 13, 10] } });
+          states: { "2": [0, 4, 6, 8, 9, 10], "3": [0, 4, 6, 12, 13, 10], "4": [0, 4, 6, 14, 15, 10] } });
 })();
 
 /* ---- the presenter view ----------------------------------------------
@@ -23281,7 +23284,11 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
    flow's estimate, WF.data), and the parts slide apart into four columns of bars on one scale, the two Boston columns
    that hold the jobs in the city outlined as Boston admin. Beat 5 (state 13): the other two columns leave and the two
    come together as stacked bars, Boston admin's 719K jobs by sector, sorted by them. Replay is the house button
-   (.who-fl-replay). ---- */
+   (.who-fl-replay).
+   Storyline 3 (states 14 and 15): beat 4 is a treemap instead, drawn as the section's first treemap (its frame, tiling, label fit and shares), the sectors' pieces named where the name fits; it plays
+   by itself too, each sector splitting into the four groups and the pieces gathering into four clusters, the column of
+   the people who neither live nor work in Boston and the three Boston groups beside it, the two that hold the city's
+   jobs outlined. Beat 5 is the same stacked bars: the outlined pieces leave the treemap and line up as the bars. ---- */
 (function(){
   const fig = document.getElementById("miFigure"), host = document.getElementById("mcFig");
   const svgEl = document.getElementById("mcSvg"), tip = document.getElementById("mcTip"), noteEl = host && host.querySelector(".mc-note");
@@ -23289,7 +23296,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   if (!fig || !host || !svgEl || typeof d3 === "undefined") return;
   const fmt = window.fmtCount || (n => String(n));
   const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const G = ["rest", "non", "res", "out"], ADM = ["non", "res"];
+  const G = ["rest", "non", "res", "out"], ADM = ["non", "res"], RIGHT = ["non", "res", "out"];
+  const GSAY = { rest: "held by people who neither live nor work in Boston", non: "held by non-residents who commute into Boston", res: "held by Boston residents who work in the city", out: "held by Boston residents who work elsewhere" };
+  const isT = m => m === "tsec" || m === "tgrp", isSec = m => m === "sec" || m === "tsec", isGrp = m => m === "grp" || m === "tgrp";
   const GN = { rest: "Neither live nor work in Boston", non: "Commute into Boston", res: "Live and work in Boston", out: "Live in Boston, work elsewhere" };
   const GS = { rest: "Neither", non: "Commute in", res: "Live and work", out: "Commute out" };
   const GV = { rest: "estRest", non: "estNon", res: "estRes", out: "estOut" };
@@ -23299,6 +23308,10 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     "Manufacturing": "#7f3c6b", "Natural Resources": "#5d9850", "Other": "#896885", "Professional & Business": "#485fa2", "Trade & Transportation": "#86c8ab" };
   const colourOf = sec => { const li = [].slice.call(document.querySelectorAll("#miSectorKey li")).find(l => l.textContent.trim().indexOf(sec) === 0);
     const sw = li && li.querySelector("i"); const c = sw && (sw.style.background || getComputedStyle(sw).backgroundColor); return c || HOUSE[sec] || "#c3ccce"; };
+  /* the words on a treemap's piece: white or ink, whichever reads better on its colour */
+  const lum = c => { const m = d3.color(c); if (!m) return 1; const r = m.rgb(), f = v => { v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); };
+    return .2126 * f(r.r) + .7152 * f(r.g) + .0722 * f(r.b); };
+  const inkOn = c => { const l = lum(c), li = lum(css("--ink") || "#1a2226"); return 1.05 / (l + .05) >= (l + .05) / (li + .05) ? "var(--white)" : "var(--ink)"; };
   const cx = document.createElement("canvas").getContext("2d");
   const tw = (t, size, wt) => { cx.font = (wt || 400) + " " + size + "px 'Source Sans 3', 'Source Sans Pro', sans-serif"; return cx.measureText(t).width; };
   const wrapTo = (t, w, size, wt) => { const out = []; let line = ""; t.split(" ").forEach(word => { const n = line ? line + " " + word : word;
@@ -23314,7 +23327,47 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     sum = {}; mx = {}; G.forEach(g => { sum[g] = d3.sum(rows, r => Math.max(0, r[GV[g]])); mx[g] = d3.max(rows, r => Math.max(0, r[GV[g]])); });
     return true;
   }
-  /* mode: "sec" the sectors' bars, "grp" the four columns (beat 4); "adm" Boston admin's stacked bars (beat 5) */
+  /* mode: "sec" the sectors' bars, "grp" the four columns (beat 4); "adm" Boston admin's stacked bars (beat 5);
+     storyline 3's beat 4: "tsec" the sectors' treemap, "tgrp" its four clusters. tree says which beat 4 is on */
+  let tree = false;
+  const TT = 24, TGAP = 10, HEADL = 17;
+  const thead = (g, bw) => wrapTo(GN[g], bw - 2, 13, 600).length * HEADL + 24;
+  function packInto(g, b, out){
+    const rt = d3.hierarchy({ children: rows.map(r => ({ r, v: Math.max(0, r[GV[g]]) })) }).sum(d => d.v || 0).sort((a, c) => c.value - a.value);
+    d3.treemap().size([b.w, b.fh]).paddingInner(1).round(true)(rt);
+    rt.leaves().forEach(n => { out[n.data.r.code + "|" + g] = { x: b.x + n.x0, y: b.y + b.hh + n.y0, w: n.x1 - n.x0, h: n.y1 - n.y0 }; });
+  }
+  /* the first treemap of the section, its frame, tiling and words (treemap.js's kit): 880 by 500, the sectors in the
+     key's order as blocks 3px apart, their two-digit sectors largest first 1px apart, each one's four groups side by
+     side inside it with no gap, so the map stands as beat 1's until it splits */
+  const KIT = () => (window.CityTreemaps && window.CityTreemaps.kit) || null;
+  const rank = s => { const k = KIT(); return k ? k.sectorRank(s) : 0; };
+  function treeLayout(w){
+    const h = Math.round(Math.max(300, Math.min(w * 500 / 880, innerHeight - 330))), H = h - TT, pad = (KIT() || { padding: 1 }).padding;
+    const bySec = new Map(); rows.forEach(r => { if (!bySec.has(r.sector)) bySec.set(r.sector, []); bySec.get(r.sector).push(r); });
+    const root = d3.hierarchy({ children: [...bySec].map(([sector, list]) => ({ sector, children: list.map(r => ({ r, children: G.map(g => ({ r, g, v: Math.max(0, r[GV[g]]) })) })) })) })
+      .sum(d => d.v || 0).sort((a, b) => a.depth === 1 ? rank(a.data.sector) - rank(b.data.sector) : a.depth === 2 ? b.value - a.value : G.indexOf(a.data.g) - G.indexOf(b.data.g));
+    const tile = (n, x0, y0, x1, y1) => (n.depth < 2 ? d3.treemapSquarify : (x1 - x0 > y1 - y0 ? d3.treemapDice : d3.treemapSlice))(n, x0, y0, x1, y1);
+    const pd = n => n.depth < 2 ? pad : 0;
+    d3.treemap().size([w, h]).tile(tile).paddingInner(pd).paddingOuter(pd).paddingTop(pd).round(true)(root);
+    const tsec = {}, tsecs = [];
+    root.descendants().forEach(n => { const b = { x: n.x0, y: n.y0, w: n.x1 - n.x0, h: n.y1 - n.y0 };
+      if (n.depth === 2) tsecs.push(Object.assign({ r: n.data.r }, b)); else if (n.depth === 3) tsec[n.data.r.code + "|" + n.data.g] = b; });
+    /* the clusters: on the left the people who neither live nor work in Boston, the three Boston groups stacked on the
+       right; each block's fill is to its count (the heads stand over the fills, so the widths are solved for that) */
+    let wR = (w - TGAP) * .32, wL, hl, hr;
+    const R = sum.non + sum.res + sum.out;
+    for (let i = 0; i < 6; i++){
+      wL = w - TGAP - wR; hl = H - thead("rest", wL); hr = H - 2 * TGAP - RIGHT.reduce((a, g) => a + thead(g, wR), 0);
+      wR = Math.max(120, Math.min(w * .5, (w - TGAP) * hl * R / (hr * sum.rest + hl * R)));
+    }
+    wL = w - TGAP - wR; hl = H - thead("rest", wL); hr = H - 2 * TGAP - RIGHT.reduce((a, g) => a + thead(g, wR), 0);
+    const blocks = {};
+    blocks.rest = { x: 0, y: TT, w: wL, hh: thead("rest", wL), fh: hl };
+    let y = TT; RIGHT.forEach(g => { const hh = thead(g, wR), fh = Math.max(8, hr * sum[g] / R); blocks[g] = { x: wL + TGAP, y, w: wR, hh, fh }; y += hh + fh + TGAP; });
+    const tgrp = {}; G.forEach(g => packInto(g, blocks[g], tgrp));
+    return { hT: h, tsec, tsecs, tgrp, blocks };
+  }
   let mode = "sec", busy = false, shown = false, played = false, L = null, hiG = null, playT = null;
   const TOPB = 22, GAPC = 14, VALW = 46;
   function layout(){
@@ -23339,11 +23392,13 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       G.forEach(g => { grp[r.code + "|" + g] = { x: colX[g], y: yS[r.code] + (rh - bh) / 2, w: Math.max(0, r[GV[g]]) * k, h: bh }; });
       let b = x0; G.forEach(g => { const on = ADM.indexOf(g) >= 0, v = on ? Math.max(0, r[GV[g]]) * kA : 0; adm[r.code + "|" + g] = { x: on ? b : x0, y: yA[r.code] + (rh - bh) / 2, w: v, h: bh }; b += v; });
     });
-    return { w, h, x0, labW, top, rh, bh, k, kS, kA, colW, colX, heads, sec, grp, adm, yS, yA, ordS, ordA };
+    return Object.assign({ w, hB: h, x0, labW, top, rh, bh, k, kS, kA, colW, colX, heads, sec, grp, adm, yS, yA, ordS, ordA }, treeLayout(w));
   }
+  const hOf = m => isT(m) ? L.hT : L.hB;
+  const setH = h => svg.attr("width", L.w).attr("height", h).attr("viewBox", "0 0 " + L.w + " " + h);
   const cells = () => rows.flatMap(r => G.map(g => ({ r, g, k: r.code + "|" + g })));
-  const boxes = m => m === "grp" ? L.grp : m === "adm" ? L.adm : L.sec;
-  const fillOf = (d, m) => m === "sec" ? colours[d.r.sector] : GC(d.g);
+  const boxes = m => m === "grp" ? L.grp : m === "adm" ? L.adm : m === "tsec" ? L.tsec : m === "tgrp" ? L.tgrp : L.sec;
+  const fillOf = (d, m) => isSec(m) ? colours[d.r.sector] : GC(d.g);
   const seenIn = (d, m) => m !== "adm" || ADM.indexOf(d.g) >= 0;
   const yOf = (r, m) => (m === "adm" ? L.yA : L.yS)[r.code];
   const ordOf = m => m === "adm" ? L.ordA : L.ordS;
@@ -23351,22 +23406,23 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   const svg = d3.select(svgEl);
   const gLab = svg.append("g").attr("class", "mc-rlabs"), gCells = svg.append("g").attr("class", "mc-cells");
   const gVal = svg.append("g").attr("class", "mc-vals"), gHead = svg.append("g").attr("class", "mc-heads"), gBos = svg.append("g").attr("class", "mc-bos");
+  const gSLab = svg.append("g").attr("class", "mc-slabs"), gTG = svg.append("g").attr("class", "mc-tglabs"), gTBos = svg.append("g").attr("class", "mc-bos");
   const PLAY = '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M4.5 2.8v10.4L13 8z" fill="currentColor"/></svg>Play';
   const REPLAY = '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M2.5 8a5.5 5.5 0 1 0 1.8-4.1M2.5 2.5v3h3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Replay';
   function words(){
     const adm = mode === "adm", tot = fmt(sum.non + sum.res);
     titleEl.textContent = adm ? "Boston admin’s " + tot + " jobs by sector and who holds them, in 2023"
-      : "The metro’s " + fmt(M.jobs) + " jobs by sector" + (mode === "grp" ? " and who holds them" : "") + ", in 2023";
+      : "The metro’s " + fmt(M.jobs) + " jobs " + (mode === "tgrp" ? "by who holds them" : "by sector" + (mode === "grp" ? " and who holds them" : "")) + ", in 2023";
     playBtn.hidden = adm;
     playBtn.innerHTML = played || busy ? REPLAY : PLAY;
-    playBtn.setAttribute("aria-label", "Replay: each sector's bar splits into the four groups of who holds the jobs");
+    playBtn.setAttribute("aria-label", tree ? "Replay: the sectors split and gather into the four groups of who holds the jobs" : "Replay: each sector's bar splits into the four groups of who holds the jobs");
     svgEl.setAttribute("aria-label", adm
       ? "Boston admin’s " + tot + " jobs by sector as stacked bars: " + ADM.map(g => GN[g].toLowerCase() + ", " + fmt(sum[g])).join("; ")
-      : mode === "grp" ? "The metro’s " + fmt(M.jobs) + " jobs by sector in four columns: " + G.map(g => GN[g].toLowerCase() + ", " + fmt(sum[g])).join("; ")
-      : "The metro’s " + fmt(M.jobs) + " jobs by sector, as bars; the largest are " + rows.slice(0, 3).map(r => r.short.toLowerCase() + ", " + fmt(r.msaJobs)).join(", "));
-    if (mode === "sec"){ const seen = []; rows.forEach(r => { if (seen.indexOf(r.sector) < 0) seen.push(r.sector); });
+      : isGrp(mode) ? "The metro’s " + fmt(M.jobs) + " jobs by sector " + (isT(mode) ? "as a treemap in four groups: " : "in four columns: ") + G.map(g => GN[g].toLowerCase() + ", " + fmt(sum[g])).join("; ")
+      : "The metro’s " + fmt(M.jobs) + " jobs by sector, as " + (isT(mode) ? "a treemap" : "bars") + "; the largest are " + rows.slice(0, 3).map(r => r.short.toLowerCase() + ", " + fmt(r.msaJobs)).join(", "));
+    if (isSec(mode)){ const seen = []; rows.forEach(r => { if (seen.indexOf(r.sector) < 0) seen.push(r.sector); }); if (tree) seen.sort((a, b) => rank(a) - rank(b));
       keyEl.innerHTML = seen.map(s => '<li><i style="background:' + colours[s] + '" aria-hidden="true"></i>' + s + '</li>').join(""); }
-    keyEl.hidden = mode !== "sec";
+    keyEl.hidden = !isSec(mode);
     keyEl.setAttribute("aria-label", adm ? "Who holds the jobs" : "Sectors");
     if (noteEl) noteEl.textContent = adm ? "Counted where people work (LODES 2023). Each sector’s split between the two groups is an estimate."
       : "Counted where people work (LODES 2023), a different source from the 2.3M jobs of the first beats. Each sector’s split among the four groups is an estimate.";
@@ -23379,12 +23435,13 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     (anim ? t.transition("rows").duration(850).ease(d3.easeCubicInOut) : t).attr("y", r => yOf(r, mode) + L.rh / 2 + 4.5);
   }
   function extras(fade){
+    treeExtras(fade);
     const vals = busy ? [] : mode === "sec" ? rows.map(r => ({ r, x: L.x0 + r.msaJobs * L.kS + 6, n: r.msaJobs })) :
       mode === "adm" ? rows.map(r => ({ r, x: L.x0 + r.jobs * L.kA + 6, n: r.jobs })) : [];
     gVal.selectAll("text").data(vals, d => d.r.code).join("text").attr("class", "mc-val").attr("x", d => d.x).attr("y", d => yOf(d.r, mode) + L.rh / 2 + 4.5).text(d => fmt(d.n));
     /* the groups' names over their columns; on beat 5 over the two parts of the first bar, so no key is needed */
     const first = L.ordA[0], resX = L.adm[first.code + "|res"].x;
-    const hs = busy || mode === "sec" ? [] : mode === "grp" ? G.map(g => ({ g, x: L.colX[g], ln: L.heads[g], tot: M.jobs }))
+    const hs = busy || isSec(mode) || isT(mode) ? [] : mode === "grp" ? G.map(g => ({ g, x: L.colX[g], ln: L.heads[g], tot: M.jobs }))
       : [{ g: "non", x: L.x0, ln: wrapTo(GN.non, resX - L.x0 - 10, 13, 600), tot: sum.non + sum.res },
          { g: "res", x: resX, ln: wrapTo(GN.res, L.w - resX - 2, 13, 600), tot: sum.non + sum.res }];
     gHead.selectAll("g").data(hs, d => mode + d.g).join("g").attr("class", d => "mc-glab mc-glab--" + d.g)
@@ -23392,7 +23449,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         return '<text class="mc-gname" x="' + d.x + '" y="' + y + '">' + d.ln.map((t, i) => '<tspan x="' + d.x + '" dy="' + (i ? 17 : 0) + '">' + t + '</tspan>').join("") + '</text>' +
           '<text class="mc-gn" x="' + d.x + '" y="' + (y + nl * 17 + 3) + '">' + fmt(sum[d.g]) + '<tspan class="mc-gp"> ' + Math.round(sum[d.g] / d.tot * 100) + '%</tspan></text>'; });
     gBos.selectAll("g").data(busy || mode !== "grp" ? [] : [1]).join("g").attr("class", "mc-bos-g").html(() => {
-      const x = L.colX.non - 6, w = L.colX.res + L.colW.res - L.colX.non + 12, y = TOPB - 4, h = L.h - y;
+      const x = L.colX.non - 6, w = L.colX.res + L.colW.res - L.colX.non + 12, y = TOPB - 4, h = L.hB - y;
       return '<rect class="mc-bos-r" x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="4"/>' +
         '<text class="mc-bos-t" x="' + (x + w / 2) + '" y="' + (y - 6) + '" text-anchor="middle">Boston admin, ' + fmt(sum.non + sum.res) + ' jobs</text>'; });
     if (fade && !reduced()){
@@ -23401,23 +23458,57 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       gBos.selectAll("g").style("opacity", 0).transition().delay(250).duration(400).style("opacity", 1);
     }
   }
-  const place = (sel, m) => sel.each(function(d){ const b = boxes(m)[d.k];
-    d3.select(this).attr("x", b.x).attr("y", b.y).attr("width", Math.max(0, b.w)).attr("height", b.h); });
+  /* the treemap's words: each piece's sector and count where they fit (a piece too small keeps its card), the groups'
+     names over their clusters, Boston admin's outline round the two that hold the city's jobs */
+  const shareOf = v => { const t = v * 100; return t.toFixed(t >= 10 ? 0 : t >= 1 ? 1 : 2) + "%"; };
+  function fitLab(b, name, sub, fill, key){
+    const k = KIT(); if (!k || !b || b.w < 4 || b.h < 4) return null;
+    const f = k.fitCellLabel(name, sub, b, k.labelCeil(b, 2, 1)); if (!f) return null;
+    return { key, f, sub, y: b.y, ink: k.cellInk(fill), k };
+  }
+  function treeExtras(fade){
+    const on = isT(mode) && !busy;
+    const labs = !on ? [] : mode === "tsec" ? L.tsecs.map(s => fitLab(s, s.r.short, shareOf(s.r.msaJobs / M.jobs), colours[s.r.sector], s.r.code)).filter(Boolean)
+      : cells().map(d => fitLab(L.tgrp[d.k], d.r.short, fmt(d.r[GV[d.g]]), GC(d.g), d.k)).filter(Boolean);
+    gSLab.selectAll("text").data(labs, d => d.key).join("text")
+      .attr("class", "mc-slab").attr("x", d => d.f.x).attr("font-size", d => d.f.size).style("fill", d => d.ink)
+      .html(d => d.f.lines.map((t, i) => '<tspan x="' + d.f.x + '" y="' + d.k.lineY(d.y, d.f.size, i, false) + '">' + esc(t) + '</tspan>').join("") +
+        (d.f.share ? '<tspan x="' + d.f.x + '" y="' + d.k.lineY(d.y, d.f.size, d.f.lines.length, true) + '" font-size="' + d.f.shareSize + '">' + d.sub + '</tspan>' : ""));
+    gTG.selectAll("g").data(on && mode === "tgrp" ? G.map(g => ({ g, b: L.blocks[g] })) : [], d => d.g).join("g").attr("class", d => "mc-glab mc-glab--" + d.g)
+      .html(d => { const ln = wrapTo(GN[d.g], d.b.w - 2, 13, 600);
+        return '<text class="mc-gname" x="' + d.b.x + '" y="' + (d.b.y + 13) + '">' + ln.map((t, i) => '<tspan x="' + d.b.x + '" dy="' + (i ? HEADL : 0) + '">' + t + '</tspan>').join("") + '</text>' +
+          '<text class="mc-gn" x="' + d.b.x + '" y="' + (d.b.y + 13 + ln.length * HEADL + 3) + '">' + fmt(sum[d.g]) + '<tspan class="mc-gp"> ' + Math.round(sum[d.g] / M.jobs * 100) + '%</tspan></text>'; });
+    gTBos.selectAll("g").data(on && mode === "tgrp" ? [1] : []).join("g").attr("class", "mc-bos-g").html(() => { const a = L.blocks.non, b = L.blocks.res, x = a.x - 5, y = a.y - 5, w = a.w + 10, h = b.y + b.hh + b.fh - a.y + 10;
+      return '<rect class="mc-bos-r" x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="4"/>' +
+        '<text class="mc-bos-t" x="' + (x + w) + '" y="' + (y - 6) + '" text-anchor="end">Boston admin, ' + fmt(sum.non + sum.res) + ' jobs</text>'; });
+    if (fade && on && !reduced()){
+      gSLab.selectAll("text").style("opacity", 0).transition().duration(300).style("opacity", 1);
+      gTG.selectAll("g").style("opacity", 0).transition().duration(350).style("opacity", 1);
+      gTBos.selectAll("g").style("opacity", 0).transition().delay(250).duration(400).style("opacity", 1);
+    }
+  }
+  const place = (sel, m) => sel.each(function(d){ const b = boxes(m)[d.k] || { x: 0, y: 0, w: 0, h: 0 };
+    d3.select(this).attr("x", b.x).attr("y", b.y).attr("width", Math.max(0, b.w)).attr("height", Math.max(0, b.h)); });
   function cut(){ gCells.selectAll("rect").interrupt().interrupt("split").interrupt("move").interrupt("fade");
-    gLab.selectAll("text").interrupt("rows"); [gVal, gHead, gBos].forEach(g => g.selectAll("*").interrupt()); }
+    gLab.interrupt(); gLab.selectAll("text").interrupt("rows"); [gVal, gHead, gBos, gSLab, gTG, gTBos].forEach(g => g.selectAll("*").interrupt()); }
   function draw(){
     if (!data()) return;
     colours = {}; rows.forEach(r => { colours[r.sector] = colourOf(r.sector); });
     L = layout(); cut(); busy = false;
-    svg.attr("width", L.w).attr("height", L.h).attr("viewBox", "0 0 " + L.w + " " + L.h);
+    setH(hOf(mode)); gLab.style("opacity", isT(mode) ? 0 : null);
     const sel = gCells.selectAll("rect").data(cells(), d => d.k).join("rect").attr("class", d => "mc-cell mc-cell--" + d.g);
     place(sel, mode); sel.attr("fill", d => fillOf(d, mode)).style("opacity", d => seenIn(d, mode) ? null : 0);
-    sel.classed("is-dim", d => !!hiG && mode !== "sec" && d.g !== hiG);
+    sel.classed("is-dim", d => !!hiG && !isSec(mode) && d.g !== hiG);
     rowLabels(false); extras(false); words();
   }
   /* the arrival from beat 3: the bars grow from the names, largest first */
   function enter(){
     if (reduced()) return 0;
+    if (isT(mode)){
+      gCells.selectAll("rect").style("opacity", 0).transition("fade").delay(d => rows.indexOf(d.r) * 35).duration(420).ease(d3.easeCubicOut).style("opacity", 1);
+      gSLab.selectAll("text").style("opacity", 0).transition().delay(rows.length * 35 + 120).duration(300).style("opacity", 1);
+      return rows.length * 35 + 420;
+    }
     gCells.selectAll("rect").attr("width", 0).attr("x", L.x0).transition("move").delay(d => rows.indexOf(d.r) * 30).duration(520).ease(d3.easeCubicOut)
       .attr("x", d => L.sec[d.k].x).attr("width", d => L.sec[d.k].w);
     gVal.selectAll("text").style("opacity", 0).transition().delay(rows.length * 30 + 300).duration(300).style("opacity", 1);
@@ -23428,27 +23519,33 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     if (!data()) return;
     cut(); tipHide();
     const from = mode; mode = m;
-    if (m === "grp") played = true;
+    if (isGrp(m)) played = true;
     if (reduced()){ draw(); return; }
     busy = true; words(); extras(false);
-    const sel = gCells.selectAll("rect"), split = from === "sec" && m === "grp";
+    /* between the treemap and the bars the frame takes the taller of the two while the pieces travel */
+    const cross = isT(from) !== isT(m);
+    setH(Math.max(hOf(from), hOf(m)));
+    const sel = gCells.selectAll("rect"), split = isSec(from) && isGrp(m);
     if (split) sel.transition("split").delay(d => G.indexOf(d.g) * 90).duration(500).attr("fill", d => fillOf(d, m));
     else sel.attr("fill", d => fillOf(d, m));
     sel.filter(d => !seenIn(d, m)).transition("fade").duration(400).style("opacity", 0);
     sel.filter(d => seenIn(d, m)).transition("fade").duration(400).style("opacity", 1);
-    rowLabels(m === "adm" || from === "adm");
-    const t0 = split ? 820 : 250;
+    if (isT(m)) gLab.transition().duration(300).style("opacity", 0);
+    else if (cross){ rowLabels(false); gLab.style("opacity", 0).transition().delay(700).duration(450).style("opacity", 1); }
+    else rowLabels(m === "adm" || from === "adm");
+    const t0 = split ? 820 : cross ? 300 : 250;
     const mv = sel.filter(d => seenIn(d, m)).transition("move")
-      .delay(d => t0 + (split ? G.indexOf(d.g) * 180 + rows.indexOf(d.r) * 12 : 0)).duration(split ? 1000 : 850).ease(d3.easeCubicInOut)
+      .delay(d => t0 + (split ? G.indexOf(d.g) * (isT(m) ? 160 : 180) + rows.indexOf(d.r) * (isT(m) ? 14 : 12) : cross ? ordOf("adm").indexOf(d.r) * 14 : 0))
+      .duration(split ? (isT(m) ? 1200 : 1000) : cross ? 950 : 850).ease(d3.easeCubicInOut)
       .attr("x", d => boxes(m)[d.k].x).attr("y", d => boxes(m)[d.k].y).attr("width", d => boxes(m)[d.k].w).attr("height", d => boxes(m)[d.k].h);
-    mv.end().then(() => { busy = false; place(sel.filter(d => !seenIn(d, m)), m); extras(true); words(); }).catch(() => {});
+    mv.end().then(() => { busy = false; setH(hOf(m)); place(sel.filter(d => !seenIn(d, m)), m); extras(true); words(); }).catch(() => {});
   }
   function play(){
     if (!data() || mode === "adm") return;
     if (playT){ clearTimeout(playT); playT = null; }
-    mode = "sec"; draw();
-    if (reduced()){ played = true; mode = "grp"; draw(); return; }
-    playT = setTimeout(() => { playT = null; moveTo("grp"); }, 350);
+    mode = tree ? "tsec" : "sec"; draw();
+    if (reduced()){ played = true; mode = tree ? "tgrp" : "grp"; draw(); return; }
+    playT = setTimeout(() => { playT = null; moveTo(tree ? "tgrp" : "grp"); }, tree ? 600 : 350);
   }
   playBtn.addEventListener("click", play);
 
@@ -23457,6 +23554,13 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   const sw = g => '<i class="mc-tsw" style="background:' + GC(g) + '"></i>';
   svgEl.addEventListener("pointermove", e => {
     if (!L || busy){ tipHide(); return; }
+    if (isT(mode)){
+      const d = e.target && e.target.__data__; if (!d || !d.r || !d.g){ tipHide(); return; }
+      tip.innerHTML = '<b>' + esc(d.r.short) + '</b>' + (mode === "tgrp"
+        ? '<p class="who-ref-tip-p">About ' + fmt(d.r[GV[d.g]]) + ' of its ' + fmt(d.r.msaJobs) + ' jobs in the metro are ' + GSAY[d.g] + '. The split within a sector is an estimate.</p>'
+        : '<p class="who-ref-tip-p">' + fmt(d.r.msaJobs) + ' jobs in the metro, ' + Math.round(d.r.msaJobs / M.jobs * 100) + '% of all.</p>');
+      tip.hidden = false; tipPlace(e); return;
+    }
     const sr = svgEl.getBoundingClientRect(), y = e.clientY - sr.top, i = Math.floor((y - L.top) / L.rh), r = ordOf(mode)[i];
     if (!r || y < L.top){ tipHide(); return; }
     tip.innerHTML = '<b>' + esc(r.short) + '</b>' + (mode === "adm"
@@ -23464,38 +23568,43 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       : mode === "grp"
       ? '<p class="who-ref-tip-p">' + fmt(r.msaJobs) + ' jobs in the metro, held by about:</p><p class="who-ref-tip-p mc-tlist">' + G.map(g => sw(g) + fmt(r[GV[g]]) + ' ' + GN[g].replace(/^./, c => c.toLowerCase())).join("<br>") + '</p><p class="who-ref-tip-p">The split is an estimate.</p>'
       : '<p class="who-ref-tip-p">' + fmt(r.msaJobs) + ' jobs in the metro, ' + Math.round(r.msaJobs / M.jobs * 100) + '% of all.</p>');
-    tip.hidden = false;
+    tip.hidden = false; tipPlace(e);
+  });
+  function tipPlace(e){
     const pr = host.querySelector(".mc-plot").getBoundingClientRect(), tr = tip.getBoundingClientRect();
     let x = e.clientX - pr.left + 14, ty = e.clientY - pr.top + 14;
     if (x + tr.width > pr.width) x = e.clientX - pr.left - tr.width - 14;
     if (ty + tr.height > pr.height) ty = Math.max(0, e.clientY - pr.top - tr.height - 14);
     tip.style.left = Math.max(0, x) + "px"; tip.style.top = ty + "px";
-  });
+  }
   svgEl.addEventListener("pointerleave", tipHide);
   /* the ledes' group phrases light their bars */
   [].slice.call(document.querySelectorAll(".mc-hl[data-mcwho]")).forEach(span => {
-    const on = () => { hiG = span.dataset.mcwho; span.classList.add("is-lit"); gCells.selectAll("rect").classed("is-dim", d => mode !== "sec" && d.g !== hiG); };
+    const on = () => { hiG = span.dataset.mcwho; span.classList.add("is-lit"); gCells.selectAll("rect").classed("is-dim", d => !isSec(mode) && d.g !== hiG); };
     const off = () => { hiG = null; span.classList.remove("is-lit"); gCells.selectAll("rect").classed("is-dim", false); };
     span.addEventListener("mouseenter", on); span.addEventListener("focus", on); span.addEventListener("click", on);
     span.addEventListener("mouseleave", off); span.addEventListener("blur", off);
   });
 
   window.MC = {
-    /* state 12 is beat 4, 13 beat 5; from is the figure's state before. Beat 4 plays by itself on arrival */
+    /* state 12 is beat 4, 13 beat 5; 14 and 15 are storyline 3's, beat 4 as a treemap; from is the figure's state
+       before. Beat 4 plays by itself on arrival */
     show(s, from){
       const was = shown; shown = true;
       requestAnimationFrame(() => {
         if (!data()) return;
         if (playT){ clearTimeout(playT); playT = null; }
-        if (s === 13){
-          if (was && L && from === 12){ moveTo("adm"); return; }
+        tree = s >= 14;
+        const sec = tree ? "tsec" : "sec", grp = tree ? "tgrp" : "grp";
+        if (s === 13 || s === 15){
+          if (was && L && from === s - 1 && mode === grp){ moveTo("adm"); return; }
           mode = "adm"; draw(); return;
         }
-        if (was && L && from === 13){ moveTo("grp"); return; }
-        if (reduced()){ played = true; mode = "grp"; draw(); return; }
-        mode = "sec"; draw();
+        if (was && L && from === s + 1 && mode === "adm"){ moveTo(grp); return; }
+        if (reduced()){ played = true; mode = grp; draw(); return; }
+        mode = sec; draw();
         const t = from >= 0 && from < 8 ? enter() : 0;
-        playT = setTimeout(() => { playT = null; if (shown && mode === "sec") moveTo("grp"); }, t + 700);
+        playT = setTimeout(() => { playT = null; if (shown && mode === sec) moveTo(grp); }, t + 700);
       });
     },
     hide(){ shown = false; tipHide(); cut(); busy = false;
@@ -23508,7 +23617,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
 /* the section's control: the treemap's states 0 to 7, this figure's 8 to 11 (see the note above), and storyline 2's
    beats 4 and 5, states 12 and 13 (window.MC, one treemap) */
 (function(){
-  const FIRST = 8, fig = document.getElementById("miFigure"), isMC = i => i === 12 || i === 13;
+  const FIRST = 8, fig = document.getElementById("miFigure"), isMC = i => i >= 12 && i <= 15;
   if (!fig) return;
   let at = -1;
   window.MI2 = {
