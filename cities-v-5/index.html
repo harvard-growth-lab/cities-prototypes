@@ -5475,17 +5475,6 @@
     /* not beat 6's flow (2026-10-28): its head is its bars', so the frame holds still between the two views */
     #miFigure.is-admin.is-b4sk[data-step="10"] .wf-head > .wf-table{display:none;}
   }
-  /* beat 7's "Show as table" stands at every width and under every option (2026-10-29): its table is the page of every
-     reading, and the rule above, written for beats 4 and 5, left the button hidden here */
-  #miFigure.is-admin[data-step="11"] .wf-head > .wf-table{display:block;}
-  #miFigure.is-admin[data-step="11"] .wf-head > .wf-table > .mi-table-btn{display:inline-flex;}
-  /* on a phone the button follows the year on the sentence's last line (2026-10-29): the head strip pins its rows to its
-     foot, and a line of its own rose over the section bar with the sentence's first line */
-  @media (max-width:599px){
-    #miFigure.is-admin[data-step="11"] .wf-head{display:block;}
-    #miFigure.is-admin[data-step="11"] .wf-head > #wfSentence{display:inline;}
-    #miFigure.is-admin[data-step="11"] .wf-head > .wf-table{display:inline-flex;vertical-align:baseline;margin:0 0 0 10px;}
-  }
   .wf-who-btn{appearance:none;-webkit-appearance:none;position:relative;display:inline-block;vertical-align:baseline;margin:0 2px;
     padding:0 6px 0 5px;border:1px solid transparent;border-radius:4px;background:var(--teal-tint);
     font:inherit;font-size:16px;font-weight:700;line-height:20px;color:var(--teal);white-space:nowrap;cursor:pointer;
@@ -8713,7 +8702,6 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
           <li data-step="adminCountsSection"><span class="dot"></span><button onclick="goTo('adminCountsSection')">Which work happens in Boston, and which do its residents do?</button></li>
           <li data-step="adminSharesSection"><span class="dot"></span><button onclick="goTo('adminSharesSection')">Which work does Boston host for the metro?</button></li>
           <li data-step="adminNetSection"><span class="dot"></span><button onclick="goTo('adminNetSection')">Where is Boston a receiver or a sender of workers?</button></li>
-          <li data-step="adminSummarySection"><span class="dot"></span><button onclick="goTo('adminSummarySection')">Extra page to show every reading</button></li>
           <li data-step="check-export"><span class="dot"></span><button onclick="goTo('check-export')">Test your knowledge</button></li>
           <li data-step="apply-export"><span class="dot"></span><button onclick="goTo('apply-export')">Put your insights</button></li>
         </ul>
@@ -9486,7 +9474,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
                    or the flow as a blank (2026-10-28, Nil: "6/7: also give options to sankey and bar like the other ones.
                    But this time, default to bar"), in beats 4 and 5's words -->
               <!-- no blank for a flow diagram since 2026-11-04 (Nil: "remove the current options"): beat 6 is the two ways, left and right -->
-              <p class="mi-sentence wf-sentence wf-sentence--sk6" id="wfSentenceSk6">Who commutes into <span class="city-short">Boston</span> and out of it, by sector, <span class="wf-s-year">in&nbsp;<span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select class="wf-year" id="wfSYear6" aria-label="Year"><option value="2023" selected>2023</option><option value="2013">2013</option></select></span></span></p>
+              <p class="mi-sentence wf-sentence wf-sentence--sk6" id="wfSentenceSk6">Workers <span class="city-short">Boston</span> receives or sends, by sector, <span class="wf-s-year">in&nbsp;<span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select class="wf-year" id="wfSYear6" aria-label="Year"><option value="2023" selected>2023</option><option value="2013">2013</option></select></span></span></p>
               <div class="mi-table wf-table"><button type="button" class="mi-table-btn" id="wfTableBtn" aria-expanded="false" aria-controls="wfTableWrap"><span class="mi-table-btn-txt">Show as table</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button></div>
             </div>
             <div class="tradable-split-header" id="miSplitHead">
@@ -9768,23 +9756,14 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
           <div class="lede-stat-row">
             <!-- the two ways side by side (2026-11-04, Nil: "show both coming and going like right and left bars and
                  highlight the difference, instead showing just the net") -->
-            <p class="lede">For each sector, the people who commute into <span class="city-short">Boston</span> for its jobs
-              reach to the right, its residents who work elsewhere to the left. The solid part is the difference.
-              <span class="mi-hl" data-row="62" tabindex="0">Health care</span> receives the most, 81K more than it sends; only
-              <span class="mi-hl" data-row="31-33" tabindex="0">manufacturing</span> and three small sectors send more workers than they receive.
-              Each sector&rsquo;s split is estimated.</p>
+            <p class="lede">Each bar is how many more workers <span class="city-short">Boston</span> receives than it sends in a
+              sector. <span class="mi-hl" data-row="62" tabindex="0">Health care</span> receives the most, 81K; only
+              <span class="mi-hl" data-row="31-33" tabindex="0">manufacturing</span> and three small sectors send more workers than they receive.</p>
           </div>
           <div class="lean-note who-gauge mi-gauge" id="miGauge"></div>
         </div>
 
-        <!-- beat 7: the section's question, answered -->
-        <div class="export-subsection" id="adminSummarySection">
-          <!-- beat 7 is the reading every reader can look up, with no lede and no questions (2026-10-28, Nil: "7/7: title is
-               'Extra page to show every reading'. No narrative text"; "remove ask the chart") -->
-          <div class="subsection-header">
-            <h3>Extra page to show every reading</h3>
-          </div>
-        </div>
+        <!-- beat 7, "Extra page to show every reading", removed (2026-11-09, Nil: "remove this completely") -->
       </section>
 
       <!-- 3 How am I doing? (2026-11-02, Nil: "under part 1: add How am I doing?"): Part 1's third
@@ -10585,7 +10564,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   /* ---------- journey state ---------- */
   const sectionDefs=[
     {name:"Who am I?", pages:["page-overview","page-overview-scatter","page-overview-flows"].concat(FLOWS_HOME ? ["page-overview-flows-out"] : []).concat(["page-overview-metro","page-overview-mscatter","check-overview","apply-overview"]), entry:"page-overview"},
-    {name:"What do my metro and I produce?", pages:["page-export-basket","tierSection","specializedSection","adminCountsSection","adminSharesSection","adminNetSection","adminSummarySection","check-export","apply-export"], entry:"page-export-basket"},
+    {name:"What do my metro and I produce?", pages:["page-export-basket","tierSection","specializedSection","adminCountsSection","adminSharesSection","adminNetSection","check-export","apply-export"], entry:"page-export-basket"},
     /* Part 1's third chapter (2026-11-02, Nil: "under part 1: add How am I doing?"): two placeholder beats until it is designed */
     {name:"How am I doing?", pages:["page-doing","page-doing-metro"], entry:"page-doing"},
     {name:"Constraints Diagnosis",pages:["page-constraints","page-city-in-metro","page-constraints-lorem","check-constraints","apply-constraints"],entry:"page-constraints"},
@@ -19386,7 +19365,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
      sell outward; then (2026-10-26) Boston's own work by sector in four
      beats, states 8 to 11 of the shared figure (window.MI2 routes them) */
   mount({ pageId: "page-export-basket", ctl: "MI2", seg: "ctLayoutSeg", noClassic: true, noToggle: true, noBadge: true,
-          states: { "2": [0, 4, 6, 8, 9, 10, 11] } });
+          states: { "2": [0, 4, 6, 8, 9, 10] } });
 })();
 
 /* ---- the presenter view ----------------------------------------------
@@ -20644,9 +20623,10 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     /* the split stands only if it adds up to the counts; if not, the blocks are drawn plain and the key says nothing of it */
     const splitOk = sum(r => r.jobs) === A.jobs && Math.abs(sum(r => r.estRes) - A.liveWork) < 1 && Math.abs(sum(r => r.estNon) - A.in) < 1 && Math.abs(sum(r => r.estOut) - A.out) < 1;
     if (!splitOk) console.warn("WF tree: the split does not match the LODES OD totals, " + D.year);
-    /* the needle's ratio is section 1's (2026-11-04, Nil: one number for Boston on both needles): commuters in for every
-       one out, 528K over 157K, 3.4; per sector the estimated split's in over its out */
-    return { D, A, M, SH_J: A.jobs / M.jobs, SH_R: A.residents / M.residents, R_ALL: A.in / A.out, rows, byCode, OD, splitOk };
+    /* the needle's ratio is jobs per working resident again, 719K over 348K, 2.1 (2026-11-09, Nil: "shouldn't the needle
+       in Where is Boston a receiver or a sender of workers? show 2.1?"): the net bars are jobs less residents' jobs, so
+       their needle is jobs over residents' jobs. From 11-04 to 11-09 it read commuters in over out, 3.4, as Who am I?'s */
+    return { D, A, M, SH_J: A.jobs / M.jobs, SH_R: A.residents / M.residents, R_ALL: A.jobs / A.residents, rows, byCode, OD, splitOk };
   }
   const YD = {}; Object.keys(WF_YEARS).forEach(y => { YD[y] = yearData(WF_YEARS[y]); });
   /* the year shown and its figures: everything below reads these, never a year's data directly. ?wfyear=2013 opens on 2013 */
@@ -20707,8 +20687,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   const BEATS = [
     { reading: "counts", sort: "jobs" },
     { reading: "shares", sort: "shareJobs" },
-    { reading: "both", sort: "gain" },
-    { reading: "report", sort: "msaJobs" }
+    /* beat 6 back to the net bars, its first design (2026-11-09, Nil: "return to the initial design"); the two-way
+       bars ("both") stay a reading the code can draw. Beat 7 removed the same day */
+    { reading: "gain", sort: "gain" }
   ];
   /* what each Ask row shows: the beat's view with the question's settings over it */
   const ASKS = {
@@ -22970,14 +22951,15 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   const gRow = (k, n, share, words) => (window.FLOW_ICO ? window.FLOW_ICO[k] : "") + '<b class="wg-n">' + fmt(n) + '</b><span class="wg-w">' + words + '</span><span class="wg-tr wg-tr--' + k + '"><i style="width:' + (share * 100).toFixed(1) + '%"></i></span>';
   /* the needle's words for a sector, or for Boston across every sector */
   function needleWords(d){
-    const own = !d, i = own ? A.jobs : d.jobs, o = own ? A.residents : d.residents, ci = own ? A.in : d.estNon, co = own ? A.out : d.estOut;
-    /* commuters in for every one out, as section 1's needle reads (2026-11-04, Nil: "do that", one number for Boston on
-       both needles, 3.4); a sector's is the estimated split's, and says so. (It read jobs over residents, 2.1, before) */
-    const ratio = co > 0 ? ci / co : GG.max, z = zoneOf(ratio);
+    const own = !d, i = own ? A.jobs : d.jobs, o = own ? A.residents : d.residents;
+    /* jobs for every working resident, Boston's 2.1, a sector's its jobs in Boston over its residents' jobs (2026-11-09,
+       back from 11-04's commuters in over out, 3.4) */
+    const ratio = o > 0 ? i / o : GG.max, z = zoneOf(ratio);
     const nm = own ? "" : d.short.charAt(0).toLowerCase() + d.short.slice(1);
     const kind = z === "bus" ? "a business admin" : z === "res" ? "a residential admin" : "balanced";
     const num = rx(ratio).replace("×", "");
-    const per = (z === "bal" ? "about one commutes in" : num + " commute in") + " for every one who commutes out" + (own ? "" : ", by estimate");
+    /* "in the sector", not "in it": two rows under the sector's name, "it" read as Boston (2026-11-03 review) */
+    const per = own ? num + " jobs in Boston for every working resident" : (z === "bal" ? "about one job" : num + " jobs") + " in Boston for every resident who works in " + (d.code ? "the sector" : "these sectors");
     const gain = i === o ? "Boston sends as many workers as it receives" : "Boston " + (i > o ? "receives " : "sends ") + fmt(Math.abs(i - o)) + (i > o ? " more workers than it sends" : " more workers than it receives");
     return { own, ratio, z, nm, per, gain, who: own ? "Boston is " + kind : "For " + nm + ", Boston is " + kind, net: '<b>' + gain + '</b>, with ' + per };
   }
