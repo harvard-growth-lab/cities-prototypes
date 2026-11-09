@@ -2491,6 +2491,21 @@
   .who-ref-key i{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--pc);border:1.5px solid var(--white);box-shadow:0 0 0 1px var(--pc);}
   .rh-pe{stroke:var(--white);stroke-width:1.5;}
   .rh-tick--one{fill:var(--ink);font-weight:600;}
+  /* opt-1 and opt-3 of the chart under the dots (2026-11-08): the zones' bars and the strip, in the needle's colours */
+  .rh-bar.rz-dim{fill-opacity:.45;} .rh-bar.rz-me{stroke:var(--teal);stroke-width:2;}
+  .rz-share{font-size:15px;font-weight:700;fill:var(--ink);} .rz-name{font-size:13px;font-weight:600;fill:var(--ink);} .rz-range{font-size:13px;fill:var(--ink-soft);}
+  .rz-call{font-size:13px;font-weight:600;fill:var(--teal);} .rz-me-t{font-size:22px;font-weight:700;fill:var(--teal);}
+  .rz-share,.rz-name,.rz-range,.rz-call,.rz-me-t{pointer-events:none;}
+  .rh-me.rs-me{stroke-width:3;}
+  /* Boston's info mark, as a term's (ink-soft, teal while its card is open) and its hit */
+  .rh-info{pointer-events:none;} .rh-info circle{fill:none;stroke:var(--ink-soft);stroke-width:1.3;} .rh-info path{stroke:var(--ink-soft);stroke-width:1.5;stroke-linecap:round;}
+  .rh-info .rh-info-dot{fill:var(--ink-soft);stroke:none;}
+  svg.is-me .rh-info circle,svg.is-me .rh-info path{stroke:var(--teal);} svg.is-me .rh-info .rh-info-dot{fill:var(--teal);}
+  .rh-hit--me{cursor:help;outline:none;} .rh-hit--me:focus-visible{stroke:var(--teal);stroke-width:2;}
+  .who-ref-tip-p{margin:0 0 10px;white-space:normal;width:220px;color:var(--ink);}
+  .who-ref-dist[data-look="zones"] .who-ref-peers{display:none;}
+  /* each chip as wide as its bold (pressed) name, so pressing one never wraps the row anew (2026-11-09, nothing moves) */
+  .who-ref-peers .wt-pl{display:inline-grid;} .who-ref-peers .wt-pl::after{content:attr(data-t);font-weight:600;height:0;visibility:hidden;overflow:hidden;}
   .rh-me-t{font-size:15px;}
   .rh-pa{stroke:var(--mk-pa);} .rh-pa-t{fill:var(--mk-pa);}
   #ovWrap.is-presenting .fl-detail--hist .who-ref-hist{height:calc(220px * var(--pv-k, 1));}
@@ -6693,6 +6708,9 @@
   .ct-eyebrow .mi-studies-panel{left:0;right:auto;z-index:13;}
   /* the quietest thing in the head, but still a control and still words:
      #9aa3a6 read at 2.6 to 1, which is under the floor for either */
+  /* v-5 (2026-11-08): no design studies on the page, the "opt" menus and the journey's option 1 / 2 are not shown; v-6 keeps them */
+  .mi-studies:not(:has(.wt-look-opt)),.journey-head > .jp-opt,.mi-studies .mi-study:not(.mi-study--look){display:none !important;}
+  /* the one study kept (2026-11-08): the chart under the dots */
   .mi-studies-btn{
     appearance:none;background:none;border:0;padding:2px 4px;font:inherit;font-size:13px;
     color:var(--ink-soft);cursor:pointer;text-decoration:underline;text-underline-offset:3px;
@@ -8539,6 +8557,9 @@
     .tw-verdict h3{font-size:16.5px;}
   }
 </style>
+<script>/* v-5 shows only the chosen design (2026-11-08, Nil: "in v-5, remove all opts but keep them in v-6"): the
+   address's ?switches are dropped before any script reads them, so every study opens on its default; v-6 keeps them */
+if (location.search) history.replaceState(null, "", location.pathname + location.hash);</script>
 <script>/* ?colours=16, 11, 10 or 9 shows that colour system beside the thirteen (HANDOFF §6c) */
 (function(){ var m = /[?&]colours=(16|11|10|9)\b/.exec(location.search); if (m) document.documentElement.dataset.colours = m[1]; })();</script>
 </head>
@@ -16552,8 +16573,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     /* "Closest peers" as beat 1's tables lead it (2026-11-08, Nil: "put i tooltip together with closest peers, similar to
        the previous sections"): the term button, whose card the stats' script registers as who-peers-admin */
     const KEY = () => '<p class="wt-peers who-ref-peers"><span class="wt-pk"><button type="button" class="term" data-term="who-peers-admin" aria-expanded="false">Closest peers</button></span>' +
-      '<button type="button" class="wt-peer wt-peer--avg" data-set="admin" data-avg="1" aria-pressed="' + avgOn() + '"><i aria-hidden="true"></i>Peer average</button><span class="wt-sep" aria-hidden="true"></span>' +
-      '<span class="wt-pgrp">' + BAL.peers.map(p => '<button type="button" class="wt-peer" data-set="admin" data-p="' + pshort(p[0]) + '" aria-pressed="' + peerOn(p) + '" style="--pc:var(--pc-' + pslug(p[0]) + ')"><i aria-hidden="true"></i>' + p[0].replace(",", "") + '</button>').join("") + '</span>' +
+      '<button type="button" class="wt-peer wt-peer--avg" data-set="admin" data-avg="1" aria-pressed="' + avgOn() + '"><i aria-hidden="true"></i><span class="wt-pl" data-t="Peer average">Peer average</span></button><span class="wt-sep" aria-hidden="true"></span>' +
+      '<span class="wt-pgrp">' + BAL.peers.map(p => '<button type="button" class="wt-peer" data-set="admin" data-p="' + pshort(p[0]) + '" aria-pressed="' + peerOn(p) + '" style="--pc:var(--pc-' + pslug(p[0]) + ')"><i aria-hidden="true"></i><span class="wt-pl" data-t="' + p[0].replace(",", "") + '">' + p[0].replace(",", "") + '</span></button>').join("") + '</span>' +
       '</p>';
     const TOP = 48;  /* over the plot: the zones' names, Boston's name over its line, whose top meets the longest bar */
     function histLayout(Wd, Hd){
@@ -16596,7 +16617,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         t.map((s, i) => '<tspan x="' + q(x0) + '" dy="' + (i ? 17 : 0) + '">' + s + '</tspan>').join("") + '</text>';
       h += words("rh-arr--lo", L.lo, L.one - 8, "end") + words("rh-arr--hi", L.hi, L.one + 8, "start");
       /* Boston's line and name; the bracket over the places beyond it with their share, in the short form where the room is small */
-      const meW = tw("Boston " + fx1(BAL.me), 15, 700), meEnd = B - 8 - meW >= 16;  /* drawn at 15px (.rh-me-t, the Under study's size) */
+      const meW = tw("Boston " + fx1(BAL.me), 15, 700) + 4 + INFO, meEnd = B - 8 - meW >= 16;  /* drawn at 15px (.rh-me-t, the Under study's size) */
       /* the peer average and the peers chosen (2026-11-08, Nil: the peers drawn as the peer average is): each a line
          from its name down to the baseline, the average dashed in its ink, a peer solid in its colour; the name beside
          the top of its line, left where it fits, else right, on the first row (60, 77, ...) where it meets no other name,
@@ -16618,20 +16639,146 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         h += '<g class="rh-mk"><line class="rh-pa-halo" x1="' + q(m.S) + '" x2="' + q(m.S) + '" y1="' + (ty - 10) + '" y2="' + q(base) + '"/><line class="' + m.cls + '"' + st + ' x1="' + q(m.S) + '" x2="' + q(m.S) + '" y1="' + (ty - 10) + '" y2="' + q(base) + '"/>' +
           '<text class="' + m.tcls + '"' + sf + ' x="' + q(m.side ? m.S - 6 : m.S + 6) + '" y="' + ty + '" text-anchor="' + (m.side ? "end" : "start") + '">' + m.pre + '<tspan class="rh-b">' + fx1(m.v) + '</tspan></text></g>'; });
       h += '<g class="rh-mk"><line class="rh-me-halo" x1="' + q(B) + '" x2="' + q(B) + '" y1="' + TOP + '" y2="' + q(base) + '"/><line class="rh-me" x1="' + q(B) + '" x2="' + q(B) + '" y1="' + TOP + '" y2="' + q(base) + '"/>' +
-        '<text class="rh-me-t" x="' + q(meEnd ? B - 8 : B + 8) + '" y="' + (TOP - 8) + '" text-anchor="' + (meEnd ? "end" : "start") + '">Boston ' + fx1(BAL.me) + '</text></g>';
+        '<text class="rh-me-t" x="' + q(meEnd ? B - 8 - 4 - INFO : B + 8) + '" y="' + (TOP - 8) + '" text-anchor="' + (meEnd ? "end" : "start") + '">Boston ' + fx1(BAL.me) + '</text>' +
+        infoMark(meEnd ? B - 8 - 7 : B + 8 + meW - 7, TOP - 13) + '</g>';
       /* what a pointer finds: a bin's whole column, a chosen peer's dot */
       C22.forEach((c, i) => { const a = x(edge(i)), b = x(edge(i + 1)); h += '<rect class="rh-hit" data-i="' + i + '" x="' + q(a) + '" y="' + TOP + '" width="' + q(b - a) + '" height="' + q(L.plotH) + '"/>'; });
       mks.forEach(m => { if (m.j != null){ const ty = 60 + 17 * m.row; h += '<rect class="rh-hit" data-p="' + m.j + '" x="' + q(m.S - 6) + '" y="' + (ty - 10) + '" width="12" height="' + q(L.base - ty + 10) + '"/>'; } });
+      h += meHit(meEnd ? B - 8 - meW - 2 : B + 6, TOP - 26, meW + 4, 24);
       return h;
     }
 
+    /* ---- two more readings of the same admins, the only study left in v-5 (2026-11-08, Nil: "from
+       balance-histogram-sketches.html, add option 1 and 3 as an option for v-5"): opt-1 the needle's three zones as
+       three bars, each the share of admins in it, Boston's bar the only one at full strength and saying "Boston is
+       here" with its 2.1, no peers; opt-3 one ranked strip from the most residential admin to the most business-like,
+       each zone named with its share, Boston's mark saying only 2.1 (its card says what that is), the peer average and
+       the peers chosen through the chips as lines, as the histogram draws them. The zones count the 44 bins by their
+       middles, so the shares are close, not exact (a bin can straddle 0.8 or 1.25) */
+    let look = "hist";
+    const ZK = ["res", "bal", "bus"], ZC = { res: 0, bal: 0, bus: 0 };
+    BAL.counts.forEach((c, i) => { ZC[zoneOf(Math.pow(10, -1 + (i + .5) * 2 / BAL.counts.length))] += c; });
+    /* whole percents that add to 100 (largest remainder) */
+    const ZP = (() => { const r = ZK.map(k => ZC[k] / BAL.n * 100), f = r.map(Math.floor); let left = 100 - f.reduce((a, b) => a + b, 0);
+      r.map((v, i) => [v - f[i], i]).sort((a, b) => b[0] - a[0]).forEach(([, i]) => { if (left > 0){ f[i]++; left--; } });
+      return { res: f[0], bal: f[1], bus: f[2] }; })();
+    const ZW = { res: ["Residential admins", "Residential", "under 0.8 jobs per working resident", "under 0.8", "under 0.8×"],
+                 bal: ["Balanced admins", "Balanced", "0.8 to 1.25 jobs per working resident", "0.8 to 1.25", "0.8× to 1.25×"],
+                 bus: ["Business admins", "Business", "over 1.25 jobs per working resident", "over 1.25", "over 1.25×"] };
+    const ME_Z = zoneOf(BAL.me), aboutN = n => "about " + FULL(Math.round(n / 100) * 100);
+    const ord = n => n + (n % 100 >= 11 && n % 100 <= 13 ? "th" : ["th", "st", "nd", "rd"][n % 10] || "th");
+    /* a block of words wrapped to a width, at the smallest form that fits (each form tried in turn) */
+    const wrapTo = (forms, max, size, weight) => { for (const f of forms){ if (tw(f, size, weight) <= max) return [f]; }
+      for (const f of forms){ const l = lines(f, max, size, weight); if (l) return l; } return [forms[forms.length - 1]]; };
+    const tsp = (ls, x0, dy) => ls.map((s, i) => '<tspan x="' + q(x0) + '" dy="' + (i ? dy : 0) + '">' + s + '</tspan>').join("");
+
+    /* opt-1: three bars */
+    function zonesLayout(Wd, Hd){
+      const W = Wd - 32; if (!(W > 0) || !(Hd > 0)) return null;
+      const g = Math.max(14, Math.min(40, W * .06)), bw = (W - 2 * g) / 3, room = bw + g - 6;
+      const name = ZK.map(k => wrapTo([ZW[k][0], ZW[k][1]], room, 13, 600)), range = ZK.map(k => wrapTo([ZW[k][2], ZW[k][3]], room, 13, 400));
+      const share = ZK.map(k => wrapTo([ZP[k] + "% of admins"], room, 15, 700)), call = wrapTo(["Boston is here"], room, 13, 600);
+      const nl = Math.max(...name.map(l => l.length)), rl = Math.max(...range.map(l => l.length)), sl = Math.max(...share.map(l => l.length));
+      const below = 20 + 17 * (nl - 1) + 17 * rl + 6, max = Math.max(...ZK.map(k => ZC[k])), rb = ZC[ME_Z] / max;
+      /* Boston's bar needs its share, its 2.1 and "Boston is here" over it: the top grows until they clear the edge */
+      const need = 8 + 19 * sl + 27 + 22 + 17 * (call.length - 1) + 14, TOPZ = Math.max(8 + 19 * sl, Math.ceil((need - (Hd - below) * (1 - rb)) / rb));
+      const plotH = Math.max(24, Hd - TOPZ - below), base = TOPZ + plotH;
+      const xs = ZK.map((k, i) => 16 + i * (bw + g));
+      return { look: "zones", Wd, W, g, bw, base, plotH, xs, name, range, share, call, nl, h: k => ZC[k] / max * plotH };
+    }
+    function zonesSvg(L){
+      let h = '<line class="rh-base" x1="16" x2="' + q(16 + L.W) + '" y1="' + q(L.base) + '" y2="' + q(L.base) + '"/>';
+      ZK.forEach((k, i) => { const x0 = L.xs[i], cx = x0 + L.bw / 2, hh = L.h(k), top = L.base - hh, me = k === ME_Z;
+        h += '<rect data-z="' + i + '" class="rh-bar rh-bar--' + k + (me ? ' rz-me' : ' rz-dim') + '" x="' + q(x0) + '" y="' + q(top) + '" width="' + q(L.bw) + '" height="' + q(hh) + '"/>';
+        /* the share over its bar; over Boston's, "Boston is here" and its reading above the share */
+        const sy = top - 8 - 19 * (L.share[i].length - 1);
+        h += '<text class="rz-share" x="' + q(cx) + '" y="' + q(sy) + '" text-anchor="middle">' + tsp(L.share[i], cx, 19) + '</text>';
+        if (me){ const by = sy - 19 - 8, cy = by - 22 - 17 * (L.call.length - 1);
+          const w21 = tw(fx1(BAL.me), 22, 700), tx = cx - (INFO + 4) / 2;
+          h += '<text class="rz-me-t" x="' + q(tx) + '" y="' + q(by) + '" text-anchor="middle">' + fx1(BAL.me) + '</text>' + infoMark(tx + w21 / 2 + 4 + 7, by - 8) +
+            '<text class="rz-call" x="' + q(cx) + '" y="' + q(cy) + '" text-anchor="middle">' + tsp(L.call, cx, 17) + '</text>';
+          /* its hit is the callout alone (2026-11-09, Nil: the card stood far from the 2.1 when the whole column was the hit) */
+          const wc = Math.max(...L.call.map(t => tw(t, 13, 600)), w21 + 4 + INFO);
+          L.meBox = [cx - wc / 2 - 6, cy - 15, wc + 12, by + 6 - (cy - 15)]; }
+        h += '<text class="rz-name" x="' + q(cx) + '" y="' + q(L.base + 20) + '" text-anchor="middle">' + tsp(L.name[i], cx, 17) + '</text>' +
+          '<text class="rz-range" x="' + q(cx) + '" y="' + q(L.base + 20 + 17 * L.nl) + '" text-anchor="middle">' + tsp(L.range[i], cx, 17) + '</text>';
+        h += '<rect class="rh-hit" data-z="' + i + '" x="' + q(x0 - L.g / 2 + 1) + '" y="0" width="' + q(L.bw + L.g - 2) + '" height="' + q(L.base) + '"/>'; });
+      if (L.meBox) h += meHit(...L.meBox);
+      return h;
+    }
+
+    /* opt-3: the ranked strip */
+    const rankOf = v => { if (v === BAL.me) return BAL.rank; const lv = Math.log10(v); let above = 0;
+      BAL.counts.forEach((c, i) => { const a = -1 + i * 2 / BAL.counts.length, b = -1 + (i + 1) * 2 / BAL.counts.length;
+        if (a >= lv) above += c; else if (b > lv) above += c * (b - lv) / (b - a); }); return above; };
+    function stripLayout(Wd, Hd){
+      const W = Wd - 32; if (!(W > 0) || !(Hd > 0)) return null;
+      const rx = r => 16 + (1 - r / BAL.n) * W, x = v => rx(rankOf(v));
+      /* the zones from the left, each as wide as its count; their names over them, the long form where all fit on one row */
+      let x0 = 16; const seg = ZK.map(k => { const w = ZC[k] / BAL.n * W, s = { k, a: x0, w }; x0 += w; return s; });
+      const label = (k, f) => (f ? ZW[k][0] : ZW[k][1]) + " (" + ZP[k] + "%)";
+      let rows = null;
+      for (const full of [true, false]){
+        const ps = seg.map(s => { const t = label(s.k, full), w = tw(t, 13, 600), cx = Math.max(16 + w / 2, Math.min(16 + W - w / 2, s.a + s.w / 2)); return { k: s.k, t, a: cx - w / 2, b: cx + w / 2, cx }; });
+        const placed = []; ps.forEach(p => { let r = 0; while (placed.some(o => o.row === r && p.a < o.b + 10 && o.a < p.b + 10)) r++; placed.push(Object.assign(p, { row: r })); });
+        const n = Math.max(...placed.map(p => p.row)) + 1; if (!rows || n < rows.n) rows = { n, ps: placed }; if (n === 1) break; }
+      /* nothing moves when a peer is switched (2026-11-09, Nil: "when I open peer cities, no feature moves"): every name
+         has its place worked out as though the peer average and all four peers were on, and the rows are reserved; a peer
+         switched on only shows its line and name. The strip takes the height the rest leaves (32 to 64), so the chart
+         fills its box with no gap under it, and the names' rows are 17 apart under Boston's 2.1 */
+      const B = rx(BAL.rank), meW = tw(fx1(BAL.me), 15, 700) + 4 + INFO, meX = Math.max(16 + meW / 2, Math.min(16 + W - meW / 2, B));
+      const placed = [{ row: 0, a: meX - meW / 2, b: meX + meW / 2 }];
+      const all = [{ v: BAL.avg, pre: "Peer average ", cls: "rh-pa", tcls: "rh-pa-t", w0: 400, col: "", avg: true }]
+        .concat(BAL.peers.map((p, j) => ({ v: p[1], pre: pshort(p[0]) + " ", cls: "rh-pl", tcls: "rh-pl-t", w0: 600, col: "var(--pc-" + pslug(p[0]) + ")", j, p })))
+        .sort((a, b) => a.v - b.v);
+      all.forEach(m => { const S = x(m.v), w = tw(m.pre, 13, m.w0) + tw(fx1(m.v), 13, 700), cx = Math.max(16 + w / 2, Math.min(16 + W - w / 2, S)), a = cx - w / 2, b = cx + w / 2;
+        let r = 0; while (placed.some(o => o.row === r && a < o.b + 8 && o.a < b + 8)) r++; placed.push({ row: r, a, b }); Object.assign(m, { S, cx, row: r }); });
+      const mks = all.filter(m => m.avg ? avgOn() : peerOn(m.p));
+      const nr = Math.max(...placed.map(p => p.row)) + 1;
+      const lo = "←" + NBSP + "Most residential", hi = "Most business-like" + NBSP + "→", one = tw(lo, 13, 600) + tw(hi, 13, 600) + 16 <= W;
+      /* top to bottom: the zones' names, the strip, Boston's row and the peers' (20, then 17 each), the ends' words */
+      const top0 = 8 + 17 * rows.n + 8, rest = top0 + 20 + 17 * (nr - 1) + 12 + 17 * (one ? 1 : 2) + 4;
+      /* what height is left once the strip is at its thickest is split above and below, so no gap gathers under the chart */
+      const hS = Math.max(32, Math.min(64, Hd - rest)), dy = Math.max(0, Math.floor((Hd - rest - hS) / 2)), top = top0 + dy, sb = top + hS, ry = r => sb + 20 + 17 * r, ey = ry(nr - 1) + 12 + 13;
+      return { look: "strip", Wd, W, x, rx, seg, rows, dy, top, hS, sb, base: sb, B, meX, meW, mks, ry, ey, lo, hi, one };
+    }
+    function stripSvg(L){
+      let h = '';
+      L.seg.forEach((s, i) => { h += '<rect data-z="' + i + '" class="rh-bar rh-bar--' + s.k + '" x="' + q(s.a + (i ? 1 : 0)) + '" y="' + q(L.top) + '" width="' + q(Math.max(0, s.w - (i ? 1 : 0))) + '" height="' + L.hS + '"/>'; });
+      L.rows.ps.forEach(p => { h += '<text class="rh-zone rh-zone--' + p.k + '" x="' + q(p.cx) + '" y="' + q(L.dy + 8 + 13 + 17 * p.row) + '" text-anchor="middle">' + p.t + '</text>'; });
+      /* the ends in words, on one row where they fit, else the right one under the left */
+      h += '<text class="rh-arr rh-arr--lo" x="16" y="' + q(L.ey) + '">' + L.lo + '</text>' +
+        '<text class="rh-arr rh-arr--hi" x="' + q(16 + L.W) + '" y="' + q(L.ey + (L.one ? 0 : 17)) + '" text-anchor="end">' + L.hi + '</text>';
+      const t0 = L.top - 6, t1 = L.sb + 6;
+      L.mks.forEach(m => { const st = m.col ? ' style="stroke:' + m.col + '"' : '', ty = L.ry(m.row);
+        h += '<g class="rh-mk"><line class="rh-pa-halo" x1="' + q(m.S) + '" x2="' + q(m.S) + '" y1="' + q(t0) + '" y2="' + q(t1) + '"/><line class="' + m.cls + '"' + st + ' x1="' + q(m.S) + '" x2="' + q(m.S) + '" y1="' + q(t0) + '" y2="' + q(t1) + '"/>' +
+          '<text class="' + m.tcls + '" x="' + q(m.cx) + '" y="' + q(ty) + '" text-anchor="middle">' + m.pre + '<tspan class="rh-b">' + fx1(m.v) + '</tspan></text></g>'; });
+      h += '<g class="rh-mk"><line class="rh-me-halo" x1="' + q(L.B) + '" x2="' + q(L.B) + '" y1="' + q(L.top - 8) + '" y2="' + q(L.sb + 8) + '"/><line class="rh-me rs-me" x1="' + q(L.B) + '" x2="' + q(L.B) + '" y1="' + q(L.top - 8) + '" y2="' + q(L.sb + 8) + '"/>' +
+        '<text class="rh-me-t" x="' + q(L.meX - (INFO + 4) / 2) + '" y="' + q(L.ry(0)) + '" text-anchor="middle">' + fx1(BAL.me) + '</text>' + infoMark(L.meX + L.meW / 2 - 7, L.ry(0) - 5) + '</g>';
+      /* what a pointer finds: a zone, Boston's mark or its 2.1, a chosen peer's line or name */
+      L.seg.forEach((s, i) => { h += '<rect class="rh-hit" data-z="' + i + '" x="' + q(s.a) + '" y="0" width="' + q(s.w) + '" height="' + q(L.sb) + '"/>'; });
+      L.mks.forEach(m => { if (m.j != null) h += '<rect class="rh-hit" data-p="' + m.j + '" x="' + q(m.S - 6) + '" y="' + q(t0) + '" width="12" height="' + q(t1 - t0) + '"/>'; });
+      { const a = Math.min(L.B - 8, L.meX - L.meW / 2 - 4), b = Math.max(L.B + 8, L.meX + L.meW / 2 + 4); h += meHit(a, t0, b - a, L.ry(0) + 6 - t0); }
+      return h;
+    }
+    /* the cards for a zone and for Boston, in the histogram's words */
+    const zoneTip = i => { const k = ZK[i]; return tipHtml(ZW[k][0], [["Admins", aboutN(ZC[k])], ["Of all " + FULL(BAL.n), ZP[k] + "%"], ["Jobs per working resident", ZW[k][4]]].concat(k === ME_Z ? [["Boston", fx1(BAL.me) + "×"]] : [])); };
+    /* Boston's 2.1 carries the house info mark, as a term does (2026-11-08, Nil: "in all 3 options, add a tooltip to
+       Boston to explain what 2.1 is"); its card says what the number is in a sentence before the figures */
+    const INFO = 14, infoMark = (cx, cy) => '<g class="rh-info" transform="translate(' + q(cx - 7) + ' ' + q(cy - 7) + ')" aria-hidden="true"><circle cx="7" cy="7" r="6.1"/><path d="M7 6.4v3.6"/><circle class="rh-info-dot" cx="7" cy="4.2" r=".9"/></g>';
+    const meHit = (x0, y0, w, h) => '<rect class="rh-hit rh-hit--me" data-me="1" tabindex="0" role="button" aria-label="Boston, ' + fx1(BAL.me) + ': what this number means" x="' + q(x0) + '" y="' + q(y0) + '" width="' + q(w) + '" height="' + q(h) + '"/>';
+    const meTip = () => '<b>Boston, ' + fx1(BAL.me) + '</b><p class="who-ref-tip-p">Boston has ' + fx1(BAL.me) + ' jobs for every resident who works: ' + K(JOBS) + ' jobs, ' + K(RES) + ' working residents.</p>' + tipHtml("", [["Rank among " + FULL(BAL.n) + " admins", ord(BAL.rank)], ["Admins with more", ABOVE + "%"], ["Kind of admin", ME_Z === "bus" ? "Business" : ME_Z === "res" ? "Residential" : "Balanced"]]).replace("<b></b>", "");
+
     /* ---- the charts on the page: the Venn and a histogram in the figure; a second histogram in the column, for a phone */
     const ARIA_V = "Jobs in Boston and jobs held by its residents, 2023: " + K(JOBS) + " jobs in Boston, " + K(RES) + " working residents, " + K(BOTH) + " both; " + K(IN) + " commute in and " + K(OUT) + " commute out.";
-    const ARIA_H = () => "Jobs per working resident across " + FULL(BAL.n) + " US admins, the bars grouped residential, balanced and business: Boston " + fx1(BAL.me) + ", " + ABOVE + "% of admins have more" +
+    const ARIA_H = () => look === "zones" ? FULL(BAL.n) + " US admins by jobs per working resident, in three bars: " + ZK.map(k => ZP[k] + "% " + ZW[k][1].toLowerCase()).join(", ") + ". Boston, " + fx1(BAL.me) + ", is a " + ZW[ME_Z][1].toLowerCase() + " admin."
+      : look === "strip" ? FULL(BAL.n) + " US admins ranked by jobs per working resident, from the most residential to the most business-like: " + ZK.map(k => ZP[k] + "% " + ZW[k][1].toLowerCase()).join(", ") + ". Boston " + fx1(BAL.me) + ", " + ord(BAL.rank) + ", " + ABOVE + "% of admins have more" +
+        (avgOn() ? "; peer average " + fx1(BAL.avg) : "") + (BAL.peers.some(peerOn) ? "; peers " + BAL.peers.filter(peerOn).map(p => pshort(p[0]) + " " + fx1(p[1])).join(", ") : "") + "."
+      : "Jobs per working resident across " + FULL(BAL.n) + " US admins, the bars grouped residential, balanced and business: Boston " + fx1(BAL.me) + ", " + ABOVE + "% of admins have more" +
       (avgOn() ? "; peer average " + fx1(BAL.avg) : "") + (BAL.peers.some(peerOn) ? "; peers " + BAL.peers.filter(peerOn).map(p => pshort(p[0]) + " " + fx1(p[1])).join(", ") : "") + ".";
     /* each histogram with its own card; the column's copy led by the Venn's source line, shown when the Venn is in a phone's band */
     const TIP = '<div class="who-ref-tip" hidden aria-hidden="true"></div>';
-    const DIST = () => '<div class="who-ref-dist' + (BAL.peers.some(peerOn) ? ' has-peers' : '') + '"><p class="who-ref-head">' + TITLE + '</p><div class="who-ref-hist"><svg role="img" aria-label="' + ARIA_H() + '"></svg></div>' + TIP + KEY() + '</div>';
+    const DIST = () => '<div class="who-ref-dist' + (BAL.peers.some(peerOn) ? ' has-peers' : '') + '" data-look="' + look + '"><p class="who-ref-head">' + TITLE + '</p><div class="who-ref-hist"><svg role="img" aria-label="' + ARIA_H() + '"></svg></div>' + TIP + KEY() + '</div>';
     /* the room under the Venn the histogram needs: the rule and its gaps, the heading, a chart 190 tall */
     const DIST_MIN = 12 + 230, DOOR = 16;  /* the block's margin and its CSS least height (border box) */
     const presOn = () => { const w = document.getElementById("ovWrap"); return !!(w && w.classList.contains("is-presenting")); };
@@ -16660,7 +16807,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     }
     function drawHist(H){
       const Wp = H.box.clientWidth, Hp = H.box.clientHeight; if (!Wp || !Hp) return;
-      const s = scale(), L = histLayout(Wp / s, Hp / s); if (!L) return; H.L = L; size(H.svg, Wp, Hp, s); H.svg.innerHTML = histSvg(L); H.svg.setAttribute("aria-label", ARIA_H()); H.key = null; H.tip.hidden = true;
+      const s = scale(), L = (look === "zones" ? zonesLayout : look === "strip" ? stripLayout : histLayout)(Wp / s, Hp / s); if (!L) return; H.L = L; size(H.svg, Wp, Hp, s);
+      H.svg.innerHTML = look === "zones" ? zonesSvg(L) : look === "strip" ? stripSvg(L) : histSvg(L); H.svg.setAttribute("aria-label", ARIA_H()); H.key = null; H.tip.hidden = true;
     }
     function draw(){ if (!on) return; ensure(); drawVenn(); hists.forEach(drawHist); }
     /* a part of the Venn, once it is named: its outline and its card, over the part */
@@ -16675,11 +16823,20 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     }
     /* a bin (its bar outlined, the places in it) or a peer's tick (its name and value) */
     function hHover(H, el, toggle){
-      const hit = el && el.closest ? el.closest(".rh-hit") : null; let key = hit ? (hit.dataset.i != null ? "b" + hit.dataset.i : "p" + hit.dataset.p) : null;
+      const hit = el && el.closest ? el.closest(".rh-hit") : null;
+      let key = hit ? (hit.dataset.i != null ? "b" + hit.dataset.i : hit.dataset.z != null ? "z" + hit.dataset.z : hit.dataset.me ? "m0" : "p" + hit.dataset.p) : null;
       if (toggle && key === H.key) key = null; H.key = key;
-      H.svg.querySelectorAll(".rh-bar.is-on").forEach(b => b.classList.remove("is-on"));
+      H.svg.querySelectorAll(".rh-bar.is-on").forEach(b => b.classList.remove("is-on")); H.svg.classList.remove("is-me");
       if (!key || !H.L){ H.tip.hidden = true; return; }
       const L = H.L, s = scale(), [ox, oy] = offset(H.box, H.tip), n = +key.slice(1);
+      /* opt-1 and opt-3: a zone (its bar outlined) or Boston's mark, the card beside what the pointer is on */
+      if (key[0] === "z" || key[0] === "m"){ if (key[0] === "z") H.svg.querySelectorAll('.rh-bar[data-z="' + n + '"]').forEach(r => r.classList.add("is-on"));
+        showTip(H.tip, key[0] === "z" ? zoneTip(n) : meTip());
+        const hb = hit.getBoundingClientRect(), pr = H.tip.parentElement.getBoundingClientRect(), tw0 = H.tip.offsetWidth, bw = H.box.clientWidth;
+        let left = hb.right - pr.left + 8; if (left + tw0 > ox + bw) left = hb.left - pr.left - 8 - tw0;
+        H.tip.style.left = q(Math.max(ox, Math.min(ox + bw - tw0, left))) + "px";
+        /* Boston's card level with its callout, kept within the chart's height */
+        H.tip.style.top = q(key[0] === "m" ? Math.max(oy, Math.min(oy + H.box.clientHeight - H.tip.offsetHeight, hb.top - pr.top)) : oy + (L.look === "strip" ? (L.sb + 10) * s : 4)) + "px"; H.svg.classList.toggle("is-me", key[0] === "m"); return; }
       if (key[0] === "b"){ const a = edge(n), b = edge(n + 1); H.svg.querySelectorAll('.rh-bar[data-i="' + n + '"]').forEach(r => r.classList.add("is-on"));
         showTip(H.tip, tipHtml(FULL(C22[n]) + (C22[n] === 1 ? " admin" : " admins"), [["Jobs per working resident", n === 0 ? "up to " + b.toFixed(2) + "\u00d7" : n === NB - 1 ? a.toFixed(2) + "\u00d7 or more" : a.toFixed(2) + "\u00d7 to " + b.toFixed(2) + "\u00d7"]]));
         H.tip.style.left = q(ox + Math.max(0, Math.min(L.x(b) * s + 8, H.box.clientWidth - H.tip.offsetWidth))) + "px"; H.tip.style.top = q(oy + TOP * s) + "px"; return; }
@@ -16694,6 +16851,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       H.svg.addEventListener("pointermove", ev => { if (ev.pointerType !== "touch" && ev.target.closest && ev.target.closest(".rh-hit")) hHover(H, ev.target); });
       box.addEventListener("pointerleave", ev => { if (ev.pointerType !== "touch") hHover(H, null); });
       H.svg.addEventListener("pointerdown", ev => { if (ev.pointerType === "touch") hHover(H, ev.target, true); });
+      /* Boston's mark from the keyboard: its card while it has the focus */
+      H.svg.addEventListener("focusin", ev => { if (ev.target.closest && ev.target.closest(".rh-hit--me")) hHover(H, ev.target); });
+      H.svg.addEventListener("focusout", () => hHover(H, null));
       hists.push(H); watch(box); scrollHides();
     }
     /* a peer or the peer average switched anywhere (beat 1's chips or these): the chips here follow, the histograms redraw */
@@ -16756,7 +16916,11 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     if (document.fonts){ const refit = () => { if (on && !raf) draw(); else hists.forEach(drawHist); };
       document.fonts.ready.then(refit); if (document.fonts.addEventListener) document.fonts.addEventListener("loadingdone", refit); }
     /* the histogram on its own, for the Under study: its markup, and the drawing and cards once it is in the page */
-    window.whoFlowsRef = { show, play, still, stop, histHtml: () => DIST(), addHist, drawHists: () => hists.forEach(drawHist) };
+    /* the reading the histogram's block shows: opt-1 three bars, opt-2 the histogram, opt-3 the ranked strip */
+    function setLook(v){ if (!/^(zones|hist|strip)$/.test(v)) return; look = v;
+      document.querySelectorAll(".who-ref-dist").forEach(d => { d.dataset.look = v; }); document.querySelectorAll(".wt-look-opt").forEach(sl => { sl.value = v; });
+      hists.forEach(H => { if (H.key) hHover(H, null); drawHist(H); }); }
+    window.whoFlowsRef = { show, play, still, stop, histHtml: () => DIST(), addHist, drawHists: () => hists.forEach(drawHist), look: () => look, setLook };
   })();
   /* ---- Who are you?: opt-2's first commuting beat as a rectangle Venn
      (2026-10-20, Nil). The "Groups" study in beat A's counter: opt-1 the
@@ -17350,6 +17514,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         blue: '<label class="mi-study"><span>Blue dots</span><select class="wt-blue-opt" aria-label="Which way the commuters coming in fly"><option value="in">1 Into Boston</option><option value="home">2 Home, from Boston (before)</option></select></label>',
         /* under the Venn (2026-11-04): opt-4's histogram, or the two bars as before */
         under: '<label class="mi-study"><span>Under</span><select class="wt-under-opt" aria-label="What stands under the figure"><option value="bars">1 Two bars</option><option value="hist">2 Every place, a histogram</option></select></label>',
+        /* the chart under the Venn (2026-11-08, balance-histogram-sketches.html options 1 and 3 beside the histogram) */
+        look: '<label class="mi-study mi-study--look"><span>Chart under the dots</span><select class="wt-look-opt" aria-label="How the chart under the dots reads the US admins"><option value="zones">opt-1 Three bars</option><option value="hist" selected>opt-2 Histogram</option><option value="strip">opt-3 Ranked strip</option></select></label>',
         compare: '<label class="mi-study"><span>Compare</span><select class="wt-compare-opt" aria-label="How the admin is set against its metro"><option value="bars">1 Bars and ranks</option><option value="cards">2 Cards</option><option value="lines">3 Lines</option></select></label>' };
       st.innerHTML = '<button type="button" class="mi-studies-btn" aria-expanded="false" aria-controls="whoFlowsPanel' + suffix + '">opt</button>' +
         '<div class="mi-studies-panel" id="whoFlowsPanel' + suffix + '" role="group" aria-label="Design studies" hidden>' + rows.map(k => ROW[k]).join("") + '</div>';
@@ -17363,12 +17529,14 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       if (ks){ if (window.whoFlowsAlt && window.whoFlowsAlt.key) ks.value = window.whoFlowsAlt.key(); ks.addEventListener("change", () => { if (window.whoFlowsAlt && window.whoFlowsAlt.setKey) window.whoFlowsAlt.setKey(ks.value); }); }
       const us = st.querySelector(".wt-under-opt");
       if (us){ if (window.whoUnderAlt) us.value = window.whoUnderAlt.mode(); us.addEventListener("change", () => { if (window.whoUnderAlt) window.whoUnderAlt.set(us.value); }); }
+      const ls = st.querySelector(".wt-look-opt");
+      if (ls){ const R = window.whoFlowsRef; if (R && R.look) ls.value = R.look(); ls.addEventListener("change", () => { if (window.whoFlowsRef && window.whoFlowsRef.setLook) window.whoFlowsRef.setLook(ls.value); }); }
       const cs = st.querySelector(".wt-compare-opt");
       if (cs){ if (window.whoCompareAlt) cs.value = window.whoCompareAlt.mode(); cs.addEventListener("change", () => { if (window.whoCompareAlt) window.whoCompareAlt.set(cs.value); }); }
       btn.addEventListener("click", () => { const open = panel.hidden; panel.hidden = !open; btn.setAttribute("aria-expanded", String(open)); });
       document.addEventListener("click", ev => { if (!st.contains(ev.target) && !panel.hidden){ panel.hidden = true; btn.setAttribute("aria-expanded", "false"); } });
     }
-    const studies = () => { study(secA, ["groups", "under", "dotkey"], ""); study(secB, ["blue"], "B"); };
+    const studies = () => { study(secA, ["groups", "under", "look", "dotkey"], ""); study(secB, ["blue"], "B"); };
     studies(); setTimeout(studies, 0);
     /* the flow graphic, the day's totals in and out of Boston: in opt-2 it
        closes beat A once the dots have landed (showEnd); in opt-1 (Nil,
