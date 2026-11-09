@@ -940,6 +940,32 @@
   .sk-fig{margin:6px 0 0;font-size:16px;line-height:1.4;color:var(--on-dark);}
   .sk-sub{margin:6px 0 0;font-size:13px;line-height:1.45;color:var(--on-dark-soft);}
   @media (prefers-reduced-motion: reduce){ .sk-share,.sk-bar i,.skd-needle,.skr-t i{transition:none;} }
+  /* Who am I?'s comparison card (2026-11-07, whole width; 2026-11-08 the first of two, then a list, Nil: "consolidate
+     ... this should be summary and takeaway"): under the head, a line a measure: its name in white, the gap from the
+     metro in quiet words, the rank at the right with its ordinal in white */
+  .seal-key[hidden]{display:none;}   /* the display rule above outranks the attribute: restated for the stand-in */
+  .seal-key--cmp{gap:14px 0;}
+  /* Who am I?'s two cards, their contents centred (2026-11-08, Nil: "make sure the contents are centered on the cards"):
+     the needle, the question and the head in the middle of the card, the whole of each card's content in the middle of
+     its height; the comparison's list keeps its columns at the card's full width */
+  #seal-0 .seal-key{align-content:start;}   /* both cards open at the same height: the question, then the head (2026-11-08) */
+  #seal-0 .sk-viz{justify-content:center;justify-self:center;}
+  #seal-0 .sk-body{text-align:left;}   /* the question over its head, both left (2026-11-08, Nil: "left align the title as well") */
+  /* the comparison's head sits left, over its list (2026-11-08, Nil) */
+  #seal-0 .sk-head{text-align:left;}
+  #seal-0 .seal-key--dial > .sk-fig{margin:0;text-align:center;}
+  /* the question flows as a line of text with its icon inline, so a wrapped question stays centred under its icon's line */
+  #seal-0 .sk-eyebrow{display:block;} #seal-0 .sk-eyebrow .sk-ico{display:inline-flex;vertical-align:middle;margin:-2px 8px 0 0;}
+  /* the three columns line up across the rows (2026-11-08, Nil: "align the three column accordingly"): the list holds
+     the columns, each row a subgrid of them, so the gaps all start at one edge and the ranks all end at the other */
+  .sk-cmp{display:grid;grid-template-columns:max-content minmax(0,1fr) max-content;gap:8px 28px;min-width:0;width:100%;}
+  .sk-cmp-row{grid-column:1 / -1;display:grid;grid-template-columns:subgrid;gap:2px 28px;align-items:baseline;font-size:14px;line-height:1.3;color:var(--on-dark-soft);}
+  .sk-cmp-row + .sk-cmp-row{border-top:1px solid var(--on-dark-line);padding-top:8px;}
+  .sk-cmp-n{font-weight:700;color:var(--white);white-space:nowrap;} .sk-cmp-n small{margin-left:6px;font-size:14px;font-weight:400;color:var(--on-dark-soft);}
+  .sk-cmp-g{color:var(--on-dark);}
+  .sk-cmp-r{text-align:right;white-space:nowrap;} .sk-cmp-r b{color:var(--white);font-weight:700;font-variant-numeric:tabular-nums;}
+  /* on a phone the name takes the first line, the gap and the rank share the second */
+  @media (max-width:599px){ .sk-cmp{grid-template-columns:minmax(0,1fr) max-content;} .sk-cmp-n{grid-column:1 / -1;} }
   @media (max-width:760px){ .seal-keys{grid-template-columns:1fr;} }
   @media (max-width:420px){ .seal-key{gap:14px 0;} }
   .seal-actions{display:flex;align-items:center;flex-wrap:wrap;gap:16px 28px;margin-top:22px;}
@@ -1635,11 +1661,12 @@
   .who-lbl.leaflet-tooltip span{display:block;font-weight:500;font-size:13px;color:var(--ink);}
   .who-lbl--city.leaflet-tooltip{font-size:var(--t-note);}
   .who-tip.leaflet-tooltip{
-    padding:8px 10px;font-family:inherit;font-size:var(--t-note);line-height:1.4;color:var(--ink);white-space:normal;width:max-content;max-width:270px;
+    padding:14px 16px;font-family:inherit;font-size:var(--t-note);line-height:1.4;color:var(--ink);white-space:normal;width:max-content;max-width:270px;
     background:var(--white);border:1px solid var(--border-strong);border-radius:4px;box-shadow:var(--shadow-md);
   }
   .who-tip.leaflet-tooltip b{display:block;font-weight:600;}
-  .who-tip.leaflet-tooltip span{display:block;color:var(--ink-soft);}
+  .who-tip.leaflet-tooltip > b.tc-name{margin-bottom:5px;line-height:1.25;}   /* 10px over the first row, as the cell card's title */
+  .who-tip.leaflet-tooltip span{display:block;font-size:13px;color:var(--ink-soft);}
   /* the town cards: the town and its rank; the balance as a headline in its colour; each way on a line behind its arrow mark */
   .who-tip.leaflet-tooltip .tc-head{display:block;margin-top:1px;font-weight:700;color:var(--ink);}
   .who-tip.leaflet-tooltip .tc-head--in{color:var(--flow-in);} .who-tip.leaflet-tooltip .tc-head--out{color:var(--flow-out-text);}
@@ -2149,19 +2176,20 @@
   .who-table[hidden]{display:none !important;}
   .ft-head h3{margin:0 0 6px;font-size:17px;font-weight:700;line-height:1.25;color:var(--ink);}
   .ft-head p{margin:0 0 8px;font-size:var(--t-note);line-height:1.45;color:var(--ink);max-width:720px;}
-  .ft-totals{display:flex;flex-wrap:wrap;gap:4px 22px;font-size:13px;color:var(--ink-soft);}
+  .ft-totals{display:flex;flex-wrap:wrap;gap:4px 22px;font-size:15px;color:var(--ink-soft);}
   .ft-totals > span{display:inline-flex;align-items:center;gap:6px;}
   /* the arrow marks, the Venn's, in the heads and totals: a little smaller than in the figure */
   .who-tbl--flows .vn-ico,.ft-totals .vn-ico{width:26px;height:18px;}
   .ft-totals b{font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;}
   .ft-totals .in b{color:var(--flow-in);} .ft-totals .out b{color:var(--flow-out-text);}
   .who-tbl--flows{margin-top:10px;table-layout:auto;}
-  .who-tbl--flows th,.who-tbl--flows td{padding:7px 6px 7px 0;font-size:13px;line-height:1.3;}
-  .who-tbl--flows thead th{padding-bottom:6px;}
+  /* the type a step up once the distance column went (2026-11-07): 16px rows, 14px heads and notes */
+  .who-tbl--flows th,.who-tbl--flows td{padding:8px 6px 8px 0;font-size:16px;line-height:1.3;}
+  .who-tbl--flows thead th{padding-bottom:6px;font-size:14px;}
   .who-tbl--flows thead th.in{color:var(--flow-in);} .who-tbl--flows thead th.out{color:var(--flow-out-text);}
   .who-tbl--flows tbody th{font-weight:600;color:var(--ink);white-space:nowrap;}
   .who-tbl--flows td.num b{display:block;font-weight:600;color:var(--ink);}
-  .who-tbl--flows td.num small{display:block;font-size:13px;color:var(--ink-soft);white-space:nowrap;}
+  .who-tbl--flows td.num small{display:block;font-size:14px;color:var(--ink-soft);white-space:nowrap;}
   /* the balance view: a direction's count and its bar in one cell, the figures first, the bar on a fixed track after
      them; the in and out bars share one scale, so the two columns compare */
   .who-tbl--flows td.ft-dir{white-space:nowrap;}
@@ -2192,20 +2220,19 @@
   .ft-bal.to{color:var(--flow-in);} .ft-bal.from{color:var(--flow-out-text);}
   .who-tbl--flows tfoot th,.who-tbl--flows tfoot td{color:var(--ink-soft);}
   .who-tbl--flows tfoot th{font-weight:400;}
-  .who-tbl--flows tfoot th small{display:block;font-size:13px;color:var(--ink-soft);white-space:normal;}
+  .who-tbl--flows tfoot th small{display:block;font-size:14px;color:var(--ink-soft);white-space:normal;}
   .who-tbl--flows tr.ft-rest:first-child th,.who-tbl--flows tr.ft-rest:first-child td{border-top:1px solid var(--border-strong);}
   .who-tbl--flows tr.ft-all th,.who-tbl--flows tr.ft-all td{font-weight:600;color:var(--ink);border-bottom:0;}
-  .ft-foot{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin:12px 0 0;font-size:13px;line-height:1.4;color:var(--ink-soft);}
+  .ft-foot{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin:12px 0 0;font-size:14px;line-height:1.4;color:var(--ink-soft);}
   /* a narrow frame (the map's at 1024, a phone's column): short heads, the
-     shares and the distance folded; the bars and the balance carry the flow */
+     shares folded; the bars and the balance carry the flow */
   @media (max-width:1439px){
     .who-tbl--flows th .long{display:none;} .who-tbl--flows th .short{display:inline;}
     .who-tbl--flows td.num small{display:none;}
-    .who-tbl--flows thead th:last-child,.who-tbl--flows td:last-child{display:none;}
     .ft-head .long{display:none;}
   }
   @media (max-width:599px){
-    .who-tbl--flows th,.who-tbl--flows td{padding:6px 4px 6px 0;}
+    .who-tbl--flows th,.who-tbl--flows td{padding:7px 4px 7px 0;font-size:15px;}
     .who-tbl--flows th.num,.who-tbl--flows td.num{padding-left:4px;}
     .who-tbl--flows tbody th{width:30%;}
     .ft-tr{width:40px;margin-left:6px;}
@@ -2345,6 +2372,12 @@
   .vk-dot{display:block;flex:none;overflow:visible;} .vk-dot circle{fill:var(--flow-both);}
   .who-fl:not(.is-venn) .vk-dot{display:none;}
   .who-fl.is-venn.vk-row .who-fl-key{order:5;margin-left:auto;}
+  /* Play again on the Venn beat, quiet (2026-11-08, Nil: "play again feature takes such prominent space, find somewhere
+     that is more quiet"): no box, in the key's soft ink, right after the dot key; the teal on hover */
+  .who-fl.is-venn .who-fl-replay{order:6;height:24px;padding:0 2px;border:0;background:none;color:var(--ink-soft);}
+  /* both at the row's left (2026-11-08, Nil: "One dot is about 2K people and play again should be on left") */
+  .who-fl.is-venn.vk-row .who-fl-key{margin-left:0;}
+  .who-fl.is-venn .who-fl-replay:hover{background:none;color:var(--teal);text-decoration:underline;text-underline-offset:3px;}
   .who-fl.is-venn.vk-foot > .who-fl-note .who-fl-key{display:none;}
   .vn-key{position:absolute;left:0;top:0;display:none;align-items:center;gap:6px;width:max-content;font-size:13px;line-height:1.4;color:var(--ink-soft);}
   .who-fl.is-venn.vk-foot .vn-key{display:inline-flex;}
@@ -2358,11 +2391,11 @@
   .vn-fr:focus-visible{outline:2px solid var(--teal);outline-offset:-2px;border-radius:4px;}
   /* the names answer a pointer (the card with the counts) once the parts are named */
   .who-fl[data-vn="named"] .vn-set,.who-fl[data-vn="named"] .vn-reg{pointer-events:auto;cursor:default;}
-  .vn-tip{position:absolute;z-index:6;left:0;top:0;width:max-content;max-width:250px;padding:7px 9px;font-size:var(--t-note);line-height:1.4;color:var(--ink);
+  .vn-tip{position:absolute;z-index:6;left:0;top:0;width:max-content;max-width:250px;padding:14px 16px;font-size:var(--t-note);line-height:1.4;color:var(--ink);
     background:var(--white);border:1px solid var(--border-strong);border-radius:4px;box-shadow:var(--shadow-md);pointer-events:none;}
   .vn-tip[hidden]{display:none;}
-  .vn-tip b{display:block;font-weight:600;font-variant-numeric:tabular-nums;}
-  .vn-tip span{display:block;color:var(--ink-soft);font-variant-numeric:tabular-nums;}
+  .vn-tip b{display:block;margin-bottom:10px;font-weight:600;line-height:1.25;font-variant-numeric:tabular-nums;}
+  .vn-tip span{display:block;font-size:13px;color:var(--ink-soft);font-variant-numeric:tabular-nums;}
   .who-fl:not(.is-venn) > .vn-tip{display:none;}
   /* ---- the Groups study's opt-4 (2026-11-02): the reference site's commute Venn and, under it, its histogram of
      jobs per working resident, in its colours (cities.taimur.sh: the Venn's two tints at .42, the live one
@@ -2390,6 +2423,15 @@
   .rv-ldr{stroke-width:1;} .rv-ldr--in{stroke:var(--flow-in);} .rv-ldr--both{stroke:var(--flow-both-text);} .rv-ldr--out{stroke:var(--flow-out);}
   .rv-cap{font-size:13px;fill:var(--ink-soft);font-variant-numeric:tabular-nums;}
   .rh-bar--lo{fill:var(--flow-out-soft);} .rh-bar--hi{fill:var(--flow-in-soft);} .rh-bar.is-on{stroke:var(--ink);stroke-width:1;}
+  /* the bars by the needle's zones (2026-11-08), the places beyond Boston in the full blue; the zones' names over them, the bracket */
+  /* the three zones in the needle's dial colours, one blue only (2026-11-08, Nil: "make sure in the bar Residential
+     admins, Balanced admins, Business admins align with the needle", then "why two different blue tones?"): the bars
+     past Boston are business admins like the rest, Boston's line alone marks where it stands */
+  .rh-bar--res{fill:var(--dial-res);} .rh-bar--bal{fill:var(--dial-bal);} .rh-bar--bus,.rh-bar--beyond{fill:var(--dial-bus);}
+  .rh-zone{font-size:13px;font-weight:600;} .rh-zone--res{fill:var(--flow-out-text);} .rh-zone--bal{fill:var(--flow-both-text);} .rh-zone--bus{fill:var(--flow-in);}
+  .rh-brk{fill:none;stroke:var(--flow-in);stroke-width:1;} .rh-brk-t{font-size:13px;font-weight:600;fill:var(--flow-in);stroke:var(--white);stroke-width:3px;paint-order:stroke;}
+  .rh-pe-t{font-size:13px;font-weight:600;stroke:var(--white);stroke-width:3px;paint-order:stroke;}
+  .who-ref-dist .wt-peers{margin-top:4px;}
   .rh-hit{fill:transparent;}
   .rh-grid{stroke:var(--border);} .rh-base{stroke:var(--control-edge);} .rh-one{stroke:var(--ink);stroke-width:1;}
   .rh-tick,.rh-cap{font-size:13px;fill:var(--ink-soft);}
@@ -2397,14 +2439,18 @@
   .rh-peer{stroke:var(--ink);stroke-width:2;}
   .rh-pa-halo{stroke:var(--white);stroke-width:4;stroke-opacity:.6;} .rh-pa{stroke:var(--ink);stroke-width:1.5;stroke-dasharray:3 3;}
   .rh-pa-t{font-size:13px;fill:var(--ink);stroke:var(--white);stroke-width:3px;paint-order:stroke;} .rh-b{font-weight:700;}
-  .rh-me-halo{stroke:var(--white);stroke-width:5;stroke-opacity:.7;} .rh-me{stroke:var(--teal);stroke-width:3;}
+  .rh-pl{stroke-width:1.5;} .rh-pl-t{font-size:13px;font-weight:600;fill:var(--ink);stroke:var(--white);stroke-width:3px;paint-order:stroke;}
+  .rh-me-halo{stroke:var(--white);stroke-width:3.5;stroke-opacity:.7;} .rh-me{stroke:var(--teal);stroke-width:1.5;}
   .rh-me-t{font-size:22px;font-weight:700;fill:var(--teal);stroke:var(--white);stroke-width:4;paint-order:stroke;}
-  .rh-arr,.rh-tick,.rh-cap,.rh-mk,.rh-grid,.rh-base,.rh-one,.rh-bar,.rh-peer{pointer-events:none;}
-  .who-ref-tip{position:absolute;z-index:6;left:0;top:0;white-space:nowrap;padding:12px 16px;font-size:13px;line-height:1.4;color:var(--ink);
+  .rh-arr,.rh-tick,.rh-cap,.rh-mk,.rh-grid,.rh-base,.rh-one,.rh-bar,.rh-peer,.rh-zone,.rh-brk,.rh-brk-t,.rh-pe,.rh-pe-t,.rh-pl,.rh-pl-t{pointer-events:none;}
+  /* the cards of this beat and the map's wear the treemap's cell card (.rca-tip, which section 2's Sankey tips share):
+     14px 16px, 4px corners, a --t-note title 10px over 13px label and value rows 6px by 14px apart (2026-11-08, Nil:
+     "did you check the tooltips against all the frozen beats' tooltips?") */
+  .who-ref-tip{position:absolute;z-index:6;left:0;top:0;white-space:nowrap;padding:14px 16px;font-size:13px;line-height:1.4;color:var(--ink);
     background:var(--white);border:1px solid var(--border-strong);border-radius:4px;box-shadow:var(--shadow-md);pointer-events:none;}
   .who-ref-tip[hidden]{display:none;}
-  .who-ref-tip b{display:block;margin-bottom:.3rem;font-weight:600;line-height:1.25;}
-  .who-ref-tip dl{display:grid;grid-template-columns:auto auto;column-gap:.85rem;row-gap:.15rem;margin:0;}
+  .who-ref-tip b{display:block;margin-bottom:10px;font-size:var(--t-note);font-weight:600;line-height:1.25;}
+  .who-ref-tip dl{display:grid;grid-template-columns:auto auto;gap:6px 14px;margin:0;}
   .who-ref-tip dt{color:var(--ink-soft);} .who-ref-tip dd{margin:0;font-weight:600;text-align:right;font-variant-numeric:tabular-nums;}
   /* the bars under the dots give way. Where the panel cannot hold both charts (a phone's band, a short or narrow
      desk panel; the script decides, ref-split) the histogram stands in the column; in a phone's band the Venn's
@@ -2436,14 +2482,14 @@
   .fl-detail--hist .who-ref-dist{margin-top:0;padding-top:0;border-top:0;min-height:0;flex:none;}
   .fl-detail--hist .who-ref-hist{flex:none;height:220px;}
   .fl-detail--hist.fl-detail--col .who-ref-hist{height:300px;}
+  /* the chart keeps its height when peers are chosen (2026-11-08, Nil: "when a peer is clicked, make sure the chart doesn't
+     change its height or move"): their names take rows over the bars, beside their lines */
   .who-ref-head{font-size:15px;font-weight:600;color:var(--ink);}
-  .who-ref-head .num{font-variant-numeric:tabular-nums;}
   .who-ref-key{display:flex;flex-wrap:wrap;align-items:center;gap:4px 16px;margin:6px 0 0;font-size:13px;line-height:1.4;color:var(--ink);font-variant-numeric:tabular-nums;}
   .who-ref-key .wrk-l{color:var(--ink-soft);}
   .who-ref-key > span{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
   .who-ref-key i{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--pc);border:1.5px solid var(--white);box-shadow:0 0 0 1px var(--pc);}
   .rh-pe{stroke:var(--white);stroke-width:1.5;}
-  .rh-cnt{stroke:var(--border);} .rh-cnt-t{font-size:13px;fill:var(--ink-soft);}
   .rh-tick--one{fill:var(--ink);font-weight:600;}
   .rh-me-t{font-size:15px;}
   .rh-pa{stroke:var(--mk-pa);} .rh-pa-t{fill:var(--mk-pa);}
@@ -2483,6 +2529,11 @@
   .who-legend--flow .wk-labs span{position:absolute;top:0;transform:translateX(-50%);white-space:nowrap;line-height:17px;}
   .who-legend--flow .wk-ends{display:flex;justify-content:space-between;width:200px;margin-top:2px;}
   .who-legend--flow .wk-ends .out{color:var(--flow-out-text);} .who-legend--flow .wk-ends .in{color:var(--flow-in);}
+  /* the net key's two words above the strip, at 15px (2026-11-08, Nil: "bump up ... labels on top", the numbers under) */
+  .who-legend--flow .wk-ends--top{margin:0 0 1px;} .who-legend--flow .wk-ends--top b{font-size:15px;font-weight:600;}
+  /* the in and out keys' words and their quiet line, one over the other */
+  .who-legend--flow .wk-ends--one{flex-direction:column;align-items:flex-start;width:max-content;max-width:270px;margin-bottom:3px;}
+  .who-legend--flow .wk-ends--one small{font-size:13px;color:var(--ink-soft);line-height:1.3;}
   .who-legend--flow .wk-shelves{display:flex;flex-direction:column;gap:4px;margin-top:3px;padding-top:6px;border-top:1px solid var(--border);}
   .who-legend--flow .wl-shelf{display:grid;grid-template-columns:var(--ws-w, 80px) auto;align-items:center;gap:8px;color:var(--ink-soft);white-space:nowrap;}
   .who-legend--flow .wl-shelf .ws{display:block;}
@@ -2500,7 +2551,7 @@
     .who-legend--flow{left:auto;right:6px;max-width:calc(100% - 12px);padding:8px 10px 9px;}
     .who-legend--flow .wk-steps,.who-legend--flow .wk-labs,.who-legend--flow .wk-ends{width:170px;}
     /* the two ends' words do not fit one 170px line: each on its own, the gains' at the right (2026-11-02) */
-    .who-legend--flow .wk-ends{flex-wrap:wrap;gap:0 8px;} .who-legend--flow .wk-ends .in{margin-left:auto;}
+    .who-legend--flow .wk-ends{flex-wrap:wrap;gap:0 8px;} .who-legend--flow .wk-ends:not(.wk-ends--one) .in{margin-left:auto;}
   }
   /* ---- the Show as control on the map's frame (2026-10-18, Nil: "should be
      on the map"): from 1200 up, where the table opens in the frame, the
@@ -4620,7 +4671,8 @@
      it (--fig-furn). They are declared on the page as well, so the section
      bar can stand its names over the frame. */
   .pages{--fig-furn:0px;--fig-ratio:9;}
-  .pages:has(#page-export-basket:not(.sec-off)),#page-export-basket{--fig-furn:132px;--fig-ratio:1.76;}
+  /* also while Who am I? alone is shown (the 'pages' layout): its third beat sits on this rail (2026-11-08) */
+  .pages:has(#page-export-basket:not(.sec-off)),.pages:has(#ovWrap:not(.sec-off)),#page-export-basket{--fig-furn:132px;--fig-ratio:1.76;}
   /* Metro Industries' furniture is its control row, the gap under the
      drawing and the key: 132 with the controls on one line and the key on
      two. The controls take a second line (34 more) once the drawing is
@@ -4628,10 +4680,10 @@
      that the height holds the frame narrower than that; the key takes a
      third (27 more) under 1024. */
   @media (max-height:700px), (max-width:1279px){
-    .pages:has(#page-export-basket:not(.sec-off)),#page-export-basket{--fig-furn:166px;}
+    .pages:has(#page-export-basket:not(.sec-off)),.pages:has(#ovWrap:not(.sec-off)),#page-export-basket{--fig-furn:166px;}
   }
   @media (max-width:1023px){
-    .pages:has(#page-export-basket:not(.sec-off)),#page-export-basket{--fig-furn:193px;}
+    .pages:has(#page-export-basket:not(.sec-off)),.pages:has(#ovWrap:not(.sec-off)),#page-export-basket{--fig-furn:193px;}
   }
   .pages,#page-export-basket{
     --stage-max:max(420px, calc((100vh - var(--chrome-h) - var(--stage-air) - var(--panel-pt) - var(--panel-pb) - 2px - var(--fig-furn)) * var(--fig-ratio) + 2 * var(--panel-px) + 2px));
@@ -5053,8 +5105,9 @@
   #ovWrap:has(.wide-beat.is-on) .ov-map-inner > .pv-open--frame{display:none !important;}
   @media (max-width:899px){ #ovWrap .wide-beat > .wide-vis > .pv-open--frame{top:auto;bottom:-13px;right:12px;} }
   /* the hand-off: as the panel leaves its dock its dots fly to the map, the panel fades and the map comes in under it */
-  #ovWrap .wide-beat > .wide-vis{transition:opacity .35s ease;}
-  #ovWrap.who-hand .wide-beat > .wide-vis{opacity:0;pointer-events:none;}
+  #ovWrap .wide-beat > .wide-vis{transition:opacity .8s ease .15s, visibility 0s linear 0s;}   /* slow, behind its dots as they go (2026-11-08) */
+  /* once faded it is also out of the tab order (its chips and term button cannot be reached unseen; review 2026-11-08) */
+  #ovWrap.who-hand .wide-beat > .wide-vis{opacity:0;visibility:hidden;pointer-events:none;transition:opacity .8s ease .15s, visibility 0s linear .95s;}
   .who-fl.fl-flown > svg circle{opacity:0 !important;transition:none !important;}
   /* the panel's details: how far each group travels; the city's two totals made of the three groups */
   .who-fl-panel > .who-fl{flex:none;}
@@ -5064,6 +5117,23 @@
   @media (min-width:900px){ #ovWrap .who-fl-panel:has(> .who-fl.is-venn),#ovWrap .who-fl-panel:has(> .who-fl.is-ref){justify-content:flex-start;padding-top:28px;padding-bottom:24px;}
     /* the bars follow the figure; where the panel has height to spare the Venn's script widens the gap (spread) */
     #ovWrap .who-fl-panel:has(> .who-fl.is-venn) > .fl-detail{margin-top:24px;} }
+  /* "Who works here, who lives here" on section 2's frame (2026-11-08, Nil: "the use overall space should be same with
+     other visual. see how 'What does the metro do for a living?' uses the space like margins, spacing etc from the
+     edges"): its words column as wide as section 2's rail, the card starting the rail's gap from it and keeping its
+     right edge, and the card's padding section 2's (--panel-pt/px/pb) */
+  @media (min-width:900px){
+    #ovWrap #page-overview-flows.wide-beat > :not(.wide-vis):not(template){max-width:var(--ct-rail-now);}
+    /* the card stays docked a screen longer (2026-11-08, Nil: it "disappears too early"), so its dots leave it only
+       as the next beat's title reaches the screen's foot */
+    #ovWrap #page-overview-flows.wide-beat{min-height:calc(var(--wide-h) + 100vh);}
+    #ovWrap #page-overview-flows.wide-beat > .wide-vis{
+      margin-left:calc(var(--ct-rail-now) + var(--ct-gap));
+      width:calc(var(--sc-panel-w, 900px) + var(--wide-col) + var(--wide-gap) - var(--ct-rail-now) - var(--ct-gap));
+      padding:var(--panel-pt) var(--panel-px) var(--panel-pb);
+    }
+    #ovWrap #page-overview-flows .who-fl-panel:has(> .who-fl.is-venn),
+    #ovWrap #page-overview-flows .who-fl-panel:has(> .who-fl.is-ref){padding-top:var(--panel-pt);padding-bottom:var(--panel-pb);}
+  }
   .fl-detail{position:relative;display:grid;grid-template-columns:minmax(0,1fr);gap:12px 40px;font-size:13px;line-height:1.35;color:var(--ink);}
   .fl-detail [data-tip]{cursor:default;}
   .fl-detail > .fd-tip{position:absolute;}
@@ -5256,6 +5326,14 @@
   #miAdminSvg :is(.ad-foot-lab--in,.ad-end--in){fill:var(--flow-in);} #miAdminSvg :is(.ad-foot-lab--out,.ad-end--out){fill:var(--flow-out-text);}
   #miAdminSvg .ad-row.is-dim :is(.ad-end--in,.ad-end--out){fill:var(--ink);}
   #miAdminSvg .ad-bar--in{fill:var(--flow-in);} #miAdminSvg .ad-bar--out{fill:var(--flow-out);}
+  /* the two ways (2026-11-04): each way pale, the difference solid in the longer way's colour; the gain's column in its colour */
+  #miFigure{--flow-in-soft:#9fd3df;--flow-out-soft:#f0c39a;}
+  #miAdminSvg .ad-bar--soft.ad-bar--in{fill:var(--flow-in-soft);} #miAdminSvg .ad-bar--soft.ad-bar--out{fill:var(--flow-out-soft);}
+  #miAdminSvg .ad-axt--in{fill:var(--flow-in);} #miAdminSvg .ad-axt--out{fill:var(--flow-out-text);}
+  #miAdminSvg .ad-col--in{fill:var(--flow-in);font-weight:600;} #miAdminSvg .ad-col--out{fill:var(--flow-out-text);font-weight:600;}
+  #miAdminSvg .ad-row.is-dim :is(.ad-col--in,.ad-col--out){fill:var(--ink-soft);}
+  .wf-key .wf-k-sw--in-soft{--sw:var(--flow-in-soft);} .wf-key .wf-k-sw--out-soft{--sw:var(--flow-out-soft);}
+  .wf-key .wf-k-sw--in{--sw:var(--flow-in);} .wf-key .wf-k-sw + .wf-k-sw{margin-left:-4px;}
   /* beat 7 (2026-10-29): the metro's bar under the Boston part, the share bar in Boston's colour */
   #miAdminSvg .ad-bar--metro{fill:var(--border-strong);} #miAdminSvg .ad-bar--sh{fill:var(--flow-in);}
   /* the name's ground: unseen until the names are pinned over a panning drawing (data-pin), then white, or the row's tint */
@@ -5353,8 +5431,9 @@
   #miFigure.is-admin.is-b4sk[data-skfold] .mi-caption{display:none;}
   #miFigure.is-admin.is-b4sk[data-skfold="strip"] .tradable-viz-wrapper{margin-bottom:0;}
   #miFigure.is-admin[data-step="10"] :is(#wfSentenceTree,#wfSentenceTree3){display:none;}
-  #miFigure.is-admin:not([data-b4="sankey"]) #wfSentenceSk6,#miFigure.is-admin:not([data-step="10"]) #wfSentenceSk6{display:none;}
-  #miFigure.is-admin[data-b4="sankey"][data-step="10"] #wfSentence{display:none;}
+  /* beat 6's own sentence under every chart option since 2026-11-04 (it no longer holds a flow blank) */
+  #miFigure.is-admin:not([data-step="10"]) #wfSentenceSk6{display:none;}
+  #miFigure.is-admin[data-step="10"] #wfSentence{display:none;}
   /* beat 5 under opt-2 (2026-10-27, Nil: "5/7: add on the tree map showing the Boston residents work elsewhere
      (commuting out of Boston)"): its own sentence, three blanks, and a third part at the foot of every block, the jobs
      Boston's residents hold outside the city */
@@ -5690,6 +5769,7 @@
   #ovWrap.is-presenting .who-legend{font-size:calc(13px * var(--pv-k, 1));}
   #ovWrap.is-presenting .who-legend--flow{max-width:min(calc(300px * var(--pv-k, 1)), calc(100% - 20px));}
   #ovWrap.is-presenting .who-legend--flow .wk-steps,#ovWrap.is-presenting .who-legend--flow .wk-labs,#ovWrap.is-presenting .who-legend--flow .wk-ends{width:calc(200px * var(--pv-k, 1));}
+  #ovWrap.is-presenting .who-legend--flow .wk-ends--top b{font-size:calc(15px * var(--pv-k, 1));}
   #ovWrap.is-presenting .who-lbl.leaflet-tooltip,#ovWrap.is-presenting .who-lbl.leaflet-tooltip span{font-size:calc(13px * var(--pv-k, 1));}
   #ovWrap.is-presenting .who-lbl--city.leaflet-tooltip{font-size:calc(var(--t-note) * var(--pv-k, 1));}
   #ovWrap.is-presenting .nat-lbl{font-size:calc(13px * var(--pv-k, 1));}
@@ -5699,7 +5779,9 @@
   #ovWrap.is-presenting .who-view-ctl--map :is(.ctl-label, .seg-btn),
   #ovWrap.is-presenting #ovMap .mc-chip,
   #ovWrap.is-presenting .who-sc :is(.sc-find .ctl-label, .sc-find input, .sc-find-clear, .sc-find-list li, .wt-peers, .wt-peer, .wt-how),
-  #ovWrap.is-presenting .ov-map-inner > .who-table :is(.ft-totals, .ft-more, th, td, small, .ft-foot){font-size:calc(13px * var(--pv-k, 1));}
+  #ovWrap.is-presenting .ov-map-inner > .who-table :is(.ft-more, small, .ft-foot, thead th){font-size:calc(14px * var(--pv-k, 1));}
+  #ovWrap.is-presenting .ov-map-inner > .who-table :is(.ft-totals){font-size:calc(15px * var(--pv-k, 1));}
+  #ovWrap.is-presenting .ov-map-inner > .who-table :is(tbody th, tbody td, tfoot th, tfoot td){font-size:calc(16px * var(--pv-k, 1));}
   #ovWrap.is-presenting .ov-map-inner > .who-table .ft-head h3{font-size:calc(17px * var(--pv-k, 1));}
   #ovWrap.is-presenting .ov-map-inner > .who-table .ft-head p:not(.ft-totals){font-size:calc(var(--t-note) * var(--pv-k, 1));max-width:calc(720px * var(--pv-k, 1));}
   /* the commuting beats' Map | Table choice and the table stay on the frame at every width in the view */
@@ -8587,7 +8669,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       <div class="sec" data-sec="page-intro-q1 page-intro-q2 page-intro-q3 page-intro-q4 page-intro-q5 page-intro-q6 page-intro-q7">
         <button class="sec-head" onclick="goTo('page-intro-q1')"><span class="num"><svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13" aria-hidden="true"><path d="M12 2l2.9 6.2 6.6.8-4.9 4.6 1.3 6.5L12 16.9 6.1 20l1.3-6.5L2.5 9l6.6-.8L12 2z"/></svg></span>Explore Your Assumption</button>
       </div>
-      <div class="sec" data-sec="page-overview page-overview-scatter page-overview-flows page-overview-flows-out page-overview-metro page-overview-mscatter page-overview-compare page-overview-practice">
+      <div class="sec" data-sec="page-overview page-overview-scatter page-overview-flows page-overview-flows-out page-overview-metro page-overview-mscatter page-overview-practice">
         <button class="sec-head" onclick="goTo('page-overview')"><span class="num" aria-hidden="true"></span>Who am I?</button>
         <ul class="steps">
           <li data-step="page-overview"><span class="dot"></span><button onclick="goTo('page-overview')">Where Boston Admin stands</button></li>
@@ -8596,7 +8678,6 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
           <li data-step="page-overview-flows-out"><span class="dot"></span><button onclick="goTo('page-overview-flows-out')">Who comes in, who goes out</button></li>
           <li data-step="page-overview-metro"><span class="dot"></span><button onclick="goTo('page-overview-metro')">Boston Metro</button></li>
           <li data-step="page-overview-mscatter"><span class="dot"></span><button onclick="goTo('page-overview-mscatter')">Among all metros</button></li>
-          <li data-step="page-overview-compare"><span class="dot"></span><button onclick="goTo('page-overview-compare')">Boston Admin and Boston Metro</button></li>
           <li data-step="check-overview"><span class="dot"></span><button onclick="goTo('check-overview')">Test your knowledge</button></li>
           <li data-step="apply-overview"><span class="dot"></span><button onclick="goTo('apply-overview')">Put your insights</button></li>
           <li data-step="page-overview-practice"><span class="dot"></span><button onclick="goTo('page-overview-practice')">Put in Practice</button></li>
@@ -8610,7 +8691,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
           <li data-step="specializedSection"><span class="dot"></span><button onclick="goTo('specializedSection')">Which tradable industries is the metro most specialized in?</button></li>
           <li data-step="adminCountsSection"><span class="dot"></span><button onclick="goTo('adminCountsSection')">Which work happens in Boston, and which do its residents do?</button></li>
           <li data-step="adminSharesSection"><span class="dot"></span><button onclick="goTo('adminSharesSection')">Which work does Boston host for the metro?</button></li>
-          <li data-step="adminNetSection"><span class="dot"></span><button onclick="goTo('adminNetSection')">Where does Boston gain and lose workers?</button></li>
+          <li data-step="adminNetSection"><span class="dot"></span><button onclick="goTo('adminNetSection')">Where is Boston a receiver or a sender of workers?</button></li>
           <li data-step="adminSummarySection"><span class="dot"></span><button onclick="goTo('adminSummarySection')">Extra page to show every reading</button></li>
           <li data-step="check-export"><span class="dot"></span><button onclick="goTo('check-export')">Test your knowledge</button></li>
           <li data-step="apply-export"><span class="dot"></span><button onclick="goTo('apply-export')">Put your insights</button></li>
@@ -8944,7 +9025,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
               <div class="seg" role="group" aria-label="Which commuters the map shows">
                 <button type="button" class="seg-btn is-active" data-flow="in" aria-pressed="true"><i class="fl-sw fl-sw--in" aria-hidden="true"></i><span class="fl-l">Live elsewhere, work in Boston</span><span class="fl-s">Commute in</span></button>
                 <button type="button" class="seg-btn" data-flow="out" aria-pressed="false"><i class="fl-sw fl-sw--out" aria-hidden="true"></i><span class="fl-l">Live in Boston, work elsewhere</span><span class="fl-s">Commute out</span></button>
-                <button type="button" class="seg-btn" data-flow="net" aria-pressed="false"><i class="fl-sw fl-sw--net" aria-hidden="true"></i><span class="fl-l">Where Boston <span class="fl-gain">gains</span> or <span class="fl-lose">loses</span> workers</span><span class="fl-s"><span class="fl-gain">Gains</span> or <span class="fl-lose">loses</span></span></button>
+                <button type="button" class="seg-btn" data-flow="net" aria-pressed="false"><i class="fl-sw fl-sw--net" aria-hidden="true"></i><span class="fl-l"><span class="fl-gain">Boston receives</span> or <span class="fl-lose">sends</span> workers</span><span class="fl-s"><span class="fl-gain">Receives</span> or <span class="fl-lose">sends</span></span></button>
               </div>
             </div>
           </section>
@@ -9014,15 +9095,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
           <!-- the city against its metro (2026-10-14): the last beat before
                the summary, the admin's four measures set against the metro's,
                the way the first table sets them against the US average -->
-          <section class="ov-block" id="page-overview-compare">
-            <div class="page-head">
-              <h2>How does <span class="city-short">Boston</span> Admin compare with <span class="city-short">Boston</span> Metro?</h2>
-            </div>
-            <p class="lede"><span class="city-short">Boston</span> Admin is <span class="city-short">Boston</span> Metro&rsquo;s largest city, yet only 13 of every
-              100 people in <span class="city-short">Boston</span> Metro live there. Homes in <span class="city-short">Boston</span> Admin cost more than across <span class="city-short">Boston</span> Metro, pay is a little
-              lower, and unemployment is a little higher.</p>
-            <div class="who-cmp" id="whoCompare"></div>
-          </section>
+          <!-- the seventh beat, "How does Boston Admin compare with Boston Metro?", is gone (2026-11-07, Nil: "remove
+               Who am I? 7/7 ... since its just repeat of numbers"); its comparison stands as the third card of the
+               chapter's close (SEAL_KEYS, whoCompareSnap) -->
 
         </div>
 
@@ -9365,8 +9440,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
                  the year a blank too (2026-10-27), one choice across the four sentences -->
             <div class="wf-head" id="wfHead">
               <p class="mi-sentence wf-sentence" id="wfSentence"><span class="city-short">Boston</span>&rsquo;s work by sector, shown as
-                <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="wfSRead" aria-label="What the bars show"><option value="counts">jobs in Boston and its residents&rsquo; jobs</option><option value="jobs">jobs in Boston alone</option><option value="residents">its residents&rsquo; jobs alone</option><option value="mix">each count&rsquo;s share of its own total</option><option value="shares">shares of the metro&rsquo;s</option><option value="gain">Boston&rsquo;s gain or loss of workers</option><option value="report">the metro&rsquo;s jobs and Boston&rsquo;s part</option></select></span>, sorted by
-                <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="wfSSort" aria-label="Order of the rows"><option value="msaJobs">jobs in the metro</option><option value="jobs">jobs in Boston</option><option value="residents">residents&rsquo; jobs</option><option value="shareJobs">Boston&rsquo;s share of the metro&rsquo;s jobs</option><option value="shareResidents">share of its working residents</option><option value="gain">Boston&rsquo;s gain</option></select></span>, <span class="wf-s-year">in&nbsp;<span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select class="wf-year" id="wfSYear" aria-label="Year"><option value="2023" selected>2023</option><option value="2013">2013</option></select></span></span></p>
+                <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="wfSRead" aria-label="What the bars show"><option value="counts">jobs in Boston and its residents&rsquo; jobs</option><option value="jobs">jobs in Boston alone</option><option value="residents">its residents&rsquo; jobs alone</option><option value="mix">each count&rsquo;s share of its own total</option><option value="shares">shares of the metro&rsquo;s</option><option value="gain">workers Boston receives or sends, net</option><option value="report">the metro&rsquo;s jobs and Boston&rsquo;s part</option></select></span>, sorted by
+                <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select id="wfSSort" aria-label="Order of the rows"><option value="msaJobs">jobs in the metro</option><option value="jobs">jobs in Boston</option><option value="residents">residents&rsquo; jobs</option><option value="shareJobs">Boston&rsquo;s share of the metro&rsquo;s jobs</option><option value="shareResidents">share of its working residents</option><option value="gain">workers Boston receives, net</option></select></span>, <span class="wf-s-year">in&nbsp;<span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select class="wf-year" id="wfSYear" aria-label="Year"><option value="2023" selected>2023</option><option value="2013">2013</option></select></span></span></p>
               <!-- beat 4's opt-2 (2026-10-27): the two groups as two blanks pressed on and off; the words never change.
                    opt-3's ranking asks its order as a blank too (2026-10-28, Nil: "When viewing as bar, give options option to
                    sort by, similar to previous beats, put them in the question format"): the total or one group's jobs -->
@@ -9389,8 +9464,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
                    and receiving with the needle, nothing else"): its sentence names the reading and keeps the year. The bars
                    or the flow as a blank (2026-10-28, Nil: "6/7: also give options to sankey and bar like the other ones.
                    But this time, default to bar"), in beats 4 and 5's words -->
-              <p class="mi-sentence wf-sentence wf-sentence--sk6" id="wfSentenceSk6"><span class="city-short">Boston</span>&rsquo;s gain or loss of workers, by sector, shown as a
-                <span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select class="wf-b6view" id="wfSkView6" aria-label="The gain or loss as a ranking or as a flow diagram"><option value="rank">ranking</option><option value="sankey">flow diagram</option></select></span>, <span class="wf-s-year">in&nbsp;<span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select class="wf-year" id="wfSYear6" aria-label="Year"><option value="2023" selected>2023</option><option value="2013">2013</option></select></span></span></p>
+              <!-- no blank for a flow diagram since 2026-11-04 (Nil: "remove the current options"): beat 6 is the two ways, left and right -->
+              <p class="mi-sentence wf-sentence wf-sentence--sk6" id="wfSentenceSk6">Who commutes into <span class="city-short">Boston</span> and out of it, by sector, <span class="wf-s-year">in&nbsp;<span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select class="wf-year" id="wfSYear6" aria-label="Year"><option value="2023" selected>2023</option><option value="2013">2013</option></select></span></span></p>
               <div class="mi-table wf-table"><button type="button" class="mi-table-btn" id="wfTableBtn" aria-expanded="false" aria-controls="wfTableWrap"><span class="mi-table-btn-txt">Show as table</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button></div>
             </div>
             <div class="tradable-split-header" id="miSplitHead">
@@ -9666,13 +9741,17 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         <!-- beat 6: the gap between the two counts, and the needle beside the words -->
         <div class="export-subsection" id="adminNetSection">
           <div class="subsection-header">
-            <h3>Where does <span class="city-short">Boston</span> gain and lose workers?</h3>
+            <h3>Where is <span class="city-short">Boston</span> a receiver or a sender of workers?</h3>
           </div>
           <!-- one lede under every chart option (2026-10-28): opt-3's beat 6 draws the gain bars too, so it reads the bars' words -->
           <div class="lede-stat-row">
-            <p class="lede">Each bar is how many more jobs <span class="city-short">Boston</span> hosts in a sector than its
-              residents hold. <span class="mi-hl" data-row="62" tabindex="0">Health care</span> gains the most, 81K; only
-              <span class="mi-hl" data-row="31-33" tabindex="0">manufacturing</span> and three small sectors lose workers.</p>
+            <!-- the two ways side by side (2026-11-04, Nil: "show both coming and going like right and left bars and
+                 highlight the difference, instead showing just the net") -->
+            <p class="lede">For each sector, the people who commute into <span class="city-short">Boston</span> for its jobs
+              reach to the right, its residents who work elsewhere to the left. The solid part is the difference.
+              <span class="mi-hl" data-row="62" tabindex="0">Health care</span> receives the most, 81K more than it sends; only
+              <span class="mi-hl" data-row="31-33" tabindex="0">manufacturing</span> and three small sectors send more workers than they receive.
+              Each sector&rsquo;s split is estimated.</p>
           </div>
           <div class="lean-note who-gauge mi-gauge" id="miGauge"></div>
         </div>
@@ -10368,23 +10447,27 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
          neither, where before 0 to 500 read as a gain and the gains had twice the losses' steps */
       /* the middle a warm grey (a review, 2026-11-02): the cool #d6dcdd sat 1.6 from the paper's parks, so an even
          admin read as woodland; this one stands 6 or more from every paper tone and 11 from Boston's own grey */
-      net: { breaks: [-5000, -1000, -100, 100, 1000, 5000], cols: ["#9b411a", "#d56927", "#f0c39a", "#c9c7c0", "#9fd3df", "#3792b5", "#123d7a"], title: "Where Boston gains or loses workers" }
+      net: { breaks: [-5000, -1000, -100, 100, 1000, 5000], cols: ["#9b411a", "#d56927", "#f0c39a", "#c9c7c0", "#9fd3df", "#3792b5", "#123d7a"], title: "Where Boston receives or sends workers" }
     };
     const col = (k, v) => { const b = S[k].breaks; let i = 0; while (i < b.length && v >= b[i]) i++; return S[k].cols[i]; };
     const lab = (k, v) => k !== "net" ? Math.round(v * 100) + "%" : v === 0 ? "0" : Math.abs(v) >= 1000 ? Math.abs(v) / 1000 + "K" : String(Math.abs(v));
+    /* the keys without their titles (2026-11-08, Nil: "remove the title ... bump up Boston receives and sends ... the
+       numbers on the down and labels on top. the color should be together", then "revise other two legend version
+       accordingly"): the words at 15px in the view's colour above the strip, the strip, its breaks under it. The net
+       key's words are "Boston sends" and "Boston receives" over its two ends; the in and out keys' their button's
+       words, with a quiet line on what the share is of */
+    const TOP = { in: ["Commute into Boston", "share of each admin\u2019s working residents"], out: ["Commute out of Boston", "share of each admin\u2019s jobs"] };
     const key = k => { const q = S[k], n = q.cols.length;
-      return '<span class="wk-t">' + q.title + '</span>' +
+      return (k === "net" ? '<span class="wk-ends wk-ends--top"><b class="out">Boston sends</b><b class="in">Boston receives</b></span>'
+          : '<span class="wk-ends wk-ends--top wk-ends--one"><b class="' + k + '">' + TOP[k][0] + '</b><small>' + TOP[k][1] + '</small></span>') +
         '<span class="wk-steps">' + q.cols.map(c => '<i style="background:' + c + '"></i>').join("") + '</span>' +
-        '<span class="wk-labs">' + q.breaks.map((b, i) => '<span style="left:' + ((i + 1) / n * 100).toFixed(2) + '%">' + lab(k, b) + '</span>').join("") + '</span>' +
-        /* the ends in the view's own words (2026-11-04, Nil: "make sure that the legend has the same language"; they said
-           "Takes from Boston" and "Sends to Boston"): orange where Boston loses workers to the admin, blue where it gains */
-        (k === "net" ? '<span class="wk-ends"><span class="out">Boston loses</span><span class="in">Boston gains</span></span>' : ''); };
+        '<span class="wk-labs">' + q.breaks.map((b, i) => '<span style="left:' + ((i + 1) / n * 100).toFixed(2) + '%">' + lab(k, b) + '</span>').join("") + '</span>'; };
     return { col, key, op: .85 };
   })();
   if (!FLOWS_HOME){ const s = document.getElementById("page-overview-flows-out"); if (s) s.remove();
     document.querySelectorAll('.rail .steps li[data-step="page-overview-flows-out"]').forEach(li => li.remove()); }
   else document.documentElement.classList.add("flows-home");
-  const pageIds = ["page-overview","page-overview-scatter","page-overview-flows","page-overview-metro","page-overview-mscatter","page-overview-compare","page-export-basket",
+  const pageIds = ["page-overview","page-overview-scatter","page-overview-flows","page-overview-metro","page-overview-mscatter","page-export-basket",
                    "page-doing","page-doing-metro","page-constraints","page-city-in-metro","page-constraints-lorem","page-levers"];
   if (FLOWS_HOME) pageIds.splice(3, 0, "page-overview-flows-out");
 
@@ -10480,7 +10563,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
 
   /* ---------- journey state ---------- */
   const sectionDefs=[
-    {name:"Who am I?", pages:["page-overview","page-overview-scatter","page-overview-flows"].concat(FLOWS_HOME ? ["page-overview-flows-out"] : []).concat(["page-overview-metro","page-overview-mscatter","page-overview-compare","check-overview","apply-overview"]), entry:"page-overview"},
+    {name:"Who am I?", pages:["page-overview","page-overview-scatter","page-overview-flows"].concat(FLOWS_HOME ? ["page-overview-flows-out"] : []).concat(["page-overview-metro","page-overview-mscatter","check-overview","apply-overview"]), entry:"page-overview"},
     {name:"What do my metro and I produce?", pages:["page-export-basket","tierSection","specializedSection","adminCountsSection","adminSharesSection","adminNetSection","adminSummarySection","check-export","apply-export"], entry:"page-export-basket"},
     /* Part 1's third chapter (2026-11-02, Nil: "under part 1: add How am I doing?"): two placeholder beats until it is designed */
     {name:"How am I doing?", pages:["page-doing","page-doing-metro"], entry:"page-doing"},
@@ -12088,8 +12171,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
           onEachFeature: (f, l) => { const q = f.properties, v = net(q);
             l.bindTooltip(tipName(q) +
               /* within 100 of even the map paints the admin grey (2026-11-02): its card says so before the figure */
-              '<span class="tc-head tc-head--' + (Math.abs(v) < 100 ? "even" : v > 0 ? "in" : "out") + '">' + (Math.abs(v) < 100 ? 'About even: Boston ' + (v > 0 ? 'gains ' + fmtN(v) + ' workers' : v < 0 ? 'loses ' + fmtN(-v) + ' workers' : 'neither gains nor loses workers') : v > 0 ? 'Boston gains ' + fmtN(v) + ' workers' : 'Boston loses ' + fmtN(-v) + ' workers') + '</span>' +
-              (v > 0 ? tipRank("gain", q, gainList.length, "where Boston gains") : v < 0 ? tipRank("loss", q, lossList.length, "where Boston loses") : '') +
+              '<span class="tc-head tc-head--' + (Math.abs(v) < 100 ? "even" : v > 0 ? "in" : "out") + '">' + (Math.abs(v) < 100 ? 'About even: Boston ' + (v > 0 ? 'receives ' + fmtN(v) + ' more workers than it sends' : v < 0 ? 'sends ' + fmtN(-v) + ' more workers than it receives' : 'sends as many workers as it receives') : v > 0 ? 'Boston receives ' + fmtN(v) + ' more workers than it sends' : 'Boston sends ' + fmtN(-v) + ' more workers than it receives') + '</span>' +
+              (v > 0 ? tipRank("gain", q, gainList.length, "where Boston is a net receiver") : v < 0 ? tipRank("loss", q, lossList.length, "where Boston is a net sender") : '') +
               tipRow("in", q.inWorkers || 0, "commute into Boston") +
               (q.outWorkers != null ? tipRow("out", q.outWorkers, "commute out of Boston to work here") : tipSub("Commuters out of Boston: not known for this admin")),
               { sticky: true, className: "who-tip", direction: "top", offset: [0, -10], opacity: 1 }); }
@@ -12242,9 +12325,10 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         /* Boston keeps its teal on the commuting maps, a heavier edge, and
            its name instead of the chips (which would land on its neighbours) */
         /* on the commuting maps Boston takes the grey of those who live and
-           work there, as the dots have it (Nil, 2026-10-18), with a darker
-           grey edge; lighter in opt-2, where the grey dots land on it */
-        const fw = getComputedStyle(document.getElementById("ovWrap")), BOTHC = fw.getPropertyValue("--flow-both").trim() || "#9aa6aa", BOTHT = fw.getPropertyValue("--flow-both-text").trim() || "#5b686d";
+           work there, as the dots have it (Nil, 2026-10-18), edged in white
+           like every town (2026-11-07, Nil: "make Boston border white as well");
+           lighter in opt-2, where the grey dots land on it */
+        const fw = getComputedStyle(document.getElementById("ovWrap")), BOTHC = fw.getPropertyValue("--flow-both").trim() || "#9aa6aa", BOTHT = fw.getPropertyValue("--white").trim() || "#fff";
         ovCityLayer.setStyle(mode ? Object.assign({}, cityOpts, { color: BOTHT, weight: 2, fillColor: BOTHC, fillOpacity: window.whoFlowsHome && isHome(mode) ? homeCityOp : .85 }) : cityOpts);
         ovCityLayer.bringToFront();
         ovLeaflet.getContainer().classList.toggle("who-commute", !!mode);
@@ -12780,7 +12864,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
             fb: "About a quarter, 26%. Only 14% of the metro\u2019s working residents live in Boston, which is why it hosts 2.1 jobs for every one its residents hold." },
           { q: "Boston is a \u2026",
             opts: [["business admin: 2.1 jobs inside the city for every job its residents hold",1],["residential admin: more residents leave for work than workers arrive",0],["balanced admin: the two counts match",0]],
-            fb: "A business admin: 719K jobs inside Boston against 348K its residents hold, and the city gains 371K workers on a working day. Only in manufacturing, management of companies, agriculture and mining do its residents out-work the city, by under 1,000 together." }
+            fb: "A business admin: 719K jobs inside Boston against 348K its residents hold, and the city receives 371K more workers than it sends on a working day. Only in manufacturing, management of companies, agriculture and mining do its residents out-work the city, by under 1,000 together." }
         ],
         prompt: "Which part of your city’s economic mix surprised you, and what does it suggest about what the city could sell more of?",
         ph: "That Boston hosts half the metro\u2019s finance jobs suggests\u2026"
@@ -13970,6 +14054,33 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
      population": the metro's most populous admin, drawn as its five largest), and is it a business or a
      residential admin (a needle: commuters in for every one out; above 1.25
      business, below 0.8 residential, between balanced). From who-2024.js. */
+  /* the metro's mark, as its icon circle draws it: in Who am I?'s snapshot card and in the produce chapter's first */
+  const ICO_METRO = '<svg class="sk-ico-metro" viewBox="0 0 30 22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="15" cy="11" rx="13" ry="8.6" stroke-dasharray="2.6 3"/><path d="M10.5 15.5h9"/><path d="M12.2 15.5V10h3v5.5"/><path d="M16.6 15.5V7h3v8.5"/></svg>';
+  /* Who am I?'s first card (2026-11-07 as a third, whole-width card; 2026-11-08, Nil: "just have two panel ... First
+     panel is 'How does Boston compare with its metro?' use a comparison icon", then "look for ways to consolidate
+     this part, it looks too long ... we already show the numbers and bars in the previous sections, this should be
+     summary and takeaway. keep the information '3rd highest of 32'"): the question and its head on top, then a
+     compact list, a measure a line: its name, the gap from the metro in words, and the admin's rank among the metro's
+     admins at the right. No bars, no figures but the employed residents' count, whose metro figure is a placeholder.
+     From whoCompareSnap, the compare beat's own helpers, which the stats' script defines after the close is built:
+     until then an empty card stands in, and that script fills it */
+  const ICO_COMPARE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h16M8 20v-7M16 20V5"/></svg>';
+  function whoSnapHtml(C){
+    if (!C) return '<div class="seal-key seal-key--cmp" data-snap hidden></div>';
+    const pop = C.rows.find(r => r.k === "population"), share = pop ? Math.round(pop.v / pop.m * 100) : null;
+    /* the population is the head's; the four others are the list, in the stats beats' order */
+    const rows = ["salary", "home_value", "unemployment", "employed"].map(k => C.rows.find(r => r.k === k)).filter(Boolean);
+    /* no "lower is better" hint here: the rank's own word ("17th lowest") says which way is good */
+    const row = r => '<div class="sk-cmp-row" role="row"><span class="sk-cmp-n" role="cell">' + r.name + '</span>' +
+      '<span class="sk-cmp-g" role="cell">' + r.gap + '</span><span class="sk-cmp-r" role="cell">' + r.rank + '</span></div>';
+    return '<div class="seal-key seal-key--cmp">' +
+      '<div class="sk-body"><p class="sk-eyebrow"><span class="sk-ico">' + ICO_COMPARE + '</span>How does Boston compare with its metro?</p>' +
+      '<p class="sk-head">' + (share !== null ? share + ' of every 100 people in Boston Metro live in Boston Admin' : 'Boston Admin against Boston Metro') + '</p></div>' +
+      '<div class="sk-cmp" role="table" aria-label="Boston Admin against Boston Metro">' +
+      '<div class="mi-sr" role="row"><span role="columnheader">Measure</span><span role="columnheader">Against Boston Metro</span><span role="columnheader">Rank among the metro\u2019s ' + C.n + ' admins of about 25,000 people or more</span></div>' +
+      rows.map(row).join("") + '</div></div>';
+  }
+  window.whoSnapHtml = whoSnapHtml;
   const SEAL_KEYS = {
     "Who am I?": () => {
       const W = window.WHO_2024; if (!W || !W.place || !W.metro || !W.in || !W.out) return "";
@@ -14005,21 +14116,18 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
           '<line class="skd-needle" x1="' + G.cx + '" y1="' + G.cy + '" x2="' + (G.cx + G.rIn - 14) + '" y2="' + G.cy + '" style="--a:' + deg.toFixed(2) + 'deg"/>' +
           '<circle class="skd-pivot" cx="' + G.cx + '" cy="' + G.cy + '" r="6"/>' +
           '<text class="skd-big" x="' + G.cx + '" y="' + (G.cy - 30) + '" text-anchor="middle">' + ratio.toFixed(1) + '\u00d7</text></svg>'; })();
-      const ICO_ANCHOR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="5" r="2.2"/><path d="M12 7.2V21M7 11h10M4 15a8 8 0 0 0 16 0"/></svg>';
       /* the city icon, as Boston wears it in the commuting figure */
       const ICO_CITY = '<svg viewBox="0 0 24 30" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + window.CITY_ICON + '</svg>';
       return '<div class="seal-keys">' +
-        /* the five most populous admins, Boston Admin's bar white and the others faint */
-        '<div class="seal-key"><div class="sk-viz sk-viz--rank" role="img" aria-label="The most populous admins in Boston Metro: ' + top.map(t => (t.here ? "Boston Admin" : t.name) + " " + K(t.pop)).join(", ") + '">' +
-          top.map(t => '<span class="skr-row' + (t.here ? ' is-here' : '') + '"><span class="skr-n">' + (t.here ? "Boston Admin" : t.name) + '</span><span class="skr-t"><i style="--w:' + (t.pop / top[0].pop * 100).toFixed(1) + '%"></i></span><b>' + K(t.pop) + '</b></span>').join("") + '</div>' +
-          '<div class="sk-body"><p class="sk-eyebrow"><span class="sk-ico">' + ICO_ANCHOR + '</span>Population anchor?</p>' +
-          '<p class="sk-head">' + (anchor ? "Boston Admin is Boston Metro\u2019s population anchor" : "Boston Admin is not Boston Metro\u2019s population anchor") + '</p>' +
-          '<p class="sk-fig">' + (anchor && next ? "The most populous of its " + places + " admins: " + K(top[0].pop) + " people, " + (top[0].pop / next.pop).toFixed(1) + " times " + next.name + ", the next largest"
-            : rank ? "The " + ["", "", "second", "third", "fourth", "fifth"][rank] + " most populous of Boston Metro\u2019s " + places + " admins" : "") + '</p></div></div>' +
-        '<div class="seal-key"><div class="sk-viz sk-viz--dial">' + dial + '</div>' +
-          '<div class="sk-body"><p class="sk-eyebrow"><span class="sk-ico">' + ICO_CITY + '</span>Business or residential admin?</p>' +
-          '<p class="sk-head">' + (zone === "bal" ? "Boston Admin is balanced: as many commute in as out" : "Boston Admin is a " + ZW[zone] + " admin") + '</p>' +
-          '<p class="sk-fig">' + ratio.toFixed(1) + ' commute in for every one who commutes out</p></div></div>' +
+        /* the comparison first (2026-11-08, Nil); the population anchor's card went with it, the comparison's
+           population row saying the same */
+        whoSnapHtml(window.whoCompareSnap && window.whoCompareSnap()) +
+        /* the second card in the first's order (2026-11-08, Nil: "make sure the title and big font text is similar to
+           the first card, its order etc"): the question and its head on top, the needle under them, its reading last */
+        '<div class="seal-key seal-key--dial"><div class="sk-body"><p class="sk-eyebrow"><span class="sk-ico">' + ICO_CITY + '</span>Business or residential admin?</p>' +
+          '<p class="sk-head">' + (zone === "bal" ? "Boston Admin is balanced: as many commute in as out" : "Boston Admin is a " + ZW[zone] + " admin") + '</p></div>' +
+          '<div class="sk-viz sk-viz--dial">' + dial + '</div>' +
+          '<p class="sk-fig">' + ratio.toFixed(1) + ' commute in for every one who commutes out</p></div>' +
         '</div>';
     },
     /* What do my metro and I produce? closes on its two halves, each drawn as the anchor's ranked bars above (2026-10-28,
@@ -14046,7 +14154,6 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       /* the anchor's rows, the first white and the others faint, the numbers' column named over them */
       const rows = (hd, list, max) => '<span class="skr-hd">' + hd + '</span>' + list.map((t, i) => '<span class="skr-row' + (i ? '' : ' is-here') + '">' +
         '<span class="skr-n">' + esc(t.name) + '</span><span class="skr-t">' + (t.w == null ? '' : '<i style="--w:' + (t.w / max * 100).toFixed(1) + '%"></i>') + '</span><b>' + t.v + '</b></span>').join("");
-      const ICO_METRO = '<svg class="sk-ico-metro" viewBox="0 0 30 22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="15" cy="11" rx="13" ry="8.6" stroke-dasharray="2.6 3"/><path d="M10.5 15.5h9"/><path d="M12.2 15.5V10h3v5.5"/><path d="M16.6 15.5V7h3v8.5"/></svg>';
       const ICO_CITY = '<svg viewBox="0 0 24 30" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + window.CITY_ICON + '</svg>';
       const lead = traded[0];
       return '<div class="seal-keys seal-keys--level">' +
@@ -14056,13 +14163,13 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
           '<div class="sk-body"><p class="sk-eyebrow"><span class="sk-ico">' + ICO_METRO + '</span>Top traded industries in Metro Area</p>' +
           '<p class="sk-head">Boston Metro sells research and software</p>' +
           '<p class="sk-fig">' + esc(lead[F.short]) + ' leads with ' + fc(lead[F.employ]) + ' jobs, at ' + lead[F.rca].toFixed(1) + ' times the national rate</p></div></div>' +
-        '<div class="seal-key"><div class="sk-viz sk-viz--rank" role="img" aria-label="' + esc("Workers Boston Admin gains or loses by sector, " + A.year + ": " +
-          top.map((t, i) => t.name + (i ? " " : " gains ") + fc(t.d)).join(", ") + (lose.length ? "; " + more + (lose.length > 1 ? " sectors lose " + fc(lost) + " together" : " loses " + fc(lost)) : "")) + '">' +
-          rows("Workers gained or lost", top.map(t => ({ name: t.name, w: t.d, v: "+" + fc(t.d) })).concat(lose.length ? [{ name: more, w: null, v: fc(-lost) }] : []), top[0].d) + '</div>' +
-          '<div class="sk-body"><p class="sk-eyebrow"><span class="sk-ico">' + ICO_CITY + '</span>Gaining or losing workers?</p>' +
-          '<p class="sk-head">Boston Admin gains in ' + gain.length + ' of ' + A.sectors.length + ' sectors</p>' +
-          '<p class="sk-fig">' + esc(top[0].name) + ' gains the most' + (lose.length > 1 ? '; the ' + lose.length + ' that lose come to ' + fc(lost) + ' together'
-            : lose.length ? '; ' + esc(lose[0].name.toLowerCase()) + ' loses ' + fc(lost) : '') + '</p></div></div>' +
+        '<div class="seal-key"><div class="sk-viz sk-viz--rank" role="img" aria-label="' + esc("Workers Boston Admin receives or sends, net, by sector, " + A.year + ": " +
+          top.map((t, i) => t.name + (i ? " " : " receives ") + fc(t.d)).join(", ") + (lose.length ? "; " + more + (lose.length > 1 ? " sectors send " + fc(lost) + " together" : " sends " + fc(lost)) : "")) + '">' +
+          rows("Workers received or sent, net", top.map(t => ({ name: t.name, w: t.d, v: "+" + fc(t.d) })).concat(lose.length ? [{ name: more, w: null, v: fc(-lost) }] : []), top[0].d) + '</div>' +
+          '<div class="sk-body"><p class="sk-eyebrow"><span class="sk-ico">' + ICO_CITY + '</span>Receiver or sender of workers?</p>' +
+          '<p class="sk-head">Boston Admin is a net receiver in ' + gain.length + ' of ' + A.sectors.length + ' sectors</p>' +
+          '<p class="sk-fig">' + esc(top[0].name) + ' receives the most' + (lose.length > 1 ? '; the ' + lose.length + ' that send come to ' + fc(lost) + ' together'
+            : lose.length ? '; ' + esc(lose[0].name.toLowerCase()) + ' sends ' + fc(lost) : '') + '</p></div></div>' +
         '</div>';
     }
   };
@@ -14837,13 +14944,13 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     /* the metro's admins on the four measures: the scatter's rows (admins of about 25,000 people and up) that the
        commuting outlines place inside the metro, with the admin itself; the admin's rank on each, lowest first for
        unemployment, and who leads where it does not (2026-10-22) */
-    const COLK = { population: "pop", salary: "wage", home_value: "home", unemployment: "unemp" };
+    const COLK = { population: "pop", salary: "wage", home_value: "home", unemployment: "unemp", employed: "emp" };
     const ordinal = n => { const m = n % 100, d = n % 10; return n + (m >= 11 && m <= 13 ? "th" : d === 1 ? "st" : d === 2 ? "nd" : d === 3 ? "rd" : "th"); };
     function metroRanks(){
       const S = window.WHO_SCATTER_2024, G = window.WHO_COMMUTE_GEO; if (!S || !G) return null;
       const C = Object.fromEntries(S.cols.map((c, i) => [c, i])), inM = new Set(G.places.features.filter(f => f.properties.inMsa).map(f => f.properties.place_id));
       const rows = S.rows.filter(r => r[C.id] === S.here || inM.has(r[C.id])), RK = { n: rows.length, rows, C, here: S.here, of: {} };
-      KEYS.forEach(k => { const c = C[COLK[k]], asc = k === "unemployment", srt = rows.slice().sort((a, b) => asc ? a[c] - b[c] : b[c] - a[c]);
+      KEYS.concat("employed").forEach(k => { const c = C[COLK[k]], asc = k === "unemployment", srt = rows.slice().sort((a, b) => asc ? a[c] - b[c] : b[c] - a[c]);
         RK.of[k] = { rank: srt.findIndex(r => r[C.id] === S.here) + 1, lead: srt[0][C.id] === S.here ? null : { name: srt[0][C.name], v: srt[0][c] } }; });
       return RK;
     }
@@ -14946,6 +15053,26 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       el.innerHTML = h + (RK ? '<p class="wt-rknote">Ranks are among the ' + RK.n + ' Boston Metro admins of about 25,000 people or more, 2024.</p>' : '') + '</div>';
     }
     compare(document.getElementById("whoCompare"));
+    /* the comparison for the chapter's close (2026-11-07): the beat that drew it is gone, its four measures stay as a
+       snapshot card. A row a measure: the admin's and the metro's figures, the gap said as the lines said it, the
+       admin's rank among the metro's admins */
+    window.whoCompareSnap = () => {
+      const W = window.WHO_2024, RK = metroRanks(); if (!W || !RK) return null;
+      const val = (g, k) => g.ind.find(r => r.key === k).value;
+      const MOST = { population: "largest", salary: "highest", home_value: "highest", unemployment: "lowest", employed: "most" };
+      const rankOf = k => { const r = RK.of[k]; return r && r.rank ? (r.rank === 1 ? "<b>" + MOST[k].charAt(0).toUpperCase() + MOST[k].slice(1) + "</b>" : "<b>" + ordinal(r.rank) + "</b> " + MOST[k]) + " of " + RK.n : ""; };
+      const rows = KEYS.map(k => { const v = val(W.place, k), m = val(W.metro, k), lower = k === "unemployment";
+        const d = k === "population" ? null : diff(k, v, m);
+        const gap = k === "population" ? Math.round(v / m * 100) + " of every 100 of the metro\u2019s people"
+          : d.same ? "about the same as the metro" : (d.t.endsWith("\u00d7") ? d.t.slice(0, -1) + " times the metro" : d.t + (d.up ? " above" : " below") + " the metro");
+        return { k, name: NAME[k], lower, v, m, fv: fmt(k, v), fm: fmt(k, m), up: d ? d.up : null, same: d ? d.same : false, t: d ? d.t : "", gap, rank: rankOf(k) }; });
+      /* employed residents (2026-11-08): the admin's own count and its rank; the metro's figure in the data is a placeholder, so no gap */
+      const E = window.WHO_COMPARE_2024 && window.WHO_COMPARE_2024.here && window.WHO_COMPARE_2024.here.employed;
+      if (E) rows.push({ k: "employed", name: NAME.employed, lower: false, v: E, m: null, fv: fmt("population", E), fm: "", up: null, same: false, t: "", gap: fmt("population", E) + " people", rank: rankOf("employed") });
+      return { n: RK.n, rows };
+    };
+    /* the close was built before this script ran: its stand-in card takes the snapshot now */
+    document.querySelectorAll(".seal-key--cmp[data-snap]").forEach(el => { if (window.whoSnapHtml) el.outerHTML = window.whoSnapHtml(window.whoCompareSnap()); });
     window.whoCompareAlt = { mode: () => cmpMode, set(m){ cmpMode = ["bars", "cards"].includes(m) ? m : "lines";
       document.querySelectorAll(".wt-compare-opt").forEach(sel => { sel.value = cmpMode; });
       const u = new URL(location.href); if (cmpMode === COMPARE_DEFAULT) u.searchParams.delete("compare"); else u.searchParams.set("compare", cmpMode);
@@ -16401,84 +16528,110 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       return h + '</g>' + (L.caps.length ? '<text class="rv-cap" x="' + PAD + '" y="' + q(L.capTop + 13) + '">' + L.caps.map((t, i) => '<tspan x="' + PAD + '" dy="' + (i ? CLH : 0) + '">' + t + '</tspan>').join("") + '</text>' : '');
     }
 
-    /* ---- the histogram, on the reference's frame (margins 34 16 64 16, more below when its words wrap) */
-    const LOV = .1, HIV = 10, NB = BAL.counts.length, TICKS = [.1, .2, .5, 1, 2, 5, 10];
-    /* each arrow held to its word by a no-break space, so a wrapped label never leaves it alone on a line */
-    const NBSP = String.fromCharCode(160), T_LO = "←" + NBSP + "More working residents than jobs", T_HI = "More jobs than working residents" + NBSP + "→";
-    const CAP = FULL(BAL.n) + " US places with 1,000 or more working residents. LODES 2023.";
+    /* ---- the histogram, on the reference's frame, read more simply (2026-11-08, Nil: "bars - is there a way to make it
+       more user-friendly? I don't understand this. also make peers optional with same interaction similar to the
+       previous sections"; balance-histogram-sketches.html, option 2): the reference's 44 bins paired into 22, each
+       coloured by the needle's zone (residential under 0.8 jobs per working resident, balanced to 1.25, business
+       above), the places beyond Boston in the full blue under a bracket saying their share; no count axis, the bars
+       are a shape, a line under them says what one counts; under the axis the ratios as "times" and the two ends in
+       words. The peer average and the peers only when chosen, through the chips beat 1 uses: one state for both
+       beats, the stats tables' "admin" set, whose click handler on the frame toggles it */
+    const LOV = .1, HIV = 10, NB = BAL.counts.length / 2, TICKS = [.5, 1, 2, 5];
+    const C22 = []; for (let i = 0; i < NB; i++) C22.push(BAL.counts[2 * i] + BAL.counts[2 * i + 1]); const MAX22 = Math.max(...C22);
     const edge = i => Math.pow(10, -1 + i * 2 / NB), fx = v => v >= 10 ? v.toFixed(0) : v.toFixed(2), fx1 = v => v.toFixed(1);
-    /* the takeaway over the chart: Boston's reading to one decimal, as the needle's, and the share of places above it */
+    const zoneOf = v => v < .8 ? "res" : v <= 1.25 ? "bal" : "bus";
+    const NBSP = String.fromCharCode(160), T_LO = "←" + NBSP + "Fewer jobs than workers", T_HI = "More jobs than workers" + NBSP + "→";
+    /* over the chart: its title alone (2026-11-08, Nil: "find a user friendly way to title this graph", then "remove"
+       the takeaway sentence under it); the share above Boston stays in the screen-reader text */
     const ABOVE = Math.round(BAL.rank / BAL.n * 100);
-    const HEAD = 'Boston has <span class="num">' + fx1(BAL.me) + '</span> jobs for every working resident. Only ' + ABOVE + '% of US places have more.';
-    const pslug = name => name.split(",")[0].trim().toLowerCase().replace(/\s+/g, "-");
-    const KEY = '<p class="who-ref-key"><span class="wrk-l">Peers</span>' + BAL.peers.slice().sort((a, b) => b[1] - a[1]).map(p =>
-      '<span><i style="--pc:var(--pc-' + pslug(p[0]) + ')" aria-hidden="true"></i>' + p[0] + ' ' + fx1(p[1]) + '</span>').join("") + '</p>';
+    const TITLE = 'Where Boston stands among ' + FULL(BAL.n) + ' US admins';
+    const pslug = name => name.split(",")[0].trim().toLowerCase().replace(/\s+/g, "-"), pshort = name => name.split(",")[0].trim();
+    /* the peers' state is the stats tables' (beat 1's chips and these are one set of switches) */
+    const TBL = () => window.whoTables && window.whoTables.admin;
+    const peerOn = p => { const t = TBL(); return !!(t && t.on.has(pshort(p[0]))); }, avgOn = () => { const t = TBL(); return !!(t && t.avg); };
+    /* "Closest peers" as beat 1's tables lead it (2026-11-08, Nil: "put i tooltip together with closest peers, similar to
+       the previous sections"): the term button, whose card the stats' script registers as who-peers-admin */
+    const KEY = () => '<p class="wt-peers who-ref-peers"><span class="wt-pk"><button type="button" class="term" data-term="who-peers-admin" aria-expanded="false">Closest peers</button></span>' +
+      '<button type="button" class="wt-peer wt-peer--avg" data-set="admin" data-avg="1" aria-pressed="' + avgOn() + '"><i aria-hidden="true"></i>Peer average</button><span class="wt-sep" aria-hidden="true"></span>' +
+      '<span class="wt-pgrp">' + BAL.peers.map(p => '<button type="button" class="wt-peer" data-set="admin" data-p="' + pshort(p[0]) + '" aria-pressed="' + peerOn(p) + '" style="--pc:var(--pc-' + pslug(p[0]) + ')"><i aria-hidden="true"></i>' + p[0].replace(",", "") + '</button>').join("") + '</span>' +
+      '</p>';
+    const TOP = 48;  /* over the plot: the zones' names, Boston's name over its line, whose top meets the longest bar */
     function histLayout(Wd, Hd){
       const plotW = Math.max(0, Wd - 32); if (!(plotW > 0) || !(Hd > 0)) return null;
       const x = v => 16 + (Math.log10(Math.min(HIV, Math.max(LOV, v))) + 1) / 2 * plotW, one = x(1);
-      const lo = (ww(T_LO) <= one - 8 ? [T_LO] : lines(T_LO, one - 8, 13, 600)) || [T_LO];
-      const hi = (ww(T_HI) <= Wd - one - 8 ? [T_HI] : lines(T_HI, Wd - one - 8, 13, 600)) || [T_HI];
-      const cap = (tw(CAP, 13, 400) <= Wd - 32 ? [CAP] : lines(CAP, Wd - 32, 13, 400)) || [CAP];
-      const la = Math.max(lo.length, hi.length), plotH = Math.max(24, Hd - 34 - (64 + 17 * (la - 1 + cap.length - 1))), base = 34 + plotH;
-      return { Wd, plotW, plotH, base, x, one, lo, hi, la, cap, y: c => base - c / BAL.max * plotH };
+      /* the ends' words keep to the plot's width (the 16px margins stay clear) */
+      const lo = (ww(T_LO) <= one - 24 ? [T_LO] : lines(T_LO, one - 24, 13, 600)) || [T_LO];
+      const hi = (ww(T_HI) <= Wd - 24 - one ? [T_HI] : lines(T_HI, Wd - 24 - one, 13, 600)) || [T_HI];
+      const la = Math.max(lo.length, hi.length), right = 16 + plotW;
+      /* under the plot: the ticks (17) and the ends' words */
+      const below = 17 + 17 * la + 14;
+      const plotH = Math.max(24, Hd - TOP - below), base = TOP + plotH;
+      return { Wd, plotW, plotH, base, x, one, lo, hi, la, right, y: c => base - c / MAX22 * plotH };
     }
     function histSvg(L){
-      const x = L.x, base = L.base, ay = base + 37, right = 16 + L.plotW * .72;
-      const words = (cls, t, x0, anchor) => '<text class="rh-arr ' + cls + '" x="' + q(x0) + '" y="' + q(ay) + '" text-anchor="' + anchor + '">' +
+      const x = L.x, base = L.base, right = 16 + L.plotW, B = x(BAL.me);
+      let h = '';
+      /* the zones named over the plot, each at its middle; where a narrow chart (the words column under 1200) would
+         run the residential name into "Balanced" it moves left of it, and shortens to "Residential" past the edge */
+      /* the three names shorten together where the plot is narrow (the words column under 1200), and one that still
+         has no room beside "Balanced" is left out: the bars' colours and the axis words name its zone (review, 2026-11-08) */
+      const zw = t => tw(t, 13, 600);
+      let [rT, balT, bT] = ["Residential admins", "Balanced admins", "Business admins"];
+      if (zw(rT) + zw(balT) + zw(bT) + 2 * 10 > right - 16) [rT, balT, bT] = ["Residential", "Balanced", "Business"];
+      const wR = zw(rT), wBal = zw(balT), wB = zw(bT), limL = x(1) - wBal / 2 - 10, limR = x(1) + wBal / 2 + 10;
+      const rX = Math.max(16 + wR / 2, Math.min(limL - wR / 2, x(Math.sqrt(LOV * .8)))), bX = Math.min(right - wB / 2, Math.max(limR + wB / 2, x(Math.sqrt(1.25 * HIV))));
+      if (rX + wR / 2 > limL) rT = ""; if (bX - wB / 2 < limR) bT = "";
+      h += (rT ? '<text class="rh-zone rh-zone--res" x="' + q(rX) + '" y="12" text-anchor="middle">' + rT + '</text>' : '') +
+        '<text class="rh-zone rh-zone--bal" x="' + q(x(1)) + '" y="12" text-anchor="middle">' + balT + '</text>' +
+        (bT ? '<text class="rh-zone rh-zone--bus" x="' + q(bX) + '" y="12" text-anchor="middle">' + bT + '</text>' : '');
+      /* Boston's own bin is split at its line, so the full blue starts where the bracket does and holds the bracket's share */
+      C22.forEach((c, i) => { const a = x(edge(i)), b = x(edge(i + 1)), y = L.y(c), z = zoneOf(Math.sqrt(edge(i) * edge(i + 1))), me = edge(i) < BAL.me && BAL.me < edge(i + 1);
+        const bar = (x0, x1, beyond) => '<rect data-i="' + i + '" class="rh-bar rh-bar--' + z + (beyond ? ' rh-bar--beyond' : '') + '" x="' + q(x0) + '" y="' + q(y) + '" width="' + q(Math.max(0, x1 - x0)) + '" height="' + q(base - y) + '"/>';
+        h += me ? bar(a + .5, B - .5, false) + bar(B + .5, b - .5, true) : bar(a + .5, b - .5, edge(i) >= BAL.me); });
+      h += '<line class="rh-base" x1="16" x2="' + q(right) + '" y1="' + q(base) + '" y2="' + q(base) + '"/>' +
+        '<line class="rh-one" x1="' + q(L.one) + '" x2="' + q(L.one) + '" y1="' + TOP + '" y2="' + q(base + 4) + '"/>';
+      TICKS.forEach(t => { h += '<line class="rh-grid" x1="' + q(x(t)) + '" x2="' + q(x(t)) + '" y1="' + q(base) + '" y2="' + q(base + 4) + '"/>' +
+        '<text class="rh-tick' + (t === 1 ? ' rh-tick--one' : '') + '" x="' + q(x(t)) + '" y="' + q(base + 17) + '" text-anchor="middle">' + (t === .5 ? "½" : t) + '×</text>'; });
+      const ay = base + 34, words = (cls, t, x0, anchor) => '<text class="rh-arr ' + cls + '" x="' + q(x0) + '" y="' + q(ay) + '" text-anchor="' + anchor + '">' +
         t.map((s, i) => '<tspan x="' + q(x0) + '" dy="' + (i ? 17 : 0) + '">' + s + '</tspan>').join("") + '</text>';
-      let h = words("rh-arr--lo", L.lo, L.one - 8, "end") + words("rh-arr--hi", L.hi, L.one + 8, "start");
-      TICKS.forEach(t => { h += '<line class="rh-grid" x1="' + q(x(t)) + '" x2="' + q(x(t)) + '" y1="34" y2="' + q(base) + '"/>'; });
-      /* how many places a bar stands for: a quiet line every 200, its count at the right end */
-      for (let c = 200; c < BAL.max; c += 200){ const y = L.y(c);
-        h += '<line class="rh-cnt" x1="16" x2="' + q(16 + L.plotW) + '" y1="' + q(y) + '" y2="' + q(y) + '"/>'; }
-      BAL.counts.forEach((c, i) => { const a = x(edge(i)), b = x(edge(i + 1)), y = L.y(c);
-        h += '<rect class="rh-bar rh-bar--' + (edge(i + 1) <= 1.0001 ? 'lo' : 'hi') + '" x="' + q(a + .5) + '" y="' + q(y) + '" width="' + q(Math.max(0, b - a - 1)) + '" height="' + q(base - y) + '"/>'; });
-      /* Boston's name on the reference's side of its line, or the other side where it would run off the chart */
-      const S = x(BAL.avg), B = x(BAL.me), meW = tw("Boston " + fx1(BAL.me), 15, 700), meEnd = B > right || B + 8.4 + meW > L.Wd;
-      /* the peer average's name on the reference's side of its line, or the other side, clear of Boston's line and
-         of the line at 1; where neither side is clear it goes up beside Boston's name, over the bars, left of its
-         line, the dashed line reaching up to it; failing that, the side clear of Boston's line. Where the name must
-         stand over the line at 1, that line starts under the name rather than run through it (a review, 2026-11-02) */
-      const paW = tw("Peer average ", 13, 400) + tw(fx1(BAL.avg), 13, 700);
-      const span = end => end ? [S - 6 - paW, S - 6] : [S + 6, S + 6 + paW], hits = (sp, v) => v > sp[0] - 4 && v < sp[1] + 4;
-      const fitsIn = sp => sp[0] >= 0 && sp[1] <= L.Wd, ok = (sp, strict) => fitsIn(sp) && !hits(sp, B) && (!strict || !hits(sp, L.one));
-      let paEnd = S > right, paY = 68;
-      /* first choice on the page (2026-11-04): up in Boston's row, left of its own line, where the two names read as
-         one row of marks and neither stands over the bars; else the reference's places */
-      { const up = span(true), meSp = meEnd ? [B - 8.4 - meW, B - 8.4] : [B + 8.4, B + 8.4 + meW];
-        if (S < B && fitsIn(up) && (up[1] + 8 < meSp[0] || up[0] > meSp[1] + 8)){ paEnd = true; paY = 28; } }
-      if (paY !== 28 && !ok(span(paEnd), true)){
-        const up = span(true), meSp = meEnd ? [B - 8.4 - meW, B - 8.4] : [B + 8.4, B + 8.4 + meW];
-        if (ok(span(!paEnd), true)) paEnd = !paEnd;
-        else if (S < B && fitsIn(up) && (up[1] + 8 < meSp[0] || up[0] > meSp[1] + 8)){ paEnd = true; paY = 28; }
-        else if (!ok(span(paEnd)) && ok(span(!paEnd))) paEnd = !paEnd; }
-      const oneTop = hits(span(paEnd), L.one) ? paY + 6 : 34, paTop = paY === 28 ? 31 : 38;
-      h += '<line class="rh-base" x1="16" x2="' + q(16 + L.plotW) + '" y1="' + q(base) + '" y2="' + q(base) + '"/>' +
-        '<line class="rh-one" x1="' + q(L.one) + '" x2="' + q(L.one) + '" y1="' + oneTop + '" y2="' + q(base + 4) + '"/>';
-      TICKS.forEach(t => { h += '<text class="rh-tick' + (t === 1 ? ' rh-tick--one' : '') + '" x="' + q(x(t)) + '" y="' + q(base + 17) + '" text-anchor="middle">' + (t === LOV ? '≤0.1' : t === HIV ? '≥10' : String(t)) + '</text>'; });
-      /* the counts' labels at the right end, over their lines, unless Boston's name stands there */
-      { const meSp = meEnd ? [B - 8.4 - meW, B - 8.4] : [B + 8.4, B + 8.4 + meW], cw = tw("400 places", 13, 400), x1 = 16 + L.plotW - 2;
-        if (x1 - cw > meSp[1] + 8 || x1 - cw > B + 8) for (let c = 200; c < BAL.max; c += 200){ const y = L.y(c);
-          if (y - 4 < 34) continue; h += '<text class="rh-cnt-t" x="' + q(x1) + '" y="' + q(y - 4) + '" text-anchor="end">' + c + ' places</text>'; } }
-      h += '<text class="rh-cap" x="16" y="' + q(ay + 17 * (L.la - 1) + 23) + '">' + L.cap.map((s, i) => '<tspan x="16" dy="' + (i ? 17 : 0) + '">' + s + '</tspan>').join("") + '</text>';
-      BAL.peers.forEach(p => { h += '<circle class="rh-pe" cx="' + q(x(p[1])) + '" cy="' + q(base) + '" r="4.5" style="fill:var(--pc-' + pslug(p[0]) + ')"/>'; });
-      h += '<g class="rh-mk"><line class="rh-pa-halo" x1="' + q(S) + '" x2="' + q(S) + '" y1="' + paTop + '" y2="' + q(base) + '"/><line class="rh-pa" x1="' + q(S) + '" x2="' + q(S) + '" y1="' + paTop + '" y2="' + q(base) + '"/>' +
-        '<text class="rh-pa-t" x="' + q(paEnd ? S - 6 : S + 6) + '" y="' + paY + '" text-anchor="' + (paEnd ? "end" : "start") + '">Peer average <tspan class="rh-b">' + fx1(BAL.avg) + '</tspan></text></g>';
-      h += '<g class="rh-mk"><line class="rh-me-halo" x1="' + q(B) + '" x2="' + q(B) + '" y1="8" y2="' + q(base) + '"/><line class="rh-me" x1="' + q(B) + '" x2="' + q(B) + '" y1="8" y2="' + q(base) + '"/>' +
-        '<text class="rh-me-t" x="' + q(meEnd ? B - 8.4 : B + 8.4) + '" y="28" text-anchor="' + (meEnd ? "end" : "start") + '">Boston ' + fx1(BAL.me) + '</text></g>';
-      /* what a pointer finds: a bin's whole column, a peer's tick */
-      BAL.counts.forEach((c, i) => { const a = x(edge(i)), b = x(edge(i + 1)); h += '<rect class="rh-hit" data-i="' + i + '" x="' + q(a) + '" y="34" width="' + q(b - a) + '" height="' + q(L.plotH) + '"/>'; });
-      BAL.peers.forEach((p, j) => { h += '<rect class="rh-hit" data-p="' + j + '" x="' + q(x(p[1]) - 5) + '" y="' + q(base - 14) + '" width="10" height="20"/>'; });
+      h += words("rh-arr--lo", L.lo, L.one - 8, "end") + words("rh-arr--hi", L.hi, L.one + 8, "start");
+      /* Boston's line and name; the bracket over the places beyond it with their share, in the short form where the room is small */
+      const meW = tw("Boston " + fx1(BAL.me), 15, 700), meEnd = B - 8 - meW >= 16;  /* drawn at 15px (.rh-me-t, the Under study's size) */
+      /* the peer average and the peers chosen (2026-11-08, Nil: the peers drawn as the peer average is): each a line
+         from its name down to the baseline, the average dashed in its ink, a peer solid in its colour; the name beside
+         the top of its line, left where it fits, else right, on the first row (60, 77, ...) where it meets no other name,
+         one crossing no line already drawn through that row (Boston's included) preferred within the first three rows */
+      const mks = (avgOn() ? [{ v: BAL.avg, pre: "Peer average ", cls: "rh-pa", tcls: "rh-pa-t", w0: 400, col: "" }] : [])
+        .concat(BAL.peers.map((p, j) => [p, j]).filter(([p]) => peerOn(p)).map(([p, j]) => ({ v: p[1], pre: pshort(p[0]) + " ", cls: "rh-pl", tcls: "rh-pl-t", w0: 600, col: "var(--pc-" + pslug(p[0]) + ")", j })))
+        .sort((a, b) => a.v - b.v);
+      const placed = [], lines0 = [{ x: B, row: -1 }];
+      mks.forEach(m => { const S = x(m.v), w = tw(m.pre, 13, m.w0) + tw(fx1(m.v), 13, 700);
+        const span = side => side ? [S - 6 - w, S - 6] : [S + 6, S + 6 + w], fits = side => side ? S - 6 - w >= 16 : S + 6 + w <= right;
+        const clear = (row, [a, b]) => !placed.some(o => o.row === row && a < o.b + 6 && o.a < b + 6), uncut = (row, [a, b]) => !lines0.some(l => l.row <= row && l.x > a - 3 && l.x < b + 3);
+        /* first a place that crosses no line within three rows, then any place clear of the other names (the halo keeps it readable over a line) */
+        const find = (n, strict) => { for (let r = 0; r < n; r++){ const sd = [true, false].find(d => fits(d) && clear(r, span(d)) && (!strict || uncut(r, span(d)))); if (sd != null) return [r, sd]; } return null; };
+        let [row, side] = find(3, true) || find(12, false) || [0, fits(true)];
+        const [a, b] = span(side); placed.push({ row, a, b }); lines0.push({ x: S, row }); Object.assign(m, { S, row, side }); });
+      /* a peer's line wears its colour; its name reads in ink (2026-11-08 audit: the peer colours are mark colours, 3.1 to 1
+         as 13px words on white, under AA) */
+      mks.forEach(m => { const ty = 60 + 17 * m.row, st = m.col ? ' style="stroke:' + m.col + '"' : '', sf = '';
+        h += '<g class="rh-mk"><line class="rh-pa-halo" x1="' + q(m.S) + '" x2="' + q(m.S) + '" y1="' + (ty - 10) + '" y2="' + q(base) + '"/><line class="' + m.cls + '"' + st + ' x1="' + q(m.S) + '" x2="' + q(m.S) + '" y1="' + (ty - 10) + '" y2="' + q(base) + '"/>' +
+          '<text class="' + m.tcls + '"' + sf + ' x="' + q(m.side ? m.S - 6 : m.S + 6) + '" y="' + ty + '" text-anchor="' + (m.side ? "end" : "start") + '">' + m.pre + '<tspan class="rh-b">' + fx1(m.v) + '</tspan></text></g>'; });
+      h += '<g class="rh-mk"><line class="rh-me-halo" x1="' + q(B) + '" x2="' + q(B) + '" y1="' + TOP + '" y2="' + q(base) + '"/><line class="rh-me" x1="' + q(B) + '" x2="' + q(B) + '" y1="' + TOP + '" y2="' + q(base) + '"/>' +
+        '<text class="rh-me-t" x="' + q(meEnd ? B - 8 : B + 8) + '" y="' + (TOP - 8) + '" text-anchor="' + (meEnd ? "end" : "start") + '">Boston ' + fx1(BAL.me) + '</text></g>';
+      /* what a pointer finds: a bin's whole column, a chosen peer's dot */
+      C22.forEach((c, i) => { const a = x(edge(i)), b = x(edge(i + 1)); h += '<rect class="rh-hit" data-i="' + i + '" x="' + q(a) + '" y="' + TOP + '" width="' + q(b - a) + '" height="' + q(L.plotH) + '"/>'; });
+      mks.forEach(m => { if (m.j != null){ const ty = 60 + 17 * m.row; h += '<rect class="rh-hit" data-p="' + m.j + '" x="' + q(m.S - 6) + '" y="' + (ty - 10) + '" width="12" height="' + q(L.base - ty + 10) + '"/>'; } });
       return h;
     }
 
     /* ---- the charts on the page: the Venn and a histogram in the figure; a second histogram in the column, for a phone */
-    const ARIA_V = "Jobs in Boston and jobs held by its residents, 2023: " + K(JOBS) + " work in Boston, " + K(RES) + " live there, " + K(BOTH) + " both; " + K(IN) + " commute in and " + K(OUT) + " commute out.";
-    const ARIA_H = "Jobs per working resident across " + FULL(BAL.n) + " places: Boston " + fx(BAL.me) + ", ranked " + BAL.rank + "; peer average " + fx(BAL.avg) +
-      "; peers " + BAL.peers.map(p => p[0] + " " + fx(p[1])).join(", ") + ".";
+    const ARIA_V = "Jobs in Boston and jobs held by its residents, 2023: " + K(JOBS) + " jobs in Boston, " + K(RES) + " working residents, " + K(BOTH) + " both; " + K(IN) + " commute in and " + K(OUT) + " commute out.";
+    const ARIA_H = () => "Jobs per working resident across " + FULL(BAL.n) + " US admins, the bars grouped residential, balanced and business: Boston " + fx1(BAL.me) + ", " + ABOVE + "% of admins have more" +
+      (avgOn() ? "; peer average " + fx1(BAL.avg) : "") + (BAL.peers.some(peerOn) ? "; peers " + BAL.peers.filter(peerOn).map(p => pshort(p[0]) + " " + fx1(p[1])).join(", ") : "") + ".";
     /* each histogram with its own card; the column's copy led by the Venn's source line, shown when the Venn is in a phone's band */
     const TIP = '<div class="who-ref-tip" hidden aria-hidden="true"></div>';
-    const DIST = '<div class="who-ref-dist"><p class="who-ref-head">' + HEAD + '</p><div class="who-ref-hist"><svg role="img" aria-label="' + ARIA_H + '"></svg></div>' + TIP + KEY + '</div>';
+    const DIST = () => '<div class="who-ref-dist' + (BAL.peers.some(peerOn) ? ' has-peers' : '') + '"><p class="who-ref-head">' + TITLE + '</p><div class="who-ref-hist"><svg role="img" aria-label="' + ARIA_H() + '"></svg></div>' + TIP + KEY() + '</div>';
     /* the room under the Venn the histogram needs: the rule and its gaps, the heading, a chart 190 tall */
     const DIST_MIN = 12 + 230, DOOR = 16;  /* the block's margin and its CSS least height (border box) */
     const presOn = () => { const w = document.getElementById("ovWrap"); return !!(w && w.classList.contains("is-presenting")); };
@@ -16507,7 +16660,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     }
     function drawHist(H){
       const Wp = H.box.clientWidth, Hp = H.box.clientHeight; if (!Wp || !Hp) return;
-      const s = scale(), L = histLayout(Wp / s, Hp / s); if (!L) return; H.L = L; size(H.svg, Wp, Hp, s); H.svg.innerHTML = histSvg(L); H.key = null; H.tip.hidden = true;
+      const s = scale(), L = histLayout(Wp / s, Hp / s); if (!L) return; H.L = L; size(H.svg, Wp, Hp, s); H.svg.innerHTML = histSvg(L); H.svg.setAttribute("aria-label", ARIA_H()); H.key = null; H.tip.hidden = true;
     }
     function draw(){ if (!on) return; ensure(); drawVenn(); hists.forEach(drawHist); }
     /* a part of the Venn, once it is named: its outline and its card, over the part */
@@ -16527,10 +16680,10 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       H.svg.querySelectorAll(".rh-bar.is-on").forEach(b => b.classList.remove("is-on"));
       if (!key || !H.L){ H.tip.hidden = true; return; }
       const L = H.L, s = scale(), [ox, oy] = offset(H.box, H.tip), n = +key.slice(1);
-      if (key[0] === "b"){ const a = edge(n), b = edge(n + 1), bar = H.svg.querySelectorAll(".rh-bar")[n]; if (bar) bar.classList.add("is-on");
-        showTip(H.tip, tipHtml(FULL(BAL.counts[n]) + (BAL.counts[n] === 1 ? " place" : " places"), [["Jobs per working resident", n === 0 ? "up to " + b.toFixed(2) : n === NB - 1 ? a.toFixed(2) + " or more" : a.toFixed(2) + " to " + b.toFixed(2)]]));
-        H.tip.style.left = q(ox + Math.max(0, Math.min(L.x(b) * s + 8, H.box.clientWidth - H.tip.offsetWidth))) + "px"; H.tip.style.top = q(oy + 34 * s) + "px"; return; }
-      const pr = BAL.peers[n]; showTip(H.tip, tipHtml(pr[0], [["Jobs per working resident", fx(pr[1])]]));
+      if (key[0] === "b"){ const a = edge(n), b = edge(n + 1); H.svg.querySelectorAll('.rh-bar[data-i="' + n + '"]').forEach(r => r.classList.add("is-on"));
+        showTip(H.tip, tipHtml(FULL(C22[n]) + (C22[n] === 1 ? " admin" : " admins"), [["Jobs per working resident", n === 0 ? "up to " + b.toFixed(2) + "\u00d7" : n === NB - 1 ? a.toFixed(2) + "\u00d7 or more" : a.toFixed(2) + "\u00d7 to " + b.toFixed(2) + "\u00d7"]]));
+        H.tip.style.left = q(ox + Math.max(0, Math.min(L.x(b) * s + 8, H.box.clientWidth - H.tip.offsetWidth))) + "px"; H.tip.style.top = q(oy + TOP * s) + "px"; return; }
+      const pr = BAL.peers[n]; showTip(H.tip, tipHtml(pr[0], [["Jobs per working resident", fx1(pr[1]) + "\u00d7"]]));
       H.tip.style.left = q(ox + Math.max(0, Math.min(L.x(pr[1]) * s + 8, H.box.clientWidth - H.tip.offsetWidth))) + "px";
       H.tip.style.top = q(oy + Math.max(0, L.base * s - H.tip.offsetHeight - 16)) + "px";
     }
@@ -16543,6 +16696,30 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       H.svg.addEventListener("pointerdown", ev => { if (ev.pointerType === "touch") hHover(H, ev.target, true); });
       hists.push(H); watch(box); scrollHides();
     }
+    /* a peer or the peer average switched anywhere (beat 1's chips or these): the chips here follow, the histograms redraw */
+    const syncPeers = () => {
+      /* the focused chip, if one of these, is found again after the swap */
+      const ae = document.activeElement, fb = ae && ae.closest ? ae.closest(".who-ref-peers .wt-peer") : null;
+      const blocks = [...document.querySelectorAll(".who-ref-peers")], at = fb ? blocks.indexOf(fb.closest(".who-ref-peers")) : -1;
+      const sel = fb ? (fb.dataset.avg ? ".wt-peer--avg" : '.wt-peer[data-p="' + CSS.escape(fb.dataset.p || "") + '"]') : null;
+      blocks.forEach(el => { el.outerHTML = KEY(); });
+      if (at >= 0){ const nb = document.querySelectorAll(".who-ref-peers")[at], b = nb && nb.querySelector(sel); if (b) b.focus({ preventScroll: true }); }
+      /* has-peers marks the chart while any peer is on (its box no longer grows) */
+      const any = BAL.peers.some(peerOn); document.querySelectorAll(".who-ref-dist").forEach(d => d.classList.toggle("has-peers", any));
+      hists.forEach(drawHist); };
+    document.addEventListener("who:peers", ev => { if (!ev.detail || !ev.detail.set || ev.detail.set === "admin") syncPeers(); });
+    document.addEventListener("click", ev => { if (ev.target.closest && ev.target.closest('.wt-peer--avg[data-set="admin"]')) setTimeout(syncPeers, 0); });
+    /* a chip clicked here holds the chart still (2026-11-08, Nil: "when a peer is clicked, make sure the chart doesn't
+       change its height or move"): beat 1's chart, above in the same column, grows with a peer's label and the scroller
+       shifts to follow it; the clicked chip is put back where it stood on the screen, once the redraws are done */
+    document.addEventListener("click", ev => { const c = ev.target.closest && ev.target.closest(".who-ref-peers .wt-peer"); if (!c) return;
+      const blocks = [...document.querySelectorAll(".who-ref-peers")], at = blocks.indexOf(c.closest(".who-ref-peers")), y0 = c.getBoundingClientRect().top;
+      const sel = c.dataset.avg ? ".wt-peer--avg" : '.wt-peer[data-p="' + CSS.escape(c.dataset.p || "") + '"]';
+      const pg = document.querySelector(".pages"), sc = pg && pg.scrollHeight > pg.clientHeight ? pg : document.scrollingElement;
+      const hold = () => { const nb = document.querySelectorAll(".who-ref-peers")[at], b = nb && nb.querySelector(sel); if (!b) return;
+        const d = b.getBoundingClientRect().top - y0; if (Math.abs(d) >= 1) sc.scrollTop += d; };
+      /* straight after the click's own handlers (before a paint), after the peer average's deferred redraw, and once more late */
+      window.addEventListener("click", hold, { once: true }); setTimeout(hold, 0); requestAnimationFrame(() => requestAnimationFrame(hold)); setTimeout(hold, 350); }, true);
     let scrollHooked = false;
     function scrollHides(){ if (scrollHooked) return; scrollHooked = true;
       const pages = document.getElementById("pages"); if (pages) pages.addEventListener("scroll", () => { if (vk) vHover(null); hists.forEach(H => { if (H.key) hHover(H, null); }); }, { passive: true }); }
@@ -16550,7 +16727,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     function ensure(){
       if (!root){
         root = document.createElement("div"); root.className = "who-ref";
-        root.innerHTML = '<div class="who-ref-venn"><svg role="img" aria-label="' + ARIA_V + '"></svg>' + TIP + '</div>' + DIST;
+        root.innerHTML = '<div class="who-ref-venn"><svg role="img" aria-label="' + ARIA_V + '"></svg>' + TIP + '</div>' + DIST();
         host.appendChild(root); vbox = root.querySelector(".who-ref-venn"); vsvg = vbox.querySelector("svg"); vtip = vbox.querySelector(".who-ref-tip");
         const key = ev => { const h = ev.target.closest && ev.target.closest(".rv-hit"); return h ? h.dataset.k : null; };
         vsvg.addEventListener("pointermove", ev => { if (ev.pointerType === "touch") return; const k = key(ev); if (k) vHover(k); });
@@ -16560,7 +16737,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       }
       const panel = host.closest(".who-fl-panel");
       if (!col && panel){ col = document.createElement("div"); col.className = "who-ref-col";
-        col.innerHTML = '<p class="who-ref-src">' + SRC.join(" ") + '</p>' + DIST; panel.after(col); addHist(col); }
+        col.innerHTML = '<p class="who-ref-src">' + SRC.join(" ") + '</p>' + DIST(); panel.after(col); addHist(col); }
     }
     function stop(){ cancelAnimationFrame(raf); raf = 0; if (vk) vHover(null); hists.forEach(H => { if (H.key) hHover(H, null); }); }
     function show(v){ on = !!v; if (on) ensure(); else stop(); }
@@ -16579,7 +16756,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     if (document.fonts){ const refit = () => { if (on && !raf) draw(); else hists.forEach(drawHist); };
       document.fonts.ready.then(refit); if (document.fonts.addEventListener) document.fonts.addEventListener("loadingdone", refit); }
     /* the histogram on its own, for the Under study: its markup, and the drawing and cards once it is in the page */
-    window.whoFlowsRef = { show, play, still, stop, histHtml: () => DIST, addHist, drawHists: () => hists.forEach(drawHist) };
+    window.whoFlowsRef = { show, play, still, stop, histHtml: () => DIST(), addHist, drawHists: () => hists.forEach(drawHist) };
   })();
   /* ---- Who are you?: opt-2's first commuting beat as a rectangle Venn
      (2026-10-20, Nil). The "Groups" study in beat A's counter: opt-1 the
@@ -16677,9 +16854,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     /* the city's icon with an arrow going into it, or out of it (shared with the map's town cards) */
     const ICO = window.FLOW_ICO;
     const ariaCircles = svg.getAttribute("aria-label");
-    const ariaVenn = () => (round() ? "Two overlapping circles of dots," : "Two rectangles of dots,") + " one dot for about 2K people: people working in Boston, " + fmtN(JOBS) + " jobs, and people living in Boston, " + fmtN(RES) +
-      " working residents. They overlap in the " + fmtN(BOTH) + " living and working in Boston. " + fmtN(IN) +
-      " work there but do not live there and commute in; " + fmtN(OUT) + " live there but do not work there and commute out.";
+    const ariaVenn = () => (round() ? "Two overlapping circles of dots," : "Two rectangles of dots,") + " one dot for about 2K people: the " + fmtN(JOBS) + " jobs in Boston, and its " + fmtN(RES) +
+      " working residents. They overlap in the " + fmtN(BOTH) + " who live and work in Boston. " + fmtN(IN) +
+      " jobs are held by people who live elsewhere and commute in; " + fmtN(OUT) + " residents have jobs elsewhere and commute out.";
 
 
     let built = false, twins = [], fA, fB, cA, cB, ldr, labs, setA, setB, sbA, sbB, vkey, cur = null, tip = null, frames = null, pinned = null;
@@ -16708,8 +16885,11 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
            the venn diagram labels according to opt 4. See how it writes number work in Boston format", "show only the
            numbers opt 4 top diagram is showing"): the two sets' totals and the three parts', each part with its
            icon, small; the shares are left to the card a pointer or a tap brings up (showTip) and to the bars */
-        '<div class="vn-set vn-set--work" data-tip="work"><b>' + fmtN(JOBS) + '</b><span class="vn-nm-l">work in Boston</span><span class="vn-nm-s">work here</span></div>' +
-        '<div class="vn-set vn-set--live" data-tip="live"><b>' + fmtN(RES) + '</b><span class="vn-nm-l">live in Boston</span><span class="vn-nm-s">live here</span></div>' +
+        /* the sets named by what LODES counts (2026-11-08, Nil: "we are not talking about the population of Boston"): the
+           jobs located in Boston, and the jobs its residents hold, "working residents" as the lede and the bars say it;
+           the reference's "work in Boston" / "live in Boston" read as people and as the whole population */
+        '<div class="vn-set vn-set--work" data-tip="work"><b>' + fmtN(JOBS) + '</b><span class="vn-nm-l">jobs in Boston</span><span class="vn-nm-s">jobs here</span></div>' +
+        '<div class="vn-set vn-set--live" data-tip="live"><b>' + fmtN(RES) + '</b><span class="vn-nm-l">working residents</span><span class="vn-nm-s">residents\u2019 jobs</span></div>' +
         /* those who commute in "live elsewhere", on a line under their count, as opt-4 has it (2026-11-02, Nil: "Remember
            to add live elsewhere, live work") */
         '<div class="vn-reg vn-reg--in" data-tip="in"><span class="vn-n">' + ICO.in + '<b>' + fmtN(IN) + '</b><em>commute in<span class="vn-xc">,</span></em></span><span class="vn-x">live elsewhere</span></div>' +
@@ -16721,7 +16901,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       /* the dot key's place under the figure (the Dot key study's "foot"): the note row's key, moved */
       vkey = document.createElement("div"); vkey.className = "vn-key";
       const nk = host.querySelector(".who-fl-key"); if (nk) vkey.innerHTML = nk.innerHTML; labs.appendChild(vkey);
-      framesUi();
+      /* the first and last frames' squares are no longer drawn (2026-11-08, Nil: "we don't have to show the 2 frames"); framesUi stays for a return */
     }
     /* the animation's first and last frames beside Play again, two small squares close together, the current one
        filled: one shows its frame and holds it there (pinned); playing moves from one to the other (2026-10-21, Nil:
@@ -16806,7 +16986,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
          outer half, the work set's ending at its circle's middle and the live set's starting at its own (the
          centres are always apart, so they never meet), long form, else short, else wrapped to the room */
       let gy, topA, topB, yA = 0, yB = 0;
-      const ends = !g.round && inBand();
+      let ends = !g.round && inBand();
       host.classList.remove("vn-brief", "vn-tight");
       if (g.round){
         const rA = g.RA * p, rB = g.RB * p;
@@ -16831,6 +17011,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
            ends, the live set's bracket 4 lower than the work set's where the two overlap; "work here" where the long
            names would meet (2026-11-02, a review: the two rows left no grid that fit a 360 band) */
         if (ends && setA.offsetWidth + setB.offsetWidth + 12 > colsT * p) host.classList.add("vn-brief");
+        /* where even the short names cannot share the level, the two rows after all (2026-11-08, the sets renamed) */
+        if (ends && setA.offsetWidth + setB.offsetWidth + 12 > colsT * p) ends = false;
         const hA = setA.offsetHeight, hB = setB.offsetHeight;
         if (ends){ topA = topB = 2; yA = topA + Math.max(hA, hB) + 2; yB = yA + 4; }
         else { topA = 2; yA = topA + hA + 2; topB = yA + TK + 6; yB = topB + hB + 2; }
@@ -16872,7 +17054,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         /* the leader runs down between the two names: the commute-in name must end short of it */
         const lx = bx1 + cB * p / 2; if (rx.in + reg.in.offsetWidth > lx - 10) return null;
         reg.both.style.maxWidth = Math.min(300, Wd) + "px";
-        const wBoth = reg.both.offsetWidth, y2 = ry + Math.max(reg.in.offsetHeight, reg.out.offsetHeight) + 14;
+        const wBoth = reg.both.offsetWidth, y2 = ry + Math.max(reg.in.offsetHeight, reg.out.offsetHeight) + 6;  /* 6 under the two, was 14 (2026-11-08, Nil: "a little closer to the top") */
         reg.both.dataset.x = Math.max(0, Math.min(Wd - wBoth, lx - wBoth / 2)); reg.both.dataset.y = y2;
         if (!lines("both", 2)) return null;
         ldr = [lx, by + 6, y2 - 4];
@@ -16885,7 +17067,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       }
       /* the dot key under everything, from the joined figure's left edge ("foot") */
       if (keyMode === "foot" && vkey.offsetHeight){ vkey.dataset.x = Math.max(0, Math.min(ax1, Wd - vkey.offsetWidth)); vkey.dataset.y = H + 8; H += 8 + vkey.offsetHeight; }
-      return { Wd, H: Math.ceil(H), p, r: p * .34, e, gy, by, ax0, bx0, ax1, bx1, topA, topB, yA, yB, wA, wB, level, ends, dens, g, ldr };
+      /* the dot a touch under a third of its pitch (2026-11-08, Nil: "make the dots super slightly smaller"; it was .34) */
+      return { Wd, H: Math.ceil(H), p, r: p * .31, e, gy, by, ax0, bx0, ax1, bx1, topA, topB, yA, yB, wA, wB, level, ends, dens, g, ldr };
     }
     /* the largest pitch that fits the panel, in the roomiest density that can name the parts at that size */
     const PMIN = { full: 10, list: 9, compact: 0 }, RANK = { full: 0, list: 1, compact: 2 };
@@ -17078,11 +17261,11 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     /* the counts behind the shares: a card under the pointer over a part, a set's name or a part's name, or where a
        finger taps (a second tap on the same part puts it away). Only once the parts are named */
     const TIPS = {
-      in:   [fmtN(IN) + " commute in", PCT(IN, JOBS) + " of the " + fmtN(JOBS) + " people working in Boston"],
-      both: [fmtN(BOTH) + " live and work in Boston", PCT(BOTH, JOBS) + " of the " + fmtN(JOBS) + " working there, " + PCT(BOTH, RES) + " of the " + fmtN(RES) + " living there"],
-      out:  [fmtN(OUT) + " commute out", PCT(OUT, RES) + " of the " + fmtN(RES) + " people living in Boston"],
-      work: ["People working in Boston", fmtN(JOBS) + " jobs: " + fmtN(IN) + " held by people commuting in, " + fmtN(BOTH) + " by its residents"],
-      live: ["People living in Boston", fmtN(RES) + " working residents: " + fmtN(BOTH) + " work there, " + fmtN(OUT) + " commute out"]
+      in:   [fmtN(IN) + " commute in", PCT(IN, JOBS) + " of the " + fmtN(JOBS) + " jobs in Boston, held by people who live elsewhere"],
+      both: [fmtN(BOTH) + " live and work in Boston", PCT(BOTH, JOBS) + " of the " + fmtN(JOBS) + " jobs in Boston, " + PCT(BOTH, RES) + " of its " + fmtN(RES) + " working residents"],
+      out:  [fmtN(OUT) + " commute out", PCT(OUT, RES) + " of Boston\u2019s " + fmtN(RES) + " working residents, with jobs elsewhere"],
+      work: ["Jobs in Boston", fmtN(JOBS) + " jobs located in Boston: " + fmtN(IN) + " held by people commuting in, " + fmtN(BOTH) + " by its residents"],
+      live: ["Working residents", fmtN(RES) + " Boston residents with a job: " + fmtN(BOTH) + " work in Boston, " + fmtN(OUT) + " commute out"]
     };
     window.WHO_FLOW_TIPS = TIPS;  /* the bars under the figure say the same in their cards (2026-10-23) */
     /* which part a point of the figure falls in, the sets standing joined (svg units): the part of the dot under it
@@ -17148,7 +17331,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     const HOME = !!window.whoFlowsHome;
     /* the Blue dots study (2026-11-02): "in" the commuters in fly from their admins into Boston, "home" from Boston to their admins as before */
     let blueWay = (location.search.match(/[?&]blue=(in|home)\b/) || [, BLUEWAY_DEFAULT])[1];
-    const secA = document.getElementById("page-overview-flows"), secB = document.getElementById("page-overview-flows-out"), secC = document.getElementById("page-overview-compare");
+    const secA = document.getElementById("page-overview-flows"), secB = document.getElementById("page-overview-flows-out");
     /* the study's menu in beat A's counter: opt-1 the dots beside the shaded
        map, opt-2 the dots go home. The second adds a beat, so the choice
        reloads the page on the section */
@@ -17185,7 +17368,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       btn.addEventListener("click", () => { const open = panel.hidden; panel.hidden = !open; btn.setAttribute("aria-expanded", String(open)); });
       document.addEventListener("click", ev => { if (!st.contains(ev.target) && !panel.hidden){ panel.hidden = true; btn.setAttribute("aria-expanded", "false"); } });
     }
-    const studies = () => { study(secA, ["groups", "under", "dotkey"], ""); study(secB, ["blue"], "B"); study(secC, ["compare"], "C"); };
+    const studies = () => { study(secA, ["groups", "under", "dotkey"], ""); study(secB, ["blue"], "B"); };
     studies(); setTimeout(studies, 0);
     /* the flow graphic, the day's totals in and out of Boston: in opt-2 it
        closes beat A once the dots have landed (showEnd); in opt-1 (Nil,
@@ -17328,10 +17511,10 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     const nm = f => esc(f.properties.name.replace(/ (Town|city)$/, ""));
     secB.classList.add("wide-text");
     /* the words follow the Blue dots study: the blue coming in from where they live, or every dot going out as before */
-    const ledeB = () => { secB.querySelector(":scope > .lede").innerHTML = (blueWay === "in"
-      ? 'Blue dots fly into Boston from the admins where they live, orange dots out to the admins where they work, and each admin takes its colour.'
-      : 'Each dot flies to the admin where its people live or work, and adds its colour there.') +
-      ' The map can show who commutes into Boston, who commutes out of it, or where Boston gains or loses workers.'; };
+    /* shorter (2026-11-08, Nil: "make the text shorter"), and true to the hand-off, where every dot goes out to its admin */
+    const ledeB = () => { secB.querySelector(":scope > .lede").innerHTML =
+      'Each dot lands on an admin and colours it: blue where Boston\u2019s commuters live, orange where its residents work.' +
+      ' The map shows who comes in, who goes out, or where Boston receives or sends workers.'; };
     ledeB();
     function setBlue(v){
       if (!/^(in|home)$/.test(v) || v === blueWay) return;
@@ -17349,7 +17532,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     const ctlN = document.createElement("div"); ctlN.className = "who-fl-ctl who-net-ctl"; ctlN.id = "whoNetCtl";
     ctlN.innerHTML = '<span class="ctl-label">Map shows</span><div class="seg" role="group" aria-label="What the map shows">' +
       /* the two words in the map's colours (2026-11-04, Nil: "color code gain and lose on that"); the legend says the same */
-      '<button type="button" class="seg-btn is-active" data-v="net" aria-pressed="true"><i class="fl-sw fl-sw--net" aria-hidden="true"></i><span>Where Boston <span class="fl-gain">gains</span> or <span class="fl-lose">loses</span> workers</span></button>' +
+      '<button type="button" class="seg-btn is-active" data-v="net" aria-pressed="true"><i class="fl-sw fl-sw--net" aria-hidden="true"></i><span><span class="fl-gain">Boston receives</span> or <span class="fl-lose">sends</span> workers</span></button>' +
       '<button type="button" class="seg-btn" data-v="in" aria-pressed="false"><i class="fl-sw fl-sw--in" aria-hidden="true"></i>Commute into Boston</button>' +
       '<button type="button" class="seg-btn" data-v="out" aria-pressed="false"><i class="fl-sw fl-sw--out" aria-hidden="true"></i>Commute out of Boston</button></div>';
     const lede2b = secB.querySelector(":scope > .lede"); lede2b.after(ctlN);
@@ -17405,11 +17588,11 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         : z === "bus" ? "With " + nm + ", Boston is the business admin" : z === "res" ? "With " + nm + ", Boston is the residential admin" : "With " + nm + ", the two are balanced";
       gVerdict.textContent = rx(i / o).replace("\u00d7", "") + " commute in for every one who commutes out";
       const sentence = fmtN(i) + " commute into Boston" + (own ? "" : " from " + nm) + " and " + fmtN(o) + " commute out of it" + (own ? "" : " to " + nm) + ": " +
-        (i > o ? "Boston gains " + fmtN(i - o) + " workers." : i < o ? "Boston loses " + fmtN(o - i) + " workers." : "Boston neither gains nor loses workers.");
+        (i > o ? "Boston receives " + fmtN(i - o) + " more workers than it sends." : i < o ? "Boston sends " + fmtN(o - i) + " more workers than it receives." : "Boston sends as many workers as it receives.");
       /* the longer bar fills the track and the gain goes in the shorter bar's row; where the two are close, both bars
          stop at six tenths and the gain is said short, so it never lands on a bar */
       const top = Math.max(i, o, 1), d = Math.abs(i - o), short = (i >= o ? o : i) / top, close = short > .45, fill = close ? .6 : 1;
-      const words = i === o ? "Neither gains nor loses" : close ? (i > o ? "+" : "\u2212") + fmtN(d) + (i > o ? " gained" : " lost") : "Boston " + (i > o ? "gains " : "loses ") + fmtN(d);
+      const words = i === o ? "Sends as many as it receives" : close ? (i > o ? "+" : "\u2212") + fmtN(d) + (i > o ? " received" : " sent") : "Boston " + (i > o ? "receives " : "sends ") + fmtN(d) + " more";
       gFlows.innerHTML = gRow("in", i, i / top * fill, i < o ? words : "") + gRow("out", o, o / top * fill, i >= o ? words : "");
       gsvg.setAttribute("aria-label", gWho.textContent + ". " + gVerdict.textContent + ". " + sentence);
     }
@@ -17493,8 +17676,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
             if (u >= 1){ it.done = true; it.el.remove(); it.el = null; it.land(it.to[0], it.to[1]); }
             else { all = false; it.el.setAttribute("cx", x.toFixed(1)); it.el.setAttribute("cy", y.toFixed(1));
               /* it shrinks into its town over the last stretch, and the town takes its colour */
-              const base = it.r0 != null ? it.r0 + (rdd - it.r0) * e : rdd, sink = u > .72 ? Math.max(0, 1 - (u - .72) / .28) : 1;
-              it.el.setAttribute("r", (base * sink).toFixed(2)); it.el.setAttribute("opacity", (.35 + .65 * sink).toFixed(2)); } });
+              const base = it.r0 != null ? it.r0 + (rdd - it.r0) * e : rdd, sink = u > .72 ? Math.max(0, 1 - (u - .72) / .28) : 1, grow = it.rise ? Math.min(1, u / .2) : 1;
+              it.el.setAttribute("r", (base * sink * grow).toFixed(2)); it.el.setAttribute("opacity", (.35 + .65 * sink).toFixed(2)); } });
           if (all){ fly.hidden = true; fly.innerHTML = ""; run = null; lock(false); res(true); } else requestAnimationFrame(step); };
         requestAnimationFrame(step); });
     }
@@ -17521,30 +17704,61 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
        sets off, and flies into Boston; the figure's blue dots fade where they stand (atTowns: they already stand at
        their admins, as the replay lays them) */
     let BOS_IN = null;
-    function itemsFrom(pts, hides, r0, atTowns){
-      const items = [], P = piles(A_IN, 0), Q = piles(A_OUT, 1), inward = blueWay === "in";
+    function itemsFrom(pts, hides, r0, atTowns, toHomes){
+      const items = [], P = piles(A_IN, 0), Q = piles(A_OUT, 1), inward = blueWay === "in" && !toHomes;
+      /* a dot with no admin on the map goes nowhere (2026-11-08, Nil: no dots at the map's edge or off it): its copy is put out */
+      const drop = i => { if (hides[i]) hides[i].remove(); };
       /* quick (Nil, 2026-10-18: "much faster"): the whole move in about 1.3 seconds */
       idx.both.forEach((i, j) => { const ll = BOS_LL[j]; if (ll && pts[i]) items.push({ from: pts[i], to: H().toPx(ll), ll, col: COL.both, delay: j, dur: 450, hide: hides[i], r0, land(){ arriveGrey(); } }); });
       if (inward){ if (!BOS_IN) BOS_IN = inBoston(idx.in.length, .37);
         idx.in.forEach((i, j) => { if (!pts[i]) return; const q = j < P.length ? P[j] : null, ll = BOS_IN[j], st = hides[i];
+          /* no admin on the map to come from: the dot is left out (2026-11-08, Nil: "dots around the edge of the map?") */
+          if (!q){ if (st) st.remove(); return; }
           if (st && !atTowns){ st.style.transition = "opacity .3s ease"; requestAnimationFrame(() => { st.style.opacity = 0; }); }
           items.push({ from: q ? q.xy : edgePos(j), fromLL: q ? q.ll : null, to: H().toPx(ll), ll, col: COL.in, delay: 120 + (q ? q.rank * 6 : 330) + j, dur: 650,
             hide: atTowns ? st : null, r0: null, start(){ if (q) arrive(q.f); }, land(){} }); });
       } else idx.in.forEach((i, j) => { if (!pts[i]) return;
         if (j < P.length){ const q = P[j]; items.push({ from: pts[i], to: q.xy, ll: q.ll, col: COL.in, delay: 120 + q.rank * 6 + j, dur: 550, hide: hides[i], r0, land(){ arrive(q.f); } }); }
-        else items.push({ from: pts[i], to: offPos(), col: COL.in, delay: 450 + (j - P.length) * 2, dur: 500, hide: hides[i], r0, land(){} }); });
+        else drop(i); });
       idx.out.forEach((i, j) => { if (!pts[i]) return;
         if (j < Q.length){ const q = Q[j]; items.push({ from: pts[i], to: q.xy, ll: q.ll, col: COL.out, delay: 200 + q.rank * 6 + j * 1.5, dur: 550, hide: hides[i], r0, land(){ arrive(q.f); } }); }
-        else items.push({ from: pts[i], to: offPos(), col: COL.out, delay: 500 + (j - Q.length) * 3, dur: 500, hide: hides[i], r0, land(){} }); });
+        else drop(i); });
       return items;
     }
-    /* the hand-off: as the docked panel starts to leave, its dots go to the map from where they stand */
+    /* the hand-off (2026-11-08, Nil: "from 3rd beat to 4th beat, the transition looks too weird, rework something. it
+       doesn't have to be super accurate, we are trying to give the message that people (dot) maps on the map"): the
+       card has mostly left the screen by the time the next beat is near, so its dots no longer set off from where
+       they stand in it; they gather over Boston in the figure's three groups and go out to their admins, as Play
+       again has them (fromBoston). The flight from the card's own dots stays below for the presenter */
+    /* 2026-11-08, Nil again: "make the transition smooth ... dots around the edge of the map? ... the dots filling the
+       map, that is it": no gathering and no pause; each dot grows in where it sets off and goes, the grey from
+       Boston's centre into Boston, the orange from the centre out to the admins where they work, the blue from the
+       admins where they live into Boston (or out to them, under ?blue=home); a dot with no admin on the map is left
+       out rather than spawned at the frame's edge; the whole fill takes about 1.3 seconds */
     async function handOff(){
+      run2++; const my = run2; hand = true; prepMap(); laid = "f"; wrap.classList.add("who-hand");
+      if (reduce() || tableUp()){ settle(); laid = ""; return; }
+      await wait(60); if (my !== run2) return;            /* the map comes in under them */
+      /* the blue go out to the admins where they live, as the card's flight sends them (one direction for the scroll, review 2026-11-08) */
+      const P = piles(A_IN, 0), Q = piles(A_OUT, 1), bos = H().toPx(BC), inward = false, items = [];
+      if (inward && !BOS_IN) BOS_IN = inBoston(idx.in.length, .37);
+      idx.both.forEach((i, j) => { const ll = BOS_LL[j]; if (ll) items.push({ from: bos, to: H().toPx(ll), ll, col: COL.both, delay: j * .6, dur: 500, rise: true, land(){ arriveGrey(); } }); });
+      idx.in.forEach((i, j) => { const q = P[j]; if (!q) return;
+        if (inward){ const ll = BOS_IN[j]; if (!ll) return; items.push({ from: q.xy, fromLL: q.ll, to: H().toPx(ll), ll, col: COL.in, delay: 150 + q.rank * 6 + j, dur: 650, rise: true, start(){ arrive(q.f); }, land(){} }); }
+        else items.push({ from: bos, to: q.xy, ll: q.ll, col: COL.in, delay: 150 + q.rank * 6 + j, dur: 650, rise: true, land(){ arrive(q.f); } }); });
+      idx.out.forEach((i, j) => { const q = Q[j]; if (!q) return; items.push({ from: bos, to: q.xy, ll: q.ll, col: COL.out, delay: 200 + q.rank * 6 + j * 1.5, dur: 650, rise: true, land(){ arrive(q.f); } }); });
+      cancelFlight(); flyClip();
+      if (!(await flight(items)) || my !== run2) return;
+      laid = ""; finish();
+    }
+    async function handOffFromCard(){
       hand = true; const my = ++run2; laid = ""; wrap.classList.add("who-hand");
       const r = panel.getBoundingClientRect(), seen = r.bottom > 140 && r.top < innerHeight - 80;
       prepMap();
-      /* opt-4 draws no dots (the reference's two charts): the map's piles are laid at once */
-      if (reduce() || !seen || tableUp() || fig.host.dataset.stage !== "sorted" || fig.host.classList.contains("is-ref")){ settle(); return; }
+      /* opt-4 draws no dots (the reference's two charts): the map's piles are laid at once; a card already off the
+         screen (a jump down the page) hands over with the fill instead */
+      if (reduce() || tableUp() || fig.host.classList.contains("is-ref")){ settle(); return; }
+      if (!seen || fig.host.dataset.stage !== "sorted"){ await handOff(); return; }
       const svg = fig.svg, sr = svg.getBoundingClientRect(), vb = svg.viewBox.baseVal, k = vb && vb.width ? sr.width / vb.width : 1;
       const r0 = (+(fig.circles[0].getAttribute("r")) || 3.6) * k;
       const pts = fig.circles.map(c => pos(svg, c));
@@ -17553,7 +17767,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       fig.host.classList.add("fl-flown");
       await wait(120); if (my !== run2) return;            /* the map comes in under them */
       laid = "page";
-      if (!(await flight(itemsFrom(pts, st, r0))) || my !== run2) return;
+      /* every dot goes to an admin on the map and colours it: the blue to the admins where they live (toHomes) */
+      if (!(await flight(itemsFrom(pts, st, r0, false, true))) || my !== run2) return;
       laid = ""; finish();
     }
     /* the panel docks again (the reader went back up): the dots come home to it */
@@ -17571,8 +17786,11 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       const pIn = pack(bos[0] - Rb - gap - Rin, bos[1], Rin, idx.in.length, 0), pB = pack(bos[0], bos[1], Rb, idx.both.length, 1.3), pO = pack(bos[0] + Rb + gap + Ro, bos[1], Ro, idx.out.length, 2.6);
       const pts = []; idx.in.forEach((i, j) => { pts[i] = pIn[j]; }); idx.both.forEach((i, j) => { pts[i] = pB[j]; }); idx.out.forEach((i, j) => { pts[i] = pO[j]; });
       /* the blue coming in (the Blue dots study's "in") gather in the admins where they live, not over Boston */
-      const inward = blueWay === "in"; if (inward){ const P = piles(A_IN, 0); idx.in.forEach((i, j) => { pts[i] = j < P.length ? P[j].xy : edgePos(j); }); }
-      cancelFlight(); flyClip(); const st = fig.dots.map((d, i) => staticDot(pts[i], COL[d.k], inward && d.k === "in" ? rd() : rr));
+      const inward = blueWay === "in", P = piles(A_IN, 0), Q = piles(A_OUT, 1);
+      if (inward) idx.in.forEach((i, j) => { pts[i] = j < P.length ? P[j].xy : null; });
+      /* a dot with no admin on the map is not drawn at all (itemsFrom leaves it out; review 2026-11-08: it flashed at the frame's edge) */
+      idx.in.forEach((i, j) => { if (j >= P.length) pts[i] = null; }); idx.out.forEach((i, j) => { if (j >= Q.length) pts[i] = null; });
+      cancelFlight(); flyClip(); const st = fig.dots.map((d, i) => pts[i] ? staticDot(pts[i], COL[d.k], inward && d.k === "in" ? rd() : rr) : null);
       await wait(400); if (my !== run2) return;
       if (tableUp()){ settle(); laid = ""; return; }
       if (!(await flight(itemsFrom(pts, st, rr, true))) || my !== run2) return;
@@ -17613,7 +17831,10 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       const dock = parseFloat(getComputedStyle(panel).top) || 0;
       if (!aOn && !hand && (secA.classList.contains("is-on") || seenA() >= .5 || seen(fig.svg) >= .5)){ aOn = true; fig.play(); }
       else if (aOn && !hand && r.top > innerHeight){ aOn = false; fig.reset(); }
-      if (!hand && r.top < dock - 8) handOff();
+      /* the hand-off runs as the card starts to leave its dock, while its dots are all still on screen (2026-11-08,
+         Nil: "I want to visibly see the nodes go and transition into those filled areas"); the beat is long enough
+         that this comes only once the next beat's title is at the screen's foot (its min-height below) */
+      if (!hand && r.top < dock - 8) handOffFromCard();
       else if (hand && r.top >= dock - 1 && !secB.classList.contains("is-on")){ takeBack(); if (fig.host.dataset.stage !== "sorted"){ aOn = true; fig.play(); } else fig.still(); }
     }
     const soon = () => { if (!q2) q2 = requestAnimationFrame(tick); };
@@ -17680,10 +17901,11 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     /* the columns sort (2026-10-22, Nil: "put sort icon on the columns wherever appropriate"): a header sorts by its column,
        a second click turns the order round; each view starts on its own column, largest first (the balance view on the
        balance, so Boston's gains lead and its losses close the list), and a change of view starts afresh */
-    const BY = { in: r => r.inW, out: r => r.outW, net: r => r.inW + r.outW, bal: r => r.inW - r.outW, d: r => r.d };
+    const BY = { in: r => r.inW, out: r => r.outW, net: r => r.inW + r.outW, bal: r => r.inW - r.outW };
     /* the Admin column does not sort (2026-10-23, Nil: "in all versions of tables, remove the sorting feature from the Admin
        column"); the counts, the net flow and the distance do */
-    const DEF = { in: "in", out: "out", net: "bal" }, ASC0 = { d: true }, KEYS = { in: ["in", "d"], out: ["out", "d"], net: ["in", "out", "bal", "d"] };
+    /* no distance column (2026-11-07, Nil: "from the table view remove the distance") */
+    const DEF = { in: "in", out: "out", net: "bal" }, ASC0 = {}, KEYS = { in: ["in"], out: ["out"], net: ["in", "out", "bal"] };
     let sort = { key: null, asc: false };
     const sortOf = m => { const k = sort.key && KEYS[m].includes(sort.key) ? sort.key : DEF[m]; return { key: k, asc: sort.key === k ? sort.asc : !!ASC0[k] }; };
     const list = m => { const { key, asc } = sortOf(m), v = BY[key], base = m === "out" ? rows.filter(r => r.outS != null) : rows;
@@ -17691,7 +17913,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     const SORT_ICO = '<svg class="ft-si" viewBox="0 0 12 16" aria-hidden="true"><path class="ft-si-up" d="M6 1.5 10.5 7h-9z"/><path class="ft-si-dn" d="M6 14.5 1.5 9h9z"/></svg>';
     const th = (key, m, cls, label) => { const s0 = sortOf(m), on = s0.key === key;
       return '<th scope="col" class="' + cls + (on ? ' is-sorted' : '') + '"' + (on ? ' aria-sort="' + (s0.asc ? 'ascending' : 'descending') + '"' : '') + '>' +
-        '<button type="button" class="ft-sort' + (on ? (s0.asc ? ' is-asc' : ' is-desc') : '') + '" data-key="' + key + '" aria-label="Sort by ' + (key === "d" ? "distance" : key === "bal" ? "net flow" : key === "in" ? "commuters into Boston" : "commuters out of Boston") + '">' + label + SORT_ICO + '</button></th>'; };
+        '<button type="button" class="ft-sort' + (on ? (s0.asc ? ' is-asc' : ' is-desc') : '') + '" data-key="' + key + '" aria-label="Sort by ' + (key === "bal" ? "net flow" : key === "in" ? "commuters into Boston" : "commuters out of Boston") + '">' + label + SORT_ICO + '</button></th>'; };
     /* the balance view's bars sit in the direction's own column, after its count, both to one scale (2026-10-23, Nil: "merge
        the into Boston column with the bar column, and use the icon once, with the column label; same for out of Boston") */
     const bal = r => { const v = r.inW - r.outW; return '<span class="ft-bal ' + (v > 0 ? "to" : v < 0 ? "from" : "") + '">' + (v > 0 ? "+" : v < 0 ? "−" : "") + fmtN(Math.abs(v)) + '</span>'; };
@@ -17700,14 +17922,13 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     const cellIn = (r, withBar) => '<td class="num' + (withBar ? ' ft-dir' : '') + '">' + fig(r.inW, r.inS != null ? pc(r.inS) + ' of its workers' : '—') + (withBar ? trk("in", r.inW) : '') + '</td>';
     const cellOut = (r, withBar) => '<td class="num' + (withBar ? ' ft-dir' : '') + '">' + fig(r.outW, r.outS != null ? pc(r.outS) + ' of its jobs' : 'not known') + (withBar ? trk("out", r.outW) : '') + '</td>';
     const rowName = r => '<th scope="row">' + esc(r.name) + (r.st && r.st !== "MA" ? ', ' + esc(r.st) : '') + '</th>';
-    const dist = r => '<td class="num">' + Math.round(r.d) + ' km</td>';
     /* the balance view leads with the net flow, right after the admin's name (2026-10-23, Nil: "put the Net Flow right
        after the admin names"); the two ways and their bars follow */
-    const row = (r, m) => '<tr>' + rowName(r) + (m === "in" ? cellIn(r) : m === "out" ? cellOut(r) : '<td class="num ft-net">' + bal(r) + '</td>' + cellIn(r, true) + cellOut(r, true)) + dist(r) + '</tr>';
+    const row = (r, m) => '<tr>' + rowName(r) + (m === "in" ? cellIn(r) : m === "out" ? cellOut(r) : '<td class="num ft-net">' + bal(r) + '</td>' + cellIn(r, true) + cellOut(r, true)) + '</tr>';
     /* a foot row: the in count, the out count, or both with their balance; the distance cell empty */
     const foot = (label, i, o, m) => '<tr class="' + (label === "All" ? "ft-all" : "ft-rest") + '"><th scope="row">' + label + '</th>' +
       (m === "in" ? '<td class="num"><b>' + fmtN(i) + '</b></td>' : m === "out" ? '<td class="num"><b>' + fmtN(o) + '</b></td>' :
-       '<td class="num ft-net">' + bal({ inW: i, outW: o }) + '</td><td class="num ft-dir"><span class="ft-fig"><b>' + fmtN(i) + '</b></span></td><td class="num ft-dir"><span class="ft-fig"><b>' + fmtN(o) + '</b></span></td>') + '<td></td></tr>';
+       '<td class="num ft-net">' + bal({ inW: i, outW: o }) + '</td><td class="num ft-dir"><span class="ft-fig"><b>' + fmtN(i) + '</b></span></td><td class="num ft-dir"><span class="ft-fig"><b>' + fmtN(o) + '</b></span></td>') + '</tr>';
     const HEAD = { in: 'Who commutes into Boston, by admin', out: 'Who commutes out of Boston, by admin', net: 'Who commutes between Boston and each admin' };
     const ICO = window.FLOW_ICO;
     const TH = { in: m => th("in", m, "num in", ICO.in + '<span class="long">Commute into Boston</span><span class="short">Into Boston</span>'),
@@ -17723,13 +17944,13 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
           '</p></div>' +
         '<table class="who-tbl who-tbl--flows who-tbl--' + m + '"><thead><tr><th scope="col" class="ft-name">Admin</th>' +
           (m === "net" ? th("bal", m, "num ft-net", "Net flow") + TH.in(m) + TH.out(m) : TH[m](m)) +
-          th("d", m, "num", "Distance") + '</tr></thead>' +
+          '</tr></thead>' +
         '<tbody>' + shown.map(r => row(r, m)).join("") + '</tbody>' +
         '<tfoot>' + foot(all ? 'All ' + L.length + ' metro admins' : 'The other ' + (L.length - shown.length) + ' metro admins', all ? metroIn : metroIn - sIn, all ? metroOut : metroOut - sOut, m) +
           foot('Beyond Boston Metro', beyondIn, beyondOut, m) +
           foot('Admins with no outline on the map<small>and places the data does not name</small>', IN - metroIn - beyondIn, OUT - metroOut - beyondOut, m) +
           foot('All', IN, OUT, m) + '</tfoot></table>' +
-        '<p class="ft-foot"><button type="button" class="who-fl-replay ft-more">' + (all ? 'Show the ' + TOP + (ASC0[sortOf(m).key] ? ' first' : ' largest') : 'Show all ' + L.length + ' admins') + '</button><span>LODES 2023. Counts jobs, not people. Out-flows are known for the 80 admins where Boston is among the largest sources of workers.</span></p>';
+        '<p class="ft-foot"><button type="button" class="who-fl-replay ft-more">' + (all ? 'Show the ' + TOP + (ASC0[sortOf(m).key] ? ' first' : ' largest') : 'Show all ' + L.length + ' admins') + '</button><span>Counts jobs, not people. Out-flows are known for the 80 admins where Boston is among the largest sources of workers.</span></p>';
     }
     /* one table in the map's frame for a desk, and one under each commuting
        beat's control for a phone (nothing moves while the reader scrolls);
@@ -20133,7 +20354,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   };
 
   /* rail-step ids -> scrolly steps, while built */
-  var OV_IDS = ["page-overview", "page-overview-scatter", "page-overview-flows", "page-overview-metro", "page-overview-mscatter", "page-overview-compare"];
+  var OV_IDS = ["page-overview", "page-overview-scatter", "page-overview-flows", "page-overview-metro", "page-overview-mscatter"];
   if (window.whoFlowsHome) OV_IDS.splice(3, 0, "page-overview-flows-out");
   window.ovStepFor = function(id){
     if (!built) return null;
@@ -20277,7 +20498,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   /* ---- the readings and the orders ---- */
   /* msaJobs: beat 7's order (2026-10-29), the metro's own ranking */
   const SORTS = { msaJobs: r => -r.msaJobs, jobs: r => -r.jobs, residents: r => -r.residents, shareJobs: r => -r.shJ, shareResidents: r => -r.shR, gain: r => -r.net };
-  const SORT_WORDS = { msaJobs: "jobs in the metro", jobs: "jobs in Boston", residents: "residents’ jobs", shareJobs: "Boston’s share of the metro’s jobs", shareResidents: "share of its working residents", gain: "Boston’s gain" };
+  const SORT_WORDS = { msaJobs: "jobs in the metro", jobs: "jobs in Boston", residents: "residents’ jobs", shareJobs: "Boston’s share of the metro’s jobs", shareResidents: "share of its working residents", gain: "workers Boston receives, net" };
   /* a share in a column or a card (2026-10-29): whole percent, one decimal under 1%, and two under 0.1% so that no
      share that is not nought reads as nought (mining's 350 jobs of the metro's 2.8M, 0.01%); none is "0%" */
   const shr = v => { if (!(v > 0)) return "0%"; const t = v * 100; if (t >= 1) return Math.round(t) + "%";
@@ -20291,7 +20512,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     mixJ:      { head: ["Of Boston’s jobs", "Boston’s jobs"], ico: "in", v: r => pc(r.jobs / A.jobs) },
     mixR:      { head: ["Of residents’ jobs", "Residents’ jobs"], ico: "out", v: r => pc(r.residents / A.residents) },
     shR:       { head: ["Of its working residents", "Of its residents"], ico: "out", v: r => pc(r.shR) },
-    net:       { head: ["Boston gains", "Gains"], ico: null, v: r => (r.net >= 0 ? "+" : "") + fmt(r.net) },
+    net:       { head: ["Received or sent, net", "Net"], ico: null, v: r => (r.net >= 0 ? "+" : "−") + fmt(Math.abs(r.net)) },
     /* beat 7's (2026-10-29): the sector's share of the metro's jobs, written to the decimal under 1% */
     msaMix:    { head: ["Of the metro’s jobs", "Of its jobs"], ico: null, v: r => shr(r.msaJobs / M.jobs) }
   };
@@ -20302,7 +20523,12 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     residents: { bars: ["out"], scale: "count", cols: [], axis: "Jobs Boston’s residents hold", ends: true },
     shares:    { bars: ["in", "out"], scale: "share", cols: ["shJ", "shR"], axis: "Share of the metro’s", dashed: true },
     mix:       { bars: ["in", "out"], scale: "mix", cols: ["mixJ", "mixR"], axis: "Share of each count", mticks: true },
-    gain:      { bars: ["net"], scale: "gain", cols: [], axis: "Boston’s gain or loss of workers", ends: true },
+    gain:      { bars: ["net"], scale: "gain", cols: [], axis: "Workers Boston receives or sends, net", ends: true },
+    /* beat 6 (2026-11-04, Nil: "show both coming and going like right and left bars and highlight the difference, instead
+       showing just the net"): each sector's commuters out to the left of a zero line and its commuters in to the right,
+       on one scale, pale; what the longer way has over the shorter stands solid, and that is the gain or the loss, written
+       in a column at the right. The split per sector is the estimate beats 4 and 5 use */
+    both:      { bars: ["in", "out"], scale: "both", cols: ["net"], axis: "Commuters", both: true },
     /* beat 7 (2026-10-29, Nil: "For representation, let's go with B" of beat7-every-reading-sketches.html): the metro's
        jobs by sector, each bar to the metro's count with the part in Boston as its teal front and the rest "elsewhere in
        Boston Metro", the count at the bar's end; a second plot of Boston's share of them with a dashed line at Boston's
@@ -20313,7 +20539,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   const BEATS = [
     { reading: "counts", sort: "jobs" },
     { reading: "shares", sort: "shareJobs" },
-    { reading: "gain", sort: "gain" },
+    { reading: "both", sort: "gain" },
     { reading: "report", sort: "msaJobs" }
   ];
   /* what each Ask row shows: the beat's view with the question's settings over it */
@@ -20351,12 +20577,15 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   const endOf = (v, step, floor) => Math.max(floor, Math.ceil(v / step - 1e-9) * step);
   const COUNT_MAX = endOf(maxOf(r => Math.max(r.jobs, r.residents)), 10000, 150000), SHARE_MAX = endOf(maxOf(r => Math.max(r.shJ, r.shR)), .05, .5);
   const GAIN_MAX = endOf(maxOf(r => r.net), 10000, 90000);
+  /* the two ways' ends (2026-11-04): each side of the zero line as long as its largest flow over both years asks */
+  const OUT_MAX = endOf(maxOf(r => r.estOut), 5000, 20000), IN_MAX = endOf(maxOf(r => r.estNon), 10000, 100000);
   const MIX_MAX = endOf(maxOf((r, Y) => Math.max(r.jobs / Y.A.jobs, r.residents / Y.A.residents, r.msaJobs / Y.M.jobs, r.msaResidents / Y.M.residents)), .05, .25);
   const ticksTo = (end, step) => d3.range(0, Math.floor(end / step + 1e-9) + 1).map(i => +(i * step).toFixed(6));
   /* beat 7's metro plot (2026-10-29): the largest metro count over both years, rounded up to 10K (460K), ticks every 100K;
      its share plot runs to the shares' end (50%), ticks every 25% */
   const MSA_MAX = endOf(maxOf(r => r.msaJobs), 10000, 450000);
-  const TICKS = { share: ticksTo(SHARE_MAX, .1), mix: ticksTo(MIX_MAX, .05), gain: ticksTo(GAIN_MAX, 25000), count: ticksTo(COUNT_MAX, 50000), metro: ticksTo(MSA_MAX, 100000), sh2: ticksTo(SHARE_MAX, .25) };
+  const TICKS = { share: ticksTo(SHARE_MAX, .1), mix: ticksTo(MIX_MAX, .05), gain: ticksTo(GAIN_MAX, 25000), count: ticksTo(COUNT_MAX, 50000), metro: ticksTo(MSA_MAX, 100000), sh2: ticksTo(SHARE_MAX, .25),
+    both: ticksTo(OUT_MAX, 25000).slice(1).map(v => -v).reverse().concat(ticksTo(IN_MAX, 25000)) };
   /* the type's measure: a canvas in the drawing's face at 13px on screen, which reads true while the figure is hidden */
   const mCtx = (() => { try { return document.createElement("canvas").getContext("2d"); } catch (e){ return null; } })();
   let mFace = null;
@@ -20380,6 +20609,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   /* beat 6's moves (2026-10-28): the one running, if any; mvOwn while a move draws the drawing it goes to; the gain bars'
      frame as last drawn (lastGain), which the moves end on */
   let mv = null, mvOwn = false, lastGain = null;
+  const B6_MOVES = false;  /* beat 5's flow to beat 6's gain bars and back (2026-10-28), retired with the gain bars (2026-11-04) */
   /* who: the groups beat 4's treemap shows, "both", "res" or "non" (never neither) */
   /* on3: the parts opt-3's treemap shows, in their order in the block, never none */
   const ALL3 = ["non", "res", "out"];
@@ -20420,9 +20650,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   const isTree = () => fig.classList.contains("is-b4tree");
   /* a group phrase's preview, put out: its words and its blank */
   const whoUnlit = () => document.querySelectorAll(".wf-who .wf-who-btn.is-lit, #page-export-basket .mi-hl[data-who].is-lit").forEach(e => e.classList.remove("is-lit"));
-  const scaleX = (g, kind) => kind === "share" ? (v => g.x0 + v / SHARE_MAX * (g.x1 - g.x0)) : kind === "mix" ? (v => g.x0 + v / MIX_MAX * (g.x1 - g.x0)) : kind === "gain" ? (v => g.zero + v / GAIN_MAX * (g.x1 - g.zero)) : kind === "metro" ? (v => g.x0 + v / MSA_MAX * (g.x1 - g.x0)) : (v => g.x0 + v / COUNT_MAX * (g.x1 - g.x0));
+  const scaleX = (g, kind) => kind === "share" ? (v => g.x0 + v / SHARE_MAX * (g.x1 - g.x0)) : kind === "mix" ? (v => g.x0 + v / MIX_MAX * (g.x1 - g.x0)) : kind === "gain" ? (v => g.zero + v / GAIN_MAX * (g.x1 - g.zero)) : kind === "both" ? (v => g.zero + v * g.unit) : kind === "metro" ? (v => g.x0 + v / MSA_MAX * (g.x1 - g.x0)) : (v => g.x0 + v / COUNT_MAX * (g.x1 - g.x0));
   const ticksOf = kind => TICKS[kind] || TICKS.count;
-  const tickLab = (kind, v) => kind === "share" || kind === "mix" ? pc(v) : fmt(v);
+  const tickLab = (kind, v) => kind === "share" || kind === "mix" ? pc(v) : fmt(Math.abs(v));
   /* any bar that is not nought is 2 units at least, as beats 1 to 3's are */
   const barLen = w => w > 0 ? Math.max(2, w) : 0;
 
@@ -20488,7 +20718,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
        under 704px (2026-10-28) is drawn at the frame's width at the panned drawing's scale, VW units wide, and never pans:
        panned, its plot ran past the frame, and at 390 the seven largest gains stopped at the frame's edge as one length,
        their values out of sight, the pinned row's among them */
-    const fitG = R.scale === "gain", onMetro = !!R.metro, panned = panSync(true, fitG), fitW = !!pan && pan.dataset.pan === "fit";
+    const fitG = R.scale === "gain" || R.scale === "both", onMetro = !!R.metro, panned = panSync(true, fitG), fitW = !!pan && pan.dataset.pan === "fit";
     let VW = fitW ? +(W * wrap.getBoundingClientRect().width / (PAN_MIN * typeK())).toFixed(3) : W, RE = VW - (W - COL_R);
     /* beat 7's drawing, panned, keeps the panned scale (704px for 880 units) and widens past 704px for its two plots
        (2026-10-29), so k is fixed before the width is known; every other drawing reads its scale off the svg */
@@ -20501,8 +20731,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
        the room to be compared */
     const gut = gutterAt(VW, px, fitW);
     const g = { x0: gut + 12, x1: 740, zero: gut + 12 };
-    const onIn = R.bars.indexOf("in") >= 0, onOut = R.bars.indexOf("out") >= 0, onNet = R.scale === "gain", two = R.bars.length === 2;
-    const endTxt = d => onMetro ? fmt(d.msaJobs) : onNet ? (d.net >= 0 ? "+" + fmt(d.net) : "−" + fmt(-d.net)) : R.ends ? fmt(onIn ? d.jobs : d.residents) : "";
+    const onIn = R.bars.indexOf("in") >= 0, onOut = R.bars.indexOf("out") >= 0, onNet = R.scale === "gain", onBoth = R.scale === "both", two = R.bars.length === 2 && !onBoth;
+    const endTxt = d => onMetro ? fmt(d.msaJobs) : onBoth ? fmt(d.estNon) : onNet ? (d.net >= 0 ? "+" + fmt(d.net) : "−" + fmt(-d.net)) : R.ends ? fmt(onIn ? d.jobs : d.residents) : "";
     /* the columns, laid from the right edge: each as wide as its head (its icon in front) or its widest value, 16 apart; the
        longer heads where the plot keeps two fifths of the room right of the names, else the shorter */
     const COL_GAP = 16, ICO_W = 26 * typeK(), ICO_H = 18 * typeK(), ICO_GAP = 5;
@@ -20532,6 +20762,17 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     }
     else if (cols.length && cols[0].left - 40 - g.x0 < .4 * (COL_R - g.x0)) cols = colsAt(1);
     if (onMetro){ /* laid above */ }
+    else if (onBoth){
+      /* the two ways (2026-11-04): from the names, room for the largest count out and its gap, the out side, the zero,
+         the in side, and room for the largest count in before the gain's column; one unit a worker on both sides, over
+         both years, so the zero stands still when the year changes */
+      const vL = px(Math.max.apply(null, allRows.map(r => textPx(fmt(r.estOut), 600)))), vR = px(Math.max.apply(null, allRows.map(r => textPx(fmt(r.estNon), 600))));
+      /* fitted to a narrow frame (a phone, a column), the gain's column folds away: the solid part and the card carry it */
+      if (fitW) cols = [];
+      const right = cols.length ? cols[0].left - 40 : RE;
+      g.unit = Math.max(0, right - 8 - vR - (g.x0 + vL + 8)) / (OUT_MAX + IN_MAX);
+      g.zero = g.x0 + vL + 8 + OUT_MAX * g.unit; g.x1 = g.zero + IN_MAX * g.unit;
+    }
     else if (cols.length) g.x1 = cols[0].left - 40;
     else if (onNet){
       /* the gain: right of the plot, room for the largest gain's value, and no notes beside the rows (2026-10-28, Nil: "6/7
@@ -20551,18 +20792,24 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     /* the head: the axis title over the plot, a rule under it and under each column, the ticks, the grid from 54 */
     gHead.selectAll("*").remove(); gGrid.selectAll("*").remove(); gDash.selectAll("*").remove(); gFoot.selectAll("*").remove();
     /* fitted to a narrow frame, a title longer than its plot ends at the drawing's right edge, its rule from its start */
-    const axT = R.axis + ", " + year, axX = fitW ? Math.max(4, Math.min(g.x0, RE - px(textPx(axT, 600)))) : g.x0;
-    gHead.append("text").attr("class", "ad-axt").attr("x", axX).attr("y", HEAD_Y).text(axT);
+    const axT = R.axis + ", " + year, axX = onBoth ? g.x0 : fitW ? Math.max(4, Math.min(g.x0, RE - px(textPx(axT, 600)))) : g.x0;
+    /* the two ways' heads either side of the zero, each in its way's colour (2026-11-04); the year is in the sentence */
+    if (onBoth){
+      gHead.append("text").attr("class", "ad-axt ad-axt--out").attr("x", g.zero - 6).attr("y", HEAD_Y).attr("text-anchor", "end").text("commute out of Boston");
+      gHead.append("text").attr("class", "ad-axt ad-axt--in").attr("x", g.zero + 6).attr("y", HEAD_Y).text("commute into Boston");
+    } else gHead.append("text").attr("class", "ad-axt").attr("x", axX).attr("y", HEAD_Y).text(axT);
     [[axX, g.x1]].concat(cols.map(c => [c.left, c.right])).forEach(([a, b]) => gHead.append("line").attr("class", "ad-rule").attr("x1", a).attr("x2", b).attr("y1", RULE_Y).attr("y2", RULE_Y));
     /* the ticks a label apart: every other one where the plot is narrow */
     const tks = ticksOf(R.scale), every = Math.max(1, Math.ceil(52 / ((sx(tks[1]) - sx(tks[0])) * k)));
-    tks.filter((v, i) => i % every === 0).forEach(v => { const x = sx(v), base = v === 0;
-      gGrid.append("line").attr("class", "ad-grid" + (base ? " is-base" : "")).attr("x1", x).attr("x2", x).attr("y1", GRID_TOP).attr("y2", base && onNet ? yEnd + 4 : yEnd);
-      gHead.append("text").attr("class", "ad-tick" + (base && onNet ? " is-zero" : "")).attr("x", x).attr("y", TICK_Y).attr("text-anchor", "middle").text(tickLab(R.scale, v)); });
+    /* thinned, the ticks are counted from the zero, so the zero always stands (the two ways' scale starts under it) */
+    const zi = Math.max(0, tks.indexOf(0));
+    tks.filter((v, i) => (i - zi) % every === 0 || (onBoth && i === 0 && zi > 0 && (sx(0) - sx(v)) * k >= 40)).forEach(v => { const x = sx(v), base = v === 0;
+      gGrid.append("line").attr("class", "ad-grid" + (base ? " is-base" : "")).attr("x1", x).attr("x2", x).attr("y1", GRID_TOP).attr("y2", base && (onNet || onBoth) ? yEnd + 4 : yEnd);
+      gHead.append("text").attr("class", "ad-tick" + (base && (onNet || onBoth) ? " is-zero" : "")).attr("x", x).attr("y", TICK_Y).attr("text-anchor", "middle").text(tickLab(R.scale, v)); });
     /* the two ways from zero, each word in its bars' colour (2026-10-28), as section 1's "Boston loses" and "Boston gains" */
-    if (onNet){
-      gFoot.append("text").attr("class", "ad-foot-lab ad-foot-lab--out").attr("x", g.zero - 6).attr("y", yEnd + 18).attr("text-anchor", "end").text("loses");
-      gFoot.append("text").attr("class", "ad-foot-lab ad-foot-lab--in").attr("x", g.zero + 6).attr("y", yEnd + 18).text("gains");
+    if (onNet || onBoth){
+      gFoot.append("text").attr("class", "ad-foot-lab ad-foot-lab--out").attr("x", g.zero - 6).attr("y", yEnd + 18).attr("text-anchor", "end").text("sends");
+      gFoot.append("text").attr("class", "ad-foot-lab ad-foot-lab--in").attr("x", g.zero + 6).attr("y", yEnd + 18).text("receives");
     }
     /* panned, the key stands down (2026-10-28): the mix names its metro mark under the rows, as the shares name their
        lines, from the drawing's left edge so it reads before the drawing is panned */
@@ -20625,7 +20872,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     tipBind(all, BARS);
     all.classed("is-dim", d => !!lit && !lit.has(d.code)).classed("is-pinned", d => d.code === pinned)
       .attr("aria-label", d => onMetro ? d.short + ": " + fmt(d.msaJobs) + " jobs in Boston Metro, " + shr(d.msaJobs / M.jobs) + " of the metro’s jobs; " + fmt(d.jobs) + " of them in Boston, " + pc(d.shJ) + "; " + fmt(d.residents) + " held by Boston’s residents"
-        : d.short + ": " + fmt(d.jobs) + " jobs in Boston, " + fmt(d.residents) + " held by its residents, Boston " + (d.net >= 0 ? "gains " + fmt(d.net) : "loses " + fmt(-d.net)) + "; " + pc(d.shJ) + " of the metro’s jobs in the sector");
+        : onBoth ? d.short + ": about " + fmt(d.estNon) + " commute into Boston and " + fmt(d.estOut) + " out of it, so Boston " + (d.net >= 0 ? "receives " + fmt(d.net) + " more workers than it sends" : "sends " + fmt(-d.net) + " more workers than it receives")
+        : d.short + ": " + fmt(d.jobs) + " jobs in Boston, " + fmt(d.residents) + " held by its residents, Boston " + (d.net >= 0 ? "receives " + fmt(d.net) + " more than it sends" : "sends " + fmt(-d.net) + " more than it receives") + "; " + pc(d.shJ) + " of the metro’s jobs in the sector");
     all.transition().duration(dur).ease(ease).delay(delay).attr("transform", d => "translate(0," + (BMT + PITCH * idx[d.code]) + ")").style("opacity", 1);
     all.select(".ad-hot").attr("width", VW).attr("height", PITCH);
     /* the row's middle: one bar 14 thick on it, two 7 thick a unit apart; the words on its baseline, 4 under the middle */
@@ -20633,21 +20881,27 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     all.select(".ad-name").attr("x", gut - 10).attr("y", txtY).attr("text-anchor", "end").text(d => fitText(d.short, (gut - 10) * k));
     const wIn = d => barLen((R.scale === "share" ? sx(d.shJ) : R.scale === "mix" ? sx(d.jobs / A.jobs) : sx(d.jobs)) - g.x0);
     const wOut = d => barLen((R.scale === "share" ? sx(d.shR) : R.scale === "mix" ? sx(d.residents / A.residents) : sx(d.residents)) - g.x0);
-    const wNet = d => barLen(Math.abs(sx(d.net) - g.zero));
+    const wNet = d => onBoth ? barLen(Math.abs(d.net) * g.unit) : barLen(Math.abs(sx(d.net) - g.zero));
+    /* the two ways (2026-11-04): the commuters in from the zero rightwards, the commuters out from it leftwards */
+    const bIn0 = d => barLen(d.estNon * g.unit), bOut0 = d => barLen(d.estOut * g.unit);
+    const wBin = d => !onBoth ? 0 : d.net > 0 ? bOut0(d) + wNet(d) : bIn0(d), wBout = d => !onBoth ? 0 : d.net < 0 ? bIn0(d) + wNet(d) : bOut0(d);
     /* beat 7 (2026-10-29): the metro's bar under the Boston part, and the share bar on the second plot */
     const wM = d => onMetro ? barLen(sx(d.msaJobs) - g.x0) : 0, wS = d => onMetro ? barLen(sxB(d.shJ) - g.b0) : 0;
     all.select(".ad-bar--metro").transition().duration(dur).ease(ease).delay(delay).attr("x", g.x0).attr("y", yIn).attr("height", onMetro ? BBAR : 0).attr("width", wM).style("opacity", onMetro ? 1 : 0);
     all.select(".ad-bar--sh").transition().duration(dur).ease(ease).delay(delay).attr("x", onMetro ? g.b0 : g.x0).attr("y", yIn).attr("height", onMetro ? BBAR : 0).attr("width", wS).style("opacity", onMetro ? 1 : 0);
-    all.select(".ad-end2").attr("y", txtY).text(d => onMetro ? pc(d.shJ) : "").transition().duration(dur).ease(ease).delay(delay).attr("x", d => onMetro ? g.b0 + wS(d) + 8 : g.x0).style("opacity", onMetro ? 1 : 0);
+    all.select(".ad-end2").attr("y", txtY).attr("text-anchor", onBoth ? "end" : "start").text(d => onMetro ? pc(d.shJ) : onBoth ? fmt(d.estOut) : "").transition().duration(dur).ease(ease).delay(delay).attr("x", d => onMetro ? g.b0 + wS(d) + 8 : onBoth ? g.zero - wBout(d) - 8 : g.x0).style("opacity", onMetro || onBoth ? 1 : 0);
     all.select(".ad-namebg").attr("width", gut + 2).attr("height", PITCH);
     const fade = kk => view.fore && view.fore !== kk ? .25 : 1;
-    all.select(".ad-bar--in").transition().duration(dur).ease(ease).delay(delay).attr("x", g.x0).attr("y", yIn).attr("height", onIn ? barH : 0).attr("width", onIn ? wIn : 0).style("opacity", onIn ? fade("in") : 0);
-    all.select(".ad-bar--out").transition().duration(dur).ease(ease).delay(delay).attr("x", g.x0).attr("y", yOut).attr("height", onOut ? barH : 0).attr("width", onOut ? wOut : 0).style("opacity", onOut ? fade("out") : 0);
+    all.select(".ad-bar--in").classed("ad-bar--soft", onBoth).transition().duration(dur).ease(ease).delay(delay).attr("x", onBoth ? g.zero : g.x0).attr("y", yIn).attr("height", onIn ? barH : 0).attr("width", onIn ? (onBoth ? wBin : wIn) : 0).style("opacity", onIn ? fade("in") : 0);
+    all.select(".ad-bar--out").classed("ad-bar--soft", onBoth).transition().duration(dur).ease(ease).delay(delay).attr("x", d => onBoth ? g.zero - wBout(d) : g.x0).attr("y", yOut).attr("height", onOut ? barH : 0).attr("width", onOut ? (onBoth ? wBout : wOut) : 0).style("opacity", onOut ? fade("out") : 0);
     /* the gain: a bar either way from the zero line, beat 3's bars against the peers. Off the gain a loss's bar folds to
        the zero line in place (2026-10-28): measured on another reading's scale it ran out past the names */
+    /* the two ways: the difference solid, over the longer way's far end (a gain past the out's length to the right, a
+       loss past the in's length to the left), the rest of both pale */
     all.select(".ad-bar--net").classed("ad-bar--in", d => d.net >= 0).classed("ad-bar--out", d => d.net < 0)
-      .transition().duration(dur).ease(ease).delay(delay).attr("y", mid - BBAR / 2).attr("height", onNet ? BBAR : 0)
-      .attr("x", d => !onNet || d.net >= 0 ? g.zero : g.zero - wNet(d)).attr("width", d => onNet ? wNet(d) : 0).style("opacity", onNet ? 1 : 0);
+      .transition().duration(dur).ease(ease).delay(delay).attr("y", mid - BBAR / 2).attr("height", onNet || onBoth ? BBAR : 0)
+      .attr("x", d => onBoth ? (d.net >= 0 ? g.zero + wBout(d) : g.zero - wBout(d)) : !onNet || d.net >= 0 ? g.zero : g.zero - wNet(d))
+      .attr("width", d => onBoth || onNet ? wNet(d) : 0).style("opacity", onNet || onBoth ? 1 : 0);
     /* the mix: beat 3's peer mark on each bar at the metro's own share of that work, 4 past the bar on its outer side
        alone (2026-10-28): over the jobs' bar, under the residents'. Its inner end stops at its own bar's edge, round cap
        and white edge with it, so it never crosses the unit's gap into the other bar and each mark reads as its bar's */
@@ -20661,6 +20915,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     const hlD = d => { let x, y, h, wa, wb;
       if (onMetro){ x = g.x0; y = yIn; h = BBAR; wa = wb = wM(d); }
       else if (onNet){ x = d.net >= 0 ? g.zero : g.zero - wNet(d); y = mid - BBAR / 2; h = BBAR; wa = wb = wNet(d); }
+      else if (onBoth){ x = g.zero - wBout(d); y = mid - BBAR / 2; h = BBAR; wa = wb = wBout(d) + wBin(d); }
       else { x = g.x0; y = yIn; h = two ? 15 : BBAR; wa = onIn ? wIn(d) : wOut(d); wb = two ? wOut(d) : wa; }
       return "M" + x + "," + y + "H" + (x + wa) + "V" + (y + h / 2) + "H" + (x + wb) + "V" + (y + h) + "H" + x + "Z"; };
     ent.select(".ad-hl").attr("d", hlD);
@@ -20668,18 +20923,20 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     /* one bar's value at its end, 8 past it (a loss's 8 before its left end); two bars' in the columns. The gain's values
        take their bars' colour (2026-10-28): a loss's bar is a sliver at this scale (371 workers of 90K), and its value in
        the losses' colour is how the four are found */
-    const endX = d => onMetro ? g.x0 + wM(d) + 8 : onNet ? (d.net >= 0 ? g.zero + wNet(d) + 8 : g.zero - wNet(d) - 8) : g.x0 + (onIn ? wIn(d) : wOut(d)) + 8;
+    const endX = d => onMetro ? g.x0 + wM(d) + 8 : onBoth ? g.zero + wBin(d) + 8 : onNet ? (d.net >= 0 ? g.zero + wNet(d) + 8 : g.zero - wNet(d) - 8) : g.x0 + (onIn ? wIn(d) : wOut(d)) + 8;
     all.select(".ad-end").attr("y", txtY).attr("text-anchor", d => onNet && d.net < 0 ? "end" : "start").text(endTxt)
       .classed("ad-end--in", d => onNet && d.net >= 0).classed("ad-end--out", d => onNet && d.net < 0)
       .transition().duration(dur).ease(ease).delay(delay).attr("x", d => endTxt(d) ? endX(d) : g.x0);
     /* the number columns at the right */
     [0, 1, 2, 3].forEach(i => { const c = cols[i];
       all.select(".ad-col" + i).attr("x", c ? c.right : COL_R).attr("y", txtY)
+        .classed("ad-col--in", d => !!c && c.key === "net" && d.net >= 0).classed("ad-col--out", d => !!c && c.key === "net" && d.net < 0)
         .text(d => c ? c.c.v(d) : "").style("opacity", 0).transition().duration(dur ? dur * .7 : 0).delay(dur ? dur * .3 : 0).style("opacity", c ? 1 : 0); });
     rowsSync(); captionSync(); tableSync(); pinNames(onMetro && panned);
     fig.dataset.adminReading = view.reading; fig.dataset.adminSort = view.sort;
     /* what the figure shows, for a reader who cannot see it */
-    const live = document.getElementById("miLive"); if (live) live.textContent = "Boston’s work by sector, " + (document.querySelector("#wfSRead option[value='" + view.reading + "']") || {}).textContent + ", sorted by " + SORT_WORDS[view.sort] + ", " + year + ".";
+    const live = document.getElementById("miLive"), readWord = view.reading === "both" ? "who commutes into Boston and out of it" : (document.querySelector("#wfSRead option[value='" + view.reading + "']") || {}).textContent || view.reading;
+    if (live) live.textContent = "Boston’s work by sector, " + readWord + ", sorted by " + SORT_WORDS[view.sort] + ", " + year + ".";
   }
   /* beat 7 on a phone (2026-10-29): the drawing pans, the names stay. Each row's name and its white ground slide with
      the frame's scroll, so the sector a bar belongs to is never off the screen; the rest of the drawing pans under them */
@@ -20728,21 +20985,21 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
      the jobs a resident worker, and the metro's shares; the rows' marks are the bars' key's, the icon alone. On the gain
      beat the gain leads, and its row goes */
   function barsHtml(d, held){
-    const gain = !!view && view.reading === "gain";
+    const gain = !!view && (view.reading === "gain" || view.reading === "both");
     /* beat 7's card (2026-10-29): the metro's count and the sector's share of the metro's jobs, Boston's part and its
        share of them, the residents' jobs, the gain, then the split, in plain numbers */
     if (view && view.reading === "report") return tSecHead(d, held) +
       tGrid([tRow("Jobs in Boston Metro", fmt(d.msaJobs)), tRow("Of the metro’s jobs", shr(d.msaJobs / M.jobs)),
         tRow("Jobs in Boston", fmt(d.jobs) + " " + tEm(pc(d.shJ) + " of them"), FI.in),
         tRow("Held by residents", fmt(d.residents), FI.out),
-        d.net >= 0 ? tRow("Boston gains", signed(d.net)) : tRow("Boston loses", fmt(-d.net))]
+        d.net >= 0 ? tRow("Boston, net receiver", signed(d.net)) : tRow("Boston, net sender", fmt(-d.net))]
         .concat(splitOk ? [tRow("Commute in", fmt(d.estNon), FI.in), tRow("Live and work in Boston", fmt(d.estRes), FI.both), tRow("Commute out", fmt(d.estOut), FI.out)] : []));
     /* the gain beat's (2026-11-03, Nil: "have the same tooltip applied to 5/7 and 6/7"): its flow's sector card */
     if (gain) return tSecHead(d, held) + gainHtml(d);
     return tSecHead(d, held) +
       tGrid([tRow("Jobs in Boston", fmt(d.jobs), FI.in), tRow("Of Boston’s jobs", share(d.jobs / A.jobs)),
         tRow("Held by residents", fmt(d.residents), FI.out), tRow("Of residents’ jobs", share(d.residents / A.residents)),
-        d.net >= 0 ? tRow("Boston gains", signed(d.net)) : tRow("Boston loses", fmt(-d.net)),
+        d.net >= 0 ? tRow("Boston, net receiver", signed(d.net)) : tRow("Boston, net sender", fmt(-d.net)),
         tRow("Jobs per resident worker", rx(d.ratio) + " " + tEm(zoneWord(d.ratio))),
         tRow("Of the metro’s jobs", share(d.shJ) + " " + tEm("of " + fmt(d.msaJobs))),
         tRow("Of its working residents", share(d.shR) + " " + tEm("of " + fmt(d.msaResidents)))]);
@@ -21155,8 +21412,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   /* beat 6's view under opt-3 (2026-10-28, Nil: "6/7: also give options to sankey and bar like the other ones. But this
      time, default to bar"): its gain bars, the "ranking", or its flow, the "flow diagram"; ?b6view=flow opens on the flow.
      The reader's choice is kept through the year, the beats around it and back */
-  const qB6 = location.search.match(/[?&]b6view=(flow|sankey|rank|bars)\b/);
-  let b6View = qB6 && (qB6[1] === "flow" || qB6[1] === "sankey") ? "sankey" : "rank";
+  /* the flow is retired (2026-11-04): beat 6 is the two-way bars under every option, and ?b6view is no longer read */
+  let b6View = "rank";
   const viewEff = () => { tView = b4 === "sankey" ? "rank" : tViewTree; };
   const gRank = svgT.append("g").attr("class", "wf-rk").style("display", "none");
   const gRankAx = gRank.append("g"), gRankRows = gRank.append("g").attr("class", "wf-rk-rows").attr("tabindex", -1);
@@ -21353,7 +21610,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     const ord = rows.slice().sort((a, b) => SORTS.gain(a) - SORTS.gain(b) || b.jobs - a.jobs), gain = ord.filter(r => r.net >= 0), lose = ord.filter(r => r.net < 0);
     /* a fold of one is that sector itself, and an empty one is not drawn */
     const fold = (list, words) => list.length > 1 ? [skAgg(list, words)] : list;
-    return gain.slice(0, 10).concat(fold(gain.slice(10), gain.slice(10).length + " more sectors that gain"),
+    return gain.slice(0, 10).concat(fold(gain.slice(10), gain.slice(10).length + " more sectors that receive"),
       lose.length ? fold(lose, skName(lose[lose.length - 1]) + " and " + (lose.length - 1) + " more") : []);
   }
   function sk6Layout(TW){
@@ -21393,7 +21650,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     nodes.forEach(n => { n.ax = n.lab === "line6" ? n.x - 8 : n.lab === "aboveEnd6" ? n.x + SK_NW : n.x; n.ay = n.lab === "line6" ? n.y + n.h / 2 : n.y; });
     const net = A.jobs - A.residents;
     return { mode: 2, TW, W: W2, H, cols, nodes, links, byId, K, TOP, more: null, all: false,
-      title: { x: cx[1], y: TOP, big: signed(net), line: net >= 0 ? "Boston gains, net" : "Boston loses, net" } };
+      title: { x: cx[1], y: TOP, big: signed(net), line: net >= 0 ? "Boston, net receiver" : "Boston, net sender" } };
   }
   /* the layout of a beat's Sankey: nodes and bands in px, keyed so one beat's drawing can turn into the next */
   function skLayout(mode, TW){
@@ -21598,7 +21855,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     if (!morph){ gL.selectAll("*").remove(); gN.selectAll("*").remove(); gT.selectAll("*").remove(); }
     const H = morph ? Math.max(prev.H, L.H) : L.H;
     svgK.attr("viewBox", "0 0 " + L.W + " " + H).attr("width", L.W * s).attr("height", H * s).style("width", L.W * s + "px")
-      .attr("aria-label", L.mode === 2 ? "Boston’s gain or loss of workers by sector, as a flow diagram, " + year : L.mode === 1 ? "The " + fmt(M.jobs) + " jobs in Boston Metro, by sector and by who holds them, " + year : "The " + fmt(A.jobs) + " jobs in Boston, by sector and by who holds them, " + year);
+      .attr("aria-label", L.mode === 2 ? "Workers Boston receives or sends by sector, as a flow diagram, " + year : L.mode === 1 ? "The " + fmt(M.jobs) + " jobs in Boston Metro, by sector and by who holds them, " + year : "The " + fmt(A.jobs) + " jobs in Boston, by sector and by who holds them, " + year);
     clip.attr("x", -10).attr("y", -10).attr("width", L.W + 20).attr("height", H + 20);
     const ease = d3.easeCubicInOut, oldKeys = new Set(morph ? gL.selectAll("path.sk-lk").data().map(l => l.key) : []);
     const exits = morph && gL.selectAll("path.sk-lk").data().some(l => !L.links.some(m => m.key === l.key));
@@ -21737,7 +21994,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   function skSay(n){
     const d = n.d;
     if (sk.mode === 2) return n.col === 0 ? fmt(A.in) + " Boston non-residents commute in." : n.col === 2 ? fmt(A.out) + " Boston residents work elsewhere." :
-      n.name + ": Boston " + (d.net >= 0 ? "gains " + fmt(d.net) : "loses " + fmt(-d.net)) + " workers; " + fmt(d.estNon) + " commute in, " + fmt(d.estOut) + " commute out.";
+      n.name + ": Boston " + (d.net >= 0 ? "receives " + fmt(d.net) + " more workers than it sends" : "sends " + fmt(-d.net) + " more workers than it receives") + "; " + fmt(d.estNon) + " commute in, " + fmt(d.estOut) + " commute out.";
     if (n.kind === "total") return fmt(n.value) + " " + n.lines[0] + ".";
     if (n.col !== 1) return fmt(n.value) + " " + SK_SAY[n.kind] + ", " + skShare(n) + "% " + n.of + ".";
     return n.name + ": " + fmt(n.value) + " jobs" + (sk.mode === 1 ? " in Boston Metro" : "") + "; " + fmt(d.estNon) + " held by " + (sk.mode === 1 ? NON_M4 : "Boston non-residents") + ", " + fmt(d.estRes) + " by Boston residents" +
@@ -21778,7 +22035,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
      Put make sure to put how much boston gains"): how much Boston gains in it, large, between the card's lines, then
      the two flows whose difference it is, in the needle's words, counts only */
   function gainHtml(d){
-    return '<div class="tip-lead tip-lead--gain"><span>Boston ' + (d.net >= 0 ? "gains" : "loses") + '</span><b>' + fmt(Math.abs(d.net)) + '</b></div>' +
+    return '<div class="tip-lead tip-lead--gain"><span>Boston, net ' + (d.net >= 0 ? "receiver" : "sender") + '</span><b>' + fmt(Math.abs(d.net)) + '</b></div>' +
       (splitOk ? tGrid([tRow("Commute in", fmt(d.estNon), tMark("non")), tRow("Commute out", fmt(d.estOut), tMark("out"))]) : "");
   }
   /* beat 6's flow's cards: a fold's titled by its words, its sectors and their gains under the title */
@@ -21802,7 +22059,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     esc: () => { if (!sk || sk.mode !== 2 || state !== 2 || !pinned) return false; skHot = null; pinned = homePin(); skFill(); needleDraw(pinned ? byCode[pinned] : null); return true; } };
   function skLive(){
     const live = document.getElementById("miLive"); if (!live || !sk) return;
-    live.textContent = sk.mode === 2 ? "Boston’s gain or loss of workers by sector, as a flow diagram, " + year + ": " + fmt(A.in) + " Boston non-residents commute in, " + fmt(A.out) + " Boston residents work elsewhere; Boston " + (A.jobs >= A.residents ? "gains " + fmt(A.jobs - A.residents) : "loses " + fmt(A.residents - A.jobs)) + "."
+    live.textContent = sk.mode === 2 ? "Workers Boston receives or sends by sector, as a flow diagram, " + year + ": " + fmt(A.in) + " Boston non-residents commute in, " + fmt(A.out) + " Boston residents work elsewhere; Boston " + (A.jobs >= A.residents ? "receives " + fmt(A.jobs - A.residents) + " more workers than it sends" : "sends " + fmt(A.residents - A.jobs) + " more workers than it receives") + "."
       : sk.mode === 1 ? "The " + fmt(M.jobs) + " jobs in Boston Metro by sector, as a flow diagram, " + year + ": commuting in " + fmt(A.in) + ", Boston residents " + fmt(A.liveWork) + ", working elsewhere " + fmt(A.out) + ", the rest of the metro " + fmt(skRest()) + "."
       : "The " + fmt(A.jobs) + " jobs in Boston by sector, as a flow diagram, " + year + ": Boston non-residents hold " + fmt(A.in) + ", Boston residents " + fmt(A.liveWork) + ".";
   }
@@ -22244,7 +22501,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     const r = view.reading;
     keyEl.innerHTML = r === "mix" ? '<span>' + I + 'each sector’s share of the jobs in <span class="city-short">Boston</span></span><span>' + O + 'its share of the jobs <span class="city-short">Boston</span>’s residents hold</span><span>dark tick: the metro’s own share of that work</span>' + src
       : r === "shares" ? '<span>shares of the metro’s jobs and of its working residents, by sector</span><span>dashed lines: <span class="city-short">Boston</span> across every sector, ' + pc(SH_J) + ' and ' + pc(SH_R) + '</span>' + src
-      : r === "gain" ? '<span>' + I + '<b>Boston gains</b>: more jobs here than its residents hold in the sector</span><span>' + O + '<b>Boston loses</b></span>' + src
+      : r === "gain" ? '<span>' + I + '<b>Boston receives</b>: more jobs here than its residents hold in the sector</span><span>' + O + '<b>Boston sends</b></span>' + src
+      /* the two ways (2026-11-04): each way's pale bar, and the solid part as the difference */
+      : r === "both" ? '<span><i class="wf-k-sw wf-k-sw--in-soft" aria-hidden="true"></i>' + I + 'commute into <span class="city-short">Boston</span>, to the right</span><span><i class="wf-k-sw wf-k-sw--out-soft" aria-hidden="true"></i>' + O + 'commute out, to the left</span><span><i class="wf-k-sw wf-k-sw--in" aria-hidden="true"></i><i class="wf-k-sw wf-k-sw--out" aria-hidden="true"></i>solid: the difference, what <span class="city-short">Boston</span> <b>receives</b> or <b>sends</b>, net</span><span>each sector’s split is estimated</span>' + src
       : r === "jobs" ? '<span>' + I + 'jobs in <span class="city-short">Boston</span>, whoever holds them</span>' + src
       : r === "residents" ? '<span>' + O + 'jobs <span class="city-short">Boston</span>’s residents hold, wherever those are</span>' + src
       /* beat 7's (2026-10-29): the three marks of the metro bar and the share plot's line, and the residents' column */
@@ -22406,12 +22665,20 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       const vals = r => [fmt(r.jobs), shr(r.jobs / A.jobs), fmt(r.residents), (r.net >= 0 ? "+" : "−") + fmt(Math.abs(r.net)), fmt(r.msaJobs), shr(r.msaJobs / M.jobs), pc(r.shJ)].concat(splitOk ? [fmt(r.estNon), fmt(r.estRes), fmt(r.estOut)] : []);
       tWrap.innerHTML = '<table class="mi-tbl wf-tbl-b7"><caption class="mi-sr">Boston’s 20 sectors and the metro’s, sorted by ' + SORT_WORDS[view.sort] + ', ' + year + '</caption>' +
         '<thead><tr class="wf-tbl-grp"><th></th>' + th("Boston", 4) + th("Boston Metro", 3) + (splitOk ? th("The commute, estimated", 3) : "") + '</tr>' +
-        '<tr><th scope="col">Sector</th>' + th("Jobs") + th("Of its jobs") + th("Residents’ jobs") + th("Gains") + th("Jobs") + th("Of its jobs") + th("In Boston") + (splitOk ? th("In") + th("Live and work") + th("Out") : "") + '</tr></thead><tbody>' +
+        '<tr><th scope="col">Sector</th>' + th("Jobs") + th("Of its jobs") + th("Residents’ jobs") + th("Received, net") + th("Jobs") + th("Of its jobs") + th("In Boston") + (splitOk ? th("In") + th("Live and work") + th("Out") : "") + '</tr></thead><tbody>' +
         line("All 20 sectors", [fmt(A.jobs), "100%", fmt(A.residents), "+" + fmt(A.jobs - A.residents), fmt(M.jobs), "100%", pc(SH_J)].concat(splitOk ? [fmt(A.in), fmt(A.liveWork), fmt(A.out)] : []), "wf-tbl-tot") +
         order().map(r => line(esc(r.short), vals(r))).join("") + '</tbody></table>';
       return;
     }
-    tWrap.innerHTML = '<table class="mi-tbl"><caption class="mi-sr">Boston’s 20 sectors, sorted by ' + SORT_WORDS[view.sort] + ', ' + year + '</caption><thead><tr><th scope="col">Sector</th><th scope="col" class="num">Jobs in Boston</th><th scope="col" class="num">Held by residents</th><th scope="col" class="num">Boston gains</th><th scope="col" class="num">Jobs per resident worker</th><th scope="col" class="num">Of the metro’s jobs</th><th scope="col" class="num">Of its working residents</th></tr></thead><tbody>' +
+    /* the two ways (2026-11-04): the commuters in and out of each sector, estimated, and the difference */
+    if (view.reading === "both" && splitOk){
+      tWrap.innerHTML = '<table class="mi-tbl"><caption class="wf-tbl-cap">Boston’s 20 sectors, sorted by ' + SORT_WORDS[view.sort] + ', ' + year + '. The difference is counted; each sector’s commuters in and out are an estimate.</caption>' +
+        '<thead><tr><th scope="col">Sector</th><th scope="col" class="num">Commute into Boston</th><th scope="col" class="num">Commute out of Boston</th><th scope="col" class="num">Boston receives or sends, net</th></tr></thead><tbody>' +
+        order().map(r => '<tr><th scope="row">' + esc(r.short) + '</th>' + cell(fmt(r.estNon)) + cell(fmt(r.estOut)) + cell((r.net >= 0 ? "+" : "−") + fmt(Math.abs(r.net))) + '</tr>').join("") +
+        '</tbody><tfoot><tr><th scope="row">All sectors</th>' + cell(fmt(A.in)) + cell(fmt(A.out)) + cell("+" + fmt(A.jobs - A.residents)) + '</tr></tfoot></table>';
+      return;
+    }
+    tWrap.innerHTML = '<table class="mi-tbl"><caption class="mi-sr">Boston’s 20 sectors, sorted by ' + SORT_WORDS[view.sort] + ', ' + year + '</caption><thead><tr><th scope="col">Sector</th><th scope="col" class="num">Jobs in Boston</th><th scope="col" class="num">Held by residents</th><th scope="col" class="num">Boston receives, net</th><th scope="col" class="num">Jobs per resident worker</th><th scope="col" class="num">Of the metro’s jobs</th><th scope="col" class="num">Of its working residents</th></tr></thead><tbody>' +
       order().map(r => '<tr><th scope="row">' + esc(r.short) + '</th>' + cell(fmt(r.jobs)) + cell(fmt(r.residents)) + cell((r.net >= 0 ? "+" : "−") + fmt(Math.abs(r.net))) + cell(rx(r.ratio)) + cell(pc(r.shJ)) + cell(pc(r.shR)) + '</tr>').join("") + '</tbody></table>';
   }
   if (tBtn) tBtn.addEventListener("click", () => { tableOpen = !tableOpen; tBtn.setAttribute("aria-expanded", String(tableOpen)); tBtn.querySelector(".mi-table-btn-txt").textContent = tableOpen ? "Hide the table" : "Show as table"; if (tWrap) tWrap.hidden = !tableOpen; tableSync(); });
@@ -22512,10 +22779,13 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
          the bar is too short for the chip, after the row's value as before */
       const rs = [].slice.call(wrap.querySelectorAll("#miAdminSvg g.ad-row")).map(g => { let x0 = Infinity, x1 = -1; const h = g.querySelector(".ad-hot");
         g.querySelectorAll(".ad-bar, .ad-val").forEach(e => { const r = e.getBoundingClientRect(); if (r.width && r.height && getComputedStyle(e).opacity !== "0"){ x1 = Math.max(x1, r.right - box.left); if (e.classList.contains("ad-bar")) x0 = Math.min(x0, r.left - box.left); } });
-        const hr = h ? h.getBoundingClientRect() : null; return hr ? { x0, x1, y: (hr.top + hr.bottom) / 2 - box.top, r: Math.min(hr.right - box.left, box.width) } : null; })
+        /* the two ways (2026-11-04): on the solid difference where it has the room, else from the zero line on the way in,
+           never on the pale way left of the zero */
+        const starts = [".ad-bar--net", ".ad-bar--in"].map(c => { const e = g.querySelector(c), r = e && e.getBoundingClientRect(); return r && r.width > 0 && getComputedStyle(e).opacity !== "0" ? r.left - box.left : null; }).filter(v => v != null);
+        const hr = h ? h.getBoundingClientRect() : null; return hr ? { x0, x1, starts, y: (hr.top + hr.bottom) / 2 - box.top, r: Math.min(hr.right - box.left, box.width) } : null; })
         .filter(o => o && o.x1 >= 0).sort((a, b) => a.y - b.y);
       const t = rs[0];
-      if (t && isFinite(t.x0) && t.x0 + 14 + hw + 8 <= t.x1) at = [t.x0 + 14, t.y - hh / 2];
+      if (t){ const s0 = (t.starts.length ? t.starts : [t.x0]).find(v => isFinite(v) && v >= 0 && v + 14 + hw + 8 <= Math.min(t.x1, t.r - 8)); if (s0 != null) at = [s0 + 14, t.y - hh / 2]; }
       for (let i = 0; i + 1 < rs.length && !at; i++){ const x = Math.max(rs[i].x1, rs[i + 1].x1) + 14; if (x + hw <= rs[i].r - 8) at = [x, rs[i].y - ft]; }
     }
     /* a flow panned off its top band shows no hand (the corner sits on its words on a phone) */
@@ -22540,7 +22810,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     const kind = z === "bus" ? "a business admin" : z === "res" ? "a residential admin" : "balanced";
     const num = rx(ratio).replace("×", "");
     const per = (z === "bal" ? "about one commutes in" : num + " commute in") + " for every one who commutes out" + (own ? "" : ", by estimate");
-    const gain = i === o ? "Boston neither gains nor loses" : "Boston " + (i > o ? "gains " : "loses ") + fmt(Math.abs(i - o));
+    const gain = i === o ? "Boston sends as many workers as it receives" : "Boston " + (i > o ? "receives " : "sends ") + fmt(Math.abs(i - o)) + (i > o ? " more workers than it sends" : " more workers than it receives");
     return { own, ratio, z, nm, per, gain, who: own ? "Boston is " + kind : "For " + nm + ", Boston is " + kind, net: '<b>' + gain + '</b>, with ' + per };
   }
   function needleDraw(d){
@@ -22558,7 +22828,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     gVerdict.innerHTML = w.net;
     const sentence = own ? fmt(ci) + " people commute into Boston and " + fmt(co) + " of its residents commute out."
       : fmt(ci) + " people commute into Boston to work in " + w.nm + " and " + fmt(co) + " of its residents commute out to work in it elsewhere.";
-    gsvg.setAttribute("aria-label", w.who + ". " + sentence + " " + w.gain + " workers, with " + w.per + ".");
+    gsvg.setAttribute("aria-label", w.who + ". " + sentence + " " + w.gain + ", with " + w.per + ".");
     gFit();
   }
   /* the needle keeps one height whatever it shows (2026-11-03, Nil: "make sure the height of the needle feature doesn't
@@ -22688,7 +22958,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
          a scroll back mid-move runs it back from where it stands. Beat 6 on its flow builds its flow as before; any other
          beat cuts a move to its end. Under reduced motion, and in the presenter, the two drawings cross-fade */
       const flip = !!mv && mv.kind === "56" && !first && !back && ((from === 2 && s === 1) || (from === 1 && s === 2));
-      const go = !mv && !first && !back && !hadAsk && b4 === "sankey" && skView === "sankey" && b6View === "rank" &&
+      /* no move to beat 6 since 2026-11-04: its two-way bars are not the gain bars the move was drawn for; it is painted */
+      const go = B6_MOVES && !mv && !first && !back && !hadAsk && b4 === "sankey" && skView === "sankey" && b6View === "rank" &&
         ((from === 1 && s === 2 && isSk() && !!sk && sk.mode === 1) || (from === 2 && s === 1 && !isSk() && !!lastGain));
       if (mv && !flip) mvCut();
       const soft = go && (reduced() || !!fig.closest(".is-presenting")), src = go ? (soft ? mvFadeTake() : mvTake()) : null;
