@@ -6153,6 +6153,51 @@
   /* ── the three clusters (opt-3's opening beat) ──────────────────────── */
   /* the lead's two rows swap by the hidden attribute, which the rail's own
      display rule would otherwise override */
+  /* ---- storyline 2 (2026-11-09): the pill at the bottom left, and beat 4's clusters (window.MC) ---- */
+  .story-pill{position:fixed;left:16px;bottom:16px;z-index:80;display:inline-flex;align-items:center;gap:2px;padding:4px;border-radius:999px;background:var(--ink);color:var(--white);font-size:13px;line-height:1;}
+  .story-pill[hidden]{display:none;}
+  .story-pill .sp-lab{padding:0 8px 0 12px;font-weight:600;}
+  .story-pill .sp-btn{appearance:none;border:0;border-radius:999px;min-width:30px;height:28px;padding:0 11px;background:transparent;color:var(--white);font:inherit;font-weight:600;cursor:pointer;}
+  .story-pill .sp-btn:hover{background:var(--ink-soft);}
+  .story-pill .sp-btn[aria-pressed="true"]{background:var(--white);color:var(--ink);}
+  .story-pill .sp-btn:focus-visible{outline:2px solid var(--white);outline-offset:1px;}
+  html.is-presenting .story-pill{display:none;}
+  #miFigure .mc-fig{display:none;}
+  #miFigure.is-mclust .mc-fig{display:block;}
+  #miFigure.is-mclust :is(.mi-head,.mi-caption,#miTreemapSvg,#miTip,#miTradMenu,#miSplitHead,#miClusterHead,#miAllHead,.wf-fig),
+  #miFigure.is-mclust > .mi-table{display:none !important;}
+  .mc-head{display:flex;align-items:center;gap:8px 16px;flex-wrap:wrap;margin:0 0 6px;}
+  .mc-head .mc-title{flex:1 1 auto;min-width:0;margin:0;font-size:16px;line-height:1.6;font-weight:400;color:var(--ink);}
+  .mc-play svg{display:block;flex:none;}
+  .mc-play[hidden]{display:none;}
+  .mc-plot{position:relative;}
+  .mc-svg{display:block;overflow:visible;}
+  .mc-cell{shape-rendering:crispEdges;stroke:none;transition:opacity .18s ease;}
+  .mc-rlab{font-size:13px;fill:var(--ink);}
+  .mc-val{font-size:13px;fill:var(--ink-soft);pointer-events:none;}
+  .mc-tlist{line-height:1.6;} .mc-tsw{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:-1px;}
+  .mc-key b{font-weight:700;}
+  .mc-cell.is-dim{opacity:.18;}
+  .mc-slab{font-size:13px;font-weight:600;pointer-events:none;}
+  .mc-slab .mc-slab-n{font-weight:400;}
+  .mc-glab{pointer-events:none;}
+  .mc-gname{font-size:13px;font-weight:600;}
+  .mc-glab--rest .mc-gname{fill:var(--flow-rest-text);} .mc-glab--non .mc-gname{fill:var(--flow-in);}
+  .mc-glab--res .mc-gname{fill:var(--flow-both-text);} .mc-glab--out .mc-gname{fill:var(--flow-out-text);}
+  .mc-gn{font-size:15px;font-weight:700;fill:var(--ink);} .mc-gn .mc-gp{font-size:13px;font-weight:400;fill:var(--ink-soft);}
+  .mc-bos-r{fill:none;stroke:var(--teal);stroke-width:1.5;stroke-dasharray:5 4;}
+  .mc-bos-t{font-size:13px;font-weight:600;fill:var(--teal);}
+  .mc-bos-g{pointer-events:none;}
+  .mc-key{display:flex;flex-wrap:wrap;gap:6px 18px;margin:10px 0 0;padding:10px 0 0;border-top:1px solid var(--border);list-style:none;font-size:13px;color:var(--ink);}
+  .mc-key[hidden]{display:none;}
+  .mc-key li{display:inline-flex;align-items:center;gap:6px;}
+  .mc-key i{display:inline-block;width:10px;height:10px;border-radius:2px;}
+  .mc-note{margin:8px 0 0;font-size:13px;line-height:1.4;color:var(--ink-soft);}
+  .mc-hl{border-bottom:1.5px dotted var(--ink-soft);cursor:pointer;white-space:nowrap;transition:background-color .15s ease,border-color .15s ease;}
+  .mc-hl::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--sw,var(--border-strong));margin-right:5px;vertical-align:-1px;}
+  .mc-hl:hover,.mc-hl.is-lit{background:var(--teal-tint);border-bottom-color:var(--teal);}
+  .mc-hl:focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:2px;}
+  @media (prefers-reduced-motion: reduce){ .mc-cell{transition:none;} }
   .mi-default[hidden], .mi-alt[hidden],
   .mi-rail-default[hidden], .mi-rail-alt[hidden]{display:none !important;}
   .mi-cluster-head{display:flex;flex-direction:column;justify-content:flex-start;gap:8px;min-height:0;opacity:0;pointer-events:none;transition:opacity .35s ease;}
@@ -8699,8 +8744,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
           <li data-step="page-export-basket"><span class="dot"></span><button onclick="goTo('page-export-basket')">What does the metro do for a living?</button></li>
           <li data-step="tierSection"><span class="dot"></span><button onclick="goTo('tierSection')">How tradable is the metro&rsquo;s work?</button></li>
           <li data-step="specializedSection"><span class="dot"></span><button onclick="goTo('specializedSection')">Which tradable industries is the metro most specialized in?</button></li>
-          <li data-step="adminCountsSection"><span class="dot"></span><button onclick="goTo('adminCountsSection')">Which work happens in Boston, and which do its residents do?</button></li>
-          <li data-step="adminSharesSection"><span class="dot"></span><button onclick="goTo('adminSharesSection')">Which work does Boston host for the metro?</button></li>
+          <li data-step="metroClustersSection" class="mi-rail-alt" hidden><span class="dot"></span><button onclick="goTo('metroClustersSection')">Who holds the jobs in Boston Metro?</button></li>
+          <li data-step="adminCountsSection"><span class="dot"></span><button onclick="goTo('adminCountsSection')"><span class="mi-rail-default">Which work happens in Boston, and which do its residents do?</span><span class="mi-rail-alt" hidden>Now let&rsquo;s look at Boston admin: who holds its jobs?</span></button></li>
+          <li data-step="adminSharesSection" class="mi-rail-default"><span class="dot"></span><button onclick="goTo('adminSharesSection')">Which work does Boston host for the metro?</button></li>
           <li data-step="adminNetSection"><span class="dot"></span><button onclick="goTo('adminNetSection')">Where is Boston a receiver or a sender of workers?</button></li>
           <li data-step="check-export"><span class="dot"></span><button onclick="goTo('check-export')">Test your knowledge</button></li>
           <li data-step="apply-export"><span class="dot"></span><button onclick="goTo('apply-export')">Put your insights</button></li>
@@ -9522,6 +9568,17 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
               <button type="button" class="tm-item is-on" data-tier="1" aria-pressed="true"><span class="tm-tick" aria-hidden="true"><svg viewBox="0 0 10 8" width="9" height="7"><path d="M1 4.2 3.7 6.8 9 1.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="tm-lab">Partly traded</span></button>
               <button type="button" class="tm-item is-on" data-tier="2" aria-pressed="true"><span class="tm-tick" aria-hidden="true"><svg viewBox="0 0 10 8" width="9" height="7"><path d="M1 4.2 3.7 6.8 9 1.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="tm-lab">Local</span></button>
             </div>
+            <!-- storyline 2's beat 4 (window.MC): its sentence and Play, the chart, its card and its key -->
+            <div class="mc-fig" id="mcFig">
+              <div class="mc-head">
+                <p class="mi-sentence mc-title" id="mcTitle"></p>
+                <button type="button" class="who-fl-replay mc-play" id="mcPlay"></button>
+              </div>
+              <div class="mc-plot"><svg class="mc-svg" id="mcSvg" role="img" aria-label="The metro's jobs by sector" xmlns="http://www.w3.org/2000/svg"></svg>
+                <div class="rca-tip" id="mcTip" role="tooltip" hidden></div></div>
+              <ul class="mc-key" id="mcKey" aria-label="Sectors"></ul>
+              <p class="mc-note">Counted where people work (LODES 2023), a different source from the 2.3M jobs of the first beats. Each sector&rsquo;s split among the four groups is an estimate.</p>
+            </div>
             <!-- the admin beats' chart (2026-10-26): Boston's 20 sectors as rows; the row's card; the table under it -->
             <div class="wf-fig" id="wfFig">
               <div class="wf-sk-pan" id="wfSkPan"><svg class="wf-sk" id="wfSankeySvg" role="group" aria-label="The jobs as a flow diagram" tabindex="-1" xmlns="http://www.w3.org/2000/svg"></svg></div>
@@ -9638,9 +9695,30 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
              One figure of twenty rows serves the four, and the needle from
              Who am I? stands beside the words of the gain-and-loss beat.
              These replaced the Worker Flows section. -->
+        <!-- storyline 2's beat 4 (2026-11-09, Nil: "4th - showing 2-digit metro industries (that would transition from the
+             3rd beat) and animate it to the 4 clusters of worker flow"): the metro's jobs as a treemap of its 20 sectors, and
+             on Play each sector splits into the four groups of beat 5's flow and they gather into four clusters; the two
+             Boston ones are outlined, and as the reader goes on they grow to fill the frame (the move to the admin).
+             Shown only under storyline 2 (the pill at the bottom left), state 12 of the shared figure (window.MC) -->
+        <div class="export-subsection mi-alt" id="metroClustersSection" hidden>
+          <div class="subsection-header">
+            <h3>Who holds the jobs in <span class="city-short">Boston</span> Metro?</h3>
+          </div>
+          <div class="lede-stat-row">
+            <p class="lede">Counted where people work, <span class="city-short">Boston</span> Metro has 2.8M jobs, here in its
+              20 sectors. Each sector&rsquo;s bar then splits by who holds its jobs.
+              <span class="mc-hl" data-mcwho="rest" tabindex="0" style="--sw:var(--flow-rest)">People who neither live nor work in <span class="city-short">Boston</span></span>
+              hold 1.9M, about seven in ten. The 719K jobs in <span class="city-short">Boston</span> go to
+              <span class="mc-hl" data-mcwho="non" tabindex="0" style="--sw:var(--flow-in)">non-residents who commute in</span>, 528K, and to
+              <span class="mc-hl" data-mcwho="res" tabindex="0" style="--sw:var(--flow-both)"><span class="city-short">Boston</span> residents</span>, 190K.
+              Its residents hold <span class="mc-hl" data-mcwho="out" tabindex="0" style="--sw:var(--flow-out)">157K more elsewhere</span>.</p>
+          </div>
+        </div>
+
         <div class="export-subsection" id="adminCountsSection">
           <div class="subsection-header">
-            <h3><span class="wf-b4-nottree">Which work happens in <span class="city-short">Boston</span>, and which do its residents do?</span><span class="wf-b4-tree">What does <span class="city-short">Boston</span> do for a living?</span></h3>
+            <h3 class="mi-alt" hidden>Now let&rsquo;s look at <span class="city-short">Boston</span> admin: who holds its jobs?</h3>
+            <h3 class="mi-default"><span class="wf-b4-nottree">Which work happens in <span class="city-short">Boston</span>, and which do its residents do?</span><span class="wf-b4-tree">What does <span class="city-short">Boston</span> do for a living?</span></h3>
           </div>
           <div class="lede-stat-row">
             <p class="lede wf-b4-bars"><span class="city-short">Boston</span> has 719K jobs, whoever holds them, and its residents hold 348K
@@ -9649,7 +9727,13 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
               <span class="mi-hl" data-row="61" tabindex="0">education</span> hold 47% of the jobs in
               <span class="city-short">Boston</span> and 45% of the residents&rsquo; jobs. The teal bar is the longer one in all
               but four rows: three in four people working in <span class="city-short">Boston</span> commute in.</p>
-            <p class="lede wf-b4-sk"><span class="city-short">Boston</span> has 719K jobs.
+            <!-- storyline 2: the words say the scale has changed, from the metro to the city inside its own limits -->
+            <p class="lede mi-alt" hidden>From the metro to the city itself: <span class="city-short">Boston</span> admin,
+              inside its own limits, has 719K jobs, the two clusters outlined in the metro&rsquo;s chart.
+              <span class="mc-hl" data-mcwho="non" tabindex="0" style="--sw:var(--flow-in)">Non-residents who commute in</span> hold 528K of them, three in four,
+              and <span class="mc-hl" data-mcwho="res" tabindex="0" style="--sw:var(--flow-both)"><span class="city-short">Boston</span> residents</span> 190K.
+              Health care and professional services lead both groups.</p>
+            <p class="lede wf-b4-sk mi-default"><span class="city-short">Boston</span> has 719K jobs.
               <span class="mi-hl mi-hl-sec" data-who="non" tabindex="0" style="--sw:var(--flow-in)">Non-residents</span> who commute in hold 528K of them, three in four,
               and <span class="mi-hl mi-hl-sec" data-who="res" tabindex="0" style="--sw:var(--flow-both)"><span class="city-short">Boston</span> residents</span> 190K.
               In every large sector, most of the jobs go to non-residents.</p>
@@ -9664,7 +9748,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
               food</span>. Each sector&rsquo;s split is an <button type="button" class="term" data-term="split" aria-expanded="false">estimate</button>.</p>
 
           </div>
-          <div class="ask-chart" data-fig="wf" role="group" aria-labelledby="wfAskLab4">
+          <div class="ask-chart mi-default" data-fig="wf" role="group" aria-labelledby="wfAskLab4">
             <p class="ask-lab" id="wfAskLab4">Ask the chart</p>
             <div class="ask-item wf-b4-bars">
               <button type="button" class="ask-q" data-ask="b4q1" aria-expanded="false" aria-controls="wfAsk-b4q1" aria-describedby="miAskHint"><svg class="ask-gly" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" aria-hidden="true"><path d="M2.5 4h7M2.5 8h11M2.5 12h5"/></svg><span class="ask-txt">Which work do Bostonians do most, ranked their way?</span><span class="ask-go"><span class="ask-off">Show <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span><span class="ask-on">Showing</span></span></button>
@@ -9694,7 +9778,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         </div>
 
         <!-- beat 5: each count as a share of the metro's -->
-        <div class="export-subsection" id="adminSharesSection">
+        <div class="export-subsection mi-default" id="adminSharesSection">
           <div class="subsection-header">
             <h3><span class="wf-b4-bars">Which work does <span class="city-short">Boston</span> host for the metro?</span><span class="wf-b4-tree">Where do <span class="city-short">Boston</span>&rsquo;s residents work?</span><span class="wf-b4-sk">Who holds the jobs in <span class="city-short">Boston</span> Metro?</span></h3>
           </div>
@@ -19054,7 +19138,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
        stage once and stays there, and every step drives it to a state */
     var fig = page.querySelector(".mi-figure");
     var topKids = [].slice.call(page.children).filter(function(c){
-      return subs.indexOf(c) < 0 && c !== fig && !c.classList.contains("page-head");
+      /* a beat another storyline leaves out stays where it is, hidden (2026-11-09) */
+      return subs.indexOf(c) < 0 && c !== fig && !c.classList.contains("page-head") && !c.classList.contains("export-subsection");
     });
     var wrap = document.createElement("div"); wrap.className = "ct-scrolly";
     var col = document.createElement("div"); col.className = "ct-steps";
@@ -19311,6 +19396,34 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   if (compBtn) new MutationObserver(syncOptWrap)
     .observe(compBtn, { attributes: true, attributeFilter: ["class"] });
   syncOptWrap();
+  /* the storyline pill (2026-11-09): fixed at the bottom left while the section is the one on, two choices */
+  if (cfg.storyPill && cfg.altNarrative){
+    var pill = document.createElement("div");
+    pill.className = "story-pill"; pill.setAttribute("role", "group"); pill.setAttribute("aria-label", "Storyline");
+    pill.innerHTML = '<span class="sp-lab">Storyline</span>' +
+      '<button type="button" class="sp-btn" data-ct="2" aria-pressed="true">1</button>' +
+      '<button type="button" class="sp-btn" data-ct="3" aria-pressed="false">2</button>';
+    document.body.appendChild(pill);
+    var pillSync = function(){
+      var on = compBtn && compBtn.classList.contains("is-active") && document.getElementById("tool") && document.getElementById("tool").classList.contains("active");
+      pill.hidden = !on;
+      pill.querySelectorAll(".sp-btn").forEach(function(b){ b.setAttribute("aria-pressed", String(b.dataset.ct === ctLayout)); });
+    };
+    pill.querySelectorAll(".sp-btn").forEach(function(b){
+      b.addEventListener("click", function(){
+        if (b.dataset.ct === ctLayout) return;
+        /* the reader stays on the beat they were on, counted the same in both storylines */
+        var at = cur;
+        setLayout(b.dataset.ct); pillSync();
+        if (built && at > 0 && built.steps[at]){ built.steps[at].scrollIntoView({ block: "center" }); spy(); }
+      });
+    });
+    if (compBtn) new MutationObserver(pillSync).observe(compBtn, { attributes: true, attributeFilter: ["class"] });
+    var toolEl = document.getElementById("tool");
+    if (toolEl) new MutationObserver(pillSync).observe(toolEl, { attributes: true, attributeFilter: ["class"] });
+    window.__storyPillSync = pillSync;
+    setTimeout(pillSync, 0);
+  }
 
   /* rail-step ids -> the scrolly step that carries them, while built */
   /* every mounted section answers for its own ids; the shared lookup asks
@@ -19364,8 +19477,12 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
      into their three tiers, then the ranking drawn over the two tiers that
      sell outward; then (2026-10-26) Boston's own work by sector in four
      beats, states 8 to 11 of the shared figure (window.MI2 routes them) */
+  /* storyline 2 (2026-11-09, Nil: "put the storyline option as a black pill button on left bottom corner"): layout "3",
+     the same first three beats, then the metro's jobs gathering into the four groups (state 12), Boston admin's two of
+     them grown to fill the frame (13; no flow diagram, Nil: "remove sankey or bars") and the net bars (10) */
   mount({ pageId: "page-export-basket", ctl: "MI2", seg: "ctLayoutSeg", noClassic: true, noToggle: true, noBadge: true,
-          states: { "2": [0, 4, 6, 8, 9, 10] } });
+          altNarrative: true, storyPill: true,
+          states: { "2": [0, 4, 6, 8, 9, 10], "3": [0, 4, 6, 12, 13, 10] } });
 })();
 
 /* ---- the presenter view ----------------------------------------------
@@ -23136,6 +23253,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       gTree.selectAll("*").interrupt();
       if (isTree()){ hlTemp = null; previewWho = null; whoUnlit(); headSync(); treePaint(false); treeFill(false); } },
     get state(){ return state; },
+    /* storyline 2's beat 4 (window.MC) reads the words' year: its rows carry the flow's split (estNon, estRes, estOut, estRest) */
+    get data(){ return YD[WORDS_YEAR]; },
     /* for the checks (2026-10-28): the move running, and a hold of it at t ms of its own clock (resume lets it run on) */
     get move(){ return mv && mv.kind !== "fade" ? { kind: mv.kind, dir: mv.vel > 0 ? "fwd" : "rev", t: mv.t, vel: mv.vel, D: mv.D, T: mv.T, delays: mv.items.filter(it => it.d).map(it => it.code + " " + it.d) } : null; },
     seek(t){ if (!mv || mv.kind === "fade") return false; if (mv.timer){ mv.timer.stop(); mv.timer = null; } mv.t = Math.max(0, Math.min(mv.D, t)); mvDraw(); return true; },
@@ -23154,16 +23273,258 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     if (!roRaf) roRaf = requestAnimationFrame(() => { roRaf = 0; if (view) paint(false); }); } }).observe(wrap || svgEl);
 })();
 
-/* the section's control: the treemap's states 0 to 7, this figure's 8 to 11 (see the note above) */
+/* ---- storyline 2's beats 4 and 5 (2026-11-09, Nil: "4th - showing 2-digit metro industries (that would transition from
+   the 3rd beat) and animate it to the 4 clusters of worker flow"; "put labels in tree map, and remove sankey or bars"; then
+   "4th and 5th should be bar representation. Also run the animations by default"): one bar chart carries both beats.
+   Beat 4 (state 12): the metro's jobs, LODES 2023 as the flow counts them, a bar for each of its 20 two-digit sectors in
+   the house sector colours. On arrival it plays: each bar splits into the four groups of the flow (the split is the
+   flow's estimate, WF.data), and the parts slide apart into four columns of bars on one scale, the two Boston columns
+   that hold the jobs in the city outlined as Boston admin. Beat 5 (state 13): the other two columns leave and the two
+   come together as stacked bars, Boston admin's 719K jobs by sector, sorted by them. Replay is the house button
+   (.who-fl-replay). ---- */
 (function(){
-  const FIRST = 8, fig = document.getElementById("miFigure");
+  const fig = document.getElementById("miFigure"), host = document.getElementById("mcFig");
+  const svgEl = document.getElementById("mcSvg"), tip = document.getElementById("mcTip"), noteEl = host && host.querySelector(".mc-note");
+  const playBtn = document.getElementById("mcPlay"), titleEl = document.getElementById("mcTitle"), keyEl = document.getElementById("mcKey");
+  if (!fig || !host || !svgEl || typeof d3 === "undefined") return;
+  const fmt = window.fmtCount || (n => String(n));
+  const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const G = ["rest", "non", "res", "out"], ADM = ["non", "res"];
+  const GN = { rest: "Neither live nor work in Boston", non: "Commute into Boston", res: "Live and work in Boston", out: "Live in Boston, work elsewhere" };
+  const GS = { rest: "Neither", non: "Commute in", res: "Live and work", out: "Commute out" };
+  const GV = { rest: "estRest", non: "estNon", res: "estRes", out: "estOut" };
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const GC = g => css({ rest: "--flow-rest", non: "--flow-in", res: "--flow-both", out: "--flow-out" }[g]);
+  const HOUSE = { "Construction": "#a25d37", "Education & Health": "#dc8271", "Financial Activities": "#e5c95e", "Leisure & Hospitality": "#9adfe7",
+    "Manufacturing": "#7f3c6b", "Natural Resources": "#5d9850", "Other": "#896885", "Professional & Business": "#485fa2", "Trade & Transportation": "#86c8ab" };
+  const colourOf = sec => { const li = [].slice.call(document.querySelectorAll("#miSectorKey li")).find(l => l.textContent.trim().indexOf(sec) === 0);
+    const sw = li && li.querySelector("i"); const c = sw && (sw.style.background || getComputedStyle(sw).backgroundColor); return c || HOUSE[sec] || "#c3ccce"; };
+  const cx = document.createElement("canvas").getContext("2d");
+  const tw = (t, size, wt) => { cx.font = (wt || 400) + " " + size + "px 'Source Sans 3', 'Source Sans Pro', sans-serif"; return cx.measureText(t).width; };
+  const wrapTo = (t, w, size, wt) => { const out = []; let line = ""; t.split(" ").forEach(word => { const n = line ? line + " " + word : word;
+    if (tw(n, size, wt) <= w || !line) line = n; else { out.push(line); line = word; } }); if (line) out.push(line); return out; };
+  const cutTo = (t, w) => { if (tw(t, 13) <= w) return t; let s = t; while (s.length > 1 && tw(s + "…", 13) > w) s = s.slice(0, -1); return s.replace(/[\s&,]+$/, "") + "…"; };
+  const esc = t => String(t).replace(/&/g, "&amp;").replace(/</g, "&lt;");
+
+  let rows = null, M = null, sum = null, mx = null, colours = null;
+  function data(){
+    if (rows) return true;
+    const D = window.WF && window.WF.data; if (!D) return false;
+    rows = D.rows.slice().sort((a, b) => b.msaJobs - a.msaJobs); M = D.M;
+    sum = {}; mx = {}; G.forEach(g => { sum[g] = d3.sum(rows, r => Math.max(0, r[GV[g]])); mx[g] = d3.max(rows, r => Math.max(0, r[GV[g]])); });
+    return true;
+  }
+  /* mode: "sec" the sectors' bars, "grp" the four columns (beat 4); "adm" Boston admin's stacked bars (beat 5) */
+  let mode = "sec", busy = false, shown = false, played = false, L = null, hiG = null, playT = null;
+  const TOPB = 22, GAPC = 14, VALW = 46;
+  function layout(){
+    const w = Math.max(280, Math.round(host.clientWidth || 0)), narrow = w < 600;
+    const labW = Math.round(Math.min(220, Math.max(104, w * (narrow ? .3 : .26)))), x0 = labW + 8, avail = w - x0;
+    /* the four columns: one scale; a column no narrower than its head needs */
+    const minC = Math.min(112, (avail - 3 * GAPC) / 4);
+    let k = (avail - 3 * GAPC) / d3.sum(G, g => mx[g]);
+    for (let it = 0; it < 6; it++){ const fixed = G.filter(g => mx[g] * k < minC);
+      k = (avail - 3 * GAPC - fixed.length * minC) / (d3.sum(G.filter(g => fixed.indexOf(g) < 0), g => mx[g]) || 1); }
+    const colW = {}, colX = {}; let cxx = x0; G.forEach(g => { colW[g] = Math.max(minC, mx[g] * k); colX[g] = cxx; cxx += colW[g] + GAPC; });
+    /* on a narrow screen the columns' heads take their short names, so none runs past two lines */
+    const heads = {}; G.forEach(g => { heads[g] = wrapTo(narrow ? GS[g] : GN[g], colW[g] - 2, 13, 600); });
+    const HT = d3.max(G, g => heads[g].length) * 17 + 24, top = TOPB + HT;
+    const rh = narrow ? 16 : 22, bh = narrow ? 11 : rh - 6, h = top + rows.length * rh + 4;
+    const kS = (avail - VALW) / d3.max(rows, r => r.msaJobs), kA = (avail - VALW) / d3.max(rows, r => r.jobs);
+    const ordS = rows, ordA = rows.slice().sort((a, b) => b.jobs - a.jobs);
+    const yS = {}, yA = {}; ordS.forEach((r, i) => { yS[r.code] = top + i * rh; }); ordA.forEach((r, i) => { yA[r.code] = top + i * rh; });
+    const sec = {}, grp = {}, adm = {};
+    rows.forEach(r => {
+      let a = x0; G.forEach(g => { const v = Math.max(0, r[GV[g]]) * kS; sec[r.code + "|" + g] = { x: a, y: yS[r.code] + (rh - bh) / 2, w: v, h: bh }; a += v; });
+      G.forEach(g => { grp[r.code + "|" + g] = { x: colX[g], y: yS[r.code] + (rh - bh) / 2, w: Math.max(0, r[GV[g]]) * k, h: bh }; });
+      let b = x0; G.forEach(g => { const on = ADM.indexOf(g) >= 0, v = on ? Math.max(0, r[GV[g]]) * kA : 0; adm[r.code + "|" + g] = { x: on ? b : x0, y: yA[r.code] + (rh - bh) / 2, w: v, h: bh }; b += v; });
+    });
+    return { w, h, x0, labW, top, rh, bh, k, kS, kA, colW, colX, heads, sec, grp, adm, yS, yA, ordS, ordA };
+  }
+  const cells = () => rows.flatMap(r => G.map(g => ({ r, g, k: r.code + "|" + g })));
+  const boxes = m => m === "grp" ? L.grp : m === "adm" ? L.adm : L.sec;
+  const fillOf = (d, m) => m === "sec" ? colours[d.r.sector] : GC(d.g);
+  const seenIn = (d, m) => m !== "adm" || ADM.indexOf(d.g) >= 0;
+  const yOf = (r, m) => (m === "adm" ? L.yA : L.yS)[r.code];
+  const ordOf = m => m === "adm" ? L.ordA : L.ordS;
+
+  const svg = d3.select(svgEl);
+  const gLab = svg.append("g").attr("class", "mc-rlabs"), gCells = svg.append("g").attr("class", "mc-cells");
+  const gVal = svg.append("g").attr("class", "mc-vals"), gHead = svg.append("g").attr("class", "mc-heads"), gBos = svg.append("g").attr("class", "mc-bos");
+  const PLAY = '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M4.5 2.8v10.4L13 8z" fill="currentColor"/></svg>Play';
+  const REPLAY = '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M2.5 8a5.5 5.5 0 1 0 1.8-4.1M2.5 2.5v3h3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Replay';
+  function words(){
+    const adm = mode === "adm", tot = fmt(sum.non + sum.res);
+    titleEl.textContent = adm ? "Boston admin’s " + tot + " jobs by sector and who holds them, in 2023"
+      : "The metro’s " + fmt(M.jobs) + " jobs by sector" + (mode === "grp" ? " and who holds them" : "") + ", in 2023";
+    playBtn.hidden = adm;
+    playBtn.innerHTML = played || busy ? REPLAY : PLAY;
+    playBtn.setAttribute("aria-label", "Replay: each sector's bar splits into the four groups of who holds the jobs");
+    svgEl.setAttribute("aria-label", adm
+      ? "Boston admin’s " + tot + " jobs by sector as stacked bars: " + ADM.map(g => GN[g].toLowerCase() + ", " + fmt(sum[g])).join("; ")
+      : mode === "grp" ? "The metro’s " + fmt(M.jobs) + " jobs by sector in four columns: " + G.map(g => GN[g].toLowerCase() + ", " + fmt(sum[g])).join("; ")
+      : "The metro’s " + fmt(M.jobs) + " jobs by sector, as bars; the largest are " + rows.slice(0, 3).map(r => r.short.toLowerCase() + ", " + fmt(r.msaJobs)).join(", "));
+    if (mode === "sec"){ const seen = []; rows.forEach(r => { if (seen.indexOf(r.sector) < 0) seen.push(r.sector); });
+      keyEl.innerHTML = seen.map(s => '<li><i style="background:' + colours[s] + '" aria-hidden="true"></i>' + s + '</li>').join(""); }
+    keyEl.hidden = mode !== "sec";
+    keyEl.setAttribute("aria-label", adm ? "Who holds the jobs" : "Sectors");
+    if (noteEl) noteEl.textContent = adm ? "Counted where people work (LODES 2023). Each sector’s split between the two groups is an estimate."
+      : "Counted where people work (LODES 2023), a different source from the 2.3M jobs of the first beats. Each sector’s split among the four groups is an estimate.";
+  }
+  /* the words around the bars: the sectors' names, each bar's count, the columns' heads and Boston admin's outline */
+  function rowLabels(anim){
+    const t = gLab.selectAll("text").data(rows, r => r.code).join("text").attr("class", "mc-rlab").attr("x", L.labW).attr("text-anchor", "end")
+      .text(r => cutTo(r.short, L.labW - 2));
+    t.select("title").remove(); t.append("title").text(r => r.short);
+    (anim ? t.transition("rows").duration(850).ease(d3.easeCubicInOut) : t).attr("y", r => yOf(r, mode) + L.rh / 2 + 4.5);
+  }
+  function extras(fade){
+    const vals = busy ? [] : mode === "sec" ? rows.map(r => ({ r, x: L.x0 + r.msaJobs * L.kS + 6, n: r.msaJobs })) :
+      mode === "adm" ? rows.map(r => ({ r, x: L.x0 + r.jobs * L.kA + 6, n: r.jobs })) : [];
+    gVal.selectAll("text").data(vals, d => d.r.code).join("text").attr("class", "mc-val").attr("x", d => d.x).attr("y", d => yOf(d.r, mode) + L.rh / 2 + 4.5).text(d => fmt(d.n));
+    /* the groups' names over their columns; on beat 5 over the two parts of the first bar, so no key is needed */
+    const first = L.ordA[0], resX = L.adm[first.code + "|res"].x;
+    const hs = busy || mode === "sec" ? [] : mode === "grp" ? G.map(g => ({ g, x: L.colX[g], ln: L.heads[g], tot: M.jobs }))
+      : [{ g: "non", x: L.x0, ln: wrapTo(GN.non, resX - L.x0 - 10, 13, 600), tot: sum.non + sum.res },
+         { g: "res", x: resX, ln: wrapTo(GN.res, L.w - resX - 2, 13, 600), tot: sum.non + sum.res }];
+    gHead.selectAll("g").data(hs, d => mode + d.g).join("g").attr("class", d => "mc-glab mc-glab--" + d.g)
+      .html(d => { const nl = d.ln.length, y = L.top - 6 - 20 - (nl - 1) * 17;
+        return '<text class="mc-gname" x="' + d.x + '" y="' + y + '">' + d.ln.map((t, i) => '<tspan x="' + d.x + '" dy="' + (i ? 17 : 0) + '">' + t + '</tspan>').join("") + '</text>' +
+          '<text class="mc-gn" x="' + d.x + '" y="' + (y + nl * 17 + 3) + '">' + fmt(sum[d.g]) + '<tspan class="mc-gp"> ' + Math.round(sum[d.g] / d.tot * 100) + '%</tspan></text>'; });
+    gBos.selectAll("g").data(busy || mode !== "grp" ? [] : [1]).join("g").attr("class", "mc-bos-g").html(() => {
+      const x = L.colX.non - 6, w = L.colX.res + L.colW.res - L.colX.non + 12, y = TOPB - 4, h = L.h - y;
+      return '<rect class="mc-bos-r" x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="4"/>' +
+        '<text class="mc-bos-t" x="' + (x + w / 2) + '" y="' + (y - 6) + '" text-anchor="middle">Boston admin, ' + fmt(sum.non + sum.res) + ' jobs</text>'; });
+    if (fade && !reduced()){
+      gVal.selectAll("text").style("opacity", 0).transition().duration(300).style("opacity", 1);
+      gHead.selectAll("g").style("opacity", 0).transition().duration(350).style("opacity", 1);
+      gBos.selectAll("g").style("opacity", 0).transition().delay(250).duration(400).style("opacity", 1);
+    }
+  }
+  const place = (sel, m) => sel.each(function(d){ const b = boxes(m)[d.k];
+    d3.select(this).attr("x", b.x).attr("y", b.y).attr("width", Math.max(0, b.w)).attr("height", b.h); });
+  function cut(){ gCells.selectAll("rect").interrupt().interrupt("split").interrupt("move").interrupt("fade");
+    gLab.selectAll("text").interrupt("rows"); [gVal, gHead, gBos].forEach(g => g.selectAll("*").interrupt()); }
+  function draw(){
+    if (!data()) return;
+    colours = {}; rows.forEach(r => { colours[r.sector] = colourOf(r.sector); });
+    L = layout(); cut(); busy = false;
+    svg.attr("width", L.w).attr("height", L.h).attr("viewBox", "0 0 " + L.w + " " + L.h);
+    const sel = gCells.selectAll("rect").data(cells(), d => d.k).join("rect").attr("class", d => "mc-cell mc-cell--" + d.g);
+    place(sel, mode); sel.attr("fill", d => fillOf(d, mode)).style("opacity", d => seenIn(d, mode) ? null : 0);
+    sel.classed("is-dim", d => !!hiG && mode !== "sec" && d.g !== hiG);
+    rowLabels(false); extras(false); words();
+  }
+  /* the arrival from beat 3: the bars grow from the names, largest first */
+  function enter(){
+    if (reduced()) return 0;
+    gCells.selectAll("rect").attr("width", 0).attr("x", L.x0).transition("move").delay(d => rows.indexOf(d.r) * 30).duration(520).ease(d3.easeCubicOut)
+      .attr("x", d => L.sec[d.k].x).attr("width", d => L.sec[d.k].w);
+    gVal.selectAll("text").style("opacity", 0).transition().delay(rows.length * 30 + 300).duration(300).style("opacity", 1);
+    return rows.length * 30 + 520;
+  }
+  /* a move from what stands to mode m: the words go, the bars recolour and travel, the words of m come in */
+  function moveTo(m){
+    if (!data()) return;
+    cut(); tipHide();
+    const from = mode; mode = m;
+    if (m === "grp") played = true;
+    if (reduced()){ draw(); return; }
+    busy = true; words(); extras(false);
+    const sel = gCells.selectAll("rect"), split = from === "sec" && m === "grp";
+    if (split) sel.transition("split").delay(d => G.indexOf(d.g) * 90).duration(500).attr("fill", d => fillOf(d, m));
+    else sel.attr("fill", d => fillOf(d, m));
+    sel.filter(d => !seenIn(d, m)).transition("fade").duration(400).style("opacity", 0);
+    sel.filter(d => seenIn(d, m)).transition("fade").duration(400).style("opacity", 1);
+    rowLabels(m === "adm" || from === "adm");
+    const t0 = split ? 820 : 250;
+    const mv = sel.filter(d => seenIn(d, m)).transition("move")
+      .delay(d => t0 + (split ? G.indexOf(d.g) * 180 + rows.indexOf(d.r) * 12 : 0)).duration(split ? 1000 : 850).ease(d3.easeCubicInOut)
+      .attr("x", d => boxes(m)[d.k].x).attr("y", d => boxes(m)[d.k].y).attr("width", d => boxes(m)[d.k].w).attr("height", d => boxes(m)[d.k].h);
+    mv.end().then(() => { busy = false; place(sel.filter(d => !seenIn(d, m)), m); extras(true); words(); }).catch(() => {});
+  }
+  function play(){
+    if (!data() || mode === "adm") return;
+    if (playT){ clearTimeout(playT); playT = null; }
+    mode = "sec"; draw();
+    if (reduced()){ played = true; mode = "grp"; draw(); return; }
+    playT = setTimeout(() => { playT = null; moveTo("grp"); }, 350);
+  }
+  playBtn.addEventListener("click", play);
+
+  /* the card: the row under the pointer, the whole sector */
+  function tipHide(){ tip.hidden = true; }
+  const sw = g => '<i class="mc-tsw" style="background:' + GC(g) + '"></i>';
+  svgEl.addEventListener("pointermove", e => {
+    if (!L || busy){ tipHide(); return; }
+    const sr = svgEl.getBoundingClientRect(), y = e.clientY - sr.top, i = Math.floor((y - L.top) / L.rh), r = ordOf(mode)[i];
+    if (!r || y < L.top){ tipHide(); return; }
+    tip.innerHTML = '<b>' + esc(r.short) + '</b>' + (mode === "adm"
+      ? '<p class="who-ref-tip-p">' + fmt(r.jobs) + ' jobs in Boston: about ' + fmt(r.estNon) + ' held by non-residents who commute in, ' + fmt(r.estRes) + ' by Boston residents. The split is an estimate.</p>'
+      : mode === "grp"
+      ? '<p class="who-ref-tip-p">' + fmt(r.msaJobs) + ' jobs in the metro, held by about:</p><p class="who-ref-tip-p mc-tlist">' + G.map(g => sw(g) + fmt(r[GV[g]]) + ' ' + GN[g].replace(/^./, c => c.toLowerCase())).join("<br>") + '</p><p class="who-ref-tip-p">The split is an estimate.</p>'
+      : '<p class="who-ref-tip-p">' + fmt(r.msaJobs) + ' jobs in the metro, ' + Math.round(r.msaJobs / M.jobs * 100) + '% of all.</p>');
+    tip.hidden = false;
+    const pr = host.querySelector(".mc-plot").getBoundingClientRect(), tr = tip.getBoundingClientRect();
+    let x = e.clientX - pr.left + 14, ty = e.clientY - pr.top + 14;
+    if (x + tr.width > pr.width) x = e.clientX - pr.left - tr.width - 14;
+    if (ty + tr.height > pr.height) ty = Math.max(0, e.clientY - pr.top - tr.height - 14);
+    tip.style.left = Math.max(0, x) + "px"; tip.style.top = ty + "px";
+  });
+  svgEl.addEventListener("pointerleave", tipHide);
+  /* the ledes' group phrases light their bars */
+  [].slice.call(document.querySelectorAll(".mc-hl[data-mcwho]")).forEach(span => {
+    const on = () => { hiG = span.dataset.mcwho; span.classList.add("is-lit"); gCells.selectAll("rect").classed("is-dim", d => mode !== "sec" && d.g !== hiG); };
+    const off = () => { hiG = null; span.classList.remove("is-lit"); gCells.selectAll("rect").classed("is-dim", false); };
+    span.addEventListener("mouseenter", on); span.addEventListener("focus", on); span.addEventListener("click", on);
+    span.addEventListener("mouseleave", off); span.addEventListener("blur", off);
+  });
+
+  window.MC = {
+    /* state 12 is beat 4, 13 beat 5; from is the figure's state before. Beat 4 plays by itself on arrival */
+    show(s, from){
+      const was = shown; shown = true;
+      requestAnimationFrame(() => {
+        if (!data()) return;
+        if (playT){ clearTimeout(playT); playT = null; }
+        if (s === 13){
+          if (was && L && from === 12){ moveTo("adm"); return; }
+          mode = "adm"; draw(); return;
+        }
+        if (was && L && from === 13){ moveTo("grp"); return; }
+        if (reduced()){ played = true; mode = "grp"; draw(); return; }
+        mode = "sec"; draw();
+        const t = from >= 0 && from < 8 ? enter() : 0;
+        playT = setTimeout(() => { playT = null; if (shown && mode === "sec") moveTo("grp"); }, t + 700);
+      });
+    },
+    hide(){ shown = false; tipHide(); cut(); busy = false;
+      if (playT){ clearTimeout(playT); playT = null; } }
+  };
+  let lw = 0;
+  if (window.ResizeObserver) new ResizeObserver(() => { const w = host.clientWidth; if (shown && w && w !== lw && !busy && !playT){ lw = w; draw(); } }).observe(host);
+})();
+
+/* the section's control: the treemap's states 0 to 7, this figure's 8 to 11 (see the note above), and storyline 2's
+   beats 4 and 5, states 12 and 13 (window.MC, one treemap) */
+(function(){
+  const FIRST = 8, fig = document.getElementById("miFigure"), isMC = i => i === 12 || i === 13;
   if (!fig) return;
+  let at = -1;
   window.MI2 = {
     setStep(i){
-      i = i | 0;
-      const admin = i >= FIRST;
+      i = i | 0; const from = at; at = i;
+      const mc = isMC(i), admin = !mc && i >= FIRST;
+      fig.classList.toggle("is-mclust", mc);
       fig.classList.toggle("is-admin", admin);
-      if (admin){
+      if (!mc && window.MC) window.MC.hide();
+      if (mc){
+        const vb = fig.querySelector(".tradable-viz-wrapper"); if (vb) vb.style.height = "";
+        if (fig.dataset.capfold) delete fig.dataset.capfold;
+        if (window.WF) window.WF.stand();
+        fig.dataset.step = String(i);
+        if (window.MC) window.MC.show(i, from);
+      } else if (admin){
         /* the ranking sets the wrapper's height by hand; the admin figure takes its own */
         const vb = fig.querySelector(".tradable-viz-wrapper"); if (vb) vb.style.height = "";
         /* beat 3 folds the caption strip (treemap.js) and only the treemap's own steps unfold it: the key is under it */
