@@ -2484,7 +2484,7 @@
   .fl-detail--hist.fl-detail--col .who-ref-hist{height:300px;}
   /* the chart keeps its height when peers are chosen (2026-11-08, Nil: "when a peer is clicked, make sure the chart doesn't
      change its height or move"): their names take rows over the bars, beside their lines */
-  .who-ref-head{font-size:15px;font-weight:600;color:var(--ink);}
+  .who-ref-head{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:14px;}  /* a gap before the zones' names (2026-11-09, Nil) */
   .who-ref-key{display:flex;flex-wrap:wrap;align-items:center;gap:4px 16px;margin:6px 0 0;font-size:13px;line-height:1.4;color:var(--ink);font-variant-numeric:tabular-nums;}
   .who-ref-key .wrk-l{color:var(--ink-soft);}
   .who-ref-key > span{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
@@ -6187,6 +6187,7 @@
   .mc-bos-r{fill:none;stroke:var(--teal);stroke-width:1.5;stroke-dasharray:5 4;}
   .mc-bos-t{font-size:13px;font-weight:600;fill:var(--teal);}
   .mc-bos-g{pointer-events:none;}
+  .mc-bos-b{fill:none;stroke:var(--teal);stroke-width:1.25;}
   .mc-key{display:flex;flex-wrap:wrap;gap:6px 18px;margin:10px 0 0;padding:10px 0 0;border-top:1px solid var(--border);list-style:none;font-size:13px;color:var(--ink);}
   .mc-key[hidden]{display:none;}
   .mc-key li{display:inline-flex;align-items:center;gap:6px;}
@@ -16623,7 +16624,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     const C22 = []; for (let i = 0; i < NB; i++) C22.push(BAL.counts[2 * i] + BAL.counts[2 * i + 1]); const MAX22 = Math.max(...C22);
     const edge = i => Math.pow(10, -1 + i * 2 / NB), fx = v => v >= 10 ? v.toFixed(0) : v.toFixed(2), fx1 = v => v.toFixed(1);
     const zoneOf = v => v < .8 ? "res" : v <= 1.25 ? "bal" : "bus";
-    const NBSP = String.fromCharCode(160), T_LO = "←" + NBSP + "Fewer jobs than workers", T_HI = "More jobs than workers" + NBSP + "→";
+    const NBSP = String.fromCharCode(160), T_LO = "Fewer jobs than workers" + NBSP + "→", T_HI = "←" + NBSP + "More jobs than workers";
     /* over the chart: its title alone (2026-11-08, Nil: "find a user friendly way to title this graph", then "remove"
        the takeaway sentence under it); the share above Boston stays in the screen-reader text */
     const ABOVE = Math.round(BAL.rank / BAL.n * 100);
@@ -16641,10 +16642,12 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     const TOP = 48;  /* over the plot: the zones' names, Boston's name over its line, whose top meets the longest bar */
     function histLayout(Wd, Hd){
       const plotW = Math.max(0, Wd - 32); if (!(plotW > 0) || !(Hd > 0)) return null;
-      const x = v => 16 + (Math.log10(Math.min(HIV, Math.max(LOV, v))) + 1) / 2 * plotW, one = x(1);
+      /* read business first (2026-11-09, Nil: "make the order business, balance and residence", as the Venn's dots run
+         commute in, both, commute out): the axis runs from the most jobs per working resident on the left to the fewest */
+      const x = v => 16 + (1 - (Math.log10(Math.min(HIV, Math.max(LOV, v))) + 1) / 2) * plotW, one = x(1);
       /* the ends' words keep to the plot's width (the 16px margins stay clear) */
-      const lo = (ww(T_LO) <= one - 24 ? [T_LO] : lines(T_LO, one - 24, 13, 600)) || [T_LO];
-      const hi = (ww(T_HI) <= Wd - 24 - one ? [T_HI] : lines(T_HI, Wd - 24 - one, 13, 600)) || [T_HI];
+      const hi = (ww(T_HI) <= one - 24 ? [T_HI] : lines(T_HI, one - 24, 13, 600)) || [T_HI];
+      const lo = (ww(T_LO) <= Wd - 24 - one ? [T_LO] : lines(T_LO, Wd - 24 - one, 13, 600)) || [T_LO];
       const la = Math.max(lo.length, hi.length), right = 16 + plotW;
       /* under the plot: the ticks (17) and the ends' words */
       const below = 17 + 17 * la + 14;
@@ -16662,22 +16665,23 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       let [rT, balT, bT] = ["Residential admins", "Balanced admins", "Business admins"];
       if (zw(rT) + zw(balT) + zw(bT) + 2 * 10 > right - 16) [rT, balT, bT] = ["Residential", "Balanced", "Business"];
       const wR = zw(rT), wBal = zw(balT), wB = zw(bT), limL = x(1) - wBal / 2 - 10, limR = x(1) + wBal / 2 + 10;
-      const rX = Math.max(16 + wR / 2, Math.min(limL - wR / 2, x(Math.sqrt(LOV * .8)))), bX = Math.min(right - wB / 2, Math.max(limR + wB / 2, x(Math.sqrt(1.25 * HIV))));
-      if (rX + wR / 2 > limL) rT = ""; if (bX - wB / 2 < limR) bT = "";
+      /* business on the left of "Balanced", residential on its right */
+      const bX = Math.max(16 + wB / 2, Math.min(limL - wB / 2, x(Math.sqrt(1.25 * HIV)))), rX = Math.min(right - wR / 2, Math.max(limR + wR / 2, x(Math.sqrt(LOV * .8))));
+      if (bX + wB / 2 > limL) bT = ""; if (rX - wR / 2 < limR) rT = "";
       h += (rT ? '<text class="rh-zone rh-zone--res" x="' + q(rX) + '" y="12" text-anchor="middle">' + rT + '</text>' : '') +
         '<text class="rh-zone rh-zone--bal" x="' + q(x(1)) + '" y="12" text-anchor="middle">' + balT + '</text>' +
         (bT ? '<text class="rh-zone rh-zone--bus" x="' + q(bX) + '" y="12" text-anchor="middle">' + bT + '</text>' : '');
       /* Boston's own bin is split at its line, so the full blue starts where the bracket does and holds the bracket's share */
-      C22.forEach((c, i) => { const a = x(edge(i)), b = x(edge(i + 1)), y = L.y(c), z = zoneOf(Math.sqrt(edge(i) * edge(i + 1))), me = edge(i) < BAL.me && BAL.me < edge(i + 1);
+      C22.forEach((c, i) => { const a = Math.min(x(edge(i)), x(edge(i + 1))), b = Math.max(x(edge(i)), x(edge(i + 1))), y = L.y(c), z = zoneOf(Math.sqrt(edge(i) * edge(i + 1))), me = edge(i) < BAL.me && BAL.me < edge(i + 1);
         const bar = (x0, x1, beyond) => '<rect data-i="' + i + '" class="rh-bar rh-bar--' + z + (beyond ? ' rh-bar--beyond' : '') + '" x="' + q(x0) + '" y="' + q(y) + '" width="' + q(Math.max(0, x1 - x0)) + '" height="' + q(base - y) + '"/>';
-        h += me ? bar(a + .5, B - .5, false) + bar(B + .5, b - .5, true) : bar(a + .5, b - .5, edge(i) >= BAL.me); });
+        h += me ? bar(a + .5, B - .5, true) + bar(B + .5, b - .5, false) : bar(a + .5, b - .5, edge(i) >= BAL.me); });
       h += '<line class="rh-base" x1="16" x2="' + q(right) + '" y1="' + q(base) + '" y2="' + q(base) + '"/>' +
         '<line class="rh-one" x1="' + q(L.one) + '" x2="' + q(L.one) + '" y1="' + TOP + '" y2="' + q(base + 4) + '"/>';
       TICKS.forEach(t => { h += '<line class="rh-grid" x1="' + q(x(t)) + '" x2="' + q(x(t)) + '" y1="' + q(base) + '" y2="' + q(base + 4) + '"/>' +
         '<text class="rh-tick' + (t === 1 ? ' rh-tick--one' : '') + '" x="' + q(x(t)) + '" y="' + q(base + 17) + '" text-anchor="middle">' + (t === .5 ? "½" : t) + '×</text>'; });
       const ay = base + 34, words = (cls, t, x0, anchor) => '<text class="rh-arr ' + cls + '" x="' + q(x0) + '" y="' + q(ay) + '" text-anchor="' + anchor + '">' +
         t.map((s, i) => '<tspan x="' + q(x0) + '" dy="' + (i ? 17 : 0) + '">' + s + '</tspan>').join("") + '</text>';
-      h += words("rh-arr--lo", L.lo, L.one - 8, "end") + words("rh-arr--hi", L.hi, L.one + 8, "start");
+      h += words("rh-arr--hi", L.hi, L.one - 8, "end") + words("rh-arr--lo", L.lo, L.one + 8, "start");
       /* Boston's line and name; the bracket over the places beyond it with their share, in the short form where the room is small */
       const meW = tw("Boston " + fx1(BAL.me), 15, 700) + 4 + INFO, meEnd = B - 8 - meW >= 16;  /* drawn at 15px (.rh-me-t, the Under study's size) */
       /* the peer average and the peers chosen (2026-11-08, Nil: the peers drawn as the peer average is): each a line
@@ -16704,7 +16708,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         '<text class="rh-me-t" x="' + q(meEnd ? B - 8 - 4 - INFO : B + 8) + '" y="' + (TOP - 8) + '" text-anchor="' + (meEnd ? "end" : "start") + '">Boston ' + fx1(BAL.me) + '</text>' +
         infoMark(meEnd ? B - 8 - 7 : B + 8 + meW - 7, TOP - 13) + '</g>';
       /* what a pointer finds: a bin's whole column, a chosen peer's dot */
-      C22.forEach((c, i) => { const a = x(edge(i)), b = x(edge(i + 1)); h += '<rect class="rh-hit" data-i="' + i + '" x="' + q(a) + '" y="' + TOP + '" width="' + q(b - a) + '" height="' + q(L.plotH) + '"/>'; });
+      C22.forEach((c, i) => { const a = Math.min(x(edge(i)), x(edge(i + 1))), b = Math.max(x(edge(i)), x(edge(i + 1))); h += '<rect class="rh-hit" data-i="' + i + '" x="' + q(a) + '" y="' + TOP + '" width="' + q(b - a) + '" height="' + q(L.plotH) + '"/>'; });
       mks.forEach(m => { if (m.j != null){ const ty = 60 + 17 * m.row; h += '<rect class="rh-hit" data-p="' + m.j + '" x="' + q(m.S - 6) + '" y="' + (ty - 10) + '" width="12" height="' + q(L.base - ty + 10) + '"/>'; } });
       h += meHit(meEnd ? B - 8 - meW - 2 : B + 6, TOP - 26, meW + 4, 24);
       return h;
@@ -16901,7 +16905,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         H.tip.style.top = q(key[0] === "m" ? Math.max(oy, Math.min(oy + H.box.clientHeight - H.tip.offsetHeight, hb.top - pr.top)) : oy + (L.look === "strip" ? (L.sb + 10) * s : 4)) + "px"; H.svg.classList.toggle("is-me", key[0] === "m"); return; }
       if (key[0] === "b"){ const a = edge(n), b = edge(n + 1); H.svg.querySelectorAll('.rh-bar[data-i="' + n + '"]').forEach(r => r.classList.add("is-on"));
         showTip(H.tip, tipHtml(FULL(C22[n]) + (C22[n] === 1 ? " admin" : " admins"), [["Jobs per working resident", n === 0 ? "up to " + b.toFixed(2) + "\u00d7" : n === NB - 1 ? a.toFixed(2) + "\u00d7 or more" : a.toFixed(2) + "\u00d7 to " + b.toFixed(2) + "\u00d7"]]));
-        H.tip.style.left = q(ox + Math.max(0, Math.min(L.x(b) * s + 8, H.box.clientWidth - H.tip.offsetWidth))) + "px"; H.tip.style.top = q(oy + TOP * s) + "px"; return; }
+        H.tip.style.left = q(ox + Math.max(0, Math.min(Math.max(L.x(a), L.x(b)) * s + 8, H.box.clientWidth - H.tip.offsetWidth))) + "px"; H.tip.style.top = q(oy + TOP * s) + "px"; return; }
       const pr = BAL.peers[n]; showTip(H.tip, tipHtml(pr[0], [["Jobs per working resident", fx1(pr[1]) + "\u00d7"]]));
       H.tip.style.left = q(ox + Math.max(0, Math.min(L.x(pr[1]) * s + 8, H.box.clientWidth - H.tip.offsetWidth))) + "px";
       H.tip.style.top = q(oy + Math.max(0, L.base * s - H.tip.offsetHeight - 16)) + "px";
@@ -19484,7 +19488,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
      4th and 5th beats so that we won't have 4 bars back to back"): layout "4", beat 4 a treemap that gathers into the
      four groups (state 14), beat 5 Boston admin's stacked bars (15), the net bars (10) as they are */
   mount({ pageId: "page-export-basket", ctl: "MI2", seg: "ctLayoutSeg", noClassic: true, noToggle: true, noBadge: true,
-          altNarrative: true, storyPill: true,
+          altNarrative: true, storyPill: true, defaultLayout: "3",   /* storyline 2 opens (2026-11-09, Nil: "make storyline 2 default") */
           states: { "2": [0, 4, 6, 8, 9, 10], "3": [0, 4, 6, 12, 13, 10], "4": [0, 4, 6, 14, 15, 10] } });
 })();
 
@@ -23280,9 +23284,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
    the 3rd beat) and animate it to the 4 clusters of worker flow"; "put labels in tree map, and remove sankey or bars"; then
    "4th and 5th should be bar representation. Also run the animations by default"): one bar chart carries both beats.
    Beat 4 (state 12): the metro's jobs, LODES 2023 as the flow counts them, a bar for each of its 20 two-digit sectors in
-   the house sector colours. On arrival it plays: each bar splits into the four groups of the flow (the split is the
-   flow's estimate, WF.data), and the parts slide apart into four columns of bars on one scale, the two Boston columns
-   that hold the jobs in the city outlined as Boston admin. Beat 5 (state 13): the other two columns leave and the two
+   the house sector colours. On arrival it plays, in two frames: the same bars take the colours of the four groups of the
+   flow (the split is the flow's estimate, WF.data), a 2px gap between the parts, the two that hold the jobs in the city
+   last in each bar after a wider gap, their heads under one bracket, Boston admin. Beat 5 (state 13): the other two columns leave and the two
    come together as stacked bars, Boston admin's 719K jobs by sector, sorted by them. Replay is the house button
    (.who-fl-replay).
    Storyline 3 (states 14 and 15): beat 4 is a treemap instead, drawn as the section's first treemap (its frame, tiling, label fit and shares), the sectors' pieces named where the name fits; it plays
@@ -23369,30 +23373,32 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     return { hT: h, tsec, tsecs, tgrp, blocks };
   }
   let mode = "sec", busy = false, shown = false, played = false, L = null, hiG = null, playT = null;
-  const TOPB = 22, GAPC = 14, VALW = 46;
+  const TOPB = 22, GAPC = 14, VALW = 46, SEG = 2, SEGB = 10, GO = ["rest", "out", "non", "res"];
   function layout(){
     const w = Math.max(280, Math.round(host.clientWidth || 0)), narrow = w < 600;
     const labW = Math.round(Math.min(220, Math.max(104, w * (narrow ? .3 : .26)))), x0 = labW + 8, avail = w - x0;
-    /* the four columns: one scale; a column no narrower than its head needs */
-    const minC = Math.min(112, (avail - 3 * GAPC) / 4);
-    let k = (avail - 3 * GAPC) / d3.sum(G, g => mx[g]);
-    for (let it = 0; it < 6; it++){ const fixed = G.filter(g => mx[g] * k < minC);
-      k = (avail - 3 * GAPC - fixed.length * minC) / (d3.sum(G.filter(g => fixed.indexOf(g) < 0), g => mx[g]) || 1); }
-    const colW = {}, colX = {}; let cxx = x0; G.forEach(g => { colW[g] = Math.max(minC, mx[g] * k); colX[g] = cxx; cxx += colW[g] + GAPC; });
-    /* on a narrow screen the columns' heads take their short names, so none runs past two lines */
+    /* beat 4's second frame keeps the bars (2026-11-09, Nil: "two frames. 1- bars colored by sector, the same. 2- bars
+       colored by clusters. maybe put a little gap but do not draw separate bars. still highlight the admin part, maybe put
+       them at the end"): each bar's four parts in one order, the two that hold Boston admin's jobs last, a 2px gap
+       between parts. Over the bars the four groups named in that order, in equal slots */
+    /* on a narrow screen the slots take the whole width, over the sectors' names too */
+    const hx = narrow ? 6 : x0, slot = (w - hx - 6 * (narrow ? 1 : 0) - 3 * GAPC) / 4, colW = {}, colX = {};
+    GO.forEach((g, i) => { colW[g] = slot; colX[g] = hx + i * (slot + GAPC); });
+    /* on a narrow screen the heads take their short names, so none runs past two lines */
     const heads = {}; G.forEach(g => { heads[g] = wrapTo(narrow ? GS[g] : GN[g], colW[g] - 2, 13, 600); });
     const HT = d3.max(G, g => heads[g].length) * 17 + 24, top = TOPB + HT;
     const rh = narrow ? 16 : 22, bh = narrow ? 11 : rh - 6, h = top + rows.length * rh + 4;
-    const kS = (avail - VALW) / d3.max(rows, r => r.msaJobs), kA = (avail - VALW) / d3.max(rows, r => r.jobs);
+    const kS = (avail - VALW - 2 * SEG - SEGB) / d3.max(rows, r => r.msaJobs), kA = (avail - VALW) / d3.max(rows, r => r.jobs);
     const ordS = rows, ordA = rows.slice().sort((a, b) => b.jobs - a.jobs);
     const yS = {}, yA = {}; ordS.forEach((r, i) => { yS[r.code] = top + i * rh; }); ordA.forEach((r, i) => { yA[r.code] = top + i * rh; });
     const sec = {}, grp = {}, adm = {};
     rows.forEach(r => {
-      let a = x0; G.forEach(g => { const v = Math.max(0, r[GV[g]]) * kS; sec[r.code + "|" + g] = { x: a, y: yS[r.code] + (rh - bh) / 2, w: v, h: bh }; a += v; });
-      G.forEach(g => { grp[r.code + "|" + g] = { x: colX[g], y: yS[r.code] + (rh - bh) / 2, w: Math.max(0, r[GV[g]]) * k, h: bh }; });
+      let a = x0, c = x0; GO.forEach(g => { const v = Math.max(0, r[GV[g]]) * kS, y = yS[r.code] + (rh - bh) / 2;
+        sec[r.code + "|" + g] = { x: a, y, w: v, h: bh }; a += v;
+        grp[r.code + "|" + g] = { x: c, y, w: v, h: bh }; c += v + (g === "out" ? SEGB : SEG); });
       let b = x0; G.forEach(g => { const on = ADM.indexOf(g) >= 0, v = on ? Math.max(0, r[GV[g]]) * kA : 0; adm[r.code + "|" + g] = { x: on ? b : x0, y: yA[r.code] + (rh - bh) / 2, w: v, h: bh }; b += v; });
     });
-    return Object.assign({ w, hB: h, x0, labW, top, rh, bh, k, kS, kA, colW, colX, heads, sec, grp, adm, yS, yA, ordS, ordA }, treeLayout(w));
+    return Object.assign({ w, hB: h, x0, labW, top, rh, bh, kS, kA, colW, colX, heads, sec, grp, adm, yS, yA, ordS, ordA }, treeLayout(w));
   }
   const hOf = m => isT(m) ? L.hT : L.hB;
   const setH = h => svg.attr("width", L.w).attr("height", h).attr("viewBox", "0 0 " + L.w + " " + h);
@@ -23415,10 +23421,10 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       : "The metro’s " + fmt(M.jobs) + " jobs " + (mode === "tgrp" ? "by who holds them" : "by sector" + (mode === "grp" ? " and who holds them" : "")) + ", in 2023";
     playBtn.hidden = adm;
     playBtn.innerHTML = played || busy ? REPLAY : PLAY;
-    playBtn.setAttribute("aria-label", tree ? "Replay: the sectors split and gather into the four groups of who holds the jobs" : "Replay: each sector's bar splits into the four groups of who holds the jobs");
+    playBtn.setAttribute("aria-label", tree ? "Replay: the sectors split and gather into the four groups of who holds the jobs" : "Replay: each sector's bar colours by the four groups of who holds its jobs");
     svgEl.setAttribute("aria-label", adm
       ? "Boston admin’s " + tot + " jobs by sector as stacked bars: " + ADM.map(g => GN[g].toLowerCase() + ", " + fmt(sum[g])).join("; ")
-      : isGrp(mode) ? "The metro’s " + fmt(M.jobs) + " jobs by sector " + (isT(mode) ? "as a treemap in four groups: " : "in four columns: ") + G.map(g => GN[g].toLowerCase() + ", " + fmt(sum[g])).join("; ")
+      : isGrp(mode) ? "The metro’s " + fmt(M.jobs) + " jobs by sector " + (isT(mode) ? "as a treemap in four groups: " : "in four groups, Boston admin's two last in each bar: ") + G.map(g => GN[g].toLowerCase() + ", " + fmt(sum[g])).join("; ")
       : "The metro’s " + fmt(M.jobs) + " jobs by sector, as " + (isT(mode) ? "a treemap" : "bars") + "; the largest are " + rows.slice(0, 3).map(r => r.short.toLowerCase() + ", " + fmt(r.msaJobs)).join(", "));
     if (isSec(mode)){ const seen = []; rows.forEach(r => { if (seen.indexOf(r.sector) < 0) seen.push(r.sector); }); if (tree) seen.sort((a, b) => rank(a) - rank(b));
       keyEl.innerHTML = seen.map(s => '<li><i style="background:' + colours[s] + '" aria-hidden="true"></i>' + s + '</li>').join(""); }
@@ -23436,22 +23442,25 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   }
   function extras(fade){
     treeExtras(fade);
-    const vals = busy ? [] : mode === "sec" ? rows.map(r => ({ r, x: L.x0 + r.msaJobs * L.kS + 6, n: r.msaJobs })) :
+    const vals = busy ? [] : mode === "sec" || mode === "grp" ? rows.map(r => ({ r, x: L.x0 + r.msaJobs * L.kS + (mode === "grp" ? 2 * SEG + SEGB : 0) + 6, n: r.msaJobs })) :
       mode === "adm" ? rows.map(r => ({ r, x: L.x0 + r.jobs * L.kA + 6, n: r.jobs })) : [];
     gVal.selectAll("text").data(vals, d => d.r.code).join("text").attr("class", "mc-val").attr("x", d => d.x).attr("y", d => yOf(d.r, mode) + L.rh / 2 + 4.5).text(d => fmt(d.n));
     /* the groups' names over their columns; on beat 5 over the two parts of the first bar, so no key is needed */
     const first = L.ordA[0], resX = L.adm[first.code + "|res"].x;
-    const hs = busy || isSec(mode) || isT(mode) ? [] : mode === "grp" ? G.map(g => ({ g, x: L.colX[g], ln: L.heads[g], tot: M.jobs }))
+    const hs = busy || isSec(mode) || isT(mode) ? [] : mode === "grp" ? GO.map(g => ({ g, x: L.colX[g], ln: L.heads[g], tot: M.jobs }))
       : [{ g: "non", x: L.x0, ln: wrapTo(GN.non, resX - L.x0 - 10, 13, 600), tot: sum.non + sum.res },
          { g: "res", x: resX, ln: wrapTo(GN.res, L.w - resX - 2, 13, 600), tot: sum.non + sum.res }];
     gHead.selectAll("g").data(hs, d => mode + d.g).join("g").attr("class", d => "mc-glab mc-glab--" + d.g)
       .html(d => { const nl = d.ln.length, y = L.top - 6 - 20 - (nl - 1) * 17;
         return '<text class="mc-gname" x="' + d.x + '" y="' + y + '">' + d.ln.map((t, i) => '<tspan x="' + d.x + '" dy="' + (i ? 17 : 0) + '">' + t + '</tspan>').join("") + '</text>' +
           '<text class="mc-gn" x="' + d.x + '" y="' + (y + nl * 17 + 3) + '">' + fmt(sum[d.g]) + '<tspan class="mc-gp"> ' + Math.round(sum[d.g] / d.tot * 100) + '%</tspan></text>'; });
+    /* Boston admin, said quietly (2026-11-09, Nil: "another way to highlight admin part, it is currently cluttered"; the
+       dashed outline round every bar's end is gone): one bracket over its two heads, as the Venn brackets its jobs, and
+       in each bar a wider gap before its two parts, so they stand as a block of their own at the bar's end */
     gBos.selectAll("g").data(busy || mode !== "grp" ? [] : [1]).join("g").attr("class", "mc-bos-g").html(() => {
-      const x = L.colX.non - 6, w = L.colX.res + L.colW.res - L.colX.non + 12, y = TOPB - 4, h = L.hB - y;
-      return '<rect class="mc-bos-r" x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="4"/>' +
-        '<text class="mc-bos-t" x="' + (x + w / 2) + '" y="' + (y - 6) + '" text-anchor="middle">Boston admin, ' + fmt(sum.non + sum.res) + ' jobs</text>'; });
+      const x = L.colX.non - 2, w = L.colX.res + L.colW.res - L.colX.non, y = TOPB - 2;
+      return '<path class="mc-bos-b" d="M' + x + ',' + (y + 6) + 'V' + y + 'H' + (x + w) + 'V' + (y + 6) + '"/>' +
+        '<text class="mc-bos-t" x="' + (x + w / 2) + '" y="' + (y - 7) + '" text-anchor="middle">Boston admin, ' + fmt(sum.non + sum.res) + ' jobs</text>'; });
     if (fade && !reduced()){
       gVal.selectAll("text").style("opacity", 0).transition().duration(300).style("opacity", 1);
       gHead.selectAll("g").style("opacity", 0).transition().duration(350).style("opacity", 1);
@@ -23505,14 +23514,16 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   function enter(){
     if (reduced()) return 0;
     if (isT(mode)){
-      gCells.selectAll("rect").style("opacity", 0).transition("fade").delay(d => rows.indexOf(d.r) * 35).duration(420).ease(d3.easeCubicOut).style("opacity", 1);
-      gSLab.selectAll("text").style("opacity", 0).transition().delay(rows.length * 35 + 120).duration(300).style("opacity", 1);
-      return rows.length * 35 + 420;
+      /* two frames only (2026-11-09, Nil: "way too many animation frames here. maybe 1. tree map 2. tree map clusters"):
+         the treemap comes in whole, stands, then makes one move into the clusters */
+      gCells.selectAll("rect").style("opacity", 0).transition("fade").duration(350).ease(d3.easeCubicOut).style("opacity", 1);
+      gSLab.selectAll("text").style("opacity", 0).transition().duration(350).style("opacity", 1);
+      return 350;
     }
-    gCells.selectAll("rect").attr("width", 0).attr("x", L.x0).transition("move").delay(d => rows.indexOf(d.r) * 30).duration(520).ease(d3.easeCubicOut)
+    gCells.selectAll("rect").attr("width", 0).attr("x", L.x0).transition("move").delay(d => rows.indexOf(d.r) * 12).duration(380).ease(d3.easeCubicOut)
       .attr("x", d => L.sec[d.k].x).attr("width", d => L.sec[d.k].w);
-    gVal.selectAll("text").style("opacity", 0).transition().delay(rows.length * 30 + 300).duration(300).style("opacity", 1);
-    return rows.length * 30 + 520;
+    gVal.selectAll("text").style("opacity", 0).transition().delay(rows.length * 12 + 200).duration(250).style("opacity", 1);
+    return rows.length * 12 + 380;
   }
   /* a move from what stands to mode m: the words go, the bars recolour and travel, the words of m come in */
   function moveTo(m){
@@ -23526,17 +23537,18 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     const cross = isT(from) !== isT(m);
     setH(Math.max(hOf(from), hOf(m)));
     const sel = gCells.selectAll("rect"), split = isSec(from) && isGrp(m);
-    if (split) sel.transition("split").delay(d => G.indexOf(d.g) * 90).duration(500).attr("fill", d => fillOf(d, m));
+    const one = split;   /* beat 4's one move, treemap or bars: every piece recolours and travels together */
+    if (one) sel.transition("split").duration(900).ease(d3.easeCubicInOut).attr("fill", d => fillOf(d, m));
     else sel.attr("fill", d => fillOf(d, m));
     sel.filter(d => !seenIn(d, m)).transition("fade").duration(400).style("opacity", 0);
     sel.filter(d => seenIn(d, m)).transition("fade").duration(400).style("opacity", 1);
     if (isT(m)) gLab.transition().duration(300).style("opacity", 0);
     else if (cross){ rowLabels(false); gLab.style("opacity", 0).transition().delay(700).duration(450).style("opacity", 1); }
     else rowLabels(m === "adm" || from === "adm");
-    const t0 = split ? 820 : cross ? 300 : 250;
+    const t0 = one ? 0 : cross ? 300 : 250;
     const mv = sel.filter(d => seenIn(d, m)).transition("move")
-      .delay(d => t0 + (split ? G.indexOf(d.g) * (isT(m) ? 160 : 180) + rows.indexOf(d.r) * (isT(m) ? 14 : 12) : cross ? ordOf("adm").indexOf(d.r) * 14 : 0))
-      .duration(split ? (isT(m) ? 1200 : 1000) : cross ? 950 : 850).ease(d3.easeCubicInOut)
+      .delay(d => t0 + (one ? 0 : cross ? ordOf("adm").indexOf(d.r) * 14 : 0))
+      .duration(one ? 900 : cross ? 950 : 850).ease(d3.easeCubicInOut)
       .attr("x", d => boxes(m)[d.k].x).attr("y", d => boxes(m)[d.k].y).attr("width", d => boxes(m)[d.k].w).attr("height", d => boxes(m)[d.k].h);
     mv.end().then(() => { busy = false; setH(hOf(m)); place(sel.filter(d => !seenIn(d, m)), m); extras(true); words(); }).catch(() => {});
   }
@@ -23545,7 +23557,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     if (playT){ clearTimeout(playT); playT = null; }
     mode = tree ? "tsec" : "sec"; draw();
     if (reduced()){ played = true; mode = tree ? "tgrp" : "grp"; draw(); return; }
-    playT = setTimeout(() => { playT = null; moveTo(tree ? "tgrp" : "grp"); }, tree ? 600 : 350);
+    playT = setTimeout(() => { playT = null; moveTo(tree ? "tgrp" : "grp"); }, tree ? 1200 : 500);
   }
   playBtn.addEventListener("click", play);
 
@@ -23566,7 +23578,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     tip.innerHTML = '<b>' + esc(r.short) + '</b>' + (mode === "adm"
       ? '<p class="who-ref-tip-p">' + fmt(r.jobs) + ' jobs in Boston: about ' + fmt(r.estNon) + ' held by non-residents who commute in, ' + fmt(r.estRes) + ' by Boston residents. The split is an estimate.</p>'
       : mode === "grp"
-      ? '<p class="who-ref-tip-p">' + fmt(r.msaJobs) + ' jobs in the metro, held by about:</p><p class="who-ref-tip-p mc-tlist">' + G.map(g => sw(g) + fmt(r[GV[g]]) + ' ' + GN[g].replace(/^./, c => c.toLowerCase())).join("<br>") + '</p><p class="who-ref-tip-p">The split is an estimate.</p>'
+      ? '<p class="who-ref-tip-p">' + fmt(r.msaJobs) + ' jobs in the metro, held by about:</p><p class="who-ref-tip-p mc-tlist">' + GO.map(g => sw(g) + fmt(r[GV[g]]) + ' ' + GN[g].replace(/^./, c => c.toLowerCase())).join("<br>") + '</p><p class="who-ref-tip-p">The split is an estimate.</p>'
       : '<p class="who-ref-tip-p">' + fmt(r.msaJobs) + ' jobs in the metro, ' + Math.round(r.msaJobs / M.jobs * 100) + '% of all.</p>');
     tip.hidden = false; tipPlace(e);
   });
@@ -23604,7 +23616,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         if (reduced()){ played = true; mode = grp; draw(); return; }
         mode = sec; draw();
         const t = from >= 0 && from < 8 ? enter() : 0;
-        playT = setTimeout(() => { playT = null; if (shown && mode === sec) moveTo(grp); }, t + 700);
+        playT = setTimeout(() => { playT = null; if (shown && mode === sec) moveTo(grp); }, t + (tree ? 1500 : 500));   /* the bars start sooner (2026-11-09, Nil: "start the animation faster") */
       });
     },
     hide(){ shown = false; tipHide(); cut(); busy = false;
