@@ -8628,7 +8628,7 @@ if (location.search) history.replaceState(null, "", location.pathname + location
       <div class="lp-lines" aria-hidden="true"><i></i><i></i><i></i></div>
       <div class="lp-jump">
         <span class="lp-label">Jump to a section:</span>
-        <button type="button" onclick="enterTool('page-overview')">Who am I?</button>
+        <button type="button" onclick="enterTool('page-overview')">Who am I as a place and metro?</button>
         <button type="button" onclick="enterTool('page-export-basket')">What do my metro and I produce?</button>
         <button type="button" onclick="enterTool('page-doing')">How am I doing?</button>
         <button type="button" onclick="enterTool('page-constraints')">Constraints Diagnosis</button>
@@ -8647,7 +8647,7 @@ if (location.search) history.replaceState(null, "", location.pathname + location
         <p class="intro">Curabitur euismod magna sit amet velit fermentum, at porta risus dictum. Integer tristique ligula nec urna varius, in aliquet sapien pulvinar. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Donec fringilla nunc vitae augue convallis, sed volutpat justo ornare.</p>
         <div class="jump-quiet">
           <span class="jump-quiet-label">Jump to a section:</span>
-          <button type="button" onclick="enterTool('page-overview')">Who am I?</button>
+          <button type="button" onclick="enterTool('page-overview')">Who am I as a place and metro?</button>
           <button type="button" onclick="enterTool('page-export-basket')">What do my metro and I produce?</button>
           <button type="button" onclick="enterTool('page-doing')">How am I doing?</button>
           <button type="button" onclick="enterTool('page-constraints')">Constraints Diagnosis</button>
@@ -8725,7 +8725,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         <button class="sec-head" onclick="goTo('page-intro-q1')"><span class="num"><svg viewBox="0 0 24 24" fill="currentColor" width="13" height="13" aria-hidden="true"><path d="M12 2l2.9 6.2 6.6.8-4.9 4.6 1.3 6.5L12 16.9 6.1 20l1.3-6.5L2.5 9l6.6-.8L12 2z"/></svg></span>Explore Your Assumption</button>
       </div>
       <div class="sec" data-sec="page-overview page-overview-scatter page-overview-flows page-overview-flows-out page-overview-metro page-overview-mscatter page-overview-practice">
-        <button class="sec-head" onclick="goTo('page-overview')"><span class="num" aria-hidden="true"></span>Who am I?</button>
+        <button class="sec-head" onclick="goTo('page-overview')"><span class="num" aria-hidden="true"></span>Who am I as a place and metro?</button>
         <ul class="steps">
           <li data-step="page-overview"><span class="dot"></span><button onclick="goTo('page-overview')">Where Boston Admin stands</button></li>
           <li data-step="page-overview-scatter"><span class="dot"></span><button onclick="goTo('page-overview-scatter')">Among all admins</button></li>
@@ -10647,7 +10647,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
 
   /* ---------- journey state ---------- */
   const sectionDefs=[
-    {name:"Who am I?", pages:["page-overview","page-overview-scatter","page-overview-flows"].concat(FLOWS_HOME ? ["page-overview-flows-out"] : []).concat(["page-overview-metro","page-overview-mscatter","check-overview","apply-overview"]), entry:"page-overview"},
+    {name:"Who am I as a place and metro?", pages:["page-overview","page-overview-scatter","page-overview-flows"].concat(FLOWS_HOME ? ["page-overview-flows-out"] : []).concat(["page-overview-metro","page-overview-mscatter","check-overview","apply-overview"]), entry:"page-overview"},
     {name:"What do my metro and I produce?", pages:["page-export-basket","tierSection","specializedSection","adminCountsSection","adminSharesSection","adminNetSection","check-export","apply-export"], entry:"page-export-basket"},
     /* Part 1's third chapter (2026-11-02, Nil: "under part 1: add How am I doing?"): two placeholder beats until it is designed */
     {name:"How am I doing?", pages:["page-doing","page-doing-metro"], entry:"page-doing"},
@@ -11287,7 +11287,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     };
 
     const LINE_C = {
-      "Who am I?": "#255862",
+      "Who am I as a place and metro?": "#255862",
       "What do my metro and I produce?": "#b97f4e",
       /* the change scale's light teal, the one step the line did not use (2026-11-02) */
       "How am I doing?":       "#67929f",
@@ -12921,7 +12921,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
 
   function sectionChecksData(){
     return {
-      "Who am I?": {
+      "Who am I as a place and metro?": {
         slug: "overview",
         qs: [
           { q: "Which geography does most of the diagnosis read at?",
@@ -14112,7 +14112,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   /* what each section leaves the reader with: three points, drafted from
      the section's own text and the facts its quiz turns on */
   const SEAL_POINTS = {
-    "Who am I?": [],
+    "Who am I as a place and metro?": [],
     /* drawn instead, as Who am I?'s are: two cards in SEAL_KEYS (2026-10-28) */
     "What do my metro and I produce?": [],
     /* placeholder until the chapter is drawn (2026-11-02). Keep the key even if emptied: without it the
@@ -14166,7 +14166,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   }
   window.whoSnapHtml = whoSnapHtml;
   const SEAL_KEYS = {
-    "Who am I?": () => {
+    "Who am I as a place and metro?": () => {
       const W = window.WHO_2024; if (!W || !W.place || !W.metro || !W.in || !W.out) return "";
       const v = (D, k) => (D.ind.find(r => r.key === k) || {}).value;
       const admin = v(W.place, "population"), metro = v(W.metro, "population");
@@ -14365,7 +14365,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       [[12, 77.2], [32, 157], [52, 115]].map(([y, x]) => '<g><line x1="10" x2="220" y1="' + y + '" y2="' + y + '" stroke="var(--mark-grey)" stroke-width="3" stroke-linecap="round"/><line x1="10" x2="' + x + '" y1="' + y + '" y2="' + y + '" stroke="#255862" stroke-width="3" stroke-linecap="round"/><circle cx="' + x + '" cy="' + y + '" r="6" fill="#255862"/></g>').join(""));
     /* part one's sections, each with its small chart; How am I doing? shows a note until its content is designed (2026-11-02) */
     const vizDoing = rows("How am I doing?: its charts are still to come", '<span class="sv-note">Charts to come</span>');
-    const SEAM_VIZ = { "Who am I?": vizProfile, "What do my metro and I produce?": vizSectors, "How am I doing?": vizDoing };
+    const SEAM_VIZ = { "Who am I as a place and metro?": vizProfile, "What do my metro and I produce?": vizSectors, "How am I doing?": vizDoing };
     const done = partSecs(0).map(k => [k, SECTIONS[k].name, SEAM_VIZ[SECTIONS[k].name] || ""]);
     const wall = '<svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="qmark" aria-hidden="true"><path d="M6 10h28v24H6z"/><path d="M6 18h28M6 26h28M16 10v8M26 10v8M11 18v8M21 18v8M31 18v8M16 26v8M26 26v8"/></svg>';
     const seam = document.createElement("section");
@@ -23428,8 +23428,11 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       : "The metro’s " + fmt(M.jobs) + " jobs by sector, as " + (isT(mode) ? "a treemap" : "bars") + "; the largest are " + rows.slice(0, 3).map(r => r.short.toLowerCase() + ", " + fmt(r.msaJobs)).join(", "));
     if (isSec(mode)){ const seen = []; rows.forEach(r => { if (seen.indexOf(r.sector) < 0) seen.push(r.sector); }); if (tree) seen.sort((a, b) => rank(a) - rank(b));
       keyEl.innerHTML = seen.map(s => '<li><i style="background:' + colours[s] + '" aria-hidden="true"></i>' + s + '</li>').join(""); }
-    keyEl.hidden = !isSec(mode);
+    /* storyline 2 without the sector key, so the bars recolour in place with nothing jumping (2026-11-10, Nil); storyline 3 keeps it */
+    keyEl.hidden = !tree || !isSec(mode);
     keyEl.setAttribute("aria-label", adm ? "Who holds the jobs" : "Sectors");
+    /* storyline 2 without the source notes (2026-11-10, Nil: delete them); storyline 3 keeps them */
+    if (noteEl) noteEl.hidden = !tree;
     if (noteEl) noteEl.textContent = adm ? "Counted where people work (LODES 2023). Each sector’s split between the two groups is an estimate."
       : "Counted where people work (LODES 2023), a different source from the 2.3M jobs of the first beats. Each sector’s split among the four groups is an estimate.";
   }
