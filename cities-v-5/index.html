@@ -6223,17 +6223,17 @@
   .sx-tg{appearance:none;border:1px solid var(--border-strong);border-radius:999px;background:var(--white);color:var(--ink);font:inherit;font-size:13px;line-height:1;padding:6px 11px;cursor:pointer;}
   .sx-tg[aria-pressed="true"]{background:var(--ink);color:var(--white);border-color:var(--ink);}
   .sx-tg:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+  /* the chart's form, a treemap or the same numbers as bars (2026-11-12, Tammy): a two-way switch at the row's right end */
+  .sx-vw-g{display:inline-flex;margin-left:auto;padding:2px;gap:2px;border:1px solid var(--border-strong);border-radius:999px;background:var(--white);}
+  .sx-vw{appearance:none;border:0;border-radius:999px;background:none;color:var(--ink-soft);font:inherit;font-size:13px;line-height:1;padding:5px 11px;cursor:pointer;}
+  .sx-vw[aria-pressed="true"]{background:var(--ink);color:var(--white);}
+  .sx-vw:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+  .mc-head .sx-vw-g{flex:none;}
+  .mc-head .sx-vw-g[hidden]{display:none;}
+  .sx-colhead{font-size:13px;}
   .sx-html[hidden]{display:none;}
-  #sxStamp{display:none;flex:none;width:52px;height:52px;}
-  #page-export-basket[data-story="9"] #sxStamp{display:block;}
-  #sxStamp .sx-bos{fill-opacity:.2;transition:fill-opacity .4s ease;} #sxStamp.is-city .sx-bos{fill-opacity:.85;}
   .sx-sico{display:inline-flex;align-items:center;gap:4px;vertical-align:-3px;margin-right:6px;color:var(--ink-soft);}
   .sx-sico--city{color:var(--teal);}
-  /* storyline 7: the frame says the scale, as the tool's two marks do */
-  #page-export-basket[data-story="8"] .ct-panel{transition:border-color .4s ease,outline-color .4s ease;}
-  #page-export-basket[data-story="8"] .ct-panel[data-scale="metro"]{border:1.5px dashed var(--ink-soft);}
-  #page-export-basket[data-story="8"] .ct-panel[data-scale="city"]{border:2px solid var(--teal);}
-  #page-export-basket[data-story="8"] .ct-panel[data-scale="both"]{border:2px solid var(--teal);outline:1.5px dashed var(--ink-soft);outline-offset:4px;}
   .sx-cell{shape-rendering:crispEdges;stroke:none;transition:opacity .18s ease;}
   .sx-gp{shape-rendering:crispEdges;}
   .sx-mark.is-dim{opacity:.18 !important;}
@@ -6249,9 +6249,7 @@
   .sx-out-r{fill:none;stroke:var(--teal);stroke-width:1.5;stroke-dasharray:4 3;pointer-events:none;}
   .sx-axis line{stroke:var(--border-strong);} .sx-axis text{font-size:12px;fill:var(--ink-soft);}
   .sx-zero{stroke:var(--ink);stroke-width:1.2;}
-  .sx-stem{stroke:var(--border-strong);stroke-width:1;}
   .sx-ico{stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:opacity .18s ease;}
-  .sx-ico.is-pale{opacity:.5;stroke-dasharray:2.2 1.8;stroke-width:1.5;}
   .sx-arr{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
   .sx-dot,.sx-sq{transition:opacity .18s ease;}
   .sx-sum{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
@@ -6280,7 +6278,36 @@
   .sec-seal.is-in .seal-sum .sx-sumrow:nth-child(3){transition-delay:.1s;} .sec-seal.is-in .seal-sum .sx-sumrow:nth-child(4){transition-delay:.2s;} .sec-seal.is-in .seal-sum .sx-sumrow:nth-child(5){transition-delay:.3s;}
   @media (max-width:420px){ .seal-sum .sx-sumrow{grid-template-columns:1fr;gap:2px;} }
   @media (prefers-reduced-motion: reduce){ .seal-sum .sx-sumrow{transition:none;} }
-  .sx-hl{border-bottom:1.5px dotted var(--ink-soft);cursor:pointer;white-space:nowrap;transition:background-color .15s ease,border-color .15s ease;}
+  /* the summary's charts (2026-11-12): the holders in the tool's colours, lifted for the dark band; the tiers in white */
+  .seal-sum{--sm-non:#5ec1d9;--sm-res:#c3ccce;--sm-out:#ec8a4c;--sm-rest:rgba(255,255,255,.16);--sm-t0:var(--white);--sm-t1:rgba(255,255,255,.55);--sm-t2:rgba(255,255,255,.2);}
+  .seal-sum .sx-sum section{display:flex;flex-direction:column;gap:0;}
+  .sm-blk{display:flex;flex-direction:column;gap:8px;padding:14px 0;border-top:1px solid var(--on-dark-line);opacity:0;transition:opacity .45s ease;}
+  .sec-seal.is-in .sm-blk{opacity:1;}
+  .sec-seal.is-in .sm-blk:nth-of-type(2){transition-delay:.1s;} .sec-seal.is-in .sm-blk:nth-of-type(3){transition-delay:.2s;} .sec-seal.is-in .sm-blk:nth-of-type(4){transition-delay:.3s;}
+  .sm-lab{margin:0;font-size:14px;font-weight:600;color:var(--on-dark-soft);}
+  .sm-note{margin:0;font-size:14px;line-height:1.35;color:var(--on-dark-soft);}
+  .sm-bars{display:flex;flex-direction:column;gap:8px;}
+  .sm-bar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 10px;align-items:baseline;font-size:15px;color:var(--on-dark);}
+  .sm-n{min-width:0;display:flex;align-items:center;gap:7px;}
+  .sm-bar > b{color:var(--white);font-variant-numeric:tabular-nums;}
+  .sm-sw{flex:none;width:10px;height:10px;border-radius:2px;}
+  .sm-tr{grid-column:1 / -1;height:8px;border-radius:2px;background:var(--on-dark-fill);overflow:hidden;}
+  .sm-tr i{display:block;height:100%;width:0;border-radius:2px;background:var(--white);transition:width .9s cubic-bezier(.32,.72,.24,1);}
+  .sec-seal.is-in .sm-tr i{width:var(--w);}
+  .sm-stack{display:flex;height:16px;border-radius:3px;overflow:hidden;gap:2px;}
+  .sm-stack i{display:block;height:100%;width:0;transition:width .9s cubic-bezier(.32,.72,.24,1);}
+  .sec-seal.is-in .sm-stack i{width:var(--w);}
+  .sm-key{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:4px 14px;font-size:14px;color:var(--on-dark-soft);}
+  .sm-key li{display:inline-flex;align-items:center;gap:6px;}
+  .sm-key i{width:10px;height:10px;border-radius:2px;flex:none;}
+  .sm-key b{color:var(--white);font-variant-numeric:tabular-nums;}
+  .sm-grid{display:grid;grid-template-columns:repeat(20,1fr);gap:3px;max-width:320px;}
+  .sm-q{display:block;aspect-ratio:1;border-radius:2px;background:var(--sm-rest);transform:scale(.4);opacity:0;transition:transform .35s ease,opacity .35s ease;}
+  .sec-seal.is-in .sm-q{transform:none;opacity:1;}
+  .sm-q--non{background:var(--sm-non);} .sm-q--res{background:var(--sm-res);} .sm-q--out{background:var(--sm-out);}
+  @media (prefers-reduced-motion: reduce){ .sm-blk,.sm-tr i,.sm-stack i,.sm-q{transition:none;} }
+  @media (max-width:699px){ .seal-sum .sx-sum h4{flex-wrap:wrap;} .seal-sum .sx-sum h4 span{flex-basis:100%;margin-left:0;text-align:left;} }
+  .sx-hl{border-bottom:1.5px dotted var(--ink-soft);cursor:pointer;white-space:normal;transition:background-color .15s ease,border-color .15s ease;}
   .sx-hl::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--sw,var(--border-strong));margin-right:5px;vertical-align:-1px;}
   .sx-hl:hover,.sx-hl.is-lit{background:var(--teal-tint);border-bottom-color:var(--teal);}
   .sx-hl:focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:2px;}
@@ -8850,13 +8877,11 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
           <li data-step="adminCountsSection"><span class="dot"></span><button onclick="goTo('adminCountsSection')"><span class="mi-rail-default">Which work happens in Boston, and which do its residents do?</span><span class="mi-rail-alt" hidden>Now let&rsquo;s look at Boston admin: who holds its jobs?</span></button></li>
           <li data-step="adminSharesSection" class="mi-rail-default"><span class="dot"></span><button onclick="goTo('adminSharesSection')">Which work does Boston host for the metro?</button></li>
           <!-- storylines 5, 7 and 8's beats (2026-11-09, revised 2026-11-12; the other storylines removed 2026-11-12): each listed for the storylines it stands in -->
+          <li data-step="sxHeldToggleSection" class="mi-rail-sx" data-story="6" hidden><span class="dot"></span><button onclick="goTo('sxHeldToggleSection')">Which of the metro&rsquo;s jobs are in Boston, and who holds them?</button></li>
           <li data-step="sxHeldSection" class="mi-rail-sx" data-story="6" hidden><span class="dot"></span><button onclick="goTo('sxHeldSection')">Who holds the metro&rsquo;s jobs, and how much of that is Boston?</button></li>
+          <li data-step="sxSceneSection" class="mi-rail-sx" data-story="8" hidden><span class="dot"></span><button onclick="goTo('sxSceneSection')">Who holds the metro&rsquo;s jobs?</button></li>
           <li data-step="sxAdminTreeSection" class="mi-rail-sx" data-story="8" hidden><span class="dot"></span><button onclick="goTo('sxAdminTreeSection')">What does Boston do for a living, and who holds its jobs?</button></li>
-          <li data-step="sxHeldToggleSection" class="mi-rail-sx" data-story="6" hidden><span class="dot"></span><button onclick="goTo('sxHeldToggleSection')">What does Boston do for a living, and who holds its jobs?</button></li>
-          <li data-step="sxGroupColsSection" class="mi-rail-sx" data-story="8" hidden><span class="dot"></span><button onclick="goTo('sxGroupColsSection')">Who holds the metro&rsquo;s jobs, and where?</button></li>
-          <li data-step="sxSceneSection" class="mi-rail-sx" data-story="9" hidden><span class="dot"></span><button onclick="goTo('sxSceneSection')">Who holds the metro&rsquo;s jobs?</button></li>
-          <li data-step="sxIsotypeSection" class="mi-rail-sx" data-story="9" hidden><span class="dot"></span><button onclick="goTo('sxIsotypeSection')">What does Boston do for a living, and who holds its jobs?</button></li>
-          <li data-step="sxIconLineSection" class="mi-rail-sx" data-story="9" hidden><span class="dot"></span><button onclick="goTo('sxIconLineSection')">Where is Boston a receiver or a sender of workers?</button></li>
+          <li data-step="sxGroupColsSection" class="mi-rail-sx" data-story="8" hidden><span class="dot"></span><button onclick="goTo('sxGroupColsSection')">Who holds Boston&rsquo;s jobs, and where do its residents work?</button></li>
           <!-- storylines 12 and 13's beats (2026-11-12): the metro's jobs asked for group by group, then Boston admin's -->
           <li data-step="syWhoSection" class="mi-rail-sx" data-story="13 14" hidden><span class="dot"></span><button onclick="goTo('syWhoSection')">Who holds the jobs in Boston Metro?</button></li>
           <li data-step="syAdminSection" class="mi-rail-sx" data-story="13 14" hidden><span class="dot"></span><button onclick="goTo('syAdminSection')">Now let&rsquo;s look at Boston admin: who holds its jobs?</button></li>
@@ -9697,7 +9722,6 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
               <div class="mc-head">
                 <p class="mi-sentence mc-title" id="sxTitle"></p>
                 <button type="button" class="who-fl-replay mc-play" id="sxPlay" hidden></button>
-                <svg id="sxStamp" role="img" aria-label="" xmlns="http://www.w3.org/2000/svg"></svg>
               </div>
               <div class="sx-toggle" id="sxToggle" role="group" aria-label="Whose jobs the chart shows" hidden></div>
               <div class="mc-plot sx-plot"><svg class="mc-svg sx-svg" id="sxSvg" role="img" aria-label="" xmlns="http://www.w3.org/2000/svg"></svg>
@@ -9710,6 +9734,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
             <div class="sy-fig" id="syFig">
               <div class="mc-head">
                 <p class="mi-sentence mc-title" id="syTitle"></p>
+                <span class="sx-vw-g" id="syView" role="group" aria-label="Chart type" hidden><button type="button" class="sx-vw" data-v="tree" aria-pressed="true">Treemap</button><button type="button" class="sx-vw" data-v="bars" aria-pressed="false">Bars</button></span>
               </div>
               <div class="mc-plot"><svg class="mc-svg sy-svg" id="sySvg" role="img" aria-label="" xmlns="http://www.w3.org/2000/svg"></svg>
                 <div class="rca-tip" id="syTip" role="tooltip" hidden></div></div>
@@ -9974,6 +9999,18 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
              and 7, storyline 8's own line (28) closes it. The summary that closed them (2.3 of the spec) stands in the section's
              "What to take with you", not as a beat (window.sxSealSync). States of the shared figure, window.SX -->
 
+        <!-- storyline 4's beat 4 (beats 4 and 5 swapped 2026-11-12, Tammy): the metro map, the toggle choosing whose part is filled -->
+        <div class="export-subsection sx-beat" id="sxHeldToggleSection" data-story="6" hidden>
+          <div class="subsection-header">
+            <h3>Which of the metro&rsquo;s jobs are in <span class="city-short">Boston</span>, and who holds them?</h3>
+          </div>
+          <button type="button" class="geo-badge geo-badge--metro sx-badge" data-sxgeo="metro" title="See this geography on the map"><svg viewBox="0 0 30 22" width="25" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="15" cy="11" rx="13" ry="8.6" stroke-dasharray="2.6 3"/><path d="M10.5 15.5h9"/><path d="M12.2 15.5V10h3v5.5"/><path d="M16.6 15.5V7h3v8.5"/></svg><span class="gb-view">Viewing:</span><span class="gb-name"><span class="city-short">Boston</span> Metro</span></button>
+          <button type="button" class="geo-badge geo-badge--city sx-badge" data-sxgeo="city" title="See this geography on the map"><svg viewBox="0 0 24 30" width="16" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 26h20"/><path d="M4 26V15h6v11"/><path d="M12 26V8h7v18"/><path d="M14.6 12h1.8M14.6 16h1.8M14.6 20h1.8"/></svg><span class="gb-view">Viewing:</span><span class="gb-name"><span class="city-short">Boston</span> Admin</span></button>
+          <div class="lede-stat-row">
+            <p class="lede">The metro&rsquo;s jobs by sector again, counted where people work, 2.8M of them, and the city&rsquo;s work read off them: the filled parts are the 719K jobs inside <span class="city-short">Boston</span>, by sector. The buttons over the chart fill only the part non-residents who commute in hold, 528K, only the part <span class="city-short">Boston</span> residents hold, 190K, or the 157K jobs <span class="city-short">Boston</span> residents hold elsewhere in the metro. <span class="sx-hl" data-sxcode="52" tabindex="0" style="--sw:#e5c95e">Finance &amp; insurance</span> is <span class="city-short">Boston</span>&rsquo;s fourth largest work, 10% of its jobs where it is 5% of the metro&rsquo;s. Each sector&rsquo;s split is an <button type="button" class="term" data-term="split" aria-expanded="false">estimate</button>.</p>
+          </div>
+        </div>
+
         <!-- the metro's map with Boston's parts filled and outlined: storyline 5 -->
         <div class="export-subsection sx-beat" id="sxHeldSection" data-story="6" hidden>
           <div class="subsection-header">
@@ -9982,7 +10019,19 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
           <button type="button" class="geo-badge geo-badge--metro sx-badge" data-sxgeo="metro" title="See this geography on the map"><svg viewBox="0 0 30 22" width="25" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="15" cy="11" rx="13" ry="8.6" stroke-dasharray="2.6 3"/><path d="M10.5 15.5h9"/><path d="M12.2 15.5V10h3v5.5"/><path d="M16.6 15.5V7h3v8.5"/></svg><span class="gb-view">Viewing:</span><span class="gb-name"><span class="city-short">Boston</span> Metro</span></button>
           <button type="button" class="geo-badge geo-badge--city sx-badge" data-sxgeo="city" title="See this geography on the map"><svg viewBox="0 0 24 30" width="16" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 26h20"/><path d="M4 26V15h6v11"/><path d="M12 26V8h7v18"/><path d="M14.6 12h1.8M14.6 16h1.8M14.6 20h1.8"/></svg><span class="gb-view">Viewing:</span><span class="gb-name"><span class="city-short">Boston</span> Admin</span></button>
           <div class="lede-stat-row">
-            <p class="lede">The metro&rsquo;s map again, counted where people work: 2.8M jobs. The filled part of each block is inside <span class="city-short">Boston</span> admin, 26 of every 100 jobs in all: 19 held by non-residents who commute in, 7 by <span class="city-short">Boston</span> residents, the outlined part. <span class="city-short">Boston</span> residents hold 6 more of every 100 elsewhere in the metro, in the pale part, and <span data-sxn="h4rest">68</span> belong to people who neither live nor work in the city. <span class="sx-hl" data-sxcode="52" tabindex="0" style="--sw:#e5c95e">Finance &amp; insurance</span> is the work <span class="city-short">Boston</span> most clearly does for the whole metro, 49% of it; <span class="sx-hl" data-sxcode="31-33" tabindex="0" style="--sw:#7f3c6b">manufacturing</span>, at 5%, is the metro&rsquo;s.</p>
+            <p class="lede">The same chart with every holder at once. The filled part of each sector is inside <span class="city-short">Boston</span> admin, 26 of every 100 jobs in all: 19 held by non-residents who commute in, 7 by <span class="city-short">Boston</span> residents, the outlined part. <span class="city-short">Boston</span> residents hold 6 more of every 100 elsewhere in the metro, in the pale part, and <span data-sxn="h4rest">68</span> belong to people who neither live nor work in the city. <span class="sx-hl" data-sxcode="52" tabindex="0" style="--sw:#e5c95e">Finance &amp; insurance</span> is the work <span class="city-short">Boston</span> most clearly does for the whole metro, 49% of it; <span class="sx-hl" data-sxcode="31-33" tabindex="0" style="--sw:#7f3c6b">manufacturing</span>, at 5%, is the metro&rsquo;s.</p>
+          </div>
+        </div>
+
+        <!-- storyline 7's beat 4 (2026-11-12, Tammy: storyline 8's beat 4 kept and moved here, ahead of 7's own; the rest of
+             storyline 8 removed): the metro's map with the four holders as figures and numbers -->
+        <div class="export-subsection sx-beat" id="sxSceneSection" data-story="8" hidden>
+          <div class="subsection-header">
+            <h3>Who holds the metro&rsquo;s jobs?</h3>
+          </div>
+          <button type="button" class="geo-badge geo-badge--metro sx-badge" data-sxgeo="metro" title="See this geography on the map"><svg viewBox="0 0 30 22" width="25" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="15" cy="11" rx="13" ry="8.6" stroke-dasharray="2.6 3"/><path d="M10.5 15.5h9"/><path d="M12.2 15.5V10h3v5.5"/><path d="M16.6 15.5V7h3v8.5"/></svg><span class="gb-view">Viewing:</span><span class="gb-name"><span class="city-short">Boston</span> Metro</span></button>
+          <div class="lede-stat-row">
+            <p class="lede"><span class="city-short">Boston</span> Metro is 130 places inside the dashed edge, and <span class="city-short">Boston</span> admin is one of them. Of every 100 of the metro&rsquo;s 2.8M jobs, counted where people work, <span class="sx-hl" data-sxwho="non" tabindex="0" style="--sw:var(--flow-in)">19 are held by people who commute into <span class="city-short">Boston</span></span>, <span class="sx-hl" data-sxwho="res" tabindex="0" style="--sw:var(--flow-both)">7 by people who live and work there</span>, <span class="sx-hl" data-sxwho="out" tabindex="0" style="--sw:var(--flow-out)">6 by <span class="city-short">Boston</span> residents working elsewhere in the metro</span> and <span class="sx-hl" data-sxwho="rest" tabindex="0" style="--sw:var(--flow-rest)"><span data-sxn="h4rest">68</span> by people who neither live nor work in <span class="city-short">Boston</span></span>.</p>
           </div>
         </div>
 
@@ -9998,58 +10047,14 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
           </div>
         </div>
 
-        <!-- storyline 5's beat 5: the same metro map, the toggle choosing whose part is filled -->
-        <div class="export-subsection sx-beat" id="sxHeldToggleSection" data-story="6" hidden>
-          <div class="subsection-header">
-            <h3>What does <span class="city-short">Boston</span> do for a living, and who holds its jobs?</h3>
-          </div>
-          <button type="button" class="geo-badge geo-badge--metro sx-badge" data-sxgeo="metro" title="See this geography on the map"><svg viewBox="0 0 30 22" width="25" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="15" cy="11" rx="13" ry="8.6" stroke-dasharray="2.6 3"/><path d="M10.5 15.5h9"/><path d="M12.2 15.5V10h3v5.5"/><path d="M16.6 15.5V7h3v8.5"/></svg><span class="gb-view">Viewing:</span><span class="gb-name"><span class="city-short">Boston</span> Metro</span></button>
-          <button type="button" class="geo-badge geo-badge--city sx-badge" data-sxgeo="city" title="See this geography on the map"><svg viewBox="0 0 24 30" width="16" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 26h20"/><path d="M4 26V15h6v11"/><path d="M12 26V8h7v18"/><path d="M14.6 12h1.8M14.6 16h1.8M14.6 20h1.8"/></svg><span class="gb-view">Viewing:</span><span class="gb-name"><span class="city-short">Boston</span> Admin</span></button>
-          <div class="lede-stat-row">
-            <p class="lede">The same map, and the city&rsquo;s work read off it: the filled parts are the 719K jobs inside <span class="city-short">Boston</span>, by sector. The buttons over the chart fill only the part non-residents who commute in hold, 528K, only the part <span class="city-short">Boston</span> residents hold, 190K, or the 157K jobs <span class="city-short">Boston</span> residents hold elsewhere in the metro. <span class="sx-hl" data-sxcode="52" tabindex="0" style="--sw:#e5c95e">Finance &amp; insurance</span> is <span class="city-short">Boston</span>&rsquo;s fourth largest work, 10% of its jobs where it is 5% of the metro&rsquo;s. Each sector&rsquo;s split is an <button type="button" class="term" data-term="split" aria-expanded="false">estimate</button>.</p>
-          </div>
-        </div>
-
         <!-- storyline 7 "Framed", beat 5: Boston's jobs and its residents' jobs sorted into three columns by holder, as beat 2 sorts tiers -->
         <div class="export-subsection sx-beat" id="sxGroupColsSection" data-story="8" hidden>
           <div class="subsection-header">
-            <h3>Who holds the metro&rsquo;s jobs, and where?</h3>
+            <h3>Who holds <span class="city-short">Boston</span>&rsquo;s jobs, and where do its residents work?</h3>
           </div>
           <button type="button" class="geo-badge geo-badge--city sx-badge" data-sxgeo="city" title="See this geography on the map"><svg viewBox="0 0 24 30" width="16" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 26h20"/><path d="M4 26V15h6v11"/><path d="M12 26V8h7v18"/><path d="M14.6 12h1.8M14.6 16h1.8M14.6 20h1.8"/></svg><span class="gb-view">Viewing:</span><span class="gb-name"><span class="city-short">Boston</span> Admin</span></button>
           <div class="lede-stat-row">
             <p class="lede">The same blocks sorted into three columns, as beat 2 sorted the metro&rsquo;s into tiers: <span class="sx-hl" data-sxwho="non" tabindex="0" style="--sw:var(--flow-in)">the jobs in <span class="city-short">Boston</span> held by non-residents who commute in</span>, 528K, 19 of every 100 jobs in the metro; <span class="sx-hl" data-sxwho="res" tabindex="0" style="--sw:var(--flow-both)">those held by <span class="city-short">Boston</span> residents</span>, 190K, 7 in 100; and <span class="sx-hl" data-sxwho="out" tabindex="0" style="--sw:var(--flow-out)">the jobs <span class="city-short">Boston</span> residents hold elsewhere in the metro</span>, 157K, 6 in 100. The other <span data-sxn="h4rest">68</span> in 100 belong to people who neither live nor work in the city. Each sector&rsquo;s split is an <button type="button" class="term" data-term="split" aria-expanded="false">estimate</button>.</p>
-          </div>
-        </div>
-
-        <!-- storyline 8 "Icons", beats 4 to 6 -->
-        <div class="export-subsection sx-beat" id="sxSceneSection" data-story="9" hidden>
-          <div class="subsection-header">
-            <h3>Who holds the metro&rsquo;s jobs?</h3>
-          </div>
-          <button type="button" class="geo-badge geo-badge--metro sx-badge" data-sxgeo="metro" title="See this geography on the map"><svg viewBox="0 0 30 22" width="25" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="15" cy="11" rx="13" ry="8.6" stroke-dasharray="2.6 3"/><path d="M10.5 15.5h9"/><path d="M12.2 15.5V10h3v5.5"/><path d="M16.6 15.5V7h3v8.5"/></svg><span class="gb-view">Viewing:</span><span class="gb-name"><span class="city-short">Boston</span> Metro</span></button>
-          <div class="lede-stat-row">
-            <p class="lede"><span class="city-short">Boston</span> Metro is 130 places inside the dashed edge, and <span class="city-short">Boston</span> admin is one of them. Of every 100 of the metro&rsquo;s 2.8M jobs, counted where people work, <span class="sx-hl" data-sxwho="non" tabindex="0" style="--sw:var(--flow-in)">19 are held by people who commute into <span class="city-short">Boston</span></span>, <span class="sx-hl" data-sxwho="res" tabindex="0" style="--sw:var(--flow-both)">7 by people who live and work there</span>, <span class="sx-hl" data-sxwho="out" tabindex="0" style="--sw:var(--flow-out)">6 by <span class="city-short">Boston</span> residents working elsewhere in the metro</span> and <span class="sx-hl" data-sxwho="rest" tabindex="0" style="--sw:var(--flow-rest)"><span data-sxn="h4rest">68</span> by people who neither live nor work in <span class="city-short">Boston</span></span>.</p>
-          </div>
-        </div>
-
-        <div class="export-subsection sx-beat" id="sxIsotypeSection" data-story="9" hidden>
-          <div class="subsection-header">
-            <p class="sx-part">From the metro to <span class="city-short">Boston</span> admin, the city inside its own limits. The section stays there from here.</p>
-            <h3>What does <span class="city-short">Boston</span> do for a living, and who holds its jobs?</h3>
-          </div>
-          <button type="button" class="geo-badge geo-badge--city sx-badge" data-sxgeo="city" title="See this geography on the map"><svg viewBox="0 0 24 30" width="16" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 26h20"/><path d="M4 26V15h6v11"/><path d="M12 26V8h7v18"/><path d="M14.6 12h1.8M14.6 16h1.8M14.6 20h1.8"/></svg><span class="gb-view">Viewing:</span><span class="gb-name"><span class="city-short">Boston</span> Admin</span></button>
-          <div class="lede-stat-row">
-            <p class="lede">Each icon is 10K of <span class="city-short">Boston</span>&rsquo;s 719K jobs. <span class="sx-hl" data-sxsec="Education &amp; Health" tabindex="0" style="--sw:#dc8271">Education &amp; health</span> fills the longest row, 225K jobs, then <span class="sx-hl" data-sxsec="Professional &amp; Business" tabindex="0" style="--sw:#485fa2">professional &amp; business</span>, 179K, and <span class="sx-hl" data-sxsec="Financial Activities" tabindex="0" style="--sw:#e5c95e">finance</span>, 88K. A solid icon is a job held by <span class="sx-hl" data-sxwho="non" tabindex="0" style="--sw:var(--flow-in)">someone who commutes in</span>, three in four; a pale one by <span class="sx-hl" data-sxwho="res" tabindex="0" style="--sw:var(--flow-both)">a <span class="city-short">Boston</span> resident</span>. Each sector&rsquo;s split is an <button type="button" class="term" data-term="split" aria-expanded="false">estimate</button>.</p>
-          </div>
-        </div>
-
-        <div class="export-subsection sx-beat" id="sxIconLineSection" data-story="9" hidden>
-          <div class="subsection-header">
-            <h3>Where is <span class="city-short">Boston</span> a receiver or a sender of workers?</h3>
-          </div>
-          <button type="button" class="geo-badge geo-badge--city sx-badge" data-sxgeo="city" title="See this geography on the map"><svg viewBox="0 0 24 30" width="16" height="20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 26h20"/><path d="M4 26V15h6v11"/><path d="M12 26V8h7v18"/><path d="M14.6 12h1.8M14.6 16h1.8M14.6 20h1.8"/></svg><span class="gb-view">Viewing:</span><span class="gb-name"><span class="city-short">Boston</span> Admin</span></button>
-          <div class="lede-stat-row">
-            <p class="lede">Each sector sits where its balance falls: to the right of the line, <span class="city-short">Boston</span> has more jobs in the sector than its residents hold, so it draws workers in; to the left, it sends them out. <span class="sx-hl" data-sxcode="62" tabindex="0" style="--sw:#dc8271">Health care</span> is furthest right, 81K; <span class="sx-hl" data-sxcode="31-33" tabindex="0" style="--sw:#7f3c6b">manufacturing</span> and three small sectors sit just left of zero.</p>
           </div>
         </div>
 
@@ -19646,11 +19651,13 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
      designer's net bars stay where the storyline keeps them, and the first beat that carries the line saying the
      section has moved to Boston admin shows it. The page carries the storyline (data-story) for the devices the
      stylesheet draws: storyline 7's frame, 8's stamp, 11's chips */
-  var SX_ON = function(v){ return +v >= 5; }, SY_ON = function(v){ return v === "13" || v === "14"; }, SX_NO_NET = { "9": true };
+  var SX_ON = function(v){ return +v >= 5; }, SY_ON = function(v){ return v === "13" || v === "14"; }, SX_NO_NET = {};
   /* storylines 4, 6, 9, 10 and 11 removed 2026-11-12 (Tammy: keep 1 to 3, 5, 7, 8, 12 and 13); the pill keeps the numbers the team knows */
-  var SX_NAMES = { "6": "Both at once", "8": "Framed", "9": "Icons",
+  var SX_NAMES = { "6": "Both at once", "8": "Framed",
     /* storylines 12 and 13 (2026-11-12): storyline 2 with "Who holds the jobs?" asked for group by group, as bars and as treemaps */
     "13": "Bars, asked", "14": "Treemaps, asked" };
+  /* the pill's order (2026-11-12, Tammy): the designer's three, then "Bars, asked" and "Treemaps, asked", then "Both at once" and "Framed" */
+  var PILL_ORDER = ["2", "3", "4", "13", "14", "6", "8"].filter(function(k){ return +k <= 4 || SX_NAMES[k]; });
   function applyNarrative(v){
     if (!cfg.altNarrative) return;
     var on = v === "3" || v === "4", sx = SX_ON(v);
@@ -19717,11 +19724,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     var pill = document.createElement("div");
     pill.className = "story-pill"; pill.setAttribute("role", "group"); pill.setAttribute("aria-label", "Storyline");
     pill.innerHTML = '<span class="sp-lab">Storyline</span>' +
-      '<button type="button" class="sp-btn" data-ct="2" aria-pressed="true">1</button>' +
-      '<button type="button" class="sp-btn" data-ct="3" aria-pressed="false">2</button>' +
-      '<button type="button" class="sp-btn" data-ct="4" aria-pressed="false">3</button>' +
-      /* storylines 4 to 8 (2026-11-09): the pill names the one on, since theirs are not the designer's */
-      Object.keys(SX_NAMES).map(function(k){ return '<button type="button" class="sp-btn" data-ct="' + k + '" aria-pressed="false" title="' + SX_NAMES[k] + '">' + (k - 1) + '</button>'; }).join("") +
+      /* numbered in the order they stand (2026-11-12, Tammy: "renumber storylines to be in order sequentially"): the designer's three,
+         then the others; the layouts keep their own keys */
+      PILL_ORDER.map(function(k, n){ return '<button type="button" class="sp-btn" data-ct="' + k + '" aria-pressed="' + (k === "2") + '"' + (SX_NAMES[k] ? ' title="' + SX_NAMES[k] + '"' : '') + '>' + (n + 1) + '</button>'; }).join("") +
       '<span class="sp-name"></span>';
     document.body.appendChild(pill);
     var pillSync = function(){
@@ -19809,7 +19814,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
           states: { "2": [0, 4, 6, 8, 9, 10], "3": [0, 4, 6, 12, 13, 10], "4": [0, 4, 6, 14, 15, 10],
                     /* storylines 5, 7 and 8 (2026-11-09, revised 2026-11-12 to the narrative spec; 4, 6, 9, 10 and 11 removed the same day): window.SX's
                        states, the net bars (10) where a storyline keeps them; the summary that closed them stands in the section's close, not as a beat */
-                    "6": [0, 4, 6, 19, 45, 10], "8": [0, 4, 6, 17, 23, 10], "9": [0, 4, 6, 25, 26, 28],
+                    "6": [0, 4, 6, 45, 19, 10],   /* beats 4 and 5 swapped (2026-11-12, Tammy) */
+                    /* storyline 7 (2026-11-12): storyline 8's first beat, the metro's holders as figures (25), ahead of its own; 8 removed */
+                    "8": [0, 4, 6, 25, 17, 23, 10],
                     /* storylines 12 and 13 (2026-11-12): window.SY's states 70 to 73, then the net bars (10) read as the two ways */
                     "13": [0, 4, 6, 70, 71, 10], "14": [0, 4, 6, 72, 73, 10] } });
 })();
@@ -23960,14 +23967,13 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
    draws them, states of the shared figure, each a function in DRAW:
      5 Both at once   the metro's map with Boston's parts filled and outlined (19); the same map, the toggle choosing
                       whose part is filled (45); the net bars (10). The metro's picture never leaves
-     7 Framed         Boston's map (17); Boston's jobs sorted into three columns by holder, as beat 2 sorts tiers (23);
-                      the net bars (10). The figure's frame is dashed grey on the metro's beats and solid teal on the
-                      city's, the tool's own two marks, and the chart's sentence opens with the scale's icon
-     8 Icons          the metro's map with the four holders as figures and numbers (25); an isotype of Boston's jobs,
-                      solid icons for commuters and pale for residents (26); the sectors as icons on the line (28). A
-                      locator stamp sits in the figure's corner on every beat
+     7 Framed         the metro's map with the four holders as figures and numbers (25, storyline 8's beat 4 until
+                      2026-11-12, the rest of 8 removed); Boston's map (17); Boston's jobs sorted into three columns by
+                      holder, as beat 2 sorts tiers (23); the net bars (10). The chart's sentence opens with the scale's
+                      icon (the frame round the figure that gave it its name was removed 2026-11-12)
+   The pill numbers them 4 and 5 (2026-11-12, numbered in order; 12 and 13, window.SY's, are 6 and 7).
    The summary (2.3 of the spec, once state 40) stands in the section's close, "What to take with you", under these
-   three (summaryHTML, window.sxSealSync), not as a beat. A beat plays on arrival from another beat and on Replay; a
+   two (summaryHTML, window.sxSealSync), not as a beat. A beat plays on arrival from another beat and on Replay; a
    resize draws it still. Data: WF.data (LODES 2023 rows with the flow's estimated split), ADMIN_SECTORS_2023's sums,
    BOSTON_INDUSTRIES_2024 for the summary, the outlines of data/geo/xch_geo.js. The ledes' phrases (.sx-hl) light the
    marks they name. ---- */
@@ -23975,7 +23981,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   const fig = document.getElementById("miFigure"), host = document.getElementById("sxFig"), page = document.getElementById("page-export-basket");
   const svgEl = document.getElementById("sxSvg"), plot = host && host.querySelector(".sx-plot"), tip = document.getElementById("sxTip");
   const titleEl = document.getElementById("sxTitle"), keyEl = document.getElementById("sxKey"), noteEl = document.getElementById("sxNote"), playBtn = document.getElementById("sxPlay");
-  const toggleEl = document.getElementById("sxToggle"), htmlEl = document.getElementById("sxHtml"), stampEl = document.getElementById("sxStamp");
+  const toggleEl = document.getElementById("sxToggle"), htmlEl = document.getElementById("sxHtml");
   if (!fig || !host || !svgEl || !page || !plot || !toggleEl || !htmlEl || typeof d3 === "undefined") return;
   const fmt = window.fmtCount || (n => String(n));
   const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -24004,22 +24010,14 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     metro: '<svg viewBox="0 0 30 22" width="22" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="15" cy="11" rx="13" ry="8.6" stroke-dasharray="2.6 3"/><path d="M10.5 15.5h9"/><path d="M12.2 15.5V10h3v5.5"/><path d="M16.6 15.5V7h3v8.5"/></svg>',
     city: '<svg viewBox="0 0 24 30" width="13" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 26h20"/><path d="M4 26V15h6v11"/><path d="M12 26V8h7v18"/><path d="M14.6 12h1.8M14.6 16h1.8M14.6 20h1.8"/></svg>' };
   /* the icons (storyline 8): one a house sector, a person and the tool's own building, each stroked in a 24-unit box */
+  /* the icons of the metro's holders (storyline 7's beat 4): a person, the metro's ring and the tool's own building, each stroked in a 24-unit box */
   const ICONS = {
-    "Education & Health": '<rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M12 8v8M8 12h8"/>',
-    "Professional & Business": '<rect x="3" y="7.5" width="18" height="12.5" rx="2"/><path d="M9 7.5V5.5a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 15 5.5v2M3 12.5h18"/>',
-    "Financial Activities": '<circle cx="12" cy="12" r="8.5"/><path d="M12 6.5v11M14.6 9.3c-.4-1-1.4-1.5-2.6-1.5-1.6 0-2.7.8-2.7 2 0 2.6 5.4 1.3 5.4 4 0 1.3-1.2 2.1-2.7 2.1-1.3 0-2.4-.6-2.8-1.6"/>',
-    "Leisure & Hospitality": '<path d="M7 3v7M5 3v4.5a2 2 0 0 0 4 0V3M7 10v11"/><path d="M17.5 3c-2.2 2.4-2.2 7.6 0 10v8"/>',
-    "Trade & Transportation": '<path d="M2.5 7h11v9.5h-11zM13.5 10.5h4.5l3 3v3h-7.5"/><circle cx="6.5" cy="18" r="1.8"/><circle cx="17.5" cy="18" r="1.8"/>',
-    "Manufacturing": '<path d="M3 20.5V10l5 3V10l5 3V10l5 3v7.5zM3 20.5h18"/><path d="M5.5 10V5h3v6.8"/>',
-    "Construction": '<path d="M4.5 16a7.5 7.5 0 0 1 15 0"/><path d="M2.5 16h19M12 8.5V5"/><path d="M9.5 11.5v4.5M14.5 11.5v4.5"/>',
-    "Natural Resources": '<path d="M5 19C5 9.5 11 5 20 4.5 19 13.5 14.5 19.5 5 19z"/><path d="M5 19c3-5 6.5-8.5 10.5-11.5"/>',
-    "Other": '<path d="M3 12.5l9.5-9.5H21v8.5L11.5 21z"/><circle cx="16.5" cy="7.5" r="1.4"/>',
     person: '<circle cx="12" cy="6" r="3.2"/><path d="M5 21v-3.5a5 5 0 0 1 5-5h4a5 5 0 0 1 5 5V21"/>',
     ring: '<ellipse cx="12" cy="12" rx="10.5" ry="7" stroke-dasharray="2.6 3"/><path d="M8.5 16h7"/><path d="M10 16v-4.5h2.5V16"/><path d="M13.5 16V9h2.5v7"/>',
     building: window.CITY_ICON || '<path d="M2 26h20"/><path d="M4 26V15h6v11"/><path d="M12 26V8h7v18"/><path d="M14.6 12h1.8M14.6 16h1.8M14.6 20h1.8"/>'
   };
   const icon = (g, name, x, y, s, colour, cls) => g.append("g").attr("class", "sx-ico" + (cls ? " " + cls : "")).style("color", colour)
-    .attr("transform", "translate(" + x + " " + y + ") scale(" + (s / 24) + ")").html(ICONS[name] || ICONS.Other);
+    .attr("transform", "translate(" + x + " " + y + ") scale(" + (s / 24) + ")").html(ICONS[name] || ICONS.person);
 
   let rows = null, A = null, M = null, secs = null, SUM = null;
   function data(){
@@ -24037,7 +24035,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     if (I){ const F = {}; I.fields.forEach((f, i) => { F[f] = i; }); const label = {}; (I.sectors || []).forEach(s => { label[s.key] = s.label; });
       const bySec = d3.rollup(I.rows, v => d3.sum(v, r => r[F.employ]), r => label[r[F.sectorKey]] || r[F.sectorKey]);
       const tot = d3.sum(I.rows, r => r[F.employ]), traded = d3.sum(I.rows.filter(r => r[F.tier] === 0), r => r[F.employ]);
-      SUM = { total: I.total || tot, n: I.rows.length, top: [...bySec].sort((a, b) => b[1] - a[1]).slice(0, 3).map(([s, v]) => ({ s, v: v / tot })), traded: traded / tot,
+      SUM = { total: I.total || tot, n: I.rows.length, top: [...bySec].sort((a, b) => b[1] - a[1]).slice(0, 3).map(([s, v]) => ({ s, v: v / tot })), traded: traded / tot, tiers: [0, 1, 2].map(t => d3.sum(I.rows.filter(r => r[F.tier] === t), r => r[F.employ]) / tot),
         /* the three beat 3 leads with: traded, a thousand jobs or more (fabric coating, 599 jobs at 12 times, is left to the ranking's long list) */
         specs: I.rows.filter(r => r[F.tier] === 0 && r[F.employ] >= 1000).sort((a, b) => b[F.rca] - a[F.rca]).slice(0, 3).map(r => ({ s: r[F.short], rca: r[F.rca] })) }; }
     return true;
@@ -24050,6 +24048,13 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   const size = (w, h) => { svg.attr("width", w).attr("height", h).attr("viewBox", "0 0 " + w + " " + h); };
   const story = () => page.dataset.story || "";
   let toggleSel = "all";
+  /* the treemap beats' other form (2026-11-12, Tammy: "on the treemap beats after beat 3, add an option to toggle the viz to an
+     equivalent bar chart"): storylines 4 and 5's; the reader's choice holds from beat to beat */
+  const VIEW_STORIES = { "6": true, "8": true };   /* storyline 4 added 2026-11-12 (Tammy) */
+  /* each storyline's own choice; storyline 6 ("Both at once") opens on the bars, 7 ("Framed") on the treemap (2026-11-12, Tammy) */
+  const viewOf = { "6": "bars", "8": "tree" };
+  const barsOn = () => !!VIEW_STORIES[story()] && viewOf[story()] === "bars";
+  const VIEW_SW = () => '<span class="sx-vw-g" role="group" aria-label="Chart type">' + [["tree", "Treemap"], ["bars", "Bars"]].map(([k, t]) => '<button type="button" class="sx-vw" data-v="' + k + '" aria-pressed="' + ((viewOf[story()] || "tree") === k) + '">' + t + '</button>').join("") + '</span>';
   /* the figure's head: the sentence (with the scale as an icon in storyline 7), Replay, the toggle, the
      key and note; the scale is also written on the frame (.ct-panel[data-scale]) for storyline 7's border, and on the
      stamp for storyline 8 */
@@ -24060,12 +24065,14 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     noteEl.textContent = o.note || ""; noteEl.hidden = !o.note; playBtn.hidden = !o.play; playBtn.innerHTML = REPLAY;
     svgEl.setAttribute("aria-label", o.aria || o.title || "");
     const panel = fig.closest(".ct-panel"); if (panel) panel.dataset.scale = sc;
-    stamp(sc);
-    toggleEl.hidden = !o.toggle;
-    toggleEl.innerHTML = o.toggle ? o.toggle.map(t => '<button type="button" class="sx-tg" data-k="' + t.k + '" aria-pressed="' + (t.k === toggleSel) + '">' + esc(t.label) + '</button>').join("") : "";
+    const vs = !!o.views && !!VIEW_STORIES[st];
+    toggleEl.hidden = !o.toggle && !vs;
+    toggleEl.innerHTML = (o.toggle ? o.toggle.map(t => '<button type="button" class="sx-tg" data-k="' + t.k + '" aria-pressed="' + (t.k === toggleSel) + '">' + esc(t.label) + '</button>').join("") : "") + (vs ? VIEW_SW() : "");
     htmlEl.hidden = !o.html; htmlEl.innerHTML = o.html || ""; svgEl.style.display = o.html ? "none" : "";
   }
-  toggleEl.addEventListener("click", e => { const b = e.target.closest(".sx-tg"); if (!b || b.dataset.k === toggleSel) return; toggleSel = b.dataset.k; draw(-2, false); });
+  toggleEl.addEventListener("click", e => {
+    const v = e.target.closest(".sx-vw"); if (v){ if (v.dataset.v !== viewOf[story()]){ viewOf[story()] = v.dataset.v; draw(-1, true); const n = toggleEl.querySelector('.sx-vw[data-v="' + v.dataset.v + '"]'); if (n) n.focus({ preventScroll: true }); } return; }
+    const b = e.target.closest(".sx-tg"); if (!b || b.dataset.k === toggleSel) return; toggleSel = b.dataset.k; draw(-2, false); });
   const keyOf = list => list.map(d => '<li><i style="' + (d.sw || "background:" + d.c) + '"></i>' + (d.n != null ? '<b>' + esc(d.n) + '</b> ' : '') + esc(d.t) + '</li>').join("");
   const sectorKey = () => keyOf(secs.filter(s => s.jobs > 0).map(s => ({ c: colourOf(s.sector), t: s.sector })));
   const groupKey = gs => keyOf(gs.map(g => ({ c: GC(g), t: GN[g] })));
@@ -24074,16 +24081,6 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   const swKey = (what, sw) => ({ sw: sw || "background:var(--ink)", t: what });
   const PALE = "background:var(--ink);opacity:.28";
   const RING = "background:var(--white);box-sizing:border-box;border:1.5px dashed var(--teal)";
-
-  /* the locator stamp (storyline 8): the metro's outline with the city filled, drawn once, in the figure's corner */
-  let stampB = null;
-  function stamp(sc){
-    const G = window.XCH_GEO_RAW; if (!stampEl || !G) return;
-    if (!stampB){ const s = d3.select(stampEl), w = 64, h = 64, proj = d3.geoMercator().fitExtent([[2, 2], [w - 2, h - 2]], { type: "FeatureCollection", features: G.places.features.concat(G.msa.features || []) }), p = d3.geoPath(proj);
-      s.attr("viewBox", "0 0 " + w + " " + h); s.append("path").datum(G.msa).attr("class", "sx-msa").attr("d", p); stampB = s.append("path").datum(G.boston).attr("class", "sx-bos").attr("d", p); }
-    stampEl.classList.toggle("is-city", sc !== "metro");
-    stampEl.setAttribute("aria-label", sc === "metro" ? "Viewing Boston Metro" : sc === "both" ? "Viewing Boston Metro and Boston admin" : "Viewing Boston admin");
-  }
 
   /* the card under the pointer, in the admin beats' idiom */
   let tipOn = false;
@@ -24154,9 +24151,80 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   const H4 = () => { const r = v => Math.round(v / M.jobs * 100), a = [r(A.in), r(A.liveWork), r(A.out)]; return a.concat([100 - a[0] - a[1] - a[2]]); };
   const H2 = () => hundred([A.in, A.liveWork]);
 
+  /* the bars a treemap stands for, row for row: one bar a two-digit sector, longest first, in its sector's colour; the
+     treemap's filled part solid from the left and the rest pale, its outlined part outlined; the value and the treemap's
+     own words at the end */
+  const barGeom = w => { const narrow = w < 600; return { narrow, labW: Math.round(Math.min(230, Math.max(112, w * (narrow ? .36 : .28)))), rh: narrow ? 20 : 24, top: 34 }; };
+  const cutTo = (t, room) => { if (tw(t, 13) <= room) return t; let u = t; while (u.length > 2 && tw(u + "…", 13) > room) u = u.slice(0, -1); return u.replace(/[\s&,]+$/, "") + "…"; };
+  function barAxis(g, x, top, bottom, n){
+    const ga = g.append("g").attr("class", "sx-axis");
+    x.ticks(n || 5).forEach(v => { const tx = x(v); ga.append("line").attr("x1", tx).attr("x2", tx).attr("y1", top - 6).attr("y2", bottom);
+      ga.append("text").attr("x", tx).attr("y", top - 12).attr("text-anchor", "middle").text(v ? fmt(v) : "0"); });
+  }
+  function barShaded(o){
+    const w = W(), G = barGeom(w), colour = o.colour || (r => colourOf(r.sector));
+    const list = rows.filter(r => o.base(r) > 0).sort((a, b) => o.base(b) - o.base(a));
+    const tail = d => fmt(o.base(d)) + (o.fill ? "  " + o.sub({ r: d }) : ""), VAL = Math.min(170, 12 + d3.max(list, d => tw(tail(d), 13)));
+    const h = G.top + list.length * G.rh + 10; size(w, h);
+    head(o);
+    const x0 = G.labW + 12, x = d3.scaleLinear().domain([0, d3.max(list, o.base)]).nice().range([x0, w - VAL]);
+    barAxis(svg, x, G.top, G.top + list.length * G.rh);
+    const bh = G.rh - 8, row = svg.append("g").selectAll("g").data(list, d => d.code).join("g").attr("transform", (d, i) => "translate(0 " + (G.top + i * G.rh) + ")");
+    row.append("text").attr("class", "sx-t").attr("x", G.labW).attr("y", G.rh / 2 + 4.5).attr("text-anchor", "end").text(d => cutTo(d.short, G.labW - 4));
+    const len = d => x(o.base(d)) - x0, fr = d => o.fill ? Math.max(0, Math.min(1, o.fill(d))) : 1;
+    if (o.fill) row.append("rect").attr("class", "sx-cell").attr("x", x0).attr("y", (G.rh - bh) / 2).attr("height", bh).attr("width", d => o.play ? 0 : len(d)).attr("fill", colour).attr("fill-opacity", .28).attr("pointer-events", "none")
+      .call(s => { if (o.play) s.transition().duration(600).ease(d3.easeCubicOut).attr("width", len); });
+    const sol = row.append("rect").attr("class", "sx-cell sx-mark").attr("data-code", d => d.code).attr("data-sec", d => d.sector).attr("x", x0).attr("y", (G.rh - bh) / 2).attr("height", bh).attr("fill", colour)
+      .attr("width", d => o.play ? 0 : len(d) * fr(d));
+    if (o.play) sol.transition().delay((d, i) => (o.fill ? 450 : 0) + i * 25).duration(600).ease(d3.easeCubicOut).attr("width", d => len(d) * fr(d));
+    if (o.outline) row.filter(d => o.outline(d) > 0 && len(d) * fr(d) * o.outline(d) >= 4).append("rect").attr("class", "sx-out-r").attr("x", x0 + 1.5).attr("y", (G.rh - bh) / 2 + 1.5).attr("height", bh - 3)
+      .attr("width", d => Math.max(0, len(d) * fr(d) * Math.max(0, Math.min(1, o.outline(d))) - 3)).attr("rx", 2).call(s => { if (o.play) s.style("opacity", 0).transition().delay(1000).duration(400).style("opacity", 1); });
+    row.append("text").attr("class", "sx-t sx-t--soft").attr("x", d => x(o.base(d)) + 6).attr("y", G.rh / 2 + 4.5)
+      .html(d => '<tspan class="sx-t--b" style="fill:var(--ink)">' + esc(fmt(o.base(d))) + '</tspan>' + (o.fill ? '<tspan>  ' + esc(o.sub({ r: d })) + '</tspan>' : ""));
+    hover(row, d => card(d.short, o.words(d)));
+  }
+  /* storyline 5's beat 6 as bars: the three holders as three columns of bars on one scale, the sectors in rows, as the
+     treemap's three columns; on a phone one bar a sector, its three holders stacked in their colours */
+  function groupBars(play, GS, GV, H){
+    const w = W(), G = barGeom(w), HEADH = 34;
+    const list = rows.filter(r => GS.some(g => r[GV[g]] > 0)).sort((a, b) => d3.sum(GS, g => b[GV[g]]) - d3.sum(GS, g => a[GV[g]]));
+    const top = G.top + HEADH, h = top + list.length * G.rh + 10; size(w, h);
+    const bh = G.rh - 8, x0 = G.labW + 12, gap = 18;
+    const gH = svg.append("g"), row = svg.append("g").selectAll("g").data(list, d => d.code).join("g").attr("transform", (d, i) => "translate(0 " + (top + i * G.rh) + ")");
+    row.append("text").attr("class", "sx-t").attr("x", G.labW).attr("y", G.rh / 2 + 4.5).attr("text-anchor", "end").text(d => cutTo(d.short, G.labW - 4));
+    const NAME = { non: "Non-residents commuting into Boston", res: "Boston residents, working in Boston", out: "Boston residents, working elsewhere" };
+    const tot = g => d3.sum(rows, r => r[GV[g]]);
+    if (G.narrow){
+      const x = d3.scaleLinear().domain([0, d3.max(list, d => d3.sum(GS, g => d[GV[g]]))]).nice().range([x0, w - 46]);
+      barAxis(svg, x, top, top + list.length * G.rh, 3);
+      GS.forEach((g, gi) => gH.append("text").attr("class", "sx-t sx-t--b sx-colhead").style("fill", GT(g)).attr("x", gi ? (gi === 1 ? w / 2 : w) : 0).attr("text-anchor", gi ? (gi === 1 ? "middle" : "end") : "start").attr("y", 14).text(fmt(tot(g)) + " " + ["in", "live here", "out"][gi]));
+      row.each(function(d){ let c = 0; const r = d3.select(this);
+        GS.forEach(g => { const v = d[GV[g]], seg = r.append("rect").attr("class", "sx-cell sx-mark").attr("data-who", g).attr("data-code", d.code).attr("x", x(c)).attr("y", (G.rh - bh) / 2).attr("height", bh).attr("fill", GC(g)).attr("width", play ? 0 : x(c + v) - x(c));
+          if (play) seg.transition().delay(GS.indexOf(g) * 300).duration(500).attr("width", x(c + v) - x(c)); c += v; });
+        r.append("text").attr("class", "sx-t sx-t--soft").attr("x", x(c) + 5).attr("y", G.rh / 2 + 4.5).text(fmt(c)); });
+      hover(row, d => card(d.short, GS.map(g => "about " + fmt(d[GV[g]]) + " " + NAME[g].toLowerCase()).join("; ") + "."));
+      return;
+    }
+    const pw = (w - x0 - gap * (GS.length - 1)) / GS.length, VAL = 40;
+    const x = d3.scaleLinear().domain([0, d3.max(list, d => d3.max(GS, g => d[GV[g]]))]).nice().range([0, pw - VAL]);
+    GS.forEach((g, gi) => {
+      const px = x0 + gi * (pw + gap), xs = d3.scaleLinear().domain(x.domain()).range([px, px + pw - VAL]);
+      gH.append("text").attr("class", "sx-t sx-t--b sx-colhead").style("fill", GT(g)).attr("x", px).attr("y", 14).text(cutTo(NAME[g], pw));
+      gH.append("text").attr("class", "sx-t sx-t--soft").attr("x", px).attr("y", 31).text(fmt(tot(g)) + " · " + H[gi] + " in 100");
+      barAxis(svg, xs, top, top + list.length * G.rh, 2);
+      const b = row.append("rect").attr("class", "sx-cell sx-mark").attr("data-who", g).attr("data-code", d => d.code).attr("data-sec", d => d.sector).attr("x", px).attr("y", (G.rh - bh) / 2).attr("height", bh)
+        .attr("fill", d => colourOf(d.sector)).attr("width", d => play ? 0 : x(d[GV[g]]));
+      if (play) b.transition().delay((d, i) => gi * 300 + i * 20).duration(500).ease(d3.easeCubicOut).attr("width", d => x(d[GV[g]]));
+      row.append("text").attr("class", "sx-t sx-t--soft").attr("x", d => px + x(d[GV[g]]) + 5).attr("y", G.rh / 2 + 4.5).style("font-size", "12px").text(d => fmt(d[GV[g]]));
+    });
+    hover(row, d => card(d.short, GS.map(g => "about " + fmt(d[GV[g]]) + " " + NAME[g].toLowerCase()).join("; ") + "."));
+  }
+
   /* one treemap, the family most beats are drawn from: base the blocks' size; fill, a fraction of each block drawn solid
      (the rest pale); outline, a fraction of the solid part outlined; colour, the block's own colour when not its sector's */
   function treeShaded(o){
+    o.views = true;
+    if (barsOn()) return barShaded(o);
     const w = W(), h = frameH(w); size(w, h);
     head(o);
     const colour = o.colour || (r => colourOf(r.sector));
@@ -24217,6 +24285,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   function groupCols(from, replay){
     const w = W(), h = frameH(w); size(w, h);
     const play = willPlay(from, replay), GS = ["non", "res", "out"], GV = { non: "estNon", res: "estRes", out: "estOut" }, H = H4(), HEAD = 58, pad = (KIT() || { padding: 1 }).padding;
+    if (barsOn()){ head({ views: true, scale: "city", title: "The " + fmt(A.jobs + A.out) + " jobs in Boston or held by its residents, sorted by who holds them and where, in 2023", key: barGeom(w).narrow ? groupKey(GS) : sectorKey(), note: SOURCE + EST + " The shares are of the metro’s " + fmt(M.jobs) + " jobs." }); groupBars(play, GS, GV, H); return; }
     const stack = w < 600;
     const root = d3.hierarchy({ children: GS.map(g => ({ g, children: [...d3.group(rows, r => r.sector)].map(([sector, rs]) => ({ sector, children: rs.map(r => ({ r, g, v: r[GV[g]] })) })) })) })
       .sum(d => d.v || 0).sort((a, b) => a.depth === 1 ? GS.indexOf(a.data.g) - GS.indexOf(b.data.g) : a.depth === 2 ? rank(a.data.sector) - rank(b.data.sector) : b.value - a.value);
@@ -24226,7 +24295,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     if (stack) size(w, HH);
     const cells = root.leaves().filter(n => n.value > 0).map(n => ({ r: n.data.r, g: n.data.g, x: n.x0, y: n.y0, w: n.x1 - n.x0, h: n.y1 - n.y0, v: n.value }));
     const cols = root.children.map(n => ({ g: n.data.g, x: n.x0, y: n.y0, w: n.x1 - n.x0, v: n.value }));
-    head({ scale: "city", title: "The " + fmt(A.jobs + A.out) + " jobs in Boston or held by its residents, sorted by who holds them and where, in 2023", key: sectorKey(), note: SOURCE + EST + " The shares are of the metro’s " + fmt(M.jobs) + " jobs." });
+    head({ views: true, scale: "city", title: "The " + fmt(A.jobs + A.out) + " jobs in Boston or held by its residents, sorted by who holds them and where, in 2023", key: sectorKey(), note: SOURCE + EST + " The shares are of the metro’s " + fmt(M.jobs) + " jobs." });
     const gH = svg.append("g"), gC = svg.append("g"), gL = svg.append("g");
     const heads = gH.selectAll("g").data(cols).join("g").attr("class", "sx-tier")
       .html(d => { const ln = wrapTo({ non: "Non-residents commuting into Boston", res: "Boston residents, working in Boston", out: "Boston residents, working elsewhere" }[d.g], d.w - 4, 13, 600).slice(0, 2);
@@ -24238,7 +24307,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     if (play){ fadeIn(heads, 0, 350, 300); sel.style("opacity", 0).transition().delay(d => 150 + GS.indexOf(d.g) * 350 + (cells.indexOf(d) % 12) * 25).duration(400).style("opacity", 1); fadeIn(labs, 900, 15, 300); }
   }
 
-  /* ---- 25, 26 and 28, storyline 8: icons and simple imagery ---- */
+  /* ---- 25, storyline 7's beat 4 (once storyline 8's): the metro's map and its four holders as figures ---- */
   function scene(from, replay){
     const w = W(), play = willPlay(from, replay), G = window.XCH_GEO_RAW, H = H4();
     const narrow = w < 600, h0 = frameH(w), mapW = narrow ? w : Math.round(w * .44), mapH = narrow ? Math.round(h0 * .62) : h0;
@@ -24265,94 +24334,49 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     rowsG.forEach((r, i) => r.style("opacity", 0).transition().delay(300 + i * 350).duration(400).style("opacity", 1));
     if (loc) loc.b.transition().delay(300).duration(500).attr("stroke-width", 3).transition().duration(500).attr("stroke-width", 1.5);
   }
-  function isotype(from, replay){
-    const w = W(), play = willPlay(from, replay), UNIT = 10000;
-    const list = secs.filter(s => s.jobs >= UNIT / 20).slice().sort((a, b) => b.jobs - a.jobs), small = secs.filter(s => s.jobs < UNIT / 20);
-    const narrow = w < 600, labW = narrow ? 0 : Math.min(210, Math.round(w * .27));
-    const maxN = Math.ceil(d3.max(list, s => s.jobs / UNIT)), is = Math.max(14, Math.min(narrow ? 18 : 22, Math.floor((w - labW - 84) / maxN) - 4)), p2 = is + 5;
-    const perLine = narrow ? Math.max(4, Math.floor((w - 70) / p2)) : Infinity;
-    const countOf = s => Math.floor(s.jobs / UNIT) + (s.jobs / UNIT % 1 > .05 ? 1 : 0);
-    const linesOf = s => Math.max(1, Math.ceil(countOf(s) / perLine)), rhOf = s => narrow ? 30 + linesOf(s) * (is + 6) : 40;
-    const ys = []; let yAcc = 8; list.forEach(s => { ys.push(yAcc); yAcc += rhOf(s); });
-    size(w, yAcc);
-    head({ scale: "city", title: "Boston admin’s " + fmt(A.jobs) + " jobs by sector, an icon for every 10K: solid where non-residents who commute in hold them, pale where Boston residents do, in 2023", play: true,
-      key: sectorKey() + keyOf([swKey("Solid: held by non-residents who commute in, " + fmt(A.in)), swKey("Pale: held by Boston residents, " + fmt(A.liveWork), PALE)]),
-      note: SOURCE + EST + (small.length ? " " + small.map(s => s.sector + ", " + fmt(s.jobs) + " jobs,").join(" ") + " too small to draw." : "") });
-    const defs = svg.append("defs");
-    list.forEach((s, ri) => {
-      const rh = rhOf(s), g = svg.append("g").attr("transform", "translate(0 " + ys[ri] + ")"), col = colourOf(s.sector);
-      const n = s.jobs / UNIT, full = Math.floor(n), frac = n - full, count = countOf(s), solid = Math.round(count * s.non / s.jobs);
-      const ix = narrow ? 0 : labW, iy = narrow ? 24 : (rh - is) / 2;
-      if (narrow) g.append("text").attr("class", "sx-t sx-t--b").attr("x", 0).attr("y", 14).text(s.sector);
-      else g.append("text").attr("class", "sx-t sx-t--b").attr("x", labW - 12).attr("y", rh / 2 + 4.5).attr("text-anchor", "end").text(s.sector);
-      const at = i => [ix + (i % perLine) * p2, iy + Math.floor(i / perLine) * (is + 6)];
-      const icons = d3.range(count).map(i => { const gi = icon(g, s.sector, at(i)[0], at(i)[1], is, col, "sx-mark" + (i >= solid ? " is-pale" : "")).attr("data-sec", s.sector).attr("data-who", i >= solid ? "res" : "non");
-        if (i === full){ const id = "sxclip-" + ri; defs.append("clipPath").attr("id", id).append("rect").attr("x", 0).attr("y", 0).attr("width", 24 * frac).attr("height", 30); gi.attr("clip-path", "url(#" + id + ")"); }
-        return gi; });
-      const last = at(Math.max(0, count - 1)), val = g.append("text").attr("class", "sx-t sx-t--soft").attr("x", count ? last[0] + p2 + 4 : ix + 4).attr("y", last[1] + is * .7).text(fmt(s.jobs));
-      hover(g, () => card(s.sector, fmt(s.jobs) + " jobs in Boston: about " + fmt(s.non) + " held by non-residents who commute in, " + fmt(s.res) + " by Boston residents."));
-      if (play){ icons.forEach((gi, i) => gi.style("opacity", 0).transition().delay(ri * 120 + i * 45).duration(250).style("opacity", 1)); val.style("opacity", 0).transition().delay(ri * 120 + count * 45 + 100).duration(300).style("opacity", 1); }
-    });
-  }
-  /* the sectors on a line from sends to receives, as icons (storyline 8) */
-  function balanceLine(from, replay, marks){
-    const w = W(), play = willPlay(from, replay);
-    const list = rows.slice().sort((a, b) => Math.abs(b.net) - Math.abs(a.net));
-    const IS = marks === "dot" ? (w < 600 ? 16 : 20) : (w < 600 ? 20 : 26), LANE = IS + 8, PAD = 40;
-    const lo = Math.min(0, d3.min(list, d => d.net)), hi = d3.max(list, d => d.net);
-    const x = d3.scaleLinear().domain([lo - 4000, hi * 1.08]).range([PAD, w - PAD]);
-    const placed = []; list.forEach(d => { const px = x(d.net); let lane = 0; while (placed.some(p => p.lane === lane && Math.abs(p.px - px) < IS + 4)) lane++; placed.push({ d, px, lane }); });
-    const two = w < 600, lanes = d3.max(placed, p => p.lane) + 1, LAB = 3, AX = 20 + LAB * 16 + lanes * LANE, h = AX + (two ? 82 : 64); size(w, h);
-    head({ scale: "city", title: "Each sector where its balance falls: workers Boston receives, to the right, or sends, to the left, in 2023", play: true, key: sectorKey(),
-      note: "A sector’s balance is its jobs in Boston less the jobs Boston’s residents hold in it, both counts (LODES 2023)." });
-    const ga = svg.append("g").attr("class", "sx-axis");
-    ga.append("line").attr("x1", PAD).attr("x2", w - PAD).attr("y1", AX).attr("y2", AX);
-    x.ticks(5).forEach(v => { const tx = x(v); ga.append("line").attr("x1", tx).attr("x2", tx).attr("y1", AX).attr("y2", AX + 6); ga.append("text").attr("x", tx).attr("y", AX + 20).attr("text-anchor", "middle").text(v === 0 ? "0" : (v > 0 ? "+" : "−") + fmt(Math.abs(v))); });
-    svg.append("line").attr("class", "sx-zero").attr("x1", x(0)).attr("x2", x(0)).attr("y1", AX - lanes * LANE - 10).attr("y2", AX);
-    svg.append("text").attr("class", "sx-t sx-t--b").attr("x", PAD).attr("y", AX + 44).style("fill", GT("out")).text("← Boston sends more workers");
-    svg.append("text").attr("class", "sx-t sx-t--b").attr("x", w - PAD).attr("y", AX + (two ? 62 : 44)).attr("text-anchor", "end").style("fill", GC("non")).text("Boston receives more workers →");
-    const gS = svg.append("g"), gI = svg.append("g"), gL = svg.append("g"), labRows = [[], [], []];
-    placed.forEach(p => {
-      const iy = AX - 10 - (p.lane + 1) * LANE + (LANE - IS) / 2, col = colourOf(p.d.sector);
-      gS.append("line").attr("class", "sx-stem").attr("x1", p.px).attr("x2", p.px).attr("y1", iy + IS).attr("y2", AX);
-      const gi = marks === "dot" ? gI.append("circle").attr("class", "sx-dot sx-mark").attr("cx", p.px).attr("cy", iy + IS / 2).attr("r", IS / 2).attr("fill", col)
-        : icon(gI, p.d.sector, p.px - IS / 2, iy, IS, col, "sx-mark");
-      gi.attr("data-code", p.d.code).attr("data-sec", p.d.sector);
-      hover(gi, () => card(p.d.short, "Boston " + (p.d.net >= 0 ? "receives " : "sends ") + fmt(Math.abs(p.d.net)) + " more workers than it " + (p.d.net >= 0 ? "sends" : "receives") + ": " + fmt(p.d.jobs) + " jobs in Boston, " + fmt(p.d.residents) + " held by its residents."));
-      p.gi = gi; p.iy = iy;
-      const name = p.d.short, lwid = tw(name, 12) + 8, lx = Math.max(lwid / 2 + 2, Math.min(w - lwid / 2 - 2, p.px)); let r = -1;
-      for (let i = 0; i < LAB && r < 0; i++) if (!labRows[i].some(b => b[1] > lx - lwid / 2 && b[0] < lx + lwid / 2)) r = i;
-      if (r >= 0){ labRows[r].push([lx - lwid / 2, lx + lwid / 2]);
-        gL.append("text").attr("class", "sx-t sx-t--soft").style("font-size", "12px").attr("x", lx).attr("y", 14 + r * 16).attr("text-anchor", "middle").text(name); }
-    });
-    if (play) placed.forEach((p, i) => { if (marks === "dot") p.gi.attr("cy", p.iy + IS / 2 - 24).style("opacity", 0).transition().delay(i * 60).duration(450).ease(d3.easeCubicOut).attr("cy", p.iy + IS / 2).style("opacity", 1);
-      else { const t = p.gi.attr("transform"); p.gi.attr("transform", t.replace(/translate\(([-\d.]+) ([-\d.]+)\)/, (m, a, b) => "translate(" + a + " " + (+b - 24) + ")")).style("opacity", 0)
-        .transition().delay(i * 60).duration(450).ease(d3.easeCubicOut).attr("transform", t).style("opacity", 1); } });
-  }
-
   /* ---- the summary, 2.3 of the spec: the metro's and the city's important economic activities. Not a beat since 2026-11-12
      (Tammy: "move that into the what to take with you section instead of as an additional beat"): under storylines 5, 7
      and 8 it stands in the section's close in place of the designer's two cards, which the other storylines keep ---- */
   function summaryHTML(){
     if (!data()) return "";
-    const chips = list => list.map(d => '<span class="sx-chipl"><i style="background:' + colourOf(d.s) + '"></i>' + esc(d.s) + (d.v != null ? ' <b>' + d.v + '</b>' : '') + '</span>').join("");
-    const row = (lab, body) => '<div class="sx-sumrow"><span class="sx-sumlab">' + lab + '</span><div>' + body + '</div></div>';
-    const topA = secs.filter(s => s.jobs > 0).slice().sort((a, b) => b.jobs - a.jobs).slice(0, 3).map(s => ({ s: s.sector, v: pct(s.jobs / A.jobs) }));
-    const recv = rows.slice().sort((a, b) => b.net - a.net).slice(0, 3), send = rows.filter(r => r.net < 0).sort((a, b) => a.net - b.net);
-    const metro = SUM ? row("Largest work", chips(SUM.top.map(d => ({ s: d.s, v: pct(d.v) })))) +
-      row("Sells outward", per100(SUM.traded) + " of its jobs are traded work, which sells outside the metro") +
-      row("Most specialized in", SUM.specs.map(d => esc(d.s) + " <b>" + d.rca.toFixed(1) + "×</b>").join(" · ") + ' <span class="sx-t--soft">the national rate</span>') : "";
-    const H = H4();
-    const city = row("Largest work", chips(topA)) +
-      row("Who holds its jobs", fmt(A.in) + " non-residents commute in, " + H2()[0] + " in 100; " + fmt(A.liveWork) + " Boston residents work in the city; " + fmt(A.out) + " more work elsewhere in the metro") +
-      row("Of the metro’s jobs", per100(A.jobs / M.jobs) + " are inside Boston admin: " + H[0] + " in 100 held by commuters in, " + H[1] + " by its residents") +
-      row("Draws workers in for", recv.map(r => esc(r.short) + " <b>+" + fmt(r.net) + "</b>").join(" · ") + (send.length ? "; sends more for " + send.map(r => esc(r.short)).join(", ") : ""));
+    /* drawn as HTML so it reflows with the card (2026-11-12, Tammy: "include some more graphical elements"): each row a
+       small chart, bars growing in as the close comes into view (.sec-seal.is-in), the words beside them kept short */
+    const w = v => (Math.max(0, Math.min(1, v)) * 100).toFixed(1) + "%";
+    const blk = (lab, body, note) => '<div class="sm-blk"><p class="sm-lab">' + lab + '</p>' + body + (note ? '<p class="sm-note">' + note + '</p>' : '') + '</div>';
+    /* bars: a name and its value over a bar, the bars on one scale */
+    const bars = list => '<div class="sm-bars">' + list.map(d => '<div class="sm-bar"><span class="sm-n">' + (d.c ? '<i class="sm-sw" style="background:' + d.c + '"></i>' : '') + esc(d.n) + '</span><b>' + d.v + '</b>' +
+      '<span class="sm-tr"><i style="--w:' + w(d.f) + (d.c ? ';background:' + d.c : '') + '"></i></span></div>').join("") + '</div>';
+    /* a stacked bar, its parts named under it */
+    const stack = (parts, aria) => '<div class="sm-stack" role="img" aria-label="' + esc(aria) + '">' + parts.map(p => '<i style="--w:' + w(p.f) + ';background:' + p.c + '"></i>').join("") + '</div>' +
+      '<ul class="sm-key">' + parts.map(p => '<li><i style="background:' + p.c + '"></i><b>' + p.v + '</b> ' + esc(p.t) + '</li>').join("") + '</ul>';
+    const C = { non: "var(--sm-non)", res: "var(--sm-res)", out: "var(--sm-out)", rest: "var(--sm-rest)" };
+    let metro = "";
+    if (SUM){
+      const top = SUM.top, mx = top[0].v, T = hundred(SUM.tiers), mr = Math.max(...SUM.specs.map(d => d.rca));
+      metro = blk("Largest work", bars(top.map(d => ({ n: d.s, v: pct(d.v), f: d.v / mx, c: colourOf(d.s) })))) +
+        blk("Sells outward", stack([{ f: T[0] / 100, c: "var(--sm-t0)", v: T[0], t: "traded" }, { f: T[1] / 100, c: "var(--sm-t1)", v: T[1], t: "partly traded" }, { f: T[2] / 100, c: "var(--sm-t2)", v: T[2], t: "local" }],
+          "Of every 100 jobs, " + T[0] + " traded, " + T[1] + " partly traded, " + T[2] + " local"), "Of every 100 jobs; traded work sells outside the metro") +
+        blk("Most specialized in", bars(SUM.specs.map(d => ({ n: d.s, v: d.rca.toFixed(1) + "×", f: d.rca / mr }))), "Times the national rate, among traded industries");
+    }
+    const H = H4(), B = H2(), topA = secs.filter(s => s.jobs > 0).slice().sort((a, b) => b.jobs - a.jobs).slice(0, 3), mxA = topA[0].jobs / A.jobs;
+    const recv = rows.slice().sort((a, b) => b.net - a.net).slice(0, 3), send = rows.filter(r => r.net < 0);
+    /* a hundred squares, one for every 100th of the metro's jobs, in the four holders' colours */
+    const sq = []; ["non", "res", "out", "rest"].forEach((g, k) => { for (let n = 0; n < H[k]; n++) sq.push(g); });
+    const grid = '<div class="sm-grid" role="img" aria-label="' + esc("Of every 100 of the metro’s jobs: " + H[0] + " held by commuters into Boston, " + H[1] + " by Boston residents in the city, " + H[2] + " by Boston residents elsewhere, " + H[3] + " by everyone else") + '">' +
+      sq.map(g => '<i class="sm-q sm-q--' + g + '"></i>').join("") + '</div>' +
+      '<ul class="sm-key">' + [["non", H[0], "commute in"], ["res", H[1], "residents, in Boston"], ["out", H[2], "residents, elsewhere"], ["rest", H[3], "everyone else"]].map(([g, v, t]) => '<li><i style="background:' + C[g] + '"></i><b>' + v + '</b> ' + t + '</li>').join("") + '</ul>';
+    const city = blk("Largest work", bars(topA.map(s => ({ n: s.sector, v: pct(s.jobs / A.jobs), f: (s.jobs / A.jobs) / mxA, c: colourOf(s.sector) })))) +
+      blk("Who holds its jobs", stack([{ f: A.in / A.jobs, c: C.non, v: fmt(A.in), t: "commute in" }, { f: A.liveWork / A.jobs, c: C.res, v: fmt(A.liveWork), t: "Boston residents" }],
+        B[0] + " in 100 of Boston’s jobs are held by commuters"), B[0] + " in 100 held by commuters; " + fmt(A.out) + " more residents work elsewhere in the metro") +
+      blk("Its share of the metro’s jobs", grid, (H[0] + H[1]) + " in 100 are in Boston") +
+      blk("Draws workers in for", bars(recv.map(r => ({ n: r.short, v: "+" + fmt(r.net), f: r.net / recv[0].net, c: colourOf(r.sector) }))),
+        send.length ? "Sends more than it receives only for " + esc(send.sort((a, b) => a.net - b.net)[0].short.toLowerCase()) + (send.length > 1 ? " and " + (send.length - 1) + " small sectors" : "") : "");
     return '<div class="sx-sum"><section><h4 class="sx-t--metro">' + SCALE_ICO.metro + ' Boston Metro <span>' + (SUM ? fmt(SUM.total) + " jobs, " + SUM.n + " industries" : fmt(M.jobs) + " jobs") + '</span></h4>' + metro + '</section>' +
       '<section><h4 class="sx-t--city">' + SCALE_ICO.city + ' Boston admin <span>' + fmt(A.jobs) + ' jobs, ' + per100(A.jobs / M.jobs) + ' of the metro’s</span></h4>' + city + '</section></div>';
   }
   /* the section's close is built before this figure: the summary is put into it when the storyline is set (applyNarrative) and
      once here, and taken out again under the other storylines */
-  const SUM_STORIES = { "6": true, "8": true, "9": true };
+  const SUM_STORIES = { "6": true, "8": true };
   const sealOf = () => { const sd = typeof sectionDefs !== "undefined" && sectionDefs.find(s => s.pages.indexOf("page-export-basket") >= 0), name = sd ? sd.name : "What do my metro and I produce?";
     return [].slice.call(document.querySelectorAll(".sec-seal")).find(s => { const e = s.querySelector(".seal-eyebrow"); return e && e.textContent.trim() === name; }); };
   window.sxSealSync = function(v){
@@ -24368,7 +24392,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     seal.classList.toggle("has-sum", has);
   };
 
-  const DRAW = { 17: adminTree, 19: metroHeld, 23: groupCols, 25: scene, 26: isotype, 28: (f, r) => balanceLine(f, r, "icon"), 45: heldToggle };
+  const DRAW = { 17: adminTree, 19: metroHeld, 23: groupCols, 25: scene, 45: heldToggle };
   function draw(from, replay){ if (!data()) return; clear(); lw = host.clientWidth; const f = DRAW[state]; if (f) f(from, replay); }
   window.SX = {
     show(s, from){ shown = true; const was = state; if (was !== s) toggleSel = "all"; state = s; requestAnimationFrame(() => { if (shown && state === s) draw(was === s ? -2 : from, false); }); },
@@ -24592,7 +24616,11 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     if (dur) labs.style("opacity", 0).transition().delay(dur * .5).duration(300).style("opacity", 1);
   }
 
-  function render(anim){ if (!shown || state < 0 || !data()) return; lw = host.clientWidth; tipHide(); const dur = anim && !reduced() ? 650 : 0; (isTree(state) ? tree : bars)(isAdm(state), dur); askSync(); }
+  /* storyline 7's treemaps as their bars (2026-11-12, Tammy): the switch in the head; the bars are states 70 and 71's own drawing */
+  const viewEl = document.getElementById("syView"); let syView = "tree";   /* storyline 5 opens on the treemaps (2026-11-12, Tammy: briefly bars, then back) */
+  function viewSync(){ if (!viewEl) return; viewEl.hidden = !isTree(state); viewEl.querySelectorAll(".sx-vw").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === syView))); }
+  if (viewEl) viewEl.addEventListener("click", e => { const b = e.target.closest(".sx-vw"); if (!b || b.dataset.v === syView) return; syView = b.dataset.v; render(true); });
+  function render(anim){ if (!shown || state < 0 || !data()) return; lw = host.clientWidth; tipHide(); const dur = anim && !reduced() ? 650 : 0; (isTree(state) && syView === "tree" ? tree : bars)(isAdm(state), dur); viewSync(); askSync(); }
   window.SY = {
     show(s, from){ shown = true; const was = state; state = s; requestAnimationFrame(() => { if (shown && state === s) render(was !== s && from !== -2); }); },
     hide(){ shown = false; state = -1; tipHide(); },
