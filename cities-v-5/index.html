@@ -1834,13 +1834,13 @@
   :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp){margin-top:0;}
   :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) > .wt-mkey{display:none;}
   /* opt 2, four bars or more (2026-11-16): the key names the colours, the bars thin to the room three bars took */
-  html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt--lines.wt--many:not(.wt--cmp) > .wt-mkey{display:flex;justify-content:flex-start;margin:0 0 10px;}
-  html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-mini[data-many]{row-gap:3px;align-content:center;min-height:57px;}
-  html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-mini[data-many] .wt-ml:not(.here){display:none;}
-  html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-mini[data-many] .wt-ml.here{line-height:1;}
-  html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-mini[data-many] .wt-mb{grid-column:2;height:var(--bh);}
-  html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-mini[data-many] .wt-mb.here{height:calc(var(--bh) + 2px);}
-  html:not([data-dd="2"]) .wt-mini[data-many]{--bh:auto;}
+  html[data-ddrows] :is(#page-overview, #page-overview-metro) .wt--lines.wt--many:not(.wt--cmp) > .wt-mkey{display:flex;justify-content:flex-start;margin:0 0 10px;}
+  html[data-ddrows] :is(#page-overview, #page-overview-metro) .wt-mini[data-many]{row-gap:3px;align-content:center;min-height:57px;}
+  html[data-ddrows] :is(#page-overview, #page-overview-metro) .wt-mini[data-many] .wt-ml:not(.here){display:none;}
+  html[data-ddrows] :is(#page-overview, #page-overview-metro) .wt-mini[data-many] .wt-ml.here{line-height:1;}
+  html[data-ddrows] :is(#page-overview, #page-overview-metro) .wt-mini[data-many] .wt-mb{grid-column:2;height:var(--bh);}
+  html[data-ddrows] :is(#page-overview, #page-overview-metro) .wt-mini[data-many] .wt-mb.here{height:calc(var(--bh) + 2px);}
+  html:not([data-ddrows]) .wt-mini[data-many]{--bh:auto;}
   /* a step smaller with the fifth row, employed residents, so the five fit (2026-11-03, Nil) */
   :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ln{grid-template-columns:minmax(0,170px) minmax(0,1fr) 260px;gap:0 24px;padding:13px 0;}
   :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ln-a{gap:3px;}
@@ -3003,30 +3003,111 @@
   @keyframes ddOut{to{opacity:0;}}
   @keyframes ddWinOut{to{opacity:0;transform:translateY(10px);}}
   @media (prefers-reduced-motion: reduce){ #deepDiveOverlay, #deepDiveOverlay .dd-window{animation:none !important;} }
+  /* ---- opt 4's window (2026-11-16, Nil: "remove the dropdown from the variable so user can only view one at a time.
+     adjust the popup styling to be more distinct from the main view - for example, center some text, move it around"):
+     a window on one measure, set on its own axis. The head tinted and centred, the measure's mark and name over the
+     place, the two geographies as a pill under it; the page's ground below, the chart a white card on it, the measure
+     in plain words in its sentence (no picker), the reading centred under the chart, then the questions on that measure
+     alone; the beat's own title gives way to the head ---- */
+  #deepDiveOverlay :is(.dd-mark, .dd-var){display:none;}
+  html[data-dd="4"] #deepDiveOverlay .dd-window{width:min(1080px, 96vw);background:var(--ground);}
+  html[data-dd="4"] #deepDiveOverlay .dd-head{position:relative;flex-direction:column;flex-wrap:nowrap;align-items:center;gap:14px;padding:22px 64px 18px;text-align:center;background:var(--teal-tint);border-bottom:1px solid var(--border);}
+  html[data-dd="4"] #deepDiveOverlay .dd-head .jh-titles{flex:none;order:0;min-width:0;}
+  html[data-dd="4"] #deepDiveOverlay .dd-head h2{display:flex;align-items:center;justify-content:center;gap:12px;}
+  html[data-dd="4"] #deepDiveOverlay .dd-mark{display:flex;flex:none;align-items:center;justify-content:center;width:40px;height:40px;border-radius:10px;background:var(--white);color:var(--teal);box-shadow:0 1px 0 var(--border);}
+  html[data-dd="4"] #deepDiveOverlay .dd-mark svg{width:22px;height:22px;--ic-ground:var(--white);}
+  html[data-dd="4"] #deepDiveOverlay .dd-var{display:block;font-size:26px;font-weight:700;line-height:1.2;letter-spacing:-.3px;color:var(--ink);}
+  html[data-dd="4"] #deepDiveOverlay .dd-head .journey-close{position:absolute;top:14px;right:14px;margin:0;}
+  html[data-dd="4"] #deepDiveOverlay .dd-head .journey-close:hover{background:var(--white);}
+  /* the geographies as a pill, the chosen one filled */
+  html[data-dd="4"] #deepDiveOverlay .dd-switch{order:1;flex:none;}
+  html[data-dd="4"] #deepDiveOverlay .dd-switch-lab{display:none;}
+  html[data-dd="4"] #deepDiveOverlay .dd-seg{border-radius:999px;border-color:var(--teal-soft);}
+  html[data-dd="4"] #deepDiveOverlay .dd-seg-btn{height:32px;padding:0 16px;border-left-color:var(--teal-soft);}
+  html[data-dd="4"] #deepDiveOverlay .dd-seg-btn.is-active{background:var(--teal);color:var(--white);}
+  html[data-dd="4"] #deepDiveOverlay .dd-body{padding:24px 32px 32px;}
+  /* the body: one column, centred */
+  html[data-dd="4"] #ovWrap #deepDiveOverlay .dd-pane:not([hidden]){display:flex;flex-direction:column;align-items:center;gap:20px;flex:0 0 auto;min-height:0;}
+  html[data-dd="4"] #ovWrap #deepDiveOverlay .dd-pane > .page-head{display:none;}
+  html[data-dd="4"] #ovWrap #deepDiveOverlay .dd-pane > .who-sc{order:2;width:100%;max-width:960px;padding:18px 22px 16px;}
+  html[data-dd="4"] #ovWrap #deepDiveOverlay .dd-pane .who-sc-plot{flex:none;height:clamp(300px, 52vh, 500px);}
+  html[data-dd="4"] #ovWrap #deepDiveOverlay .dd-pane > .sc-say{order:1;max-width:680px;text-align:center;}
+  html[data-dd="4"] #ovWrap #deepDiveOverlay .dd-pane > .sc-say .lede{margin:0;font-size:15px;line-height:1.6;color:var(--ink);}
+  html[data-dd="4"] #ovWrap #deepDiveOverlay .who-sc .sc-sentence{font-size:15px;line-height:1.55;}
+  html[data-dd="4"] #ovWrap #deepDiveOverlay .sc-ask .ask-q{font-size:14px;}
+  html[data-dd="4"] #ovWrap #deepDiveOverlay .dd-pane > .sc-ask{order:3;width:100%;max-width:640px;align-self:center;}
+  html[data-dd="4"] #ovWrap #deepDiveOverlay .sc-ask .ask-lab{text-align:center;}
+  html[data-dd="4"] #ovWrap #deepDiveOverlay .sc-ask .ask-item.is-other{display:none;}
+  html[data-dd="4"] #ovWrap #deepDiveOverlay .sc-ask:not(:has(.ask-item:not(.is-other))){display:none;}
+  /* the chart's sentence centred, the measure in plain words, the finder centred under it */
+  html[data-dd="4"] #deepDiveOverlay .sc-pick:not(.sc-year){display:none;}
+  html[data-dd="4"] #deepDiveOverlay .sc-mword{display:inline;font-weight:600;}
+  html[data-dd="4"] #ovWrap #deepDiveOverlay .who-sc .who-sc-ctl{flex-direction:column;flex-wrap:nowrap;align-items:center;row-gap:10px;text-align:center;}
+  html[data-dd="4"] #ovWrap #deepDiveOverlay .who-sc .sc-sentence{flex:none;}
+  html[data-dd="4"] #ovWrap #deepDiveOverlay .who-sc .who-sc-ctl .sc-find{margin:0 !important;flex:none;}
+  html[data-dd="4"] #ovWrap #deepDiveOverlay .who-sc-peers .wt-peers{justify-content:center;text-align:center;}
+  html[data-dd="4"] #ovWrap #deepDiveOverlay .who-sc-peers .wt-pgrp{flex:0 1 auto;justify-content:center;}
+  @media (max-width:599px){
+    html[data-dd="4"] #deepDiveOverlay .dd-head{padding:16px 48px 14px;gap:10px;}
+    html[data-dd="4"] #deepDiveOverlay .dd-head .journey-close{top:8px;right:8px;}
+    html[data-dd="4"] #deepDiveOverlay .dd-mark{width:34px;height:34px;} html[data-dd="4"] #deepDiveOverlay .dd-mark svg{width:20px;height:20px;}
+    html[data-dd="4"] #deepDiveOverlay .dd-var{font-size:22px;}
+    html[data-dd="4"] #deepDiveOverlay .dd-switch{width:100%;max-width:360px;}
+    html[data-dd="4"] #deepDiveOverlay .dd-body{padding:18px 12px 24px;}
+    html[data-dd="4"] #ovWrap #deepDiveOverlay .dd-pane > .who-sc{padding:12px 10px 10px;}
+    html[data-dd="4"] #ovWrap #deepDiveOverlay .dd-pane .who-sc-plot{height:clamp(280px, 48vh, 400px);}
+    html[data-dd="4"] #ovWrap #deepDiveOverlay .who-sc .who-sc-ctl .sc-find{width:100%;}
+  }
   /* ---- the Deep dive's choice 2 (2026-11-16, Nil: "In opt-2: when user clicks on a closest peer, replace the map with
      scatter plot to show the comparison. the scatter plot should still highlight the specific button and draw the bar
      line"): no cards and no window; the beat's chart (the same section the window hosts, moved) stands in the map's
      box while a peer or the peer average is pressed, over the map, which keeps its place. html[data-dd] is the pill's
-     choice ---- */
-  html[data-dd="2"] .dd-entry{display:none !important;}
+     choice; html[data-ddrows] marks the choices whose rows are the switches (2, 3 and 4) ---- */
+  html[data-ddrows] .dd-entry{display:none !important;}
   /* opt 2's rows as the chart's switches (2026-11-16, review): a switch at each measure's row end, the whole row answers,
      the row the chart draws tinted with the city's edge, its name and switch in teal */
-  .wt-go, .wt-how2{display:none;}
-  html[data-dd="2"] .wt-how1{display:none;} html[data-dd="2"] .wt-how2{display:inline;}
-  html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ln{position:relative;padding-left:12px;padding-right:52px;}
-  @media (min-width:600px){ html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ln{grid-template-columns:minmax(0,140px) minmax(0,1fr) 224px;gap:0 18px;} }
-  html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) > .wt-mkey{padding-left:12px;}
-  html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-ln[data-sk]{cursor:pointer;transition:background-color .15s ease, box-shadow .15s ease;}
-  html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-ln[data-sk]:hover{background:var(--teal-tint);}
-  html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-go{display:flex;align-items:center;justify-content:center;position:absolute;right:8px;top:50%;transform:translateY(-50%);
+  .wt-go, .wt-how2, .wt-how3{display:none;}
+  /* the hint under the beat's own table; the chart's peers row (in opt 4's window) keeps its first */
+  html[data-ddrows] :is(#page-overview, #page-overview-metro) .wt .wt-how1{display:none;}
+  html[data-ddrows]:not([data-dd="4"]) :is(#page-overview, #page-overview-metro) .wt .wt-how2{display:inline;}
+  html[data-dd="4"] :is(#page-overview, #page-overview-metro) .wt .wt-how3{display:inline;}
+  /* opt 3 (2026-11-16): a mark a measure, in a tinted square at the row's head, so the five rows read at a glance; the
+     name column widens for it */
+  :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ln-a.has-ic{display:grid;grid-template-columns:32px minmax(0,1fr);column-gap:20px;row-gap:3px;align-items:center;}
+  :is(#page-overview, #page-overview-metro) .wt-ln-a.has-ic > :not(.wt-ic){grid-column:2;}
+  .wt-ic{grid-column:1;grid-row:1 / span 3;display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:6px;--ic-ground:var(--teal-tint);background:var(--ic-ground);color:var(--teal);transition:background-color .15s ease;}
+  .wt-ic svg{display:block;width:18px;height:18px;}
+  html[data-ddrows] :is(#page-overview, #page-overview-metro) .wt-ln:is(.is-pick, [data-sk]:hover) .wt-ic{--ic-ground:var(--white);}
+  @media (min-width:600px){ html[data-dd="3"][data-ddrows] :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ln{grid-template-columns:minmax(0,196px) minmax(0,1fr) 204px;} }
+  /* a narrower window: the square a size down, the bars a little narrower, so the takeaways keep opt 2's room */
+  @media (min-width:600px) and (max-width:1279px){
+    html[data-dd="3"][data-ddrows] :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ln{grid-template-columns:minmax(0,174px) minmax(0,1fr) 196px;}
+    :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ln-a.has-ic{grid-template-columns:26px minmax(0,1fr);column-gap:16px;}
+    .wt-ic{width:26px;height:26px;border-radius:5px;} .wt-ic svg{width:16px;height:16px;}
+  }
+  /* opt 3's chart has no measure picker: the rows choose, so the sentence names the measure in plain words */
+  .sc-mword{display:none;}
+  html[data-dd="3"] #ddFig .sc-pick:not(.sc-year){display:none;}
+  html[data-dd="3"] #ddFig .sc-mword{display:inline;font-weight:600;}
+  /* opt 3's peers (2026-11-16, Nil: "move the peer cities selector into the chart on the side"): the chart's own row of
+     chips, with the peer average's, under the plot; the table keeps only its hint */
+  html[data-dd="3"] #ovWrap #ddFig .who-sc-peers{display:block;}
+  html[data-dd="3"] #ovWrap #ddFig .who-sc-peers .wt-peers{margin:0;}
+  .wt-how--solo{margin:16px 0 0;font-size:13px;color:var(--ink-soft);}
+  html[data-ddrows] :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ln{position:relative;padding-left:12px;padding-right:52px;}
+  @media (min-width:600px){ html[data-ddrows] :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ln{grid-template-columns:minmax(0,140px) minmax(0,1fr) 224px;gap:0 18px;} }
+  html[data-ddrows] :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) > .wt-mkey{padding-left:12px;}
+  html[data-ddrows] :is(#page-overview, #page-overview-metro) .wt-ln[data-sk]{cursor:pointer;transition:background-color .15s ease, box-shadow .15s ease;}
+  html[data-ddrows] :is(#page-overview, #page-overview-metro) .wt-ln[data-sk]:hover{background:var(--teal-tint);}
+  html[data-ddrows] :is(#page-overview, #page-overview-metro) .wt-go{display:flex;align-items:center;justify-content:center;position:absolute;right:8px;top:50%;transform:translateY(-50%);
     width:32px;height:32px;padding:0;box-sizing:border-box;border:1px solid var(--border-strong);border-radius:4px;background:var(--white);color:var(--ink-soft);cursor:pointer;transition:background-color .15s ease, color .15s ease, border-color .15s ease;}
-  html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-ln[data-sk]:hover .wt-go{color:var(--teal);border-color:var(--teal);}
-  html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-go:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
-  html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-ln.is-pick{background:var(--teal-tint);box-shadow:inset 3px 0 0 var(--teal);}
-  html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-ln.is-pick .wt-name{color:var(--teal);}
-  html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-ln.is-pick .wt-go{background:var(--teal);border-color:var(--teal);color:var(--white);}
-  @media (max-width:599px){ html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-go{top:14px;transform:none;} }
-  @media (prefers-reduced-motion: reduce){ html[data-dd="2"] :is(#page-overview, #page-overview-metro) :is(.wt-ln[data-sk], .wt-go){transition:none;} }
+  html[data-ddrows] :is(#page-overview, #page-overview-metro) .wt-ln[data-sk]:hover .wt-go{color:var(--teal);border-color:var(--teal);}
+  html[data-ddrows] :is(#page-overview, #page-overview-metro) .wt-go:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
+  html[data-ddrows] :is(#page-overview, #page-overview-metro) .wt-ln.is-pick{background:var(--teal-tint);box-shadow:inset 3px 0 0 var(--teal);}
+  html[data-ddrows] :is(#page-overview, #page-overview-metro) .wt-ln.is-pick .wt-name{color:var(--teal);}
+  html[data-ddrows] :is(#page-overview, #page-overview-metro) .wt-ln.is-pick[data-sk] .wt-go{background:var(--teal);border-color:var(--teal);color:var(--white);}
+  @media (max-width:599px){ html[data-ddrows] :is(#page-overview, #page-overview-metro) .wt-go{top:14px;transform:none;} }
+  @media (prefers-reduced-motion: reduce){ html[data-ddrows] :is(#page-overview, #page-overview-metro) :is(.wt-ln[data-sk], .wt-go, .wt-ic){transition:none;} }
   #ovWrap #ddFig{position:absolute;inset:0;z-index:1002;container-type:inline-size;display:flex;flex-direction:column;box-sizing:border-box;background:var(--white);opacity:0;transition:opacity .3s ease;}
   #ovWrap #ddFig[hidden]{display:none;}
   #ovWrap #ddFig.is-in{opacity:1;}
@@ -3057,6 +3138,7 @@
   /* a narrow box (the map's card at 1024, the band on a phone): the sentence a size down, no finder, so the plot keeps the room */
   @container (max-width:479px){
     #ovWrap #ddFig .sc-find{display:none;}
+    #ovWrap #ddFig .who-sc-peers .wt-how{display:none;}   /* opt 3's chips: the plot keeps the room */
     #ovWrap #ddFig .who-sc .sc-sentence{font-size:14px;line-height:1.5;}
   }
   /* the band on a phone is 320 high */
@@ -8900,10 +8982,10 @@
    address's ?switches are dropped before any script reads them, so every study opens on its default; v-6 keeps them */
 /* a second one is kept (2026-11-16), for the Deep dive study: ?deep=beats puts section 1's two scatter plots back in the
    scroll as beats (DEEP_DIVE) */
-/* and a third (2026-11-16), for the Deep dive pill: ?dd=2 opens section 1 on the pill's choice 2 (the scatter plot in the
-   map's place) */
+/* and a third (2026-11-16), for the Deep dive pill: ?dd=1 to ?dd=4 opens section 1 on that choice of the pill (2, the
+   scatter plot in the map's place, is the default) */
 /* (main's first kept switch, ?b6=both for section 2's beat 6, is not on this branch: section 1 was ported alone, 2026-11-16) */
-if (location.search){ const keep = [/[?&]deep=beats\b/.test(location.search) ? "deep=beats" : "", /[?&]dd=2\b/.test(location.search) ? "dd=2" : ""].filter(Boolean);
+if (location.search){ const keep = [/[?&]deep=beats\b/.test(location.search) ? "deep=beats" : "", (location.search.match(/[?&](dd=[1-4])\b/) || [, ""])[1]].filter(Boolean);
   history.replaceState(null, "", location.pathname + (keep.length ? "?" + keep.join("&") : "") + location.hash); }</script>
 <script>/* ?colours=16, 11, 10 or 9 shows that colour system beside the thirteen (HANDOFF §6c) */
 (function(){ var m = /[?&]colours=(16|11|10|9)\b/.exec(location.search); if (m) document.documentElement.dataset.colours = m[1]; })();</script>
@@ -11091,24 +11173,40 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     panes.forEach((p, i) => { p.classList.add("dd-pane"); p.classList.remove("is-on"); p.dataset.dd = i ? "metro" : "admin"; p.hidden = true; stage.appendChild(p); });
     wrap.appendChild(ov);
     let cur = "admin";
-    /* the pill's choice: "1" the window and its cards, "2" the chart in the map's place (below) */
-    let dd = /[?&]dd=1\b/.test(location.search) ? "1" : "2";   /* opt 2 the default (2026-11-16, Nil); ?dd=1 the window */
-    document.documentElement.dataset.dd = dd;
+    /* the pill's choice: "1" the window and its cards, "2" the chart in the map's place (below); "3" (2026-11-16) is 2 with
+       population a measure too, drawn as bubbles, a mark at each row's head and no picker on the chart; "4" (2026-11-16)
+       is 2's rows, but a row's switch opens the chart in 1's window */
+    let dd = (location.search.match(/[?&]dd=([1-4])\b/) || [, "2"])[1];   /* opt 2 the default (2026-11-16, Nil) */
+    /* the chart where the map was (2, 3); the window (1, 4); the rows as switches (2, 3, 4) */
+    const inMap = () => dd === "2" || dd === "3";
+    const applyDd = () => { const r = document.documentElement; r.dataset.dd = dd; if (dd === "1") delete r.dataset.ddrows; else r.dataset.ddrows = ""; };
+    applyDd();
+    /* opt 4 (2026-11-16, Nil: "remove the dropdown from the variable so user can only view one at a time ... adjust the
+       popup styling to be more distinct from the main view"): the head is the measure's, its mark and name over the place */
+    function heading(){
+      const c = window.WHO_SC && window.WHO_SC[cur];
+      if (dd !== "4" || !c){ title.innerHTML = NAME(cur); return; }
+      const nm = c.k === "yp" ? c.M.yp.long : c.M[c.k].name, mk = window.whoMark ? window.whoMark(c.k) : "";
+      title.innerHTML = (mk ? '<span class="dd-mark" aria-hidden="true">' + mk + '</span>' : '') + '<span class="dd-var">' + nm + '</span>' +
+        '<span class="vh">, ' + city() + (cur === "metro" ? " Metro among US metros" : " Admin among US admins") + '</span>';
+    }
     function show(set, m){
       cur = set === "metro" ? "metro" : "admin";
       panes.forEach(p => { p.hidden = p.dataset.dd !== cur; });
-      title.innerHTML = NAME(cur);
       ov.querySelectorAll(".dd-seg-btn").forEach(b => { const on = b.dataset.dd === cur; b.classList.toggle("is-active", on); b.setAttribute("aria-pressed", String(on)); });
       /* the chart draws in the window's box: it arrives here, not by the scroll */
       const c = window.WHO_SC && window.WHO_SC[cur];
       if (c){ if (m && c.set && m !== c.k) c.set(m); if (c.enter) c.enter(); }
+      heading();
       stage.scrollTop = 0;
     }
     /* the window rises at a scale under 1, and the chart measured it then: drawn again at the size it settles to */
     const win = ov.querySelector(".dd-window");
     win.addEventListener("animationend", ev => { if (ev.target !== win || !isOpen() || ov.classList.contains("is-closing")) return;
       const c = window.WHO_SC && window.WHO_SC[cur]; if (c && c.rearrange) c.rearrange(); });
-    ov.querySelector(".dd-seg").addEventListener("click", ev => { const b = ev.target.closest(".dd-seg-btn"); if (b && b.dataset.dd !== cur) show(b.dataset.dd); });
+    /* the other geography; in opt 4 on the same measure, the window being that one measure's */
+    ov.querySelector(".dd-seg").addEventListener("click", ev => { const b = ev.target.closest(".dd-seg-btn"); if (!b || b.dataset.dd === cur) return;
+      const c = window.WHO_SC && window.WHO_SC[cur]; show(b.dataset.dd, dd === "4" && c ? c.k : undefined); });
 
     /* -- the dialog's manners: the focus in and back, Escape, the keyboard kept inside, the page behind inert and still -- */
     let opener = null, inerted = [], closing = 0, tipUp = false;
@@ -11142,7 +11240,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       e.preventDefault(); close();
     }
     function open(from, preset){
-      if (dd === "2") return;   /* the pill's choice 2 has no window */
+      if (inMap()) return;   /* the pill's choices 2 and 3 have no window */
       if (isOpen() && !ov.classList.contains("is-closing")) return;
       if (wrap.classList.contains("is-presenting")) return;   /* the presenter view stands over everything */
       clearTimeout(closing); ov.classList.remove("is-closing");
@@ -11163,7 +11261,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         ov.classList.remove("open", "is-closing"); setInert(false);
         document.documentElement.classList.remove("dd-open");
         if (window.whoRelease) window.whoRelease();
-        const o = opener; opener = null;
+        let o = opener; opener = null;
+        /* opt 4: a row's switch opened it, and its table has been drawn again since (a peer pressed in the window) */
+        if (o && !o.isConnected && o.dataset && o.dataset.sk) o = document.querySelector('.wt-go[data-set="' + o.dataset.set + '"][data-sk="' + o.dataset.sk + '"]');
         if (o && o.focus && o.isConnected && o.getClientRects().length) o.focus({ preventScroll: true });
       };
       if (now === true || matchMedia("(prefers-reduced-motion: reduce)").matches) done();
@@ -11219,8 +11319,15 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     /* the measure the chart in the map's place draws, for the table to mark its row */
     window.ddPicked = set => figLive && figSet === set && window.WHO_SC && window.WHO_SC[set] ? window.WHO_SC[set].k : null;
     function markRows(){
+      /* opt 3: the peers' bars stand only in the chosen row, so the tables are drawn again (the focus kept on its switch) */
+      if (dd === "3"){
+        const a = document.activeElement, go = a && a.classList && a.classList.contains("wt-go") ? [a.dataset.set, a.dataset.sk] : null;
+        Object.values(window.whoTables || {}).forEach(T => { if (T && T.render) T.render(); });
+        if (go){ const nb = document.querySelector('.wt-go[data-set="' + go[0] + '"][data-sk="' + go[1] + '"]'); if (nb && nb !== a) nb.focus({ preventScroll: true }); }
+        return;
+      }
       document.querySelectorAll(".wt-ln[data-sk]").forEach(r => { const on = window.ddPicked(r.dataset.set) === r.dataset.sk, b = r.querySelector(".wt-go");
-        r.classList.toggle("is-pick", on); if (b) b.setAttribute("aria-pressed", String(on)); });
+        r.classList.toggle("is-pick", on); if (b && b.hasAttribute("aria-pressed")) b.setAttribute("aria-pressed", String(on)); });
     }
     /* the sentence over the chart names who is on it: "Boston Admin and Oakland CA among US admins, by average salary ..." */
     function figWho(set){
@@ -11283,7 +11390,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     /* which chart the box should hold: the clicked beat's set, or else the beat on screen's, if it has anything pressed */
     function figCheck(set){
       let want = null;
-      if (dd === "2" && !wrap.classList.contains("is-presenting") && !isOpen() && secOn()){
+      if (inMap() && !wrap.classList.contains("is-presenting") && !isOpen() && secOn()){
         const on = wrap.querySelector(".ov-left > section.ov-block.is-on"), s = set || (on && FIG_BEAT[on.id]);
         want = s && (rowAsk[s] !== undefined ? rowAsk[s] : anyOn(s)) ? s : null;
       }
@@ -11294,23 +11401,30 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     let clickBeat = null;
     document.addEventListener("click", ev => { const b = ev.target.closest && ev.target.closest(".wt-peer"), k = b && b.closest(".ov-block"); clickBeat = k ? k.id : null; }, true);
     document.addEventListener("click", ev => {
-      const b = ev.target.closest && ev.target.closest(".wt-peer"); if (!b || dd !== "2") return;
+      const b = ev.target.closest && ev.target.closest(".wt-peer"); if (!b || !inMap()) return;
       const set = FIG_BEAT[clickBeat]; if (set && b.dataset.set === set){ if (!rowAsk[set]) delete rowAsk[set]; figCheck(set); }
       /* the peer average's switch tells no chart (the charts always draw it); in the map's place the chart draws it only
          while it is pressed, so it is told here */
       if (set && b.dataset.avg && figSet === set) document.dispatchEvent(new CustomEvent("who:peers", { detail: { set } }));
+      /* opt 3: the chips stand in the chart itself; the peer average's switch is told to it the same way */
+      else if (!set && b.dataset.avg && b.closest("#ddFig") && figSet === b.dataset.set) document.dispatchEvent(new CustomEvent("who:peers", { detail: { set: figSet } }));
     });
     /* a measure's row: the chart in the map's place on that measure; the marked row again, back to the map (the peers stay
        pressed in the table) */
     document.addEventListener("click", ev => {
-      if (dd !== "2" || !ev.target.closest) return;
+      if (dd === "1" || !ev.target.closest) return;
       const r = ev.target.closest(".wt-ln[data-sk]"); if (!r || ev.target.closest(".wt-peer, a, select, input")) return;
       const set = r.dataset.set, k = r.dataset.sk, c = window.WHO_SC && window.WHO_SC[set]; if (!c || !FIG_BEAT[r.closest(".ov-block") && r.closest(".ov-block").id]) return;
+      /* opt 4: the window, opened on the row's measure; the switch is the opener the focus goes back to */
+      if (dd === "4"){ open(r.querySelector(".wt-go") || r, { set, m: k }); return; }
+      if (k === "pop" && dd !== "3") return;
       if (window.ddPicked(set) === k){ rowAsk[set] = false; figCheck(set); return; }
       rowAsk[set] = true;
       if (c.k !== k) c.set(k);
       figCheck(set); markRows();
-      const say = r.querySelector(".wt-name"); if (say) figSay.textContent = "Chart in place of the map: " + say.firstChild.textContent + " against population, among US " + (set === "metro" ? "metros" : "admins") + ".";
+      const say = r.querySelector(".wt-name"), among = ", among US " + (set === "metro" ? "metros" : "admins") + ".";
+      if (k === "pop") figSay.textContent = "Chart in place of the map: population, each place a dot along a scale of it" + among;
+      else if (say) figSay.textContent = "Chart in place of the map: " + say.firstChild.textContent + " against population" + among;
     });
     /* the chart's own picker: the marked row follows */
     document.addEventListener("who:measure", () => markRows());
@@ -11320,12 +11434,17 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       const set = figSet, T = tableOf(set); if (!T) return;
       T.on.clear(); T.avg = false; delete rowAsk[set]; T.render(); document.dispatchEvent(new CustomEvent("who:peers", { detail: { set } }));
       figHide();
-      const id = Object.keys(FIG_BEAT).find(k => FIG_BEAT[k] === set), first = id && document.querySelector("#" + id + " .wt-peer");
+      const id = Object.keys(FIG_BEAT).find(k => FIG_BEAT[k] === set), first = id && document.querySelector("#" + id + " .wt-peer, #" + id + " .wt-go");
       if (first) first.focus({ preventScroll: true });
     });
     function setOpt(v){
-      dd = v === "2" ? "2" : "1"; document.documentElement.dataset.dd = dd;
-      if (dd === "2" && isOpen()) close(true);
+      const was = dd;
+      dd = /^[1-4]$/.test(v) ? v : "1"; applyDd();
+      if (inMap() && isOpen()) close(true);
+      /* population's bubbles are opt 3's alone: leaving it, a chart on population goes back to the average salary */
+      if (was === "3" && dd !== "3") ["admin", "metro"].forEach(s => { const c = window.WHO_SC && window.WHO_SC[s]; if (c && c.k === "pop") c.set("wage"); });
+      /* the rows drawn again: opt 3 adds population's switch and the marks, opt 4 its switches' window mark */
+      Object.values(window.whoTables || {}).forEach(T => { if (T && T.render) T.render(); });
       figCheck();
     }
     /* the pill (section 2's storyline pill, cornerPill above), on section 1 only, once the section bar is built */
@@ -11333,7 +11452,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     function mountPill(){
       if (pill || !window.cornerPill) return;
       const nb = navBtn(), tool = document.getElementById("tool");
-      pill = window.cornerPill({ label: "Deep dive", choices: [["1", "1", "In a window"], ["2", "2", "In the map\u2019s place"]], get: () => dd, pick: setOpt, shown: secOn, watch: [nb, tool] });
+      pill = window.cornerPill({ label: "Deep dive", choices: [["1", "1", "In a window"], ["2", "2", "In the map\u2019s place"],
+        ["3", "3", "In the map\u2019s place, with population as bubbles"], ["4", "4", "From the rows, in a window"]], get: () => dd, pick: setOpt, shown: secOn, watch: [nb, tool] });
       /* the beat on screen, the presenter view, the section and the tool: the box follows each */
       [nb, tool, wrap].concat(Object.keys(FIG_BEAT).map(id => document.getElementById(id))).forEach(el => { if (el) new MutationObserver(() => figCheck()).observe(el, { attributes: true, attributeFilter: ["class"] }); });
     }
@@ -15299,6 +15419,22 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     /* the Deep dive's chart, opt 2: the scatter's name for each measure it can draw, and the switch's mark (a small scatter) */
     const GO_K = { employed: "emp", salary: "wage", home_value: "home", unemployment: "unemp" };
     const GO_ICON = '<svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true" focusable="false"><path d="M2.5 2v11.5H14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6" cy="10" r="1.4" fill="currentColor"/><circle cx="8.6" cy="6.6" r="1.4" fill="currentColor"/><circle cx="11.6" cy="8.4" r="1.4" fill="currentColor"/><circle cx="12" cy="4.2" r="1.4" fill="currentColor"/></svg>';
+    /* opt 3's marks, one a measure (2026-11-16, Nil: "icons where it might help the user parse the variables more
+       quickly"): people, a briefcase, the pay mark's dollar, a house, the briefcase struck through */
+    const SI = 'stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"';
+    const BAG = '<rect x="2.75" y="6.25" width="14.5" height="10.25" rx="1.75" ' + SI + '/><path d="M7.25 6.25V5A1.5 1.5 0 0 1 8.75 3.5h2.5A1.5 1.5 0 0 1 12.75 5v1.25';
+    const IC = {
+      population: '<circle cx="7.5" cy="6.5" r="2.75" ' + SI + '/><path d="M2.5 16.5c0-2.9 2.2-5 5-5s5 2.1 5 5" ' + SI + '/><circle cx="13.9" cy="7.1" r="2.2" ' + SI + '/><path d="M14.2 11.5c1.9.2 3.3 1.9 3.3 4.2" ' + SI + '/>',
+      employed: BAG + 'M2.75 10.75h14.5" ' + SI + '/>',
+      salary: '<path d="M13.6 6.6c-.45-1.45-1.85-2.35-3.6-2.35-2.05 0-3.55 1.1-3.55 2.75 0 3.75 7.25 2.05 7.25 5.9 0 1.75-1.6 2.9-3.75 2.9-1.85 0-3.35-.9-3.8-2.45M10 2.5v15" ' + SI + '/>',
+      home_value: '<path d="M3 9.25 10 3.5l7 5.75" ' + SI + '/><path d="M4.75 8v8.5h10.5V8" ' + SI + '/><path d="M8.5 16.5v-4.25h3v4.25" ' + SI + '/>',
+      /* the stroke cut out of the bag in the square's own ground, so it reads on the tint and on white */
+      unemployment: BAG + '" ' + SI + '/><path d="M2.5 3 17.5 18" stroke-width="4" stroke-linecap="round" style="stroke:var(--ic-ground)"/><path d="M2.5 3 17.5 18" ' + SI + '/>'
+    };
+    const icon = k => IC[k] ? '<span class="wt-ic" aria-hidden="true"><svg viewBox="0 0 20 20" fill="none" focusable="false">' + IC[k] + '</svg></span>' : '';
+    /* the same marks by the chart's names, for opt 4's window to head itself with */
+    window.whoMark = sk => { const k = { pop: "population", emp: "employed", wage: "salary", home: "home_value", unemp: "unemployment" }[sk];
+      return k ? '<svg viewBox="0 0 20 20" fill="none" aria-hidden="true" focusable="false">' + IC[k] + '</svg>' : ''; };
     const esc = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
     const slug = n => n.toLowerCase().replace(/\s+/g, "-");
     const ARR = up => '<svg class="wt-arr" viewBox="0 0 10 10" aria-hidden="true"><path d="' + (up ? "M5 1 9.5 9H.5Z" : "M5 9 .5 1h9Z") + '" fill="currentColor"/></svg>';
@@ -15380,15 +15516,23 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         /* the bars share one height once a second comparison is on (2026-11-16, Nil, opt 2: "as more bars appear, the bars may
            get thinner to make sure the page doesn't get super long"): from four bars the comparisons' names go to the key over
            the rows, Boston keeps its name, and each bar is as thick as the room allows, so a row never grows */
-        const nOn = 2 + (avg ? 1 : 0) + onPeers.length, many = nOn > 3;
+        /* the pill's choices 3 and 4 (2026-11-16); in 3 the peers' and the peer average's bars (and its takeaway) stand only
+           in the row the chart shows (Nil: "when clicked, only show the bar for the selected row"), their switches in the
+           chart, so the table's own row of them gives way to a hint */
+        const ddo = window.deepDive && window.deepDive.opt, o3 = ddo === "3", o4 = ddo === "4";
+        const pickK = o3 && window.ddPicked ? window.ddPicked(id) : null;
+        const nOn = 2 + (avg ? 1 : 0) + onPeers.length, many = nOn > 3 && (!o3 || !!pickK);
         const thin = n => n > 3 ? ' data-many style="--bh:' + Math.max(3, Math.min(6, Math.floor((40 - (n - 2) * 3) / (n - 1)))) + 'px"' : '';
         let h = '<div class="wt wt--' + mode + (many ? ' wt--many' : '') + '" data-mode="' + mode + '">' + (cards ? '<div class="wt-cards">' : key);
         SKEYS.filter(k => here[k] != null && C.us[k] != null).forEach(k => {
           const v = here[k], us = C.us[k], pa = pavg[k], lower = k === "unemployment";
-          const max = Math.max(v, us, avg ? pa : 0, ...onPeers.map(pr => pr[k])) * 1.04;
+          const sk = GO_K[k] || (o3 && k === "population" ? "pop" : null), picked = !!sk && !!window.ddPicked && window.ddPicked(id) === sk;
+          /* what this row draws beside Boston and the US average */
+          const avgR = avg && (!o3 || picked), peersR = !o3 || picked ? onPeers : [];
+          const max = Math.max(v, us, avgR ? pa : 0, ...peersR.map(pr => pr[k])) * 1.04;
           const name = '<span class="wt-name">' + NAME[k] + (lower ? '<span class="hint">lower is better</span>' : '') + '</span>';
-          const take = '<p class="wt-tk">' + dChip(k, v, us, "US average") + (avg ? dChip(k, v, pa, "Peers") : '') + '</p>';
-          const aria = NAME[k] + ': ' + opts.here + ' ' + fmt(k, v) + ', US average ' + fmt(k, us) + (avg ? ', peer average ' + fmt(k, pa) : '') + onPeers.map(pr => ', ' + pr.name + ' ' + fmt(k, pr[k])).join("");
+          const take = '<p class="wt-tk">' + dChip(k, v, us, "US average") + (avgR ? dChip(k, v, pa, "Peers") : '') + '</p>';
+          const aria = NAME[k] + ': ' + opts.here + ' ' + fmt(k, v) + ', US average ' + fmt(k, us) + (avgR ? ', peer average ' + fmt(k, pa) : '') + peersR.map(pr => ', ' + pr.name + ' ' + fmt(k, pr[k])).join("");
           if (cards){
             h += '<div class="wt-card"><p class="wt-ck">' + name + figure(k, v) + '</p>' + take +
               '<div class="wt-bars" role="img" aria-label="' + aria + '">' + bar(k, "here", opts.here, v, max) + bar(k, "us", "US average", us, max) + (avg ? bar(k, "pa", "Peer average", pa, max) : '') +
@@ -15397,15 +15541,17 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
             /* the row is the chart's switch (2026-11-16, review of opt 2: "have the toggles for charts be in the rows with the
                metrics so you can click on the metric and then see the scatterplot version ... a visual indicator of what metric
                is selected"): each measure the chart can draw has a switch at the row's end, the whole row answers the click, and
-               the row whose measure the chart shows is marked. Population, the chart's other axis, has none */
-            const sk = GO_K[k], picked = !!sk && !!window.ddPicked && window.ddPicked(id) === sk;
-            h += '<div class="wt-ln' + (picked ? ' is-pick' : '') + '"' + (sk ? ' data-sk="' + sk + '" data-set="' + id + '"' : '') + '><div class="wt-ln-a">' + name + figure(k, v) + '</div><div class="wt-ln-b">' + take + '</div>' +
-              '<div class="wt-ln-c"><div class="wt-mini" role="img" aria-label="' + aria + '"' + thin(2 + (avg ? 1 : 0) + onPeers.length) + '>' + mini("here", opts.here, v, max) + mini("us", "US average", us, max) + (avg ? mini("pa", "Peer average", pa, max) : '') +
-              onPeers.map(pr => mini("pe", esc(pr.name), pr[k], max, ' style="--pc:var(--pc-' + slug(pr.name) + ')"')).join("") + '</div></div>' +
-              (sk ? '<button type="button" class="wt-go" data-set="' + id + '" data-sk="' + sk + '" aria-pressed="' + picked + '" aria-label="' + NAME[k] + ' on the chart, against population" title="' + NAME[k] + ' on the chart">' + GO_ICON + '</button>' : '') + '</div>';
+               the row whose measure the chart shows is marked. Population, the chart's other axis, has none, but in the pill's
+               3, where it is a chart of its own (bubbles), and its rows lead with a mark each; in the pill's 4 the switch opens
+               a window, and says so */
+            const goLab = o4 ? 'Open the ' + NAME[k].toLowerCase() + ' chart in a window' : k === "population" ? 'Population on the chart, as bubbles' : NAME[k] + ' on the chart, against population';
+            h += '<div class="wt-ln' + (picked ? ' is-pick' : '') + '"' + (sk ? ' data-sk="' + sk + '" data-set="' + id + '"' : '') + '><div class="wt-ln-a' + (o3 ? ' has-ic' : '') + '">' + (o3 ? icon(k) : '') + name + figure(k, v) + '</div><div class="wt-ln-b">' + take + '</div>' +
+              '<div class="wt-ln-c"><div class="wt-mini" role="img" aria-label="' + aria + '"' + thin(2 + (avgR ? 1 : 0) + peersR.length) + '>' + mini("here", opts.here, v, max) + mini("us", "US average", us, max) + (avgR ? mini("pa", "Peer average", pa, max) : '') +
+              peersR.map(pr => mini("pe", esc(pr.name), pr[k], max, ' style="--pc:var(--pc-' + slug(pr.name) + ')"')).join("") + '</div></div>' +
+              (sk ? '<button type="button" class="wt-go" data-set="' + id + '" data-sk="' + sk + '"' + (o4 ? ' aria-haspopup="dialog"' : ' aria-pressed="' + picked + '"') + ' aria-label="' + goLab + '" title="' + goLab + '">' + GO_ICON + '</button>' : '') + '</div>';
           }
         });
-        return h + (cards ? '</div>' : '') + peersRow(true, true) + '</div>';
+        return h + (cards ? '</div>' : '') + (o3 && !cards ? '<p class="wt-how wt-how--solo">Click a measure to see it on the chart, and a peer there to add it.</p>' : peersRow(true, true)) + '</div>';
       }
       /* opt-5 axis (2026-10-23): a row a measure on one line. One scale for the four rows, multiples of the US average
          spaced as on a slide rule, the US average a dashed line down to the track, Boston a dot with the sentence over it
@@ -15683,7 +15829,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
           /* the peers in a group of their own, so a second line of them starts under the first peer, not under the
              label or the peer average (2026-10-23, Nil) */
           '<span class="wt-pgrp">' + C.peers.map(pr => '<button type="button" class="wt-peer" data-set="' + id + '" data-p="' + esc(pr.name) + '" aria-pressed="' + on.has(pr.name) + '" style="--pc:var(--pc-' + slug(pr.name) + ')"><i aria-hidden="true"></i>' + esc(pr.name) + ' ' + pr.st + '</button>').join("") + '</span>' +
-          '<span class="wt-how"><span class="wt-how1">' + (withAvg ? 'Click the peer average or a peer to show it on the chart.' : 'Click a peer to show it on the chart.') + '</span><span class="wt-how2">Click a measure to see it on the chart, or a peer to add it.</span></span></p>';
+          '<span class="wt-how"><span class="wt-how1">' + (withAvg ? 'Click the peer average or a peer to show it on the chart.' : 'Click a peer to show it on the chart.') + '</span><span class="wt-how2">Click a measure to see it on the chart, or a peer to add it.</span><span class="wt-how3">Click a measure to open its chart, or a peer to add it.</span></span></p>';
       }
       /* the band's tooltips: the mark nearest the pointer (inside a margin
          round it, the dashed line's wider) says its name and figure, the
@@ -16160,7 +16306,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       yearFns.forEach(f => f());
     }
     const tintOn = () => (window.whoRight || "map") === "map";
-    const TKEY = { wage: "salary", home: "home_value", unemp: "unemployment", yp: "yp", emp: "employed" };
+    const TKEY = { wage: "salary", home: "home_value", unemp: "unemployment", yp: "yp", emp: "employed", pop: "population" };
     const fmt = (v, k, full) => {
       const m = M[k];
       if (m.pct) return v.toFixed(1) + "%";
@@ -16260,8 +16406,10 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
          way (2026-10-17, Nil): the measure a blank in it, a native select
          dressed as Metro Industries' .mi-pick; opt-1 keeps the buttons */
       /* it says what the chart holds: the admins LAUS publishes, of about 25,000 people or more; every metro with the measures */
-      const sentence = SW ? '<p class="sc-sentence">' + (noun === "metro" ? "US metros" : "US admins") + ', by <span class="mi-pick sc-pick"><span class="mi-measure" aria-hidden="true"></span><select aria-label="The measure up the side of the chart">' +
-          BTN.map(m => '<option value="' + m + '"' + (m === k ? ' selected' : '') + '>' + M[m].name.toLowerCase() + '</option>').join("") + '</select></span> and population, in ' +
+      /* opt 3 (2026-11-16, Nil: "remove the variable dropdown ... since the user can now use the buttons in each row"): the
+         measure in plain words beside the picker, CSS showing one; population's own chart says "by population" alone */
+      const sentence = SW ? '<p class="sc-sentence">' + (noun === "metro" ? "US metros" : "US admins") + ', by <span class="sc-mlead"' + (k === "pop" ? ' hidden' : '') + '><span class="mi-pick sc-pick"><span class="mi-measure" aria-hidden="true"></span><select aria-label="The measure up the side of the chart">' +
+          BTN.map(m => '<option value="' + m + '"' + (m === k ? ' selected' : '') + '>' + M[m].name.toLowerCase() + '</option>').join("") + '</select></span><span class="sc-mword">' + M[k].name.toLowerCase() + '</span> and </span>population, in ' +
           /* the year a blank too, as the treemap beats have it (2026-11-03, Nil) */
           (THEN ? '<span class="mi-pick sc-pick sc-year"><span class="mi-measure" aria-hidden="true"></span><select aria-label="Year">' +
             [2024, 2014].map(y => '<option value="' + y + '"' + (y === year ? ' selected' : '') + '>' + y + '</option>').join("") + '</select></span>' : year) + '</p>' : '';
@@ -16275,12 +16423,18 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       const pick = host.querySelector(".sc-pick:not(.sc-year) select"), yearPick = host.querySelector(".sc-year select");
       const fitPick = () => [pick, yearPick].forEach(p => { if (!p) return; const mm = p.parentNode.querySelector(".mi-measure"), o = p.options[p.selectedIndex]; if (!mm || !o) return; mm.textContent = o.text; if (mm.offsetWidth) p.style.width = "calc(" + (mm.offsetWidth / parseFloat(getComputedStyle(mm).fontSize)).toFixed(3) + "em + 24px)"; });
       fitPick(); if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitPick);
+      /* opt 3's sentence: the measure's plain words, and no "... and" before population on population's own chart */
+      function askMark(){ if (beat) beat.querySelectorAll(".sc-ask .ask-item[data-m]").forEach(it => it.classList.toggle("is-other", it.dataset.m !== k)); }
+      const mword = () => { const at = beat || host, w = at.querySelector(".sc-mword"), lead = at.querySelector(".sc-mlead");
+        if (w && M[k]) w.textContent = M[k].name.toLowerCase(); if (lead) lead.hidden = k === "pop"; };
       const onSet = T ? T.on : new Set(), isOn = i => onSet.has(rows[i][C.name]);
       /* the Deep dive's choice 2: in the map's place the chart shows only what the chips press, the peer average with them,
          and names a peer as its chip does ("Oakland CA") */
       const inFig = () => !!host.closest("#ddFig"), avgOff = () => inFig() && !(T && T.avg);
       const peerName = i => { const p = inFig() && T && T.C && T.C.peers ? T.C.peers.find(q => q.name === rows[i][C.name]) : null; return p ? p.name + " " + p.st : rows[i][C.name]; };
-      const drawPeers = () => { peersHost.innerHTML = T ? T.peersRow() : "";
+      /* in the map's place the row carries the peer average's switch and the matching card too (opt 3 shows it there, the
+         table's own row giving way to it); in the window, the row as it was */
+      const drawPeers = () => { const f = inFig(); peersHost.dataset.fig = f ? "1" : ""; peersHost.innerHTML = T ? T.peersRow(f, f) : "";
         /* opt-1: a peer shows on the map too */
         const how = tintOn() && peersHost.querySelector(".wt-how"); if (how) how.textContent = "Click a peer to show it on the chart and the map."; };
       /* the grid under the cloud; the US average's line and name over it */
@@ -16300,7 +16454,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       const gCall = el("g", "sc-calls", gMarks);
       let cur = null, curPa = null, geo = null, raf = 0, entered = false;
       /* nothing is left on the edge: the unemployment axis reaches the highest rate */
-      const aria = () => svg.setAttribute("aria-label", M[k].name + " by population, " + year + ": " + (noun === "metro" ? "Boston Metro " : "Boston Admin ") + fmt(rows[hereI][C[k]], k, true) + ", peer average " + fmt(PAVG[k], k, true) +
+      const aria = () => svg.setAttribute("aria-label", (k === "pop" ? "Population, each " + noun + " a dot along a scale of it, " : M[k].name + " by population, ") + year + ": " + (noun === "metro" ? "Boston Metro " : "Boston Admin ") + fmt(rows[hereI][C[k]], k, true) + ", peer average " + fmt(PAVG[k], k, true) +
         (k === "emp" ? ", US average " + Math.round(RATE * 100) + " employed per 100 residents" : ", US average " + fmt(US[k], k, true)) + "." +
         ((window.whoScTip || "card") !== "today" ? " The arrow keys go from " + noun + " to " + noun + ", Home back to " + rows[hereI][C.name] + " " + opts.tag + ", Escape closes the card." : ""));
       aria();
@@ -16317,13 +16471,65 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         /* opt-2 reads it in the words beside the panel */
         const slot = beat && beat.querySelector(".sc-say"); if (slot) slot.innerHTML = t ? '<p class="lede">' + t.innerHTML + '</p>' : ""; };
 
+      /* the side of a measure's chart: its domain, its ticks, and the gutter its tick labels take */
+      const yDom = yk => (M[yk].pct || M[yk].yrs) ? [0, M[yk].max] : pad(ext(yk), true);
+      const yTicks = (yk, yd, H) => M[yk].log ? logTicks(yd[0], yd[1], H) : linTicks(yd[0], yd[1], H);
+      const gutFor = (yk, yt, fs) => Math.max(...yt.map(v => tickFmt(v, yk).length)) * fs * .62 + 10;
+      /* ---- opt 3's population (2026-11-16, Nil: first "shows the city's population relative to other admins or metros as
+         a bubble chart that stylistically follows the other charts", then "make it more similar to a scatter with one axis
+         (consider something vertically oriented)", a vertical beeswarm; later the same day, "build recommendation" for
+         coherence with the other charts): population ACROSS, on the scatters' own axis (their scale, ticks, margins, frame
+         and the gutter of the measure the reader came from), so a measure picked next only raises or lowers each dot. Each
+         place a dot of the scatters' size, grey and opacity, set up or down from the middle at random within a band as thick
+         as places of its size are many (a sina plot), overlapping as the scatters' cloud does, so it has their texture
+         rather than a packed swarm's rows. The subject, the peers and the peer average on the middle line, nudged apart where
+         they would meet; the US average a dashed upright line named over the plot ---- */
+      let side = k === "pop" ? "wage" : k;
+      const SINA_D = .05;   /* places to a square pixel at the cloud's thickest, about the admin scatters' core */
+      const sinas = {};
+      function sinaFor(W, H, m, x){
+        const key = [year, W, H, m.l, m.t, m.b, phone() ? 1 : 0].join(":");
+        if (sinas[key]) return sinas[key];
+        const x0 = m.l, cols = Math.max(1, Math.ceil(W - m.r - x0) + 1), cnt = new Float32Array(cols), is = shown();
+        const col = i => Math.min(cols - 1, Math.max(0, Math.round(x(rows[i][C.pop]) - x0)));
+        is.forEach(i => { cnt[col(i)]++; });
+        /* how many places to a pixel across, smoothed over a few pixels */
+        const sd = Math.max(3, (cols - 1) / 120), R = Math.ceil(sd * 3), ker = [];
+        for (let d = -R; d <= R; d++) ker.push(Math.exp(-d * d / (2 * sd * sd)));
+        const ks = ker.reduce((a, b) => a + b, 0), den = new Float32Array(cols);
+        let peak = 0;
+        for (let c = 0; c < cols; c++){ let s = 0; for (let d = -R; d <= R; d++){ const q = c + d; if (q >= 0 && q < cols) s += cnt[q] * ker[d + R]; }
+          den[c] = s / ks; if (den[c] > peak) peak = den[c]; }
+        /* the band at its thickest as close-set as SINA_D, within the plot; never so thin that a sparse set (the metros) lies flat */
+        const cy = (m.t + H - m.b) / 2, room = (H - m.b - m.t) / 2 - 8;
+        const hPeak = Math.max(room * .45, Math.min(room, peak / (2 * SINA_D))), A = peak ? hPeak / peak : 0;
+        const ys = new Float32Array(n);
+        is.forEach(i => { ys[i] = cy + (2 * jit[i] - 1) * Math.max(2.5, A * den[col(i)]); });
+        return (sinas[key] = { ys, cy });
+      }
+      function swarmLayout(W, H, fs){
+        const sd = yDom(side), m = { l: Math.round(gutFor(side, yTicks(side, sd, H), fs)), r: 14, t: fs + 18, b: fs * 2 + 18 };
+        const xd = pad(ext("pop"), true), x = scale(xd[0], xd[1], m.l, W - m.r, true);
+        const S = sinaFor(W, H, m, x), pos = new Float32Array(n * 2);
+        for (let i = 0; i < n; i++){ pos[2 * i] = x(rows[i][C.pop]); pos[2 * i + 1] = S.ys[i]; }
+        /* the marks on the middle line, each moved up or down by the least that clears those already set */
+        const set = [];
+        const put = (X, r) => { for (let s = 0; s < 400; s++) for (const g of s ? [-1, 1] : [1]){ const Y = S.cy + g * s;
+          if (set.every(([a, b, q]) => Math.hypot(a - X, b - Y) >= q + r + 1.5)){ set.push([X, Y, r]); return Y; } } return S.cy; };
+        pos[2 * hereI + 1] = put(pos[2 * hereI], 7);
+        peerI.forEach(i => { pos[2 * i + 1] = put(pos[2 * i], 5); });
+        const pa = [x(PAVG.pop), put(x(PAVG.pop), 5.5)];
+        return { k: "pop", swarm: true, W, H, m, fs, x, xd, yt: [], pos, pa };
+      }
       function layout(kk){
         /* opt-2: as tall as its box (a taller drawing would be scaled down, and its 13px with it) */
         const PR = plot.getBoundingClientRect(), W = Math.floor(PR.width) || plot.clientWidth, H = SW ? Math.max(180, Math.floor(PR.height) || plot.clientHeight) : phone() ? 280 : 360, fs = 13 * pvK();
+        /* population as its own chart while it is the measure on; as the strip the chart rises from, before it is */
+        if (kk === "pop" && k === "pop" && SW) return swarmLayout(W, H, fs);
         const yk = kk === "pop" ? null : kk;
-        const yd = yk ? ((M[yk].pct || M[yk].yrs) ? [0, M[yk].max] : pad(ext(yk), true)) : null;
-        const yt = yd ? (M[yk].log ? logTicks(yd[0], yd[1], H) : linTicks(yd[0], yd[1], H)) : [];
-        const gut = yk ? Math.max(...yt.map(v => tickFmt(v, yk).length)) * fs * .62 + 10 : 6;
+        const yd = yk ? yDom(yk) : null;
+        const yt = yd ? yTicks(yk, yd, H) : [];
+        const gut = yk ? gutFor(yk, yt, fs) : 6;
         const m = { l: Math.round(gut), r: 14, t: fs + 18, b: fs * 2 + 18 };
         /* the search ends where the plot does, at its last gridline (2026-11-03, Nil: "find admin right aligned with the graph") */
         const fb = (beat || host).querySelector(".sc-find");
@@ -16352,11 +16558,13 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         const line = (cls, x1, y1, x2, y2) => { const e = el("line", cls, gStatic); e.setAttribute("x1", x1); e.setAttribute("y1", y1); e.setAttribute("x2", x2); e.setAttribute("y2", y2); return e; };
         const bottom = H - m.b;
         /* opt-2: a question may wash a population range under the cloud (an open end reaches the edge); nothing with no question */
-        const vis = SW && yd && ask && ask.band ? ask.band : null;
+        /* opt 3's population (L.swarm) is drawn as the scatters are: their population axis, gridlines and frame, no scale up
+           the side, the US average an upright line */
+        const vis = SW && (yd || L.swarm) && ask && ask.band ? ask.band : null;
         if (vis){ const a = Math.max(vis[0], xd[0]), b = Math.min(vis[1] || Infinity, xd[1]), r = el("rect", "sc-band", gStatic);
           r.setAttribute("x", x(a)); r.setAttribute("y", m.t); r.setAttribute("width", Math.max(0, x(b) - x(a))); r.setAttribute("height", bottom - m.t); }
         /* opt-2 draws the axes: a gridline within 6px of one would read as a second edge, so the axis stands in for it */
-        const axes = SW && yd;
+        const axes = SW && (yd || L.swarm);
         logTicks(xd[0], xd[1], W - m.l - m.r).forEach(v => { const X = x(v); if (!axes || X - m.l >= 6) line("sc-grid", X, m.t, X, bottom); t("sc-tick", X, bottom + fs + 6, fmt(v, "pop"), "middle"); });
         t("sc-axt", W - m.r, H - 4, "Population", "end");
         yt.forEach(v => { const Y = y(v); if (!axes || bottom - Y >= 6) line("sc-grid", m.l, Y, W - m.r, Y); t("sc-tick", m.l - 6, Y + fs * .35, tickFmt(v, k), "end"); });
@@ -16364,13 +16572,26 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         if (pick && !pick.style.width) fitPick();
         /* opt-2: the two axes drawn, in the rule Metro Industries' bar charts set under their heads (2026-10-17, Nil) */
         if (axes){ line("sc-axis", m.l, bottom, W - m.r, bottom); line("sc-axis", m.l, m.t, m.l, bottom); }
-        const axt = t("sc-axt", 0, m.t - 10, SW && k === "yp" ? M[k].long : M[k].name, "start");
+        const axt = L.swarm ? null : t("sc-axt", 0, m.t - 10, SW && k === "yp" ? M[k].long : M[k].name, "start");
         /* the note: the question's set while one stands; it stands down rather than meet the axis name.
            No "Each grey dot is a US admin" line otherwise (2026-11-03, Nil): the sentence above says what the dots are */
-        if (SW){ const meets = e => { const p = e.getBBox(), r2 = axt.getBBox(); return p.x < r2.x + r2.width + 12; };
+        if (SW){ const meets = e => { if (!axt) return false; const p = e.getBBox(), r2 = axt.getBBox(); return p.x < r2.x + r2.width + 12; };
           if (setOn()){ const e = t("sc-note", W - m.r, m.t - 10, setNote(), "end"); if (meets(e)) e.remove(); } }
         else t("sc-note", W - m.r, m.t - 10, (tintOn() ? "Each dot is " : "Each grey dot is ") + opts.unit, "end");
-        if (k === "emp"){
+        if (L.swarm){
+          /* the line upright at the US average's population, named over the plot where the scatters name their measure, so
+             it never sits on the cloud; kept inside the chart's width */
+          const X = x(US.pop);
+          if (X >= m.l && X <= W - m.r){
+            line("sc-usavg-halo", X, m.t, X, bottom); line("sc-usavg", X, m.t, X, bottom);
+            const lab = t("sc-avglab", X, m.t - 10, "US average ", "middle"), v = document.createElementNS(NS, "tspan");
+            v.setAttribute("class", "sc-avgval"); v.textContent = fmt(US.pop, "pop"); lab.appendChild(v);
+            const b = lab.getBBox();
+            if (b.x < 0){ lab.setAttribute("x", 0); lab.setAttribute("text-anchor", "start"); }
+            else if (b.x + b.width > W){ lab.setAttribute("x", W); lab.setAttribute("text-anchor", "end"); }
+            gStatic.querySelectorAll(".sc-usavg-halo, .sc-usavg, .sc-avglab").forEach(e => gRef.appendChild(e));
+          }
+        } else if (k === "emp"){
           const p0 = Math.max(xd[0], yd[0] / RATE), p1 = Math.min(xd[1], yd[1] / RATE);
           line("sc-usavg", x(p0), y(p0 * RATE), x(p1), y(p1 * RATE));
           const lab = t("sc-avglab", x(p1) - 6, y(p1 * RATE) + fs + 6, "US average, " + Math.round(RATE * 100) + " per 100 residents", "end");
@@ -16396,14 +16617,15 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         gStatic.querySelectorAll(".sc-axt, .sc-note, .sc-bandlab").forEach(e => { const b = e.getBBox(); boxes.push([b.x - 2, b.y, b.x + b.width + 2, b.y + b.height, 60]); });
         /* the US average's line: a name across it reads as struck through */
         if (L.y && L.k !== "emp" && US[L.k] != null){ const Y = L.y(US[L.k]); boxes.push([m.l, Y - 3, W - m.r, Y + 3, 60, "line"]); }
+        else if (L.swarm && US.pop != null){ const X = L.x(US.pop); boxes.push([X - 3, m.t, X + 3, H - m.b, 60, "line"]); }
         const callI = calls();
         /* the US average's name moves to the line's other end if a marked place sits on it */
         const al = gRef.querySelector(".sc-avglab");
-        if (al && callI.length){ const hit = () => { const b = al.getBBox(); return callI.some(i => { const X = pos[2 * i], Y = pos[2 * i + 1]; return X + 10 > b.x && X - 10 < b.x + b.width && Y + 10 > b.y && Y - 10 < b.y + b.height; }); };
+        if (al && callI.length && !L.swarm){ const hit = () => { const b = al.getBBox(); return callI.some(i => { const X = pos[2 * i], Y = pos[2 * i + 1]; return X + 10 > b.x && X - 10 < b.x + b.width && Y + 10 > b.y && Y - 10 < b.y + b.height; }); };
           if (hit()){ const start = al.getAttribute("text-anchor") === "start"; al.setAttribute("x", start ? W - m.r : m.l + 4); al.setAttribute("text-anchor", start ? "end" : "start"); if (hit()){ al.setAttribute("x", start ? m.l + 4 : W - m.r); al.setAttribute("text-anchor", start ? "start" : "end"); } } }
         const marks = [[pos[2 * hereI], pos[2 * hereI + 1], 8]].concat(peerI.filter(isOn).map(i => [pos[2 * i], pos[2 * i + 1], 6]), callI.map(i => [pos[2 * i], pos[2 * i + 1], 8]), avgOff() ? [] : [[pa[0], pa[1], 8]]);
         marks.forEach(([X, Y, r]) => boxes.push([X - r, Y - r, X + r, Y + r, 12]));
-        const lim = SW && L.yd ? [m.l + 2, 2, W - 2, H - m.b - 2] : [m.l - 4, 2, W - 2, H - m.b + 4];
+        const lim = SW && (L.yd || L.swarm) ? [m.l + 2, 2, W - 2, H - m.b - 2] : [m.l - 4, 2, W - 2, H - m.b + 4];
         const cost = b => { let c = (b[0] < lim[0] || b[2] > lim[2] || b[1] < lim[1] || b[3] > lim[3]) ? 1e6 : 0;
           boxes.forEach(o => { const w = Math.min(b[2], o[2]) - Math.max(b[0], o[0]), h = Math.min(b[3], o[3]) - Math.max(b[1], o[1]); if (w > 0 && h > 0) c += w * h * (o[4] || 3); }); return c; };
         const centres = marks.map(([X, Y]) => [X, Y]);
@@ -16533,6 +16755,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         if (best >= 0) return { i: best, x: cur[2 * best], y: cur[2 * best + 1] };
         /* the US average's dashed line, where no dot is near */
         if (fresh() && k !== "emp" && geo.y && px >= geo.m.l && px <= geo.W - geo.m.r){ const Y = geo.y(US[k]); if (Math.abs(py - Y) <= 5) return { us: true, x: px, y: Y }; }
+        if (fresh() && geo.swarm && py >= geo.m.t && py <= geo.H - geo.m.b){ const X = geo.x(US.pop); if (Math.abs(px - X) <= 5) return { us: true, x: X, y: py }; }
         return null;
       }
       /* what the new cards say */
@@ -16555,7 +16778,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         /* an average is no place to do better or worse: its gaps stay in ink */
         return '<span class="tt-r' + (plain ? "" : (lowBetter(k) ? !up : up) ? " is-good" : " is-bad") + '"><b>' + ARRW(up) + size + '</b>' + escT(words) + '</span>';
       };
-      const WHAT = { wage: "average salary", home: "home value", unemp: "unemployment", yp: "years of pay for a home", emp: "employed residents" };
+      const WHAT = { wage: "average salary", home: "home value", unemp: "unemployment", yp: "years of pay for a home", emp: "employed residents", pop: "population" };
       /* the card's comparisons (2026-11-03, Nil: "compare 2 data points against Boston admin, don't need to mention
          US average"): each names its measure, "18% higher average salary than Boston Admin", population in ink */
       const MORE = { pop: ["larger", "smaller"], emp: ["more", "fewer"], wage: ["higher", "lower"], home: ["higher", "lower"] };
@@ -16578,7 +16801,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       /* counted from the nearer end: "19th lowest", not "1,566th highest" */
       const rankNote = i => { const v = rows[i][C[k]], low = lowBetter(k); let a = 1, b = 1;
         let on = 0; for (let j = 0; j < n; j++){ if (gone[j]) continue; on++; const w = rows[j][C[k]]; if (low ? w < v : w > v) a++; if (low ? w > v : w < v) b++; }
-        const top = a <= b, r = top ? a : b, dir = k === "yp" ? (top ? "fewest" : "most") : low === top ? "lowest" : "highest";
+        const top = a <= b, r = top ? a : b, dir = k === "yp" ? (top ? "fewest" : "most") : k === "pop" ? (top ? "largest" : "smallest") : low === top ? "lowest" : "highest";
+        if (k === "pop") return (r === 1 ? "The " + dir : "The " + ord(r) + " " + dir) + " of the " + on.toLocaleString("en-US") + " " + noun + "s on the chart" + (year !== 2024 ? " in " + year : "") + ".";
         return (r === 1 ? "The " + dir : ord(r) + " " + dir) + " " + WHAT[k] + " of the " + on.toLocaleString("en-US") + " " + noun + "s on the chart" + (year !== 2024 ? " in " + year : "") + "." +
           (k === "unemp" ? " Lower is better." : k === "yp" ? " Fewer is easier to afford." : ""); };
       /* the card's parts: the mark it is about, as drawn, and the references it is set against */
@@ -16601,13 +16825,13 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         const head = '<div class="tt-h"><span>' + escT(d.name) + '</span></div>';
         /* the measure, then population, each against Boston (Boston itself against the peer average) */
         const rowsH = () => { const [who, v, pop] = d.vs, r = [cmpRow(k, d.v, v, who)];
-          if (pop != null && d.pop != null) r.push(cmpRow("pop", d.pop, pop, who));
+          if (pop != null && d.pop != null && k !== "pop") r.push(cmpRow("pop", d.pop, pop, who));
           return '<div class="tt-rows">' + r.join("") + '</div>'; };
-        const kv = (k === "yp" && d.yp ? [["Home value", fmt(d.yp[0], "home")], ["Average salary", fmt(d.yp[1], "wage")]] : []).concat(d.pop != null ? [["Population", popF(d.pop)]] : []);
+        const kv = (k === "yp" && d.yp ? [["Home value", fmt(d.yp[0], "home")], ["Average salary", fmt(d.yp[1], "wage")]] : []).concat(d.pop != null && k !== "pop" ? [["Population", popF(d.pop)]] : []);
         /* the measure and the population as one list, in the same style, then the comparisons (2026-11-03, Nil:
            "show salary and population with the same standard styling and show the comparison after"). The card is the
            only form since the hand-off (2026-11-03: the Card study's other forms were stripped) */
-        const facts = [[k === "yp" ? M.yp.long : M[k].name, fmt(d.v, k)]].concat(kv);
+        const facts = [[k === "yp" ? M.yp.long : M[k].name, k === "pop" ? popF(d.v) : fmt(d.v, k)]].concat(kv);
         return head + '<dl class="tt-kv tt-kv--lead">' + facts.map(([a, b]) => '<dt>' + a + '</dt><dd>' + b + '</dd>').join("") + '</dl>' + rowsH();
       }
       /* centred over the mark, under it where the top has no room, inside the plot either way */
@@ -16698,11 +16922,14 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       if (window.ResizeObserver){ let lw = 0, lh = 0; new ResizeObserver(() => { if (plot.clientWidth === lw && plot.clientHeight === lh) return; lw = plot.clientWidth; lh = plot.clientHeight; if (fresh()) hideTip(); render(false); }).observe(plot); }
       /* the switch: the header, the reading and the axes change at once, the dots move */
       function set(nk, keepAsk){
-        if (!SW || nk === k || BTN.indexOf(nk) < 0) return;
+        if (!SW || nk === k || (BTN.indexOf(nk) < 0 && nk !== "pop")) return;
         if (!keepAsk && ask) closeAsk(false);
         prevK = k; k = nk;
+        /* population's chart keeps the gutter of the measure the reader came from, so going back only moves the dots up or down */
+        if (prevK !== "pop") side = prevK;
         beat.querySelectorAll(".who-sc-ctl .seg-btn").forEach(b => { const on = b.dataset.m === k; b.classList.toggle("is-active", on); b.setAttribute("aria-pressed", String(on)); });
-        if (pick && pick.value !== k){ pick.value = k; fitPick(); }
+        if (pick && pick.value !== k && k !== "pop"){ pick.value = k; fitPick(); }
+        mword(); askMark();
         cmp.innerHTML = headFor(k);
         aria(); say(); hideTip(); gLabels.classList.remove("is-in");
         entered = true;
@@ -16735,6 +16962,10 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         a2: { m: "home", dark: "above", fade: true, callouts: ["0643280", "0668000", "0644000"], note: n => "Dark dots: the " + n + " admins where a home is worth more" },
         m1: { m: "wage", dark: "above", fade: true, callouts: ["41940", "34940", "35620"], note: n => "Dark dots: the " + n + " metros that pay more" },
         m2: { m: "home", dark: "above", fade: true, callouts: ["41940", "27980", "31080"], note: n => "Dark dots: the " + n + " metros where a home is worth more" } };
+      /* each question marked with its measure, and those on another measure than the chart's marked so (opt 4's window, a
+         window on one measure, shows only its own) */
+      if (SW) beat.querySelectorAll(".sc-ask .ask-q[data-ask]").forEach(q => { const st = ASKS[q.dataset.ask]; if (st) q.closest(".ask-item").dataset.m = st.m; });
+      askMark();
       let askBack = null;
       /* the tab on the panel while an answer stands, Metro Industries' own:
          what the chart is showing, and the way back, named for the measure
@@ -16869,7 +17100,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
           arrange(); placeWords(); drawPeers(); cmp.innerHTML = headFor(k); render(false); if (entered && cur) paint(cur, geo.pa); },
         /* the presenter view: the beat arrives without a scroll, and the controls follow the panel */
         enter(){ if (io){ io.disconnect(); io = null; } if (!entered){ entered = true; render(true); } else render(false); },
-        rearrange(){ arrange(); render(false); } };
+        rearrange(){ arrange(); if (peersHost.dataset.fig !== (inFig() ? "1" : "")) drawPeers(); render(false); } };
       /* the beat arrives: the dots move into place once, from the beat before */
       let io = null;
       if (window.IntersectionObserver){
