@@ -2690,6 +2690,11 @@
      quiet until used; it stands on the sentence's first line, at its right, the sentence wrapping beside it */
   .sc-find-ic{position:absolute;left:10px;top:50%;width:14px;height:14px;margin-top:-7px;color:var(--ink-soft);pointer-events:none;}
   .sc-find input{padding-left:32px;width:200px;height:30px;border-color:var(--border-strong);}
+  /* short at rest, its placeholder's width and a little (2026-11-16, Nil: "find admin button can be probably shorter"); in use,
+     focused or holding a name with its Clear, it widens to the room a name needs */
+  .sc-find input{width:140px;padding-right:10px;transition:width .18s ease;}
+  .sc-find input:focus,.sc-find input:not(:placeholder-shown){width:220px;padding-right:54px;}
+  @media (prefers-reduced-motion: reduce){ .sc-find input{transition:none;} }
   .sc-find input::placeholder{color:var(--ink-soft);opacity:1;}
   .sc-find input:hover{border-color:var(--teal);}
   .sc-find-box:focus-within .sc-find-ic{color:var(--teal);}
@@ -3015,19 +3020,30 @@
   /* opt 2's rows as the chart's switches (2026-11-16, review): a switch at each measure's row end, the whole row answers,
      the row the chart draws tinted with the city's edge, its name and switch in teal */
   .wt-go, .wt-how2{display:none;}
+  /* the chart's title names its measure in plain words, set a weight up (2026-11-16, Nil) */
+  .who-sc .sc-sentence .sc-mword{font-weight:600;color:var(--ink);}
   html[data-dd="2"] .wt-how1{display:none;} html[data-dd="2"] .wt-how2{display:inline;}
-  html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ln{position:relative;padding-left:12px;padding-right:52px;}
+  html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ln{position:relative;padding-left:12px;padding-right:78px;}
+  /* the columns give the switch's 112px back by the table's own width (2026-11-16): the bars narrower first, then the names */
+  html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp){container-type:inline-size;}
   @media (min-width:600px){ html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ln{grid-template-columns:minmax(0,140px) minmax(0,1fr) 224px;gap:0 18px;} }
+  @media (min-width:600px){ @container (max-width:699px){ html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ln{grid-template-columns:minmax(0,120px) minmax(0,1fr) 180px;gap:0 12px;padding-right:76px;} } }
   html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) > .wt-mkey{padding-left:12px;}
   html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-ln[data-sk]{cursor:pointer;transition:background-color .15s ease, box-shadow .15s ease;}
   html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-ln[data-sk]:hover{background:var(--teal-tint);}
   html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-go{display:flex;align-items:center;justify-content:center;position:absolute;right:8px;top:50%;transform:translateY(-50%);
-    width:32px;height:32px;padding:0;box-sizing:border-box;border:1px solid var(--border-strong);border-radius:4px;background:var(--white);color:var(--ink-soft);cursor:pointer;transition:background-color .15s ease, color .15s ease, border-color .15s ease;}
+    flex-direction:column;gap:2px;width:58px;height:42px;padding:0 4px;line-height:1;box-sizing:border-box;border:1px solid var(--border-strong);border-radius:4px;background:var(--white);color:var(--teal);font:inherit;font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer;transition:background-color .15s ease, color .15s ease, border-color .15s ease;}
+  /* "Compare" at 12px, an exception to the 13px floor (2026-11-16, Nil), on a second line under its mark ("try writing
+     compare as a second line"), so the switch takes 58px of the row */
+  html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-go svg{flex:none;width:14px;height:14px;}
   html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-ln[data-sk]:hover .wt-go{color:var(--teal);border-color:var(--teal);}
   html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-go:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
   html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-ln.is-pick{background:var(--teal-tint);box-shadow:inset 3px 0 0 var(--teal);}
   html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-ln.is-pick .wt-name{color:var(--teal);}
   html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-ln.is-pick .wt-go{background:var(--teal);border-color:var(--teal);color:var(--white);}
+  /* the pressed switch under the pointer darkens as the house's filled buttons do (.btn-journey, .chat-send), its mark and
+     word staying white (2026-11-16, Nil: the teal hover on the teal fill read as a block) */
+  html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-ln.is-pick[data-sk]:hover .wt-go{background:var(--teal-dark);border-color:var(--teal-dark);color:var(--white);box-shadow:inset 0 0 0 999px rgba(26,34,38,.2);}
   @media (max-width:599px){ html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-go{top:14px;transform:none;} }
   @media (prefers-reduced-motion: reduce){ html[data-dd="2"] :is(#page-overview, #page-overview-metro) :is(.wt-ln[data-sk], .wt-go){transition:none;} }
   #ovWrap #ddFig{position:absolute;inset:0;z-index:1002;container-type:inline-size;display:flex;flex-direction:column;box-sizing:border-box;background:var(--white);opacity:0;transition:opacity .3s ease;}
@@ -5630,15 +5646,9 @@
   .wf-key i.wf-k-sw.wf-k-sw--cin{--sw:var(--flow-in);background:var(--flow-in-soft);} .wf-key i.wf-k-sw.wf-k-sw--cout{--sw:var(--flow-out);background:var(--flow-out-soft);}
   .wf-key .wf-k-sw--out-solid{--sw:var(--flow-out);}
   #wfTip .tip-sw--cin{background:var(--flow-in-soft);box-shadow:inset 0 0 0 1px var(--flow-in);} #wfTip .tip-sw--cout{background:var(--flow-out-soft);box-shadow:inset 0 0 0 1px var(--flow-out);}
-  /* beat 6's tick (2026-11-15, Nil: "it looks confusing, how about we put the right and left column as toggle, and turn
-     it off by default"): one tick under the beat's sentence, in beat 4's ticks' look (.wf-check), on beat 6 alone. Off,
-     the net bars alone; on, the two counts' thin bars behind them */
-  #miFigure #wfB6Opt{display:none;}
-  #miFigure.is-admin[data-step="10"]:not(.is-b4sk) #wfB6Opt{display:flex;order:1;flex:0 0 100%;align-items:center;margin:0;font-size:14px;line-height:1.35;color:var(--ink);}
-  .ct-panel.is-presenting #miFigure.is-admin[data-step="10"]:not(.is-b4sk) #wfB6Opt{font-size:max(16px, calc(15.5px * var(--pv-k, 1)));}
-  /* its box 24px tall to a finger without moving the rows under it, and the box itself to the presenter's scale */
-  #page-export-basket #wfB6Opt .wf-check{padding:3px 0;margin:-3px 0;}
-  .ct-panel.is-presenting #miFigure #wfB6Opt .wf-check input{width:calc(16px * var(--pv-k, 1));height:calc(16px * var(--pv-k, 1));}
+  /* beat 6's choice lives in its sentence as a blank (2026-11-16, Nil: "the toggle seems off - the location how it
+     clutters, the long sentence"): "net" or "net, with both counts", beside the year's blank */
+  #miFigure #wfSentenceSk6 .wf-b6-pick{margin-right:0;}
   /* beat 6's key keeps inside the frame (2026-11-15): the strip under the drawing is as tall as the hidden sector key
      that holds it open or as this key, whichever is the taller (the two in one grid cell), so a key of more lines in a
      narrower frame grows the frame instead of running under its edge; and never under 58px, the key's two lines with
@@ -5692,15 +5702,15 @@
   /* the card is beats 1 to 3's .rca-tip, part for part (2026-10-28, Nil: "make sure everything else are the same, size,
      color etc."). Its one addition: a group's row, and a group's head, carry the key's mark under the chart, the swatch
      and the flow icon (the bars' rows the icon alone, as their key has it) */
-  #wfTip .tip-grid dt{display:flex;align-items:center;gap:5px;}
-  #wfTip :is(.tip-grid dt,.tip-sector) > i.tip-sw{width:10px;height:10px;flex:none;}
-  #wfTip .tip-sw--non{background:var(--flow-in);} #wfTip .tip-sw--res{background:var(--flow-both);} #wfTip .tip-sw--out{background:var(--flow-out);}
-  #wfTip .tip-sw--rest{background:var(--flow-rest);}
-  #wfTip :is(.tip-grid dt,.tip-sector) .vn-ico{width:22px;height:15px;flex:none;}
-  #wfTip :is(.tip-grid dt,.tip-sector) .vn-ico--both{width:12px;}
+  :is(#wfTip,#mcTip) .tip-grid dt{display:flex;align-items:center;gap:5px;}
+  :is(#wfTip,#mcTip) :is(.tip-grid dt,.tip-sector) > i.tip-sw{width:10px;height:10px;flex:none;}
+  :is(#wfTip,#mcTip) .tip-sw--non{background:var(--flow-in);} :is(#wfTip,#mcTip) .tip-sw--res{background:var(--flow-both);} :is(#wfTip,#mcTip) .tip-sw--out{background:var(--flow-out);}
+  :is(#wfTip,#mcTip) .tip-sw--rest{background:var(--flow-rest);}
+  :is(#wfTip,#mcTip) :is(.tip-grid dt,.tip-sector) .vn-ico{width:22px;height:15px;flex:none;}
+  :is(#wfTip,#mcTip) :is(.tip-grid dt,.tip-sector) .vn-ico--both{width:12px;}
   /* beats 4 to 6's cards (2026-11-03): a hairline over the second grid, a share in its count's type, a group's mark in its title */
-  #wfTip .tip-grid--ruled{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
-  #wfTip .tip-sh{margin-left:4px;}
+  :is(#wfTip,#mcTip) .tip-grid--ruled{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+  :is(#wfTip,#mcTip) .tip-sh{margin-left:4px;}
   /* beat 6's gain leads its sector's card: the words, then the count large at the right, as the rows under it stand */
   #wfTip .tip-lead--gain{justify-content:space-between;}
   /* the net is the card's first reading (2026-11-15, Nil: the emphasis on net moves from the bars to the tooltip and the needle) */
@@ -6474,6 +6484,8 @@
   #miFigure.is-mclust > .mi-table{display:none !important;}
   .mc-head{display:flex;align-items:center;gap:8px 16px;flex-wrap:wrap;margin:0 0 6px;}
   .mc-head .mc-title{flex:1 1 auto;min-width:0;margin:0;font-size:16px;line-height:1.6;font-weight:400;color:var(--ink);}
+  /* beats 4 and 5's sentence at 600 throughout, its place name too (2026-11-16, Nil); section 3's sentence keeps 400 */
+  #miFigure #mcTitle{font-weight:600;}
   .mc-play svg{display:block;flex:none;}
   /* the locator of beats 4 and 5 (2026-11-15; 2026-11-16 merged with the sentence): a little map before the sentence, whose
      first words name the place in its outline's colour; the ring leaves the city once, on the turn from the metro to the city */
@@ -6501,7 +6513,6 @@
   .mc-cell{shape-rendering:crispEdges;stroke:none;transition:opacity .18s ease;}
   .mc-rlab{font-size:13px;fill:var(--ink);}
   .mc-val{font-size:13px;fill:var(--ink-soft);pointer-events:none;}
-  .mc-tlist{line-height:1.6;} .mc-tsw{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:-1px;}
   .mc-key b{font-weight:700;}
   .mc-cell.is-dim{opacity:.18;}
   .mc-slab{font-weight:400;pointer-events:none;}
@@ -6519,10 +6530,6 @@
   .mc-key li{display:inline-flex;align-items:center;gap:6px;}
   .mc-key i{display:inline-block;width:10px;height:10px;border-radius:2px;}
   .mc-note{margin:8px 0 0;font-size:13px;line-height:1.4;color:var(--ink-soft);}
-  .mc-hl{border-bottom:1.5px dotted var(--ink-soft);cursor:pointer;white-space:nowrap;transition:background-color .15s ease,border-color .15s ease;}
-  .mc-hl::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--sw,var(--border-strong));margin-right:5px;vertical-align:-1px;}
-  .mc-hl:hover,.mc-hl.is-lit{background:var(--teal-tint);border-bottom-color:var(--teal);}
-  .mc-hl:focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:2px;}
   @media (prefers-reduced-motion: reduce){ .mc-cell{transition:none;} }
   .mi-default[hidden], .mi-alt[hidden],
   .mi-rail-default[hidden], .mi-rail-alt[hidden]{display:none !important;}
@@ -9853,13 +9860,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
                    or the flow as a blank (2026-10-28, Nil: "6/7: also give options to sankey and bar like the other ones.
                    But this time, default to bar"), in beats 4 and 5's words -->
               <!-- no blank for a flow diagram since 2026-11-04 (Nil: "remove the current options"): beat 6 is the two ways, left and right -->
-              <p class="mi-sentence wf-sentence wf-sentence--sk6" id="wfSentenceSk6">Workers <span class="city-short">Boston</span> receives or sends, net, by sector, <span class="wf-s-year">in&nbsp;<span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select class="wf-year" id="wfSYear6" aria-label="Year"><option value="2023" selected>2023</option><option value="2013">2013</option></select></span></span></p>
-              <!-- beat 6's tick (2026-11-15, Nil: "put the right and left column as toggle, and turn it off by default"):
-                   off, the net bars alone; on, the two counts each net comes from as thin bars either side of the zero line -->
-              <div class="wf-b6opt" id="wfB6Opt">
-                <label class="wf-check"><input type="checkbox" id="wfB6Counts" aria-describedby="wfB6Hint"><span>Show jobs located in <span class="city-short">Boston</span> and jobs its residents hold</span></label>
-                <span class="mi-sr" id="wfB6Hint">Adds two thin bars to every sector behind its net bar: the jobs located in Boston to the right of the zero line, the jobs Boston&rsquo;s residents hold to the left, each with its count.</span>
-              </div>
+              <p class="mi-sentence wf-sentence wf-sentence--sk6" id="wfSentenceSk6">Workers <span class="city-short">Boston</span> receives or sends by sector, <span class="mi-pick wf-b6-pick"><span class="mi-measure" aria-hidden="true"></span><select class="wf-b6show" id="wfB6Show" aria-label="Net alone, or net with the two counts it comes from" aria-describedby="wfB6Hint"><option value="net" selected>net</option><option value="both">net, with both counts</option></select></span>, <span class="wf-s-year">in&nbsp;<span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select class="wf-year" id="wfSYear6" aria-label="Year"><option value="2023" selected>2023</option><option value="2013">2013</option></select></span></span><span class="mi-sr" id="wfB6Hint">With both counts, every sector gets two thin bars behind its net bar: the jobs located in Boston to the right of the zero line, the jobs Boston&rsquo;s residents hold to the left, each with its count.</span></p>
               <div class="mi-table wf-table"><button type="button" class="mi-table-btn" id="wfTableBtn" aria-expanded="false" aria-controls="wfTableWrap"><span class="mi-table-btn-txt">Show as table</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button></div>
             </div>
             <div class="tradable-split-header" id="miSplitHead">
@@ -10050,11 +10051,11 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
           <div class="lede-stat-row">
             <p class="lede">Counted where people work, <span class="city-short">Boston</span> Metro has 2.8M jobs, here in its
               20 sectors. Each sector then splits by who holds its jobs.
-              <span class="mc-hl" data-mcwho="rest" tabindex="0" style="--sw:var(--flow-rest)">People who neither live nor work in <span class="city-short">Boston</span></span>
+              People who neither live nor work in <span class="city-short">Boston</span>
               hold 1.9M, about seven in ten. The 719K jobs in <span class="city-short">Boston</span> go to
-              <span class="mc-hl" data-mcwho="non" tabindex="0" style="--sw:var(--flow-in)">non-residents who commute in</span>, 528K, and to
-              <span class="mc-hl" data-mcwho="res" tabindex="0" style="--sw:var(--flow-both)"><span class="city-short">Boston</span> residents</span>, 190K.
-              Its residents hold <span class="mc-hl" data-mcwho="out" tabindex="0" style="--sw:var(--flow-out)">157K more elsewhere</span>.</p>
+              non-residents who commute in, 528K, and to
+              <span class="city-short">Boston</span> residents, 190K.
+              Its residents hold 157K more elsewhere.</p>
           </div>
         </div>
 
@@ -10073,8 +10074,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
             <!-- storyline 2: the words say the scale has changed, from the metro to the city inside its own limits -->
             <p class="lede mi-alt" hidden>From the metro to the city itself: <span class="city-short">Boston</span> admin,
               inside its own limits, has 719K jobs, the two clusters outlined in the metro&rsquo;s chart.
-              <span class="mc-hl" data-mcwho="non" tabindex="0" style="--sw:var(--flow-in)">Non-residents who commute in</span> hold 528K of them, three in four,
-              and <span class="mc-hl" data-mcwho="res" tabindex="0" style="--sw:var(--flow-both)"><span class="city-short">Boston</span> residents</span> 190K.
+              Non-residents who commute in hold 528K of them, three in four,
+              and <span class="city-short">Boston</span> residents 190K.
               Health care and professional services lead both groups.</p>
             <p class="lede wf-b4-sk mi-default"><span class="city-short">Boston</span> has 719K jobs.
               <span class="mi-hl mi-hl-sec" data-who="non" tabindex="0" style="--sw:var(--flow-in)">Non-residents</span> who commute in hold 528K of them, three in four,
@@ -11185,7 +11186,10 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       rowAsk[set] = true;
       if (c.k !== k) c.set(k);
       figCheck(set); markRows();
-      const say = r.querySelector(".wt-name"); if (say) figSay.textContent = "Chart in place of the map: " + say.firstChild.textContent + " against population, among US " + (set === "metro" ? "metros" : "admins") + ".";
+      const say = r.querySelector(".wt-name"), among = ", among US " + (set === "metro" ? "metros" : "admins") + ".";
+      /* population's own chart (2026-11-16, after the Deep dive's opt 3): each place a dot along a scale of it */
+      if (k === "pop") figSay.textContent = "Chart in place of the map: population, each place a dot along a scale of it" + among;
+      else if (say) figSay.textContent = "Chart in place of the map: " + say.firstChild.textContent + " against population" + among;
     });
     /* the chart's own picker: the marked row follows */
     document.addEventListener("who:measure", () => markRows());
@@ -11205,10 +11209,13 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     }
     /* the pill (section 2's storyline pill, cornerPill above), on section 1 only, once the section bar is built */
     let pill = null;
+    /* the pill is hidden since 2026-11-16 (Nil: "hide the options since we decided to go with the option 2"); choice 2
+       stands, ?dd=1 still opens choice 1 */
+    const DD_PILL = false;
     function mountPill(){
       if (pill || !window.cornerPill) return;
       const nb = navBtn(), tool = document.getElementById("tool");
-      pill = window.cornerPill({ label: "Deep dive", choices: [["1", "1", "In a window"], ["2", "2", "In the map\u2019s place"]], get: () => dd, pick: setOpt, shown: secOn, watch: [nb, tool] });
+      pill = window.cornerPill({ label: "Deep dive", choices: [["1", "1", "In a window"], ["2", "2", "In the map\u2019s place"]], get: () => dd, pick: setOpt, shown: () => DD_PILL && secOn(), watch: [nb, tool] });
       /* the beat on screen, the presenter view, the section and the tool: the box follows each */
       [nb, tool, wrap].concat(Object.keys(FIG_BEAT).map(id => document.getElementById(id))).forEach(el => { if (el) new MutationObserver(() => figCheck()).observe(el, { attributes: true, attributeFilter: ["class"] }); });
     }
@@ -15497,7 +15504,12 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
        bars, band and axis forms keep the four, the band having no distribution for it */
     const SKEYS = ["population", "employed", "salary", "home_value", "unemployment"];
     /* the Deep dive's chart, opt 2: the scatter's name for each measure it can draw, and the switch's mark (a small scatter) */
-    const GO_K = { employed: "emp", salary: "wage", home_value: "home", unemployment: "unemp" };
+    /* population too (2026-11-16, Nil, after the Deep dive's opt 3: "population row also get the compare button and it opens
+       the scatter chart"): its chart is every place along the population scale alone */
+    const GO_K = { population: "pop", employed: "emp", salary: "wage", home_value: "home", unemployment: "unemp" };
+    /* one word in both states (2026-11-16, Nil: "make the button as short as possible"): the pressed one is filled, its
+       scatter mark kept */
+    const GO_OFF = "Compare", GO_ON = "Compare";
     const GO_ICON = '<svg viewBox="0 0 16 16" width="16" height="16" fill="none" aria-hidden="true" focusable="false"><path d="M2.5 2v11.5H14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6" cy="10" r="1.4" fill="currentColor"/><circle cx="8.6" cy="6.6" r="1.4" fill="currentColor"/><circle cx="11.6" cy="8.4" r="1.4" fill="currentColor"/><circle cx="12" cy="4.2" r="1.4" fill="currentColor"/></svg>';
     const esc = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
     const slug = n => n.toLowerCase().replace(/\s+/g, "-");
@@ -15582,6 +15594,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
            the rows, Boston keeps its name, and each bar is as thick as the room allows, so a row never grows */
         const nOn = 2 + (avg ? 1 : 0) + onPeers.length, many = nOn > 3;
         const thin = n => n > 3 ? ' data-many style="--bh:' + Math.max(3, Math.min(6, Math.floor((40 - (n - 2) * 3) / (n - 1)))) + 'px"' : '';
+        /* the switches say what they do (2026-11-16, Nil: "apply A" of scatter-cue-sketches.html): each reads "Compare"; the
+           line over the rows and population's note were removed the same day (Nil) */
+        const one = String(opts.unit || "US admins").replace(/s$/, "");
         let h = '<div class="wt wt--' + mode + (many ? ' wt--many' : '') + '" data-mode="' + mode + '">' + (cards ? '<div class="wt-cards">' : key);
         SKEYS.filter(k => here[k] != null && C.us[k] != null).forEach(k => {
           const v = here[k], us = C.us[k], pa = pavg[k], lower = k === "unemployment";
@@ -15597,12 +15612,12 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
             /* the row is the chart's switch (2026-11-16, review of opt 2: "have the toggles for charts be in the rows with the
                metrics so you can click on the metric and then see the scatterplot version ... a visual indicator of what metric
                is selected"): each measure the chart can draw has a switch at the row's end, the whole row answers the click, and
-               the row whose measure the chart shows is marked. Population, the chart's other axis, has none */
+               the row whose measure the chart shows is marked. Population's opens its own chart since 2026-11-16 (GO_K) */
             const sk = GO_K[k], picked = !!sk && !!window.ddPicked && window.ddPicked(id) === sk;
             h += '<div class="wt-ln' + (picked ? ' is-pick' : '') + '"' + (sk ? ' data-sk="' + sk + '" data-set="' + id + '"' : '') + '><div class="wt-ln-a">' + name + figure(k, v) + '</div><div class="wt-ln-b">' + take + '</div>' +
               '<div class="wt-ln-c"><div class="wt-mini" role="img" aria-label="' + aria + '"' + thin(2 + (avg ? 1 : 0) + onPeers.length) + '>' + mini("here", opts.here, v, max) + mini("us", "US average", us, max) + (avg ? mini("pa", "Peer average", pa, max) : '') +
               onPeers.map(pr => mini("pe", esc(pr.name), pr[k], max, ' style="--pc:var(--pc-' + slug(pr.name) + ')"')).join("") + '</div></div>' +
-              (sk ? '<button type="button" class="wt-go" data-set="' + id + '" data-sk="' + sk + '" aria-pressed="' + picked + '" aria-label="' + NAME[k] + ' on the chart, against population" title="' + NAME[k] + ' on the chart">' + GO_ICON + '</button>' : '') + '</div>';
+              (sk ? '<button type="button" class="wt-go" data-set="' + id + '" data-sk="' + sk + '" aria-pressed="' + picked + '" aria-label="Compare ' + NAME[k].toLowerCase() + ' with every ' + one + (sk === "pop" ? '' : ', against population') + '">' + GO_ICON + '<span class="wt-go-w">' + (picked ? GO_ON : GO_OFF) + '</span></button>' : '') + '</div>';
           }
         });
         return h + (cards ? '</div>' : '') + peersRow(true, true) + '</div>';
@@ -15883,7 +15898,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
           /* the peers in a group of their own, so a second line of them starts under the first peer, not under the
              label or the peer average (2026-10-23, Nil) */
           '<span class="wt-pgrp">' + C.peers.map(pr => '<button type="button" class="wt-peer" data-set="' + id + '" data-p="' + esc(pr.name) + '" aria-pressed="' + on.has(pr.name) + '" style="--pc:var(--pc-' + slug(pr.name) + ')"><i aria-hidden="true"></i>' + esc(pr.name) + ' ' + pr.st + '</button>').join("") + '</span>' +
-          '<span class="wt-how"><span class="wt-how1">' + (withAvg ? 'Click the peer average or a peer to show it on the chart.' : 'Click a peer to show it on the chart.') + '</span><span class="wt-how2">Click a measure to see it on the chart, or a peer to add it.</span></span></p>';
+          '<span class="wt-how"><span class="wt-how1">' + (withAvg ? 'Click the peer average or a peer to show it on the chart.' : 'Click a peer to show it on the chart.') + '</span><span class="wt-how2">Click a peer to add it to the table and the chart.</span></span></p>';
       }
       /* the band's tooltips: the mark nearest the pointer (inside a margin
          round it, the dashed line's wider) says its name and figure, the
@@ -16302,6 +16317,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     const ALL = rows.map((r, i) => i);
     /* the chart's year (2026-11-03, Nil: the sentence's 2024 a choice): 2024, or 2014 from who-scatter-2014.js,
        the same rows keyed by id; a row with no 2014 values stands down that year (gone) */
+    const SC_YEAR_PICK = false;
     const THEN = opts.then || null, gone = new Uint8Array(n);
     let year = D.year || 2024;
     const shown = () => ALL.filter(i => !gone[i]);
@@ -16360,7 +16376,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       yearFns.forEach(f => f());
     }
     const tintOn = () => (window.whoRight || "map") === "map";
-    const TKEY = { wage: "salary", home: "home_value", unemp: "unemployment", yp: "yp", emp: "employed" };
+    const TKEY = { wage: "salary", home: "home_value", unemp: "unemployment", yp: "yp", emp: "employed", pop: "population" };
     const fmt = (v, k, full) => {
       const m = M[k];
       if (m.pct) return v.toFixed(1) + "%";
@@ -16460,11 +16476,14 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
          way (2026-10-17, Nil): the measure a blank in it, a native select
          dressed as Metro Industries' .mi-pick; opt-1 keeps the buttons */
       /* it says what the chart holds: the admins LAUS publishes, of about 25,000 people or more; every metro with the measures */
-      const sentence = SW ? '<p class="sc-sentence">' + (noun === "metro" ? "US metros" : "US admins") + ', by <span class="mi-pick sc-pick"><span class="mi-measure" aria-hidden="true"></span><select aria-label="The measure up the side of the chart">' +
-          BTN.map(m => '<option value="' + m + '"' + (m === k ? ' selected' : '') + '>' + M[m].name.toLowerCase() + '</option>').join("") + '</select></span> and population, in ' +
-          /* the year a blank too, as the treemap beats have it (2026-11-03, Nil) */
-          (THEN ? '<span class="mi-pick sc-pick sc-year"><span class="mi-measure" aria-hidden="true"></span><select aria-label="Year">' +
-            [2024, 2014].map(y => '<option value="' + y + '"' + (y === year ? ' selected' : '') + '>' + y + '</option>').join("") + '</select></span>' : year) + '</p>' : '';
+      /* the title names the chart, no picker in it (2026-11-16, Nil, after the Deep dive's opt 3: "we don't give options to
+         change the scatter plot y axis from the control sentence. it will just be a regular title with the y axis bold"):
+         the rows' Compare switches choose the measure; population's own chart is "by population" */
+      const sentence = SW ? '<p class="sc-sentence">' + (noun === "metro" ? "US metros" : "US admins") + ', by <span class="sc-mlead"><b class="sc-mword">' + (k === "pop" ? "population" : M[k].name.toLowerCase()) + '</b><span class="sc-mand"' + (k === "pop" ? ' hidden' : '') + '> and population</span></span>, in ' +
+          /* the year a blank too, as the treemap beats have it (2026-11-03, Nil); since 2026-11-16 plain words, no blank
+             (Nil: "in the first section scatter plots, remove the year selection"): SC_YEAR_PICK brings the blank back */
+          (SC_YEAR_PICK && THEN ? '<span class="mi-pick sc-pick sc-year"><span class="mi-measure" aria-hidden="true"></span><select aria-label="Year">' +
+            [2024, 2014].map(y => '<option value="' + y + '"' + (y === year ? ' selected' : '') + '>' + y + '</option>').join("") + '</select></span>' : '<span class="sc-yr">' + year + '</span>') + '</p>' : '';
       host.innerHTML = (SW ? '<div class="who-fl-ctl who-sc-ctl">' + sentence + '<span class="ctl-label">' + (tintOn() ? "Chart and map show" : "Chart shows") + '</span><div class="seg" role="group" aria-label="The measure up the side of the chart">' +
           BTN.map(m => '<button type="button" class="seg-btn' + (m === k ? ' is-active' : '') + '" data-m="' + m + '" aria-pressed="' + (m === k) + '">' + M[m].name + '</button>').join("") + '</div>' + finder + '</div>' : '') +
         '<div class="who-sc-cmp">' + headFor(k) + '</div>' +
@@ -16475,6 +16494,11 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       const pick = host.querySelector(".sc-pick:not(.sc-year) select"), yearPick = host.querySelector(".sc-year select");
       const fitPick = () => [pick, yearPick].forEach(p => { if (!p) return; const mm = p.parentNode.querySelector(".mi-measure"), o = p.options[p.selectedIndex]; if (!mm || !o) return; mm.textContent = o.text; if (mm.offsetWidth) p.style.width = "calc(" + (mm.offsetWidth / parseFloat(getComputedStyle(mm).fontSize)).toFixed(3) + "em + 24px)"; });
       fitPick(); if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitPick);
+      /* the title's measure in its words; "and population" stands down on population's own chart */
+      /* the title may stand in the beat or travel with the chart (the map's place, the window): each copy follows */
+      const mword = () => [host, beat].forEach(at => { if (!at) return;
+        at.querySelectorAll(".sc-mword").forEach(w => { w.textContent = k === "pop" ? "population" : M[k].name.toLowerCase(); });
+        at.querySelectorAll(".sc-mand").forEach(a => { a.hidden = k === "pop"; }); });
       const onSet = T ? T.on : new Set(), isOn = i => onSet.has(rows[i][C.name]);
       /* the Deep dive's choice 2: in the map's place the chart shows only what the chips press, the peer average with them,
          and names a peer as its chip does ("Oakland CA") */
@@ -16500,7 +16524,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       const gCall = el("g", "sc-calls", gMarks);
       let cur = null, curPa = null, geo = null, raf = 0, entered = false;
       /* nothing is left on the edge: the unemployment axis reaches the highest rate */
-      const aria = () => svg.setAttribute("aria-label", M[k].name + " by population, " + year + ": " + (noun === "metro" ? "Boston Metro " : "Boston Admin ") + fmt(rows[hereI][C[k]], k, true) + ", peer average " + fmt(PAVG[k], k, true) +
+      const aria = () => svg.setAttribute("aria-label", (k === "pop" ? "Population, each " + noun + " a dot along a scale of it, " : M[k].name + " by population, ") + year + ": " + (noun === "metro" ? "Boston Metro " : "Boston Admin ") + fmt(rows[hereI][C[k]], k, true) + ", peer average " + fmt(PAVG[k], k, true) +
         (k === "emp" ? ", US average " + Math.round(RATE * 100) + " employed per 100 residents" : ", US average " + fmt(US[k], k, true)) + "." +
         ((window.whoScTip || "card") !== "today" ? " The arrow keys go from " + noun + " to " + noun + ", Home back to " + rows[hereI][C.name] + " " + opts.tag + ", Escape closes the card." : ""));
       aria();
@@ -16517,13 +16541,65 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         /* opt-2 reads it in the words beside the panel */
         const slot = beat && beat.querySelector(".sc-say"); if (slot) slot.innerHTML = t ? '<p class="lede">' + t.innerHTML + '</p>' : ""; };
 
+      /* the side of a measure's chart: its domain, its ticks, and the gutter its tick labels take */
+      const yDom = yk => (M[yk].pct || M[yk].yrs) ? [0, M[yk].max] : pad(ext(yk), true);
+      const yTicks = (yk, yd, H) => M[yk].log ? logTicks(yd[0], yd[1], H) : linTicks(yd[0], yd[1], H);
+      const gutFor = (yk, yt, fs) => Math.max(...yt.map(v => tickFmt(v, yk).length)) * fs * .62 + 10;
+      /* ---- opt 3's population (2026-11-16, Nil: first "shows the city's population relative to other admins or metros as
+         a bubble chart that stylistically follows the other charts", then "make it more similar to a scatter with one axis
+         (consider something vertically oriented)", a vertical beeswarm; later the same day, "build recommendation" for
+         coherence with the other charts): population ACROSS, on the scatters' own axis (their scale, ticks, margins, frame
+         and the gutter of the measure the reader came from), so a measure picked next only raises or lowers each dot. Each
+         place a dot of the scatters' size, grey and opacity, set up or down from the middle at random within a band as thick
+         as places of its size are many (a sina plot), overlapping as the scatters' cloud does, so it has their texture
+         rather than a packed swarm's rows. The subject, the peers and the peer average on the middle line, nudged apart where
+         they would meet; the US average a dashed upright line named over the plot ---- */
+      let side = k === "pop" ? "wage" : k;
+      const SINA_D = .05;   /* places to a square pixel at the cloud's thickest, about the admin scatters' core */
+      const sinas = {};
+      function sinaFor(W, H, m, x){
+        const key = [year, W, H, m.l, m.t, m.b, phone() ? 1 : 0].join(":");
+        if (sinas[key]) return sinas[key];
+        const x0 = m.l, cols = Math.max(1, Math.ceil(W - m.r - x0) + 1), cnt = new Float32Array(cols), is = shown();
+        const col = i => Math.min(cols - 1, Math.max(0, Math.round(x(rows[i][C.pop]) - x0)));
+        is.forEach(i => { cnt[col(i)]++; });
+        /* how many places to a pixel across, smoothed over a few pixels */
+        const sd = Math.max(3, (cols - 1) / 120), R = Math.ceil(sd * 3), ker = [];
+        for (let d = -R; d <= R; d++) ker.push(Math.exp(-d * d / (2 * sd * sd)));
+        const ks = ker.reduce((a, b) => a + b, 0), den = new Float32Array(cols);
+        let peak = 0;
+        for (let c = 0; c < cols; c++){ let s = 0; for (let d = -R; d <= R; d++){ const q = c + d; if (q >= 0 && q < cols) s += cnt[q] * ker[d + R]; }
+          den[c] = s / ks; if (den[c] > peak) peak = den[c]; }
+        /* the band at its thickest as close-set as SINA_D, within the plot; never so thin that a sparse set (the metros) lies flat */
+        const cy = (m.t + H - m.b) / 2, room = (H - m.b - m.t) / 2 - 8;
+        const hPeak = Math.max(room * .45, Math.min(room, peak / (2 * SINA_D))), A = peak ? hPeak / peak : 0;
+        const ys = new Float32Array(n);
+        is.forEach(i => { ys[i] = cy + (2 * jit[i] - 1) * Math.max(2.5, A * den[col(i)]); });
+        return (sinas[key] = { ys, cy });
+      }
+      function swarmLayout(W, H, fs){
+        const sd = yDom(side), m = { l: Math.round(gutFor(side, yTicks(side, sd, H), fs)), r: 14, t: fs + 18, b: fs * 2 + 18 };
+        const xd = pad(ext("pop"), true), x = scale(xd[0], xd[1], m.l, W - m.r, true);
+        const S = sinaFor(W, H, m, x), pos = new Float32Array(n * 2);
+        for (let i = 0; i < n; i++){ pos[2 * i] = x(rows[i][C.pop]); pos[2 * i + 1] = S.ys[i]; }
+        /* the marks on the middle line, each moved up or down by the least that clears those already set */
+        const set = [];
+        const put = (X, r) => { for (let s = 0; s < 400; s++) for (const g of s ? [-1, 1] : [1]){ const Y = S.cy + g * s;
+          if (set.every(([a, b, q]) => Math.hypot(a - X, b - Y) >= q + r + 1.5)){ set.push([X, Y, r]); return Y; } } return S.cy; };
+        pos[2 * hereI + 1] = put(pos[2 * hereI], 7);
+        peerI.forEach(i => { pos[2 * i + 1] = put(pos[2 * i], 5); });
+        const pa = [x(PAVG.pop), put(x(PAVG.pop), 5.5)];
+        return { k: "pop", swarm: true, W, H, m, fs, x, xd, yt: [], pos, pa };
+      }
       function layout(kk){
         /* opt-2: as tall as its box (a taller drawing would be scaled down, and its 13px with it) */
         const PR = plot.getBoundingClientRect(), W = Math.floor(PR.width) || plot.clientWidth, H = SW ? Math.max(180, Math.floor(PR.height) || plot.clientHeight) : phone() ? 280 : 360, fs = 13 * pvK();
+        /* population as its own chart while it is the measure on; as the strip the chart rises from, before it is */
+        if (kk === "pop" && k === "pop" && SW) return swarmLayout(W, H, fs);
         const yk = kk === "pop" ? null : kk;
-        const yd = yk ? ((M[yk].pct || M[yk].yrs) ? [0, M[yk].max] : pad(ext(yk), true)) : null;
-        const yt = yd ? (M[yk].log ? logTicks(yd[0], yd[1], H) : linTicks(yd[0], yd[1], H)) : [];
-        const gut = yk ? Math.max(...yt.map(v => tickFmt(v, yk).length)) * fs * .62 + 10 : 6;
+        const yd = yk ? yDom(yk) : null;
+        const yt = yd ? yTicks(yk, yd, H) : [];
+        const gut = yk ? gutFor(yk, yt, fs) : 6;
         const m = { l: Math.round(gut), r: 14, t: fs + 18, b: fs * 2 + 18 };
         /* the search ends where the plot does, at its last gridline (2026-11-03, Nil: "find admin right aligned with the graph") */
         const fb = (beat || host).querySelector(".sc-find");
@@ -16552,11 +16628,13 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         const line = (cls, x1, y1, x2, y2) => { const e = el("line", cls, gStatic); e.setAttribute("x1", x1); e.setAttribute("y1", y1); e.setAttribute("x2", x2); e.setAttribute("y2", y2); return e; };
         const bottom = H - m.b;
         /* opt-2: a question may wash a population range under the cloud (an open end reaches the edge); nothing with no question */
-        const vis = SW && yd && ask && ask.band ? ask.band : null;
+        /* opt 3's population (L.swarm) is drawn as the scatters are: their population axis, gridlines and frame, no scale up
+           the side, the US average an upright line */
+        const vis = SW && (yd || L.swarm) && ask && ask.band ? ask.band : null;
         if (vis){ const a = Math.max(vis[0], xd[0]), b = Math.min(vis[1] || Infinity, xd[1]), r = el("rect", "sc-band", gStatic);
           r.setAttribute("x", x(a)); r.setAttribute("y", m.t); r.setAttribute("width", Math.max(0, x(b) - x(a))); r.setAttribute("height", bottom - m.t); }
         /* opt-2 draws the axes: a gridline within 6px of one would read as a second edge, so the axis stands in for it */
-        const axes = SW && yd;
+        const axes = SW && (yd || L.swarm);
         logTicks(xd[0], xd[1], W - m.l - m.r).forEach(v => { const X = x(v); if (!axes || X - m.l >= 6) line("sc-grid", X, m.t, X, bottom); t("sc-tick", X, bottom + fs + 6, fmt(v, "pop"), "middle"); });
         t("sc-axt", W - m.r, H - 4, "Population", "end");
         yt.forEach(v => { const Y = y(v); if (!axes || bottom - Y >= 6) line("sc-grid", m.l, Y, W - m.r, Y); t("sc-tick", m.l - 6, Y + fs * .35, tickFmt(v, k), "end"); });
@@ -16564,13 +16642,26 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         if (pick && !pick.style.width) fitPick();
         /* opt-2: the two axes drawn, in the rule Metro Industries' bar charts set under their heads (2026-10-17, Nil) */
         if (axes){ line("sc-axis", m.l, bottom, W - m.r, bottom); line("sc-axis", m.l, m.t, m.l, bottom); }
-        const axt = t("sc-axt", 0, m.t - 10, SW && k === "yp" ? M[k].long : M[k].name, "start");
+        const axt = L.swarm ? null : t("sc-axt", 0, m.t - 10, SW && k === "yp" ? M[k].long : M[k].name, "start");
         /* the note: the question's set while one stands; it stands down rather than meet the axis name.
            No "Each grey dot is a US admin" line otherwise (2026-11-03, Nil): the sentence above says what the dots are */
-        if (SW){ const meets = e => { const p = e.getBBox(), r2 = axt.getBBox(); return p.x < r2.x + r2.width + 12; };
+        if (SW){ const meets = e => { if (!axt) return false; const p = e.getBBox(), r2 = axt.getBBox(); return p.x < r2.x + r2.width + 12; };
           if (setOn()){ const e = t("sc-note", W - m.r, m.t - 10, setNote(), "end"); if (meets(e)) e.remove(); } }
         else t("sc-note", W - m.r, m.t - 10, (tintOn() ? "Each dot is " : "Each grey dot is ") + opts.unit, "end");
-        if (k === "emp"){
+        if (L.swarm){
+          /* the line upright at the US average's population, named over the plot where the scatters name their measure, so
+             it never sits on the cloud; kept inside the chart's width */
+          const X = x(US.pop);
+          if (X >= m.l && X <= W - m.r){
+            line("sc-usavg-halo", X, m.t, X, bottom); line("sc-usavg", X, m.t, X, bottom);
+            const lab = t("sc-avglab", X, m.t - 10, "US average ", "middle"), v = document.createElementNS(NS, "tspan");
+            v.setAttribute("class", "sc-avgval"); v.textContent = fmt(US.pop, "pop"); lab.appendChild(v);
+            const b = lab.getBBox();
+            if (b.x < 0){ lab.setAttribute("x", 0); lab.setAttribute("text-anchor", "start"); }
+            else if (b.x + b.width > W){ lab.setAttribute("x", W); lab.setAttribute("text-anchor", "end"); }
+            gStatic.querySelectorAll(".sc-usavg-halo, .sc-usavg, .sc-avglab").forEach(e => gRef.appendChild(e));
+          }
+        } else if (k === "emp"){
           const p0 = Math.max(xd[0], yd[0] / RATE), p1 = Math.min(xd[1], yd[1] / RATE);
           line("sc-usavg", x(p0), y(p0 * RATE), x(p1), y(p1 * RATE));
           const lab = t("sc-avglab", x(p1) - 6, y(p1 * RATE) + fs + 6, "US average, " + Math.round(RATE * 100) + " per 100 residents", "end");
@@ -16596,14 +16687,15 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         gStatic.querySelectorAll(".sc-axt, .sc-note, .sc-bandlab").forEach(e => { const b = e.getBBox(); boxes.push([b.x - 2, b.y, b.x + b.width + 2, b.y + b.height, 60]); });
         /* the US average's line: a name across it reads as struck through */
         if (L.y && L.k !== "emp" && US[L.k] != null){ const Y = L.y(US[L.k]); boxes.push([m.l, Y - 3, W - m.r, Y + 3, 60, "line"]); }
+        else if (L.swarm && US.pop != null){ const X = L.x(US.pop); boxes.push([X - 3, m.t, X + 3, H - m.b, 60, "line"]); }
         const callI = calls();
         /* the US average's name moves to the line's other end if a marked place sits on it */
         const al = gRef.querySelector(".sc-avglab");
-        if (al && callI.length){ const hit = () => { const b = al.getBBox(); return callI.some(i => { const X = pos[2 * i], Y = pos[2 * i + 1]; return X + 10 > b.x && X - 10 < b.x + b.width && Y + 10 > b.y && Y - 10 < b.y + b.height; }); };
+        if (al && callI.length && !L.swarm){ const hit = () => { const b = al.getBBox(); return callI.some(i => { const X = pos[2 * i], Y = pos[2 * i + 1]; return X + 10 > b.x && X - 10 < b.x + b.width && Y + 10 > b.y && Y - 10 < b.y + b.height; }); };
           if (hit()){ const start = al.getAttribute("text-anchor") === "start"; al.setAttribute("x", start ? W - m.r : m.l + 4); al.setAttribute("text-anchor", start ? "end" : "start"); if (hit()){ al.setAttribute("x", start ? m.l + 4 : W - m.r); al.setAttribute("text-anchor", start ? "start" : "end"); } } }
         const marks = [[pos[2 * hereI], pos[2 * hereI + 1], 8]].concat(peerI.filter(isOn).map(i => [pos[2 * i], pos[2 * i + 1], 6]), callI.map(i => [pos[2 * i], pos[2 * i + 1], 8]), avgOff() ? [] : [[pa[0], pa[1], 8]]);
         marks.forEach(([X, Y, r]) => boxes.push([X - r, Y - r, X + r, Y + r, 12]));
-        const lim = SW && L.yd ? [m.l + 2, 2, W - 2, H - m.b - 2] : [m.l - 4, 2, W - 2, H - m.b + 4];
+        const lim = SW && (L.yd || L.swarm) ? [m.l + 2, 2, W - 2, H - m.b - 2] : [m.l - 4, 2, W - 2, H - m.b + 4];
         const cost = b => { let c = (b[0] < lim[0] || b[2] > lim[2] || b[1] < lim[1] || b[3] > lim[3]) ? 1e6 : 0;
           boxes.forEach(o => { const w = Math.min(b[2], o[2]) - Math.max(b[0], o[0]), h = Math.min(b[3], o[3]) - Math.max(b[1], o[1]); if (w > 0 && h > 0) c += w * h * (o[4] || 3); }); return c; };
         const centres = marks.map(([X, Y]) => [X, Y]);
@@ -16733,6 +16825,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         if (best >= 0) return { i: best, x: cur[2 * best], y: cur[2 * best + 1] };
         /* the US average's dashed line, where no dot is near */
         if (fresh() && k !== "emp" && geo.y && px >= geo.m.l && px <= geo.W - geo.m.r){ const Y = geo.y(US[k]); if (Math.abs(py - Y) <= 5) return { us: true, x: px, y: Y }; }
+        if (fresh() && geo.swarm && py >= geo.m.t && py <= geo.H - geo.m.b){ const X = geo.x(US.pop); if (Math.abs(px - X) <= 5) return { us: true, x: X, y: py }; }
         return null;
       }
       /* what the new cards say */
@@ -16755,7 +16848,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         /* an average is no place to do better or worse: its gaps stay in ink */
         return '<span class="tt-r' + (plain ? "" : (lowBetter(k) ? !up : up) ? " is-good" : " is-bad") + '"><b>' + ARRW(up) + size + '</b>' + escT(words) + '</span>';
       };
-      const WHAT = { wage: "average salary", home: "home value", unemp: "unemployment", yp: "years of pay for a home", emp: "employed residents" };
+      const WHAT = { wage: "average salary", home: "home value", unemp: "unemployment", yp: "years of pay for a home", emp: "employed residents", pop: "population" };
       /* the card's comparisons (2026-11-03, Nil: "compare 2 data points against Boston admin, don't need to mention
          US average"): each names its measure, "18% higher average salary than Boston Admin", population in ink */
       const MORE = { pop: ["larger", "smaller"], emp: ["more", "fewer"], wage: ["higher", "lower"], home: ["higher", "lower"] };
@@ -16778,7 +16871,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       /* counted from the nearer end: "19th lowest", not "1,566th highest" */
       const rankNote = i => { const v = rows[i][C[k]], low = lowBetter(k); let a = 1, b = 1;
         let on = 0; for (let j = 0; j < n; j++){ if (gone[j]) continue; on++; const w = rows[j][C[k]]; if (low ? w < v : w > v) a++; if (low ? w > v : w < v) b++; }
-        const top = a <= b, r = top ? a : b, dir = k === "yp" ? (top ? "fewest" : "most") : low === top ? "lowest" : "highest";
+        const top = a <= b, r = top ? a : b, dir = k === "yp" ? (top ? "fewest" : "most") : k === "pop" ? (top ? "largest" : "smallest") : low === top ? "lowest" : "highest";
+        if (k === "pop") return (r === 1 ? "The " + dir : "The " + ord(r) + " " + dir) + " of the " + on.toLocaleString("en-US") + " " + noun + "s on the chart" + (year !== 2024 ? " in " + year : "") + ".";
         return (r === 1 ? "The " + dir : ord(r) + " " + dir) + " " + WHAT[k] + " of the " + on.toLocaleString("en-US") + " " + noun + "s on the chart" + (year !== 2024 ? " in " + year : "") + "." +
           (k === "unemp" ? " Lower is better." : k === "yp" ? " Fewer is easier to afford." : ""); };
       /* the card's parts: the mark it is about, as drawn, and the references it is set against */
@@ -16801,13 +16895,13 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         const head = '<div class="tt-h"><span>' + escT(d.name) + '</span></div>';
         /* the measure, then population, each against Boston (Boston itself against the peer average) */
         const rowsH = () => { const [who, v, pop] = d.vs, r = [cmpRow(k, d.v, v, who)];
-          if (pop != null && d.pop != null) r.push(cmpRow("pop", d.pop, pop, who));
+          if (pop != null && d.pop != null && k !== "pop") r.push(cmpRow("pop", d.pop, pop, who));
           return '<div class="tt-rows">' + r.join("") + '</div>'; };
-        const kv = (k === "yp" && d.yp ? [["Home value", fmt(d.yp[0], "home")], ["Average salary", fmt(d.yp[1], "wage")]] : []).concat(d.pop != null ? [["Population", popF(d.pop)]] : []);
+        const kv = (k === "yp" && d.yp ? [["Home value", fmt(d.yp[0], "home")], ["Average salary", fmt(d.yp[1], "wage")]] : []).concat(d.pop != null && k !== "pop" ? [["Population", popF(d.pop)]] : []);
         /* the measure and the population as one list, in the same style, then the comparisons (2026-11-03, Nil:
            "show salary and population with the same standard styling and show the comparison after"). The card is the
            only form since the hand-off (2026-11-03: the Card study's other forms were stripped) */
-        const facts = [[k === "yp" ? M.yp.long : M[k].name, fmt(d.v, k)]].concat(kv);
+        const facts = [[k === "yp" ? M.yp.long : M[k].name, k === "pop" ? popF(d.v) : fmt(d.v, k)]].concat(kv);
         return head + '<dl class="tt-kv tt-kv--lead">' + facts.map(([a, b]) => '<dt>' + a + '</dt><dd>' + b + '</dd>').join("") + '</dl>' + rowsH();
       }
       /* centred over the mark, under it where the top has no room, inside the plot either way */
@@ -16898,11 +16992,14 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       if (window.ResizeObserver){ let lw = 0, lh = 0; new ResizeObserver(() => { if (plot.clientWidth === lw && plot.clientHeight === lh) return; lw = plot.clientWidth; lh = plot.clientHeight; if (fresh()) hideTip(); render(false); }).observe(plot); }
       /* the switch: the header, the reading and the axes change at once, the dots move */
       function set(nk, keepAsk){
-        if (!SW || nk === k || BTN.indexOf(nk) < 0) return;
+        if (!SW || nk === k || (BTN.indexOf(nk) < 0 && nk !== "pop")) return;
         if (!keepAsk && ask) closeAsk(false);
         prevK = k; k = nk;
+        /* population's chart keeps the gutter of the measure the reader came from, so going back only moves the dots up or down */
+        if (prevK !== "pop") side = prevK;
         beat.querySelectorAll(".who-sc-ctl .seg-btn").forEach(b => { const on = b.dataset.m === k; b.classList.toggle("is-active", on); b.setAttribute("aria-pressed", String(on)); });
-        if (pick && pick.value !== k){ pick.value = k; fitPick(); }
+        if (pick && pick.value !== k && k !== "pop"){ pick.value = k; fitPick(); }
+        mword();
         cmp.innerHTML = headFor(k);
         aria(); say(); hideTip(); gLabels.classList.remove("is-in");
         entered = true;
@@ -16916,6 +17013,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       if (yearPick) yearPick.addEventListener("change", () => { if (ask) closeAsk(false); setYear(+yearPick.value); });
       yearFns.push(() => {
         if (yearPick && +yearPick.value !== year){ yearPick.value = String(year); }
+        const yr = host.querySelector(".sc-yr"); if (yr) yr.textContent = year;
         fitPick();
         if (found != null && gone[found]){ found = null; const f = host.querySelector(".sc-find input"), c = host.querySelector(".sc-find-clear"); if (f) f.value = ""; if (c) c.hidden = true; }
         if (kbI != null && gone[kbI]) kbI = null;
@@ -22354,10 +22452,10 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
      the zero line, the jobs located in Boston rightwards and the jobs its residents hold leftwards; turned off, the
      reverse. The axis, the heads, the counts and the values, which change place, fade in over it. No motion under
      reduced motion. The choice holds for the page's life: the beat comes back as the reader left it ---- */
-  const b6Box = document.getElementById("wfB6Counts");
-  if (b6Box) b6Box.checked = b6Counts;
+  const b6Sel = document.getElementById("wfB6Show");
+  if (b6Sel) b6Sel.value = b6Counts ? "both" : "net";
   function b6Set(on){
-    on = !!on; if (b6Box) b6Box.checked = on;
+    on = !!on; if (b6Sel){ b6Sel.value = on ? "both" : "net"; fitPick(b6Sel); }
     if (on === b6Counts) return;
     b6Counts = on;
     if (state !== 2 || !view || asked || away || isSk()) return;
@@ -22377,7 +22475,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     if (!on) setTimeout(() => { if (!b6Counts && state === 2 && view && view.reading === "gain") gRows.selectAll(".ad-bar--thin").classed("ad-bar--thin", false).classed("ad-bar--soft", false).attr("height", 0).style("opacity", 0); }, T + 80);
     hintSoon(T + 500);
   }
-  if (b6Box) b6Box.addEventListener("change", () => b6Set(b6Box.checked));
+  if (b6Sel) b6Sel.addEventListener("change", () => b6Set(b6Sel.value === "both"));
   /* beat 7 on a phone (2026-10-29): the drawing pans, the names stay. Each row's name and its white ground slide with
      the frame's scroll, so the sector a bar belongs to is never off the screen; the rest of the drawing pans under them */
   function pinNames(on){
@@ -24539,7 +24637,6 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     locEl.classList.remove("is-arrive");
     if (adm && was === "metro"){ void locEl.offsetWidth; locEl.classList.add("is-arrive"); }
   }
-  const GSAY = { rest: "held by people who neither live nor work in Boston", non: "held by non-residents who commute into Boston", res: "held by Boston residents who work in the city", out: "held by Boston residents who work elsewhere" };
   const isT = m => m === "tsec" || m === "tgrp", isSec = m => m === "sec" || m === "tsec", isGrp = m => m === "grp" || m === "tgrp";
   const GN = { rest: "Neither live nor work in Boston", non: "Commute into Boston", res: "Live and work in Boston", out: "Live in Boston, work elsewhere" };
   const GS = { rest: "Neither", non: "Commute in", res: "Live and work", out: "Commute out" };
@@ -24806,42 +24903,55 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   }
   playBtn.addEventListener("click", play);
 
-  /* the card: the row under the pointer, the whole sector */
+  /* the card: the sector under the pointer, in the frozen beats' card (2026-11-16, Nil: "make the design aligned with
+     the frozen sections"): beat 1's head (the sector's colour and name, the two-digit name under it), its count and its
+     share of the beat's whole, then under a hairline each group's part with the key's swatch and flow icon, its count
+     and its share of the sector, in plain numbers. A treemap piece and a bar take the same card for their sector */
   function tipHide(){ tip.hidden = true; }
-  const sw = g => '<i class="mc-tsw" style="background:' + GC(g) + '"></i>';
-  svgEl.addEventListener("pointermove", e => {
+  const shr = v => { if (!(v > 0)) return "0%"; const t = v * 100; if (t >= 1) return Math.round(t) + "%";
+    for (let k = 1; k < 4; k++){ const q = t.toFixed(k); if (+q > 0) return q + "%"; } return t.toFixed(3) + "%"; };
+  const FI = window.FLOW_ICO || {}, ICO = { non: "in", res: "both", out: "out" };
+  const tMark = g => '<i class="tip-sw tip-sw--' + g + '"></i>' + (FI[ICO[g]] || "");
+  const tRow = (k, v, mark) => '<dt>' + (mark || "") + k + '</dt><dd>' + v + '</dd>';
+  const tGrid = (list, ruled) => '<dl class="tip-grid' + (ruled ? ' tip-grid--ruled' : '') + '">' + list.join("") + '</dl>';
+  const tSh = t => ' <span class="tip-sh">' + t + '</span>';
+  /* the rows wear the chart's own heads' words (GN) and stand in the order the parts are drawn: the bars' GO, the
+     treemap's clusters' G, the admin bars' ADM */
+  function cardHtml(r){
+    const adm = mode === "adm", tot = adm ? r.jobs : r.msaJobs, whole = adm ? sum.non + sum.res : M.jobs;
+    const head = '<div class="tip-target"><i style="background:' + colourOf(r.sector) + '"></i><b>' + esc(r.sector) + '</b></div>' +
+      '<div class="tip-head"><strong>' + esc(r.short) + ' <span class="tip-code">(2-digit)</span></strong></div>';
+    /* the sectors' treemap writes a share with one place under 10%, its card the same */
+    const pc = mode === "tsec" ? shareOf : shr;
+    const lead = tGrid([tRow(adm ? "Jobs in Boston" : "Jobs in Boston Metro", fmt(tot)), tRow("Share", pc(tot / whole))]);
+    if (isSec(mode)) return head + lead;
+    const v = g => Math.max(0, r[GV[g]]);
+    const parts = (adm ? ADM : mode === "grp" ? GO : G).map(g => tRow(GN[g], fmt(v(g)) + tSh(shr(v(g) / tot)), tMark(g)));
+    return head + lead + tGrid(parts, true);
+  }
+  const PLOT = () => host.querySelector(".mc-plot");
+  const CTP = window.CityTreemaps && window.CityTreemaps.cursorTipPos;
+  /* built once per sector and beat, then only moved, as the frozen cards are */
+  let tipKey = "";
+  function tipShow(r, e){ const k = mode + "|" + r.code; if (k !== tipKey || tip.hidden){ tipKey = k; tip.innerHTML = cardHtml(r); } tip.hidden = false; tipPlace(e); }
+  function tipAt(e){
     if (!L || busy){ tipHide(); return; }
     if (isT(mode)){
-      const d = e.target && e.target.__data__; if (!d || !d.r || !d.g){ tipHide(); return; }
-      tip.innerHTML = '<b>' + esc(d.r.short) + '</b>' + (mode === "tgrp"
-        ? '<p class="who-ref-tip-p">About ' + fmt(d.r[GV[d.g]]) + ' of its ' + fmt(d.r.msaJobs) + ' jobs in the metro are ' + GSAY[d.g] + '. The split within a sector is an estimate.</p>'
-        : '<p class="who-ref-tip-p">' + fmt(d.r.msaJobs) + ' jobs in the metro, ' + Math.round(d.r.msaJobs / M.jobs * 100) + '% of all.</p>');
-      tip.hidden = false; tipPlace(e); return;
+      const d = e.target && e.target.__data__; if (!d || !d.r){ tipHide(); return; }
+      tipShow(d.r, e); return;
     }
     const sr = svgEl.getBoundingClientRect(), y = e.clientY - sr.top, i = Math.floor((y - L.top) / L.rh), r = ordOf(mode)[i];
     if (!r || y < L.top){ tipHide(); return; }
-    tip.innerHTML = '<b>' + esc(r.short) + '</b>' + (mode === "adm"
-      ? '<p class="who-ref-tip-p">' + fmt(r.jobs) + ' jobs in Boston: about ' + fmt(r.estNon) + ' held by non-residents who commute in, ' + fmt(r.estRes) + ' by Boston residents. The split is an estimate.</p>'
-      : mode === "grp"
-      ? '<p class="who-ref-tip-p">' + fmt(r.msaJobs) + ' jobs in the metro, held by about:</p><p class="who-ref-tip-p mc-tlist">' + GO.map(g => sw(g) + fmt(r[GV[g]]) + ' ' + GN[g].replace(/^./, c => c.toLowerCase())).join("<br>") + '</p><p class="who-ref-tip-p">The split is an estimate.</p>'
-      : '<p class="who-ref-tip-p">' + fmt(r.msaJobs) + ' jobs in the metro, ' + Math.round(r.msaJobs / M.jobs * 100) + '% of all.</p>');
-    tip.hidden = false; tipPlace(e);
-  });
-  function tipPlace(e){
-    const pr = host.querySelector(".mc-plot").getBoundingClientRect(), tr = tip.getBoundingClientRect();
-    let x = e.clientX - pr.left + 14, ty = e.clientY - pr.top + 14;
-    if (x + tr.width > pr.width) x = e.clientX - pr.left - tr.width - 14;
-    if (ty + tr.height > pr.height) ty = Math.max(0, e.clientY - pr.top - tr.height - 14);
-    tip.style.left = Math.max(0, x) + "px"; tip.style.top = ty + "px";
+    tipShow(r, e);
   }
+  svgEl.addEventListener("pointermove", tipAt);
+  /* a tap has no hover: it shows the card, a tap off the chart lets it go */
+  svgEl.addEventListener("pointerdown", e => { if (e.pointerType !== "mouse") tipAt(e); });
+  document.addEventListener("pointerdown", e => { if (e.pointerType !== "mouse" && !svgEl.contains(e.target)) tipHide(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape") tipHide(); });
+  /* placed as the frozen beats place theirs: over the pointer, under it where there is no room, kept in the plot */
+  function tipPlace(e){ if (CTP) CTP(e, PLOT(), tip); }
   svgEl.addEventListener("pointerleave", tipHide);
-  /* the ledes' group phrases light their bars */
-  [].slice.call(document.querySelectorAll(".mc-hl[data-mcwho]")).forEach(span => {
-    const on = () => { hiG = span.dataset.mcwho; span.classList.add("is-lit"); gCells.selectAll("rect").classed("is-dim", d => !isSec(mode) && d.g !== hiG); };
-    const off = () => { hiG = null; span.classList.remove("is-lit"); gCells.selectAll("rect").classed("is-dim", false); };
-    span.addEventListener("mouseenter", on); span.addEventListener("focus", on); span.addEventListener("click", on);
-    span.addEventListener("mouseleave", off); span.addEventListener("blur", off);
-  });
 
   window.MC = {
     /* state 12 is beat 4, 13 beat 5; 14 and 15 are storyline 3's, beat 4 as a treemap; from is the figure's state
