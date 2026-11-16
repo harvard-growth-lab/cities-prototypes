@@ -2898,14 +2898,35 @@
      rules, colours and listeners still reach them; the rules below only undo the beats' layout (the sticky panel, the
      narrow words column, the phone band) and size the chart to the window. Three parts: the entry control (.dd-entry),
      the content (.dd-pane, .dd-switch), the shell (#deepDiveOverlay, in the house's .journey-overlay dress) ---- */
-  /* the entry: one light control at the foot of each beat's words */
-  .dd-entry{appearance:none;align-self:flex-start;display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px 0 11px;background:var(--white);border:1px solid var(--control-edge);border-radius:4px;font:inherit;font-size:13px;font-weight:600;line-height:1;color:var(--teal);cursor:pointer;white-space:nowrap;}
-  .dd-entry svg{flex:none;width:14px;height:14px;}
-  .dd-entry:hover{background:var(--teal-tint);border-color:var(--teal);}
-  .dd-entry:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
-  #ovWrap:not(.ov2) .ov-block > .dd-entry{margin-top:12px;}
+  /* the entry (2026-11-16 pm, Nil: "more designed, not just like a button ... compare your admin with other admins";
+     "deep dive should be at the end of the content"; "the feature might be repeated so use a generic icon ... remove
+     the extra sentence ... make the title shorter"): one card, the last thing in each beat's words, a magnifier (the
+     house's search glass, nothing of this chart, so the same card serves any later deep dive), a short name, an arrow */
+  .dd-entry{appearance:none;box-sizing:border-box;width:100%;display:block;container-type:inline-size;
+    padding:12px 14px 12px 12px;background:var(--teal-tint);border:1px solid var(--teal-soft);border-left:4px solid var(--teal);border-radius:4px;font:inherit;text-align:left;color:var(--ink);cursor:pointer;
+    transition:border-color .15s, background-color .15s;}
+  .dd-entry-in{display:grid;grid-template-columns:40px minmax(0, 1fr) auto;align-items:center;column-gap:14px;}
+  .dd-entry:hover{background:var(--white);border-color:var(--teal);}
+  .dd-entry:focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-color:var(--teal);}
+  .dd-entry-ic{display:flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:4px;background:var(--white);color:var(--teal);}
+  .dd-entry-ic svg{display:block;width:22px;height:22px;}
+  .dd-entry:hover .dd-entry-ic{background:var(--teal-tint);}
+  .dd-entry-txt{display:block;min-width:0;}
+  .dd-entry-kick{display:block;font-size:13px;font-weight:600;line-height:1.2;color:var(--teal);margin:0 0 2px;}
+  .dd-entry-open{font-size:13px;font-weight:600;margin-right:6px;}
+  .dd-entry-title{display:block;min-width:0;font-size:16px;font-weight:600;line-height:1.3;color:var(--ink);}
+  .dd-entry-go{display:inline-flex;align-items:center;color:var(--teal);}
+  .dd-entry-go svg{flex:none;width:18px;height:18px;transition:transform .15s;}
+  .dd-entry:hover .dd-entry-go svg{transform:scale(1.15);}
+  #ovWrap:not(.ov2) .ov-block > .dd-entry{margin-top:24px;}
   #ovWrap.is-presenting .dd-entry{display:none !important;}   /* the presenter view shows the figure alone */
-  #ovWrap:not(.ov2) .ov-block > .dd-entry + *{margin-top:20px;}
+  /* a phone: the same one line, smaller */
+  @media (max-width:599px){
+    .dd-entry{padding:10px 12px 10px 10px;}
+    .dd-entry-in{grid-template-columns:32px minmax(0, 1fr) auto;column-gap:12px;}
+    .dd-entry-ic{width:32px;height:32px;} .dd-entry-ic svg{width:20px;height:20px;}
+  }
+  @media (prefers-reduced-motion: reduce){ .dd-entry, .dd-entry-go svg{transition:none;} .dd-entry:hover .dd-entry-go svg{transform:none;} }
   /* the shell: the page behind stands still, and #ovWrap's clip (which would cut a fixed child) lets go while it is open */
   html.dd-open .pages{overflow:hidden;}
   html.dd-open #ovWrap{clip-path:none !important;box-shadow:none !important;}
@@ -2960,11 +2981,11 @@
   @media (max-width:599px){
     #deepDiveOverlay .dd-window{width:100%;height:100%;max-height:100%;border-radius:0;}
     #deepDiveOverlay .dd-head{padding:12px 10px 12px 16px;gap:10px 12px;}
-    #deepDiveOverlay .dd-head .jh-titles{order:1;}
+    #deepDiveOverlay .dd-head .jh-titles{order:1;flex:1 1 0;min-width:0;}
     #deepDiveOverlay .dd-head .journey-close{order:2;}
     #deepDiveOverlay .dd-switch{order:3;flex:1 0 100%;}
-    #deepDiveOverlay .dd-seg{flex:1;}
-    #deepDiveOverlay .dd-seg-btn{flex:1;height:36px;padding:0 8px;}
+    #deepDiveOverlay .dd-seg{flex:1;min-width:0;}
+    #deepDiveOverlay .dd-seg-btn{flex:1 1 0;min-width:0;height:auto;min-height:40px;padding:5px 8px;white-space:normal;line-height:1.25;text-align:center;}
     #deepDiveOverlay .dd-body{padding:22px 14px 24px;}
     #ovWrap #deepDiveOverlay .dd-pane > .who-sc{padding:10px 10px 8px;}
     #ovWrap #deepDiveOverlay .dd-pane .who-sc-ctl .sc-find{flex:1 0 100%;margin-left:0;}
@@ -2977,6 +2998,50 @@
   @keyframes ddOut{to{opacity:0;}}
   @keyframes ddWinOut{to{opacity:0;transform:translateY(10px);}}
   @media (prefers-reduced-motion: reduce){ #deepDiveOverlay, #deepDiveOverlay .dd-window{animation:none !important;} }
+  /* ---- the Deep dive's choice 2 (2026-11-16, Nil: "In opt-2: when user clicks on a closest peer, replace the map with
+     scatter plot to show the comparison. the scatter plot should still highlight the specific button and draw the bar
+     line"): no cards and no window; the beat's chart (the same section the window hosts, moved) stands in the map's
+     box while a peer or the peer average is pressed, over the map, which keeps its place. html[data-dd] is the pill's
+     choice ---- */
+  html[data-dd="2"] .dd-entry{display:none !important;}
+  #ovWrap #ddFig{position:absolute;inset:0;z-index:1002;container-type:inline-size;display:flex;flex-direction:column;box-sizing:border-box;background:var(--white);opacity:0;transition:opacity .3s ease;}
+  #ovWrap #ddFig[hidden]{display:none;}
+  #ovWrap #ddFig.is-in{opacity:1;}
+  .dd-fig-bar{flex:none;display:flex;align-items:center;padding:12px var(--panel-px) 0;}
+  .dd-fig-back{appearance:none;display:inline-flex;align-items:center;gap:6px;height:28px;margin-left:-8px;padding:0 8px;background:none;border:0;border-radius:4px;font:inherit;font-size:13px;font-weight:600;line-height:1;color:var(--teal);cursor:pointer;}
+  .dd-fig-back svg{flex:none;width:14px;height:14px;}
+  .dd-fig-back:hover{background:var(--teal-tint);}
+  .dd-fig-back:focus-visible{outline:2px solid var(--teal);outline-offset:1px;}
+  #ovWrap #ddFig .dd-pane{position:static;z-index:auto;flex:1 1 0;min-height:0;height:auto;width:auto;max-width:none;margin:0;padding:0;display:flex;flex-direction:column;justify-content:flex-start;}
+  #ovWrap #ddFig .dd-pane[hidden]{display:none;}
+  #ovWrap #ddFig .dd-pane > :not(.who-sc){display:none !important;}
+  #ovWrap #ddFig .dd-pane > .who-sc{
+    position:relative;top:auto;z-index:auto;order:0;flex:1 1 0;width:auto;height:auto;min-width:0;min-height:0;margin:0;
+    box-sizing:border-box;padding:8px var(--panel-px) var(--panel-pb);display:flex;flex-direction:column;gap:12px;
+    background:none;border:0;border-radius:0;box-shadow:none;
+  }
+  #ovWrap #ddFig .who-sc-plot{flex:1;min-height:0;height:auto;position:relative;}
+  #ovWrap #ddFig .who-sc-plot > svg{position:absolute;left:0;top:0;width:100%;height:100%;}
+  /* the beat's own chips are the control: the chart's row of them would say it twice */
+  #ovWrap #ddFig .who-sc-peers{display:none;}
+  /* the sentence names who is on the chart, so it takes the box's width; the finder stands under it */
+  #ovWrap #ddFig .who-sc .who-sc-ctl{flex-wrap:wrap;row-gap:8px;column-gap:16px;align-items:center;}
+  /* the sentence on its own line, the finder under it (2026-11-16, Nil: "make them separate") */
+  #ovWrap #ddFig .who-sc .sc-sentence{flex:1 1 100%;min-width:0;}
+  #ovWrap #ddFig .who-sc .who-sc-ctl .sc-find{margin-left:0;flex:none;}
+  #ovWrap #ddFig :is(.pv-open, .mi-studies){display:none !important;}
+  #ovWrap:has(#ddFig.is-in) .ov-map-inner > .pv-open--frame{display:none !important;}
+  /* a narrow box (the map's card at 1024, the band on a phone): the sentence a size down, no finder, so the plot keeps the room */
+  @container (max-width:479px){
+    #ovWrap #ddFig .sc-find{display:none;}
+    #ovWrap #ddFig .who-sc .sc-sentence{font-size:14px;line-height:1.5;}
+  }
+  /* the band on a phone is 320 high */
+  @media (max-width:899px){
+    .dd-fig-bar{padding:4px 12px 0;}
+    #ovWrap #ddFig .dd-pane > .who-sc{padding:2px 12px 6px;gap:6px;}
+  }
+  @media (prefers-reduced-motion: reduce){ #ovWrap #ddFig{transition:none;} }
   /* the tile credit is hidden for the prototype's sake — CARTO and
      OpenStreetMap both require it on anything published, so it has to
      come back (or move into an about/credits page) before this ships */
@@ -8828,7 +8893,9 @@
    tick on, the two counts behind the net bars (B6_COUNTS_DEFAULT) */
 /* a second one is kept (2026-11-16), for the Deep dive study: ?deep=beats puts section 1's two scatter plots back in the
    scroll as beats (DEEP_DIVE) */
-if (location.search){ const keep = [/[?&]b6=both\b/.test(location.search) ? "b6=both" : "", /[?&]deep=beats\b/.test(location.search) ? "deep=beats" : ""].filter(Boolean);
+/* and a third (2026-11-16), for the Deep dive pill: ?dd=2 opens section 1 on the pill's choice 2 (the scatter plot in the
+   map's place) */
+if (location.search){ const keep = [/[?&]b6=both\b/.test(location.search) ? "b6=both" : "", /[?&]deep=beats\b/.test(location.search) ? "deep=beats" : "", /[?&]dd=2\b/.test(location.search) ? "dd=2" : ""].filter(Boolean);
   history.replaceState(null, "", location.pathname + (keep.length ? "?" + keep.join("&") : "") + location.hash); }</script>
 <script>/* ?colours=16, 11, 10 or 9 shows that colour system beside the thirteen (HANDOFF §6c) */
 (function(){ var m = /[?&]colours=(16|11|10|9)\b/.exec(location.search); if (m) document.documentElement.dataset.colours = m[1]; })();</script>
@@ -10800,10 +10867,28 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   if (!FLOWS_HOME){ const s = document.getElementById("page-overview-flows-out"); if (s) s.remove();
     document.querySelectorAll('.rail .steps li[data-step="page-overview-flows-out"]').forEach(li => li.remove()); }
   else document.documentElement.classList.add("flows-home");
+  /* ---- the black pill at the bottom left (2026-11-16, lifted from section 2's storyline pill, 2026-11-09, so the Deep
+     dive's choice wears the same one): a label and its choices, shown while shown() holds, synced on any class change of
+     the watch list; get() the choice on, pick(v) to change it. .story-pill's rules dress every one; each shows only on
+     its own section, so two never stand together ---- */
+  window.cornerPill = function(o){
+    const key = o.key || "v", pill = document.createElement("div");
+    pill.className = "story-pill"; pill.setAttribute("role", "group"); pill.setAttribute("aria-label", o.label); pill.hidden = true;
+    if (o.id) pill.id = o.id;
+    pill.innerHTML = '<span class="sp-lab">' + o.label + '</span>' + o.choices.map(c => '<button type="button" class="sp-btn" data-' + key + '="' + c[0] + '" aria-pressed="false"' +
+      (c[2] ? ' title="' + c[2] + '"' : '') + '>' + c[1] + '</button>').join("");
+    document.body.appendChild(pill);
+    const val = b => b.dataset[key];
+    const sync = () => { pill.hidden = !o.shown(); pill.querySelectorAll(".sp-btn").forEach(b => b.setAttribute("aria-pressed", String(val(b) === String(o.get())))); };
+    pill.querySelectorAll(".sp-btn").forEach(b => b.addEventListener("click", () => { if (val(b) === String(o.get())) return; o.pick(val(b)); sync(); }));
+    (o.watch || []).forEach(el => { if (el) new MutationObserver(sync).observe(el, { attributes: true, attributeFilter: ["class"] }); });
+    setTimeout(sync, 0);
+    return { el: pill, sync };
+  };
   /* ---- the Deep dive study (2026-11-16, Nil: "In section one, the two scatter plots will not be separate beats any
      more. For opt 1: design a modal for that beat, which will open from each previous section and call it deep dive").
      DEEP_DIVE is how the page opens: "modal" (opt 1) takes the two scatter beats out of the scroll, so the section
-     counts four beats, and shows them one at a time in a dialog opened by a "Deep dive" control at the foot of each
+     counts four beats, and shows them one at a time in a dialog opened by a card ("Compare with other admins", 11-16 pm) at the end of each
      remaining beat's words; "beats" leaves both in the scroll as before, with no control. On a "modal" page the
      address ?deep=beats asks for the beats. Three parts, kept apart so a later option (a drawer, say) can change the
      shell alone: the content (the two sections moved whole, so the chart's own code draws them where they stand),
@@ -10826,15 +10911,23 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     const PRESET = { "page-overview": { set: "admin" }, "page-overview-flows": { set: "admin" }, "page-overview-flows-out": { set: "admin" }, "page-overview-metro": { set: "metro" } };
     const ARROW = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg>';
     const words = el => el ? el.textContent.replace(/\s+/g, " ").trim() : "";
+    /* the names, in the section's words (Boston Admin, Boston Metro): the card's short one (the beat already names the
+       place), its full one for a screen reader, and the window's, which carries the place */
+    const city = () => words(panes[0].querySelector(".page-head .city-short")) || "Boston";
+    const SHORT = set => set === "metro" ? "Compare with other metros" : "Compare with other admins";
+    const FULL = set => "Compare " + city() + (set === "metro" ? " Metro with other metros" : " Admin with other admins");
+    const NAME = set => '<span class="city-short">' + city() + '</span>&nbsp;' + (set === "metro" ? "Metro compared with other metros" : "Admin compared with other admins");
+    /* the house's search glass (Find an admin), drawn larger: generic, so it reads "look further" on any deep dive */
+    const GLASS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" focusable="false"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 20 20"/></svg>';
 
     /* -- the shell -- */
     const ov = document.createElement("div"); ov.className = "journey-overlay dd-overlay"; ov.id = "deepDiveOverlay";
     ov.innerHTML = '<div class="journey-window dd-window" role="dialog" aria-modal="true" aria-labelledby="deepDiveTitle">' +
-      '<div class="journey-head dd-head"><div class="jh-titles"><h2 id="deepDiveTitle" tabindex="-1">Deep dive</h2></div>' +
-      '<div class="dd-switch"><span class="dd-switch-lab" id="deepDiveSwitchLab">Compare with</span><div class="dd-seg" role="group" aria-labelledby="deepDiveSwitchLab">' +
-      '<button type="button" class="dd-seg-btn" data-dd="admin" aria-pressed="false">Admins of every size</button>' +
-      '<button type="button" class="dd-seg-btn" data-dd="metro" aria-pressed="false">Metros of every size</button></div></div>' +
-      '<button type="button" class="journey-close" aria-label="Close the deep dive"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 2l12 12M14 2 2 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button></div>' +
+      '<div class="journey-head dd-head"><div class="jh-titles"><h2 id="deepDiveTitle" tabindex="-1"></h2></div>' +
+      '<div class="dd-switch"><span class="dd-switch-lab" id="deepDiveSwitchLab">Show</span><div class="dd-seg" role="group" aria-labelledby="deepDiveSwitchLab">' +
+      '<button type="button" class="dd-seg-btn" data-dd="admin" aria-pressed="false"><span><span class="city-short">' + city() + '</span>&nbsp;Admin among admins</span></button>' +
+      '<button type="button" class="dd-seg-btn" data-dd="metro" aria-pressed="false"><span><span class="city-short">' + city() + '</span>&nbsp;Metro among metros</span></button></div></div>' +
+      '<button type="button" class="journey-close" aria-label="Close the comparison"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 2l12 12M14 2 2 14" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button></div>' +
       '<div class="journey-body dd-body" id="deepDiveStage"></div></div>';
     const stage = ov.querySelector("#deepDiveStage"), title = ov.querySelector("#deepDiveTitle");
 
@@ -10843,15 +10936,23 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     panes.forEach((p, i) => { p.classList.add("dd-pane"); p.classList.remove("is-on"); p.dataset.dd = i ? "metro" : "admin"; p.hidden = true; stage.appendChild(p); });
     wrap.appendChild(ov);
     let cur = "admin";
+    /* the pill's choice: "1" the window and its cards, "2" the chart in the map's place (below) */
+    let dd = /[?&]dd=2\b/.test(location.search) ? "2" : "1";
+    document.documentElement.dataset.dd = dd;
     function show(set, m){
       cur = set === "metro" ? "metro" : "admin";
       panes.forEach(p => { p.hidden = p.dataset.dd !== cur; });
+      title.innerHTML = NAME(cur);
       ov.querySelectorAll(".dd-seg-btn").forEach(b => { const on = b.dataset.dd === cur; b.classList.toggle("is-active", on); b.setAttribute("aria-pressed", String(on)); });
       /* the chart draws in the window's box: it arrives here, not by the scroll */
       const c = window.WHO_SC && window.WHO_SC[cur];
       if (c){ if (m && c.set && m !== c.k) c.set(m); if (c.enter) c.enter(); }
       stage.scrollTop = 0;
     }
+    /* the window rises at a scale under 1, and the chart measured it then: drawn again at the size it settles to */
+    const win = ov.querySelector(".dd-window");
+    win.addEventListener("animationend", ev => { if (ev.target !== win || !isOpen() || ov.classList.contains("is-closing")) return;
+      const c = window.WHO_SC && window.WHO_SC[cur]; if (c && c.rearrange) c.rearrange(); });
     ov.querySelector(".dd-seg").addEventListener("click", ev => { const b = ev.target.closest(".dd-seg-btn"); if (b && b.dataset.dd !== cur) show(b.dataset.dd); });
 
     /* -- the dialog's manners: the focus in and back, Escape, the keyboard kept inside, the page behind inert and still -- */
@@ -10886,6 +10987,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       e.preventDefault(); close();
     }
     function open(from, preset){
+      if (dd === "2") return;   /* the pill's choice 2 has no window */
       if (isOpen() && !ov.classList.contains("is-closing")) return;
       if (wrap.classList.contains("is-presenting")) return;   /* the presenter view stands over everything */
       clearTimeout(closing); ov.classList.remove("is-closing");
@@ -10916,22 +11018,151 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     ov.addEventListener("click", e => { if (e.target === ov) close(); });
     window.addEventListener("hashchange", () => close(true));
 
-    /* -- the entry: after the last paragraph of each remaining beat's words, once every beat has built its own -- */
+    /* -- the entry: a card, the last thing in each remaining beat's words, once every beat has built its own -- */
     function entries(){
       wrap.querySelectorAll(".ov-left > section.ov-block").forEach(b => {
         const pre = PRESET[b.id]; if (!pre || b.querySelector(".dd-entry")) return;
-        const ledes = b.querySelectorAll("p.lede"), at = ledes.length ? ledes[ledes.length - 1] : b.querySelector(".page-head"); if (!at) return;
         const btn = document.createElement("button"); btn.type = "button"; btn.className = "dd-entry"; btn.dataset.deep = pre.set;
         btn.setAttribute("aria-haspopup", "dialog");
-        btn.setAttribute("aria-label", "Deep dive: " + words(panes[pre.set === "metro" ? 1 : 0].querySelector(".page-head h2")));
-        btn.innerHTML = "<span>Deep dive</span>" + ARROW;
+        btn.setAttribute("aria-label", FULL(pre.set));   /* its name in full: "Compare Boston Admin with other admins" */
+        /* 2026-11-16 eve, Nil: "looks like a search button. stylize it so ... it's distinct and user-friendly so that user
+           knows what to expect": a tinted card with the city's edge, the feature's name over its title ("Deep dive", the
+           same on any later one), layers for going deeper in place of the search glass, and "Open" with the arrows that
+           mean a larger view opens over the page */
+        const LAYERS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3.5 20.5 8 12 12.5 3.5 8Z"/><path d="M3.5 12.2 12 16.7l8.500-4.500"/><path d="M3.500 16.300 12 20.800l8.500-4.500"/></svg>';
+        const EXPAND = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M9.500 2.500h4v4M13.500 2.500 9 7M6.500 13.500h-4v-4M2.500 13.500 7 9"/></svg>';
+        btn.innerHTML = '<span class="dd-entry-in"><span class="dd-entry-ic" aria-hidden="true">' + LAYERS + '</span>' +
+          '<span class="dd-entry-txt"><span class="dd-entry-kick">See more detail</span><span class="dd-entry-title">' + SHORT(pre.set) + '</span></span>' +
+          '<span class="dd-entry-go" aria-hidden="true"><span class="dd-entry-open">Open</span>' + EXPAND + '</span></span>';
         btn.addEventListener("click", () => open(btn, PRESET[b.id]));
-        at.after(btn);
+        b.appendChild(btn);   /* the end of the beat's words: after its measures, peers, bars and notes */
       });
     }
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", entries); else entries();
+
+    /* -- choice 2 (2026-11-16, Nil: "when user clicks on a closest peer, replace the map with scatter plot to show the
+       comparison. the scatter plot should still highlight the specific button and draw the bar line"): a peer or the peer
+       average pressed on the admin's beat or the metro's brings that beat's chart into the map's box. The chips do all
+       they did (their table draws the peer's line on each bar); the chart reads the same pressed set, so it rings and
+       names them, and a second chip moves the highlight without drawing the field again. Nothing pressed, "Back to map",
+       another beat, the presenter view or the pill's 1: the map, and the section goes back to the window's stage -- */
+    const FIG_BEAT = { "page-overview": "admin", "page-overview-metro": "metro" };
+    const paneOf = set => panes.find(p => p.dataset.dd === set);
+    const tableOf = set => window.whoTables && window.whoTables[set];
+    const anyOn = set => { const T = tableOf(set); return !!T && (T.on.size > 0 || !!T.avg); };
+    const reduce = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const mapBox = wrap.querySelector(".ov-map-inner");
+    const fig = document.createElement("div"); fig.className = "dd-fig"; fig.id = "ddFig"; fig.hidden = true;
+    fig.setAttribute("role", "region"); fig.setAttribute("aria-label", "Comparison chart");
+    fig.innerHTML = '<div class="dd-fig-bar"><button type="button" class="dd-fig-back"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M13 8H3M7 4 3 8l4 4"/></svg>Back to map</button></div>';
+    if (mapBox) mapBox.appendChild(fig);
+    const figSay = document.createElement("span"); figSay.className = "vh"; figSay.setAttribute("aria-live", "polite"); if (mapBox) mapBox.appendChild(figSay);
+    const figBehind = on => { if (mapBox) Array.from(mapBox.children).forEach(e => { if (e !== fig && e !== figSay){ if (on) e.setAttribute("inert", ""); else e.removeAttribute("inert"); } }); };
+    let figSet = null, figT = 0;
+    /* the sentence over the chart names who is on it: "Boston Admin and Oakland CA among US admins, by average salary ..." */
+    function figWho(set){
+      const T = tableOf(set), p = paneOf(set), s = p && p.querySelector(".who-sc .sc-sentence"); if (!T || !s) return;
+      const names = [city() + (set === "metro" ? " Metro" : " Admin")];
+      T.C.peers.forEach(pr => { if (T.on.has(pr.name)) names.push(pr.name + " " + pr.st); });
+      if (T.avg) names.push(names.length > 1 ? "the peer average" : "its peer average");
+      const list = names.length < 2 ? names[0] : names.slice(0, -1).join(", ") + " and " + names[names.length - 1];
+      let w = s.querySelector(".dd-fig-who"); if (!w){ w = document.createElement("span"); w.className = "dd-fig-who"; s.insertBefore(w, s.firstChild); }
+      /* 2026-11-16, Nil: the title is "US admins, by average salary and population, in 2024"; the names stand on the plot and in the chips */
+      const h0 = s.offsetHeight; w.textContent = "";
+      /* a narrow box's sentence outgrew its reserve: the plot fits the new room */
+      if (h0 && s.offsetHeight !== h0 && figSet === set){ const c = window.WHO_SC && window.WHO_SC[set]; if (c && c.rearrange) requestAnimationFrame(() => c.rearrange()); }
+      fig.dataset.who = list;
+    }
+    /* the sentence keeps the height of its longest list (every peer and the peer average), so pressing another chip
+       never changes the plot's box and the field stands still while the highlight moves */
+    function figReserve(set){
+      const T = tableOf(set), p = paneOf(set), s = p && p.querySelector(".who-sc .sc-sentence"); if (!T || !s) return;
+      const on = new Set(T.on), avg = T.avg;
+      T.C.peers.forEach(pr => T.on.add(pr.name)); T.avg = true; s.style.minHeight = ""; figWho(set);
+      const h = s.offsetHeight;
+      T.on.clear(); on.forEach(n => T.on.add(n)); T.avg = avg; s.style.minHeight = ""; figWho(set);
+      /* a narrow box (under 480) keeps the room for the plot: one line over the current list at most */
+      const lh = parseFloat(getComputedStyle(s).lineHeight) || 21, cap = fig.clientWidth && fig.clientWidth < 480 ? s.offsetHeight + lh : Infinity;
+      if (h) s.style.minHeight = Math.min(h, cap) + "px";
+    }
+    const figUnwho = p => { const w = p && p.querySelector(".dd-fig-who"), s = p && p.querySelector(".who-sc .sc-sentence"); if (w) w.remove(); if (s) s.style.minHeight = ""; };
+    /* the box changes width (a window resized, the map's card settling back from a wide beat): measured again */
+    let figW = 0;
+    if (window.ResizeObserver) new ResizeObserver(es => { const w = Math.round(es[0].contentRect.width); if (!figSet || !w || w === figW) return; figW = w;
+      requestAnimationFrame(() => { if (!figSet) return; figReserve(figSet); const c = window.WHO_SC && window.WHO_SC[figSet]; if (c && c.rearrange) c.rearrange(); }); }).observe(fig);
+    function figShow(set){
+      const p = paneOf(set), c = window.WHO_SC && window.WHO_SC[set]; if (!p || !mapBox) return;
+      clearTimeout(figT);
+      const fresh = fig.hidden || figSet !== set;
+      if (figSet !== set){
+        panes.forEach(q => { if (q !== p && q.parentNode === fig){ figUnwho(q); q.hidden = true; stage.appendChild(q); } });
+        fig.appendChild(p); p.hidden = false; figSet = set;
+      }
+      figWho(set);
+      if (!fresh && fig.classList.contains("is-in")) return;
+      fig.hidden = false; figBehind(true);
+      if (fresh){ figReserve(set); figSay.textContent = "Chart in place of the map: " + (fig.dataset.who || "") + " among US " + (set === "metro" ? "metros" : "admins") + "."; }
+      /* drawn at once at the box's size: enter() (first time) then rearrange() lands the dots with no move */
+      if (fresh && c){ if (c.enter) c.enter(); if (c.rearrange) c.rearrange(); }
+      if (reduce()) fig.classList.add("is-in");
+      else requestAnimationFrame(() => requestAnimationFrame(() => { if (figSet && !fig.hidden) fig.classList.add("is-in"); }));
+    }
+    function figHide(now){
+      if (!figSet) return;
+      fig.classList.remove("is-in"); clearTimeout(figT);
+      figSay.textContent = "Map shown.";
+      const done = () => { const p = paneOf(figSet); if (p){ figUnwho(p); p.hidden = true; stage.appendChild(p); } fig.hidden = true; figSet = null; figBehind(false); };
+      if (now === true || reduce()) done(); else figT = setTimeout(done, 300);
+    }
+    const navBtn = () => { let i = 0; try { i = sectionDefs.findIndex(sd => sd.pages.indexOf("page-overview") >= 0); } catch (e){} return document.querySelectorAll(".secnav-btn")[i < 0 ? 0 : i]; };
+    const secOn = () => { const b = navBtn(), t = document.getElementById("tool"); return !!(b && b.classList.contains("is-active") && t && t.classList.contains("active")); };
+    /* which chart the box should hold: the clicked beat's set, or else the beat on screen's, if it has anything pressed */
+    function figCheck(set){
+      let want = null;
+      if (dd === "2" && !wrap.classList.contains("is-presenting") && !isOpen() && secOn()){
+        const on = wrap.querySelector(".ov-left > section.ov-block.is-on"), s = set || (on && FIG_BEAT[on.id]);
+        want = s && anyOn(s) ? s : null;
+      }
+      if (want) figShow(want); else figHide();
+    }
+    /* a chip on either beat: its table has already taken the click (the listener on #ovWrap), so the state is the new one;
+       the beat is read on the way down, as the table draws the chip again and the clicked one leaves the page */
+    let clickBeat = null;
+    document.addEventListener("click", ev => { const b = ev.target.closest && ev.target.closest(".wt-peer"), k = b && b.closest(".ov-block"); clickBeat = k ? k.id : null; }, true);
+    document.addEventListener("click", ev => {
+      const b = ev.target.closest && ev.target.closest(".wt-peer"); if (!b || dd !== "2") return;
+      const set = FIG_BEAT[clickBeat]; if (set && b.dataset.set === set) figCheck(set);
+      /* the peer average's switch tells no chart (the charts always draw it); in the map's place the chart draws it only
+         while it is pressed, so it is told here */
+      if (set && b.dataset.avg && figSet === set) document.dispatchEvent(new CustomEvent("who:peers", { detail: { set } }));
+    });
+    /* a peer added by the chart's own finder: the sentence follows */
+    document.addEventListener("who:peers", ev => { if (figSet && (!ev.detail || !ev.detail.set || ev.detail.set === figSet)) figWho(figSet); });
+    fig.querySelector(".dd-fig-back").addEventListener("click", () => {
+      const set = figSet, T = tableOf(set); if (!T) return;
+      T.on.clear(); T.avg = false; T.render(); document.dispatchEvent(new CustomEvent("who:peers", { detail: { set } }));
+      figHide();
+      const id = Object.keys(FIG_BEAT).find(k => FIG_BEAT[k] === set), first = id && document.querySelector("#" + id + " .wt-peer");
+      if (first) first.focus({ preventScroll: true });
+    });
+    function setOpt(v){
+      dd = v === "2" ? "2" : "1"; document.documentElement.dataset.dd = dd;
+      if (dd === "2" && isOpen()) close(true);
+      figCheck();
+    }
+    /* the pill (section 2's storyline pill, cornerPill above), on section 1 only, once the section bar is built */
+    let pill = null;
+    function mountPill(){
+      if (pill || !window.cornerPill) return;
+      const nb = navBtn(), tool = document.getElementById("tool");
+      pill = window.cornerPill({ label: "Deep dive", choices: [["1", "1", "In a window"], ["2", "2", "In the map\u2019s place"]], get: () => dd, pick: setOpt, shown: secOn, watch: [nb, tool] });
+      /* the beat on screen, the presenter view, the section and the tool: the box follows each */
+      [nb, tool, wrap].concat(Object.keys(FIG_BEAT).map(id => document.getElementById(id))).forEach(el => { if (el) new MutationObserver(() => figCheck()).observe(el, { attributes: true, attributeFilter: ["class"] }); });
+    }
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mountPill); else setTimeout(mountPill, 0);
     window.deepDive = { mode: deepMode, open: (x, from) => open(from, typeof x === "string" ? PRESET[x] : x), close, show,
-      get isOpen(){ return isOpen(); }, get set(){ return cur; }, PRESET };
+      get isOpen(){ return isOpen(); }, get set(){ return cur; }, PRESET,
+      get opt(){ return dd; }, setOpt, fig: { show: figShow, hide: figHide, get set(){ return figSet; } } };
   })();
   const pageIds = ["page-overview","page-overview-scatter","page-overview-flows","page-overview-metro","page-overview-mscatter","page-export-basket",
                    "page-doing","page-doing-metro","page-constraints","page-city-in-metro","page-constraints-lorem","page-levers"];
@@ -16089,7 +16320,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
           ms.forEach(m => { const v = m * Math.pow(10, e); if (v >= lo && v <= hi) t.push(v); });
         if (t.length <= most) return t;
       }
-      return [];
+      /* a narrow axis (the Deep dive's choice 2 in the map's card): every second or third power of ten, never none */
+      const d = []; for (let e = Math.ceil(Math.log10(lo)); e <= Math.floor(Math.log10(hi)); e++) d.push(Math.pow(10, e));
+      const st = Math.ceil(d.length / most); return d.filter((v, i) => i % st === 0);
     }
     function linTicks(lo, hi, len){
       const most = Math.max(3, Math.floor(len / 44));
@@ -16176,6 +16409,10 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       const fitPick = () => [pick, yearPick].forEach(p => { if (!p) return; const mm = p.parentNode.querySelector(".mi-measure"), o = p.options[p.selectedIndex]; if (!mm || !o) return; mm.textContent = o.text; if (mm.offsetWidth) p.style.width = "calc(" + (mm.offsetWidth / parseFloat(getComputedStyle(mm).fontSize)).toFixed(3) + "em + 24px)"; });
       fitPick(); if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitPick);
       const onSet = T ? T.on : new Set(), isOn = i => onSet.has(rows[i][C.name]);
+      /* the Deep dive's choice 2: in the map's place the chart shows only what the chips press, the peer average with them,
+         and names a peer as its chip does ("Oakland CA") */
+      const inFig = () => !!host.closest("#ddFig"), avgOff = () => inFig() && !(T && T.avg);
+      const peerName = i => { const p = inFig() && T && T.C && T.C.peers ? T.C.peers.find(q => q.name === rows[i][C.name]) : null; return p ? p.name + " " + p.st : rows[i][C.name]; };
       const drawPeers = () => { peersHost.innerHTML = T ? T.peersRow() : "";
         /* opt-1: a peer shows on the map too */
         const how = tintOn() && peersHost.querySelector(".wt-how"); if (how) how.textContent = "Click a peer to show it on the chart and the map."; };
@@ -16286,6 +16523,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
          no room steps outward on a leader, else takes the least overlap */
       function drawLabels(L){
         gLabels.textContent = "";
+        [pavgBg, pavg].forEach(c => { c.style.display = avgOff() ? "none" : ""; });   /* back in the window, the ring is back */
         const { pos, pa, m, W, H, fs } = L, boxes = [], segs = [];
         gRef.querySelectorAll(".sc-avglab").forEach(e => { const b = e.getBBox(); boxes.push([b.x - 2, b.y, b.x + b.width + 2, b.y + b.height, 60]); });
         gStatic.querySelectorAll(".sc-axt, .sc-note, .sc-bandlab").forEach(e => { const b = e.getBBox(); boxes.push([b.x - 2, b.y, b.x + b.width + 2, b.y + b.height, 60]); });
@@ -16296,7 +16534,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         const al = gRef.querySelector(".sc-avglab");
         if (al && callI.length){ const hit = () => { const b = al.getBBox(); return callI.some(i => { const X = pos[2 * i], Y = pos[2 * i + 1]; return X + 10 > b.x && X - 10 < b.x + b.width && Y + 10 > b.y && Y - 10 < b.y + b.height; }); };
           if (hit()){ const start = al.getAttribute("text-anchor") === "start"; al.setAttribute("x", start ? W - m.r : m.l + 4); al.setAttribute("text-anchor", start ? "end" : "start"); if (hit()){ al.setAttribute("x", start ? m.l + 4 : W - m.r); al.setAttribute("text-anchor", start ? "start" : "end"); } } }
-        const marks = [[pos[2 * hereI], pos[2 * hereI + 1], 8]].concat(peerI.filter(isOn).map(i => [pos[2 * i], pos[2 * i + 1], 6]), callI.map(i => [pos[2 * i], pos[2 * i + 1], 8]), [[pa[0], pa[1], 8]]);
+        const marks = [[pos[2 * hereI], pos[2 * hereI + 1], 8]].concat(peerI.filter(isOn).map(i => [pos[2 * i], pos[2 * i + 1], 6]), callI.map(i => [pos[2 * i], pos[2 * i + 1], 8]), avgOff() ? [] : [[pa[0], pa[1], 8]]);
         marks.forEach(([X, Y, r]) => boxes.push([X - r, Y - r, X + r, Y + r, 12]));
         const lim = SW && L.yd ? [m.l + 2, 2, W - 2, H - m.b - 2] : [m.l - 4, 2, W - 2, H - m.b + 4];
         const cost = b => { let c = (b[0] < lim[0] || b[2] > lim[2] || b[1] < lim[1] || b[3] > lim[3]) ? 1e6 : 0;
@@ -16346,8 +16584,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         place(pos[2 * hereI], pos[2 * hereI + 1], 8, noun === "metro" ? "Boston Metro" : "Boston Admin", "sc-lab--here");
         /* the found admin and the questions' places, each with its figure */
         callI.forEach(i => place(pos[2 * i], pos[2 * i + 1], 8, rows[i][C.name] + (i === found && noun === "admin" ? ", " + rows[i][C.st] : "") + " " + fmt(rows[i][C[L.k]], L.k), "sc-lab--call"));
-        place(pa[0], pa[1], 8, "Peer average", "sc-lab--avg");
-        peerI.filter(isOn).sort((a, b) => pos[2 * a] - pos[2 * b]).forEach(i => place(pos[2 * i], pos[2 * i + 1], 6, rows[i][C.name], "", true));
+        if (!avgOff()) place(pa[0], pa[1], 8, "Peer average", "sc-lab--avg");
+        peerI.filter(isOn).sort((a, b) => pos[2 * a] - pos[2 * b]).forEach(i => place(pos[2 * i], pos[2 * i + 1], 6, peerName(i), "", true));
       }
       /* the dots in their fifths' colours (opt-1), or the plain grey */
       function tint(){ const F = tintOn() && !setOn() && FIFTH[k]; host.classList.toggle("is-tinted", !!F);
@@ -16363,7 +16601,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         for (let i = 0; i < n; i++){ const d = dots[i]; if (d){ d.setAttribute("cx", p[2 * i].toFixed(1)); d.setAttribute("cy", p[2 * i + 1].toFixed(1)); } }
         peerI.forEach((i, j) => { peerDots[j].setAttribute("cx", p[2 * i]); peerDots[j].setAttribute("cy", p[2 * i + 1]); });
         hereDot.setAttribute("cx", p[2 * hereI]); hereDot.setAttribute("cy", p[2 * hereI + 1]);
-        [pavgBg, pavg].forEach(c => { c.setAttribute("cx", pa[0]); c.setAttribute("cy", pa[1]); c.setAttribute("r", 5.5); }); curPa = [pa[0], pa[1]];
+        [pavgBg, pavg].forEach(c => { c.setAttribute("cx", pa[0]); c.setAttribute("cy", pa[1]); c.setAttribute("r", 5.5); c.style.display = avgOff() ? "none" : ""; }); curPa = [pa[0], pa[1]];
         gCall.textContent = "";
         calls().forEach(i => { const f = i === found, c = el("circle", f ? "sc-found" : "sc-call", gCall);
           c.setAttribute("cx", p[2 * i]); c.setAttribute("cy", p[2 * i + 1]); c.setAttribute("r", f ? 8 : 6.5);
@@ -16424,7 +16662,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         for (let i = 0; i < n; i++){ if (gone[i]) continue; const dx = cur[2 * i] - px, dy = cur[2 * i + 1] - py, d = dx * dx + dy * dy;
           if (d < bd || (d === bd && (i === hereI || peerI.indexOf(i) >= 0))){ bd = d; best = i; } }
         const dpx = geo.pa[0] - px, dpy = geo.pa[1] - py;
-        if (dpx * dpx + dpy * dpy < bd) return { avg: true, x: geo.pa[0], y: geo.pa[1] };
+        if (!avgOff() && dpx * dpx + dpy * dpy < bd) return { avg: true, x: geo.pa[0], y: geo.pa[1] };
         if (best >= 0) return { i: best, x: cur[2 * best], y: cur[2 * best + 1] };
         /* the US average's dashed line, where no dot is near */
         if (fresh() && k !== "emp" && geo.y && px >= geo.m.l && px <= geo.W - geo.m.r){ const Y = geo.y(US[k]); if (Math.abs(py - Y) <= 5) return { us: true, x: px, y: Y }; }
@@ -20125,33 +20363,20 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     .observe(compBtn, { attributes: true, attributeFilter: ["class"] });
   syncOptWrap();
   /* the storyline pill (2026-11-09): fixed at the bottom left while the section is the one on, three choices */
-  if (cfg.storyPill && cfg.altNarrative){
-    var pill = document.createElement("div");
-    pill.className = "story-pill"; pill.setAttribute("role", "group"); pill.setAttribute("aria-label", "Storyline");
-    pill.innerHTML = '<span class="sp-lab">Storyline</span>' +
-      '<button type="button" class="sp-btn" data-ct="2" aria-pressed="true">1</button>' +
-      '<button type="button" class="sp-btn" data-ct="3" aria-pressed="false">2</button>' +
-      '<button type="button" class="sp-btn" data-ct="4" aria-pressed="false">3</button>';
-    document.body.appendChild(pill);
-    var pillSync = function(){
-      var on = compBtn && compBtn.classList.contains("is-active") && document.getElementById("tool") && document.getElementById("tool").classList.contains("active");
-      pill.hidden = !on;
-      pill.querySelectorAll(".sp-btn").forEach(function(b){ b.setAttribute("aria-pressed", String(b.dataset.ct === ctLayout)); });
-    };
-    pill.querySelectorAll(".sp-btn").forEach(function(b){
-      b.addEventListener("click", function(){
-        if (b.dataset.ct === ctLayout) return;
+  /* (2026-11-16) built by window.cornerPill, which the Deep dive's pill on section 1 shares */
+  if (cfg.storyPill && cfg.altNarrative && window.cornerPill){
+    var toolEl = document.getElementById("tool");
+    var storyPill = window.cornerPill({ label: "Storyline", key: "ct", choices: [["2", "1"], ["3", "2"], ["4", "3"]],
+      get: function(){ return ctLayout; },
+      pick: function(v){
         /* the reader stays on the beat they were on, counted the same in both storylines */
         var at = cur;
-        setLayout(b.dataset.ct); pillSync();
+        setLayout(v); storyPill.sync();
         if (built && at > 0 && built.steps[at]){ built.steps[at].scrollIntoView({ block: "center" }); spy(); }
-      });
-    });
-    if (compBtn) new MutationObserver(pillSync).observe(compBtn, { attributes: true, attributeFilter: ["class"] });
-    var toolEl = document.getElementById("tool");
-    if (toolEl) new MutationObserver(pillSync).observe(toolEl, { attributes: true, attributeFilter: ["class"] });
-    window.__storyPillSync = pillSync;
-    setTimeout(pillSync, 0);
+      },
+      shown: function(){ return !!(compBtn && compBtn.classList.contains("is-active") && toolEl && toolEl.classList.contains("active")); },
+      watch: [compBtn, toolEl] });
+    window.__storyPillSync = storyPill.sync;
   }
 
   /* rail-step ids -> the scrolly step that carries them, while built */
