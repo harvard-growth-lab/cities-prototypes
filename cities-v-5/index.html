@@ -1836,6 +1836,14 @@
      table's first rule sits one paragraph gap under the text */
   :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp){margin-top:0;}
   :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) > .wt-mkey{display:none;}
+  /* opt 2, four bars or more (2026-11-16): the key names the colours, the bars thin to the room three bars took */
+  html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt--lines.wt--many:not(.wt--cmp) > .wt-mkey{display:flex;justify-content:flex-start;margin:0 0 10px;}
+  html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-mini[data-many]{row-gap:3px;align-content:center;min-height:57px;}
+  html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-mini[data-many] .wt-ml:not(.here){display:none;}
+  html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-mini[data-many] .wt-ml.here{line-height:1;}
+  html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-mini[data-many] .wt-mb{grid-column:2;height:var(--bh);}
+  html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-mini[data-many] .wt-mb.here{height:calc(var(--bh) + 2px);}
+  html:not([data-dd="2"]) .wt-mini[data-many]{--bh:auto;}
   /* a step smaller with the fifth row, employed residents, so the five fit (2026-11-03, Nil) */
   :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ln{grid-template-columns:minmax(0,170px) minmax(0,1fr) 260px;gap:0 24px;padding:13px 0;}
   :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ln-a{gap:3px;}
@@ -15518,10 +15526,15 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         const bar = (k, cls, lab, x, max, style) => '<span class="wt-bl ' + cls + '"' + (style || '') + '>' + lab + '</span><span class="wt-bt ' + cls + '"' + (style || '') + '><i style="width:' + (x / max * 100).toFixed(2) + '%"></i></span><span class="wt-bv ' + cls + '">' + fmt(k, x) + '</span>';
         /* opt-4's small bars are named before them (2026-10-23, Nil: "write Boston Admin and US average before the bars"); the key
            over the rows stays, set to the right */
-        const mini = (cls, lab, x, max, style) => '<span class="wt-ml ' + cls + '"' + (style || '') + '>' + lab + '</span><span class="wt-mb ' + cls + '"' + (style || '') + ' style="--w:' + (x / max * 100).toFixed(2) + '%' + (style ? style.replace(/^ style="/, ';').replace(/"$/, '') : '') + '"></span>';
+        const mini = (cls, lab, x, max, style) => '<span class="wt-ml ' + cls + '"' + (style || '') + '>' + lab + '</span><span class="wt-mb ' + cls + '" style="--w:' + (x / max * 100).toFixed(2) + '%' + (style ? style.replace(/^ style="/, ';').replace(/"$/, '') : '') + '"></span>';
         const key = '<p class="wt-mkey" aria-hidden="true"><span><i class="here"></i>' + opts.here + '</span><span><i class="us"></i>US average</span>' + (avg ? '<span><i class="pa"></i>Peer average</span>' : '') +
           onPeers.map(pr => '<span><i class="pe" style="--pc:var(--pc-' + slug(pr.name) + ')"></i>' + esc(pr.name) + '</span>').join("") + '</p>';
-        let h = '<div class="wt wt--' + mode + '" data-mode="' + mode + '">' + (cards ? '<div class="wt-cards">' : key);
+        /* the bars share one height once a second comparison is on (2026-11-16, Nil, opt 2: "as more bars appear, the bars may
+           get thinner to make sure the page doesn't get super long"): from four bars the comparisons' names go to the key over
+           the rows, Boston keeps its name, and each bar is as thick as the room allows, so a row never grows */
+        const nOn = 2 + (avg ? 1 : 0) + onPeers.length, many = nOn > 3;
+        const thin = n => n > 3 ? ' data-many style="--bh:' + Math.max(3, Math.min(6, Math.floor((40 - (n - 2) * 3) / (n - 1)))) + 'px"' : '';
+        let h = '<div class="wt wt--' + mode + (many ? ' wt--many' : '') + '" data-mode="' + mode + '">' + (cards ? '<div class="wt-cards">' : key);
         SKEYS.filter(k => here[k] != null && C.us[k] != null).forEach(k => {
           const v = here[k], us = C.us[k], pa = pavg[k], lower = k === "unemployment";
           const max = Math.max(v, us, avg ? pa : 0, ...onPeers.map(pr => pr[k])) * 1.04;
@@ -15534,7 +15547,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
               onPeers.map(pr => bar(k, "pe", '<i class="wt-pd" aria-hidden="true"></i>' + esc(pr.name), pr[k], max, ' style="--pc:var(--pc-' + slug(pr.name) + ')"')).join("") + '</div></div>';
           } else {
             h += '<div class="wt-ln"><div class="wt-ln-a">' + name + figure(k, v) + '</div><div class="wt-ln-b">' + take + '</div>' +
-              '<div class="wt-ln-c"><div class="wt-mini" role="img" aria-label="' + aria + '">' + mini("here", opts.here, v, max) + mini("us", "US average", us, max) + (avg ? mini("pa", "Peer average", pa, max) : '') +
+              '<div class="wt-ln-c"><div class="wt-mini" role="img" aria-label="' + aria + '"' + thin(2 + (avg ? 1 : 0) + onPeers.length) + '>' + mini("here", opts.here, v, max) + mini("us", "US average", us, max) + (avg ? mini("pa", "Peer average", pa, max) : '') +
               onPeers.map(pr => mini("pe", esc(pr.name), pr[k], max, ' style="--pc:var(--pc-' + slug(pr.name) + ')"')).join("") + '</div></div></div>';
           }
         });
