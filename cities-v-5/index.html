@@ -6457,8 +6457,10 @@
   .mc-head{display:flex;align-items:center;gap:8px 16px;flex-wrap:wrap;margin:0 0 6px;}
   .mc-head .mc-title{flex:1 1 auto;min-width:0;margin:0;font-size:16px;line-height:1.6;font-weight:400;color:var(--ink);}
   .mc-play svg{display:block;flex:none;}
-  /* the locator in the head of beats 4 and 5 (2026-11-15): which place the bars count */
-  .mc-loc{display:flex;align-items:center;gap:8px;flex:none;font-size:13px;line-height:1.3;color:var(--ink-soft);}
+  /* the locator of beats 4 and 5 (2026-11-15; 2026-11-16 merged with the sentence): a little map before the sentence, whose
+     first words name the place in its outline's colour; the ring leaves the city once, on the turn from the metro to the city */
+  .mc-lead{flex:1 1 auto;min-width:0;margin:0;display:flex;align-items:center;gap:10px;}
+  .mc-loc{display:block;flex:none;line-height:0;}
   .mc-loc[hidden]{display:none;}
   .mc-loc-map{display:block;flex:none;overflow:hidden;background:var(--white);border:1px solid var(--border);border-radius:4px;}
   .mc-loc-g{transform-origin:0 0;transition:transform .9s cubic-bezier(.4,0,.2,1);}
@@ -6467,12 +6469,14 @@
   .mc-loc-city{fill:transparent;fill-rule:evenodd;stroke:var(--geo-city);stroke-width:1.4;stroke-linejoin:round;transition:fill .6s ease;}
   .mc-loc[data-geo="admin"] .mc-loc-metro{fill:var(--border);}
   .mc-loc[data-geo="admin"] .mc-loc-city{fill:var(--geo-city);}
-  .mc-loc-txt b{display:block;font-weight:600;color:var(--ink);transition:color .6s ease;}
-  .mc-loc[data-geo="admin"] .mc-loc-txt b{color:var(--geo-city);}
+  .mc-place{font-weight:600;color:var(--ink);white-space:nowrap;}
+  .mc-place--admin{color:var(--geo-city);}
+  .mc-place.is-swap{animation:mcPlaceIn .5s cubic-bezier(.2,.7,.2,1);}
+  @keyframes mcPlaceIn{0%{opacity:0;}100%{opacity:1;}}
   .mc-loc-ring{fill:none;stroke:var(--geo-city);stroke-width:1.5;opacity:0;transform-box:fill-box;transform-origin:center;}
   .mc-loc.is-arrive .mc-loc-ring{animation:mcLocRing 1.1s ease-out .7s 2;}
   @keyframes mcLocRing{0%{opacity:.9;transform:scale(.7);}100%{opacity:0;transform:scale(3.4);}}
-  @media (prefers-reduced-motion: reduce){ .mc-loc-g,.mc-loc-metro,.mc-loc-city,.mc-loc-txt b{transition:none;} .mc-loc.is-arrive .mc-loc-ring{animation:none;} }
+  @media (prefers-reduced-motion: reduce){ .mc-loc-g,.mc-loc-metro,.mc-loc-city{transition:none;} .mc-loc.is-arrive .mc-loc-ring,.mc-place.is-swap{animation:none;} }
   .mc-play[hidden]{display:none;}
   .mc-plot{position:relative;}
   .mc-svg{display:block;overflow:visible;}
@@ -9887,12 +9891,12 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
             </div>
             <!-- storyline 2's beat 4 (window.MC): its sentence and Play, the chart, its card and its key -->
             <div class="mc-fig" id="mcFig">
+              <!-- the locator in the sentence (2026-11-15; 2026-11-16, Nil: "merge the map figure idea with the control sentence"):
+                   a little map opens the sentence, whose first words name the place it shows, in its outline's colour. The metro
+                   filled while the bars are the metro's; at the Boston admin beat the map moves in on the city, which fills, a ring
+                   leaves it, and the name in the sentence turns to Boston admin -->
               <div class="mc-head">
-                <p class="mi-sentence mc-title" id="mcTitle"></p>
-                <!-- the locator (2026-11-15, Nil: "going from 4th to 5th beat, give a visual cue to the user using some kind of a map idea"):
-                     the metro's outline with the city inside it, section 1's two lines (the metro dashed, the city solid). The metro is
-                     filled while the bars are the metro's; at the Boston admin beat the little map moves in on the city, which fills, and a ring leaves it -->
-                <div class="mc-loc" id="mcLoc" aria-hidden="true"><svg class="mc-loc-map" width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g class="mc-loc-g"><path class="mc-loc-metro"/><path class="mc-loc-city"/></g><circle class="mc-loc-ring" cx="30" cy="30" r="8"/></svg><span class="mc-loc-txt"><b id="mcLocName"></b><span id="mcLocSub"></span></span></div>
+                <p class="mc-lead"><span class="mc-loc" id="mcLoc" aria-hidden="true"><svg class="mc-loc-map" width="36" height="36" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g class="mc-loc-g"><path class="mc-loc-metro"/><path class="mc-loc-city"/></g><circle class="mc-loc-ring" cx="30" cy="30" r="8"/></svg></span><span class="mi-sentence mc-title" id="mcTitle"></span></p>
                 <button type="button" class="who-fl-replay mc-play" id="mcPlay"></button>
               </div>
               <div class="mc-plot"><svg class="mc-svg" id="mcSvg" role="img" aria-label="The metro's jobs by sector" xmlns="http://www.w3.org/2000/svg"></svg>
@@ -24460,7 +24464,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   /* the locator (2026-11-15): section 1's outlines (data/geo/who_commute_geo.js) drawn flat, a degree of longitude
      shortened by the latitude's cosine, fitted to 60 by 60; LOC_IN is the move in on the city for the Boston admin beat (six
      times, the city in the middle, on the metro's ground); without the outlines it stays away */
-  const locEl = document.getElementById("mcLoc"), locName = document.getElementById("mcLocName"), locSub = document.getElementById("mcLocSub");
+  const locEl = document.getElementById("mcLoc");
   let locGeo = "", LOC_IN = "";
   (function(){
     const Q = window.WHO_COMMUTE_GEO; if (!locEl) return; if (!Q || !Q.msa || !Q.boston){ locEl.hidden = true; return; }
@@ -24477,11 +24481,11 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     let cx = 0, cy = 0; big.forEach(c => { const q = pt(c); cx += q[0]; cy += q[1]; }); const n = big.length || 1, Z = 6;
     LOC_IN = "translate(" + (W / 2 - cx / n * Z).toFixed(1) + "px," + (H / 2 - cy / n * Z).toFixed(1) + "px) scale(" + Z + ")";
   })();
+  if (locEl) locEl.addEventListener("animationend", e => { if (e.target.classList.contains("mc-loc-ring")) locEl.classList.remove("is-arrive"); });
   function locSet(adm){
     if (!locEl || locEl.hidden) return; const g = adm ? "admin" : "metro", was = locGeo; if (g === was) return;
     locGeo = g; locEl.dataset.geo = g;
     locEl.querySelector(".mc-loc-g").style.transform = adm ? LOC_IN : "";
-    locName.textContent = adm ? "Boston admin" : "Boston Metro"; locSub.textContent = adm ? "the city, inside the metro" : "the city and its surroundings";
     locEl.classList.remove("is-arrive");
     if (adm && was === "metro"){ void locEl.offsetWidth; locEl.classList.add("is-arrive"); }
   }
@@ -24602,8 +24606,11 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   function words(){
     const adm = mode === "adm", tot = fmt(sum.non + sum.res);
     locSet(adm);
-    titleEl.textContent = adm ? "Boston admin’s " + tot + " jobs by sector and who holds them, in 2023"
-      : "The metro’s " + fmt(M.jobs) + " jobs " + (mode === "tgrp" ? "by who holds them" : "by sector" + (mode === "grp" ? " and who holds them" : "")) + ", in 2023";
+    /* the sentence opens on the place the map shows; the name fades in anew when the place changes */
+    const place = adm ? "Boston admin" : "Boston Metro", swap = !!titleEl.dataset.place && titleEl.dataset.place !== place;
+    titleEl.dataset.place = place;
+    titleEl.innerHTML = '<span class="mc-place' + (adm ? ' mc-place--admin' : '') + (swap ? ' is-swap' : '') + '">' + place + '</span>' + (adm ? "’s " + tot + " jobs by sector and who holds them, in 2023"
+      : "’s " + fmt(M.jobs) + " jobs " + (mode === "tgrp" ? "by who holds them" : "by sector" + (mode === "grp" ? " and who holds them" : "")) + ", in 2023");
     playBtn.hidden = adm;
     playBtn.innerHTML = played || busy ? REPLAY : PLAY;
     playBtn.setAttribute("aria-label", tree ? "Replay: the sectors split and gather into the four groups of who holds the jobs" : "Replay: each sector's bar colours by the four groups of who holds its jobs");
