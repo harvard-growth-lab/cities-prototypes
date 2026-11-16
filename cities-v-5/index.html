@@ -6487,6 +6487,10 @@
   /* beats 4 and 5's sentence at 600 throughout, its place name too (2026-11-16, Nil); section 3's sentence keeps 400 */
   #miFigure #mcTitle{font-weight:600;}
   .mc-play svg{display:block;flex:none;}
+  /* quiet, as the Venn's Play again (2026-11-16, Nil: "make the replay button similar to the venn diagram one"): no box, the
+     soft ink, teal and underlined on hover */
+  #miFigure .who-fl-replay.mc-play{height:24px;padding:0 2px;border:0;background:none;color:var(--ink-soft);}
+  #miFigure .who-fl-replay.mc-play:hover{background:none;color:var(--teal);text-decoration:underline;text-underline-offset:3px;}
   /* the locator of beats 4 and 5 (2026-11-15; 2026-11-16 merged with the sentence): a little map before the sentence, whose
      first words name the place in its outline's colour; the ring leaves the city once, on the turn from the metro to the city */
   .mc-lead{flex:1 1 auto;min-width:0;margin:0;display:flex;align-items:center;gap:10px;}
@@ -18206,7 +18210,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
 
     let built = false, twins = [], fA, fB, cA, cB, ldr, labs, setA, setB, sbA, sbB, vkey, cur = null, tip = null, frames = null, pinned = null;
     /* a set's bracket: a line over its rectangle, with ticks down at both ends (opt-4's, 6 deep) */
-    const TK = 6, bpath = (a, b, y) => "M" + (a + .5).toFixed(1) + "," + (y + TK).toFixed(1) + "V" + y.toFixed(1) + "H" + (b - .5).toFixed(1) + "V" + (y + TK).toFixed(1);
+    /* VN_FLIP: the parts' names over the rectangles, the sets' brackets under them, their ticks up (2026-11-16, Nil) */
+    const VN_FLIP = true;
+    const TK = 6, bpath = (a, b, y, up) => { const k = up ? -TK : TK; return "M" + (a + .5).toFixed(1) + "," + (y + k).toFixed(1) + "V" + y.toFixed(1) + "H" + (b - .5).toFixed(1) + "V" + (y + k).toFixed(1); };
     const FRAMES = [["Apart", "First frame: the two groups apart", 0], ["Together", "Last frame: the two groups together, the three parts named", 2]];
     const hideTip = () => { if (tip){ tip.hidden = true; delete tip.dataset.k; } };
     const brk = {}, reg = {};
@@ -18369,7 +18375,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       const atX = (c, w) => Math.max(0, Math.min(Wd - w, c - w / 2)), axm = (ax0 + ax1) / 2, bxm = (bx0 + bx1) / 2;
       const level = !g.round && !ends && atX(ax0 + colsA * p / 2, wA) + wA + 12 <= atX(bx0 + g.colsB * p / 2, wB) &&
         axm + colsA * p + 6 <= atX(bxm + g.colsB * p / 2, wB);
-      const by = gy + R * p + e + 7, ry = by + 13;
+      let by = gy + R * p + e + 7; const ry = by + 13;
       /* a part's label (its icon, count and name) on at most n lines */
       const lines = (k, n) => { const w = reg[k].querySelector(".vn-n"), lh = parseFloat(getComputedStyle(w.querySelector("b")).lineHeight) || 22; return w.offsetHeight <= lh * n + 2 * (n - 1) + 2; };
       let H, ldr = null;
@@ -18410,10 +18416,25 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         K3.forEach(k => { reg[k].style.maxWidth = (Wd - x - 4) + "px"; reg[k].dataset.x = x; reg[k].dataset.y = y; y += reg[k].offsetHeight + (dens === "list" ? 10 : 6); });
         H = y;
       }
+      /* the parts' names over the figure and the sets' counts under it (2026-11-16, Nil: "the cluster names should be on top
+         and xx jobs should be on the bottom"): the rectangles' layout turned upside down, each name kept the right way up and
+         as near the figure as it stood, the brackets' ticks reaching up to their rectangles. A stacked list keeps its order */
+      let flip = false;
+      if (VN_FLIP && !g.round){
+        flip = true;
+        const box = (t, h) => H - t - h, hA = setA.offsetHeight, hB = setB.offsetHeight;
+        topA = box(topA, hA); topB = box(topB, hB); yA = H - yA; yB = H - yB;
+        gy = H - gy - R * p;
+        const by0 = by; by = H - by0 - 3;
+        if (dens === "full"){
+          K3.forEach(k => { reg[k].dataset.y = box(+reg[k].dataset.y, reg[k].offsetHeight); });
+          if (ldr) ldr = [ldr[0], H - ldr[1], H - ldr[2]];
+        } else { const ry0 = by0 + 13; K3.forEach(k => { reg[k].dataset.y = +reg[k].dataset.y - ry0 + 2; }); }
+      }
       /* the dot key under everything, from the joined figure's left edge ("foot") */
       if (keyMode === "foot" && vkey.offsetHeight){ vkey.dataset.x = Math.max(0, Math.min(ax1, Wd - vkey.offsetWidth)); vkey.dataset.y = H + 8; H += 8 + vkey.offsetHeight; }
       /* the dot a touch under a third of its pitch (2026-11-08, Nil: "make the dots super slightly smaller"; it was .34) */
-      return { Wd, H: Math.ceil(H), p, r: p * .31, e, gy, by, ax0, bx0, ax1, bx1, topA, topB, yA, yB, wA, wB, level, ends, dens, g, ldr };
+      return { Wd, H: Math.ceil(H), p, r: p * .31, e, gy, by, ax0, bx0, ax1, bx1, topA, topB, yA, yB, wA, wB, level, ends, dens, g, ldr, flip };
     }
     /* the largest pitch that fits the panel, in the roomiest density that can name the parts at that size */
     const PMIN = { full: 10, list: 9, compact: 0 }, RANK = { full: 0, list: 1, compact: 2 };
@@ -18523,7 +18544,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         const lA = L.ends ? Math.max(0, Math.min(L.Wd - L.wA, ax)) : at(ax + wa / 2, L.wA), lB = L.ends ? Math.max(0, Math.min(L.Wd - L.wB, bx + wb - L.wB)) : at(bx + wb / 2, L.wB);
         setA.style.left = lA.toFixed(1) + "px"; setB.style.left = lB.toFixed(1) + "px";
         topA = L.ends ? L.topA : L.topB + (L.topA - L.topB) * rise;
-        sbA.setAttribute("d", bpath(ax, ax + wa, L.ends ? L.yA : L.yB + (L.yA - L.yB) * rise)); sbB.setAttribute("d", bpath(bx, bx + wb, L.yB));
+        sbA.setAttribute("d", bpath(ax, ax + wa, L.ends ? L.yA : L.yB + (L.yA - L.yB) * rise, L.flip)); sbB.setAttribute("d", bpath(bx, bx + wb, L.yB, L.flip));
       }
       setA.style.top = topA.toFixed(1) + "px"; setB.style.top = L.topB.toFixed(1) + "px";
     }
@@ -24749,7 +24770,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   const gVal = svg.append("g").attr("class", "mc-vals"), gHead = svg.append("g").attr("class", "mc-heads"), gBos = svg.append("g").attr("class", "mc-bos");
   const gSLab = svg.append("g").attr("class", "mc-slabs"), gTG = svg.append("g").attr("class", "mc-tglabs"), gTBos = svg.append("g").attr("class", "mc-bos");
   const PLAY = '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M4.5 2.8v10.4L13 8z" fill="currentColor"/></svg>Play';
-  const REPLAY = '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M2.5 8a5.5 5.5 0 1 0 1.8-4.1M2.5 2.5v3h3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Replay';
+  const REPLAY = '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M2.5 8a5.5 5.5 0 1 0 1.8-4.1M2.5 2.5v3h3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Play again';
   function words(){
     const adm = mode === "adm", tot = fmt(sum.non + sum.res);
     locSet(adm);
