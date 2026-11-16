@@ -915,6 +915,15 @@
   .sec-seal.is-in .skd-needle{transform:rotate(var(--a));}
   .skd-pivot{fill:var(--white);}
   .skd-big{font-size:44px;font-weight:700;fill:var(--white);font-variant-numeric:tabular-nums;}
+  /* at 2.1 the needle runs up through the reading (2026-11-16, jobs for every working resident; at 3.4 it passed clear):
+     the reading on an edge of the card's own colour, the teal under its 7% white */
+  .skd-big{stroke:color-mix(in srgb, var(--teal-dark) 93%, #fff);stroke-width:9px;stroke-linejoin:round;paint-order:stroke;}
+  /* the dial drawn both ways (2026-11-16): storylines 2 and 3 show the mirrored one, business at the left; its needle
+     still swings in from the residential end, now the right */
+  .skd--m{display:none;}
+  html[data-who-story]:not([data-who-story="1"]) .skd--n{display:none;}
+  html[data-who-story]:not([data-who-story="1"]) .skd--m{display:block;}
+  .skd--m .skd-needle{transform:rotate(0deg);}
   /* the anchor: the five most populous admins as bars on one scale, the admin's own white and named in bold */
   .sk-viz--rank{display:grid;grid-template-columns:max-content minmax(0,1fr) max-content;align-items:center;gap:8px 10px;width:min(100%, 340px);}
   .skr-row{display:contents;}
@@ -5503,6 +5512,79 @@
   .wg-gain{position:absolute;top:-3px;white-space:nowrap;font-weight:600;line-height:16px;color:var(--ink);}
   .wg-ghostlab{margin:6px 0 0;color:var(--ink-soft);min-height:1.35em;}
   @media (prefers-reduced-motion: reduce){ .wg-needle,.wg-ghost{transition:none;} }
+  /* section 1's storylines (2026-11-16): in 2 and 3 the needle holds Boston's own reading, so no ghost and no line for it.
+     In 3 it stands under the dots in the chart's place: in the panel the dial and its words side by side, centred under
+     the Venn; in the column stacked, as on the map's beat. It rests at the dial's start while the two sets stand apart
+     and swings to Boston's reading as they join */
+  .who-gauge.is-static .wg-ghost,.who-gauge.is-static .wg-ghostlab{display:none;}
+  .fl-detail--gauge .who-gauge{margin-top:0;}
+  .who-gauge--wide{display:grid;grid-template-columns:250px minmax(0,340px);column-gap:40px;align-items:center;justify-content:center;}
+  .who-gauge--wide .wg-svg{margin:0;}
+  .who-gauge--wide .wg-who{margin-top:0;}
+  .fl-bare .fl-detail--gauge .wg-needle{transform:rotate(-180deg) !important;transition:none;}
+  /* the mirrored dial (storylines 2 and 3, business at the left): it rests at the residential end, now the right */
+  .fl-bare .fl-detail--gauge .wg-svg.is-flip .wg-needle{transform:rotate(0deg) !important;}
+  #ovWrap.is-presenting .who-gauge--wide{grid-template-columns:calc(250px * var(--pv-k, 1)) minmax(0, calc(340px * var(--pv-k, 1)));column-gap:calc(40px * var(--pv-k, 1));font-size:calc(13px * var(--pv-k, 1));}
+  #ovWrap.is-presenting .who-gauge--wide .wg-svg{max-width:none;}
+  #ovWrap.is-presenting .who-gauge--wide :is(.wg-who, .wg-verdict){font-size:calc(15px * var(--pv-k, 1));}
+  #ovWrap.is-presenting .who-gauge--wide .wg-flows{height:auto;}
+  /* at 2.1 the needle runs up past its reading (2026-11-16): the reading on a white edge over it, the tick's words it
+     covers stepped aside. Section 1's needles only, not section 2's (#miGauge) */
+  .who-gauge:not(.mi-gauge) .wg-big{stroke:var(--white);stroke-width:6px;stroke-linejoin:round;paint-order:stroke;}
+  .who-gauge:not(.mi-gauge) .wg-tlab{transition:opacity .3s ease;} .who-gauge:not(.mi-gauge) .wg-tlab.is-hid{opacity:0;}
+  /* storyline 3's needle stands over the dots (2026-11-16, Tammy: "move needle to be above dots venn"); the Venn's own
+     spacing is reckoned under it, as with nothing under the dots */
+  #ovWrap .who-fl-panel:has(> .who-fl.is-venn) > .fl-detail.fl-detail--gauge{margin:0 0 20px;}
+  /* and the dot key with Play again goes under the figure, where the needle stands over it (2026-11-16, Tammy: "move the
+     'each dot is' and play again text somewhere else, possibly below dot venn"): from 1200 up and in the presenter; under
+     1200 the needle is in the words column and the row keeps its place over the dots. Centred, as the needle and the
+     figure over it stand */
+  /* storyline 5 too: its figure stands alone in the panel for two steps, and the key belongs by the dots */
+  @media (min-width:1200px){ html:is([data-who-story="3"],[data-who-story="5"]) .who-fl-panel > #whoFlows.is-venn > .who-fl-note{order:1;margin:12px 0 0;justify-content:center;} }
+  html:is([data-who-story="3"],[data-who-story="5"]) #ovWrap.is-presenting .who-fl-panel > #whoFlows.is-venn > .who-fl-note{order:1;margin:12px 0 0;justify-content:center;}
+  /* storylines 2 and 3 (2026-11-16, Tammy: "swap sides of map legend so the left/right and blue/orange matches between
+     beats"): the net key reads as the Venn and the histogram on the beat before do, blue on the left, "Boston receives"
+     over it, orange and "Boston sends" on the right. Its numbers are the same each way (5K 1K 100 | 100 1K 5K), so only
+     the steps and the two words turn round; the one-colour keys (in, out) stay as they are */
+  html[data-who-story]:not([data-who-story="1"]) .who-legend--flow .wk-ends--top:not(.wk-ends--one) + .wk-steps{direction:rtl;}
+  html[data-who-story]:not([data-who-story="1"]) .who-legend--flow .wk-ends--top:not(.wk-ends--one) + .wk-steps i:first-child{border-radius:0 2px 2px 0;}
+  html[data-who-story]:not([data-who-story="1"]) .who-legend--flow .wk-ends--top:not(.wk-ends--one) + .wk-steps i:last-child{border-radius:2px 0 0 2px;}
+  html[data-who-story]:not([data-who-story="1"]) .who-legend--flow .wk-ends:not(.wk-ends--one) .in{order:-1;margin-left:0;}
+  html[data-who-story]:not([data-who-story="1"]) .who-legend--flow .wk-ends:not(.wk-ends--one) .out{margin-left:auto;}
+  /* storyline 3's histogram on the map's beat, in the words column where the needle stood: as tall as the column's copy */
+  .who-b3-hist{margin-top:14px;}
+  .who-b3-hist .who-ref-hist{height:280px;}
+  /* storyline 2's title under the dots: Boston's reading in the teal of its line */
+  .who-ref-head .who-ref-me{font-weight:700;color:var(--teal);}
+  /* ---- storylines 4 and 5, "quieter" (2026-11-16, Tammy: "too many labels/it may not be immediately clear to the user
+     what they are seeing - however, all the numbers are informative"): every number stays, said in fewer marks ---- */
+  /* the words' three groups in the figure's colours, so the paragraph is its key */
+  .wl{font-weight:600;} .wl--in{color:var(--flow-in);} .wl--both{color:var(--flow-both-text);} .wl--out{color:var(--flow-out-text);}
+  /* the parts' names without their icons and "live elsewhere": the count and what it counts, in the part's colour */
+  html:is([data-who-story="4"],[data-who-story="5"]) #whoFlows.is-venn .vn-reg :is(.vn-ico, .vn-x, .vn-xc){display:none;}
+  /* one line under the chart's axis for the two ends' words */
+  .rh-axt{font-size:13px;fill:var(--ink-soft);pointer-events:none;}
+  /* the peers behind one switch, which opens them in its own row, so nothing moves */
+  .who-ref-ptog{display:none;}
+  html:is([data-who-story="4"],[data-who-story="5"]) .who-ref-ptog{display:inline-flex;align-items:center;min-height:28px;appearance:none;border:0;padding:0;background:none;
+    font:inherit;font-size:13px;color:var(--ink-soft);text-decoration:underline;text-underline-offset:3px;cursor:pointer;}
+  html:is([data-who-story="4"],[data-who-story="5"]) .who-ref-ptog:hover{color:var(--teal);}
+  html:is([data-who-story="4"],[data-who-story="5"]) .who-ref-ptog:focus-visible{outline:2px solid var(--teal);outline-offset:2px;border-radius:2px;}
+  html:is([data-who-story="4"],[data-who-story="5"]):not([data-who-peers="open"]) .who-ref-peers > :not(.who-ref-ptog){display:none;}
+  /* ---- storyline 5: the beat in three steps, by the reader's scroll. The three paragraphs stand apart down the words'
+     column, the one whose step is on in full ink; the chart keeps its room in the panel and comes in with the third; no
+     Play again, the scroll plays it. The presenter shows the whole figure, as the other storylines do ---- */
+  html[data-who-story="5"] #page-overview-flows > .lede{transition:opacity .35s ease;}
+  html[data-who-story="5"] #ovWrap:not(.is-presenting) #page-overview-flows[data-step] > .lede:not(.is-step){opacity:.4;}
+  html[data-who-story="5"] #ovWrap #page-overview-flows > .lede + .lede{margin-top:52vh;}
+  html[data-who-story="5"] #ovWrap #page-overview-flows > .lede + .lede + .lede{margin-top:16vh;}
+  html[data-who-story="5"] #page-overview-flows .fl-detail--hist{transition:opacity .5s ease .3s, visibility 0s;}
+  /* until then the figure stands in the middle of the panel, and rises as the chart comes in */
+  html[data-who-story="5"] .who-fl-panel > #whoFlows{transition:transform .7s cubic-bezier(.3,.7,.2,1);}
+  html[data-who-story="5"] #ovWrap:not(.is-presenting) #page-overview-flows[data-step]:not([data-step="3"]) .who-fl-panel > #whoFlows{transform:translateY(var(--step-drop, 0px));}
+  @media (prefers-reduced-motion: reduce){ html[data-who-story="5"] .who-fl-panel > #whoFlows,html[data-who-story="5"] #page-overview-flows .fl-detail--hist,html[data-who-story="5"] #page-overview-flows > .lede{transition:none;} }
+  html[data-who-story="5"] #ovWrap:not(.is-presenting) #page-overview-flows[data-step]:not([data-step="3"]) .fl-detail--hist{opacity:0;visibility:hidden;transition:opacity .3s ease, visibility 0s linear .3s;}
+  html[data-who-story="5"] #ovWrap:not(.is-presenting) #whoFlows .who-fl-replay{display:none;}
   /* the narrow column stacks the switch, as a phone does */
   @media (min-width:900px){
     #ovWrap .wide-text .who-fl-ctl .seg{flex-direction:column;width:100%;}
@@ -8936,7 +9018,9 @@
    scroll as beats (DEEP_DIVE) */
 /* and a third (2026-11-16), for the Deep dive pill: ?dd=2 opens section 1 on the pill's choice 2 (the scatter plot in the
    map's place) */
-if (location.search){ const keep = [/[?&]b6=both\b/.test(location.search) ? "b6=both" : "", /[?&]deep=beats\b/.test(location.search) ? "deep=beats" : "", /[?&]dd=2\b/.test(location.search) ? "dd=2" : ""].filter(Boolean);
+/* and a fourth (2026-11-16), for section 1's storyline pill: ?whostory=2 to 5 opens the section on that storyline */
+if (location.search){ const ws = location.search.match(/[?&]whostory=([2-5])\b/);
+  const keep = [/[?&]b6=both\b/.test(location.search) ? "b6=both" : "", /[?&]deep=beats\b/.test(location.search) ? "deep=beats" : "", /[?&]dd=2\b/.test(location.search) ? "dd=2" : "", ws ? "whostory=" + ws[1] : ""].filter(Boolean);
   history.replaceState(null, "", location.pathname + (keep.length ? "?" + keep.join("&") : "") + location.hash); }</script>
 <script>/* ?colours=16, 11, 10 or 9 shows that colour system beside the thirteen (HANDOFF §6c) */
 (function(){ var m = /[?&]colours=(16|11|10|9)\b/.exec(location.search); if (m) document.documentElement.dataset.colours = m[1]; })();</script>
@@ -11227,6 +11311,48 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     window.deepDive = { mode: deepMode, open: (x, from) => open(from, typeof x === "string" ? PRESET[x] : x), close, show,
       get isOpen(){ return isOpen(); }, get set(){ return cur; }, PRESET,
       get opt(){ return dd; }, setOpt, fig: { show: figShow, hide: figHide, get set(){ return figSet; } } };
+  })();
+  /* ---- section 1's storyline (2026-11-16, Tammy: the feedback on "Who works here, who lives here" was that it should
+     signal its takeaway more clearly): the black pill at the bottom left, on this section only, its choice kept in
+     ?whostory=. 1 the beats as they stand; 2 the chart under the dots titled with its takeaway (Boston's jobs per
+     working resident and how few admins have more); 3 the needle in the chart's place. In 2 and 3 the needle stands
+     still on Boston's own reading; in 3 it has moved up, so the map's beat has none. window.whoStory: get(), set(v),
+     on(fn), the commuting beats' scripts below listening.
+     4 and 5 (2026-11-16, Tammy: the beat has "too many labels/it may not be immediately clear to the user what they are
+     seeing - however, all the numbers are informative"), both on storyline 2's footing (the takeaway said once, the needle
+     held and mirrored, the map's key turned): 4 "quieter", every number kept and said in fewer marks (the parts' names
+     without icons or second lines, the words' three groups in the figure's colours, one line under the chart's axis for
+     two, the peers behind one switch); 5 the same, told in three steps by the reader's scroll: the two totals, then the
+     three parts, then the chart ---- */
+  (function(){
+    const CH = ["1", "2", "3", "4", "5"], subs = [], root = document.documentElement;
+    let v = (location.search.match(/[?&]whostory=([1-5])\b/) || [, "1"])[1];
+    root.dataset.whoStory = v;
+    const scroller = () => { const pg = document.querySelector(".pages"); return pg && pg.scrollHeight > pg.clientHeight ? pg : document.scrollingElement; };
+    function set(n){
+      n = String(n); if (CH.indexOf(n) < 0 || n === v) return;
+      /* the reader stays where they were: the beat on screen keeps its top through the change and the redraws after it */
+      const beat = document.querySelector("#ovWrap .ov-block.is-on"), y0 = beat ? beat.getBoundingClientRect().top : null;
+      const hold = () => { if (!beat) return; const d = beat.getBoundingClientRect().top - y0; if (Math.abs(d) < 1) return;
+        const sc = scroller(), sb = sc.style.scrollBehavior; sc.style.scrollBehavior = "auto"; sc.scrollTop += d; sc.style.scrollBehavior = sb; };
+      v = n; root.dataset.whoStory = v;
+      const u = new URL(location.href); if (v === "1") u.searchParams.delete("whostory"); else u.searchParams.set("whostory", v);
+      history.replaceState(history.state, "", u.pathname + u.search + u.hash);
+      subs.forEach(f => { try { f(v); } catch (e){ console.error(e); } });
+      hold(); requestAnimationFrame(() => requestAnimationFrame(hold));
+    }
+    window.whoStory = { get: () => v, set, on: f => { subs.push(f); } };
+    const navBtn = () => { let i = 0; try { i = sectionDefs.findIndex(sd => sd.pages.indexOf("page-overview") >= 0); } catch (e){} return document.querySelectorAll(".secnav-btn")[i < 0 ? 0 : i]; };
+    const secOn = () => { const b = navBtn(), t = document.getElementById("tool"); return !!(b && b.classList.contains("is-active") && t && t.classList.contains("active")); };
+    let pill = null;
+    function mount(){
+      if (pill || !window.cornerPill) return;
+      pill = window.cornerPill({ id: "whoStoryPill", label: "Storyline", key: "ws",
+        choices: [["1", "1", "As it stands"], ["2", "2", "The chart under the dots says its takeaway"], ["3", "3", "The needle in the chart's place"],
+          ["4", "4", "Quieter: fewer labels, the words colour-keyed to the figure"], ["5", "5", "Quieter, and told in three steps as you scroll"]],
+        get: () => v, pick: set, shown: secOn, watch: [navBtn(), document.getElementById("tool")] });
+    }
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mount); else setTimeout(mount, 0);
   })();
   const pageIds = ["page-overview","page-overview-scatter","page-overview-flows","page-overview-metro","page-overview-mscatter","page-export-basket",
                    "page-doing","page-doing-metro","page-constraints","page-city-in-metro","page-constraints-lorem","page-levers"];
@@ -15134,7 +15260,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   /* Who are you? closes on two verdicts, each drawn (2026-10-14): is the
      admin its metro's population anchor (2026-10-22, Nil: "Boston is the population anchor, number 1 admin with most
      population": the metro's most populous admin, drawn as its five largest), and is it a business or a
-     residential admin (a needle: commuters in for every one out; above 1.25
+     residential admin (a needle: jobs for every working resident, commuters in for every one out until 2026-11-16; above 1.25
      business, below 0.8 residential, between balanced). From who-2024.js. */
   /* the metro's mark, as its icon circle draws it: in Who am I?'s snapshot card and in the produce chapter's first */
   const ICO_METRO = '<svg class="sk-ico-metro" viewBox="0 0 30 22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="15" cy="11" rx="13" ry="8.6" stroke-dasharray="2.6 3"/><path d="M10.5 15.5h9"/><path d="M12.2 15.5V10h3v5.5"/><path d="M16.6 15.5V7h3v8.5"/></svg>';
@@ -15170,7 +15296,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       const admin = v(W.place, "population"), metro = v(W.metro, "population");
       const places = 130;
       const jobs = W.in.jobsHere, res = W.out.residentWorkers, inn = W.in.filledByCommuters, out = W.out.workElsewhere;
-      const ratio = inn / out;
+      /* jobs for every working resident, 2.1, as the needle in the beats and section 2's read it (2026-11-16, Tammy: "make
+         the needle numbers consistent"; it read commuters in for every one out, 3.4) */
+      const ratio = jobs / res;
       const n = x => x.toLocaleString("en-US"), M = x => (x / 1e6).toFixed(1) + " million", K = x => Math.round(x / 1e3) + "K";
       /* the metro's admins by population: the scatter's rows (admins of about 25,000 people and up, 2024) that the
          commuting outlines place inside the metro, with the admin itself */
@@ -15180,24 +15308,26 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         top = S.rows.filter(r => r[C.id] === S.here || inM.has(r[C.id])).sort((a, b) => b[C.pop] - a[C.pop]).slice(0, 5).map(r => ({ here: r[C.id] === S.here, name: r[C.name], pop: r[C.pop] })); }
       const rank = top.findIndex(t => t.here) + 1, anchor = rank === 1, next = top[1];
       /* business or residential (2026-10-22, Nil: "replace Sender or receiver? with Business or Residential admin
-         questions and show the needle graph"): the commuting beat's needle, commuters in for every one out on a log
+         questions and show the needle graph"): the commuting beat's needle on a log
          half ring from a quarter to four times, small and white on the close's teal; it swings in as the close arrives */
       const zone = ratio < .8 ? "res" : ratio <= 1.25 ? "bal" : "bus", ZW = { res: "residential", bal: "balanced", bus: "business" };
-      const dial = (() => {
+      /* drawn both ways (2026-11-16, Tammy: "mirror the dial in storylines 2 and 3"): skd--n residential at the left, as
+         storyline 1 has it; skd--m mirrored, business at the left; the storyline on the page shows one (html[data-who-story]) */
+      const dial = m => {
         const G = { cx: 160, cy: 168, r: 150, rIn: 122, min: .25, max: 4 };
-        const ang = v => Math.PI - (Math.log(v) - Math.log(G.min)) / (Math.log(G.max) - Math.log(G.min)) * Math.PI;
+        const ang = v => { const u = (Math.log(v) - Math.log(G.min)) / (Math.log(G.max) - Math.log(G.min)) * Math.PI; return m ? u : Math.PI - u; };
         const pt = (a, r) => [G.cx + Math.cos(a) * r, G.cy - Math.sin(a) * r], f = x => x.toFixed(1);
-        const arc = (v0, v1) => { const a0 = ang(v0), a1 = ang(v1), p0 = pt(a0, G.r), p1 = pt(a1, G.r), p2 = pt(a1, G.rIn), p3 = pt(a0, G.rIn);
+        const arc = (v0, v1) => { let a0 = ang(v0), a1 = ang(v1); if (a0 < a1) [a0, a1] = [a1, a0]; const p0 = pt(a0, G.r), p1 = pt(a1, G.r), p2 = pt(a1, G.rIn), p3 = pt(a0, G.rIn);
           return "M" + f(p0[0]) + "," + f(p0[1]) + " A" + G.r + "," + G.r + " 0 0 1 " + f(p1[0]) + "," + f(p1[1]) + " L" + f(p2[0]) + "," + f(p2[1]) + " A" + G.rIn + "," + G.rIn + " 0 0 0 " + f(p3[0]) + "," + f(p3[1]) + "Z"; };
         const Z = [{ v0: .25, v1: .8, k: "res", t: "Residential" }, { v0: .8, v1: 1.25, k: "bal", t: "Balanced" }, { v0: 1.25, v1: 4, k: "bus", t: "Business" }];
         const r = Math.max(G.min, Math.min(G.max, ratio)), deg = -(ang(r) * 180 / Math.PI);
-        return '<svg class="skd" viewBox="0 0 320 200" role="img" aria-label="Boston Admin: ' + ratio.toFixed(1) + ' commute in for every one who commutes out, a ' + ZW[zone] + ' admin">' +
+        return '<svg class="skd skd--' + (m ? 'm' : 'n') + '" viewBox="0 0 320 200" role="img" aria-label="Boston Admin: ' + ratio.toFixed(1) + ' jobs for every working resident, a ' + ZW[zone] + ' admin">' +
           Z.map(z => '<path class="skd-zone' + (z.k === zone ? ' is-on' : '') + '" d="' + arc(z.v0, z.v1) + '"/>').join("") +
           Z.map(z => { const mid = Math.exp((Math.log(z.v0) + Math.log(z.v1)) / 2), a = ang(mid), q = pt(a, G.r + 16), d = -(a * 180 / Math.PI - 90);
             return '<text class="skd-lab' + (z.k === zone ? ' is-on' : '') + '" x="' + f(q[0]) + '" y="' + f(q[1]) + '" text-anchor="middle" transform="rotate(' + d.toFixed(1) + ' ' + f(q[0]) + ' ' + f(q[1]) + ')">' + z.t + '</text>'; }).join("") +
           '<line class="skd-needle" x1="' + G.cx + '" y1="' + G.cy + '" x2="' + (G.cx + G.rIn - 14) + '" y2="' + G.cy + '" style="--a:' + deg.toFixed(2) + 'deg"/>' +
           '<circle class="skd-pivot" cx="' + G.cx + '" cy="' + G.cy + '" r="6"/>' +
-          '<text class="skd-big" x="' + G.cx + '" y="' + (G.cy - 30) + '" text-anchor="middle">' + ratio.toFixed(1) + '\u00d7</text></svg>'; })();
+          '<text class="skd-big" x="' + G.cx + '" y="' + (G.cy - 30) + '" text-anchor="middle">' + ratio.toFixed(1) + '\u00d7</text></svg>'; };
       /* the city icon, as Boston wears it in the commuting figure */
       const ICO_CITY = '<svg viewBox="0 0 24 30" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + window.CITY_ICON + '</svg>';
       return '<div class="seal-keys">' +
@@ -15207,9 +15337,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         /* the second card in the first's order (2026-11-08, Nil: "make sure the title and big font text is similar to
            the first card, its order etc"): the question and its head on top, the needle under them, its reading last */
         '<div class="seal-key seal-key--dial"><div class="sk-body"><p class="sk-eyebrow"><span class="sk-ico">' + ICO_CITY + '</span>Business or residential admin?</p>' +
-          '<p class="sk-head">' + (zone === "bal" ? "Boston Admin is balanced: as many commute in as out" : "Boston Admin is a " + ZW[zone] + " admin") + '</p></div>' +
-          '<div class="sk-viz sk-viz--dial">' + dial + '</div>' +
-          '<p class="sk-fig">' + ratio.toFixed(1) + ' commute in for every one who commutes out</p></div>' +
+          '<p class="sk-head">' + (zone === "bal" ? "Boston Admin is balanced: about one job for every working resident" : "Boston Admin is a " + ZW[zone] + " admin") + '</p></div>' +
+          '<div class="sk-viz sk-viz--dial">' + dial(false) + dial(true) + '</div>' +
+          '<p class="sk-fig">' + ratio.toFixed(1) + ' jobs in Boston for every working resident</p></div>' +
         '</div>';
     },
     /* What do my metro and I produce? closes on its two halves, each drawn as the anchor's ranked bars above (2026-10-28,
@@ -17747,14 +17877,25 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     /* over the chart: its title alone (2026-11-08, Nil: "find a user friendly way to title this graph", then "remove"
        the takeaway sentence under it); the share above Boston stays in the screen-reader text */
     const ABOVE = Math.round(BAL.rank / BAL.n * 100);
-    const TITLE = 'Where Boston stands among ' + FULL(BAL.n) + ' US admins';
+    /* section 1's storyline 2 (2026-11-16, Tammy: "something more informative ... possibly something like [city] has x
+       jobs for every x residents"): the title says the takeaway, Boston's reading in the teal of its line and the share
+       of admins with more (its card's "Admins with more"); storylines 1 and 3 keep the title above */
+    const TITLE1 = 'Where Boston stands among ' + FULL(BAL.n) + ' US admins';
+    const TITLE2 = 'Boston has <b class="who-ref-me">' + fx1(BAL.me) + ' jobs</b> for every working resident. Only ' + ABOVE + '% of US admins have more.';
+    /* 4 says it too; in 5 the third step's words do, so the chart keeps its plain title and nothing is said twice */
+    const TITLE = () => window.whoStory && /^[24]$/.test(window.whoStory.get()) ? TITLE2 : TITLE1;
+    /* storylines 4 and 5, "quieter": one line under the axis for the two ends' words, the peers behind one switch */
+    const quiet = () => !!window.whoStory && /^[45]$/.test(window.whoStory.get());
+    const T_AX = "Jobs for every working resident";
+    if (window.whoStory) window.whoStory.on(() => { document.querySelectorAll(".who-ref-head").forEach(h => { h.innerHTML = TITLE(); }); });
     const pslug = name => name.split(",")[0].trim().toLowerCase().replace(/\s+/g, "-"), pshort = name => name.split(",")[0].trim();
     /* the peers' state is the stats tables' (beat 1's chips and these are one set of switches) */
     const TBL = () => window.whoTables && window.whoTables.admin;
     const peerOn = p => { const t = TBL(); return !!(t && t.on.has(pshort(p[0]))); }, avgOn = () => { const t = TBL(); return !!(t && t.avg); };
     /* "Closest peers" as beat 1's tables lead it (2026-11-08, Nil: "put i tooltip together with closest peers, similar to
        the previous sections"): the term button, whose card the stats' script registers as who-peers-admin */
-    const KEY = () => '<p class="wt-peers who-ref-peers"><span class="wt-pk"><button type="button" class="term" data-term="who-peers-admin" aria-expanded="false">Closest peers</button></span>' +
+    const peersOpen = () => document.documentElement.dataset.whoPeers === "open", PTOG = () => peersOpen() ? "Hide peers" : "Compare with closest peers";
+    const KEY = () => '<p class="wt-peers who-ref-peers"><button type="button" class="who-ref-ptog" aria-expanded="' + peersOpen() + '">' + PTOG() + '</button><span class="wt-pk"><button type="button" class="term" data-term="who-peers-admin" aria-expanded="false">Closest peers</button></span>' +
       '<button type="button" class="wt-peer wt-peer--avg" data-set="admin" data-avg="1" aria-pressed="' + avgOn() + '"><i aria-hidden="true"></i><span class="wt-pl" data-t="Peer average">Peer average</span></button><span class="wt-sep" aria-hidden="true"></span>' +
       '<span class="wt-pgrp">' + BAL.peers.map(p => '<button type="button" class="wt-peer" data-set="admin" data-p="' + pshort(p[0]) + '" aria-pressed="' + peerOn(p) + '" style="--pc:var(--pc-' + pslug(p[0]) + ')"><i aria-hidden="true"></i><span class="wt-pl" data-t="' + p[0].replace(",", "") + '">' + p[0].replace(",", "") + '</span></button>').join("") + '</span>' +
       '</p>';
@@ -17767,7 +17908,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       /* the ends' words keep to the plot's width (the 16px margins stay clear) */
       const hi = (ww(T_HI) <= one - 24 ? [T_HI] : lines(T_HI, one - 24, 13, 600)) || [T_HI];
       const lo = (ww(T_LO) <= Wd - 24 - one ? [T_LO] : lines(T_LO, Wd - 24 - one, 13, 600)) || [T_LO];
-      const la = Math.max(lo.length, hi.length), right = 16 + plotW;
+      const la = quiet() ? 1 : Math.max(lo.length, hi.length), right = 16 + plotW;
       /* under the plot: the ticks (17) and the ends' words */
       const below = 17 + 17 * la + 14;
       const plotH = Math.max(24, Hd - TOP - below), base = TOP + plotH;
@@ -17800,7 +17941,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         '<text class="rh-tick' + (t === 1 ? ' rh-tick--one' : '') + '" x="' + q(x(t)) + '" y="' + q(base + 17) + '" text-anchor="middle">' + (t === .5 ? "½" : t) + '×</text>'; });
       const ay = base + 34, words = (cls, t, x0, anchor) => '<text class="rh-arr ' + cls + '" x="' + q(x0) + '" y="' + q(ay) + '" text-anchor="' + anchor + '">' +
         t.map((s, i) => '<tspan x="' + q(x0) + '" dy="' + (i ? 17 : 0) + '">' + s + '</tspan>').join("") + '</text>';
-      h += words("rh-arr--hi", L.hi, L.one - 8, "end") + words("rh-arr--lo", L.lo, L.one + 8, "start");
+      if (quiet()) h += '<text class="rh-axt" x="' + q((16 + right) / 2) + '" y="' + q(ay) + '" text-anchor="middle">' + T_AX + '</text>';
+      else h += words("rh-arr--hi", L.hi, L.one - 8, "end") + words("rh-arr--lo", L.lo, L.one + 8, "start");
       /* Boston's line and name; the bracket over the places beyond it with their share, in the short form where the room is small */
       const meW = tw("Boston " + fx1(BAL.me), 15, 700) + 4 + INFO, meEnd = B - 8 - meW >= 16;  /* drawn at 15px (.rh-me-t, the Under study's size) */
       /* the peer average and the peers chosen (2026-11-08, Nil: the peers drawn as the peer average is): each a line
@@ -17963,7 +18105,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       (avgOn() ? "; peer average " + fx1(BAL.avg) : "") + (BAL.peers.some(peerOn) ? "; peers " + BAL.peers.filter(peerOn).map(p => pshort(p[0]) + " " + fx1(p[1])).join(", ") : "") + ".";
     /* each histogram with its own card; the column's copy led by the Venn's source line, shown when the Venn is in a phone's band */
     const TIP = '<div class="who-ref-tip" hidden aria-hidden="true"></div>';
-    const DIST = () => '<div class="who-ref-dist' + (BAL.peers.some(peerOn) ? ' has-peers' : '') + '" data-look="' + look + '"><p class="who-ref-head">' + TITLE + '</p><div class="who-ref-hist"><svg role="img" aria-label="' + ARIA_H() + '"></svg></div>' + TIP + KEY() + '</div>';
+    const DIST = () => '<div class="who-ref-dist' + (BAL.peers.some(peerOn) ? ' has-peers' : '') + '" data-look="' + look + '"><p class="who-ref-head">' + TITLE() + '</p><div class="who-ref-hist"><svg role="img" aria-label="' + ARIA_H() + '"></svg></div>' + TIP + KEY() + '</div>';
     /* the room under the Venn the histogram needs: the rule and its gaps, the heading, a chart 190 tall */
     const DIST_MIN = 12 + 230, DOOR = 16;  /* the block's margin and its CSS least height (border box) */
     const presOn = () => { const w = document.getElementById("ovWrap"); return !!(w && w.classList.contains("is-presenting")); };
@@ -18105,7 +18247,12 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     function setLook(v){ if (!/^(zones|hist|strip)$/.test(v)) return; look = v;
       document.querySelectorAll(".who-ref-dist").forEach(d => { d.dataset.look = v; }); document.querySelectorAll(".wt-look-opt").forEach(sl => { sl.value = v; });
       hists.forEach(H => { if (H.key) hHover(H, null); drawHist(H); }); }
-    window.whoFlowsRef = { show, play, still, stop, histHtml: () => DIST(), addHist, drawHists: () => hists.forEach(drawHist), look: () => look, setLook };
+    /* the peers' switch (storylines 4 and 5): one state for every copy of the chart */
+    document.addEventListener("click", ev => { const b = ev.target.closest && ev.target.closest(".who-ref-ptog"); if (!b) return;
+      if (peersOpen()) delete document.documentElement.dataset.whoPeers; else document.documentElement.dataset.whoPeers = "open";
+      document.querySelectorAll(".who-ref-ptog").forEach(t => { t.textContent = PTOG(); t.setAttribute("aria-expanded", String(peersOpen())); }); });
+    window.whoFlowsRef = { show, play, still, stop, histHtml: () => DIST(), addHist, drawHists: () => hists.forEach(drawHist), look: () => look, setLook,
+      me: fx1(BAL.me), above: ABOVE };
   })();
   /* ---- Who are you?: opt-2's first commuting beat as a rectangle Venn
      (2026-10-20, Nil). The "Groups" study in beat A's counter: opt-1 the
@@ -18293,12 +18440,17 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
        bars follow the figure at GAP[0], to GAP[1] where there is room, and what is left goes half over the figure
        (past its least, top0) and half under the bars. Without the bars in the panel (under 1200, a phone's band) the
        figure is centred alone */
-    const detail = () => { const panel = host.closest(".who-fl-panel"); return panel && panel.querySelector(":scope > .fl-detail:not([hidden])"); };
+    const detail = () => { const panel = host.closest(".who-fl-panel"); return panel && panel.querySelector(":scope > .fl-detail:not([hidden]):not(.fl-detail--gauge)"); };
     function spread(B, H){
       if (B === Infinity){ svg.style.marginTop = ""; return; }
       const det = detail(), shown = !!det && getComputedStyle(det).display !== "none";
       const more = shown ? Math.max(0, Math.min(GAP[1] - GAP[0], B - H)) : 0, spare = Math.max(0, B - H - more);
-      svg.style.marginTop = (top0() + spare / 2).toFixed(1) + "px";
+      /* section 1's storyline 3, the needle over the dots (2026-11-16): the room left goes over the needle, half of it,
+         so the needle, the Play again row and the figure stand together, centred (the budget counted GAP[0] for the
+         needle's margin, which is given back here) */
+      const panel = host.closest(".who-fl-panel"), over = panel && panel.querySelector(":scope > .fl-detail--gauge:not([hidden])");
+      if (over && getComputedStyle(over).display !== "none"){ svg.style.marginTop = top0() + "px"; over.style.marginTop = ((spare + GAP[0]) / 2).toFixed(1) + "px"; }
+      else svg.style.marginTop = (top0() + spare / 2).toFixed(1) + "px";
       if (det) det.style.marginTop = (GAP[0] + more) + "px";
     }
     /* the panel's height can change while its width does not (a taller window): fit again then */
@@ -18581,6 +18733,28 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         raf = requestAnimationFrame(tick);
       }, +host.dataset.hold || 900));
     }
+    /* section 1's storyline 5 (2026-11-16, Tammy: too many labels at once): the two frames taken a step at a time by the
+       reader's scroll, not by the clock. to(2): the sets slide together and the parts are named; to(0): they draw apart
+       again. Either holds its frame (pinned) until the other is asked for; with reduced motion the frame at once */
+    function to(i){
+      i = i ? 2 : 0; build();
+      const at = host.dataset.vn, going = raf || timers.length;
+      if (pinned === i && (going || at === (i ? "named" : "apart"))) return;
+      stop(); pinned = i; host.dataset.played = "1";
+      const L = layout(); if (!L) return; size(L);
+      if (reduce()){ host.classList.add("no-fade"); frame(L, i); void host.offsetWidth; host.classList.remove("no-fade"); return; }
+      /* from where the slide stands: whole if it stood at a frame */
+      const from = at === "named" || at === "met" ? 1 : 0; if (from === (i ? 1 : 0)){ frame(L, i); return; }
+      colour(false); setVn("moving"); host.dataset.stage = "colour";
+      const t0 = performance.now(), dur = i ? 1300 : 900;
+      const tick = now => { const u = Math.min(1, (now - t0) / dur), e = ease(u); draw(L, i ? e : 1 - e);
+        if (u < 1){ raf = requestAnimationFrame(tick); return; }
+        raf = 0;
+        if (!i){ setVn("apart"); host.dataset.stage = "all"; if (stale){ stale = false; still(); } return; }
+        setVn("met");
+        timers.push(setTimeout(() => { timers = []; colour(true); setVn("named"); host.dataset.stage = "sorted"; if (stale){ stale = false; still(); } }, 200)); };
+      raf = requestAnimationFrame(tick);
+    }
     /* before the beat arrives, and on a resize: the stage as it stands */
     function still(){
       if (raf){ stale = true; return; }
@@ -18670,7 +18844,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       if (k && tip && !tip.hidden && tip.dataset.k === k) hideTip(); else showTip(k, ev.clientX, ev.clientY); });
     { const pages = document.getElementById("pages"); if (pages) pages.addEventListener("scroll", hideTip, { passive: true }); }
     window.whoFlowsAlt = { on: () => isVenn() || isRef(), mode: () => mode, set, key: () => keyMode, setKey,
-      play: () => isRef() ? REF.play() : play(), still: () => isRef() ? REF.still() : still(), stop: () => { stop(); if (REF) REF.stop(); } };
+      play: () => isRef() ? REF.play() : play(), still: () => isRef() ? REF.still() : still(), stop: () => { stop(); if (REF) REF.stop(); },
+      to: i => { if (isVenn()) to(i); } };
     /* the labels are measured: lay out again once the web fonts are in (still() waits for a slide under way) */
     if (document.fonts){ const refit = () => { if (isVenn() && built) still(); };
       document.fonts.ready.then(refit); if (document.fonts.addEventListener) document.fonts.addEventListener("loadingdone", refit); }
@@ -18775,11 +18950,27 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     const lede1 = secA.querySelector(":scope > .lede");
     /* this beat says "Boston", not "Boston Admin", in its words, figure and bars (2026-10-21, Nil: "Who works here, who
        lives here: instead of saying Boston Admin, just write Boston"); the shared map and the other beats keep the long names */
-    lede1.innerHTML = 'A city&rsquo;s jobs and its workers are not the same people. <span class="city-short">Boston</span> has ' + fmtN(JOBS) + ' jobs and ' + fmtN(RES) +
-      ' working residents, and ' + fmtN(BOTH) + ' people are both: they live and work in <span class="city-short">Boston</span>.';
-    const lede2 = document.createElement("p"); lede2.className = "lede";
-    lede2.innerHTML = 'Commuters fill the other jobs, three in four: ' + fmtN(IN) + ' come in on a working day, and ' + fmtN(OUT) + ' residents commute out. For every one who leaves, ' + (IN / OUT).toFixed(1) + ' arrive.';
-    lede1.after(lede2);
+    const lede2 = document.createElement("p"); lede2.className = "lede"; lede1.after(lede2);
+    /* a third paragraph, for storyline 5's third step */
+    const lede3 = document.createElement("p"); lede3.className = "lede"; lede3.hidden = true; lede2.after(lede3);
+    const story = () => window.whoStory ? window.whoStory.get() : "1";
+    /* the words by storyline (2026-11-16). 4 and 5 write the three groups in the figure's colours (wl--in, --both, --out),
+       so the words are its key. 4 leaves the last sentence to the chart's title, which says it. 5 is the same sentences
+       cut in three, a step each: the two totals, the three parts, the reading, with how few admins have more (the
+       chart's own figure) */
+    function ledes(){
+      const s = story(), BOS = '<span class="city-short">Boston</span>', R = window.whoFlowsRef;
+      const W = (k, t) => s === "4" || s === "5" ? '<span class="wl wl--' + k + '">' + t + '</span>' : t;
+      const open = 'A city&rsquo;s jobs and its workers are not the same people. ' + BOS + ' has ' + fmtN(JOBS) + ' jobs and ' + fmtN(RES) + ' working residents';
+      const both = W("both", fmtN(BOTH) + ' people are both') + ': they live and work in ' + BOS + '.';
+      const comm = 'Commuters fill the other jobs, three in four: ' + W("in", fmtN(IN) + ' come in') + ' on a working day, and ' + W("out", fmtN(OUT) + ' residents commute out') + '.';
+      const all = 'In all, there are ' + (JOBS / RES).toFixed(1) + ' jobs in Boston for every working resident.';
+      if (s === "5"){ lede1.innerHTML = open + '.'; lede2.innerHTML = both + ' ' + comm;
+        lede3.innerHTML = all + (R && R.above != null ? ' Only ' + R.above + '% of US admins have more.' : ''); }
+      else { lede1.innerHTML = open + ', and ' + both; lede2.innerHTML = comm + (s === "4" ? '' : ' ' + all); }
+      lede3.hidden = s !== "5";
+    }
+    ledes();
     /* no map stands beside this beat, so no Map | Table choice either */
     secA.querySelectorAll(":scope > .who-view-ctl").forEach(c => c.remove());
     const ctlA = document.getElementById("whoFlowCtl"); if (ctlA) ctlA.hidden = true;
@@ -18835,18 +19026,27 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     let under = REFH ? (location.search.match(/[?&]under=(bars|hist)\b/) || [, UNDER_DEFAULT])[1] : "bars";
     const histHtml = col => '<div class="fl-detail fl-detail--hist' + (col ? ' fl-detail--col' : '') + '">' + REFH.histHtml() + '</div>';
     if (REFH) panel.insertAdjacentHTML("beforeend", histHtml(false));
+    /* section 1's storyline 3 (2026-11-16): the needle in the chart's place, in the panel and in the column as the chart
+       stands; the blocks are filled where the needle is built, with the map's beat below */
+    const gaugeHtml = col => '<div class="fl-detail fl-detail--gauge' + (col ? ' fl-detail--col' : '') + '" hidden></div>';
+    /* the needle over the dots, not under them (2026-11-16, Tammy: "move needle to be above dots venn") */
+    panel.insertAdjacentHTML("afterbegin", gaugeHtml(false));
     const door = document.createElement("button"); door.type = "button"; door.className = "pv-open pv-open--frame"; door.setAttribute("data-present", "");
     door.title = "Present the figure full screen (P)"; door.innerHTML = ICON_PRES + "<span>Present</span>"; panel.appendChild(door);
-    lede2.after(panel);
+    lede3.after(panel);
     /* on a phone the panel is the band and holds the dots alone: the details stand in the column */
     panel.insertAdjacentHTML("afterend", detailHtml(true));
     if (REFH) panel.nextElementSibling.insertAdjacentHTML("afterend", histHtml(true));
-    [panel.querySelector(".fl-detail"), panel.nextElementSibling].forEach(d => { if (d && d.classList.contains("fl-detail")) barTips(d); });
-    const underBlocks = () => ({ bars: [panel.querySelector(":scope > .fl-detail:not(.fl-detail--hist)"), panel.parentElement.querySelector(":scope > .fl-detail--col:not(.fl-detail--hist)")],
-      hist: [panel.querySelector(":scope > .fl-detail--hist"), panel.parentElement.querySelector(":scope > .fl-detail--hist.fl-detail--col")] });
-    function applyUnder(){ const b = underBlocks();
-      b.bars.forEach(el => { if (el) el.hidden = under === "hist"; }); b.hist.forEach(el => { if (el) el.hidden = under !== "hist"; });
-      if (under === "hist" && REFH) REFH.drawHists(); }
+    (panel.parentElement.querySelector(":scope > .fl-detail--hist.fl-detail--col") || panel.nextElementSibling).insertAdjacentHTML("afterend", gaugeHtml(true));
+    [panel.querySelector(":scope > .fl-detail:not(.fl-detail--hist):not(.fl-detail--gauge)"), panel.nextElementSibling].forEach(d => { if (d && d.classList.contains("fl-detail")) barTips(d); });
+    const underBlocks = () => ({ bars: [panel.querySelector(":scope > .fl-detail:not(.fl-detail--hist):not(.fl-detail--gauge)"), panel.parentElement.querySelector(":scope > .fl-detail--col:not(.fl-detail--hist):not(.fl-detail--gauge)")],
+      hist: [panel.querySelector(":scope > .fl-detail--hist"), panel.parentElement.querySelector(":scope > .fl-detail--hist.fl-detail--col")],
+      gauge: [panel.querySelector(":scope > .fl-detail--gauge"), panel.parentElement.querySelector(":scope > .fl-detail--gauge.fl-detail--col")] });
+    /* storyline 3 sets the needle under the dots whichever the Under study's choice */
+    function applyUnder(){ const b = underBlocks(), s3 = story() === "3";
+      b.bars.forEach(el => { if (el) el.hidden = s3 || under === "hist"; }); b.hist.forEach(el => { if (el) el.hidden = s3 || under !== "hist"; });
+      b.gauge.forEach(el => { if (el) el.hidden = !s3; });
+      if (!s3 && under === "hist" && REFH) REFH.drawHists(); }
     if (REFH){ const b = underBlocks(); b.hist.forEach(el => { if (el) REFH.addHist(el); }); }
     applyUnder();
     function setUnder(v){
@@ -18910,65 +19110,108 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
        use in the Worker Flows"): Boston's commuters in for every one out, on a half ring from a quarter to four times
        (log), three zones in this section's words, residential, balanced, business; the needle swings to the admin whose
        card is open on the map, and a dashed ghost keeps Boston's own reading */
-    const gauge = document.createElement("div"); gauge.className = "who-gauge"; gauge.id = "whoGauge"; ctlN.after(gauge);
+    /* (2026-11-16) built by makeGauge: once for this beat, and for section 1's storyline 3 once for each block under the
+       dots (the panel's, the dial and its words side by side, and the column's), where it holds Boston's own reading */
     const GG = { cx: 160, cy: 168, r: 150, rIn: 122, min: .25, max: 4 }, GNS = "http://www.w3.org/2000/svg";
-    const gAng = v => Math.PI - (Math.log(v) - Math.log(GG.min)) / (Math.log(GG.max) - Math.log(GG.min)) * Math.PI;
+    /* the dial's angle for a reading: residential at the left, business at the right; mirrored (f) in section 1's storylines
+       2 and 3 (2026-11-16, Tammy: "mirror the dial in storylines 2 and 3"), business at the left, as the Venn, the histogram
+       and the map's key there read, blue first */
+    const gAng = (v, f) => { const u = (Math.log(v) - Math.log(GG.min)) / (Math.log(GG.max) - Math.log(GG.min)) * Math.PI; return f ? u : Math.PI - u; };
     const gPt = (a, r) => [GG.cx + Math.cos(a) * r, GG.cy - Math.sin(a) * r];
-    const gArc = (v0, v1, r0, r1) => { const a0 = gAng(v0), a1 = gAng(v1), p0 = gPt(a0, r1), p1 = gPt(a1, r1), p2 = gPt(a1, r0), p3 = gPt(a0, r0);
+    /* a zone's ring, drawn from its left end to its right whichever way the dial runs */
+    const gArc = (v0, v1, r0, r1, f) => { let a0 = gAng(v0, f), a1 = gAng(v1, f); if (a0 < a1) [a0, a1] = [a1, a0];
+      const p0 = gPt(a0, r1), p1 = gPt(a1, r1), p2 = gPt(a1, r0), p3 = gPt(a0, r0);
       return "M" + p0[0] + "," + p0[1] + " A" + r1 + "," + r1 + " 0 0 1 " + p1[0] + "," + p1[1] + " L" + p2[0] + "," + p2[1] + " A" + r0 + "," + r0 + " 0 0 0 " + p3[0] + "," + p3[1] + "Z"; };
     const gEl = (n, a, txt) => { const e = document.createElementNS(GNS, n); Object.entries(a).forEach(([k, v]) => e.setAttribute(k, v)); if (txt != null) e.textContent = txt; return e; };
     const ZONES = [{ v0: .25, v1: .8, k: "res", label: "Residential" }, { v0: .8, v1: 1.25, k: "bal", label: "Balanced" }, { v0: 1.25, v1: 4, k: "bus", label: "Business" }];
     const zoneOf = r => r < .8 ? "res" : r <= 1.25 ? "bal" : "bus";
-    const gsvg = gEl("svg", { class: "wg-svg", viewBox: "0 0 320 200", role: "img" });
-    /* the balanced zone runs from the one colour to the other (2026-10-22, Nil: "don't use white, maybe do gradient") */
-    { const defs = gEl("defs", {}), x0 = gPt(gAng(.8), GG.r)[0], x1 = gPt(gAng(1.25), GG.r)[0];
-      const grad = gEl("linearGradient", { id: "wgBal", gradientUnits: "userSpaceOnUse", x1: x0.toFixed(1), y1: 0, x2: x1.toFixed(1), y2: 0 });
-      grad.appendChild(gEl("stop", { offset: "0", class: "wg-stop--res" })); grad.appendChild(gEl("stop", { offset: "1", class: "wg-stop--bus" }));
-      defs.appendChild(grad); gsvg.appendChild(defs); }
-    ZONES.forEach(z => gsvg.appendChild(gEl("path", { d: gArc(z.v0, z.v1, GG.rIn, GG.r), class: "wg-zone wg-zone--" + z.k })));
-    ZONES.forEach(z => { const mid = Math.exp((Math.log(z.v0) + Math.log(z.v1)) / 2), a = gAng(mid), q = gPt(a, GG.r + 13), deg = -(a * 180 / Math.PI - 90);
-      gsvg.appendChild(gEl("text", { x: q[0], y: q[1], class: "wg-zlab", "text-anchor": "middle", transform: "rotate(" + deg.toFixed(1) + " " + q[0] + " " + q[1] + ")" }, z.label)); });
-    [.5, 1, 2].forEach(v => { const a = gAng(v), q0 = gPt(a, GG.rIn - 2), q1 = gPt(a, GG.rIn - 8), qt = gPt(a, GG.rIn - 24);
-      gsvg.appendChild(gEl("line", { x1: q0[0], y1: q0[1], x2: q1[0], y2: q1[1], class: "wg-tick" }));
-      gsvg.appendChild(gEl("text", { x: qt[0], y: qt[1] + 4, class: "wg-tlab", "text-anchor": "middle" }, v + "\u00d7")); });
-    const R_ALL = IN / OUT, ga = gAng(R_ALL), g0 = gPt(ga, GG.rIn - 4), g1 = gPt(ga, GG.r + 4);
-    const ghost = gEl("line", { x1: g0[0], y1: g0[1], x2: g1[0], y2: g1[1], class: "wg-ghost" }); gsvg.appendChild(ghost);
-    const needle = gEl("line", { x1: GG.cx, y1: GG.cy, x2: GG.cx + GG.rIn - 12, y2: GG.cy, class: "wg-needle" }); gsvg.appendChild(needle);
-    gsvg.appendChild(gEl("circle", { cx: GG.cx, cy: GG.cy, r: 4, class: "wg-pivot" }));
-    const gBig = gEl("text", { x: GG.cx, y: GG.cy - 22, class: "wg-big", "text-anchor": "middle" }, ""); gsvg.appendChild(gBig);
-    gauge.appendChild(gsvg);
-    /* the third line as a picture (2026-10-23, Nil: "short and more diagrammatic without taking any more space"): the
-       in-flow as a bar, the out-flow as a bar under it to the same scale, each with its icon and count, and what Boston
-       gains or loses written in the gap the shorter bar leaves (needle-caption-sketches.html, option 2) */
-    gauge.insertAdjacentHTML("beforeend", '<p class="wg-who"></p><p class="wg-verdict"></p><div class="wg-flows" aria-hidden="true"></div><p class="wg-ghostlab"></p>');
-    const gWho = gauge.querySelector(".wg-who"), gVerdict = gauge.querySelector(".wg-verdict"), gFlows = gauge.querySelector(".wg-flows"), gGhost = gauge.querySelector(".wg-ghostlab");
+    /* Boston's own reading is its jobs for every working resident, 719K over 348K, 2.1, as the histogram under the dots
+       and section 2's needle read it (2026-11-16, Tammy: "make the needle numbers consistent"; it read commuters in for
+       every one out, 3.4). The bars under it still say who commutes, and their difference is the same 371K */
+    const R_ALL = JOBS / RES;
     const gRow = (k, n, share, gain) => window.FLOW_ICO[k] + '<b class="wg-n">' + fmtN(n) + '</b><span class="wg-tr wg-tr--' + k + '"><i style="width:' + (share * 100).toFixed(1) + '%"></i>' +
       (gain ? '<span class="wg-gain" style="left:calc(' + (share * 100).toFixed(1) + '% + 8px)">' + gain + '</span>' : '') + '</span>';
     const rx = r => (r >= 10 ? Math.round(r) : r.toFixed(1)) + "\u00d7";
-    function gaugeDraw(q){
-      const own = !q, i = own ? IN : (q.inWorkers || 0), o = own ? OUT : q.outWorkers, r = Math.max(GG.min, Math.min(GG.max, i / o)), z = zoneOf(i / o);
-      needle.style.transform = "rotate(" + (-(gAng(r) * 180 / Math.PI)).toFixed(2) + "deg)"; needle.setAttribute("class", "wg-needle wg-needle--" + z);
-      gBig.textContent = rx(i / o); gBig.setAttribute("class", "wg-big wg-big--" + z);
-      ghost.classList.toggle("is-on", !own); gGhost.textContent = own ? "" : "Dashed line: Boston with every admin, " + rx(R_ALL);
-      const nm = own ? "" : q.name.replace(/ (Town|city)$/, "");
-      /* the title says what Boston is (2026-10-22, Nil: "the title should be Boston is a business admin"); with an admin's
-         card open, what it is to that admin */
-      gWho.className = "wg-who wg-who--" + z;
-      gWho.textContent = own ? "Boston is a " + (z === "bus" ? "business" : z === "res" ? "residential" : "balanced") + " admin"
-        : z === "bus" ? "With " + nm + ", Boston is the business admin" : z === "res" ? "With " + nm + ", Boston is the residential admin" : "With " + nm + ", the two are balanced";
-      gVerdict.textContent = rx(i / o).replace("\u00d7", "") + " commute in for every one who commutes out";
-      const sentence = fmtN(i) + " commute into Boston" + (own ? "" : " from " + nm) + " and " + fmtN(o) + " commute out of it" + (own ? "" : " to " + nm) + ": " +
-        (i > o ? "Boston receives " + fmtN(i - o) + " more workers than it sends." : i < o ? "Boston sends " + fmtN(o - i) + " more workers than it receives." : "Boston sends as many workers as it receives.");
-      /* the longer bar fills the track and the gain goes in the shorter bar's row; where the two are close, both bars
-         stop at six tenths and the gain is said short, so it never lands on a bar */
-      const top = Math.max(i, o, 1), d = Math.abs(i - o), short = (i >= o ? o : i) / top, close = short > .45, fill = close ? .6 : 1;
-      const words = i === o ? "Sends as many as it receives" : close ? (i > o ? "+" : "\u2212") + fmtN(d) + (i > o ? " received" : " sent") : "Boston " + (i > o ? "receives " : "sends ") + fmtN(d) + " more";
-      gFlows.innerHTML = gRow("in", i, i / top * fill, i < o ? words : "") + gRow("out", o, o / top * fill, i >= o ? words : "");
-      gsvg.setAttribute("aria-label", gWho.textContent + ". " + gVerdict.textContent + ". " + sentence);
+    let gN = 0;
+    const mirrored = () => story() !== "1";
+    function makeGauge(cls){
+      const gauge = document.createElement("div"); gauge.className = "who-gauge" + (cls ? " " + cls : "");
+      const gsvg = gEl("svg", { class: "wg-svg", viewBox: "0 0 320 200", role: "img" }), gid = "wgBal" + (gN++ ? "-" + gN : "");
+      /* the dial is drawn again when the storyline turns it round: the needle lands at once on the new drawing */
+      let f = false, tlab = [], ghost, needle, gBig, last = null;
+      const A = v => gAng(v, f);
+      function build(){
+        f = mirrored(); gsvg.textContent = ""; gsvg.classList.toggle("is-flip", f); tlab = [];
+        /* the balanced zone runs from the one colour to the other (2026-10-22, Nil: "don't use white, maybe do gradient") */
+        { const defs = gEl("defs", {}), x0 = gPt(A(.8), GG.r)[0], x1 = gPt(A(1.25), GG.r)[0];
+          const grad = gEl("linearGradient", { id: gid, gradientUnits: "userSpaceOnUse", x1: x0.toFixed(1), y1: 0, x2: x1.toFixed(1), y2: 0 });
+          grad.appendChild(gEl("stop", { offset: "0", class: "wg-stop--res" })); grad.appendChild(gEl("stop", { offset: "1", class: "wg-stop--bus" }));
+          defs.appendChild(grad); gsvg.appendChild(defs); }
+        ZONES.forEach(z => gsvg.appendChild(gEl("path", { d: gArc(z.v0, z.v1, GG.rIn, GG.r, f), class: "wg-zone wg-zone--" + z.k })));
+        ZONES.forEach(z => { const mid = Math.exp((Math.log(z.v0) + Math.log(z.v1)) / 2), a = A(mid), q = gPt(a, GG.r + 13), deg = -(a * 180 / Math.PI - 90);
+          gsvg.appendChild(gEl("text", { x: q[0], y: q[1], class: "wg-zlab", "text-anchor": "middle", transform: "rotate(" + deg.toFixed(1) + " " + q[0] + " " + q[1] + ")" }, z.label)); });
+        /* a tick's words step aside while the needle lies over them (2026-11-16: at 2.1 it covered the "2\u00d7") */
+        [.5, 1, 2].forEach(v => { const a = A(v), q0 = gPt(a, GG.rIn - 2), q1 = gPt(a, GG.rIn - 8), qt = gPt(a, GG.rIn - 24);
+          gsvg.appendChild(gEl("line", { x1: q0[0], y1: q0[1], x2: q1[0], y2: q1[1], class: "wg-tick" }));
+          const t = gEl("text", { x: qt[0], y: qt[1] + 4, class: "wg-tlab", "text-anchor": "middle" }, v + "\u00d7"); gsvg.appendChild(t); tlab.push({ t, a }); });
+        const ga = A(R_ALL), g0 = gPt(ga, GG.rIn - 4), g1 = gPt(ga, GG.r + 4);
+        ghost = gEl("line", { x1: g0[0], y1: g0[1], x2: g1[0], y2: g1[1], class: "wg-ghost" }); gsvg.appendChild(ghost);
+        needle = gEl("line", { x1: GG.cx, y1: GG.cy, x2: GG.cx + GG.rIn - 12, y2: GG.cy, class: "wg-needle" }); gsvg.appendChild(needle);
+        gsvg.appendChild(gEl("circle", { cx: GG.cx, cy: GG.cy, r: 4, class: "wg-pivot" }));
+        gBig = gEl("text", { x: GG.cx, y: GG.cy - 22, class: "wg-big", "text-anchor": "middle" }, ""); gsvg.appendChild(gBig);
+      }
+      build();
+      gauge.appendChild(gsvg);
+      /* the third line as a picture (2026-10-23, Nil: "short and more diagrammatic without taking any more space"): the
+         in-flow as a bar, the out-flow as a bar under it to the same scale, each with its icon and count, and what Boston
+         gains or loses written in the gap the shorter bar leaves (needle-caption-sketches.html, option 2) */
+      gauge.insertAdjacentHTML("beforeend", '<div class="wg-cap"><p class="wg-who"></p><p class="wg-verdict"></p><div class="wg-flows" aria-hidden="true"></div><p class="wg-ghostlab"></p></div>');
+      const gWho = gauge.querySelector(".wg-who"), gVerdict = gauge.querySelector(".wg-verdict"), gFlows = gauge.querySelector(".wg-flows"), gGhost = gauge.querySelector(".wg-ghostlab");
+      /* an admin's card open on the map (storyline 1) reads the commuters between Boston and it, in for every one out:
+         two admins have no jobs per working resident between them */
+      function draw(q){
+        last = q; const own = !q, i = own ? IN : (q.inWorkers || 0), o = own ? OUT : q.outWorkers, ratio = own ? R_ALL : i / o, r = Math.max(GG.min, Math.min(GG.max, ratio)), z = zoneOf(ratio);
+        needle.style.transform = "rotate(" + (-(A(r) * 180 / Math.PI)).toFixed(2) + "deg)"; needle.setAttribute("class", "wg-needle wg-needle--" + z);
+        tlab.forEach(o => o.t.classList.toggle("is-hid", Math.abs(o.a - A(r)) < .18));
+        gBig.textContent = rx(ratio); gBig.setAttribute("class", "wg-big wg-big--" + z);
+        ghost.classList.toggle("is-on", !own); gGhost.textContent = own ? "" : "Dashed line: Boston, " + rx(R_ALL).replace("×", "") + " jobs for every working resident";
+        const nm = own ? "" : q.name.replace(/ (Town|city)$/, "");
+        /* the title says what Boston is (2026-10-22, Nil: "the title should be Boston is a business admin"); with an admin's
+           card open, what it is to that admin */
+        gWho.className = "wg-who wg-who--" + z;
+        gWho.textContent = own ? "Boston is a " + (z === "bus" ? "business" : z === "res" ? "residential" : "balanced") + " admin"
+          : z === "bus" ? "With " + nm + ", Boston is the business admin" : z === "res" ? "With " + nm + ", Boston is the residential admin" : "With " + nm + ", the two are balanced";
+        gVerdict.textContent = rx(ratio).replace("\u00d7", "") + (own ? " jobs in Boston for every working resident" : " commute in for every one who commutes out");
+        const sentence = fmtN(i) + " commute into Boston" + (own ? "" : " from " + nm) + " and " + fmtN(o) + " commute out of it" + (own ? "" : " to " + nm) + ": " +
+          (i > o ? "Boston receives " + fmtN(i - o) + " more workers than it sends." : i < o ? "Boston sends " + fmtN(o - i) + " more workers than it receives." : "Boston sends as many workers as it receives.");
+        /* the longer bar fills the track and the gain goes in the shorter bar's row; where the two are close, both bars
+           stop at six tenths and the gain is said short, so it never lands on a bar */
+        const top = Math.max(i, o, 1), d = Math.abs(i - o), short = (i >= o ? o : i) / top, close = short > .45, fill = close ? .6 : 1;
+        const words = i === o ? "Sends as many as it receives" : close ? (i > o ? "+" : "\u2212") + fmtN(d) + (i > o ? " received" : " sent") : "Boston " + (i > o ? "receives " : "sends ") + fmtN(d) + " more";
+        gFlows.innerHTML = gRow("in", i, i / top * fill, i < o ? words : "") + gRow("out", o, o / top * fill, i >= o ? words : "");
+        gsvg.setAttribute("aria-label", gWho.textContent + ". " + gVerdict.textContent + ". " + sentence);
+      }
+      draw(null);
+      return { el: gauge, draw, sync(){ if (mirrored() !== f){ build(); draw(last); } } };
     }
-    gaugeDraw(null);
-    /* the needle follows the admin whose card is open on the map (a pointer over it, or a tap), when its out count is known */
-    document.addEventListener("who-town", ev => { if (gauge.hidden) return; const q = ev.detail; gaugeDraw(q && q.outWorkers != null ? q : null); });
+    const gB = makeGauge(""); gB.el.id = "whoGauge"; ctlN.after(gB.el);
+    const gUnder = underBlocks().gauge.map((blk, k) => { if (!blk) return null; const g = makeGauge("is-static" + (k ? "" : " who-gauge--wide")); blk.appendChild(g.el); return g; }).filter(Boolean);
+    /* storyline 3 trades the two (2026-11-16, Tammy: "in storyline 3, take the histogram in exchange"): the chart from
+       under the dots stands here in the needle's place, drawn and switched (peers, cards) as its copies there are */
+    let b3hist = null;
+    if (REFH){ gB.el.insertAdjacentHTML("afterend", '<div class="fl-detail fl-detail--hist who-b3-hist" hidden>' + REFH.histHtml() + '</div>');
+      b3hist = gB.el.nextElementSibling; REFH.addHist(b3hist); }
+    /* the needle follows the admin whose card is open on the map (a pointer over it, or a tap), when its out count is known;
+       in section 1's storylines 2 and 3 it stays on Boston (2026-11-16, Tammy: "a static one showing the admin's stat"),
+       and in 3, where it stands under the dots instead, this beat has the histogram */
+    document.addEventListener("who-town", ev => { if (gB.el.hidden || story() !== "1") return; const q = ev.detail; gB.draw(q && q.outWorkers != null ? q : null); });
+    function storySync(){ const s = story(); gB.el.hidden = s === "3"; gB.el.classList.toggle("is-static", s !== "1"); if (s !== "1") gB.draw(null);
+      [gB].concat(gUnder).forEach(g => g.sync());
+      if (b3hist){ b3hist.hidden = s !== "3"; if (s === "3") REFH.drawHists(); } }
+    storySync();
+    /* leaving storyline 5 the figure plays through again by its clock, if its beat is the reader's */
+    if (window.whoStory) window.whoStory.on(() => { const was = stepAt > 0; ledes(); storySync(); applyUnder(); stepSync();
+      if (was && !stepped() && !hand && secA.classList.contains("is-on")){ aOn = true; fig.play(); } else fig.still(); soon(); });
     ["whoHomeCtl", "whoHomeFig", "whoHomeFg", "whoHomeTwo"].forEach(id => { const e = document.getElementById(id); if (e) e.remove(); });
 
     /* where the dots go: each town's share of a group's dots, by largest remainder */
@@ -19194,18 +19437,44 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       wrap.classList.toggle("map-wide", on);
       requestAnimationFrame(() => { if (window.whoPresFit) window.whoPresFit(); });
     }
+    /* ---- storyline 5: the beat told in three steps by the reader's scroll (2026-11-16). The step is the last of the
+       three paragraphs to have come up past a line six tenths down the screen: 1 the two sets apart with their totals,
+       2 they join and the three parts are named, 3 the chart under them comes in (the stylesheet, by data-step). The
+       figure's own clock stands down: no play on arrival, no Play again ---- */
+    const stepped = () => story() === "5", CAPS = [lede1, lede2, lede3], STEP_LINE = .62;
+    let stepAt = 0;
+    function stepSync(){
+      if (!stepped()){ if (stepAt){ stepAt = 0; delete secA.dataset.step; CAPS.forEach(c => c.classList.remove("is-step")); } return; }
+      let n = 1; for (let i = 1; i < CAPS.length; i++){ if (CAPS[i].getBoundingClientRect().top < innerHeight * STEP_LINE) n = i + 1; }
+      if (n !== stepAt){ stepAt = n; secA.dataset.step = n; CAPS.forEach((c, i) => c.classList.toggle("is-step", i === n - 1)); }
+      /* until the chart comes in the figure stands in the middle of the panel: lower by half the room the chart keeps */
+      const hist = panel.querySelector(":scope > .fl-detail--hist"), room = hist && getComputedStyle(hist).display !== "none" ? hist.offsetHeight + (parseFloat(getComputedStyle(hist).marginTop) || 0) : 0;
+      secA.style.setProperty("--step-drop", (room / 2).toFixed(0) + "px");
+      if (!hand && window.whoFlowsAlt && window.whoFlowsAlt.to) window.whoFlowsAlt.to(n >= 2 ? 2 : 0);
+    }
+    const titleB = secB.querySelector(".page-head h2");
+    const nextIn = () => { if (!titleB || titleB.getBoundingClientRect().top < innerHeight - 100) return true;
+      /* the dots' top row, from every fifth dot (a row is some 50 across): read only while the card is off its dock */
+      let top = Infinity; for (let i = 0; i < fig.circles.length; i += 5){ const t = fig.circles[i].getBoundingClientRect().top; if (t < top) top = t; }
+      return top < 24; };
     function tick(){
       q2 = 0; if (presOn()) return;
       wideMap();
+      if (stepped()) stepSync();
       const r = panel.getBoundingClientRect(); if (!r.height) return;
       const dock = parseFloat(getComputedStyle(panel).top) || 0;
-      if (!aOn && !hand && (secA.classList.contains("is-on") || seenA() >= .5 || seen(fig.svg) >= .5)){ aOn = true; fig.play(); }
+      if (!aOn && !hand && (secA.classList.contains("is-on") || seenA() >= .5 || seen(fig.svg) >= .5)){ aOn = true; if (!stepped()) fig.play(); }
       else if (aOn && !hand && r.top > innerHeight){ aOn = false; fig.reset(); }
       /* the hand-off runs as the card starts to leave its dock, while its dots are all still on screen (2026-11-08,
          Nil: "I want to visibly see the nodes go and transition into those filled areas"); the beat is long enough
          that this comes only once the next beat's title is at the screen's foot (its min-height below) */
-      if (!hand && r.top < dock - 8) handOffFromCard();
-      else if (hand && r.top >= dock - 1 && !secB.classList.contains("is-on")){ takeBack(); if (fig.host.dataset.stage !== "sorted"){ aOn = true; fig.play(); } else fig.still(); }
+      /* not on the card's first step off its dock (2026-11-16, Tammy: the transition into the next beat was "too
+         sensitive/triggering too soon on scroll"): measured from 1024 to 1920 wide it ran there with the next beat's title
+         still up to 130px under the screen's foot, so any nudge past the dock sent the dots off before anything of beat 3
+         showed. Now the card scrolls on, its dots with it, until that title is 100px up the screen, or until the dots are
+         about to leave the screen's top, whichever comes first. Going back up still waits for the card to dock again */
+      if (!hand && r.top < dock - 8 && nextIn()) handOffFromCard();
+      else if (hand && r.top >= dock - 1 && !secB.classList.contains("is-on")){ takeBack(); if (stepped()){ aOn = true; stepSync(); fig.still(); } else if (fig.host.dataset.stage !== "sorted"){ aOn = true; fig.play(); } else fig.still(); }
     }
     const soon = () => { if (!q2) q2 = requestAnimationFrame(tick); };
     document.getElementById("pages").addEventListener("scroll", soon, { passive: true });
