@@ -2495,7 +2495,7 @@
   .fl-detail--hist.fl-detail--col .who-ref-hist{height:300px;}
   /* the chart keeps its height when peers are chosen (2026-11-08, Nil: "when a peer is clicked, make sure the chart doesn't
      change its height or move"): their names take rows over the bars, beside their lines */
-  .who-ref-head{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:14px;}  /* a gap before the zones' names (2026-11-09, Nil) */
+  .who-ref-head{font-size:var(--fig-title-size);font-weight:var(--fig-title-weight);color:var(--ink);margin-bottom:14px;}  /* a gap before the zones' names (2026-11-09, Nil) */
   .who-ref-key{display:flex;flex-wrap:wrap;align-items:center;gap:4px 16px;margin:6px 0 0;font-size:13px;line-height:1.4;color:var(--ink);font-variant-numeric:tabular-nums;}
   .who-ref-key .wrk-l{color:var(--ink-soft);}
   .who-ref-key > span{display:inline-flex;align-items:center;gap:5px;white-space:nowrap;}
@@ -2837,7 +2837,7 @@
      ink, the subject bold */
   .who-sc svg text{font-family:inherit;font-size:13px;fill:var(--ink);}
   /* opt-2: the face Metro Industries' charts set on their svg, so 13px reads the same size there and here */
-  #ovWrap[data-right] .sc-beat .who-sc svg text{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+  #ovWrap[data-right] .sc-beat .who-sc svg text{font-family:inherit;}
   .who-sc .sc-tick{font-weight:500;fill:var(--ink-soft);font-variant-numeric:tabular-nums;}
   .who-sc .sc-axt{font-weight:600;fill:var(--ink-soft);}
   .who-sc .sc-note{font-weight:400;fill:var(--ink-soft);}
@@ -2846,7 +2846,7 @@
   .who-sc .sc-axis{stroke:var(--border-strong);stroke-width:1;shape-rendering:crispEdges;}
   /* opt-2's control row as a sentence (Metro Industries' type: 16px, the blank
      a tinted teal word); opt-1 keeps "Chart shows" and its buttons */
-  .sc-sentence{display:none;margin:0;flex:1 1 auto;min-width:0;font-size:16px;line-height:1.6;font-weight:400;color:var(--ink);}
+  .sc-sentence{display:none;margin:0;flex:1 1 auto;min-width:0;font-size:var(--fig-title-size);line-height:var(--fig-title-lh);font-weight:var(--fig-title-weight);color:var(--ink);}
   #ovWrap[data-right] .ov-block.sc-beat .sc-sentence{display:block;}
   #ovWrap[data-right] .ov-block.sc-beat .who-sc-ctl > .ctl-label,
   #ovWrap[data-right] .ov-block.sc-beat .who-sc-ctl > .seg{display:none !important;}
@@ -3021,7 +3021,7 @@
      the row the chart draws tinted with the city's edge, its name and switch in teal */
   .wt-go, .wt-how2{display:none;}
   /* the chart's title names its measure in plain words, set a weight up (2026-11-16, Nil) */
-  .who-sc .sc-sentence .sc-mword{font-weight:600;color:var(--ink);}
+  .who-sc .sc-sentence .sc-mword{font-weight:700;color:var(--ink);}
   html[data-dd="2"] .wt-how1{display:none;} html[data-dd="2"] .wt-how2{display:inline;}
   html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ln{position:relative;padding-left:12px;padding-right:78px;}
   /* the columns give the switch's 112px back by the table's own width (2026-11-16): the bars narrower first, then the names */
@@ -3032,18 +3032,20 @@
   html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-ln[data-sk]{cursor:pointer;transition:background-color .15s ease, box-shadow .15s ease;}
   html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-ln[data-sk]:hover{background:var(--teal-tint);}
   html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-go{display:flex;align-items:center;justify-content:center;position:absolute;right:8px;top:50%;transform:translateY(-50%);
-    flex-direction:column;gap:2px;width:58px;height:42px;padding:0 4px;line-height:1;box-sizing:border-box;border:1px solid var(--border-strong);border-radius:4px;background:var(--white);color:var(--teal);font:inherit;font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer;transition:background-color .15s ease, color .15s ease, border-color .15s ease;}
+    flex-direction:column;gap:2px;width:58px;height:42px;padding:0 4px;line-height:1;box-sizing:border-box;border:0;border-radius:4px;background:transparent;color:var(--ink-soft);font:inherit;font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer;transition:background-color .15s ease, color .15s ease, border-color .15s ease;}
   /* "Compare" at 12px, an exception to the 13px floor (2026-11-16, Nil), on a second line under its mark ("try writing
      compare as a second line"), so the switch takes 58px of the row */
   html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-go svg{flex:none;width:14px;height:14px;}
-  html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-ln[data-sk]:hover .wt-go{color:var(--teal);border-color:var(--teal);}
+  /* the switch recedes (2026-11-17, Nil: "de-emphasize the compare buttons ... lose the frame and make the background the same as the background"):
+     no frame, no fill of its own, soft ink at rest; teal when its row is under the pointer or drawn */
+  html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-ln[data-sk]:hover .wt-go{color:var(--teal);}
   html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-go:focus-visible{outline:2px solid var(--teal);outline-offset:2px;}
   html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-ln.is-pick{background:var(--teal-tint);box-shadow:inset 3px 0 0 var(--teal);}
   html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-ln.is-pick .wt-name{color:var(--teal);}
-  html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-ln.is-pick .wt-go{background:var(--teal);border-color:var(--teal);color:var(--white);}
+  html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-ln.is-pick .wt-go{color:var(--teal);}
   /* the pressed switch under the pointer darkens as the house's filled buttons do (.btn-journey, .chat-send), its mark and
      word staying white (2026-11-16, Nil: the teal hover on the teal fill read as a block) */
-  html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-ln.is-pick[data-sk]:hover .wt-go{background:var(--teal-dark);border-color:var(--teal-dark);color:var(--white);box-shadow:inset 0 0 0 999px rgba(26,34,38,.2);}
+  html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-ln.is-pick[data-sk]:hover .wt-go{color:var(--teal-dark);}
   @media (max-width:599px){ html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-go{top:14px;transform:none;} }
   @media (prefers-reduced-motion: reduce){ html[data-dd="2"] :is(#page-overview, #page-overview-metro) :is(.wt-ln[data-sk], .wt-go){transition:none;} }
   #ovWrap #ddFig{position:absolute;inset:0;z-index:1002;container-type:inline-size;display:flex;flex-direction:column;box-sizing:border-box;background:var(--white);opacity:0;transition:opacity .3s ease;}
@@ -3076,7 +3078,7 @@
   /* a narrow box (the map's card at 1024, the band on a phone): the sentence a size down, no finder, so the plot keeps the room */
   @container (max-width:479px){
     #ovWrap #ddFig .sc-find{display:none;}
-    #ovWrap #ddFig .who-sc .sc-sentence{font-size:14px;line-height:1.5;}
+    #ovWrap #ddFig .who-sc .sc-sentence{font-size:var(--fig-title-size);line-height:1.4;}
   }
   /* the band on a phone is 320 high */
   @media (max-width:899px){
@@ -4831,6 +4833,9 @@
      the registered #1a2226) */
   .ct-step:not(.is-on) .term-card,
   #ovWrap .ov-block:not(.is-on) .term-card{--ink:initial;--ink-soft:initial;}
+  /* the step counter keeps the ink in a quiet beat, as the staging build does (2026-11-17) */
+  .ct-step:not(.is-on) .ct-count,
+  #ovWrap .ov-block:not(.is-on) .ct-count{--ink:initial;}
   .ct-step:not(.is-on) svg:not(:has(text)){opacity:.55;}
   /* the explainer's chevron is a control, not a picture: eased to .55 it
      fell to 2.1 to 1, so in this section it keeps its own 4.5 */
@@ -5023,10 +5028,15 @@
      over the per-band unit sizes further down, which still serve the
      city's figure. */
   #miFigure{--mi-s:1;--mi-type:1;}
+  /* as the staging build: the charts' type grows with a drawing drawn wider than its 880 units, 13px under that
+     (2026-11-17); --mi-g is that growth, max(1, the scale); the map's cell labels are sized in treemap.js */
+  #miFigure{--mi-g:max(1, var(--mi-s));}
+  /* staging draws the Show all button as an HTML control at 13px, so it does not grow */
+  #miFigure #miTreemapSvg .mi-colhead.mi-more-txt{font-size:calc(13px * var(--mi-type) / var(--mi-s));}
   #miFigure #miTreemapSvg .mi-name,
   #miFigure #miTreemapSvg .mi-val,
   #miFigure #miTreemapSvg .mi-card-lab,
-  #miFigure #miTreemapSvg .mi-card-pct{font-size:calc(13px * var(--mi-type) / var(--mi-s));}
+  #miFigure #miTreemapSvg .mi-card-pct{font-size:calc(13px * var(--mi-type) * var(--mi-g) / var(--mi-s));}
   #miFigure #miTreemapSvg .mi-jobs,
   #miFigure #miTreemapSvg .mi-trad,
   #miFigure #miTreemapSvg .mi-rows.is-tier .mi-jobs,
@@ -5037,7 +5047,7 @@
   #miFigure #miTreemapSvg .mi-badge,
   #miFigure #miTreemapSvg .mi-toplab,
   #miFigure #miTreemapSvg .mi-nation-lab,
-  #miFigure #miTreemapSvg .mi-card-none{font-size:calc(13px * var(--mi-type) / var(--mi-s));}
+  #miFigure #miTreemapSvg .mi-card-none{font-size:calc(13px * var(--mi-type) * var(--mi-g) / var(--mi-s));}
   /* the figure's own controls and keys */
   #miFigure .mi-view .seg-btn{font-size:13px;}
   #miFigure .mi-view .mi-year select,#miFigure #miLevelSel{font-size:13px;}
@@ -5573,7 +5583,7 @@
   #miFigure.is-admin .mi-head > :not(.wf-head){visibility:hidden !important;pointer-events:none;}
   #miFigure .wf-head{display:none;}
   #miFigure.is-admin .wf-head{display:flex;align-items:flex-start;gap:8px 16px;flex-wrap:wrap;}
-  #miFigure.is-admin .wf-sentence{display:block;flex:1 1 auto;min-width:0;margin:0;font-size:16px;line-height:1.6;font-weight:400;color:var(--ink);}
+  #miFigure.is-admin .wf-sentence{display:block;flex:1 1 auto;min-width:0;margin:0;font-size:var(--fig-title-size);line-height:var(--fig-title-lh);font-weight:var(--fig-title-weight);color:var(--ink);}
   #miFigure .wf-sentence .mi-pick{margin:0 2px;}
   /* the year's blank never leaves its "in" at the end of the line above (2026-10-27) */
   #miFigure .wf-s-year{white-space:nowrap;}
@@ -5581,7 +5591,7 @@
   #miFigure.is-admin .mi-caption > :not(.wf-key){visibility:hidden;}
   #miFigure .wf-key{display:none;}
   /* a step larger and set off from the chart by a rule (2026-11-04, Nil: "make the legend bigger and more visible", beats 4 to 6) */
-  #miFigure.is-admin .wf-key{display:flex;flex-wrap:wrap;gap:6px 24px;align-items:center;margin:0;padding-top:10px;border-top:1px solid var(--border);font-size:15px;line-height:1.35;color:var(--ink);}
+  #miFigure.is-admin .wf-key{display:flex;flex-wrap:wrap;gap:6px 24px;align-items:center;margin:0;padding-top:10px;border-top:1px solid var(--border);font-size:13px;line-height:1.35;color:var(--ink-soft);}
   /* each entry runs as text (2026-10-27): as an inline-flex box its nested city name was a flex item of its own,
      and "jobs in Boston, whoever" read with a gap either side of the name */
   .wf-key > span{display:inline-block;}
@@ -5908,7 +5918,7 @@
   #wfMoveSvg text{paint-order:stroke;stroke:var(--white);stroke-linejoin:round;white-space:pre;}
   /* the two drawings' faces: the flow's, and the bars' (the svg's own) */
   #wfMoveSvg .mv-f{font-family:"Source Sans 3","Source Sans Pro",sans-serif;}
-  #wfMoveSvg .mv-b{font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;}
+  #wfMoveSvg .mv-b{font-family:inherit;}
   #miFigure .wf-mv > .wf-key{position:absolute;margin:0;}
   #wfTreeSvg .wf-tr-bg{fill:var(--border);}
   #wfTreeSvg .wf-tr-non{fill:var(--flow-in);} #wfTreeSvg .wf-tr-res{fill:var(--flow-both);} #wfTreeSvg .wf-tr-out{fill:var(--flow-out);}
@@ -5940,7 +5950,7 @@
   /* the treemaps' ranking: beat 1's bars, each a stack of the parts shown */
   /* the ranking: beats 1 to 3's bars in px (2026-10-27), their type and face, their head, beat 1 and 2's mute for the
      rows a phrase does not name and beats 1 to 3's ink line round the bar under the pointer */
-  #wfTreeSvg .wf-rk text{font-size:calc(13px * var(--mi-type, 1));fill:var(--ink);font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;}
+  #wfTreeSvg .wf-rk text{font-size:calc(13px * var(--mi-type, 1));fill:var(--ink);font-family:inherit;}
   #wfTreeSvg .wf-rk text.wf-rk-axt{font-weight:600;fill:var(--ink-soft);}
   #wfTreeSvg .wf-rk text.wf-rk-tick{font-weight:500;fill:var(--ink-soft);}
   #wfTreeSvg .wf-rk-rule{stroke:var(--border-strong);stroke-width:1;}
@@ -6039,7 +6049,7 @@
   @media (max-width:599px), (hover:none){ #miFigure .wf-hint-ptr{display:none;} #miFigure .wf-hint-tap{display:inline;} #miFigure .wf-hint{right:8px;} }
   /* on a mark it stands as a chip (2026-11-04), 14px semibold on a translucent white ground; no edge and no shadow
      since 2026-11-15 (Nil: it must not look like a button). Beat 6's alone: the hint shows on no other beat */
-  #miFigure .wf-hint.is-on-mark{right:auto;bottom:auto;padding:4px 9px 4px 6px;background:color-mix(in srgb, var(--white) 80%, transparent);border:0;box-shadow:none;font-size:14px;font-weight:600;color:var(--ink);}
+  #miFigure .wf-hint.is-on-mark{right:auto;bottom:auto;padding:4px 9px 4px 6px;background:color-mix(in srgb, var(--white) 80%, transparent);border:0;box-shadow:none;font-size:13px;font-weight:600;color:var(--ink);}
   #miFigure .wf-hint.is-on-mark .xp-ico{width:24px;height:24px;}
   #miFigure .wf-hint.is-bare span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;}
   #miFigure .wf-hint.is-on-mark.is-bare{padding:4px 6px;}
@@ -6155,7 +6165,7 @@
      bars' readings ("less" only when some bar is behind) */
   #miSort .spec-key{
     display:none;flex-wrap:wrap;align-items:center;gap:4px 18px;margin:0 0 0 auto;
-    font-size:16px;line-height:1.3;color:var(--ink);opacity:1;pointer-events:auto;
+    font-size:13px;line-height:1.3;color:var(--ink-soft);opacity:1;pointer-events:auto;
   }
   #miFigure[data-step="6"]:not([data-sort="gap"]) #miSort .spec-key:not(.spec-key--gap),
   #miFigure[data-step="6"][data-sort="gap"] #miSort .spec-key--gap{display:inline-flex;}
@@ -6403,7 +6413,7 @@
   #miFigure .mi-sentence{display:none;}
   #miFigure[data-row="sentence"] .mi-sentence{
     display:block;flex:1 1 auto;min-width:0;margin:0;
-    font-size:16px;line-height:1.6;font-weight:400;color:var(--ink);
+    font-size:var(--fig-title-size);line-height:var(--fig-title-lh);font-weight:var(--fig-title-weight);color:var(--ink);
   }
   /* the ranking beats' row is drawn apart from the map beats' (#miSort), and
      folds into a sentence the same way: its buttons stand down for a blank */
@@ -6437,7 +6447,7 @@
      width: left alone, a select stands at the width of its longest option */
   .mi-pick .mi-measure{position:absolute;visibility:hidden;white-space:nowrap;font-weight:700;top:0;left:0;pointer-events:none;}
   .mi-pick select{
-    appearance:none;-webkit-appearance:none;font:inherit;font-size:16px;font-weight:700;color:var(--teal);line-height:1.25;
+    appearance:none;-webkit-appearance:none;font:inherit;font-size:var(--fig-title-size);font-weight:700;color:var(--teal);line-height:1.25;white-space:nowrap;
     border:0;border-radius:4px;background-color:var(--teal-tint);margin:0;padding:1px 16px 1px 7px;cursor:pointer;height:auto;
     background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' fill='none' stroke='%23255862' stroke-width='1.4' stroke-linecap='round'/></svg>");
     background-repeat:no-repeat;background-position:right 4px center;
@@ -6483,7 +6493,7 @@
   #miFigure.is-mclust :is(.mi-head,.mi-caption,#miTreemapSvg,#miTip,#miTradMenu,#miSplitHead,#miClusterHead,#miAllHead,.wf-fig),
   #miFigure.is-mclust > .mi-table{display:none !important;}
   .mc-head{display:flex;align-items:center;gap:8px 16px;flex-wrap:wrap;margin:0 0 6px;}
-  .mc-head .mc-title{flex:1 1 auto;min-width:0;margin:0;font-size:16px;line-height:1.6;font-weight:400;color:var(--ink);}
+  .mc-head .mc-title{flex:1 1 auto;min-width:0;margin:0;font-size:var(--fig-title-size);line-height:var(--fig-title-lh);font-weight:var(--fig-title-weight);color:var(--ink);}
   /* beats 4 and 5's sentence at 600 throughout, its place name too (2026-11-16, Nil); section 3's sentence keeps 400 */
   #miFigure #mcTitle{font-weight:600;}
   .mc-play svg{display:block;flex:none;}
@@ -6514,7 +6524,7 @@
   .mc-play[hidden]{display:none;}
   .mc-plot{position:relative;}
   .mc-svg{display:block;overflow:visible;}
-  .mc-cell{shape-rendering:crispEdges;stroke:none;transition:opacity .18s ease;}
+  .mc-cell{shape-rendering:crispEdges;stroke:var(--control-edge);stroke-width:1;stroke-opacity:0;transition:opacity .18s ease,stroke-opacity .9s ease;}
   .mc-rlab{font-size:13px;fill:var(--ink);}
   .mc-val{font-size:13px;fill:var(--ink-soft);pointer-events:none;}
   .mc-key b{font-weight:700;}
@@ -6522,7 +6532,17 @@
   .mc-slab{font-weight:400;pointer-events:none;}
   .mc-glab{pointer-events:none;}
   .mc-gname{font-size:13px;font-weight:600;}
-  .mc-glab--rest .mc-gname{fill:var(--flow-rest-text);} .mc-glab--non .mc-gname{fill:var(--flow-in);}
+  .mc-glab--rest .mc-gname{fill:var(--ink-soft);} .mc-glab--non .mc-gname{fill:var(--flow-in);}
+  /* the fourth group steps back (2026-11-16, Nil: "de-emphasize the purple"): a pale grey piece with a
+     --control-edge outline (3.4 to 1 on white, so the piece is found without its colour), ?rest=frame an empty frame */
+  .mc-cell.is-rest{stroke-opacity:1;}
+  #mcTip .tip-sw--rest{background:var(--border);box-shadow:inset 0 0 0 1px var(--control-edge);}
+  html[data-mc-rest] #mcTip .tip-sw--rest{background:var(--white);}
+  html:is([data-mc-rest="quiet"],[data-mc-rest="dash"],[data-mc-rest="faint"]) :is(.mc-glab--rest .mc-gname,.mc-glab--rest .mc-gn){font-weight:400;fill:var(--ink-soft);}
+  html:is([data-mc-rest="quiet"],[data-mc-rest="dash"],[data-mc-rest="faint"]) .mc-slab--rest{fill:var(--ink-soft) !important;}
+  html[data-mc-rest="dash"] .mc-cell.is-rest{stroke-dasharray:3 2;}
+  html[data-mc-rest="faint"] .mc-cell.is-rest{stroke:var(--border-strong);}
+  html[data-mc-rest="faint"] #mcTip .tip-sw--rest{box-shadow:inset 0 0 0 1px var(--border-strong);}
   .mc-glab--res .mc-gname{fill:var(--flow-both-text);} .mc-glab--out .mc-gname{fill:var(--flow-out-text);}
   .mc-gn{font-size:15px;font-weight:700;fill:var(--ink);} .mc-gn .mc-gp{font-size:13px;font-weight:400;fill:var(--ink-soft);}
   .mc-bos-r{fill:none;stroke:var(--teal);stroke-width:1.5;stroke-dasharray:5 4;}
@@ -6896,7 +6916,7 @@
   #miFigure[data-morelook="tint"] :is(#miTreemapSvg .mi-more, #wfSankeySvg .mi-more, .mi-pinsvg .mi-more-pin):hover .mi-more-box{stroke:var(--teal);}
   #miFigure :is(#miTreemapSvg, #wfSankeySvg) .mi-more:focus-visible .mi-more-box{stroke:var(--ink);stroke-width:2;}
   /* the flow's button in beat 1's face (2026-10-28): the flow sets its words in Source Sans, the treemap's control in the system face */
-  #wfSankeySvg .mi-more text{font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;}
+  #wfSankeySvg .mi-more text{font-family:inherit;}
   /* the peers order's two ends: the rows between them are not drawn, and a
      faint dashed rule says so */
   #miTreemapSvg .mi-split{stroke:var(--border-strong);stroke-width:1;stroke-dasharray:3 3;vector-effect:non-scaling-stroke;}
@@ -8927,6 +8947,33 @@
     .tw-verdict{padding:12px 14px;}
     .tw-verdict h3{font-size:16.5px;}
   }
+
+  /* ==== The figures' type hierarchy (2026-11-17; the stakeholders: the control sentences were not visible enough and
+     differed from chart to chart, and the axis labels were hard to see). From the top:
+       1 the beat's title, 26/700 in the text column
+       2 the control sentence, the figure's own title: 18/600 in the ink, one style on every chart, its blanks 700 teal
+       3 the data's own words (names, values, direct labels), as they were
+       4 axis titles and column heads: 14/600 in the ink (they were 13 in the soft ink)
+       5 ticks: 13/500 in the ink (they were in the soft ink)
+       6 notes, sources, keys: 13 in the soft ink
+     Every chart is set in the page's face. The tokens are the levers. ==== */
+  :root{--fig-title-size:18px;--fig-title-weight:600;--fig-title-lh:1.45;--axis-title-size:14px;--axis-ink:var(--ink);}
+  @media (max-width:600px){ :root{--fig-title-size:16px;} }
+  .who-sc .sc-tick,.rh-tick,.dg-chart .dg-ytick,.dg-chart .dg-xtick,#miAdminSvg .ad-tick,.mi-figure svg .mi-ticklab,
+  #wfTreeSvg .wf-rk text.wf-rk-tick{fill:var(--axis-ink);}
+  .rh-tick:not(.rh-tick--one){font-weight:500;}
+  .rh-tick--one{font-weight:700;}
+  /* the heads the first pass missed: the histogram's zone names and direction words, the bars' group heads (their colours stay) */
+  .rh-zone,.rh-arr,.mc-gname{font-size:var(--axis-title-size);}
+  .wg-tlab{fill:var(--axis-ink);font-weight:500;}
+  .mi-nb{white-space:nowrap;}
+  .who-sc .sc-axt,.dg-chart .dg-axname{fill:var(--axis-ink);font-size:var(--axis-title-size);font-weight:600;}
+  #miFigure #miAdminSvg .ad-axt,#miFigure #miAdminSvg .ad-head{fill:var(--axis-ink);font-size:calc(var(--axis-title-size) * var(--mi-type, 1) / var(--k, 1));}
+  #miFigure #miTreemapSvg .mi-axname,
+  #miFigure #miTreemapSvg .mi-colhead:not(.mi-more-txt){fill:var(--axis-ink);font-size:calc(var(--axis-title-size) * var(--mi-type) * var(--mi-g) / var(--mi-s));}
+  #miFigure #miTreemapSvg .mi-tradmenu:hover .mi-colhead,
+  #miFigure #miTreemapSvg .mi-tradmenu.is-open .mi-colhead{fill:var(--teal);}
+  #wfTreeSvg .wf-rk text.wf-rk-axt,#wfTreeSvg .wf-rk text.wf-rk-head{fill:var(--axis-ink);font-size:calc(var(--axis-title-size) * var(--mi-type, 1));}
 </style>
 <script>/* v-5 shows only the chosen design (2026-11-08, Nil: "in v-5, remove all opts but keep them in v-6"): the
    address's ?switches are dropped before any script reads them, so every study opens on its default; v-6 keeps them */
@@ -8936,7 +8983,8 @@
    scroll as beats (DEEP_DIVE) */
 /* and a third (2026-11-16), for the Deep dive pill: ?dd=2 opens section 1 on the pill's choice 2 (the scatter plot in the
    map's place) */
-if (location.search){ const keep = [/[?&]b6=both\b/.test(location.search) ? "b6=both" : "", /[?&]deep=beats\b/.test(location.search) ? "deep=beats" : "", /[?&]dd=2\b/.test(location.search) ? "dd=2" : ""].filter(Boolean);
+/* and a fourth (2026-11-16): ?rest=frame|quiet|dash|faint, how "Neither live nor work in Boston" steps back in section 2's beat 4 */
+if (location.search){ const keep = [/[?&]b6=both\b/.test(location.search) ? "b6=both" : "", /[?&]deep=beats\b/.test(location.search) ? "deep=beats" : "", /[?&]dd=2\b/.test(location.search) ? "dd=2" : "", (location.search.match(/[?&](rest=(?:frame|quiet|dash|faint))\b/) || [])[1] || ""].filter(Boolean);
   history.replaceState(null, "", location.pathname + (keep.length ? "?" + keep.join("&") : "") + location.hash); }</script>
 <script>/* ?colours=16, 11, 10 or 9 shows that colour system beside the thirteen (HANDOFF §6c) */
 (function(){ var m = /[?&]colours=(16|11|10|9)\b/.exec(location.search); if (m) document.documentElement.dataset.colours = m[1]; })();</script>
@@ -9864,7 +9912,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
                    or the flow as a blank (2026-10-28, Nil: "6/7: also give options to sankey and bar like the other ones.
                    But this time, default to bar"), in beats 4 and 5's words -->
               <!-- no blank for a flow diagram since 2026-11-04 (Nil: "remove the current options"): beat 6 is the two ways, left and right -->
-              <p class="mi-sentence wf-sentence wf-sentence--sk6" id="wfSentenceSk6">Workers <span class="city-short">Boston</span> receives or sends by sector, <span class="mi-pick wf-b6-pick"><span class="mi-measure" aria-hidden="true"></span><select class="wf-b6show" id="wfB6Show" aria-label="Net alone, or net with the two counts it comes from" aria-describedby="wfB6Hint"><option value="net" selected>net</option><option value="both">net, with both counts</option></select></span>, <span class="wf-s-year">in&nbsp;<span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select class="wf-year" id="wfSYear6" aria-label="Year"><option value="2023" selected>2023</option><option value="2013">2013</option></select></span></span><span class="mi-sr" id="wfB6Hint">With both counts, every sector gets two thin bars behind its net bar: the jobs located in Boston to the right of the zero line, the jobs Boston&rsquo;s residents hold to the left, each with its count.</span></p>
+              <p class="mi-sentence wf-sentence wf-sentence--sk6" id="wfSentenceSk6">Workers <span class="city-short">Boston</span> receives or sends by sector, <span class="mi-nb"><span class="mi-pick wf-b6-pick"><span class="mi-measure" aria-hidden="true"></span><select class="wf-b6show" id="wfB6Show" aria-label="Net alone, or net with the two counts it comes from" aria-describedby="wfB6Hint"><option value="net" selected>net</option><option value="both">net, with both counts</option></select></span>,</span> <span class="wf-s-year">in&nbsp;<span class="mi-pick"><span class="mi-measure" aria-hidden="true"></span><select class="wf-year" id="wfSYear6" aria-label="Year"><option value="2023" selected>2023</option><option value="2013">2013</option></select></span></span><span class="mi-sr" id="wfB6Hint">With both counts, every sector gets two thin bars behind its net bar: the jobs located in Boston to the right of the zero line, the jobs Boston&rsquo;s residents hold to the left, each with its count.</span></p>
               <div class="mi-table wf-table"><button type="button" class="mi-table-btn" id="wfTableBtn" aria-expanded="false" aria-controls="wfTableWrap"><span class="mi-table-btn-txt">Show as table</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button></div>
             </div>
             <div class="tradable-split-header" id="miSplitHead">
@@ -9904,7 +9952,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
             <div class="mi-table-wrap" id="miTableWrap" hidden tabindex="0" role="region" aria-label="The map, as a table"></div>
           </div>
           <div class="tradable-viz-wrapper">
-            <svg class="viz-big" id="miTreemapSvg" role="group" aria-label="All industries" tabindex="-1" width="880" height="500" viewBox="0 0 880 500" xmlns="http://www.w3.org/2000/svg" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;"></svg>
+            <svg class="viz-big" id="miTreemapSvg" role="group" aria-label="All industries" tabindex="-1" width="880" height="500" viewBox="0 0 880 500" xmlns="http://www.w3.org/2000/svg" style="font-family: inherit;"></svg>
             <div class="rca-tip" id="miTip" role="tooltip" hidden></div>
             <!-- the tradability filter, opened from the column head it filters -->
             <div class="trad-menu" id="miTradMenu" role="group" aria-label="Which tradability tiers to show" hidden>
@@ -9933,7 +9981,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
               <!-- the bars and the rankings pan sideways in a narrow frame, as beats 1 to 3's do (2026-10-27) -->
               <div class="wf-pan" id="wfPan">
                 <svg class="viz-big wf-tree" id="wfTreeSvg" role="group" aria-label="All 719K jobs in Boston by sector, as a treemap" tabindex="-1" xmlns="http://www.w3.org/2000/svg"></svg>
-                <svg class="viz-big" id="miAdminSvg" role="group" aria-label="Boston's work by sector" tabindex="-1" width="880" height="500" viewBox="0 0 880 500" xmlns="http://www.w3.org/2000/svg" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;"></svg>
+                <svg class="viz-big" id="miAdminSvg" role="group" aria-label="Boston's work by sector" tabindex="-1" width="880" height="500" viewBox="0 0 880 500" xmlns="http://www.w3.org/2000/svg" style="font-family: inherit;"></svg>
               </div>
               <!-- beat 6's moves between the flow and the bars (2026-10-28): a layer over the frame, drawn while one runs -->
               <div class="wf-mv" id="wfMove" aria-hidden="true"></div>
@@ -10781,7 +10829,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
 <script src="data/geo/who_commute_geo.js"></script>
 <script src="industries-2024.js"></script>
 <script src="industries-2014.js"></script>
-<script src="treemap.js?v=2026-10-28-tip"></script>
+<script src="treemap.js?v=2026-11-17-type2"></script>
 <script>
   /* every commuting count is rounded (2026-10-23, Nil: "round all commuting numbers, instead of 708101 say 708K"): under a
      thousand as it is, then thousands with one decimal to 10K (6K, 1.2K), whole thousands to a million (528K), then
@@ -17765,8 +17813,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
          commute in, both, commute out): the axis runs from the most jobs per working resident on the left to the fewest */
       const x = v => 16 + (1 - (Math.log10(Math.min(HIV, Math.max(LOV, v))) + 1) / 2) * plotW, one = x(1);
       /* the ends' words keep to the plot's width (the 16px margins stay clear) */
-      const hi = (ww(T_HI) <= one - 24 ? [T_HI] : lines(T_HI, one - 24, 13, 600)) || [T_HI];
-      const lo = (ww(T_LO) <= Wd - 24 - one ? [T_LO] : lines(T_LO, Wd - 24 - one, 13, 600)) || [T_LO];
+      const hi = (ww(T_HI) <= one - 24 ? [T_HI] : lines(T_HI, one - 24, 14, 600)) || [T_HI];
+      const lo = (ww(T_LO) <= Wd - 24 - one ? [T_LO] : lines(T_LO, Wd - 24 - one, 14, 600)) || [T_LO];
       const la = Math.max(lo.length, hi.length), right = 16 + plotW;
       /* under the plot: the ticks (17) and the ends' words */
       const below = 17 + 17 * la + 14;
@@ -17780,7 +17828,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
          run the residential name into "Balanced" it moves left of it, and shortens to "Residential" past the edge */
       /* the three names shorten together where the plot is narrow (the words column under 1200), and one that still
          has no room beside "Balanced" is left out: the bars' colours and the axis words name its zone (review, 2026-11-08) */
-      const zw = t => tw(t, 13, 600);
+      const zw = t => tw(t, 14, 600);
       let [rT, balT, bT] = ["Residential admins", "Balanced admins", "Business admins"];
       if (zw(rT) + zw(balT) + zw(bT) + 2 * 10 > right - 16) [rT, balT, bT] = ["Residential", "Balanced", "Business"];
       const wR = zw(rT), wBal = zw(balT), wB = zw(bT), limL = x(1) - wBal / 2 - 10, limR = x(1) + wBal / 2 + 10;
@@ -21935,12 +21983,12 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     residents: { bars: ["out"], scale: "count", cols: [], axis: "Jobs Boston’s residents hold", ends: true },
     shares:    { bars: ["in", "out"], scale: "share", cols: ["shJ", "shR"], axis: "Share of the metro’s", dashed: true },
     mix:       { bars: ["in", "out"], scale: "mix", cols: ["mixJ", "mixR"], axis: "Share of each count", mticks: true },
-    gain:      { bars: ["net"], scale: "gain", cols: [], axis: "Workers Boston receives or sends, net", ends: true },
+    gain:      { bars: ["net"], scale: "gain", cols: [], axis: "Workers, net", ends: true },   /* the sentence over it says the rest (2026-11-17) */
     /* beat 6 with its tick on (2026-11-15; option C of receiver-sender-sketches.html, then Nil: "it looks confusing, how
        about we put the right and left column as toggle, and turn it off by default"): the net over the two counts it comes from. Right of a zero line a thin pale bar, the jobs located in Boston; left
        of it another, the jobs Boston's residents hold in the sector, wherever they work; on one scale, each count
        written in a column at its side. Over them, from the zero line, the solid net bar, its value the signed number alone */
-    cancel:    { bars: ["in", "out"], scale: "cancel", cols: [], axis: "Workers Boston receives or sends, net" },
+    cancel:    { bars: ["in", "out"], scale: "cancel", cols: [], axis: "Workers, net" },
     /* beat 6 (2026-11-04, Nil: "show both coming and going like right and left bars and highlight the difference, instead
        showing just the net"): each sector's commuters out to the left of a zero line and its commuters in to the right,
        on one scale, pale; what the longer way has over the shorter stands solid, and that is the gain or the loss, written
@@ -24663,7 +24711,12 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   const GS = { rest: "Neither", non: "Commute in", res: "Live and work", out: "Commute out" };
   const GV = { rest: "estRest", non: "estNon", res: "estRes", out: "estOut" };
   const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
-  const GC = g => css({ rest: "--flow-rest", non: "--flow-in", res: "--flow-both", out: "--flow-out" }[g]);
+  /* grey: pale grey, outlined; frame: an empty frame; quiet: the frame with its words in the soft ink; dash: quiet, dashed;
+     faint: quiet with a --border-strong edge (1.7 to 1, under the 3 to 1 for marks: named in words above it) */
+  const REST = (location.search.match(/[?&]rest=(frame|quiet|dash|faint)\b/) || [])[1] || "grey";
+  if (REST !== "grey") document.documentElement.dataset.mcRest = REST;
+  const GC = g => css({ rest: REST !== "grey" ? "--white" : "--border", non: "--flow-in", res: "--flow-both", out: "--flow-out" }[g]);
+  const restOn = (sel, m) => sel.classed("is-rest", d => d.g === "rest" && !isSec(m));
   const HOUSE = { "Construction": "#a25d37", "Education & Health": "#dc8271", "Financial Activities": "#e5c95e", "Leisure & Hospitality": "#9adfe7",
     "Manufacturing": "#7f3c6b", "Natural Resources": "#5d9850", "Other": "#896885", "Professional & Business": "#485fa2", "Trade & Transportation": "#86c8ab" };
   const colourOf = sec => { const li = [].slice.call(document.querySelectorAll("#miSectorKey li")).find(l => l.textContent.trim().indexOf(sec) === 0);
@@ -24691,7 +24744,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
      storyline 3's beat 4: "tsec" the sectors' treemap, "tgrp" its four clusters. tree says which beat 4 is on */
   let tree = false;
   const TT = 24, TGAP = 10, HEADL = 17;
-  const thead = (g, bw) => wrapTo(GN[g], bw - 2, 13, 600).length * HEADL + 24;
+  const thead = (g, bw) => wrapTo(GN[g], bw - 2, 14, 600).length * HEADL + 24;
   function packInto(g, b, out){
     const rt = d3.hierarchy({ children: rows.map(r => ({ r, v: Math.max(0, r[GV[g]]) })) }).sum(d => d.v || 0).sort((a, c) => c.value - a.value);
     d3.treemap().size([b.w, b.fh]).paddingInner(1).round(true)(rt);
@@ -24729,7 +24782,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     return { hT: h, tsec, tsecs, tgrp, blocks };
   }
   let mode = "sec", busy = false, shown = false, played = false, L = null, hiG = null, playT = null;
-  const TOPB = 22, GAPC = 14, VALW = 46, SEG = 2, SEGB = 10, GO = ["rest", "out", "non", "res"];
+  const TOPB = 22, GAPC = 14, VALW = 46, SEG = 2, SEGB = 10, GO = ["non", "res", "out", "rest"];   /* 2026-11-16, Nil: commute in, live and work, live in Boston and work elsewhere, then neither, last */
   function layout(){
     const w = Math.max(280, Math.round(host.clientWidth || 0)), narrow = w < 600;
     const labW = Math.round(Math.min(220, Math.max(104, w * (narrow ? .3 : .26)))), x0 = labW + 8, avail = w - x0;
@@ -24741,7 +24794,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     const hx = narrow ? 6 : x0, slot = (w - hx - 6 * (narrow ? 1 : 0) - 3 * GAPC) / 4, colW = {}, colX = {};
     GO.forEach((g, i) => { colW[g] = slot; colX[g] = hx + i * (slot + GAPC); });
     /* on a narrow screen the heads take their short names, so none runs past two lines */
-    const heads = {}; G.forEach(g => { heads[g] = wrapTo(narrow ? GS[g] : GN[g], colW[g] - 2, 13, 600); });
+    const heads = {}; G.forEach(g => { heads[g] = wrapTo(narrow ? GS[g] : GN[g], colW[g] - 2, 14, 600); });
     const HT = d3.max(G, g => heads[g].length) * 17 + 24, top = TOPB + HT;
     const rh = narrow ? 16 : 22, bh = narrow ? 11 : rh - 6, h = top + rows.length * rh + 4;
     const kS = (avail - VALW - 2 * SEG - SEGB) / d3.max(rows, r => r.msaJobs), kA = (avail - VALW) / d3.max(rows, r => r.jobs);
@@ -24751,7 +24804,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     rows.forEach(r => {
       let a = x0, c = x0; GO.forEach(g => { const v = Math.max(0, r[GV[g]]) * kS, y = yS[r.code] + (rh - bh) / 2;
         sec[r.code + "|" + g] = { x: a, y, w: v, h: bh }; a += v;
-        grp[r.code + "|" + g] = { x: c, y, w: v, h: bh }; c += v + (g === "out" ? SEGB : SEG); });
+        grp[r.code + "|" + g] = { x: c, y, w: v, h: bh }; c += v + (g === "res" ? SEGB : SEG); });
       let b = x0; G.forEach(g => { const on = ADM.indexOf(g) >= 0, v = on ? Math.max(0, r[GV[g]]) * kA : 0; adm[r.code + "|" + g] = { x: on ? b : x0, y: yA[r.code] + (rh - bh) / 2, w: v, h: bh }; b += v; });
     });
     return Object.assign({ w, hB: h, x0, labW, top, rh, bh, kS, kA, colW, colX, heads, sec, grp, adm, yS, yA, ordS, ordA }, treeLayout(w));
@@ -24784,7 +24837,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     playBtn.setAttribute("aria-label", tree ? "Replay: the sectors split and gather into the four groups of who holds the jobs" : "Replay: each sector's bar colours by the four groups of who holds its jobs");
     svgEl.setAttribute("aria-label", adm
       ? "Boston admin’s " + tot + " jobs by sector as stacked bars: " + ADM.map(g => GN[g].toLowerCase() + ", " + fmt(sum[g])).join("; ")
-      : isGrp(mode) ? "The metro’s " + fmt(M.jobs) + " jobs by sector " + (isT(mode) ? "as a treemap in four groups: " : "in four groups, Boston admin's two last in each bar: ") + G.map(g => GN[g].toLowerCase() + ", " + fmt(sum[g])).join("; ")
+      : isGrp(mode) ? "The metro’s " + fmt(M.jobs) + " jobs by sector " + (isT(mode) ? "as a treemap in four groups: " : "in four groups, Boston admin's two first in each bar: ") + G.map(g => GN[g].toLowerCase() + ", " + fmt(sum[g])).join("; ")
       : "The metro’s " + fmt(M.jobs) + " jobs by sector, as " + (isT(mode) ? "a treemap" : "bars") + "; the largest are " + rows.slice(0, 3).map(r => r.short.toLowerCase() + ", " + fmt(r.msaJobs)).join(", "));
     if (isSec(mode)){ const seen = []; rows.forEach(r => { if (seen.indexOf(r.sector) < 0) seen.push(r.sector); }); if (tree) seen.sort((a, b) => rank(a) - rank(b));
       keyEl.innerHTML = seen.map(s => '<li><i style="background:' + colours[s] + '" aria-hidden="true"></i>' + s + '</li>').join(""); }
@@ -24811,8 +24864,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     /* the groups' names over their columns; on beat 5 over the two parts of the first bar, so no key is needed */
     const first = L.ordA[0], resX = L.adm[first.code + "|res"].x;
     const hs = busy || isSec(mode) || isT(mode) ? [] : mode === "grp" ? GO.map(g => ({ g, x: L.colX[g], ln: L.heads[g], tot: M.jobs }))
-      : [{ g: "non", x: L.x0, ln: wrapTo(GN.non, resX - L.x0 - 10, 13, 600), tot: sum.non + sum.res },
-         { g: "res", x: resX, ln: wrapTo(GN.res, L.w - resX - 2, 13, 600), tot: sum.non + sum.res }];
+      : [{ g: "non", x: L.x0, ln: wrapTo(GN.non, resX - L.x0 - 10, 14, 600), tot: sum.non + sum.res },
+         { g: "res", x: resX, ln: wrapTo(GN.res, L.w - resX - 2, 14, 600), tot: sum.non + sum.res }];
     gHead.selectAll("g").data(hs, d => mode + d.g).join("g").attr("class", d => "mc-glab mc-glab--" + d.g)
       .html(d => { const nl = d.ln.length, y = L.top - 6 - 20 - (nl - 1) * 17;
         return '<text class="mc-gname" x="' + d.x + '" y="' + y + '">' + d.ln.map((t, i) => '<tspan x="' + d.x + '" dy="' + (i ? 17 : 0) + '">' + t + '</tspan>').join("") + '</text>' +
@@ -24843,11 +24896,11 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     const labs = !on ? [] : mode === "tsec" ? L.tsecs.map(s => fitLab(s, s.r.short, shareOf(s.r.msaJobs / M.jobs), colours[s.r.sector], s.r.code)).filter(Boolean)
       : cells().map(d => fitLab(L.tgrp[d.k], d.r.short, fmt(d.r[GV[d.g]]), GC(d.g), d.k)).filter(Boolean);
     gSLab.selectAll("text").data(labs, d => d.key).join("text")
-      .attr("class", "mc-slab").attr("x", d => d.f.x).attr("font-size", d => d.f.size).style("fill", d => d.ink)
+      .attr("class", d => "mc-slab" + (/\|rest$/.test(d.key) ? " mc-slab--rest" : "")).attr("x", d => d.f.x).attr("font-size", d => d.f.size).style("fill", d => d.ink)
       .html(d => d.f.lines.map((t, i) => '<tspan x="' + d.f.x + '" y="' + d.k.lineY(d.y, d.f.size, i, false) + '">' + esc(t) + '</tspan>').join("") +
         (d.f.share ? '<tspan x="' + d.f.x + '" y="' + d.k.lineY(d.y, d.f.size, d.f.lines.length, true) + '" font-size="' + d.f.shareSize + '">' + d.sub + '</tspan>' : ""));
     gTG.selectAll("g").data(on && mode === "tgrp" ? G.map(g => ({ g, b: L.blocks[g] })) : [], d => d.g).join("g").attr("class", d => "mc-glab mc-glab--" + d.g)
-      .html(d => { const ln = wrapTo(GN[d.g], d.b.w - 2, 13, 600);
+      .html(d => { const ln = wrapTo(GN[d.g], d.b.w - 2, 14, 600);
         return '<text class="mc-gname" x="' + d.b.x + '" y="' + (d.b.y + 13) + '">' + ln.map((t, i) => '<tspan x="' + d.b.x + '" dy="' + (i ? HEADL : 0) + '">' + t + '</tspan>').join("") + '</text>' +
           '<text class="mc-gn" x="' + d.b.x + '" y="' + (d.b.y + 13 + ln.length * HEADL + 3) + '">' + fmt(sum[d.g]) + '<tspan class="mc-gp"> ' + Math.round(sum[d.g] / M.jobs * 100) + '%</tspan></text>'; });
     gTBos.selectAll("g").data(on && mode === "tgrp" ? [1] : []).join("g").attr("class", "mc-bos-g").html(() => { const a = L.blocks.non, b = L.blocks.res, x = a.x - 5, y = a.y - 5, w = a.w + 10, h = b.y + b.hh + b.fh - a.y + 10;
@@ -24869,7 +24922,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     L = layout(); cut(); busy = false;
     setH(hOf(mode)); gLab.style("opacity", isT(mode) ? 0 : null);
     const sel = gCells.selectAll("rect").data(cells(), d => d.k).join("rect").attr("class", d => "mc-cell mc-cell--" + d.g);
-    place(sel, mode); sel.attr("fill", d => fillOf(d, mode)).style("opacity", d => seenIn(d, mode) ? null : 0);
+    place(sel, mode); sel.attr("fill", d => fillOf(d, mode)).style("opacity", d => seenIn(d, mode) ? null : 0); restOn(sel, mode);
     sel.classed("is-dim", d => !!hiG && !isSec(mode) && d.g !== hiG);
     rowLabels(false); extras(false); words();
   }
@@ -24903,6 +24956,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     const one = split;   /* beat 4's one move, treemap or bars: every piece recolours and travels together */
     if (one) sel.transition("split").duration(900).ease(d3.easeCubicInOut).attr("fill", d => fillOf(d, m));
     else sel.attr("fill", d => fillOf(d, m));
+    restOn(sel, m);
     sel.filter(d => !seenIn(d, m)).transition("fade").duration(400).style("opacity", 0);
     sel.filter(d => seenIn(d, m)).transition("fade").duration(400).style("opacity", 1);
     if (isT(m)) gLab.transition().duration(300).style("opacity", 0);

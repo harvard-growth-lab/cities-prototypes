@@ -274,7 +274,7 @@
   const _labCtx = (function(){
     try { return document.createElement("canvas").getContext("2d"); } catch (e){ return null; }
   })();
-  const LAB_STACK = "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+  const LAB_STACK = "'Source Sans 3', 'Source Sans Pro', sans-serif";   /* the page's face (2026-11-17) */
   /* measured at the size it will be set at, never scaled from another: the
      system face tracks tighter as it grows, so 8px type runs wider than a
      twelfth of the same words at 100px - which is how names came to overrun
@@ -3337,7 +3337,7 @@
     if (!m || !o) return;
     m.textContent = o.text;
     /* a held blank has no chevron, so it is cut to the word and its sides */
-    const room = sel.getAttribute("aria-disabled") === "true" ? 14 : 24;
+    const room = sel.getAttribute("aria-disabled") === "true" ? 17 : 24;   /* 3px to spare: cut to the word exactly, "6-digit" broke at its hyphen */
     if (m.offsetWidth) sel.style.width = (m.offsetWidth + room) + "px";
   }
   function fitPicks(root){ (root || document).querySelectorAll(".mi-pick select").forEach(fitPick); }
@@ -3489,6 +3489,10 @@
     };
     const scaleNow = () => S || DEFAULT_S;
     const tellScale = () => { if (fig) fig.style.setProperty("--mi-s", String(+scaleNow().toFixed(4))); };
+    /* the charts' own type grows with a drawing wider than its 880 units and holds 13px under that, as the
+       staging build sets it (2026-11-17, Nil: "make v-5 match with the staging link"); the map's cell labels
+       keep TYPE_K alone. TK() sizes the type and the geometry fitted to it */
+    const TK = () => TYPE_K * Math.max(1, scaleNow());
     tellScale();
     const cellOf = new Map();                       /* row name -> its cell */
     industryData.forEach(r => cellOf.set(r.name, cellOfRow(r, jobsTotal)));
@@ -3599,7 +3603,7 @@
        the cross beside them (a phone, where "Partly traded" alone nearly
        fills its ground), every band takes a second line for the share. */
     let bandStacked = false, fitBandRef = null;
-    const bandH = () => { const s = scaleNow() / TYPE_K, one = Math.max(30, Math.ceil(26 / s)); return bandStacked ? one + Math.ceil(17 / s) : one; };
+    const bandH = () => { const s = scaleNow() / TK(), one = Math.max(30, Math.ceil(26 / s)); return bandStacked ? one + Math.ceil(17 / s) : one; };
     const cardHead = () => bandH() + (isClean() ? 3 : 14);
     const cardH = () => MI_H - cardHead() - cardBot();
     let cardBox = [];
@@ -3686,13 +3690,13 @@
     /* the tier grounds' bands: how wide each one's name and share are, and
        whether any ground is too narrow to set them on one line */
     const sharePct = k => Math.round(clusterShare[k] * 100) + "%";
-    const bandNameW = [0, 0, 0], bandGap = () => 7 * TYPE_K / scaleNow();
+    const bandNameW = [0, 0, 0], bandGap = () => 7 * TK() / scaleNow();
     /* the name a band carries: the tier's, or where even that alone is too
        wide for its ground (the drawing letterboxed under the open table on
        a narrow screen) the first word of it, "Partly" */
     const bandName = [TIER_NAMES[0], TIER_NAMES[1], TIER_NAMES[2]];
     fitBandRef = () => {
-      const u = TYPE_K / scaleNow();
+      const u = TK() / scaleNow();
       const mn = measureFor("mi-card-lab"), mp = measureFor("mi-card-pct");
       [0, 1, 2].forEach(k => { bandName[k] = TIER_NAMES[k]; bandNameW[k] = mn.w(bandName[k]); });
       const pw = [0, 1, 2].map(k => mp.w(sharePct(k)));
@@ -3863,7 +3867,7 @@
        rate's name sits on the box's line */
     const RANK_N = 14, RANK_FOOT = 0.5;
     /* the type's size on screen, in the drawing's units */
-    const fsUnits = () => 13 * TYPE_K / scaleNow();
+    const fsUnits = () => 13 * TK() / scaleNow();
     /* the footer under the third beat's rows: the half row, then the box's
        line, where the national rate's name stands too */
     const footBase = R => MT + spanOf(R) * rhOf(R) + (R === R2 ? RANK_FOOT * rhOf(R) : 0);
@@ -4173,7 +4177,7 @@
       /* the band's words sit on its middle line, whatever its height: the
          name, then the share after it - or under it, on a second line,
          where the grounds are too narrow for both */
-      const bh = bandH(), half = 8.5 * TYPE_K / scaleNow();
+      const bh = bandH(), half = 8.5 * TK() / scaleNow();
       const mid = bandStacked ? bh / 2 - half : bh / 2, mid2 = bandStacked ? bh / 2 + half : mid;
       sel.select("rect.mi-card-band").attr("height", bh);
       sel.select("text.mi-card-lab").attr("y", mid).attr("dy", "0.35em").text(c => bandName[c.k]);
@@ -4189,7 +4193,7 @@
          a fixed size on screen like the words beside it: an 8px mark 13px
          in from the band's right edge, on a 20px target */
       sel.select("g.mi-card-x").style("display", c => cardBox.length > 1 && !c.noX ? null : "none");
-      const u = TYPE_K / scaleNow(), hit = Math.min(20 * u, bh);
+      const u = TK() / scaleNow(), hit = Math.min(20 * u, bh);
       sel.select("rect.mi-card-x-hit").attr("y", mid - hit / 2).attr("width", hit).attr("height", hit);
       const xIn = 13 * u;
       go(sel.select("rect.mi-card-x-hit")).attr("x", c => c.x + c.w - xIn - hit / 2);
@@ -4496,7 +4500,7 @@
         /* the number is a fixed size on screen, so its disc is too: 9
            units where the figure is drawn at its own size, more where it
            is drawn smaller, inside the 30 the gutter keeps for it */
-        const br = Math.min(13 * TYPE_K, Math.max(9, 9.5 * TYPE_K / scaleNow()), rh * 0.46);
+        const br = Math.min(13 * TK(), Math.max(9, 9.5 * TK() / scaleNow()), rh * 0.46);
         g.append("circle").attr("class", "mi-badge-bg").attr("cx", br + 3).attr("cy", 0).attr("r", br);
         g.append("text").attr("class", "mi-badge").attr("x", br + 3).attr("y", 0).attr("dy", "0.35em")
           .attr("text-anchor", "middle").text(d => R.rankIdx.get(d.name) + 1);
@@ -5007,7 +5011,7 @@
       const at500 = h1 - drawnPx + MI_H * k;
       const slot = figRef && Math.abs(figRef.w - w) < 1 ? Math.max(0, figRef.h - at500) : Math.max(0, h0 - h1);
       rank6H = MI_H + slot / k;
-      const fsU = 13 * TYPE_K / scaleNow();
+      const fsU = 13 * TK() / scaleNow();
       /* under the rows: the national rate's name, and the Show box where it stands at the foot */
       /* under the rows and their half row: the box's line, and a margin
          to the drawing's foot */
