@@ -1,17 +1,12 @@
 # Cities Tool — v-6
 
-Created on 2026-10-14 as a copy of [`../cities-v-5/`](../cities-v-5/), to show
-the second design option for the "Who are you?" section beside v-5's. The rest
-of the tool is v-5's as it stood at the copy.
+Created on 2026-09-21 as an exact copy of [`../cities-v-1/`](../cities-v-1/)
+at commit `6b43ea1`. Same content, same figures, same data — including the real
+2024 Boston employment rows, the tier language (traded, partly traded, local)
+and the Metro Industries order the copy was taken with.
 
-| | v-5 | v-6 |
-|---|---|---|
-| The admin's and the metro's stats | bars | a line, the marks named on it |
-| The scatters | one beat for each measure | one chart for each geography, its measure switched over it |
-| The commuting figure | dots that sort into three groups | a Sankey of the same three groups |
-
-Both replay the commuting animation every time it comes into view. The city
-and metro comparison follows each version's stats form.
+[`../cities-v-1/`](../cities-v-1/) is the line this was taken from; it holds
+the record of that work at the point of the copy.
 
 ```
 index.html                 the whole page — markup, styles and page logic
