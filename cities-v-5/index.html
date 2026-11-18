@@ -1860,9 +1860,7 @@
      13 as on the scatters */
   :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-mini{gap:5px 10px;}
   :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ml.here{font-weight:700;}
-  :is(#page-overview, #page-overview-metro) .wt-peers{margin-top:24px;gap:8px 6px;font-size:13px;}
-  :is(#page-overview, #page-overview-metro) .wt-peers > .wt-pk,:is(#page-overview, #page-overview-metro) .wt-peers > span:first-child{min-height:28px;}
-  :is(#page-overview, #page-overview-metro) .wt-peer{padding:4px 9px 4px 7px;}
+  :is(#page-overview, #page-overview-metro) .wt-peers{margin-top:24px;}
   @media (max-width:599px){ :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ln{grid-template-columns:1fr;gap:8px 0;padding:14px 0;} }
   /* the compare beat's lines (opt-3): the metro's bar in the lightest tone, the rank under the takeaway, the ordinal in
      ink; population as a hundred squares, four rows of twenty-five, the admin's share of them filled */
@@ -2064,14 +2062,16 @@
   .wt-pn.end{transform:translateX(-100%);}
   .wt-pn.start{transform:none;}
   /* the peers: the control that adds a peer to the chart, in its colour once on */
-  .wt-peers{margin:16px 0 0;display:flex;flex-wrap:wrap;align-items:flex-start;gap:6px 8px;font-size:var(--t-note);line-height:1.5;color:var(--ink);}
+  /* every "Closest peers" row is set as beat 1's (2026-11-18, Nil: "make sure closest peer styling in beat-1 applies to the
+     same feature in other beats"): the label 13px, its rows 8px apart, the switches 26px tall; each place keeps its own margin */
+  .wt-peers{margin:16px 0 0;display:flex;flex-wrap:wrap;align-items:flex-start;gap:8px 6px;font-size:13px;line-height:1.5;color:var(--ink);}
   /* the peers wrap inside their own group, every line of them starting under the first; the group stays beside the
      label and the peer average while two peers fit there, else it takes the next line whole */
   .wt-pgrp{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;flex:1 1 220px;min-width:0;}
-  .wt-peers > .wt-pk,.wt-peers > span:first-child{display:inline-flex;align-items:center;min-height:calc(13px * 1.2 + 8px);}
+  .wt-peers > .wt-pk,.wt-peers > span:first-child{display:inline-flex;align-items:center;min-height:28px;}
   .wt-peers > .wt-sep{margin-top:2px;}
   .wt-peers.is-dropped > .wt-sep{visibility:hidden;}
-  .wt-peer{appearance:none;font:inherit;font-size:13px;line-height:1.2;color:var(--ink);background:var(--white);border:1px solid var(--control-edge);border-radius:4px;padding:3px 9px 3px 7px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+  .wt-peer{appearance:none;font:inherit;font-size:13px;line-height:1.2;color:var(--ink);background:var(--white);border:1px solid var(--control-edge);border-radius:4px;padding:4px 9px 4px 7px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
   .wt-peer i{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--control-edge);background:var(--white);flex:none;}
   .wt-peer:hover{background:var(--teal-tint);}
   .wt-peer[aria-pressed="true"]{border-color:var(--pc);font-weight:600;}
@@ -6544,6 +6544,12 @@
   html[data-mc-rest="dash"] .mc-cell.is-rest{stroke-dasharray:3 2;}
   html[data-mc-rest="faint"] .mc-cell.is-rest{stroke:var(--border-strong);}
   html[data-mc-rest="faint"] #mcTip .tip-sw--rest{box-shadow:inset 0 0 0 1px var(--border-strong);}
+  /* hatch: the piece white under thin diagonal lines in --border-strong, edged in the same; its words in the soft ink */
+  .mc-defs{position:absolute;width:0;height:0;overflow:hidden;}
+  #mcHatch rect{fill:var(--white);} #mcHatch line{stroke:var(--border-strong);stroke-width:1.5;}
+  html[data-mc-rest="hatch"] .mc-cell.is-rest{fill:url(#mcHatch);stroke:var(--border-strong);}
+  html[data-mc-rest="hatch"] :is(.mc-glab--rest .mc-gname,.mc-glab--rest .mc-gn){fill:var(--ink-soft);}
+  html[data-mc-rest="hatch"] #mcTip .tip-sw--rest{background:repeating-linear-gradient(45deg,var(--border-strong) 0 1.5px,var(--white) 1.5px 3.5px);box-shadow:inset 0 0 0 1px var(--border-strong);}
   .mc-glab--res .mc-gname{fill:var(--flow-both-text);} .mc-glab--out .mc-gname{fill:var(--flow-out-text);}
   .mc-gn{font-size:15px;font-weight:700;fill:var(--ink);} .mc-gn .mc-gp{font-size:13px;font-weight:400;fill:var(--ink-soft);}
   .mc-bos-r{fill:none;stroke:var(--teal);stroke-width:1.5;stroke-dasharray:5 4;}
@@ -8985,7 +8991,7 @@
 /* and a third (2026-11-16), for the Deep dive pill: ?dd=2 opens section 1 on the pill's choice 2 (the scatter plot in the
    map's place) */
 /* and a fourth (2026-11-16): ?rest=frame|quiet|dash|faint, how "Neither live nor work in Boston" steps back in section 2's beat 4 */
-if (location.search){ const keep = [/[?&]b6=both\b/.test(location.search) ? "b6=both" : "", /[?&]deep=beats\b/.test(location.search) ? "deep=beats" : "", /[?&]dd=2\b/.test(location.search) ? "dd=2" : "", (location.search.match(/[?&](rest=(?:frame|quiet|dash|faint))\b/) || [])[1] || ""].filter(Boolean);
+if (location.search){ const keep = [/[?&]b6=both\b/.test(location.search) ? "b6=both" : "", /[?&]deep=beats\b/.test(location.search) ? "deep=beats" : "", /[?&]dd=2\b/.test(location.search) ? "dd=2" : "", (location.search.match(/[?&](rest=(?:grey|frame|quiet|dash|faint))\b/) || [])[1] || "", /[?&]held=four\b/.test(location.search) ? "held=four" : ""].filter(Boolean);
   history.replaceState(null, "", location.pathname + (keep.length ? "?" + keep.join("&") : "") + location.hash); }</script>
 <script>/* ?colours=16, 11, 10 or 9 shows that colour system beside the thirteen (HANDOFF §6c) */
 (function(){ var m = /[?&]colours=(16|11|10|9)\b/.exec(location.search); if (m) document.documentElement.dataset.colours = m[1]; })();</script>
@@ -9971,7 +9977,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
                 <p class="mc-lead"><span class="mc-loc" id="mcLoc" aria-hidden="true"><svg class="mc-loc-map" width="36" height="36" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"><g class="mc-loc-g"><path class="mc-loc-metro"/><path class="mc-loc-city"/></g><circle class="mc-loc-ring" cx="30" cy="30" r="8"/></svg></span><span class="mi-sentence mc-title" id="mcTitle"></span></p>
                 <button type="button" class="who-fl-replay mc-play" id="mcPlay"></button>
               </div>
-              <div class="mc-plot"><svg class="mc-svg" id="mcSvg" role="img" aria-label="The metro's jobs by sector" xmlns="http://www.w3.org/2000/svg"></svg>
+              <div class="mc-plot"><svg class="mc-defs" width="0" height="0" aria-hidden="true" focusable="false"><defs><pattern id="mcHatch" patternUnits="userSpaceOnUse" width="5" height="5" patternTransform="rotate(45)"><rect width="5" height="5"/><line x1="0" y1="0" x2="0" y2="5"/></pattern></defs></svg><svg class="mc-svg" id="mcSvg" role="img" aria-label="The metro's jobs by sector" xmlns="http://www.w3.org/2000/svg"></svg>
                 <div class="rca-tip" id="mcTip" role="tooltip" hidden></div></div>
               <ul class="mc-key" id="mcKey" aria-label="Sectors"></ul>
               <p class="mc-note">Counted where people work (LODES 2023), a different source from the 2.3M jobs of the first beats. Each sector&rsquo;s split among the four groups is an estimate.</p>
@@ -24678,7 +24684,12 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   if (!fig || !host || !svgEl || typeof d3 === "undefined") return;
   const fmt = window.fmtCount || (n => String(n));
   const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const G = ["rest", "non", "res", "out"], ADM = ["non", "res"], RIGHT = ["non", "res", "out"];
+  /* ?held=two (2026-11-18, Nil: "merge Live in Boston, work elsewhere and Neither live nor work in Boston and label them xx
+     jobs outside of Boston Admin ... and change other label to xx jobs in Boston Admin"): three groups, the two outside
+     the city as one hatched part (estOutAll), named by its count; the bracket over the city's two says its count too */
+  /* the default since 2026-11-18 (Nil: "make the second option default"); ?held=four the four groups before it */
+  const MERGE = !/[?&]held=four\b/.test(location.search);
+  const G = MERGE ? ["rest", "non", "res"] : ["rest", "non", "res", "out"], ADM = ["non", "res"], RIGHT = MERGE ? ["non", "res"] : ["non", "res", "out"];
   /* the locator (2026-11-15): section 1's outlines (data/geo/who_commute_geo.js) drawn flat, a degree of longitude
      shortened by the latitude's cosine, fitted to 60 by 60; LOC_IN is the move in on the city for the Boston admin beat (six
      times, the city in the middle, on the metro's ground); without the outlines it stays away */
@@ -24708,13 +24719,16 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     if (adm && was === "metro"){ void locEl.offsetWidth; locEl.classList.add("is-arrive"); }
   }
   const isT = m => m === "tsec" || m === "tgrp", isSec = m => m === "sec" || m === "tsec", isGrp = m => m === "grp" || m === "tgrp";
-  const GN = { rest: "Neither live nor work in Boston", non: "Commute into Boston", res: "Live and work in Boston", out: "Live in Boston, work elsewhere" };
-  const GS = { rest: "Neither", non: "Commute in", res: "Live and work", out: "Commute out" };
-  const GV = { rest: "estRest", non: "estNon", res: "estRes", out: "estOut" };
+  const GN = { rest: MERGE ? "Outside Boston Admin" : "Neither live nor work in Boston", non: "Commute into Boston", res: "Live and work in Boston", out: "Live in Boston, work elsewhere" };
+  const GS = { rest: MERGE ? "Outside" : "Neither", non: "Commute in", res: "Live and work", out: "Commute out" };
+  const GV = { rest: MERGE ? "estOutAll" : "estRest", non: "estNon", res: "estRes", out: "estOut" };
   const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
   /* grey: pale grey, outlined; frame: an empty frame; quiet: the frame with its words in the soft ink; dash: quiet, dashed;
      faint: quiet with a --border-strong edge (1.7 to 1, under the 3 to 1 for marks: named in words above it) */
-  const REST = (location.search.match(/[?&]rest=(frame|quiet|dash|faint)\b/) || [])[1] || "grey";
+  /* hatch (the default since 2026-11-18, Nil: the pale grey "looks more like the other grey bar and ... like they have some
+     relationship which they do not"): white with a light diagonal hatch, a texture none of the other three has; ?rest=grey
+     the pale grey before it */
+  const REST = (location.search.match(/[?&]rest=(grey|frame|quiet|dash|faint)\b/) || [])[1] || "hatch";
   if (REST !== "grey") document.documentElement.dataset.mcRest = REST;
   const GC = g => css({ rest: REST !== "grey" ? "--white" : "--border", non: "--flow-in", res: "--flow-both", out: "--flow-out" }[g]);
   const restOn = (sel, m) => sel.classed("is-rest", d => d.g === "rest" && !isSec(m));
@@ -24738,6 +24752,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     if (rows) return true;
     const D = window.WF && window.WF.data; if (!D) return false;
     rows = D.rows.slice().sort((a, b) => b.msaJobs - a.msaJobs); M = D.M;
+    if (MERGE) rows.forEach(r => { r.estOutAll = Math.max(0, r.estOut) + Math.max(0, r.estRest); });
     sum = {}; mx = {}; G.forEach(g => { sum[g] = d3.sum(rows, r => Math.max(0, r[GV[g]])); mx[g] = d3.max(rows, r => Math.max(0, r[GV[g]])); });
     return true;
   }
@@ -24745,7 +24760,11 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
      storyline 3's beat 4: "tsec" the sectors' treemap, "tgrp" its four clusters. tree says which beat 4 is on */
   let tree = false;
   const TT = 24, TGAP = 10, HEADL = 17;
-  const thead = (g, bw) => wrapTo(GN[g], bw - 2, 14, 600).length * HEADL + 24;
+  /* a group's head; under ?held=two the part outside the city is named by its count, its second line the share alone */
+  const headName = g => MERGE && g === "rest" ? fmt(sum.rest) + " jobs outside of Boston Admin" : GN[g];
+  const headCount = g => MERGE && g === "rest" ? "" : fmt(sum[g]);
+  const bosWord = () => MERGE ? fmt(sum.non + sum.res) + " jobs in Boston Admin" : "Boston admin, " + fmt(sum.non + sum.res) + " jobs";
+  const thead = (g, bw) => wrapTo(headName(g), bw - 2, 14, 600).length * HEADL + 24;
   function packInto(g, b, out){
     const rt = d3.hierarchy({ children: rows.map(r => ({ r, v: Math.max(0, r[GV[g]]) })) }).sum(d => d.v || 0).sort((a, c) => c.value - a.value);
     d3.treemap().size([b.w, b.fh]).paddingInner(1).round(true)(rt);
@@ -24770,7 +24789,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     /* the clusters: on the left the people who neither live nor work in Boston, the three Boston groups stacked on the
        right; each block's fill is to its count (the heads stand over the fills, so the widths are solved for that) */
     let wR = (w - TGAP) * .32, wL, hl, hr;
-    const R = sum.non + sum.res + sum.out;
+    const R = RIGHT.reduce((a, g) => a + sum[g], 0);
     for (let i = 0; i < 6; i++){
       wL = w - TGAP - wR; hl = H - thead("rest", wL); hr = H - 2 * TGAP - RIGHT.reduce((a, g) => a + thead(g, wR), 0);
       wR = Math.max(120, Math.min(w * .5, (w - TGAP) * hl * R / (hr * sum.rest + hl * R)));
@@ -24783,7 +24802,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     return { hT: h, tsec, tsecs, tgrp, blocks };
   }
   let mode = "sec", busy = false, shown = false, played = false, L = null, hiG = null, playT = null;
-  const TOPB = 22, GAPC = 14, VALW = 46, SEG = 2, SEGB = 10, GO = ["non", "res", "out", "rest"];   /* 2026-11-16, Nil: commute in, live and work, live in Boston and work elsewhere, then neither, last */
+  const TOPB = 22, GAPC = 14, VALW = 46, SEG = 2, SEGB = 10, GO = MERGE ? ["non", "res", "rest"] : ["non", "res", "out", "rest"], GAPS = (GO.length - 3) * SEG + SEG + SEGB;   /* 2026-11-16, Nil: commute in, live and work, live in Boston and work elsewhere, then neither, last */
   function layout(){
     const w = Math.max(280, Math.round(host.clientWidth || 0)), narrow = w < 600;
     const labW = Math.round(Math.min(220, Math.max(104, w * (narrow ? .3 : .26)))), x0 = labW + 8, avail = w - x0;
@@ -24792,13 +24811,13 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
        them at the end"): each bar's four parts in one order, the two that hold Boston admin's jobs last, a 2px gap
        between parts. Over the bars the four groups named in that order, in equal slots */
     /* on a narrow screen the slots take the whole width, over the sectors' names too */
-    const hx = narrow ? 6 : x0, slot = (w - hx - 6 * (narrow ? 1 : 0) - 3 * GAPC) / 4, colW = {}, colX = {};
+    const hx = narrow ? 6 : x0, slot = (w - hx - 6 * (narrow ? 1 : 0) - (GO.length - 1) * GAPC) / GO.length, colW = {}, colX = {};
     GO.forEach((g, i) => { colW[g] = slot; colX[g] = hx + i * (slot + GAPC); });
     /* on a narrow screen the heads take their short names, so none runs past two lines */
-    const heads = {}; G.forEach(g => { heads[g] = wrapTo(narrow ? GS[g] : GN[g], colW[g] - 2, 14, 600); });
+    const heads = {}; G.forEach(g => { heads[g] = wrapTo(narrow && !(MERGE && g === "rest") ? GS[g] : headName(g), colW[g] - 2, 14, 600); });
     const HT = d3.max(G, g => heads[g].length) * 17 + 24, top = TOPB + HT;
     const rh = narrow ? 16 : 22, bh = narrow ? 11 : rh - 6, h = top + rows.length * rh + 4;
-    const kS = (avail - VALW - 2 * SEG - SEGB) / d3.max(rows, r => r.msaJobs), kA = (avail - VALW) / d3.max(rows, r => r.jobs);
+    const kS = (avail - VALW - GAPS) / d3.max(rows, r => r.msaJobs), kA = (avail - VALW) / d3.max(rows, r => r.jobs);
     const ordS = rows, ordA = rows.slice().sort((a, b) => b.jobs - a.jobs);
     const yS = {}, yA = {}; ordS.forEach((r, i) => { yS[r.code] = top + i * rh; }); ordA.forEach((r, i) => { yA[r.code] = top + i * rh; });
     const sec = {}, grp = {}, adm = {};
@@ -24838,7 +24857,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     playBtn.setAttribute("aria-label", tree ? "Replay: the sectors split and gather into the four groups of who holds the jobs" : "Replay: each sector's bar colours by the four groups of who holds its jobs");
     svgEl.setAttribute("aria-label", adm
       ? "Boston admin’s " + tot + " jobs by sector as stacked bars: " + ADM.map(g => GN[g].toLowerCase() + ", " + fmt(sum[g])).join("; ")
-      : isGrp(mode) ? "The metro’s " + fmt(M.jobs) + " jobs by sector " + (isT(mode) ? "as a treemap in four groups: " : "in four groups, Boston admin's two first in each bar: ") + G.map(g => GN[g].toLowerCase() + ", " + fmt(sum[g])).join("; ")
+      : isGrp(mode) ? "The metro’s " + fmt(M.jobs) + " jobs by sector " + (isT(mode) ? "as a treemap in " + (MERGE ? "three" : "four") + " groups: " : (MERGE ? "in three groups" : "in four groups") + ", Boston admin's two first in each bar: ") + G.map(g => GN[g].toLowerCase() + ", " + fmt(sum[g])).join("; ")
       : "The metro’s " + fmt(M.jobs) + " jobs by sector, as " + (isT(mode) ? "a treemap" : "bars") + "; the largest are " + rows.slice(0, 3).map(r => r.short.toLowerCase() + ", " + fmt(r.msaJobs)).join(", "));
     if (isSec(mode)){ const seen = []; rows.forEach(r => { if (seen.indexOf(r.sector) < 0) seen.push(r.sector); }); if (tree) seen.sort((a, b) => rank(a) - rank(b));
       keyEl.innerHTML = seen.map(s => '<li><i style="background:' + colours[s] + '" aria-hidden="true"></i>' + s + '</li>').join(""); }
@@ -24848,7 +24867,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     /* storyline 2 without the source notes (2026-11-10, Nil: delete them); storyline 3 keeps them */
     if (noteEl) noteEl.hidden = !tree;
     if (noteEl) noteEl.textContent = adm ? "Counted where people work (LODES 2023). Each sector’s split between the two groups is an estimate."
-      : "Counted where people work (LODES 2023), a different source from the 2.3M jobs of the first beats. Each sector’s split among the four groups is an estimate.";
+      : "Counted where people work (LODES 2023), a different source from the 2.3M jobs of the first beats. Each sector’s split among the " + (MERGE ? "three" : "four") + " groups is an estimate.";
   }
   /* the words around the bars: the sectors' names, each bar's count, the columns' heads and Boston admin's outline */
   function rowLabels(anim){
@@ -24859,7 +24878,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   }
   function extras(fade){
     treeExtras(fade);
-    const vals = busy ? [] : mode === "sec" || mode === "grp" ? rows.map(r => ({ r, x: L.x0 + r.msaJobs * L.kS + (mode === "grp" ? 2 * SEG + SEGB : 0) + 6, n: r.msaJobs })) :
+    const vals = busy ? [] : mode === "sec" || mode === "grp" ? rows.map(r => ({ r, x: L.x0 + r.msaJobs * L.kS + (mode === "grp" ? GAPS : 0) + 6, n: r.msaJobs })) :
       mode === "adm" ? rows.map(r => ({ r, x: L.x0 + r.jobs * L.kA + 6, n: r.jobs })) : [];
     gVal.selectAll("text").data(vals, d => d.r.code).join("text").attr("class", "mc-val").attr("x", d => d.x).attr("y", d => yOf(d.r, mode) + L.rh / 2 + 4.5).text(d => fmt(d.n));
     /* the groups' names over their columns; on beat 5 over the two parts of the first bar, so no key is needed */
@@ -24870,14 +24889,14 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     gHead.selectAll("g").data(hs, d => mode + d.g).join("g").attr("class", d => "mc-glab mc-glab--" + d.g)
       .html(d => { const nl = d.ln.length, y = L.top - 6 - 20 - (nl - 1) * 17;
         return '<text class="mc-gname" x="' + d.x + '" y="' + y + '">' + d.ln.map((t, i) => '<tspan x="' + d.x + '" dy="' + (i ? 17 : 0) + '">' + t + '</tspan>').join("") + '</text>' +
-          '<text class="mc-gn" x="' + d.x + '" y="' + (y + nl * 17 + 3) + '">' + fmt(sum[d.g]) + '<tspan class="mc-gp"> ' + Math.round(sum[d.g] / d.tot * 100) + '%</tspan></text>'; });
+          '<text class="mc-gn" x="' + d.x + '" y="' + (y + nl * 17 + 3) + '">' + headCount(d.g) + '<tspan class="mc-gp">' + (headCount(d.g) ? ' ' : '') + Math.round(sum[d.g] / d.tot * 100) + '%</tspan></text>'; });
     /* Boston admin, said quietly (2026-11-09, Nil: "another way to highlight admin part, it is currently cluttered"; the
        dashed outline round every bar's end is gone): one bracket over its two heads, as the Venn brackets its jobs, and
        in each bar a wider gap before its two parts, so they stand as a block of their own at the bar's end */
     gBos.selectAll("g").data(busy || mode !== "grp" ? [] : [1]).join("g").attr("class", "mc-bos-g").html(() => {
       const x = L.colX.non - 2, w = L.colX.res + L.colW.res - L.colX.non, y = TOPB - 2;
       return '<path class="mc-bos-b" d="M' + x + ',' + (y + 6) + 'V' + y + 'H' + (x + w) + 'V' + (y + 6) + '"/>' +
-        '<text class="mc-bos-t" x="' + (x + w / 2) + '" y="' + (y - 7) + '" text-anchor="middle">Boston admin, ' + fmt(sum.non + sum.res) + ' jobs</text>'; });
+        '<text class="mc-bos-t" x="' + (x + w / 2) + '" y="' + (y - 7) + '" text-anchor="middle">' + bosWord() + '</text>'; });
     if (fade && !reduced()){
       gVal.selectAll("text").style("opacity", 0).transition().duration(300).style("opacity", 1);
       gHead.selectAll("g").style("opacity", 0).transition().duration(350).style("opacity", 1);
@@ -24901,12 +24920,12 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       .html(d => d.f.lines.map((t, i) => '<tspan x="' + d.f.x + '" y="' + d.k.lineY(d.y, d.f.size, i, false) + '">' + esc(t) + '</tspan>').join("") +
         (d.f.share ? '<tspan x="' + d.f.x + '" y="' + d.k.lineY(d.y, d.f.size, d.f.lines.length, true) + '" font-size="' + d.f.shareSize + '">' + d.sub + '</tspan>' : ""));
     gTG.selectAll("g").data(on && mode === "tgrp" ? G.map(g => ({ g, b: L.blocks[g] })) : [], d => d.g).join("g").attr("class", d => "mc-glab mc-glab--" + d.g)
-      .html(d => { const ln = wrapTo(GN[d.g], d.b.w - 2, 14, 600);
+      .html(d => { const ln = wrapTo(headName(d.g), d.b.w - 2, 14, 600);
         return '<text class="mc-gname" x="' + d.b.x + '" y="' + (d.b.y + 13) + '">' + ln.map((t, i) => '<tspan x="' + d.b.x + '" dy="' + (i ? HEADL : 0) + '">' + t + '</tspan>').join("") + '</text>' +
-          '<text class="mc-gn" x="' + d.b.x + '" y="' + (d.b.y + 13 + ln.length * HEADL + 3) + '">' + fmt(sum[d.g]) + '<tspan class="mc-gp"> ' + Math.round(sum[d.g] / M.jobs * 100) + '%</tspan></text>'; });
+          '<text class="mc-gn" x="' + d.b.x + '" y="' + (d.b.y + 13 + ln.length * HEADL + 3) + '">' + headCount(d.g) + '<tspan class="mc-gp">' + (headCount(d.g) ? ' ' : '') + Math.round(sum[d.g] / M.jobs * 100) + '%</tspan></text>'; });
     gTBos.selectAll("g").data(on && mode === "tgrp" ? [1] : []).join("g").attr("class", "mc-bos-g").html(() => { const a = L.blocks.non, b = L.blocks.res, x = a.x - 5, y = a.y - 5, w = a.w + 10, h = b.y + b.hh + b.fh - a.y + 10;
       return '<rect class="mc-bos-r" x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="4"/>' +
-        '<text class="mc-bos-t" x="' + (x + w) + '" y="' + (y - 6) + '" text-anchor="end">Boston admin, ' + fmt(sum.non + sum.res) + ' jobs</text>'; });
+        '<text class="mc-bos-t" x="' + (x + w) + '" y="' + (y - 6) + '" text-anchor="end">' + bosWord() + '</text>'; });
     if (fade && on && !reduced()){
       gSLab.selectAll("text").style("opacity", 0).transition().duration(300).style("opacity", 1);
       gTG.selectAll("g").style("opacity", 0).transition().duration(350).style("opacity", 1);
