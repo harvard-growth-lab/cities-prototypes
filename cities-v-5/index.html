@@ -6494,8 +6494,9 @@
   #miFigure.is-mclust > .mi-table{display:none !important;}
   .mc-head{display:flex;align-items:center;gap:8px 16px;flex-wrap:wrap;margin:0 0 6px;}
   .mc-head .mc-title{flex:1 1 auto;min-width:0;margin:0;font-size:var(--fig-title-size);line-height:var(--fig-title-lh);font-weight:var(--fig-title-weight);color:var(--ink);}
-  /* beats 4 and 5's sentence at 600 throughout, its place name too (2026-11-16, Nil); section 3's sentence keeps 400 */
-  #miFigure #mcTitle{font-weight:600;}
+  /* beats 4 and 5's sentence was 600 throughout (2026-11-16); since 2026-11-18 (Nil: "do not make the control sentence
+     bold") it follows the others at the token's weight */
+  #miFigure #mcTitle{font-weight:var(--fig-title-weight);}
   .mc-play svg{display:block;flex:none;}
   /* quiet, as the Venn's Play again (2026-11-16, Nil: "make the replay button similar to the venn diagram one"): no box, the
      soft ink, teal and underlined on hover */
@@ -8951,13 +8952,13 @@
   /* ==== The figures' type hierarchy (2026-11-17; the stakeholders: the control sentences were not visible enough and
      differed from chart to chart, and the axis labels were hard to see). From the top:
        1 the beat's title, 26/700 in the text column
-       2 the control sentence, the figure's own title: 18/600 in the ink, one style on every chart, its blanks 700 teal
+       2 the control sentence, the figure's own title: 18/400 in the ink (not bold, 2026-11-18, Nil), one style on every chart, its blanks 700 teal
        3 the data's own words (names, values, direct labels), as they were
        4 axis titles and column heads: 14/600 in the ink (they were 13 in the soft ink)
        5 ticks: 13/500 in the ink (they were in the soft ink)
        6 notes, sources, keys: 13 in the soft ink
      Every chart is set in the page's face. The tokens are the levers. ==== */
-  :root{--fig-title-size:18px;--fig-title-weight:600;--fig-title-lh:1.45;--axis-title-size:14px;--axis-ink:var(--ink);}
+  :root{--fig-title-size:18px;--fig-title-weight:400;--fig-title-lh:1.45;--axis-title-size:14px;--axis-ink:var(--ink);}
   @media (max-width:600px){ :root{--fig-title-size:16px;} }
   .who-sc .sc-tick,.rh-tick,.dg-chart .dg-ytick,.dg-chart .dg-xtick,#miAdminSvg .ad-tick,.mi-figure svg .mi-ticklab,
   #wfTreeSvg .wf-rk text.wf-rk-tick{fill:var(--axis-ink);}
