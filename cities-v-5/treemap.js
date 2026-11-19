@@ -6769,7 +6769,11 @@
         tip.hidden = false;
         cursorTipPos(ev, wrap, tip);
         this.parentNode.appendChild(this);          // hovered mark to the front
-        d3.select(r).style("stroke", "#1a2226").style("stroke-width", 2.5);
+        /* the ranking's bars take no line round them on hover (2026-11-18, Nil: "Which tradable industries is the metro most
+           specialized in? - when hover, the bar should not have a border around"): the row's tint and dark-teal name mark it */
+        /* nor the ranking's bars in the sector beats (2026-11-18, Nil: "none of bars should get border when hover") */
+        const asBar = step === 3 || step === 6 || (view === "alt" && [0, 1, 4, 5, 7].indexOf(step) >= 0);
+        if (!asBar) d3.select(r).style("stroke", "#1a2226").style("stroke-width", 2.5);
         /* coming in off the bar rather than the band, light the band anyway */
         if (!hotRow && (step === 3 || step === 6)){
           const R = step === 6 ? R2 : R1;

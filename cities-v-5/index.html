@@ -24,7 +24,7 @@
     /* neutrals, darkest first; the ratios are on white */
     --ink:#1a2226;            /* text: 16.1 to 1 */
     --ink-soft:#526066;       /* secondary text, icons, the metro: 6.5 */
-    --control-edge:#7f8f95;   /* the edge a control is found by, chart axes, quiet marks: 3.4 */
+    --control-edge:#7f8f95;--hatch-edge:#88979c;   /* the edge a control is found by, chart axes, quiet marks: 3.4 */
     --border-strong:#c3ccce;  /* field and card edges, the rule under a table head */
     --border:#e2e7e8;         /* hairlines, gridlines, tracks */
     /* the ground of the narrative sections and around their white panels
@@ -919,10 +919,10 @@
   .sk-viz--rank{display:grid;grid-template-columns:max-content minmax(0,1fr) max-content;align-items:center;gap:8px 10px;width:min(100%, 340px);}
   .skr-row{display:contents;}
   .skr-n,.skr-row > b{font-size:14px;line-height:1.2;color:var(--on-dark-soft);white-space:nowrap;}
-  .skr-row > b{font-weight:600;font-variant-numeric:tabular-nums;text-align:right;}
+  .skr-row > b{font-weight:400;font-variant-numeric:tabular-nums;text-align:right;}
   .skr-t i{display:block;height:12px;width:0;border-radius:2px;background:var(--on-dark-line);transition:width .9s cubic-bezier(.32,.72,.24,1);}
   .sec-seal.is-in .skr-t i{width:var(--w);}
-  .skr-row.is-here .skr-n,.skr-row.is-here > b{color:var(--white);font-weight:700;}
+  .skr-row.is-here .skr-n,.skr-row.is-here > b{color:var(--white);font-weight:700;} .skr-row.is-here > b{font-weight:400;}
   .skr-row.is-here .skr-t i{background:var(--white);}
   /* What do my metro and I produce?'s two cards (2026-10-28, Nil: "for the numbers in both cards label the column so
      that we know what they are"): the numbers' column named over it, right-aligned on the values; the metro's mark at
@@ -1862,6 +1862,15 @@
   :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ml.here{font-weight:700;}
   :is(#page-overview, #page-overview-metro) .wt-peers{margin-top:24px;}
   @media (max-width:599px){ :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ln{grid-template-columns:1fr;gap:8px 0;padding:14px 0;} }
+  /* opt-2, the friendly box plot (2026-11-18, Nil: "the option should be our friendly box plot, keep all other
+     functionalities"): opt-1's rows and type, the band in a wider third column; the drawn key over the rows, and the
+     marks' key under it once the peer average or a peer is on (the band names only Boston and the US average) */
+  @media (min-width:600px){ :is(#page-overview, #page-overview-metro) .wt--lines.wt--band:not(.wt--cmp) .wt-ln{grid-template-columns:minmax(0,170px) minmax(0,1fr) minmax(0,1fr);} }
+  :is(#page-overview, #page-overview-metro) .wt--band > .wt-key{margin:0 0 12px;}
+  html :is(#page-overview, #page-overview-metro) .wt--band.wt--keyed > .wt-mkey{display:flex;justify-content:flex-start;margin:0 0 10px;}
+  .wt--band .wt-mkey i{width:10px;height:10px;border-radius:50%;}
+  .wt--band .wt-mkey i.pa{background:var(--white);border:2px solid var(--mk-pa);box-sizing:border-box;}
+  .wt--band .wt-bnd{margin:0;}
   /* the compare beat's lines (opt-3): the metro's bar in the lightest tone, the rank under the takeaway, the ordinal in
      ink; population as a hundred squares, four rows of twenty-five, the admin's share of them filled */
   .wt-mb.mt,.wt-mkey i.mt{background:var(--bar-mt);}
@@ -1915,46 +1924,7 @@
   @media (max-width:599px){ .wc-cards{grid-template-columns:1fr;} }
   @media (max-width:899px){ .who-cmp .wt-row,.who-cmp .wt[data-form="beside"] .wt-row{grid-template-columns:1fr;gap:10px 0;} .wt-rank{padding-top:0;} }
   .wt[data-form="beside"] .wt-name .hint{display:block;margin-left:0;}
-  /* opt-2 of the tables (2026-10-17, the sketches' A2 revised): three
-     columns, the measure and Boston's figure; the band, square, Boston
-     alone on it and named above, the US average a dashed line through
-     it and named under it with its figure ("US avg 20K", 2026-10-17, Nil);
-     and the takeaway in one short line under one "Boston is" head ("33
-     times the US avg"), the column as wide
-     as its longest line (measured, --say-w) so the rows line up. The key
-     sits on top, beside the head. The peer average is off until its switch
-     in the peers' row; it and any peers on take a lane under the US
-     average's name, and its line drops level with it. Every mark answers
-     a pointer with a tooltip. Under 600px of table the three stack, and
-     each line says "Boston is" itself */
-  .wt[data-mode="band"]{container:whoband / inline-size;}
-  .wt[data-mode="band"] .wt-row{grid-template-columns:minmax(0,120px) minmax(0,340px) var(--say-w,210px);gap:0 20px;align-items:start;justify-content:start;}
-  .wt[data-mode="band"] .wt-row.wt-row--head{padding:0 0 8px;border:0;align-items:end;}
-  .wt[data-mode="band"] .wt-row--head .wt-key{grid-column:1 / 3;margin:0;}
-  .wt[data-mode="band"] .wt-row--head .wt-colh{grid-column:3;}
-  .wt[data-mode="band"] .wt-name .hint{display:block;margin-left:0;}
-  .wt-cmp{position:relative;display:grid;grid-template-columns:minmax(0,1fr);grid-auto-rows:18px;align-items:center;padding-top:19px;font-size:13px;line-height:1.3;}
-  /* the peer average on: its line starts level with its lane */
-  .wt-cmp.has-lane{grid-template-rows:18px 22px;}
-  .wt-say{display:block;white-space:nowrap;color:var(--ink);}
-  .wt-say b{font-weight:600;font-variant-numeric:tabular-nums;}
-  .wt-say .wt-arr{width:10px;height:10px;margin-right:3px;vertical-align:-.5px;}
-  .wt-say.is-good b{color:var(--rise);} .wt-say.is-bad b{color:var(--fall);}
-  /* the subject: said once by the head, read in full by a screen reader */
-  .wt-who{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
-  @container whoband (max-width:599px){
-    .wt[data-mode="band"] .wt-row{grid-template-columns:minmax(0,1fr);gap:6px 0;}
-    .wt[data-mode="band"] .wt-row.wt-row--head{gap:0;}
-    .wt[data-mode="band"] .wt-row--head .wt-key{grid-column:1;}
-    .wt[data-mode="band"] .wt-row--head .wt-colh{display:none;}
-    .wt[data-mode="band"] .wt-cmp{padding-top:0;grid-auto-rows:auto;row-gap:2px;}
-    .wt[data-mode="band"] .wt-cmp.has-lane{grid-template-rows:none;}
-    .wt[data-mode="band"] .wc-gap{display:none;}
-    .wt[data-mode="band"] .wt-say{white-space:normal;}
-    .wt[data-mode="band"] .wt-who{position:static;width:auto;height:auto;margin:0;overflow:visible;clip:auto;color:var(--ink-soft);}
-    /* the peers start their own line under the peer average, rather than strand the rule */
-    .wt[data-mode="band"] .wt-sep{flex-basis:100%;height:0;margin:0;background:none;}
-  }
+  /* opt-2 of the tables, the friendly box plot (2026-11-19): it is the lines table (wt--lines wt--band), its bars swapped for a band per row; the rules below are its marks */
   /* the band's tooltips: the mark under the pointer ringed while its tip shows */
   .wt-bnd{cursor:default;}
   .wt-bnd:focus-visible{outline:2px solid var(--teal);outline-offset:4px;border-radius:2px;}
@@ -1969,7 +1939,6 @@
   .wt,.wt-tip{--band-out:var(--border-strong);--band-mid:color-mix(in srgb,var(--border-strong) 40%,var(--control-edge));}
   @supports not (color:color-mix(in srgb,red,blue)){ .wt,.wt-tip{--band-mid:var(--control-edge);} }
   .wt-bnd{position:relative;height:56px;margin:2px 0 0;}
-  .wt-bnd.has-lane{height:76px;}
   .wt-bnd > span{position:absolute;display:block;}
   .wb-rail{left:0;right:0;top:25px;height:2px;background:var(--border);}
   .wb-band{top:20px;height:12px;background:var(--band-out);}
@@ -1980,15 +1949,16 @@
      numbers; its tooltip has both), drawn last so Boston's dot never hides it */
   .wb-pe{top:26px;width:9px;height:9px;margin:-4.5px 0 0 -4.5px;border-radius:50%;background:var(--pc);box-shadow:0 0 0 1.5px var(--white);}
   .wb-pa{top:26px;width:11px;height:11px;margin:-5.5px 0 0 -5.5px;border-radius:50%;border:2px solid var(--mk-pa);box-sizing:border-box;background:var(--white);box-shadow:0 0 0 1.5px var(--white);}
-  .wb-here{top:26px;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:var(--geo-city);box-shadow:0 0 0 2px var(--white);}
+  /* Boston's dot a size down (2026-11-19, Nil: "make the boston dot smaller"), still the largest mark */
+  .wb-here{top:26px;width:12px;height:12px;margin:-6px 0 0 -6px;border-radius:50%;background:var(--geo-city);box-shadow:0 0 0 2px var(--white);}
+  /* the tick a mark hangs from when it drops to a lane under the rail (fit) */
+  .wb-tk{width:0;margin-left:-.5px;border-left:1px solid var(--ink);}
   .wb-name{top:0;transform:translateX(-50%);font-size:13px;font-weight:600;line-height:1.2;color:var(--ink);white-space:nowrap;}
   .wb-name.end,.wb-ul.end{left:auto !important;right:0;transform:none;}
   .wb-name.start{transform:translateX(-8px);}
   /* the averages' names with their figures: the US one under its line, the peers' beside its circle */
-  .wb-ul{top:39px;transform:translateX(-50%);font-size:13px;line-height:1.2;color:var(--ink);white-space:nowrap;}
+  .wb-ul{top:39px;transform:translateX(-50%);font-size:13px;line-height:1.2;color:var(--ink);white-space:nowrap;background:var(--white);}
   .wb-ul.start{transform:translateX(-2px);}
-  .wb-pl{top:58px;transform:translateX(10px);font-size:13px;line-height:1.2;color:var(--ink);white-space:nowrap;}
-  .wb-pl.lt{transform:translateX(calc(-100% - 10px));}
   /* each average's figure beside its name, in the name's 13px */
   .wb-n{font-size:13px;font-variant-numeric:tabular-nums;}
   /* the peers' row: the peer average's switch, its ring the circle's */
@@ -2007,28 +1977,6 @@
   .bk-brk--mid{left:60px;width:76px;top:35px;height:5px;border-top:0;}
   .bk-all{left:0;width:200px;top:24px;height:10px;background:var(--band-out);}
   .bk-mid{left:60px;width:76px;top:24px;height:10px;background:var(--band-mid);}
-  /* the info mark is kept but not shown (2026-10-22, Nil: "hide the information icon that demos the box plot creation") */
-  .wt-key .bk-i{display:none;align-self:flex-end;margin:0 0 20px;cursor:pointer;line-height:1;}
-  .wt-key .bk-i::after{--s:15px;margin:0;vertical-align:0;}
-  .wt-key > span.bk-pop{position:absolute;left:0;top:calc(100% + 8px);z-index:30;display:block;width:330px;max-width:100%;padding:12px 14px 10px;
-    background:var(--white);border:1px solid var(--border-strong);border-radius:8px;box-shadow:var(--shadow-md);font-size:var(--t-note);line-height:1.45;color:var(--ink);}
-  .wt-key > span.bk-pop[hidden]{display:none;}
-  .bk-anim{display:block;width:100%;height:auto;overflow:visible;}
-  .ba-rail{stroke:var(--border);stroke-width:2;}
-  .ba-dot{fill:var(--ink-soft);opacity:0;transition:opacity .45s ease;}
-  .ba-all{fill:var(--band-out);opacity:0;transition:opacity .5s ease;} .ba-mid{fill:var(--band-mid);opacity:0;transition:opacity .5s ease;}
-  .ba-us{stroke:var(--ink);stroke-width:1.5;stroke-dasharray:3 3;opacity:0;transition:opacity .5s ease;}
-  .ba-here{fill:var(--geo-city);stroke:var(--white);stroke-width:2;opacity:0;transform:translateY(-22px);transition:opacity .4s ease,transform .5s cubic-bezier(.32,.72,.24,1);}
-  .bk-pop.s1 .ba-dot{opacity:.85;} .bk-pop.s2 .ba-all{opacity:1;} .bk-pop.s2 .ba-dot.out{opacity:.25;} .bk-pop.s3 .ba-mid{opacity:1;}
-  .bk-pop.s4 .ba-us{opacity:1;} .bk-pop.s5 .ba-here{opacity:1;transform:none;}
-  .bk-pop .bk-caps{position:relative;display:block;height:2.9em;margin-top:6px;}
-  .bk-pop .bk-cap{position:absolute;left:0;top:0;display:flex;align-items:flex-start;gap:8px;opacity:0;transition:opacity .4s ease;}
-  .bk-cap b{flex:none;display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--teal-tint);color:var(--teal);font-size:13px;font-weight:700;}
-  .bk-pop[data-step="1"] .bk-cap--1,.bk-pop[data-step="2"] .bk-cap--2,.bk-pop[data-step="3"] .bk-cap--3,.bk-pop[data-step="4"] .bk-cap--4,.bk-pop[data-step="5"] .bk-cap--5{opacity:1;}
-  /* reduced motion: the finished band and the five steps listed */
-  .bk-pop.is-static .bk-caps{position:static;height:auto;display:flex;flex-direction:column;gap:5px;}
-  .bk-pop.is-static .bk-cap{position:static;opacity:1;}
-  @media (prefers-reduced-motion: reduce){ .ba-dot,.ba-all,.ba-mid,.ba-us,.ba-here,.bk-cap{transition:none;} }
   @media (max-width:599px){ .wt-key > .bk{width:min(290px, 100%);} }
   /* opt-2's peers' row: the average's switch first, a rule, then the peers */
   .wt-sep{flex:none;width:1px;height:20px;margin:0 2px;background:var(--border-strong);}
@@ -2121,16 +2069,6 @@
     .wt .wt-row,.wt[data-form="beside"] .wt-row{grid-template-columns:1fr;gap:10px 0;}
     .wt-row.wt-row--head{gap:0;}
     .wt[data-form="beside"] .wt-bars{grid-template-columns:82px minmax(0,1fr) 46px 118px;gap:3px 6px;}
-    .wt[data-mode="band"] .wt-row{grid-template-columns:minmax(0,1fr);gap:6px 0;}
-    .wt[data-mode="band"] .wt-row.wt-row--head{gap:0;}
-    .wt[data-mode="band"] .wt-row--head .wt-key{grid-column:1;}
-    .wt[data-mode="band"] .wt-row--head .wt-colh{display:none;}
-    .wt[data-mode="band"] .wt-cmp{padding-top:0;grid-auto-rows:auto;row-gap:2px;}
-    .wt[data-mode="band"] .wt-cmp.has-lane{grid-template-rows:none;}
-    .wt[data-mode="band"] .wc-gap{display:none;}
-    .wt[data-mode="band"] .wt-say{white-space:normal;}
-    .wt[data-mode="band"] .wt-who{position:static;width:auto;height:auto;margin:0;overflow:visible;clip:auto;color:var(--ink-soft);}
-    .wt[data-mode="band"] .wt-sep{flex-basis:100%;height:0;margin:0;background:none;}
     .wt-viz{padding-right:4px;}
   }
   /* ---- Who are you?: the commuting beat (2026-10-14) ----
@@ -3029,6 +2967,17 @@
   @media (min-width:600px){ html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ln{grid-template-columns:minmax(0,140px) minmax(0,1fr) 224px;gap:0 18px;} }
   @media (min-width:600px){ @container (max-width:699px){ html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) .wt-ln{grid-template-columns:minmax(0,120px) minmax(0,1fr) 180px;gap:0 12px;padding-right:76px;} } }
   html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt--lines:not(.wt--cmp) > .wt-mkey{padding-left:12px;}
+  /* the box plot's columns under the switch (2026-11-18): the band and the takeaway share the room evenly, so the
+     takeaway keeps the lines' measure on one line */
+  @media (min-width:600px){ html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt--lines.wt--band:not(.wt--cmp) .wt-ln{grid-template-columns:minmax(0,140px) minmax(0,1fr) minmax(0,1fr);} }
+  /* opt-3: two columns, the name and figure, then the bars in the room the takeaway left */
+  @media (min-width:600px){ html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt--lines.wt--tip:not(.wt--cmp) .wt-ln{grid-template-columns:minmax(0,170px) minmax(0,1fr);gap:0 28px;} }
+  @media (min-width:600px){ @container (max-width:699px){ html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt--lines.wt--tip:not(.wt--cmp) .wt-ln{grid-template-columns:minmax(0,120px) minmax(0,1fr);gap:0 16px;} } }
+  :is(#page-overview, #page-overview-metro) .wt--tip .wt-ln{cursor:default;}
+  .wt-tip.wt-tip--take{max-width:300px;} .wt-tip--take .wt-tk{margin:4px 0 0;}
+  @media (min-width:600px){ @container (max-width:699px){ html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt--lines.wt--band:not(.wt--cmp) .wt-ln{grid-template-columns:minmax(0,120px) minmax(0,1fr) minmax(0,1fr);} } }
+  html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt--band > .wt-key{padding-left:12px;}
+  html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-bln[data-sk] .wt-bnd{cursor:pointer;}
   html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-ln[data-sk]{cursor:pointer;transition:background-color .15s ease, box-shadow .15s ease;}
   html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-ln[data-sk]:hover{background:var(--teal-tint);}
   html[data-dd="2"] :is(#page-overview, #page-overview-metro) .wt-go{display:flex;align-items:center;justify-content:center;position:absolute;right:8px;top:50%;transform:translateY(-50%);
@@ -4293,7 +4242,7 @@
     fill:var(--teal-tint);
     stroke:var(--geo-metro);stroke-width:1.5;stroke-dasharray:3 2;
   }
-  .rca-chart .rca-value--behind{fill:var(--ink);font-weight:600;}
+  .rca-chart .rca-value--behind{fill:var(--ink);font-weight:400;}
   /* the peer chart keeps the benchmark label static — no tooltip on it */
   .rca-chart .rca-benchmark-label--plain{
     cursor:default;text-decoration:none;
@@ -4336,7 +4285,7 @@
      Transparent so gridlines and the benchmark rule still read through. */
   .rca-top-band{fill:var(--teal);fill-opacity:.07;pointer-events:none;}
   .rca-row.is-top .rca-label{font-weight:600;fill:var(--ink);}
-  .rca-row.is-top .rca-value{font-weight:700;}
+  .rca-row.is-top .rca-value{font-weight:400;}
   /* plain text in the band's own tint — a heading, not a chip */
   .rca-top-tag{
     font-size:13px;font-weight:600;fill:var(--teal);pointer-events:none;
@@ -5182,7 +5131,9 @@
      beneath it on the same tint: one short answer in plain words, nothing
      else. Pressing the row again goes back to the beat's starting view. */
   #page-export-basket .ask-chart{align-self:stretch;width:100%;margin:20px 0 0;}
-  #page-export-basket .ask-lab{margin:0 0 4px;font-size:13px;font-weight:600;color:var(--ink-soft);}
+  /* 14px, a step up, behind a question bubble (2026-11-18, Nil: "bump ask chart by 1 px and use an icon") */
+  #page-export-basket .ask-lab{display:flex;align-items:center;gap:6px;margin:0 0 4px;font-size:14px;font-weight:600;color:var(--ink-soft);}
+  #page-export-basket .ask-lab::before{content:"";flex:none;width:16px;height:16px;background:currentColor;-webkit-mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'><path d='M3.5 1.75h9a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H7.5l-3.25 2.75v-2.75H3.5a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2z'/><path d='M6.25 5.4a1.75 1.75 0 1 1 2.5 1.6c-.45.22-.75.6-.75 1.1v.25'/><path d='M8 9.9v.01' stroke-width='1.8'/></svg>") center/contain no-repeat;mask:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'><path d='M3.5 1.75h9a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H7.5l-3.25 2.75v-2.75H3.5a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2z'/><path d='M6.25 5.4a1.75 1.75 0 1 1 2.5 1.6c-.45.22-.75.6-.75 1.1v.25'/><path d='M8 9.9v.01' stroke-width='1.8'/></svg>") center/contain no-repeat;}
   #page-export-basket .ask-item{margin:0 -10px;border-top:1px solid var(--border);border-radius:0;transition:background .15s ease;}
   #page-export-basket .ask-item:last-child{border-bottom:1px solid var(--border);}
   #page-export-basket .ask-item.is-on{background:var(--teal-tint);}
@@ -5510,7 +5461,7 @@
   .wg-n{font-weight:600;color:var(--ink);text-align:right;}
   .wg-tr{position:relative;height:10px;} .wg-tr i{position:absolute;left:0;top:0;bottom:0;border-radius:0 2px 2px 0;}
   .wg-tr--in i{background:var(--flow-in);} .wg-tr--out i{background:var(--flow-out);}
-  .wg-gain{position:absolute;top:-3px;white-space:nowrap;font-weight:600;line-height:16px;color:var(--ink);}
+  .wg-gain{position:absolute;top:-3px;white-space:nowrap;font-weight:400;line-height:16px;color:var(--ink);}
   .wg-ghostlab{margin:6px 0 0;color:var(--ink-soft);min-height:1.35em;}
   @media (prefers-reduced-motion: reduce){ .wg-needle,.wg-ghost{transition:none;} }
   /* the narrow column stacks the switch, as a phone does */
@@ -5566,7 +5517,7 @@
      figure after the treemap's three states, told in section 1's colours; the needle from Who am I? beside the words of
      the gain-and-loss beat. The two charts share #miFigure: the one not on keeps its width (so it measures itself the
      same) but stands under the other, out of sight and out of the tab order. ---- */
-  :root{--flow-in:#027694;--flow-out:#ce6627;--flow-both:#9aa6aa;--flow-out-text:#a8521f;--flow-both-text:#5b686d;}
+  :root{--flow-in:#027694;--flow-out:#ce6627;--flow-both:#9aa6aa;--flow-in-text:#027694;--flow-out-text:#a8521f;--flow-both-text:#5b686d;}
   /* the needle's ring (2026-11-04, Nil: "pale option is good but slightly too pale ... make sure the grey looks
      different"): the two hues a step under the map's pale ends, a warm grey at balanced that is not Boston's cool
      --flow-both; the ring is ground, so the solid tokens stay on the marks (the needle ink, the number and the bars) */
@@ -5591,23 +5542,23 @@
   #miFigure.is-admin .mi-caption > :not(.wf-key){visibility:hidden;}
   #miFigure .wf-key{display:none;}
   /* a step larger and set off from the chart by a rule (2026-11-04, Nil: "make the legend bigger and more visible", beats 4 to 6) */
-  #miFigure.is-admin .wf-key{display:flex;flex-wrap:wrap;gap:6px 24px;align-items:center;margin:0;padding-top:10px;border-top:1px solid var(--border);font-size:13px;line-height:1.35;color:var(--ink-soft);}
+  #miFigure.is-admin .wf-key{display:flex;flex-wrap:wrap;gap:6px 24px;align-items:center;margin:0;padding-top:10px;font-size:13px;line-height:1.35;color:var(--ink-soft);}   /* no rule above the key (2026-11-18, Nil) */
   /* each entry runs as text (2026-10-27): as an inline-flex box its nested city name was a flex item of its own,
      and "jobs in Boston, whoever" read with a gap either side of the name */
   .wf-key > span{display:inline-block;}
   .wf-key > span > :is(.vn-ico,.wf-k-sw){display:inline-block;vertical-align:middle;margin-right:7px;}
   .wf-key .vn-ico{width:30px;height:21px;}
   .wf-key .vn-ico--both{width:17px;}
-  .wf-key b{font-weight:600;color:var(--ink);}
+  .wf-key b{font-weight:400;color:var(--ink);}
   .wf-foot{display:flex;flex-direction:column;gap:8px;margin-top:4px;}
   .wf-foot .mi-table-wrap{margin:0;}
   /* the chart's look is beats 1 to 3's bars, line for line (2026-10-27, Nil: "The bar design and styling is different in
      4,5,6 beats comparing to 1,2,3 beat. 1,2,3 beats are the right ones. Make all bar design instances in 4,5,6 same with
      1,2,3"). Type: 13px on screen at every width in the drawing's face, the --k scale divided out, as --mi-s is there */
-  #miFigure #miAdminSvg text{font-size:calc(13px * var(--mi-type, 1) / var(--k, 1));}
+  #miFigure #miAdminSvg text{font-size:calc(13px * var(--mi-type, 1) * var(--mi-g, 1) / var(--k, 1));}
   #miAdminSvg text{fill:var(--ink);}
   #miAdminSvg .ad-name{font-weight:400;}
-  #miAdminSvg .ad-val{font-weight:600;}
+  #miAdminSvg .ad-val{font-weight:400;} #miAdminSvg .ad-end--inside{font-weight:600;}   /* past the bar regular, inside it 600 (2026-11-18) */
   /* the right-hand columns read as beats 1 to 3's: a quieter voice than the names and the bars' own values */
   #miAdminSvg .ad-col{font-weight:500;fill:var(--ink-soft);font-variant-numeric:tabular-nums;}
   #miAdminSvg .ad-axt,#miAdminSvg .ad-head{font-weight:600;fill:var(--ink-soft);}
@@ -5623,7 +5574,7 @@
   #miAdminSvg .ad-foot-lab{font-weight:600;fill:var(--ink-soft);}
   /* the gain's two ways, its foot words and its values in their bars' colours (2026-10-28); a row given up to a phrase
      gives up its value's colour with its bar's */
-  #miAdminSvg :is(.ad-foot-lab--in,.ad-end--in){fill:var(--flow-in);} #miAdminSvg :is(.ad-foot-lab--out,.ad-end--out){fill:var(--flow-out-text);}
+  #miAdminSvg :is(.ad-foot-lab--in,.ad-end--in){fill:var(--flow-in-text);} #miAdminSvg :is(.ad-foot-lab--out,.ad-end--out){fill:var(--flow-out-text);}
   #miAdminSvg .ad-row.is-dim :is(.ad-end--in,.ad-end--out){fill:var(--ink);}
   #miAdminSvg .ad-bar--in{fill:var(--flow-in);} #miAdminSvg .ad-bar--out{fill:var(--flow-out);}
   /* the two ways (2026-11-04): each way pale, the difference solid in the longer way's colour; the gain's column in its colour */
@@ -5689,7 +5640,7 @@
   /* the row under the pointer: beats 1 to 3's ink line round its bar, or round a pair's outer edge (ad-hl, 2026-10-28),
      its name in the dark teal */
   #miAdminSvg .ad-hl{fill:none;stroke:none;pointer-events:none;}
-  #miAdminSvg .ad-row.is-hot .ad-hl{stroke:var(--ink);stroke-width:2.5;vector-effect:non-scaling-stroke;}
+  /* no line round a bar under the pointer (2026-11-18, Nil: "none of bars should get border when hover"): the row's tint and name mark it */
   #miAdminSvg .ad-row.is-hot .ad-name{fill:var(--teal-dark);}
   /* beat 6: the row the needle reads is marked as the row under the pointer is, while no other row is (2026-10-28): its
      tint alone was too faint to find the needle's row by. Under the pointer another row takes the line, and the needle */
@@ -5718,6 +5669,8 @@
   :is(#wfTip,#mcTip) .tip-sw--rest{background:var(--flow-rest);}
   :is(#wfTip,#mcTip) :is(.tip-grid dt,.tip-sector) .vn-ico{width:22px;height:15px;flex:none;}
   :is(#wfTip,#mcTip) :is(.tip-grid dt,.tip-sector) .vn-ico--both{width:12px;}
+  /* in the bars' card every group's name starts on one line: the icon in a 22px slot, an empty one for the part with none */
+  #mcTip .tip-grid dt .vn-ico--both{width:22px;} #mcTip .tip-grid dt .tip-ico-gap{width:22px;flex:none;}
   /* beats 4 to 6's cards (2026-11-03): a hairline over the second grid, a share in its count's type, a group's mark in its title */
   :is(#wfTip,#mcTip) .tip-grid--ruled{margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
   :is(#wfTip,#mcTip) .tip-sh{margin-left:4px;}
@@ -5960,7 +5913,7 @@
   #wfTreeSvg .wf-rk-seg--non{fill:var(--flow-in);} #wfTreeSvg .wf-rk-seg--res{fill:var(--flow-both);} #wfTreeSvg .wf-rk-seg--out{fill:var(--flow-out);}
   /* opt-3's beat 5 (2026-11-03): the rest of the metro, as the flow and beat 7's metro part draw it */
   #wfTreeSvg .wf-rk-seg--rest{fill:var(--flow-rest);}
-  #wfTreeSvg .wf-rk-val{font-weight:600;}
+  #wfTreeSvg .wf-rk-val{font-weight:400;}
   /* the columns (2026-10-28, Nil: "change the design of the bars so it looks like the previous bars like there are
      columns showing the data"): opt-1's heads and values, each head with its group's swatch and icon, as the key had
      them. A group the toggles or an answer leave out goes hollow and struck in its head, as in the key, and its values
@@ -5984,12 +5937,12 @@
   #wfTreeSvg .wf-rk-row.is-hot .wf-rk-hot,#wfTreeSvg .wf-rk-row[aria-pressed="true"] .wf-rk-hot{fill:var(--teal-tint);}
   /* one line round the whole stack (2026-10-28): a line round each part drew dark dividers inside the bar */
   #wfTreeSvg .wf-rk-hl{fill:none;stroke:none;pointer-events:none;}
-  #wfTreeSvg .wf-rk-row.is-hot .wf-rk-hl{stroke:var(--ink);stroke-width:2.5;vector-effect:non-scaling-stroke;}
+
   #wfTreeSvg .wf-rk-row.is-hot .wf-rk-name{fill:var(--teal-dark);}
   #wfTreeSvg .wf-rk-row:focus-visible .wf-rk-hot{fill:var(--teal-tint);stroke:var(--teal);stroke-width:1.5;}
   /* the key's swatches, the treemap's two parts */
   /* the swatches and the words as beats 1 to 3's sector key has them (2026-10-27, Nil: "make the legend color same as 1,2,3 beats") */
-  .wf-key .wf-k-sw{width:15px;height:15px;border-radius:3px;box-sizing:border-box;border:2px solid var(--sw);background:var(--sw);}
+  .wf-key .wf-k-sw{width:13px;height:13px;border-radius:3px;box-sizing:border-box;border:2px solid var(--sw);background:var(--sw);}
   .wf-key .wf-k-sw--res{--sw:var(--flow-both);} .wf-key .wf-k-sw--non{--sw:var(--flow-in);} .wf-key .wf-k-sw--out{--sw:var(--flow-out);}
   .wf-key .wf-k-sw--rest{--sw:var(--flow-rest);}
   /* beat 7's key (2026-10-29): the metro's part of a bar, and the dashed line of Boston's share overall */
@@ -6445,9 +6398,9 @@
   .mi-pick{position:relative;display:inline-block;vertical-align:baseline;}
   /* a hidden twin of the chosen word, measured to cut the select to its
      width: left alone, a select stands at the width of its longest option */
-  .mi-pick .mi-measure{position:absolute;visibility:hidden;white-space:nowrap;font-weight:700;top:0;left:0;pointer-events:none;}
+  .mi-pick .mi-measure{position:absolute;visibility:hidden;white-space:nowrap;font-weight:600;top:0;left:0;pointer-events:none;}
   .mi-pick select{
-    appearance:none;-webkit-appearance:none;font:inherit;font-size:var(--fig-title-size);font-weight:700;color:var(--teal);line-height:1.25;white-space:nowrap;
+    appearance:none;-webkit-appearance:none;font:inherit;font-size:var(--fig-title-size);font-weight:600;color:var(--teal);line-height:1.25;white-space:nowrap;
     border:0;border-radius:4px;background-color:var(--teal-tint);margin:0;padding:1px 16px 1px 7px;cursor:pointer;height:auto;
     background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' fill='none' stroke='%23255862' stroke-width='1.4' stroke-linecap='round'/></svg>");
     background-repeat:no-repeat;background-position:right 4px center;
@@ -6514,7 +6467,7 @@
   .mc-loc-city{fill:transparent;fill-rule:evenodd;stroke:var(--geo-city);stroke-width:1.4;stroke-linejoin:round;transition:fill .6s ease;}
   .mc-loc[data-geo="admin"] .mc-loc-metro{fill:var(--border);}
   .mc-loc[data-geo="admin"] .mc-loc-city{fill:var(--geo-city);}
-  .mc-place{font-weight:600;color:var(--ink);white-space:nowrap;}
+  .mc-place{font-weight:400;color:var(--ink);white-space:nowrap;}
   .mc-place--admin{color:var(--geo-city);}
   .mc-place.is-swap{animation:mcPlaceIn .5s cubic-bezier(.2,.7,.2,1);}
   @keyframes mcPlaceIn{0%{opacity:0;}100%{opacity:1;}}
@@ -6526,14 +6479,17 @@
   .mc-plot{position:relative;}
   .mc-svg{display:block;overflow:visible;}
   .mc-cell{shape-rendering:crispEdges;stroke:var(--control-edge);stroke-width:1;stroke-opacity:0;transition:opacity .18s ease,stroke-opacity .9s ease;}
-  .mc-rlab{font-size:13px;fill:var(--ink);}
-  .mc-val{font-size:13px;fill:var(--ink-soft);pointer-events:none;}
+  .mc-rlab{font-size:calc(13px * var(--mi-g, 1));fill:var(--ink);}
+  .mc-hot-band{fill:var(--teal-tint);pointer-events:none;} .mc-hl{fill:none;stroke:var(--ink);stroke-width:2.5;pointer-events:none;}
+  .mc-hls{pointer-events:none;} .mc-rlab.is-hot{fill:var(--teal-dark);}
+  /* the bars' end values as beats 3 and 6 write theirs: 600 in ink (2026-11-18 design-system check) */
+  .mc-val{font-size:calc(13px * var(--mi-g, 1));font-weight:400;fill:var(--ink);pointer-events:none;}
   .mc-key b{font-weight:700;}
   .mc-cell.is-dim{opacity:.18;}
   .mc-slab{font-weight:400;pointer-events:none;}
   .mc-glab{pointer-events:none;}
   .mc-gname{font-size:13px;font-weight:600;}
-  .mc-glab--rest .mc-gname{fill:var(--ink-soft);} .mc-glab--non .mc-gname{fill:var(--flow-in);}
+  .mc-glab--rest .mc-gname{fill:var(--ink-soft);} .mc-glab--non .mc-gname{fill:var(--flow-in-text);}
   /* the fourth group steps back (2026-11-16, Nil: "de-emphasize the purple"): a pale grey piece with a
      --control-edge outline (3.4 to 1 on white, so the piece is found without its colour), ?rest=frame an empty frame */
   .mc-cell.is-rest{stroke-opacity:1;}
@@ -6547,15 +6503,20 @@
   /* hatch: the piece white under thin diagonal lines in --border-strong, edged in the same; its words in the soft ink */
   .mc-defs{position:absolute;width:0;height:0;overflow:hidden;}
   #mcHatch rect{fill:var(--white);} #mcHatch line{stroke:var(--border-strong);stroke-width:1.5;}
-  html[data-mc-rest="hatch"] .mc-cell.is-rest{fill:url(#mcHatch);stroke:var(--border-strong);}
+  /* the hatched piece edged in --control-edge (2026-11-18, Nil: "fix it"): --border-strong sat 1.6 to 1 on white, under
+     WCAG 1.4.11's 3 to 1 for a mark that carries data; the hatch lines inside stay light, so the piece still steps back */
+  /* a step lighter (2026-11-18, Nil: "make exception, make the border slightly lighter"): --hatch-edge, the edge grey thinned
+     to 3.0 to 1 on white, the least WCAG 1.4.11 allows; a fourteenth colour, for this edge alone */
+  html[data-mc-rest="hatch"] .mc-cell.is-rest{fill:url(#mcHatch);stroke:var(--hatch-edge);}
   html[data-mc-rest="hatch"] :is(.mc-glab--rest .mc-gname,.mc-glab--rest .mc-gn){fill:var(--ink-soft);}
-  html[data-mc-rest="hatch"] #mcTip .tip-sw--rest{background:repeating-linear-gradient(45deg,var(--border-strong) 0 1.5px,var(--white) 1.5px 3.5px);box-shadow:inset 0 0 0 1px var(--border-strong);}
+  html[data-mc-rest="hatch"] #mcTip .tip-sw--rest{background:repeating-linear-gradient(45deg,var(--border-strong) 0 1.5px,var(--white) 1.5px 3.5px);box-shadow:inset 0 0 0 1px var(--hatch-edge);}
   .mc-glab--res .mc-gname{fill:var(--flow-both-text);} .mc-glab--out .mc-gname{fill:var(--flow-out-text);}
-  .mc-gn{font-size:15px;font-weight:700;fill:var(--ink);} .mc-gn .mc-gp{font-size:13px;font-weight:400;fill:var(--ink-soft);}
+  .mc-gn{font-size:calc(var(--axis-title-size) * var(--mi-g, 1));font-weight:700;fill:var(--ink);} .mc-gn .mc-gp{font-size:calc(13px * var(--mi-g, 1));font-weight:400;fill:var(--ink-soft);}
   .mc-bos-r{fill:none;stroke:var(--teal);stroke-width:1.5;stroke-dasharray:5 4;}
-  .mc-bos-t{font-size:13px;font-weight:600;fill:var(--teal);}
+  .mc-bos-t{font-size:calc(13px * var(--mi-g, 1));font-weight:600;fill:var(--teal);}
   .mc-bos-g{pointer-events:none;}
   .mc-bos-b{fill:none;stroke:var(--teal);stroke-width:1.25;}
+  .mc-bos-b--out{stroke:var(--control-edge);stroke-width:1;stroke-dasharray:4 3;} .mc-bos-t--out{fill:var(--ink-soft);}
   .mc-key{display:flex;flex-wrap:wrap;gap:6px 18px;margin:10px 0 0;padding:10px 0 0;border-top:1px solid var(--border);list-style:none;font-size:13px;color:var(--ink);}
   .mc-key[hidden]{display:none;}
   .mc-key li{display:inline-flex;align-items:center;gap:6px;}
@@ -7107,7 +7068,10 @@
   /* the quietest thing in the head, but still a control and still words:
      #9aa3a6 read at 2.6 to 1, which is under the floor for either */
   /* v-5 (2026-11-08): no design studies on the page, the "opt" menus and the journey's option 1 / 2 are not shown; v-6 keeps them */
-  .mi-studies:not(:has(.wt-look-opt)),.journey-head > .jp-opt,.mi-studies .mi-study:not(.mi-study--look){display:none !important;}
+  /* Who works here, who lives here keeps no opt (2026-11-19, Nil: "remove options from Who works here, who lives here"):
+     its Chart under the dots study is hidden with the rest, the histogram its default */
+  .mi-studies:not(:has(.mi-study--keep)),.journey-head > .jp-opt,.mi-studies .mi-study:not(.mi-study--keep){display:none !important;}
+  /* and, since 2026-11-18, "Who holds the jobs" in three or four groups, in that beat's own counter (.mi-studies--own) */
   /* the one study kept (2026-11-08): the chart under the dots */
   .mi-studies-btn{
     appearance:none;background:none;border:0;padding:2px 4px;font:inherit;font-size:13px;
@@ -7195,8 +7159,9 @@
 
   .mi-figure svg .mi-name{font-size:13px;fill:var(--ink);}
   .mi-figure svg .mi-name.is-top{font-weight:700;}
-  .mi-figure svg .mi-val{font-size:13px;font-weight:600;fill:var(--ink);}
-  .mi-figure svg .mi-val.is-top{fill:var(--teal);font-weight:700;}
+  /* numbers past a bar's end are regular (2026-11-18, Nil: "for all bars in v-5: when a number is written after the bar finishes, make that number weight regular") */
+  .mi-figure svg .mi-val{font-size:13px;font-weight:400;fill:var(--ink);}
+  .mi-figure svg .mi-val.is-top{fill:var(--teal);font-weight:400;}
   .mi-figure svg .mi-peer{stroke:var(--ink);stroke-width:2;stroke-linecap:round;}
   /* a white edge under the peer mark: the bars start at 0, so every mark
      now crosses a bar, three of them dark teal */
@@ -7656,7 +7621,7 @@
   #exportTreemapSvg .opt-quad{stroke:var(--control-edge);stroke-dasharray:4 3;}
   #exportTreemapSvg .opt-quadlab{font-size:13px;font-weight:600;fill:var(--teal);}
   #exportTreemapSvg .opt-bar-name{font-size:13px;fill:var(--ink);}
-  #exportTreemapSvg .opt-bar-val{font-size:13px;font-weight:600;fill:var(--ink-soft);}
+  #exportTreemapSvg .opt-bar-val{font-size:13px;font-weight:400;fill:var(--ink-soft);}
 
 
   /* change rides beside the level, small and coloured, costing no height */
@@ -8971,16 +8936,35 @@
   .rh-tick:not(.rh-tick--one){font-weight:500;}
   .rh-tick--one{font-weight:700;}
   /* the heads the first pass missed: the histogram's zone names and direction words, the bars' group heads (their colours stay) */
-  .rh-zone,.rh-arr,.mc-gname{font-size:var(--axis-title-size);}
+  .rh-zone,.rh-arr{font-size:var(--axis-title-size);}
+  .mc-gname{font-size:calc(var(--axis-title-size) * var(--mi-g, 1));}
   .wg-tlab{fill:var(--axis-ink);font-weight:500;}
   .mi-nb{white-space:nowrap;}
   .who-sc .sc-axt,.dg-chart .dg-axname{fill:var(--axis-ink);font-size:var(--axis-title-size);font-weight:600;}
-  #miFigure #miAdminSvg .ad-axt,#miFigure #miAdminSvg .ad-head{fill:var(--axis-ink);font-size:calc(var(--axis-title-size) * var(--mi-type, 1) / var(--k, 1));}
+  #miFigure #miAdminSvg .ad-axt,#miFigure #miAdminSvg .ad-head{fill:var(--axis-ink);font-size:calc(var(--axis-title-size) * var(--mi-type, 1) * var(--mi-g, 1) / var(--k, 1));}
   #miFigure #miTreemapSvg .mi-axname,
   #miFigure #miTreemapSvg .mi-colhead:not(.mi-more-txt){fill:var(--axis-ink);font-size:calc(var(--axis-title-size) * var(--mi-type) * var(--mi-g) / var(--mi-s));}
   #miFigure #miTreemapSvg .mi-tradmenu:hover .mi-colhead,
   #miFigure #miTreemapSvg .mi-tradmenu.is-open .mi-colhead{fill:var(--teal);}
   #wfTreeSvg .wf-rk text.wf-rk-axt,#wfTreeSvg .wf-rk text.wf-rk-head{fill:var(--axis-ink);font-size:calc(var(--axis-title-size) * var(--mi-type, 1));}
+  /* ---- the legends at 14px (2026-11-19, Nil: "make legends 14px except the tree map legends"), in one place so the
+     rules they lift stay as they were: the keys under and beside the charts; the treemaps' sector and complexity keys stay
+     13, and so do labels drawn on the marks (zone names, bracket words, line ends), which are not keys. Presenting mode
+     keeps its own scaled sizes */
+  html body .who-legend{font-size:14px;}
+  html body .who-legend--flow .wk-ends--one small{font-size:14px;}
+  html body .who-legend--flow .wk-labs{height:19px;} html body .who-legend--flow .wk-labs span{line-height:18px;}
+  html body .who-fl-note > .who-fl-key,html body #whoFlows .vn-key{font-size:14px;}
+  html body .wt-mkey{font-size:14px;}
+  html body .wg-ghostlab{font-size:14px;}
+  html body #miSort .spec-key{font-size:14px;}
+  html body #miFigure.is-admin .wf-key{font-size:14px;}
+  #miFigure #miAdminSvg .ad-foot-lab{font-size:calc(14px * var(--mi-type, 1) * var(--mi-g, 1) / var(--k, 1));}
+  html body #dgFigure .dg-key{font-size:14px;}
+  html body .dg-cmp > legend.dg-lab,html body .dg-peers{font-size:14px;}
+  html body .scatter-footnote,html body .tool-body .chart-block .scatter-footnote{font-size:14px;}
+  html body .rca-footnote,html body .tool-body .rca-footnote{font-size:14px;}
+  html body .jp-legend--line .leg{font-size:14px;}
 </style>
 <script>/* v-5 shows only the chosen design (2026-11-08, Nil: "in v-5, remove all opts but keep them in v-6"): the
    address's ?switches are dropped before any script reads them, so every study opens on its default; v-6 keeps them */
@@ -8990,8 +8974,9 @@
    scroll as beats (DEEP_DIVE) */
 /* and a third (2026-11-16), for the Deep dive pill: ?dd=2 opens section 1 on the pill's choice 2 (the scatter plot in the
    map's place) */
+/* and ?table=band (2026-11-18): section 1's Where does Boston stand? beats in the friendly box plot */
 /* and a fourth (2026-11-16): ?rest=frame|quiet|dash|faint, how "Neither live nor work in Boston" steps back in section 2's beat 4 */
-if (location.search){ const keep = [/[?&]b6=both\b/.test(location.search) ? "b6=both" : "", /[?&]deep=beats\b/.test(location.search) ? "deep=beats" : "", /[?&]dd=2\b/.test(location.search) ? "dd=2" : "", (location.search.match(/[?&](rest=(?:grey|frame|quiet|dash|faint))\b/) || [])[1] || "", /[?&]held=four\b/.test(location.search) ? "held=four" : ""].filter(Boolean);
+if (location.search){ const keep = [/[?&]b6=both\b/.test(location.search) ? "b6=both" : "", /[?&]deep=beats\b/.test(location.search) ? "deep=beats" : "", /[?&]dd=2\b/.test(location.search) ? "dd=2" : "", (location.search.match(/[?&](rest=(?:grey|frame|quiet|dash|faint))\b/) || [])[1] || "", /[?&]held=four\b/.test(location.search) ? "held=four" : "", (location.search.match(/[?&](table=(?:band|tip))\b/) || [])[1] || ""].filter(Boolean);
   history.replaceState(null, "", location.pathname + (keep.length ? "?" + keep.join("&") : "") + location.hash); }</script>
 <script>/* ?colours=16, 11, 10 or 9 shows that colour system beside the thirteen (HANDOFF §6c) */
 (function(){ var m = /[?&]colours=(16|11|10|9)\b/.exec(location.search); if (m) document.documentElement.dataset.colours = m[1]; })();</script>
@@ -11240,6 +11225,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     document.addEventListener("click", ev => {
       if (dd !== "2" || !ev.target.closest) return;
       const r = ev.target.closest(".wt-ln[data-sk]"); if (!r || ev.target.closest(".wt-peer, a, select, input")) return;
+      /* the box plot's band (opt-2, 2026-11-18): a tap on a touch screen opens its tooltip only; a mouse click answers as the row does */
+      if (ev.target.closest(".wt-bnd") && ev.pointerType && ev.pointerType !== "mouse") return;
       const set = r.dataset.set, k = r.dataset.sk, c = window.WHO_SC && window.WHO_SC[set]; if (!c || !FIG_BEAT[r.closest(".ov-block") && r.closest(".ov-block").id]) return;
       if (window.ddPicked(set) === k){ rowAsk[set] = false; figCheck(set); return; }
       rowAsk[set] = true;
@@ -15604,7 +15591,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     /* opt-5 "axis" (2026-10-23, Nil: "a few more options showing them on a line, similar ideas, to the point and clean"):
        the sketches' 3 in stand-line-sketches.html, with the judges' fixes; its 1 (words) and 2 (joined) were built as
        opt-5 and opt-7 and deleted the same day (Nil: "delete opt 5 and 7") */
-    let mode = (location.search.match(/[?&]table=(band|bars|cards|lines|axis)\b/) || [, TABLE_DEFAULT])[1];
+    let mode = (location.search.match(/[?&]table=(band|bars|cards|lines|axis|tip)\b/) || [, TABLE_DEFAULT])[1];
     /* the bars say each comparison at the end of its bar (Nil, 2026-10-15:
        the pick over the comparisons stacked in the text column), so the
        text column holds only the measure and Boston's figure */
@@ -15624,7 +15611,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
        references, peers and switched-on peers (the charts below read them) */
     function make(id, C, opts){
       const on = new Set();
-      let host = null, D = null, avg = false, ro = null, sayW = 0, tipData = {}, tipsOn = false;
+      let host = null, D = null, avg = false, ro = null, tipData = {}, tipsOn = false;
       /* a sentence: the arrow and the size, then the words */
       function dChip(k, here, ref, label){
         const d = diff(k, here, ref), better = k === "unemployment" ? !d.up : d.up;
@@ -15637,6 +15624,15 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       /* the figure plain, no tooltip (2026-11-03, Nil: "Where does Boston Admin stand? - remove tooltip"); the
          bucket's words stay in C.bucket, and the old "tipv" hover still answers should a figure carry the class again */
       const figure = (k, v) => '<span class="wt-val">' + fmt(k, v) + '</span>';
+      /* a measure's row parts, shared by the lines and the box plot (2026-11-18, Nil: "keep all other functionalities like
+         compare, turning on peer city"): its name, its takeaway, the words a screen reader hears for its chart, and its
+         Compare switch */
+      const mName = k => '<span class="wt-name">' + NAME[k] + (k === "unemployment" ? '<span class="hint">lower is better</span>' : '') + '</span>';
+      const mTake = (k, v, us, pa) => '<p class="wt-tk">' + dChip(k, v, us, "US average") + (avg ? dChip(k, v, pa, "Peers") : '') + '</p>';
+      const mAria = (k, v, us, pa, onPeers) => NAME[k] + ': ' + opts.here + ' ' + fmt(k, v) + ', US average ' + fmt(k, us) + (avg ? ', peer average ' + fmt(k, pa) : '') + onPeers.map(pr => ', ' + pr.name + ' ' + fmt(k, pr[k])).join("");
+      const mGo = k => { const sk = GO_K[k], picked = !!sk && !!window.ddPicked && window.ddPicked(id) === sk, one = String(opts.unit || "US admins").replace(/s$/, "");
+        return { picked, attrs: sk ? ' data-sk="' + sk + '" data-set="' + id + '"' : '',
+          btn: sk ? '<button type="button" class="wt-go" data-set="' + id + '" data-sk="' + sk + '" aria-pressed="' + picked + '" aria-label="Compare ' + NAME[k].toLowerCase() + ' with every ' + one + (sk === "pop" ? '' : ', against population') + '">' + GO_ICON + '<span class="wt-go-w">' + (picked ? GO_ON : GO_OFF) + '</span></button>' : '' }; };
       /* opt-3 and opt-4: the takeaway first. Cards: a card a measure, its name and figure, the takeaway as its head,
          then the bars (the subject's, the US average's, the peer average's when on, any peer on). Lines: a row a measure,
          the name and figure, the takeaway, and a few unlabelled bars (a key over them names the colours) */
@@ -15655,14 +15651,15 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         const thin = n => n > 3 ? ' data-many style="--bh:' + Math.max(3, Math.min(6, Math.floor((40 - (n - 2) * 3) / (n - 1)))) + 'px"' : '';
         /* the switches say what they do (2026-11-16, Nil: "apply A" of scatter-cue-sketches.html): each reads "Compare"; the
            line over the rows and population's note were removed the same day (Nil) */
-        const one = String(opts.unit || "US admins").replace(/s$/, "");
-        let h = '<div class="wt wt--' + mode + (many ? ' wt--many' : '') + '" data-mode="' + mode + '">' + (cards ? '<div class="wt-cards">' : key);
+        /* opt-3 (2026-11-19, Nil: "keep the option 1 but put text describing 33 times etc, on a tooltip, adjust spacing
+           accordingly"): opt-1's rows without the takeaway column; the takeaway waits in the row, hidden, for the row's
+           tooltip, and the bars take the room it leaves */
+        const tipT = mode === "tip";
+        let h = '<div class="wt wt--' + (tipT ? 'lines wt--tip' : mode) + (many ? ' wt--many' : '') + '" data-mode="' + mode + '">' + (cards ? '<div class="wt-cards">' : key);
         SKEYS.filter(k => here[k] != null && C.us[k] != null).forEach(k => {
-          const v = here[k], us = C.us[k], pa = pavg[k], lower = k === "unemployment";
+          const v = here[k], us = C.us[k], pa = pavg[k];
           const max = Math.max(v, us, avg ? pa : 0, ...onPeers.map(pr => pr[k])) * 1.04;
-          const name = '<span class="wt-name">' + NAME[k] + (lower ? '<span class="hint">lower is better</span>' : '') + '</span>';
-          const take = '<p class="wt-tk">' + dChip(k, v, us, "US average") + (avg ? dChip(k, v, pa, "Peers") : '') + '</p>';
-          const aria = NAME[k] + ': ' + opts.here + ' ' + fmt(k, v) + ', US average ' + fmt(k, us) + (avg ? ', peer average ' + fmt(k, pa) : '') + onPeers.map(pr => ', ' + pr.name + ' ' + fmt(k, pr[k])).join("");
+          const name = mName(k), take = mTake(k, v, us, pa), aria = mAria(k, v, us, pa, onPeers);
           if (cards){
             h += '<div class="wt-card"><p class="wt-ck">' + name + figure(k, v) + '</p>' + take +
               '<div class="wt-bars" role="img" aria-label="' + aria + '">' + bar(k, "here", opts.here, v, max) + bar(k, "us", "US average", us, max) + (avg ? bar(k, "pa", "Peer average", pa, max) : '') +
@@ -15672,14 +15669,71 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
                metrics so you can click on the metric and then see the scatterplot version ... a visual indicator of what metric
                is selected"): each measure the chart can draw has a switch at the row's end, the whole row answers the click, and
                the row whose measure the chart shows is marked. Population's opens its own chart since 2026-11-16 (GO_K) */
-            const sk = GO_K[k], picked = !!sk && !!window.ddPicked && window.ddPicked(id) === sk;
-            h += '<div class="wt-ln' + (picked ? ' is-pick' : '') + '"' + (sk ? ' data-sk="' + sk + '" data-set="' + id + '"' : '') + '><div class="wt-ln-a">' + name + figure(k, v) + '</div><div class="wt-ln-b">' + take + '</div>' +
+            const g = mGo(k);
+            h += '<div class="wt-ln' + (g.picked ? ' is-pick' : '') + '"' + g.attrs + '><div class="wt-ln-a">' + name + figure(k, v) + '</div><div class="wt-ln-b"' + (tipT ? ' hidden' : '') + '>' + take + '</div>' +
               '<div class="wt-ln-c"><div class="wt-mini" role="img" aria-label="' + aria + '"' + thin(2 + (avg ? 1 : 0) + onPeers.length) + '>' + mini("here", opts.here, v, max) + mini("us", "US average", us, max) + (avg ? mini("pa", "Peer average", pa, max) : '') +
-              onPeers.map(pr => mini("pe", esc(pr.name), pr[k], max, ' style="--pc:var(--pc-' + slug(pr.name) + ')"')).join("") + '</div></div>' +
-              (sk ? '<button type="button" class="wt-go" data-set="' + id + '" data-sk="' + sk + '" aria-pressed="' + picked + '" aria-label="Compare ' + NAME[k].toLowerCase() + ' with every ' + one + (sk === "pop" ? '' : ', against population') + '">' + GO_ICON + '<span class="wt-go-w">' + (picked ? GO_ON : GO_OFF) + '</span></button>' : '') + '</div>';
+              onPeers.map(pr => mini("pe", esc(pr.name), pr[k], max, ' style="--pc:var(--pc-' + slug(pr.name) + ')"')).join("") + '</div></div>' + g.btn + '</div>';
           }
         });
         return h + (cards ? '</div>' : '') + peersRow(true, true) + '</div>';
+      }
+      /* opt-2, the friendly box plot (2026-11-18, Nil: "the option should be our friendly box plot, keep all other
+         functionalities like compare, turning on peer city etc"): opt-1's rows, their names, figures, takeaways and Compare
+         switches, with the band of where US admins fall in the bars' place. The drawn key over the rows; a second key names
+         the peer average's ring and the peers' dots once any is on. The band's scale takes every peer, on or off, so it
+         keeps still as the chips are clicked; Boston is drawn last, and a mark it would cover drops to a lane under the rail (fit). Employed residents has no spread of its own in
+         the data: its band is population's, scaled by the US average's employed share, and its tooltip says so */
+      function banded(here, pavg, onPeers){
+        tipData = {};
+        const keyed = avg || onPeers.length > 0, pop = D.ind.find(q => q.key === "population");
+        const key = '<div class="wt-key wt-key--band"><span class="bk" aria-hidden="true"><span class="bk-lab bk-lab--all">Lighter: where 90 of every 100 ' + opts.unit + ' fall</span>' +
+            '<i class="bk-brk bk-brk--all"></i><i class="bk-all"></i><i class="bk-mid"></i><i class="bk-brk bk-brk--mid"></i>' +
+            '<span class="bk-lab bk-lab--mid">Darker: the middle half of them</span></span>' +
+          '<span class="vh">Each band spans where 90 of every 100 ' + opts.unit + ' fall; its darker middle holds the middle half of them.</span></div>';
+        /* no key of the peers' marks over the table (2026-11-19, Nil: "do not put a dot legend when clicked on a peer city"):
+           the chips below name them in their colours */
+        const mkey = "";
+        let h = '<div class="wt wt--lines wt--band' + (keyed ? ' wt--keyed' : '') + '" data-mode="band">' + key + mkey;
+        /* the names turn inward at the band's ends: guessed from the column's likely width, then measured (fit) */
+        const hw = host.clientWidth || 640, bw = hw >= 600 ? Math.max(160, (hw - 270) * .55) : Math.max(200, hw - 24);
+        const edge = (t, x, cw) => { const w = 100 * (t.length * cw + 4) / bw; return x > 100 - w / 2 ? " end" : x < w / 2 ? " start" : ""; };
+        const names = C.peers.map(pr => pr.name + " " + pr.st), list = names.slice(0, -1).join(", ") + " and " + names[names.length - 1];
+        const one = opts.unit.replace(/^US /, "").replace(/s$/, ""), pcs = getComputedStyle(host);
+        const tr = s => '<span class="tt-r">' + s + '</span>';
+        SKEYS.filter(k => here[k] != null && C.us[k] != null).forEach(k => {
+          const v = here[k], us = C.us[k], pa = pavg[k], g = mGo(k);
+          const r = D.ind.find(q => q.key === k) || (k === "employed" && pop && C.us.population ? { scale: pop.scale, q: pop.q.map(x => x * us / C.us.population), est: true } : null);
+          const f = r && r.scale === "log" ? Math.log : (x => x), q = r ? r.q : null;
+          const all = [v, us].concat(pa != null ? [pa] : [], C.peers.map(pr => pr[k]).filter(x => x != null));
+          const lo = Math.min(...all, ...(q ? [q[0]] : [])), hi = Math.max(...all, ...(q ? [q[4]] : []));
+          const sxn = x => 1.5 + (f(x) - f(lo)) / ((f(hi) - f(lo)) || 1) * 96.5, sx = x => sxn(x).toFixed(2) + "%";
+          const usT = "US average " + fmt(k, us);
+          const bnd = '<div class="wt-bnd" data-k="' + k + '" tabindex="0" role="img" aria-label="' + mAria(k, v, us, pa, onPeers) +
+              (q ? '; 90 of every 100 ' + opts.unit + ' fall between ' + fmt(k, q[0]) + ' and ' + fmt(k, q[4]) + ', half of them between ' + fmt(k, q[1]) + ' and ' + fmt(k, q[3]) + (r.est ? ', estimated' : '') : '') + '">' +
+            '<span class="wb-rail"></span>' +
+            (q ? '<span class="wb-band" style="left:' + sx(q[0]) + ';width:' + (sxn(q[4]) - sxn(q[0])).toFixed(2) + '%"></span>' +
+                 '<span class="wb-mid" style="left:' + sx(q[1]) + ';width:' + (sxn(q[3]) - sxn(q[1])).toFixed(2) + '%"></span>' : '') +
+            '<span class="wb-ush" style="left:' + sx(us) + '"></span><span class="wb-us" data-tip="us" style="left:' + sx(us) + '"></span>' +
+            onPeers.map(pr => '<span class="wb-pe" data-tip="pe:' + esc(pr.name) + '" style="left:' + sx(pr[k]) + ';--pc:var(--pc-' + slug(pr.name) + ')"></span>').join("") +
+            (avg && pa != null ? '<span class="wb-pa" data-tip="pa" style="left:' + sx(pa) + '"></span>' : '') +
+            '<span class="wb-here" data-tip="here" style="left:' + sx(v) + '"></span>' +
+            '<span class="wb-name' + edge(opts.here, sxn(v), 7.4) + '" data-tip="here" style="left:' + sx(v) + '">' + opts.here + '</span>' +
+            '<span class="wb-ul' + edge(usT, sxn(us), 6.6) + '" data-tip="us" style="left:' + sx(us) + '">US average <span class="wb-n">' + fmt(k, us) + '</span></span></div>';
+          h += '<div class="wt-ln wt-bln' + (g.picked ? ' is-pick' : '') + '"' + g.attrs + '><div class="wt-ln-a">' + mName(k) + figure(k, v) + '</div><div class="wt-ln-b">' + mTake(k, v, us, pa) + '</div>' +
+            '<div class="wt-ln-c">' + bnd + '</div>' + g.btn + '</div>';
+          /* each mark's tooltip: its name and figure, and Boston's takeaways in the row's own words */
+          tipData[k] = {
+            here: { g: "here", name: opts.here, fig: fmt(k, v), rows: [tr(dChip(k, v, us, "US average"))].concat(avg && pa != null ? [tr(dChip(k, v, pa, "Peers"))] : []), note: C.bucket && C.bucket[k] },
+            us: { g: "us", name: "US average", fig: fmt(k, us), note: "The average of " + opts.unit },
+            pa: { g: "pa", name: "Peer average", fig: pa != null ? fmt(k, pa) : "", note: "The average of " + list },
+            band: q ? { g: "band", name: "Where " + opts.unit + " fall", kv: [["90 of every 100", fmt(k, q[0]) + " to " + fmt(k, q[4])], ["The middle half", fmt(k, q[1]) + " to " + fmt(k, q[3])], ["The middle " + one, fmt(k, q[2])]],
+              note: r.est ? "Estimated: the population band times the share of people employed, as for the US average" : "" } : null,
+            sum: { name: NAME[k], kv: [[opts.here, fmt(k, v)], ["US average", fmt(k, us)]].concat(avg && pa != null ? [["Peer average", fmt(k, pa)]] : [], onPeers.map(pr => [pr.name + " " + pr.st, fmt(k, pr[k])])) },
+            pe: {}
+          };
+          onPeers.forEach(pr => { tipData[k].pe[pr.name] = { g: "pe", pc: pcs.getPropertyValue("--pc-" + slug(pr.name)).trim(), name: pr.name + " " + pr.st, fig: fmt(k, pr[k]), note: "One of the closest peers" }; });
+        });
+        return h + peersRow(true, true) + '</div>';
       }
       /* opt-5 axis (2026-10-23): a row a measure on one line. One scale for the four rows, multiples of the US average
          spaced as on a slide rule, the US average a dashed line down to the track, Boston a dot with the sentence over it
@@ -15758,43 +15812,11 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         const here = {}; D.ind.forEach(r => { here[r.key] = r.value; }); Object.assign(here, C.here || {});
         const peers = C.peers, pavg = {}; SKEYS.forEach(k => { if (peers.every(pr => pr[k] != null)) pavg[k] = mean(peers, k); });
         const onPeers = peers.filter(pr => on.has(pr.name));
-        if (mode === "cards" || mode === "lines"){ host.innerHTML = simple(here, pavg, onPeers); return; }
+        if (mode === "cards" || mode === "lines" || mode === "tip"){ host.innerHTML = simple(here, pavg, onPeers); return; }
         if (mode === "axis"){ host.innerHTML = lined(here, pavg, onPeers); settle(); return; }
-        const side = mode === "bars" && form === "beside", band = mode === "band";
-        /* the band's head: the key, on top, beside the column's "Boston is";
-           the key holds the band alone (the marks are named on it), and the
-           peer average's circle only where its name found no room */
-        /* the key, one quiet line beside the head: a small band, the
-           whole of it where 90 of every 100 fall, then its darker tone
-           alone, the middle half (2026-10-17, Nil: the bracketed key took
-           too much room) */
-        /* the key as a drawing (2026-10-22, Nil: "an extremely easy to understand legend diagram for the box, what is
-           darker area, what is lighter area"): a small band with a bracket over its whole and one under its darker
-           middle, each named; then an info mark that opens a card whose band builds itself up in five steps */
-        const bandHead = () => '<div class="wt-row wt-row--head"><div class="wt-key wt-key--band">' +
-          '<span class="bk" aria-hidden="true"><span class="bk-lab bk-lab--all">Lighter: where 90 of every 100 ' + opts.unit + ' fall</span>' +
-            '<i class="bk-brk bk-brk--all"></i><i class="bk-all"></i><i class="bk-mid"></i><i class="bk-brk bk-brk--mid"></i>' +
-            '<span class="bk-lab bk-lab--mid">Darker: the middle half of them</span></span>' +
-          '<button type="button" class="term bk-i" aria-expanded="false" aria-label="How to read the band"></button>' +
-          '<span class="vh">The band spans where 90 of every 100 ' + opts.unit + ' fall; its darker middle holds the middle half of them.</span>' +
-          bandPop() + '</div><span class="wt-colh" aria-hidden="true">' + opts.here + ' is</span></div>';
-        /* the card: sixty admins along a line, the lighter band over 90 of every 100 of them, the darker middle, the US
-           average, then the subject's dot; a caption a step. Built in order, the steps come in one by one (bandSteps) */
-        const bandPop = () => { const N = 60, X = p => 20 + 260 * Math.pow(p, 1.5), xs = []; for (let i = 0; i < N; i++) xs.push(X((i + .5) / N));
-          const lo = X(.05), hi = X(.95), q1 = X(.25), q3 = X(.75), mean = xs.reduce((a, b) => a + b, 0) / N, here = X(.9);
-          const dots = xs.map((x, i) => '<circle class="ba-dot' + (x < lo || x > hi ? ' out' : '') + '" cx="' + x.toFixed(1) + '" cy="' + (55 + Math.sin(i * 2.4) * 9).toFixed(1) + '" r="3"/>').join("");
-          const caps = ["Every one of the " + opts.unit + ", placed along the line by this measure.", "The lighter band covers where 90 of every 100 of them fall.",
-            "The darker middle holds the middle half of them.", "The dashed line is the US average.", "The teal dot is " + opts.here + "."];
-          return '<span class="bk-pop" role="dialog" aria-label="How to read the band" hidden>' +
-            '<svg class="bk-anim" viewBox="0 0 300 110" aria-hidden="true"><line class="ba-rail" x1="0" x2="300" y1="55" y2="55"/>' +
-              '<rect class="ba-all" x="' + lo.toFixed(1) + '" y="48" width="' + (hi - lo).toFixed(1) + '" height="14"/>' +
-              '<rect class="ba-mid" x="' + q1.toFixed(1) + '" y="48" width="' + (q3 - q1).toFixed(1) + '" height="14"/>' +
-              '<g class="ba-dots">' + dots + '</g>' +
-              '<line class="ba-us" x1="' + mean.toFixed(1) + '" x2="' + mean.toFixed(1) + '" y1="40" y2="70"/>' +
-              '<circle class="ba-here" cx="' + here.toFixed(1) + '" cy="55" r="7"/></svg>' +
-            '<span class="bk-caps">' + caps.map((c, i) => '<span class="bk-cap bk-cap--' + (i + 1) + '"><b>' + (i + 1) + '</b>' + c + '</span>').join("") + '</span></span>'; };
-        if (band) tipData = {};
-        let h = '<div class="wt" data-mode="' + mode + '"' + (side ? ' data-form="beside"' : '') + (band && sayW ? ' style="--say-w:' + sayW + 'px"' : '') + '>' + (side ? colHead(opts.here) : band ? bandHead() : '');
+        if (mode === "band"){ host.innerHTML = banded(here, pavg, onPeers); requestAnimationFrame(fit); return; }
+        const side = mode === "bars" && form === "beside";
+        let h = '<div class="wt" data-mode="' + mode + '"' + (side ? ' data-form="beside"' : '') + '>' + (side ? colHead(opts.here) : '');
         KEYS.forEach(k => {
           const v = here[k], us = C.us[k], pa = pavg[k], lower = k === "unemployment";
           let tail = '';
@@ -15809,66 +15831,9 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
             (C.lead && C.lead[k] ? '<p class="wt-lead">' + esc(C.lead[k]) + '</p>' : '') +
             (line ? '<p class="wt-refs">' + refLine("US average", us) + refLine("Peer average", pa) +
                       onPeers.map(pr => '<span class="wt-ref wt-ref--pe"><i class="wt-sw pe" style="--pc:var(--pc-' + slug(pr.name) + ')" aria-hidden="true"></i><span class="wt-rn">' + esc(pr.name) + ' <span class="num">' + fmt(k, pr[k]) + '</span></span></span>').join("") + '</p>'
-                  : side || band ? '' : '<p class="wt-diff">' + dChip(k, v, us, "US average") + dChip(k, v, pa, "Peers") + '</p>') + '</div><div class="wt-viz">';
-          if (mode === "band"){
-            /* the band runs from the 5th to the 95th percentile of every US
-               admin (or metro) with the measure, the darker middle the
-               middle half, on the distribution's own scale (log for people
-               and dollars), widened to take any mark beyond it; the rows
-               share nothing but their left edge */
-            const r = D.ind.find(q => q.key === k), f = r.scale === "log" ? Math.log : (x => x);
-            const [p5, p25, , p75, p95] = r.q;
-            const all = [v, us, pa].concat(onPeers.map(pr => pr[k]));
-            const lo = Math.min(p5, ...all), hi = Math.max(p95, ...all);
-            const sxn = x => 1.5 + (f(x) - f(lo)) / ((f(hi) - f(lo)) || 1) * 96.5, sx = x => sxn(x).toFixed(2) + "%";
-            /* the names turn inward at the band's ends: guessed here from
-               the band's likely width, then measured (fit, after drawing) */
-            const hw = host.clientWidth || 640, bw = hw >= 600 ? Math.max(120, Math.min(340, hw - 430)) : hw;
-            const edge = (t, x, cw) => { const w = 100 * (t.length * cw + 4) / bw; return x > 100 - w / 2 ? " end" : x < w / 2 ? " start" : ""; };
-            /* the peer average, switched on, stands on the band's line as a peer does: no lane, no name; its chip
-               in the peers row is its key, its tooltip its figure (2026-10-18, Nil: "treat it as a city showing.
-               show it on the plot line without label"); its takeaway does go under "Boston is" (the peers' do not) */
-            const lane = false;
-            h += '<div class="wt-bnd' + (lane ? ' has-lane' : '') + '" data-k="' + k + '" tabindex="0" role="img" aria-label="' + NAME[k] + ': ' + opts.here + ' ' + fmt(k, v) + ', US average ' + fmt(k, us) + (avg ? ', peer average ' + fmt(k, pa) : '') +
-                '; 90 of every 100 ' + opts.unit + ' fall between ' + fmt(k, p5) + ' and ' + fmt(k, p95) + ', half of them between ' + fmt(k, p25) + ' and ' + fmt(k, p75) + '">' +
-              '<span class="wb-rail"></span>' +
-              '<span class="wb-band" style="left:' + sx(p5) + ';width:' + (sxn(p95) - sxn(p5)).toFixed(2) + '%"></span>' +
-              '<span class="wb-mid" style="left:' + sx(p25) + ';width:' + (sxn(p75) - sxn(p25)).toFixed(2) + '%"></span>' +
-              '<span class="wb-ush" style="left:' + sx(us) + '"></span><span class="wb-us" data-tip="us" style="left:' + sx(us) + '"></span>' +
-              (avg ? '<span class="wb-pa" data-tip="pa" style="left:' + sx(pa) + '"></span>' : '') +
-              '<span class="wb-here" data-tip="here" style="left:' + sx(v) + '"></span>' +
-              /* the peers last, so one at Boston's own figure still shows, on Boston's dot */
-              onPeers.map(pr => '<span class="wb-pe" data-tip="pe:' + esc(pr.name) + '" style="left:' + sx(pr[k]) + ';--pc:var(--pc-' + slug(pr.name) + ')"></span>').join("") +
-              '<span class="wb-name' + edge(opts.here, sxn(v), 7.4) + '" data-tip="here" style="left:' + sx(v) + '">' + opts.here + '</span>' +
-              '<span class="wb-ul' + edge("US avg " + fmt(k, us), sxn(us), 6.6) + '" data-tip="us" style="left:' + sx(us) + '">US avg <span class="wb-n">' + fmt(k, us) + '</span></span>' +
-              '</div>';
-            /* the gap to an average, in words: "33 times the US avg",
-               "3% below the peer avg" (the tooltips spell "average" out) */
-            const gap = (x, whose) => { const d = diff(k, v, x); if (d.same) return { t: "about the same as the " + whose };
-              const times = d.t.endsWith("\u00d7"); return { up: d.up, better: lower ? !d.up : d.up, size: times ? d.t.slice(0, -1) + " times" : d.t, rest: (times ? "the " : d.up ? "above the " : "below the ") + whose }; };
-            /* the third column: the takeaway in one line, the peer average's
-               (when on) level with its lane */
-            const say = (x, whose) => { const g = gap(x, whose), who = '<span class="wt-who">' + opts.here + ' is </span>';
-              return g.t ? '<span class="wt-say">' + who + g.t + '</span>' : '<span class="wt-say' + (g.better ? ' is-good' : ' is-bad') + '">' + who + '<b>' + ARR(g.up) + g.size + '</b> ' + g.rest + '</span>'; };
-            tail = '<div class="wt-cmp">' + say(us, "US avg") + (avg ? say(pa, "peer avg") : '') + '</div>';
-            /* what each mark's tooltip says: its glyph and name, its figure,
-               how Boston compares (as column 3 says it), a note */
-            const row = (x, whose) => { const g = gap(x, whose);
-              return g.t ? '<span class="tt-r">' + g.t + '</span>' : '<span class="tt-r' + (g.better ? ' is-good' : ' is-bad') + '"><b>' + ARR(g.up) + g.size + '</b> ' + g.rest + '</span>'; };
-            const names = peers.map(pr => pr.name + " " + pr.st), list = names.slice(0, -1).join(", ") + " and " + names[names.length - 1];
-            const one = opts.unit.replace(/^US /, "").replace(/s$/, "");
-            tipData[k] = {
-              here: { g: "here", name: opts.here, fig: fmt(k, v), rows: [row(us, "US average")].concat(avg ? [row(pa, "peer average")] : []), note: C.bucket[k] },
-              us: { g: "us", name: "US average", fig: fmt(k, us), note: "The average of " + opts.unit },
-              pa: { g: "pa", name: "Peer average", fig: fmt(k, pa), note: "The average of " + list },
-              band: { g: "band", name: "Where " + opts.unit + " fall", kv: [["90 of every 100", fmt(k, p5) + " to " + fmt(k, p95)], ["The middle half", fmt(k, p25) + " to " + fmt(k, p75)], ["The middle " + one, fmt(k, r.q[2])]] },
-              sum: { name: NAME[k], kv: [[opts.here, fmt(k, v)], ["US average", fmt(k, us)]].concat(avg ? [["Peer average", fmt(k, pa)]] : []) },
-              pe: {}
-            };
-            /* the peer's colour read here: the tooltip hangs off the body, outside the section that names it */
-            const pcs = getComputedStyle(host);
-            onPeers.forEach(pr => { tipData[k].pe[pr.name] = { g: "pe", pc: pcs.getPropertyValue("--pc-" + slug(pr.name)).trim(), name: pr.name + " " + pr.st, fig: fmt(k, pr[k]), note: "One of the closest peers" }; });
-          } else if (mode === "bars"){
+                  : side ? '' : '<p class="wt-diff">' + dChip(k, v, us, "US average") + dChip(k, v, pa, "Peers") + '</p>') + '</div><div class="wt-viz">';
+          /* the box plot (opt-2) is drawn by banded() since 2026-11-18 */
+          if (mode === "bars"){
             const bar = (cls, lab, x, style) => '<span class="wt-bl ' + cls + '"' + (style || '') + '>' + lab + '</span><span class="wt-bt ' + cls + '"' + (style || '') + '><i style="width:' + pct(x) + '"></i></span><span class="wt-bv ' + cls + '">' + fmt(k, x) + '</span>' +
               (side ? (cls === "us" || cls === "pa" ? beside(k, v, x, opts.here) : '<span class="wt-ba"></span>') : '');
             h += '<div class="wt-bars">' + bar("here", opts.here, v) + bar("us", "US average", us) + bar("pa", "Peer average", pa) +
@@ -15895,9 +15860,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
           h += '</div>' + tail + '</div>';
         });
         /* how the peers were matched is the label's card in both forms (2026-10-18, Nil: the bars as the box plot) */
-        h += peersRow(band, true) + '</div>';
+        h += peersRow(false, true) + '</div>';
         host.innerHTML = h;
-        if (band) requestAnimationFrame(fit);
       }
       /* the band's names, measured once drawn: Boston's and the US
          average's turn inward where they would pass the band's ends; the
@@ -15915,25 +15879,29 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         peersFit();
         if (mode === "axis"){ settle(); return; }
         if (mode !== "band") return;
-        let lost = false;
-        /* the takeaway column as wide as its longest line, measured where
-           the three columns stand side by side */
-        const row = host.querySelector(".wt-row:not(.wt-row--head)");
-        if (row && getComputedStyle(row).gridTemplateColumns.split(" ").length >= 3){
-          let w = 0; host.querySelectorAll(".wt-say,.wt-row--head .wt-colh").forEach(e => { e.style.width = "max-content"; w = Math.max(w, e.getBoundingClientRect().width); e.style.width = ""; });
-          w = Math.ceil(Math.min(w, 280)); const t = host.querySelector(".wt");
-          if (w && t && w !== sayW){ sayW = w; t.style.setProperty("--say-w", w + "px"); } }
+        /* the box plot's names, Boston's and the US average's, turned inward where they would pass the band's ends */
         host.querySelectorAll(".wt-bnd").forEach(b => {
           const B = b.getBoundingClientRect(); if (!B.width) return;
           b.querySelectorAll(".wb-name,.wb-ul").forEach(n => { n.classList.remove("start", "end"); const r = n.getBoundingClientRect();
             if (r.left < B.left - .5) n.classList.add("start"); else if (r.right > B.right + .5) n.classList.add("end"); });
-          const pl = b.querySelector(".wb-pl"); if (!pl) return;
-          const dots = [...b.querySelectorAll(".wb-pe")].map(d => d.getBoundingClientRect());
-          const room = () => { const r = pl.getBoundingClientRect(); return r.left >= B.left - .5 && r.right <= B.right + .5 && !dots.some(d => d.top < r.bottom && r.top < d.bottom && d.left < r.right + 3 && r.left < d.right + 3); };
-          pl.classList.remove("lt"); pl.style.visibility = "";
-          if (!room()){ pl.classList.add("lt"); if (!room()){ pl.style.visibility = "hidden"; lost = true; } }
+          /* a peer or the peer average that Boston's dot (or another mark) would cover drops to a lane under the US
+             average's name, hung from the rail by a short ink tick, so every mark that is on stays in sight */
+          b.querySelectorAll(".wb-tk").forEach(t => t.remove()); b.style.height = "";
+          const here = b.querySelector(".wb-here"), ms = [...b.querySelectorAll(".wb-pa"), ...b.querySelectorAll(".wb-pe")];
+          ms.forEach(m => { m.style.top = ""; });
+          if (!here || !ms.length) return;
+          const at = (e, halo) => { const r = e.getBoundingClientRect(); return { x: (r.left + r.right) / 2, r: r.width / 2 + halo }; };
+          const lanes = [[at(here, 2)]], L1 = 66, LS = 14, first = b.querySelector(".wb-pe,.wb-pa");
+          ms.forEach(m => { const o = at(m, 1.5); let n = 0;
+            while (lanes[n] && lanes[n].some(p => Math.abs(p.x - o.x) < p.r + o.r)) n++;
+            (lanes[n] = lanes[n] || []).push(o);
+            if (!n) return;
+            const top = L1 + (n - 1) * LS, tk = document.createElement("span");
+            m.style.top = top + "px"; tk.className = "wb-tk"; tk.setAttribute("aria-hidden", "true");
+            tk.style.left = m.style.left; tk.style.top = "36px"; tk.style.height = Math.max(0, top - (o.r - 1.5) - 36) + "px";
+            b.insertBefore(tk, first); });
+          if (lanes.length > 1) b.style.height = (L1 + (lanes.length - 2) * LS + 9) + "px";
         });
-        const kw = host.querySelector(".k-pa-w"); if (kw) kw.hidden = !lost;
       }
       /* the figure and its two differences, and the peers' switches, as the
          table draws them, for the charts below it */
@@ -15972,10 +15940,11 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         bandTipClear();
         if (!b || !ids) return;
         if (ids === "band") b.classList.add("is-hot-band");
-        else [].concat(ids).forEach(id => b.querySelectorAll('[data-tip="' + CSS.escape(id) + '"]').forEach(e => { if (!/\bwb-(name|ul|pl)\b/.test(e.className)) e.classList.add("is-hot"); }));
+        else [].concat(ids).forEach(id => b.querySelectorAll('[data-tip="' + CSS.escape(id) + '"]').forEach(e => { if (!/\bwb-(name|ul)\b/.test(e.className)) e.classList.add("is-hot"); }));
       }
       function bandTip(ev){
-        const b = ev.target.closest ? ev.target.closest(".wt-bnd") : null, T = b && mode === "band" && tipData[b.dataset.k];
+        if (mode !== "band") return;
+        const b = ev.target.closest ? ev.target.closest(".wt-bnd") : null, T = b && tipData[b.dataset.k];
         if (!T){ bandTipOff(); return; }
         /* the marks within a margin of the pointer, ranked by the distance to
            their box (0 inside it), a tie going to the later mark, the one
@@ -15990,13 +15959,16 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
           if (id.startsWith("pe:")){ const near = hits.filter(h => h.e.dataset.tip.startsWith("pe:") && h.d <= best.d + 2 && Math.abs(h.r.left - best.r.left) < 6);
             if (near.length > 1){ ids = near.map(h => h.e.dataset.tip); const ps = ids.map(i => T.pe[i.slice(3)]).filter(Boolean);
               t = { g: "pe", pc: ps[ps.length - 1].pc, name: "Closest peers here", kv: ps.map(q => [q.name, q.fig]) }; } }
+          /* Boston's dot is drawn over any peer under it (2026-11-18): the peers it covers are listed in its tip */
+          if (id === "here"){ const under = hits.filter(h => h.e.dataset.tip.startsWith("pe:") && h.d <= 1).map(h => h.e.dataset.tip);
+            if (under.length){ ids = ids.concat(under); t = Object.assign({}, t, { kv: under.map(i => T.pe[i.slice(3)]).filter(Boolean).map(q => [q.name, q.fig]) }); } }
           /* over the marks and their names together, so the tip never hides a name */
           const u = { left: 1e9, right: -1e9, top: 1e9, bottom: -1e9 };
           ids.forEach(i => b.querySelectorAll('[data-tip="' + CSS.escape(i) + '"]').forEach(e => { if (e.style.visibility === "hidden") return; const r = e.getBoundingClientRect();
             u.left = Math.min(u.left, r.left); u.right = Math.max(u.right, r.right); u.top = Math.min(u.top, r.top); u.bottom = Math.max(u.bottom, r.bottom); }));
           hot(b, ids); placeTip(tipHtml(t), u); return; }
-        const z = b.querySelector(".wb-band").getBoundingClientRect();
-        if (x >= z.left && x <= z.right && y >= z.top - 6 && y <= z.bottom + 6){ hot(b, "band"); placeTip(tipHtml(T.band), { left: x, right: x, top: z.top, bottom: z.bottom }); return; }
+        const zb = b.querySelector(".wb-band"), z = zb && T.band && zb.getBoundingClientRect();
+        if (z && x >= z.left && x <= z.right && y >= z.top - 6 && y <= z.bottom + 6){ hot(b, "band"); placeTip(tipHtml(T.band), { left: x, right: x, top: z.top, bottom: z.bottom }); return; }
         bandTipOff();
       }
       function mount(el, data){ host = el; D = data;
@@ -16029,6 +16001,16 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     }
     function bandTipClear(){ document.querySelectorAll(".wt-bnd .is-hot").forEach(e => e.classList.remove("is-hot")); document.querySelectorAll(".wt-bnd.is-hot-band").forEach(e => e.classList.remove("is-hot-band")); }
     function bandTipOff(){ bandTipClear(); tipBand = null; if (tip && tip.dataset.from === "band") tip.hidden = true; }
+    /* opt-3's row tooltip: the measure's name and its takeaway over the row's bars, from the pointer or the keyboard */
+    { const takeTip = row => { const b = row.querySelector(".wt-ln-b"), c = row.querySelector(".wt-ln-c"), n = row.querySelector(".wt-name");
+        if (!b || !c) return; placeTip('<b>' + (n ? n.firstChild.textContent : "") + '</b>' + b.innerHTML, c.getBoundingClientRect(), row); tipEl().classList.add("wt-tip--take"); };
+      const rowOf = ev => ev.target.closest && ev.target.closest(".wt--tip .wt-ln");
+      document.addEventListener("mouseover", ev => { const r = rowOf(ev); if (r && !r.contains(ev.relatedTarget)) takeTip(r); });
+      document.addEventListener("mouseout", ev => { const r = rowOf(ev); if (r && !r.contains(ev.relatedTarget)) bandTipOff(); });
+      document.addEventListener("focusin", ev => { const r = rowOf(ev); if (r && ev.target.matches(":focus-visible")) takeTip(r); });
+      document.addEventListener("focusout", ev => { if (rowOf(ev)) bandTipOff(); });
+      /* a tap on a row opens its takeaway (touch has no hover); a tap elsewhere closes it */
+      document.addEventListener("pointerdown", ev => { const r = rowOf(ev); if (r && ev.pointerType !== "mouse" && !(ev.target.closest && ev.target.closest("button, a, input, select"))) setTimeout(() => takeTip(r), 0); }); }
     document.addEventListener("pointerdown", ev => { if (!(ev.target.closest && ev.target.closest(".wt-bnd"))) bandTipOff(); }, true);
     /* a scroll hides the band's tip, or (one a focused band opened) moves it with the band once the scroll settles */
     { const pg = document.getElementById("pages"); if (pg) pg.addEventListener("scroll", () => {
@@ -16074,8 +16056,10 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         if (!eye || eye.querySelector(".wt-table-opt")) return;
         const st = document.createElement("div"); st.className = "mi-studies"; const pid = "whoTablesPanel" + (id === "page-overview" ? "" : "M");
         st.innerHTML = '<button type="button" class="mi-studies-btn" aria-expanded="false" aria-controls="' + pid + '">opt</button>' +
-          '<div class="mi-studies-panel" id="' + pid + '" role="group" aria-label="Design studies" hidden><label class="mi-study"><span>Tables</span>' +
-          '<select class="wt-table-opt" aria-label="How the tables draw Boston Admin and Boston Metro against the US and their peers"><option value="bars">1 Named bars</option><option value="band">2 Box plots</option><option value="cards">3 Cards</option><option value="lines">4 Lines</option><option value="axis">5 One axis</option></select></label>' +
+          '<div class="mi-studies-panel" id="' + pid + '" role="group" aria-label="Design studies" hidden><label class="mi-study mi-study--keep"><span>Tables</span>' +
+          /* shown in v-5, two choices (2026-11-18, Nil: "design an opt. The option should be our friendly box plot"): the
+             lines as shipped, or the box plot with all they do; the bars, cards and one axis are kept in the code but reachable only in v-6 and v-7 (v-5 keeps only ?table=band) */
+          '<select class="wt-table-opt" aria-label="How the tables draw Boston Admin and Boston Metro against the US and their peers"><option value="lines">opt-1 Lines</option><option value="band">opt-2 Friendly box plot</option><option value="tip">opt-3 Lines, takeaways on hover</option></select></label>' +
           (window.ovBasemap ? '<label class="mi-study"><span>Basemap</span><select class="wt-basemap-opt" aria-label="The map under the outlines"><option value="landing">1 Site paper, blue water</option><option value="section">2 Site paper, docked grey</option><option value="carto">3 CARTO (before)</option></select></label>' : '') + '</div>';
         eye.appendChild(st);
         const btn = st.querySelector(".mi-studies-btn"), panel = st.querySelector(".mi-studies-panel"), sel = st.querySelector("select");
@@ -16098,7 +16082,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       compare(document.getElementById("whoCompare"));
     }
     function set(m){
-      mode = ["band", "cards", "lines", "axis"].includes(m) ? m : "bars";
+      mode = ["band", "cards", "lines", "axis", "tip"].includes(m) ? m : "bars";
       document.querySelectorAll(".wt-table-opt").forEach(sel => { sel.value = mode; });
       const u = new URL(location.href); if (mode === TABLE_DEFAULT) u.searchParams.delete("table"); else u.searchParams.set("table", mode);
       history.replaceState(null, "", u.pathname + u.search + u.hash);
@@ -16243,20 +16227,6 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       document.querySelectorAll(".wt-compare-opt").forEach(sel => { sel.value = cmpMode; });
       const u = new URL(location.href); if (cmpMode === COMPARE_DEFAULT) u.searchParams.delete("compare"); else u.searchParams.set("compare", cmpMode);
       history.replaceState(null, "", u.pathname + u.search + u.hash); compare(document.getElementById("whoCompare")); } };
-    /* the band key's info mark: its card opens under the key and its band builds up a step at a time, round and round;
-       with reduced motion the five steps stand at once. Escape, a click elsewhere or the mark again closes it */
-    const bandSteps = { open: null, t: 0 };
-    function bandStep(pop, n){ pop.dataset.step = n; pop.className = "bk-pop" + [1, 2, 3, 4, 5].filter(i => i <= n).map(i => " s" + i).join(""); }
-    function bandClose(){ const o = bandSteps.open; if (!o) return; clearInterval(bandSteps.t); o.pop.hidden = true; o.btn.setAttribute("aria-expanded", "false"); bandSteps.open = null; }
-    function bandOpen(btn){ bandClose(); const pop = btn.parentNode.querySelector(".bk-pop"); if (!pop) return;
-      pop.hidden = false; btn.setAttribute("aria-expanded", "true"); bandSteps.open = { btn, pop };
-      if (matchMedia("(prefers-reduced-motion: reduce)").matches){ bandStep(pop, 5); pop.classList.add("is-static"); return; }
-      pop.classList.remove("is-static"); let n = 1; bandStep(pop, n);
-      bandSteps.t = setInterval(() => { n = n % 5 + 1; if (n === 1){ bandStep(pop, 0); setTimeout(() => bandStep(pop, 1), 350); } else bandStep(pop, n); }, 1700); }
-    document.addEventListener("click", ev => { const b = ev.target.closest(".bk-i");
-      if (b){ if (bandSteps.open && bandSteps.open.btn === b) bandClose(); else bandOpen(b); return; }
-      if (bandSteps.open && !bandSteps.open.pop.contains(ev.target)) bandClose(); });
-    document.addEventListener("keydown", ev => { if (ev.key === "Escape" && bandSteps.open){ const b = bandSteps.open.btn; bandClose(); b.focus(); } });
     if (window.WHO_COMPARE_2024) tables.admin = make("admin", window.WHO_COMPARE_2024, { here: "Boston Admin", unit: "US admins", peersWord: "Closest peers:" });
     if (window.WHO_COMPARE_METRO_2024) tables.metro = make("metro", window.WHO_COMPARE_METRO_2024, { here: "Boston Metro", unit: "US metros", peersWord: "Closest peer metros:" });
     window.whoTables = tables;
@@ -20433,7 +20403,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
       }
     });
     /* the study word goes home to the figure's head with the rest */
-    var studies = page.querySelector(".mi-studies"), mhead = page.querySelector(".mi-figure .mi-head");
+    var studies = page.querySelector(".mi-studies:not(.mi-studies--own)"), mhead = page.querySelector(".mi-figure .mi-head");
     if (studies && mhead && !mhead.contains(studies)) mhead.appendChild(studies);
     built.wrap.remove();
     built = null;
@@ -20446,7 +20416,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     built.steps.forEach(function(st, j){ st.classList.toggle("is-on", j === i); });
     /* the figure's study word rides the beat's counter: it moves to the
        eyebrow of the step the reader is on, and closes as it goes */
-    var studies = page.querySelector(".mi-studies");
+    var studies = page.querySelector(".mi-studies:not(.mi-studies--own)");
     var eye = built.steps[i] && built.steps[i].querySelector(":scope > .ct-eyebrow");
     if (studies && eye && !eye.contains(studies)){
       var sp = studies.querySelector(".mi-studies-panel"), sb = studies.querySelector(".mi-studies-btn");
@@ -20603,22 +20573,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   if (compBtn) new MutationObserver(syncOptWrap)
     .observe(compBtn, { attributes: true, attributeFilter: ["class"] });
   syncOptWrap();
-  /* the storyline pill (2026-11-09): fixed at the bottom left while the section is the one on, three choices */
-  /* (2026-11-16) built by window.cornerPill, which the Deep dive's pill on section 1 shares */
-  if (cfg.storyPill && cfg.altNarrative && window.cornerPill){
-    var toolEl = document.getElementById("tool");
-    var storyPill = window.cornerPill({ label: "Storyline", key: "ct", choices: [["2", "1"], ["3", "2"], ["4", "3"]],
-      get: function(){ return ctLayout; },
-      pick: function(v){
-        /* the reader stays on the beat they were on, counted the same in both storylines */
-        var at = cur;
-        setLayout(v); storyPill.sync();
-        if (built && at > 0 && built.steps[at]){ built.steps[at].scrollIntoView({ block: "center" }); spy(); }
-      },
-      shown: function(){ return !!(compBtn && compBtn.classList.contains("is-active") && toolEl && toolEl.classList.contains("active")); },
-      watch: [compBtn, toolEl] });
-    window.__storyPillSync = storyPill.sync;
-  }
+  /* the storyline pill is gone (2026-11-18, Nil: "delete the storyline options feature from v-5"): storyline 2 only */
 
   /* rail-step ids -> the scrolly step that carries them, while built */
   /* every mounted section answers for its own ids; the shared lookup asks
@@ -20679,7 +20634,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
      4th and 5th beats so that we won't have 4 bars back to back"): layout "4", beat 4 a treemap that gathers into the
      four groups (state 14), beat 5 Boston admin's stacked bars (15), the net bars (10) as they are */
   mount({ pageId: "page-export-basket", ctl: "MI2", seg: "ctLayoutSeg", noClassic: true, noToggle: true, noBadge: true,
-          altNarrative: true, storyPill: true, defaultLayout: "3",   /* storyline 2 opens (2026-11-09, Nil: "make storyline 2 default") */
+          altNarrative: true, defaultLayout: "3",   /* storyline 2 opens (2026-11-09, Nil: "make storyline 2 default") */
           states: { "2": [0, 4, 6, 8, 9, 10], "3": [0, 4, 6, 12, 13, 10], "4": [0, 4, 6, 14, 15, 10] } });
   /* How am I doing? (2026-11-12, Nil: "make sure the design system continues in section 3"): the same engine, two
      beats beside one figure; window.DOINGVIEW.setStep(0 | 1) gives the figure the beat's four measures */
@@ -23942,7 +23897,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     if (o.op <= .002) return;
     const C = mv.C, sg = signed(r.net), kc = r.net >= 0 ? C.flowIn : C.flowOutText, id = r.code + (o.end ? ":e" : ""), an = o.end ? "end" : "start";
     if (o.ff) mvText(S, "vf:" + id, x, y, sg, { anchor: an, face: "f", wt: 700, num: true, op: o.op, halo: o.halo });
-    else mvText(S, "vb:" + id, x, y, sg, { anchor: an, face: "b", wt: 600, z: mv.B.z, fill: mvMix(C.ink, kc, o.col), op: o.op, halo: o.halo });
+    else mvText(S, "vb:" + id, x, y, sg, { anchor: an, face: "b", wt: 400, z: mv.B.z, fill: mvMix(C.ink, kc, o.col), op: o.op, halo: o.halo });
   }
   /* the bars' frame: the dashed zero line drawing down, and the pinned row's tint */
   function mvFrame(S, p){
@@ -23966,7 +23921,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     /* the folds' own words go as the glide starts, before their members' come in */
     mv.folds.forEach(f => { const y = oy + f.ly;
       mvText(S, "fname:" + f.id, ox + f.nx, y, f.name, p.ff ? { anchor: "end", halo: 1, op: p.oFoldLab } : { anchor: "end", face: "b", z: B.z, halo: 1, op: p.oFoldLab });
-      if (f.net != null) mvText(S, "fnet:" + f.id, ox + f.vx, y, signed(f.net), p.ff ? { wt: 700, num: true, halo: 1, op: p.oFoldLab } : { face: "b", wt: 600, z: B.z, halo: 1, op: p.oFoldLab });
+      if (f.net != null) mvText(S, "fnet:" + f.id, ox + f.vx, y, signed(f.net), p.ff ? { wt: 700, num: true, halo: 1, op: p.oFoldLab } : { face: "b", wt: 400, z: B.z, halo: 1, op: p.oFoldLab });
       if (f.count) mvText(S, "fcnt:" + f.id, ox + f.cx, y, f.count, { anchor: "end", wt: 700, num: true, halo: 1, op: p.oBands }); });
     mv.items.forEach(it => {
       const r = it.r, i = it.i, g = p.g(it), L = p.len(i), own = r.net >= 0 ? C.flowIn : C.flowOut;
@@ -24688,7 +24643,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
      jobs outside of Boston Admin ... and change other label to xx jobs in Boston Admin"): three groups, the two outside
      the city as one hatched part (estOutAll), named by its count; the bracket over the city's two says its count too */
   /* the default since 2026-11-18 (Nil: "make the second option default"); ?held=four the four groups before it */
-  const MERGE = !/[?&]held=four\b/.test(location.search);
+  let MERGE = !/[?&]held=four\b/.test(location.search);
   const G = MERGE ? ["rest", "non", "res"] : ["rest", "non", "res", "out"], ADM = ["non", "res"], RIGHT = MERGE ? ["non", "res"] : ["non", "res", "out"];
   /* the locator (2026-11-15): section 1's outlines (data/geo/who_commute_geo.js) drawn flat, a degree of longitude
      shortened by the latitude's cosine, fitted to 60 by 60; LOC_IN is the move in on the city for the Boston admin beat (six
@@ -24741,7 +24696,8 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     return .2126 * f(r.r) + .7152 * f(r.g) + .0722 * f(r.b); };
   const inkOn = c => { const l = lum(c), li = lum(css("--ink") || "#1a2226"); return 1.05 / (l + .05) >= (l + .05) / (li + .05) ? "var(--white)" : "var(--ink)"; };
   const cx = document.createElement("canvas").getContext("2d");
-  const tw = (t, size, wt) => { cx.font = (wt || 400) + " " + size + "px 'Source Sans 3', 'Source Sans Pro', sans-serif"; return cx.measureText(t).width; };
+  let TG = 1;   /* the type's growth above 1366 wide (--mi-g, max(1, --mi-s)), so the measures match the drawn type */
+  const tw = (t, size, wt) => { cx.font = (wt || 400) + " " + size * TG + "px 'Source Sans 3', 'Source Sans Pro', sans-serif"; return cx.measureText(t).width; };
   const wrapTo = (t, w, size, wt) => { const out = []; let line = ""; t.split(" ").forEach(word => { const n = line ? line + " " + word : word;
     if (tw(n, size, wt) <= w || !line) line = n; else { out.push(line); line = word; } }); if (line) out.push(line); return out; };
   const cutTo = (t, w) => { if (tw(t, 13) <= w) return t; let s = t; while (s.length > 1 && tw(s + "…", 13) > w) s = s.slice(0, -1); return s.replace(/[\s&,]+$/, "") + "…"; };
@@ -24752,7 +24708,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     if (rows) return true;
     const D = window.WF && window.WF.data; if (!D) return false;
     rows = D.rows.slice().sort((a, b) => b.msaJobs - a.msaJobs); M = D.M;
-    if (MERGE) rows.forEach(r => { r.estOutAll = Math.max(0, r.estOut) + Math.max(0, r.estRest); });
+    rows.forEach(r => { r.estOutAll = Math.max(0, r.estOut) + Math.max(0, r.estRest); });
     sum = {}; mx = {}; G.forEach(g => { sum[g] = d3.sum(rows, r => Math.max(0, r[GV[g]])); mx[g] = d3.max(rows, r => Math.max(0, r[GV[g]])); });
     return true;
   }
@@ -24802,10 +24758,15 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     return { hT: h, tsec, tsecs, tgrp, blocks };
   }
   let mode = "sec", busy = false, shown = false, played = false, L = null, hiG = null, playT = null;
-  const TOPB = 22, GAPC = 14, VALW = 46, SEG = 2, SEGB = 10, GO = MERGE ? ["non", "res", "rest"] : ["non", "res", "out", "rest"], GAPS = (GO.length - 3) * SEG + SEG + SEGB;   /* 2026-11-16, Nil: commute in, live and work, live in Boston and work elsewhere, then neither, last */
+  const TOPB = 22, GAPC = 14, VALW = 46, SEG = 2, SEGB = 10, GO = MERGE ? ["non", "res", "rest"] : ["non", "res", "out", "rest"];
+  let GAPS = (GO.length - 3) * SEG + SEG + SEGB;   /* 2026-11-16, Nil: commute in, live and work, live in Boston and work elsewhere, then neither, last */
   function layout(){
     const w = Math.max(280, Math.round(host.clientWidth || 0)), narrow = w < 600;
-    const labW = Math.round(Math.min(220, Math.max(104, w * (narrow ? .3 : .26)))), x0 = labW + 8, avail = w - x0;
+    /* the bars' geometry is beats 3 and 6's (2026-11-18 design-system check): 21 and 14 units on an 880-unit drawing, not
+       under .8 of them, the names 22 units clear of the bars, and the type grown as theirs */
+    TG = Math.max(1, parseFloat(getComputedStyle(host).getPropertyValue("--mi-s")) || 1);
+    const kU = Math.max(.8, w / 880);
+    const labW = Math.round(Math.min(220, Math.max(104, w * (narrow ? .38 : .26)))), x0 = labW + Math.round(22 * kU), avail = w - x0;
     /* beat 4's second frame keeps the bars (2026-11-09, Nil: "two frames. 1- bars colored by sector, the same. 2- bars
        colored by clusters. maybe put a little gap but do not draw separate bars. still highlight the admin part, maybe put
        them at the end"): each bar's four parts in one order, the two that hold Boston admin's jobs last, a 2px gap
@@ -24815,8 +24776,42 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     GO.forEach((g, i) => { colW[g] = slot; colX[g] = hx + i * (slot + GAPC); });
     /* on a narrow screen the heads take their short names, so none runs past two lines */
     const heads = {}; G.forEach(g => { heads[g] = wrapTo(narrow && !(MERGE && g === "rest") ? GS[g] : headName(g), colW[g] - 2, 14, 600); });
-    const HT = d3.max(G, g => heads[g].length) * 17 + 24, top = TOPB + HT;
-    const rh = narrow ? 16 : 22, bh = narrow ? 11 : rh - 6, h = top + rows.length * rh + 4;
+    /* three groups, the city's two heads (2026-11-18, Nil: "put a little color block with Commute into Boston and Live and work
+       in Boston. make Live and work in Boston closer to the first one, you can even align it with the begining of grey
+       bar"): each opens on a 10px block of its colour, and the second stands where the first bar's grey part begins, or
+       just clear of the first head where that is further */
+    /* no colour blocks before the heads (2026-11-18, Nil: "remove the color block from labels"): the names wear their colours */
+    const SWZ = narrow ? 11 : 13, SW = 0;
+    if (MERGE){
+      heads.non = wrapTo(GN.non, colW.non - 2 - SW, 14, 600);
+      const nonW = Math.max(...heads.non.map(t => tw(t, 14, 600)), tw(fmt(sum.non) + " " + Math.round(sum.non / M.jobs * 100) + "%", 14, 700));
+      const greyX = x0 + Math.max(0, rows[0][GV.non]) * (avail - VALW - GAPS) / d3.max(rows, r => r.msaJobs) + SEG;
+      colX.res = narrow ? colX.non + SW + nonW + 16 : Math.max(greyX, colX.non + SW + nonW + 16);
+      /* the outside part has no head below, so on a wide screen the second head may run on over its column; on a phone it
+         wraps in its slot, which leaves the outside part's words two lines */
+      colW.res = narrow ? Math.max(colX.rest - GAPC - colX.res, w - 124 - colX.res) : Math.max(colX.rest - GAPC - colX.res, Math.min(w - 4 - colX.res, SW + tw(GN.res, 14, 600) + 4));
+      heads.res = wrapTo(GN.res, colW.res - 2 - SW, 14, 600);
+    }
+    /* the outside part's words start clear of the city's bracket */
+    const resEnd = MERGE ? colX.res + SW + Math.max(...heads.res.map(t => tw(t, 14, 600)), tw(fmt(sum.res) + " " + Math.round(sum.res / M.jobs * 100) + "%", 14, 700)) + 2 : 0;
+    /* and its bracket takes the rest of the width (2026-11-18, Nil: "make rest of the space 2.1M jobs outside of Boston Admin") */
+    const outX = MERGE ? resEnd + 14 : 0;
+    /* three groups (2026-11-18, Nil: "make '2.1M jobs outside of Boston Admin' same level and styling with 719K jobs in Boston
+       Admin"): the part outside the city is named on the bracket's line, over its own column to the right edge, wrapping
+       upward; it has no head of its own below, so the heads' row counts only the city's two */
+    /* the outside part's words stand in the first bar's hatched part where they fit (2026-11-18, Nil: the label over its own
+       column "is not really aligning with the bars"), so they can only mean that part; where they do not fit (a phone) they
+       stay on the bracket's line behind a hatched block like the bars' */
+    const r0 = rows[0], k0 = (avail - VALW - GAPS) / d3.max(rows, r => r.msaJobs);
+    const inX = x0 + (Math.max(0, r0[GV.non]) + Math.max(0, r0[GV.res])) * k0 + SEG + SEGB, inW = MERGE ? Math.max(0, r0[GV.rest]) * k0 : 0;
+    /* one ruler, one notch, the bars untouched (2026-11-18, Nil: "the xx jobs outside Boston should be a thinner line aligned
+       with the 719K jobs in Boston Admin ... similar to the 1. One ruler, one notch"; "do not change the bar design, just
+       label"): the city's teal bracket runs on as a thinner grey line to the end of the longest bar, and the two labels
+       meet at the notch between them */
+    const inBar = false, barEnd = Math.min(w - 2, x0 + d3.max(rows, r => r.msaJobs) * k0 + GAPS);
+    const outLn = MERGE ? wrapTo(headName("rest"), (narrow ? w : barEnd) - resEnd - (narrow ? 2 : 8), 13, 600) : [], topB = TOPB + Math.max(0, outLn.length - 1) * 16;
+    const HT = d3.max(G.filter(g => !(MERGE && g === "rest")), g => heads[g].length) * 17 + 24, top = topB + HT;
+    const rh = 21 * kU, bh = 14 * kU, h = top + rows.length * rh + 4;
     const kS = (avail - VALW - GAPS) / d3.max(rows, r => r.msaJobs), kA = (avail - VALW) / d3.max(rows, r => r.jobs);
     const ordS = rows, ordA = rows.slice().sort((a, b) => b.jobs - a.jobs);
     const yS = {}, yA = {}; ordS.forEach((r, i) => { yS[r.code] = top + i * rh; }); ordA.forEach((r, i) => { yA[r.code] = top + i * rh; });
@@ -24827,7 +24822,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         grp[r.code + "|" + g] = { x: c, y, w: v, h: bh }; c += v + (g === "res" ? SEGB : SEG); });
       let b = x0; G.forEach(g => { const on = ADM.indexOf(g) >= 0, v = on ? Math.max(0, r[GV[g]]) * kA : 0; adm[r.code + "|" + g] = { x: on ? b : x0, y: yA[r.code] + (rh - bh) / 2, w: v, h: bh }; b += v; });
     });
-    return Object.assign({ w, hB: h, x0, labW, top, rh, bh, kS, kA, colW, colX, heads, sec, grp, adm, yS, yA, ordS, ordA }, treeLayout(w));
+    return Object.assign({ w, hB: h, x0, labW, top, topB, outLn, outX, barEnd, inBar, inX, resEnd, SW, SWZ, kU, rh, bh, kS, kA, colW, colX, heads, sec, grp, adm, yS, yA, ordS, ordA }, treeLayout(w));
   }
   const hOf = m => isT(m) ? L.hT : L.hB;
   const setH = h => svg.attr("width", L.w).attr("height", h).attr("viewBox", "0 0 " + L.w + " " + h);
@@ -24839,7 +24834,21 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   const ordOf = m => m === "adm" ? L.ordA : L.ordS;
 
   const svg = d3.select(svgEl);
+  /* the row under the pointer, as beats 3 and 6 mark theirs (2026-11-18, Nil: "4/6 and 5/6 don't have the same hover
+     interaction as other bars"): the row's band in the teal tint, an ink line round its bar's outer edge, its name in the
+     dark teal */
+  const gHot = svg.append("g").attr("class", "mc-hot");
   const gLab = svg.append("g").attr("class", "mc-rlabs"), gCells = svg.append("g").attr("class", "mc-cells");
+  const gHl = svg.append("g").attr("class", "mc-hls");
+  function hot(r){
+    const B = r && L && !busy && !isT(mode) ? boxes(mode) : null;
+    const ps = B ? G.map(g => B[r.code + "|" + g]).filter(b => b && b.w > .5) : [];
+    gLab.selectAll("text").classed("is-hot", d => !!ps.length && d.code === r.code);
+    if (!ps.length){ gHot.html(""); gHl.html(""); return; }
+    const y = yOf(r, mode), x1 = Math.min(...ps.map(b => b.x)), x2 = Math.max(...ps.map(b => b.x + b.w)), by = Math.min(...ps.map(b => b.y)), bh = Math.max(...ps.map(b => b.y + b.h)) - by;
+    gHot.html('<rect class="mc-hot-band" x="0" y="' + y + '" width="' + L.w + '" height="' + L.rh + '"/>');
+    /* no line round the bar (2026-11-18, Nil: "none of bars should get border when hover") */
+  }
   const gVal = svg.append("g").attr("class", "mc-vals"), gHead = svg.append("g").attr("class", "mc-heads"), gBos = svg.append("g").attr("class", "mc-bos");
   const gSLab = svg.append("g").attr("class", "mc-slabs"), gTG = svg.append("g").attr("class", "mc-tglabs"), gTBos = svg.append("g").attr("class", "mc-bos");
   const PLAY = '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M4.5 2.8v10.4L13 8z" fill="currentColor"/></svg>Play';
@@ -24848,15 +24857,15 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     const adm = mode === "adm", tot = fmt(sum.non + sum.res);
     locSet(adm);
     /* the sentence opens on the place the map shows; the name fades in anew when the place changes */
-    const place = adm ? "Boston admin" : "Boston Metro", swap = !!titleEl.dataset.place && titleEl.dataset.place !== place;
+    const place = adm ? "Boston Admin" : "Boston Metro", swap = !!titleEl.dataset.place && titleEl.dataset.place !== place;
     titleEl.dataset.place = place;
     titleEl.innerHTML = '<span class="mc-place' + (adm ? ' mc-place--admin' : '') + (swap ? ' is-swap' : '') + '">' + place + '</span>' + (adm ? "’s " + tot + " jobs by sector and who holds them, in 2023"
       : "’s " + fmt(M.jobs) + " jobs " + (mode === "tgrp" ? "by who holds them" : "by sector" + (mode === "grp" ? " and who holds them" : "")) + ", in 2023");
     playBtn.hidden = adm;
     playBtn.innerHTML = played || busy ? REPLAY : PLAY;
-    playBtn.setAttribute("aria-label", tree ? "Replay: the sectors split and gather into the four groups of who holds the jobs" : "Replay: each sector's bar colours by the four groups of who holds its jobs");
+    playBtn.setAttribute("aria-label", tree ? "Replay: the sectors split and gather into the four groups of who holds the jobs" : "Replay: each sector's bar colours by the " + (MERGE ? "three" : "four") + " groups of who holds its jobs");
     svgEl.setAttribute("aria-label", adm
-      ? "Boston admin’s " + tot + " jobs by sector as stacked bars: " + ADM.map(g => GN[g].toLowerCase() + ", " + fmt(sum[g])).join("; ")
+      ? "Boston Admin’s " + tot + " jobs by sector as stacked bars: " + ADM.map(g => GN[g].toLowerCase() + ", " + fmt(sum[g])).join("; ")
       : isGrp(mode) ? "The metro’s " + fmt(M.jobs) + " jobs by sector " + (isT(mode) ? "as a treemap in " + (MERGE ? "three" : "four") + " groups: " : (MERGE ? "in three groups" : "in four groups") + ", Boston admin's two first in each bar: ") + G.map(g => GN[g].toLowerCase() + ", " + fmt(sum[g])).join("; ")
       : "The metro’s " + fmt(M.jobs) + " jobs by sector, as " + (isT(mode) ? "a treemap" : "bars") + "; the largest are " + rows.slice(0, 3).map(r => r.short.toLowerCase() + ", " + fmt(r.msaJobs)).join(", "));
     if (isSec(mode)){ const seen = []; rows.forEach(r => { if (seen.indexOf(r.sector) < 0) seen.push(r.sector); }); if (tree) seen.sort((a, b) => rank(a) - rank(b));
@@ -24878,25 +24887,34 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   }
   function extras(fade){
     treeExtras(fade);
-    const vals = busy ? [] : mode === "sec" || mode === "grp" ? rows.map(r => ({ r, x: L.x0 + r.msaJobs * L.kS + (mode === "grp" ? GAPS : 0) + 6, n: r.msaJobs })) :
-      mode === "adm" ? rows.map(r => ({ r, x: L.x0 + r.jobs * L.kA + 6, n: r.jobs })) : [];
+    const vals = busy ? [] : mode === "sec" || mode === "grp" ? rows.map(r => ({ r, x: L.x0 + r.msaJobs * L.kS + (mode === "grp" ? GAPS : 0) + 9 * L.kU, n: r.msaJobs })) :
+      mode === "adm" ? rows.map(r => ({ r, x: L.x0 + r.jobs * L.kA + 9 * L.kU, n: r.jobs })) : [];
     gVal.selectAll("text").data(vals, d => d.r.code).join("text").attr("class", "mc-val").attr("x", d => d.x).attr("y", d => yOf(d.r, mode) + L.rh / 2 + 4.5).text(d => fmt(d.n));
     /* the groups' names over their columns; on beat 5 over the two parts of the first bar, so no key is needed */
     const first = L.ordA[0], resX = L.adm[first.code + "|res"].x;
-    const hs = busy || isSec(mode) || isT(mode) ? [] : mode === "grp" ? GO.map(g => ({ g, x: L.colX[g], ln: L.heads[g], tot: M.jobs }))
+    const hs = busy || isSec(mode) || isT(mode) ? [] : mode === "grp" ? GO.filter(g => !(MERGE && g === "rest")).map(g => ({ g, x: L.colX[g], ln: L.heads[g], tot: M.jobs }))
       : [{ g: "non", x: L.x0, ln: wrapTo(GN.non, resX - L.x0 - 10, 14, 600), tot: sum.non + sum.res },
          { g: "res", x: resX, ln: wrapTo(GN.res, L.w - resX - 2, 14, 600), tot: sum.non + sum.res }];
     gHead.selectAll("g").data(hs, d => mode + d.g).join("g").attr("class", d => "mc-glab mc-glab--" + d.g)
-      .html(d => { const nl = d.ln.length, y = L.top - 6 - 20 - (nl - 1) * 17;
-        return '<text class="mc-gname" x="' + d.x + '" y="' + y + '">' + d.ln.map((t, i) => '<tspan x="' + d.x + '" dy="' + (i ? 17 : 0) + '">' + t + '</tspan>').join("") + '</text>' +
-          '<text class="mc-gn" x="' + d.x + '" y="' + (y + nl * 17 + 3) + '">' + headCount(d.g) + '<tspan class="mc-gp">' + (headCount(d.g) ? ' ' : '') + Math.round(sum[d.g] / d.tot * 100) + '%</tspan></text>'; });
+      .html(d => { const nl = d.ln.length, y = L.top - 6 - 20 - (nl - 1) * 17, sw = mode === "grp" ? L.SW : 0, tx = d.x + sw;
+        return (sw ? '<rect class="mc-gsw" x="' + d.x + '" y="' + (y - 5 * TG - L.SWZ / 2) + '" width="' + L.SWZ + '" height="' + L.SWZ + '" rx="3" fill="' + GC(d.g) + '"/>' : '') +
+          '<text class="mc-gname" x="' + tx + '" y="' + y + '">' + d.ln.map((t, i) => '<tspan x="' + tx + '" dy="' + (i ? 17 : 0) + '">' + t + '</tspan>').join("") + '</text>' +
+          '<text class="mc-gn" x="' + tx + '" y="' + (y + nl * 17 + 3) + '">' + headCount(d.g) + '<tspan class="mc-gp">' + (headCount(d.g) ? ' ' : '') + Math.round(sum[d.g] / d.tot * 100) + '%</tspan></text>'; });
     /* Boston admin, said quietly (2026-11-09, Nil: "another way to highlight admin part, it is currently cluttered"; the
        dashed outline round every bar's end is gone): one bracket over its two heads, as the Venn brackets its jobs, and
        in each bar a wider gap before its two parts, so they stand as a block of their own at the bar's end */
     gBos.selectAll("g").data(busy || mode !== "grp" ? [] : [1]).join("g").attr("class", "mc-bos-g").html(() => {
-      const x = L.colX.non - 2, w = L.colX.res + L.colW.res - L.colX.non, y = TOPB - 2;
-      return '<path class="mc-bos-b" d="M' + x + ',' + (y + 6) + 'V' + y + 'H' + (x + w) + 'V' + (y + 6) + '"/>' +
-        '<text class="mc-bos-t" x="' + (x + w / 2) + '" y="' + (y - 7) + '" text-anchor="middle">' + bosWord() + '</text>'; });
+      /* under three groups the bracket ends where the two heads under it end, and the outside part's words stand on its
+         line in the same type, with a bracket of their own over their column, in the soft ink (teal stays the city's) */
+      const y = L.topB - 2, x = L.colX.non - 2;
+      const w = MERGE ? L.resEnd - x
+        : L.colX.res + L.colW.res - L.colX.non;
+      const bk = (bx, bw, cls) => '<path class="mc-bos-b' + cls + '" d="M' + bx + ',' + (y + 6) + 'V' + y + 'H' + (bx + bw) + 'V' + (y + 6) + '"/>';
+      if (MERGE){ const nx = L.resEnd, n = L.outLn.length;
+        return '<path class="mc-bos-b" d="M' + x + ',' + (y + 6) + 'V' + y + 'H' + nx + 'V' + (y + 6) + '"/><path class="mc-bos-b mc-bos-b--out" d="M' + nx + ',' + y + 'H' + L.barEnd + 'V' + (y + 6) + '"/>' +
+          '<text class="mc-bos-t" x="' + (x + nx) / 2 + '" y="' + (y - 7) + '" text-anchor="middle">' + bosWord() + '</text>' +
+          '<text class="mc-bos-t mc-bos-t--out" text-anchor="middle">' + L.outLn.map((t, i) => '<tspan x="' + (nx + (L.w < 600 ? L.w : L.barEnd)) / 2 + '" y="' + (y - 7 - (n - 1 - i) * 16) + '">' + esc(t) + '</tspan>').join("") + '</text>'; }
+      return bk(x, w, "") + '<text class="mc-bos-t" x="' + (x + w / 2) + '" y="' + (y - 7) + '" text-anchor="middle">' + bosWord() + '</text>'; });
     if (fade && !reduced()){
       gVal.selectAll("text").style("opacity", 0).transition().duration(300).style("opacity", 1);
       gHead.selectAll("g").style("opacity", 0).transition().duration(350).style("opacity", 1);
@@ -25002,11 +25020,11 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
      the frozen sections"): beat 1's head (the sector's colour and name, the two-digit name under it), its count and its
      share of the beat's whole, then under a hairline each group's part with the key's swatch and flow icon, its count
      and its share of the sector, in plain numbers. A treemap piece and a bar take the same card for their sector */
-  function tipHide(){ tip.hidden = true; }
+  function tipHide(){ tip.hidden = true; if (typeof hot === "function") hot(null); }
   const shr = v => { if (!(v > 0)) return "0%"; const t = v * 100; if (t >= 1) return Math.round(t) + "%";
     for (let k = 1; k < 4; k++){ const q = t.toFixed(k); if (+q > 0) return q + "%"; } return t.toFixed(3) + "%"; };
   const FI = window.FLOW_ICO || {}, ICO = { non: "in", res: "both", out: "out" };
-  const tMark = g => '<i class="tip-sw tip-sw--' + g + '"></i>' + (FI[ICO[g]] || "");
+  const tMark = g => '<i class="tip-sw tip-sw--' + g + '"></i>' + (FI[ICO[g]] || '<i class="tip-ico-gap" aria-hidden="true"></i>');
   const tRow = (k, v, mark) => '<dt>' + (mark || "") + k + '</dt><dd>' + v + '</dd>';
   const tGrid = (list, ruled) => '<dl class="tip-grid' + (ruled ? ' tip-grid--ruled' : '') + '">' + list.join("") + '</dl>';
   const tSh = t => ' <span class="tip-sh">' + t + '</span>';
@@ -25017,11 +25035,12 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     const head = '<div class="tip-target"><i style="background:' + colourOf(r.sector) + '"></i><b>' + esc(r.sector) + '</b></div>' +
       '<div class="tip-head"><strong>' + esc(r.short) + ' <span class="tip-code">(2-digit)</span></strong></div>';
     /* the sectors' treemap writes a share with one place under 10%, its card the same */
-    const pc = mode === "tsec" ? shareOf : shr;
-    const lead = tGrid([tRow(adm ? "Jobs in Boston" : "Jobs in Boston Metro", fmt(tot)), tRow("Share", pc(tot / whole))]);
+    /* shares as beat 1's card writes them, one place under 10%, and named for their whole (2026-11-18 design-system check) */
+    const pc = shareOf;
+    const lead = tGrid([tRow(adm ? "Jobs in Boston" : "Jobs in Boston Metro", fmt(tot)), tRow(adm ? "Share of Boston Admin jobs" : "Share of metro jobs", pc(tot / whole))]);
     if (isSec(mode)) return head + lead;
     const v = g => Math.max(0, r[GV[g]]);
-    const parts = (adm ? ADM : mode === "grp" ? GO : G).map(g => tRow(GN[g], fmt(v(g)) + tSh(shr(v(g) / tot)), tMark(g)));
+    const parts = (adm ? ADM : mode === "grp" ? GO : G).map(g => tRow(GN[g], fmt(v(g)) + tSh(shareOf(v(g) / tot)), tMark(g)));
     return head + lead + tGrid(parts, true);
   }
   const PLOT = () => host.querySelector(".mc-plot");
@@ -25037,7 +25056,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
     }
     const sr = svgEl.getBoundingClientRect(), y = e.clientY - sr.top, i = Math.floor((y - L.top) / L.rh), r = ordOf(mode)[i];
     if (!r || y < L.top){ tipHide(); return; }
-    tipShow(r, e);
+    tipShow(r, e); hot(r);
   }
   svgEl.addEventListener("pointermove", tipAt);
   /* a tap has no hover: it shows the card, a tap off the chart lets it go */
@@ -25048,6 +25067,35 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
   function tipPlace(e){ if (CTP) CTP(e, PLOT(), tip); }
   svgEl.addEventListener("pointerleave", tipHide);
 
+  /* the opt in beat 4's counter (2026-11-18, Nil: "make sure the option is opt next to the chapter feature"): three groups
+     (the default) or the four before it, switched in place; the address keeps ?held=four */
+  function setHeld(m){
+    if (m === MERGE) return; MERGE = m;
+    const set = (a, v) => a.splice(0, a.length, ...v);
+    set(G, m ? ["rest", "non", "res"] : ["rest", "non", "res", "out"]); set(RIGHT, m ? ["non", "res"] : ["non", "res", "out"]);
+    set(GO, m ? ["non", "res", "rest"] : ["non", "res", "out", "rest"]); GAPS = (GO.length - 3) * SEG + SEG + SEGB;
+    GN.rest = m ? "Outside Boston Admin" : "Neither live nor work in Boston"; GS.rest = m ? "Outside" : "Neither"; GV.rest = m ? "estOutAll" : "estRest";
+    const u = new URL(location.href); if (m) u.searchParams.delete("held"); else u.searchParams.set("held", "four");
+    history.replaceState(history.state, "", u.pathname + u.search + u.hash);
+    rows = null; tipHide(); if (shown && data()) draw();
+  }
+  let heldOpt = null;
+  function heldStudy(){
+    const eye = document.querySelector(".ct-step.is-on > .ct-eyebrow"); if (!eye) return;
+    if (!heldOpt){
+      heldOpt = document.createElement("div"); heldOpt.className = "mi-studies mi-studies--own";
+      heldOpt.innerHTML = '<button type="button" class="mi-studies-btn" aria-expanded="false" aria-controls="mcHeldPanel">opt</button>' +
+        '<div class="mi-studies-panel" id="mcHeldPanel" role="group" aria-label="Design studies" hidden><label class="mi-study mi-study--keep"><span>Groups</span>' +
+        '<select class="mc-held-opt" aria-label="Who holds the jobs, in how many groups"><option value="three">opt-1 Three: in and outside Boston Admin</option><option value="four">opt-2 Four (before)</option></select></label></div>';
+      const btn = heldOpt.querySelector(".mi-studies-btn"), panel = heldOpt.querySelector(".mi-studies-panel"), sel = heldOpt.querySelector("select");
+      sel.addEventListener("change", () => setHeld(sel.value === "three"));
+      btn.addEventListener("click", () => { const open = panel.hidden; panel.hidden = !open; btn.setAttribute("aria-expanded", String(open)); });
+      document.addEventListener("click", ev => { if (!heldOpt.contains(ev.target) && !panel.hidden){ panel.hidden = true; btn.setAttribute("aria-expanded", "false"); } });
+    }
+    heldOpt.querySelector("select").value = MERGE ? "three" : "four";
+    if (!eye.contains(heldOpt)){ heldOpt.querySelector(".mi-studies-panel").hidden = true; heldOpt.querySelector(".mi-studies-btn").setAttribute("aria-expanded", "false"); eye.appendChild(heldOpt); }
+  }
+
   window.MC = {
     /* state 12 is beat 4, 13 beat 5; 14 and 15 are storyline 3's, beat 4 as a treemap; from is the figure's state
        before. Beat 4 plays by itself on arrival */
@@ -25057,6 +25105,7 @@ if (/[?&]landing=full\b/.test(location.search)) document.getElementById("landing
         if (!data()) return;
         if (playT){ clearTimeout(playT); playT = null; }
         tree = s >= 14;
+        if (s === 12 || s === 14) heldStudy();
         const sec = tree ? "tsec" : "sec", grp = tree ? "tgrp" : "grp";
         if (s === 13 || s === 15){
           if (was && L && from === s - 1 && mode === grp){ moveTo("adm"); return; }
