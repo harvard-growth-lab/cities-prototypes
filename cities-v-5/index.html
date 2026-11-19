@@ -6467,7 +6467,7 @@
   .mc-loc-city{fill:transparent;fill-rule:evenodd;stroke:var(--geo-city);stroke-width:1.4;stroke-linejoin:round;transition:fill .6s ease;}
   .mc-loc[data-geo="admin"] .mc-loc-metro{fill:var(--border);}
   .mc-loc[data-geo="admin"] .mc-loc-city{fill:var(--geo-city);}
-  .mc-place{font-weight:400;color:var(--ink);white-space:nowrap;}
+  .mc-place{font-weight:600;color:var(--ink);white-space:nowrap;}
   .mc-place--admin{color:var(--geo-city);}
   .mc-place.is-swap{animation:mcPlaceIn .5s cubic-bezier(.2,.7,.2,1);}
   @keyframes mcPlaceIn{0%{opacity:0;}100%{opacity:1;}}
@@ -8959,6 +8959,8 @@
   html body .wg-ghostlab{font-size:14px;}
   html body #miSort .spec-key{font-size:14px;}
   html body #miFigure.is-admin .wf-key{font-size:14px;}
+  /* one colour through the key (2026-11-19, Nil: legends "same color"): the soft grey of every other key, its "Net: Boston receives / sends" words no longer ink */
+  html body #miFigure .wf-key b{color:inherit;}
   #miFigure #miAdminSvg .ad-foot-lab{font-size:calc(14px * var(--mi-type, 1) * var(--mi-g, 1) / var(--k, 1));}
   html body #dgFigure .dg-key{font-size:14px;}
   html body .dg-cmp > legend.dg-lab,html body .dg-peers{font-size:14px;}
